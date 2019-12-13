@@ -216,6 +216,7 @@ class WinTypeRes(gclasses.WinMyFrame, gclasses.GuiChecks):
 			pass
 		else:
 			out, self.oldRes = self.ReadRes[self.eName](oldRes)
+			print(out, self.oldRes)
 			if out:
 				self.CreateM('event')
 			else:
@@ -985,13 +986,10 @@ class WinTypeRes(gclasses.WinMyFrame, gclasses.GuiChecks):
 	 #--> Get nRows
 		oldRes = l.split(';')
 		ll = len(oldRes)
-		if ll > 1:
-			if self.CType == config.combobox['ControlType'][2]:
-				self.tcRows.SetValue(str(len(oldRes)))
-			else:
-				self.tcRows.SetValue(str(len(oldRes) - 1))
+		if self.CType == config.combobox['ControlType'][2]:
+			self.tcRows.SetValue(str(ll))
 		else:
-			return [False, []]
+			self.tcRows.SetValue(str(ll - 1))
 	 #--> Get nCols
 		oldRes = [x.split(',') for x in oldRes]
 	  #--> Check that each row has the same number of columns
@@ -1002,7 +1000,7 @@ class WinTypeRes(gclasses.WinMyFrame, gclasses.GuiChecks):
 			return [False, []] 
 	  #-->
 		if self.CType == config.combobox['ControlType'][2]:
-			self.tcCols.SetValue(str(len(oldRes[1]) - 1))
+			self.tcCols.SetValue(str(len(oldRes[0]) - 1))
 		else:
 			self.tcCols.SetValue(str(len(oldRes[1])))		
 	 #--> Flat res list

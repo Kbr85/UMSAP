@@ -60,8 +60,8 @@ if cOS == 'Darwin':
 	cwd = cwd.parent
 	cwd = cwd.parent
 	#################################################### Change before releasing
-	res = cwd / 'Resources'
-	#res = cwd / 'BORRAR-GUI/RESOURCES'
+	#res = cwd / 'Resources'
+	res = cwd / 'BORRAR-GUI/RESOURCES'
 	#################################################### Change before releasing
 	#--> Set top left coordinate
 	topLeftCoord = (0, 21)
@@ -740,7 +740,7 @@ extName = { # Link the file extension to name dict
 # ----------------------------------------------------------------- Images
 image = { # Information regarding images
 	#--> paths to images in:
-	'icon' : path['Images'] / 'p97-1o-v2.ico',
+	'icon' : path['Images'] / 'icon2.ico',
 	'Main' : path['Images'] / 'MAIN-WINDOW/p97-2.png',
 	'Util' : path['Images'] / 'MAIN-WINDOW/p97-2.png',
 	'About': path['Images'] / 'ABOUT/p97-2-about.png',

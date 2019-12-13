@@ -1,25 +1,27 @@
 #--> Imports
 import platform
 import shutil
+import getpass
 
 from distutils.dir_util import copy_tree
 from pathlib            import Path
 
 #--> VARIABLES 
 cwd = Path.cwd()
+user = getpass.getuser()
 
 #--> FOLDERS TO COPY
-source = Path('/Users/kenny/Dropbox/UMSAP/CODE/0-CODE/')
-img    = Path('/Users/kenny/Dropbox/UMSAP/CODE/2-RESOURCES/IMAGES/')
-data   = Path('/Users/kenny/Dropbox/UMSAP/LOCAL/DATA/')
+source = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/0-CODE/')
+img    = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/IMAGES/')
+data   = Path('/Users/' + user + '/Dropbox/UMSAP/LOCAL/DATA/')
 dataF  = ['LIMPROT', 'TARPROT', 'PROTPROF']
 
 #--> FILES TO COPY
-icon   = Path('/Users/kenny/Dropbox/UMSAP/CODE/2-RESOURCES/ICON/MAC/icon.icns')
-icon2  = Path('/Users/kenny/Dropbox/UMSAP/CODE/2-RESOURCES/ICON/WIN/icon2.ico')
-manual = Path('/Users/kenny/Dropbox/UMSAP/CODE/2-RESOURCES/MANUAL/manual.pdf')
-spec   = Path('/Users/kenny/Dropbox/UMSAP/CODE/2-RESOURCES/BUNDLE/MAC/UMSAPm.spec')
-config = Path('/Users/kenny/Dropbox/UMSAP/CODE/2-RESOURCES/CONFIG/config_def.json')
+icon   = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/ICON/MAC/icon.icns')
+icon2  = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/ICON/WIN/icon2.ico')
+manual = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/MANUAL/manual.pdf')
+spec   = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/BUNDLE/MAC/UMSAPm.spec')
+config = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/CONFIG/config_def.json')
 
 #--> START RUNNING
 ##--> ASK IF PLAYGROUND FOLDER CAN BE DELETED
@@ -86,7 +88,8 @@ if var == "Y" or var == "y":
 	for f in dataF:
 		print('Copying PlayDATA folders: ' + f)
 		lf = data / f
-		copy_tree(str(lf), str(resD))
+		resDf = resD  / f
+		copy_tree(str(lf), str(resDf))
    ###--> FINAL PRINT
 	print("\nAll Done. Enjoy!!")
 else:

@@ -675,15 +675,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	  #--> write
 		line = '--> Statistical test results and Fold changes: \n'
 		self.tcText.AppendText(line)
-		line = '	(True: p < '+u'\N{GREEK SMALL LETTER ALPHA}'+', False: p > '+u'\N{GREEK SMALL LETTER ALPHA}'+')\n\n'
+		line = '	(Selected '+u'\N{GREEK SMALL LETTER ALPHA}'+' level: ' + str(self.aVal) + ')\n\n'
 		self.tcText.AppendText(line)
 		line = '  -- Volcano plot \n\n'
 		self.tcText.AppendText(line)
 	   #-->
-		myDict = {i:lambda x: 'True' if x <= self.aVal else 'False' 
-			for i in dfo.loc[:, idx['P values',:]].columns}	  
-	   #-->
-		dmethods.DFWrite2TextCtrl(dfo, self.tcText, formatters=myDict)
+		dmethods.DFWrite2TextCtrl(dfo, self.tcText, formatters=None)
 		self.tcText.AppendText('\n\n')
 	 #--> Return
 		return True
@@ -703,11 +700,10 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		idx = pd.IndexSlice
 		dfo['Relevant points'] = self.NTimePL
 		dfo['P values'] = df.loc[:,idx['tp',:,:,self.PoPc]].to_numpy().tolist()[0]
-		myDict = {'P values':lambda x: 'True' if x <= self.aVal else 'False'}  
 	  #--> write
 		line = ('  -- Relevant points analysis: \n\n')
 		self.tcText.AppendText(line)	  
-		dmethods.DFWrite2TextCtrl(dfo, self.tcText, formatters=myDict)
+		dmethods.DFWrite2TextCtrl(dfo, self.tcText, formatters=None)
 		self.tcText.AppendText('\n\n')
 	 #--> Return
 		return True

@@ -31,12 +31,12 @@ import numpy  as np
 from scipy import stats
 from statsmodels.stats.multitest import multipletests 
 ## My modules
-import config.config      as config
-import gui.menu.menu      as menu
-import gui.gui_classes    as gclasses
-import gui.gui_methods    as gmethods
-import data.data_classes  as dclasses 
-import data.data_methods  as dmethods
+import config.config        as config
+import gui.menu.menu        as menu
+import gui.gui_classes      as gclasses
+import gui.gui_methods      as gmethods
+import data.data_classes    as dclasses 
+import data.data_methods    as dmethods
 import checks.checks_single as check
 #---
 
@@ -189,41 +189,41 @@ class WinProtProf(gclasses.WinModule):
 		self.tcColExt.SetValue('NA')
 
 		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!!
-	# 	if config.cOS == 'Darwin':
-	# 		self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt') 
-	# 		self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
-	# 		# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt')
-	# 		# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
-	# 	elif config.cOS == 'Windows':
-	# 		from pathlib import Path
-	# 		self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt'))) 
-	# 		self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/test2')))
-	# 	self.tcOutName.SetValue('myProtTest')
-	# 	self.tcScoreVal.SetValue('320')  
-	# 	self.tcZscore.SetValue('10')
-	# 	self.cbCorrP.SetValue('Kenny')
-	# 	self.tcDetProt.SetValue('0')
-	# 	self.tcGeneN.SetValue('6')   
-	# 	self.tcScore.SetValue('39')     
-	# 	self.tcColExt.SetValue('0 1 2 3 4-10')
-	#    #--> One Control per Row
-	# 	# self.tcResults.SetValue('105 115 125, 106 116 126, 101 111 121; 130 131 132, 108 118 128, 103 113 123')         
-	# 	# self.CType = 'One Control per Row'
-	# 	# self.LabelControl = 'MyControl'
-	# 	# self.LabelCond    = ['DMSO', 'H2O']
-	# 	# self.LabelRP      = ['30min', '1D']
-	#    #--> One Control        
-	# 	#self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-	# 	#self.CType = 'One Control'
-	# 	#self.LabelControl = 'MyControl'
-	# 	#self.LabelCond    = ['DMSO', 'H2O']
-	# 	#self.LabelRP      = ['30min', '1D']
-	#    #--> One Control per Column
-	# 	self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123; 100 110 120, 102 112 122')
-	# 	self.CType = 'One Control per Column'
-	# 	self.LabelControl = 'MyControl'
-	# 	self.LabelCond    = ['DMSO', 'H2O', 'MeOH']
-	# 	self.LabelRP      = ['30min', '1D']		 
+		if config.cOS == 'Darwin':
+			self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt') 
+			self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
+			# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt')
+			# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
+		elif config.cOS == 'Windows':
+			from pathlib import Path
+			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt'))) 
+			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/test2')))
+		self.tcOutName.SetValue('myProtTest')
+		self.tcScoreVal.SetValue('320')  
+		self.tcZscore.SetValue('10')
+		self.cbCorrP.SetValue('Kenny')
+		self.tcDetProt.SetValue('0')
+		self.tcGeneN.SetValue('6')   
+		self.tcScore.SetValue('39')     
+		self.tcColExt.SetValue('0 1 2 3 4-10')
+	   #--> One Control per Row
+		# self.tcResults.SetValue('105 115 125, 106 116 126, 101 111 121; 130 131 132, 108 118 128, 103 113 123')         
+		# self.CType = 'One Control per Row'
+		# self.LabelControl = 'MyControl'
+		# self.LabelCond    = ['DMSO', 'H2O']
+		# self.LabelRP      = ['30min', '1D']
+	   #--> One Control        
+		#self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+		#self.CType = 'One Control'
+		#self.LabelControl = 'MyControl'
+		#self.LabelCond    = ['DMSO', 'H2O']
+		#self.LabelRP      = ['30min', '1D']
+	   #--> One Control per Column
+		self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123; 100 110 120, 102 112 122')
+		self.CType = 'One Control per Column'
+		self.LabelControl = 'MyControl'
+		self.LabelCond    = ['DMSO', 'H2O', 'MeOH']
+		self.LabelRP      = ['30min', '1D']		 
 		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! 		
 
 	 #--> Show
@@ -571,6 +571,8 @@ class WinProtProf(gclasses.WinModule):
 		else:
 			return False
 	 #--> MyTuples. To configure the loops of the self.do['ResultsControl] matrix
+	 #	  (x, y, X, Y) x, y coordinates in tc.Results list of list
+	 #                 X, Y labels in the output dataframe
 		self.do['MyTuples'] = {
 			'v'   : [],
 			'tpds': [],
@@ -848,9 +850,51 @@ class WinProtProf(gclasses.WinModule):
 				self.dataO.loc[:,idx['tp',:,:,'Pc']] = pvalC
 			else:
 				pass	
-	  #--> Final steps for self.dataOF
+	  #--> Final steps for self.dataO
 		self.dataO = self.dataO.sort_values(by=config.protprof['SortBy'])
 		self.dataO = self.dataO.reset_index(drop=True)
+	  #--> Change X, Y, T & C to the given/default names
+	   #--> Set col dicts
+		colX = {'Gene':'Gene', 'Protein': 'Protein', 'Score':'Score'}
+		colY = {'Gene':'Gene', 'Protein': 'Protein', 'Score':'Score'}
+		colXt = {'Gene':'Gene', 'Protein': 'Protein', 'Score':'Score'}
+		colYt = {'Gene':'Gene', 'Protein': 'Protein', 'Score':'Score'}
+		if self.do['CType'] == config.combobox['ControlType'][1]:
+			for x in range(0, self.do['Xv']):
+				j = x + 1
+				colX['X'+str(j)] = self.do['LabelRP'][x]
+			for x in range(0, self.do['Yv']+1):
+				j = x - 1
+				if x == 0:
+					colY['Y0'] = self.do['LabelControl']
+				else:
+					colY['Y'+str(x)] = self.do['LabelCond'][j]
+		else:
+			for x in range(0, self.do['Xv']):
+				j = x + 1
+				colX['X'+str(j)] = self.do['LabelCond'][x]
+			for x in range(0, self.do['Yv']+1):
+				j = x - 1
+				if x == 0:
+					colY['Y0'] = self.do['LabelControl']
+				else:
+					colY['Y'+str(x)] = self.do['LabelRP'][j]
+		for x in range(0, self.do['Xtp']):
+			j = x + 1
+			colXt['T'+str(j)] = self.do['LabelRP'][x]
+		for x in range(0, self.do['Ytp']+1):
+			j = x - 1
+			if x == 0:
+				colYt['C0'] = self.do['LabelControl']
+			else:
+				colYt['C'+str(x)] = self.do['LabelCond'][j]	
+	   #--> Copy dataframe
+		self.dataOW = self.dataO.copy()
+	   #--> Change columns name
+		for a in [colX, colXt]:
+			self.dataOW.rename(columns=a, level=1, inplace=True)
+		for a in [colY, colYt]:
+			self.dataOW.rename(columns=a, level=2, inplace=True)
 	 #--> Return
 		return True
 	#---
@@ -877,7 +921,7 @@ class WinProtProf(gclasses.WinModule):
 		file = folderD / 'data-05-Ratios.txt'
 		dmethods.FFsWriteCSV(file, self.dataVPSNMR)
 		file = folderD / 'data-06-Results.txt'
-		dmethods.FFsWriteCSV(file, self.dataO)		
+		dmethods.FFsWriteCSV(file, self.dataOW)		
 	 #--> protprof file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Writing output files: protprof file', 1)
