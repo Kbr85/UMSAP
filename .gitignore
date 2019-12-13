@@ -1,0 +1,7 @@
+# Ignore files
+.DS_Store
+
+
+# Ignore folders
+__pychache__
+.vscode
