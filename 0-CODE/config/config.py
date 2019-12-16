@@ -60,8 +60,8 @@ if cOS == 'Darwin':
 	cwd = cwd.parent
 	cwd = cwd.parent
 	#################################################### Change before releasing
-	#res = cwd / 'Resources'
-	res = cwd / 'BORRAR-GUI/RESOURCES'
+	res = cwd / 'Resources'
+	#res = cwd / 'BORRAR-GUI/RESOURCES'
 	#################################################### Change before releasing
 	#--> Set top left coordinate
 	topLeftCoord = (0, 21)

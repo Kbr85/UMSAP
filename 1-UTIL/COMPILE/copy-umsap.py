@@ -2,6 +2,7 @@
 import platform
 import shutil
 import getpass
+import platform
 
 from distutils.dir_util import copy_tree
 from pathlib            import Path
@@ -9,19 +10,27 @@ from pathlib            import Path
 #--> VARIABLES 
 cwd = Path.cwd()
 user = getpass.getuser()
+cOS = platform.system()
+
+if cOS == 'Darwin':
+	pathF = '/Users/'
+	spec = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/BUNDLE/MAC/UMSAPm.spec')
+else:
+	pathF = 'C:/Users/'
+	spec  = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/BUNDLE/WIN/UMSAP.spec')
+	specH = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/BUNDLE/WIN/version.txt')
 
 #--> FOLDERS TO COPY
-source = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/0-CODE/')
-img    = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/IMAGES/')
-data   = Path('/Users/' + user + '/Dropbox/UMSAP/LOCAL/DATA/')
+source = Path(pathF + user + '/Dropbox/UMSAP/CODE/0-CODE/')
+img    = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/IMAGES/')
+data   = Path(pathF + user + '/Dropbox/UMSAP/LOCAL/DATA/')
 dataF  = ['LIMPROT', 'TARPROT', 'PROTPROF']
 
 #--> FILES TO COPY
-icon   = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/ICON/MAC/icon.icns')
-icon2  = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/ICON/WIN/icon2.ico')
-manual = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/MANUAL/manual.pdf')
-spec   = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/BUNDLE/MAC/UMSAPm.spec')
-config = Path('/Users/' + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/CONFIG/config_def.json')
+icon   = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/ICON/MAC/icon.icns')
+icon2  = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/ICON/WIN/icon2.ico')
+manual = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/MANUAL/manual.pdf')
+config = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/CONFIG/config_def.json')
 
 #--> START RUNNING
 ##--> ASK IF PLAYGROUND FOLDER CAN BE DELETED
@@ -81,6 +90,12 @@ if var == "Y" or var == "y":
 	print('Copying Resources: ' + str(spec))		
 	loc = cwd / spec.name
 	shutil.copyfile(spec, loc)
+	if cOS == 'Windows':
+		print('Copying Resources: ' + str(specH))		
+		loc = cwd / specH.name
+		shutil.copyfile(specH, loc)		
+	else:
+		pass
    ###--> DATA FOLDER
 	print('')
 	print('Copying PlayDATA folders')
