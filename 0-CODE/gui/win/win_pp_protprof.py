@@ -63,18 +63,33 @@ class WinProtProf(gclasses.WinModule):
 	  #--> Destroy widgets needed by other modules but not here
 		self.WidgetsDestroy(self.name)
 	  #--> StaticText
-		self.stChB    = wx.StaticText(self.boxValues, label='Median correction')
-		self.stZscore = wx.StaticText(self.boxValues, label='Z score (%)')
-		self.stCorrP  = wx.StaticText(self.boxValues, label='P correction')
-		self.stGeneN  = wx.StaticText(self.boxColumns, label='Gene names')
+		self.stChB     = wx.StaticText(self.boxValues, label='Median correction')
+		self.stZscore  = wx.StaticText(self.boxValues, label='Z score (%)')
+		self.stCorrP   = wx.StaticText(self.boxValues, label='P correction')
+		self.stGeneN   = wx.StaticText(self.boxColumns, label='Gene names')
+		self.stExclude = wx.StaticText(
+			self.boxColumns, 
+			label='Exclude proteins'
+		)
 	  #--> CheckBox
 		self.chb = wx.CheckBox(self.boxValues, label='')
 		self.chb.SetValue(True)
 	  #--> TextCtrl
-		self.tcZscore = wx.TextCtrl(self.boxValues, value='',
-			size=config.size['TextCtrl']['ValuesSect'])			
-		self.tcGeneN = wx.TextCtrl(self.boxColumns, value='', 
-			size=config.size['TextCtrl']['ColumnsSect'])
+		self.tcZscore = wx.TextCtrl(
+			self.boxValues, 
+			value='',
+			size=config.size['TextCtrl']['ValuesSect']
+		)			
+		self.tcGeneN = wx.TextCtrl(
+			self.boxColumns, 
+			value='', 
+			size=config.size['TextCtrl']['ColumnsSect']
+		)
+		self.tcExclude = wx.TextCtrl(
+			  self.boxColumns,
+			  value='',
+			  size=config.size['TextCtrl']['ColumnsSect']
+		)		
 	  #--> Combobox. #---->>>>>>>> This will be moved to gclasses.WinModule when extending the p values correction to all modules
 		self.cbCorrP = wx.ComboBox(self.boxValues, 
 			value='Benjamini - Hochberg',  
@@ -86,7 +101,8 @@ class WinProtProf(gclasses.WinModule):
 			101: self.tcDetProt,
 			102: self.tcGeneN, 
 			103: self.tcScore, 
-			104: self.tcColExt,
+			104: self.tcExclude,
+			105: self.tcColExt,
 		}
 	 #--> Sizers
 	  #--> Central static boxes
@@ -150,17 +166,21 @@ class WinProtProf(gclasses.WinModule):
 			flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxColumnsWid.Add(self.tcScore,        pos=(2,1), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL, span=(0,2))
-		self.sizerboxColumnsWid.Add(self.stColExt,       pos=(3,0), border=2, 
+		self.sizerboxColumnsWid.Add(self.stExclude,      pos=(3,0), border=2, 
 			flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
-		self.sizerboxColumnsWid.Add(self.tcColExt,       pos=(3,1), border=2, 
+		self.sizerboxColumnsWid.Add(self.tcExclude,      pos=(3,1), border=2, 
+			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL, span=(0,2))			
+		self.sizerboxColumnsWid.Add(self.stColExt,       pos=(4,0), border=2, 
+			flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
+		self.sizerboxColumnsWid.Add(self.tcColExt,       pos=(4,1), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL, span=(0,2))
-		self.sizerboxColumnsWid.Add(self.stResults,      pos=(4,0), border=2, 
+		self.sizerboxColumnsWid.Add(self.stResults,      pos=(5,0), border=2, 
 			flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, span=(0,2))		
-		self.sizerboxColumnsWid.Add(self.buttonResultsW, pos=(5,0), border=2, 
+		self.sizerboxColumnsWid.Add(self.buttonResultsW, pos=(6,0), border=2, 
 			flag=wx.ALIGN_RIGHT|wx.ALL)
-		self.sizerboxColumnsWid.Add(self.tcResults,      pos=(5,1), border=2, 
+		self.sizerboxColumnsWid.Add(self.tcResults,      pos=(6,1), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
-		self.sizerboxColumnsWid.Add(self.buttonResultsL, pos=(5,2), border=2, 
+		self.sizerboxColumnsWid.Add(self.buttonResultsL, pos=(6,2), border=2, 
 			flag=wx.ALIGN_RIGHT|wx.ALL)		
 	  #--> Fit
 		self.sizer.Fit(self)
@@ -173,6 +193,8 @@ class WinProtProf(gclasses.WinModule):
 		self.stZscore.SetToolTip(config.tooltip[self.name]['ZScore'])
 		self.stCorrP.SetToolTip(config.tooltip[self.name]['CorrP'])
 		self.stGeneN.SetToolTip(config.tooltip[self.name]['GeneN'])
+		self.stExclude.SetToolTip(
+			config.tooltip[self.name]['Exclude'] + config.msg['OptVal'])
 	 #--> Binding
 		for child in self.GetChildren():
 			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
@@ -186,44 +208,46 @@ class WinProtProf(gclasses.WinModule):
 		self.cbaVal.SetValue('0.050')
 		self.chb.SetValue(False)
 		self.cbCorrP.SetValue('Benjamini - Hochberg')
+		self.tcExclude.SetValue('NA')
 		self.tcColExt.SetValue('NA')
 
 		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!!
-		if config.cOS == 'Darwin':
-			self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt') 
-			self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
-			# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt')
-			# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
-		elif config.cOS == 'Windows':
-			from pathlib import Path
-			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt'))) 
-			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/test2')))
-		self.tcOutName.SetValue('myProtTest')
-		self.tcScoreVal.SetValue('320')  
-		self.tcZscore.SetValue('10')
-		self.cbCorrP.SetValue('Kenny')
-		self.tcDetProt.SetValue('0')
-		self.tcGeneN.SetValue('6')   
-		self.tcScore.SetValue('39')     
-		self.tcColExt.SetValue('0 1 2 3 4-10')
-	   #--> One Control per Row
-		# self.tcResults.SetValue('105 115 125, 106 116 126, 101 111 121; 130 131 132, 108 118 128, 103 113 123')         
-		# self.CType = 'One Control per Row'
-		# self.LabelControl = 'MyControl'
-		# self.LabelCond    = ['DMSO', 'H2O']
-		# self.LabelRP      = ['30min', '1D']
-	   #--> One Control        
-		#self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-		#self.CType = 'One Control'
-		#self.LabelControl = 'MyControl'
-		#self.LabelCond    = ['DMSO', 'H2O']
-		#self.LabelRP      = ['30min', '1D']
-	   #--> One Control per Column
-		self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123; 100 110 120, 102 112 122')
-		self.CType = 'One Control per Column'
-		self.LabelControl = 'MyControl'
-		self.LabelCond    = ['DMSO', 'H2O', 'MeOH']
-		self.LabelRP      = ['30min', '1D']		 
+	# 	if config.cOS == 'Darwin':
+	# 		self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt') 
+	# 		self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
+	# 		# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt')
+	# 		# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
+	# 	elif config.cOS == 'Windows':
+	# 		from pathlib import Path
+	# 		self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt'))) 
+	# 		self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/test2')))
+	# 	self.tcOutName.SetValue('myProtTest')
+	# 	self.tcScoreVal.SetValue('320')  
+	# 	self.tcZscore.SetValue('10')
+	# 	self.cbCorrP.SetValue('Kenny')
+	# 	self.tcDetProt.SetValue('0')
+	# 	self.tcGeneN.SetValue('6')   
+	# 	self.tcScore.SetValue('39')     
+	# 	self.tcColExt.SetValue('0 1 2 3 4-10')
+	# 	self.tcExclude.SetValue('171 172 173')
+	#    #--> One Control per Row
+	# 	# self.tcResults.SetValue('105 115 125, 106 116 126, 101 111 121; 130 131 132, 108 118 128, 103 113 123')         
+	# 	# self.CType = 'One Control per Row'
+	# 	# self.LabelControl = 'MyControl'
+	# 	# self.LabelCond    = ['DMSO', 'H2O']
+	# 	# self.LabelRP      = ['30min', '1D']
+	#    #--> One Control        
+	# 	#self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+	# 	#self.CType = 'One Control'
+	# 	#self.LabelControl = 'MyControl'
+	# 	#self.LabelCond    = ['DMSO', 'H2O']
+	# 	#self.LabelRP      = ['30min', '1D']
+	#    #--> One Control per Column
+	# 	self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123; 100 110 120, 102 112 122')
+	# 	self.CType = 'One Control per Column'
+	# 	self.LabelControl = 'MyControl'
+	# 	self.LabelCond    = ['DMSO', 'H2O', 'MeOH']
+	# 	self.LabelRP      = ['30min', '1D']		 
 		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! 		
 
 	 #--> Show
@@ -253,6 +277,7 @@ class WinProtProf(gclasses.WinModule):
 
 	def OnClearColumnsDef(self):
 		""" Specific clear for Columns in this module """
+		self.tcExclude.SetValue('NA')
 		self.tcColExt.SetValue('NA')
 		self.CType        = None
 		self.LabelControl = None
@@ -288,7 +313,8 @@ class WinProtProf(gclasses.WinModule):
 				       'P correction' :    self.cbCorrP.GetValue(),              
 				  'Detected proteins' :  self.tcDetProt.GetValue(),
 						 'Gene names' :    self.tcGeneN.GetValue(),    
-				              'Score' :    self.tcScore.GetValue(),          
+				              'Score' :    self.tcScore.GetValue(),
+				   'Exclude proteins' :  self.tcExclude.GetValue(),         
 				 'Columns to extract' :   self.tcColExt.GetValue(),  		 
 				            'Results' :  self.tcResults.GetValue(),
 						 'Conditions' : ', '.join(self.LabelCond),      
@@ -435,6 +461,23 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #--> Exclude proteins
+		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
+			'Checking user input: Exclude proteins', 1)		
+		if self.CheckGuiListNumber(self.tcExclude, 
+			'ExcludeCol',
+			config.dictCheckFatalErrorMsg[self.name]['ExcludeCol'],  
+			t         = config.dictElemExclude[self.name]['t'],
+			comp      = config.dictElemExclude[self.name]['comp'],
+			val       = config.dictElemExclude[self.name]['val'],
+			NA        = config.dictElemExclude[self.name]['NA'],
+			Range     = config.dictElemExclude[self.name]['Range'],
+			Order     = config.dictElemExclude[self.name]['Order'],
+			Unique    = config.dictElemExclude[self.name]['Unique'],
+			DelRepeat = config.dictElemExclude[self.name]['DelRepeat']):
+			pass
+		else:
+			return False			
 	  #--> Columns to extract
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Columns to extract', 1)		
@@ -477,12 +520,19 @@ class WinProtProf(gclasses.WinModule):
 	 #--> Repeating element
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Unique column numbers', 1)
+	  #--> Main list
 		self.l = ([self.do['GeneNCol']]
 					+ [self.do['DetectProtCol']] 
 					+ [self.do['ScoreCol']]
 					+ list(set(dmethods.ListFlatNLevels(self.do['Control'], 1)[1]))
 					+ dmethods.ListFlatNLevels(self.do['Results'], 2)[1])
-		if self.CheckGuiListUniqueElements(self.l, 
+	  #--> Include excluded columns 
+		if self.do['ExcludeCol'] != None:
+			self.le = self.l + self.do['ExcludeCol']
+		else:
+			self.le = self.l
+	  #--> Check
+		if self.CheckGuiListUniqueElements(self.le, 
 			config.dictCheckFatalErrorMsg[self.name]['Unique'],
 			NA=config.dictElemResultsTP[self.name]['NA']):
 			pass
@@ -490,9 +540,9 @@ class WinProtProf(gclasses.WinModule):
 			return False
 	 #--> Small variables needed further below
 		if self.do['ColExtract'] != None:
-			self.lcExt = self.l + self.do['ColExtract']							
+			self.lcExt = self.le + self.do['ColExtract']							
 		else:
-			self.lcExt = self.l
+			self.lcExt = self.le
 	 #--> Return
 		return True
 	#---
@@ -546,7 +596,12 @@ class WinProtProf(gclasses.WinModule):
 			self.name,
 		)
 		if out:
-			 pass
+			if self.do['ExcludeCol'] != None:
+				for col in self.do['ExcludeCol']:
+					newCol = self.header[col]
+					self.dataV[newCol] = self.dataFileObj.dataFrame[newCol]
+			else:
+				pass
 		else:
 			return False
 	 #--> Variables to configure the output dataframe
@@ -660,8 +715,19 @@ class WinProtProf(gclasses.WinModule):
 		""" """
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis', 1)
+	 #--> Remove proteins found in Exclude proteins
+		if self.do['ExcludeCol'] != None:
+			# a = self.dataFileObj.dataFrame.iloc[:,self.do['ExcludeCol']] == '+'
+			# a = a.loc[(a==True).any(axis=1)]
+			# idx = a.index
+			a = self.dataV == '+'
+			a = a.loc[(a==True).any(axis=1)]
+			idx = a.index
+			self.dataVP = self.dataV.drop(index=idx)
+		else:
+			self.dataVP = self.dataV
 	 #--> Remove proteins that where not identified in all experiments
-		self.dataVP = self.dataV.loc[~(self.dataV==0).any(axis=1)]
+		self.dataVP = self.dataVP.loc[~(self.dataVP==0).any(axis=1)]
 	 #--> Filter data by Score value
 		out, self.dataVPS = dmethods.DFColValFilter(
 			self.dataVP,
@@ -671,7 +737,7 @@ class WinProtProf(gclasses.WinModule):
 			loc=True,	
 		)
 	 #--> Data frame dimensions. Here because self.dataV must be filter by 
-	 #    proteins identified in all expeirments and score first
+	 #    proteins identified in all experiments and score first
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Data frame dimension', 1)
 		self.tentry, self.tcol = self.dataVPS.shape				
@@ -684,8 +750,12 @@ class WinProtProf(gclasses.WinModule):
 	 #--> Normalize
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Normalizing data', 1)
+		if self.do['ExcludeCol'] != None:
+			end = self.tcol - len(self.do['ExcludeCol'])
+		else:
+			end = self.tcol
 		out, self.dataVPSN = dmethods.DataNorm(self.dataVPS, 
-			sel=list(range(config.protprof['SColNorm'], self.tcol, 1)),
+			sel=list(range(config.protprof['SColNorm'], end, 1)),
 			method=self.do['Datanorm'])
 		if out:
 			pass

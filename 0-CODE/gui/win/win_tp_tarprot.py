@@ -570,7 +570,7 @@ class WinTarProt(gclasses.WinModule):
 		except Exception:
 			return False
 	 #--> Check column numbers
-		if self.CheckGuiColNumbersInDataFile(self.l, self.dataFileObj.nCols,
+		if self.CheckGuiColNumbersInDataFile(self.lcExt, self.dataFileObj.nCols,
 			config.dictCheckFatalErrorMsg[self.name]['ColNumber']):
 			pass
 		else:

@@ -981,7 +981,9 @@ msg = { # Text messages used in the programm
 		'ScoreCol' : ("Score must hold an integer number greater or equal to "
 			"0."),
 		'GeneNCol' : ("Gene names must hold an integer number greater or equal "
-			"to 0."),			
+			"to 0."),
+		'ExcludeCol' : ("Exclude proteins must hold a list of positive "
+			"integer numbers or the value NA."),						
 		'ColExtract' : ("Columns to extract must hold a list of positive "
 			"integer numbers or the value NA."),
 		'ColExtract2' : ("Columns to extract must hold a list of positive "
@@ -1031,7 +1033,7 @@ msg = { # Text messages used in the programm
 		'UniqueTP' : ("The values for Sequences, Detected proteins, Score," 
 			" and Results must be unique."),
 		'UniquePP' : ("The values for Detected proteins, Gene names, Score," 
-			" and Results must be unique."),
+			" Exclude proteins and Results must be unique."),
 		'ColNumber' : ("The given data file contains less columns than "
 			"requested."),
 		'UOption' : ("Received and unknown option."),
@@ -1157,6 +1159,9 @@ msg = { # Text messages used in the programm
 		'Control' : ("Information regarding the control experiments."),
 		'ControlNa' : ("Name of the control experiment.\ne.g DMSO"),
 		'ControlType' : ("Control experiment design."),
+	 #--> Used in ProtProf
+		'Exclude' : ("Proteins found in these columns will be excluded from" 
+			" the analysis.\ne.g. 45 67 109"),
 	},
 	'Button' : { # For tooltips regarding button widgets
 	 #--> Used in Main
@@ -1345,6 +1350,7 @@ tooltip = { # This dict makes it easier to set the tooltips based on the name of
 		'ZScore'              : msg['StaticText']['ZScore'],
 		'CorrP'               : msg['StaticText']['CorrP'],
 		'GeneN'               : msg['StaticText']['GeneN'],
+		'Exclude'             : msg['StaticText']['Exclude'],
 	},
 	name['LimProt'] : { # Limited Proteolysis module
 		'DataFile'            : msg['Button']['DataFile'],		
@@ -1973,6 +1979,19 @@ dictElemColExtract = { # To check user input in a Columns to Extract Col in the 
 	},
 }
 
+dictElemExclude = { # To check user input in a Exclude proteins Col in the Columns section
+	name['ProtProf'] : {
+		't'        : 'int',
+		'comp'     : 'egt',
+		'val'      : 0,
+		'NA'       : True,
+		'Order'    : False,
+		'Range'    : True,
+		'Unique'   : True,
+		'DelRepeat': False
+	},
+}
+
 dictElemControl = { # To check user input in a Control Col in the Columns section
 	name['TarProt'] : {
 		't'        : 'int',
@@ -2072,6 +2091,7 @@ dictCheckFatalErrorMsg = { ####----> Fatal error messages
 		'DetectProtCol'   : msg['Errors']['DetectProtCol'],
 		'GeneNCol'        : msg['Errors']['GeneNCol'],
 		'ScoreCol'        : msg['Errors']['ScoreCol'],
+		'ExcludeCol'      : msg['Errors']['ExcludeCol'],
 		'ColExtract'      : msg['Errors']['ColExtract'],
 		'Results'         : msg['Errors']['ResultsPP'],	
 		'Unique'          : msg['Errors']['UniquePP'],
@@ -2290,6 +2310,7 @@ dictUserInput2UscrFile = { # Equivalence between the uscr file and the self.do d
 		'DetectProtCol'  : 'Detected proteins',
 		'GeneNCol'       : 'Gene names',
 		'ScoreCol'       : 'Score',
+		'ExcludeCol'     : 'Exclude proteins',
 		'ColExtract'     : 'Columns to extract',
 		'Results'        : 'Results',
 		'CType'          : 'Control Type',   

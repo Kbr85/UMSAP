@@ -121,6 +121,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.sizer.Fit(self)
 	  #--> Add Grow
 		self.sizerIN.AddGrowableCol(0, 1)
+		self.sizerIN.AddGrowableRow(2, 1)
 	 #--> Positions and minimal size
 		self.WinPos()
 		gmethods.MinSize(self)

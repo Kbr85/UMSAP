@@ -311,11 +311,14 @@ def ListCtrlGetSelected(lb):
 	totalItems = lb.GetItemCount()
 	selItems   = []
  #--> Get selected
+	#--# IMPROVED (DOWN) This means that you have to iterate the entire list
+	# Should be faster with GetFirstSelected, GetNextSelected and GetSelecteItemCount
 	for i in range(totalItems):
 		if lb.IsSelected(i):
 			selItems.append(i)
 		else:
 			pass
+	#--# IMPROVED (UP)
  #--> Return
 	return selItems
 #---
@@ -384,7 +387,7 @@ def ListCtrlSearchVal(lb, string, startI=1):
 	"""
  #--> Variables
 	sel  = []
-	seqs = [] 
+	seqs = []
 	totalItems = lb.GetItemCount()
  #--> Search the wx.ListBox
 	for i in range(totalItems):
@@ -410,6 +413,7 @@ def ListCtrlSearchVal(lb, string, startI=1):
 	elif n == 1:
 		ListCtrlDeSelAll(lb)
 		lb.Select(sel[0])
+		lb.EnsureVisible(sel[0])
   #--> n == 0
 	elif n == 0:
 		m = len(seqs)
@@ -631,6 +635,7 @@ def LaunchProtProf(data):
 		'DetectProtCol': config.win['ProtProf'].tcDetProt,
 		'GeneNCol'     : config.win['ProtProf'].tcGeneN,
 		'ScoreCol'     : config.win['ProtProf'].tcScore,
+		'ExcludeCol'   : config.win['ProtProf'].tcExclude,
 		'ColExtract'   : config.win['ProtProf'].tcColExt,
 		'Results'      : config.win['ProtProf'].tcResults,
 	}
@@ -778,9 +783,7 @@ def MenuOnUpdateTP():
 			fLocO = Path(dlgo.GetPath())
  #--> Create tarprot object
 			try:
-				print('Creating fileObj')
 				fileObj = dclasses.DataObjTarProtFile(fLoc)
-				print('Created fileObj')
 			except Exception:
 				k = False
  #--> Run update

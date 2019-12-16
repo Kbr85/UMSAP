@@ -837,16 +837,17 @@ class ToolMenuProtProfMod(ToolMenuTarProtMod):
 		self.Append(101, 'Detected proteins')
 		self.Append(102, 'Gene names')
 		self.Append(103, 'Score')
-		self.Append(104, 'Columns to extract')
+		self.Append(104, 'Exclude proteins')
+		self.Append(105, 'Columns to extract')
 		self.AppendSeparator()
-		self.Append(105, 'Clear list')
+		self.Append(106, 'Clear list')
 		self.AppendSeparator()
-		self.Append(106, 'Save input file')
+		self.Append(107, 'Save input file')
 	  ####---- Bind
-		for i in range(101, 105, 1):
+		for i in range(101, 106, 1):
 			self.Bind(wx.EVT_MENU, self.OnButton, id=i)
-		self.Bind(wx.EVT_MENU, self.OnClear,      id=105)
-		self.Bind(wx.EVT_MENU, self.OnSaveInputF, id=106)
+		self.Bind(wx.EVT_MENU, self.OnClear,      id=106)
+		self.Bind(wx.EVT_MENU, self.OnSaveInputF, id=107)
 	#---
 #---
 

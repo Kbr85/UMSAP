@@ -1963,7 +1963,7 @@ class GuiChecks():
 			NA: NA allowed (boolean)
 			Rage: Range allowed (boolean)
 			Order: list must be ordered low -> high (boolean)
-			Unique: elements ust be unique (boolean)
+			Unique: elements must be unique (boolean)
 			DelRepeat: delete repeating elements (boolean)								
 		"""
 	  #--> Initial set

@@ -216,7 +216,6 @@ class WinTypeRes(gclasses.WinMyFrame, gclasses.GuiChecks):
 			pass
 		else:
 			out, self.oldRes = self.ReadRes[self.eName](oldRes)
-			print(out, self.oldRes)
 			if out:
 				self.CreateM('event')
 			else:
