@@ -77,12 +77,12 @@ def WinGraphResCreate(winID, file):
 		file: file with results (string or Path)
 	"""
  #--> Create the window
-	#try:
-	test = config.pointer['gmethods']['WinCreate'][winID](file)
-	config.win['Open'].append(test)
-	config.win['Main'].Iconize(True)
-	#except Exception:
-	#	return False
+	try:
+		test = config.pointer['gmethods']['WinCreate'][winID](file)
+		config.win['Open'].append(test)
+		config.win['Main'].Iconize(True)
+	except Exception:
+		return False
  #--> Return
 	return True
 #---
@@ -98,6 +98,8 @@ def WinTypeResCreate(winID, parent, parentName=None):
  #--> Check that no other window for this module already exists
 	if parent.name in config.win['TypeRes'].keys():
 		config.win['TypeRes'][parent.name].Iconize(False)
+		config.win['TypeRes'][parent.name].Raise()
+
 	else:
  #--> Create the window
 		config.win['TypeRes'][parent.name] = config.pointer['gmethods']['WinCreate'][winID](parent, parentName)
@@ -1049,8 +1051,10 @@ def MenuOnRInputFile():
 	""" Run the script """
  #--> Variables
 	k = True
-	dlg = gclasses.DlgOpenFile(config.msg['Open']['InputF'],
-		config.extLong['Uscr'])
+	dlg = gclasses.DlgOpenFile(
+		config.msg['Open']['InputF'],
+		config.extLong['Uscr']
+	)
  #--> Get path to the file
 	if dlg.ShowModal() == wx.ID_OK:
 		fLoc = Path(dlg.GetPath())

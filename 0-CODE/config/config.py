@@ -60,8 +60,8 @@ if cOS == 'Darwin':
 	cwd = cwd.parent
 	cwd = cwd.parent
 	#################################################### Change before releasing
-	res = cwd / 'Resources'
-	#res = cwd / 'BORRAR-GUI/RESOURCES'
+	#res = cwd / 'Resources'
+	res = cwd / 'BORRAR-UMSAP/RESOURCES'
 	#################################################### Change before releasing
 	#--> Set top left coordinate
 	topLeftCoord = (0, 21)
@@ -2434,6 +2434,9 @@ pointer = { # pointer to methods in different classes to avoid repeating if stat
 	},
 	'dclasses' : { # pointer to methods in data.data_classes
 		'DataObj' : {}, # Classes creating data file objects
+	},
+	'dmethods' : {
+		'fillListCtrl' : {}, # Methods to get information to fill a ListCtrl
 	},
 	'gmethods' : { # points to methods in gui.gui_methods module
 		'LaunchUscr' : {}, # Launch uscr methods used by dclasses.DataObjScriptFile

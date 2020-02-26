@@ -3065,6 +3065,8 @@ class WinRes(WinMyFrame, ElementListCtrlSearch):
 		fname = self.fileP.name
 		title = config.title[self.name] + ' (' + str(fname) + ')'
 		WinMyFrame.__init__(self, parent=parent, title=title, style=style)
+	 #---
+
 	 #--> Widgets
 	  #--> wx.ListBox & wx.SearchCtrl
 		ElementListCtrlSearch.__init__(self, parent=self.panel)
@@ -3072,44 +3074,48 @@ class WinRes(WinMyFrame, ElementListCtrlSearch):
 			style=wx.LC_REPORT|wx.BORDER_SIMPLE|wx.LC_SINGLE_SEL)
 	  #--- Lines
 		self.VI1 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
+	 #---
+
 	 #--> Automatically create the file object based on self.name
 		try:
 			self.fileObj
 		except Exception:
 			try:
 				self.fileObj = config.pointer['dclasses']['DataObj'][self.name](self.fileP)
-			except Exception:
+			except Exception as e:
 				raise ValueError('')
+	 #---
+
 	 #--> Automatically fill the listbox
-		self.FillListBox()
+		try:
+			self.FillListBox()
+		except Exception as e:
+			DlgUnexpectedErrorMsg(str(e))
+			raise ValueError('')
+	 #---
+
 	 #--> Bind
 		if config.cOS == 'Darwin':
 			self.lb.Bind(wx.EVT_KILL_FOCUS, self.OnFocusKill)
 		else:
 			pass
+	 #---
 	#---
 
 	####---- Methods of the class
-	def FillListBox(self):
+	def FillListBox(self, col=None, df=None):
 		""" Fill the list box depending on self.name """
-	 #--> TarProtRes
-		if self.name == config.name['TarProtRes']:
-			l = self.fileObj.filterPeptDF.loc[:,'Sequence'].tolist()
-			gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
-	 #--> ProtProfRes
-		elif self.name == config.name['ProtProfRes']:
-			col = [('Gene','Gene','Gene','Gene'), ('Protein','Protein','Protein','Protein')]
-			l = self.fileObj.dataFrame.loc[:,col].values.tolist()
-			gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
-	 #--> LimProtRes
-		elif self.name == config.name['LimProtRes']:
-			col = ('Sequence','Sequence','Sequence')
-			l = self.fileObj.filterPeptDF.loc[:,col].tolist()
-			gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
-	 #--> 
-		else:
-			pass
-	 #--> Return
+	 #--> Empty the listctrl
+		self.lb.DeleteAllItems()
+	 #--> Get new information
+		l = config.pointer['dmethods']['fillListCtrl'][self.name](
+			self,
+			col=col, 
+			df=df,
+		)
+	 #--> Show the new info
+		gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
+	 #-->
 		return True
 	#---
 	

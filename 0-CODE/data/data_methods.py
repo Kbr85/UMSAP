@@ -1680,3 +1680,59 @@ def DHelperFragTuple2NatSeq(self, tup, strC=True):
 	return [True, l]
 #---
 # ------------------------------------------------------- dclasses Helpers (END)
+
+
+# ------------------------------- Data to fill ListCtrl in a Result Window
+# This methods get information from a dataframe and the information is used to
+# fill a ListCtrl. They are intended to be called from within a class
+def Get_Data4ListCtrl_TarProtRes(self, col=None, df=None):
+	""" 	"""
+ #--> Default values
+	if col is None:
+		col = [('Sequence')]
+	else:
+		pass
+	if df is None:
+		df = self.fileObj.filterPeptDF
+	else:
+		pass
+ #--> Get info
+	l = df.loc[:,col].values.tolist()
+ #--> Return
+	return l
+#---
+
+def Get_Data4ListCtrl_LimProtRes(self, col=None, df=None):
+	""" 	"""
+ #--> Default values
+	if col is None:
+		col = [('Sequence','Sequence','Sequence')]
+	else:
+		pass
+	if df is None:
+		df = self.fileObj.filterPeptDF
+	else:
+		pass
+ #--> Get info
+	l = df.loc[:,col].values.tolist()
+ #--> Return
+	return l
+#---
+
+def Get_Data4ListCtrl_ProtProfRes(self, col=None, df=None):
+	""" 	"""
+ #--> Default values
+	if col is None:
+		col = [('Gene','Gene','Gene','Gene'), ('Protein','Protein','Protein','Protein')]
+	else:
+		pass
+	if df is None:
+		df = self.fileObj.dataFrame
+	else:
+		pass
+ #--> Get info
+	l = df.loc[:,col].values.tolist()
+ #--> Return
+	return l
+#---
+# ------------------------------- Data to fill ListCtrl in a Result Window (END)

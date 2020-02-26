@@ -54,40 +54,40 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		except Exception:
 			raise ValueError("")
 	 #--> Variables
-		self.NC		   = self.fileObj.nConds
-		self.data		 = self.fileObj.dataFrame
-		self.start		= True
-		self.TP		   = self.fileObj.timeP
-		self.NP		   = self.fileObj.NProt
-		self.colors	   = dmethods.GetColors(self.NC)
-		self.colorsL	  = dmethods.GetColors(self.NC, "L")
-		self.loga		 = self.fileObj.loga
-		self.aVal		 = self.fileObj.aVal
-		self.P			= False
+		self.NC           = self.fileObj.nConds
+		self.data         = self.fileObj.dataFrame
+		self.start        = True
+		self.TP           = self.fileObj.timeP
+		self.NP           = self.fileObj.NProt
+		self.colors       = dmethods.GetColors(self.NC)
+		self.colorsL      = dmethods.GetColors(self.NC, "L")
+		self.loga         = self.fileObj.loga
+		self.aVal         = self.fileObj.aVal
+		self.P            = False
 		self.xCoordTimeA  = self.fileObj.xCoordTimeA
-		self.ZscoreVal	= self.fileObj.ZscoreVal
+		self.ZscoreVal    = self.fileObj.ZscoreVal
 		self.ZscoreValP   = self.fileObj.ZscoreValP
 		self.ZscoreValD   = self.fileObj.ZscoreVal
 		self.ZscoreValDP  = self.fileObj.ZscoreValP
-		self.NCondL	   = self.fileObj.nCondsL
-		self.NTimePL	  = self.fileObj.nTimePL
+		self.NCondL       = self.fileObj.nCondsL
+		self.NTimePL      = self.fileObj.nTimePL
 		self.XaxisLabel   = [self.fileObj.ControlLabel] + self.NTimePL
 		self.ControlLabel = self.fileObj.ControlLabel
-		self.CType		= self.fileObj.CType
-		self.Xv		   = self.fileObj.Xv
-		self.Yv		   = self.fileObj.Yv
+		self.CType        = self.fileObj.CType
+		self.Xv           = self.fileObj.Xv
+		self.Yv           = self.fileObj.Yv
 		#---
 		self.n  = 0
 		self.tp = 0
 		#---
-		self.grayC	  = False
-		self.allL	   = False
-		self.prot	   = False
+		self.grayC      = False
+		self.allL       = False
+		self.prot       = False
 		self.legendShow = False
-		self.CorrP	  = False
-		self.pP		 = config.protprof['ColOut'][1]
-		self.pPt		= config.protprof['ColTPp'][0]
-		self.PoPc	   = config.protprof['ColOut'][0]
+		self.CorrP      = False
+		self.pP         = config.protprof['ColOut'][1]
+		self.pPt        = config.protprof['ColTPp'][0]
+		self.PoPc       = config.protprof['ColOut'][0]
 	 #--> Menu
 		self.menubar = menu.MenuBarProtProfRes(
 			self.NC,
@@ -505,8 +505,13 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	#---
 
 	##-- Plot2 Volcano plot
-	def DrawConfig2(self):
+	def DrawConfig2(self, df=None):
 		""" """
+	 #--> df
+		if df is None:
+			df = self.data
+		else:
+			pass
 	 #--> Title of the plot
 		self.title = (
 			"C: " 
@@ -520,9 +525,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #--> Get data
 		if self.CType == config.combobox['ControlType'][1]:
 			try:
-				self.x = self.data[('v', 'X'+str(self.tp+1), "Y" + str(self.n+1), "log2FC")]
-				self.y = self.data[('v', 'X'+str(self.tp+1), "Y" + str(self.n+1), self.pP)]
-				self.z = self.data[('v', 'X'+str(self.tp+1), "Y" + str(self.n+1), "zFC")]
+				self.x = df[('v', 'X'+str(self.tp+1), "Y" + str(self.n+1), "log2FC")]
+				self.y = df[('v', 'X'+str(self.tp+1), "Y" + str(self.n+1), self.pP)]
+				self.z = df[('v', 'X'+str(self.tp+1), "Y" + str(self.n+1), "zFC")]
 				self.colorsV = dmethods.GetZColors(
 					self.z.to_list(), 
 					config.colors[self.name]["Colors"],
@@ -533,9 +538,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 				k = False
 		else:
 			try:
-				self.x = self.data[('v', 'X'+str(self.n+1), "Y" + str(self.tp+1), "log2FC")]
-				self.y = self.data[('v', 'X'+str(self.n+1), "Y" + str(self.tp+1), self.pP)]
-				self.z = self.data[('v', 'X'+str(self.n+1), "Y" + str(self.tp+1), "zFC")]
+				self.x = df[('v', 'X'+str(self.n+1), "Y" + str(self.tp+1), "log2FC")]
+				self.y = df[('v', 'X'+str(self.n+1), "Y" + str(self.tp+1), self.pP)]
+				self.z = df[('v', 'X'+str(self.n+1), "Y" + str(self.tp+1), "zFC")]
 				self.colorsV = dmethods.GetZColors(
 					self.z.to_list(), 
 					config.colors[self.name]["Colors"],
