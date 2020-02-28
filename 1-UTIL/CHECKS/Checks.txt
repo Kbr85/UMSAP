@@ -49,7 +49,13 @@
 	-- You need a document describing the structure of the data frame used
 		in the application. ALL OF THEM
 
-	-- Tool menus should be slightly different in popup and menubar.
+	-- Menu should be redone with a scheme like the one your are using for 
+		ProtProfR.Tools.Filter_Results_by
+		In essence you will have Menu Instances that will be used to 
+		create PopUpMenus and MenuBars
+	
+		This is old:
+		Tool menus should be slightly different in popup and menubar.
 		E.g. The tool menu in TarProt has a header that makes not much sense
 		in the menubar
 
@@ -84,6 +90,12 @@
 
 	-- Redesign class again because you could use some abstract parent class
 		to hold methods used in different modules.
+
+	-- CheckGui classes should accept both a wx.TextCtrl or a value because
+		otherwise you cannot use them to check arbitrary values. The idea is to 
+		keep methods in check and check_multiple just checking and returning
+		[True/False, Original_value/Modified_value] and let GuiCheck to handle 
+		error notification.
 
 	-- Create a way to generate plot of data to show normalization 
 		improvement 

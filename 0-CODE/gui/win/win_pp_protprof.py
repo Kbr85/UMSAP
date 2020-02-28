@@ -198,7 +198,6 @@ class WinProtProf(gclasses.WinModule):
 	 #--> Binding
 		for child in self.GetChildren():
 			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
 	 #--> Default values
 		self.tcOutputFF.SetValue('NA')
 		self.tcOutName.SetValue('NA')

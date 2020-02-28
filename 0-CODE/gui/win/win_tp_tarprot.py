@@ -156,7 +156,6 @@ class WinTarProt(gclasses.WinModule):
 		self.buttonPDBFile.Bind(wx.EVT_BUTTON, self.OnPDBFile)
 		for child in self.GetChildren():
 			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
 	 #--> Initial default values
 		self.tcSeqNatFile.SetValue('NA')
 		self.tcPDBFile.SetValue('NA')

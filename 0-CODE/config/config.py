@@ -859,8 +859,17 @@ msg = { # Text messages used in the programm
 		'Values' : 'Values',
 		'Columns': 'Column numbers', 
 	},
-	'TextInput' : { # For text input dialog
-		'ZScoreThreshold' : "New Z score threshold:",
+	'TextInput' : { # For text in input dialog
+		'msg': {
+			'ZScoreThreshold' : "Z score threshold value (%):",
+			'ZScoreFilter': "Z score value (%):",
+			'log2FCFilter': 'Log2FC absolute value:',
+		},
+		'caption' : {
+			'ZScoreThreshold' : "Z score threshold for Volcano plot",
+			'ZScoreFilter': "Filter results by Z score",			
+			'log2FCFilter': 'Filter results by Log2FC value',
+		}
 	},
 	'Open' : { # For open file dialogues
 		'DataFile'   : 'Select the data file',
@@ -1037,6 +1046,10 @@ msg = { # Text messages used in the programm
 		'ColNumber' : ("The given data file contains less columns than "
 			"requested."),
 		'UOption' : ("Received and unknown option."),
+		'FilterByZscore' : ("Please provide a valid value to filter the "
+			"results by Z score. \ne.g. < 10 or > 25"),
+		'FilterByLog2FC' : ("Please provide a valid value to filter the "
+			"results by Log2FC. \ne.g. < 1.5 or > 2"),
 	 #--> class related
 		'NoSeq' : ("It is not possible to create an instance of "
 			"DataObjSequenceFile with no sequence."),
@@ -1299,7 +1312,11 @@ msg = { # Text messages used in the programm
 		'CancelPref' : ("Close the Preference window without saving."),
 		'LoadDef' : ("Load default values."),						
 	},
-	'OptVal' : ("\n---\nThis field is optional (NA).")		
+	'filterValuesExamples' : {
+		'byZScore' : 'e.g. < 10 or > 20',
+		'byLog2FC' : 'e.g. < 2 or > 1.4',
+	},		
+	'OptVal' : ("\n---\nThis field is optional (NA)."),	
 }
 # --------------------------------------------------------------- Messages (END)
 

@@ -1160,9 +1160,9 @@ def DFColValFilter(df, val, col, comp='eq', reset=True, loc=False):
 		df: data frame
 		val: value to look for in the column (int)
 		col: col name or index (list of strings or integers)
-		comp: comparison (string)
+		comp: comparison (string, eq, ge, le, lt, gt)
 		reset: reset the df index after filtering or not
-		loc: True .loc False .iloc
+		loc: True .loc False .iloc depending on the values of col
 	"""
   #--> Filter
 	try:
@@ -1176,6 +1176,11 @@ def DFColValFilter(df, val, col, comp='eq', reset=True, loc=False):
 				dfo = df.loc[df.loc[:,col] >= val]			
 			else:
 				dfo = df.loc[df.iloc[:,col] >= val]
+		elif comp == 'le':
+			if loc:
+				dfo = df.loc[df.loc[:,col] <= val]			
+			else:
+				dfo = df.loc[df.iloc[:,col] <= val]				
 	except Exception:
 		return [False, None]
   #--> Reset				
@@ -1736,3 +1741,48 @@ def Get_Data4ListCtrl_ProtProfRes(self, col=None, df=None):
 	return l
 #---
 # ------------------------------- Data to fill ListCtrl in a Result Window (END)
+
+
+
+
+
+
+
+
+
+
+def GetFilterByZscoreValue(var):
+	""" Check that the input of the Filter by Z score filter in ProtProfR
+		comply with the format > 10, < 10, >= 10 or <= 10
+		---
+		var: string with the value
+		---
+		Returns [True/False, value/False, comparison/False]
+		value: string, check for number is done elsewhere
+		comparison: string, lt or gt
+
+	"""
+ #--> Variables
+	nFalse = 3
+ #---
+
+ #--> Find comparison type and add the equal part
+	lt = '<' in var
+	gt = '>' in var
+	if lt and gt:
+		return [False] * nFalse
+	elif lt:
+		comp = 'le'
+	else:
+		comp = 'ge'
+ #---
+
+ #--> Get number
+	num = [x for x in var if x in '0123456789.,']
+	num = ''.join(num)
+ #---
+
+ #--> Return 
+	return [True, num, comp] 
+ #---
+#---

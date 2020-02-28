@@ -188,7 +188,6 @@ class WinLimProt(gclasses.WinModule):
 	 #--> Binding
 		for child in self.GetChildren():
 			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
 	 #--> Default values
 		self.tcSeqNatFile.SetValue('NA')
 		self.tcOutputFF.SetValue('NA')

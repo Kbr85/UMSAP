@@ -29,13 +29,14 @@ import wx
 import pandas as pd
 import matplotlib.patches as mpatches
 from pathlib import Path
-from scipy import stats
+from scipy   import stats
 ## My modules
 import config.config		  as config
 import gui.menu.menu		  as menu
-import gui.gui_classes		as gclasses
-import gui.gui_methods		as gmethods
+import gui.gui_classes		  as gclasses
+import gui.gui_methods		  as gmethods
 import data.data_methods	  as dmethods
+import checks.checks_single   as checkS
 import checks.checks_multiple as checkM
 #---
 
@@ -44,6 +45,7 @@ import checks.checks_multiple as checkM
 class WinProtProfRes(gclasses.WinResDosDos):
 	""" To show the results in a protprof file """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the protprof file """
 	 #--> Initial setup
@@ -54,28 +56,35 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		except Exception:
 			raise ValueError("")
 	 #--> Variables
-		self.NC           = self.fileObj.nConds
-		self.data         = self.fileObj.dataFrame
-		self.start        = True
-		self.TP           = self.fileObj.timeP
-		self.NP           = self.fileObj.NProt
-		self.colors       = dmethods.GetColors(self.NC)
-		self.colorsL      = dmethods.GetColors(self.NC, "L")
-		self.loga         = self.fileObj.loga
-		self.aVal         = self.fileObj.aVal
-		self.P            = False
-		self.xCoordTimeA  = self.fileObj.xCoordTimeA
-		self.ZscoreVal    = self.fileObj.ZscoreVal
-		self.ZscoreValP   = self.fileObj.ZscoreValP
-		self.ZscoreValD   = self.fileObj.ZscoreVal
-		self.ZscoreValDP  = self.fileObj.ZscoreValP
-		self.NCondL       = self.fileObj.nCondsL
-		self.NTimePL      = self.fileObj.nTimePL
-		self.XaxisLabel   = [self.fileObj.ControlLabel] + self.NTimePL
-		self.ControlLabel = self.fileObj.ControlLabel
-		self.CType        = self.fileObj.CType
-		self.Xv           = self.fileObj.Xv
-		self.Yv           = self.fileObj.Yv
+		self.NC                  = self.fileObj.nConds
+		self.data                = self.fileObj.dataFrame
+		self.data_filtered       = self.data
+		self.start               = True
+		self.TP                  = self.fileObj.timeP
+		self.NP                  = self.fileObj.NProt
+		self.colors              = dmethods.GetColors(self.NC)
+		self.colorsL             = dmethods.GetColors(self.NC, "L")
+		self.loga                = self.fileObj.loga
+		self.aVal                = self.fileObj.aVal
+		self.P                   = False
+		self.xCoordTimeA         = self.fileObj.xCoordTimeA
+		self.ZscoreVal           = self.fileObj.ZscoreVal
+		self.ZscoreValP          = self.fileObj.ZscoreValP
+		self.ZscoreValD          = self.fileObj.ZscoreVal
+		self.ZscoreValDP         = self.fileObj.ZscoreValP
+		self.zScore_filterValue_userInput = (
+			config.msg['filterValuesExamples']['byZScore']
+		)
+		self.log2FC_filterValue_userInput = (
+			config.msg['filterValuesExamples']['byLog2FC']
+		)
+		self.NCondL              = self.fileObj.nCondsL
+		self.NTimePL             = self.fileObj.nTimePL
+		self.XaxisLabel          = [self.fileObj.ControlLabel] + self.NTimePL
+		self.ControlLabel        = self.fileObj.ControlLabel
+		self.CType               = self.fileObj.CType
+		self.Xv                  = self.fileObj.Xv
+		self.Yv                  = self.fileObj.Yv
 		#---
 		self.n  = 0
 		self.tp = 0
@@ -136,8 +145,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #--> Show
 		self.Show()
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the classs
+	#region ---------------------------------------------------------- General
 	def WinPos(self):
 		""" Set the position of a new window depending on the number of same
 		windows already open """
@@ -156,7 +166,22 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		return True
 	#---
 
-	##-- Binding
+	def FilterDataRedraw(self, data=None):
+		""" Redraw the window data after filtering the initial data 
+			---
+			data: df already filtered
+		"""
+	 
+	 #--> Update listbox
+		self.FillListBox(df=data)
+	 #--> Redraw volcano plot
+		self.DrawConfig2(df=data)
+	 #--> Return
+		return (True)
+	#---
+	#endregion --------------------------------------------------------- General
+
+	#region ---------------------------------------------------------- Binding
 	def OnPick2(self, event):
 		""" """
 		ind = event.ind
@@ -253,7 +278,15 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		return True
 	#---
 
-	##-- Menu
+	def OnPopUpMenu(self, event):
+		""" Show the pop up menu in the wx.ListCtrl. Binding is done in
+		 the base class """
+		self.PopupMenu(menu.ToolMenuProtProfResFilter())
+		return True
+	#---
+	#endregion --------------------------------------------------------- Binding
+
+    #region --------------------------------------------------------------- Menu
 	def OnReset(self):
 		""" Reset view """
 		self.grayC = False
@@ -346,8 +379,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		""" Set a new Z score threshold """
 	 #--> Create dlg
 		dlg = gclasses.DlgTextInput(self, 
-			config.msg['TextInput']['ZScoreThreshold'],
-			value=str(self.ZscoreValDP)
+			config.msg['TextInput']['msg']['ZScoreThreshold'],
+			value=str(self.ZscoreValDP),
+			caption=config.msg['TextInput']['caption']['ZScoreThreshold'],
 		)
 	 #--> Show 
 		if dlg.ShowModal() == wx.ID_OK:
@@ -398,7 +432,138 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		return True
 	#---
 
-	##-- Plot3 Time analysis
+	def OnFilter_None(self):
+		""" Reset all filter """
+	
+		self.data_filtered = self.data
+		self.zScore_filterValue_userInput = (
+			config.msg['filterValuesExamples']['byZScore']
+		)
+		self.log2fc_filterValue_userInput = (
+			config.msg['filterValuesExamples']['byLog2FC']
+		)		
+		self.FilterDataRedraw()
+		return True
+	#---
+
+	def OnFilter_ZScore_GUI(self):
+		""" Filter the protein list by ZScore, Filtering is not recursive. It is
+			always done with respect to the protein list read from the .protprof
+			file.
+		"""
+	 #--> Create dlg
+		dlg = gclasses.DlgTextInput(self, 
+			config.msg['TextInput']['msg']['ZScoreThreshold'],
+			value=str(self.zScore_filterValue_userInput),
+			caption=config.msg['TextInput']['caption']['ZScoreFilter'],
+		)
+	 #--> Show & Process answer 
+		if dlg.ShowModal() == wx.ID_OK:
+	 	 #--> Get value
+			val = dlg.GetValue()
+	 	 #--> Process value
+			self.OnFilter_ZScore_Run(val)
+		else:
+			pass
+	 #--> Destroy & Return
+		dlg.Destroy()
+		return True		
+	#---	
+
+	def OnFilter_ZScore_Run(self, val):
+		""" Filter the results by Z score.
+			---
+			val: string with format < 10 or > 10
+		"""
+
+	 #--> Check user input
+		out, num, comp = checkM.CheckMFilterByZscore(val)
+		if out:
+			pass
+		else:
+			gclasses.DlgWarningOk(config.msg['Errors']['FilterByZscore'])
+			return False
+	 #---
+
+	 #--> Get z score value
+		self.zScore_filterValue_userInput = val
+		zVal = stats.norm.ppf(1 - num/100)
+	 #---
+
+	 #--> Filter dataframe
+		idx = pd.IndexSlice
+		col = idx[:,:,:,'zFC']
+		if comp == 'le':
+			self.data_filtered = self.data[((self.data.loc[:,col] >= zVal) | (self.data.loc[:,col] <= -zVal)).any(axis=1)]
+		elif comp == 'ge':
+			self.data_filtered = self.data[((self.data.loc[:,col] <= zVal) & (self.data.loc[:,col] >= -zVal)).any(axis=1)]
+	 #---
+
+	 #--> Update GUI elements
+		self.FilterDataRedraw(self.data_filtered)
+	 #---
+	#---
+
+	def OnFilter_Log2FC_GUI(self):
+		""" Filter the protein list by Log2FC, Filtering is not recursive. It is
+			always done with respect to the protein list read from the .protprof
+			file.
+		"""
+	 #--> Create dlg
+		dlg = gclasses.DlgTextInput(self, 
+			config.msg['TextInput']['msg']['log2FCFilter'],
+			value=str(self.log2FC_filterValue_userInput),
+			caption=config.msg['TextInput']['caption']['log2FCFilter'],
+		)
+	 #--> Show & Process answer 
+		if dlg.ShowModal() == wx.ID_OK:
+	 	 #--> Get value
+			val = dlg.GetValue()
+	 	 #--> Process value
+			self.OnFilter_Log2FC_Run(val)
+		else:
+			pass
+	 #--> Destroy & Return
+		dlg.Destroy()
+		return True		
+	#---	
+
+	def OnFilter_Log2FC_Run(self, val):
+		""" Filter the results by Log2FC values.
+			---
+			val: string with format < 10 or > 10
+		"""
+
+	 #--> Check user input
+		out, num, comp = checkM.CheckMFilterByZscore(val)
+		if out:
+			pass
+		else:
+			gclasses.DlgWarningOk(config.msg['Errors']['FilterByLog2FC'])
+			return False
+	 #---
+
+		self.log2FC_filterValue_userInput = val
+
+	 #--> Filter dataframe
+
+		print(num)
+
+		idx = pd.IndexSlice
+		col = idx[:,:,:,'log2FC']
+		if comp == 'le':
+			self.data_filtered = self.data[((self.data.loc[:,col] <= num) & (self.data.loc[:,col] >= -num)).any(axis=1)]
+		elif comp == 'ge':
+			self.data_filtered = self.data[((self.data.loc[:,col] >= num) | (self.data.loc[:,col] <= -num)).any(axis=1)]
+	 #---
+
+	 #--> Update GUI elements
+		self.FilterDataRedraw(self.data_filtered)
+	 #---
+	#---
+    #endregion ---------------------------------------------------------- Menu
+
+	#region ---------------------------------------------- Plot3 Time analysis
 	def DrawConfig3(self):
 		""" """
 		if self.prot != False:
@@ -491,7 +656,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #--> Names of the axis
 		self.p3.axes.grid(True, linestyle=":")
 		self.p3.axes.set_xlabel('Relevant Points', fontweight="bold")
-		self.p3.axes.set_ylabel("log$_{2}$[fold change]", fontweight="bold")
+		self.p3.axes.set_ylabel("log$_{2}$[Fold Change]", fontweight="bold")
 		self.p3.axes.set_xticks(range(0, len(self.XaxisLabel), 1))
 		self.p3.axes.set_xticklabels(self.XaxisLabel)
 	 #--> Make symmetric
@@ -503,8 +668,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #--> Return
 		return True
 	#---
+	#endregion ------------------------------------------- Plot3 Time analysis
 
-	##-- Plot2 Volcano plot
+	#region ----------------------------------------------- Plot2 Volcano plot
 	def DrawConfig2(self, df=None):
 		""" """
 	 #--> df
@@ -596,12 +762,13 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		""" General details of the plot area """
 		self.p2.axes.grid(True, linestyle=":")
 		self.p2.axes.axhline(y=self.loga, color="black", dashes=(5, 2, 1, 2), alpha=0.5)
-		self.p2.axes.set_xlabel("log$_{2}$[fold change]", fontweight="bold")
+		self.p2.axes.set_xlabel("log$_{2}$[Fold Change]", fontweight="bold")
 		self.p2.axes.set_ylabel("-log$_{10}$[p values]", fontweight="bold")
 		return True
 	#---
+	#endregion -------------------------------------------- Plot2 Volcano plot
 
-	##-- Show Text 
+	#region -------------------------------------------------------- Show Text 
 	def ShowText(self, df):
 		""" Show details for a selection in the wx.ListCtrl
 			---
@@ -814,5 +981,11 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #--> Return
 		return True
 	#---
+	#endregion ----------------------------------------------------- Show Text
 #---
+
+
+
+
+
 

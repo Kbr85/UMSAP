@@ -330,4 +330,51 @@ def CheckMListNumber(listV, t="float", comp="egt", val=0, Range=False,
  #--> Return
 	return [True, lout]
 #---
+
+def CheckMFilterByZscore(val, val2=100):
+	""" Check the input for Filter results by Z score in ProtProfR has the 
+		format > 10, < 10, <= 10 or >= 10
+		---
+		val: is the user given value (string)
+		val2: value to compare val against (decimal)
+		---
+		Returns [True/False, value/False, comparison/False]
+		value: float number
+		comparison: string lt or gt
+	"""
+
+ #--> Variables
+	nFalse = 3
+ #---
+
+ #--> Check not empty
+	if check.CheckVarEmpty(val):
+		pass
+	else:
+		return [False] * nFalse
+ #--- 
+
+ #--> Get number & comparison
+	out, num, comp = dmethods.GetFilterByZscoreValue(val)		
+	if out:
+		pass
+	else:
+		return [False] * nFalse
+ #---
+
+ #--> Check number is float
+	out, num = check.CheckNumType(num)
+	if out:
+		pass
+	else:
+		return [False] * nFalse
+ #---
+
+ #--> Check num < 100 & Return
+	if check.CheckNumComp(num, comp='lt', val=val2):
+		return [True, num, comp]
+	else:
+		return [False] * nFalse
+ #---
+#---
 # ----------------------------------------------------------------- Values (END)

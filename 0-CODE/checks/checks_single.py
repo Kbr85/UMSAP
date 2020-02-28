@@ -38,15 +38,14 @@ import gui.gui_methods as gmethods
 # -------------------------------------------------------------- Variables
 def CheckVarEmpty(var):
 	""" Check if a a widget value is different than ''. 
-		Return True if var != '' else False
 		---
-		var: variable to check
+		var: value to check
+		---
+		Return True if var != '' else False
 	"""
   #--> Check & Return
-	if var != '':
-		return True
-	else:
-		return False
+	return var != ''
+  #---
 #---
 
 def CheckNumType(var, t='float'):

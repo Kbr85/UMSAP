@@ -2310,9 +2310,12 @@ class DlgOpenFile(wx.FileDialog):
 class DlgTextInput(wx.TextEntryDialog):
 	""" Creates a Text Input Dialog """
 
-	def __init__(self, parent, message, value=''):
+	def __init__(self, parent, message, value='', caption=''):
 		""" message: msg to show """
-		super().__init__(parent, message, value=value)
+		if caption == '':
+			super().__init__(parent, message, value=value)
+		else:
+			super().__init__(parent, message, value=value, caption=caption)
 		self.Center()
 	#---
 #---
@@ -2818,6 +2821,7 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 	 #--> Binding
 		self.buttonSeqRecFile.Bind(wx.EVT_BUTTON, self.OnSeqRecFile)
 		self.buttonSeqNatFile.Bind(wx.EVT_BUTTON, self.OnSeqNatFile)
+		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
 	 #--> Default values
 		self.tcOutputFF.SetValue('NA')
 		self.tcOutName.SetValue('NA')
@@ -3054,7 +3058,7 @@ class WinUtilUno(WinMyFrame, GuiChecks, ElementClearAFV, ElementHelpRun,
 	#---
 #---
 
-class WinRes(WinMyFrame, ElementListCtrlSearch):
+class WinRes(WinMyFrame, GuiChecks, ElementListCtrlSearch):
 	""" Basic elements for the util windows. Used in: tarprotR and limprotR """
 
 	def __init__(self, parent=None, style=wx.DEFAULT_FRAME_STYLE):
@@ -3099,21 +3103,21 @@ class WinRes(WinMyFrame, ElementListCtrlSearch):
 			self.lb.Bind(wx.EVT_KILL_FOCUS, self.OnFocusKill)
 		else:
 			pass
+		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
 	 #---
 	#---
 
 	####---- Methods of the class
 	def FillListBox(self, col=None, df=None):
 		""" Fill the list box depending on self.name """
-	 #--> Empty the listctrl
-		self.lb.DeleteAllItems()
+
 	 #--> Get new information
 		l = config.pointer['dmethods']['fillListCtrl'][self.name](
 			self,
 			col=col, 
 			df=df,
 		)
-	 #--> Show the new info
+	 #--> Show items. This methods delete any previous items in the listbox
 		gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
 	 #-->
 		return True
@@ -3135,6 +3139,11 @@ class WinRes(WinMyFrame, ElementListCtrlSearch):
 		"""
 		self.lb.SetFocus()
 		return True
+	#---
+
+	def OnPopUpMenu(self, event):
+		""" Show the pop up menu in the wx.ListCtrl. Override as needed """
+		pass
 	#---	
 #---
 
