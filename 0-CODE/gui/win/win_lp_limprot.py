@@ -661,7 +661,8 @@ class WinLimProt(gclasses.WinModule):
 		out, self.colOut = dmethods.ListColHeaderLimProtFile(self.do['Bands'], 
 			self.do['Lanes'])
 	 #--> List of Protein for limprotR
-		self.do['ListOfProt'] = self.dataFileObj.dataFrame.iloc[:,self.do['DetectProtCol']].unique().tolist()
+		a = self.dataFileObj.dataFrame.iloc[:,self.do['DetectProtCol']]
+		self.do['ListOfProt'] = a.dropna().unique().tolist()
 		self.do['ListOfProt'].sort()	 
 		return True
 	#---

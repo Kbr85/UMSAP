@@ -628,7 +628,7 @@ class DataObjSequenceFile():
 	  #--> Find seq in self.seq
 		nt = self.seq.find(seq)
 	  #--> Get n, c
-		if check.CheckNumComp(nt, comp='gt'):
+		if check.CheckNumComp(nt, comp='egt'):
 			n = nt + 1
 		else:
 			return [False, None, None]
