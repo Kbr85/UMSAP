@@ -198,31 +198,31 @@ class WinLimProt(gclasses.WinModule):
 		self.tcColExt.SetValue('NA')
 
 		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!!
-		# if config.cOS == 'Darwin':
-		# 	self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt') 
-		# 	self.tcSeqRecFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
-		# 	self.tcSeqNatFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
-		# 	self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
-		# 	# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt')
-		# 	# self.tcSeqRecFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
-		# 	# self.tcSeqNatFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
-		# 	# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
-		# elif config.cOS == 'Windows':
-		# 	from pathlib import Path
-		# 	self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt'))) 
-		# 	self.tcSeqRecFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayData/LIMPROT/Mod-LimProt-seqA.txt')))
-		# 	self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/test')))
-		# self.tcOutName.SetLabel('myLimTest')
-		# self.tcTarprot.SetLabel('Mis18alpha')   
-		# self.tcScoreVal.SetLabel('10')
-		# self.tcSeqLength.SetValue('100')	
-		# self.tcDelta.SetValue('8') 
-		# self.tcDeltaU.SetValue('NA') 
-		# self.tcSeq.SetLabel('0')       
-		# self.tcDetProt.SetLabel('34')   
-		# self.tcScore.SetLabel('42')     
-		# self.tcColExt.SetLabel('0 1 2 3 4-10')
-		# self.tcResults.SetLabel('69-71; 81-83, 78-80, 75-77, 72-74, NA; NA, NA, NA, 66-68, NA; 63-65, 105-107, 102-104, 99-101, NA; 93-95, 90-92, 87-89, 84-86, 60-62')  
+		if config.cOS == 'Darwin':
+			self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt') 
+			self.tcSeqRecFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
+			self.tcSeqNatFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
+			self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
+			# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt')
+			# self.tcSeqRecFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
+			# self.tcSeqNatFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
+			# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
+		elif config.cOS == 'Windows':
+			from pathlib import Path
+			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt'))) 
+			self.tcSeqRecFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayData/LIMPROT/Mod-LimProt-seqA.txt')))
+			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/test')))
+		self.tcOutName.SetLabel('myLimTest')
+		self.tcTarprot.SetLabel('Mis18alpha')   
+		self.tcScoreVal.SetLabel('10')
+		self.tcSeqLength.SetValue('100')	
+		self.tcDelta.SetValue('8') 
+		self.tcDeltaU.SetValue('NA') 
+		self.tcSeq.SetLabel('0')       
+		self.tcDetProt.SetLabel('34')   
+		self.tcScore.SetLabel('42')     
+		self.tcColExt.SetLabel('0 1 2 3 4-10')
+		self.tcResults.SetLabel('69-71; 81-83, 78-80, 75-77, 72-74, NA; NA, NA, NA, 66-68, NA; 63-65, 105-107, 102-104, 99-101, NA; 93-95, 90-92, 87-89, 84-86, 60-62')  
 		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!!
 	 #--> Show
 		self.Show()
@@ -661,7 +661,8 @@ class WinLimProt(gclasses.WinModule):
 		out, self.colOut = dmethods.ListColHeaderLimProtFile(self.do['Bands'], 
 			self.do['Lanes'])
 	 #--> List of Protein for limprotR
-		self.do['ListOfProt'] = self.dataFileObj.dataFrame.iloc[:,self.do['DetectProtCol']].unique().tolist()
+		a = self.dataFileObj.dataFrame.iloc[:,self.do['DetectProtCol']]
+		self.do['ListOfProt'] = a.dropna().unique().tolist()
 		self.do['ListOfProt'].sort()	 
 		return True
 	#---
