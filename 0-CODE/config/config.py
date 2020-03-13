@@ -59,10 +59,12 @@ if cOS == 'Darwin':
 	#--> Fix cwd and set the location of the Resources folder
 	cwd = cwd.parent
 	cwd = cwd.parent
+	
 	#################################################### Change before releasing
-	res = cwd / 'Resources'
-	#res = cwd / 'BORRAR-GUI/RESOURCES'
+	#res = cwd / 'Resources'
+	res = cwd / 'BORRAR-UMSAP/RESOURCES'
 	#################################################### Change before releasing
+	
 	#--> Set top left coordinate
 	topLeftCoord = (0, 21)
 	#--> Height of the panels I and T corrected by windows addition, like separators blabla
