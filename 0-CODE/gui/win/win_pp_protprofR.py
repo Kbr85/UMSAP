@@ -58,7 +58,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #--> Variables
 		self.NC                  = self.fileObj.nConds
 		self.data                = self.fileObj.dataFrame
-		self.data_filtered       = self.data
+		self.data_filtered       = None
 		self.start               = True
 		self.TP                  = self.fileObj.timeP
 		self.NP                  = self.fileObj.NProt
@@ -113,8 +113,16 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	  #--> Line
 		self.lineHI10 = wx.StaticLine(self.panel)
 	  #--> TextCtrl
+	   #--> Size for the TextCtrl # Minimum supported screen height 900 px IMPROVED
+		h = config.size['Screen'][1] + config.size['TaskBarHeight'] - 650
+		if h > config.size['TextCtrl'][self.name]['TextPanel'][1]:
+			size = config.size['TextCtrl'][self.name]['TextPanel']
+		else:
+			h = 230
+			size = (config.size['TextCtrl'][self.name]['TextPanel'][0], h)
+	   #--> TextCtrl
 		self.tcText = wx.TextCtrl(self.panel, 
-			size=config.size['TextCtrl'][self.name]['TextPanel'], 
+			size=size, 
 			style=wx.BORDER_SIMPLE|wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 		self.tcText.SetFont(config.font[config.name['TarProtRes']])
 	 #--> Sizers
@@ -434,16 +442,31 @@ class WinProtProfRes(gclasses.WinResDosDos):
 
 	def OnFilter_None(self):
 		""" Reset all filter """
-	
-		self.data_filtered = self.data
+	 #--> Filtered data
+		self.data_filtered = None
+	 #---
+	 #--> 
 		self.zScore_filterValue_userInput = (
 			config.msg['filterValuesExamples']['byZScore']
 		)
 		self.log2fc_filterValue_userInput = (
 			config.msg['filterValuesExamples']['byLog2FC']
-		)		
+		)
+	 #---
+	 #--> Redraw		
 		self.FilterDataRedraw()
+	 #---
+	 #--> Return
 		return True
+	 #---
+	#---
+
+	def OnFilter_Data(self):
+		""" Set the data to be filter """
+		if self.data_filtered is None:
+			return self.data
+		else:
+			return self.data_filtered
 	#---
 
 	def OnFilter_ZScore_GUI(self):
@@ -490,13 +513,17 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		zVal = stats.norm.ppf(1 - num/100)
 	 #---
 
+	 #--> Set data
+		data = self.OnFilter_Data()
+	 #---
+
 	 #--> Filter dataframe
 		idx = pd.IndexSlice
 		col = idx[:,:,:,'zFC']
 		if comp == 'le':
-			self.data_filtered = self.data[((self.data.loc[:,col] >= zVal) | (self.data.loc[:,col] <= -zVal)).any(axis=1)]
+			self.data_filtered = data[((self.data.loc[:,col] >= zVal) | (self.data.loc[:,col] <= -zVal)).any(axis=1)]
 		elif comp == 'ge':
-			self.data_filtered = self.data[((self.data.loc[:,col] <= zVal) & (self.data.loc[:,col] >= -zVal)).any(axis=1)]
+			self.data_filtered = data[((self.data.loc[:,col] <= zVal) & (self.data.loc[:,col] >= -zVal)).any(axis=1)]
 	 #---
 
 	 #--> Update GUI elements
@@ -545,16 +572,17 @@ class WinProtProfRes(gclasses.WinResDosDos):
 
 		self.log2FC_filterValue_userInput = val
 
+	 #--> Set data
+		data = self.OnFilter_Data()
+	 #---		
+
 	 #--> Filter dataframe
-
-		print(num)
-
 		idx = pd.IndexSlice
 		col = idx[:,:,:,'log2FC']
 		if comp == 'le':
-			self.data_filtered = self.data[((self.data.loc[:,col] <= num) & (self.data.loc[:,col] >= -num)).any(axis=1)]
+			self.data_filtered = data[((self.data.loc[:,col] <= num) & (self.data.loc[:,col] >= -num)).any(axis=1)]
 		elif comp == 'ge':
-			self.data_filtered = self.data[((self.data.loc[:,col] >= num) | (self.data.loc[:,col] <= -num)).any(axis=1)]
+			self.data_filtered = data[((self.data.loc[:,col] >= num) | (self.data.loc[:,col] <= -num)).any(axis=1)]
 	 #---
 
 	 #--> Update GUI elements
