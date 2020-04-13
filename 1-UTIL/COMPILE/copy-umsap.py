@@ -2,7 +2,6 @@
 import platform
 import shutil
 import getpass
-import platform
 
 from distutils.dir_util import copy_tree
 from pathlib            import Path

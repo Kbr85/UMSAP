@@ -99,7 +99,6 @@ def WinTypeResCreate(winID, parent, parentName=None):
 	if parent.name in config.win['TypeRes'].keys():
 		config.win['TypeRes'][parent.name].Iconize(False)
 		config.win['TypeRes'][parent.name].Raise()
-
 	else:
  #--> Create the window
 		config.win['TypeRes'][parent.name] = config.pointer['gmethods']['WinCreate'][winID](parent, parentName)

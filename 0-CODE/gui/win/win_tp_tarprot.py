@@ -167,12 +167,12 @@ class WinTarProt(gclasses.WinModule):
 		
 		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!!
 		if config.cOS == 'Darwin':
-			self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt') 
-			self.tcSeqRecFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-seq.txt')
-			self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
-			# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')
-			# self.tcSeqRecFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/TARPROT/Mod-Enz-Dig-data-seq.txt')
-			# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
+			# self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt') 
+			# self.tcSeqRecFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-seq.txt')
+			# self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
+			self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')
+			self.tcSeqRecFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-seq.txt')
+			self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
 		elif config.cOS == 'Windows':
 			from pathlib import Path
 			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/TarProt/Mod-Enz-Dig-data-ms.txt'))) 

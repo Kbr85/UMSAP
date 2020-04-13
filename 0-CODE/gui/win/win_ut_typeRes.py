@@ -948,11 +948,12 @@ class WinTypeRes(gclasses.WinMyFrame, gclasses.GuiChecks):
 		oldRes = [x.split(',') for x in oldRes]
 	  #--> Check that each row has the same number of columns
 		nCols = len(list(set([len(x) for x in oldRes])))
-		if nCols == 2:
-			pass
+		if nCols == 1: # Only 1 Lane
+			self.tcCols.SetValue(str(1))
+		elif nCols == 2: # Several lanes per band
+			self.tcCols.SetValue(str(len(oldRes[1])))
 		else:
-			return [False, []] 		
-		self.tcCols.SetValue(str(len(oldRes[1])))
+			return [False, []] 
 	 #--> Flat res list
 		oldRes = dmethods.ListFlatNLevels(oldRes)[1]
 	 #--> Return
