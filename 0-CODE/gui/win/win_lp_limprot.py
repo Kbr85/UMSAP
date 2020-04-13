@@ -198,14 +198,14 @@ class WinLimProt(gclasses.WinModule):
 
 		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!!
 		if config.cOS == 'Darwin':
-			self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt') 
-			self.tcSeqRecFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
-			self.tcSeqNatFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
-			self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
-			# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt')
-			# self.tcSeqRecFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
-			# self.tcSeqNatFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
-			# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
+			# self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt') 
+			# self.tcSeqRecFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
+			# self.tcSeqNatFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
+			# self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
+			self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt')
+			self.tcSeqRecFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
+			self.tcSeqNatFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
+			self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
 		elif config.cOS == 'Windows':
 			from pathlib import Path
 			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt'))) 
