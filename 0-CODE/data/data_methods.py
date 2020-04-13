@@ -1160,9 +1160,9 @@ def DFColValFilter(df, val, col, comp='eq', reset=True, loc=False):
 		df: data frame
 		val: value to look for in the column (int)
 		col: col name or index (list of strings or integers)
-		comp: comparison (string)
+		comp: comparison (string, eq, ge, le, lt, gt)
 		reset: reset the df index after filtering or not
-		loc: True .loc False .iloc
+		loc: True .loc False .iloc depending on the values of col
 	"""
   #--> Filter
 	try:
@@ -1176,6 +1176,11 @@ def DFColValFilter(df, val, col, comp='eq', reset=True, loc=False):
 				dfo = df.loc[df.loc[:,col] >= val]			
 			else:
 				dfo = df.loc[df.iloc[:,col] >= val]
+		elif comp == 'le':
+			if loc:
+				dfo = df.loc[df.loc[:,col] <= val]			
+			else:
+				dfo = df.loc[df.iloc[:,col] <= val]				
 	except Exception:
 		return [False, None]
   #--> Reset				
@@ -1680,3 +1685,104 @@ def DHelperFragTuple2NatSeq(self, tup, strC=True):
 	return [True, l]
 #---
 # ------------------------------------------------------- dclasses Helpers (END)
+
+
+# ------------------------------- Data to fill ListCtrl in a Result Window
+# This methods get information from a dataframe and the information is used to
+# fill a ListCtrl. They are intended to be called from within a class
+def Get_Data4ListCtrl_TarProtRes(self, col=None, df=None):
+	""" 	"""
+ #--> Default values
+	if col is None:
+		col = [('Sequence')]
+	else:
+		pass
+	if df is None:
+		df = self.fileObj.filterPeptDF
+	else:
+		pass
+ #--> Get info
+	l = df.loc[:,col].values.tolist()
+ #--> Return
+	return l
+#---
+
+def Get_Data4ListCtrl_LimProtRes(self, col=None, df=None):
+	""" 	"""
+ #--> Default values
+	if col is None:
+		col = [('Sequence','Sequence','Sequence')]
+	else:
+		pass
+	if df is None:
+		df = self.fileObj.filterPeptDF
+	else:
+		pass
+ #--> Get info
+	l = df.loc[:,col].values.tolist()
+ #--> Return
+	return l
+#---
+
+def Get_Data4ListCtrl_ProtProfRes(self, col=None, df=None):
+	""" 	"""
+ #--> Default values
+	if col is None:
+		col = [('Gene','Gene','Gene','Gene'), ('Protein','Protein','Protein','Protein')]
+	else:
+		pass
+	if df is None:
+		df = self.fileObj.dataFrame
+	else:
+		pass
+ #--> Get info
+	l = df.loc[:,col].values.tolist()
+ #--> Return
+	return l
+#---
+# ------------------------------- Data to fill ListCtrl in a Result Window (END)
+
+
+
+
+
+
+
+
+
+
+def GetFilterByZscoreValue(var):
+	""" Check that the input of the Filter by Z score filter in ProtProfR
+		comply with the format > 10, < 10, >= 10 or <= 10
+		---
+		var: string with the value
+		---
+		Returns [True/False, value/False, comparison/False]
+		value: string, check for number is done elsewhere
+		comparison: string, lt or gt
+
+	"""
+ #--> Variables
+	nFalse = 3
+ #---
+
+ #--> Find comparison type and add the equal part
+	lt = '<' in var
+	gt = '>' in var
+	if lt and gt:
+		return [False] * nFalse
+	elif lt:
+		comp = 'le'
+	else:
+		comp = 'ge'
+ #---
+
+ #--> Get number
+	num = [x for x in var if x in '0123456789.,']
+	num = ''.join(num)
+ #---
+
+ #--> Return 
+	return [True, num, comp] 
+ #---
+#---

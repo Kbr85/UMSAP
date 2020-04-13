@@ -188,7 +188,6 @@ class WinLimProt(gclasses.WinModule):
 	 #--> Binding
 		for child in self.GetChildren():
 			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
 	 #--> Default values
 		self.tcSeqNatFile.SetValue('NA')
 		self.tcOutputFF.SetValue('NA')
@@ -203,15 +202,15 @@ class WinLimProt(gclasses.WinModule):
 			self.tcSeqRecFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
 			self.tcSeqNatFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
 			self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
-			# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt')
-			# self.tcSeqRecFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
-			# self.tcSeqNatFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
-			# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
+			# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt')
+			# self.tcSeqRecFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
+			# self.tcSeqNatFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
+			# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
 		elif config.cOS == 'Windows':
 			from pathlib import Path
-			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt'))) 
-			self.tcSeqRecFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayData/LIMPROT/Mod-LimProt-seqA.txt')))
-			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/test')))
+			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt'))) 
+			self.tcSeqRecFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayData/LIMPROT/Mod-LimProt-seqA.txt')))
+			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/test')))
 		self.tcOutName.SetLabel('myLimTest')
 		self.tcTarprot.SetLabel('Mis18alpha')   
 		self.tcScoreVal.SetLabel('10')

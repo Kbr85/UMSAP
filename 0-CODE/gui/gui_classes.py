@@ -2310,9 +2310,12 @@ class DlgOpenFile(wx.FileDialog):
 class DlgTextInput(wx.TextEntryDialog):
 	""" Creates a Text Input Dialog """
 
-	def __init__(self, parent, message, value=''):
+	def __init__(self, parent, message, value='', caption=''):
 		""" message: msg to show """
-		super().__init__(parent, message, value=value)
+		if caption == '':
+			super().__init__(parent, message, value=value)
+		else:
+			super().__init__(parent, message, value=value, caption=caption)
 		self.Center()
 	#---
 #---
@@ -2818,6 +2821,7 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 	 #--> Binding
 		self.buttonSeqRecFile.Bind(wx.EVT_BUTTON, self.OnSeqRecFile)
 		self.buttonSeqNatFile.Bind(wx.EVT_BUTTON, self.OnSeqNatFile)
+		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
 	 #--> Default values
 		self.tcOutputFF.SetValue('NA')
 		self.tcOutName.SetValue('NA')
@@ -3054,7 +3058,7 @@ class WinUtilUno(WinMyFrame, GuiChecks, ElementClearAFV, ElementHelpRun,
 	#---
 #---
 
-class WinRes(WinMyFrame, ElementListCtrlSearch):
+class WinRes(WinMyFrame, GuiChecks, ElementListCtrlSearch):
 	""" Basic elements for the util windows. Used in: tarprotR and limprotR """
 
 	def __init__(self, parent=None, style=wx.DEFAULT_FRAME_STYLE):
@@ -3065,6 +3069,8 @@ class WinRes(WinMyFrame, ElementListCtrlSearch):
 		fname = self.fileP.name
 		title = config.title[self.name] + ' (' + str(fname) + ')'
 		WinMyFrame.__init__(self, parent=parent, title=title, style=style)
+	 #---
+
 	 #--> Widgets
 	  #--> wx.ListBox & wx.SearchCtrl
 		ElementListCtrlSearch.__init__(self, parent=self.panel)
@@ -3072,44 +3078,48 @@ class WinRes(WinMyFrame, ElementListCtrlSearch):
 			style=wx.LC_REPORT|wx.BORDER_SIMPLE|wx.LC_SINGLE_SEL)
 	  #--- Lines
 		self.VI1 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
+	 #---
+
 	 #--> Automatically create the file object based on self.name
 		try:
 			self.fileObj
 		except Exception:
 			try:
 				self.fileObj = config.pointer['dclasses']['DataObj'][self.name](self.fileP)
-			except Exception:
+			except Exception as e:
 				raise ValueError('')
+	 #---
+
 	 #--> Automatically fill the listbox
-		self.FillListBox()
+		try:
+			self.FillListBox()
+		except Exception as e:
+			DlgUnexpectedErrorMsg(str(e))
+			raise ValueError('')
+	 #---
+
 	 #--> Bind
 		if config.cOS == 'Darwin':
 			self.lb.Bind(wx.EVT_KILL_FOCUS, self.OnFocusKill)
 		else:
 			pass
+		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+	 #---
 	#---
 
 	####---- Methods of the class
-	def FillListBox(self):
+	def FillListBox(self, col=None, df=None):
 		""" Fill the list box depending on self.name """
-	 #--> TarProtRes
-		if self.name == config.name['TarProtRes']:
-			l = self.fileObj.filterPeptDF.loc[:,'Sequence'].tolist()
-			gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
-	 #--> ProtProfRes
-		elif self.name == config.name['ProtProfRes']:
-			col = [('Gene','Gene','Gene','Gene'), ('Protein','Protein','Protein','Protein')]
-			l = self.fileObj.dataFrame.loc[:,col].values.tolist()
-			gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
-	 #--> LimProtRes
-		elif self.name == config.name['LimProtRes']:
-			col = ('Sequence','Sequence','Sequence')
-			l = self.fileObj.filterPeptDF.loc[:,col].tolist()
-			gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
-	 #--> 
-		else:
-			pass
-	 #--> Return
+
+	 #--> Get new information
+		l = config.pointer['dmethods']['fillListCtrl'][self.name](
+			self,
+			col=col, 
+			df=df,
+		)
+	 #--> Show items. This methods delete any previous items in the listbox
+		gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
+	 #-->
 		return True
 	#---
 	
@@ -3129,6 +3139,11 @@ class WinRes(WinMyFrame, ElementListCtrlSearch):
 		"""
 		self.lb.SetFocus()
 		return True
+	#---
+
+	def OnPopUpMenu(self, event):
+		""" Show the pop up menu in the wx.ListCtrl. Override as needed """
+		pass
 	#---	
 #---
 

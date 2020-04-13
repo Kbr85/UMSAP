@@ -9,7 +9,16 @@
 # ------------------------------------------------------------------------------
 
 
-""" This module generates the menus of the app """
+""" This module generates the menus of the app.
+	---
+	The id numbers in the menus are assigned as follow:
+	100s Modules & Utility main window
+	200s Utilities
+	300s Help menu
+	400s UMSAP menu (The Win/Linux version of the mac UMSAP menu)
+	600s Script menu
+	500s, 700s and 800s are reserved for the optional Tools menu.
+"""
 
 
 # ------------------------------------------------------------------------------
@@ -32,6 +41,55 @@ import config.config as config
 import gui.gui_methods as gmethods
 #---
 
+
+# ------------------------------------------------------- Individual menus
+class MenuFilterResultsBy(wx.Menu):
+	""" Menu to filter results in ProtProfR """
+
+	def __init__(self):
+		""" """
+	
+		super().__init__()
+	 #--> Menu items
+		self.Append(801, 'No filter')
+		self.Append(802, 'Z score')
+		self.Append(803, 'Log2FC')
+		self.Append(804, 'Monotonic')
+	 #---
+
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnFilter_None,   id=801)
+		self.Bind(wx.EVT_MENU, self.OnFilter_ZScore, id=802)
+		self.Bind(wx.EVT_MENU, self.OnFilter_Log2FC, id=803)
+	 #---
+	#---
+
+	#--> Methods of the class
+	def OnFilter_None(self, event):
+		""" """
+		win = self.GetWindow()
+		win.OnFilter_None()
+	#---
+	
+	def OnFilter_ZScore(self, event):
+		""""""
+		win = self.GetWindow()
+		if win.OnFilter_ZScore_GUI():
+			return True
+		else:
+			return False
+	#---
+
+	def OnFilter_Log2FC(self, event):
+		""""""
+		win = self.GetWindow()
+		if win.OnFilter_Log2FC_GUI():
+			return True
+		else:
+			return False
+	#---
+#---
+# ------------------------------------------------------- Individual menus (END)
 
 
 # -------------------------------------------------- Individual Tool menus
@@ -210,11 +268,10 @@ class ToolMenuProtProfResFilter(wx.Menu):
 	def __init__(self):
 		""" """
 		super().__init__()
-		self.Append(800, 'None',      kind=wx.ITEM_RADIO)
-		self.Append(800, 'Z score',   kind=wx.ITEM_RADIO)
-		self.Append(801, 'Log2FC',    kind=wx.ITEM_RADIO)
-		self.Append(802, 'Monotonic', kind=wx.ITEM_RADIO)
-	#---
+	 #--> Menu items
+		menuFilters = MenuFilterResultsBy()
+		self.Append(wx.ID_ANY, 'Filter Results by', menuFilters)
+	 #---
 #---
 
 class ToolMenuProtProfResV(wx.Menu):
@@ -1227,13 +1284,13 @@ class MenuBarProtProfRes(MainMenuBar):
 	 ####---- Menu items
 		self.VolcanoPlotMenu  = ToolMenuProtProfResV(nC, nt, lC, lt, n, tp)
 		self.TimeAnalysisMenu = ToolMenuProtProfResT(allL, grayC)
-		self.FilterMenu       = ToolMenuProtProfResFilter()
+		self.FilterMenu       = MenuFilterResultsBy()
 		self.ToolsMenu = wx.Menu()
 		self.ToolsMenu.AppendSubMenu(self.VolcanoPlotMenu, 'Volcano Plot')
 		self.ToolsMenu.AppendSeparator()
 		self.ToolsMenu.AppendSubMenu(self.TimeAnalysisMenu, 'Time Analysis')
 		self.ToolsMenu.AppendSeparator()
-		self.ToolsMenu.AppendSubMenu(self.FilterMenu, 'Filtered Results')
+		self.ToolsMenu.AppendSubMenu(self.FilterMenu, 'Filter Results by')
 		self.ToolsMenu.AppendSeparator()
 		self.ToolsMenu.AppendCheckItem(599, 'Corrected P values')
 	 ####---- Append to menu bar

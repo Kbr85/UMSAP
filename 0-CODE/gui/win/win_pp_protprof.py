@@ -198,7 +198,6 @@ class WinProtProf(gclasses.WinModule):
 	 #--> Binding
 		for child in self.GetChildren():
 			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
 	 #--> Default values
 		self.tcOutputFF.SetValue('NA')
 		self.tcOutName.SetValue('NA')
@@ -211,44 +210,51 @@ class WinProtProf(gclasses.WinModule):
 		self.tcExclude.SetValue('NA')
 		self.tcColExt.SetValue('NA')
 
-		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!!
-	# 	if config.cOS == 'Darwin':
-	# 		self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt') 
-	# 		self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
-	# 		# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt')
-	# 		# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
-	# 	elif config.cOS == 'Windows':
-	# 		from pathlib import Path
-	# 		self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt'))) 
-	# 		self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/test2')))
-	# 	self.tcOutName.SetValue('myProtTest')
-	# 	self.tcScoreVal.SetValue('320')  
-	# 	self.tcZscore.SetValue('10')
-	# 	self.cbCorrP.SetValue('Kenny')
-	# 	self.tcDetProt.SetValue('0')
-	# 	self.tcGeneN.SetValue('6')   
-	# 	self.tcScore.SetValue('39')     
-	# 	self.tcColExt.SetValue('0 1 2 3 4-10')
-	# 	self.tcExclude.SetValue('171 172 173')
-	#    #--> One Control per Row
-	# 	# self.tcResults.SetValue('105 115 125, 106 116 126, 101 111 121; 130 131 132, 108 118 128, 103 113 123')         
-	# 	# self.CType = 'One Control per Row'
-	# 	# self.LabelControl = 'MyControl'
-	# 	# self.LabelCond    = ['DMSO', 'H2O']
-	# 	# self.LabelRP      = ['30min', '1D']
-	#    #--> One Control        
-	# 	#self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-	# 	#self.CType = 'One Control'
-	# 	#self.LabelControl = 'MyControl'
-	# 	#self.LabelCond    = ['DMSO', 'H2O']
-	# 	#self.LabelRP      = ['30min', '1D']
-	#    #--> One Control per Column
-	# 	self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123; 100 110 120, 102 112 122')
-	# 	self.CType = 'One Control per Column'
-	# 	self.LabelControl = 'MyControl'
-	# 	self.LabelCond    = ['DMSO', 'H2O', 'MeOH']
-	# 	self.LabelRP      = ['30min', '1D']		 
-		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! 		
+		############################################################################### INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!!
+		if config.cOS == 'Darwin':
+			self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/PROTPROF/proteinGroups-kbr.txt') 
+			self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
+			# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt')
+			# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/test')
+		elif config.cOS == 'Windows':
+			from pathlib import Path
+			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt'))) 
+			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/test2')))
+		self.tcOutName.SetValue('myProtTest')
+		self.tcScoreVal.SetValue('320')  
+		self.tcZscore.SetValue('10')
+		self.chb.SetValue(True)
+		self.cbCorrP.SetValue('Benjamini - Hochberg')
+		self.tcDetProt.SetValue('0')
+		self.tcGeneN.SetValue('6')   
+		self.tcScore.SetValue('39')     
+		self.tcColExt.SetValue('0 1 2 3 4-10')
+		self.tcExclude.SetValue('171 172 173')
+	   #--> One Control per Row
+		# self.tcResults.SetValue('105 115 125, 106 116 126, 101 111 121; 130 131 132, 108 118 128, 103 113 123')         
+		# self.CType = 'One Control per Row'
+		# self.LabelControl = 'MyControl'
+		# self.LabelCond    = ['DMSO', 'H2O']
+		# self.LabelRP      = ['30min', '1D']
+	   #--> One Control        
+		#self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+		#self.CType = 'One Control'
+		#self.LabelControl = 'MyControl'
+		#self.LabelCond    = ['DMSO', 'H2O']
+		#self.LabelRP      = ['30min', '1D']
+	   #--> One Control per Column, 3 Cond and 2 TP
+		# self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123; 100 110 120, 102 112 122')
+		# self.CType = 'One Control per Column'
+		# self.LabelControl = 'MyControl'
+		# self.LabelCond    = ['DMSO', 'H2O', 'MeOH']
+		# self.LabelRP      = ['30min', '1D']		 
+	   #--> One Control per Column, 2 Cond and 2 TP
+		self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+		self.CType = 'One Control per Column'
+		self.LabelControl = 'MyControl'
+		self.LabelCond    = ['DMSO', 'H2O']
+		self.LabelRP      = ['30min', '1D']		 		
+		############################################################################### INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! 		
 
 	 #--> Show
 		self.Show()
@@ -764,10 +770,11 @@ class WinProtProf(gclasses.WinModule):
 	 #--> Median correction
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Median correction', 1)
+		self.dataVPSNM = self.dataVPSN.copy()			
 		if self.do['median']:
-			self.dataVPSNM.iloc[:,config.protprof['SColNorm']:] = self.dataVPSN.iloc[:,config.protprof['SColNorm']:].div(self.dataVPSN.iloc[:,config.protprof['SColNorm']:].median(axis=0))
+			self.dataVPSNM.iloc[:,config.protprof['SColNorm']:] = self.dataVPSNM.iloc[:,config.protprof['SColNorm']:].div(self.dataVPSNM.iloc[:,config.protprof['SColNorm']:].median(axis=0))
 		else:
-			self.dataVPSNM = self.dataVPSN.copy()
+			pass
 	 #--> Ratios
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Calculating ratios', 1)
