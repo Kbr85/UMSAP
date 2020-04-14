@@ -73,10 +73,10 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.ZscoreValD          = self.fileObj.ZscoreVal
 		self.ZscoreValDP         = self.fileObj.ZscoreValP
 		self.zScore_filterValue_userInput = (
-			config.msg['filterValuesExamples']['byZScore']
+			config.msg['FilteredValues']['Examples']['byZScore']
 		)
 		self.log2FC_filterValue_userInput = (
-			config.msg['filterValuesExamples']['byLog2FC']
+			config.msg['FilteredValues']['Examples']['byLog2FC']
 		)
 		self.NCondL              = self.fileObj.nCondsL
 		self.NTimePL             = self.fileObj.nTimePL
@@ -125,6 +125,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			size=size, 
 			style=wx.BORDER_SIMPLE|wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 		self.tcText.SetFont(config.font[config.name['TarProtRes']])
+	  #--> Split statusbar
+		self.statusbar.SetFieldsCount(number=2, widths=[100, -1])
+	  #---
 	 #--> Sizers
 	  #--> Add
 		self.sizerIN.Add(self.lineHI10, pos=(1,2), border=2, span=(0,3),
@@ -292,9 +295,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.PopupMenu(menu.ToolMenuProtProfResFilter())
 		return True
 	#---
-	#endregion --------------------------------------------------------- Binding
+	#endregion ------------------------------------------------------- Binding
 
-    #region --------------------------------------------------------------- Menu
+    #region ------------------------------------------------------------- Menu
 	def OnReset(self):
 		""" Reset view """
 		self.grayC = False
@@ -439,7 +442,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #--> Return
 		return True
 	#---
+	#endregion ---------------------------------------------------------- Menu
 
+	#region ---------------------------------------------------------- Filters
 	def OnFilter_None(self):
 		""" Reset all filter """
 	 #--> Filtered data
@@ -447,14 +452,17 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	 #--> 
 		self.zScore_filterValue_userInput = (
-			config.msg['filterValuesExamples']['byZScore']
+			config.msg['FilteredValues']['Examples']['byZScore']
 		)
 		self.log2fc_filterValue_userInput = (
-			config.msg['filterValuesExamples']['byLog2FC']
+			config.msg['FilteredValues']['Examples']['byLog2FC']
 		)
 	 #---
 	 #--> Redraw		
 		self.FilterDataRedraw()
+	 #---
+	 #--> StatusBar
+		self.statusbar.SetStatusText('', 1) 
 	 #---
 	 #--> Return
 		return True
@@ -467,6 +475,25 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			return self.data
 		else:
 			return self.data_filtered
+	#---
+
+	def OnFilter_StatusBarText(self, newText):
+		""" Set the text in the status bar 
+			---
+			newText: text to add
+		"""
+	 #--> Get the current text
+		text_now = self.statusbar.GetStatusText(1)
+	 #---
+	 #--> Set the new one
+		text_new = text_now + '| ' + newText + ' '
+	 #---
+	 #--> Set
+		self.statusbar.SetStatusText(text_new, 1)
+	 #---
+	 #--> Return
+		return True
+	 #---
 	#---
 
 	def OnFilter_ZScore_GUI(self):
@@ -498,7 +525,6 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			---
 			val: string with format < 10 or > 10
 		"""
-
 	 #--> Check user input
 		out, num, comp = checkM.CheckMFilterByZscore(val)
 		if out:
@@ -507,16 +533,13 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			gclasses.DlgWarningOk(config.msg['Errors']['FilterByZscore'])
 			return False
 	 #---
-
 	 #--> Get z score value
 		self.zScore_filterValue_userInput = val
 		zVal = stats.norm.ppf(1 - num/100)
 	 #---
-
 	 #--> Set data
 		data = self.OnFilter_Data()
 	 #---
-
 	 #--> Filter dataframe
 		idx = pd.IndexSlice
 		col = idx[:,:,:,'zFC']
@@ -525,9 +548,15 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		elif comp == 'ge':
 			self.data_filtered = data[((self.data.loc[:,col] <= zVal) & (self.data.loc[:,col] >= -zVal)).any(axis=1)]
 	 #---
-
 	 #--> Update GUI elements
 		self.FilterDataRedraw(self.data_filtered)
+	 #---
+	 #--> Statusbar
+		line = 'Zscore ' + str(comp) + ' ' + str(num)
+		self.OnFilter_StatusBarText(line)
+	 #---
+	 #--> Return
+		return True
 	 #---
 	#---
 
@@ -569,13 +598,10 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			gclasses.DlgWarningOk(config.msg['Errors']['FilterByLog2FC'])
 			return False
 	 #---
-
 		self.log2FC_filterValue_userInput = val
-
 	 #--> Set data
 		data = self.OnFilter_Data()
 	 #---		
-
 	 #--> Filter dataframe
 		idx = pd.IndexSlice
 		col = idx[:,:,:,'log2FC']
@@ -584,12 +610,18 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		elif comp == 'ge':
 			self.data_filtered = data[((self.data.loc[:,col] >= num) | (self.data.loc[:,col] <= -num)).any(axis=1)]
 	 #---
-
 	 #--> Update GUI elements
 		self.FilterDataRedraw(self.data_filtered)
 	 #---
+	 #--> Status bar
+		line = 'Log2FC ' + str(comp) + ' ' + str(num)
+		self.OnFilter_StatusBarText(line)
+	 #---
+	 #--> Return
+		return True
+	 #---
 	#---
-    #endregion ---------------------------------------------------------- Menu
+    #endregion ------------------------------------------------------- Filters
 
 	#region ---------------------------------------------- Plot3 Time analysis
 	def DrawConfig3(self):
@@ -796,7 +828,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	#---
 	#endregion -------------------------------------------- Plot2 Volcano plot
 
-	#region -------------------------------------------------------- Show Text 
+	#region -------------------------------------------------------- Show Text
 	def ShowText(self, df):
 		""" Show details for a selection in the wx.ListCtrl
 			---

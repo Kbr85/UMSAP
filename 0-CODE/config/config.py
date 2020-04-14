@@ -1314,9 +1314,15 @@ msg = { # Text messages used in the programm
 		'CancelPref' : ("Close the Preference window without saving."),
 		'LoadDef' : ("Load default values."),						
 	},
-	'filterValuesExamples' : {
-		'byZScore' : 'e.g. < 10 or > 20',
-		'byLog2FC' : 'e.g. < 2 or > 1.4',
+	'FilteredValues' : { # Filtered values in ProtProf
+		'Examples' : {
+			'byZScore' : 'e.g. < 10 or > 20',
+			'byLog2FC' : 'e.g. < 2 or > 1.4',
+		},
+		'StatusBar' : {
+			'byZScore' : 'Zscore',
+			'byLog2FC' : 'Log2FC',
+		},
 	},		
 	'OptVal' : ("\n---\nThis field is optional (NA)."),	
 }
