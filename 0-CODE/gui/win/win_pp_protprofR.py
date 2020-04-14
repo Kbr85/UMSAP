@@ -48,14 +48,16 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the protprof file """
-	 #--> Initial setup
+		#region ------------------------------------------------ Initial setup
 		self.name = config.name["ProtProfRes"]
 		self.fileP = Path(file)
 		try:
 			super().__init__(self, parent=None)
 		except Exception:
 			raise ValueError("")
-	 #--> Variables
+		#endregion --------------------------------------------- Initial setup
+		
+		#region ---------------------------------------------------- Variables
 		self.NC                  = self.fileObj.nConds
 		self.data                = self.fileObj.dataFrame
 		self.data_filtered       = None
@@ -72,12 +74,6 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.ZscoreValP          = self.fileObj.ZscoreValP
 		self.ZscoreValD          = self.fileObj.ZscoreVal
 		self.ZscoreValDP         = self.fileObj.ZscoreValP
-		self.zScore_filterValue_userInput = (
-			config.msg['FilteredValues']['Examples']['byZScore']
-		)
-		self.log2FC_filterValue_userInput = (
-			config.msg['FilteredValues']['Examples']['byLog2FC']
-		)
 		self.NCondL              = self.fileObj.nCondsL
 		self.NTimePL             = self.fileObj.nTimePL
 		self.XaxisLabel          = [self.fileObj.ControlLabel] + self.NTimePL
@@ -97,7 +93,18 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.pP         = config.protprof['ColOut'][1]
 		self.pPt        = config.protprof['ColTPp'][0]
 		self.PoPc       = config.protprof['ColOut'][0]
-	 #--> Menu
+		#--- filter methods
+		self.filter_method = {
+			'Filter_ZScore' : self.OnFilter_ZScore_Run,
+			'Filter_Log2FC' : self.OnFilter_Log2FC_Run,
+		}
+		self.filter_userInput = {
+			'Filter_ZScore' : config.msg['FilteredValues']['Examples']['Filter_ZScore'],
+			'Filter_Log2FC' : config.msg['FilteredValues']['Examples']['Filter_Log2FC'],
+		}
+		#endregion ------------------------------------------------- Variables
+	
+		#region --------------------------------------------------------- Menu
 		self.menubar = menu.MenuBarProtProfRes(
 			self.NC,
 			self.TP,
@@ -109,51 +116,62 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			self.grayC
 		)		
 		self.SetMenuBar(self.menubar)
-	 #--> Widgets
-	  #--> Line
+		#endregion ------------------------------------------------------ Menu
+		
+		#region ------------------------------------------------------ Widgets
+		#--> Line
 		self.lineHI10 = wx.StaticLine(self.panel)
-	  #--> TextCtrl
-	   #--> Size for the TextCtrl # Minimum supported screen height 900 px IMPROVED
+	  	#--> TextCtrl
+		#--> Size for the TextCtrl # Minimum supported screen height 900 px IMPROVED
 		h = config.size['Screen'][1] + config.size['TaskBarHeight'] - 650
 		if h > config.size['TextCtrl'][self.name]['TextPanel'][1]:
 			size = config.size['TextCtrl'][self.name]['TextPanel']
 		else:
 			h = 230
 			size = (config.size['TextCtrl'][self.name]['TextPanel'][0], h)
-	   #--> TextCtrl
+		#---
+		#--> TextCtrl
 		self.tcText = wx.TextCtrl(self.panel, 
 			size=size, 
 			style=wx.BORDER_SIMPLE|wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 		self.tcText.SetFont(config.font[config.name['TarProtRes']])
-	  #--> Split statusbar
+		#---
+	  	#--> Split statusbar
 		self.statusbar.SetFieldsCount(number=2, widths=[100, -1])
-	  #---
-	 #--> Sizers
-	  #--> Add
+	  	#---
+		#endregion --------------------------------------------------- Widgets
+
+		#region ------------------------------------------------------- Sizers
+		#--> Add
 		self.sizerIN.Add(self.lineHI10, pos=(1,2), border=2, span=(0,3),
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerIN.Add(self.tcText,   pos=(2,2), border=2, span=(0,3),
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
-	  #--> Modify span
+		#--> Modify span
 		self.sizerIN.SetItemSpan(self.sizerLB,  (3,0))
 		self.sizerIN.SetItemSpan(self.lineVI10, (3,0))
-	  #--> Fit
+		#--> Fit
 		self.sizer.Fit(self)
-	  #--> Add Grow
+		#--> Add Grow
 		self.sizerIN.AddGrowableCol(0, 1)
 		self.sizerIN.AddGrowableRow(2, 1)
-	 #--> Positions and minimal size
+		#endregion ---------------------------------------------------- Sizers
+
+		#--> Positions and minimal size
 		self.WinPos()
 		gmethods.MinSize(self)
-	 #--> Binding
+		
+		#--> Binding
 		self.p3.canvas.mpl_connect("button_press_event", self.OnClick3)
 		#---
 		self.p2.canvas.mpl_connect("button_press_event", self.OnClick2)
 		self.p2.canvas.mpl_connect("pick_event", self.OnPick2)
-	 #--> Draw
+		
+		#--> Draw
 		self.DrawConfig2()
 		self.DrawConfig3()
-	 #--> Show
+		
+		#--> Show
 		self.Show()
 	#---
 	#endregion ------------------------------------------------ Instance Setup
@@ -185,10 +203,19 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 
 	 #--> Update listbox
 		self.FillListBox(df=data)
+	 #---
 	 #--> Redraw volcano plot
 		self.DrawConfig2(df=data)
+	 #---
+	 #--> Redraw point analysis
+		self.DrawConfig3()
+	 #---
+	 #--> Empty Text
+		self.tcText.Clear()		
+	 #---
 	 #--> Return
 		return (True)
+	 #---
 	#---
 	#endregion --------------------------------------------------------- General
 
@@ -316,6 +343,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		#--- Reset Z score
 		self.ZscoreValD  = self.ZscoreVal
 		self.ZscoreValDP = self.ZscoreValP
+		#--- Reset data_filtered
+		self.data_filtered = None
+		#--- Reset user_input
+		self.OnFilter_Reset_UserInput()
+		#--- Reset listbox
+		self.FillListBox()
 		#--- Reset p2 and p3 panel
 		self.DrawConfig3()
 		self.DrawConfig2()
@@ -323,9 +356,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.search.Clear()
 		#--- Reset TextCtrl
 		self.tcText.Clear() 
+		#--- StatusBar
+		self.statusbar.SetStatusText('', 1)
 		#---
 		self.Refresh()
 		self.Update()
+		#---
 		return True
 	#---
 
@@ -445,30 +481,6 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	#endregion ---------------------------------------------------------- Menu
 
 	#region ---------------------------------------------------------- Filters
-	def OnFilter_None(self):
-		""" Reset all filter """
-	 #--> Filtered data
-		self.data_filtered = None
-	 #---
-	 #--> 
-		self.zScore_filterValue_userInput = (
-			config.msg['FilteredValues']['Examples']['byZScore']
-		)
-		self.log2fc_filterValue_userInput = (
-			config.msg['FilteredValues']['Examples']['byLog2FC']
-		)
-	 #---
-	 #--> Redraw		
-		self.FilterDataRedraw()
-	 #---
-	 #--> StatusBar
-		self.statusbar.SetStatusText('', 1) 
-	 #---
-	 #--> Return
-		return True
-	 #---
-	#---
-
 	def OnFilter_Data(self):
 		""" Set the data to be filter """
 		if self.data_filtered is None:
@@ -496,29 +508,40 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	#---
 
-	def OnFilter_ZScore_GUI(self):
-		""" Filter the protein list by ZScore, Filtering is not recursive. It is
-			always done with respect to the protein list read from the .protprof
-			file.
+	def OnFilter_Reset_UserInput(self):
+		""" Reset self.user_input dict """
+		self.filter_userInput['Filter_ZScore'] = config.msg['FilteredValues']['Examples']['Filter_ZScore']
+		self.filter_userInput['Filter_Log2FC'] = config.msg['FilteredValues']['Examples']['Filter_Log2FC']
+	#---
+
+	def OnFilter_GUI(self, filterMethod):
+		""" Creates the GUI for user input and call the run method 
+			---
+			filterMethod: name of the filter to apply (str)
 		"""
 	 #--> Create dlg
 		dlg = gclasses.DlgTextInput(self, 
-			config.msg['TextInput']['msg']['ZScoreThreshold'],
-			value=str(self.zScore_filterValue_userInput),
-			caption=config.msg['TextInput']['caption']['ZScoreFilter'],
+			config.msg['TextInput']['msg'][filterMethod],
+			value=self.filter_userInput[filterMethod],
+			caption=config.msg['TextInput']['caption'][filterMethod],
 		)
 	 #--> Show & Process answer 
 		if dlg.ShowModal() == wx.ID_OK:
 	 	 #--> Get value
 			val = dlg.GetValue()
 	 	 #--> Process value
-			self.OnFilter_ZScore_Run(val)
+			self.filter_method[filterMethod](val)
 		else:
 			pass
 	 #--> Destroy & Return
 		dlg.Destroy()
 		return True		
 	#---	
+
+	def OnFilter_None(self):
+		""" Reset all filter """
+		self.OnReset()
+	#---
 
 	def OnFilter_ZScore_Run(self, val):
 		""" Filter the results by Z score.
@@ -544,9 +567,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		idx = pd.IndexSlice
 		col = idx[:,:,:,'zFC']
 		if comp == 'le':
-			self.data_filtered = data[((self.data.loc[:,col] >= zVal) | (self.data.loc[:,col] <= -zVal)).any(axis=1)]
+			self.data_filtered = data[((data.loc[:,col] >= zVal) | (data.loc[:,col] <= -zVal)).any(axis=1)]
 		elif comp == 'ge':
-			self.data_filtered = data[((self.data.loc[:,col] <= zVal) & (self.data.loc[:,col] >= -zVal)).any(axis=1)]
+			self.data_filtered = data[((data.loc[:,col] <= zVal) & (data.loc[:,col] >= -zVal)).any(axis=1)]
 	 #---
 	 #--> Update GUI elements
 		self.FilterDataRedraw(self.data_filtered)
@@ -559,30 +582,6 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		return True
 	 #---
 	#---
-
-	def OnFilter_Log2FC_GUI(self):
-		""" Filter the protein list by Log2FC, Filtering is not recursive. It is
-			always done with respect to the protein list read from the .protprof
-			file.
-		"""
-	 #--> Create dlg
-		dlg = gclasses.DlgTextInput(self, 
-			config.msg['TextInput']['msg']['log2FCFilter'],
-			value=str(self.log2FC_filterValue_userInput),
-			caption=config.msg['TextInput']['caption']['log2FCFilter'],
-		)
-	 #--> Show & Process answer 
-		if dlg.ShowModal() == wx.ID_OK:
-	 	 #--> Get value
-			val = dlg.GetValue()
-	 	 #--> Process value
-			self.OnFilter_Log2FC_Run(val)
-		else:
-			pass
-	 #--> Destroy & Return
-		dlg.Destroy()
-		return True		
-	#---	
 
 	def OnFilter_Log2FC_Run(self, val):
 		""" Filter the results by Log2FC values.
@@ -606,9 +605,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		idx = pd.IndexSlice
 		col = idx[:,:,:,'log2FC']
 		if comp == 'le':
-			self.data_filtered = data[((self.data.loc[:,col] <= num) & (self.data.loc[:,col] >= -num)).any(axis=1)]
+			self.data_filtered = data[((data.loc[:,col] <= num) & (data.loc[:,col] >= -num)).any(axis=1)]
 		elif comp == 'ge':
-			self.data_filtered = data[((self.data.loc[:,col] >= num) | (self.data.loc[:,col] <= -num)).any(axis=1)]
+			self.data_filtered = data[((data.loc[:,col] >= num) | (data.loc[:,col] <= -num)).any(axis=1)]
 	 #---
 	 #--> Update GUI elements
 		self.FilterDataRedraw(self.data_filtered)
@@ -631,7 +630,14 @@ class WinProtProfRes(gclasses.WinResDosDos):
 				+ ' - '
 				+ gmethods.ListCtrlGetColVal(self.lb, col=1, t="str")[0]
 			)
-			self.y = dmethods.DFColValFilter(self.data, self.prot, 1)[1]
+			if self.data_filtered is None:
+				self.y = dmethods.DFColValFilter(self.data, self.prot, 1)[1]
+			else:
+				self.y = dmethods.DFColValFilter(
+					self.data_filtered, 
+					self.prot, 
+					1,
+				)[1]
 		elif self.allL:
 			self.title = "All detected proteins"
 		else:
@@ -675,7 +681,10 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		else:
 			color = self.colorsL
 		#-->
-		self.DrawHelper3(self.data, color, 1)
+		if self.data_filtered is None:
+			self.DrawHelper3(self.data, color, 1)
+		else:
+			self.DrawHelper3(self.data_filtered, color, 1)
 		#-->
 		return True
 	#---
@@ -735,7 +744,10 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		""" """
 	 #--> df
 		if df is None:
-			df = self.data
+			if self.data_filtered is None:
+				df = self.data
+			else:
+				df = self.data_filtered
 		else:
 			pass
 	 #--> Title of the plot

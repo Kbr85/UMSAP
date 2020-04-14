@@ -864,13 +864,13 @@ msg = { # Text messages used in the programm
 	'TextInput' : { # For text in input dialog
 		'msg': {
 			'ZScoreThreshold' : "Z score threshold value (%):",
-			'ZScoreFilter': "Z score value (%):",
-			'log2FCFilter': 'Log2FC absolute value:',
+			'Filter_ZScore': "Z score value (%):",
+			'Filter_Log2FC': 'Log2FC absolute value:',
 		},
 		'caption' : {
 			'ZScoreThreshold' : "Z score threshold for Volcano plot",
-			'ZScoreFilter': "Filter results by Z score",			
-			'log2FCFilter': 'Filter results by Log2FC value',
+			'Filter_ZScore': "Filter results by Z score",			
+			'Filter_Log2FC': 'Filter results by Log2FC value',
 		}
 	},
 	'Open' : { # For open file dialogues
@@ -1316,12 +1316,12 @@ msg = { # Text messages used in the programm
 	},
 	'FilteredValues' : { # Filtered values in ProtProf
 		'Examples' : {
-			'byZScore' : 'e.g. < 10 or > 20',
-			'byLog2FC' : 'e.g. < 2 or > 1.4',
+			'Filter_ZScore' : 'e.g. < 10 or > 20',
+			'Filter_Log2FC' : 'e.g. < 2 or > 1.4',
 		},
 		'StatusBar' : {
-			'byZScore' : 'Zscore',
-			'byLog2FC' : 'Log2FC',
+			'Filter_ZScore' : 'Zscore',
+			'Filter_Log2FC' : 'Log2FC',
 		},
 	},		
 	'OptVal' : ("\n---\nThis field is optional (NA)."),	

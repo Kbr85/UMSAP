@@ -54,13 +54,15 @@ class MenuFilterResultsBy(wx.Menu):
 		self.Append(801, 'No filter')
 		self.Append(802, 'Z score')
 		self.Append(803, 'Log2FC')
-		self.Append(804, 'Monotonic')
+		self.Append(804, '-Log10P')
+		self.Append(805, 'Monotonic')
 	 #---
 
 	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnFilter_None,   id=801)
 		self.Bind(wx.EVT_MENU, self.OnFilter_ZScore, id=802)
 		self.Bind(wx.EVT_MENU, self.OnFilter_Log2FC, id=803)
+		#self.Bind(wx.EVT_MENU, self.OnFilter_Log10P, id=804)
 	 #---
 	#---
 
@@ -74,7 +76,7 @@ class MenuFilterResultsBy(wx.Menu):
 	def OnFilter_ZScore(self, event):
 		""""""
 		win = self.GetWindow()
-		if win.OnFilter_ZScore_GUI():
+		if win.OnFilter_GUI('Filter_ZScore'):
 			return True
 		else:
 			return False
@@ -83,11 +85,20 @@ class MenuFilterResultsBy(wx.Menu):
 	def OnFilter_Log2FC(self, event):
 		""""""
 		win = self.GetWindow()
-		if win.OnFilter_Log2FC_GUI():
+		if win.OnFilter_GUI('Filter_Log2FC'):
 			return True
 		else:
 			return False
 	#---
+
+	# def OnFilter_Log10P(self, event):
+	# 	""""""
+	# 	win = self.GetWindow()
+	# 	if win.OnFilter_Log10P_GUI():
+	# 		return True
+	# 	else:
+	# 		return False
+	# #---
 #---
 # ------------------------------------------------------- Individual menus (END)
 
