@@ -863,14 +863,16 @@ msg = { # Text messages used in the programm
 	},
 	'TextInput' : { # For text in input dialog
 		'msg': {
-			'ZScoreThreshold' : "Z score threshold value (%):",
-			'Filter_ZScore': "Z score value (%):",
-			'Filter_Log2FC': 'Log2FC absolute value:',
+			'ZScoreThreshold': "Z score threshold value (%):",
+			'Filter_ZScore'  : "Threshold value: (%):",
+			'Filter_Log2FC'  : 'Threshold value (absolute value):',
+			'Filter_P'       : 'Threshold value:',
 		},
 		'caption' : {
-			'ZScoreThreshold' : "Z score threshold for Volcano plot",
-			'Filter_ZScore': "Filter results by Z score",			
-			'Filter_Log2FC': 'Filter results by Log2FC value',
+			'ZScoreThreshold': "Z score threshold for Volcano plot",
+			'Filter_ZScore'  : "Filter results by Z score",
+			'Filter_Log2FC'  : 'Filter results by Log2FC value',
+			'Filter_P'       : 'Filter results by P value',
 		}
 	},
 	'Open' : { # For open file dialogues
@@ -1048,10 +1050,12 @@ msg = { # Text messages used in the programm
 		'ColNumber' : ("The given data file contains less columns than "
 			"requested."),
 		'UOption' : ("Received and unknown option."),
-		'FilterByZscore' : ("Please provide a valid value to filter the "
+		'Filter_ZScore' : ("Please provide a valid value to filter the "
 			"results by Z score. \ne.g. < 10 or > 25"),
-		'FilterByLog2FC' : ("Please provide a valid value to filter the "
+		'Filter_Log2FC' : ("Please provide a valid value to filter the "
 			"results by Log2FC. \ne.g. < 1.5 or > 2"),
+		'Filter_P' : ("Please provide a valid value to filter the "
+			"results by P values.\ne.g. < 0.01 or p > 0.005"),
 	 #--> class related
 		'NoSeq' : ("It is not possible to create an instance of "
 			"DataObjSequenceFile with no sequence."),
@@ -1316,12 +1320,14 @@ msg = { # Text messages used in the programm
 	},
 	'FilteredValues' : { # Filtered values in ProtProf
 		'Examples' : {
-			'Filter_ZScore' : 'e.g. < 10 or > 20',
-			'Filter_Log2FC' : 'e.g. < 2 or > 1.4',
+			'Filter_ZScore': 'e.g. < 10 or > 20',
+			'Filter_Log2FC': 'e.g. < 2 or > 1.4',
+			'Filter_P'     : 'e.g. < 0.05 or > 0.001',
 		},
 		'StatusBar' : {
-			'Filter_ZScore' : 'Zscore',
-			'Filter_Log2FC' : 'Log2FC',
+			'Filter_ZScore': 'Zscore',
+			'Filter_Log2FC': 'Log2FC',
+			'Filter_P'     : 'P',
 		},
 	},		
 	'OptVal' : ("\n---\nThis field is optional (NA)."),	

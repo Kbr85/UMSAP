@@ -45,6 +45,12 @@ import gui.gui_methods as gmethods
 # ------------------------------------------------------- Individual menus
 class MenuFilterResultsBy(wx.Menu):
 	""" Menu to filter results in ProtProfR """
+	
+	filter_keys = {
+		802 : 'Filter_ZScore',
+		803 : 'Filter_Log2FC', 
+		804 : 'Filter_Log10P',	
+	}
 
 	def __init__(self):
 		""" """
@@ -54,15 +60,15 @@ class MenuFilterResultsBy(wx.Menu):
 		self.Append(801, 'No filter')
 		self.Append(802, 'Z score')
 		self.Append(803, 'Log2FC')
-		self.Append(804, '-Log10P')
+		self.Append(804, 'P')
 		self.Append(805, 'Monotonic')
 	 #---
 
 	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnFilter_None,   id=801)
-		self.Bind(wx.EVT_MENU, self.OnFilter_ZScore, id=802)
-		self.Bind(wx.EVT_MENU, self.OnFilter_Log2FC, id=803)
-		#self.Bind(wx.EVT_MENU, self.OnFilter_Log10P, id=804)
+		for k in range(802, 804):
+			self.Bind(wx.EVT_MENU, self.OnFilter_Run, id=k)
+		self.Bind(wx.EVT_MENU, self.OnFilter_P, id=804)
 	 #---
 	#---
 
@@ -72,33 +78,25 @@ class MenuFilterResultsBy(wx.Menu):
 		win = self.GetWindow()
 		win.OnFilter_None()
 	#---
+
+	def OnFilter_Run(self, event):
+		""""""
+		win = self.GetWindow()
+		if win.OnFilter_GUI(self.filter_keys[event.GetId()]):
+			return True
+		else:
+			return False
+	#---
 	
-	def OnFilter_ZScore(self, event):
+	def OnFilter_P(self, event):
 		""""""
 		win = self.GetWindow()
-		if win.OnFilter_GUI('Filter_ZScore'):
+		if win.OnFilter_P_GUI():
 			return True
 		else:
 			return False
 	#---
 
-	def OnFilter_Log2FC(self, event):
-		""""""
-		win = self.GetWindow()
-		if win.OnFilter_GUI('Filter_Log2FC'):
-			return True
-		else:
-			return False
-	#---
-
-	# def OnFilter_Log10P(self, event):
-	# 	""""""
-	# 	win = self.GetWindow()
-	# 	if win.OnFilter_Log10P_GUI():
-	# 		return True
-	# 	else:
-	# 		return False
-	# #---
 #---
 # ------------------------------------------------------- Individual menus (END)
 

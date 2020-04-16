@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -8,45 +8,30 @@
 #	See the accompaning licence for more details.
 # ------------------------------------------------------------------------------
 
-
 """ This module contains the base classes for the GUI of the app """
 
-
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
-import wx
-import wx.lib.dialogs
+#region -------------------------------------------------------------- Imports
 import webbrowser
 import _thread
-import pandas as pd
+
 import matplotlib as mpl
+import pandas as pd
+import wx
+import wx.lib.dialogs
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.widgets import Cursor
 from pathlib import Path
-## My modules
-import config.config          as config
-import gui.menu.menu          as menu
-import gui.gui_methods        as gmethods
-import data.data_classes      as dclasses
-import data.data_methods      as dmethods
+
 import checks.checks_multiple as checkM
 import checks.checks_single   as check
-#---
+import config.config          as config
+import data.data_classes      as dclasses
+import data.data_methods      as dmethods
+import gui.menu.menu          as menu
+import gui.gui_methods        as gmethods
+#endregion ----------------------------------------------------------- Imports
 
-
-
-# ----------------------------------------------------------- GUI ELEMENTS
+#region --------------------------------------------------------- GUI ELEMENTS
 class ElementHelpRun():
 	""" A sizer with the Help and Start buttoms. Between the buttons there is a 
 		static text and below the text a gauge. """
@@ -1737,11 +1722,9 @@ class ElementGraphPanel(wx.Panel):
 		return True
 	#---
 #---
-# ----------------------------------------------------------- GUI ELEMENTS (END)
+#endregion ------------------------------------------------------ GUI ELEMENTS
 
-
-
-# ------------------------------------------------------------- GUI-Checks
+#region ----------------------------------------------------------- GUI-Checks
 class GuiChecks():
 	""" This class holds all checks needed in the GUI for the user input 
 		In addition, the methods fill the self.d and self.do dicts 
@@ -2261,11 +2244,9 @@ class GuiChecks():
 			return False
 	#---
 #---
-# ------------------------------------------------------------- GUI-Checks (END)
+#endregion -------------------------------------------------------- GUI-Checks
 
-
-
-# ------------------------------------------------------------ DLG WINDOWS
+#region ---------------------------------------------------------- DLG WINDOWS
 class DlgOpenDir(wx.DirDialog):
 	""" Select folder dialog """
 	
@@ -2348,7 +2329,7 @@ class DlgWarningYesNo(wx.MessageDialog):
 	#---
 #---
 
-####---- These dialogs show and destroy themselves
+#--> Dialogs below show and destroy themselves
 class DlgFatalErrorMsg(wx.MessageDialog):
 	""" A fatal error message """
 	
@@ -2434,11 +2415,58 @@ class DlgScrolledDialog(wx.lib.dialogs.ScrolledMessageDialog):
 		self.Destroy()
 	#--
 #---
-# ------------------------------------------------------------ DLG WINDOWS (END)
 
+class DlgFilterPvalues(wx.Dialog):
+	""" Creates the dialog window to filter results by P values in ProtProfR """
+	def __init__(self, parent, title=''):
+		""""""
+		super().__init__(parent, title=title)
+		#region ------------------------------------------------------ Widgets
+		#--> StaticText
+		self.stText = wx.StaticText(
+			self, 
+			label=config.msg['TextInput']['msg']['Filter_P']
+		)
+		#--> TextCtrl
+		self.tcText = wx.TextCtrl(
+			self, 
+			value=config.msg['FilteredValues']['Examples']['Filter_P'],
+			size=(300, 23),
+		)
+		#--> CheckBox
+		self.cbLogP  = wx.CheckBox(self, label='-Log10P')
+		self.cbCorrP = wx.CheckBox(self, label='Corrected P')
+		#--> Buttons
+		self.btnOK     = wx.Button(self, wx.ID_OK)
+		self.btnCancel = wx.Button(self, wx.ID_CANCEL)
+		self.btnOK.SetDefault() # Set focus on btnOk
+		#endregion --------------------------------------------------- Widgets
 
+		#region ------------------------------------------------------- Sizers
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-# ------------------------------------------------------------ GUI WINDOWS
+		self.sizer.Add(self.stText, 0, wx.ALL, 5)
+		self.sizer.Add(self.tcText, 0, wx.ALL, 5)
+
+		self.box_check = wx.BoxSizer(wx.HORIZONTAL)
+		self.box_check.Add(self.cbLogP, 0, wx.ALL, 5)
+		self.box_check.Add(self.cbCorrP, 0, wx.ALL, 5)
+		self.sizer.Add(self.box_check, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
+
+		self.sizer_btn = wx.StdDialogButtonSizer()
+		self.sizer_btn.AddButton(self.btnOK)
+		self.sizer_btn.AddButton(self.btnCancel)
+		self.sizer_btn.Realize()
+		self.sizer.Add(self.sizer_btn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+
+		self.SetSizer(self.sizer)
+		self.sizer.Fit(self)
+		#endregion --------------------------------------------------- Sizers
+	#---
+#---
+#endregion ------------------------------------------------------- DLG WINDOWS
+
+#region ---------------------------------------------------------- GUI WINDOWS
 class WinMyFrame(wx.Frame):
 	""" Base class for all windows.	
 		The class define the outer borders and a sizerIN to hold all other 
@@ -3391,7 +3419,7 @@ class WinResDosDos(WinResDos):
 		self.sizerIN.AddGrowableCol(4, 1)		
 	#---
 #---
-# ------------------------------------------------------------ GUI WINDOWS (END)
+#endregion ------------------------------------------------------- GUI WINDOWS
 
 
 

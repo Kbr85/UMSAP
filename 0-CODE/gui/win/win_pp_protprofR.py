@@ -95,12 +95,14 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.PoPc       = config.protprof['ColOut'][0]
 		#--- filter methods
 		self.filter_method = {
-			'Filter_ZScore' : self.OnFilter_ZScore_Run,
-			'Filter_Log2FC' : self.OnFilter_Log2FC_Run,
+			'Filter_ZScore': self.OnFilter_ZScore_Run,
+			'Filter_Log2FC': self.OnFilter_Log2FC_Run,
+			'Filter_P'     : self.OnFilter_P_Run,
 		}
 		self.filter_userInput = {
-			'Filter_ZScore' : config.msg['FilteredValues']['Examples']['Filter_ZScore'],
-			'Filter_Log2FC' : config.msg['FilteredValues']['Examples']['Filter_Log2FC'],
+			'Filter_ZScore': config.msg['FilteredValues']['Examples']['Filter_ZScore'],
+			'Filter_Log2FC': config.msg['FilteredValues']['Examples']['Filter_Log2FC'],
+			'Filter_P'     : config.msg['FilteredValues']['Examples']['Filter_P'],
 		}
 		#endregion ------------------------------------------------- Variables
 	
@@ -517,7 +519,8 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	def OnFilter_GUI(self, filterMethod):
 		""" Creates the GUI for user input and call the run method 
 			---
-			filterMethod: name of the filter to apply (str)
+			filterMethod: key to id the method to apply (string) e.g. keys in
+				self.filter_method
 		"""
 	 #--> Create dlg
 		dlg = gclasses.DlgTextInput(self, 
@@ -553,11 +556,10 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		if out:
 			pass
 		else:
-			gclasses.DlgWarningOk(config.msg['Errors']['FilterByZscore'])
+			gclasses.DlgWarningOk(config.msg['Errors']['Filter_ZScore'])
 			return False
 	 #---
 	 #--> Get z score value
-		self.zScore_filterValue_userInput = val
 		zVal = stats.norm.ppf(1 - num/100)
 	 #---
 	 #--> Set data
@@ -588,16 +590,14 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			---
 			val: string with format < 10 or > 10
 		"""
-
 	 #--> Check user input
 		out, num, comp = checkM.CheckMFilterByZscore(val)
 		if out:
 			pass
 		else:
-			gclasses.DlgWarningOk(config.msg['Errors']['FilterByLog2FC'])
+			gclasses.DlgWarningOk(config.msg['Errors']['Filter_Log2FC'])
 			return False
 	 #---
-		self.log2FC_filterValue_userInput = val
 	 #--> Set data
 		data = self.OnFilter_Data()
 	 #---		
@@ -619,6 +619,79 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #--> Return
 		return True
 	 #---
+	#---
+
+	def OnFilter_P_GUI(self):
+		""""""
+	 #--> Create dialog and show it
+		dlg = gclasses.DlgFilterPvalues(
+			self, 
+			title=config.msg['TextInput']['caption']['Filter_P'],
+		)
+		dlg.CenterOnParent() 
+	 #---
+	 #--> Proccess answer
+		if dlg.ShowModal() == wx.ID_OK:
+		 #--> Get values and call Run method
+			val   = dlg.tcText.GetValue()
+			logP  = dlg.cbLogP.GetValue()
+			corrP = dlg.cbCorrP.GetValue()
+			self.OnFilter_P_Run(val, logP, corrP)			
+		 #---
+		else:
+			pass
+	 #---
+	 #--> Destroy & Return
+		dlg.Destroy()
+		return True
+	 #---
+	#---
+
+	def OnFilter_P_Run(self, val, logP, corrP):
+		""" Filter by P values 
+			---
+			val: string with format > 10 or < 10
+			logP: val refer to P (False) or logP (True) values (Boolean)
+			corrP: use corrected (True) or regular (False) P values (Boolean)
+		"""
+	 #--> Check user input
+		out, num, comp = checkM.CheckMFilterByZscore(val)
+		if out:
+			pass
+		else:
+			gclasses.DlgWarningOk(config.msg['Errors']['Filter_P'])
+			return False
+	 #---
+	 #--> Variables
+		data = self.OnFilter_Data()
+		if logP:
+			a = 'p'
+		else:
+			a = ''
+		if corrP:
+			b = 'Pc'
+		else:
+			b = 'P'
+		colP = a + b
+	 #---		
+	 #--> Filter dataframe
+		idx = pd.IndexSlice
+		col = idx[:,:,:,colP]
+		if comp == 'le':
+			self.data_filtered = data[(data.loc[:,col] <= num).any(axis=1)]
+		elif comp == 'ge':
+			self.data_filtered = data[(data.loc[:,col] >= num).any(axis=1)]
+	 #---
+	 #--> Update GUI elements
+		self.FilterDataRedraw(self.data_filtered)
+	 #---
+	 #--> Status bar
+		line = 'P ' + str(comp) + ' ' + str(num)
+		self.OnFilter_StatusBarText(line)
+	 #---
+	 #--> Return
+		return True
+	 #---		
 	#---
     #endregion ------------------------------------------------------- Filters
 
