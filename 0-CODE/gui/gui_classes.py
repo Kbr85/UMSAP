@@ -27,8 +27,8 @@ import checks.checks_single   as check
 import config.config          as config
 import data.data_classes      as dclasses
 import data.data_methods      as dmethods
-import gui.menu.menu          as menu
 import gui.gui_methods        as gmethods
+import gui.menu.menu          as menu
 #endregion ----------------------------------------------------------- Imports
 
 #region --------------------------------------------------------- GUI ELEMENTS

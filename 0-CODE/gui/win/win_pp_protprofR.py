@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# 	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+# 	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 
 # 	This program is distributed for free in the hope that it will be useful,
 # 	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -8,39 +8,23 @@
 # 	See the accompaning licence for more details.
 # ------------------------------------------------------------------------------
 
-
 """ Creates the window showing the results for a .protprof file """
 
-
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
-import wx
-import pandas as pd
+#region -------------------------------------------------------------- Imports
 import matplotlib.patches as mpatches
+import pandas as pd
+import wx
 from pathlib import Path
 from scipy   import stats
-## My modules
+
 import config.config		  as config
-import gui.menu.menu		  as menu
+import checks.checks_multiple as checkM
+import checks.checks_single   as checkS
+import data.data_methods	  as dmethods
 import gui.gui_classes		  as gclasses
 import gui.gui_methods		  as gmethods
-import data.data_methods	  as dmethods
-import checks.checks_single   as checkS
-import checks.checks_multiple as checkM
-#---
-
-
+import gui.menu.menu		  as menu
+#endregion ----------------------------------------------------------- Imports
 
 class WinProtProfRes(gclasses.WinResDosDos):
 	""" To show the results in a protprof file """
@@ -103,6 +87,10 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			'Filter_ZScore': config.msg['FilteredValues']['Examples']['Filter_ZScore'],
 			'Filter_Log2FC': config.msg['FilteredValues']['Examples']['Filter_Log2FC'],
 			'Filter_P'     : config.msg['FilteredValues']['Examples']['Filter_P'],
+		}
+		self.filter_steps = { # Keys are meaningless values are:
+			# (method, comp, num, (options))
+			# ('Filter_P', comp, num, (lopP, corrP))
 		}
 		#endregion ------------------------------------------------- Variables
 	
@@ -338,8 +326,8 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		#---
 		self.menubar.Check(703, False)
 		self.menubar.Check(704, False)
-		self.menubar.Check(504, True)
-		self.menubar.Check(504 + self.NC, True)
+		self.menubar.Check(505, True)
+		self.menubar.Check(505 + self.NC, True)
 		#--- Reset listbox
 		gmethods.ListCtrlDeSelAll(self.lb)
 		#--- Reset Z score
@@ -347,8 +335,8 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.ZscoreValDP = self.ZscoreValP
 		#--- Reset data_filtered
 		self.data_filtered = None
-		#--- Reset user_input
-		self.OnFilter_Reset_UserInput()
+		#--- Reset filter_steps
+		self.filter_steps = {}
 		#--- Reset listbox
 		self.FillListBox()
 		#--- Reset p2 and p3 panel
@@ -369,7 +357,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 
 	def OnCond(self, Mid):
 		""" Mid: Id of the selected menu item (int) """
-		self.n = Mid - 504
+		self.n = Mid - 505
 		self.menubar.Check(Mid, True)
 		self.DrawConfig2()
 		if len(gmethods.ListCtrlGetSelected(self.lb)) > 0:
@@ -381,7 +369,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 
 	def OnTP(self, Mid):
 		""" Mid: Id of the selected menu item """
-		self.tp = Mid - (504 + self.NC)
+		self.tp = Mid - (505 + self.NC)
 		self.menubar.Check(Mid, True)
 		self.DrawConfig2()
 		if len(gmethods.ListCtrlGetSelected(self.lb)) > 0:
@@ -491,6 +479,23 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			return self.data_filtered
 	#---
 
+	def OnFilter_CondTimeP(self):
+		""" Return the current condition and time point as needed for the 
+			pd.IndexSlice. Here pd.IndexSlice is [a, b, c, d]. Condition and 
+			time points are terms b and c depending on the control type used
+		"""
+	 #--> Set b & c
+		if self.CType == config.combobox['ControlType'][1]:
+			b = 'X'+str(self.tp+1)
+			c = "Y" + str(self.n+1)
+		else:
+			b = 'X'+str(self.n+1)
+			c = "Y" + str(self.tp+1)
+	 #---
+	 #--> Return
+		return (b, c) 
+	#---
+
 	def OnFilter_StatusBarText(self, newText):
 		""" Set the text in the status bar 
 			---
@@ -510,10 +515,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	#---
 
-	def OnFilter_Reset_UserInput(self):
-		""" Reset self.user_input dict """
-		self.filter_userInput['Filter_ZScore'] = config.msg['FilteredValues']['Examples']['Filter_ZScore']
-		self.filter_userInput['Filter_Log2FC'] = config.msg['FilteredValues']['Examples']['Filter_Log2FC']
+	def OnFilter_Apply(self):
+		""" Apply filter to new condition - time point """
+		for k, i in self.filter_steps.items():
+			method = i[0]
+			options = i[1:]
+			self.filter_method[method](*options, addStep=False)
 	#---
 
 	def OnFilter_GUI(self, filterMethod):
@@ -539,86 +546,6 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #--> Destroy & Return
 		dlg.Destroy()
 		return True		
-	#---	
-
-	def OnFilter_None(self):
-		""" Reset all filter """
-		self.OnReset()
-	#---
-
-	def OnFilter_ZScore_Run(self, val):
-		""" Filter the results by Z score.
-			---
-			val: string with format < 10 or > 10
-		"""
-	 #--> Check user input
-		out, num, comp = checkM.CheckMFilterByZscore(val)
-		if out:
-			pass
-		else:
-			gclasses.DlgWarningOk(config.msg['Errors']['Filter_ZScore'])
-			return False
-	 #---
-	 #--> Get z score value
-		zVal = stats.norm.ppf(1 - num/100)
-	 #---
-	 #--> Set data
-		data = self.OnFilter_Data()
-	 #---
-	 #--> Filter dataframe
-		idx = pd.IndexSlice
-		col = idx[:,:,:,'zFC']
-		if comp == 'le':
-			self.data_filtered = data[((data.loc[:,col] >= zVal) | (data.loc[:,col] <= -zVal)).any(axis=1)]
-		elif comp == 'ge':
-			self.data_filtered = data[((data.loc[:,col] <= zVal) & (data.loc[:,col] >= -zVal)).any(axis=1)]
-	 #---
-	 #--> Update GUI elements
-		self.FilterDataRedraw(self.data_filtered)
-	 #---
-	 #--> Statusbar
-		line = 'Zscore ' + str(comp) + ' ' + str(num)
-		self.OnFilter_StatusBarText(line)
-	 #---
-	 #--> Return
-		return True
-	 #---
-	#---
-
-	def OnFilter_Log2FC_Run(self, val):
-		""" Filter the results by Log2FC values.
-			---
-			val: string with format < 10 or > 10
-		"""
-	 #--> Check user input
-		out, num, comp = checkM.CheckMFilterByZscore(val)
-		if out:
-			pass
-		else:
-			gclasses.DlgWarningOk(config.msg['Errors']['Filter_Log2FC'])
-			return False
-	 #---
-	 #--> Set data
-		data = self.OnFilter_Data()
-	 #---		
-	 #--> Filter dataframe
-		idx = pd.IndexSlice
-		col = idx[:,:,:,'log2FC']
-		if comp == 'le':
-			self.data_filtered = data[((data.loc[:,col] <= num) & (data.loc[:,col] >= -num)).any(axis=1)]
-		elif comp == 'ge':
-			self.data_filtered = data[((data.loc[:,col] >= num) | (data.loc[:,col] <= -num)).any(axis=1)]
-	 #---
-	 #--> Update GUI elements
-		self.FilterDataRedraw(self.data_filtered)
-	 #---
-	 #--> Status bar
-		line = 'Log2FC ' + str(comp) + ' ' + str(num)
-		self.OnFilter_StatusBarText(line)
-	 #---
-	 #--> Return
-		return True
-	 #---
 	#---
 
 	def OnFilter_P_GUI(self):
@@ -647,7 +574,101 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	#---
 
-	def OnFilter_P_Run(self, val, logP, corrP):
+	def OnFilter_None(self):
+		""" Reset all filter """
+		self.OnReset()
+	#---
+
+	def OnFilter_ZScore_Run(self, val, addStep=True):
+		""" Filter the results by Z score.
+			---
+			val: string with format < 10 or > 10
+		"""
+	 #--> Check user input
+		out, num, comp = checkM.CheckMFilterByZscore(val)
+		if out:
+			pass
+		else:
+			gclasses.DlgWarningOk(config.msg['Errors']['Filter_ZScore'])
+			return False
+	 #---
+	 #--> Get z score value
+		zVal = stats.norm.ppf(1 - num/100)
+	 #---
+	 #--> Set data
+		data = self.OnFilter_Data()
+		b, c = self.OnFilter_CondTimeP()
+	 #---
+	 #--> Filter dataframe
+		idx = pd.IndexSlice
+		col = idx[:,b,c,'zFC']
+		if comp == 'le':
+			self.data_filtered = data[((data.loc[:,col] >= zVal) | (data.loc[:,col] <= -zVal)).any(axis=1)]
+		elif comp == 'ge':
+			self.data_filtered = data[((data.loc[:,col] <= zVal) & (data.loc[:,col] >= -zVal)).any(axis=1)]
+	 #---
+	 #--> Update GUI elements
+		self.FilterDataRedraw(self.data_filtered)
+	 #---
+	 #--> Update filter_steps & StatusBar
+		if addStep:
+			self.filter_steps[len(self.filter_steps)+1] = (
+				'Filter_ZScore', val
+			)
+			line = 'Zscore ' + str(comp) + ' ' + str(num)
+			self.OnFilter_StatusBarText(line)
+		else:
+			pass
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---
+
+	def OnFilter_Log2FC_Run(self, val, addStep=True):
+		""" Filter the results by Log2FC values.
+			---
+			val: string with format < 10 or > 10
+		"""
+	 #--> Check user input
+		out, num, comp = checkM.CheckMFilterByZscore(val)
+		if out:
+			pass
+		else:
+			gclasses.DlgWarningOk(config.msg['Errors']['Filter_Log2FC'])
+			return False
+	 #---
+	 #--> Set data
+		data = self.OnFilter_Data()
+		b, c = self.OnFilter_CondTimeP()
+	 #---		
+	 #--> Filter dataframe
+		idx = pd.IndexSlice
+		col = idx[:,b,c,'log2FC']
+		if comp == 'le':
+			self.data_filtered = data[((data.loc[:,col] <= num) & (data.loc[:,col] >= -num)).any(axis=1)]
+		elif comp == 'ge':
+			self.data_filtered = data[((data.loc[:,col] >= num) | (data.loc[:,col] <= -num)).any(axis=1)]
+	 #---
+	 #--> Update GUI elements
+		self.FilterDataRedraw(self.data_filtered)
+	 #---
+	 #--> Update filter_steps
+		if addStep:
+			self.filter_steps[len(self.filter_steps)+1] = (
+				'Filter_Log2FC', val
+			)
+			line = 'Log2FC ' + str(comp) + ' ' + str(num)
+			self.OnFilter_StatusBarText(line)
+		else:
+			pass
+	 #---	 
+	 #--> Return
+		return True
+	 #---
+	#---
+
+	def OnFilter_P_Run(self, val, logP, corrP, addStep=True):
 		""" Filter by P values 
 			---
 			val: string with format > 10 or < 10
@@ -664,19 +685,19 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	 #--> Variables
 		data = self.OnFilter_Data()
+		b, c = self.OnFilter_CondTimeP()
 		if logP:
-			a = 'p'
+			d = 'p'
 		else:
-			a = ''
+			d = ''
 		if corrP:
-			b = 'Pc'
+			d = d + 'Pc'
 		else:
-			b = 'P'
-		colP = a + b
+			d = d + 'P'
 	 #---		
 	 #--> Filter dataframe
 		idx = pd.IndexSlice
-		col = idx[:,:,:,colP]
+		col = idx[:,b,c,d]
 		if comp == 'le':
 			self.data_filtered = data[(data.loc[:,col] <= num).any(axis=1)]
 		elif comp == 'ge':
@@ -685,9 +706,15 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #--> Update GUI elements
 		self.FilterDataRedraw(self.data_filtered)
 	 #---
-	 #--> Status bar
-		line = 'P ' + str(comp) + ' ' + str(num)
-		self.OnFilter_StatusBarText(line)
+	 #--> Update filter_steps
+		if addStep:
+			self.filter_steps[len(self.filter_steps)+1] = (
+				'Filter_P', val, logP, corrP
+			)
+			line = 'P ' + str(comp) + ' ' + str(num)
+			self.OnFilter_StatusBarText(line)			
+		else:
+			pass
 	 #---
 	 #--> Return
 		return True

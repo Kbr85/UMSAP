@@ -45,7 +45,7 @@ import gui.gui_methods as gmethods
 # ------------------------------------------------------- Individual menus
 class MenuFilterResultsBy(wx.Menu):
 	""" Menu to filter results in ProtProfR """
-	
+
 	filter_keys = {
 		802 : 'Filter_ZScore',
 		803 : 'Filter_Log2FC', 
@@ -299,7 +299,7 @@ class ToolMenuProtProfResV(wx.Menu):
 	  ####---- Menu items
 	  #--> Condition menu
 		self.CondMenu = wx.Menu()
-		j = 504
+		j = 505
 		for i in lC:
 			self.CondMenu.Append(j, str(i), kind=wx.ITEM_RADIO)
 			j += 1
@@ -312,16 +312,19 @@ class ToolMenuProtProfResV(wx.Menu):
 		self.AppendSubMenu(self.CondMenu, 'Conditions')
 		self.AppendSubMenu(self.TPMenu, 'Relevant Points')
 		self.AppendSeparator()
+		self.Append(504, 'Apply Filters')
+		self.AppendSeparator()
 		self.Append(503, 'Z score Threshold')
 		self.AppendSeparator()
 		self.Append(502, 'Save Plot Image')
 		self.AppendSeparator()
 		self.Append(501, 'Reset View')
 	  ####---- Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,    id=501)
-		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=502)
-		self.Bind(wx.EVT_MENU, self.OnZScore,   id=503)
-		j = 504
+		self.Bind(wx.EVT_MENU, self.OnReset,        id=501)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot,     id=502)
+		self.Bind(wx.EVT_MENU, self.OnZScore,       id=503)
+		self.Bind(wx.EVT_MENU, self.OnFilter_Apply, id=504)
+		j = 505
 		for i in range(0, nC, 1):
 			self.CondMenu.Bind(wx.EVT_MENU, self.OnCond, id=j)
 			j += 1
@@ -333,6 +336,13 @@ class ToolMenuProtProfResV(wx.Menu):
 	#---
 
 	####---- Methods of the class
+	def OnFilter_Apply(self, event):
+		""" Apply filter to this condition - time point """
+		win = self.GetWindow()
+		win.OnFilter_Apply()
+		return True
+	#---
+
 	def OnZScore(self, event):
 		""" Set new Z score threshold in % """
 		win = self.GetWindow()
@@ -377,8 +387,8 @@ class ToolMenuProtProfResV(wx.Menu):
 			n  : current number of condition
 			tp : current time point
 		"""
-		self.CondMenu.Check(504+n, True)
-		self.TPMenu.Check(504+nC+tp, True)
+		self.CondMenu.Check(505+n, True)
+		self.TPMenu.Check(505+nC+tp, True)
 		return True
 	#---
 #---
