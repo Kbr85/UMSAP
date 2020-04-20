@@ -49,7 +49,6 @@ class MenuFilterResultsBy(wx.Menu):
 	filter_keys = {
 		802 : 'Filter_ZScore',
 		803 : 'Filter_Log2FC', 
-		804 : 'Filter_Log10P',	
 	}
 
 	def __init__(self):
@@ -65,10 +64,11 @@ class MenuFilterResultsBy(wx.Menu):
 	 #---
 
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnFilter_None,   id=801)
+		self.Bind(wx.EVT_MENU, self.OnFilter_None, id=801)
 		for k in range(802, 804):
 			self.Bind(wx.EVT_MENU, self.OnFilter_Run, id=k)
-		self.Bind(wx.EVT_MENU, self.OnFilter_P, id=804)
+		self.Bind(wx.EVT_MENU, self.OnFilter_P,         id=804)
+		self.Bind(wx.EVT_MENU, self.OnFilter_Monotonic, id=805)
 	 #---
 	#---
 
@@ -92,6 +92,15 @@ class MenuFilterResultsBy(wx.Menu):
 		""""""
 		win = self.GetWindow()
 		if win.OnFilter_P_GUI():
+			return True
+		else:
+			return False
+	#---
+
+	def OnFilter_Monotonic(self, event):
+		""" Proteins with monotonic behavior in at least one condition """
+		win = self.GetWindow()
+		if win.OnFilter_Monotonic_GUI():
 			return True
 		else:
 			return False

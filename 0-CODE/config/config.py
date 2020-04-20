@@ -863,16 +863,19 @@ msg = { # Text messages used in the programm
 	},
 	'TextInput' : { # For text in input dialog
 		'msg': {
-			'ZScoreThreshold': "Z score threshold value (%):",
-			'Filter_ZScore'  : "Threshold value: (%):",
-			'Filter_Log2FC'  : 'Threshold value (absolute value):',
-			'Filter_P'       : 'Threshold value:',
+			'ZScoreThreshold' : "Z score threshold value (%):",
+			'Filter_ZScore'   : "Threshold value: (%):",
+			'Filter_Log2FC'   : 'Threshold value (absolute value):',
+			'Filter_P'        : 'Threshold value:',
+			'Filter_Monotonic': ("Behavior along Relevant Points must be "
+				"monotonically"),
 		},
 		'caption' : {
-			'ZScoreThreshold': "Z score threshold for Volcano plot",
-			'Filter_ZScore'  : "Filter results by Z score",
-			'Filter_Log2FC'  : 'Filter results by Log2FC value',
-			'Filter_P'       : 'Filter results by P value',
+			'ZScoreThreshold' : "Z score threshold for Volcano plot",
+			'Filter_ZScore'   : "Filter results by Z score",
+			'Filter_Log2FC'   : 'Filter results by Log2FC value',
+			'Filter_P'        : 'Filter results by P value',
+			'Filter_Monotonic': 'Filter results by monotonicity',
 		}
 	},
 	'Open' : { # For open file dialogues
@@ -1036,6 +1039,8 @@ msg = { # Text messages used in the programm
 			"different."),
 		'NTimeP_PP' : ("The number of relevant points in Relevant points and "
 			"Results are different."),
+		'TimePoint_Number' : ("More than one relevant point is needed for this"
+			"filter."),
 		'NoExport' : ("There is nothing to export."),
 	 #--> Image related
 		'ImgNotSaved' : ("The image could not be saved."),

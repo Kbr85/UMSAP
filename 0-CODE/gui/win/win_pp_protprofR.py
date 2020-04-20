@@ -79,16 +79,17 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.PoPc       = config.protprof['ColOut'][0]
 		#--- filter methods
 		self.filter_method = {
-			'Filter_ZScore': self.OnFilter_ZScore_Run,
-			'Filter_Log2FC': self.OnFilter_Log2FC_Run,
-			'Filter_P'     : self.OnFilter_P_Run,
+			'Filter_ZScore'   : self.OnFilter_ZScore_Run,
+			'Filter_Log2FC'   : self.OnFilter_Log2FC_Run,
+			'Filter_P'        : self.OnFilter_P_Run,
+			'Filter_Monotonic': self.OnFilter_Monotonic,
 		}
 		self.filter_userInput = {
 			'Filter_ZScore': config.msg['FilteredValues']['Examples']['Filter_ZScore'],
 			'Filter_Log2FC': config.msg['FilteredValues']['Examples']['Filter_Log2FC'],
 			'Filter_P'     : config.msg['FilteredValues']['Examples']['Filter_P'],
 		}
-		self.filter_steps = { # Keys are meaningless values are:
+		self.filter_steps = { # Keys are meaningless, values are:
 			# (method, comp, num, (options))
 			# ('Filter_P', comp, num, (lopP, corrP))
 		}
@@ -574,6 +575,31 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	#---
 
+	def OnFilter_Monotonic_GUI(self):
+		""" Dialog for monotonic """
+	 #--> Create window
+		dlg = gclasses.DlgFilterMonotonic(
+			self,
+			config.msg['TextInput']['caption']['Filter_Monotonic'],
+		)
+		dlg.CenterOnParent()
+	 #---
+	 #--> Proccess answer
+		if dlg.ShowModal() == wx.ID_OK:
+		 #--> Get value and call Run
+			up   = dlg.cbIncreasing.GetValue()
+			down = dlg.cbDecreasing.GetValue()
+			both = dlg.cbBoth.GetValue()
+			self.OnFilter_Monotonic(up, down, both)
+		else:
+			pass	
+	 #---
+	 #--> Destroy & Return
+		dlg.Destroy()
+		return True
+	 #---	 
+	#---
+
 	def OnFilter_None(self):
 		""" Reset all filter """
 		self.OnReset()
@@ -720,6 +746,75 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		return True
 	 #---		
 	#---
+
+	def OnFilter_Monotonic(self, up=False, down=False, both=False, addStep=True):
+		""" Proteins with monotonic behavior in at least one condition """
+	 #--> Check number of time points
+		if self.TP > 1:
+			pass
+		else:
+			msg = config.msg['Errors']['TimePoint_Number'] 
+			gclasses.DlgWarningOk(msg, nothing=True)
+			return False
+	 #---
+	 #--> Variables
+		data = self.OnFilter_Data()
+		b, c = self.OnFilter_CondTimeP()
+		idx = pd.IndexSlice
+		if self.CType == config.combobox['ControlType'][1]:
+			col = idx[:,:,c,'log2FC']
+			control = ('Control', 'Control', c,'log2FC')
+		else:
+			col = idx[:,b,:,'log2FC']
+			control = ('Control', b, 'Control','log2FC')
+	 #---
+	 #--> Filter data
+	  #--> Add control column
+		data.insert(0, control, 0)
+	  #---
+	  #--> Filter
+		if both:
+			self.data_filtered = data[data.loc[:,col].apply(self.OnFilter_Monotonic_Both, axis=1)]
+			line = 'Monotonic (Both)'
+		elif up:
+			self.data_filtered = data[data.loc[:,col].apply(lambda x: x.is_monotonic_increasing, axis=1)]
+			line = 'Monotonic (Increasing)'
+		elif down:
+			self.data_filtered = data[data.loc[:,col].apply(lambda x: x.is_monotonic_decreasing, axis=1)]
+			line = 'Monotonic (Decreasing)'
+		else:
+			return False
+	  #---
+	  #--> Remove control
+		data.drop(control, axis=1, inplace=True)
+		self.data_filtered.drop(control, axis=1, inplace=True)
+	  #---
+	 #---
+	 #--> Update GUI elements
+		self.FilterDataRedraw(self.data_filtered)
+	 #---
+	 #--> Update filter_steps
+		if addStep:
+			self.filter_steps[len(self.filter_steps)+1] = (
+				'Filter_Monotonic', up, down, both
+			)
+			self.OnFilter_StatusBarText(line)			
+		else:
+			pass
+	 #---
+	 #--> Return
+		return True
+	 #---			 
+	#---
+
+	def OnFilter_Monotonic_Both(self, row):
+		""" Filter for monotonic increasing or decreasing """
+		if row.is_monotonic_decreasing or row.is_monotonic_increasing:
+			return True
+		else:
+			return False
+	#---
+
     #endregion ------------------------------------------------------- Filters
 
 	#region ---------------------------------------------- Plot3 Time analysis

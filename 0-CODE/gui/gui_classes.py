@@ -2388,13 +2388,21 @@ class DlgSuccessMsg(wx.MessageDialog):
 class DlgWarningOk(wx.MessageDialog):
 	""" Defines a custom warning message """
 
-	def __init__(self, message):
+	def __init__(self, message, nothing=False):
 		""" message: msg to show (string) """
+	 #--> Configure msg
+		if nothing:
+			msg = message + "\n" + config.msg['Errors']['Nothing']
+		else:
+			msg = message
+	 #---
+	 #--> Create, Center, Show & Destroy
 		super().__init__(None, message=message, caption='Warning', 
 			style=wx.OK|wx.ICON_EXCLAMATION)
 		self.Center()
 		self.ShowModal()
 		self.Destroy()
+	 #---
 	#---
 #---
 
@@ -2462,6 +2470,67 @@ class DlgFilterPvalues(wx.Dialog):
 		self.SetSizer(self.sizer)
 		self.sizer.Fit(self)
 		#endregion --------------------------------------------------- Sizers
+	#---
+#---
+
+class DlgFilterMonotonic(wx.Dialog):
+	""" Creates the dialog window to filter results by monotonic behavior """
+	def __init__(self, parent, title=''):
+		""""""
+		super().__init__(parent, title=title)
+		#region ------------------------------------------------------ Widgets
+		#--> Static text
+		self.stText = wx.StaticText(
+			self, 
+			label=config.msg['TextInput']['msg']['Filter_Monotonic'],
+		)
+		#--> CheckBox
+		self.cbIncreasing = wx.CheckBox(self, label='Increasing')
+		self.cbDecreasing = wx.CheckBox(self, label='Decreasing')
+		self.cbBoth       = wx.CheckBox(self, label='Both')
+		#--> Buttons
+		self.btnOK     = wx.Button(self, wx.ID_OK)
+		self.btnCancel = wx.Button(self, wx.ID_CANCEL)
+		self.btnOK.SetDefault() # Set focus on btnOk
+		#endregion --------------------------------------------------- Widgets
+
+		#region ------------------------------------------------------- Sizers
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.sizer.Add(self.stText, 0, wx.ALL, 5)
+
+		self.box_check = wx.BoxSizer(wx.HORIZONTAL)
+		self.box_check.Add(self.cbIncreasing, 0, wx.ALL, 5)
+		self.box_check.Add(self.cbDecreasing, 0, wx.ALL, 5)
+		self.box_check.Add(self.cbBoth, 0, wx.ALL, 5)
+		self.sizer.Add(self.box_check, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
+
+		self.sizer_btn = wx.StdDialogButtonSizer()
+		self.sizer_btn.AddButton(self.btnOK)
+		self.sizer_btn.AddButton(self.btnCancel)
+		self.sizer_btn.Realize()
+		self.sizer.Add(self.sizer_btn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+
+		self.SetSizer(self.sizer)
+		self.sizer.Fit(self)
+		#endregion ---------------------------------------------------- Sizers
+
+		#region --------------------------------------------------------- Bind
+		self.cbIncreasing.Bind(wx.EVT_CHECKBOX, self.OnCheck)
+		self.cbDecreasing.Bind(wx.EVT_CHECKBOX, self.OnCheck)
+		self.cbBoth.Bind(wx.EVT_CHECKBOX, self.OnCheck)
+		#endregion ------------------------------------------------------ Bind
+	#---
+
+	def OnCheck(self, event):
+		""" Make sure only one checkbox is check at a time """
+		for k in ['Increasing', 'Decreasing', 'Both']:
+			win = wx.Window.FindWindowByLabel(k)
+			if event.GetId() == win.GetId():
+				pass
+			else:
+				win.SetValue(False)
+		return True
 	#---
 #---
 #endregion ------------------------------------------------------- DLG WINDOWS
