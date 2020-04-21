@@ -83,6 +83,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			'Filter_Log2FC'   : self.OnFilter_Log2FC_Run,
 			'Filter_P'        : self.OnFilter_P_Run,
 			'Filter_Monotonic': self.OnFilter_Monotonic,
+			'Filter_Divergent': self.OnFilter_Divergent,
 		}
 		self.filter_userInput = {
 			'Filter_ZScore': config.msg['FilteredValues']['Examples']['Filter_ZScore'],
@@ -471,6 +472,28 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	#---
 	#endregion ---------------------------------------------------------- Menu
 
+	#region ----------------------------------------------------------- Checks
+	def Check_TP(self):
+		""" Check number of time points is greater than 1"""
+		if self.TP > 1:
+			return True
+		else:
+			msg = config.msg['Errors']['TimePoint_Number'] 
+			gclasses.DlgWarningOk(msg, nothing=True)
+			return False
+	#---
+
+	def Check_NC(self):
+		""" Check number of conditions is greater than 1 """
+		if self.NC > 1:
+			return True
+		else:
+			msg = config.msg['Errors']['Conditions_Number'] 
+			gclasses.DlgWarningOk(msg, nothing=True)
+			return False
+	#---
+	#endregion -------------------------------------------------------- Checks
+
 	#region ---------------------------------------------------------- Filters
 	def OnFilter_Data(self):
 		""" Set the data to be filter """
@@ -478,6 +501,27 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			return self.data
 		else:
 			return self.data_filtered
+	#---
+
+	def OnFilter_Data_Divergent(self, data):
+		""" Add the control columns to the data DF 
+			---
+			data: DF with the values
+			---
+			Returns a DF with the control columns added at the begining
+		"""
+	 #--> Insert control columns
+		for k in range(1, self.NC+1, 1):
+			idx = pd.IndexSlice
+			if self.CType == config.combobox['ControlType'][1]:
+				col = idx['Control', 'Control', 'Y'+str(k), 'log2FC']
+			else:
+				col = idx['Control', 'X'+str(k), 'Control', 'log2FC']
+			data.insert(0, col, 0)
+	 #---
+	 #--> Return
+		return data
+	 #---
 	#---
 
 	def OnFilter_CondTimeP(self):
@@ -518,10 +562,22 @@ class WinProtProfRes(gclasses.WinResDosDos):
 
 	def OnFilter_Apply(self):
 		""" Apply filter to new condition - time point """
+	 #--> First reset self.data_filtered
+		self.data_filtered = None
+	 #---
+	 #--> Apply filters
 		for k, i in self.filter_steps.items():
+			print(k, i)
 			method = i[0]
 			options = i[1:]
 			self.filter_method[method](*options, addStep=False)
+	 #---
+	 #--> Redraw
+		self.FilterDataRedraw(self.data_filtered)
+	 #---
+	 #--> Return
+		return True
+	 #---
 	#---
 
 	def OnFilter_GUI(self, filterMethod):
@@ -633,14 +689,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		elif comp == 'ge':
 			self.data_filtered = data[((data.loc[:,col] <= zVal) & (data.loc[:,col] >= -zVal)).any(axis=1)]
 	 #---
-	 #--> Update GUI elements
-		self.FilterDataRedraw(self.data_filtered)
-	 #---
-	 #--> Update filter_steps & StatusBar
+	 #--> Update GUI, filter_steps & StatusBar
 		if addStep:
 			self.filter_steps[len(self.filter_steps)+1] = (
 				'Filter_ZScore', val
 			)
+			self.FilterDataRedraw(self.data_filtered)
 			line = 'Zscore ' + str(comp) + ' ' + str(num)
 			self.OnFilter_StatusBarText(line)
 		else:
@@ -676,14 +730,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		elif comp == 'ge':
 			self.data_filtered = data[((data.loc[:,col] >= num) | (data.loc[:,col] <= -num)).any(axis=1)]
 	 #---
-	 #--> Update GUI elements
-		self.FilterDataRedraw(self.data_filtered)
-	 #---
-	 #--> Update filter_steps
+	 #--> Update GUI, filter_steps & StatusBar
 		if addStep:
 			self.filter_steps[len(self.filter_steps)+1] = (
 				'Filter_Log2FC', val
 			)
+			self.FilterDataRedraw(self.data_filtered)
 			line = 'Log2FC ' + str(comp) + ' ' + str(num)
 			self.OnFilter_StatusBarText(line)
 		else:
@@ -729,14 +781,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		elif comp == 'ge':
 			self.data_filtered = data[(data.loc[:,col] >= num).any(axis=1)]
 	 #---
-	 #--> Update GUI elements
-		self.FilterDataRedraw(self.data_filtered)
-	 #---
-	 #--> Update filter_steps
+	 #--> Update GUI, filter_steps & StatusBar
 		if addStep:
 			self.filter_steps[len(self.filter_steps)+1] = (
 				'Filter_P', val, logP, corrP
 			)
+			self.FilterDataRedraw(self.data_filtered)
 			line = 'P ' + str(comp) + ' ' + str(num)
 			self.OnFilter_StatusBarText(line)			
 		else:
@@ -750,11 +800,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	def OnFilter_Monotonic(self, up=False, down=False, both=False, addStep=True):
 		""" Proteins with monotonic behavior in at least one condition """
 	 #--> Check number of time points
-		if self.TP > 1:
+		if self.Check_TP():
 			pass
 		else:
-			msg = config.msg['Errors']['TimePoint_Number'] 
-			gclasses.DlgWarningOk(msg, nothing=True)
 			return False
 	 #---
 	 #--> Variables
@@ -790,14 +838,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.data_filtered.drop(control, axis=1, inplace=True)
 	  #---
 	 #---
-	 #--> Update GUI elements
-		self.FilterDataRedraw(self.data_filtered)
-	 #---
-	 #--> Update filter_steps
+	 #--> Update GUI, filter_steps & StatusBar
 		if addStep:
 			self.filter_steps[len(self.filter_steps)+1] = (
 				'Filter_Monotonic', up, down, both
 			)
+			self.FilterDataRedraw(self.data_filtered)
 			self.OnFilter_StatusBarText(line)			
 		else:
 			pass
@@ -815,6 +861,99 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			return False
 	#---
 
+	def OnFilter_Divergent(self, addStep=True):
+		""" Get proteins with divergent behavior in at least two conditions """
+	 #--> Check NC & TP
+	  #--> Check number of conditions
+		if self.Check_NC():
+			pass
+		else:
+			return False
+	  #---	 
+	  #--> Check number of time points
+		if self.Check_TP():
+			pass
+		else:
+			return False
+	  #---
+	 #---
+	 #--> Set data
+		data = self.OnFilter_Data()
+		data = self.OnFilter_Data_Divergent(data)
+	 #---
+	 #--> Filter
+		self.data_filtered = data[data.apply(self.OnFilter_Divergent_Apply, axis=1)]
+	 #---
+	 #--> Remove control
+		idx = pd.IndexSlice
+		col = idx['Control',:,:,:]
+		del_col = data.loc[:,col].columns.values.tolist()
+		data.drop(columns=del_col, axis=1, inplace=True)
+		self.data_filtered.drop(columns=del_col, axis=1, inplace=True)	 
+	 #---
+	 #--> Update GUI, filter_steps & StatusBar
+		if addStep:
+			self.filter_steps[len(self.filter_steps)+1] = (
+				'Filter_Divergent',
+			)
+			self.FilterDataRedraw(self.data_filtered)
+			line = 'Divergent'
+			self.OnFilter_StatusBarText(line)			
+		else:
+			pass
+	 #---
+	 #--> Return
+		return True
+	 #---				
+	#---
+
+	def OnFilter_Divergent_Apply(self, row):
+		""" Return if row is divergent or not """
+	 #--> Variables 
+		up        = False
+		up_test   = True
+		down      = False
+		down_test = True
+	 #---
+	 #--> Check monotonicity
+		for k in range(1, self.NC+1, 1):
+		 #--> Create index slice
+			idx = pd.IndexSlice
+			if self.CType == config.combobox['ControlType'][1]:
+				col = idx[:, :, 'Y'+str(k), 'log2FC']
+			else:
+				col = idx[:, 'X'+str(k), :, 'log2FC']	
+		 #---
+		 #--> Check up
+			if up_test:
+				tup = row.loc[col].is_monotonic_increasing
+				if tup:
+					up = True
+					up_test = False
+				else:
+					pass
+			else:
+				pass
+		 #-->
+		 #--> Check Down
+			if down_test:
+				tdown = row.loc[col].is_monotonic_decreasing
+				if tdown:
+					down = True
+					down_test = False
+				else:
+					pass
+			else:
+				pass 
+		 #---
+	 #---
+	 #--> Return
+		if up and down:
+			return True
+		else:
+			return False
+	 #---
+	#---	
     #endregion ------------------------------------------------------- Filters
 
 	#region ---------------------------------------------- Plot3 Time analysis

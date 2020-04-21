@@ -1041,6 +1041,8 @@ msg = { # Text messages used in the programm
 			"Results are different."),
 		'TimePoint_Number' : ("More than one relevant point is needed for this"
 			"filter."),
+		'Conditions_Number' : ("More than one conditions is needed for this"
+			"filter."),
 		'NoExport' : ("There is nothing to export."),
 	 #--> Image related
 		'ImgNotSaved' : ("The image could not be saved."),

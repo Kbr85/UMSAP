@@ -61,6 +61,7 @@ class MenuFilterResultsBy(wx.Menu):
 		self.Append(803, 'Log2FC')
 		self.Append(804, 'P')
 		self.Append(805, 'Monotonic')
+		self.Append(806, 'Divergent')
 	 #---
 
 	 #--> Bind
@@ -69,6 +70,7 @@ class MenuFilterResultsBy(wx.Menu):
 			self.Bind(wx.EVT_MENU, self.OnFilter_Run, id=k)
 		self.Bind(wx.EVT_MENU, self.OnFilter_P,         id=804)
 		self.Bind(wx.EVT_MENU, self.OnFilter_Monotonic, id=805)
+		self.Bind(wx.EVT_MENU, self.OnFilter_Divergent, id=806)
 	 #---
 	#---
 
@@ -105,7 +107,15 @@ class MenuFilterResultsBy(wx.Menu):
 		else:
 			return False
 	#---
-
+	
+	def OnFilter_Divergent(self, event):
+		""" Get proteins with divergent behavior in at least two conditions """
+		win = self.GetWindow()
+		if win.OnFilter_Divergent():
+			return True
+		else:
+			return False
+	#---
 #---
 # ------------------------------------------------------- Individual menus (END)
 
