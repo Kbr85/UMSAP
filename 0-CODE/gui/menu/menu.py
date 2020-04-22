@@ -8,7 +8,6 @@
 #	See the accompaning licence for more details.
 # ------------------------------------------------------------------------------
 
-
 """ This module generates the menus of the app.
 	---
 	The id numbers in the menus are assigned as follow:
@@ -19,18 +18,6 @@
 	600s Script menu
 	500s, 700s and 800s are reserved for the optional Tools menu.
 """
-
-
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
 
 #--- Imports
 ## Standard modules
@@ -43,44 +30,76 @@ import gui.gui_methods as gmethods
 
 
 # ------------------------------------------------------- Individual menus
-class MenuFilterResultsBy(wx.Menu):
-	""" Menu to filter results in ProtProfR """
+class MenuFilterMonotonicity(wx.Menu):
+	""" Creates the monotonicity filter menu """
+
+	kwargs = {
+		896: { 'up'  : True, },
+		895: { 'down': True, },
+		894: { 'both': True, },
+	}
+
+	#region --------------------------------------------------- Instance setup
+	def __init__(self):
+		""" """
+		super().__init__()
+	 #--> Menu items
+		self.Append(896, 'Increasing')
+		self.Append(895, 'Decreasing')
+		self.Append(894, 'Both')
+	 #---
+	 #--> Bind
+		for k in range(894, 897):
+			self.Bind(wx.EVT_MENU, self.Monotonic, id=k)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance setup
+
+	#region ------------------------------------------------------- My Methods
+	def Monotonic(self, event):
+		""" Filter by monotonic behavior """
+		eID = event.GetId()
+		win = self.GetWindow()
+		if win.OnFilter_Monotonic(**self.kwargs[eID]):
+			return True
+		else:
+			return False
+	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
+
+class MenuFilterAddFilter(wx.Menu):
+	""" Menu to add filter in ProtProfR """
 
 	filter_keys = {
-		802 : 'Filter_ZScore',
-		803 : 'Filter_Log2FC', 
+		801 : 'Filter_ZScore',
+		802 : 'Filter_Log2FC', 
 	}
 
 	def __init__(self):
 		""" """
 	
 		super().__init__()
+	 #--> Submenus
+		monotonicMenu = MenuFilterMonotonicity()
 	 #--> Menu items
-		self.Append(801, 'No filter')
-		self.Append(802, 'Z score')
-		self.Append(803, 'Log2FC')
-		self.Append(804, 'P')
-		self.Append(805, 'Monotonic')
-		self.Append(806, 'Divergent')
+		self.Append(801, 'Z score')
+		self.Append(802, 'Log2FC')
+		self.Append(803, 'P')
+		self.Append(804, 'Monotonic', monotonicMenu)
+		self.Append(805, 'Divergent')
 	 #---
 
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnFilter_None, id=801)
-		for k in range(802, 804):
+		for k in range(801, 803):
 			self.Bind(wx.EVT_MENU, self.OnFilter_Run, id=k)
-		self.Bind(wx.EVT_MENU, self.OnFilter_P,         id=804)
-		self.Bind(wx.EVT_MENU, self.OnFilter_Monotonic, id=805)
-		self.Bind(wx.EVT_MENU, self.OnFilter_Divergent, id=806)
+		self.Bind(wx.EVT_MENU, self.OnFilter_P,         id=803)
+		self.Bind(wx.EVT_MENU, self.OnFilter_Monotonic, id=804)
+		self.Bind(wx.EVT_MENU, self.OnFilter_Divergent, id=805)
 	 #---
 	#---
 
 	#--> Methods of the class
-	def OnFilter_None(self, event):
-		""" """
-		win = self.GetWindow()
-		win.OnFilter_None()
-	#---
-
 	def OnFilter_Run(self, event):
 		""""""
 		win = self.GetWindow()
@@ -116,6 +135,48 @@ class MenuFilterResultsBy(wx.Menu):
 		else:
 			return False
 	#---
+#---
+
+class MenuFilterMainMenu(wx.Menu):
+	""" Main Menu to control filters """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Submenus
+		AddMenu = MenuFilterAddFilter()
+	 #---
+	 #--> Menu items
+		self.Append(897, 'Add', AddMenu)
+		self.Append(898, 'Remove')
+		self.Append(899, 'Reset')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnRemove, id=898)
+		self.Bind(wx.EVT_MENU, self.OnReset,  id=899)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnReset(self, event):
+		""" Remove all Filters """
+		win = self.GetWindow()
+		if win.OnFilter_None():
+			return True
+		else:
+			return False
+	#---
+
+	def OnRemove(self, event):
+		""" Remove selected filters """
+		win = self.GetWindow()
+		if win.OnFilter_Remove():
+			return True
+		else:
+			return False
+	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 # ------------------------------------------------------- Individual menus (END)
 
@@ -290,16 +351,18 @@ class ToolMenuProtProfResT(wx.Menu):
 	#---
 #---
 
-class ToolMenuProtProfResFilter(wx.Menu):
+class ToolMenuProtProfResFilter(MenuFilterMainMenu):
 	""" Tools menu to show filtered results in protprofRes """
 
 	def __init__(self):
 		""" """
 		super().__init__()
-	 #--> Menu items
-		menuFilters = MenuFilterResultsBy()
-		self.Append(wx.ID_ANY, 'Filter Results by', menuFilters)
+	 #--> Change menu items labels
+		self.SetLabel(897, 'Add Filter')
+		self.SetLabel(898, 'Remove Filter')
+		self.SetLabel(899, 'Reset Filters')
 	 #---
+	#---
 #---
 
 class ToolMenuProtProfResV(wx.Menu):
@@ -1322,13 +1385,13 @@ class MenuBarProtProfRes(MainMenuBar):
 	 ####---- Menu items
 		self.VolcanoPlotMenu  = ToolMenuProtProfResV(nC, nt, lC, lt, n, tp)
 		self.TimeAnalysisMenu = ToolMenuProtProfResT(allL, grayC)
-		self.FilterMenu       = MenuFilterResultsBy()
+		self.FilterMenu       = MenuFilterMainMenu()
 		self.ToolsMenu = wx.Menu()
 		self.ToolsMenu.AppendSubMenu(self.VolcanoPlotMenu, 'Volcano Plot')
 		self.ToolsMenu.AppendSeparator()
 		self.ToolsMenu.AppendSubMenu(self.TimeAnalysisMenu, 'Time Analysis')
 		self.ToolsMenu.AppendSeparator()
-		self.ToolsMenu.AppendSubMenu(self.FilterMenu, 'Filter Results by')
+		self.ToolsMenu.AppendSubMenu(self.FilterMenu, 'Filters')
 		self.ToolsMenu.AppendSeparator()
 		self.ToolsMenu.AppendCheckItem(599, 'Corrected P values')
 	 ####---- Append to menu bar

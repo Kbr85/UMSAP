@@ -631,31 +631,6 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	#---
 
-	def OnFilter_Monotonic_GUI(self):
-		""" Dialog for monotonic """
-	 #--> Create window
-		dlg = gclasses.DlgFilterMonotonic(
-			self,
-			config.msg['TextInput']['caption']['Filter_Monotonic'],
-		)
-		dlg.CenterOnParent()
-	 #---
-	 #--> Proccess answer
-		if dlg.ShowModal() == wx.ID_OK:
-		 #--> Get value and call Run
-			up   = dlg.cbIncreasing.GetValue()
-			down = dlg.cbDecreasing.GetValue()
-			both = dlg.cbBoth.GetValue()
-			self.OnFilter_Monotonic(up, down, both)
-		else:
-			pass	
-	 #---
-	 #--> Destroy & Return
-		dlg.Destroy()
-		return True
-	 #---	 
-	#---
-
 	def OnFilter_None(self):
 		""" Reset all filter """
 		self.OnReset()
