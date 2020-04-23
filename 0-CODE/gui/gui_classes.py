@@ -2392,12 +2392,12 @@ class DlgWarningOk(wx.MessageDialog):
 		""" message: msg to show (string) """
 	 #--> Configure msg
 		if nothing:
-			msg = message + "\n" + config.msg['Errors']['Nothing']
+			msg = message + config.msg['Errors']['Nothing']
 		else:
 			msg = message
 	 #---
 	 #--> Create, Center, Show & Destroy
-		super().__init__(None, message=message, caption='Warning', 
+		super().__init__(None, message=msg, caption='Warning', 
 			style=wx.OK|wx.ICON_EXCLAMATION)
 		self.Center()
 		self.ShowModal()
@@ -2473,21 +2473,23 @@ class DlgFilterPvalues(wx.Dialog):
 	#---
 #---
 
-class DlgFilterMonotonic(wx.Dialog):
-	""" Creates the dialog window to filter results by monotonic behavior """
-	def __init__(self, parent, title=''):
-		""""""
+class DlgFilterRemove(wx.Dialog):
+	""" Show applied filter and remove the selected one """
+	def __init__(self, parent, filters, title=''):
+		""" parent: parent window
+			filter: dict with the applied filters and further info. See 
+				WinProtProfRes.filter_steps
+			title: title for the window
+		"""
 		super().__init__(parent, title=title)
 		#region ------------------------------------------------------ Widgets
-		#--> Static text
-		self.stText = wx.StaticText(
-			self, 
-			label=config.msg['TextInput']['msg']['Filter_Monotonic'],
-		)
+		#--> StaticText
+		self.stText = wx.StaticText(self, label='Select filters to be removed')
+		#---
 		#--> CheckBox
-		self.cbIncreasing = wx.CheckBox(self, label='Increasing')
-		self.cbDecreasing = wx.CheckBox(self, label='Decreasing')
-		self.cbBoth       = wx.CheckBox(self, label='Both')
+		self.checkBoxes = []
+		for k, i in filters.items():
+			self.checkBoxes.append(wx.CheckBox(self, label=i[1]))
 		#--> Buttons
 		self.btnOK     = wx.Button(self, wx.ID_OK)
 		self.btnCancel = wx.Button(self, wx.ID_CANCEL)
@@ -2499,11 +2501,8 @@ class DlgFilterMonotonic(wx.Dialog):
 
 		self.sizer.Add(self.stText, 0, wx.ALL, 5)
 
-		self.box_check = wx.BoxSizer(wx.HORIZONTAL)
-		self.box_check.Add(self.cbIncreasing, 0, wx.ALL, 5)
-		self.box_check.Add(self.cbDecreasing, 0, wx.ALL, 5)
-		self.box_check.Add(self.cbBoth, 0, wx.ALL, 5)
-		self.sizer.Add(self.box_check, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
+		for k in self.checkBoxes:
+			self.sizer.Add(k, 0, wx.ALL, 5)
 
 		self.sizer_btn = wx.StdDialogButtonSizer()
 		self.sizer_btn.AddButton(self.btnOK)
@@ -2515,22 +2514,7 @@ class DlgFilterMonotonic(wx.Dialog):
 		self.sizer.Fit(self)
 		#endregion ---------------------------------------------------- Sizers
 
-		#region --------------------------------------------------------- Bind
-		self.cbIncreasing.Bind(wx.EVT_CHECKBOX, self.OnCheck)
-		self.cbDecreasing.Bind(wx.EVT_CHECKBOX, self.OnCheck)
-		self.cbBoth.Bind(wx.EVT_CHECKBOX, self.OnCheck)
-		#endregion ------------------------------------------------------ Bind
-	#---
-
-	def OnCheck(self, event):
-		""" Make sure only one checkbox is check at a time """
-		for k in ['Increasing', 'Decreasing', 'Both']:
-			win = wx.Window.FindWindowByLabel(k)
-			if event.GetId() == win.GetId():
-				pass
-			else:
-				win.SetValue(False)
-		return True
+		self.CenterOnParent()
 	#---
 #---
 #endregion ------------------------------------------------------- DLG WINDOWS

@@ -94,7 +94,6 @@ class MenuFilterAddFilter(wx.Menu):
 		for k in range(801, 803):
 			self.Bind(wx.EVT_MENU, self.OnFilter_Run, id=k)
 		self.Bind(wx.EVT_MENU, self.OnFilter_P,         id=803)
-		self.Bind(wx.EVT_MENU, self.OnFilter_Monotonic, id=804)
 		self.Bind(wx.EVT_MENU, self.OnFilter_Divergent, id=805)
 	 #---
 	#---
@@ -113,15 +112,6 @@ class MenuFilterAddFilter(wx.Menu):
 		""""""
 		win = self.GetWindow()
 		if win.OnFilter_P_GUI():
-			return True
-		else:
-			return False
-	#---
-
-	def OnFilter_Monotonic(self, event):
-		""" Proteins with monotonic behavior in at least one condition """
-		win = self.GetWindow()
-		if win.OnFilter_Monotonic_GUI():
 			return True
 		else:
 			return False

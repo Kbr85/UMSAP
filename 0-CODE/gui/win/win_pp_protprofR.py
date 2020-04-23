@@ -91,8 +91,8 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			'Filter_P'     : config.msg['FilteredValues']['Examples']['Filter_P'],
 		}
 		self.filter_steps = { # Keys are meaningless, values are:
-			# (method, comp, num, (options))
-			# ('Filter_P', comp, num, (lopP, corrP))
+			# (method_key, method_print, comp, num, (options))
+			# ('Filter_P', 'P values'  , comp, num, (lopP, corrP))
 		}
 		#endregion ------------------------------------------------- Variables
 	
@@ -317,14 +317,21 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	#endregion ------------------------------------------------------- Binding
 
     #region ------------------------------------------------------------- Menu
-	def OnReset(self):
-		""" Reset view """
+	def OnReset(self, keepState=False):
+		""" Reset view 
+			---
+			keepState: booleans to prevent changing condition and time point 
+			when called from OnFilter_Remove
+		"""
 		self.grayC = False
 		self.allL  = False
 		self.prot  = False
 		#---
-		self.n = 0
-		self.tp = 0
+		if keepState:
+			pass
+		else:
+			self.n  = 0
+			self.tp = 0
 		#---
 		self.menubar.Check(703, False)
 		self.menubar.Check(704, False)
@@ -492,15 +499,32 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			gclasses.DlgWarningOk(msg, nothing=True)
 			return False
 	#---
+
+	def Check_AppliedFilters(self):
+		""" Check that there are at least one filter already applied """
+		if len(self.filter_steps) > 0:
+			return True
+		else:
+			msg = config.msg['Errors']['No_Filters'] 
+			gclasses.DlgWarningOk(msg, nothing=True)
+			return False
 	#endregion -------------------------------------------------------- Checks
 
 	#region ---------------------------------------------------------- Filters
 	def OnFilter_Data(self):
-		""" Set the data to be filter """
+		""" Set the data to be filter. It also set self.prot to False because
+			there is no warranty that the selected protein would be available 
+			after filtering
+		"""
+	 #--> Set self.prot
+		self.prot = False
+	 #---
+	 #--> Set data frame & Return
 		if self.data_filtered is None:
 			return self.data
 		else:
 			return self.data_filtered
+	 #---
 	#---
 
 	def OnFilter_Data_Divergent(self, data):
@@ -560,17 +584,28 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	#---
 
-	def OnFilter_Apply(self):
-		""" Apply filter to new condition - time point """
+	def OnFilter_Apply(self, filterDict=None):
+		""" Apply filter to new condition - time point 
+			filter: dict used when the method is call from OnFilter_Remove
+		"""
 	 #--> First reset self.data_filtered
 		self.data_filtered = None
 	 #---
+	 #--> Set filter dict
+		if filterDict is None:
+			myFilter = self.filter_steps
+		else:
+			myFilter = filterDict
+			self.statusbar.SetStatusText("", 1) # The number of filters changed
+			self.filter_steps = {} # This needs to be filled again
 	 #--> Apply filters
-		for k, i in self.filter_steps.items():
-			print(k, i)
+		for k, i in myFilter.items():
 			method = i[0]
-			options = i[1:]
-			self.filter_method[method](*options, addStep=False)
+			options = i[2:]
+			if filterDict is None:
+				self.filter_method[method](*options, addStep=False)
+			else:
+				self.filter_method[method](*options)
 	 #---
 	 #--> Redraw
 		self.FilterDataRedraw(self.data_filtered)
@@ -633,7 +668,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 
 	def OnFilter_None(self):
 		""" Reset all filter """
-		self.OnReset()
+		self.OnReset(keepState=True)
 	#---
 
 	def OnFilter_ZScore_Run(self, val, addStep=True):
@@ -666,12 +701,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	 #--> Update GUI, filter_steps & StatusBar
 		if addStep:
-			self.filter_steps[len(self.filter_steps)+1] = (
-				'Filter_ZScore', val
-			)
 			self.FilterDataRedraw(self.data_filtered)
 			line = 'Zscore ' + str(comp) + ' ' + str(num)
 			self.OnFilter_StatusBarText(line)
+			self.filter_steps[len(self.filter_steps)+1] = (
+				'Filter_ZScore', line, val
+			)
 		else:
 			pass
 	 #---
@@ -707,12 +742,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	 #--> Update GUI, filter_steps & StatusBar
 		if addStep:
-			self.filter_steps[len(self.filter_steps)+1] = (
-				'Filter_Log2FC', val
-			)
 			self.FilterDataRedraw(self.data_filtered)
 			line = 'Log2FC ' + str(comp) + ' ' + str(num)
 			self.OnFilter_StatusBarText(line)
+			self.filter_steps[len(self.filter_steps)+1] = (
+				'Filter_Log2FC', line, val
+			)
 		else:
 			pass
 	 #---	 
@@ -758,12 +793,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	 #--> Update GUI, filter_steps & StatusBar
 		if addStep:
-			self.filter_steps[len(self.filter_steps)+1] = (
-				'Filter_P', val, logP, corrP
-			)
 			self.FilterDataRedraw(self.data_filtered)
 			line = 'P ' + str(comp) + ' ' + str(num)
 			self.OnFilter_StatusBarText(line)			
+			self.filter_steps[len(self.filter_steps)+1] = (
+				'Filter_P', line, val, logP, corrP
+			)
 		else:
 			pass
 	 #---
@@ -815,11 +850,11 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	 #--> Update GUI, filter_steps & StatusBar
 		if addStep:
-			self.filter_steps[len(self.filter_steps)+1] = (
-				'Filter_Monotonic', up, down, both
-			)
 			self.FilterDataRedraw(self.data_filtered)
 			self.OnFilter_StatusBarText(line)			
+			self.filter_steps[len(self.filter_steps)+1] = (
+				'Filter_Monotonic', line, up, down, both
+			)
 		else:
 			pass
 	 #---
@@ -868,12 +903,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	 #--> Update GUI, filter_steps & StatusBar
 		if addStep:
-			self.filter_steps[len(self.filter_steps)+1] = (
-				'Filter_Divergent',
-			)
 			self.FilterDataRedraw(self.data_filtered)
 			line = 'Divergent'
 			self.OnFilter_StatusBarText(line)			
+			self.filter_steps[len(self.filter_steps)+1] = (
+				'Filter_Divergent', line,
+			)
 		else:
 			pass
 	 #---
@@ -928,7 +963,45 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		else:
 			return False
 	 #---
-	#---	
+	#---
+
+	def OnFilter_Remove(self):
+		""" Remove selected filters """	
+	 #--> Check there are applied filters
+		if self.Check_AppliedFilters():
+			pass
+		else:
+			return False
+	 #---	
+	 #--> Create dlg & remove filter
+		dlg = gclasses.DlgFilterRemove(
+			self,
+			self.filter_steps, 
+			title=config.msg['TextInput']['caption']['Filter_Remove'],
+		)
+		if dlg.ShowModal() == wx.ID_OK:
+			filterDict = {}
+		 #--> Remove selected filters
+			for k, i in enumerate(dlg.checkBoxes, start=1):
+				if i.GetValue():
+					pass
+				else:
+					filterDict[k] = self.filter_steps[k]
+		 #---
+		 #--> Apply left filters
+			if len(filterDict) > 0:
+				self.OnFilter_Apply(filterDict)
+			else:
+				self.OnReset(keepState=True)
+		 #---
+		else:
+			pass
+	 #---
+	 #--> Destroy & Return
+		dlg.Destroy()
+		return True
+	 #---
+	#---
     #endregion ------------------------------------------------------- Filters
 
 	#region ---------------------------------------------- Plot3 Time analysis
