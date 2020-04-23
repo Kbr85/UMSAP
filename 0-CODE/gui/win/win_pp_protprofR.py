@@ -1002,6 +1002,30 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		return True
 	 #---
 	#---
+
+	def OnFilter_RemoveLast(self):
+		""" Remove last added filter """
+	 #--> Check there are applied filters
+		if self.Check_AppliedFilters():
+			pass
+		else:
+			return False
+	 #---
+	 #--> Set filterDict
+		filterDict = {}
+		for k in range(1, len(self.filter_steps)):
+			filterDict[k] = self.filter_steps[k]		
+	 #---
+	 #--> Apply left filters
+		if len(filterDict) > 0:
+			self.OnFilter_Apply(filterDict)
+		else:
+			self.OnReset(keepState=True)
+	 #---	
+	 #--> Return 
+		return True
+	 #---
+	#---
     #endregion ------------------------------------------------------- Filters
 
 	#region ---------------------------------------------- Plot3 Time analysis

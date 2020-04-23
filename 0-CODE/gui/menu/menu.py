@@ -68,6 +68,44 @@ class MenuFilterMonotonicity(wx.Menu):
 	#endregion ---------------------------------------------------- My Methods
 #---
 
+class MenuFilterRemoveFilters(wx.Menu):
+	""" Remove filters menu """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Menu items
+		self.Append(896, 'Any')
+		self.Append(895, 'Last Added\tCtrl+Z')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnRemove, id=896)
+		self.Bind(wx.EVT_MENU, self.OnRemove_Last, id=895)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnRemove(self, event):
+		""" Remove selected filters """
+		win = self.GetWindow()
+		if win.OnFilter_Remove():
+			return True
+		else:
+			return False
+	#---
+
+	def OnRemove_Last(self, event):
+		""" Remove last added filter """
+		win = self.GetWindow()
+		if win.OnFilter_RemoveLast():
+			return True
+		else:
+			return False
+	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
+
 class MenuFilterAddFilter(wx.Menu):
 	""" Menu to add filter in ProtProfR """
 
@@ -135,14 +173,14 @@ class MenuFilterMainMenu(wx.Menu):
 		super().__init__()
 	 #--> Submenus
 		AddMenu = MenuFilterAddFilter()
+		RemoveMenu = MenuFilterRemoveFilters()
 	 #---
 	 #--> Menu items
 		self.Append(897, 'Add', AddMenu)
-		self.Append(898, 'Remove')
+		self.Append(898, 'Remove', RemoveMenu)
 		self.Append(899, 'Reset')
 	 #---
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnRemove, id=898)
 		self.Bind(wx.EVT_MENU, self.OnReset,  id=899)
 	 #---
 	#---
@@ -153,15 +191,6 @@ class MenuFilterMainMenu(wx.Menu):
 		""" Remove all Filters """
 		win = self.GetWindow()
 		if win.OnFilter_None():
-			return True
-		else:
-			return False
-	#---
-
-	def OnRemove(self, event):
-		""" Remove selected filters """
-		win = self.GetWindow()
-		if win.OnFilter_Remove():
 			return True
 		else:
 			return False
