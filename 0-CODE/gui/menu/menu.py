@@ -34,9 +34,9 @@ class MenuFilterMonotonicity(wx.Menu):
 	""" Creates the monotonicity filter menu """
 
 	kwargs = {
-		896: { 'up'  : True, },
-		895: { 'down': True, },
-		894: { 'both': True, },
+		897: { 'up'  : True, },
+		898: { 'down': True, },
+		899: { 'both': True, },
 	}
 
 	#region --------------------------------------------------- Instance setup
@@ -44,12 +44,12 @@ class MenuFilterMonotonicity(wx.Menu):
 		""" """
 		super().__init__()
 	 #--> Menu items
-		self.Append(896, 'Increasing')
-		self.Append(895, 'Decreasing')
-		self.Append(894, 'Both')
+		self.Append(897, 'Increasing')
+		self.Append(898, 'Decreasing')
+		self.Append(899, 'Both')
 	 #---
 	 #--> Bind
-		for k in range(894, 897):
+		for k in range(897, 900):
 			self.Bind(wx.EVT_MENU, self.Monotonic, id=k)
 	 #---
 	#---
@@ -75,12 +75,12 @@ class MenuFilterRemoveFilters(wx.Menu):
 		""""""
 		super().__init__()
 	 #--> Menu items
-		self.Append(896, 'Any')
-		self.Append(895, 'Last Added\tCtrl+Z')
+		itemAny  = self.Append(-1, 'Any')
+		itemLast = self.Append(-1, 'Last Added\tCtrl+Z')
 	 #---
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnRemove, id=896)
-		self.Bind(wx.EVT_MENU, self.OnRemove_Last, id=895)
+		self.Bind(wx.EVT_MENU, self.OnRemove, source=itemAny)
+		self.Bind(wx.EVT_MENU, self.OnRemove_Last, source=itemLast)
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
@@ -114,6 +114,7 @@ class MenuFilterAddFilter(wx.Menu):
 		802 : 'Filter_Log2FC', 
 	}
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self):
 		""" """
 	
@@ -123,20 +124,21 @@ class MenuFilterAddFilter(wx.Menu):
 	 #--> Menu items
 		self.Append(801, 'Z score')
 		self.Append(802, 'Log2FC')
-		self.Append(803, 'P')
-		self.Append(804, 'Monotonic', monotonicMenu)
-		self.Append(805, 'Divergent')
+		itemP     = self.Append(-1, 'P')
+		self.Append(-1, 'Monotonic', monotonicMenu)
+		itemDiver = self.Append(-1, 'Divergent')
 	 #---
 
 	 #--> Bind
 		for k in range(801, 803):
 			self.Bind(wx.EVT_MENU, self.OnFilter_Run, id=k)
-		self.Bind(wx.EVT_MENU, self.OnFilter_P,         id=803)
-		self.Bind(wx.EVT_MENU, self.OnFilter_Divergent, id=805)
+		self.Bind(wx.EVT_MENU, self.OnFilter_P, source=itemP)
+		self.Bind(wx.EVT_MENU, self.OnFilter_Divergent, source=itemDiver)
 	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	#--> Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def OnFilter_Run(self, event):
 		""""""
 		win = self.GetWindow()
@@ -163,6 +165,7 @@ class MenuFilterAddFilter(wx.Menu):
 		else:
 			return False
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class MenuFilterMainMenu(wx.Menu):
@@ -172,16 +175,19 @@ class MenuFilterMainMenu(wx.Menu):
 		""""""
 		super().__init__()
 	 #--> Submenus
-		AddMenu = MenuFilterAddFilter()
+		AddMenu    = MenuFilterAddFilter()
 		RemoveMenu = MenuFilterRemoveFilters()
 	 #---
 	 #--> Menu items
-		self.Append(897, 'Add', AddMenu)
-		self.Append(898, 'Remove', RemoveMenu)
-		self.Append(899, 'Reset')
+		self.Append(850, 'Add', AddMenu)
+		self.Append(851, 'Remove', RemoveMenu)
+		self.Append(852, 'Reset')
+		self.AppendSeparator()
+		self.iExport = self.Append(-1, 'Export Results')
 	 #---
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,  id=899)
+		self.Bind(wx.EVT_MENU, self.OnReset,  id=852)
+		self.Bind(wx.EVT_MENU, self.OnExport, source=self.iExport)
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
@@ -195,6 +201,15 @@ class MenuFilterMainMenu(wx.Menu):
 		else:
 			return False
 	#---
+
+	def OnExport(self, event):
+		""""""
+		win = self.GetWindow()
+		if win.OnExport():
+			return True
+		else:
+			return False
+	#---	
 	#endregion ---------------------------------------------------- My Methods
 #---
 # ------------------------------------------------------- Individual menus (END)
@@ -377,9 +392,9 @@ class ToolMenuProtProfResFilter(MenuFilterMainMenu):
 		""" """
 		super().__init__()
 	 #--> Change menu items labels
-		self.SetLabel(897, 'Add Filter')
-		self.SetLabel(898, 'Remove Filter')
-		self.SetLabel(899, 'Reset Filters')
+		self.SetLabel(850, 'Add Filter')
+		self.SetLabel(851, 'Remove Filter')
+		self.SetLabel(852, 'Reset Filters')
 	 #---
 	#---
 #---

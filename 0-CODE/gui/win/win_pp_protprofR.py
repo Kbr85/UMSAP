@@ -94,6 +94,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			# (method_key, method_print, comp, num, (options))
 			# ('Filter_P', 'P values'  , comp, num, (lopP, corrP))
 		}
+		self.col4Export = self.fileObj.col4Export
 		#endregion ------------------------------------------------- Variables
 	
 		#region --------------------------------------------------------- Menu
@@ -1027,6 +1028,40 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	#---
     #endregion ------------------------------------------------------- Filters
+
+    #region ----------------------------------------------------------- Export
+	def OnExport(self):
+		""" Export protein list 
+			---
+			all : boolean to export only for this condition / relevant point or
+			apply filter to each condition / relevent point and export each
+			protein list
+		"""
+	 #--> Check there are applied filters
+		if self.Check_AppliedFilters():
+			pass
+		else:
+			return False
+	 #---	
+	 #--> Select output file
+		dlg = gclasses.DlgSaveFile(config.extLong['Data'])
+		if dlg.ShowModal() == wx.ID_OK:
+			path = dlg.GetPath()
+		else:
+			return False
+	 #---
+	 #--> Get new df with correct labels
+		df = self.data_filtered.rename(columns=self.col4Export[1], level=1)
+		df.rename(columns=self.col4Export[2], level=2, inplace=True)
+	 #---
+	 #--> Write
+		dmethods.FFsWriteCSV(path, df)
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---
+    #endregion -------------------------------------------------------- Export	
 
 	#region ---------------------------------------------- Plot3 Time analysis
 	def DrawConfig3(self):
