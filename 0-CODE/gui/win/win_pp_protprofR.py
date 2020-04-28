@@ -84,11 +84,13 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			'Filter_P'        : self.OnFilter_P_Run,
 			'Filter_Monotonic': self.OnFilter_Monotonic,
 			'Filter_Divergent': self.OnFilter_Divergent,
+			'Filter_OneP'     : self.OnFilter_OneP,
 		}
 		self.filter_userInput = {
 			'Filter_ZScore': config.msg['FilteredValues']['Examples']['Filter_ZScore'],
 			'Filter_Log2FC': config.msg['FilteredValues']['Examples']['Filter_Log2FC'],
 			'Filter_P'     : config.msg['FilteredValues']['Examples']['Filter_P'],
+			'Filter_OneP'  : config.msg['FilteredValues']['Examples']['Filter_OneP'],
 		}
 		self.filter_steps = { # Keys are meaningless, values are:
 			# (method_key, method_print, comp, num, (options))
@@ -667,6 +669,31 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	#---
 
+	def OnFilter_OneP_GUI(self):
+		""""""
+	 #--> Create dialog and show it
+		dlg = gclasses.DlgFilterOnePvalues(
+			self, 
+			title=config.msg['TextInput']['caption']['Filter_OneP'],
+		)
+		dlg.CenterOnParent() 
+	 #---
+	 #--> Proccess answer
+		if dlg.ShowModal() == wx.ID_OK:
+		 #--> Get values and call Run method
+			val   = dlg.tcText.GetValue()
+			corrP = dlg.cbCorrP.GetValue()
+			self.OnFilter_OneP(val, corrP)			
+		 #---
+		else:
+			pass
+	 #---
+	 #--> Destroy & Return
+		dlg.Destroy()
+		return True
+	 #---
+	#---	
+
 	def OnFilter_None(self):
 		""" Reset all filter """
 		self.OnReset(keepState=True)
@@ -964,6 +991,42 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		else:
 			return False
 	 #---
+	#---
+
+	def OnFilter_OneP(self, val, corrP, addStep=True):
+		""" Proteins with at least one relevant point in which p < a """
+	 #--> Check user input
+		out, num, comp = checkM.CheckMFilterByZscore(val, 1)
+		if out:
+			pass
+		else:
+			gclasses.DlgWarningOk(config.msg['Errors']['Filter_OneP'])
+			return False
+	 #---
+	 #--> Set data
+		data = self.OnFilter_Data()
+		if corrP:
+			d = 'Pc'
+		else:
+			d = 'P'
+	 #---
+	 #--> Filter dataframe
+		idx = pd.IndexSlice
+		col = idx['tp',:,:,d]
+		self.data_filtered = data[(data.loc[:,col] <= num).any(axis=1)]
+	 #---
+	 #--> Update GUI, filter_steps & StatusBar
+		if addStep:
+			self.FilterDataRedraw(self.data_filtered)
+			line = 'α = ' + str(num)
+			self.OnFilter_StatusBarText(line)
+			self.filter_steps[len(self.filter_steps)+1] = (
+				'Filter_OneP', line, val, corrP,
+			)
+		else:
+			pass
+	 #---	 	 
+		return True
 	#---
 
 	def OnFilter_Remove(self):

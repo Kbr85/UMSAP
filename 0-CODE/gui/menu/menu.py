@@ -111,7 +111,7 @@ class MenuFilterAddFilter(wx.Menu):
 
 	filter_keys = {
 		801 : 'Filter_ZScore',
-		802 : 'Filter_Log2FC', 
+		802 : 'Filter_Log2FC',
 	}
 
 	#region --------------------------------------------------- Instance Setup
@@ -124,7 +124,8 @@ class MenuFilterAddFilter(wx.Menu):
 	 #--> Menu items
 		self.Append(801, 'Z score')
 		self.Append(802, 'Log2FC')
-		itemP     = self.Append(-1, 'P')
+		itemP    = self.Append(-1, 'P value')
+		itemOneP = self.Append(-1, 'One P value') 
 		self.Append(-1, 'Monotonic', monotonicMenu)
 		itemDiver = self.Append(-1, 'Divergent')
 	 #---
@@ -134,6 +135,7 @@ class MenuFilterAddFilter(wx.Menu):
 			self.Bind(wx.EVT_MENU, self.OnFilter_Run, id=k)
 		self.Bind(wx.EVT_MENU, self.OnFilter_P, source=itemP)
 		self.Bind(wx.EVT_MENU, self.OnFilter_Divergent, source=itemDiver)
+		self.Bind(wx.EVT_MENU, self.OnFilter_OneP, source=itemOneP)
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
@@ -156,6 +158,15 @@ class MenuFilterAddFilter(wx.Menu):
 		else:
 			return False
 	#---
+
+	def OnFilter_OneP(self, event):
+		""""""
+		win = self.GetWindow()
+		if win.OnFilter_OneP_GUI():
+			return True
+		else:
+			return False
+	#---	
 	
 	def OnFilter_Divergent(self, event):
 		""" Get proteins with divergent behavior in at least two conditions """

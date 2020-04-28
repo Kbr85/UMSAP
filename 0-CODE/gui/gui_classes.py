@@ -2473,6 +2473,55 @@ class DlgFilterPvalues(wx.Dialog):
 	#---
 #---
 
+class DlgFilterOnePvalues(wx.Dialog):
+	""" Creates the dialog window to filter results by P values in ProtProfR 
+		Relevant Points
+	"""
+	def __init__(self, parent, title=''):
+		""""""
+		super().__init__(parent, title=title)
+		#region ------------------------------------------------------ Widgets
+		#--> StaticText
+		self.stText = wx.StaticText(
+			self, 
+			label=config.msg['TextInput']['msg']['Filter_OneP']
+		)
+		#--> TextCtrl
+		self.tcText = wx.TextCtrl(
+			self, 
+			value=config.msg['FilteredValues']['Examples']['Filter_OneP'],
+			size=(300, 23),
+		)
+		#--> CheckBox
+		self.cbCorrP = wx.CheckBox(self, label='Corrected P')
+		#--> Buttons
+		self.btnOK     = wx.Button(self, wx.ID_OK)
+		self.btnCancel = wx.Button(self, wx.ID_CANCEL)
+		self.btnOK.SetDefault() # Set focus on btnOk
+		#endregion --------------------------------------------------- Widgets
+
+		#region ------------------------------------------------------- Sizers
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.sizer.Add(self.stText, 0, wx.ALL, 5)
+		self.sizer.Add(self.tcText, 0, wx.ALL, 5)
+
+		self.box_check = wx.BoxSizer(wx.HORIZONTAL)
+		self.box_check.Add(self.cbCorrP, 0, wx.ALL, 5)
+		self.sizer.Add(self.box_check, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
+
+		self.sizer_btn = wx.StdDialogButtonSizer()
+		self.sizer_btn.AddButton(self.btnOK)
+		self.sizer_btn.AddButton(self.btnCancel)
+		self.sizer_btn.Realize()
+		self.sizer.Add(self.sizer_btn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+
+		self.SetSizer(self.sizer)
+		self.sizer.Fit(self)
+		#endregion --------------------------------------------------- Sizers
+	#---
+#---
+
 class DlgFilterRemove(wx.Dialog):
 	""" Show applied filter and remove the selected one """
 	def __init__(self, parent, filters, title=''):

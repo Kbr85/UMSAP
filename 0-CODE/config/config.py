@@ -867,6 +867,7 @@ msg = { # Text messages used in the programm
 			'Filter_ZScore'  : "Threshold value: (%):",
 			'Filter_Log2FC'  : 'Threshold value (absolute value):',
 			'Filter_P'       : 'Threshold value:',
+			'Filter_OneP'    : 'α value',
 		},
 		'caption' : {
 			'ZScoreThreshold': "Z score threshold for Volcano plot",
@@ -874,6 +875,7 @@ msg = { # Text messages used in the programm
 			'Filter_Log2FC'  : 'Filter results by Log2FC value',
 			'Filter_P'       : 'Filter results by P value',
 			'Filter_Remove'  : 'Remove filters',
+			'Filter_OneP'    : ("Filter Relevant points by α threshold."),
 		}
 	},
 	'Open' : { # For open file dialogues
@@ -1062,6 +1064,8 @@ msg = { # Text messages used in the programm
 			"results by Log2FC. \ne.g. < 1.5 or > 2"),
 		'Filter_P' : ("Please provide a valid value to filter the "
 			"results by P values.\ne.g. < 0.01 or p > 0.005"),
+		'Filter_OneP' : ("Please provide a valid value to filter the "
+			"Relevant points by α threshold.\ne.g. 0.01"),
 	 #--> class related
 		'NoSeq' : ("It is not possible to create an instance of "
 			"DataObjSequenceFile with no sequence."),
@@ -1329,11 +1333,13 @@ msg = { # Text messages used in the programm
 			'Filter_ZScore': 'e.g. < 10 or > 20',
 			'Filter_Log2FC': 'e.g. < 2 or > 1.4',
 			'Filter_P'     : 'e.g. < 0.05 or > 0.001',
+			'Filter_OneP'  : '0.01',
 		},
 		'StatusBar' : {
 			'Filter_ZScore': 'Zscore',
 			'Filter_Log2FC': 'Log2FC',
 			'Filter_P'     : 'P',
+			'Filter_OneP'  : 'α',
 		},
 	},		
 	'OptVal' : ("\n---\nThis field is optional (NA)."),	
