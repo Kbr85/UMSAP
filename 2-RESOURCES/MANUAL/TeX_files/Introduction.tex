@@ -1,8 +1,8 @@
 \chapter{Introduction}
 
-Utilities for Mass Spectrometry Analysis of Proteins (UMSAP) is a graphical user interface (GUI) designed to speed up the post-processing of data obtained during mass spectrometry studies involving proteins. The program is not intended to analyze a mass spectrum or a mass chromatogram, neither to identify the peaks in a mass spectrum. The main objective is the fast post-processing of the vast amount of data generated in mass spectrometry experiments involving proteins after all the peaks in the associated mass spectra have been identified.
+Utilities for Mass Spectrometry Analysis of Proteins (UMSAP) is a graphical user interface (GUI) designed to speed up the post-processing of data obtained during mass spectrometry studies involving proteins. The program is not intended to analyze a mass spectrum or a mass chromatogram, neither to identify the peaks in a mass spectrum. The main objective is the fast post-processing of the vast amount of data generated in mass spectrometry experiments involving proteins after peak identification have been performed.
 
-The program is organized in modules with each module performing a single type of data post-processing. The reason for this clear separation is the high dependency between the type of mass spectrometry experiment performed and the way in which the resulting data must be post-processed. The modules are designed in such a way that the required user input is minimized but still users can control every aspect of the analysis. Currently, the software contains two modules but several others are already planned. 
+The program is organized in modules with each module performing a single type of data post-processing. The reason for this clear separation is the high dependency between the type of mass spectrometry experiment performed and the way in which the resulting data must be post-processed. The modules are designed in such a way that the required user input is minimized but still users can control every aspect of the analysis. Currently, the software contains four modules but several others are already planned. 
 
 \section{Citing Utilities for Mass Spectrometry Analysis of Proteins}
 
@@ -27,20 +27,20 @@ In particular, I would like to thank Prof. Dr. Michael Ehrmann for the support a
 
 \section{Copyrights Notes}
 
-UMSAP \num{2.1} is written in Python and uses the following modules and Python version:
+UMSAP \num[parse-numbers=false]{2.1.0} is written in Python and uses the following modules and Python version:
 \begin{table}[h!]
 	\centering
 	\begin{tabular}{l c}
 		\hline
 		Module & Version \\
 		\hline
-        Biopython & \num{1.73} \\
-        Matplotlib  &  \num[parse-numbers=false]{3.0.2} \\
-        NumPy      &  \num[parse-numbers=false]{1.16.1}\\
-        PyInstaller &  \num{3.4}\\
-        Python      &  \num[parse-numbers=false]{3.7.1}\\
-        Requests   &  \num[parse-numbers=false]{2.21.0}\\
-        wxPython  &  \num[parse-numbers=false]{4.0.4}\\
+        Biopython   & \num{1.73} \\
+        Matplotlib  & \num[parse-numbers=false]{3.0.2} \\
+        NumPy       & \num[parse-numbers=false]{1.16.1}\\
+        PyInstaller & \num{3.4}\\
+        Python      & \num[parse-numbers=false]{3.7.1}\\
+        Requests    & \num[parse-numbers=false]{2.21.0}\\
+        wxPython    & \num[parse-numbers=false]{4.0.4}\\
         \hline		
 	\end{tabular}
 	\caption[List of modules used by UMSAP]{List of modules used by UMSAP.}
