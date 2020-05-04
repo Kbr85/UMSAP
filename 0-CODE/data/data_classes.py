@@ -1948,6 +1948,8 @@ class DataObjProtProfFile(MyModules):
 		self.CType        = self.Fdata['CI']['CType']
 		#--> xCoordTimeA
 		self.SetMissingTP()
+		#--> col4Export
+		self.col4Export = self.ColForExport()
 		return True
 	#---
 
@@ -2022,6 +2024,39 @@ class DataObjProtProfFile(MyModules):
 		dmethods.FFsWriteCSV(fileO, df)
 	 #--> Return
 		return True
+	#---
+
+	def ColForExport(self):
+		""" Return a dict mapping the Xn and Yn in the df to the real
+			conditions / time points depending on Ctype
+			---
+			Return a nested dict with one dict for each level 
+		"""
+	 #--> Output dict
+		col = {1 : {}, 2 : {},}
+	 #---
+	 #--> Volcano region
+		if self.CType == config.combobox['ControlType'][1]:
+			for k, i in enumerate(self.nTimePL, start=1):
+				col[1]['X'+str(k)] = i
+			for k, i in enumerate(self.nCondsL, start=1):
+				col[2]['Y'+str(k)] = i
+		else:
+			for k, i in enumerate(self.nCondsL, start=1):
+				col[1]['X'+str(k)] = i
+			for k, i in enumerate(self.nTimePL, start=1):
+				col[2]['Y'+str(k)] = i
+		col[2]['Y0'] = self.ControlLabel			
+	 #---
+	 #--> Relevant Points region
+		for k,i in enumerate(self.nTimePL, start=1):
+			col[1]['T'+str(k)] = i
+		for k,i in enumerate(self.nCondsL, start=1):
+			col[2]['C'+str(k)] = i
+		col[2]['C0'] = self.ControlLabel
+	 #--> Return
+		return col
+	 #---
 	#---
 #---
 

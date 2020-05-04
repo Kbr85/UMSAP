@@ -1773,8 +1773,10 @@ def GetFilterByZscoreValue(var):
 		return [False] * nFalse
 	elif lt:
 		comp = 'le'
-	else:
+	elif gt:
 		comp = 'ge'
+	else:
+		comp = ''
  #---
 
  #--> Get number

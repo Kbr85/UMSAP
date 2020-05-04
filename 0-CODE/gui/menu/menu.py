@@ -8,7 +8,6 @@
 #	See the accompaning licence for more details.
 # ------------------------------------------------------------------------------
 
-
 """ This module generates the menus of the app.
 	---
 	The id numbers in the menus are assigned as follow:
@@ -19,18 +18,6 @@
 	600s Script menu
 	500s, 700s and 800s are reserved for the optional Tools menu.
 """
-
-
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
 
 #--- Imports
 ## Standard modules
@@ -43,51 +30,198 @@ import gui.gui_methods as gmethods
 
 
 # ------------------------------------------------------- Individual menus
-class MenuFilterResultsBy(wx.Menu):
-	""" Menu to filter results in ProtProfR """
+class MenuFilterMonotonicity(wx.Menu):
+	""" Creates the monotonicity filter menu """
 
+	kwargs = {
+		897: { 'up'  : True, },
+		898: { 'down': True, },
+		899: { 'both': True, },
+	}
+
+	#region --------------------------------------------------- Instance setup
+	def __init__(self):
+		""" """
+		super().__init__()
+	 #--> Menu items
+		self.Append(897, 'Increasing')
+		self.Append(898, 'Decreasing')
+		self.Append(899, 'Both')
+	 #---
+	 #--> Bind
+		for k in range(897, 900):
+			self.Bind(wx.EVT_MENU, self.Monotonic, id=k)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance setup
+
+	#region ------------------------------------------------------- My Methods
+	def Monotonic(self, event):
+		""" Filter by monotonic behavior """
+		eID = event.GetId()
+		win = self.GetWindow()
+		if win.OnFilter_Monotonic(**self.kwargs[eID]):
+			return True
+		else:
+			return False
+	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
+
+class MenuFilterRemoveFilters(wx.Menu):
+	""" Remove filters menu """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Menu items
+		itemAny  = self.Append(-1, 'Any')
+		itemLast = self.Append(-1, 'Last Added\tCtrl+Z')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnRemove, source=itemAny)
+		self.Bind(wx.EVT_MENU, self.OnRemove_Last, source=itemLast)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnRemove(self, event):
+		""" Remove selected filters """
+		win = self.GetWindow()
+		if win.OnFilter_Remove():
+			return True
+		else:
+			return False
+	#---
+
+	def OnRemove_Last(self, event):
+		""" Remove last added filter """
+		win = self.GetWindow()
+		if win.OnFilter_RemoveLast():
+			return True
+		else:
+			return False
+	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
+
+class MenuFilterAddFilter(wx.Menu):
+	""" Menu to add filter in ProtProfR """
+
+	filter_keys = {
+		801 : 'Filter_ZScore',
+		802 : 'Filter_Log2FC',
+	}
+
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self):
 		""" """
 	
 		super().__init__()
+	 #--> Submenus
+		monotonicMenu = MenuFilterMonotonicity()
 	 #--> Menu items
-		self.Append(801, 'No filter')
-		self.Append(802, 'Z score')
-		self.Append(803, 'Log2FC')
-		self.Append(804, 'Monotonic')
+		self.Append(801, 'Z score')
+		self.Append(802, 'Log2FC')
+		itemP    = self.Append(-1, 'P value')
+		itemOneP = self.Append(-1, 'One P value') 
+		self.Append(-1, 'Monotonic', monotonicMenu)
+		itemDiver = self.Append(-1, 'Divergent')
 	 #---
 
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnFilter_None,   id=801)
-		self.Bind(wx.EVT_MENU, self.OnFilter_ZScore, id=802)
-		self.Bind(wx.EVT_MENU, self.OnFilter_Log2FC, id=803)
+		for k in range(801, 803):
+			self.Bind(wx.EVT_MENU, self.OnFilter_Run, id=k)
+		self.Bind(wx.EVT_MENU, self.OnFilter_P, source=itemP)
+		self.Bind(wx.EVT_MENU, self.OnFilter_Divergent, source=itemDiver)
+		self.Bind(wx.EVT_MENU, self.OnFilter_OneP, source=itemOneP)
 	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	#--> Methods of the class
-	def OnFilter_None(self, event):
-		""" """
+	#region ------------------------------------------------------- My Methods
+	def OnFilter_Run(self, event):
+		""""""
 		win = self.GetWindow()
-		win.OnFilter_None()
+		if win.OnFilter_GUI(self.filter_keys[event.GetId()]):
+			return True
+		else:
+			return False
 	#---
 	
-	def OnFilter_ZScore(self, event):
+	def OnFilter_P(self, event):
 		""""""
 		win = self.GetWindow()
-		if win.OnFilter_ZScore_GUI():
+		if win.OnFilter_P_GUI():
 			return True
 		else:
 			return False
 	#---
 
-	def OnFilter_Log2FC(self, event):
+	def OnFilter_OneP(self, event):
 		""""""
 		win = self.GetWindow()
-		if win.OnFilter_Log2FC_GUI():
+		if win.OnFilter_OneP_GUI():
+			return True
+		else:
+			return False
+	#---	
+	
+	def OnFilter_Divergent(self, event):
+		""" Get proteins with divergent behavior in at least two conditions """
+		win = self.GetWindow()
+		if win.OnFilter_Divergent():
 			return True
 		else:
 			return False
 	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
+
+class MenuFilterMainMenu(wx.Menu):
+	""" Main Menu to control filters """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Submenus
+		AddMenu    = MenuFilterAddFilter()
+		RemoveMenu = MenuFilterRemoveFilters()
+	 #---
+	 #--> Menu items
+		self.Append(850, 'Add', AddMenu)
+		self.Append(851, 'Remove', RemoveMenu)
+		self.Append(852, 'Reset')
+		self.AppendSeparator()
+		self.iExport = self.Append(-1, 'Export Results')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnReset,  id=852)
+		self.Bind(wx.EVT_MENU, self.OnExport, source=self.iExport)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnReset(self, event):
+		""" Remove all Filters """
+		win = self.GetWindow()
+		if win.OnFilter_None():
+			return True
+		else:
+			return False
+	#---
+
+	def OnExport(self, event):
+		""""""
+		win = self.GetWindow()
+		if win.OnExport():
+			return True
+		else:
+			return False
+	#---	
+	#endregion ---------------------------------------------------- My Methods
 #---
 # ------------------------------------------------------- Individual menus (END)
 
@@ -262,16 +396,18 @@ class ToolMenuProtProfResT(wx.Menu):
 	#---
 #---
 
-class ToolMenuProtProfResFilter(wx.Menu):
+class ToolMenuProtProfResFilter(MenuFilterMainMenu):
 	""" Tools menu to show filtered results in protprofRes """
 
 	def __init__(self):
 		""" """
 		super().__init__()
-	 #--> Menu items
-		menuFilters = MenuFilterResultsBy()
-		self.Append(wx.ID_ANY, 'Filter Results by', menuFilters)
+	 #--> Change menu items labels
+		self.SetLabel(850, 'Add Filter')
+		self.SetLabel(851, 'Remove Filter')
+		self.SetLabel(852, 'Reset Filters')
 	 #---
+	#---
 #---
 
 class ToolMenuProtProfResV(wx.Menu):
@@ -290,7 +426,7 @@ class ToolMenuProtProfResV(wx.Menu):
 	  ####---- Menu items
 	  #--> Condition menu
 		self.CondMenu = wx.Menu()
-		j = 504
+		j = 505
 		for i in lC:
 			self.CondMenu.Append(j, str(i), kind=wx.ITEM_RADIO)
 			j += 1
@@ -303,16 +439,19 @@ class ToolMenuProtProfResV(wx.Menu):
 		self.AppendSubMenu(self.CondMenu, 'Conditions')
 		self.AppendSubMenu(self.TPMenu, 'Relevant Points')
 		self.AppendSeparator()
+		self.Append(504, 'Apply Filters')
+		self.AppendSeparator()
 		self.Append(503, 'Z score Threshold')
 		self.AppendSeparator()
 		self.Append(502, 'Save Plot Image')
 		self.AppendSeparator()
 		self.Append(501, 'Reset View')
 	  ####---- Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,    id=501)
-		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=502)
-		self.Bind(wx.EVT_MENU, self.OnZScore,   id=503)
-		j = 504
+		self.Bind(wx.EVT_MENU, self.OnReset,        id=501)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot,     id=502)
+		self.Bind(wx.EVT_MENU, self.OnZScore,       id=503)
+		self.Bind(wx.EVT_MENU, self.OnFilter_Apply, id=504)
+		j = 505
 		for i in range(0, nC, 1):
 			self.CondMenu.Bind(wx.EVT_MENU, self.OnCond, id=j)
 			j += 1
@@ -324,6 +463,13 @@ class ToolMenuProtProfResV(wx.Menu):
 	#---
 
 	####---- Methods of the class
+	def OnFilter_Apply(self, event):
+		""" Apply filter to this condition - time point """
+		win = self.GetWindow()
+		win.OnFilter_Apply()
+		return True
+	#---
+
 	def OnZScore(self, event):
 		""" Set new Z score threshold in % """
 		win = self.GetWindow()
@@ -368,8 +514,8 @@ class ToolMenuProtProfResV(wx.Menu):
 			n  : current number of condition
 			tp : current time point
 		"""
-		self.CondMenu.Check(504+n, True)
-		self.TPMenu.Check(504+nC+tp, True)
+		self.CondMenu.Check(505+n, True)
+		self.TPMenu.Check(505+nC+tp, True)
 		return True
 	#---
 #---
@@ -1284,13 +1430,13 @@ class MenuBarProtProfRes(MainMenuBar):
 	 ####---- Menu items
 		self.VolcanoPlotMenu  = ToolMenuProtProfResV(nC, nt, lC, lt, n, tp)
 		self.TimeAnalysisMenu = ToolMenuProtProfResT(allL, grayC)
-		self.FilterMenu       = MenuFilterResultsBy()
+		self.FilterMenu       = MenuFilterMainMenu()
 		self.ToolsMenu = wx.Menu()
 		self.ToolsMenu.AppendSubMenu(self.VolcanoPlotMenu, 'Volcano Plot')
 		self.ToolsMenu.AppendSeparator()
 		self.ToolsMenu.AppendSubMenu(self.TimeAnalysisMenu, 'Time Analysis')
 		self.ToolsMenu.AppendSeparator()
-		self.ToolsMenu.AppendSubMenu(self.FilterMenu, 'Filter Results by')
+		self.ToolsMenu.AppendSubMenu(self.FilterMenu, 'Filters')
 		self.ToolsMenu.AppendSeparator()
 		self.ToolsMenu.AppendCheckItem(599, 'Corrected P values')
 	 ####---- Append to menu bar

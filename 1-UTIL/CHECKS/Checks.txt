@@ -112,6 +112,8 @@
 	-- The Sequence Highlight limprot should be move to dclasses.MyModule to 
 		use it in tarprot too.
 
+	-- Currently only a minimum screen height of 900 px is supported
+
 	OLD FILE BELOW
 
 	-- Error message when searching UNIPROT/PDB.
