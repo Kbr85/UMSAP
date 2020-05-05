@@ -42,7 +42,7 @@ from pathlib import Path
 
 
 # ----------------------------------------------------- General parameters
-version       = '2.1.0 (beta)' # String to write in the output files
+version       = '2.1.0' # String to write in the output files
 versionUpdate = [2, 0, 1]      # List to match against the version online
 dictVersion   = { # dict for directly write into output files
 	'version': version,
@@ -61,8 +61,8 @@ if cOS == 'Darwin':
 	cwd = cwd.parent
 	
 	#################################################### Change before releasing
-	#res = cwd / 'Resources'
-	res = cwd / 'BORRAR-UMSAP/RESOURCES'
+	res = cwd / 'Resources'
+	# res = cwd / 'BORRAR-UMSAP/RESOURCES'
 	#################################################### Change before releasing
 	
 	#--> Set top left coordinate

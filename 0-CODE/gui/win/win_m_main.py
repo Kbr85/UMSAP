@@ -69,7 +69,7 @@ class WinMain(gclasses.WinMyFrame):
 		)
 		self.text2 = wx.StaticText(
 			self.panel, 
-			label='Copyright © 2017-2019 Kenny Bravo Rodriguez'
+			label='Copyright © 2017 Kenny Bravo Rodriguez'
 		)
 	 #--> Sizers
 	  #--> New

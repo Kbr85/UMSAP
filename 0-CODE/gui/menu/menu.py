@@ -1149,7 +1149,7 @@ class MainMenuBar(wx.MenuBar):
 			self.Append(UMSAPmenu, '&UMSAP')
 		else:
 			pass
-		self.Append(Modmenu,    '&Module')
+		self.Append(Modmenu,    '&Modules')
 		self.Append(Utilmenu,   '&Utilites')
 		self.Append(Helpmenu,   '&Help')
 		self.Append(Scriptmenu, '&Script')
