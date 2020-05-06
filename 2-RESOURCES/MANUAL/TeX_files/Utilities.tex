@@ -1,23 +1,61 @@
 \chapter{Utilities}
 \label{chap:util}
 
-Currently, there are \num{14} utilities. Users can access the utilities in two ways. From the main interface (\autoref{fig:mainwindow}) users can select Utilities in the list to the right and a new window will appear with a complete list of available utilities (\autoref{fig:utilwindow}). The alternative option is to directly select the desired utility from the menu entry, Utilities. The second approach is faster since does not require to use the Utilities window (\autoref{fig:utilwindow}).
+Currently, there are \num{15} utilities. Users can access the utilities in two ways. From the main interface (\autoref{fig:mainwindow}) users can select Utilities in the list to the right and a new window will appear with a complete list of available utilities (\autoref{fig:utilwindow}). The alternative option is to directly select the desired utility from the menu entry, Utilities. The second approach is faster since does not require to use the Utilities window (\autoref{fig:utilwindow}).
+
+The utilities are organized in General Utilities and utilities that are specific for a given module. The following sections describe each one the implemented utilities.
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.7\textwidth]{./IMAGES/UTIL-WINDOW/20190429-util.jpg}	    
+	\includegraphics[width=0.7\textwidth]{./IMAGES/UTIL-WINDOW/util.jpg}	    
 	\caption[The Utilities window]{\textbf{The Utilities window.} From this window users can access all the available utilities.} 
 	\label{fig:utilwindow}
 	\vspace{-5pt} 	
 \end{figure} 
 
-The utilities are organized in two categories. The Targeted Proteolysis category includes utilities that are specific for the Targeted Proteolysis module while the category General Utilities includes utilities with a more general scope.
+\section{Limited Proteolysis utilities}
+
+\subsection{Sequence highlight}
+\label{subsec:seqhigh}
+The Sequence Highlight utility allows user to highlight on the sequence of the Target protein the peptides detected in each gel lane/band considered in the .limprot file. The sequences with the highlighted peptides are saved in a .pdf file. How to generate a .limprot file is discussed in \autoref{chap:limprot}.
+
+\textit{\textbf{The interface}}
+
+The window of the Sequence Highlight utility is divided in three regions. 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.7\textwidth]{./IMAGES/UTIL-SEQUENCE-HIGHLIGHT/sequence-highlight.jpg}	    
+	\caption[The Sequence Highlight window]{\textbf{The Sequence Highlight window.} This window allows to generate a .pdf file showing the location of the peptides detected in the investigated gel lane/band on the sequence of the Target protein.} 
+	\label{fig:seqhighwindow}
+	\vspace{-5pt} 	
+\end{figure} 
+
+Region \num{1} contains three buttons allowing users to quickly delete all provided input to generate a new .pdf file. The Clear all button will delete all user provided input. The Clear files button will delete the path to all user provided files. Finally, the Clear values button will delete all user provided numerical values.
+
+Region \num{2} contains the fields where users provide the information needed in order to create the .pdf file with the highlighted sequences. The Limprot file button allows users to browse the file system to select the .limprot file that will be used for the generation of the .pdf file. Only one .limprot file can be provided here. The Output file button allows users to browse the file system to select the location and name of the .pdf file. If left empty, then the .pdf file, resulting from the analysis, will be saved in the same directory containing the .limprot file and will have the same name as the .limprot file. If the folder containing the selected .limprot file already contains a .pdf file with the same name as the selected .limprot file, then UMSAP will add the current date and time to the seconds to the end of the .pdf file name in order to avoid overwriting the older .pdf file without explicit user permission.
+
+The Sequence length parameter allows user to define the maximum number of residues per line to be used during the creation of the .pdf file. The value here must be an integer number greater than zero.
+
+Region \num{3} contains the Help and Start analysis buttons and a progress bar. The Help button leads to an online tutorial while the Start analysis button will start the generation of the .pdf file. The progress bar will give a rough estimate of the remaining time for completing the analysis.
+
+\textit{\textbf{The analysis}}
+
+First, UMSAP will check the validity of the user provided input. After this, for each gel lane/band analyzed in the .limprot file, UMSAP will print the sequence of the Target protein to the .pdf file with the peptides found in the gel lane/band highlighted.
+
+\textit{\textbf{The output}} 
+
+The output is a .pdf file containing a page for each gel lane/band found in the .limprot file. As described before, each page contains the sequence of the Target protein with the detected peptides highlighted in red. In addition, the residue number of the beginning and ending of the highlighted fragments are also given. If the sequence of the native protein was provided when creating the .limprot file, then the information is given for the recombinant and native protein. 
+
+\textit{\textbf{The Tools menu}}
+
+This utility does not have a Tool menu.
 
 \section{Targeted Proteolysis utilities }  
 
 \subsection{AA Distribution}
 \label{subsec:aadistcalc}
-The AA Distribution utility allows user to calculate the AA distribution around the detected cleavage sites using a list of FP (see page \pageref{par:PIP}). The list of FP is automatically generated from a .tarprot file. How to generate the .tarprot file is discussed in \autoref{chap:enzdig}. The list of FP is a non redundant list. 
+The AA Distribution utility allows user to calculate the AA distribution around the detected cleavage sites using a list of FP (see page \pageref{par:PIP}). The list of FP is automatically generated from a .tarprot file. How to generate a .tarprot file is discussed in \autoref{chap:enzdig}. The list of FP is a non redundant list. 
 
 \textit{\textbf{The interface}}
 
@@ -25,7 +63,7 @@ The window of the AA Distribution utility is divided in three regions (\autoref{
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.7\textwidth]{./IMAGES/UTIL-AA-WINDOW/20190429-util-aa.jpg}	    
+	\includegraphics[width=0.7\textwidth]{./IMAGES/UTIL-AA-WINDOW/util-aa.jpg}	    
 	\caption[The AA Distribution window]{\textbf{The AA Distribution window.} This window allows to obtain the AA distribution around the detected cleavage sites from a .tarprot file.} 
 	\label{fig:aadistset}
 	\vspace{-5pt} 	
@@ -37,18 +75,17 @@ Region \num{2} contains the fields where users provide the information needed in
 
 The parameter Positions indicates the number of positions around the cleavage sites to be analyzed. The value here must be an integer number greater than zero.
 
-Region \num{3} contains the Help and Start buttons and a progress bar. The Help button leads to an online tutorial while the Start button will start the analysis. The progress bar will give a rough estimate of the remaining time for completing the analysis.
-\newpage
+Region \num{3} contains the Help and Start analysis buttons and a progress bar. The Help button leads to an online tutorial while the Start analysis button will start the analysis. The progress bar will give a rough estimate of the remaining time for completing the analysis.
 
 \textit{\textbf{The analysis}}
 
 First, UMSAP will check the validity of the user provided input. After this, a list of FP is created using the .tarprot file. For each FP, the sequence around the N and C terminal ends of the peptide is analyzed up to the user provided number of Positions. For the N terminus of the peptide the identity of residues in positions \(Pn\) to \(P1\) is inferred from the sequence of the recombinant protein contained in the .tarprot file. The same is done for positions \(P1'\) to \(Pn'\) at the C terminus of the peptide. If the N or C terminus of a peptide is the first or last residue of the recombinant protein under study the N or C terminus is excluded from the analysis. For each position the number of times that each AA appears at a given position are counted. Finally, the absolute numbers of AA appearances for each position are converted to percent taking the total for each position as the sum of all counted AA in the position.
 
-In addition, UMSAP tests whether the obtained AA distribution is significantly different to the expected AA distribution from the proteolysis of the target protein by a totally non-selective protease. The first step is to generate an AA distribution with the same number of positions defined by the user with the Position parameter. This distribution is generated assuming that all peptidic bonds in the recombinant protein may be cleaved by the protease with equal probability and that all peptidic bonds will be cleaved. Here, we are also assuming that all products of cleaving all peptidic bonds will be detected in the MS experiment. Then, UMSAP compares each position in both distributions using a $\chi^2$ test with the significance level found in the .tarprot file. In order to be able to perform the $\chi^2$ test, AAs are pooled together in the same groups as described for the color code used in the output.    
+In addition, UMSAP tests whether the obtained AA distribution is significantly different to the expected AA distribution from the proteolysis of the Target protein by a totally non-selective protease. The first step is to generate an AA distribution with the same number of positions defined by the user with the Position parameter. This distribution is generated assuming that all peptidic bonds in the recombinant protein may be cleaved by the protease with equal probability and that all peptidic bonds will be cleaved. Here, we are also assuming that all products of cleaving all peptidic bonds will be detected in the MS experiment. Then, UMSAP compares each position in both distributions using a $\chi^2$ test with the significance level found in the .tarprot file. In order to be able to perform the $\chi^2$ test, AAs are pooled together in the same groups as described for the color code used in the output.    
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.9\textwidth]{./IMAGES/UTIL-AA-WINDOW/20190429-util-aa-res.jpg}	    
+	\includegraphics[width=0.9\textwidth]{./IMAGES/UTIL-AA-WINDOW/util-aa-res.jpg}	    
 	\caption[The AA Distribution analysis window]{\textbf{The AA Distribution analysis window.} This window allows to visualize the results contained in a .aadist file.}
 	\label{fig:aadistshow}
 	\vspace{-5pt} 	
@@ -56,7 +93,7 @@ In addition, UMSAP tests whether the obtained AA distribution is significantly d
 
 \textit{\textbf{The output}} 
 
-The output from the AA distribution calculation is a file with .aadist extension. The file will be automatically loaded and a graphical representation of the results will be shown (\autoref{fig:aadistshow}). There are two graphical representations. The first representation shows a bar graph of the AA distribution in which each bar represents a position. AAs are color coded with positively charged AAs (R and K) in blue, negatively charged AAs (D and E) in red, polar AAs (S, T, N, H, C and Q) in green, non-polar AAs (A, V, I, L and M) in gray, aromatic AAs (F, Y and W) in pink and Gly and Pro in yellow. AAs with an occurrence higher than \SI{10}{\percent} are labeled with the one letter code for the AA and the percentage value. For example, in \autoref{fig:aadistshow} the value of \SI{11.0}{\percent} obtained for A in position \(P1\) means that A was found in position \(P1\) in the \SI{11.0}{\percent} of the total cleavage sites detected. 
+The output from the AA distribution calculation is a file with .aadist extension. The file will be automatically loaded and a graphical representation of the results will be shown (\autoref{fig:aadistshow}). There are two graphical representations. The first representation shows a bar graph of the AA distribution in which each bar represents a position. AAs are color coded with positively charged AAs (R and K) in blue, negatively charged AAs (D and E) in red, polar AAs (S, T, N, H, C and Q) in green, non-polar AAs (A, V, I, L and M) in gray, aromatic AAs (F, Y and W) in pink and Gly and Pro in yellow. AAs with an occurrence higher than \SI{10}{\percent} are labeled with the one letter code for the AA and the percentage value. For example, in \autoref{fig:aadistshow} the value of \SI{16.7}{\percent} obtained for A in position \(P1'\) means that A was found in position \(P1'\) in the \SI{16.7}{\percent} of the total cleavage sites detected. 
 
 The results of the $\chi^2$ test are given in the color of the name of the position. A green color represents that the obtained distribution in the position is significantly different to a no selectivity distribution at the level of significance found in the .tarprot file. A red color represents that the distributions are not significantly different at the level of significance found in the .tarprot file. Finally, a black color indicates that the number of expected values below 5 was higher than the \SI{20}{\percent} threshold recommended by Yates et al. and the test was not performed \cite{Yates1999}. 
 
@@ -82,7 +119,7 @@ First, UMSAP will check the validity of the user provided input. After this the 
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.7\textwidth]{./IMAGES/UTIL-CUTPROP-WINDOW/20190429-util-cutprop-res.jpg}	    
+	\includegraphics[width=0.7\textwidth]{./IMAGES/UTIL-CUTPROP-WINDOW/util-cutprop-res.jpg}	    
 	\caption[The Cleavages per Residue analysis window]{\textbf{The Cleavages per Residue analysis window.} This window allows to visualize the results contained in a .cutprop file.} 
 	\label{fig:cutpropshwo}
 	\vspace{-5pt} 	
