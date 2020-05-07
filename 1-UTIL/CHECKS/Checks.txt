@@ -242,8 +242,17 @@
 
 		----- CUTPROP UTIL (UP)
 	
-	
-	
+
+
+		----- FILTERED PEPTIDE LIST (DOWN)
+
+			- Change Exp column values to True/False, right now the putput is 
+				very bad.
+
+		----- FILTERED PEPTIDE LIST (UP)
+
+
+
 		----- CLEAVAGES TO PDB FILES UTIL (Down)
 
 			-- It is to slow in the current implementation. Improve

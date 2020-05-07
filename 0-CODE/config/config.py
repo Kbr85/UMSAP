@@ -61,8 +61,8 @@ if cOS == 'Darwin':
 	cwd = cwd.parent
 	
 	#################################################### Change before releasing
-	# res = cwd / 'Resources'
-	res = cwd / 'BORRAR-UMSAP/RESOURCES'
+	res = cwd / 'Resources'
+	# res = cwd / 'BORRAR-UMSAP/RESOURCES'
 	#################################################### Change before releasing
 	
 	#--> Set top left coordinate
