@@ -5,30 +5,16 @@ The module Targeted Proteolysis is designed to post-process the mass spectrometr
 
 \section{Definitions}
 
-Before explaining in detail the interface and how does the module works, lets make clear the meaning of some terms that will be used in the following paragraphs.
+Before explaining in detail the interface and how does the module works, lets make clear the meaning of the term Filtered peptide in the context of the Targeted proteolysis module:
 
 \phantomsection
 \begin{itemize}
-	\item \textit{Recombinant protein}: actual amino acid sequence used in the mass spectrometry experiments. It may be identical to the native sequence of the target protein under study or not.
-	\item \textit{Native protein}: full amino acid sequence expressed in wild type cells.
-	\item \textit{Detected peptide}: any peptide detected in any of the mass spectrometry experiments including the control experiments.
-	\item \textit{Relevant peptide}: a detected peptide with a Score value above a user defined threshold (see page \pageref{par:scorevalueenzdig}).
 	\item \textit{Filtered peptide}: a relevant peptide with a significantly different behavior in the control and a given experiment at the chosen significance level.\label{par:PIP}
-	\item \textit{Fragment}: group of filtered peptides with no gaps when their sequences are aligned to the sequence of the recombinant/native protein. 
 \end{itemize}
-
-For example, there are three fragments in the alignment shown below. The first fragment is formed by sequences \numrange{1}{3} since there is no gap in the sequence MKKTAIAIAVAL. SEQ\num{4} forms the second fragment because there is a gap between the last residue in SEQ\num{3} and the first residue in SEQ\num{4} and another gap between the last residue in SEQ\num{4} and the first residue in SEQ\num{5}. For the same reason SEQ\num{5} forms the third fragment.
-
-\begin{texshade}{./TeX_files/test.fasta}
-	%Acceptable file formats are: ALN, MSF & FASTA
-	\residuesperline*{50}
-	\shadingmode[kenny]{functional}
-	\hideconsensus
-\end{texshade}
 
 \section{The input data files}
 
-The Targeted Proteolysis module requires a data file containing the detected peptides and a sequence file containing the amino acid sequence of the recombinant protein used in the study. Both files must follow the guidelines specified in \autoref{sec:datafile}. In short, the data file must have a tabular format with tab separated columns and the name of the columns are expected as first row. The sequence file is expected to contain only one sequence and to be FASTA formatted with or without the header line. All columns given as input in the section \textit{Columns in the input file} in Region \num{2} of the interface must be present in the data file. Optionally, another sequence file with the sequence of the native target protein and a pdb file may be specified.
+The Targeted Proteolysis module requires a data file containing the detected peptides and a sequence file containing the amino acid sequence of the recombinant protein used in the study. Both files must follow the guidelines specified in \autoref{sec:datafile}. In short, the data file must have a tabular format with tab separated columns and the name of the columns are expected as first row. The sequence file is expected to contain only one sequence and to be FASTA formatted with or without the header line. All columns given as input in the section \textit{Column numbers} in Region \num{2} of the interface must be present in the data file. Optionally, another sequence file with the sequence of the native target protein and a pdb file may be specified.
 
 \section{The interface}
 
@@ -61,7 +47,7 @@ See \autoref{sec:datafile} for more details about the data files.
 
 \num{6}.- The Output name button does nothing but the text box to its right allows users to specify the name of the files that will be generated during the analysis. If this field is left empty, then the name tarprot will be used for the output files. 
 
-The section \textit{User defined values} in Region \num{2} contains eight parameters. Here, users provide information about the target protein, how the data file should be processed and which optional analysis will be performed.
+The section \textit{Values} in Region \num{2} contains eight parameters. Here, users provide information about the target protein, how the data file should be processed and which optional analysis will be performed.
 
 \phantomsection
 \num{1}.- The parameter Target protein\label{par:subsprot} allows users to specify which of the proteins detected in the MS experiments was used as substrate during the enzymatic proteolysis. Users may type here any unique protein identifier present in the data file. The search for the target protein is case sensitive, meaning that eFeB is not the same as efeb.
@@ -85,13 +71,13 @@ The section \textit{User defined values} in Region \num{2} contains eight parame
 \phantomsection
 \num{8}.- The parameter PDB ID\label{par:pdbID} allows users to specify the chain or segment in the pdb file to use when mapping the cleavages detected in the MS experiments to the structure of the target protein. There are two possibilities. When a PDB file is provided with the button PDB file in the section \textit{Files} in Region \num{2} of the interface, then the expected value for PDB ID is only the chain or segment ID found in the pdb file that will be used for mapping the detected cleavages. When the pdb file should be downloaded from the PDB database, then a PDB code and the chain or segment ID is expected here. The format in this case is Code:Chain or Code:SegmentID, for example, 2y4f:A or 2y4f:PROA. 
 
-The section \textit{Columns in the input file} in Region \num{2} contains five parameters. Here, users provide the column numbers in the data file from where UMSAP will get the information needed to perform the analysis of the enzymatic proteolysis. All columns specified  in this section must be present in the data file. Users must be aware that Python starts counting from \num{0}. Therefore, the number of the columns in the data file starts from \num{0} and not from \num{1}. The column numbers displayed in the list box in Region \num{3} after the data file is selected can be directly used for the parameter values since they are already corrected.  
+The section \textit{Column numbers} in Region \num{2} contains five parameters. Here, users provide the column numbers in the data file from where UMSAP will get the information needed to perform the analysis of the enzymatic proteolysis. All columns specified  in this section must be present in the data file. Users must be aware that Python starts counting from \num{0}. Therefore, the number of the columns in the data file starts from \num{0} and not from \num{1}. The column numbers displayed in the list box in Region \num{3} after the data file is selected can be directly used for the parameter values.  
 
 \num{1}.- The parameter Sequences allows users to specify the column in the data file containing the sequences of the peptides identified in the MS experiments. Only one integer number equal or greater than zero will be accepted here.
 
-\num{2}.- The parameter Detected proteins allows users to specify the column in the data file containing the unique protein identifier for the proteins detected in the MS experiments. It is in this column where the program will look for the Target protein value given in the section \textit{User defined values} in Region \num{2} of the interface. Only one integer number equal or greater than zero will be accepted here.
+\num{2}.- The parameter Detected proteins allows users to specify the column in the data file containing the unique protein identifier for the proteins detected in the MS experiments. It is in this column where the program will look for the Target protein value given in the section \textit{Values} in Region \num{2} of the interface. Only one integer number equal or greater than zero will be accepted here.
 
-\num{3}.- The parameter Score allows users to specify the column in the data file containing the Score values. It is in this column where the program will look for the values to be compared against the Score threshold given in the section \textit{User defined values} in Region \num{2} of the interface.
+\num{3}.- The parameter Score allows users to specify the column in the data file containing the Score values. It is in this column where the program will look for the values to be compared against the Score threshold given in section \textit{Values} of Region \num{2} of the interface.
 
 \phantomsection
 \num{4}.- The parameter Columns to extract\label{par:enzdigColExt} allows users to specify which columns in the data file will be copy to the shorter versions of the data file, see page \pageref{par:datafilesenzdig} for more details. A range of columns may be specified as \numrange[range-phrase = --]{4}{10}. Any number of columns may be specified here. Only integers numbers equal or greater than zero will be accepted. A value of NA means no shorter version of the data files will be created.
