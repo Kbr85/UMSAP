@@ -86,12 +86,12 @@ The section \textit{Column numbers} in Region \num{2} contains five parameters. 
 
 \num{5}.- \label{par:limprotResultControl}The parameter Results - Control experiments allows users to specify the columns in the Data file containing the results of the control and enzymatic digestion experiments. There are three ways to provide the information for this parameter. Users can directly type the column numbers corresponding to the control and digestion experiments, load the values from a .txt file using the Load values button or use the Type values button to call a helper window, see \autoref{fig:limprotResControlWindow}. Independently of the chosen method, the expected input here is a matrix in which each element contains the column numbers with the MS results for a gel spot. Duplicate values are not allowed. 
 
-The helper window is divided in four Regions. Region \num{1} allow to define the number of bands and lanes of interest in the gel and create the matrix in Region \num{2}. Each text field in Region \num{2} should contain the column numbers containing the MS results for the given gel spot. The values for the text fields should be positive integer numbers or a range of integers, e.g. \numrange[range-phrase=--]{60}{62} or NA for empty gel spots. The column numbers can be seen in the list box in Region \num{3}. Selected entries in the list box can be copied and then pasted to the text fields using the right mouse button or the Tools menu. 
+The helper window is divided in four Regions. Region \num{1} allow to define the number of bands and lanes of interest in the gel and create the matrix in Region \num{2}. Each text field in Region \num{2} should contain the column numbers containing the MS results for the given gel spot. The values for the text fields should be positive integer numbers or a range of integers, e.g. \numrange[range-phrase=--]{60}{62} or NA for empty gel spots. The column numbers can be seen in the list box in Region \num{3}. Selected entries in the list box can be copied and then pasted to the text fields using the right mouse button or the Tools menu. Region \num{4} contains two buttons to Cancel or to Export the values to the window of the module. 
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.7\textwidth]{./IMAGES/MOD-LIMPROT/limprot-rescontrol.jpg}
-	\caption[The Result - Control experiments helper window]{\textbf{The Result - Control experiments helper window.} This window allows users to specify the column numbers in the Data file containing the MS results for the selected gel spots.} 
+	\caption[The Result - Control experiments helper window for the Limited Proteolysis module]{\textbf{The Result - Control experiments helper window.} This window allows users to specify the column numbers in the Data file containing the MS results for the selected gel spots.} 
 	\label{fig:limprotResControlWindow}
 	\vspace{-5pt} 	
 \end{figure}
