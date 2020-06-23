@@ -42,7 +42,7 @@ from pathlib import Path
 
 
 # ----------------------------------------------------- General parameters
-version       = '2.1.0 (beta)' # String to write in the output files
+version       = '2.1.0' # String to write in the output files
 versionUpdate = [2, 0, 1]      # List to match against the version online
 dictVersion   = { # dict for directly write into output files
 	'version': version,
@@ -61,8 +61,8 @@ if cOS == 'Darwin':
 	cwd = cwd.parent
 	
 	#################################################### Change before releasing
-	#res = cwd / 'Resources'
-	res = cwd / 'BORRAR-UMSAP/RESOURCES'
+	res = cwd / 'Resources'
+	# res = cwd / 'BORRAR-UMSAP/RESOURCES'
 	#################################################### Change before releasing
 	
 	#--> Set top left coordinate
@@ -176,25 +176,25 @@ title = { # Title of the windows
 	name['UpdateNotice']: 'UMSAP Updates',
 	#--> Utilities
 	name['Util']    : 'UMSAP - Utilities',
-	name['CorrA']   : 'UMSAP - Correlation Analysis',
-	name['CorrARes']: 'UMSAP - Correlation Analysis',
-	name['MergeAA'] : 'UMSAP - Merge aadist Files',
+	name['CorrA']   : 'UMSAP - Util - Correlation Analysis',
+	name['CorrARes']: 'UMSAP - Util - Correlation Analysis',
+	name['MergeAA'] : 'UMSAP - Util - Merge aadist Files',
 	name['TypeRes'] : 'UMSAP - Column Numbers for the Field Results - Control Experiment',
 	#--> Targeted Proteolysis module
 	name['TarProt']   : 'UMSAP - Targeted Proteolysis',
 	name['TarProtRes']: 'UMSAP - TarProt - Fragments',
-	name['CutPropRes']: 'UMSAP - Cleavages per Residue',
-	name['AAdist']    : 'UMSAP - AA Distribution',
-	name['AAdistR']   : 'UMSAP - AA Distribution',
-	name['Histo']     : 'UMSAP - Histograms',
-	name['HistoRes']  : 'UMSAP - Histograms',
-	name['SeqAlign']  : 'UMSAP - Sequence Alignment',
-	name['ShortDFile']: 'UMSAP - Short Data Files',
-	name['Cuts2PDB']  : 'UMSAP - Cleavages to PDB Files',
+	name['CutPropRes']: 'UMSAP - Util - Cleavages per Residue',
+	name['AAdist']    : 'UMSAP - Util - AA Distribution',
+	name['AAdistR']   : 'UMSAP - Util - AA Distribution',
+	name['Histo']     : 'UMSAP - Util - Histograms',
+	name['HistoRes']  : 'UMSAP - Util - Histograms',
+	name['SeqAlign']  : 'UMSAP - Util - Sequence Alignment',
+	name['ShortDFile']: 'UMSAP - Util - Short Data Files',
+	name['Cuts2PDB']  : 'UMSAP - Util - Cleavages to PDB Files',
 	#--> Limited Proteolysis module
 	name['LimProt']   : 'UMSAP - Limited Proteolysis',
 	name['LimProtRes']: 'UMSAP - LimProt - Gel Analysis',
-	name['SeqH']      : 'UMSAP - LimProt - Sequence Highlight',
+	name['SeqH']      : 'UMSAP - Util - Sequence Highlight',
 	#--> Proteome Profiling module
 	name['ProtProf']   : 'UMSAP - Proteome Profiling',
 	name['ProtProfRes']: 'UMSAP - ProtProf - Results',

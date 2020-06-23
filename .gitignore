@@ -1,6 +1,18 @@
-# Ignore files
+# General files
 .DS_Store
 
+# Latex files
+*.aux
+*.log
+*.toc
+*.bbl
+*.blg
+*.bcf
+*.lof
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
 
 # Ignore folders
 __pychache__

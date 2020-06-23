@@ -60,10 +60,10 @@ class WinLimProt(gclasses.WinModule):
 		self.tcDeltaU = wx.TextCtrl(self.boxValues, value="", size=(180, 22))
 	  #--- StaticText
 		self.stDeltaU = wx.StaticText(self.boxValues, 
-			label=u'\N{GREEK CAPITAL LETTER DELTA}'+ '-value', 
+			label=u'\N{GREEK CAPITAL LETTER THETA}'+ '-value', 
 			style=wx.ALIGN_RIGHT) 
 		self.stDelta = wx.StaticText(self.boxValues, 
-			label=u'\N{GREEK CAPITAL LETTER DELTA}'+ 'max-value', 
+			label=u'\N{GREEK CAPITAL LETTER THETA}'+ 'max-value', 
 			style=wx.ALIGN_RIGHT)
 		self.stbVal  = wx.StaticText(self.boxValues,  
 			label=u'\N{GREEK SMALL LETTER BETA}'+'-value', 
