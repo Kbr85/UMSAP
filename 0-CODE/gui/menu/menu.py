@@ -19,17 +19,16 @@
 	500s, 700s and 800s are reserved for the optional Tools menu.
 """
 
-#--- Imports
-## Standard modules
-import wx
+#region -------------------------------------------------------------- Imports
 import _thread
-## My modules
+
+import wx
+
 import config.config as config
 import gui.gui_methods as gmethods
-#---
+#endregion ----------------------------------------------------------- Imports
 
-
-# ------------------------------------------------------- Individual menus
+#region ----------------------------------------------------- Individual menus
 class MenuFilterMonotonicity(wx.Menu):
 	""" Creates the monotonicity filter menu """
 
@@ -223,10 +222,9 @@ class MenuFilterMainMenu(wx.Menu):
 	#---	
 	#endregion ---------------------------------------------------- My Methods
 #---
-# ------------------------------------------------------- Individual menus (END)
+#endregion -------------------------------------------------- Individual menus
 
-
-# -------------------------------------------------- Individual Tool menus
+#region ------------------------------------------------ Individual Tool menus
 #---# Improve You can create a base class for the menu containing several
 #---# methods that appears almost everywhere.
 #---# Improve
@@ -1062,11 +1060,9 @@ class ToolMenuLimProtMod(ToolMenuTarProtMod):
 		super().__init__()
 	#---
 #---
-# -------------------------------------------------- Individual Tool menus (END)
+#endregion --------------------------------------------- Individual Tool menus
 
-
-
-#--------------------------------------------------------------- Menu Bars
+#region ------------------------------------------------------------ Menu Bars
 class MainMenuBar(wx.MenuBar):
 	""" Creates the application main menu bar. ids with 500s, 700s, 800s are 
 		reserved for the optional Tools entries in the derived classes. Usually
@@ -1460,4 +1456,4 @@ class MenuBarProtProfRes(MainMenuBar):
 		return True 
 	#---
 #---
-#--------------------------------------------------------------- Menu Bars (END)
+#endregion --------------------------------------------------------- Menu Bars
