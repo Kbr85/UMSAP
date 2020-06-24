@@ -12,35 +12,23 @@
 """ This module creates the window for the LimProt module of the app """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region ------------------------------------------------------------- Imports
 import wx
 import pandas as pd
-## My modules
+
 import config.config      as config
 import gui.menu.menu      as menu
 import gui.gui_classes    as gclasses
 import gui.gui_methods    as gmethods
 import data.data_classes  as dclasses
 import data.data_methods  as dmethods
-#----
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinLimProt(gclasses.WinModule):
 	""" To create the gui for the Proteome Profiling module """
-
+	
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=None):
 		""" parent: parent of the widgets
 			style: style of the window
@@ -48,16 +36,22 @@ class WinLimProt(gclasses.WinModule):
 	 #--> Initial Setup
 		self.name = config.name['LimProt']
 		super().__init__(parent=parent, style=style, length=56)
+	 #---
 	 #--> Variables
 		self.CType = config.combobox['ControlType'][0] # Needed for self.CheckGuiResultControl
+	 #---
 	 #--> Menu
 		self.menubar = menu.MainMenuBarWithTools(self.name)
 		self.SetMenuBar(self.menubar)		
+	 #---
 	 #--> Widgets
 	  #--> Destroy unneeded widget from parent class
 		self.WidgetsDestroy(self.name)
+	  #---
 	  #--- TextCtrl
 		self.tcDeltaU = wx.TextCtrl(self.boxValues, value="", size=(180, 22))
+		self.tcDelta  = wx.TextCtrl(self.boxValues, value="", size=(180, 22))
+	  #---
 	  #--- StaticText
 		self.stDeltaU = wx.StaticText(self.boxValues, 
 			label=u'\N{GREEK CAPITAL LETTER THETA}'+ '-value', 
@@ -71,13 +65,14 @@ class WinLimProt(gclasses.WinModule):
 		self.styVal  = wx.StaticText(self.boxValues, 
 			label=u'\N{GREEK SMALL LETTER GAMMA}'+'-value', 
 			style=wx.ALIGN_RIGHT)
+	  #---
 	  #--- ComboBox
 		self.cbbVal = wx.ComboBox(self.boxValues, value='Equal alpha', 
 			choices=config.combobox['Bvalues'], style=wx.CB_READONLY)
 		self.cbyVal = wx.ComboBox(self.boxValues, value='0.8',  
 			choices=config.combobox['Yvalues'], style=wx.CB_READONLY)
-	  #--- Text Ctrl
-		self.tcDelta = wx.TextCtrl(self.boxValues, value="", size=(180, 22))				
+	  #---
+	 #---		
 	 #--> Sizers
 	  #--> Central static boxes
 	   #--> Files
@@ -104,6 +99,7 @@ class WinLimProt(gclasses.WinModule):
 			flag=wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxFilesWid.Add(self.tcOutName,        border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)			
+	   #---
 	   #--> Values
 		self.sizerboxValuesWid = wx.FlexGridSizer(5, 4, 1, 1)
 		self.sizerboxValues.Add(self.sizerboxValuesWid, border=2, 
@@ -146,6 +142,7 @@ class WinLimProt(gclasses.WinModule):
 			flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxValuesWid.Add(self.tcDelta,     border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+	   #---
 	   #--> Columns
 		self.sizerboxColumnsWid = wx.GridBagSizer(1, 1)
 		self.sizerboxColumns.Add(self.sizerboxColumnsWid, border=2, 
@@ -173,9 +170,13 @@ class WinLimProt(gclasses.WinModule):
 		self.sizerboxColumnsWid.Add(self.tcResults,      pos=(5,1), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerboxColumnsWid.Add(self.buttonResultsL, pos=(5,2), border=2, 
-			flag=wx.ALIGN_RIGHT|wx.ALL)			
+			flag=wx.ALIGN_RIGHT|wx.ALL)	
+	   #---
+	  #---		
 	  #--> Fit				
-		self.sizer.Fit(self)		
+		self.sizer.Fit(self)
+	  #---
+	 #---		
 	 #--> Tooltips
 		self.buttonOutName.SetToolTip(config.tooltip[self.name]['OutName'])
 		self.staVal.SetToolTip(config.tooltip[self.name]['aVal'])
@@ -185,9 +186,11 @@ class WinLimProt(gclasses.WinModule):
 		self.stDeltaU.SetToolTip(config.tooltip[self.name]['dVal'])
 		self.stSeqLength.SetToolTip(
 			config.tooltip[self.name]['SeqLength'] + config.msg['OptVal'])
+	 #---
 	 #--> Binding
 		for child in self.GetChildren():
 			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+	 #---
 	 #--> Default values
 		self.tcSeqNatFile.SetValue('NA')
 		self.tcOutputFF.SetValue('NA')
@@ -195,17 +198,17 @@ class WinLimProt(gclasses.WinModule):
 		self.tcScoreVal.SetValue('0')
 		self.tcSeqLength.SetValue('100')		
 		self.tcColExt.SetValue('NA')
+	 #---
+	
 
-		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!!
+	 #--> INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! ##########
+		import getpass
+		user = getpass.getuser()
 		if config.cOS == 'Darwin':
-			# self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt') 
-			# self.tcSeqRecFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
-			# self.tcSeqNatFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
-			# self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
-			self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt')
-			self.tcSeqRecFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
-			self.tcSeqNatFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
-			self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
+			self.tcDataFile.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt')
+			self.tcSeqRecFile.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA-PseudoNat.txt')
+			self.tcSeqNatFile.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/LIMPROT/Mod-LimProt-seqA.txt')
+			self.tcOutputFF.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
 		elif config.cOS == 'Windows':
 			from pathlib import Path
 			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/LIMPROT/Mod-LimProt-data-kbr.txt'))) 
@@ -222,13 +225,17 @@ class WinLimProt(gclasses.WinModule):
 		self.tcScore.SetLabel('42')     
 		self.tcColExt.SetLabel('0 1 2 3 4-10')
 		self.tcResults.SetLabel('69-71; 81-83, 78-80, 75-77, 72-74, NA; NA, NA, NA, 66-68, NA; 63-65, 105-107, 102-104, 99-101, NA; 93-95, 90-92, 87-89, 84-86, 60-62')  
-		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!!
+	 #--- INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! ##########
+	 
+	 
 	 #--> Show
 		self.Show()
+	 #---
 	#---
-
-	####---- Methods of the class
-	##-- Binding
+	#endregion ------------------------------------------------ Instance Setup
+	
+	# ------------------------------------------------------------- My Methods
+	#region ----------------------------------------------------- Bind Methods
 	def OnClearFilesDef(self):
 		""" Specific clear steps in File section for this module """
 		self.tcSeqNatFile.SetValue('NA')
@@ -255,7 +262,9 @@ class WinLimProt(gclasses.WinModule):
 		self.tcColExt.SetValue('NA')
 		return True
 	#---
+	#endregion -------------------------------------------------- Bind Methods
 
+	#region ----------------------------------------------------- Menu Methods
 	def OnPopUpMenu(self, event):
 		""" Show the pop up menu in the wx.ListCtrl. Binding is done in
 			the base class 
@@ -264,15 +273,15 @@ class WinLimProt(gclasses.WinModule):
 		return True
 	#---
 
-	##-- Menu (Other methods in gclasses.WinModule)
 	def OnSaveInputF(self):
 		""" Save the .uscr file with the data in the window """
 	 #--> Variables
 		k = True
 		dlg = gclasses.DlgSaveFile(config.extLong['Uscr'])
-	 #--> Get output file path
+	 #---
+	 #--> Get output file path and save
 		if dlg.ShowModal() == wx.ID_OK:
-	 #--> Temp dict with data
+	 	 #--> Temp dict with data
 			temp = {
 				          'Data file' :   self.tcDataFile.GetValue(),       
 				     'Sequence (rec)' : self.tcSeqRecFile.GetValue(),     
@@ -295,19 +304,24 @@ class WinLimProt(gclasses.WinModule):
 				            'Results' :    self.tcResults.GetValue(),
 				             'Module' : config.mod[config.name['LimProt']]	
 			}
-	 #--> Save
+		 #---
+	 	 #--> Save
 			if dmethods.FFsWriteDict2Uscr(dlg.GetPath(), iDict=temp):
 				k = True
 			else:
 				k = False
+		 #---
 		else:
 			k = False
+	 #---
 	 #--> Destroy dlg & Return
 		dlg.Destroy()
 		return k
+	 #---
 	#---
+	#endregion -------------------------------------------------- Menu Methods
 
-	###--- Run
+	#region ------------------------------------------------------ Run Methods
 	def CheckInput(self):
 		""" Check the user provided input """
 	 #--> Files and Folders
@@ -321,6 +335,7 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Sequence (rec)
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Sequence (rec)', 1)
@@ -331,6 +346,7 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False		
+	  #---
 	  #--> Sequence (nat)
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Sequence (nat)', 1)
@@ -342,6 +358,7 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False				
+	  #---
 	  #--> Output folder
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Output folder', 1)
@@ -352,6 +369,7 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False		
+	  #---
 	  #--> Output name
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Output name', 1)
@@ -362,6 +380,8 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False	
+	  #---
+	 #---
 	 #--> Values
 	  #--> Target protein
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -371,7 +391,8 @@ class WinLimProt(gclasses.WinModule):
 			config.dictCheckFatalErrorMsg[self.name]['Targetprotein']):
 			pass
 		else:
-			return False	
+			return False
+	  #---	
 	  #--> Score value
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Score value', 1)
@@ -381,6 +402,7 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Sequence length
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Sequence length', 1)
@@ -393,6 +415,7 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False							
+	  #---
 	  #--> Delta user
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: delta user value', 1)
@@ -403,6 +426,7 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False	
+	  #---
 	  #--> Delta max
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: delta max value', 1)
@@ -412,6 +436,7 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Data normalization
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Data normalization', 1)
@@ -422,12 +447,14 @@ class WinLimProt(gclasses.WinModule):
 			cbalO = cbal
 		self.d['Datanorm'] = cbal
 		self.do['Datanorm'] = cbalO
+	  #---
 	  #--> alpha value
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: alpha value', 1)
 		cbal = self.cbaVal.GetValue()
 		self.d ['aVal'] = cbal
 		self.do['aVal'] = float(cbal)
+	  #---
 	  #--> beta value
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: beta value', 1)
@@ -437,12 +464,15 @@ class WinLimProt(gclasses.WinModule):
 			self.do['bVal'] = float(cbbl)							
 		except Exception:
 			self.do['bVal'] = self.do['aVal']
+	  #---
 	  #--> y value
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: gamma value', 1)
 		cbyl = self.cbyVal.GetValue()
 		self.d['yVal'] = cbyl
-		self.do['yVal'] = float(cbyl)							
+		self.do['yVal'] = float(cbyl)	
+	  #---
+	 #---						
 	 #--> Columns
 	  #--> Sequences
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -456,7 +486,8 @@ class WinLimProt(gclasses.WinModule):
 			NA   = config.dictElemSeqCol[self.name]['NA']):
 			pass
 		else:
-			return False		
+			return False
+	  #---		
 	  #--> Detected protein
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Detected proteins', 1)
@@ -469,7 +500,8 @@ class WinLimProt(gclasses.WinModule):
 			NA   = config.dictElemDetectProtCol[self.name]['NA']):
 			pass
 		else:
-			return False		
+			return False
+	  #---		
 	  #--> Score
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Score', 1)
@@ -483,6 +515,7 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Columns to extract
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Columns to extract', 1)		
@@ -500,7 +533,7 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False
-		
+	  #---
 	  #--> Results 
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Results', 1)
@@ -522,8 +555,12 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	   #---
 	   #--> Final setting
 		self.do['Control'] = self.do['Control'][0]
+	   #---
+	  #---
+	 #---
 	 #--> Repeating element
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Unique column numbers', 1)
@@ -534,14 +571,17 @@ class WinLimProt(gclasses.WinModule):
 			config.dictCheckFatalErrorMsg[self.name]['Unique'], NA=True):
 			pass
 		else:
-			return False	
+			return False
+	 #---	
 	 #--> Small variable needed further below
 		if self.do['ColExtract'] == None:
 			self.lcExt = self.l
 		else:
 			self.lcExt = self.l + self.do['ColExtract']	
+	 #---
 	 #--> Return				
 		return True				
+	 #---
 	#---
 
 	def ReadInputFiles(self):
@@ -554,6 +594,7 @@ class WinLimProt(gclasses.WinModule):
 			self.dataFileObj = dclasses.DataObjDataFile(self.do['Datafile'])
 		except Exception:
 			return False
+	  #---
 	  #--> Check column numbers
 		if self.CheckGuiColNumbersInDataFile(self.lcExt, 
 			self.dataFileObj.nCols,
@@ -562,6 +603,8 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
+	 #---
 	 #--> Seq rec file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Reading input files: Recombinant sequence', 1)
@@ -570,6 +613,7 @@ class WinLimProt(gclasses.WinModule):
 				seqP=self.do['Seq_rec'])
 		except Exception:
 			return False
+	 #---
 	 #--> Seq nat file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Reading input files: Native sequence', 1)
@@ -581,19 +625,23 @@ class WinLimProt(gclasses.WinModule):
 				return False
 		else:
 			pass
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def SetVariable(self):
 		""" Set extra needed variables """
 	 #--> Small variables needed in further steps or limprotRes
 		self.lNoNa = [x for x in self.l if x != None]
+	 #---
 	 #--> data frame with needed columns from data file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Data frame', 1)
 	  #--> Dict with column type to set the data frame
 		self.DtypeDictBuilder()
+	  #---
 	  #--> Get data frame
 		out, self.dataV = dmethods.DFSelFilterNSet(self.dataFileObj.dataFrame,
 			self.lNoNa, 
@@ -608,21 +656,27 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
+	 #---
 	 #--> dataV dimensions
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Data frame dimension', 1)
 		self.tentry, self.tcol = self.dataV.shape
+	 #---
 	 #--> Sequences
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Recombinant sequence', 1)
 	  #--> Rec
 		self.recSeqSeq = self.recSeqObj.seq
 		self.do['RecSeq'] = self.recSeqSeq
+	  #---
 	  #--> Nat
 		if self.do['Seq_nat'] == None:
 			self.do['NatSeq'] = None
 		else:
 			self.do['NatSeq'] = self.natSeqSeq = self.natSeqObj.seq
+	  #---
+	 #---
 	 #--> Seq Length
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Sequence lengths', 1)
@@ -631,6 +685,7 @@ class WinLimProt(gclasses.WinModule):
 		else:
 			self.do['protSeqLength'] = (self.recSeqObj.seqLength, 
 			self.natSeqObj.seqLength)
+	 #---
 	 #--> ProtLoc & mist
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Protein location and mistmatch', 1)
@@ -644,32 +699,40 @@ class WinLimProt(gclasses.WinModule):
 				pass
 			else:
 				return False
+	 #---
 	 #--> pRes
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: pRes', 1)
 		self.do['pRes'] = [1, *self.do['ProtLoc'], self.do['protSeqLength'][0]]
+	 #---
 	 #--> Lanes & Bands
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Lanes and bands in the gel', 1)		
 		self.do['Bands'] = len(self.do['Results'])
 		self.do['Lanes'] = len(self.do['Results'][0])
+	 #---
 	 #--> Header for the data frame in the output
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Output header', 1)
 		i = 0
 		out, self.colOut = dmethods.ListColHeaderLimProtFile(self.do['Bands'], 
 			self.do['Lanes'])
+	 #---
 	 #--> List of Protein for limprotR
 		a = self.dataFileObj.dataFrame.iloc[:,self.do['DetectProtCol']]
 		self.do['ListOfProt'] = a.dropna().unique().tolist()
 		self.do['ListOfProt'].sort()	 
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DtypeDictBuilder(self):
 		""" Creates the dtype dict to convert the data type in the dataFrame """
 	 #--> Column names of the data frame
 		self.header = self.dataFileObj.header
+	 #---
 	 #--> Create dict
 		self.dtypeDict = {
 			self.header[self.do['SeqCol']] : 'object',
@@ -680,14 +743,18 @@ class WinLimProt(gclasses.WinModule):
 			self.dtypeDict[self.header[a]] = 'float'
 	  #--> Flat Results list
 		out, res = dmethods.ListFlatNLevels(self.do['Results'], 2)
+	  #---
 	  #--> Add results columns to dict
 		for a in res:
 			if a != None:
 				self.dtypeDict[self.header[a]] = 'float'
 			else:
 				pass
+	  #---
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---	
 
 	def RunAnalysis(self):
@@ -704,6 +771,7 @@ class WinLimProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	 #---
 	 #--> Create data frame with results
 	  #--> Get rows
 		rows = []
@@ -717,12 +785,16 @@ class WinLimProt(gclasses.WinModule):
 			else:
 				return False
 			i += 1
+	  #---
 	  #--> Create data frame
 		self.dataO = pd.DataFrame(rows, columns=self.colOut)
 		self.dataO.sort_values(by=config.limprot['SortBy'], inplace=True)
 		self.dataO.reset_index(drop=True, inplace=True)	
+	  #---
+	 #---
 	 #--> Return	
 		return True
+	 #---
 	#---
 
 	def RunAnalysisFunction(self, row):
@@ -753,6 +825,7 @@ class WinLimProt(gclasses.WinModule):
 			msg = config.dictCheckFatalErrorMsg[self.name]['NoPeptInRecSeq']
 			gclasses.DlgFatalErrorMsg(msg, seq=tseq)
 			return [False, False]
+	 #---
 	 #--> Control
 		control = []
 		s = 3
@@ -760,6 +833,7 @@ class WinLimProt(gclasses.WinModule):
 			control.append(row[s])
 			s += 1
 		rowO.append(control)
+	 #---
 	 #--> Exp
 		for z in self.do['Results']: # Loop Bands
 			for j in z: # Loop Lanes
@@ -783,11 +857,14 @@ class WinLimProt(gclasses.WinModule):
 					rowO.append(delta)
 					rowO.append(tost)
 					rowO.append(exp)
+	 #---
 	 #--> Sequence and Score
 		rowO.append(tseq)
 		rowO.append(tscore)
+	 #---
 	 #--> Return
 		return [True, rowO]
+	 #---
 	#---
 
 	def WriteOF(self):
@@ -796,6 +873,7 @@ class WinLimProt(gclasses.WinModule):
 			'Writing output files', 1)
 	 #--> Create output folder
 		self.do['Outputfolder'].mkdir()
+	 #---
 	 #--> Intermediate files
 		msg = 'Writing output files: Intermediate files' 
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -808,6 +886,7 @@ class WinLimProt(gclasses.WinModule):
 		dmethods.FFsWriteCSV(file, self.dataN)
 		file = folderD / 'data-02-Results.txt'
 		dmethods.FFsWriteCSV(file, self.dataO)		
+	 #---
 	 #--> limprot file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Writing output files: limprot file', 1)
@@ -821,8 +900,10 @@ class WinLimProt(gclasses.WinModule):
 			'R' : dmethods.DictTuplesKey2StringKey(self.dataO.to_dict())
 			}
 		dmethods.FFsWriteJSON(self.limprotFile, data)
+	 #---
 	 #--> Create the limprot object
 		self.limprotObj = dclasses.DataObjLimProtFile(self.limprotFile)
+	 #---
 	 #--> uscr file
 		self.uscrFile = self.limprotFile.with_suffix(config.extShort['Uscr'][0])
 		msg = 'Writing output files: uscr files'
@@ -834,8 +915,10 @@ class WinLimProt(gclasses.WinModule):
 			hDict=config.dictUserInput2UscrFile[self.name]
 		)
 		#--# Improve Something unexpected may go wrong saving the uscr file (UP)
+	 #---
+	 #--> Files that depend on FP being not empty
 		if self.limprotObj.checkFP:
-	 #--> short data
+	 	 #--> short data
 			if self.do['ColExtract'] is None:
 				pass
 			else:
@@ -845,7 +928,8 @@ class WinLimProt(gclasses.WinModule):
 				self.dataOutFolder = self.do['Outputfolder'] / 'Data'
 				self.dataOutFolder.mkdir()
 				self.limprotObj.ToSDataFile(self.dataOutFolder)
-	 #--> sequence files
+	 	 #---
+		 #--> sequence files
 			if self.do['Sequencelength'] != None:
 				msg = 'Writing output files: sequence file'
 				wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, 
@@ -853,6 +937,7 @@ class WinLimProt(gclasses.WinModule):
 				self.seqFile = self.limprotFile.with_suffix('.seq.pdf')
 				self.limprotObj.LimProt2SeqPDF(self.seqFile,
 					self.do['Sequencelength'])
+		 #---
 			else:
 				pass
 		else:
@@ -861,12 +946,15 @@ class WinLimProt(gclasses.WinModule):
 				nothing='E',
 			)
 			return False
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def ShowRes(self):
 		""" Show graphical output """
+
 		gmethods.UpdateGaugeText(self.gauge, self.stProgress,
 			'Generating graphical output', 1)
 		if self.limprotObj.checkFP:
@@ -879,6 +967,7 @@ class WinLimProt(gclasses.WinModule):
 			pass		
 		return True
 	#---
+	#endregion --------------------------------------------------- Run Methods
 #---
 
 

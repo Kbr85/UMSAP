@@ -12,32 +12,22 @@
 """ This module display the information in a histo file """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-# --- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import matplotlib.patches as mpatches
 import numpy as np
-## My modules
+
 import config.config as config
 import gui.menu.menu as menu
 import gui.gui_classes as gclasses
 import gui.gui_methods as gmethods
 import data.data_classes as dclasses
-#---
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinHistoRes(gclasses.WinGraph):
     """ Creates the window to show the results in a .hist file """
 
+	#region --------------------------------------------------- Instance Setup
     def __init__(self, file):
         """ file: path to the .hist file (string or Path)"""
      #--> Initial Setup
@@ -46,6 +36,7 @@ class WinHistoRes(gclasses.WinGraph):
             super().__init__(file)
         except Exception:
             raise ValueError("")
+	 #---
      #--> Variables
         self.nExpFP = self.fileObj.nExpFP
         self.barWidth = self.fileObj.barWidth
@@ -55,17 +46,22 @@ class WinHistoRes(gclasses.WinGraph):
         #---
         self.seq = 0  # 0 Rec 2 Nat
         self.uni = 0  # 0 All 1 Unique
+	 #---
      #--> Menu
         self.menubar = menu.MainMenuBarWithTools(self.name, self.seq, self.uni)
         self.SetMenuBar(self.menubar)
+	 #---
      #--> Draw
         self.DrawConfig()
+	 #---
      #--> Show
         self.Show()
+	 #---
     #---
+	#endregion ------------------------------------------------ Instance Setup
 
-    ####---- Methods of the class
-    ##-- Binding
+    # ------------------------------------------------------------- My Methods
+    #region -------------------------------------------------- Binding Methods
     def WinPos(self):
         """ Set the position of a new window depending on the number of same
 		    windows already open. 
@@ -76,12 +72,16 @@ class WinHistoRes(gclasses.WinGraph):
         yo = config.size["Screen"][1] - yw + config.size["TaskBarHeight"]
         x = xo + config.win["HistoResNum"] * config.win["DeltaNewWin"]
         y = yo - config.win["HistoResNum"] * config.win["DeltaNewWin"]
+	 #---
      #--> Position
         self.SetPosition(pt=(x, y))
+	 #---
      #--> Number of already created windows
         config.win["HistoResNum"] = config.win["HistoResNum"] + 1
+	 #---
      #--> Return
         return True
+	 #---
     #---
 
     def OnClick(self, event):
@@ -92,8 +92,9 @@ class WinHistoRes(gclasses.WinGraph):
             pass
         return True
     #---
-
-    ##-- Menu
+	#endregion ----------------------------------------------- Binding Methods
+    
+	#region ----------------------------------------------------- Menu Methods
     def OnReset(self):
         """ Reset the window """
         self.uni = 0
@@ -140,8 +141,9 @@ class WinHistoRes(gclasses.WinGraph):
         self.DrawConfig()
         return True
     #---
+	#endregion -------------------------------------------------- Menu Methods
 
-    ##-- Plotting
+    #region ------------------------------------------------- Plotting Methods
     def DrawConfig(self):
         """ Configure the plot """
      #--> Variables
@@ -171,17 +173,21 @@ class WinHistoRes(gclasses.WinGraph):
         self.header = self.header[1:]
         #-->
         self.x = range(1, self.nWin + 1, 1)
+	 #---
      #--> Draw & Return
         self.Draw()
         return True
+	 #---
     #---
 
     def Draw(self):
         """ Draw into the plot. """
      #--> Clear plot
         self.ClearPlot()
+	 #---
      #--> Set Title
         self.axes.set_title(self.title)
+	 #---
      #--> Plot bars
         c = 0
         for k in self.plotDf:
@@ -197,6 +203,7 @@ class WinHistoRes(gclasses.WinGraph):
                     color=color,
                     edgecolor=config.colors[self.name]["EdgeC"],
                 )
+	  #---
       #--> Experimnets
             elif k != "Windows":
                 ci = (c + 1) % self.Ncolor
@@ -213,6 +220,8 @@ class WinHistoRes(gclasses.WinGraph):
                 c += 1
             else:
                 pass
+	  #---
+	 #---
      #--> Legend
         self.legendlist = []
         for i in range(1, self.nExpFP, 1):
@@ -227,11 +236,14 @@ class WinHistoRes(gclasses.WinGraph):
             handles=self.legendlist, loc="upper left", bbox_to_anchor=(1, 1)
         )
         self.leg.get_frame().set_edgecolor("k")
+	 #---
      #--> Update axis & Draw
         self.SetAxis()
         self.canvas.draw()
+	 #---
      #--> Return
         return True
+	 #---
     #---
 
     def SetAxis(self):
@@ -290,5 +302,6 @@ class WinHistoRes(gclasses.WinGraph):
             self.statusbar.SetStatusText("")
         return True
     #---
+	#endregion ---------------------------------------------- Plotting Methods
 #---
 

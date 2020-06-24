@@ -232,39 +232,48 @@ class MenuFilterMainMenu(wx.Menu):
 class ToolMenuTypeResults(wx.Menu):
 	""" Tool menu for the Type Results window """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self):
 		""" """
 		super().__init__()
 	 #--> Menu items
 		self.Append(501, 'Copy\tCtrl+C')
+	 #---
 	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnLBoxCopy, id=501)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def OnLBoxCopy(self, event):
 		""" Copy the colum numbers of selected rows to the clipboard """
 		win = self.GetWindow()
 		win.OnLBoxCopy()
 		return True
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class ToolMenuCorrAMod(wx.Menu):
 	""" Creates the tools menu for the correlation analysis window """
 	
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self):
 		""" """
 		super().__init__()
-		####---- Menu items
+	 #--> Menu items
 		self.Append(502, 'Delete Selected')
 		self.Append(501, 'Clear List')
-		####---- Bind
+	 #---
+	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnClearL,      id=501)
 		self.Bind(wx.EVT_MENU, self.OnDelSel,      id=502)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def OnClearL(self, event):
 		""" Clear all """
 		win = self.GetWindow()
@@ -278,28 +287,34 @@ class ToolMenuCorrAMod(wx.Menu):
 		win.OnDelSel()
 		return True
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class ToolMenuCorrARes(wx.Menu):
 	""" Creates the pop up menu in the correlation results window """
 	
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self):
 		""" """
 	 #--> Init
 		super().__init__()
+	 #---
 	 #--> Menu items
 		self.Append(502, 'Export Data to:')
 		for i in config.corr['MenuID'].keys():
 			self.Append(int(i), config.corr['MenuID'][i])		
 		self.AppendSeparator()
 		self.Append(501, 'Save Plot Image')
-	 #---> Bind
+	 #---
+	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=501)
 		for i in config.corr['MenuID'].keys():
 			self.Bind(wx.EVT_MENU, self.OnExport, id=int(i))
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def OnSavePlot(self, event):
 		""" Save image of the plot """
 		win = self.GetWindow()
@@ -316,19 +331,20 @@ class ToolMenuCorrARes(wx.Menu):
 			return True
 		else:
 			return True
-	#---		
+	#---
+	#endregion ---------------------------------------------------- My Methods		
 #---
 
 class ToolMenuProtProfResT(wx.Menu):
 	""" Tools menu for ProtProfResT """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, allL, grayC):
 		""" allL  : Draw all protein lines
 			grayC : Draw lines in gray or with different colors
 		"""
 		super().__init__()
-
-		####---- Menu items
+	 #--> Menu items
 		self.Append(703, 'Show All',   kind=wx.ITEM_CHECK)
 		self.AppendSeparator()
 		self.Append(704, 'Same Color', kind=wx.ITEM_CHECK)
@@ -336,16 +352,20 @@ class ToolMenuProtProfResT(wx.Menu):
 		self.Append(702, 'Save Plot Image')
 		self.AppendSeparator()
 		self.Append(701, 'Reset View')
-		####---- Current
+	 #---
+	 #--> Current
 		self.CurrentState(allL, grayC)
-		####---- Bind
+	 #---
+	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnReset,    id=701)
 		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=702)
 		self.Bind(wx.EVT_MENU, self.OnAll,      id=703)
 		self.Bind(wx.EVT_MENU, self.OnColor,    id=704)
+	 #---
 	#---
-
-	####---- Methods of the class
+	#endregion ------------------------------------------------ Instance Setup
+	
+	#region ------------------------------------------------------- My Methods
 	def CurrentState(self, allL, grayC):
 		""" Check the menu items according to the current state of the window
 			---
@@ -392,11 +412,13 @@ class ToolMenuProtProfResT(wx.Menu):
 		else:
 			return False
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class ToolMenuProtProfResFilter(MenuFilterMainMenu):
 	""" Tools menu to show filtered results in protprofRes """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self):
 		""" """
 		super().__init__()
@@ -406,11 +428,13 @@ class ToolMenuProtProfResFilter(MenuFilterMainMenu):
 		self.SetLabel(852, 'Reset Filters')
 	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 #---
 
 class ToolMenuProtProfResV(wx.Menu):
 	""" Tools menu for ProtProfResV """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, nC, nt, lC, lt, n, tp):
 		""" nC : number of conditions
 			nt : number of relevant points per conditions 
@@ -420,19 +444,20 @@ class ToolMenuProtProfResV(wx.Menu):
 			tp : current selected time point
 		"""
 		super().__init__()
-
-	  ####---- Menu items
+	 #--> Menu items
 	  #--> Condition menu
 		self.CondMenu = wx.Menu()
 		j = 505
 		for i in lC:
 			self.CondMenu.Append(j, str(i), kind=wx.ITEM_RADIO)
 			j += 1
+	  #---
 	  #--> Relevant points menu
 		self.TPMenu = wx.Menu()
 		for i in lt:
 			self.TPMenu.Append(j, str(i), kind=wx.ITEM_RADIO) 
 			j += 1
+	  #---
 	  #--> All together
 		self.AppendSubMenu(self.CondMenu, 'Conditions')
 		self.AppendSubMenu(self.TPMenu, 'Relevant Points')
@@ -444,7 +469,9 @@ class ToolMenuProtProfResV(wx.Menu):
 		self.Append(502, 'Save Plot Image')
 		self.AppendSeparator()
 		self.Append(501, 'Reset View')
-	  ####---- Bind
+	  #---
+	 #---
+	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnReset,        id=501)
 		self.Bind(wx.EVT_MENU, self.OnSavePlot,     id=502)
 		self.Bind(wx.EVT_MENU, self.OnZScore,       id=503)
@@ -456,11 +483,14 @@ class ToolMenuProtProfResV(wx.Menu):
 		for i in range(0, nt, 1):
 			self.TPMenu.Bind(wx.EVT_MENU, self.OnTP, id=j)
 			j += 1 
-	  ####---- Current state
+	 #---
+	 #--> Current state
 		self.CurrentState(nC, n, tp)		
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def OnFilter_Apply(self, event):
 		""" Apply filter to this condition - time point """
 		win = self.GetWindow()
@@ -516,11 +546,13 @@ class ToolMenuProtProfResV(wx.Menu):
 		self.TPMenu.Check(505+nC+tp, True)
 		return True
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class ToolMenuCutPropRes(wx.Menu):
 	""" To show the pop up menu in CutPropRes """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, nExp, seq, norm, exp, comp):
 		""" nExp: Total number of experiments
 			seq : 0 Rec Seq, 1 Nat Seq
@@ -529,7 +561,7 @@ class ToolMenuCutPropRes(wx.Menu):
 			comp: experiment to compare to
 		"""
 		super().__init__()	
-	  ####---- Menu items
+	 #--> Menu items
 	  #--> Experiment menu
 		self.ExpMenu = wx.Menu()
 		self.ExpMenu.Append(507, 'FP List', kind=wx.ITEM_RADIO)
@@ -537,6 +569,7 @@ class ToolMenuCutPropRes(wx.Menu):
 			self.Mid = 507 + i
 			name = 'Experiment ' + str(i)
 			self.ExpMenu.Append(self.Mid, name, kind=wx.ITEM_RADIO)
+	  #---
 	  #--> Comparison menu
 		self.CompMenu = wx.Menu()
 		tempID = self.Mid + 1
@@ -547,6 +580,7 @@ class ToolMenuCutPropRes(wx.Menu):
 			tempID = tempID + 1 
 			name = 'Experiment ' + str(i)
 			self.CompMenu.Append(tempID, name, kind=wx.ITEM_RADIO)
+	  #---
 	  #--> All together
 		self.AppendSubMenu(self.ExpMenu, 'Experiments')
 		self.AppendSubMenu(self.CompMenu, 'Compare to')
@@ -560,9 +594,12 @@ class ToolMenuCutPropRes(wx.Menu):
 		self.Append(506, 'Save Plot Image')
 		self.AppendSeparator()
 		self.Append(501, 'Reset View')
-	  ####---- Check defaults
+	  #---
+	  #--> Check defaults
 		self.CurrentState(nExp, seq, norm, exp, comp)
-	  ####---- Bind
+	  #---
+	 #---
+	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnReset,    id=501)
 		self.Bind(wx.EVT_MENU, self.OnSeq,      id=502)
 		self.Bind(wx.EVT_MENU, self.OnSeq,      id=503)
@@ -576,9 +613,11 @@ class ToolMenuCutPropRes(wx.Menu):
 		for i in range(1, nExp + 3, 1):
 			tMidd = self.Mid + i
 			self.CompMenu.Bind(wx.EVT_MENU, self.OnComp, id=tMidd)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def CurrentState(self, nExp, seq, norm, exp, comp):
 		""" Check item based on the current window state
 			---
@@ -650,18 +689,19 @@ class ToolMenuCutPropRes(wx.Menu):
 		win.OnComp(event.GetId(), self.Mid)
 		return True
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class ToolMenuHistoRes(wx.Menu):
 	""" Add Tools menu to a HistoR window"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, seq, uni):
 		""" seq: 0 Rec Seq, 1 Nat Seq
 			uni: 0 All Cuts, 1 Unique Cuts 
 		"""
 		super().__init__()
-
-	  ####---- Menu items
+	 #--> Menu items
 		self.Append(502, 'Native Sequence',      kind=wx.ITEM_RADIO)
 		self.Append(503, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
 		self.AppendSeparator()
@@ -671,18 +711,22 @@ class ToolMenuHistoRes(wx.Menu):
 		self.Append(506, 'Save Plot Image')
 		self.AppendSeparator()
 		self.Append(501, 'Reset View')
-	  ####---- Check defaults
+	 #---
+	 #--> Check defaults
 		self.CurrentState(seq, uni)
-	  ####---- Bind
+	 #---
+	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnReset,    id=501)
 		self.Bind(wx.EVT_MENU, self.OnSeq,      id=502)
 		self.Bind(wx.EVT_MENU, self.OnSeq,      id=503)
 		self.Bind(wx.EVT_MENU, self.OnUni,      id=504)
 		self.Bind(wx.EVT_MENU, self.OnUni,      id=505)
 		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=506)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def CurrentState(self, seq, uni):
 		""" Check the menu items based on the current window state
 			---
@@ -728,12 +772,14 @@ class ToolMenuHistoRes(wx.Menu):
 		win = self.GetWindow()
 		win.OnUni(event.GetId())
 		return True
-	#---		
+	#---
+	#endregion ---------------------------------------------------- My Methods		
 #---
 
 class ToolMenuAAdistRes(wx.Menu):
 	""" Pop Up menu in AAdistR """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, exp, pos, nExp, nPosName):
 		""" exp     : current experiment
 			pos     : current position
@@ -741,8 +787,7 @@ class ToolMenuAAdistRes(wx.Menu):
 			nPosName: list with the positions label 
 		"""
 		super().__init__()
-
-	  ####---- Menu items
+	 #--> Menu items
 	  #--> Experiment menu
 		self.ExpMenu = wx.Menu()
 		self.ExpMenu.Append(503, 'FP List', kind=wx.ITEM_RADIO)
@@ -750,23 +795,28 @@ class ToolMenuAAdistRes(wx.Menu):
 			self.Mid = 503 + i
 			name = 'Experiment ' + str(i)
 			self.ExpMenu.Append(self.Mid, name, kind=wx.ITEM_RADIO)
-	  #---> Positions menu
+	  #---
+	  #--> Positions menu
 		self.CompMenu = wx.Menu()
 		tempID = self.Mid + 1
 		self.CompMenu.Append(tempID, 'None', kind=wx.ITEM_RADIO)
 		for i in nPosName:
 			tempID = tempID + 1
 			self.CompMenu.Append(tempID, str(i), kind=wx.ITEM_RADIO)			
-	  #---- All together
+	  #---
+	  #--> All together
 		self.AppendSubMenu(self.ExpMenu, 'Experiments')
 		self.AppendSubMenu(self.CompMenu, 'Compare Positions')
 		self.AppendSeparator()
 		self.Append(502, 'Save Plot Image')
 		self.AppendSeparator()
 		self.Append(501, 'Reset View')
-	  ####---- Check defaults
+	  #---
+	 #---
+	 #--> Check defaults
 		self.CurrentState(exp, pos)
-	  ####---- Bind
+	 #---
+	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnReset, id=501)
 		self.Bind(wx.EVT_MENU, self.OnSavePlotImage, id=502)
 		self.ExpMenu.Bind(wx.EVT_MENU, self.OnExp, id=503)
@@ -778,9 +828,11 @@ class ToolMenuAAdistRes(wx.Menu):
 		for i in range(1, len(nPosName) + 1, 1):
 			TtempID = tempID + i
 			self.CompMenu.Bind(wx.EVT_MENU, self.OnPos, id=TtempID)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 		
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def OnSavePlotImage(self, event):
 		""" Save image of the plot """
 		win = self.GetWindow()
@@ -822,17 +874,18 @@ class ToolMenuAAdistRes(wx.Menu):
 		win = self.GetWindow()
 		win.OnPos(event.GetId(), self.Mid)
 		return True
-	#---	
+	#---
+	#endregion ---------------------------------------------------- My Methods	
 #---
 
 class ToolMenuLimProtRes(wx.Menu):
 	""" Tool menu in LimprotRes """
-
+	
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, selM):
 		""" selM: selection mode. True Select Lane, False Select Band """
 		super().__init__()
-
-	  ####---- Menu items
+	 #--> Menu items
 		self.Append(505, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
 		self.AppendSeparator()
 		self.Append(504, 'Export Filtered Peptides')
@@ -841,20 +894,24 @@ class ToolMenuLimProtRes(wx.Menu):
 		self.Append(502, 'Save Gel Image')
 		self.AppendSeparator()
 		self.Append(501, 'Reset View')
-	  ####---- Bind
+	 #---
+	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnReset,    id=501)
 		self.Bind(wx.EVT_MENU, self.OnSaveGel,  id=502)
 		self.Bind(wx.EVT_MENU, self.OnSaveFrag, id=503)
 		self.Bind(wx.EVT_MENU, self.OnExportFP, id=504)
 		self.Bind(wx.EVT_MENU, self.OnSelM,     id=505)
-	  ####---- Current Status
+	 #---
+	 #--> Current Status
 		if selM:
 			self.Check(505, True)
 		else:
 			self.Check(505, False)
+	 #---
 	#---
-		
-	####---- Methods of the class
+	#endregion ------------------------------------------------ Instance Setup
+ 	
+	#region ------------------------------------------------------- My Methods
 	def OnExportFP(self, event):
 		""" Export the list of filtered peptides """
 		win = self.GetWindow()
@@ -889,30 +946,34 @@ class ToolMenuLimProtRes(wx.Menu):
 		win.OnResetView()
 		return True
 	#---
+	#endregion ---------------------------------------------------- My Methods	
 #---
 
 class ToolMenuTarProtRes(wx.Menu):
 	""" Handles the pop up menu in tarprotR """	
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self):
 		""" """
 		super().__init__()
-
-	  ####---- Menu items
+	 #--> Menu items
 		self.Append(504, 'Export Filtered Peptides')
 		self.AppendSeparator()
 		self.Append(503, 'Save Fragments Image')
 		self.Append(502, 'Save Plot Image')
 		self.AppendSeparator()
 		self.Append(501, 'Reset View')
-	  ####---- Bind
+	 #---
+	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnReset,    id=501)
 		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=502)
 		self.Bind(wx.EVT_MENU, self.OnSaveFrag, id=503)
 		self.Bind(wx.EVT_MENU, self.OnExportFP, id=504)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 		
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def OnSavePlot(self, event):
 		""" Save image of the plot """
 		win = self.GetWindow()
@@ -940,23 +1001,27 @@ class ToolMenuTarProtRes(wx.Menu):
 		win.OnExportFP()
 		return True
 	#---
+	#endregion ---------------------------------------------------- My Methods	
 #---
 
 class ToolMenuMergeAA(wx.Menu):
 	""" Tools menu in mergeAA """	
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self):
 		super().__init__()
-
-	  ####---- Menu items
+	 #--> Menu items
 		self.Append(501, 'Delete selected paths')
 		self.Append(502, 'Delete all paths')
-	  ####---- Bind
+	 #---
+	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnDelSel, id=501)
 		self.Bind(wx.EVT_MENU, self.OnDelAll, id=502)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def OnDelAll(self, event):
 		""" Del all items in the list """
 		win = self.GetWindow()
@@ -970,15 +1035,17 @@ class ToolMenuMergeAA(wx.Menu):
 		win.OnDelSel()
 		return True
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class ToolMenuTarProtMod(wx.Menu):
 	""" Popup menu for the wx.ListCtrl in the TarProt module """
 	
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self):
 		""" """
 		super().__init__()
-	  ####---- Menu items
+	 #--> Menu items
 		self.Append(100, 'Add selection to:')
 		self.Append(101, 'Sequence')
 		self.Append(102, 'Detected proteins')
@@ -988,14 +1055,17 @@ class ToolMenuTarProtMod(wx.Menu):
 		self.Append(105, 'Clear list')
 		self.AppendSeparator()
 		self.Append(106, 'Save input file')
-	  ####---- Bind
+	 #---
+	 #--> Bind
 		for i in range(101, 105, 1):
 			self.Bind(wx.EVT_MENU, self.OnButton, id=i)
 		self.Bind(wx.EVT_MENU, self.OnClear,      id=105)
 		self.Bind(wx.EVT_MENU, self.OnSaveInputF, id=106)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def OnButton(self, event):
 		""" Get the id of the menu item triggering the add to event and send it
 			to main method 
@@ -1021,19 +1091,21 @@ class ToolMenuTarProtMod(wx.Menu):
 		else:
 			return False
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class ToolMenuProtProfMod(ToolMenuTarProtMod):
 	""" Tool menu for the ProtProf """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self):
 		""" """
 		super().__init__()
-	  
-	  ####---- Destroy old items
+	 #--> Destroy old items
 		for i in self.GetMenuItems():
 			self.DestroyItem(i)
-	  ####---- Creates the one needed 
+	 #---
+	 #--> Creates the one needed 
 		self.Append(100, 'Add selection to:')
 		self.Append(101, 'Detected proteins')
 		self.Append(102, 'Gene names')
@@ -1044,12 +1116,15 @@ class ToolMenuProtProfMod(ToolMenuTarProtMod):
 		self.Append(106, 'Clear list')
 		self.AppendSeparator()
 		self.Append(107, 'Save input file')
-	  ####---- Bind
+	 #-->
+	 #--> Bind
 		for i in range(101, 106, 1):
 			self.Bind(wx.EVT_MENU, self.OnButton, id=i)
 		self.Bind(wx.EVT_MENU, self.OnClear,      id=106)
 		self.Bind(wx.EVT_MENU, self.OnSaveInputF, id=107)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 #---
 
 class ToolMenuLimProtMod(ToolMenuTarProtMod):
@@ -1070,10 +1145,11 @@ class MainMenuBar(wx.MenuBar):
 		submenu.
 	"""
 	
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self):
 		""" """
 		super().__init__()
-	  ####---- Menu items
+	 #--> Menu items
 	  #--> Modules
 		Modmenu = wx.Menu()
 		Modmenu.Append(102, 'Limited Proteolysis\tALT+Ctrl+L')
@@ -1081,6 +1157,7 @@ class MainMenuBar(wx.MenuBar):
 		Modmenu.Append(101, 'Targeted Proteolysis\tALT+Ctrl+T')
 		Modmenu.AppendSeparator()
 		Modmenu.Append(103, 'Utilities\tALT+Ctrl+U')
+	  #---
 	  #--> Utilities
 		LimProtMenu = wx.Menu()
 		LimProtMenu.Append(214, 'Sequence Highlight')
@@ -1104,7 +1181,8 @@ class MainMenuBar(wx.MenuBar):
 		Utilmenu.AppendSubMenu(TarProtmenu, 'Targeted Proteolysis')
 		Utilmenu.AppendSubMenu(Genmenu, 'General Utilities')
 		Utilmenu.AppendSeparator()
-		Utilmenu.Append(207, 'Read Output File\tCtrl+R')		
+		Utilmenu.Append(207, 'Read Output File\tCtrl+R')	
+	  #---	
 	  #--> Help
 		Helpmenu = wx.Menu()
 		Helpmenu.Append(301, 'Manual')
@@ -1120,9 +1198,11 @@ class MainMenuBar(wx.MenuBar):
 		else:
 			pass
 		Helpmenu.Append(wx.ID_PREFERENCES, 'Preferences')
+	  #---
 	  #--> Script
 		Scriptmenu = wx.Menu()
 		Scriptmenu.Append(601, 'Run Input File\tCtrl+I')
+	  #---
 	  #--> UMSAP menu in Win/Linux/Mac
 		if config.cOS == 'Windows':
 			UMSAPmenu = wx.Menu()
@@ -1138,7 +1218,8 @@ class MainMenuBar(wx.MenuBar):
 			UMSAPmenu.Append(402, 'Quit UMSAP\tCtrl+Q')			
 		else:
 			pass
-	  ####---- Append to menubar
+	  #---
+	  #--> Append to menubar
 		if config.cOS == 'Windows':
 			self.Append(UMSAPmenu, '&UMSAP')
 		elif config.cOS == 'Linux':
@@ -1149,12 +1230,15 @@ class MainMenuBar(wx.MenuBar):
 		self.Append(Utilmenu,   '&Utilites')
 		self.Append(Helpmenu,   '&Help')
 		self.Append(Scriptmenu, '&Script')
-	  ####---- Bind
+	  #---
+	 #---
+	 #--> Bind
 	  #--> 100
 		self.Bind(wx.EVT_MENU, self.OnTarProt,         id=101)
 		self.Bind(wx.EVT_MENU, self.OnLimProt,         id=102)
 		self.Bind(wx.EVT_MENU, self.OnUtil,            id=103)
 		self.Bind(wx.EVT_MENU, self.OnProtProf,        id=104)
+	  #---
 	  #--> 200
 		self.Bind(wx.EVT_MENU, self.OnAAdist,          id=201)
 		self.Bind(wx.EVT_MENU, self.OnCutProp,         id=202)
@@ -1170,11 +1254,13 @@ class MainMenuBar(wx.MenuBar):
 		self.Bind(wx.EVT_MENU, self.OnCInputFile,      id=212)
 		self.Bind(wx.EVT_MENU, self.OnFPList,          id=213)
 		self.Bind(wx.EVT_MENU, self.OnSeqH,            id=214)
+	  #---
 	  #--> 300
 		self.Bind(wx.EVT_MENU, self.OnHelpManual,      id=301)
 		self.Bind(wx.EVT_MENU, self.OnHelpTutorials,   id=302)
 		self.Bind(wx.EVT_MENU, self.OnCheckUpdate,     id=303)
 		self.Bind(wx.EVT_MENU, self.OnPreferences,     id=wx.ID_PREFERENCES)		
+	  #---
 	  #--> 400
 		if config.cOS == 'Darwin':
 			self.Bind(wx.EVT_MENU, self.OnAbout,       id=wx.ID_ABOUT)
@@ -1188,11 +1274,15 @@ class MainMenuBar(wx.MenuBar):
 			self.Bind(wx.EVT_MENU, self.OnAbout,       id=403)
 		else:
 			pass
+	  #---
 	  #--> 600
 		self.Bind(wx.EVT_MENU, self.OnRInputFile,      id=601)
+	  #---
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	#--> 100
 	def OnProtProf(self, event):
 		""" Creates the Proteome Profiling module """
@@ -1382,11 +1472,13 @@ class MainMenuBar(wx.MenuBar):
 		else:
 			return False
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class MainMenuBarWithTools(MainMenuBar):
 	""" To add a Tools menu to the menubar for specific windows """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, name, *args):
 		""" name: Name of the window """
 		super().__init__()
@@ -1406,11 +1498,13 @@ class MainMenuBarWithTools(MainMenuBar):
 		else:
 			pass		
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 #---
 
 class MenuBarProtProfRes(MainMenuBar):
 	""" Tools for ProtProfResV """
 	
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, nC, nt, lC, lt, n, tp, allL, grayC):
 		""" nC   : Total number of conditions
 			nt   : Total number of relevant points,
@@ -1422,8 +1516,7 @@ class MenuBarProtProfRes(MainMenuBar):
 			grayC: Color for the lines in Time Analysis (Boolean)  
 		"""
 		super().__init__()
-
-	 ####---- Menu items
+	 #--> Menu items
 		self.VolcanoPlotMenu  = ToolMenuProtProfResV(nC, nt, lC, lt, n, tp)
 		self.TimeAnalysisMenu = ToolMenuProtProfResT(allL, grayC)
 		self.FilterMenu       = MenuFilterMainMenu()
@@ -1435,7 +1528,8 @@ class MenuBarProtProfRes(MainMenuBar):
 		self.ToolsMenu.AppendSubMenu(self.FilterMenu, 'Filters')
 		self.ToolsMenu.AppendSeparator()
 		self.ToolsMenu.AppendCheckItem(599, 'Corrected P values')
-	 ####---- Append to menu bar
+	 #---
+	 #--> Append to menu bar
 		if config.cOS == 'Darwin':
 			self.Insert(2, self.ToolsMenu, '&Tools')
 		elif config.cOS == 'Windows':
@@ -1444,16 +1538,20 @@ class MenuBarProtProfRes(MainMenuBar):
 			self.Insert(3, self.ToolsMenu, '&Tools')
 		else:
 			pass
-	 ####---- Bind
+	 #---
+	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnCorrP, id=599)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def OnCorrP(self, event):
 		""" Show corrected P values """
 		win = self.GetFrame()
 		win.OnCorrP()
 		return True 
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 #endregion --------------------------------------------------------- Menu Bars

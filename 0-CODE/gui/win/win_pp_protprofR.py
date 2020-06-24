@@ -8,7 +8,9 @@
 # 	See the accompaning licence for more details.
 # ------------------------------------------------------------------------------
 
+
 """ Creates the window showing the results for a .protprof file """
+
 
 #region -------------------------------------------------------------- Imports
 import matplotlib.patches as mpatches
@@ -32,16 +34,15 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the protprof file """
-		#region ------------------------------------------------ Initial setup
+	 #--> Initial setup
 		self.name = config.name["ProtProfRes"]
 		self.fileP = Path(file)
 		try:
 			super().__init__(self, parent=None)
 		except Exception:
 			raise ValueError("")
-		#endregion --------------------------------------------- Initial setup
-		
-		#region ---------------------------------------------------- Variables
+	 #---	
+	 #--> Variables
 		self.NC                  = self.fileObj.nConds
 		self.data                = self.fileObj.dataFrame
 		self.data_filtered       = None
@@ -77,7 +78,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.pP         = config.protprof['ColOut'][1]
 		self.pPt        = config.protprof['ColTPp'][0]
 		self.PoPc       = config.protprof['ColOut'][0]
-		#--- filter methods
+	  #--- filter methods
 		self.filter_method = {
 			'Filter_ZScore'   : self.OnFilter_ZScore_Run,
 			'Filter_Log2FC'   : self.OnFilter_Log2FC_Run,
@@ -96,10 +97,10 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			# (method_key, method_print, comp, num, (options))
 			# ('Filter_P', 'P values'  , comp, num, (lopP, corrP))
 		}
+	  #---
 		self.col4Export = self.fileObj.col4Export
-		#endregion ------------------------------------------------- Variables
-	
-		#region --------------------------------------------------------- Menu
+	 #---
+	 #--> Menu
 		self.menubar = menu.MenuBarProtProfRes(
 			self.NC,
 			self.TP,
@@ -111,67 +112,72 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			self.grayC
 		)		
 		self.SetMenuBar(self.menubar)
-		#endregion ------------------------------------------------------ Menu
-		
-		#region ------------------------------------------------------ Widgets
-		#--> Line
+	 #---
+	 #--> Widgets
+	  #--> Line
 		self.lineHI10 = wx.StaticLine(self.panel)
-	  	#--> TextCtrl
-		#--> Size for the TextCtrl # Minimum supported screen height 900 px IMPROVED
+	  #---
+	  #--> TextCtrl
+	   #--> Size for the TextCtrl # Minimum supported screen height 900 px IMPROVED
 		h = config.size['Screen'][1] + config.size['TaskBarHeight'] - 650
 		if h > config.size['TextCtrl'][self.name]['TextPanel'][1]:
 			size = config.size['TextCtrl'][self.name]['TextPanel']
 		else:
 			h = 230
 			size = (config.size['TextCtrl'][self.name]['TextPanel'][0], h)
-		#---
-		#--> TextCtrl
+	   #---
+	   #--> TextCtrl
 		self.tcText = wx.TextCtrl(self.panel, 
 			size=size, 
 			style=wx.BORDER_SIMPLE|wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 		self.tcText.SetFont(config.font[config.name['TarProtRes']])
-		#---
-	  	#--> Split statusbar
+	   #---
+	  #---
+	  #--> Split statusbar
 		self.statusbar.SetFieldsCount(number=2, widths=[100, -1])
-	  	#---
-		#endregion --------------------------------------------------- Widgets
-
-		#region ------------------------------------------------------- Sizers
-		#--> Add
+	  #---
+	 #---
+	 #--> Sizers
+	  #--> Add
 		self.sizerIN.Add(self.lineHI10, pos=(1,2), border=2, span=(0,3),
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerIN.Add(self.tcText,   pos=(2,2), border=2, span=(0,3),
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
-		#--> Modify span
+	  #---
+	  #--> Modify span
 		self.sizerIN.SetItemSpan(self.sizerLB,  (3,0))
 		self.sizerIN.SetItemSpan(self.lineVI10, (3,0))
-		#--> Fit
+	  #---
+	  #--> Fit
 		self.sizer.Fit(self)
-		#--> Add Grow
+	  #---
+	  #--> Add Grow
 		self.sizerIN.AddGrowableCol(0, 1)
 		self.sizerIN.AddGrowableRow(2, 1)
-		#endregion ---------------------------------------------------- Sizers
-
-		#--> Positions and minimal size
+	  #---
+	 #---
+	 #--> Positions and minimal size
 		self.WinPos()
 		gmethods.MinSize(self)
-		
-		#--> Binding
+	 #---	
+	 #--> Binding
 		self.p3.canvas.mpl_connect("button_press_event", self.OnClick3)
 		#---
 		self.p2.canvas.mpl_connect("button_press_event", self.OnClick2)
 		self.p2.canvas.mpl_connect("pick_event", self.OnPick2)
-		
-		#--> Draw
+	 #---
+	 #--> Draw
 		self.DrawConfig2()
 		self.DrawConfig3()
-		
-		#--> Show
+	 #---	
+	 #--> Show
 		self.Show()
+	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
 
-	#region ---------------------------------------------------------- General
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- General Methods
 	def WinPos(self):
 		""" Set the position of a new window depending on the number of same
 		windows already open """
@@ -182,12 +188,16 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		x = ( xo - config.protprof["ExtraX_V"]
 			- config.win["ProtProfResNum"] * config.win["DeltaNewWin"])
 		y = yo + config.win["ProtProfResNum"] * config.win["DeltaNewWin"]
+	 #---
 	 #--> Set
 		self.SetPosition(pt=(x, y))
+	 #---
 	 #--> Adjust number of created windows
 		config.win["ProtProfResNum"] = config.win["ProtProfResNum"] + 1
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def FilterDataRedraw(self, data=None):
@@ -212,9 +222,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		return (True)
 	 #---
 	#---
-	#endregion --------------------------------------------------------- General
+	#endregion ----------------------------------------------- General Methods
 
-	#region ---------------------------------------------------------- Binding
+	#region -------------------------------------------------- Binding Methods
 	def OnPick2(self, event):
 		""" """
 		ind = event.ind
@@ -238,7 +248,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	def OnClick2(self, event):
 		""" To process click events """
 		if event.button == 3:
-	 #-->			
+	 	 #-->			
 			Tmenu = menu.ToolMenuProtProfResV(
 				self.NC, 
 				self.TP, 
@@ -246,13 +256,14 @@ class WinProtProfRes(gclasses.WinResDosDos):
 				self.NTimePL,
 				self.n, 
 				self.tp)
-	 #--> Submenus in pop up menu do not work on Windows
+	 	 #---
+		 #--> Submenus in pop up menu do not work on Windows
 			if config.cOS == 'Windows':
 				for i in ['Conditions', 'Relevant Points']:
 					Tmenu.DestroyItem(Tmenu.FindItem(i))
 			else:
 				pass
-	 #-->
+	 	 #-->
 			self.PopupMenu(Tmenu)
 		else:
 			pass
@@ -273,6 +284,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #--> Draw tp
 		self.prot = gmethods.ListCtrlGetColVal(self.lb, col=2, t="str")[0]
 		self.DrawConfig3()
+	 #---
 	 #--> Draw volcano
 		dfP = dmethods.DFColValFilter(self.data, self.prot, 1)[1]
 		if self.CType == config.combobox['ControlType'][1]:
@@ -298,10 +310,13 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			picker=True
 		)
 		self.p2.canvas.draw()
+	 #---
 	 #--> Show text in self.tcText
 		self.ShowText(dfP)
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def OnRightDown(self, event):
@@ -326,45 +341,58 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			keepState: booleans to prevent changing condition and time point 
 			when called from OnFilter_Remove
 		"""
+	 #--> Variables
 		self.grayC = False
 		self.allL  = False
 		self.prot  = False
-		#---
 		if keepState:
 			pass
 		else:
 			self.n  = 0
 			self.tp = 0
-		#---
+	 #---
+	 #--> Menu
 		self.menubar.Check(703, False)
 		self.menubar.Check(704, False)
 		self.menubar.Check(505, True)
 		self.menubar.Check(505 + self.NC, True)
-		#--- Reset listbox
+	 #---
+	 #--> Reset listbox
 		gmethods.ListCtrlDeSelAll(self.lb)
-		#--- Reset Z score
+	 #---
+	 #--> Reset Z score
 		self.ZscoreValD  = self.ZscoreVal
 		self.ZscoreValDP = self.ZscoreValP
-		#--- Reset data_filtered
+	 #---
+	 #--> Reset data_filtered
 		self.data_filtered = None
-		#--- Reset filter_steps
+	 #---
+	 #--> Reset filter_steps
 		self.filter_steps = {}
-		#--- Reset listbox
+	 #---
+	 #--> Reset listbox
 		self.FillListBox()
-		#--- Reset p2 and p3 panel
+	 #---
+	 #--> Reset p2 and p3 panel
 		self.DrawConfig3()
 		self.DrawConfig2()
-		#--- Reset SearchCtrl
+	 #---
+	 #--> Reset SearchCtrl
 		self.search.Clear()
-		#--- Reset TextCtrl
+	 #---
+	 #--> Reset TextCtrl
 		self.tcText.Clear() 
-		#--- StatusBar
+	 #---
+	 #--> StatusBar
 		self.statusbar.SetStatusText('', 1)
-		#---
+	 #---
+	 #-->
 		self.Refresh()
 		self.Update()
-		#---
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def OnCond(self, Mid):
@@ -393,35 +421,45 @@ class WinProtProfRes(gclasses.WinResDosDos):
 
 	def OnAll(self):
 		""" """
+	 #-->
 		if self.allL == True:
 			self.allL = False
 		else:
 			self.allL = True
-		#-->
+
 		if self.allL:
 			self.p3.canvas.mpl_connect("pick_event", self.OnPick3)
 		else:
 			self.p3.canvas.mpl_disconnect("pick_event")
-		#-->
+	 #---
+	 #-->
 		self.menubar.Check(703, self.allL)
-		#-->
+	 #---
+	 #-->
 		self.DrawConfig3()
-		#-->
+	 #---
+	 #-->
 		return True
+	 #---
 	#---
 
 	def OnColor(self):
 		""" """
+	 #-->
 		if self.grayC == True:
 			self.grayC = False
 		else:
 			self.grayC = True
-		#-->
+	 #---
+	 #-->
 		self.menubar.Check(704, self.grayC)
-		#-->
+	 #---
+	 #-->
 		self.DrawConfig3()
-		#-->
+	 #---
+	 #-->
 		return True
+	 #---
 	#---
 
 	def OnZScore(self):
@@ -432,29 +470,35 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			value=str(self.ZscoreValDP),
 			caption=config.msg['TextInput']['caption']['ZScoreThreshold'],
 		)
+	 #---
 	 #--> Show 
 		if dlg.ShowModal() == wx.ID_OK:
-	 #--> Get & Check value
+		 #--> Get & Check value
 			num = dlg.GetValue()
 			out, newZ = checkM.CheckMNumberComp(num, val2=100)
-	 #--> Redraw
+	 	 #---
+		 #--> Redraw
 			if out:
-	  #--> Update Z score
+	  		 #--> Update Z score
 				self.ZscoreValDP = newZ
 				self.ZscoreValD = stats.norm.ppf(1 - newZ/100)
 				self.DrawConfig2()
-	  #--> ListSelect
+	  		 #---
+			 #--> ListSelect
 				if len(gmethods.ListCtrlGetSelected(self.lb)) > 0:
 					self.OnListSelect('event')
 				else:
 					pass
+			 #---
 			else:
 				pass
 		else:
 			pass
+	 #---
 	 #--> Destroy & Return
 		dlg.Destroy()
 		return True
+	 #---
 	#---
 
 	def OnCorrP(self):
@@ -471,14 +515,17 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			self.pPt   = config.protprof['ColTPp'][1]
 			self.PoPc  = config.protprof['ColOut'][2]
 		self.menubar.Check(599, self.CorrP)
+	 #---
 	 #--> Draw 
 		if len(gmethods.ListCtrlGetSelected(self.lb)) > 0:
 			self.DrawConfig2()
 			self.OnListSelect('event')
 		else:
 			self.DrawConfig2()
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 	#endregion ---------------------------------------------------------- Menu
 
@@ -601,6 +648,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			myFilter = filterDict
 			self.statusbar.SetStatusText("", 1) # The number of filters changed
 			self.filter_steps = {} # This needs to be filled again
+	 #---
 	 #--> Apply filters
 		for k, i in myFilter.items():
 			method = i[0]
@@ -630,17 +678,22 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			value=self.filter_userInput[filterMethod],
 			caption=config.msg['TextInput']['caption'][filterMethod],
 		)
+	 #---
 	 #--> Show & Process answer 
 		if dlg.ShowModal() == wx.ID_OK:
 	 	 #--> Get value
 			val = dlg.GetValue()
+		 #---
 	 	 #--> Process value
 			self.filter_method[filterMethod](val)
+		 #---
 		else:
 			pass
+	 #---
 	 #--> Destroy & Return
 		dlg.Destroy()
 		return True		
+	 #---
 	#---
 
 	def OnFilter_P_GUI(self):
@@ -1154,13 +1207,16 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		""" """
 	 #-->
 		self.p3.ClearPlot()
+	 #---
 	 #-->
 		self.p3.axes.set_title(self.title)
+	 #---
 	 #-->
 		if self.allL:
 			self.DrawAll3()
 		else:
 			pass
+	 #---
 	 #-->
 		if self.prot != False:
 			self.legendShow = True
@@ -1172,25 +1228,32 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			self.leg.get_frame().set_edgecolor('k')	
 		else:
 			pass
+	 #---
 	 #-->
 		self.SetAxis3()
+	 #---
 	 #-->
 		self.p3.canvas.draw()
+	 #---
 	#---
 
 	def DrawAll3(self):
 		""" Draw all data at the begining """
+	 #-->
 		if self.grayC:
 			color = [config.colors[self.name]["Gray"]] * self.NC
 		else:
 			color = self.colorsL
-		#-->
+	 #---
+	 #-->
 		if self.data_filtered is None:
 			self.DrawHelper3(self.data, color, 1)
 		else:
 			self.DrawHelper3(self.data_filtered, color, 1)
-		#-->
+	 #---
+	 #-->
 		return True
+	 #---
 	#---
 
 	def DrawHelper3(self, df, color, alpha, lw=1):
@@ -1232,14 +1295,17 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.p3.axes.set_ylabel("log$_{2}$[Fold Change]", fontweight="bold")
 		self.p3.axes.set_xticks(range(0, len(self.XaxisLabel), 1))
 		self.p3.axes.set_xticklabels(self.XaxisLabel)
+	 #---
 	 #--> Make symmetric
 		ylim = self.p3.axes.get_ylim()
 		if abs(ylim[0]) >= abs(ylim[1]):
 			self.p3.axes.set_ylim(ylim[0], -ylim[0])
 		else:
 			self.p3.axes.set_ylim(-ylim[1], ylim[1])
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 	#endregion ------------------------------------------- Plot3 Time analysis
 
@@ -1254,6 +1320,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 				df = self.data_filtered
 		else:
 			pass
+	 #---
 	 #--> Title of the plot
 		self.title = (
 			"C: " 
@@ -1264,6 +1331,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			+ str(self.ZscoreValDP)
 			+ "%"
 		)
+	 #---
 	 #--> Get data
 		if self.CType == config.combobox['ControlType'][1]:
 			try:
@@ -1296,18 +1364,23 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		else:
 			self.x = pd.Series([])
 			self.title = "No data found for this relevant point"
+	 #---
 	 #--> Plot
 		self.Draw2()
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def Draw2(self):
 		""" """
 	 #-->
 		self.p2.ClearPlot()
+	 #---
 	 #-->
 		self.p2.axes.set_title(self.title)
+	 #---
 	 #-->
 		if len(self.x.index) > 0:
 			self.p2.axes.scatter(
@@ -1321,17 +1394,21 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			)
 		else:
 			pass
+	 #---
 	 #-->
 		xlim = self.p2.axes.get_xlim()
 		if abs(xlim[0]) >= abs(xlim[1]):
 			self.p2.axes.set_xlim(xlim[0], -xlim[0])
 		else:
 			self.p2.axes.set_xlim(-xlim[1], xlim[1])
+	 #---
 	 #-->
 		self.SetAxis2()
 		self.p2.canvas.draw()
+	 #---
 	 #--> 
 		return True
+	 #---
 	#---
 
 	def SetAxis2(self):
@@ -1352,9 +1429,11 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		"""
 	 #--> Clear old text
 		self.tcText.Clear()
+	 #---
 	 #--> Variables
 		num   = gmethods.ListCtrlGetColVal(self.lb, col=0, t="str")[0]
 		gen   = gmethods.ListCtrlGetColVal(self.lb, col=1, t="str")[0]
+	 #---
 	 #--> Write
 	  #--> Header
 		self.tcText.AppendText('--> Selected entry:\n\n')
@@ -1367,23 +1446,31 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		   + '\n\n'
 		)
 		self.tcText.AppendText(line)
+	  #---
 	  #--> Intra Condition comparison
 		self.AddTextCComp(df)
+	  #---
 	  #--> Inter Condition comparison
 		if self.NC > 1:
 			self.AddTextTPComp(df)  
 		else:
 			pass
+	  #---
 	  #--> Ave for Intra Condition comparison
 		line = ('--> Intensity averages and standard deviations: \n\n')
 		self.tcText.AppendText(line)		   
 		self.AddTextAveCond(df)
+	  #---
 	  #--> 
 		self.AddTextAveTP(df)
+	  #---
+	 #---
 	 #--> Get back to first line
 		self.tcText.SetInsertionPoint(0)
+	 #---
 	 #--> Return  
 		return True
+	 #---
 	#---
 
 	def AddTextCComp(self, df):
@@ -1397,12 +1484,15 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		b = ['Conditions'] + 2 * self.NTimePL
 		mInd = pd.MultiIndex.from_arrays([a[:],
 										  b[:]])
+	  #---
 	  #--> dfo
 		dfo = pd.DataFrame(columns=mInd, index=range(0, self.NC, 1))
+	  #---
 	  #--> add data
 		idx = pd.IndexSlice
 	   #-->
 		dfo.loc[:,idx[:,'Conditions']] = self.NCondL
+	   #---
 	   #-->
 		pvals = []
 		if self.CType == config.combobox['ControlType'][1]:
@@ -1412,6 +1502,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			for k, e in enumerate(self.NCondL, start=1):
 				pvals.append(df.loc[:,idx['v','X'+str(k),:, self.PoPc]].to_numpy().tolist()[0])
 		dfo.loc[:, idx['P values',:]] = pvals
+	   #---
 	   #-->
 		pvals = []
 		if self.CType == config.combobox['ControlType'][1]:
@@ -1421,7 +1512,10 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			for k, e in enumerate(self.NCondL, start=1):
 				pvals.append(df.loc[:,idx['v','X'+str(k),:, 'log2FC']].to_numpy().tolist()[0])		
 		dfo.loc[:, idx['log2FC',:]] = pvals	   
-	  #--> write
+	   #---
+	  #---
+	 #---
+	 #--> write
 		line = '--> Statistical test results and Fold changes: \n'
 		self.tcText.AppendText(line)
 		line = '	(Selected '+u'\N{GREEK SMALL LETTER ALPHA}'+' level: ' + str(self.aVal) + ')\n\n'
@@ -1431,8 +1525,10 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	   #-->
 		dmethods.DFWrite2TextCtrl(dfo, self.tcText, formatters=None)
 		self.tcText.AppendText('\n\n')
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def AddTextTPComp(self, df):
@@ -1445,6 +1541,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			columns=['Relevant points', 'P values'], 
 			index=range(0, self.TP, 1)
 		)
+	 #---
 	 #--> Add data
 		idx = pd.IndexSlice
 		dfo['Relevant points'] = self.NTimePL
@@ -1454,8 +1551,11 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.tcText.AppendText(line)	  
 		dmethods.DFWrite2TextCtrl(dfo, self.tcText, formatters=None)
 		self.tcText.AppendText('\n\n')
+	  #---
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def AddTextAveCond(self, df):
@@ -1479,8 +1579,11 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			l = self.NC
 		mInd = pd.MultiIndex.from_arrays([a[:],
 										  b[:]])
+	  #---
 	  #--> dfo
 		dfo = pd.DataFrame(columns=mInd, index=range(0, l, 1))
+	  #---
+	 #---
 	 #--> Add data
 		idx = pd.IndexSlice
 	  #-->
@@ -1488,6 +1591,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			dfo.loc[:,idx[:,'Conditions']] = [self.ControlLabel] + self.NCondL
 		else:
 			dfo.loc[:,idx[:,'Conditions']] = self.NCondL
+	  #---
 	  #-->
 		ave = []
 		std = []
@@ -1504,16 +1608,20 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			for k in range(1, self.Xv+1, 1):
 				ave.append(df.loc[:,idx['v','X'+str(k),:,'ave']].to_numpy().tolist()[0])
 				std.append(df.loc[:,idx['v','X'+str(k),:,'sd']].to_numpy().tolist()[0])	 
+	  #---
 	  #-->
 		dfo.loc[:, idx[:,'Ave']] = ave
 		dfo.loc[:, idx[:,'Std']] = std
+	 #---
 	 #--> Write
 		line = ('  -- Volcano plot: \n\n')
 		self.tcText.AppendText(line)	 
 		dmethods.DFWrite2TextCtrl(dfo, self.tcText)
 		self.tcText.AppendText('\n\n')	   
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def AddTextAveTP(self, df):
@@ -1529,12 +1637,16 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		b = ['Conditions'] + ['Ave', 'Std'] * (self.TP)
 		mInd = pd.MultiIndex.from_arrays([a[:],
 										  b[:]])
+	  #---
 	  #--> dfo
 		dfo = pd.DataFrame(columns=mInd, index=range(0, self.NC, 1))
+	  #---
+	 #---
 	 #--> Add data
 		idx = pd.IndexSlice
 	  #-->
 		dfo.loc[:,idx[:,'Conditions']] = self.NCondL
+	  #---
 	  #-->
 		ave = []
 		std = []
@@ -1546,16 +1658,21 @@ class WinProtProfRes(gclasses.WinResDosDos):
 				stdc.append(df.loc[:,idx['tp','T'+str(x),'C'+str(y),'sd']].to_numpy().tolist()[0])
 			ave.append(avec)
 			std.append(stdc)
+	  #---
 	  #-->
 		dfo.loc[:, idx[:,'Ave']] = ave
 		dfo.loc[:, idx[:,'Std']] = std 
+	  #---
+	 #---
 	 #--> Write
 		line = ('  -- Relevant points analysis: \n\n')
 		self.tcText.AppendText(line)	 
 		dmethods.DFWrite2TextCtrl(dfo, self.tcText)
 		self.tcText.AppendText('\n\n')	   
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 	#endregion ----------------------------------------------------- Show Text
 #---

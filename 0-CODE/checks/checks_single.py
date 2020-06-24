@@ -12,30 +12,16 @@
 """ This module contains methods to check the user input data """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import requests
 from pathlib import Path
-## My modules
+
 import config.config as config
 import gui.gui_classes as gclasses
 import gui.gui_methods as gmethods
-#---
+#endregion ----------------------------------------------------------- Imports
 
-
-
-# -------------------------------------------------------------- Variables
+#region ------------------------------------------------------------ Variables
 def CheckVarEmpty(var):
 	""" Check if a a widget value is different than ''. 
 		---
@@ -43,9 +29,9 @@ def CheckVarEmpty(var):
 		---
 		Return True if var != '' else False
 	"""
-  #--> Check & Return
+ #--> Check & Return
 	return var != ''
-  #---
+ #---
 #---
 
 def CheckNumType(var, t='float'):
@@ -55,9 +41,10 @@ def CheckNumType(var, t='float'):
 		var : variable to check
 		t   : possible values: float, int
 	"""
-  #--> Variables
+ #--> Variables
 	k = True
-  #--> Set the correct type
+ #---
+ #--> Set the correct type
 	if t == 'float':
 		try:
 			varT = float(var)
@@ -71,11 +58,13 @@ def CheckNumType(var, t='float'):
 	else:
 		### DlgBugMsg
 		pass
-  #--> Return
+ #---
+ #--> Return
 	if k:
 		return [True, varT]
 	else:
 		return [False, None]
+ #---
 #---
 
 def CheckNumComp(num, comp='egt', val=0):
@@ -85,9 +74,10 @@ def CheckNumComp(num, comp='egt', val=0):
 		comp: egt >= val, e == val, gt > val, elt <= val, lt < val (string)
 		val : value to compare against (int, float, etc) 
 	"""
-  #--> Variables
+ #--> Variables
 	k = True
-  #--> Compare
+ #---
+ #--> Compare
 	if comp == 'gt':
 		if num > val:
 			return True
@@ -116,11 +106,13 @@ def CheckNumComp(num, comp='egt', val=0):
 	else:
 		### DlgBugMsg
 		pass
-  #--> Return
+ #---
+ #--> Return
 	if k:
 		return True
 	else:
 		return False
+ #---
 #---
 
 def CheckaWithincd(a, c, d):
@@ -129,11 +121,12 @@ def CheckaWithincd(a, c, d):
 		a : number to check (int, float, etc)
 		b, c : limits of the interval (int, float, etc)
 	"""
-  #--> Check & Return
+ #--> Check & Return
 	if c <= a and a <= d:
 		return True
 	else:
 		return False
+ #---
 #---
 
 def CheckabWithincd(a, b, c, d):
@@ -142,7 +135,7 @@ def CheckabWithincd(a, b, c, d):
 		a, b: numbers to check (int, float, etc)
 		c, d: limits of the interval (int, float, etc)
 	"""
-  #--> Check & Return
+ #--> Check & Return
 	if c <= a and a <= d:
 		if c <= b and b <= d:
 			return True
@@ -151,6 +144,7 @@ def CheckabWithincd(a, b, c, d):
 	else:
 		pass
 	return False
+ #---
 #---  
 
 def CheckControlExpNA(l):
@@ -164,6 +158,7 @@ def CheckControlExpNA(l):
 	"""
  #--> Variables
 	k = True
+ #---
  #--> Check
 	for x in l:
 		if x[0][0] in config.naVals:
@@ -177,36 +172,38 @@ def CheckControlExpNA(l):
 				break
 			else:
 				pass
+ #---
  #--> Return
 	if k:
 		return True
 	else:
 		msg = config.msg['Errors']['ControlNA']
 		gclasses.DlgFatalErrorMsg(msg)
-		return False
+		return False 
+ #---
 #---
-# -------------------------------------------------------------- Variables (END)
+#endregion --------------------------------------------------------- Variables
 
-
-
-# ------------------------------------------------------------------ Lists
+#region ---------------------------------------------------------------- Lists
 def CheckListUniqueElements(l, NA=False):
 	""" Check that a list does not contains repeated elements
 		---
 		l : flat list
 		NA: allow NA elements in the list or not (boolean)
 	"""
-  #--> Remove multiple NA elements if they are allowed
+ #--> Remove multiple NA elements if they are allowed
 	if NA == False:
 		lo = list(set(l))
 	else:
 		l = [x for x in l if x != None]
 		lo = list(set(l))
-  #--- Compare length of l & lo and Return
+ #---
+ #--> Compare length of l & lo and Return
 	if len(lo) == len(l):
 		return True
 	else:
 		return False
+ #---
 #---
 
 def CheckListNElements(l, mod=None, msg=None):
@@ -217,9 +214,10 @@ def CheckListNElements(l, mod=None, msg=None):
 		l: list of elements (list of list)
 		msg: error msg (string)
 	"""
-  #--> Get number of elements in each element
+ #--> Get number of elements in each element
 	n = [len(x) for x in l]
-  #--> Check if they are the same
+ #---
+ #--> Check if they are the same
 	if len(list(set(n))) > 1:
 		if msg == None:
 			if mod == None:
@@ -232,6 +230,7 @@ def CheckListNElements(l, mod=None, msg=None):
 		return False
 	else:
 		return True
+ #---
 #---
 
 def CheckListEqualElements(l, msg=None, NA=True):
@@ -243,14 +242,15 @@ def CheckListEqualElements(l, msg=None, NA=True):
 		msg : Error message to show (string)
 		NA: NA values are allowed or not (boolean)
 	"""
-  #--> Check
+ #--> Check
 	for a in l: # For each cond/band
-		#--> Get number of replicates in each tp/lane
+	 #--> Get number of replicates in each tp/lane
 		if NA:
 			e = [len(b) for b in a if b[0] != None]
 		else:
 			e = [len(b) for b in a]
-		#--> Check number of replicates
+	 #---
+	 #--> Check number of replicates
 		if len(list(set(e))) > 1:
 			if msg == None:
 				pass
@@ -259,28 +259,31 @@ def CheckListEqualElements(l, msg=None, NA=True):
 			return False	
 		else:
 			pass
-  #--> Return
+	 #---
+ #---
+ #--> Return
 	return True
+ #---
 #---
-# ------------------------------------------------------------------ Lists (END)
+#endregion ------------------------------------------------------------- Lists
 
-
-
-# ------------------------------------------------------ Files and Folders
+#region ---------------------------------------------------- Files and Folders
 def CheckFileRead(var):
 	""" Check if var points to a file that can be read in.
 		---
 		var : path the file (string or path)
 	"""
-  #--> Variables
+ #--> Variables
 	mfile = Path(var)
-  #--> Check & Return
+ #---
+ #--> Check & Return
 	try:
 		fo = open(mfile, 'r')
 		fo.close()
 		return True
 	except Exception:
 		return False
+ #---
 #---
 
 def CheckFileExtension(var, ext):
@@ -289,22 +292,22 @@ def CheckFileExtension(var, ext):
 		var : path to the file (string or path)
 		ext : must have the dot(.) .txt (list from config.extShort)
 	"""
-  #--> Set variables
+ #--> Set variables
 	mfile = Path(var)
 	myext = str(mfile.suffix)
-  #--> Check & Return
+ #---
+ #--> Check & Return
 	for e in ext:
 		if myext == e:
 			return True
 		else:
 			pass
 	return False
+ #---
 #---
-# ------------------------------------------------------ Files and Folders (End)
+#endregion ------------------------------------------------- Files and Folders
 
-
-
-# ------------------------------------------------------------ wx.ListCtrl
+#region ---------------------------------------------------------- wx.ListCtrl
 def CheckListCtrlEmpty(lb, msg=None, nEle=1, empty=False, dlgShow=True):
 	""" Check that the wx.ListCtrl has some items 
 		---
@@ -314,9 +317,10 @@ def CheckListCtrlEmpty(lb, msg=None, nEle=1, empty=False, dlgShow=True):
 		empty  : lb can be empty or not (boolean)
 		dlgShow: show or not the error message 
 	"""
-  #--> Get number of items in lb 
+ #--> Get number of items in lb 
 	items = lb.GetItemCount()
-  #--> Compare against nEle and empty and return if True
+ #---
+ #--> Compare against nEle and empty and return if True
 	if items >= nEle and empty == False:
 		return True
 	elif items >= nEle and empty == True:
@@ -328,60 +332,62 @@ def CheckListCtrlEmpty(lb, msg=None, nEle=1, empty=False, dlgShow=True):
 	else:
 		gclasses.DlgUnexpectedErrorMsg(config.msg['UErrors']['Unknown'])
 		return False
-  #--> Show error message or not and return
+ #---
+ #--> Show error message or not and return
 	if dlgShow:
 		gclasses.DlgFatalErrorMsg(msg)
 		return False
 	else:
 		return False
+ #---
 #---
-# ------------------------------------------------------------ wx.ListCtrl (End)
+#endregion ------------------------------------------------------- wx.ListCtrl
 
-
-
-# ---------------------------------------------------------------- Uniprot
+#region -------------------------------------------------------------- Uniprot
 def CheckUniprot(code, ext='.fasta'):
 	""" Check if a given UNIPROT CODE exists.
 		---
 		code: temptative UNIPROT code (string)
 		ext : extension to create the url. Must include the dot if needed. (string) 
 	"""
-  #--> form & request the url
+ #--> form & request the url
 	if code != '':
 		url = config.url['Uniprot'] + code + ext
 		uniprot = requests.get(url)
-  #--> Check uniprot & Return
+ #---
+ #--> Check uniprot & Return
 		if 	uniprot.ok:
 			return [True, uniprot]
 		else:
 			return [False, None]
 	else:
 		return [False, None]
+ #---
 #---
-# ---------------------------------------------------------------- Uniprot (END)
+#endregion ----------------------------------------------------------- Uniprot
 
-
-
-# -------------------------------------------------------------------- PDB
+#region ------------------------------------------------------------------ PDB
 def CheckPDB(code, ext='.pdb'):
 	""" Check if a given PDB CODE exists. 
 		---
 		code: tentative PDB code (string)
 		ext : extension to create the url. Must include the dot if needed. (string) 
 	"""
-  #--> form & request the url
+ #--> form & request the url
 	if code != '':
 		url = config.url['Pdb'] + code + ext
 		pdb = requests.get(url)
-  #--> Check PDB 
+ #---
+ #--> Check PDB 
 		if pdb.ok:
 			return [True, pdb]
 		else:
 			return [False, None]
 	else:
 		return [False, None]	
+ #---
 #---
-# -------------------------------------------------------------------- PDB (END)
+#endregion --------------------------------------------------------------- PDB
 
 
 

@@ -12,32 +12,20 @@
 """ This module creates the Sequence utility window for LimProt module """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import wx
-## My modules
+
 import config.config   as config
 import gui.gui_classes as gclasses
 import gui.gui_methods as gmethods 
 import data.data_classes as dclasses 
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinSeqAlignLP(gclasses.WinUtilUno):
 	""" Creates the GUI for the Sequence Highlight utility in LimProt. """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=None):
 		""" parent: parent of the widgets
 			style: style of the window
@@ -45,23 +33,29 @@ class WinSeqAlignLP(gclasses.WinUtilUno):
 	 #--> Initial setup
 		self.name = config.name['SeqH']
 		super().__init__(parent=parent, style=style, length=16)
+	 #---
 	 #--> Sizers
 		self.sizer.Fit(self)
+	 #---
 	 #--> Position
 		self.Center()
+	 #---
 	 #--> Show	
 		self.Show()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
-	##-- Binding
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- Binding Methods
 	def OnClearFilesDef(self):
 		""" Specific clear for Files section in the window """
 		self.tcOutputFF.SetValue('NA')
 		return True
 	#---
+	#endregion ----------------------------------------------- Binding Methods
 
-	##-- Run
+	#region ------------------------------------------------------ Run Methods
 	def CheckInput(self):
 		""" """
 	 #--> Files
@@ -75,6 +69,7 @@ class WinSeqAlignLP(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Output file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Output file', 1)
@@ -87,6 +82,8 @@ class WinSeqAlignLP(gclasses.WinUtilUno):
 			pass
 		else:
 			return False	
+	  #---
+	 #---
 	 #--> Values
 	  #--> Seq Length
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -100,8 +97,11 @@ class WinSeqAlignLP(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	  #---
+	 #---
 	 #--> Return	
 		return True
+	 #---
 	#---
 
 	def ReadInputFiles(self):
@@ -143,5 +143,6 @@ class WinSeqAlignLP(gclasses.WinUtilUno):
 	def ShowRes(self):
 		""" Show graph results """
 		return True
-	#---	
+	#---
+	#endregion --------------------------------------------------- Run Methods	
 #---		

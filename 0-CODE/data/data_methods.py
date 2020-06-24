@@ -12,54 +12,42 @@
 """ This module contains methods to proccess data """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import copy
 import csv
 import datetime
 import itertools
 import json
-import numpy as np
-import pandas as pd
 from collections import Counter
 from math import sqrt
 from statistics import stdev
+
+import numpy as np
+import pandas as pd
 from numpy import inf
 from scipy import stats
 from statsmodels.stats.weightstats import ttost_ind
-## My modules
+
 import config.config as config
 import gui.gui_classes as gclasses
 import checks.checks_single as check
-#--- 
+#endregion ----------------------------------------------------------- Imports
 
-
-
-# ------------------------------------------------------ Files and Folders
+#region ---------------------------------------------------- Files and Folders
 def FFsRead(fileP, char='\t'):
 	""" Reads a file. Empty lines are discarded. 
 		---
 		fileP: path to the file (string or path)
 		char: each line is splitted with cha 
 	"""
-  #--> Variables
+ #--> Variables
 	fileP = str(fileP)
 	data = []
-  #--> Read and split lines
+ #---
+ #--> Read and split lines
 	with open(fileP, 'r') as file:
 		for line in file:
-			#--> To considerer mac \n or windows \r\n files
+		 	#--> To considerer mac \n or windows \r\n files
 			l  = line.split('\n')[0]
 			ll = l.split('\r')[0]
 			if ll == '' or ll.strip() == '':
@@ -70,8 +58,10 @@ def FFsRead(fileP, char='\t'):
 				else:
 					lll = ll.split(char)
 					data.append(lll)
-  #--> Return
+ #---
+ #--> Return
 	return data
+ #---
 #---
 
 def FFsReadCSV(fileP, char='\t'):
@@ -80,17 +70,20 @@ def FFsReadCSV(fileP, char='\t'):
 		fileP: path to the file (string or Path)
 		char: character used to split each line
 	"""
-  #--> Variables
+ #--> Variables
 	data = []
-  #--> Read and split the file
+ #---
+ #--> Read and split the file
 	with open(fileP, 'r') as tsv:
 		for line in csv.reader(tsv, delimiter=char):
 			if line == '':
 				pass
 			else:
 				data.append(line)
-  #--> Return
+ #---
+ #--> Return
 	return data
+ #---
 #---
 
 def FFsReadJSON(fileP):
@@ -145,6 +138,7 @@ def FFsWriteDict2Uscr(fileP, iDict, hDict=None):
 	"""
  #--> Open file for output
 	file = open(str(fileP), 'w')
+ #---
  #--> Write key : values
 	for k, v in iDict.items():
 		if hDict == None:
@@ -157,15 +151,15 @@ def FFsWriteDict2Uscr(fileP, iDict, hDict=None):
 				file.write(str(hDict[k]) + ': ' + str(v) + '\n')
 			except KeyError:
 				pass
+ #---
  #--> Close file & Return
 	file.close()
 	return True
+ #---
 #---
-# ------------------------------------------------------ Files and Folders (END)
+#endregion ------------------------------------------------- Files and Folders
 
-
-
-# ------------------------------------------------------------------ Lists
+#region ---------------------------------------------------------------- Lists
 def ListResult(line, mod, CType):
 	""" Takes a line like the input in Results and returns a list of list with
 		three levels. The return list has the structure:
@@ -185,16 +179,20 @@ def ListResult(line, mod, CType):
 		return [False, False]
 	else:
 		pass
+ #---
  #--> Variables
 	temp = line.split(';')
+ #---
  #--> Check Module and do custom proccesing	
   #--> TarProt
 	if mod == config.name['TarProt']:
 		temp = [[x.strip()] for x in temp]
 		resS = [temp]
+  #---
   #--> LimProt
 	elif mod == config.name['LimProt']:
 		resS = ListResultHelper(temp)
+  #---
   #--> ProtProf
 	elif mod == config.name['ProtProf']:
 		if CType == config.combobox['ControlType'][0]:
@@ -212,8 +210,11 @@ def ListResult(line, mod, CType):
 			pass
 	else:
 		return [False, False]
+  #---
+ #---
  #--> Return
 	return [True, resS]
+ #---
 #---
 
 def ListResultHelper(temp):
@@ -223,8 +224,10 @@ def ListResultHelper(temp):
 	"""
  #--> Variables
 	resS = []
+ #---
  #--> Get control
 	c = temp[0].strip()
+ #---
  #--> 
 	temp = temp[1:]	
 	temp = [x.strip().split(',') for x in temp]
@@ -234,8 +237,10 @@ def ListResultHelper(temp):
 		for y in x:
 			l.append([y.strip()])
 		resS.append(l)
+ #---
  #--> Return
 	return resS
+ #---
 #---
 
 def ListResultHelper2(temp):
@@ -245,8 +250,10 @@ def ListResultHelper2(temp):
 	"""
  #--> Variables
 	resS = []
+ #---
  #--> Get control
 	c = [x.strip() for x in temp[0].strip().split(',')]
+ #---
  #--> 
 	temp = temp[1:]	
 	temp = [x.strip().split(',') for x in temp]
@@ -261,8 +268,10 @@ def ListResultHelper2(temp):
 		msg = config.msg['Errors']['ResMatrixShape']
 		gclasses.DlgFatalErrorMsg(msg)
 		return [False, False]
+ #---
  #--> Return
 	return [True, resS]
+ #---
 #---
 
 def ListResultHelper3(temp):
@@ -272,6 +281,7 @@ def ListResultHelper3(temp):
 	"""
  #--> Variables
 	resS = []
+ #---
  #--> 
 	temp = [x.strip().split(',') for x in temp]
 	for x in temp:
@@ -279,8 +289,10 @@ def ListResultHelper3(temp):
 		for y in x:
 			l.append([y.strip()])
 		resS.append(l)	
+ #---
  #--> Return
 	return resS
+ #---
 #---
 
 def ListResultNoNa(l):
@@ -289,9 +301,10 @@ def ListResultNoNa(l):
 		---
 		l: full Result list (list of list with three level)
 	"""
-  #--> Variables
+ #--> Variables
 	lo = []
-  #--> Scan the list and remove None elements
+ #---
+ #--> Scan the list and remove None elements
 	for a in l: # For each cond/band
 		la = []
 		for e in a: # For each tp/lane
@@ -300,8 +313,10 @@ def ListResultNoNa(l):
 			else:
 				pass
 		lo.append(la)
-  #--> Return
+ #---
+ #--> Return
 	return [True, lo]
+ #---
 #---
 		
 def ListFlatNLevels(l, N=1):
@@ -311,15 +326,17 @@ def ListFlatNLevels(l, N=1):
 		l: multi level list
 		N: number of levels to flat
 	"""
-  #--> Variables
+ #--> Variables
 	lo = l[:]
-  #--> Flat the outer N levels & Return
+ #---
+ #--> Flat the outer N levels & Return
 	try:
 		for _ in range(0, N, 1):
 			lo = list(itertools.chain(*lo))
 		return [True, lo]
 	except Exception:
 		return [False, None]
+ #---
 #---
 	
 def ListExpand(l):
@@ -327,17 +344,20 @@ def ListExpand(l):
 		In a range a-b a < b 
 		l: one level list of positive integer (string)
 	"""
-  #--> Variables
+ #--> Variables
 	lo = []
-  #--> Set types and expand ranges
+ #---
+ #--> Set types and expand ranges
 	for e in l:
 		if '-' not in e:
 			lo.append(int(e))
 		else:
 			a, b = map(int, e.split('-'))
 			lo += range(a, b + 1)
-  #--> Return
+ #---
+ #--> Return
 	return lo
+ #---
 #---
 
 def ListColHeaderTarProtFile(nExp):
@@ -345,18 +365,21 @@ def ListColHeaderTarProtFile(nExp):
 		---
 		nExp: number of experiment (int)
 	"""
-  #--> Variables
+ #--> Variables
 	colOut = config.tarprot['ColNames'][:] # Name of the columns
 	ind    = [] # List with the index of the columns
 	iPoint = config.tarprot['InsertPoint']
-  #--> 
+ #---
+ #--> 
 	for i in range(0, nExp, 1):
 		exp = nExp - i
 		label = 'Exp' + str(exp)
 		colOut.insert(iPoint, label)
 		ind.append(iPoint + i)
-  #--> Return
+ #---
+ #--> Return
 	return [colOut, ind]
+ #---
 #---
 
 def ListColHeaderLimProtFile(nB, nL):
@@ -365,31 +388,37 @@ def ListColHeaderLimProtFile(nB, nL):
 		nB: number of bands (int)
 		nL: number of lanes (int)
 	"""
-  #--> Variables
+ #--> Variables
 	col = config.limprot['ColOut']
-  #--> First col index level
+ #---
+ #--> First col index level
 	a = config.limprot['ColNames'][0:-2]
 	for i in range(1, nB+1, 1):
 		a = a + ['B'+str(i)] * nL * len(col)
 	a = a + config.limprot['ColNames'][-2:]	 
-  #--> Second col index level
+ #---
+ #--> Second col index level
 	b = config.limprot['ColNames'][0:-2]
 	for i in range (1, nB+1, 1):
 		for e in range(1, nL+1, 1):
 			b = b + ['L'+str(e)] * len(col)
 	b = b + config.limprot['ColNames'][-2:]	 
-  #--> Third col index level
+ #---
+ #--> Third col index level
 	c = config.limprot['ColNames'][0:-2]
 	for i in range(1, nB+1, 1):
 		for e in range(1, nL+1, 1):
 			c = c + config.limprot['ColOut']
 	c = c + config.limprot['ColNames'][-2:]	 
-  #--> Create the multi index
+ #---
+ #--> Create the multi index
 	col = pd.MultiIndex.from_arrays([a[:],
 									 b[:],
 									 c[:]])
-  #--> Return
+ #---
+ #--> Return
 	return [True, col]
+ #---
 #---
 
 def ListColHeaderCutPropFile(nExp):
@@ -397,9 +426,10 @@ def ListColHeaderCutPropFile(nExp):
 		---
 		nExp: number of experiments (int)
 	"""
-  #--> Varaibles
+ #--> Varaibles
 	colOut = config.cutprop['ColNames'][:]
-  #--> Add columns
+ #---
+ #--> Add columns
 	for i in range(0, nExp, 1):
 		exp = nExp - i
 		label = 'Exp' + str(exp) + ' Nat Norm'
@@ -412,8 +442,10 @@ def ListColHeaderCutPropFile(nExp):
 		colOut.insert(2, label)
 	ind = list(range(2, len(colOut)-config.cutprop['NumColsHeader']+2,
 		1))
-  #--> Return	
+ #---
+ #--> Return	
 	return [colOut, ind]
+ #---
 #---
 
 def ListColHeaderProtProfFile(Xv, Yv, Xtp, Ytp):
@@ -433,26 +465,29 @@ def ListColHeaderProtProfFile(Xv, Yv, Xtp, Ytp):
 		Ytp: number of conditions (int)
 
 	"""
-  #--> Variables
+ #--> Variables
 	col    = config.protprof['ColOut']
 	colL   = len(col)
 	colTP  = config.protprof['ColTPp']
 	colTPL = len(colTP)
 	colDS  = config.protprof['ColDS']
 	colDSL  = len(colDS)
-  #--> First columns index level --> ColNames, c for conditions & tp for relevant points
+ #---
+ #--> First columns index level --> ColNames, c for conditions & tp for relevant points
 	a = config.protprof['ColNames']
 	a = (a 
 		+ ['v'] * Xv * (colDSL + Yv * (colDSL+colL)) 
 		+ ['tp'] * Xtp * (colTPL + Ytp * colDSL)
 	)
-  #--> Second columns index level --> ColNames, N for c & TP for tp
+ #---
+ #--> Second columns index level --> ColNames, N for c & TP for tp
 	b = config.protprof['ColNames']
 	for i in range(1, Xv+1, 1):
 		b = b + ['X' + str(i)] * (2 + Yv * (colL + colDSL))
 	for i in range(1, Xtp+1, 1):
 		b = b + ['T'+str(i)] * (colTPL + Ytp * (colDSL))	
-  #--> Third columns index level --> ColNames, TP for c & N for tp
+ #---
+ #--> Third columns index level --> ColNames, TP for c & N for tp
 	c = config.protprof['ColNames']
 	for _ in range(0, Xv, 1):
 		c = c + ['Y0'] * colDSL
@@ -462,16 +497,20 @@ def ListColHeaderProtProfFile(Xv, Yv, Xtp, Ytp):
 		c = c + ['C0'] * colTPL
 		for i in range(1, Ytp+1, 1):
 			c = c + ['C' + str(i)] * colDSL 	
-  #--> Fourth columns index level ---> ColNames, name of the columns
+ #---
+ #--> Fourth columns index level ---> ColNames, name of the columns
 	d = config.protprof['ColNames']
 	d = d + Xv * (colDS + Yv * (col + colDS)) + Xtp * (colTP + Ytp * (colDS))
-  #--> Set the multi index
+ #---
+ #--> Set the multi index
 	col = pd.MultiIndex.from_arrays([a[:],
 									 b[:],
 									 c[:],
 									 d[:]])
-  #--> Return
+ #---
+ #--> Return
 	return [True, col]
+ #---
 #---
 
 def ListAddExtraAA(seq):
@@ -481,10 +520,11 @@ def ListAddExtraAA(seq):
 		---
 		seq: sequence of the protein (string)
 	"""
-  #--> Variables
+ #--> Variables
 	aaL = config.aaList1
 	l = list(set(list(seq)))
-  #--> Update aaL
+ #---
+ #--> Update aaL
 	for i in l:
 		if i.islower():
 			pass
@@ -493,8 +533,10 @@ def ListAddExtraAA(seq):
 				pass
 			else:
 				aaL.append(i)
-  #--> Return
+ #---
+ #--> Return
 	return aaL
+ #---
 #---
 
 def ListHistWin(width, seqLength, start=0):
@@ -505,16 +547,19 @@ def ListHistWin(width, seqLength, start=0):
 		seqLength: length of the sequence (int)
 		start: start the windows in this number (int)
 	"""
-  #--> Create windows
+ #--> Create windows
 	lo = list(range(start, seqLength, width))
-  #--> Fix first element because protein residue numbers start in 1 not 0
+ #---
+ #--> Fix first element because protein residue numbers start in 1 not 0
 	if start == 0:
 		lo[0] = 1
 	else:
 		pass
-  #--> Add last residue number & Return
+ #---
+ #--> Add last residue number & Return
 	lo.append(seqLength - 1)
 	return lo
+ #---
 #---
 
 def ListStepSum(l, rangeR, start=0):
@@ -524,16 +569,19 @@ def ListStepSum(l, rangeR, start=0):
 		rangeR: modify the output (string)
 		start: number for starting the sum
 	"""
-  #--> Variables
+ #--> Variables
 	lo = [start]
-  #--> Step sum
+ #---
+ #--> Step sum
 	for k, i in enumerate(l):
 		lo.append(lo[k] + i)
-  #--> Return
+ #---
+ #--> Return
 	if rangeR == config.name['AAdistR']:
 		return lo[0:-1]
 	else:
 		return lo
+ #---
 #---
 
 def ListCharCount(seq):
@@ -550,24 +598,25 @@ def ListUnique(l, NA=False):
 		l: flat list to scan (flat list)
 		NA: NA values are allowed or not (boolean)
 	"""
-  #--> Remove NA values if NA == True
+ #--> Remove NA values if NA == True
 	if NA == True:
 		l = [x for x in l if x != None]
 	else:
 		pass
-  #--> Find repeated elements
+ #---
+ #--> Find repeated elements
 	re = [i for i, count in Counter(l).items() if count > 1]
-  #--> Return
+ #---
+ #--> Return
 	if len(re) > 0:
 		return [False, re]
 	else:
 		return [True, None]
+ #---
 #---
-# ------------------------------------------------------------------ Lists (END)
+#endregion ------------------------------------------------------------- Lists
 
-
-
-# ------------------------------------------------------------------ Dicts
+#region ---------------------------------------------------------------- Dicts
 def DictVal2String(iDict, keys2string=None):
 	""" Takes a dict and returns the same dict but all values are converted to 
 		str 
@@ -575,19 +624,23 @@ def DictVal2String(iDict, keys2string=None):
 		iDict: initial values (dict)
 		keys2strig: keys whose values will be converted to string. If None convert everything. (list of strings)
 	"""
-  #--> Convert
-	#--> Everything
+ #--> Convert
+  #--> Everything
 	if keys2string is None:
 		oDict = {}
 		for k, i in iDict.items():
 			oDict[k] = str(i)
-	#--> Selected few
+  #---
+  #--> Selected few
 	else:
 		oDict = copy.deepcopy(iDict)
 		for i in keys2string:
 			oDict[i] = str(oDict[i])
-  #--> Return
+  #---
+ #---
+ #--> Return
 	return oDict
+ #---
 #---
 
 def DictStartAAdist(pos, aaL, v=0):
@@ -598,14 +651,17 @@ def DictStartAAdist(pos, aaL, v=0):
 		aaL: list with one letter codes (list of string)
 		v: initial value for each position 
 	"""
-  #--> Variables
+ #--> Variables
 	d = {}
 	l = [0] * 2 * pos
-  #--> Fill dict
+ #---
+ #--> Fill dict
 	for i in aaL:
 		d[i] = list(l)
-  #--> Return
+ #---
+ #--> Return
 	return d
+ #---
 #---
 
 def DictUpdateAAdist(iDict, seq):
@@ -614,16 +670,19 @@ def DictUpdateAAdist(iDict, seq):
 		iDict: aa and values (dict)
 		seq: peptide sequence (string)
 	"""
-  #--> Variables
+ #--> Variables
 	seql = list(seq)
-  #--> Update dict
+ #---
+ #--> Update dict
 	for k, s in enumerate(seql):
 		if s != config.aadist['FillChar']:
 			iDict[s][k] = iDict[s][k] + 1
 		else:
 			pass
-  #--> Return
+ #---
+ #--> Return
 	return iDict
+ #---
 #---
 
 def DictAAdist2DF(iDict, pos):
@@ -644,11 +703,12 @@ def DictAAdist2DF(iDict, pos):
 		RD   0   AAx
 		     n+1 Pos 0 0 0 0 0 0 0 0
 	"""
-  #--> Variables
+ #--> Variables
 	ln = ['AA'] + list(range(0, 2*pos)) 
 	dfL  = []
 	indL = []
-  #--> Creates the data frame
+ #---
+ #--> Creates the data frame
 	for k in iDict: # Loop the keys Exp#, FP & RD
 		ll = []
 		indL.append(k)
@@ -659,8 +719,10 @@ def DictAAdist2DF(iDict, pos):
 		dfL.append(pd.DataFrame(ll, columns=ln)) 
 	#--> Create multi level data frame
 	dfo = pd.concat(dfL, keys=indL)
-  #--> Return
+ #---
+ #--> Return
 	return dfo
+ #---
 #---
 
 def DictTuplesKey2StringKey(iDict):
@@ -668,17 +730,20 @@ def DictTuplesKey2StringKey(iDict):
 		---
 		iDict: initial dictionary (dict)
 	"""
-  #--> Variables
+ #--> Variables
 	oDict = {}
-  #--> Change keys
+ #---
+ #--> Change keys
 	for k in iDict:
 		if isinstance(k, tuple):
 			nk = config.protprof['Join'].join(k) # You might need to change the join char 
 			oDict[nk] = iDict[k]
 		else:
 			oDict[k] = iDict[k]
-  #--> Return
+ #---
+ #--> Return
 	return oDict
+ #---
 #---
 
 def DictStringKey2TuplesKey(iDict, char=','):
@@ -687,19 +752,21 @@ def DictStringKey2TuplesKey(iDict, char=','):
 		iDict: initial values (dict)
 		char: character to use for spliting (string)
 	"""
-  #--> Variables
+ #--> Variables
 	oDict = {}
-  #--> Split keys
+ #---
+ #--> Split keys
 	for k in iDict:
 		nk = tuple(k.split(char))
 		oDict[nk] = iDict[k]
-  #--> Return
+ #---
+ #--> Return
 	return oDict
+ #---
 #---
-# ------------------------------------------------------------------ Dicts (END)
+#endregion ------------------------------------------------------------- Dicts
 
-
-# ---------------------------------------------------------------- Strings
+#region -------------------------------------------------------------- Strings
 def StringCharForAAdist(string, ind, N, fill=None):
 	""" Returns the characters in string around ind up to N as a str. 
 		For example: (ABCDEFGH, 3, 2) centers the function in D and returns CDEF
@@ -709,10 +776,11 @@ def StringCharForAAdist(string, ind, N, fill=None):
 		N: number of character around ind to return (int)
 		fill: Optionally fill missing characters with this value (string or None) 
 	"""
-  #--> Variables
+ #--> Variables
 	s = ind - N + 1
 	e = ind + N
-  #--> Search string
+ #---
+ #--> Search string
 	try:
 		seq = string[s:e+1]
 	except Exception:
@@ -726,13 +794,14 @@ def StringCharForAAdist(string, ind, N, fill=None):
 				else:
 					seq.append(fill)
 		seq = str(''.join(seq))
-  #--> Return
+ #---
+ #--> Return
 	return seq
+ #---
 #---
-# ---------------------------------------------------------------- Strings (END)
+#endregion ----------------------------------------------------------- Strings
 
-
-# --------------------------------------------------------- UMSAP versions
+#region ------------------------------------------------------- UMSAP versions
 def VersionCompare(la=None, lb=None):
 	""" Compare config.versionUpdate and config.versionInternet. 
 		In general compares two lists with three values each and elements are 
@@ -745,7 +814,7 @@ def VersionCompare(la=None, lb=None):
 		la : first list (list 3 elements)
 		lb : second list (list 3 elements)
 	"""
-  #--> Variables
+ #--> Variables
 	if la == None:
 		la = config.versionInternet
 	else:
@@ -754,7 +823,8 @@ def VersionCompare(la=None, lb=None):
 		lb = config.versionUpdate
 	else:
 		pass
-  #--> Compare & Return
+ #---
+ #--> Compare & Return
 	if la != None:
 		xI, yI, zI = la
 		xU, yU, zU = lb
@@ -776,6 +846,7 @@ def VersionCompare(la=None, lb=None):
 			return -1
 	else:
 		return 0
+ #---
 #---
 
 def VersionJoin(l):
@@ -786,22 +857,18 @@ def VersionJoin(l):
 	li = list(map(str, l))
 	return ".".join(li) 
 #---
-# --------------------------------------------------------- UMSAP versions (END)
+#endregion ---------------------------------------------------- UMSAP versions
 
-
-
-# --------------------------------------------- Date and time manipulation
+#region ------------------------------------------- Date and time manipulation
 def DateTimeNow():
 	""" Return the current date and time with the format 
 		YMDHMS: 20190204050204 """
 	now = datetime.datetime.now()
 	return now.strftime("%Y%m%d%H%M%S")
 #---
-# --------------------------------------------- Date and time manipulation (END)
+#endregion ---------------------------------------- Date and time manipulation
 
-
-
-# ------------------------------------------------------------- Statistics
+#region ----------------------------------------------------------- Statistics
 def StatAncova(c, e, a, mod):
 	""" Run Ancova for c and e. Depending on mod c and e may be altered. 
 		c: control (list of numbers)
@@ -809,7 +876,7 @@ def StatAncova(c, e, a, mod):
 		a: alpha level (float)
 		mod: module (string)
 	"""
-  #--> Update c and e depending on mod
+ #--> Update c and e depending on mod
 	if mod is None:
 		cok = c
 		eok = e
@@ -817,9 +884,11 @@ def StatAncova(c, e, a, mod):
 		cok, eok = StatPrepAncova(c, e, mod)
 	else:
 		pass
-  #--> Run & Return
+ #---
+ #--> Run & Return
 	ancovaRes = StatRunAncova(cok, eok, a)
 	return ancovaRes
+ #---
 #---
 
 def StatPrepAncova(c, e, mod='TarProt'):
@@ -828,38 +897,47 @@ def StatPrepAncova(c, e, mod='TarProt'):
 		e: experiments (list of numbers)
 		mod: module (string)		
 	"""
-  #--> TarProt preps
+ #--> TarProt preps
 	if mod == 'TarProt':
-   #--> Variables		
+     #--> Variables		
 		xC  = []
 		xCt = []
 		yC  = []
 		xE  = []
 		yE  = []
-   #--> Fill the control and first point for experiment
-	#--> First point for control and experiment 
+     #--> Fill the control and first point for experiment
+      #--> First point for control and experiment 
 		for y in c:
 			xC.append(1)
 			xCt.append(5)
 			xE.append(1)
 			yC.append(y)
 			yE.append(y)
-	#--> Duplicate point
+      #---
+      #--> Duplicate point
 		xC  = xC + xCt
 		yC  = yC + yC
-	#--> Make array
+      #---
+      #--> Make array
 		cA = np.array([xC, yC], dtype='float')
-   #--> Experiment, second point	
-	#--> Second point, first done with control 
+      #---
+     #---
+	 #--> Experiment, second point	
+	  #--> Second point, first done with control 
 		for y in e:
 			xE.append(5)
 			yE.append(y)	
-	#--> MAke array
+	  #---
+	  #--> Make array
 		eA = np.array([xE, yE], dtype='float')	
-   #--> Return 
+	  #---
+	 #---
+ #---
+ #--> Return 
 		return [cA, eA]	
 	else:
 		pass	
+ #---
 #---
 
 def StatRunAncova(c, e, a, k=2):
@@ -879,16 +957,18 @@ def StatRunAncova(c, e, a, k=2):
 		a: alpha value
 
 	"""
-  #--> Total sum
+ #--> Total sum
 	Sum_Yc = np.sum(c[1])
 	Sum_Ye = np.sum(e[1])
 	Sum_Yc_Ye = Sum_Yc + Sum_Ye
-  #--> Quit if everythin is 0
+ #---
+ #--> Quit if everythin is 0
 	if Sum_Yc_Ye == 0:
 		return [0, 'NAF']
 	else:
 		pass
-  #--> Other sum
+ #---
+ #--> Other sum
 	Sum_Xc   = np.sum(c[0])
 	Sum_Xe   = np.sum(e[0])
 	Sum_XcYc = np.sum(np.prod(c, axis=0))
@@ -897,11 +977,13 @@ def StatRunAncova(c, e, a, k=2):
 	Sum_Xe2  = np.sum(np.square(e[0]))
 	Sum_Yc2  = np.sum(np.square(c[1]))
 	Sum_Ye2  = np.sum(np.square(e[1]))
-  #--> Number of points
+ #---
+ #--> Number of points
 	Nc = c.shape[1]
 	Ne = e.shape[1]
 	Nt = Ne + Nc 
-  #--> Other values
+ #---
+ #--> Other values
 	SCc        = Sum_XcYc - ((Sum_Xc * Sum_Yc) / (1.0 * Nc))
 	SCe        = Sum_XeYe - ((Sum_Xe * Sum_Ye) / (1.0 * Ne))
 	SCwg       = SCc + SCe
@@ -912,7 +994,8 @@ def StatRunAncova(c, e, a, k=2):
 	SS_Ye      = Sum_Ye2 - ((Sum_Ye * Sum_Ye) / (1.0 * Ne))
 	SSwg_Y     = SS_Yc + SS_Ye
 	adj_SSwg_Y = SSwg_Y - ((SCwg * SCwg)/(1.0 * SSwg_X))	
-  #--> Slope
+ #---
+ #--> Slope
 	SSnum_Slope =  (((SCc * SCc)/(SS_Xc)) + ((SCe * SCe)/(SS_Xe)) 
 				   - ((SCwg * SCwg)/(SSwg_X)))
 	SSden_Slope =  adj_SSwg_Y - SSnum_Slope
@@ -921,9 +1004,11 @@ def StatRunAncova(c, e, a, k=2):
 	F_Slope     = float(((SSnum_Slope)/(dfnum_Slope)) 
 					   / ((SSden_Slope)/(dfden_Slope)))
 	slope       = SCe / (1.0 * SS_Xe)
-  #--> F value
+ #---
+ #--> F value
 	Ft = stats.f.ppf(1-a, dfnum_Slope, dfden_Slope)
-  #--> Results & Return	
+ #---
+ #--> Results & Return	
 	if Ft == 'NA':
 		stest = -2
 	elif F_Slope > Ft and slope > 0:
@@ -935,6 +1020,7 @@ def StatRunAncova(c, e, a, k=2):
 	else:
 		stest = -3
 	return [stest, F_Slope, Ft, slope]
+ #---
 #---
 
 def StatChiSquare(lo, le, aVal):
@@ -956,16 +1042,18 @@ def StatChiSquare(lo, le, aVal):
 			del le[i]
 		else:
 			pass
+ #---
  #--> Calculate & Return
 	lenlo = len(lo)
 	if lenlo > 1:
 		data = np.array([lo, le])
-		#--> Catch error in scipy calculation
+	 #--> Catch error in scipy calculation
 		try:
 			chi = stats.chi2_contingency(data)
 		except Exception:
 			return -1
-		#--- Check contingency table for values below 5
+	 #---
+	 #--> Check contingency table for values below 5
 		val5 = np.count_nonzero(chi[3] < 5.0)
 		elt5 = val5 / (2 * lenlo)
 		if elt5 < 0.2:
@@ -975,8 +1063,10 @@ def StatChiSquare(lo, le, aVal):
 				return 0
 		else:
 			return -1	
+	 #---
 	else:
 		return -1
+ #---
 #---
 
 def StatTost(c, e, a, b, y, d, dm):
@@ -990,9 +1080,10 @@ def StatTost(c, e, a, b, y, d, dm):
 		d: delta value manual (float)
 		dm: maximum delta value (float)
 	"""
-  #--> Calculate t
+ #--> Calculate t
 	t_R = stats.ttest_ind(c, e, equal_var=False)
-  #--> Estimate delta
+ #---
+ #--> Estimate delta
 	if d != None:
 		tdelta = d
 	else:
@@ -1001,10 +1092,13 @@ def StatTost(c, e, a, b, y, d, dm):
 			tdelta = dm
 		else:
 			tdelta = Edelta
-  #--> Calculate tost
+ #---
+ #--> Calculate tost
 	tost_R = ttost_ind(c, e, -tdelta, tdelta, usevar='unequal')
-  #--> Return
+ #---
+ #--> Return
 	return [t_R.pvalue, tdelta, tost_R[0]]
+ #---
 #---
 	
 def StatEstimateDeltaTost(c, a, b, y):
@@ -1015,23 +1109,24 @@ def StatEstimateDeltaTost(c, a, b, y):
 		b: beta value (float)
 		y: chi level value (float)
 	"""
-  #--> Variables
+ #--> Variables
 	n      = len(c)  
 	s      = stdev(c) 
 	chi    = stats.chi2.ppf(1 - y, n - 1)
 	ta1    = stats.t.ppf(1 - a, 2*n - 2)
 	tb1    = stats.t.ppf(1 - b/2, 2*n -2)
 	s_corr = s * sqrt((n - 1)/(chi))
-  #--> delta
+ #---
+ #--> delta
 	delta = s_corr * (ta1 + tb1) * sqrt(2/n)
-  #--> Return
+ #---
+ #--> Return
 	return delta
+ #---
 #---
-# ------------------------------------------------------------- Statistics (END)
+#endregion -------------------------------------------------------- Statistics
 
-
-
-# ----------------------------------------------------- Data Normalization
+#region --------------------------------------------------- Data Normalization
 def DataNorm(pdFi, sel=None, method=None):
 	""" Normalize a pandas data frame (pdF) or selected columns using the 
 		specified method. -inf are replaced with 0 
@@ -1040,13 +1135,15 @@ def DataNorm(pdFi, sel=None, method=None):
 		sel: list of columns (list)
 		method: (string)
 	"""
-  #--> Copy to avoid changing the original
+ #--> Copy to avoid changing the original
 	pdF = pdFi.copy()
-  #--> Normalize & Return
-   #--> None
+ #---
+ #--> Normalize & Return
+  #--> None
 	if method is None:
 		return [True, pdF]
-   #--> Log2
+  #---
+  #--> Log2
 	elif method == 'Log2':
 		if sel is None:
 			pdFN = np.log2(pdF)
@@ -1056,10 +1153,13 @@ def DataNorm(pdFi, sel=None, method=None):
 			pdFN.iloc[:,sel] = np.log2(pdFN.iloc[:,sel])
 			pdFN = pdFN.replace(-inf, 0)
 		return [True, pdFN]			
-   #--> Unknown method
+  #---
+  #--> Unknown method
 	else:
 		gclasses.DlgFatalErrorMsg(config.msg['Errors']['NormMethod'])
 		return [False, False]
+  #---
+ #---
 #---
 
 def DataNormDFCol(pdFCol):
@@ -1080,9 +1180,10 @@ def DataCalcRatios(dfi, col, header):
 		3 must be organized in the same order (list of list 3 levels)
 		header: name of the columns in the data frame (list)
 	"""
-  #--> Copy df to avoid changing the original data	
+ #--> Copy df to avoid changing the original data	
 	df = dfi.copy()
-  #--> Calculate ratios
+ #---
+ #--> Calculate ratios
 	for k, a in enumerate(col): # Loop cond/bands
 		tp = len(a)
 		for l, b in enumerate(a[0]): # Loop reference in given cond/band
@@ -1094,14 +1195,14 @@ def DataCalcRatios(dfi, col, header):
 				else:
 					tc.append(header[col[k][c][l]])
 			df[tc] = df[tc].div(df[ref], axis=0)
-  #--> Return
-	return [True, df]
+ #---
+ #--> Return
+	return [True, df] 
+ #---
 #---
-# ----------------------------------------------------- Data Normalization (END)
+#endregion ------------------------------------------------ Data Normalization
 
-
-
-# ------------------------------------------ pandas.DataFrame manipulation
+#region ---------------------------------------- pandas.DataFrame manipulation
 def DFSelCol(df, sel, loc=False):
 	""" Select all rows from columns in sel by loc method
 		---
@@ -1109,9 +1210,10 @@ def DFSelCol(df, sel, loc=False):
 		sel: list with column names or column indexes (list)
 		loc: True .loc method False .iloc method	
 	"""
-  #--> Variables
+ #--> Variables
 	k = True
-  #--> Select
+ #---
+ #--> Select
 	if loc:
 		try:
 			dfo = df.loc[:,sel]
@@ -1122,11 +1224,13 @@ def DFSelCol(df, sel, loc=False):
 			dfo = df.iloc[:,sel]
 		except Exception:
 			k = False
-  #--> Return
+ #---
+ #--> Return
 	if k:
 		return [True, dfo]
 	else:
 		return [False, None]
+ #---
 #---
 
 def DFSetColType(df, typeV, name):
@@ -1136,15 +1240,17 @@ def DFSetColType(df, typeV, name):
 		typeV: col name : type paired values (dict)
 		name: for looking error msg (string)
 	"""
-  #--> Variables
+ #--> Variables
 	k = True
-  #--> Assign types
+ #---
+ #--> Assign types
 	try:
 		df = df.astype(typeV)
 	except Exception as e:
 		error = str(e).split(':')[1]
 		k = False
-  #--> Return
+ #---
+ #--> Return
 	if k:
 		return [True, df]
 	else:
@@ -1152,6 +1258,7 @@ def DFSetColType(df, typeV, name):
 		msg += '\nNon-numeric value: ' + str(error)
 		gclasses.DlgFatalErrorMsg(msg)
 		return [False, None]			
+ #---
 #---
 
 def DFColValFilter(df, val, col, comp='eq', reset=True, loc=False):
@@ -1164,7 +1271,7 @@ def DFColValFilter(df, val, col, comp='eq', reset=True, loc=False):
 		reset: reset the df index after filtering or not
 		loc: True .loc False .iloc depending on the values of col
 	"""
-  #--> Filter
+ #--> Filter
 	try:
 		if comp == 'eq':
 			if loc:
@@ -1183,13 +1290,16 @@ def DFColValFilter(df, val, col, comp='eq', reset=True, loc=False):
 				dfo = df.loc[df.iloc[:,col] <= val]				
 	except Exception:
 		return [False, None]
-  #--> Reset				
+ #---
+ #--> Reset				
 	if reset:
 		dfo.reset_index(drop=True, inplace=True)
 	else:
 		pass
-  #--> Return
+ #---
+ #--> Return
 	return [True, dfo]
+ #---
 #---
 
 def DFCharFilter(df, char, col, pres=False, loc=False, reset=True):
@@ -1202,7 +1312,7 @@ def DFCharFilter(df, char, col, pres=False, loc=False, reset=True):
 		loc: True .loc False .iloc
 		reset: reset the df index after filtering or not
 	"""
-  #--> Look up char
+ #--> Look up char
 	if pres:
 		try:
 			if loc:
@@ -1219,13 +1329,16 @@ def DFCharFilter(df, char, col, pres=False, loc=False, reset=True):
 				dfo = df[~df.iloc[:,col].str.contains(char)]
 		except Exception:
 			return [False, None]
-  #--> Reset
+ #---
+ #--> Reset
 	if reset:
 		dfo.reset_index(drop=True, inplace=True)
 	else:
 		pass
-  #--> Return			
+ #---
+ #--> Return			
 	return [True, dfo]
+ #---
 #---
 
 #--- Several steps
@@ -1238,9 +1351,10 @@ def DFSelSet(df, sel, typeV, name, locT=False):
 		name: for looking error msg (string)
 		locT: True .loc method False .iloc method 	
 	"""
-  #--> DFselCol
+ #--> DFselCol
 	out, df = DFSelCol(df, sel, locT)
-  #--> DFSetColType
+ #---
+ #--> DFSetColType
 	if out:
 		out, df = DFSetColType(df, typeV, name)
 		if out:
@@ -1249,6 +1363,7 @@ def DFSelSet(df, sel, typeV, name, locT=False):
 			return [False, None]
 	else:
 		return [False, None]
+ #---
 #---
 
 def DFSelFilterNSet(df, sel, val, col, comp, name, typeV, locT=False):
@@ -1265,9 +1380,10 @@ def DFSelFilterNSet(df, sel, val, col, comp, name, typeV, locT=False):
 		typeV: col name : type pairs (dict) 
 		locT: True .loc methos False .iloc method
 	"""
-  #--> DFSelCol
+ #--> DFSelCol
 	out, df = DFSelCol(df, sel, locT)
-  #--> DFColValFilter len(val) times
+ #---
+ #--> DFColValFilter len(val) times
 	if out:
 		for k in range(0, len(val)):
 			out, df = DFColValFilter(df, val[k], col[k], comp[k], loc=True)
@@ -1275,7 +1391,8 @@ def DFSelFilterNSet(df, sel, val, col, comp, name, typeV, locT=False):
 				pass
 			else:
 				return [False, False]
-  #--> Col types
+ #---
+ #--> Col types
 		out, df = DFSetColType(df, typeV, name)
 		if out:
 			return [True, df]
@@ -1283,6 +1400,7 @@ def DFSelFilterNSet(df, sel, val, col, comp, name, typeV, locT=False):
 			return [False, False]
 	else:
 		return [False, False]
+ #---
 #---
 
 def DFSelCharFilterNSet(df, sel, char, colC, val, col, comp, name, typeV, 
@@ -1302,12 +1420,13 @@ def DFSelCharFilterNSet(df, sel, char, colC, val, col, comp, name, typeV,
 		typeV: col name : type pairs (dict) 
 		locT: True .loc methos False .iloc method	
 	"""
-  #--> Sel col
+ #--> Sel col
 	out, df = DFSelCol(df, sel, locT)
-  #--> Fiter by char
+ #---
+ #--> Fiter by char
 	if out:	
 		out, df = DFCharFilter(df, char, colC)
-  #--> Filter by val len(val) times 
+  	 #--> Filter by val len(val) times 
 		if out:
 			for k in range(0, len(val)):
 				out, df = DFColValFilter(df, val[k], col[k], comp[k], loc=True)
@@ -1315,7 +1434,7 @@ def DFSelCharFilterNSet(df, sel, char, colC, val, col, comp, name, typeV,
 					pass
 				else:
 					return [False, False]
-  #--> Set types
+  	 #--> Set types
 			out, df = DFSetColType(df, typeV, name)
 			if out:
 				return [True, df]
@@ -1325,6 +1444,7 @@ def DFSelCharFilterNSet(df, sel, char, colC, val, col, comp, name, typeV,
 			return [False, False]
 	else:
 		return [False, False]	
+ #---
 #---
 
 def DFGetFragments(df, name, strC=True):
@@ -1335,7 +1455,7 @@ def DFGetFragments(df, name, strC=True):
 		name: name for error msg
 		strC: return a string (True) or a list (False)  
 	"""
-  #--> Get N, C pairs from the df
+ #--> Get N, C pairs from the df
 	dvS = df.loc[:,['Nterm', 'Cterm']]
 	dvS = dvS.drop_duplicates()
 	dvS = dvS.sort_values(by=['Nterm', 'Cterm'], axis=0)
@@ -1343,7 +1463,8 @@ def DFGetFragments(df, name, strC=True):
 	l = len(dvSL)
 	lm = l - 1
 	frags = []
-  #--- Make the fragments
+ #---
+ #--> Make the fragments
 	for k, v in enumerate(dvSL):
 		if k == 0:
 			n, c = v
@@ -1367,11 +1488,13 @@ def DFGetFragments(df, name, strC=True):
 				pass
 		else:
 			pass
-  #--> Convert to string or not & Return
+ #---
+ #--> Convert to string or not & Return
 	if strC:
 		return [True, '; '.join(list(map(str, frags)))]
 	else:
 		return [True, frags]
+ #---
 #---
 
 def DFWrite2TextCtrl(df, tc, formatters=None):
@@ -1386,11 +1509,9 @@ def DFWrite2TextCtrl(df, tc, formatters=None):
  #--> Return
     return True
 #--- 		
-# ------------------------------------------ pandas.DataFrame manipulation (END)			
+#endregion ------------------------------------- pandas.DataFrame manipulation
 
-
-
-# ------------------------------------------------------------------- Calc
+#region ----------------------------------------------------------------- Calc
 def CalCutpropInd(i):
 	""" Returns the starting index of an experiment in the cutpropObj.data
 		dataframe 
@@ -1400,18 +1521,16 @@ def CalCutpropInd(i):
 	ind = ((config.cutprop['DistBetExp'] * i) - config.cutprop['NColExpStart'])
 	return ind
 #---
-# ------------------------------------------------------------------- Calc (END)
+#endregion -------------------------------------------------------------- Calc
 
-
-
-# ----------------------------------------------------------------- Colors
+#region --------------------------------------------------------------- Colors
 def GetColors(N, t='S'):
 	""" Get N colors from config.colors['Fragments'] 
 		---
 		N: number of colors (int)
 		t: (S)olid or (L)ight colors (string)
 	"""
-  #--> Variables
+ #--> Variables
 	if t == 'S':
 		Ncolor = len(config.colors['Fragments'])
 		colors = config.colors['Fragments']
@@ -1419,12 +1538,15 @@ def GetColors(N, t='S'):
 		Ncolor = len(config.colors['FragmentsLight'])
 		colors = config.colors['FragmentsLight']		
 	Nlist = []
-  #--> Get the colors
+ #---
+ #--> Get the colors
 	for i in range(1, N+1, 1):
 		ci = i % Ncolor
 		Nlist.append(colors[ci])
-  #--> Return
+ #---
+ #--> Return
 	return Nlist
+ #---
 #---
 
 def GetZColors(y, colors, lim=2):
@@ -1435,9 +1557,10 @@ def GetZColors(y, colors, lim=2):
 		lim: boundary for selecting the color from colors 
 		---
 	"""
-  #--> Variables
+ #--> Variables
 	colO = []
-  #--> Select color
+ #---
+ #--> Select color
 	for z in y:
 		if z >= lim:
 			colO.append(colors[0])
@@ -1445,19 +1568,20 @@ def GetZColors(y, colors, lim=2):
 			colO.append(colors[2])
 		else:
 			colO.append(colors[1])
-  #--> Return
+ #---
+ #--> Return
 	return [True, colO]
+ #---
 #---
-# ----------------------------------------------------------------- Colors (END)
+#endregion ------------------------------------------------------------ Colors
 
-
-
-# ------------------------------------------------------- gclasses Helpers
+#region ----------------------------------------------------- gclasses Helpers
 def GHelperLBSelUpdate(self):
 	""" To update selections in ElementGelPanel and WinResUno """
-  #-->
+ #-->
 	self.seqG = self.fAll[self.fAll.loc[:,'Sequence'].str.contains(self.selSeq, regex=False)]
-  #-->
+ #---
+ #-->
 	if self.seqG.empty == False:
 		self.lbSelPlotG = True
 		if self.selM == True and self.TLane != None:
@@ -1485,6 +1609,7 @@ def GHelperLBSelUpdate(self):
 			self.lbSelPlot = False								
 	else:
 		self.lbSelPlotG = False
+ #---
 #---
 
 def GHelperXYLocate(x, y, coordDict):
@@ -1495,10 +1620,11 @@ def GHelperXYLocate(x, y, coordDict):
 		The keys in x match the ones in y. Basically you have the y values and
 		for each y values you have the x in the y row.
 	"""
-  #--> Default values
+ #--> Default values
 	yo = None
 	xo = None
-  #--> Locate y
+ #---
+ #--> Locate y
 	for k in coordDict['y'].keys():
 		yi, yf = coordDict['y'][k][0]
 		if yi <= y and y <= yf:
@@ -1506,7 +1632,8 @@ def GHelperXYLocate(x, y, coordDict):
 			break
 		else:
 			pass
-  #--> Locate x
+ #---
+ #--> Locate x
 	if yo == None:
 		for k in coordDict['x'].keys():
 			if xo == None:
@@ -1527,19 +1654,22 @@ def GHelperXYLocate(x, y, coordDict):
 				break
 			else:
 				pass
-  #--> Return
+ #---
+ #--> Return
 	return [True, xo, yo]		
+ #---
 #---
 
 def GHelperShowFragDet(self):
 	""" Show fragments details depending of self. Used in TarProtRes and 
 		LimProtRes 
 	"""
-  #--> Get fragment number info
+ #--> Get fragment number info
 	k  = self.kf[0]
 	b  = self.kf[1]
 	bp = b + 1
-  #--> Locate the fragment in data frame
+ #---
+ #--> Locate the fragment in data frame
 	if self.name == config.name['TarProtRes']:
 		tf  = self.f.loc['E' + str(k),:]
 	elif self.name == config.name['LimProtRes']:
@@ -1550,14 +1680,16 @@ def GHelperShowFragDet(self):
 			tf = tf.droplevel(0, axis=0)
 	else:
 		pass
-  #--> Get info for experiment
+ #---
+ #--> Get info for experiment
 	eF  = tf.shape[0]
 	eFN = tf['Bit'].sum()
 	eC  = int(tf.at[0,'TCuts'])
 	eCN = int(tf.at[0,'TCutsNat'])
 	eS  = tf['SeqN'].sum(skipna=True)
 	eSN = int(tf['SeqNNat'].sum(skipna=True))
-  #--> Get info for fragment
+ #---
+ #--> Get info for fragment
 	tff = tf.loc[b,:]
 	n   = int(tff['Nterm'])
 	try:
@@ -1579,11 +1711,13 @@ def GHelperShowFragDet(self):
 		cnF = int(tff['CutsNat'])
 	except Exception:
 		cnF = 'NA'
-  #--> Extra space for printing
+ #---
+ #--> Extra space for printing
 	sku, sfu, sd = GHelperGetSpan(k, bp)
-  #--> Write into text box
+ #---
+ #--> Write into text box
 	self.text.Clear()
-	#---
+  #-->
 	if self.name == config.name['TarProtRes']:
 		text = ("Details for Experiment " + str(k) + " and Fragment " 
 			+ str(bp) + "\n\n")
@@ -1607,7 +1741,8 @@ def GHelperShowFragDet(self):
 		self.text.AppendText(text)		
 	else:
 		pass
-	#---
+  #---
+  #-->
 	text = (sd * " " + "Sequences " + str(eS) + "(" + str(eSN) + ")\n\n")
 	self.text.AppendText(text)
 	text = ("Fragment" + sfu * " " + str(bp) + ":  Nterm " + str(n) 
@@ -1620,9 +1755,12 @@ def GHelperShowFragDet(self):
 	self.text.AppendText('Sequences in the fragment:\n\n')
 	for i in tff['SeqSpace']:
 		self.text.AppendText(str(i) + '\n')
-	self.text.SetInsertionPoint(0)
-  #--> Return
+	self.text.SetInsertionPoint(0) 
+  #---
+ #---
+ #--> Return
 	return True
+ #---
 #---	
 
 def GHelperGetSpan(k, F):
@@ -1632,13 +1770,15 @@ def GHelperGetSpan(k, F):
 		k: experiment (int)
 		F: fragment number (int)
 	"""
-  #--> Length of the numbers
+ #--> Length of the numbers
 	sk = len(str(k))
 	sF = len(str(F))
-  #--> Length needed to write the string
+ #---
+ #--> Length needed to write the string
 	lk = 11 + sk # These numbers are related to what you write in text box
 	lf = 9 + sF
-  #--> Extra space to make it even
+ #---
+ #--> Extra space to make it even
 	if lk > lf:
 		sku = 1
 		sfu = 1 + lk - lf
@@ -1647,23 +1787,24 @@ def GHelperGetSpan(k, F):
 		sku = lf - lk - 1
 		sfu = 1
 		sd = lf + 3
-  #--> Return
+ #---
+ #--> Return
 	return [sku, sfu, sd]
+ #---
 #---
-# ------------------------------------------------------- gclasses Helpers (END)
+#endregion -------------------------------------------------- gclasses Helpers
 
-
-
-# ------------------------------------------------------- dclasses Helpers
+#region ----------------------------------------------------- dclasses Helpers
 def DHelperFragTuple2NatSeq(self, tup, strC=True):
 	""" Convert the fragment N, C tuple to the native sequence residue numbers
 		---
 		tup: tupple (N, C)
 		strC: True covert to string False return list
 	"""
-  #--> Variables
+ #--> Variables
 	l = []
-  #--> Native residue numbers
+ #---
+ #--> Native residue numbers
 	if self.natProtPres:
 		for t in tup:
 			lt = []
@@ -1674,20 +1815,22 @@ def DHelperFragTuple2NatSeq(self, tup, strC=True):
 				else:
 					lt.append('NA')
 			l.append(tuple(lt))
-   #--> Convert to string or not 
+  	 #--> Convert to string or not 
 		if strC:
 			l = '; '.join(list(map(str, l)))
 		else:
 			pass
+	 #---
 	else:
 		l = 'NA'
-  #--> Return
+ #---
+ #--> Return
 	return [True, l]
+ #---
 #---
-# ------------------------------------------------------- dclasses Helpers (END)
+#endregion -------------------------------------------------- dclasses Helpers
 
-
-# ------------------------------- Data to fill ListCtrl in a Result Window
+#region ----------------------------- Data to fill ListCtrl in a Result Window
 # This methods get information from a dataframe and the information is used to
 # fill a ListCtrl. They are intended to be called from within a class
 def Get_Data4ListCtrl_TarProtRes(self, col=None, df=None):
@@ -1701,10 +1844,13 @@ def Get_Data4ListCtrl_TarProtRes(self, col=None, df=None):
 		df = self.fileObj.filterPeptDF
 	else:
 		pass
+ #---
  #--> Get info
 	l = df.loc[:,col].values.tolist()
+ #---
  #--> Return
 	return l
+ #---
 #---
 
 def Get_Data4ListCtrl_LimProtRes(self, col=None, df=None):
@@ -1718,10 +1864,13 @@ def Get_Data4ListCtrl_LimProtRes(self, col=None, df=None):
 		df = self.fileObj.filterPeptDF
 	else:
 		pass
+ #---
  #--> Get info
 	l = df.loc[:,col].values.tolist()
+ #---
  #--> Return
 	return l
+ #---
 #---
 
 def Get_Data4ListCtrl_ProtProfRes(self, col=None, df=None):
@@ -1735,20 +1884,15 @@ def Get_Data4ListCtrl_ProtProfRes(self, col=None, df=None):
 		df = self.fileObj.dataFrame
 	else:
 		pass
+ #---
  #--> Get info
 	l = df.loc[:,col].values.tolist()
+ #---
  #--> Return
 	return l
+ #---
 #---
-# ------------------------------- Data to fill ListCtrl in a Result Window (END)
-
-
-
-
-
-
-
-
+#endregion -------------------------- Data to fill ListCtrl in a Result Window
 
 
 def GetFilterByZscoreValue(var):
@@ -1765,7 +1909,6 @@ def GetFilterByZscoreValue(var):
  #--> Variables
 	nFalse = 3
  #---
-
  #--> Find comparison type and add the equal part
 	lt = '<' in var
 	gt = '>' in var
@@ -1778,12 +1921,10 @@ def GetFilterByZscoreValue(var):
 	else:
 		comp = ''
  #---
-
  #--> Get number
 	num = [x for x in var if x in '0123456789.,']
 	num = ''.join(num)
  #---
-
  #--> Return 
 	return [True, num, comp] 
  #---

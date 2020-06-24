@@ -12,31 +12,19 @@
 """ This module creates the main window of the app """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import wx
-## My modules
+
 import config.config   as config
 import gui.gui_methods as gmethods
 import gui.gui_classes as gclasses 
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinMain(gclasses.WinMyFrame):
 	""" Creates the main frame of the application """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=None):
 		""" parent: parent of the widgets
 			style: style of the windows
@@ -44,10 +32,12 @@ class WinMain(gclasses.WinMyFrame):
 	 #--> Initial Setup
 		self.name = config.name['Main']
 		super().__init__(parent=parent, style=style)
+	 #---
 	 #--> Widgets
 	  #--> Lines
 		self.lineHI1 = wx.StaticLine(self.panel)
 		self.lineVI1 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
+	  #---
 	  #--> Images
 		self.img = wx.StaticBitmap(
 			self.panel, 
@@ -57,11 +47,13 @@ class WinMain(gclasses.WinMyFrame):
 				wx.BITMAP_TYPE_ANY,
 			),
 		)
+	  #---
 	  #--> Buttons
 		self.buttonLimProt = wx.Button(self.panel, label='Limited Proteolysis')
 		self.buttonProtProf= wx.Button(self.panel, label='Proteome Profiling')
 		self.buttonTarProt = wx.Button(self.panel, label='Targeted Proteolysis')
 		self.buttonUtil    = wx.Button(self.panel, label='Utilities')
+	  #---
 	  #--> Static text
 		self.text1 = wx.StaticText(
 			self.panel, 
@@ -71,9 +63,12 @@ class WinMain(gclasses.WinMyFrame):
 			self.panel, 
 			label='Copyright © 2017 Kenny Bravo Rodriguez'
 		)
+	  #---
+	 #---
 	 #--> Sizers
 	  #--> New
 		self.sizerButton = wx.BoxSizer(wx.VERTICAL)
+	  #---
 	  #--> Add
 		self.sizerButton.Add(
 			self.buttonLimProt,  
@@ -134,25 +129,33 @@ class WinMain(gclasses.WinMyFrame):
 			span=(1, 3), 
 			flag=wx.ALIGN_RIGHT|wx.ALL
 		)
+	  #---
 	  #--> Fit
 		self.sizer.Fit(self)
+	  #---
+	 #---
 	 #--> Position
 		self.Centre()
+	 #---
 	 #--> Tooltips
 		self.buttonProtProf.SetToolTip(config.tooltip[self.name]['ProtProf'])
 		self.buttonTarProt.SetToolTip(config.tooltip[self.name]['TarProt'])
 		self.buttonLimProt.SetToolTip(config.tooltip[self.name]['LimProt'])
 		self.buttonUtil.SetToolTip(config.tooltip[self.name]['Util'])
+	 #---
 	 #--> Bind
 		self.buttonUtil.Bind(wx.EVT_BUTTON, self.OnUtil)
 		self.buttonTarProt.Bind(wx.EVT_BUTTON, self.menubar.OnTarProt)	
 		self.buttonLimProt.Bind(wx.EVT_BUTTON, self.menubar.OnLimProt)	
 		self.buttonProtProf.Bind(wx.EVT_BUTTON, self.menubar.OnProtProf)	
+	 #---
 	 #--> Show
 		self.Show()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnUtil(self, event):
 		""" Creates the utility window """
 		gmethods.WinMUCreate(config.name['Util'])

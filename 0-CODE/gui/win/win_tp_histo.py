@@ -12,25 +12,14 @@
 """ This module creates the Histograms utility window """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import wx
-## My modules
+
 import config.config as config
 import gui.gui_classes as gclasses
 import gui.gui_methods as gmethods
 import data.data_classes as dclasses 
-#---
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinHisto(gclasses.WinUtilUno):
@@ -38,6 +27,7 @@ class WinHisto(gclasses.WinUtilUno):
 		histograms from a .tarprot file 
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=None):
 		""" parent: parent of the widgets
 			style: style of the windows
@@ -45,23 +35,29 @@ class WinHisto(gclasses.WinUtilUno):
 	 #--> Initial Setup
 		self.name = config.name['Histo']
 		super().__init__(parent=parent, style=style, length=17)
+	 #---
 	 #--> Sizers
 		self.sizer.Fit(self)
+	 #---
 	 #--> Position
 		self.Center()
+	 #---
 	 #--> Show
 		self.Show()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
-	##-- Binding
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- Binding Methods
 	def OnClearFilesDef(self):
 		""" Specific clear for Files section in this window """
 		self.tcOutputFF.SetValue('NA')
 		return True
 	#---
+	#endregion ----------------------------------------------- Binding Methods
 
-	###--- Run
+	#region ------------------------------------------------------ Run Methods
 	def CheckInput(self):
 		""" Check the user provided input """
 	 #--> Files
@@ -75,6 +71,7 @@ class WinHisto(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Output file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Output file', 1)
@@ -87,6 +84,8 @@ class WinHisto(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	  #---
+	 #---
 	 #--> Values		
 	  #--> Histogram windows
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -113,8 +112,11 @@ class WinHisto(gclasses.WinUtilUno):
 				pass
 		else:
 			pass
+	  #---
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def ReadInputFiles(self):
@@ -145,6 +147,7 @@ class WinHisto(gclasses.WinUtilUno):
 		if self.tarprotObj.checkFP:
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Writing output files: hist file', 1)
+	 #---
 	 #--> Write		
 			self.tarprotObj.TarProt2HistoFile(self.do['Outputfile'], 
 				self.do['Histogramwindows'])
@@ -152,8 +155,10 @@ class WinHisto(gclasses.WinUtilUno):
 			gclasses.DlgFatalErrorMsg(
 				config.dictCheckFatalErrorMsg[self.name]['FiltPept2'])
 			return False
+	 #---
 	 #--> Return			
 		return True
+	 #---
 	#---
 
 	def ShowRes(self):
@@ -166,9 +171,12 @@ class WinHisto(gclasses.WinUtilUno):
 				self.do['Outputfile'])
 		else:
 			return False
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---	
+	#endregion --------------------------------------------------- Run Methods
 #---
 
 

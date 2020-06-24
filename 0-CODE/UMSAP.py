@@ -12,22 +12,11 @@
 """ This module starts the application """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-# --- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import wx
 import _thread
 from pathlib import Path
-## My modules
+
 import config.config	 as config
 import gui.menu.menu	 as menu
 import gui.gui_classes   as gclasses
@@ -63,8 +52,7 @@ from gui.win.win_lp_seq		    import WinSeqAlignLP
 #---
 from gui.win.win_pp_protprof	import WinProtProf
 from gui.win.win_pp_protprofR   import WinProtProfRes
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class UmsapApp(wx.App):
@@ -75,14 +63,16 @@ class UmsapApp(wx.App):
 	   
 	 #--> Set special configuration values that require a running wx.App
 		self.AppInit()
+	 #---
 	 #--> Check for updates
 		self.AppUpdateCheck()
+	 #---
 	 #--> Show the main frame & Return
 		gmethods.WinMUCreate(config.name["Main"])
 		return True
+	 #---
 	#---
 
-	####---- Methods of the class
 	def AppInit(self):
 		""" Define parameters that requires a wx.App to be already running """
 	   
@@ -91,9 +81,11 @@ class UmsapApp(wx.App):
 			wx.MenuBar.MacSetCommonMenuBar(menu.MainMenuBar())
 		else:
 			pass
+	 #---
 	 #--> Configuration options
 	  #--> Screen Size
 		config.size["Screen"] = wx.GetDisplaySize()
+	  #---
 	  #--> Fonts
 	   #--> Define Fonts
 		if config.cOS == "Darwin":
@@ -126,9 +118,12 @@ class UmsapApp(wx.App):
 		else:
 			gclasses.DlgUnexpectedErrorMsg(config.msg["UErrors"]["OS"])
 			return False
-	   #--> Assign fonts
+	  #---
+	  #--> Assign fonts
 		config.font[config.name["LimProtRes"]] = config.font[config.name["TarProtRes"]]
-	  #--> Pointers
+	  #---
+	 #---
+	 #--> Pointers
 		config.pointer['gmethods']['LaunchUscr'] = { # Launch module from uscr file
 			config.mod[config.name['TarProt']] : gmethods.LaunchTarProt,
 			config.mod[config.name['LimProt']] : gmethods.LaunchLimProt,
@@ -199,20 +194,25 @@ class UmsapApp(wx.App):
 			config.name['LimProtRes']  : dmethods.Get_Data4ListCtrl_LimProtRes,
 			config.name['ProtProfRes'] : dmethods.Get_Data4ListCtrl_ProtProfRes,
 		}
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def AppUpdateCheck(self):
 		""" Check for updates from a different thread"""
 	 #--> Check if check is on
 		if config.general["checkUpdate"] == 1:
-	 #--> Check
+	 	 #--> Check
 			_thread.start_new_thread(gmethods.UpdateCheck, ("main",))
+		 #---
 		else:
 			pass
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 #---
 
