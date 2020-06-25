@@ -13,6 +13,38 @@
 
 
 
+------------------------------------------------------------ CHANGE LOG (Down)
+
+	-- Two new modules
+
+	-- Easier way to type the column numbers containing the control and 
+		experiment result
+
+	-- Included threads for better GUI experience.
+
+	-- Change : for a ; in PDBID TarProt module
+
+	-- Improved display of columns label in CorrARes
+
+	-- Pop up menu now works inside graphics
+
+	-- Check for Updates 
+
+	-- Preference panels
+
+	-- Cutprop total column change to FP list
+
+	-- Data_Step added for manual control of step by step results
+
+	-- Format of output file change to json or csv to allow easier reading by
+		users needing to manipulate the output files.
+	
+	-- List of filtered peptide in the .filtpept file simplified.
+
+------------------------------------------------------------ CHANGE LOG (Up)
+
+
+
 ------------------------------------------------------------ MANUAL (Down)
 
 	-- Short cuts are growing place a list in the manual
@@ -359,39 +391,6 @@
   ---------------------------------------------------- RESULTS WINDOWS
 
 ------------------------------------------------------------ THINGS TO DO (Up)
-
-
-
------------------------------------------------------------- CHANGE LOG (Down)
-
-	-- Two new modules
-
-	-- Easier way to type the column numbers containing the control and 
-		experiment result
-
-	-- Included threads for better GUI experience.
-
-	-- Change : for a ; in PDBID TarProt module
-
-	-- Improved display of columns label in CorrARes
-
-	-- Pop up menu now works inside graphics
-
-	-- Check for Updates 
-
-	-- Preference panels
-
-	-- Cutprop total column change to FP list
-
-	-- Data_Step added for manual control of step by step results
-
-	-- Format of output file change to json or csv to allow easier reading by
-		users needing to manipulate the output files.
-	
-	-- List of filtered peptide in the .filtpept file simplified.
-
------------------------------------------------------------- CHANGE LOG (Up)
-
 
 
 
