@@ -161,9 +161,6 @@ class UmsapApp(wx.App):
 		}
 		config.pointer['menu']['toolmenu'] = { # Tool menu
 			#--> Modules
-			# config.name['TarProt'] : menu.ToolMenuTarProtMod,
-			# config.name['LimProt'] : menu.ToolMenuLimProtMod,
-			# config.name['ProtProf']: menu.ToolMenuProtProfMod,
 			config.name['TarProt'] : menu.ToolsModule,
 			config.name['LimProt'] : menu.ToolsModule,
 			config.name['ProtProf']: menu.ToolsModule,			
@@ -178,7 +175,7 @@ class UmsapApp(wx.App):
 			config.name['HistoRes']  : menu.ToolMenuHistoRes,
 			config.name['AAdistR']   : menu.ToolMenuAAdistRes,
 			#--> Other windows
-			config.name['TypeRes']   : menu.ToolMenuTypeResults,
+			config.name['TypeRes']   : menu.ToolsTypeResults,
 		}
 		config.pointer['dclasses']['DataObj'] = { # Data objects with name and file extension
 			config.name['TarProtRes']	  : dclasses.DataObjTarProtFile,

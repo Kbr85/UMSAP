@@ -400,6 +400,31 @@ class AddSelection(wx.Menu):
 	#---
 	#endregion ----------------------------------------------------- MyMethods
 #---
+
+class ToolsTypeResults(wx.Menu):
+	""" Tool menu for the Type Results window """
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""" """
+		super().__init__()
+	 #--> Menu items
+		self.copy = self.Append(-1, 'Copy Selected Columns\tCtrl+C')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnLBoxCopy, source=self.copy)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnLBoxCopy(self, event):
+		""" Copy the colum numbers of selected rows to the clipboard """
+		win = self.GetWindow()
+		win.OnLBoxCopy()
+		return True
+	#---
+	#endregion ---------------------------------------------------- My Methods
 #endregion -------------------------------------------------------- Base menus
 
 #region ---------------------------------------------------------- Mixed menus
@@ -769,31 +794,31 @@ class MenuFilterMainMenu(wx.Menu):
 #---# methods that appears almost everywhere.
 #---# Improve
 
-class ToolMenuTypeResults(wx.Menu):
-	""" Tool menu for the Type Results window """
+# class ToolMenuTypeResults(wx.Menu):
+# 	""" Tool menu for the Type Results window """
 
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self):
-		""" """
-		super().__init__()
-	 #--> Menu items
-		self.Append(501, 'Copy\tCtrl+C')
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnLBoxCopy, id=501)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
+# 	#region --------------------------------------------------- Instance Setup
+# 	def __init__(self):
+# 		""" """
+# 		super().__init__()
+# 	 #--> Menu items
+# 		self.Append(501, 'Copy\tCtrl+C')
+# 	 #---
+# 	 #--> Bind
+# 		self.Bind(wx.EVT_MENU, self.OnLBoxCopy, id=501)
+# 	 #---
+# 	#---
+# 	#endregion ------------------------------------------------ Instance Setup
 
-	#region ------------------------------------------------------- My Methods
-	def OnLBoxCopy(self, event):
-		""" Copy the colum numbers of selected rows to the clipboard """
-		win = self.GetWindow()
-		win.OnLBoxCopy()
-		return True
-	#---
-	#endregion ---------------------------------------------------- My Methods
-#---
+# 	#region ------------------------------------------------------- My Methods
+# 	def OnLBoxCopy(self, event):
+# 		""" Copy the colum numbers of selected rows to the clipboard """
+# 		win = self.GetWindow()
+# 		win.OnLBoxCopy()
+# 		return True
+# 	#---
+# 	#endregion ---------------------------------------------------- My Methods
+# #---
 
 class ToolMenuCorrAMod(wx.Menu):
 	""" Creates the tools menu for the correlation analysis window """
