@@ -166,8 +166,8 @@ class UmsapApp(wx.App):
 			config.name['ProtProf']: menu.ToolsModule,			
 			#--> Utilities
 			config.name['MergeAA'] : menu.ToolMenuMergeAA,
-			config.name['CorrA']   : menu.ToolMenuCorrAMod,
-			config.name['CorrARes']: menu.ToolMenuCorrARes,
+			config.name['CorrA']   : menu.ToolsCorrAUtil,
+			config.name['CorrARes']: menu.ToolsCorrARes,
 			#--> Result windows
 			config.name['TarProtRes']: menu.ToolMenuTarProtRes,
 			config.name['LimProtRes']: menu.ToolMenuLimProtRes,

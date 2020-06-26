@@ -425,6 +425,69 @@ class ToolsTypeResults(wx.Menu):
 		return True
 	#---
 	#endregion ---------------------------------------------------- My Methods
+#---
+
+class ToolsCorrAUtil(wx.Menu):
+	""" Creates the tools menu for the correlation analysis window """
+	
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""" """
+		super().__init__()
+	 #--> Menu items
+		self.delSel = self.Append(-1, 'Delete Selected')
+		self.clearL = self.Append(-1, 'Clear List')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnClearL, source=self.clearL)
+		self.Bind(wx.EVT_MENU, self.OnDelSel, source=self.delSel)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnClearL(self, event):
+		""" Clear all """
+		win = self.GetWindow()
+		win.OnClearL()
+		return True
+	#---
+
+	def OnDelSel(self, event):
+		""" Delete selected """
+		win = self.GetWindow()
+		win.OnDelSel()
+		return True
+	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
+
+class CorrAResExport(wx.Menu):
+	""" Export menu in the Correlation analysis result window """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Menu items & Bind
+		for k, e in config.modules.items():
+			self.Append(k, e)
+			self.Bind(wx.EVT_MENU, self.OnExport, id=k)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnExport(self, event):
+		""" Export columns in the correlation plot """	
+		win = self.GetWindow()
+		if win.OnExport(event.GetId()):
+			return True
+		else:
+			return True
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+
 #endregion -------------------------------------------------------- Base menus
 
 #region ---------------------------------------------------------- Mixed menus
@@ -499,6 +562,39 @@ class ToolsModule(wx.Menu):
 			return False
 	#---
 	#endregion ----------------------------------------------------- MyMethods
+#---
+
+class ToolsCorrARes(wx.Menu):
+	""" Creates the pop up menu in the correlation results window """
+	
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""" """
+	 #--> Init
+		super().__init__()
+	 #---
+	 #--> Menu items
+		self.Export = CorrAResExport()
+		self.AppendSubMenu(self.Export, 'Export Data to')
+		self.AppendSeparator()
+		self.saveImg = self.Append(-1, 'Save Plot Image')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnSavePlot, source=self.saveImg)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnSavePlot(self, event):
+		""" Save image of the plot """
+		win = self.GetWindow()
+		if win.OnSavePlotImage():
+			return True
+		else:
+			return False
+	#---
+	#endregion ---------------------------------------------------- My Methods		
 #---
 #endregion ------------------------------------------------------- Mixed menus
 
@@ -793,113 +889,6 @@ class MenuFilterMainMenu(wx.Menu):
 #---# Improve You can create a base class for the menu containing several
 #---# methods that appears almost everywhere.
 #---# Improve
-
-# class ToolMenuTypeResults(wx.Menu):
-# 	""" Tool menu for the Type Results window """
-
-# 	#region --------------------------------------------------- Instance Setup
-# 	def __init__(self):
-# 		""" """
-# 		super().__init__()
-# 	 #--> Menu items
-# 		self.Append(501, 'Copy\tCtrl+C')
-# 	 #---
-# 	 #--> Bind
-# 		self.Bind(wx.EVT_MENU, self.OnLBoxCopy, id=501)
-# 	 #---
-# 	#---
-# 	#endregion ------------------------------------------------ Instance Setup
-
-# 	#region ------------------------------------------------------- My Methods
-# 	def OnLBoxCopy(self, event):
-# 		""" Copy the colum numbers of selected rows to the clipboard """
-# 		win = self.GetWindow()
-# 		win.OnLBoxCopy()
-# 		return True
-# 	#---
-# 	#endregion ---------------------------------------------------- My Methods
-# #---
-
-class ToolMenuCorrAMod(wx.Menu):
-	""" Creates the tools menu for the correlation analysis window """
-	
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self):
-		""" """
-		super().__init__()
-	 #--> Menu items
-		self.Append(502, 'Delete Selected')
-		self.Append(501, 'Clear List')
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnClearL,      id=501)
-		self.Bind(wx.EVT_MENU, self.OnDelSel,      id=502)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	def OnClearL(self, event):
-		""" Clear all """
-		win = self.GetWindow()
-		win.OnClearL()
-		return True
-	#---
-
-	def OnDelSel(self, event):
-		""" Delete selected """
-		win = self.GetWindow()
-		win.OnDelSel()
-		return True
-	#---
-	#endregion ---------------------------------------------------- My Methods
-#---
-
-class ToolMenuCorrARes(wx.Menu):
-	""" Creates the pop up menu in the correlation results window """
-	
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self):
-		""" """
-	 #--> Init
-		super().__init__()
-	 #---
-	 #--> Menu items
-		self.Append(502, 'Export Data to:')
-		for i in config.corr['MenuID'].keys():
-			self.Append(int(i), config.corr['MenuID'][i])		
-		self.AppendSeparator()
-		self.Append(501, 'Save Plot Image')
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=501)
-		for i in config.corr['MenuID'].keys():
-			self.Bind(wx.EVT_MENU, self.OnExport, id=int(i))
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	def OnSavePlot(self, event):
-		""" Save image of the plot """
-		win = self.GetWindow()
-		if win.OnSavePlotImage():
-			return True
-		else:
-			return False
-	#---
-
-	def OnExport(self, event):
-		""" Export columns in the correlation plot """	
-		win = self.GetWindow()
-		if win.OnExport(event.GetId()):
-			return True
-		else:
-			return True
-	#---
-	#endregion ---------------------------------------------------- My Methods		
-#---
-
 class ToolMenuProtProfResT(wx.Menu):
 	""" Tools menu for ProtProfResT """
 

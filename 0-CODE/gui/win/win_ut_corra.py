@@ -180,7 +180,7 @@ class WinCorrA(gclasses.WinUtilUno):
 	#region ----------------------------------------------------- Menu Methods
 	def OnPopUpMenu(self, event):
 		""" Show the popup menu over self.lbo """
-		self.PopupMenu(menu.ToolMenuCorrAMod())
+		self.PopupMenu(menu.ToolsCorrAUtil())
 		return True
 	#---
 
