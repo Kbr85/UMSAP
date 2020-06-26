@@ -575,6 +575,73 @@ class ToolsHistoRes(wx.Menu):
 	#endregion ---------------------------------------------------- My Methods		
 #---
 
+class AAdistResExp(wx.Menu):
+	""" Experiments menu for the AA distribution result window 
+	
+		Menu items IDs (int) are used to identify the experiments
+	"""
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, nExp):
+		""" nExp: number of experiments in the .tarprot file """
+		super().__init__()
+	 #--> Menu items
+		self.Append(100, 'FP List', kind=wx.ITEM_RADIO)
+		for i in range(101, 101 + nExp, 1):
+			name = 'Experiment ' + str(i-100)
+			self.Append(i, name, kind=wx.ITEM_RADIO)		
+	 #---
+	 #--> Bind
+		for i in range(100, 101+nExp, 1):
+			self.Bind(wx.EVT_MENU, self.OnExp, id=i)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnExp(self, event):
+		""" Show the AAdist for a particular experiment """
+		win = self.GetWindow()
+		win.OnExp(event.GetId())
+		return True
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+
+class AAdistResPos(wx.Menu):
+	""" Positions menu for the AA distribution result window 
+		
+		Menu items IDs (int) are used to identify the position
+	"""
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, nPosName):
+		""" nPosName: list with the positions label """
+		super().__init__()
+	 #--> Menu items
+		self.Append(200, 'None', kind=wx.ITEM_RADIO)
+		for k, e in enumerate(nPosName, start=201):
+			self.Append(k, e, kind=wx.ITEM_RADIO)
+	 #---
+	 #--> Bind
+		for k in range(200, 201 + len(nPosName), 1):
+			self.Bind(wx.EVT_MENU, self.OnPos, id=k)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnPos(self, event):
+		""" Compare the distribution for a particular position in all 
+			experiments 
+		"""
+		win = self.GetWindow()
+		win.OnPos(event.GetId())
+		return True
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+
 #endregion -------------------------------------------------------- Base menus
 
 #region ---------------------------------------------------------- Mixed menus
@@ -682,6 +749,67 @@ class ToolsCorrARes(wx.Menu):
 			return False
 	#---
 	#endregion ---------------------------------------------------- My Methods		
+#---
+
+class ToolsAAdistRes(wx.Menu):
+	""" Tools menu for the AA distribution results window """
+	
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, exp, pos, nExp, nPosName):
+		""" exp     : current experiment 0 to nExp
+			pos     : current position 0 to len(nPosName)
+			nExp    : total number of experiments
+			nPosName: list with the positions label 
+		"""
+		super().__init__()
+	 #--> Menu items
+		self.Exp = AAdistResExp(nExp)
+		self.Pos = AAdistResPos(nPosName)
+		self.AppendSubMenu(self.Exp, 'Experiments')
+		self.AppendSubMenu(self.Pos, 'Compare Positions')
+		self.AppendSeparator()
+		self.save = self.Append(-1, 'Save Plot Image')
+		self.AppendSeparator()
+		self.reset = self.Append(-1, 'Reset View')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnSavePlotImage, source=self.save)
+		self.Bind(wx.EVT_MENU, self.OnReset, source=self.reset)
+	 #---
+	 #--> Check current selected items
+		self.CurrentState(exp, pos)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def CurrentState(self, exp, pos):
+		""" Mark the current values
+			---
+			exp: Current experiment 0 to nExp
+			pos: Current position 0 to len(nPosName)
+		"""
+		self.Exp.Check(100+exp, True)
+		self.Pos.Check(200+pos, True)
+		return True
+	#----
+
+	def OnSavePlotImage(self, event):
+		""" Save image of the plot """
+		win = self.GetWindow()
+		if win.OnSavePlotImage():
+			return True
+		else:
+			pass
+	#---
+
+	def OnReset(self, event):
+		""" Reset the view """
+		win = self.GetWindow()
+		win.OnReset()
+		return True	
+	#---
+	#endregion ----------------------------------------------------- MyMethods
 #---
 #endregion ------------------------------------------------------- Mixed menus
 
@@ -1331,108 +1459,6 @@ class ToolMenuCutPropRes(wx.Menu):
 		return True
 	#---
 	#endregion ---------------------------------------------------- My Methods
-#---
-
-class ToolMenuAAdistRes(wx.Menu):
-	""" Pop Up menu in AAdistR """
-
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self, exp, pos, nExp, nPosName):
-		""" exp     : current experiment
-			pos     : current position
-			nExp    : total number of experiments
-			nPosName: list with the positions label 
-		"""
-		super().__init__()
-	 #--> Menu items
-	  #--> Experiment menu
-		self.ExpMenu = wx.Menu()
-		self.ExpMenu.Append(503, 'FP List', kind=wx.ITEM_RADIO)
-		for i in range(1, nExp + 1, 1):
-			self.Mid = 503 + i
-			name = 'Experiment ' + str(i)
-			self.ExpMenu.Append(self.Mid, name, kind=wx.ITEM_RADIO)
-	  #---
-	  #--> Positions menu
-		self.CompMenu = wx.Menu()
-		tempID = self.Mid + 1
-		self.CompMenu.Append(tempID, 'None', kind=wx.ITEM_RADIO)
-		for i in nPosName:
-			tempID = tempID + 1
-			self.CompMenu.Append(tempID, str(i), kind=wx.ITEM_RADIO)			
-	  #---
-	  #--> All together
-		self.AppendSubMenu(self.ExpMenu, 'Experiments')
-		self.AppendSubMenu(self.CompMenu, 'Compare Positions')
-		self.AppendSeparator()
-		self.Append(502, 'Save Plot Image')
-		self.AppendSeparator()
-		self.Append(501, 'Reset View')
-	  #---
-	 #---
-	 #--> Check defaults
-		self.CurrentState(exp, pos)
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset, id=501)
-		self.Bind(wx.EVT_MENU, self.OnSavePlotImage, id=502)
-		self.ExpMenu.Bind(wx.EVT_MENU, self.OnExp, id=503)
-		for i in range(1, nExp + 1, 1):
-			tMid = 503 + i
-			self.ExpMenu.Bind(wx.EVT_MENU, self.OnExp, id=tMid)
-		tempID = tMid + 1
-		self.CompMenu.Bind(wx.EVT_MENU, self.OnPos, id=tempID)
-		for i in range(1, len(nPosName) + 1, 1):
-			TtempID = tempID + i
-			self.CompMenu.Bind(wx.EVT_MENU, self.OnPos, id=TtempID)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-		
-	#region ------------------------------------------------------- My Methods
-	def OnSavePlotImage(self, event):
-		""" Save image of the plot """
-		win = self.GetWindow()
-		if win.OnSavePlotImage():
-			return True
-		else:
-			pass
-	#---
-
-	def CurrentState(self, exp, pos):
-		""" Mark the current values
-			---
-			exp: Current experiment
-			pos: Current position 
-		"""
-		self.ExpMenu.Check(503 + exp, True)
-		self.CompMenu.Check(self.Mid + 1 + pos, True)
-		return True
-	#----
-
-	def OnExp(self, event):
-		""" Show the AAdist for a particular experiment """
-		win = self.GetWindow()
-		win.OnExp(event.GetId())
-		return True
-	#---
-
-	def OnReset(self, event):
-		""" Reset the view """
-		win = self.GetWindow()
-		win.OnReset(self.Mid)
-		return True	
-	#---
-
-	def OnPos(self, event):
-		""" Compare the distribution for a particular position in all 
-			experiments 
-		"""
-		win = self.GetWindow()
-		win.OnPos(event.GetId(), self.Mid)
-		return True
-	#---
-	#endregion ---------------------------------------------------- My Methods	
 #---
 
 class ToolMenuLimProtRes(wx.Menu):

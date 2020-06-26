@@ -97,7 +97,7 @@ class WinAAdistRes(gclasses.WinGraph):
 		""" To process click events """
 		if event.button == 3:
 			if config.cOS == 'Windows':
-				Tmenu = menu.ToolMenuAAdistRes(
+				Tmenu = menu.ToolsAAdistRes(
 					self.exp, 
 					self.pos,
 					self.nExp, 
@@ -109,7 +109,7 @@ class WinAAdistRes(gclasses.WinGraph):
 				self.PopupMenu(Tmenu)
 			else:
 				self.PopupMenu(
-					menu.ToolMenuAAdistRes(
+					menu.ToolsAAdistRes(
 						self.exp, 
 						self.pos,
 						self.nExp, 
@@ -128,22 +128,22 @@ class WinAAdistRes(gclasses.WinGraph):
 			---
 			Mid: ID of the selected menu item (int)
 		"""
-		self.exp = Mid - 503
+		self.exp = Mid - 100
 		self.menubar.Check(Mid, True)
 		self.pos = 0
 		self.DrawConfig()
 		return True
 	#---
 
-	def OnReset(self, Mid):
+	def OnReset(self):
 		""" Reset the view """
 	 #-->
 		self.exp = 0
 		self.pos = 0
 	 #---
 	 #-->
-		self.menubar.Check(503, True)
-		self.menubar.Check(Mid+1, True)
+		self.menubar.Check(100, True)
+		self.menubar.Check(200, True)
 	 #---
 	 #-->
 		self.DrawConfig()
@@ -153,14 +153,13 @@ class WinAAdistRes(gclasses.WinGraph):
 	 #---
 	#---
 
-	def OnPos(self, Mid, rMid):
+	def OnPos(self, Mid):
 		""" Compare the distribution for a particular position in all 
 			experiments 
 			---
 			Mid: ID of the selected menu item (int)
-			rMid: reference Id number (int)
 		"""
-		self.pos = Mid - rMid - 1
+		self.pos = Mid - 200
 		self.menubar.Check(Mid, True)
 		self.DrawConfig()
 		return True
