@@ -8,16 +8,9 @@
 #	See the accompaning licence for more details.
 # ------------------------------------------------------------------------------
 
-""" This module generates the menus of the app.
-	---
-	The id numbers in the menus are assigned as follow:
-	100s Modules & Utility main window
-	200s Utilities
-	300s Help menu
-	400s UMSAP menu (The Win/Linux version of the mac UMSAP menu)
-	600s Script menu
-	500s, 700s and 800s are reserved for the optional Tools menu.
-"""
+
+""" This module generates the menus of the app """
+
 
 #region -------------------------------------------------------------- Imports
 import _thread
@@ -44,9 +37,9 @@ class ModuleUtil(wx.Menu):
 		self.util     = self.Append(-1, 'Utilities\tALT+Ctrl+U')
 	 #---
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnTarProt,  source=self.limprot)
+		self.Bind(wx.EVT_MENU, self.OnLimProt,  source=self.limprot)
 		self.Bind(wx.EVT_MENU, self.OnProtProf, source=self.protprof)
-		self.Bind(wx.EVT_MENU, self.OnLimProt,  source=self.tarprot)
+		self.Bind(wx.EVT_MENU, self.OnTarProt,  source=self.tarprot)
 		self.Bind(wx.EVT_MENU, self.OnUtil,     source=self.util)
 	 #---
 	#---
@@ -377,6 +370,36 @@ class UMSAPforWinLinux(wx.Menu):
 	#---
 	#endregion ----------------------------------------------------- MyMethods
 #---
+
+class AddSelection(wx.Menu):
+	""" Add selection from Data file column names listbox to wx.TextCtrl """
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, name):
+		""" name: name of the module so you can add the elements from
+				config.addColumnsTo
+		"""
+		super().__init__()
+	 #--> Menu items & Bind
+		for k,e in enumerate(config.addColumnsTo[name], start=1):
+			self.Append(k, e)
+			self.Bind(wx.EVT_MENU, self.OnButton, id=k)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnButton(self, event):
+		""" Get the id of the menu item triggering the add to event and send it
+			to main method 
+		"""
+		win = self.GetWindow()
+		MId = event.GetId()
+		win.AddFromList(MId)
+		return True		
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
 #endregion -------------------------------------------------------- Base menus
 
 #region ---------------------------------------------------------- Mixed menus
@@ -412,8 +435,47 @@ class Utilities(wx.Menu):
 	#---
 	#endregion ----------------------------------------------------- MyMethods
 #---
-#endregion ------------------------------------------------------- Mixed menus
 
+class ToolsModule(wx.Menu):
+	""" Tools menu for the modules """
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, name):
+		""" name: name of the module """
+		super().__init__()
+	 #--> Menu items
+		self.AddTo = AddSelection(name)
+		self.AppendSubMenu(self.AddTo, 'Add Selection to')
+		self.clear = self.Append(-1, 'Clear List')
+		self.AppendSeparator()
+		self.save  = self.Append(-1, 'Save uscr File')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnClear,      source=self.clear)
+		self.Bind(wx.EVT_MENU, self.OnSaveInputF, source=self.save)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnClear(self, event):
+		""" Clears the list box in TarProt """
+		win = self.GetWindow()
+		win.ClearListCtrl()
+		return True
+	#---
+
+	def OnSaveInputF(self, event):
+		""" Save uscr file directly from the module window """
+		win = self.GetWindow()
+		if win.OnSaveInputF():
+			return True
+		else:
+			return False
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+#endregion ------------------------------------------------------- Mixed menus
 
 #region -------------------------------------------------------------- Menubar
 class MainMenuBar(wx.MenuBar):
@@ -1514,104 +1576,6 @@ class ToolMenuMergeAA(wx.Menu):
 		return True
 	#---
 	#endregion ---------------------------------------------------- My Methods
-#---
-
-class ToolMenuTarProtMod(wx.Menu):
-	""" Popup menu for the wx.ListCtrl in the TarProt module """
-	
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self):
-		""" """
-		super().__init__()
-	 #--> Menu items
-		self.Append(100, 'Add selection to:')
-		self.Append(101, 'Sequence')
-		self.Append(102, 'Detected proteins')
-		self.Append(103, 'Score')
-		self.Append(104, 'Columns to extract')
-		self.AppendSeparator()
-		self.Append(105, 'Clear list')
-		self.AppendSeparator()
-		self.Append(106, 'Save input file')
-	 #---
-	 #--> Bind
-		for i in range(101, 105, 1):
-			self.Bind(wx.EVT_MENU, self.OnButton, id=i)
-		self.Bind(wx.EVT_MENU, self.OnClear,      id=105)
-		self.Bind(wx.EVT_MENU, self.OnSaveInputF, id=106)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	def OnButton(self, event):
-		""" Get the id of the menu item triggering the add to event and send it
-			to main method 
-		"""
-		win = self.GetWindow()
-		MId = event.GetId()
-		win.AddFromList(MId)
-		return True		
-	#---
-
-	def OnClear(self, event):
-		""" Clears the list box in TarProt """
-		win = self.GetWindow()
-		win.ClearListCtrl()
-		return True
-	#---
-
-	def OnSaveInputF(self, event):
-		""" Save uscr file directly from the module window """
-		win = self.GetWindow()
-		if win.OnSaveInputF():
-			return True
-		else:
-			return False
-	#---
-	#endregion ---------------------------------------------------- My Methods
-#---
-
-class ToolMenuProtProfMod(ToolMenuTarProtMod):
-	""" Tool menu for the ProtProf """
-
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self):
-		""" """
-		super().__init__()
-	 #--> Destroy old items
-		for i in self.GetMenuItems():
-			self.DestroyItem(i)
-	 #---
-	 #--> Creates the one needed 
-		self.Append(100, 'Add selection to:')
-		self.Append(101, 'Detected proteins')
-		self.Append(102, 'Gene names')
-		self.Append(103, 'Score')
-		self.Append(104, 'Exclude proteins')
-		self.Append(105, 'Columns to extract')
-		self.AppendSeparator()
-		self.Append(106, 'Clear list')
-		self.AppendSeparator()
-		self.Append(107, 'Save input file')
-	 #-->
-	 #--> Bind
-		for i in range(101, 106, 1):
-			self.Bind(wx.EVT_MENU, self.OnButton, id=i)
-		self.Bind(wx.EVT_MENU, self.OnClear,      id=106)
-		self.Bind(wx.EVT_MENU, self.OnSaveInputF, id=107)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-#---
-
-class ToolMenuLimProtMod(ToolMenuTarProtMod):
-	""" To handel tool and pop up menu in LimProt module """
-
-	def __init__(self):
-		""" """
-		super().__init__()
-	#---
 #---
 #endregion --------------------------------------------- Individual Tool menus
 

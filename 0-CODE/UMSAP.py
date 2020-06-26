@@ -161,9 +161,12 @@ class UmsapApp(wx.App):
 		}
 		config.pointer['menu']['toolmenu'] = { # Tool menu
 			#--> Modules
-			config.name['TarProt'] : menu.ToolMenuTarProtMod,
-			config.name['LimProt'] : menu.ToolMenuLimProtMod,
-			config.name['ProtProf']: menu.ToolMenuProtProfMod,
+			# config.name['TarProt'] : menu.ToolMenuTarProtMod,
+			# config.name['LimProt'] : menu.ToolMenuLimProtMod,
+			# config.name['ProtProf']: menu.ToolMenuProtProfMod,
+			config.name['TarProt'] : menu.ToolsModule,
+			config.name['LimProt'] : menu.ToolsModule,
+			config.name['ProtProf']: menu.ToolsModule,			
 			#--> Utilities
 			config.name['MergeAA'] : menu.ToolMenuMergeAA,
 			config.name['CorrA']   : menu.ToolMenuCorrAMod,

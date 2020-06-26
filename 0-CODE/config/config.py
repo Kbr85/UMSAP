@@ -1473,6 +1473,17 @@ tooltip = { # This dict makes it easier to set the tooltips based on the name of
 }
 #endregion ---------------------------------------------------------- Tooltips
 
+#region ----------------------------------------------------------- Menu items
+addColumnsTo = {
+	name['TarProt'] : ['Sequences', 'Detected proteins', 'Score', 
+			'Columns to extract'],
+	name['LimProt'] : ['Sequences', 'Detected proteins', 'Score', 
+			'Columns to extract'],
+	name['ProtProf'] : ['Detected proteins', 'Gene names', 'Score', 
+			'Exclude proteins', 'Columns to extract'],
+}
+#endregion -------------------------------------------------------- Menu items
+
 #-------------------------------------------------------- GUI dictionaries
 #--- The name of the dict is the class where the dict is used or
 #--- the GUI element for which the dict is intended to be used 
