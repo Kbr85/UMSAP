@@ -28,7 +28,485 @@ import config.config as config
 import gui.gui_methods as gmethods
 #endregion ----------------------------------------------------------- Imports
 
-#region ----------------------------------------------------- Individual menus
+#region ----------------------------------------------------------- Base menus
+class ModuleUtil(wx.Menu):
+	""" Module menu in the main menubar """
+
+	#region --------------------------------------------------- Instance setup
+	def __init__(self):
+		""" """
+		super().__init__()
+	 #--> Menu items
+		self.limprot  = self.Append(-1, 'Limited Proteolysis\tALT+Ctrl+L')
+		self.protprof = self.Append(-1, 'Proteome Profiling\tALT+Ctrl+P')
+		self.tarprot  = self.Append(-1, 'Targeted Proteolysis\tALT+Ctrl+T')
+		self.AppendSeparator()
+		self.util     = self.Append(-1, 'Utilities\tALT+Ctrl+U')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnTarProt,  source=self.limprot)
+		self.Bind(wx.EVT_MENU, self.OnProtProf, source=self.protprof)
+		self.Bind(wx.EVT_MENU, self.OnLimProt,  source=self.tarprot)
+		self.Bind(wx.EVT_MENU, self.OnUtil,     source=self.util)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnLimProt(self, event):
+		""" Creates the Limited Proteolysis module """
+		gmethods.WinMUCreate(config.name['LimProt'])
+		return True
+	#---
+
+	def OnProtProf(self, event):
+		""" Creates the Proteome Profiling module """
+		gmethods.WinMUCreate(config.name['ProtProf'])
+		return True
+	#---
+
+	def OnTarProt(self, event):
+		""" Creates the Targeted Proteolysis module """
+		gmethods.WinMUCreate(config.name['TarProt'])
+		return True
+	#---
+
+	def OnUtil(self, event):
+		""" Creates the Utilities window """
+		gmethods.WinMUCreate(config.name['Util'])
+		return True
+	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
+
+class UtilLimProt(wx.Menu):
+	""" Utilities for the LimProt module """
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Menu items
+		self.seqHigh = self.Append(-1, 'Sequence Highlight')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnSeqH, source=self.seqHigh)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnSeqH(self, event):
+		""" Sequence highlight window for LimProt """
+		gmethods.WinMUCreate(config.name['SeqH'])
+		return True
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+
+class UtilTarProt(wx.Menu):
+	""" Utilities for the TarProt module """
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Menu items
+		self.aaDist  = self.Append(-1, 'AA Distribution')
+		self.cutRes  = self.Append(-1, 'Cleavages per Residue')
+		self.cut2Pdb = self.Append(-1, 'Cleavages to PDB Files')
+		self.fpList  = self.Append(-1, 'Filtered Peptide List')
+		self.histo   = self.Append(-1, 'Histograms')
+		self.seqAli  = self.Append(-1, 'Sequence Alignments')
+		self.AppendSeparator()
+		self.updateRes    = self.Append(-1, 'Update Results')
+		self.customUpdate = self.Append(-1, 'Custom Update of Results')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnAAdist,       source=self.aaDist)
+		self.Bind(wx.EVT_MENU, self.OnCutRes,       source=self.cutRes)
+		self.Bind(wx.EVT_MENU, self.OnCut2Pdb,      source=self.cut2Pdb)	
+		self.Bind(wx.EVT_MENU, self.OnFPList,       source=self.fpList)			
+		self.Bind(wx.EVT_MENU, self.OnHisto,        source=self.histo)
+		self.Bind(wx.EVT_MENU, self.OnSeqAli,       source=self.seqAli)
+		self.Bind(wx.EVT_MENU, self.OnUpdateRes,    source=self.updateRes)
+		self.Bind(wx.EVT_MENU, self.OnCustomUpdate, source=self.customUpdate)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnAAdist(self, event):
+		""" Window to get the aa distribution files from a tarprot file """
+		gmethods.WinMUCreate(config.name['AAdist'])	
+		return True
+	#---
+
+	def OnCutRes(self, event):
+		""" Creates the .cutprop file from a .tarprot file """
+		if gmethods.MenuOnCutProp():
+			return True
+		else:
+			return False
+	#---	
+
+	def OnCut2Pdb(self, event):
+		""" Window to map the cleavage per residue to a pdb file from a tarprot 
+			file 
+		"""
+		gmethods.WinMUCreate(config.name['Cuts2PDB'])	
+		return True
+	#---
+
+	def OnFPList(self, event):
+		""" Reads a .tarprot file and creates a .filtpept file """	
+		if gmethods.MenuOnFPList():
+			return True
+		else:
+			return False
+	#---
+
+	def OnHisto(self, event):
+		""" Window to get the histogram files from a tarprot file """
+		gmethods.WinMUCreate(config.name['Histo'])	
+		return True
+	#---
+
+	def OnSeqAli(self, event):
+		""" Window to get the sequence alignments files from a tarprot file """
+		gmethods.WinMUCreate(config.name['SeqAlign'])	
+		return True
+	#---
+
+	def OnUpdateRes(self, event):
+		""" Reads a .tarprot file and creates all the associated files """
+		if gmethods.MenuOnUpdateTP():
+			return True
+		else:
+			return False
+	#---
+
+	def OnCustomUpdate(self, event):
+		""" Read a tarprot file and fill the Tarprot module with the input 
+			found in the file so users can make quick changes. It is intended 
+			for update and change results from old .tarprot file for wich a 
+			configuration file is not available.
+		"""
+		if gmethods.MenuOnReanalyseTP():
+			return True
+		else:
+			return False
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+
+class UtilGeneral(wx.Menu):
+	""" General utilities """
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Menu items
+		self.corrA   = self.Append(-1, 'Correlation Analysis')
+		self.inputF  = self.Append(-1, 'Create Input File')
+		self.mergeAA = self.Append(-1, 'Merge aadist Files')
+		self.shortDF = self.Append(-1, 'Short Data Files')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnCorrA,   source=self.corrA)	 
+		self.Bind(wx.EVT_MENU, self.OnInputF,  source=self.inputF)
+		self.Bind(wx.EVT_MENU, self.OnMergeAA, source=self.mergeAA)
+		self.Bind(wx.EVT_MENU, self.OnShortDF, source=self.shortDF)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnCorrA(self, event):
+		""" Creates the correlation analysis window """
+		gmethods.WinMUCreate(config.name['CorrA'])	
+		return True
+	#---
+
+	def OnInputF(self, event):
+		""" Reads a .tarprot file and creates a .uscr file """	
+		if gmethods.MenuOnCInputFile():
+			return True
+		else:
+			return False
+	#---
+
+	def OnMergeAA(self, event):
+		""" Merge aadist files util window """
+		gmethods.WinMUCreate(config.name['MergeAA'])
+		return True
+	#---
+
+	def OnShortDF(self, event):
+		""" Window to create the short data files from a module main output file
+		"""
+		gmethods.WinMUCreate(config.name['ShortDFile'])
+		return True
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+
+class Help(wx.Menu):
+	""" Help menu for all OS in the main menubar """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Menu items
+		self.about = self.Append(-1, 'About UMSAP')
+		self.AppendSeparator()
+		self.manual    = self.Append(-1, 'Manual')
+		self.tutorials = self.Append(-1, 'Tutorials')
+		self.AppendSeparator()
+		self.checkUpdate = self.Append(-1, 'Check for Updates')
+		self.AppendSeparator()
+		self.preferences = self.Append(-1, 'Preferences')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnAbout,       source=self.about)
+		self.Bind(wx.EVT_MENU, self.OnManual,      source=self.manual)
+		self.Bind(wx.EVT_MENU, self.OnTutorials,   source=self.tutorials)
+		self.Bind(wx.EVT_MENU, self.OnCheckUpdate, source=self.checkUpdate)
+		self.Bind(wx.EVT_MENU, self.OnPreferences, source=self.preferences)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnAbout(self, event):
+		""" Show the about window """
+		gmethods.WinMUCreate(config.name['About'])
+		return True
+	#---
+
+	def OnManual(self, event):
+		""" Shows the manual with the default pdfviewer in the system """
+		if gmethods.MenuOnHelpManual():
+			return True
+		else:
+			return False
+	#---
+
+	def OnTutorials(self, event):
+		""" Shows the tutorial page at umsap.nl """
+		if gmethods.MenuOnHelpTutorials():
+			return True
+		else:
+			return False
+	#---
+
+	def OnCheckUpdate(self, event):
+		""" Manually check for updates"""
+		_thread.start_new_thread(gmethods.UpdateCheck, ('menu',))
+		return True
+	#---
+
+	def OnPreferences(self, event):
+		""" Show the window to set the preferences """
+		gmethods.WinMUCreate(config.name['Preference'])
+		return True
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+
+class Script(wx.Menu):
+	""" Script menu in the main menubar """
+	
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Menu items
+		self.read = self.Append(-1, 'Run Input File\tCtrl+I')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnRead, source=self.read)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnRead(self, event):
+		""" Run the script """
+		if gmethods.MenuOnRInputFile():
+			return True
+		else:
+			return False
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+
+class UMSAPforWinLinux(wx.Menu):
+	""" UMSAP menu for Windows or Linux """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Menu items
+		self.minAll = self.Append(-1, 'Minimize All\tCtrl+M')
+		self.quit   = self.Append(-1, 'Quit UMSAP\tCtrl+Q')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnMinAll, source=self.minAll)
+		self.Bind(wx.EVT_MENU, self.OnQuitUMSAP, source=self.quit)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnMinAll(self, event):
+		""" Minimize all UMSAP windows """
+		if gmethods.MenuOnMinimizeAll():
+			return True
+		else:
+			return False
+	#---
+	
+	def OnQuitUMSAP(self, event):
+		""" This function terminates the application closing all the windows """
+		if gmethods.MenuOnQuitUMSAP():
+			return True
+		else:
+			return False
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+#endregion -------------------------------------------------------- Base menus
+
+#region ---------------------------------------------------------- Mixed menus
+class Utilities(wx.Menu):
+	""" Utilities menu in main menubar """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Menu items
+		self.LimProt = UtilLimProt()
+		self.TarProt = UtilTarProt()
+		self.General = UtilGeneral()
+		self.AppendSubMenu(self.LimProt, 'Limited Proteolysis')
+		self.AppendSubMenu(self.TarProt, 'Targeted Proteolysis')
+		self.AppendSubMenu(self.General, 'General Utilities')
+		self.AppendSeparator()
+		self.ReadOutF = self.Append(-1, 'Read Output File\tCtrl+R')	
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnReadOutF, source=self.ReadOutF)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnReadOutF(self, event):
+		""" Read a file generated by UMSAP """
+		if gmethods.MenuOnReadOutFile():
+			return True
+		else:
+			return False
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+#endregion ------------------------------------------------------- Mixed menus
+
+
+#region -------------------------------------------------------------- Menubar
+class MainMenuBar(wx.MenuBar):
+	""" Creates the application main menu bar. ids with 500s, 700s, 800s are 
+		reserved for the optional Tools entries in the derived classes. Usually
+		Tools has a submenus with the 500s, 700s, 800s id associated to each
+		submenu.
+	"""
+	
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""" """
+		super().__init__()
+	 #--> Menu items
+		self.ModuleUtil = ModuleUtil()
+		self.Utilities  = Utilities()
+		self.Help       = Help()
+		self.Script     = Script()
+		if config.cOS != 'Darwin':
+			self.UMSAP = UMSAPforWinLinux()
+		else:
+			pass
+	 #---
+	 #--> Append to menubar
+		if config.cOS != 'Darwin':
+			self.Append(UMSAP, '&UMSAP')
+		else:
+			pass
+		self.Append(self.ModuleUtil, '&Modules')
+		self.Append(self.Utilities,  '&Utilites')
+		self.Append(self.Help,       '&Help')
+		self.Append(self.Script,     '&Script')
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+#---
+
+class MainMenuBarWithTools(MainMenuBar):
+	""" To add a Tools menu to the menubar for specific windows """
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, name, *args):
+		""" name: Name of the window """
+		super().__init__()
+	  
+	 #--> Menu items
+		if len(args) == 0:
+			ToolsMenu = config.pointer['menu']['toolmenu'][name]()
+		else:
+			ToolsMenu = config.pointer['menu']['toolmenu'][name](*args)
+	 #---
+	 #--> Append to menu bar
+		if config.cOS == 'Darwin':
+			self.Insert(2, ToolsMenu, '&Tools')
+		elif config.cOS == 'Windows':
+			self.Insert(3, ToolsMenu, '&Tools')
+		elif config.cOS == 'Linux':
+			self.Insert(3, ToolsMenu, '&Tools')
+		else:
+			pass		
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+#---
+#endregion ----------------------------------------------------------- Menubar
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+############################################ OLD
+
 class MenuFilterMonotonicity(wx.Menu):
 	""" Creates the monotonicity filter menu """
 
@@ -222,7 +700,7 @@ class MenuFilterMainMenu(wx.Menu):
 	#---	
 	#endregion ---------------------------------------------------- My Methods
 #---
-#endregion -------------------------------------------------- Individual menus
+
 
 #region ------------------------------------------------ Individual Tool menus
 #---# Improve You can create a base class for the menu containing several
@@ -1138,369 +1616,6 @@ class ToolMenuLimProtMod(ToolMenuTarProtMod):
 #endregion --------------------------------------------- Individual Tool menus
 
 #region ------------------------------------------------------------ Menu Bars
-class MainMenuBar(wx.MenuBar):
-	""" Creates the application main menu bar. ids with 500s, 700s, 800s are 
-		reserved for the optional Tools entries in the derived classes. Usually
-		Tools has a submenus with the 500s, 700s, 800s id associated to each
-		submenu.
-	"""
-	
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self):
-		""" """
-		super().__init__()
-	 #--> Menu items
-	  #--> Modules
-		Modmenu = wx.Menu()
-		Modmenu.Append(102, 'Limited Proteolysis\tALT+Ctrl+L')
-		Modmenu.Append(104, 'Proteome Profiling\tALT+Ctrl+P')
-		Modmenu.Append(101, 'Targeted Proteolysis\tALT+Ctrl+T')
-		Modmenu.AppendSeparator()
-		Modmenu.Append(103, 'Utilities\tALT+Ctrl+U')
-	  #---
-	  #--> Utilities
-		LimProtMenu = wx.Menu()
-		LimProtMenu.Append(214, 'Sequence Highlight')
-		TarProtmenu = wx.Menu()
-		TarProtmenu.Append(201, 'AA Distribution')
-		TarProtmenu.Append(202, 'Cleavages per Residue')
-		TarProtmenu.Append(208, 'Cleavages to PDB Files')
-		TarProtmenu.Append(213, 'Filtered Peptide List')
-		TarProtmenu.Append(203, 'Histograms')
-		TarProtmenu.Append(204, 'Sequence Alignments')
-		TarProtmenu.AppendSeparator()
-		TarProtmenu.Append(210, 'Update Results')
-		TarProtmenu.Append(211, 'Custom Update of Results')
-		Genmenu = wx.Menu()
-		Genmenu.Append(206, 'Correlation Analysis')
-		Genmenu.Append(212, 'Create Input File')
-		Genmenu.Append(209, 'Merge aadist Files')
-		Genmenu.Append(205, 'Short Data Files')
-		Utilmenu = wx.Menu()
-		Utilmenu.AppendSubMenu(LimProtMenu, 'Limited Proteolysis')
-		Utilmenu.AppendSubMenu(TarProtmenu, 'Targeted Proteolysis')
-		Utilmenu.AppendSubMenu(Genmenu, 'General Utilities')
-		Utilmenu.AppendSeparator()
-		Utilmenu.Append(207, 'Read Output File\tCtrl+R')	
-	  #---	
-	  #--> Help
-		Helpmenu = wx.Menu()
-		Helpmenu.Append(301, 'Manual')
-		Helpmenu.Append(302, 'Tutorials')
-		if config.cOS == 'Darwin':
-			Helpmenu.Append(wx.ID_ABOUT, 'About UMSAP')
-		else:
-			pass
-		Helpmenu.AppendSeparator()
-		Helpmenu.Append(303, 'Check for Updates')
-		if config.cOS != 'Darwin':
-			Helpmenu.AppendSeparator()
-		else:
-			pass
-		Helpmenu.Append(wx.ID_PREFERENCES, 'Preferences')
-	  #---
-	  #--> Script
-		Scriptmenu = wx.Menu()
-		Scriptmenu.Append(601, 'Run Input File\tCtrl+I')
-	  #---
-	  #--> UMSAP menu in Win/Linux/Mac
-		if config.cOS == 'Windows':
-			UMSAPmenu = wx.Menu()
-			UMSAPmenu.Append(403, 'About UMSAP')
-			UMSAPmenu.AppendSeparator()
-			UMSAPmenu.Append(401, 'Minimize All\tCtrl+M')
-			UMSAPmenu.Append(402, 'Quit UMSAP\tCtrl+Q')
-		elif config.cOS == 'Linux':
-			UMSAPmenu = wx.Menu()
-			UMSAPmenu.Append(403, 'About UMSAP')
-			UMSAPmenu.AppendSeparator()
-			UMSAPmenu.Append(401, 'Minimize All\tCtrl+M')
-			UMSAPmenu.Append(402, 'Quit UMSAP\tCtrl+Q')			
-		else:
-			pass
-	  #---
-	  #--> Append to menubar
-		if config.cOS == 'Windows':
-			self.Append(UMSAPmenu, '&UMSAP')
-		elif config.cOS == 'Linux':
-			self.Append(UMSAPmenu, '&UMSAP')
-		else:
-			pass
-		self.Append(Modmenu,    '&Modules')
-		self.Append(Utilmenu,   '&Utilites')
-		self.Append(Helpmenu,   '&Help')
-		self.Append(Scriptmenu, '&Script')
-	  #---
-	 #---
-	 #--> Bind
-	  #--> 100
-		self.Bind(wx.EVT_MENU, self.OnTarProt,         id=101)
-		self.Bind(wx.EVT_MENU, self.OnLimProt,         id=102)
-		self.Bind(wx.EVT_MENU, self.OnUtil,            id=103)
-		self.Bind(wx.EVT_MENU, self.OnProtProf,        id=104)
-	  #---
-	  #--> 200
-		self.Bind(wx.EVT_MENU, self.OnAAdist,          id=201)
-		self.Bind(wx.EVT_MENU, self.OnCutProp,         id=202)
-		self.Bind(wx.EVT_MENU, self.OnHisto,           id=203)
-		self.Bind(wx.EVT_MENU, self.OnSeqAlign,        id=204)
-		self.Bind(wx.EVT_MENU, self.OnShortDFiles,     id=205)
-		self.Bind(wx.EVT_MENU, self.OnCorrAnalysis,    id=206)
-		self.Bind(wx.EVT_MENU, self.OnReadOutFile,     id=207)
-		self.Bind(wx.EVT_MENU, self.OnPDBfiles,        id=208)
-		self.Bind(wx.EVT_MENU, self.OnMergeAadist,     id=209)
-		self.Bind(wx.EVT_MENU, self.OnUpdateTP,        id=210)
-		self.Bind(wx.EVT_MENU, self.OnReanalyseTP,     id=211)
-		self.Bind(wx.EVT_MENU, self.OnCInputFile,      id=212)
-		self.Bind(wx.EVT_MENU, self.OnFPList,          id=213)
-		self.Bind(wx.EVT_MENU, self.OnSeqH,            id=214)
-	  #---
-	  #--> 300
-		self.Bind(wx.EVT_MENU, self.OnHelpManual,      id=301)
-		self.Bind(wx.EVT_MENU, self.OnHelpTutorials,   id=302)
-		self.Bind(wx.EVT_MENU, self.OnCheckUpdate,     id=303)
-		self.Bind(wx.EVT_MENU, self.OnPreferences,     id=wx.ID_PREFERENCES)		
-	  #---
-	  #--> 400
-		if config.cOS == 'Darwin':
-			self.Bind(wx.EVT_MENU, self.OnAbout,       id=wx.ID_ABOUT)
-		elif config.cOS == 'Windows':
-			self.Bind(wx.EVT_MENU, self.OnMinimizeAll, id=401)
-			self.Bind(wx.EVT_MENU, self.OnQuitUMSAP,   id=402)
-			self.Bind(wx.EVT_MENU, self.OnAbout,       id=403)
-		elif config.cOS == 'Linux':
-			self.Bind(wx.EVT_MENU, self.OnMinimizeAll, id=401)
-			self.Bind(wx.EVT_MENU, self.OnQuitUMSAP,   id=402)
-			self.Bind(wx.EVT_MENU, self.OnAbout,       id=403)
-		else:
-			pass
-	  #---
-	  #--> 600
-		self.Bind(wx.EVT_MENU, self.OnRInputFile,      id=601)
-	  #---
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	#--> 100
-	def OnProtProf(self, event):
-		""" Creates the Proteome Profiling module """
-		gmethods.WinMUCreate(config.name['ProtProf'])
-		return True
-	#---
-
-	def OnTarProt(self, event):
-		""" Creates the Targeted Proteolysis module """
-		gmethods.WinMUCreate(config.name['TarProt'])
-		return True
-	#---
-
-	def OnLimProt(self, event):
-		""" Creates the Limited Proteolysis module """
-		gmethods.WinMUCreate(config.name['LimProt'])
-		return True
-	#---
-
-	def OnUtil(self, event):
-		""" Creates the Utilities window """
-		gmethods.WinMUCreate(config.name['Util'])
-		return True
-	#---
-
-	#--> 200
-	def OnSeqH(self, event):
-		""" Sequence highlight window for LimProt """
-		gmethods.WinMUCreate(config.name['SeqH'])
-		return True
-	#---
-
-	def OnMergeAadist(self, event):
-		""" Merge aadist files util window """
-		gmethods.WinMUCreate(config.name['MergeAA'])
-		return True
-	#---
-
-	def OnShortDFiles(self, event):
-		""" Window to create the short data files from a module main output file
-		"""
-		gmethods.WinMUCreate(config.name['ShortDFile'])
-		return True
-	#---
-
-	def OnPDBfiles(self, event):
-		""" Window to map the cleavage per residue to a pdb file from a tarprot 
-			file 
-		"""
-		gmethods.WinMUCreate(config.name['Cuts2PDB'])	
-		return True
-	#---
-
-	def OnAAdist(self, event):
-		""" Window to get the aa distribution files from a tarprot file """
-		gmethods.WinMUCreate(config.name['AAdist'])	
-		return True
-	#---
-
-	def OnHisto(self, event):
-		""" Window to get the histogram files from a tarprot file """
-		gmethods.WinMUCreate(config.name['Histo'])	
-		return True
-	#---
-
-	def OnSeqAlign(self, event):
-		""" Window to get the sequence alignments files from a tarprot file """
-		gmethods.WinMUCreate(config.name['SeqAlign'])	
-		return True
-	#---
-
-	def OnCorrAnalysis(self, event):
-		""" Creates the correlation analysis window """
-		gmethods.WinMUCreate(config.name['CorrA'])	
-		return True
-	#---
-
-	def OnReanalyseTP(self, event):
-		""" Read a tarprot file and fill the Tarprot module with the input 
-			found in the file so users can make quick changes. It is intended 
-			for update and change results from old .tarprot file for wich a 
-			configuration file is not available.
-		"""
-		if gmethods.MenuOnReanalyseTP():
-			return True
-		else:
-			return False
-	#---
-
-	def OnUpdateTP(self, event):
-		""" Reads a .tarprot file and creates all the associated files """
-		if gmethods.MenuOnUpdateTP():
-			return True
-		else:
-			return False
-	#---
-
-	def OnFPList(self, event):
-		""" Reads a .tarprot file and creates a .filtpept file """	
-		if gmethods.MenuOnFPList():
-			return True
-		else:
-			return False
-	#---
-
-	def OnCInputFile(self, event):
-		""" Reads a .tarprot file and creates a .uscr file """	
-		if gmethods.MenuOnCInputFile():
-			return True
-		else:
-			return False
-	#---
-
-	def OnCutProp(self, event):
-		""" Creates the .cutprop file from a .tarprot file """
-		if gmethods.MenuOnCutProp():
-			return True
-		else:
-			return False
-	#---
-
-	def OnReadOutFile(self, event):
-		""" Read a file generated by UMSAP """
-		if gmethods.MenuOnReadOutFile():
-			return True
-		else:
-			return False
-	#---
-
-	#--> 300
-	def OnHelpManual(self, event):
-		""" Shows the manual with the default pdfviewer in the system """
-		if gmethods.MenuOnHelpManual():
-			return True
-		else:
-			return False
-	#---
-
-	def OnHelpTutorials(self, event):
-		""" Shows the tutorial page at umsap.nl """
-		if gmethods.MenuOnHelpTutorials():
-			return True
-		else:
-			return False
-	#---
-
-	def OnCheckUpdate(self, event):
-		""" Manually check for updates"""
-		_thread.start_new_thread(gmethods.UpdateCheck, ('menu',))
-		return True
-	#---
-
-	def OnPreferences(self, event):
-		""" Show the window to set the preferences """
-		gmethods.WinMUCreate(config.name['Preference'])
-		return True
-	#---		
-
-	#--> 400
-	def OnAbout(self, event):
-		""" Show the about window """
-		gmethods.WinMUCreate(config.name['About'])
-		return True
-	#---	
-
-	def OnMinimizeAll(self, event):
-		""" Minimize all UMSAP windows """
-		if gmethods.MenuOnMinimizeAll():
-			return True
-		else:
-			return False
-	#---
-	
-	def OnQuitUMSAP(self, event):
-		""" This function terminates the application closing all the windows """
-		if gmethods.MenuOnQuitUMSAP():
-			return True
-		else:
-			return False
-	#---
-
-	#--> 600
-	def OnRInputFile(self, event):
-		""" Run the script """
-		if gmethods.MenuOnRInputFile():
-			return True
-		else:
-			return False
-	#---
-	#endregion ---------------------------------------------------- My Methods
-#---
-
-class MainMenuBarWithTools(MainMenuBar):
-	""" To add a Tools menu to the menubar for specific windows """
-
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self, name, *args):
-		""" name: Name of the window """
-		super().__init__()
-	  
-	  ####---- Menu items
-		if len(args) == 0:
-			ToolsMenu = config.pointer['menu']['toolmenu'][name]()
-		else:
-			ToolsMenu = config.pointer['menu']['toolmenu'][name](*args)
-	  ####---- Append to menu bar
-		if config.cOS == 'Darwin':
-			self.Insert(2, ToolsMenu, '&Tools')
-		elif config.cOS == 'Windows':
-			self.Insert(3, ToolsMenu, '&Tools')
-		elif config.cOS == 'Linux':
-			self.Insert(3, ToolsMenu, '&Tools')
-		else:
-			pass		
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-#---
-
 class MenuBarProtProfRes(MainMenuBar):
 	""" Tools for ProtProfResV """
 	
