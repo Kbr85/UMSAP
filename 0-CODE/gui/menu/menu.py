@@ -488,6 +488,93 @@ class CorrAResExport(wx.Menu):
 	#endregion ----------------------------------------------------- MyMethods
 #---
 
+class ToolsHistoRes(wx.Menu):
+	""" Add Tools menu to a Histogram results window. 
+	
+		In this case is better to use IDs as int for the menu items 
+	"""
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, seq, uni):
+		""" seq: 0 Rec Seq, 1 Nat Seq
+			uni: 0 All Cuts, 1 Unique Cuts 
+		"""
+		super().__init__()
+	 #--> Menu items
+		self.Append(502, 'Native Sequence',      kind=wx.ITEM_RADIO)
+		self.Append(503, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
+		self.AppendSeparator()
+		self.Append(504, 'All cleavages',        kind=wx.ITEM_RADIO)
+		self.Append(505, 'Unique cleavages',     kind=wx.ITEM_RADIO)
+		self.AppendSeparator()
+		self.Append(506, 'Save Plot Image')
+		self.AppendSeparator()
+		self.Append(501, 'Reset View')
+	 #---
+	 #--> Check defaults
+		self.CurrentState(seq, uni)
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnReset,    id=501)
+		self.Bind(wx.EVT_MENU, self.OnSeq,      id=502)
+		self.Bind(wx.EVT_MENU, self.OnSeq,      id=503)
+		self.Bind(wx.EVT_MENU, self.OnUni,      id=504)
+		self.Bind(wx.EVT_MENU, self.OnUni,      id=505)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=506)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def CurrentState(self, seq, uni):
+		""" Check the menu items based on the current window state
+			---
+			seq: 0 Rec Seq, 1 Nat Seq
+			uni: 0 All Cuts, 1 Unique Cuts
+		"""
+		if seq == 0:
+			self.Check(503, True)
+		else:
+			self.Check(502, True)
+		if uni == 0:
+			self.Check(504, True)
+		else:
+			self.Check(505, True)
+		return True
+	#---
+
+	def OnReset(self, event):
+		""" Reset the window """
+		win = self.GetWindow()
+		win.OnReset()
+		return True
+	#---
+
+	def OnSavePlot(self, event):
+		""" Save image of the plot """
+		win = self.GetWindow()
+		if win.OnSavePlotImage():
+			return True
+		else:
+			return False
+	#---
+
+	def OnSeq(self, event):
+		""" Change the plot if the sequence changes """
+		win = self.GetWindow()
+		win.OnSeq(event.GetId())
+		return True
+	#---
+
+	def OnUni(self, event):
+		""" Change the plot if the type of cleavages changes """
+		win = self.GetWindow()
+		win.OnUni(event.GetId())
+		return True
+	#---
+	#endregion ---------------------------------------------------- My Methods		
+#---
+
 #endregion -------------------------------------------------------- Base menus
 
 #region ---------------------------------------------------------- Mixed menus
@@ -1244,90 +1331,6 @@ class ToolMenuCutPropRes(wx.Menu):
 		return True
 	#---
 	#endregion ---------------------------------------------------- My Methods
-#---
-
-class ToolMenuHistoRes(wx.Menu):
-	""" Add Tools menu to a HistoR window"""
-
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self, seq, uni):
-		""" seq: 0 Rec Seq, 1 Nat Seq
-			uni: 0 All Cuts, 1 Unique Cuts 
-		"""
-		super().__init__()
-	 #--> Menu items
-		self.Append(502, 'Native Sequence',      kind=wx.ITEM_RADIO)
-		self.Append(503, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
-		self.AppendSeparator()
-		self.Append(504, 'All cleavages',        kind=wx.ITEM_RADIO)
-		self.Append(505, 'Unique cleavages',     kind=wx.ITEM_RADIO)
-		self.AppendSeparator()
-		self.Append(506, 'Save Plot Image')
-		self.AppendSeparator()
-		self.Append(501, 'Reset View')
-	 #---
-	 #--> Check defaults
-		self.CurrentState(seq, uni)
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,    id=501)
-		self.Bind(wx.EVT_MENU, self.OnSeq,      id=502)
-		self.Bind(wx.EVT_MENU, self.OnSeq,      id=503)
-		self.Bind(wx.EVT_MENU, self.OnUni,      id=504)
-		self.Bind(wx.EVT_MENU, self.OnUni,      id=505)
-		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=506)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	def CurrentState(self, seq, uni):
-		""" Check the menu items based on the current window state
-			---
-			seq: 0 Rec Seq, 1 Nat Seq
-			uni: 0 All Cuts, 1 Unique Cuts
-		"""
-		if seq == 0:
-			self.Check(503, True)
-		else:
-			self.Check(502, True)
-		if uni == 0:
-			self.Check(504, True)
-		else:
-			self.Check(505, True)
-		return True
-	#---
-
-	def OnReset(self, event):
-		""" Reset the window """
-		win = self.GetWindow()
-		win.OnReset()
-		return True
-	#---
-
-	def OnSavePlot(self, event):
-		""" Save image of the plot """
-		win = self.GetWindow()
-		if win.OnSavePlotImage():
-			return True
-		else:
-			return False
-	#---
-
-	def OnSeq(self, event):
-		""" Change the plot if the sequence changes """
-		win = self.GetWindow()
-		win.OnSeq(event.GetId())
-		return True
-	#---
-
-	def OnUni(self, event):
-		""" Change the plot if the type of cleavages changes """
-		win = self.GetWindow()
-		win.OnUni(event.GetId())
-		return True
-	#---
-	#endregion ---------------------------------------------------- My Methods		
 #---
 
 class ToolMenuAAdistRes(wx.Menu):
