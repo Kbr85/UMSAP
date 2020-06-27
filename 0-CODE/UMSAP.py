@@ -171,7 +171,7 @@ class UmsapApp(wx.App):
 			#--> Result windows
 			config.name['TarProtRes']: menu.ToolMenuTarProtRes,
 			config.name['LimProtRes']: menu.ToolMenuLimProtRes,
-			config.name['CutPropRes']: menu.ToolMenuCutPropRes,
+			config.name['CutPropRes']: menu.ToolsCutRes,
 			config.name['HistoRes']  : menu.ToolsHistoRes,
 			config.name['AAdistR']   : menu.ToolsAAdistRes,
 			#--> Other windows

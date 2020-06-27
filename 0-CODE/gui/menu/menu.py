@@ -575,8 +575,8 @@ class ToolsHistoRes(wx.Menu):
 	#endregion ---------------------------------------------------- My Methods		
 #---
 
-class AAdistResExp(wx.Menu):
-	""" Experiments menu for the AA distribution result window 
+class TarProtFPExp(wx.Menu):
+	""" Experiments menu for the TarProt module starting with FP 
 	
 		Menu items IDs (int) are used to identify the experiments
 	"""
@@ -642,6 +642,36 @@ class AAdistResPos(wx.Menu):
 	#endregion ----------------------------------------------------- MyMethods
 #---
 
+class TarProtNoneFPExp(wx.Menu):
+	""" Experiments menu for the TarProt module including None and FP """
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, nExp):
+		""" nExp: number of experiments in the .tarprot file """ 
+		super().__init__()
+	 #--> Menu items
+		self.Append(200, 'None', kind=wx.ITEM_RADIO)
+		self.Append(201, 'FP List', kind=wx.ITEM_RADIO)
+		for i in range(202, 202+nExp, 1):
+			name = 'Experiment ' + str(i-201)
+			self.Append(i, name, kind=wx.ITEM_RADIO)				
+	 #---
+	 #--> Bind
+		for i in range(200, 202+nExp, 1):
+			self.Bind(wx.EVT_MENU, self.OnComp, id=i)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnComp(self, event):
+		""" Changes the plot if comp changes """
+		win = self.GetWindow()
+		win.OnComp(event.GetId())
+		return True
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
 #endregion -------------------------------------------------------- Base menus
 
 #region ---------------------------------------------------------- Mixed menus
@@ -763,7 +793,7 @@ class ToolsAAdistRes(wx.Menu):
 		"""
 		super().__init__()
 	 #--> Menu items
-		self.Exp = AAdistResExp(nExp)
+		self.Exp = TarProtFPExp(nExp)
 		self.Pos = AAdistResPos(nPosName)
 		self.AppendSubMenu(self.Exp, 'Experiments')
 		self.AppendSubMenu(self.Pos, 'Compare Positions')
@@ -808,6 +838,117 @@ class ToolsAAdistRes(wx.Menu):
 		win = self.GetWindow()
 		win.OnReset()
 		return True	
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+
+class ToolsCutRes(wx.Menu):
+	""" Tools menu for the Cleavage per Residue Res utility window """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, nExp, seq, norm, exp, comp):
+		""" nExp: Total number of experiments
+			seq : 0 Rec Seq, 1 Nat Seq
+			norm: 0 Reg Values, 1 Normalized Values
+			exp : current experiment
+			comp: experiment to compare to
+		"""
+		
+		super().__init__()
+	 #--> Menu items
+		self.Exp  = TarProtFPExp(nExp)
+		self.Comp = TarProtNoneFPExp(nExp)
+
+		self.AppendSubMenu(self.Exp, 'Experiments')
+		self.AppendSubMenu(self.Comp, 'Compare to')
+		self.AppendSeparator()
+		self.Append(301, 'Native Sequence',      kind=wx.ITEM_RADIO)
+		self.Append(302, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
+		self.AppendSeparator()
+		self.Append(303, 'Normalized Values', kind=wx.ITEM_RADIO)
+		self.Append(304, 'Regular Values',    kind=wx.ITEM_RADIO)
+		self.AppendSeparator()
+		self.save = self.Append(-1, 'Save Plot Image')
+		self.AppendSeparator()
+		self.reset = self.Append(-1, 'Reset View')
+	 #---
+	 #--> Bind		
+		self.Bind(wx.EVT_MENU, self.OnSeq,      id=301)
+		self.Bind(wx.EVT_MENU, self.OnSeq,      id=302)
+		self.Bind(wx.EVT_MENU, self.OnNorm,     id=303)
+		self.Bind(wx.EVT_MENU, self.OnNorm,     id=304)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot, source=self.save)
+		self.Bind(wx.EVT_MENU, self.OnReset,    source=self.reset)
+	 #---
+	 #--> Check defaults
+		self.CurrentState(nExp, seq, norm, exp, comp)
+	 #---	 
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def CurrentState(self, nExp, seq, norm, exp, comp):
+		""" Check item based on the current window state
+			---
+			nExp : total number of experiment
+			seq  : 0 Rec Seq, 2 Nat Seq 
+			norm : 0 Regular values, 1 Normalized values
+			exp  : current number of experiment
+			comp : compare to
+		"""	
+	 #-->
+		self.Exp.Check(100+exp, True)
+	 #---
+	 #-->
+		if comp is None:
+			self.Comp.Check(200, True)
+		else:
+			self.Comp.Check(201+comp, True)
+	 #---
+	 #-->
+		if seq == 0:
+			self.Check(302, True)
+		else:
+			self.Check(301, True)
+	 #---
+	 #-->
+		if norm == 0:
+			self.Check(304, True)
+		else:
+			self.Check(303, True)
+	 #---
+	 #-->
+		return True
+	 #---
+	#---	
+
+	def OnSeq(self, event):
+		""" Change the plot if the sequence changes """
+		win = self.GetWindow()
+		win.OnSeq(event.GetId())
+		return True
+	#---
+
+	def OnNorm(self, event):
+		""" Change the plot if the normalization changes """
+		win = self.GetWindow()
+		win.OnNorm(event.GetId())
+		return True
+	#---
+
+	def OnSavePlot(self, event):
+		""" Save image of the plot """
+		win = self.GetWindow()
+		if win.OnSavePlotImage():
+			return True
+		else:
+			return False
+	#---
+
+	def OnReset(self, event):
+		""" Reset the window """
+		win = self.GetWindow()
+		win.OnReset()
+		return True
 	#---
 	#endregion ----------------------------------------------------- MyMethods
 #---
@@ -859,17 +1000,17 @@ class MainMenuBarWithTools(MainMenuBar):
 	  
 	 #--> Menu items
 		if len(args) == 0:
-			ToolsMenu = config.pointer['menu']['toolmenu'][name]()
+			self.Tools = config.pointer['menu']['toolmenu'][name]()
 		else:
-			ToolsMenu = config.pointer['menu']['toolmenu'][name](*args)
+			self.Tools = config.pointer['menu']['toolmenu'][name](*args)
 	 #---
 	 #--> Append to menu bar
 		if config.cOS == 'Darwin':
-			self.Insert(2, ToolsMenu, '&Tools')
+			self.Insert(2, self.Tools, '&Tools')
 		elif config.cOS == 'Windows':
-			self.Insert(3, ToolsMenu, '&Tools')
+			self.Insert(3, self.Tools, '&Tools')
 		elif config.cOS == 'Linux':
-			self.Insert(3, ToolsMenu, '&Tools')
+			self.Insert(3, self.Tools, '&Tools')
 		else:
 			pass		
 	 #---
@@ -877,31 +1018,6 @@ class MainMenuBarWithTools(MainMenuBar):
 	#endregion ------------------------------------------------ Instance Setup
 #---
 #endregion ----------------------------------------------------------- Menubar
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ############################################ OLD
 
@@ -1313,149 +1429,6 @@ class ToolMenuProtProfResV(wx.Menu):
 		"""
 		self.CondMenu.Check(505+n, True)
 		self.TPMenu.Check(505+nC+tp, True)
-		return True
-	#---
-	#endregion ---------------------------------------------------- My Methods
-#---
-
-class ToolMenuCutPropRes(wx.Menu):
-	""" To show the pop up menu in CutPropRes """
-
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self, nExp, seq, norm, exp, comp):
-		""" nExp: Total number of experiments
-			seq : 0 Rec Seq, 1 Nat Seq
-			norm: 0 Reg Values, 1 Normalized Values
-			exp : current experiment
-			comp: experiment to compare to
-		"""
-		super().__init__()	
-	 #--> Menu items
-	  #--> Experiment menu
-		self.ExpMenu = wx.Menu()
-		self.ExpMenu.Append(507, 'FP List', kind=wx.ITEM_RADIO)
-		for i in range(1, nExp + 1, 1):
-			self.Mid = 507 + i
-			name = 'Experiment ' + str(i)
-			self.ExpMenu.Append(self.Mid, name, kind=wx.ITEM_RADIO)
-	  #---
-	  #--> Comparison menu
-		self.CompMenu = wx.Menu()
-		tempID = self.Mid + 1
-		self.CompMenu.Append(tempID, 'None', kind=wx.ITEM_RADIO)
-		tempID = tempID + 1
-		self.CompMenu.Append(tempID, 'FP List', kind=wx.ITEM_RADIO)
-		for i in range(1, nExp + 1, 1):
-			tempID = tempID + 1 
-			name = 'Experiment ' + str(i)
-			self.CompMenu.Append(tempID, name, kind=wx.ITEM_RADIO)
-	  #---
-	  #--> All together
-		self.AppendSubMenu(self.ExpMenu, 'Experiments')
-		self.AppendSubMenu(self.CompMenu, 'Compare to')
-		self.AppendSeparator()
-		self.Append(502, 'Native Sequence', kind=wx.ITEM_RADIO)
-		self.Append(503, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
-		self.AppendSeparator()
-		self.Append(504, 'Normalized Values', kind=wx.ITEM_RADIO)
-		self.Append(505, 'Regular Values', kind=wx.ITEM_RADIO)
-		self.AppendSeparator()
-		self.Append(506, 'Save Plot Image')
-		self.AppendSeparator()
-		self.Append(501, 'Reset View')
-	  #---
-	  #--> Check defaults
-		self.CurrentState(nExp, seq, norm, exp, comp)
-	  #---
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,    id=501)
-		self.Bind(wx.EVT_MENU, self.OnSeq,      id=502)
-		self.Bind(wx.EVT_MENU, self.OnSeq,      id=503)
-		self.Bind(wx.EVT_MENU, self.OnNorm,     id=504)
-		self.Bind(wx.EVT_MENU, self.OnNorm,     id=505)
-		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=506)
-		self.ExpMenu.Bind(wx.EVT_MENU, self.OnExp,      id=507)
-		for i in range(1, nExp + 1, 1):
-			tMid = 507 + i
-			self.ExpMenu.Bind(wx.EVT_MENU, self.OnExp, id=tMid)
-		for i in range(1, nExp + 3, 1):
-			tMidd = self.Mid + i
-			self.CompMenu.Bind(wx.EVT_MENU, self.OnComp, id=tMidd)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	def CurrentState(self, nExp, seq, norm, exp, comp):
-		""" Check item based on the current window state
-			---
-			nExp : total number of experiment
-			seq  : 0 Rec Seq, 1 Nat Seq 
-			norm : 0 Regular values, 1 Normalized values
-			exp  : current number of experiment
-			comp : compare to
-		"""	
-		if seq == 0:
-			self.Check(503, True)
-		else:
-			self.Check(502, True)
-		if norm == 0:
-			self.Check(505, True)
-		else:
-			self.Check(504, True)
-		tMid = 507 + exp
-		self.ExpMenu.Check(tMid, True)
-		tMid = 507 + nExp
-		if comp is None:
-			self.CompMenu.Check(tMid + 1, True)
-		else:
-			tMid = tMid + 2 + comp
-			self.CompMenu.Check(tMid, True)
-		return True
-	#---	
-
-	def OnReset(self, event):
-		""" Reset the window """
-		win = self.GetWindow()
-		win.OnReset(self.Mid)
-		return True
-	#---
-
-	def OnSeq(self, event):
-		""" Change the plot if the sequence changes """
-		win = self.GetWindow()
-		win.OnSeq(event.GetId())
-		return True
-	#---
-
-	def OnNorm(self, event):
-		""" Change the plot if the normalization changes """
-		win = self.GetWindow()
-		win.OnNorm(event.GetId())
-		return True
-	#---
-
-	def OnSavePlot(self, event):
-		""" Save image of the plot """
-		win = self.GetWindow()
-		if win.OnSavePlotImage():
-			return True
-		else:
-			return False
-	#---
-
-	def OnExp(self, event):
-		""" Change the plot if experiment changes """
-		win = self.GetWindow()
-		win.OnExp(event.GetId())
-		return True
-	#--- 
-
-	def OnComp(self, event):
-		""" Changes the plot if comp changes """
-		win = self.GetWindow()
-		win.OnComp(event.GetId(), self.Mid)
 		return True
 	#---
 	#endregion ---------------------------------------------------- My Methods
