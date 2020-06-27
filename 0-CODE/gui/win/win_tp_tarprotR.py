@@ -101,14 +101,14 @@ class WinTarProtRes(gclasses.WinResUno):
 	#region -------------------------------------------------- Binding Methods
 	def OnRightDown(self, event):
 		""" Display the popup menu """
-		self.PopupMenu(menu.ToolMenuTarProtRes())
+		self.PopupMenu(menu.ToolsTarProtRes())
 		return True
 	#---
 
 	def OnClick(self, event):
 		""" To process click events """
 		if event.button == 3:
-			self.PopupMenu(menu.ToolMenuTarProtRes())
+			self.PopupMenu(menu.ToolsTarProtRes())
 		else:
 			pass
 		return True

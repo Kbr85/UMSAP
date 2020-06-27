@@ -706,6 +706,61 @@ class ToolsMergeAA(wx.Menu):
 	#---
 	#endregion ---------------------------------------------------- My Methods
 #---
+
+class ToolsTarProtRes(wx.Menu):
+	""" Handles the pop up menu in tarprotR """	
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""" """
+		super().__init__()
+	 #--> Menu items
+		self.expFP = self.Append(-1, 'Export Filtered Peptides')
+		self.AppendSeparator()
+		self.saveF = self.Append(-1, 'Save Fragments Image')
+		self.saveP = self.Append(-1, 'Save Plot Image')
+		self.AppendSeparator()
+		self.reset = self.Append(-1, 'Reset View')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnReset,    source=self.reset)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot, source=self.saveP)
+		self.Bind(wx.EVT_MENU, self.OnSaveFrag, source=self.saveF)
+		self.Bind(wx.EVT_MENU, self.OnExportFP, source=self.expFP)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+		
+	#region ------------------------------------------------------- My Methods
+	def OnSavePlot(self, event):
+		""" Save image of the plot """
+		win = self.GetWindow()
+		win.OnSavePlot()
+		return True
+	#---
+
+	def OnSaveFrag(self, event):
+		""" Save an image of the fragments  """
+		win = self.GetWindow()
+		win.OnSaveFrag()
+		return True
+	#---		
+
+	def OnReset(self, event):
+		""" Reset the view """
+		win = self.GetWindow()
+		win.OnResetView()
+		return True
+	#---
+
+	def OnExportFP(self, event):
+		""" Export the list of filtered peptides """
+		win = self.GetWindow()
+		win.OnExportFP()
+		return True
+	#---
+	#endregion ---------------------------------------------------- My Methods	
+#---
 #endregion -------------------------------------------------------- Base menus
 
 #region ---------------------------------------------------------- Mixed menus
@@ -985,6 +1040,77 @@ class ToolsCutRes(wx.Menu):
 		return True
 	#---
 	#endregion ----------------------------------------------------- MyMethods
+#---
+
+class ToolsLimProtRes(wx.Menu):
+	""" Tool menu in LimprotRes """
+	
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, selM):
+		""" selM: selection mode. True Select Lane, False Select Band """
+		super().__init__()
+	 #--> Menu items
+		self.selM = self.Append(100, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
+		self.AppendSeparator()
+		self.expFP = self.Append(-1, 'Export Filtered Peptides')
+		self.AppendSeparator()
+		self.saveF = self.Append(-1, 'Save Fragments Image')
+		self.saveG = self.Append(-1, 'Save Gel Image')
+		self.AppendSeparator()
+		self.reset = self.Append(-1, 'Reset View')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnReset,    source=self.reset)
+		self.Bind(wx.EVT_MENU, self.OnSaveGel,  source=self.saveG)
+		self.Bind(wx.EVT_MENU, self.OnSaveFrag, source=self.saveF)
+		self.Bind(wx.EVT_MENU, self.OnExportFP, source=self.expFP)
+		self.Bind(wx.EVT_MENU, self.OnSelM,     source=self.selM)
+	 #---
+	 #--> Current Status
+		if selM:
+			self.Check(100, True)
+		else:
+			self.Check(100, False)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+ 	
+	#region ------------------------------------------------------- My Methods
+	def OnExportFP(self, event):
+		""" Export the list of filtered peptides """
+		win = self.GetWindow()
+		win.OnExportFP()
+		return True
+	#---
+
+	def OnSaveGel(self, event):
+		""" Save image of the plot """
+		win = self.GetWindow()
+		win.OnSaveGel()
+		return True
+	#---
+
+	def OnSaveFrag(self, event):
+		""" Save an image of the fragments  """
+		win = self.GetWindow()
+		win.OnSaveFrag()
+		return True
+	#---		
+
+	def OnSelM(self, event):
+		""" Change selection mode """
+		win = self.GetWindow()
+		win.OnSelM()		
+		return True
+	#---
+
+	def OnReset(self, event):
+		""" Reset the view """
+		win = self.GetWindow()
+		win.OnResetView()
+		return True
+	#---
+	#endregion ---------------------------------------------------- My Methods	
 #---
 #endregion ------------------------------------------------------- Mixed menus
 
@@ -1476,132 +1602,6 @@ class ToolMenuProtProfResV(wx.Menu):
 		return True
 	#---
 	#endregion ---------------------------------------------------- My Methods
-#---
-
-class ToolMenuLimProtRes(wx.Menu):
-	""" Tool menu in LimprotRes """
-	
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self, selM):
-		""" selM: selection mode. True Select Lane, False Select Band """
-		super().__init__()
-	 #--> Menu items
-		self.Append(505, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
-		self.AppendSeparator()
-		self.Append(504, 'Export Filtered Peptides')
-		self.AppendSeparator()
-		self.Append(503, 'Save Fragments Image')
-		self.Append(502, 'Save Gel Image')
-		self.AppendSeparator()
-		self.Append(501, 'Reset View')
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,    id=501)
-		self.Bind(wx.EVT_MENU, self.OnSaveGel,  id=502)
-		self.Bind(wx.EVT_MENU, self.OnSaveFrag, id=503)
-		self.Bind(wx.EVT_MENU, self.OnExportFP, id=504)
-		self.Bind(wx.EVT_MENU, self.OnSelM,     id=505)
-	 #---
-	 #--> Current Status
-		if selM:
-			self.Check(505, True)
-		else:
-			self.Check(505, False)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
- 	
-	#region ------------------------------------------------------- My Methods
-	def OnExportFP(self, event):
-		""" Export the list of filtered peptides """
-		win = self.GetWindow()
-		win.OnExportFP()
-		return True
-	#---
-
-	def OnSaveGel(self, event):
-		""" Save image of the plot """
-		win = self.GetWindow()
-		win.OnSaveGel()
-		return True
-	#---
-
-	def OnSaveFrag(self, event):
-		""" Save an image of the fragments  """
-		win = self.GetWindow()
-		win.OnSaveFrag()
-		return True
-	#---		
-
-	def OnSelM(self, event):
-		""" Change selection mode """
-		win = self.GetWindow()
-		win.OnSelM()		
-		return True
-	#---
-
-	def OnReset(self, event):
-		""" Reset the view """
-		win = self.GetWindow()
-		win.OnResetView()
-		return True
-	#---
-	#endregion ---------------------------------------------------- My Methods	
-#---
-
-class ToolMenuTarProtRes(wx.Menu):
-	""" Handles the pop up menu in tarprotR """	
-
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self):
-		""" """
-		super().__init__()
-	 #--> Menu items
-		self.Append(504, 'Export Filtered Peptides')
-		self.AppendSeparator()
-		self.Append(503, 'Save Fragments Image')
-		self.Append(502, 'Save Plot Image')
-		self.AppendSeparator()
-		self.Append(501, 'Reset View')
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,    id=501)
-		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=502)
-		self.Bind(wx.EVT_MENU, self.OnSaveFrag, id=503)
-		self.Bind(wx.EVT_MENU, self.OnExportFP, id=504)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-		
-	#region ------------------------------------------------------- My Methods
-	def OnSavePlot(self, event):
-		""" Save image of the plot """
-		win = self.GetWindow()
-		win.OnSavePlot()
-		return True
-	#---
-
-	def OnSaveFrag(self, event):
-		""" Save an image of the fragments  """
-		win = self.GetWindow()
-		win.OnSaveFrag()
-		return True
-	#---		
-
-	def OnReset(self, event):
-		""" Reset the view """
-		win = self.GetWindow()
-		win.OnResetView()
-		return True
-	#---
-
-	def OnExportFP(self, event):
-		""" Export the list of filtered peptides """
-		win = self.GetWindow()
-		win.OnExportFP()
-		return True
-	#---
-	#endregion ---------------------------------------------------- My Methods	
 #---
 #endregion --------------------------------------------- Individual Tool menus
 

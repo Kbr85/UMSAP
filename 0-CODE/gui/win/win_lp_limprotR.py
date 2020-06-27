@@ -127,7 +127,7 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 	#region -------------------------------------------------- Binding Methods
 	def OnRightDown(self, event):
 		""" Display the popup menu """
-		self.PopupMenu(menu.ToolMenuLimProtRes(self.selM))
+		self.PopupMenu(menu.ToolsLimProtRes(self.selM))
 		return True
 	#---
 	#endregion ----------------------------------------------- Binding Methods
@@ -178,7 +178,7 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 		#-->
 		self.text.Clear()		
 		#-->
-		self.menubar.Check(505, True)
+		self.menubar.Check(100, True)
 		#-->
 		self.Refresh()
 		self.Update()
@@ -194,13 +194,13 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 		if self.selM:
 			self.selM = False
 			self.FragLabel = 'Lane   '
-			self.menubar.Check(505, False)
+			self.menubar.Check(100, False)
 	 #---
 	 #-->
 		else:
 			self.selM = True
 			self.FragLabel = 'Band   ' 
-			self.menubar.Check(505, True)
+			self.menubar.Check(100, True)
 	 #---
 	 #-->
 		return True

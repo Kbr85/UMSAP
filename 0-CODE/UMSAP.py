@@ -169,8 +169,8 @@ class UmsapApp(wx.App):
 			config.name['CorrA']   : menu.ToolsCorrAUtil,
 			config.name['CorrARes']: menu.ToolsCorrARes,
 			#--> Result windows
-			config.name['TarProtRes']: menu.ToolMenuTarProtRes,
-			config.name['LimProtRes']: menu.ToolMenuLimProtRes,
+			config.name['TarProtRes']: menu.ToolsTarProtRes,
+			config.name['LimProtRes']: menu.ToolsLimProtRes,
 			config.name['CutPropRes']: menu.ToolsCutRes,
 			config.name['HistoRes']  : menu.ToolsHistoRes,
 			config.name['AAdistR']   : menu.ToolsAAdistRes,
