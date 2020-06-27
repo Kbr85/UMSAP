@@ -165,7 +165,7 @@ class UmsapApp(wx.App):
 			config.name['LimProt'] : menu.ToolsModule,
 			config.name['ProtProf']: menu.ToolsModule,			
 			#--> Utilities
-			config.name['MergeAA'] : menu.ToolMenuMergeAA,
+			config.name['MergeAA'] : menu.ToolsMergeAA,
 			config.name['CorrA']   : menu.ToolsCorrAUtil,
 			config.name['CorrARes']: menu.ToolsCorrARes,
 			#--> Result windows

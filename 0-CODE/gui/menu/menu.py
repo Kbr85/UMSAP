@@ -672,6 +672,40 @@ class TarProtNoneFPExp(wx.Menu):
 	#---
 	#endregion ----------------------------------------------------- MyMethods
 #---
+
+class ToolsMergeAA(wx.Menu):
+	""" Tools menu in mergeAA """	
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		super().__init__()
+	 #--> Menu items
+		self.delSel = self.Append(-1, 'Delete Selected Paths')
+		self.delAll = self.Append(-1, 'Delete All Paths')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnDelSel, source=self.delSel)
+		self.Bind(wx.EVT_MENU, self.OnDelAll, source=self.delAll)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnDelAll(self, event):
+		""" Del all items in the list """
+		win = self.GetWindow()
+		win.OnDelAll()
+		return True
+	#---
+
+	def OnDelSel(self, event):
+		""" Del selected items in the list """
+		win = self.GetWindow()
+		win.OnDelSel()
+		return True
+	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
 #endregion -------------------------------------------------------- Base menus
 
 #region ---------------------------------------------------------- Mixed menus
@@ -1018,6 +1052,16 @@ class MainMenuBarWithTools(MainMenuBar):
 	#endregion ------------------------------------------------ Instance Setup
 #---
 #endregion ----------------------------------------------------------- Menubar
+
+
+
+
+
+
+
+
+
+
 
 ############################################ OLD
 
@@ -1558,40 +1602,6 @@ class ToolMenuTarProtRes(wx.Menu):
 		return True
 	#---
 	#endregion ---------------------------------------------------- My Methods	
-#---
-
-class ToolMenuMergeAA(wx.Menu):
-	""" Tools menu in mergeAA """	
-
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self):
-		super().__init__()
-	 #--> Menu items
-		self.Append(501, 'Delete selected paths')
-		self.Append(502, 'Delete all paths')
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnDelSel, id=501)
-		self.Bind(wx.EVT_MENU, self.OnDelAll, id=502)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	def OnDelAll(self, event):
-		""" Del all items in the list """
-		win = self.GetWindow()
-		win.OnDelAll()
-		return True
-	#---
-
-	def OnDelSel(self, event):
-		""" Del selected items in the list """
-		win = self.GetWindow()
-		win.OnDelSel()
-		return True
-	#---
-	#endregion ---------------------------------------------------- My Methods
 #---
 #endregion --------------------------------------------- Individual Tool menus
 

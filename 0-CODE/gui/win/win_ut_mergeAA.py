@@ -202,7 +202,7 @@ class WinMergeAAFiles(gclasses.WinMyFrame, gclasses.ElementHelpRun,
 
 	def OnRightDown(self, event):
 		""" """
-		self.PopupMenu(menu.ToolMenuMergeAA())
+		self.PopupMenu(menu.ToolsMergeAA())
 		return True
 	#---
 	#endregion ----------------------------------------------- Binding Methods
