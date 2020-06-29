@@ -3144,7 +3144,7 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 	""" Basic elements of the modules windows. Used in TarProt, LimProt """
 	
 	#region ---------------------------------------------------- Initial Setup
-	def __init__(self, parent, style=None, length=60):
+	def __init__(self, parent, name, style=None, length=60):
 		""" parent: parent of the widgets
 			style: style of the window
 			length: length of the gauge in ElementHelpRun
@@ -3242,11 +3242,15 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 	 #---
 	 #--> Dict for adding from listbox. Override as needed
 		self.ColDic = {
-			101: self.tcSeq, 
-			102: self.tcDetProt, 
-			103: self.tcScore, 
-			104: self.tcColExt,
+			1: self.tcSeq, 
+			2: self.tcDetProt, 
+			3: self.tcScore, 
+			4: self.tcColExt,
 		}
+	 #---
+	 #--> Menu
+		self.menubar = menu.MainMenuBarWithTools(self.name, self.name)
+		self.SetMenuBar(self.menubar)
 	 #---
 	 #--> Sizers
 	  #--> Central static boxes
@@ -3367,8 +3371,10 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 
 	#region ----------------------------------------------------  Bind Methods
 	def OnPopUpMenu(self, event):
-		""" Show the pop up menu in the wx.ListCtrl. Override as needed """
-		pass
+		""" Show the pop up menu in the wx.ListCtrl. Binding is done in
+		 the base class """
+		self.PopupMenu(menu.ToolsModule(self.name))
+		return True
 	#---
 
 	def OnSeqRecFile(self, event):
@@ -3920,10 +3926,10 @@ class WinResDos(WinRes):
 	#---
 	#endregion ------------------------------------------------ Instance Setup
 
-	# ---------------------------------------------------------[--- My Methods
+	# ------------------------------------------------------------- My Methods
 	def OnSavePlotImage(self):
 		""" Save plot in the graph """
-		if self.p3.OnSaveImage():
+		if self.p2.OnSaveImage():
 			return True
 		else:
 			return False

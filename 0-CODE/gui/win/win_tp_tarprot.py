@@ -35,14 +35,10 @@ class WinTarProt(gclasses.WinModule):
 		"""
 	 #--> Initial Setup
 		self.name  = config.name['TarProt']
-		super().__init__(parent=parent, style=style)
+		super().__init__(parent=parent, name=self.name, style=style)
 	 #---
 	 #--> Variables
 		self.CType = config.combobox['ControlType'][0] # Needed for self.CheckGuiResultControl
-	 #---
-	 #--> Menu
-		self.menubar = menu.MainMenuBarWithTools(self.name)
-		self.SetMenuBar(self.menubar)
 	 #---
 	 #--> Sizers
 	  #--> Central static boxes
@@ -246,14 +242,6 @@ class WinTarProt(gclasses.WinModule):
 	#endregion ----------------------------------------------- Binding Methods
 
 	#region ----------------------------------------------------- Menu Methods
-	def OnPopUpMenu(self, event):
-		""" Show the pop up menu in the wx.ListCtrl. Binding is done in
-			the base class 
-		"""
-		self.PopupMenu(menu.ToolMenuTarProtMod())
-		return True
-	#---
-
 	def OnSaveInputF(self):
 		""" Save the .uscr file with the data in the window """
 	 #--> Variables

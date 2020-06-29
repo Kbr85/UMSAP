@@ -43,11 +43,7 @@ class WinProtProf(gclasses.WinModule):
 		self.LabelControl = None # column numbers, when loading column numbers 
 		self.LabelCond    = None # from a txt or from a uscr 
 		self.LabelRP      = None # 
-		super().__init__(parent=parent, style=style, length=53)
-	 #---
-	 #--> Menu
-		self.menubar = menu.MainMenuBarWithTools(self.name)
-		self.SetMenuBar(self.menubar)
+		super().__init__(parent=parent, name=self.name, style=style, length=53)
 	 #---
 	 #--> Widgets
 	  #--> Destroy widgets needed by other modules but not here
@@ -94,11 +90,11 @@ class WinProtProf(gclasses.WinModule):
 	 #---
 	 #--> Dict for menu
 		self.ColDic = {
-			101: self.tcDetProt,
-			102: self.tcGeneN, 
-			103: self.tcScore, 
-			104: self.tcExclude,
-			105: self.tcColExt,
+			1: self.tcDetProt,
+			2: self.tcGeneN, 
+			3: self.tcScore, 
+			4: self.tcExclude,
+			5: self.tcColExt,
 		}
 	 #---
 	 #--> Sizers
@@ -302,13 +298,6 @@ class WinProtProf(gclasses.WinModule):
 	#endregion ----------------------------------------------- Binding Methods
 
 	#region ----------------------------------------------------- Menu Methods
-	def OnPopUpMenu(self, event):
-		""" Show the pop up menu in the wx.ListCtrl. Binding is done in
-		 the base class """
-		self.PopupMenu(menu.ToolMenuProtProfMod())
-		return True
-	#---
-
 	def OnSaveInputF(self):
 		""" Save the .uscr file with the data in the window """
 	 #--> Variables

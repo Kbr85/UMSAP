@@ -149,21 +149,63 @@ class WinUtil(gclasses.WinMyFrame):
 		self.Center()
 	 #---
 	 #--> Bind
-		self.buttonSeqH.Bind(wx.EVT_BUTTON, self.menubar.OnSeqH)
-		self.buttonReadOut.Bind(wx.EVT_BUTTON, self.menubar.OnReadOutFile)
-		self.buttonCutsPerRes.Bind(wx.EVT_BUTTON, self.menubar.OnCutProp)
-		self.buttonCuts2PDB.Bind(wx.EVT_BUTTON, self.menubar.OnPDBfiles)
-		self.buttonShortFile.Bind(wx.EVT_BUTTON, self.menubar.OnShortDFiles)
-		self.buttonAAdist.Bind(wx.EVT_BUTTON, self.menubar.OnAAdist)
-		self.buttonSeqAlign.Bind(wx.EVT_BUTTON, self.menubar.OnSeqAlign)
-		self.buttonCreatehist.Bind(wx.EVT_BUTTON, self.menubar.OnHisto)
-		self.buttonCorrAnaly.Bind(wx.EVT_BUTTON, self.menubar.OnCorrAnalysis)
-		self.buttonAAdistf.Bind(wx.EVT_BUTTON, self.menubar.OnMergeAadist)
-		self.buttonUpdateTP.Bind(wx.EVT_BUTTON, self.menubar.OnUpdateTP)
-		self.buttonReaTP.Bind(wx.EVT_BUTTON, self.menubar.OnReanalyseTP)
-		self.buttonCInputF.Bind(wx.EVT_BUTTON, self.menubar.OnCInputFile)
-		self.buttonFPL.Bind(wx.EVT_BUTTON, self.menubar.OnFPList)
-		self.buttonRunScript.Bind(wx.EVT_BUTTON, self.menubar.OnRInputFile)
+		self.buttonSeqH.Bind(
+			wx.EVT_BUTTON,       
+			self.menubar.Utilities.LimProt.OnSeqH,
+		)
+		self.buttonAAdist.Bind(
+			wx.EVT_BUTTON,    
+			self.menubar.Utilities.TarProt.OnAAdist,
+		)
+		self.buttonSeqAlign.Bind(
+			wx.EVT_BUTTON,
+			self.menubar.Utilities.TarProt.OnSeqAli,
+		)
+		self.buttonCreatehist.Bind(
+			wx.EVT_BUTTON, 
+			self.menubar.Utilities.TarProt.OnHisto,
+		)		
+		self.buttonCutsPerRes.Bind(
+			wx.EVT_BUTTON, 
+			self.menubar.Utilities.TarProt.OnCutRes,
+		)
+		self.buttonCuts2PDB.Bind(
+			wx.EVT_BUTTON,   
+			self.menubar.Utilities.TarProt.OnCut2Pdb,
+		)
+		self.buttonUpdateTP.Bind(
+			wx.EVT_BUTTON,   
+			self.menubar.Utilities.TarProt.OnUpdateRes,
+		)
+		self.buttonReaTP.Bind(
+			wx.EVT_BUTTON,      
+			self.menubar.Utilities.TarProt.OnCustomUpdate,
+		)
+		self.buttonFPL.Bind(
+			wx.EVT_BUTTON,        
+			self.menubar.Utilities.TarProt.OnFPList,
+		)
+		self.buttonShortFile.Bind(
+			wx.EVT_BUTTON,  
+			self.menubar.Utilities.General.OnShortDF,
+		)
+		self.buttonCorrAnaly.Bind(
+			wx.EVT_BUTTON,  
+			self.menubar.Utilities.General.OnCorrA,
+		)
+		self.buttonAAdistf.Bind(
+			wx.EVT_BUTTON,    
+			self.menubar.Utilities.General.OnMergeAA,
+		)		
+		self.buttonCInputF.Bind(
+			wx.EVT_BUTTON,    
+			self.menubar.Utilities.General.OnInputF,
+		)
+		self.buttonReadOut.Bind(
+			wx.EVT_BUTTON,    
+			self.menubar.Utilities.OnReadOutF,
+		)
+		self.buttonRunScript.Bind(wx.EVT_BUTTON, self.menubar.Script.OnRead)
 	 #---
 	 #--> Tooltips
 		self.buttonSeqH.SetToolTip(config.tooltip[self.name]['SeqH'])

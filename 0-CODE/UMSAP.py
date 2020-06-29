@@ -161,21 +161,21 @@ class UmsapApp(wx.App):
 		}
 		config.pointer['menu']['toolmenu'] = { # Tool menu
 			#--> Modules
-			config.name['TarProt'] : menu.ToolMenuTarProtMod,
-			config.name['LimProt'] : menu.ToolMenuLimProtMod,
-			config.name['ProtProf']: menu.ToolMenuProtProfMod,
+			config.name['TarProt'] : menu.ToolsModule,
+			config.name['LimProt'] : menu.ToolsModule,
+			config.name['ProtProf']: menu.ToolsModule,			
 			#--> Utilities
-			config.name['MergeAA'] : menu.ToolMenuMergeAA,
-			config.name['CorrA']   : menu.ToolMenuCorrAMod,
-			config.name['CorrARes']: menu.ToolMenuCorrARes,
+			config.name['MergeAA'] : menu.ToolsMergeAA,
+			config.name['CorrA']   : menu.ToolsCorrAUtil,
+			config.name['CorrARes']: menu.ToolsCorrARes,
 			#--> Result windows
-			config.name['TarProtRes']: menu.ToolMenuTarProtRes,
-			config.name['LimProtRes']: menu.ToolMenuLimProtRes,
-			config.name['CutPropRes']: menu.ToolMenuCutPropRes,
-			config.name['HistoRes']  : menu.ToolMenuHistoRes,
-			config.name['AAdistR']   : menu.ToolMenuAAdistRes,
+			config.name['TarProtRes']: menu.ToolsTarProtRes,
+			config.name['LimProtRes']: menu.ToolsLimProtRes,
+			config.name['CutPropRes']: menu.ToolsCutRes,
+			config.name['HistoRes']  : menu.ToolsHistoRes,
+			config.name['AAdistR']   : menu.ToolsAAdistRes,
 			#--> Other windows
-			config.name['TypeRes']   : menu.ToolMenuTypeResults,
+			config.name['TypeRes']   : menu.ToolsTypeResults,
 		}
 		config.pointer['dclasses']['DataObj'] = { # Data objects with name and file extension
 			config.name['TarProtRes']	  : dclasses.DataObjTarProtFile,

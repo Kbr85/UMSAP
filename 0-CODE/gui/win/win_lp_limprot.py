@@ -35,14 +35,10 @@ class WinLimProt(gclasses.WinModule):
 		"""
 	 #--> Initial Setup
 		self.name = config.name['LimProt']
-		super().__init__(parent=parent, style=style, length=56)
+		super().__init__(parent=parent, name=self.name, style=style, length=56)
 	 #---
 	 #--> Variables
 		self.CType = config.combobox['ControlType'][0] # Needed for self.CheckGuiResultControl
-	 #---
-	 #--> Menu
-		self.menubar = menu.MainMenuBarWithTools(self.name)
-		self.SetMenuBar(self.menubar)		
 	 #---
 	 #--> Widgets
 	  #--> Destroy unneeded widget from parent class
@@ -265,14 +261,6 @@ class WinLimProt(gclasses.WinModule):
 	#endregion -------------------------------------------------- Bind Methods
 
 	#region ----------------------------------------------------- Menu Methods
-	def OnPopUpMenu(self, event):
-		""" Show the pop up menu in the wx.ListCtrl. Binding is done in
-			the base class 
-		"""
-		self.PopupMenu(menu.ToolMenuLimProtMod())
-		return True
-	#---
-
 	def OnSaveInputF(self):
 		""" Save the .uscr file with the data in the window """
 	 #--> Variables

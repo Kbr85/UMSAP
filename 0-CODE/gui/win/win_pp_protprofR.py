@@ -102,8 +102,6 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #---
 	 #--> Menu
 		self.menubar = menu.MenuBarProtProfRes(
-			self.NC,
-			self.TP,
 			self.NCondL, 
 			self.NTimePL, 
 			self.n, 
@@ -249,9 +247,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		""" To process click events """
 		if event.button == 3:
 	 	 #-->			
-			Tmenu = menu.ToolMenuProtProfResV(
-				self.NC, 
-				self.TP, 
+			Tmenu = menu.ToolsProtProfResV(
 				self.NCondL,
 				self.NTimePL,
 				self.n, 
@@ -273,7 +269,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	def OnClick3(self, event):
 		""" To process click events """
 		if event.button == 3:
-			self.PopupMenu(menu.ToolMenuProtProfResT(self.allL, self.grayC))
+			self.PopupMenu(menu.ToolsProtProfResRP(self.allL, self.grayC))
 		else:
 			pass
 		return True
@@ -329,7 +325,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	def OnPopUpMenu(self, event):
 		""" Show the pop up menu in the wx.ListCtrl. Binding is done in
 		 the base class """
-		self.PopupMenu(menu.ToolMenuProtProfResFilter())
+		self.PopupMenu(menu.Filter())
 		return True
 	#---
 	#endregion ------------------------------------------------------- Binding
@@ -345,6 +341,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.grayC = False
 		self.allL  = False
 		self.prot  = False
+		self.CorrP = False
 		if keepState:
 			pass
 		else:
@@ -352,10 +349,11 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			self.tp = 0
 	 #---
 	 #--> Menu
-		self.menubar.Check(703, False)
-		self.menubar.Check(704, False)
-		self.menubar.Check(505, True)
-		self.menubar.Check(505 + self.NC, True)
+		self.menubar.Check(300, False)
+		self.menubar.Check(301, False)
+		self.menubar.Check(100, True)
+		self.menubar.Check(200, True)
+		self.menubar.Check(600, False)
 	 #---
 	 #--> Reset listbox
 		gmethods.ListCtrlDeSelAll(self.lb)
@@ -397,7 +395,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 
 	def OnCond(self, Mid):
 		""" Mid: Id of the selected menu item (int) """
-		self.n = Mid - 505
+		self.n = Mid - 100
 		self.menubar.Check(Mid, True)
 		self.DrawConfig2()
 		if len(gmethods.ListCtrlGetSelected(self.lb)) > 0:
@@ -407,9 +405,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		return True
 	#---
 
-	def OnTP(self, Mid):
+	def OnRP(self, Mid):
 		""" Mid: Id of the selected menu item """
-		self.tp = Mid - (505 + self.NC)
+		self.tp = Mid - 200
 		self.menubar.Check(Mid, True)
 		self.DrawConfig2()
 		if len(gmethods.ListCtrlGetSelected(self.lb)) > 0:
@@ -433,7 +431,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			self.p3.canvas.mpl_disconnect("pick_event")
 	 #---
 	 #-->
-		self.menubar.Check(703, self.allL)
+		self.menubar.Check(300, self.allL)
 	 #---
 	 #-->
 		self.DrawConfig3()
@@ -452,7 +450,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			self.grayC = True
 	 #---
 	 #-->
-		self.menubar.Check(704, self.grayC)
+		self.menubar.Check(301, self.grayC)
 	 #---
 	 #-->
 		self.DrawConfig3()
@@ -514,7 +512,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			self.pP	= config.protprof['ColOut'][3]
 			self.pPt   = config.protprof['ColTPp'][1]
 			self.PoPc  = config.protprof['ColOut'][2]
-		self.menubar.Check(599, self.CorrP)
+		self.menubar.Check(600, self.CorrP)
 	 #---
 	 #--> Draw 
 		if len(gmethods.ListCtrlGetSelected(self.lb)) > 0:

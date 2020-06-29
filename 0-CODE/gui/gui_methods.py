@@ -66,12 +66,15 @@ def WinGraphResCreate(winID, file):
 		file: file with results (string or Path)
 	"""
  #--> Create the window
-	try:
-		test = config.pointer['gmethods']['WinCreate'][winID](file)
-		config.win['Open'].append(test)
-		config.win['Main'].Iconize(True)
-	except Exception:
-		return False
+	test = config.pointer['gmethods']['WinCreate'][winID](file)
+	config.win['Open'].append(test)
+	config.win['Main'].Iconize(True) 
+	# try:
+	# 	test = config.pointer['gmethods']['WinCreate'][winID](file)
+	# 	config.win['Open'].append(test)
+	# 	config.win['Main'].Iconize(True)
+	# except Exception:
+	# 	return False
  #---
  #--> Return
 	return True

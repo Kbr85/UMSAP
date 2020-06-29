@@ -490,7 +490,7 @@ class WinTypeRes(gclasses.WinMyFrame, gclasses.GuiChecks):
 
 	def OnPopUpMenu(self, event):
 		""" Pop up menu in wx.ListBox """
-		self.PopupMenu(menu.ToolMenuTypeResults())
+		self.PopupMenu(menu.ToolsTypeResults())
 		return True	
 	#---
 	#endregion -------------------------------------------------- Menu Methods

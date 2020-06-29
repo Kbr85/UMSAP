@@ -86,7 +86,7 @@ class WinCorrARes(gclasses.WinGraph):
 	def OnClick(self, event):
 		""" To process click events """
 		if event.button == 3:
-			self.PopupMenu(menu.ToolMenuCorrARes())
+			self.PopupMenu(menu.ToolsCorrARes())
 		else:
 			pass
 		return True
@@ -118,7 +118,7 @@ class WinCorrARes(gclasses.WinGraph):
 		gmethods.WinTypeResCreate(
 			config.name['TypeRes'], 
 			self,
-			parentName=config.mod[config.corr['MenuID'][mID]]
+			parentName=config.mod[config.modules[mID]]
 		)
 	 #---
 	 #--> Set self.mID

@@ -601,14 +601,6 @@ typeRes = { # Information about the typeRes window
 		name['LimProt'],
 	],
 }
-
-corr = { # Information about the corr file
-	'MenuID' : {
-		503 : 'Limited Proteolysis',
-		504 : 'Proteome Profiling',
-		505 : 'Targeted Proteolysis',
-	}
-}
 #endregion ------------------------------------- Information about UMSAP Files
 
 #region ---------------------------------------- Information about other Files
@@ -1472,6 +1464,23 @@ tooltip = { # This dict makes it easier to set the tooltips based on the name of
 	},
 }
 #endregion ---------------------------------------------------------- Tooltips
+
+#region ----------------------------------------------------------- Menu items
+addColumnsTo = {
+	name['TarProt'] : ['Sequences', 'Detected proteins', 'Score', 
+			'Columns to extract'],
+	name['LimProt'] : ['Sequences', 'Detected proteins', 'Score', 
+			'Columns to extract'],
+	name['ProtProf'] : ['Detected proteins', 'Gene names', 'Score', 
+			'Exclude proteins', 'Columns to extract'],
+}
+
+modules = {
+	1: 'Limited Proteolysis',
+	2: 'Proteome Profiling',
+	3: 'Targeted Proteolysis',
+}
+#endregion -------------------------------------------------------- Menu items
 
 #-------------------------------------------------------- GUI dictionaries
 #--- The name of the dict is the class where the dict is used or

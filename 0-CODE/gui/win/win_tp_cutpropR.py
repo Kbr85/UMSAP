@@ -97,7 +97,7 @@ class WinCutPropRes(gclasses.WinGraph):
 	 #-->
 		if event.button == 3:
 	 	 #-->
-			Tmenu = menu.ToolMenuCutPropRes(
+			Tmenu = menu.ToolsCutRes(
 				self.nExp, 
 				self.seq, 
 				self.norm, 
@@ -126,21 +126,29 @@ class WinCutPropRes(gclasses.WinGraph):
 	#endregion ----------------------------------------------- Binding Methods
 
 	#region ----------------------------------------------------- Menu Methods
-	def OnReset(self, Mid):
+	def OnReset(self):
 		""" Reset the window 
 			---
 			Mid: ID of the selected menu item (int)
 		"""
+	 #--> Variables
 		self.norm = 0
 		self.seq =  0
 		self.exp =  0
 		self.comp = None
-		self.menubar.Check(503, True)
-		self.menubar.Check(505, True)
-		self.menubar.Check(507, True)
-		self.menubar.Check(Mid+1, True)
+	 #---
+	 #--> Menu
+		self.menubar.Tools.Check(100, True)
+		self.menubar.Tools.Check(200, True)
+		self.menubar.Tools.Check(302, True)
+		self.menubar.Tools.Check(304, True)
+	 #---
+	 #-->
 		self.DrawConfig()
+	 #---
+	 #-->
 		return True
+	 #---
 	#---
 
 	def OnSeq(self, Mid):
@@ -149,10 +157,10 @@ class WinCutPropRes(gclasses.WinGraph):
 			Mid: ID of the selected menu item
 		"""
 		self.menubar.Check(Mid, True)
-		if Mid == 502:
-			self.seq = 2
-		else:
+		if Mid == 302:
 			self.seq = 0
+		else:
+			self.seq = 2
 		self.DrawConfig()
 		return True
 	#---
@@ -163,7 +171,7 @@ class WinCutPropRes(gclasses.WinGraph):
 			Mid: ID of the selected menu item 
 		"""
 		self.menubar.Check(Mid, True)
-		if Mid == 504:
+		if Mid == 303:
 			self.norm = 1
 		else:
 			self.norm = 0
@@ -177,19 +185,19 @@ class WinCutPropRes(gclasses.WinGraph):
 			Mid: ID of the selected menu item (int)
 		"""
 		self.menubar.Check(Mid, True)
-		self.exp = Mid - 507
+		self.exp = Mid - 100
 		self.DrawConfig()
 		return True
 	#--- 
 
-	def OnComp(self, Mid, rMid):
+	def OnComp(self, Mid):
 		""" Changes the plot if comp changes 
 			---
 			Mid: ID of the selected menu item (int)
 			rMid: reference ID (int)
 		"""
 		self.menubar.Check(Mid, True)
-		val = Mid - rMid - 1
+		val = Mid - 200
 		if val == 0:
 			self.comp = None
 		else:

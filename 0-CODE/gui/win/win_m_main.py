@@ -144,10 +144,22 @@ class WinMain(gclasses.WinMyFrame):
 		self.buttonUtil.SetToolTip(config.tooltip[self.name]['Util'])
 	 #---
 	 #--> Bind
-		self.buttonUtil.Bind(wx.EVT_BUTTON, self.OnUtil)
-		self.buttonTarProt.Bind(wx.EVT_BUTTON, self.menubar.OnTarProt)	
-		self.buttonLimProt.Bind(wx.EVT_BUTTON, self.menubar.OnLimProt)	
-		self.buttonProtProf.Bind(wx.EVT_BUTTON, self.menubar.OnProtProf)	
+		self.buttonLimProt.Bind(
+			wx.EVT_BUTTON, 
+			self.menubar.ModuleUtil.OnLimProt,
+		)	
+		self.buttonProtProf.Bind(
+			wx.EVT_BUTTON,
+			self.menubar.ModuleUtil.OnProtProf,
+		)	
+		self.buttonTarProt.Bind(
+			wx.EVT_BUTTON, 
+			self.menubar.ModuleUtil.OnTarProt,
+		)	
+		self.buttonUtil.Bind(
+			wx.EVT_BUTTON, 
+			self.OnUtil,
+		)
 	 #---
 	 #--> Show
 		self.Show()
