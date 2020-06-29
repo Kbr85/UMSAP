@@ -3926,10 +3926,10 @@ class WinResDos(WinRes):
 	#---
 	#endregion ------------------------------------------------ Instance Setup
 
-	# ---------------------------------------------------------[--- My Methods
+	# ------------------------------------------------------------- My Methods
 	def OnSavePlotImage(self):
 		""" Save plot in the graph """
-		if self.p3.OnSaveImage():
+		if self.p2.OnSaveImage():
 			return True
 		else:
 			return False

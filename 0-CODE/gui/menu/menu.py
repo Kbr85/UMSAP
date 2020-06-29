@@ -761,6 +761,210 @@ class ToolsTarProtRes(wx.Menu):
 	#---
 	#endregion ---------------------------------------------------- My Methods	
 #---
+
+class ConditionsProtProfV(wx.Menu):
+	""" Conditions menu in ProtProf results volcano window """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, lC):
+		""" lC : conditions legends """
+		super().__init__()
+	 #--> Menu items & Binding
+		for k, i in enumerate(lC, start=100):
+			self.Append(k, i, kind=wx.ITEM_RADIO)
+			self.Bind(wx.EVT_MENU, self.OnCond, id=k)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnCond(self, event):
+		""" Select condition """ 
+		win = self.GetWindow()
+		win.OnCond(event.GetId())		
+		return True
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+
+class RevPointsProtProfV(wx.Menu):
+	""" Relevant points menu in ProtProf results volcano window """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, lRP):
+		""" lRP : relevant points legend """
+		super().__init__()
+	 #--> Menu items & Binding
+		for k, i in enumerate(lRP, start=200):
+			self.Append(k, i, kind=wx.ITEM_RADIO)
+			self.Bind(wx.EVT_MENU, self.OnRP, id=k)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnRP(self, event):
+		""" Select time point """ 
+		win = self.GetWindow()
+		win.OnRP(event.GetId())		
+		return True
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
+
+class ToolsProtProfResRP(wx.Menu):
+	""" Tools menu for ProtProf relevant points result window """
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, allL, grayC):
+		""" allL  : Draw all protein lines
+			grayC : Draw lines in gray or with different colors
+		"""
+		super().__init__()
+	 #--> Menu items
+		self.Append(300, 'Show All',   kind=wx.ITEM_CHECK)
+		self.AppendSeparator()
+		self.Append(301, 'Same Color', kind=wx.ITEM_CHECK)
+		self.AppendSeparator()
+		self.saveRP = self.Append(-1, 'Save Plot Image')
+		self.AppendSeparator()
+		self.reset = self.Append(-1, 'Reset View')
+	 #---
+	 #--> Current
+		self.CurrentState(allL, grayC)
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnReset,    source=self.reset)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot, source=self.saveRP)
+		self.Bind(wx.EVT_MENU, self.OnAll,      id=300)
+		self.Bind(wx.EVT_MENU, self.OnColor,    id=301)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+	
+	#region ------------------------------------------------------- My Methods
+	def CurrentState(self, allL, grayC):
+		""" Check the menu items according to the current state of the window
+			---
+			allL  : Draw all protein lines
+			grayC : Draw lines in gray or with different colors
+		"""
+		if allL:
+			self.Check(300, True)
+		else:
+			self.Check(300, False)
+		if grayC:
+			self.Check(301, True)
+		else:
+			self.Check(301, False)		
+		return True
+	#---
+
+	def OnAll(self, event):
+		""" Show all lines """
+		win = self.GetWindow()
+		win.OnAll()
+		return True
+	#---
+
+	def OnColor(self, event):
+		""" Gray or not """
+		win = self.GetWindow()
+		win.OnColor()
+		return True
+	#---		
+
+	def OnReset(self, event):
+		""" Reset the window """
+		win = self.GetWindow()
+		win.OnReset()
+		return True
+	#---
+
+	def OnSavePlot(self, event):
+		""" Save image of the plot """
+		win = self.GetWindow()
+		if win.p3.OnSaveImage():
+			return True
+		else:
+			return False
+	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
+
+class FilterElementMonotonicity(wx.Menu):
+	""" Creates the monotonicity filter menu """
+
+	kwargs = {
+		400: { 'up'  : True, },
+		401: { 'down': True, },
+		402: { 'both': True, },
+	}
+
+	#region --------------------------------------------------- Instance setup
+	def __init__(self):
+		""" """
+		super().__init__()
+	 #--> Menu items
+		self.Append(400, 'Increasing')
+		self.Append(401, 'Decreasing')
+		self.Append(402, 'Both')
+	 #---
+	 #--> Bind
+		for k in range(400, 403):
+			self.Bind(wx.EVT_MENU, self.Monotonic, id=k)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance setup
+
+	#region ------------------------------------------------------- My Methods
+	def Monotonic(self, event):
+		""" Filter by monotonic behavior """
+		eID = event.GetId()
+		win = self.GetWindow()
+		if win.OnFilter_Monotonic(**self.kwargs[eID]):
+			return True
+		else:
+			return False
+	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
+
+class FilterRemove(wx.Menu):
+	""" Remove filters menu """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Menu items
+		itemAny  = self.Append(-1, 'Any')
+		itemLast = self.Append(-1, 'Last Added\tCtrl+Z')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnRemove, source=itemAny)
+		self.Bind(wx.EVT_MENU, self.OnRemove_Last, source=itemLast)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnRemove(self, event):
+		""" Remove selected filters """
+		win = self.GetWindow()
+		if win.OnFilter_Remove():
+			return True
+		else:
+			return False
+	#---
+
+	def OnRemove_Last(self, event):
+		""" Remove last added filter """
+		win = self.GetWindow()
+		if win.OnFilter_RemoveLast():
+			return True
+		else:
+			return False
+	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
 #endregion -------------------------------------------------------- Base menus
 
 #region ---------------------------------------------------------- Mixed menus
@@ -1112,6 +1316,247 @@ class ToolsLimProtRes(wx.Menu):
 	#---
 	#endregion ---------------------------------------------------- My Methods	
 #---
+
+class ToolsProtProfResV(wx.Menu):
+	""" Menu for the volcano plot in ProtProf results window """
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, lC, lRP, nC, nRP):
+		""" lC : conditions legends
+			lRP: relevant points legend
+			nC : current selected condition
+			nRP: current selected relevant point
+		"""
+		super().__init__()
+	 #--> Menu items
+		self.Cond = ConditionsProtProfV(lC)
+		self.RP   = RevPointsProtProfV(lRP)
+
+		self.AppendSubMenu(self.Cond, 'Conditions')
+		self.AppendSubMenu(self.RP, 'Relevant Points')
+		self.AppendSeparator()
+		self.aFilter = self.Append(-1, 'Apply Filters')
+		self.AppendSeparator()
+		self.zScore = self.Append(-1, 'Z score Threshold')
+		self.AppendSeparator()
+		self.saveV = self.Append(-1, 'Save Plot Image')
+		self.AppendSeparator()
+		self.reset = self.Append(-1, 'Reset View')
+	  #---
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnReset,        source=self.reset)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot,     source=self.saveV)
+		self.Bind(wx.EVT_MENU, self.OnZScore,       source=self.zScore)
+		self.Bind(wx.EVT_MENU, self.OnFilter_Apply, source=self.aFilter)
+	 #---
+	 #--> Current state
+		self.CurrentState(nC, nRP)		
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnFilter_Apply(self, event):
+		""" Apply filter to this condition - time point """
+		win = self.GetWindow()
+		win.OnFilter_Apply()
+		return True
+	#---
+
+	def OnZScore(self, event):
+		""" Set new Z score threshold in % """
+		win = self.GetWindow()
+		win.OnZScore()
+		return True
+	#---
+
+	def OnReset(self, event):
+		""" Reset the window """
+		win = self.GetWindow()
+		win.OnReset()
+		return True
+	#---
+
+	def OnSavePlot(self, event):
+		""" Save image of the plot """
+		win = self.GetWindow()
+		if win.p2.OnSaveImage():
+			return True
+		else:
+			return False
+	#---
+
+	def CurrentState(self, nC, nRP):
+		""" Check the menu items based on the current state of the window
+			---
+			nC  : current number of condition
+			nRP : current relevant points
+		"""
+		self.Cond.Check(100+nC, True)
+		self.RP.Check(200+nRP, True)
+		return True
+	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
+
+class FilterAdd(wx.Menu):
+	""" Menu to add filter in ProtProfRes """
+
+	filter_keys = {
+		500 : 'Filter_ZScore',
+		501 : 'Filter_Log2FC',
+	}
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""" """
+		super().__init__()
+	 #--> Menu items
+		self.Monotonicity = FilterElementMonotonicity()
+
+		self.zScore = self.Append(500, 'Z score')
+		self.log2FC = self.Append(501, 'Log2FC')
+		self.pVal   = self.Append(-1, 'P value')
+		self.oneP   = self.Append(-1, 'One P value') 
+		self.AppendSubMenu(self.Monotonicity, 'Monotonic')
+		self.div    = self.Append(-1, 'Divergent')
+	 #---
+
+	 #--> Bind
+		for k in range(500, 502):
+			self.Bind(wx.EVT_MENU, self.OnFilter_Run, id=k)
+		self.Bind(wx.EVT_MENU, self.OnFilter_P, source=self.pVal)
+		self.Bind(wx.EVT_MENU, self.OnFilter_Divergent, source=self.div)
+		self.Bind(wx.EVT_MENU, self.OnFilter_OneP, source=self.oneP)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnFilter_Run(self, event):
+		""""""
+		win = self.GetWindow()
+		if win.OnFilter_GUI(self.filter_keys[event.GetId()]):
+			return True
+		else:
+			return False
+	#---
+	
+	def OnFilter_P(self, event):
+		""""""
+		win = self.GetWindow()
+		if win.OnFilter_P_GUI():
+			return True
+		else:
+			return False
+	#---
+
+	def OnFilter_OneP(self, event):
+		""""""
+		win = self.GetWindow()
+		if win.OnFilter_OneP_GUI():
+			return True
+		else:
+			return False
+	#---	
+	
+	def OnFilter_Divergent(self, event):
+		""" Get proteins with divergent behavior in at least two conditions """
+		win = self.GetWindow()
+		if win.OnFilter_Divergent():
+			return True
+		else:
+			return False
+	#---
+	#endregion ---------------------------------------------------- My Methods
+#---
+
+class Filter(wx.Menu):
+	""" Main Menu to control filters """
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""""""
+		super().__init__()
+	 #--> Menu items
+		self.Add = FilterAdd()
+		self.Remove = FilterRemove()
+
+		self.AppendSubMenu(self.Add, 'Add')
+		self.AppendSubMenu(self.Remove, 'Remove')
+		self.reset = self.Append(-1, 'Reset')
+		self.AppendSeparator()
+		self.iExport = self.Append(-1, 'Export Results')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnReset,  source=self.reset)
+		self.Bind(wx.EVT_MENU, self.OnExport, source=self.iExport)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region ------------------------------------------------------- My Methods
+	def OnReset(self, event):
+		""" Remove all Filters """
+		win = self.GetWindow()
+		if win.OnFilter_None():
+			return True
+		else:
+			return False
+	#---
+
+	def OnExport(self, event):
+		""""""
+		win = self.GetWindow()
+		if win.OnExport():
+			return True
+		else:
+			return False
+	#---	
+	#endregion ---------------------------------------------------- My Methods
+#---
+
+class ToolsProtProfRes(wx.Menu):
+	""" Tools menu for the ProtProf results window """
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, lC, lRP, nC, nRP, allL, grayC):
+		""" lC : conditions legends
+			lRP  : relevant points legend
+			nC   : current selected condition
+			nRP  : current selected relevant point
+			allL : Draw all protein lines
+			grayC: Draw lines in gray or with different colors
+		"""
+		super().__init__()
+	 #--> Menu items
+		self.Volcano = ToolsProtProfResV(lC, lRP, nC, nRP)
+		self.RP      = ToolsProtProfResRP(allL, grayC)
+		self.Filter  = Filter()
+
+		self.AppendSubMenu(self.Volcano, 'Volcano Plot')
+		self.AppendSeparator()
+		self.AppendSubMenu(self.RP, 'Relevant Points')
+		self.AppendSeparator()
+		self.AppendSubMenu(self.Filter, 'Filters')
+		self.AppendSeparator()
+		self.corrP = self.Append(600, 'Corrected P Values', kind=wx.ITEM_CHECK)
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnCorrP, source=self.corrP)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+
+	#region -------------------------------------------------------- MyMethods
+	def OnCorrP(self, event):
+		""" Show corrected P values """
+		win = self.GetWindow()
+		win.OnCorrP()
+		return True 
+	#---
+	#endregion ----------------------------------------------------- MyMethods
+#---
 #endregion ------------------------------------------------------- Mixed menus
 
 #region -------------------------------------------------------------- Menubar
@@ -1177,6 +1622,36 @@ class MainMenuBarWithTools(MainMenuBar):
 	#---
 	#endregion ------------------------------------------------ Instance Setup
 #---
+
+class MenuBarProtProfRes(MainMenuBar):
+	""" Tools for ProtProfRes """
+	
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, lC, lRP, nC, nRP, allL, grayC):
+		""" lC : conditions legends
+			lRP  : relevant points legend
+			nC   : current selected condition
+			nRP  : current selected relevant point
+			allL : Draw all protein lines
+			grayC: Draw lines in gray or with different colors
+		"""
+		super().__init__()
+	 #--> Menu items
+		self.Tools = ToolsProtProfRes(lC, lRP, nC, nRP, allL, grayC)
+	 #---
+	 #--> Append to menu bar
+		if config.cOS == 'Darwin':
+			self.Insert(2, self.Tools, '&Tools')
+		elif config.cOS == 'Windows':
+			self.Insert(3, self.Tools, '&Tools')
+		elif config.cOS == 'Linux':
+			self.Insert(3, self.Tools, '&Tools')
+		else:
+			pass
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+#---
 #endregion ----------------------------------------------------------- Menubar
 
 
@@ -1184,479 +1659,3 @@ class MainMenuBarWithTools(MainMenuBar):
 
 
 
-
-
-
-
-
-############################################ OLD
-
-class MenuFilterMonotonicity(wx.Menu):
-	""" Creates the monotonicity filter menu """
-
-	kwargs = {
-		897: { 'up'  : True, },
-		898: { 'down': True, },
-		899: { 'both': True, },
-	}
-
-	#region --------------------------------------------------- Instance setup
-	def __init__(self):
-		""" """
-		super().__init__()
-	 #--> Menu items
-		self.Append(897, 'Increasing')
-		self.Append(898, 'Decreasing')
-		self.Append(899, 'Both')
-	 #---
-	 #--> Bind
-		for k in range(897, 900):
-			self.Bind(wx.EVT_MENU, self.Monotonic, id=k)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance setup
-
-	#region ------------------------------------------------------- My Methods
-	def Monotonic(self, event):
-		""" Filter by monotonic behavior """
-		eID = event.GetId()
-		win = self.GetWindow()
-		if win.OnFilter_Monotonic(**self.kwargs[eID]):
-			return True
-		else:
-			return False
-	#---
-	#endregion ---------------------------------------------------- My Methods
-#---
-
-class MenuFilterRemoveFilters(wx.Menu):
-	""" Remove filters menu """
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self):
-		""""""
-		super().__init__()
-	 #--> Menu items
-		itemAny  = self.Append(-1, 'Any')
-		itemLast = self.Append(-1, 'Last Added\tCtrl+Z')
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnRemove, source=itemAny)
-		self.Bind(wx.EVT_MENU, self.OnRemove_Last, source=itemLast)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	def OnRemove(self, event):
-		""" Remove selected filters """
-		win = self.GetWindow()
-		if win.OnFilter_Remove():
-			return True
-		else:
-			return False
-	#---
-
-	def OnRemove_Last(self, event):
-		""" Remove last added filter """
-		win = self.GetWindow()
-		if win.OnFilter_RemoveLast():
-			return True
-		else:
-			return False
-	#---
-	#endregion ---------------------------------------------------- My Methods
-#---
-
-class MenuFilterAddFilter(wx.Menu):
-	""" Menu to add filter in ProtProfR """
-
-	filter_keys = {
-		801 : 'Filter_ZScore',
-		802 : 'Filter_Log2FC',
-	}
-
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self):
-		""" """
-	
-		super().__init__()
-	 #--> Submenus
-		monotonicMenu = MenuFilterMonotonicity()
-	 #--> Menu items
-		self.Append(801, 'Z score')
-		self.Append(802, 'Log2FC')
-		itemP    = self.Append(-1, 'P value')
-		itemOneP = self.Append(-1, 'One P value') 
-		self.Append(-1, 'Monotonic', monotonicMenu)
-		itemDiver = self.Append(-1, 'Divergent')
-	 #---
-
-	 #--> Bind
-		for k in range(801, 803):
-			self.Bind(wx.EVT_MENU, self.OnFilter_Run, id=k)
-		self.Bind(wx.EVT_MENU, self.OnFilter_P, source=itemP)
-		self.Bind(wx.EVT_MENU, self.OnFilter_Divergent, source=itemDiver)
-		self.Bind(wx.EVT_MENU, self.OnFilter_OneP, source=itemOneP)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	def OnFilter_Run(self, event):
-		""""""
-		win = self.GetWindow()
-		if win.OnFilter_GUI(self.filter_keys[event.GetId()]):
-			return True
-		else:
-			return False
-	#---
-	
-	def OnFilter_P(self, event):
-		""""""
-		win = self.GetWindow()
-		if win.OnFilter_P_GUI():
-			return True
-		else:
-			return False
-	#---
-
-	def OnFilter_OneP(self, event):
-		""""""
-		win = self.GetWindow()
-		if win.OnFilter_OneP_GUI():
-			return True
-		else:
-			return False
-	#---	
-	
-	def OnFilter_Divergent(self, event):
-		""" Get proteins with divergent behavior in at least two conditions """
-		win = self.GetWindow()
-		if win.OnFilter_Divergent():
-			return True
-		else:
-			return False
-	#---
-	#endregion ---------------------------------------------------- My Methods
-#---
-
-class MenuFilterMainMenu(wx.Menu):
-	""" Main Menu to control filters """
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self):
-		""""""
-		super().__init__()
-	 #--> Submenus
-		AddMenu    = MenuFilterAddFilter()
-		RemoveMenu = MenuFilterRemoveFilters()
-	 #---
-	 #--> Menu items
-		self.Append(850, 'Add', AddMenu)
-		self.Append(851, 'Remove', RemoveMenu)
-		self.Append(852, 'Reset')
-		self.AppendSeparator()
-		self.iExport = self.Append(-1, 'Export Results')
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,  id=852)
-		self.Bind(wx.EVT_MENU, self.OnExport, source=self.iExport)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	def OnReset(self, event):
-		""" Remove all Filters """
-		win = self.GetWindow()
-		if win.OnFilter_None():
-			return True
-		else:
-			return False
-	#---
-
-	def OnExport(self, event):
-		""""""
-		win = self.GetWindow()
-		if win.OnExport():
-			return True
-		else:
-			return False
-	#---	
-	#endregion ---------------------------------------------------- My Methods
-#---
-
-
-#region ------------------------------------------------ Individual Tool menus
-#---# Improve You can create a base class for the menu containing several
-#---# methods that appears almost everywhere.
-#---# Improve
-class ToolMenuProtProfResT(wx.Menu):
-	""" Tools menu for ProtProfResT """
-
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self, allL, grayC):
-		""" allL  : Draw all protein lines
-			grayC : Draw lines in gray or with different colors
-		"""
-		super().__init__()
-	 #--> Menu items
-		self.Append(703, 'Show All',   kind=wx.ITEM_CHECK)
-		self.AppendSeparator()
-		self.Append(704, 'Same Color', kind=wx.ITEM_CHECK)
-		self.AppendSeparator()
-		self.Append(702, 'Save Plot Image')
-		self.AppendSeparator()
-		self.Append(701, 'Reset View')
-	 #---
-	 #--> Current
-		self.CurrentState(allL, grayC)
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,    id=701)
-		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=702)
-		self.Bind(wx.EVT_MENU, self.OnAll,      id=703)
-		self.Bind(wx.EVT_MENU, self.OnColor,    id=704)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-	
-	#region ------------------------------------------------------- My Methods
-	def CurrentState(self, allL, grayC):
-		""" Check the menu items according to the current state of the window
-			---
-			allL  : Draw all protein lines
-			grayC : Draw lines in gray or with different colors
-		"""
-		if allL:
-			self.Check(703, True)
-		else:
-			self.Check(703, False)
-		if grayC:
-			self.Check(704, True)
-		else:
-			self.Check(704, False)		
-		return True
-	#---
-
-	def OnAll(self, event):
-		""" Show all lines """
-		win = self.GetWindow()
-		win.OnAll()
-		return True
-	#---
-
-	def OnColor(self, event):
-		""" Gray or not """
-		win = self.GetWindow()
-		win.OnColor()
-		return True
-	#---		
-
-	def OnReset(self, event):
-		""" Reset the window """
-		win = self.GetWindow()
-		win.OnReset()
-		return True
-	#---
-
-	def OnSavePlot(self, event):
-		""" Save image of the plot """
-		win = self.GetWindow()
-		if win.OnSavePlotImage():
-			return True
-		else:
-			return False
-	#---
-	#endregion ---------------------------------------------------- My Methods
-#---
-
-class ToolMenuProtProfResFilter(MenuFilterMainMenu):
-	""" Tools menu to show filtered results in protprofRes """
-
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self):
-		""" """
-		super().__init__()
-	 #--> Change menu items labels
-		self.SetLabel(850, 'Add Filter')
-		self.SetLabel(851, 'Remove Filter')
-		self.SetLabel(852, 'Reset Filters')
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-#---
-
-class ToolMenuProtProfResV(wx.Menu):
-	""" Tools menu for ProtProfResV """
-
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self, nC, nt, lC, lt, n, tp):
-		""" nC : number of conditions
-			nt : number of relevant points per conditions 
-			lC : conditions legends
-			lt : relevant points legend
-			n  : current selected condition 
-			tp : current selected time point
-		"""
-		super().__init__()
-	 #--> Menu items
-	  #--> Condition menu
-		self.CondMenu = wx.Menu()
-		j = 505
-		for i in lC:
-			self.CondMenu.Append(j, str(i), kind=wx.ITEM_RADIO)
-			j += 1
-	  #---
-	  #--> Relevant points menu
-		self.TPMenu = wx.Menu()
-		for i in lt:
-			self.TPMenu.Append(j, str(i), kind=wx.ITEM_RADIO) 
-			j += 1
-	  #---
-	  #--> All together
-		self.AppendSubMenu(self.CondMenu, 'Conditions')
-		self.AppendSubMenu(self.TPMenu, 'Relevant Points')
-		self.AppendSeparator()
-		self.Append(504, 'Apply Filters')
-		self.AppendSeparator()
-		self.Append(503, 'Z score Threshold')
-		self.AppendSeparator()
-		self.Append(502, 'Save Plot Image')
-		self.AppendSeparator()
-		self.Append(501, 'Reset View')
-	  #---
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,        id=501)
-		self.Bind(wx.EVT_MENU, self.OnSavePlot,     id=502)
-		self.Bind(wx.EVT_MENU, self.OnZScore,       id=503)
-		self.Bind(wx.EVT_MENU, self.OnFilter_Apply, id=504)
-		j = 505
-		for i in range(0, nC, 1):
-			self.CondMenu.Bind(wx.EVT_MENU, self.OnCond, id=j)
-			j += 1
-		for i in range(0, nt, 1):
-			self.TPMenu.Bind(wx.EVT_MENU, self.OnTP, id=j)
-			j += 1 
-	 #---
-	 #--> Current state
-		self.CurrentState(nC, n, tp)		
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	def OnFilter_Apply(self, event):
-		""" Apply filter to this condition - time point """
-		win = self.GetWindow()
-		win.OnFilter_Apply()
-		return True
-	#---
-
-	def OnZScore(self, event):
-		""" Set new Z score threshold in % """
-		win = self.GetWindow()
-		win.OnZScore()
-		return True
-	#---
-
-	def OnCond(self, event):
-		""" Select condition """ 
-		win = self.GetWindow()
-		win.OnCond(event.GetId())		
-		return True
-	#---
-
-	def OnTP(self, event):
-		""" Select time point """ 
-		win = self.GetWindow()
-		win.OnTP(event.GetId())		
-		return True
-	#---
-
-	def OnReset(self, event):
-		""" Reset the window """
-		win = self.GetWindow()
-		win.OnReset()
-		return True
-	#---
-
-	def OnSavePlot(self, event):
-		""" Save image of the plot """
-		win = self.GetWindow()
-		if win.OnSavePlotImage():
-			return True
-		else:
-			return False
-	#---
-
-	def CurrentState(self, nC, n, tp):
-		""" Check the menu items based on the current state of the window
-			---
-			nC : number of conditions
-			n  : current number of condition
-			tp : current time point
-		"""
-		self.CondMenu.Check(505+n, True)
-		self.TPMenu.Check(505+nC+tp, True)
-		return True
-	#---
-	#endregion ---------------------------------------------------- My Methods
-#---
-#endregion --------------------------------------------- Individual Tool menus
-
-#region ------------------------------------------------------------ Menu Bars
-class MenuBarProtProfRes(MainMenuBar):
-	""" Tools for ProtProfResV """
-	
-	#region --------------------------------------------------- Instance Setup
-	def __init__(self, nC, nt, lC, lt, n, tp, allL, grayC):
-		""" nC   : Total number of conditions
-			nt   : Total number of relevant points,
-			lC   : Legend for conditions
-			lt   : Legend for relevant points
-			n    : Current condition
-			tp   : Current relevant points
-			allL : Show all lines in Time Analysis (Boolean)
-			grayC: Color for the lines in Time Analysis (Boolean)  
-		"""
-		super().__init__()
-	 #--> Menu items
-		self.VolcanoPlotMenu  = ToolMenuProtProfResV(nC, nt, lC, lt, n, tp)
-		self.TimeAnalysisMenu = ToolMenuProtProfResT(allL, grayC)
-		self.FilterMenu       = MenuFilterMainMenu()
-		self.ToolsMenu = wx.Menu()
-		self.ToolsMenu.AppendSubMenu(self.VolcanoPlotMenu, 'Volcano Plot')
-		self.ToolsMenu.AppendSeparator()
-		self.ToolsMenu.AppendSubMenu(self.TimeAnalysisMenu, 'Time Analysis')
-		self.ToolsMenu.AppendSeparator()
-		self.ToolsMenu.AppendSubMenu(self.FilterMenu, 'Filters')
-		self.ToolsMenu.AppendSeparator()
-		self.ToolsMenu.AppendCheckItem(599, 'Corrected P values')
-	 #---
-	 #--> Append to menu bar
-		if config.cOS == 'Darwin':
-			self.Insert(2, self.ToolsMenu, '&Tools')
-		elif config.cOS == 'Windows':
-			self.Insert(3, self.ToolsMenu, '&Tools')
-		elif config.cOS == 'Linux':
-			self.Insert(3, self.ToolsMenu, '&Tools')
-		else:
-			pass
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnCorrP, id=599)
-	 #---
-	#---
-	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	def OnCorrP(self, event):
-		""" Show corrected P values """
-		win = self.GetFrame()
-		win.OnCorrP()
-		return True 
-	#---
-	#endregion ---------------------------------------------------- My Methods
-#---
-#endregion --------------------------------------------------------- Menu Bars
