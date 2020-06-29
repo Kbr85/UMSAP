@@ -1459,7 +1459,9 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.tcText.AppendText(line)		   
 		self.AddTextAveCond(df)
 	  #---
-	  #--> 
+	  #--> Ave for RP comparison
+		line = ('--> Ratio averages and standard deviations: \n\n')
+		self.tcText.AppendText(line)
 		self.AddTextAveTP(df)
 	  #---
 	 #---
