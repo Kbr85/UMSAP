@@ -28,7 +28,7 @@ import wx
 
 
 #region --------------------------------------------------- General parameters
-version       = '2.1.0' # String to write in the output files
+version       = '2.1.0 (beta)' # String to write in the output files
 versionUpdate = [2, 0, 1]      # List to match against the version online
 dictVersion   = { # dict for directly write into output files
 	'version': version,
