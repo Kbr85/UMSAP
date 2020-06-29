@@ -1323,7 +1323,7 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.title = (
 			"C: " 
 			+ str(self.NCondL[self.n])
-			+ "  TP: " 
+			+ "  RP: " 
 			+ str(self.NTimePL[self.tp])
 			+ "  Z$_{score}$: "
 			+ str(self.ZscoreValDP)
