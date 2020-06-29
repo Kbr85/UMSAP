@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,31 +12,19 @@
 """ This module creates the about window of the app """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import wx
 import wx.lib.agw.hyperlink as hl
-## My modules
+
 import config.config   as config
 import gui.gui_classes as gclasses
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinAbout(gclasses.WinMyFrame):
 	""" Creates the about window """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=None):
 		""" parent: parent for the widgets
 			style: style of the windows
@@ -44,25 +32,33 @@ class WinAbout(gclasses.WinMyFrame):
 	 #--> Initial Setup
 		self.name = config.name['About']
 		super().__init__(parent=parent, style=style)
+	 #---
 	 #--> Widgets
 	  #--> Images
 		self.img = wx.StaticBitmap(self.panel, wx.ID_ANY, 
 			wx.Bitmap(str(config.image['About']), wx.BITMAP_TYPE_ANY))
+	  #---
 	  #--> Lines
 		self.lineHI1 = wx.StaticLine(self.panel)
 		self.lineHI2 = wx.StaticLine(self.panel)
 		self.lineHI3 = wx.StaticLine(self.panel)
+	  #---
 	  #--> StaticText
 		self.text1 = wx.StaticText(self.panel,
 			label='Copyright © 2017-2019 Kenny Bravo Rodriguez')
+	  #---
 	  #--> TextCtrl
 		self.MyText = wx.TextCtrl(self.panel, size=(100, 500), 
 			style=wx.TE_MULTILINE|wx.TE_WORDWRAP|wx.TE_READONLY)
+	  #---
 	  #--> Button
 		self.buttonOk = wx.Button(self.panel, label='Ok')
+	  #---
 	  #--> hl
 		self.lnk = hl.HyperLinkCtrl(self.panel, -1, config.url['Home'], 
 			URL=config.url['Home'])
+	  #---
+	 #---
 	 #--> Sizers
 	  #--> Add
 		self.sizerIN.Add(self.img,      pos=(0, 0), border=2, span=(0, 2), 
@@ -81,23 +77,31 @@ class WinAbout(gclasses.WinMyFrame):
 			flag=wx.ALIGN_LEFT|wx.EXPAND|wx.ALL)
 		self.sizerIN.Add(self.buttonOk, pos=(6, 1), border=2, 
 			flag=wx.ALIGN_RIGHT|wx.ALL)
+	  #---
 	  #--> Fit
 		self.sizer.Fit(self)
+	  #---
+	 #---
 	 #--> Add Text
 		#---# Improve (DOWN) read from file?
 		self.MyText.AppendText(myText)
 		self.MyText.SetInsertionPoint(0)
 		self.buttonOk.SetFocus()
 		#---# Improve (UP) read from file?
+	 #---
 	 #--> Position
 		self.Center()
+	 #---
 	 #--> Binding
 		self.buttonOk.Bind(wx.EVT_BUTTON, self.OnButtonClose)
+	 #---
 	 #--> Show
 		self.Show()
+	 #---
 	#---
-
-	####---- Methods of the class
+	#endregion ------------------------------------------------ Instance Setup
+	
+	# ------------------------------------------------------------- My Methods
 	def OnButtonClose(self, event):
 		""" To close the window """
 		self.Close()

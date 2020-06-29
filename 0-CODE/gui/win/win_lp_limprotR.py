@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,24 +12,12 @@
 """ Creates the window showing the results in a .limprot file """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
+#region -------------------------------------------------------------- Imports
+from pathlib import Path
 
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
 import wx
 import pandas as pd
-from pathlib import Path
-## My modules
+
 import config.config     as config
 import gui.menu.menu     as menu
 import gui.gui_methods   as gmethods
@@ -37,13 +25,13 @@ import gui.gui_classes   as gclasses
 import data.data_classes as dclasses
 import data.data_methods as dmethods
 import checks.checks_single as check
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 	""" To show the results in a limprot file """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the file with the results """
 	 #--> Initial Variables
@@ -53,6 +41,7 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 			self.fileObj = dclasses.DataObjLimProtFile(self.fileP)
 		except Exception:
 			raise ValueError('')
+	 #---
 	 #--> Check that there is something to show
 		self.checkFP = self.fileObj.checkFP
 		if self.checkFP:
@@ -61,12 +50,14 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 			gclasses.DlgFatalErrorMsg(
 				config.dictCheckFatalErrorMsg[self.name]['FiltPept2'])
 			raise ValueError('')
+	 #---
 	 #--> Initial Setup
 		try:
 			gclasses.WinResUno.__init__(self, parent=None)
 			gclasses.ElementGelPanel.__init__(self, parent=self.panel)
 		except Exception:
 			raise ValueError('')
+	 #---
 	 #--> More Variables
 	  #-->
 		self.Lanes       = self.fileObj.Lanes
@@ -83,7 +74,7 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 		self.natProtPres = self.fileObj.natProtPres
 		self.locProtType = self.fileObj.locProtType
 		self.TLane       = None       
-		self.TBand       = None       
+		self.TBand       = None      
 	  #-->                          
 		self.fAll   = self.fileObj.GetFragments()[1]
 	  #--->>>> self.fPlot and self.f needed for ElementFragPanel to work
@@ -105,51 +96,66 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 		self.TextB       = None             
 		self.TextF       = None             
 		self.TextM       = 0            
+	 #---
 	 #--> Menu
 		self.menubar = menu.MainMenuBarWithTools(self.name, self.selM)
 		self.SetMenuBar(self.menubar)
+	 #---
 	 #--> Sizers
 	  #--> Add
 		self.sizerIN.Add(self.p2,      pos=(2,2), border=2,
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+	  #---
 	  #--> Fit
 		self.sizer.Fit(self)
+	  #---
+	 #---
 	 #--> Positions and minimal size
 		gmethods.MinSize(self)
 		self.WinPos()
+	 #---
 	 #--> Binding
 		self.p2.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+	 #---
 	 #--> Show
 		self.Show()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
-	##-- Binding
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- Binding Methods
 	def OnRightDown(self, event):
 		""" Display the popup menu """
-		self.PopupMenu(menu.ToolMenuLimProtRes(self.selM))
+		self.PopupMenu(menu.ToolsLimProtRes(self.selM))
 		return True
 	#---
+	#endregion ----------------------------------------------- Binding Methods
 
-	##-- Menu
+	#region ----------------------------------------------------- Menu Methods
 	def OnExportFP(self):
 		""" Export the FP list """
 	 #--> Variables
 		msg = config.msg['Save']['FiltPept']
 		dlg = gclasses.DlgSaveFile(config.extLong['FiltPept'], msg)
+	 #---
 	 #--> Get path & save	
 		if dlg.ShowModal() == wx.ID_CANCEL:
 			pass
 		else:
 			p = Path(dlg.GetPath())
 			self.fileObj.LimProt2FiltPept(p)
+	 #---
 	 #--> Destroy & Return
 		dlg.Destroy()
 		return True	
+	 #---
 	#---
 
 	def OnResetView(self):
 		""" Reset the view of the window """
+	
+	 #--> Variables
 		self.TLane       = None
 		self.HLane       = False		
 		#-->
@@ -164,19 +170,22 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 		self.selSeq      = None
 		#--> 
 		self.selM        = True
-		#-->
+	 #---
+	 #--> Update GUI
 		gmethods.ListCtrlDeSelAll(self.lb)
 		#-->
 		self.search.Clear()
 		#-->
 		self.text.Clear()		
 		#-->
-		self.menubar.Check(505, True)
+		self.menubar.Check(100, True)
 		#-->
 		self.Refresh()
 		self.Update()
-		#-->
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def OnSelM(self):
@@ -185,17 +194,21 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 		if self.selM:
 			self.selM = False
 			self.FragLabel = 'Lane   '
-			self.menubar.Check(505, False)
+			self.menubar.Check(100, False)
+	 #---
 	 #-->
 		else:
 			self.selM = True
 			self.FragLabel = 'Band   ' 
-			self.menubar.Check(505, True)
+			self.menubar.Check(100, True)
+	 #---
 	 #-->
 		return True
+	 #---
 	#---
+	#endregion -------------------------------------------------- Menu Methods
 
-	##-- Text Details
+	#region ----------------------------------------------------- Text Details
 	def ShowFragDet(self):
 		""" Needed because ElementFragPanel expect this method in the class """
 		self.GetLBF()
@@ -209,6 +222,7 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 	 #--> Nothing selected
 		if self.TextM == 0:
 			pass
+	 #---
 	 #--> Lane selected
 		elif self.TextM == 1:
 			#-->
@@ -224,6 +238,7 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 				self.DataForSingleBandLane(df)
 			else:
 				self.DataForEmptySpot(label='lane')
+	 #---
 	 #--> Band
 		elif self.TextM == 2:
 			#-->
@@ -240,6 +255,7 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 				self.DataForSingleBandLane(df)
 			else:
 				self.DataForEmptySpot(label='band')
+	 #---
 	 #--> Spot
 		elif self.TextM == 3:
 			#-->
@@ -256,10 +272,14 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 				self.DataForBandLane(df)
 			else:
 				self.DataForEmptySpot()
+	 #---
 	 #--> Fragment
 		elif self.TextM == 4:
 			dmethods.GHelperShowFragDet(self)
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DataForEmptySpot(self, label='spot'):
@@ -270,6 +290,7 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 			+ " identified in this "
 			+ label
 			+ ".\n\n")
+	 #---
 	 #-->
 		self.text.AppendText("Other proteins detected in the gel:\n\n")
 		for i in self.listOfProt:
@@ -279,10 +300,13 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 					self.text.AppendText(str(iii) + '\n')
 			else:
 				self.text.AppendText(str(i) + '\n')
+	 #---
 	 #--> Set pointer in the first line. Otherwise wx.TextCtrl is at the end of the text
 		self.text.SetInsertionPoint(0)
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DataForBandLane(self, df):
@@ -297,6 +321,7 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 		l = [tuple(x) for x in df.loc[:,['Nterm', 'Cterm']].values.tolist()]
 		proR = '; '.join(list(map(str, l)))
 		proRNat = dmethods.DHelperFragTuple2NatSeq(self, l)[1]
+	 #---
 	 #--> Write
 		self.text.AppendText('--> Fragments: ' + fra + '\n\n')
 		self.text.AppendText('--> Number of FP: ' + seqN + ' (' + seqL + ')'+'\n\n')
@@ -305,8 +330,10 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 		self.text.AppendText(proR+'\n\n')
 		self.text.AppendText('Native protein:\n')
 		self.text.AppendText(proRNat+'\n')
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DataForSingleBandLane(self, df):
@@ -317,12 +344,15 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 	 #--> Variables
 	  #-->
 		dV = {}
+	  #---
 	  #-->
 		t = df.index.unique(level=0)
 		dV['nBL_PN'] = str(len(t))
+	  #---
 	  #-->
 		t = [int(x[1:]) for x in t]
 		t.sort()
+	  #---
 	  #-->
 		if self.TextM == 1:
 			TLane = self.TextL - 1
@@ -336,8 +366,10 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 			t = ['L'+str(x) for x in t]
 		else:
 			pass
+	  #---
 	  #-->
 		dV['nBL_PL'] = ', '.join(t)
+	  #---
 	  #-->
 		sl = []
 		fl = []
@@ -356,11 +388,14 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 		dV['nSeqL'] = ', '.join(list(map(str, sl)))
 		dV['nFrag'] = str(sum(fl))
 		dV['nFragL'] = ', '.join(list(map(str,fl)))
+	  #---
 	  #-->
 		dV['ProtFrag'] = dmethods.DFGetFragments(df, self.name, strC=False)[1]
 		dV['ProtFragN'] = dmethods.DHelperFragTuple2NatSeq(self, 
 			dV['ProtFrag'])[1]
 		dV['ProtFrag'] = '; '.join(list(map(str, dV['ProtFrag'])))
+	  #---
+	 #---
 	 #--> Write
 		if self.TextM == 1:
 			self.text.AppendText('--> Analyzed Bands\n\n')
@@ -381,11 +416,15 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 		self.text.AppendText(dV['ProtFrag']+'\n\n')
 		self.text.AppendText('Native protein sequence:\n')
 		self.text.AppendText(dV['ProtFragN']+'\n\n')
+	 #---
      #--> Get back to first line
 		self.text.SetInsertionPoint(0)
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
+	#endregion -------------------------------------------------- Text Details
 #---
 
 
