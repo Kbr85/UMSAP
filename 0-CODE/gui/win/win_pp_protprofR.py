@@ -13,9 +13,10 @@
 
 
 #region -------------------------------------------------------------- Imports
-import matplotlib.patches as mpatches
-import pandas as pd
 import wx
+import matplotlib.patches as mpatches
+import numpy as np
+import pandas as pd
 from pathlib import Path
 from scipy   import stats
 
@@ -53,6 +54,8 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		self.colorsL             = dmethods.GetColors(self.NC, "L")
 		self.loga                = self.fileObj.loga
 		self.aVal                = self.fileObj.aVal
+		self.logaD               = self.fileObj.loga
+		self.aValD               = self.fileObj.aVal		
 		self.P                   = False
 		self.xCoordTimeA         = self.fileObj.xCoordTimeA
 		self.ZscoreVal           = self.fileObj.ZscoreVal
@@ -359,6 +362,8 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		gmethods.ListCtrlDeSelAll(self.lb)
 	 #---
 	 #--> Reset Z score
+		self.loga        = self.logaD
+		self.aVal        = self.aValD
 		self.ZscoreValD  = self.ZscoreVal
 		self.ZscoreValDP = self.ZscoreValP
 	 #---
@@ -458,6 +463,41 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	 #-->
 		return True
 	 #---
+	#---
+
+	def OnaVal(self):
+		""" Select aVal for the volcano plot """
+	 #--> Create dlg
+		dlg = gclasses.DlgTextInput(self, 
+			config.msg['TextInput']['msg']['aVal'],
+			value=str(self.aValD),
+			caption=config.msg['TextInput']['caption']['aVal'],
+		)
+	 #---
+	 #--> Show 
+		if dlg.ShowModal() == wx.ID_OK:
+		 #--> Get & Check value
+			num = dlg.GetValue()		
+			out, newA = checkM.CheckMNumberComp(num, val2=1)
+			if out:
+			 #--> Update values
+				self.aVal = newA
+				self.loga = 0 - np.log10(newA)
+				self.DrawConfig2()
+	  		 #---
+			 #--> ListSelect
+				if len(gmethods.ListCtrlGetSelected(self.lb)) > 0:
+					self.OnListSelect('event')
+				else:
+					pass
+			 #---			 
+		else:
+			pass
+	 #---
+	 #--> Destroy & Return
+		dlg.Destroy()
+		return True
+	 #---	 
 	#---
 
 	def OnZScore(self):
@@ -1326,6 +1366,8 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			+ "  Z$_{score}$: "
 			+ str(self.ZscoreValDP)
 			+ "%"
+			+ "  α: "
+			+ str(self.aVal)
 		)
 	 #---
 	 #--> Get data

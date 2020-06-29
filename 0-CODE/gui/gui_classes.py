@@ -3347,6 +3347,7 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 				 self.stPDB,            self.tcPDB,
 				 self.stSeqLength,      self.tcSeqLength,
 				 self.stSeq,            self.tcSeq,
+				 self.staVal,           self.cbaVal,
 				 ]
 	 #---
 	 #--> Limprot

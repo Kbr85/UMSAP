@@ -51,7 +51,6 @@ class WinProtProf(gclasses.WinModule):
 	  #---
 	  #--> StaticText
 		self.stChB     = wx.StaticText(self.boxValues, label='Median correction')
-		self.stZscore  = wx.StaticText(self.boxValues, label='Z score (%)')
 		self.stCorrP   = wx.StaticText(self.boxValues, label='P correction')
 		self.stGeneN   = wx.StaticText(self.boxColumns, label='Gene names')
 		self.stExclude = wx.StaticText(
@@ -63,12 +62,7 @@ class WinProtProf(gclasses.WinModule):
 		self.chb = wx.CheckBox(self.boxValues, label='')
 		self.chb.SetValue(True)
 	  #---
-	  #--> TextCtrl
-		self.tcZscore = wx.TextCtrl(
-			self.boxValues, 
-			value='',
-			size=config.size['TextCtrl']['ValuesSect']
-		)			
+	  #--> TextCtrl		
 		self.tcGeneN = wx.TextCtrl(
 			self.boxColumns, 
 			value='', 
@@ -124,25 +118,17 @@ class WinProtProf(gclasses.WinModule):
 			flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxValuesWid.Add(self.tcScoreVal,  pos=(0,1), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
-		self.sizerboxValuesWid.Add(self.stZscore,    pos=(0,2), border=2, 
-			flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL)		
-		self.sizerboxValuesWid.Add(self.tcZscore,    pos=(0,3), border=2, 
-			flag=wx.EXPAND|wx.ALIGN_LEFT|wx.ALL)
 		self.sizerboxValuesWid.Add(self.stDataNorm,  pos=(1,0), border=2, 
 			flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxValuesWid.Add(self.cbDataNorm,  pos=(1,1), border=2, 
-			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)			
-		self.sizerboxValuesWid.Add(self.staVal,      pos=(1,2), border=2, 
-			flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
-		self.sizerboxValuesWid.Add(self.cbaVal,      pos=(1,3), border=2, 
-			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)			
-		self.sizerboxValuesWid.Add(self.stChB,       pos=(2,0), border=2, 
+			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+		self.sizerboxValuesWid.Add(self.stChB,       pos=(0,2), border=2, 
 			flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL)		
-		self.sizerboxValuesWid.Add(self.chb,         pos=(2,1), border=2, 
+		self.sizerboxValuesWid.Add(self.chb,         pos=(0,3), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_LEFT|wx.ALL)
-		self.sizerboxValuesWid.Add(self.stCorrP,     pos=(2,2), border=2, 
+		self.sizerboxValuesWid.Add(self.stCorrP,     pos=(1,2), border=2, 
 			flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL)		
-		self.sizerboxValuesWid.Add(self.cbCorrP,     pos=(2,3), border=2, 
+		self.sizerboxValuesWid.Add(self.cbCorrP,     pos=(1,3), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_LEFT|wx.ALL)			
 	   #---
 	   #--> Columns
@@ -184,11 +170,9 @@ class WinProtProf(gclasses.WinModule):
 	 #---
 	 #--> Tooltips
 		self.stScoreVal.SetToolTip(config.tooltip[self.name]['ScoreVal'])
-		self.staVal.SetToolTip(config.tooltip[self.name]['aVal'])
 		self.stResults.SetToolTip(config.tooltip[self.name]['Results'])
 		self.buttonOutName.SetToolTip(config.tooltip[self.name]['OutName'])
 		self.stChB.SetToolTip(config.tooltip[self.name]['MedianCorrection'])
-		self.stZscore.SetToolTip(config.tooltip[self.name]['ZScore'])
 		self.stCorrP.SetToolTip(config.tooltip[self.name]['CorrP'])
 		self.stGeneN.SetToolTip(config.tooltip[self.name]['GeneN'])
 		self.stExclude.SetToolTip(
@@ -202,9 +186,7 @@ class WinProtProf(gclasses.WinModule):
 		self.tcOutputFF.SetValue('NA')
 		self.tcOutName.SetValue('NA')
 		self.tcScoreVal.SetValue('0') 
-		self.tcZscore.SetValue('1')
 		self.cbDataNorm.SetValue('Log2')
-		self.cbaVal.SetValue('0.050')
 		self.chb.SetValue(False)
 		self.cbCorrP.SetValue('Benjamini - Hochberg')
 		self.tcExclude.SetValue('NA')
@@ -223,8 +205,7 @@ class WinProtProf(gclasses.WinModule):
 			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt'))) 
 			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/test2')))
 		self.tcOutName.SetValue('myProtTest')
-		self.tcScoreVal.SetValue('320')  
-		self.tcZscore.SetValue('10')
+		self.tcScoreVal.SetValue('320')
 		self.chb.SetValue(True)
 		self.cbCorrP.SetValue('Benjamini - Hochberg')
 		self.tcDetProt.SetValue('0')
@@ -276,10 +257,8 @@ class WinProtProf(gclasses.WinModule):
 
 	def OnClearValuesDef(self):
 		""" Specific clear for Values in this module """
-		self.tcScoreVal.SetValue('0') 
-		self.tcZscore.SetValue('1')
+		self.tcScoreVal.SetValue('0')
 		self.cbDataNorm.SetValue('Log2')
-		self.cbaVal.SetValue('0.050')
 		self.chb.SetValue(False)
 		self.cbCorrP.SetValue('Benjamini - Hochberg')
 		return True
@@ -311,9 +290,7 @@ class WinProtProf(gclasses.WinModule):
 				      'Output folder' : self.tcOutputFF.GetValue(),   
 				        'Output name' :  self.tcOutName.GetValue(),     
 				        'Score value' : self.tcScoreVal.GetValue(),
-						'Z score'     :   self.tcZscore.GetValue(),
 				 'Data normalization' : self.cbDataNorm.GetValue(),
-				            'a-value' :     self.cbaVal.GetValue(),
 				  'Median correction' :        self.chb.GetValue(),
 				       'P correction' :    self.cbCorrP.GetValue(),              
 				  'Detected proteins' :  self.tcDetProt.GetValue(),
@@ -393,21 +370,6 @@ class WinProtProf(gclasses.WinModule):
 		else:
 			return False	
 	  #---
-	  #--> Z score
-		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
-			'Checking user input: Z score (%)', 1)
-		if self.CheckGui1Number(self.tcZscore, 
-			'ZscoreVal',
-			config.dictCheckFatalErrorMsg[self.name]['ZscoreVal'], 
-			t    = config.dictElemZscoreVal[self.name]['t'],
-			comp = config.dictElemZscoreVal[self.name]['comp'],
-			val  = config.dictElemZscoreVal[self.name]['val'],
-			val2 = config.dictElemZscoreVal[self.name]['val2'],
-			NA   = config.dictElemZscoreVal[self.name]['NA']):
-			pass
-		else:
-			return False
-	  #---
 	  #--> Data normalization
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Data normalization', 1)
@@ -418,13 +380,6 @@ class WinProtProf(gclasses.WinModule):
 			cbalO = cbal
 		self.d['Datanorm'] = cbal
 		self.do['Datanorm'] = cbalO
-	  #---
-	  #--> alpha value
-		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
-			'Checking user input: alpha value', 1)
-		cbal = self.cbaVal.GetValue()
-		self.d['aVal'] = cbal
-		self.do['aVal'] = float(cbal)
 	  #---
 	  #--> median correction
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -737,8 +692,8 @@ class WinProtProf(gclasses.WinModule):
 	  #---
 	 #---
 	 #---->>>> To avoid calculating it when creating the protprofObj
-		self.do['loga'] = 0 - np.log10(self.do['aVal'])
-		self.do['ZscoreVal'] = stats.norm.ppf(1 - (self.do['ZscoreVal']/100))
+		self.do['loga'] = 0 - np.log10(0.05)
+		self.do['ZscoreVal'] = stats.norm.ppf(1 - 0.1)
 	 #---
 	 #--> Return
 		return True	
@@ -987,7 +942,7 @@ class WinProtProf(gclasses.WinModule):
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Running the analysis: Correcting p values (1/2)', 1)			
 			pval = self.dataO.loc[:,idx['v',:,:,k]].to_numpy().tolist()
-			pvalC = self.PCorrect(pval, self.do['aVal'], self.do['CorrP'])[1]
+			pvalC = self.PCorrect(pval, self.do['CorrP'])[1]
 			self.dataO.loc[:,idx['v',:,:,m]] = pvalC
 			self.dataO.loc[:,idx['v',:,:,n]] = -1 * np.log(self.dataO.loc[:,idx['v',:,:,m]].astype('float64')).values
 	   #--> Correct inter condition
@@ -995,7 +950,7 @@ class WinProtProf(gclasses.WinModule):
 				wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 					'Running the analysis: Correcting p values (2/2)', 1)			
 				pval = self.dataO.loc[:,idx['tp',:,:,'P']].to_numpy().tolist()
-				pvalC = self.PCorrect(pval, self.do['aVal'], self.do['CorrP'])[1]
+				pvalC = self.PCorrect(pval, self.do['CorrP'])[1]
 				self.dataO.loc[:,idx['tp',:,:,'Pc']] = pvalC
 			else:
 				pass	
@@ -1168,7 +1123,7 @@ class WinProtProf(gclasses.WinModule):
 		return p 
 	#---
 
-	def PCorrect(self, pval, alpha, method):
+	def PCorrect(self, pval, method):
 		""" Correct p values using statsmodels.stats.multitest.multipletests
 			---
 			pval: list of list (2 levels) with the p values. 
@@ -1184,7 +1139,7 @@ class WinProtProf(gclasses.WinModule):
 		methodO = config.dictCorrectP[method]
 	 #---
 	 #--> Correct pvalues
-		pvalCF = multipletests(pvalF, alpha=alpha, method=methodO)[1]
+		pvalCF = multipletests(pvalF, method=methodO)[1]
 	 #---
 	 #--> pvalC
 		pvalC = []
