@@ -1146,16 +1146,15 @@ class WinProtProfRes(gclasses.WinResDosDos):
     #region ----------------------------------------------------------- Export
 	def OnExport(self):
 		""" Export protein list 
-			---
-			all : boolean to export only for this condition / relevant point or
-			apply filter to each condition / relevent point and export each
-			protein list
+
+			If no filter is applied then export all the proteins else export the
+			results of the filters.
 		"""
 	 #--> Check there are applied filters
-		if self.Check_AppliedFilters():
-			pass
+		if self.data_filtered is None:
+			df = self.data.rename(columns=self.col4Export[1], level=1)
 		else:
-			return False
+			df = self.data_filtered.rename(columns=self.col4Export[1], level=1)
 	 #---	
 	 #--> Select output file
 		dlg = gclasses.DlgSaveFile(config.extLong['Data'])
@@ -1165,7 +1164,6 @@ class WinProtProfRes(gclasses.WinResDosDos):
 			return False
 	 #---
 	 #--> Get new df with correct labels
-		df = self.data_filtered.rename(columns=self.col4Export[1], level=1)
 		df.rename(columns=self.col4Export[2], level=2, inplace=True)
 	 #---
 	 #--> Write
