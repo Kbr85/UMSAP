@@ -9,7 +9,7 @@
 
 	-- Remove any NON-default path and options from Modules and Utilities
 
-	-- Remove beta from About UMSAP window
+	-- Remove beta from About UMSAP window and splash
 
 -------------------------------------------------------- BEFORE REALISING (UP)
 
