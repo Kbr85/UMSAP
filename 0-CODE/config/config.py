@@ -811,19 +811,21 @@ msg = { # Text messages used in the programm
 	},
 	'TextInput' : { # For text in input dialog
 		'msg': {
+			'aVal'           : "α value:",
 			'ZScoreThreshold': "Z score threshold value (%):",
 			'Filter_ZScore'  : "Threshold value: (%):",
 			'Filter_Log2FC'  : 'Threshold value (absolute value):',
 			'Filter_P'       : 'Threshold value:',
-			'Filter_OneP'    : 'α value',
+			'Filter_OneP'    : 'Threshold value:',
 		},
 		'caption' : {
-			'ZScoreThreshold': "Z score threshold for Volcano plot",
+			'aVal'           : 'α value for the Volcano plot',
+			'ZScoreThreshold': "Z score threshold for the Volcano plot",
 			'Filter_ZScore'  : "Filter results by Z score",
 			'Filter_Log2FC'  : 'Filter results by Log2FC value',
 			'Filter_P'       : 'Filter results by P value',
 			'Filter_Remove'  : 'Remove filters',
-			'Filter_OneP'    : ("Filter Relevant points by α threshold."),
+			'Filter_OneP'    : 'Filter relevant points by α value',
 		}
 	},
 	'Open' : { # For open file dialogues
@@ -981,8 +983,6 @@ msg = { # Text messages used in the programm
 		'NTPperCond_PP' : ("Results - Control experiments must contain the same"
 			" number of relevant points for each condition."),
 		'TyepResRowCol': ("must contain a positive integer number."),
-		'ZscoreVal' : ("The Z score threshold must be a decimal number between "
-			"0 and 100."),
 		'NConds_PP' : ("The number of conditions in Conditions and Results are "
 			"different."),
 		'NTimeP_PP' : ("The number of relevant points in Relevant points and "
@@ -1086,15 +1086,11 @@ msg = { # Text messages used in the programm
 		'ScoreValPP' : ("Detected proteins will be considered relevant if their"
 			" score values are higher than the Score value defined here.\n"
 			"e.g. 50.7"),
-		'aValPP' : ("Significance level for the t test."),	
 		'CharacterPP' : ("Character used to separate protein names in the data"
 			" file.\ne.g. ;"),		
 		'MedianCorrection' : ("Apply median correction to Results columns after"
 			" normalization."),
 		'TimeP' : ("Name of the relevant points tested.\ne.g. 0H, 1H, 24H"),
-		'ZScore' : ("Z score threshold in % to identify up and down regulated "
-			"protein.\ne.g. 10 means find the top 10% up and down regulated "
-			"proteins."),
 		'CorrP' : ("Method to correct the calculated p values"),
 		'GeneN' : ("Column number with the gene names of the identified "
 			"proteins.\ne.g. 6"),			
@@ -1281,7 +1277,7 @@ msg = { # Text messages used in the programm
 			'Filter_ZScore': 'e.g. < 10 or > 20',
 			'Filter_Log2FC': 'e.g. < 2 or > 1.4',
 			'Filter_P'     : 'e.g. < 0.05 or > 0.001',
-			'Filter_OneP'  : '0.01',
+			'Filter_OneP'  : 'e.g. 0.01',
 		},
 		'StatusBar' : {
 			'Filter_ZScore': 'Zscore',
@@ -1330,13 +1326,11 @@ tooltip = { # This dict makes it easier to set the tooltips based on the name of
 		'ResultsW'            : msg['Button']['ResultsW'],
 		'ResultsL'            : msg['Button']['ResultsL'],
 		'ScoreVal'            : msg['StaticText']['ScoreValPP'],
-		'aVal'                : msg['StaticText']['aValPP'],
 		'MedianCorrection'    : msg['StaticText']['MedianCorrection'],
 		'Character'           : msg['StaticText']['CharacterPP'],
 		'Results'             : msg['StaticText']['ResultsPP'],
 		'Conditions'          : msg['StaticText']['Conditions'],
 		'TimeP'               : msg['StaticText']['TimeP'],
-		'ZScore'              : msg['StaticText']['ZScore'],
 		'CorrP'               : msg['StaticText']['CorrP'],
 		'GeneN'               : msg['StaticText']['GeneN'],
 		'Exclude'             : msg['StaticText']['Exclude'],
@@ -1933,16 +1927,6 @@ dictElemGeneNCol = { # To check user input in a Gene names Col in the Columns se
 	},
 }
 
-dictElemZscoreVal = { # To check user input in a Z score (%) Col in the Values section
-	name['ProtProf'] : {
-		't'   : 'float',
-		'comp': 'egt',
-		'NA'  : False,
-		'val' : 0,
-		'val2': 100,
-	},
-}
-
 dictElemColExtract = { # To check user input in a Columns to Extract Col in the Columns section
 	name['TarProt'] : {
 		't'        : 'int',
@@ -2094,7 +2078,6 @@ dictCheckFatalErrorMsg = { ####----> Fatal error messages
 		'Outputfolder'    : msg['Errors']['Outputfolder'],
 		'Outputname'      : msg['Errors']['Outputname'],
 		'Scorevalue'      : msg['Errors']['Scorevalue'],
-		'ZscoreVal'       : msg['Errors']['ZscoreVal'],
 		'DetectProtCol'   : msg['Errors']['DetectProtCol'],
 		'GeneNCol'        : msg['Errors']['GeneNCol'],
 		'ScoreCol'        : msg['Errors']['ScoreCol'],
@@ -2309,9 +2292,7 @@ dictUserInput2UscrFile = { # Equivalence between the uscr file and the self.do d
 		'Outputfolder'   : 'Output folder',
 		'Outputname'     : 'Output name',
 		'Scorevalue'     : 'Score value',
-		'ZscoreVal'      : 'Z score',
 		'Datanorm'       : 'Data normalization',
-		'aVal'           : 'a-value',
 		'median'         : 'Median correction',
 		'CorrP'          : 'P correction',
 		'DetectProtCol'  : 'Detected proteins',

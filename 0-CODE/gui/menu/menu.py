@@ -1336,6 +1336,7 @@ class ToolsProtProfResV(wx.Menu):
 		self.AppendSeparator()
 		self.aFilter = self.Append(-1, 'Apply Filters')
 		self.AppendSeparator()
+		self.aVal   = self.Append(-1, 'α value')
 		self.zScore = self.Append(-1, 'Z score Threshold')
 		self.AppendSeparator()
 		self.saveV = self.Append(-1, 'Save Plot Image')
@@ -1346,6 +1347,7 @@ class ToolsProtProfResV(wx.Menu):
 	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnReset,        source=self.reset)
 		self.Bind(wx.EVT_MENU, self.OnSavePlot,     source=self.saveV)
+		self.Bind(wx.EVT_MENU, self.OnaVal,         source=self.aVal)
 		self.Bind(wx.EVT_MENU, self.OnZScore,       source=self.zScore)
 		self.Bind(wx.EVT_MENU, self.OnFilter_Apply, source=self.aFilter)
 	 #---
@@ -1360,6 +1362,13 @@ class ToolsProtProfResV(wx.Menu):
 		""" Apply filter to this condition - time point """
 		win = self.GetWindow()
 		win.OnFilter_Apply()
+		return True
+	#---
+
+	def OnaVal(self, event):
+		""" Set new Z score threshold in % """
+		win = self.GetWindow()
+		win.OnaVal()
 		return True
 	#---
 
@@ -1417,7 +1426,7 @@ class FilterAdd(wx.Menu):
 		self.zScore = self.Append(500, 'Z score')
 		self.log2FC = self.Append(501, 'Log2FC')
 		self.pVal   = self.Append(-1, 'P value')
-		self.oneP   = self.Append(-1, 'One P value') 
+		self.oneP   = self.Append(-1, 'α value') 
 		self.AppendSubMenu(self.Monotonicity, 'Monotonic')
 		self.div    = self.Append(-1, 'Divergent')
 	 #---

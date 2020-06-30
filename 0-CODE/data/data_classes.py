@@ -2136,7 +2136,7 @@ class DataObjProtProfFile(MyModules):
 		- nConds     : number of conditions in the file
 		- timeP      : number of relevant points per conditions, including the reference
 		- loga       : -log10[aVal]
-		- aVal       : alpha value used when creating the file
+		# - aVal       : alpha value used when creating the file
 		- NProt      : number of protein detected
 		- xCoordTimeA: list of list with x coordinates for the time analysis plot for each condition
 		- ZscoreVal  : value of the zscore in the file 
@@ -2195,14 +2195,14 @@ class DataObjProtProfFile(MyModules):
 		self.loga = self.Fdata['CI']['loga']
 	 #---
 	 #--> aVal
-		self.aVal = self.Fdata['CI']['aVal']
+		self.aVal = 0.05  # This is the default value 
 	 #---
 	 #--> NProt
 		self.NProt = self.dataFrame.shape[0]
 	 #---
 	 #--> ZscoreVal
 		self.ZscoreVal  = self.Fdata['CI']['ZscoreVal']
-		self.ZscoreValP = self.Fdata['I']['ZscoreVal'] 
+		self.ZscoreValP = 10 # This is the default value 
 	 #---
 	 #--> Legends
 		self.nCondsL      = self.Fdata['CI']['LabelCond']

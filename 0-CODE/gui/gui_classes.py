@@ -2722,6 +2722,59 @@ class DlgScrolledDialog(wx.lib.dialogs.ScrolledMessageDialog):
 #---
 #--> Dialogs below show and destroy themselves (UP)
 
+class DlgFilterOneText(wx.Dialog):
+	""" Creates a dialog window with one text field. 
+
+		It is similar to wx.TextEntryDialog but it allows to use SetHint
+	"""
+
+	#region --------------------------------------------------- Instance setup  
+	def __init__(self, parent, label, hint=None, title=''):
+		""""""
+		super().__init__(parent, title=title)
+	 #--> Widgets
+	  #--> StaticText
+		self.stText = wx.StaticText(self, label=label)
+	  #---
+	  #--> TextCtrl
+		self.tcText = wx.TextCtrl(self, size=(300, 23))
+		if hint is None:
+			pass
+		else:
+			self.tcText.SetHint(hint)
+	  #---
+	  #--> Buttons
+		self.btnOK     = wx.Button(self, wx.ID_OK)
+		self.btnCancel = wx.Button(self, wx.ID_CANCEL)
+		self.btnOK.SetDefault() # Set focus on btnOk
+	  #---
+	 #---
+	 #--> Sizers
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.sizer.Add(self.stText, 0, wx.ALL, 5)
+		self.sizer.Add(self.tcText, 0, wx.ALL, 5)
+
+		self.sizer_btn = wx.StdDialogButtonSizer()
+		self.sizer_btn.AddButton(self.btnOK)
+		self.sizer_btn.AddButton(self.btnCancel)
+		self.sizer_btn.Realize()
+		self.sizer.Add(self.sizer_btn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+
+		self.SetSizer(self.sizer)
+		self.sizer.Fit(self)
+	 #--- Sizers
+	#---
+	#endregion ------------------------------------------------ Instance setup
+
+	#region ---------------------------------------------------------- Methods
+	def GetValue(self):
+		""" Returns the text in self.tcText """
+		return self.tcText.GetValue()
+	#---
+	#endregion ------------------------------------------------------- Methods
+#---
+
 class DlgFilterPvalues(wx.Dialog):
 	""" Creates the dialog window to filter results by P values in ProtProfR """
 	
@@ -2737,10 +2790,10 @@ class DlgFilterPvalues(wx.Dialog):
 	  #---
 	  #--> TextCtrl
 		self.tcText = wx.TextCtrl(
-			self, 
-			value=config.msg['FilteredValues']['Examples']['Filter_P'],
+			self,
 			size=(300, 23),
 		)
+		self.tcText.SetHint(config.msg['FilteredValues']['Examples']['Filter_P'])
 	  #---
 	  #--> CheckBox
 		self.cbLogP  = wx.CheckBox(self, label='-Log10P')
@@ -2792,9 +2845,9 @@ class DlgFilterOnePvalues(wx.Dialog):
 	  #--> TextCtrl
 		self.tcText = wx.TextCtrl(
 			self, 
-			value=config.msg['FilteredValues']['Examples']['Filter_OneP'],
 			size=(300, 23),
 		)
+		self.tcText.SetHint(config.msg['FilteredValues']['Examples']['Filter_OneP'])
 	  #---
 	  #--> CheckBox
 		self.cbCorrP = wx.CheckBox(self, label='Corrected P')
@@ -3347,6 +3400,7 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 				 self.stPDB,            self.tcPDB,
 				 self.stSeqLength,      self.tcSeqLength,
 				 self.stSeq,            self.tcSeq,
+				 self.staVal,           self.cbaVal,
 				 ]
 	 #---
 	 #--> Limprot
