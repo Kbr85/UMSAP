@@ -1426,7 +1426,7 @@ class FilterAdd(wx.Menu):
 		self.zScore = self.Append(500, 'Z score')
 		self.log2FC = self.Append(501, 'Log2FC')
 		self.pVal   = self.Append(-1, 'P value')
-		self.oneP   = self.Append(-1, 'One P value') 
+		self.oneP   = self.Append(-1, 'α value') 
 		self.AppendSubMenu(self.Monotonicity, 'Monotonic')
 		self.div    = self.Append(-1, 'Divergent')
 	 #---

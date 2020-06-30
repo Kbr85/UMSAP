@@ -711,10 +711,10 @@ class WinProtProfRes(gclasses.WinResDosDos):
 				self.filter_method
 		"""
 	 #--> Create dlg
-		dlg = gclasses.DlgTextInput(self, 
+		dlg = gclasses.DlgFilterOneText(self, 
 			config.msg['TextInput']['msg'][filterMethod],
-			value=self.filter_userInput[filterMethod],
-			caption=config.msg['TextInput']['caption'][filterMethod],
+			hint=self.filter_userInput[filterMethod],
+			title=config.msg['TextInput']['caption'][filterMethod],
 		)
 	 #---
 	 #--> Show & Process answer 

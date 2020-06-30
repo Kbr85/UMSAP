@@ -816,7 +816,7 @@ msg = { # Text messages used in the programm
 			'Filter_ZScore'  : "Threshold value: (%):",
 			'Filter_Log2FC'  : 'Threshold value (absolute value):',
 			'Filter_P'       : 'Threshold value:',
-			'Filter_OneP'    : 'α value',
+			'Filter_OneP'    : 'Threshold value:',
 		},
 		'caption' : {
 			'aVal'           : 'α value for the Volcano plot',
@@ -825,7 +825,7 @@ msg = { # Text messages used in the programm
 			'Filter_Log2FC'  : 'Filter results by Log2FC value',
 			'Filter_P'       : 'Filter results by P value',
 			'Filter_Remove'  : 'Remove filters',
-			'Filter_OneP'    : ("Filter Relevant points by α threshold."),
+			'Filter_OneP'    : 'Filter relevant points by α value',
 		}
 	},
 	'Open' : { # For open file dialogues
@@ -1277,7 +1277,7 @@ msg = { # Text messages used in the programm
 			'Filter_ZScore': 'e.g. < 10 or > 20',
 			'Filter_Log2FC': 'e.g. < 2 or > 1.4',
 			'Filter_P'     : 'e.g. < 0.05 or > 0.001',
-			'Filter_OneP'  : '0.01',
+			'Filter_OneP'  : 'e.g. 0.01',
 		},
 		'StatusBar' : {
 			'Filter_ZScore': 'Zscore',
