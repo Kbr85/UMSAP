@@ -1154,8 +1154,7 @@ msg = { # Text messages used in the programm
 			" a protein structure."),
 		'CInputFile' : ("Create an input file for UMSAP from a .tarprot "
 			"file."),
-		'FPList' : ("Create a filtered peptide list file from a .tarprot "
-			"file."),
+		'Export' : ("Export selected data to a file with CSV format."),
 		'CHist' : ("Generate histograms of the detected cleavage sites "
 			"found in a .tarprot file."),
 		'SeqAlign' : ("Generate sequence alignments based on the peptides found"
@@ -1307,7 +1306,7 @@ tooltip = { # This dict makes it easier to set the tooltips based on the name of
 	    'CutPerRes' : msg['Button']['CutPerRes'],
 	    'Cuts2PDB'  : msg['Button'][ 'Cuts2PDB'],
 	    'CInputFile': msg['Button']['CInputFile'],
-	    'FPList'    : msg['Button']['FPList'],
+	    'Export'    : msg['Button']['Export'],
 	    'CHist'     : msg['Button']['CHist'],
 	    'SeqAlign'  : msg['Button']['SeqAlign'],
 	    'ShortFile' : msg['Button']['ShortFile'],

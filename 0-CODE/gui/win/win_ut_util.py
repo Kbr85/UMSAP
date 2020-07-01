@@ -57,8 +57,6 @@ class WinUtil(gclasses.WinMyFrame):
 			label='Cleavages per residue')
 		self.buttonCuts2PDB   = wx.Button(self.boxTarProt, 
 			label='Cleavages to PDB files')
-		self.buttonFPL        = wx.Button(self.boxTarProt, 
-			label='Filtered peptide list')
 		self.buttonCreatehist = wx.Button(self.boxTarProt, 
 			label='Histograms')
 		self.buttonSeqAlign   = wx.Button(self.boxTarProt, 
@@ -73,6 +71,8 @@ class WinUtil(gclasses.WinMyFrame):
 			label='Correlation analysis')
 		self.buttonAAdistf    = wx.Button(self.boxUtil, 
 			label='Merge aadist files')
+		self.buttonExport     = wx.Button(self.boxUtil, 
+			label='Export data')
 		self.buttonCInputF    = wx.Button(self.boxUtil, 
 			label='Create input file')
 		self.buttonShortFile  = wx.Button(self.boxUtil, 
@@ -98,8 +98,6 @@ class WinUtil(gclasses.WinMyFrame):
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerboxTarProt.Add(self.buttonCuts2PDB,   border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
-		self.sizerboxTarProt.Add(self.buttonFPL,        border=2, 
-			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerboxTarProt.Add(self.buttonCreatehist, border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerboxTarProt.Add(self.buttonSeqAlign,   border=2, 
@@ -115,6 +113,8 @@ class WinUtil(gclasses.WinMyFrame):
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerboxUtil.Add(self.buttonCInputF,    border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+		self.sizerboxUtil.Add(self.buttonExport, border=2, 
+			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerboxUtil.Add(self.buttonAAdistf,   border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)							
 		self.sizerboxUtil.Add(self.buttonReadOut,   border=2, 
@@ -126,12 +126,12 @@ class WinUtil(gclasses.WinMyFrame):
 	  #---				
 	  #--> All in statbox
 		self.sizerStatBox = wx.GridBagSizer(1,1)
-		self.sizerStatBox.Add(self.sizerboxLimProt, pos=(0,0), border=2, 
+		self.sizerStatBox.Add(self.sizerboxUtil,    pos=(0,0), border=2, 
+			flag=wx.ALIGN_CENTER|wx.ALL, span=(2,0))
+		self.sizerStatBox.Add(self.sizerboxLimProt, pos=(0,1), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
-		self.sizerStatBox.Add(self.sizerboxUtil,    pos=(1,0), border=2, 
+		self.sizerStatBox.Add(self.sizerboxTarProt, pos=(1,1), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
-		self.sizerStatBox.Add(self.sizerboxTarProt, pos=(0,1), border=2, 
-			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL, span=(2,0))
 	  #---
 	  #--> All in sizerIn
 		self.sizerIN.Add(self.sizerStatBox, pos=(0, 0), border=2, 
@@ -181,9 +181,9 @@ class WinUtil(gclasses.WinMyFrame):
 			wx.EVT_BUTTON,      
 			self.menubar.Utilities.TarProt.OnCustomUpdate,
 		)
-		self.buttonFPL.Bind(
+		self.buttonExport.Bind(
 			wx.EVT_BUTTON,        
-			self.menubar.Utilities.TarProt.OnFPList,
+			self.menubar.Utilities.General.OnExport,
 		)
 		self.buttonShortFile.Bind(
 			wx.EVT_BUTTON,  
@@ -213,11 +213,11 @@ class WinUtil(gclasses.WinMyFrame):
 		self.buttonCutsPerRes.SetToolTip(config.tooltip[self.name]['CutPerRes'])
 		self.buttonCuts2PDB.SetToolTip(config.tooltip[self.name]['Cuts2PDB'])
 		self.buttonCInputF.SetToolTip(config.tooltip[self.name]['CInputFile'])
-		self.buttonFPL.SetToolTip(config.tooltip[self.name]['FPList'])
 		self.buttonCreatehist.SetToolTip(config.tooltip[self.name]['CHist'])
 		self.buttonSeqAlign.SetToolTip(config.tooltip[self.name]['SeqAlign'])
 		self.buttonShortFile.SetToolTip(config.tooltip[self.name]['ShortFile'])
 		self.buttonCorrAnaly.SetToolTip(config.tooltip[self.name]['CorrA'])
+		self.buttonExport.SetToolTip(config.tooltip[self.name]['Export'])		
 		self.buttonAAdistf.SetToolTip(config.tooltip[self.name]['AAdistM'])
 		self.buttonReadOut.SetToolTip(config.tooltip[self.name]['ReadOut'])
 		self.buttonUpdateTP.SetToolTip(config.tooltip[self.name]['UpdateTP'])
