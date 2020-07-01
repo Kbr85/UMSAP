@@ -39,7 +39,7 @@ Region \num{2} contains the fields where users provide the information needed in
 	\vspace{-5pt} 	
 \end{figure} 
 
-The section \textit{Values} in Region \num{2} of the interface contains six parameters. Here, users provide information about how the Data file should be processed.
+The section \textit{Values} in Region \num{2} of the interface contains four parameters. Here, users provide information about how the Data file should be processed.
 
 \phantomsection
 \num{1}.- The parameter Score value\label{par:protprofScoreValue} allows users to define a threshold value above which the detected proteins will be considered as relevant. The Score value is an indicator of how reliable was the detection of the protein during the MS experiments. The value given to UMSAP depends on the program generating the Data file. Only one real number equal or greater than zero will be accepted as a valid input here. A value of zero means all detected proteins will be treated as relevant proteins.
@@ -48,11 +48,7 @@ The section \textit{Values} in Region \num{2} of the interface contains six para
 
 \num{3}.- The parameter Median correction indicates whether to apply a median correction to protein intensities in each experiment. The main advantage of this correction is to get volcano plots that are symmetric in the x axis.
 
-\num{4}.- The parameter Z score (\%) is used to highlight the corresponding top percent of up or down regulated proteins in the resulting volcano plots. Only numbers between 0 and 100 will be accepted here.
-
-\num{5}.- The parameter $\alpha$-value presets the significance level for the t-Student test performed.
-
-\num{6}.- The parameters P correction allows selecting the correction method for the p values calculated during the analysis. 
+\num{4}.- The parameters P correction allows selecting the correction method for the p values calculated during the analysis. 
 
 The section \textit{Column numbers} in Region \num{2} contains six parameters. Here, users provide the column numbers in the Data file from where UMSAP will get the information needed to perform the analysis of the module. All columns specified in this section must be present in the Data file. Users must be aware that Python starts counting from \num{0}. Therefore, the number of the columns in the Data file starts from \num{0} and not from \num{1}. The column numbers displayed in the list box in Region \num{3} after the Data file is selected can be directly used for the values of the parameters. 
 
@@ -126,7 +122,7 @@ The Proteome Profiling module generates up to three files and a folder named Dat
 	\vspace{-5pt} 	
 \end{figure}
 
-The other three files created has extension .txt, .uscr and .protprof. The file with extension .txt contains all the lines in the Data files but only the columns specified with the parameter Columns to extract in section \textit{Column numbers} of Region \num{2} of the interface of the Proteome Profiling module. This file is generated only if the value of hte parameter Columns to extract is not NA. 
+The three files created have extension .txt, .uscr and .protprof. The file with extension .txt contains all the lines in the Data files but only the columns specified with the parameter Columns to extract in section \textit{Column numbers} of Region \num{2} of the interface of the Proteome Profiling module. This file is generated only if the value of hte parameter Columns to extract is not NA. 
 
 The file with extension .uscr contains all the input given by the user so a new analysis may be performed without typing all the option values again, see \autoref{subsec:utilUscrFile}. 
 
@@ -146,7 +142,7 @@ After creating the .protprof at the end of the analysis, the Proteome Profiling 
 
 Region \num{1} contains a list of all protein IDs and Gene names contained in the .protprof file being shown. The search box at the bottom allows to search for a protein in the list. Selecting a protein in the list will highlight the protein in Region \num{2} and display information about it in Regions \num{3} and \num{4}.
 
-Region \num{2} contains a volcano plot showing the results for the t-test comparing the condition (C), relevant point (RP) to the control. The volcano plot has a horizontal line indicating the significance level selected for the experiments. In addition, the points in the plot can be colored by Z-score allowing to quickly identified the top up (blue) or down (red) regulated proteins. In \autoref{fig:protprofResultsWindow}, the top \SI{10}{\percent} up and down regulated proteins are colored. Selecting a protein in the plot will highlight the selected protein in Region \num{1} and display information about it in Regions \num{3} and \num{4}. See \autoref{sec:protprofTools} for more options.
+Region \num{2} contains a volcano plot showing the results for the t-test comparing the condition (C), relevant point (RP) to the control. The volcano plot has a horizontal line indicating the significance level selected for the experiments. In addition, the points in the plot can be colored by Z-score allowing to quickly identified the top up (blue) or down (red) regulated proteins. In \autoref{fig:protprofResultsWindow}, the top \SI{10}{\percent} up and down regulated proteins are colored and $\alpha$ is set to 0.05. Selecting a protein in the plot will highlight the selected protein in Region \num{1} and display information about it in Regions \num{3} and \num{4}. See \autoref{sec:protprofTools} for more options.
 
 Region \num{3} contains a plot of $log_2[FC]$ vs Relevant points. The plot allows to see the behavior of the FC along the relevant points for each condition tested in the experiments. See \autoref{sec:protprofTools} for more options.
 
@@ -157,7 +153,7 @@ Region \num{4} shows a summary of the results for a selected proteins. Proteins 
 
 The Tools menu for the results window of the Proteome Profiling module allows to further customize the plots and to apply different filters to the protein list shown in the window.
 
-Under the menu entry Volcano Plot, users can change the condition and relevant point shown in the volcano plot and the Z score value used to color the points in the plot. The complete state of the window can be reset or an image of the volcano plot can be created. If the condition or relevant point displayed is changed the Apply Filters menu entry allows to recalculate the filters for the current condition, relevant point displayed.
+Under the menu entry Volcano Plot, users can change the condition and relevant point shown in the volcano plot, the Z score value used to color the points in the plot and the $\alpha$ value. The complete state of the window can be reset or an image of the volcano plot can be created. If the condition or relevant point displayed is changed the Apply Filters menu entry allows to recalculate the filters for the current condition, relevant point displayed.
 
 Under the menu entry Relevant Points, users can show all the proteins at once with different or the same colors, reset the state of the window or create an image of the Relevant Points graph.
 
@@ -181,11 +177,11 @@ This menu entry allows to filter proteins by the absolute value of the $log_2[FC
 
 \textbf{\textit{\underline{P value}}}
 
-This menu entry allows to filter proteins by the P value calculated for the current Condition and Relevant point. The threshold $\alpha$-value can be given in the 0 to 1 range or as a $-log10$ value. Regular or corrected P values can be used in the filter.
+This menu entry allows to filter proteins by the p value calculated for the comparison of the currently displayed  Condition and Relevant point to the control experiment. The threshold p value can be given in the 0 to 1 range or as a $-log10$ value. Regular or corrected P values can be used in the filter.
 
-\textbf{\textit{\underline{One P value}}}
+\textbf{\textit{\underline{$\alpha$ value}}}
 
-This menu entry allows to filter proteins by P values, but here all Conditions and Relevant points are searched. Therefore, the returned list of proteins consists of proteins that pass the filter for at least one Condition - Relevant point pair.
+This menu entry allows to filter proteins by the p values calculated for the comparison of the relevant points. The returned list of proteins consists of proteins for which the calculated p value is less than the selected $\alpha$ value, for at least one relevant point .
 
 \textbf{\textit{\underline{Monotonic}}}
 
