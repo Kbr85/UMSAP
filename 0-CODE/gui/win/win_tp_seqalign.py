@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,27 +12,14 @@
 """ This module creates the Sequence alignments utility window """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import wx
-## My modules
+
 import config.config   as config
 import gui.gui_classes as gclasses
 import gui.gui_methods as gmethods 
 import data.data_classes as dclasses 
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinSeqAlign(gclasses.WinUtilUno):
@@ -40,6 +27,7 @@ class WinSeqAlign(gclasses.WinUtilUno):
 		generates sequence alignments from a .tarprot file 
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=None):
 		""" parent: parent of the widgets 
 			style: style of the window
@@ -47,23 +35,29 @@ class WinSeqAlign(gclasses.WinUtilUno):
 	 #--> Initial Setup
 		self.name = config.name['SeqAlign']
 		super().__init__(parent=parent, style=style, length=16)
+	 #---
 	 #--> Sizers
 		self.sizer.Fit(self)
+	 #---
 	 #--> Position
 		self.Center()
+	 #---
 	 #--> Show	
 		self.Show()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
-	##-- Binding
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- Binding Methods
 	def OnClearFilesDef(self):
 		""" Specific clear for Files section in this window """
 		self.tcOutputFF.SetValue('NA')
 		return True
 	#--- 
+	#endregion ----------------------------------------------- Binding Methods
 
-	###--- Run
+	#region ------------------------------------------------------ Run Methods
 	def CheckInput(self):
 		""" """
 	 #--> Files
@@ -77,6 +71,7 @@ class WinSeqAlign(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Output folder
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Output folder', 1)
@@ -87,6 +82,8 @@ class WinSeqAlign(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	  #---
+	 #---
 	 #--> Values	
 	  #--> Seq Length
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -100,7 +97,11 @@ class WinSeqAlign(gclasses.WinUtilUno):
 			pass
 		else:
 			return False	
+	  #---
+	 #---
+	 #-->
 		return True
+	 #---
 	#---
 
 	def ReadInputFiles(self):
@@ -143,6 +144,7 @@ class WinSeqAlign(gclasses.WinUtilUno):
 		""" Show graph results """
 		return True
 	#---
+	#endregion --------------------------------------------------- Run Methods
 #---
 
 

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# 	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+# 	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 
 # 	This program is distributed for free in the hope that it will be useful,
 # 	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,88 +12,118 @@
 """ This module starts the application """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
+#region -------------------------------------------------------------- Imports
+import os
+import platform
 
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-# --- Imports
-## Standard modules
 import wx
-import _thread
-from pathlib import Path
-## My modules
-import config.config	 as config
-import gui.menu.menu	 as menu
-import gui.gui_classes   as gclasses
-import gui.gui_methods   as gmethods
-import data.data_classes as dclasses
-import data.data_methods as dmethods
-#--- 
-from gui.win.win_m_main		    import WinMain
-from gui.win.win_m_about		import WinAbout
-from gui.win.win_m_preferences  import WinPreferences
-from gui.win.win_m_updateCheck  import WinUpdateNotice
-#---
-from gui.win.win_ut_util		import WinUtil
-from gui.win.win_ut_corra	    import WinCorrA
-from gui.win.win_ut_corraR	    import WinCorrARes
-from gui.win.win_ut_mergeAA	    import WinMergeAAFiles
-from gui.win.win_ut_typeRes	    import WinTypeRes
-from gui.win.win_ut_shortdfiles import WinShortDataFiles
-#---
-from gui.win.win_tp_tarprot	    import WinTarProt
-from gui.win.win_tp_histo	    import WinHisto
-from gui.win.win_tp_seqalign	import WinSeqAlign
-from gui.win.win_tp_aadist	    import WinAAdist
-from gui.win.win_tp_cutpropR	import WinCutPropRes
-from gui.win.win_tp_histoR	    import WinHistoRes
-from gui.win.win_tp_aadistR	    import WinAAdistRes
-from gui.win.win_tp_tarprotR	import WinTarProtRes
-from gui.win.win_tp_cuts2pdb	import WinCuts2PDB
-#---
-from gui.win.win_lp_limprot	    import WinLimProt
-from gui.win.win_lp_limprotR	import WinLimProtRes
-from gui.win.win_lp_seq		    import WinSeqAlignLP
-#---
-from gui.win.win_pp_protprof	import WinProtProf
-from gui.win.win_pp_protprofR   import WinProtProfRes
-#---
-
-
+import wx.adv
+#endregion ----------------------------------------------------------- Imports
 
 class UmsapApp(wx.App):
 	""" Start the UMSAP app """
 
 	def OnInit(self):
 		""" Initialize the app """
-	   
-	 #--> Set special configuration values that require a running wx.App
-		self.AppInit()
-	 #--> Check for updates
-		self.AppUpdateCheck()
-	 #--> Show the main frame & Return
-		gmethods.WinMUCreate(config.name["Main"])
+
+	 #--> Show SplashScreen
+		cwd = os.path.abspath(os.path.dirname(__file__))
+		cOS = platform.system()
+
+		if cOS == 'Darwin':
+		 ############################################# Change before releasing
+			image_loc = cwd + '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
+			# image_loc = (
+			# 	cwd 
+			# 	+ '/UMSAP.app/Contents/Resources/IMAGES/SPLASHSCREEN/splash.png'
+			# )
+		 ############################################# Change before releasing
+		else:
+			image_loc = 'UPDATE'
+		
+		bitmap = wx.Bitmap(image_loc, type=wx.BITMAP_TYPE_PNG)
+		
+		SplashWindow(bitmap)
+	 #---
+	 #--> Return
 		return True
+	 #---
+	#---
+#---
+
+class SplashWindow(wx.adv.SplashScreen):
+	""" Create splash screen """
+
+	def __init__(self, bitmap):
+		""""""
+
+		super().__init__(
+			bitmap, 
+			wx.adv.SPLASH_CENTER_ON_SCREEN|wx.adv.SPLASH_TIMEOUT,
+			1000,
+			None,	
+		)
+
+		self.Bind(wx.EVT_CLOSE, self.OnClose)
+
+		self.Show()
 	#---
 
-	####---- Methods of the class
-	def AppInit(self):
-		""" Define parameters that requires a wx.App to be already running """
-	   
-	 #--> MenuBar
+	def OnClose(self, event):
+		""" Finish app configuration """
+
+	 #--> Imports
+		import _thread
+		from pathlib import Path
+
+		import config.config	 as config
+		import gui.menu.menu	 as menu
+		import gui.gui_classes   as gclasses
+		import gui.gui_methods   as gmethods
+		import data.data_classes as dclasses
+		import data.data_methods as dmethods
+		#--- 
+		from gui.win.win_m_main		    import WinMain
+		from gui.win.win_m_about		import WinAbout
+		from gui.win.win_m_preferences  import WinPreferences
+		from gui.win.win_m_updateCheck  import WinUpdateNotice
+		#---
+		from gui.win.win_ut_util		import WinUtil
+		from gui.win.win_ut_corra	    import WinCorrA
+		from gui.win.win_ut_corraR	    import WinCorrARes
+		from gui.win.win_ut_mergeAA	    import WinMergeAAFiles
+		from gui.win.win_ut_typeRes	    import WinTypeRes
+		from gui.win.win_ut_shortdfiles import WinShortDataFiles
+		#---
+		from gui.win.win_tp_tarprot	    import WinTarProt
+		from gui.win.win_tp_histo	    import WinHisto
+		from gui.win.win_tp_seqalign	import WinSeqAlign
+		from gui.win.win_tp_aadist	    import WinAAdist
+		from gui.win.win_tp_cutpropR	import WinCutPropRes
+		from gui.win.win_tp_histoR	    import WinHistoRes
+		from gui.win.win_tp_aadistR	    import WinAAdistRes
+		from gui.win.win_tp_tarprotR	import WinTarProtRes
+		from gui.win.win_tp_cuts2pdb	import WinCuts2PDB
+		#---
+		from gui.win.win_lp_limprot	    import WinLimProt
+		from gui.win.win_lp_limprotR	import WinLimProtRes
+		from gui.win.win_lp_seq		    import WinSeqAlignLP
+		#---
+		from gui.win.win_pp_protprof	import WinProtProf
+		from gui.win.win_pp_protprofR   import WinProtProfRes
+	 #---
+	 #--> Set special configuration values that require a running wx.App
+	  #--> MenuBar
 		if config.cOS == "Darwin":
 			wx.MenuBar.MacSetCommonMenuBar(menu.MainMenuBar())
 		else:
 			pass
-	 #--> Configuration options
-	  #--> Screen Size
+	  #---
+	  #--> Configuration options
+	   #--> Screen Size
 		config.size["Screen"] = wx.GetDisplaySize()
+	   #---
+	  #---
 	  #--> Fonts
 	   #--> Define Fonts
 		if config.cOS == "Darwin":
@@ -126,8 +156,11 @@ class UmsapApp(wx.App):
 		else:
 			gclasses.DlgUnexpectedErrorMsg(config.msg["UErrors"]["OS"])
 			return False
+	   #---
 	   #--> Assign fonts
 		config.font[config.name["LimProtRes"]] = config.font[config.name["TarProtRes"]]
+	   #---
+	  #---
 	  #--> Pointers
 		config.pointer['gmethods']['LaunchUscr'] = { # Launch module from uscr file
 			config.mod[config.name['TarProt']] : gmethods.LaunchTarProt,
@@ -166,21 +199,21 @@ class UmsapApp(wx.App):
 		}
 		config.pointer['menu']['toolmenu'] = { # Tool menu
 			#--> Modules
-			config.name['TarProt'] : menu.ToolMenuTarProtMod,
-			config.name['LimProt'] : menu.ToolMenuLimProtMod,
-			config.name['ProtProf']: menu.ToolMenuProtProfMod,
+			config.name['TarProt'] : menu.ToolsModule,
+			config.name['LimProt'] : menu.ToolsModule,
+			config.name['ProtProf']: menu.ToolsModule,			
 			#--> Utilities
-			config.name['MergeAA'] : menu.ToolMenuMergeAA,
-			config.name['CorrA']   : menu.ToolMenuCorrAMod,
-			config.name['CorrARes']: menu.ToolMenuCorrARes,
+			config.name['MergeAA'] : menu.ToolsMergeAA,
+			config.name['CorrA']   : menu.ToolsCorrAUtil,
+			config.name['CorrARes']: menu.ToolsCorrARes,
 			#--> Result windows
-			config.name['TarProtRes']: menu.ToolMenuTarProtRes,
-			config.name['LimProtRes']: menu.ToolMenuLimProtRes,
-			config.name['CutPropRes']: menu.ToolMenuCutPropRes,
-			config.name['HistoRes']  : menu.ToolMenuHistoRes,
-			config.name['AAdistR']   : menu.ToolMenuAAdistRes,
+			config.name['TarProtRes']: menu.ToolsTarProtRes,
+			config.name['LimProtRes']: menu.ToolsLimProtRes,
+			config.name['CutPropRes']: menu.ToolsCutRes,
+			config.name['HistoRes']  : menu.ToolsHistoRes,
+			config.name['AAdistR']   : menu.ToolsAAdistRes,
 			#--> Other windows
-			config.name['TypeRes']   : menu.ToolMenuTypeResults,
+			config.name['TypeRes']   : menu.ToolsTypeResults,
 		}
 		config.pointer['dclasses']['DataObj'] = { # Data objects with name and file extension
 			config.name['TarProtRes']	  : dclasses.DataObjTarProtFile,
@@ -199,20 +232,23 @@ class UmsapApp(wx.App):
 			config.name['LimProtRes']  : dmethods.Get_Data4ListCtrl_LimProtRes,
 			config.name['ProtProfRes'] : dmethods.Get_Data4ListCtrl_ProtProfRes,
 		}
-	 #--> Return
-		return True
-	#---
-
-	def AppUpdateCheck(self):
-		""" Check for updates from a different thread"""
-	 #--> Check if check is on
+	  #---
+	 #---
+	 #--> Check for updates
 		if config.general["checkUpdate"] == 1:
-	 #--> Check
 			_thread.start_new_thread(gmethods.UpdateCheck, ("main",))
 		else:
 			pass
-	 #--> Return
+	 #---
+	 #--> Show the main frame & Return
+		gmethods.WinMUCreate(config.name["Main"])
+	 #---
+	 #--> Destroy Splash Window
+		self.Destroy()
+	 #---
+	 #-->
 		return True
+	 #---
 	#---
 #---
 

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,25 +12,13 @@
 """ This module creates the window for the ProtProf module of the app """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
-import wx
+#region -------------------------------------------------------------- Imports
 import pandas as pd
 import numpy  as np
+import wx
 from scipy import stats
 from statsmodels.stats.multitest import multipletests 
-## My modules
+
 import config.config        as config
 import gui.menu.menu        as menu
 import gui.gui_classes      as gclasses
@@ -38,13 +26,13 @@ import gui.gui_methods      as gmethods
 import data.data_classes    as dclasses 
 import data.data_methods    as dmethods
 import checks.checks_single as check
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinProtProf(gclasses.WinModule):
 	""" To create the gui for the Proteome Profiling module """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=None):
 		""" parent: parent for the widgets
 			style: style of the window
@@ -55,31 +43,26 @@ class WinProtProf(gclasses.WinModule):
 		self.LabelControl = None # column numbers, when loading column numbers 
 		self.LabelCond    = None # from a txt or from a uscr 
 		self.LabelRP      = None # 
-		super().__init__(parent=parent, style=style, length=53)
-	 #--> Menu
-		self.menubar = menu.MainMenuBarWithTools(self.name)
-		self.SetMenuBar(self.menubar)
+		super().__init__(parent=parent, name=self.name, style=style, length=53)
+	 #---
 	 #--> Widgets
 	  #--> Destroy widgets needed by other modules but not here
 		self.WidgetsDestroy(self.name)
+	  #---
 	  #--> StaticText
 		self.stChB     = wx.StaticText(self.boxValues, label='Median correction')
-		self.stZscore  = wx.StaticText(self.boxValues, label='Z score (%)')
 		self.stCorrP   = wx.StaticText(self.boxValues, label='P correction')
 		self.stGeneN   = wx.StaticText(self.boxColumns, label='Gene names')
 		self.stExclude = wx.StaticText(
 			self.boxColumns, 
 			label='Exclude proteins'
 		)
+	  #---
 	  #--> CheckBox
 		self.chb = wx.CheckBox(self.boxValues, label='')
 		self.chb.SetValue(True)
-	  #--> TextCtrl
-		self.tcZscore = wx.TextCtrl(
-			self.boxValues, 
-			value='',
-			size=config.size['TextCtrl']['ValuesSect']
-		)			
+	  #---
+	  #--> TextCtrl		
 		self.tcGeneN = wx.TextCtrl(
 			self.boxColumns, 
 			value='', 
@@ -89,21 +72,25 @@ class WinProtProf(gclasses.WinModule):
 			  self.boxColumns,
 			  value='',
 			  size=config.size['TextCtrl']['ColumnsSect']
-		)		
+		)
+	  #---		
 	  #--> Combobox. #---->>>>>>>> This will be moved to gclasses.WinModule when extending the p values correction to all modules
 		self.cbCorrP = wx.ComboBox(self.boxValues, 
 			value='Benjamini - Hochberg',  
 			choices=config.combobox['CorrectP'], 
 			style=wx.CB_READONLY
 		)
+	  #---
+	 #---
 	 #--> Dict for menu
 		self.ColDic = {
-			101: self.tcDetProt,
-			102: self.tcGeneN, 
-			103: self.tcScore, 
-			104: self.tcExclude,
-			105: self.tcColExt,
+			1: self.tcDetProt,
+			2: self.tcGeneN, 
+			3: self.tcScore, 
+			4: self.tcExclude,
+			5: self.tcColExt,
 		}
+	 #---
 	 #--> Sizers
 	  #--> Central static boxes
 	   #--> Files
@@ -122,6 +109,7 @@ class WinProtProf(gclasses.WinModule):
 			flag=wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxFilesWid.Add(self.tcOutName,        border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)	
+	   #---
 	   #--> Values
 		self.sizerboxValuesWid = wx.GridBagSizer(1, 1)
 		self.sizerboxValues.Add(self.sizerboxValuesWid, border=2, 
@@ -130,26 +118,19 @@ class WinProtProf(gclasses.WinModule):
 			flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxValuesWid.Add(self.tcScoreVal,  pos=(0,1), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
-		self.sizerboxValuesWid.Add(self.stZscore,    pos=(0,2), border=2, 
-			flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL)		
-		self.sizerboxValuesWid.Add(self.tcZscore,    pos=(0,3), border=2, 
-			flag=wx.EXPAND|wx.ALIGN_LEFT|wx.ALL)
 		self.sizerboxValuesWid.Add(self.stDataNorm,  pos=(1,0), border=2, 
 			flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxValuesWid.Add(self.cbDataNorm,  pos=(1,1), border=2, 
-			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)			
-		self.sizerboxValuesWid.Add(self.staVal,      pos=(1,2), border=2, 
-			flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
-		self.sizerboxValuesWid.Add(self.cbaVal,      pos=(1,3), border=2, 
-			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)			
-		self.sizerboxValuesWid.Add(self.stChB,       pos=(2,0), border=2, 
+			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+		self.sizerboxValuesWid.Add(self.stChB,       pos=(0,2), border=2, 
 			flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL)		
-		self.sizerboxValuesWid.Add(self.chb,         pos=(2,1), border=2, 
+		self.sizerboxValuesWid.Add(self.chb,         pos=(0,3), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_LEFT|wx.ALL)
-		self.sizerboxValuesWid.Add(self.stCorrP,     pos=(2,2), border=2, 
+		self.sizerboxValuesWid.Add(self.stCorrP,     pos=(1,2), border=2, 
 			flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL)		
-		self.sizerboxValuesWid.Add(self.cbCorrP,     pos=(2,3), border=2, 
+		self.sizerboxValuesWid.Add(self.cbCorrP,     pos=(1,3), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_LEFT|wx.ALL)			
+	   #---
 	   #--> Columns
 		self.sizerboxColumnsWid = wx.GridBagSizer(1, 1)
 		self.sizerboxColumns.Add(self.sizerboxColumnsWid, border=2, 
@@ -182,47 +163,49 @@ class WinProtProf(gclasses.WinModule):
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerboxColumnsWid.Add(self.buttonResultsL, pos=(6,2), border=2, 
 			flag=wx.ALIGN_RIGHT|wx.ALL)		
+	  #---
 	  #--> Fit
 		self.sizer.Fit(self)
+	  #---
+	 #---
 	 #--> Tooltips
 		self.stScoreVal.SetToolTip(config.tooltip[self.name]['ScoreVal'])
-		self.staVal.SetToolTip(config.tooltip[self.name]['aVal'])
 		self.stResults.SetToolTip(config.tooltip[self.name]['Results'])
 		self.buttonOutName.SetToolTip(config.tooltip[self.name]['OutName'])
 		self.stChB.SetToolTip(config.tooltip[self.name]['MedianCorrection'])
-		self.stZscore.SetToolTip(config.tooltip[self.name]['ZScore'])
 		self.stCorrP.SetToolTip(config.tooltip[self.name]['CorrP'])
 		self.stGeneN.SetToolTip(config.tooltip[self.name]['GeneN'])
 		self.stExclude.SetToolTip(
 			config.tooltip[self.name]['Exclude'] + config.msg['OptVal'])
+	 #---
 	 #--> Binding
 		for child in self.GetChildren():
 			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+	 #---
 	 #--> Default values
 		self.tcOutputFF.SetValue('NA')
 		self.tcOutName.SetValue('NA')
 		self.tcScoreVal.SetValue('0') 
-		self.tcZscore.SetValue('1')
 		self.cbDataNorm.SetValue('Log2')
-		self.cbaVal.SetValue('0.050')
 		self.chb.SetValue(False)
 		self.cbCorrP.SetValue('Benjamini - Hochberg')
 		self.tcExclude.SetValue('NA')
 		self.tcColExt.SetValue('NA')
+	 #---
 
-		############################################################################### INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!!
+	 
+	 #--> INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! ##########
+		import getpass
+		user = getpass.getuser()
 		if config.cOS == 'Darwin':
-			self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/PROTPROF/proteinGroups-kbr.txt') 
-			self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
-			# self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/PROTPROF/proteinGroups-kbr.txt')
-			# self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
+			self.tcDataFile.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/PROTPROF/proteinGroups-kbr.txt') 
+			self.tcOutputFF.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
 		elif config.cOS == 'Windows':
 			from pathlib import Path
 			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt'))) 
 			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/test2')))
 		self.tcOutName.SetValue('myProtTest')
-		self.tcScoreVal.SetValue('320')  
-		self.tcZscore.SetValue('10')
+		self.tcScoreVal.SetValue('320')
 		self.chb.SetValue(True)
 		self.cbCorrP.SetValue('Benjamini - Hochberg')
 		self.tcDetProt.SetValue('0')
@@ -254,14 +237,16 @@ class WinProtProf(gclasses.WinModule):
 		self.LabelControl = 'MyControl'
 		self.LabelCond    = ['DMSO', 'H2O']
 		self.LabelRP      = ['30min', '1D']		 		
-		############################################################################### INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! 		
+	 #--- INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! ##########
+
 
 	 #--> Show
 		self.Show()
+	 #---
 	#---
 
-	####---- Methods of the class
-	##-- Binding
+	# ------------------------------------------------------------- My Methods  
+	#region -------------------------------------------------- Binding Methods
 	def OnClearFilesDef(self):
 		""" Specific clear for Files in this module """
 		self.tcOutputFF.SetValue('NA')
@@ -272,10 +257,8 @@ class WinProtProf(gclasses.WinModule):
 
 	def OnClearValuesDef(self):
 		""" Specific clear for Values in this module """
-		self.tcScoreVal.SetValue('0') 
-		self.tcZscore.SetValue('1')
+		self.tcScoreVal.SetValue('0')
 		self.cbDataNorm.SetValue('Log2')
-		self.cbaVal.SetValue('0.050')
 		self.chb.SetValue(False)
 		self.cbCorrP.SetValue('Benjamini - Hochberg')
 		return True
@@ -291,30 +274,23 @@ class WinProtProf(gclasses.WinModule):
 		self.LabelRP      = None
 		return True
 	#---
+	#endregion ----------------------------------------------- Binding Methods
 
-	def OnPopUpMenu(self, event):
-		""" Show the pop up menu in the wx.ListCtrl. Binding is done in
-		 the base class """
-		self.PopupMenu(menu.ToolMenuProtProfMod())
-		return True
-	#---
-
-	##-- Menu
+	#region ----------------------------------------------------- Menu Methods
 	def OnSaveInputF(self):
 		""" Save the .uscr file with the data in the window """
 	 #--> Variables
 		k = True
 		dlg = gclasses.DlgSaveFile(config.extLong['Uscr'])
+	 #---
 		if dlg.ShowModal() == wx.ID_OK:
-	 #--> Dict with values
+	 	 #--> Dict with values
 			temp = {
 				          'Data file' : self.tcDataFile.GetValue(),               
 				      'Output folder' : self.tcOutputFF.GetValue(),   
 				        'Output name' :  self.tcOutName.GetValue(),     
 				        'Score value' : self.tcScoreVal.GetValue(),
-						'Z score'     :   self.tcZscore.GetValue(),
 				 'Data normalization' : self.cbDataNorm.GetValue(),
-				            'a-value' :     self.cbaVal.GetValue(),
 				  'Median correction' :        self.chb.GetValue(),
 				       'P correction' :    self.cbCorrP.GetValue(),              
 				  'Detected proteins' :  self.tcDetProt.GetValue(),
@@ -329,19 +305,23 @@ class WinProtProf(gclasses.WinModule):
 					   'Control Type' :	self.CType, 						
 				             'Module' : config.mod[config.name['ProtProf']]	
 			}
-	 #--> Write to file
+		 #---
+	 	 #--> Write to file
 			if dmethods.FFsWriteDict2Uscr(dlg.GetPath(), iDict=temp):
 				k = True
 			else:
 				k = False
+		 #---
 		else:
 			k = False
-	 #--> Destryo dlg & Return 
+	 #--> Destroy dlg & Return 
 		dlg.Destroy()
 		return k
+	 #---
 	#---	
-
-	###--- Run
+	#endregion -------------------------------------------------- Menu Methods
+	
+	#region ------------------------------------------------------ Run Methods
 	def CheckInput(self):
 		""" """
 	 #--> Files and Folders
@@ -355,6 +335,7 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Output folder
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Output folder', 1)
@@ -365,6 +346,7 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False		
+	  #---
 	  #--> Output name
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Output name', 1)
@@ -375,6 +357,8 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
+	 #---
 	 #--> Values						
 	  #--> Score value
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -385,20 +369,7 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False	
-	  #--> Z score
-		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
-			'Checking user input: Z score (%)', 1)
-		if self.CheckGui1Number(self.tcZscore, 
-			'ZscoreVal',
-			config.dictCheckFatalErrorMsg[self.name]['ZscoreVal'], 
-			t    = config.dictElemZscoreVal[self.name]['t'],
-			comp = config.dictElemZscoreVal[self.name]['comp'],
-			val  = config.dictElemZscoreVal[self.name]['val'],
-			val2 = config.dictElemZscoreVal[self.name]['val2'],
-			NA   = config.dictElemZscoreVal[self.name]['NA']):
-			pass
-		else:
-			return False
+	  #---
 	  #--> Data normalization
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Data normalization', 1)
@@ -409,16 +380,12 @@ class WinProtProf(gclasses.WinModule):
 			cbalO = cbal
 		self.d['Datanorm'] = cbal
 		self.do['Datanorm'] = cbalO
-	  #--> alpha value
-		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
-			'Checking user input: alpha value', 1)
-		cbal = self.cbaVal.GetValue()
-		self.d['aVal'] = cbal
-		self.do['aVal'] = float(cbal)
+	  #---
 	  #--> median correction
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: median correction', 1)
 		self.d['median'] = self.do['median'] = self.chb.GetValue()
+	  #---
 	  #--> P correction
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: P values correction', 1)
@@ -427,6 +394,8 @@ class WinProtProf(gclasses.WinModule):
 			self.do['CorrP'] = None
 		else:
 			self.do['CorrP'] = self.d['CorrP']
+	  #---
+	 #---
 	 #--> Columns
 	  #--> Detected protein
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -441,6 +410,7 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Gene name
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Gene names', 1)
@@ -454,6 +424,7 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False				
+	  #---
 	  #--> Score
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Score', 1)
@@ -467,6 +438,7 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Exclude proteins
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Exclude proteins', 1)		
@@ -483,7 +455,8 @@ class WinProtProf(gclasses.WinModule):
 			DelRepeat = config.dictElemExclude[self.name]['DelRepeat']):
 			pass
 		else:
-			return False			
+			return False
+	  #---			
 	  #--> Columns to extract
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Columns to extract', 1)		
@@ -501,6 +474,7 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Results 
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Results', 1)
@@ -522,7 +496,9 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False
-	   #--> Final setting
+	   #---
+	  #---
+	 #---
 	 #--> Repeating element
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Unique column numbers', 1)
@@ -532,11 +508,13 @@ class WinProtProf(gclasses.WinModule):
 					+ [self.do['ScoreCol']]
 					+ list(set(dmethods.ListFlatNLevels(self.do['Control'], 1)[1]))
 					+ dmethods.ListFlatNLevels(self.do['Results'], 2)[1])
+	  #---
 	  #--> Include excluded columns 
 		if self.do['ExcludeCol'] != None:
 			self.le = self.l + self.do['ExcludeCol']
 		else:
 			self.le = self.l
+	  #---
 	  #--> Check
 		if self.CheckGuiListUniqueElements(self.le, 
 			config.dictCheckFatalErrorMsg[self.name]['Unique'],
@@ -544,13 +522,17 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
+	 #---
 	 #--> Small variables needed further below
 		if self.do['ColExtract'] != None:
 			self.lcExt = self.le + self.do['ColExtract']							
 		else:
 			self.lcExt = self.le
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def ReadInputFiles(self):
@@ -563,6 +545,7 @@ class WinProtProf(gclasses.WinModule):
 			self.dataFileObj = dclasses.DataObjDataFile(self.do['Datafile'])
 		except Exception:
 			return False
+	  #---
 	  #--> Check number of columns
 		if self.CheckGuiColNumbersInDataFile(self.lcExt, self.dataFileObj.nCols,
 			config.dictCheckFatalErrorMsg[self.name]['ColNumber'],
@@ -570,8 +553,11 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def SetVariable(self):
@@ -583,17 +569,21 @@ class WinProtProf(gclasses.WinModule):
 		self.do['LabelRP']     = self.LabelRP
 		self.d['CType']        = self.do['CType']        = self.CType
 		self.d['LabelControl'] = self.do['LabelControl'] = self.LabelControl
+	 #---
 	 #--> Small variables needed further below
 		self.do['NCond']  = len(self.do['LabelCond'])
 		self.do['NTimeP'] = len(self.do['LabelRP'])
 		self.lNoNa = [x for x in self.l if x != None]
+	 #---
 	 #--> Column names in the data file
 		self.header = self.dataFileObj.header	
+	 #---
 	 #--> Data frame with the original data
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Initial dataframe', 1)
 	  #--> Create dict to assign data type
 		self.DtypeDictBuilder()
+	  #---
 	  #--> Create data frame
 		out, self.dataV = dmethods.DFSelSet(
 			self.dataFileObj.dataFrame,
@@ -610,6 +600,8 @@ class WinProtProf(gclasses.WinModule):
 				pass
 		else:
 			return False
+	  #---
+	 #---
 	 #--> Variables to configure the output dataframe
 		if self.do['CType'] == config.combobox['ControlType'][1]:
 			self.do['Xv']  = self.do['NTimeP']
@@ -619,6 +611,7 @@ class WinProtProf(gclasses.WinModule):
 			self.do['Yv']  = self.do['NTimeP']
 		self.do['Xtp'] = self.do['NTimeP']
 		self.do['Ytp'] = self.do['NCond']
+	 #---
 	 #--> output header
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Output header', 1)
@@ -631,6 +624,7 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False
+	 #---
 	 #--> MyTuples. To configure the loops of the self.do['ResultsControl] matrix
 	 #	  (x, y, X, Y) x, y coordinates in tc.Results list of list
 	 #                 X, Y labels in the output dataframe
@@ -649,6 +643,7 @@ class WinProtProf(gclasses.WinModule):
 					'Y'+str(y),
 				)
 				self.do['MyTuples']['v'].append(a)
+	  #---
 	  #--> tpds
 		if self.do['CType'] == config.combobox['ControlType'][1]:
 			for x in range(0, self.do['Xtp'], 1):
@@ -670,6 +665,7 @@ class WinProtProf(gclasses.WinModule):
 						'C'+str(x+1),
 					)
 					self.do['MyTuples']['tpds'].append(a)
+	  #---
 	  #--> tpp
 		if self.do['CType'] == config.combobox['ControlType'][1]:
 			for x in range(0, self.do['Xtp'], 1):
@@ -693,11 +689,15 @@ class WinProtProf(gclasses.WinModule):
 					'C0',
 				)
 				self.do['MyTuples']['tpp'].append(a)
+	  #---
+	 #---
 	 #---->>>> To avoid calculating it when creating the protprofObj
-		self.do['loga'] = 0 - np.log10(self.do['aVal'])
-		self.do['ZscoreVal'] = stats.norm.ppf(1 - (self.do['ZscoreVal']/100))
+		self.do['loga'] = 0 - np.log10(0.05)
+		self.do['ZscoreVal'] = stats.norm.ppf(1 - 0.1)
+	 #---
 	 #--> Return
 		return True	
+	 #---
 	#---
 
 	def DtypeDictBuilder(self):
@@ -713,8 +713,10 @@ class WinProtProf(gclasses.WinModule):
 				self.dtypeDict[self.header[a]] = 'float'
 			else:
 				pass
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def RunAnalysis(self):	
@@ -732,8 +734,10 @@ class WinProtProf(gclasses.WinModule):
 			self.dataVP = self.dataV.drop(index=idx)
 		else:
 			self.dataVP = self.dataV
+	 #---
 	 #--> Remove proteins that where not identified in all experiments
 		self.dataVP = self.dataVP.loc[~(self.dataVP==0).any(axis=1)]
+	 #---
 	 #--> Filter data by Score value
 		out, self.dataVPS = dmethods.DFColValFilter(
 			self.dataVP,
@@ -742,6 +746,7 @@ class WinProtProf(gclasses.WinModule):
 			comp='ge',
 			loc=True,	
 		)
+	 #---
 	 #--> Data frame dimensions. Here because self.dataV must be filter by 
 	 #    proteins identified in all experiments and score first
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -753,6 +758,7 @@ class WinProtProf(gclasses.WinModule):
 			return False
 		else:
 			pass
+	 #---
 	 #--> Normalize
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Normalizing data', 1)
@@ -767,6 +773,7 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False
+	 #---
 	 #--> Median correction
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Median correction', 1)
@@ -775,6 +782,7 @@ class WinProtProf(gclasses.WinModule):
 			self.dataVPSNM.iloc[:,config.protprof['SColNorm']:] = self.dataVPSNM.iloc[:,config.protprof['SColNorm']:].div(self.dataVPSNM.iloc[:,config.protprof['SColNorm']:].median(axis=0))
 		else:
 			pass
+	 #---
 	 #--> Ratios
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Calculating ratios', 1)
@@ -784,26 +792,31 @@ class WinProtProf(gclasses.WinModule):
 			pass
 		else:
 			return False
+	 #---
 	 #--> Run analysis
 	  #--> Empty data frame
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Empty dataframe for results', 1)
 		self.dataO = pd.DataFrame(np.nan, columns=self.colOut, index=range(self.tentry))
+	  #---
 	  #--> Gene names	
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Extracting Gene names', 1)
 		a = self.dataFileObj.header[self.do['GeneNCol']]
 		self.dataO[('Gene', 'Gene', 'Gene')] = self.dataVPSNM.loc[:,a]
+	  #---
 	  #--> Protein Names	
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Extracting Protein names', 1)
 		a = self.dataFileObj.header[self.do['DetectProtCol']]			
 		self.dataO[('Protein', 'Protein', 'Protein')] = self.dataVPSNM.loc[:,a]
+	  #---
 	  #--> Scores	
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Extracting Scores', 1)
 		a = self.dataFileObj.header[self.do['ScoreCol']]			
 		self.dataO[('Score', 'Score', 'Score')] = self.dataVPSNM.loc[:,a]
+	  #---
 	  #--> Ave & Sd
 	   #--> v region of the df
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -814,6 +827,7 @@ class WinProtProf(gclasses.WinModule):
 			dfl = self.dataVPSNM.loc[:,colN]
 			self.dataO.loc[:,('v', a, b, 'ave')] = dfl.mean(axis=1, skipna=True).to_numpy()
 			self.dataO.loc[:,('v', a, b, 'sd')]  = dfl.std(axis=1, skipna=True).to_numpy()
+	   #---
 	   #--> tp region of the df
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Calculating averages and standard deviations (2/2)', 1)	  
@@ -823,6 +837,7 @@ class WinProtProf(gclasses.WinModule):
 			dfl = self.dataVPSNMR.loc[:,colN]
 			self.dataO.loc[:,('tp', a, b,  'ave')] = dfl.mean(axis=1, skipna=True).to_numpy()
 			self.dataO.loc[:,('tp', a, b,  'sd')] = dfl.std(axis=1, skipna=True).to_numpy()
+	  #---
 	  #--> Fold changes and intra condition p value
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Calculating FC and p values', 1)
@@ -832,47 +847,56 @@ class WinProtProf(gclasses.WinModule):
 		k, l, m, n, o, p, q = config.protprof['ColOut']
 		for z in self.do['MyTuples']['v']:
 			x,y,a,b = z		
-	   #--> Get reference labels and length
+	   	 #--> Get reference labels and length
 			if y == 0:
 				pass
 			else:
 				ref = [self.header[h] for h in self.do['ResultsControl'][x][0]]
 				lref = len(ref)
-	   #--> Check the time point			
+	   	 #---
+		 #--> Check the time point			
 				if self.do['ResultsControl'][x][y][0] == None:
 					pass
 				else:
-	   #--> Update msg
+	   			 #--> Update msg
 					msg = ("Running the analysis: Calculating FC and p values ("
 						+ str(c) + "/" + str(t) + ")")
 					wx.CallAfter(gmethods.UpdateText, self.stProgress, msg)
-	   #--> Get relevant points label and length
+	   			 #---
+				 #--> Get relevant points label and length
 					tp = [self.header[h] for h in self.do['ResultsControl'][x][y]]
 					ltp = len(tp)
-	   #--> Data Frame section
+	   			 #---
+				 #--> Data Frame section
 					dfl = self.dataVPSNM.loc[:,ref+tp]
-	   #--> Calculate p values & FC
+	   			 #---
+				 #--> Calculate p values & FC
 					self.dataO[('v', a, b, k)] = dfl.apply(self.TTest, axis=1, raw=True, args=(lref, ltp))
 					self.dataO[('v', a, b, o)] = self.dataO[('v', a, b, 'ave')] / self.dataO[('v', a, 'Y0', 'ave')]
-	   #--> Update a
+				 #---
 				c += 1
+	   #---
 	   #--> Apply log
 		idx = pd.IndexSlice
 		self.dataO.loc[:,idx['v',:,:,l]] = -1 * np.log10(self.dataO.loc[:,idx['v',:,:,k]].astype('float64')).to_numpy()
 		self.dataO.loc[:,idx['v',:,:,p]] = np.log2(self.dataO.loc[:,idx['v',:,:,o]].astype('float64')).to_numpy()
+	   #---
+	  #---
 	  #--> Z scores
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Calculating Z scores', 1)		
 		dv = self.dataO.loc[:,idx['v',:,:,p]]
 		dv = (dv - dv.mean()).div(dv.std())
 		self.dataO.loc[:,idx['v',:,:,q]] = dv.values	
+	  #---
 	  #--> p values Time Analysis
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running the analysis: Calculating TP p values', 1)	 
 	   #--> Variables
 		tp = self.do['NTimeP']
-	   #--> If only one condition do nothing		
+	   #---
 		if self.do['NCond'] == 1:
+		 #--> If only one condition do nothing		
 			pass 
 		else:
 			tpc = 1
@@ -881,23 +905,24 @@ class WinProtProf(gclasses.WinModule):
 					+ str(tpc) + '/' + str(tp) + ")")
 				wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, 
 					self.stProgress, msg, 1)								
-	   #--> More variables										
+	   	 	 #--> More variables										
 				mL = []
 				mLn = []
 				ntp = 0
 				l,a,b = z
+			 #---
 				for val in l:
 					x,y = val						
-	   #--> Check empty time point					
+			 	 #--> Check empty time point					
 					if self.do['ResultsControl'][x][y][0] == None:
 						pass
 					else:
-	   #--> Get column headers						
+	   			 	 #--> Get column headers						
 						mll = [self.header[h] for h in self.do['ResultsControl'][x][y]]
 						mL += mll
 						mLn.append(len(mll))
 						ntp += 1
-	   #--> Run p calculation						
+	   		 #--> Run p calculation						
 				if ntp < 2:
 					pass
 				elif ntp == 2:
@@ -905,8 +930,10 @@ class WinProtProf(gclasses.WinModule):
 					self.dataO[('tp',a,b,'P')] = self.dataVPSNMR.loc[:,mL].apply(self.TTest, axis=1, raw=True, args=(c, d))
 				else:
 					self.dataO[('tp',a,b,'P')] = self.dataVPSNMR.loc[:,mL].apply(self.TAnova, axis=1, raw=True, args=(mLn,))
-	   #--> Update current time point
+			 #---
+	   		 #--> Update current time point
 				tpc += 1
+			 #---
 	  #--> Correct p values
 		if self.do['CorrP'] == None:
 			pass
@@ -915,7 +942,7 @@ class WinProtProf(gclasses.WinModule):
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Running the analysis: Correcting p values (1/2)', 1)			
 			pval = self.dataO.loc[:,idx['v',:,:,k]].to_numpy().tolist()
-			pvalC = self.PCorrect(pval, self.do['aVal'], self.do['CorrP'])[1]
+			pvalC = self.PCorrect(pval, self.do['CorrP'])[1]
 			self.dataO.loc[:,idx['v',:,:,m]] = pvalC
 			self.dataO.loc[:,idx['v',:,:,n]] = -1 * np.log(self.dataO.loc[:,idx['v',:,:,m]].astype('float64')).values
 	   #--> Correct inter condition
@@ -923,7 +950,7 @@ class WinProtProf(gclasses.WinModule):
 				wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 					'Running the analysis: Correcting p values (2/2)', 1)			
 				pval = self.dataO.loc[:,idx['tp',:,:,'P']].to_numpy().tolist()
-				pvalC = self.PCorrect(pval, self.do['aVal'], self.do['CorrP'])[1]
+				pvalC = self.PCorrect(pval, self.do['CorrP'])[1]
 				self.dataO.loc[:,idx['tp',:,:,'Pc']] = pvalC
 			else:
 				pass	
@@ -982,6 +1009,7 @@ class WinProtProf(gclasses.WinModule):
 			'Writing output files', 1)
 	 #--> Create output folder
 		self.do['Outputfolder'].mkdir()
+	 #---
 	 #--> Intermediate files
 		folderD = self.do['Outputfolder'] / 'Data_Steps'
 		folderD.mkdir()
@@ -999,6 +1027,7 @@ class WinProtProf(gclasses.WinModule):
 		dmethods.FFsWriteCSV(file, self.dataVPSNMR)
 		file = folderD / 'data-06-Results.txt'
 		dmethods.FFsWriteCSV(file, self.dataOW)		
+	 #---
 	 #--> protprof file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Writing output files: protprof file', 1)
@@ -1012,10 +1041,14 @@ class WinProtProf(gclasses.WinModule):
 				keys2string=config.protprof['StringKeys']),
 			'R' : dmethods.DictTuplesKey2StringKey(self.dataO.to_dict())
 			}
+	  #---
 	  #--> Write
 		dmethods.FFsWriteJSON(self.protprofFile, data)
+	  #---
+	 #---
 	 #--> Create the protprof object
 		self.protprofObj = dclasses.DataObjProtProfFile(self.protprofFile)
+	 #---
 	 #--> uscr file
 		self.uscrFile = self.protprofFile.with_suffix(config.extShort['Uscr'][0])
 		msg = 'Writing output files: uscr files'
@@ -1027,6 +1060,7 @@ class WinProtProf(gclasses.WinModule):
 			hDict=config.dictUserInput2UscrFile[self.name]
 		)
 		#--# Improve Something unexpected may go wrong saving the uscr file (UP)
+	 #---
 	 #--> short data
 		if self.do['ColExtract'] is None:
 			pass
@@ -1035,8 +1069,10 @@ class WinProtProf(gclasses.WinModule):
 			df = dmethods.DFSelCol(self.dataFileObj.dataFrame, 
 				self.do['ColExtract'])[1]
 			dmethods.FFsWriteCSV(self.sdataFile, df)
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def ShowRes(self):
@@ -1054,7 +1090,6 @@ class WinProtProf(gclasses.WinModule):
 		return True
 	#---
 
-	##-- Run Helpers
 	def TTest(self, row, lref, ltp):
 		""" Calculate t-test 
 			---
@@ -1088,7 +1123,7 @@ class WinProtProf(gclasses.WinModule):
 		return p 
 	#---
 
-	def PCorrect(self, pval, alpha, method):
+	def PCorrect(self, pval, method):
 		""" Correct p values using statsmodels.stats.multitest.multipletests
 			---
 			pval: list of list (2 levels) with the p values. 
@@ -1099,18 +1134,24 @@ class WinProtProf(gclasses.WinModule):
 		"""
 	 #--> Flat pval
 		pvalF = dmethods.ListFlatNLevels(pval)[1]
+	 #---
 	 #--> method
 		methodO = config.dictCorrectP[method]
+	 #---
 	 #--> Correct pvalues
-		pvalCF = multipletests(pvalF, alpha=alpha, method=methodO)[1]
+		pvalCF = multipletests(pvalF, method=methodO)[1]
+	 #---
 	 #--> pvalC
 		pvalC = []
 		step = len(pval[0])
 		for i in range(0, len(pvalCF), step):
 			pvalC.append(pvalCF[i:i+step]) 
+	 #---
 	 #--> Return
 		return [True, pvalC]
+	 #---
 	#---
+	#endregion --------------------------------------------------- Run Methods
 #---
 
 

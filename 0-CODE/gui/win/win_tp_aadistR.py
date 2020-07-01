@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,39 +12,28 @@
 """ Creates the window showing the results in a .aadist file """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import matplotlib.patches as mpatches
-## My modules
+
 import config.config     as config
 import gui.menu.menu     as menu
 import gui.gui_classes   as gclasses
 import gui.gui_methods   as gmethods
 import data.data_classes as dclasses
 import data.data_methods as dmethods
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinAAdistRes(gclasses.WinGraph):
 	""" Creates the window to show the results in a .aadist file """
-	
+
+	#region ---------------------------------------------------- Initial Setup	
 	def __init__(self, file):
 		""" file: path to the aadist file (string or Path) """
 	 #--> Initial Setup
 		self.name = config.name['AAdistR']
 		super().__init__(file)
+	 #---
 	 #--> Variables
 		self.dataPC   = self.fileObj.dataPerCent
 		self.nExp     = self.fileObj.nExp
@@ -62,6 +51,7 @@ class WinAAdistRes(gclasses.WinGraph):
 		#---
 		self.exp = 0
 		self.pos = 0
+	 #---
 	 #--> Menu
 		self.menubar = menu.MainMenuBarWithTools(self.name, 
 			self.exp, 
@@ -69,14 +59,18 @@ class WinAAdistRes(gclasses.WinGraph):
 			self.nExp,
 			self.nPosName)
 		self.SetMenuBar(self.menubar)
+	 #---
 	 #--> Draw
 		self.DrawConfig()
+	 #---
 	 #--> Show
 		self.Show()
+	 #---
 	#---
+	#endregion ------------------------------------------------- Initial Setup	
 
-	####---- Methods of the class
-	##-- Binding
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- Binding Methods
 	def WinPos(self):
 		""" Set the position of a new window depending on the number of same
 			windows already open 
@@ -87,19 +81,23 @@ class WinAAdistRes(gclasses.WinGraph):
 		xo = config.size['Screen'][0] - xw 
 		x = xo - config.win['AAdistResNum'] * config.win['DeltaNewWin']
 		y = yo + config.win['AAdistResNum'] * config.win['DeltaNewWin']
+	 #---
 	 #--> Position
 		self.SetPosition(pt=(x, y))
+	 #---
 	 #--> Update number
 		config.win['AAdistResNum'] = config.win['AAdistResNum'] + 1
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def OnClick(self, event):
 		""" To process click events """
 		if event.button == 3:
 			if config.cOS == 'Windows':
-				Tmenu = menu.ToolMenuAAdistRes(
+				Tmenu = menu.ToolsAAdistRes(
 					self.exp, 
 					self.pos,
 					self.nExp, 
@@ -111,7 +109,7 @@ class WinAAdistRes(gclasses.WinGraph):
 				self.PopupMenu(Tmenu)
 			else:
 				self.PopupMenu(
-					menu.ToolMenuAAdistRes(
+					menu.ToolsAAdistRes(
 						self.exp, 
 						self.pos,
 						self.nExp, 
@@ -122,57 +120,63 @@ class WinAAdistRes(gclasses.WinGraph):
 			pass
 		return True
 	#---
-
-	##-- Menu
+	#endregion ----------------------------------------------- Binding Methods
+	
+	#region ----------------------------------------------------- Menu Methods
 	def OnExp(self, Mid):
 		""" Show the AAdist for a particular experiment 
 			---
 			Mid: ID of the selected menu item (int)
 		"""
-		self.exp = Mid - 503
+		self.exp = Mid - 100
 		self.menubar.Check(Mid, True)
 		self.pos = 0
 		self.DrawConfig()
 		return True
 	#---
 
-	def OnReset(self, Mid):
+	def OnReset(self):
 		""" Reset the view """
 	 #-->
 		self.exp = 0
 		self.pos = 0
+	 #---
 	 #-->
-		self.menubar.Check(503, True)
-		self.menubar.Check(Mid+1, True)
+		self.menubar.Check(100, True)
+		self.menubar.Check(200, True)
+	 #---
 	 #-->
 		self.DrawConfig()
+	 #---
 	 #-->
 		return True		
+	 #---
 	#---
 
-	def OnPos(self, Mid, rMid):
+	def OnPos(self, Mid):
 		""" Compare the distribution for a particular position in all 
 			experiments 
 			---
 			Mid: ID of the selected menu item (int)
-			rMid: reference Id number (int)
 		"""
-		self.pos = Mid - rMid - 1
+		self.pos = Mid - 200
 		self.menubar.Check(Mid, True)
 		self.DrawConfig()
 		return True
 	#---	
-
-	##-- Plotting
+	#endregion -------------------------------------------------- Menu Methods
+	
+	#region ------------------------------------------------- Plotting Methods
 	def DrawConfig(self):
 		""" Configure the plot """
-	 #--- Set key & title
+	 #--> Set key & title
 		if self.exp == 0:
 			self.tkey = 'FP'
 			self.title = 'AA distribution (FP List)'
 		else:
 			self.title = 'AA distribution (Exp' + str(self.exp) + ')'
 			self.tkey = 'Exp' + str(self.exp)
+	 #---
 	 #--> Get position and draw position or comparison
 		if self.pos == 0:
 			self.Draw()
@@ -185,8 +189,10 @@ class WinAAdistRes(gclasses.WinGraph):
 				self.title = 'AA distribution (Pos P' + str(p) + ')'
 			self.tpos = self.pos - 1 	
 			self.DrawComp()
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def SetAxis(self):
@@ -213,10 +219,13 @@ class WinAAdistRes(gclasses.WinGraph):
 		""" Draw bar plot for one experiment """
 	 #--> Clear plot
 		self.ClearPlot()
+	 #---
 	 #--> title
 		self.axes.set_title(self.title)
+	 #---
 	 #--> tDF with percent values 
 		tDF = self.dataPC.loc[self.tkey]
+	 #---
 	 #--> Draw bars
 		for i in range(0, len(self.nPosName), 1):
 			iS = i
@@ -247,10 +256,12 @@ class WinAAdistRes(gclasses.WinGraph):
 						verticalalignment='center')
 				else:
 					pass
+	 #---
 	 #--> Axis, draw & Return
 		self.SetAxis()
 		self.canvas.draw()
 		return True
+	 #---
 	#---
 
 	def SetAxisComp(self):
@@ -275,11 +286,14 @@ class WinAAdistRes(gclasses.WinGraph):
 		"""
 	 #--> Clear
 		self.ClearPlot()
+	 #---
 	 #--> Title
 		self.axes.set_title(self.title)
+	 #---
 	 #--> Variables
 		p = self.pos - 1
 		pl = 0
+	 #---
 	 #--> Draw bars
 		for a in self.aaKeys:
 			pl += 1
@@ -296,6 +310,7 @@ class WinAAdistRes(gclasses.WinGraph):
 				self.axes.bar(tx, i, align='edge', color=color, 
 					width=self.barWidth, 
 					edgecolor=config.colors[self.name]['BarEdge'])
+	 #---
 	 #--> Legend
 		self.legendlist = []
 		for i in range(1, self.nExpFP, 1):
@@ -310,10 +325,12 @@ class WinAAdistRes(gclasses.WinGraph):
 		self.leg = self.axes.legend(handles=self.legendlist, loc='upper left',
 			bbox_to_anchor=(1, 1))
 		self.leg.get_frame().set_edgecolor('k')					
+	 #---
 	 #--> Axis, draw & Return
 		self.SetAxisComp()
 		self.canvas.draw()
 		return True
+	 #---
 	#---
 
 	def UpdateStatusBar(self, event):
@@ -323,6 +340,7 @@ class WinAAdistRes(gclasses.WinGraph):
 		if event.inaxes:
 			x, y = event.xdata, event.ydata
 			xf = int(x + 0.5) - 1
+	 #---
 	 #--> Text for positions
 			if self.pos == 0 and x > 0.6 and x < self.nPos + 0.4:
 				show = None
@@ -349,6 +367,7 @@ class WinAAdistRes(gclasses.WinGraph):
 					self.statusbar.SetStatusText('Pos=' + str(pos) + 
 						'  AA=' + str(AA) + '  %=' + str(per) + 
 						'  Abs=' + str(absC) + '  InSeq=' + str(inseqC))
+	 #---
 	 #--> Text for comparison
 			elif self.pos != 0 and x > 0.6 and x < len(self.aaKeys) + 0.4:
 				xS = xf + 1
@@ -380,12 +399,16 @@ class WinAAdistRes(gclasses.WinGraph):
 							'  Abs=' + str(absC) + '  InSeq=' + str(inseqC))
 			else:
 				self.statusbar.SetStatusText(gmethods.StatusBarXY(x, y))
+	 #---
 	 #--> No text
 		else:
 			self.statusbar.SetStatusText('')
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
+	#endregion ---------------------------------------------- Plotting Methods
 #---
 
 

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,27 +12,14 @@
 """ This module contains the main configuration parameters of the app """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import json
 import os
 import platform
-import wx
 from pathlib import Path
-## My modules
-#---
 
+import wx
+#endregion ----------------------------------------------------------- Imports
 
 
 # ------------------------------------------------------------------------------
@@ -40,9 +27,8 @@ from pathlib import Path
 # ------------------------------------------------------------------------------
 
 
-
-# ----------------------------------------------------- General parameters
-version       = '2.1.0' # String to write in the output files
+#region --------------------------------------------------- General parameters
+version       = '2.1.0 (beta)' # String to write in the output files
 versionUpdate = [2, 0, 1]      # List to match against the version online
 dictVersion   = { # dict for directly write into output files
 	'version': version,
@@ -50,19 +36,17 @@ dictVersion   = { # dict for directly write into output files
 versionInternet = None              # To hold the version found in the Internet
 cOS             = platform.system() # Current operating system
 cwd             = Path(os.path.abspath(os.path.dirname(__file__))) # current working directory
-# ----------------------------------------------------- General parameters (END)
+#endregion ------------------------------------------------ General parameters
 
-
-
-# ------------------------------------------ PLATFORM DEPENDENT PARAMETERS
+#region ---------------------------------------- PLATFORM DEPENDENT PARAMETERS
 if cOS == 'Darwin':
 	#--> Fix cwd and set the location of the Resources folder
 	cwd = cwd.parent
 	cwd = cwd.parent
 	
 	#################################################### Change before releasing
-	res = cwd / 'Resources'
-	# res = cwd / 'BORRAR-UMSAP/RESOURCES'
+	# res = cwd / 'Resources'
+	res = cwd / 'BORRAR-UMSAP/RESOURCES'
 	#################################################### Change before releasing
 	
 	#--> Set top left coordinate
@@ -116,11 +100,9 @@ elif cOS == 'Linux':
 	
 else:
 	pass
-# ------------------------------------------ PLATFORM DEPENDENT PARAMETERS (END)
+#endregion ------------------------------------- PLATFORM DEPENDENT PARAMETERS
 
-
-
-# ------------------------------------------------------- Names and titles
+#region ----------------------------------------------------- Names and titles
 name = { # Unique names to identify windows/objects through the config file
 	#--> Main like windows
 	'Main'        : 'Main',
@@ -201,11 +183,9 @@ title = { # Title of the windows
 	#--> Windows shown as modal
 	name['CorrAExp']  : 'Export column numbers',
 }
-# ------------------------------------------------------- Names and titles (END)
+#endregion -------------------------------------------------- Names and titles
 
-
-
-# -------------------------------------------------------- Windows options
+#region ------------------------------------------------------ Windows options
 win = { # To track the existence and number of certain windows. 
 		# None values change to a reference to the open window.
 	'Open'  : [], # List of all open windows in the program
@@ -240,11 +220,9 @@ win = { # To track the existence and number of certain windows.
 	     'ProtProfResNum': 0,
 	'DeltaNewWin'   : 15,
 }
-# -------------------------------------------------------- Windows options (End)
+#endregion --------------------------------------------------- Windows options
 
-
-
-# -------------------------------------------------- Modules and Utilities
+#region ------------------------------------------------ Modules and Utilities
 mod = { # Modules in the program including the Utilities window
 	name['TarProt'] : 'Targeted Proteolysis',
 	name['LimProt'] : 'Limited Proteolysis',
@@ -255,32 +233,26 @@ mod = { # Modules in the program including the Utilities window
 	'Proteome Profiling'  : name['ProtProf'],
 	'Utilities'           : name['Util'],
 }
-# -------------------------------------------------- Modules and Utilities (END)
+#endregion --------------------------------------------- Modules and Utilities
 
-
-
-# ------------------------------------------------------------------ Paths
+#region ---------------------------------------------------------------- Paths
 path = { # Path to folders containing UMSAP files independently of the OS
 	'CWD'      : cwd,            # Root of the folders containing UMSAP files
 	'Resources': res,            # Resources folder
 	'Images'   : res / 'IMAGES', # Images folder
 	'Config'   : res / 'CONFIG', # Configuration folder
 }
-# ------------------------------------------------------------------ Paths (END)
+#endregion ------------------------------------------------------------- Paths
 
-
-
-# ------------------------------------------------------------------ Files
+#region ---------------------------------------------------------------- Files
 file = { # Path to critical files
 	'Config'   : path['Config'] / 'config.json',     # User config file
 	'ConfigDef': path['Config'] / 'config_def.json', # Default config file
 	'Manual'   : path['Resources'] / 'MANUAL/manual.pdf', # UMSAP Manual
 }
-# ------------------------------------------------------------------ Files (END)
+#endregion ------------------------------------------------------------- Files
 
-
-
-#------------------------------------------------------------------- Sizes
+#region----------------------------------------------------------------- Sizes
 size = { # Size for different widgets in the GUI
 	'Screen'       : None,          # Size of the user screen
 	'TaskBarHeight': TaskBarHeight, # Height of the task bar for the current OS
@@ -353,11 +325,9 @@ size = { # Size for different widgets in the GUI
 		name['TypeRes'] : (500, 500),
 	},
 }
-#------------------------------------------------------------------- Sizes (END)
+#endregion ------------------------------------------------------------- Sizes
 
-
-
-# ------------------------------------------ Information about UMSAP Files
+#region ---------------------------------------- Information about UMSAP Files
 protprof = { # Information about the protprof file
 	'SColNorm': 3, # Columns to be normalized in protprof.dataV starts in this index
 	'SColNumRow': 3,   # Index where experiments starts
@@ -631,19 +601,9 @@ typeRes = { # Information about the typeRes window
 		name['LimProt'],
 	],
 }
+#endregion ------------------------------------- Information about UMSAP Files
 
-corr = { # Information about the corr file
-	'MenuID' : {
-		503 : 'Limited Proteolysis',
-		504 : 'Proteome Profiling',
-		505 : 'Targeted Proteolysis',
-	}
-}
-# ------------------------------------------ Information about UMSAP Files (END) 
-
-
-
-# ------------------------------------------ Information about other Files 
+#region ---------------------------------------- Information about other Files
 pdbFile = { # Information about pdb files
 	'Coord records' : { # Details about the pdb records containing atomic coordinates
 		'ATOM'      : [(1, 4)  , 'ATOM'      , 'string'],
@@ -681,11 +641,9 @@ pdbFile = { # Information about pdb files
 		],
 	},
 }
-# ------------------------------------------ Information about other Files (END) 
+#endregion ------------------------------------- Information about other Files
 
-
-
-# ------------------------------------------------------------- Extensions
+#region ----------------------------------------------------------- Extensions
 extLong = { # string for the dlg windows representing the extension of the files
 	'Data'    : 'txt files (*.txt)|*.txt',
 	'Seq'     : 'txt fasta files (*.txt; *.fasta)|*.txt;*.fasta',
@@ -735,11 +693,9 @@ extName = { # Link the file extension to name dict
 	'.tarprot' : name['TarProt'],
 	'.protprof': name['ProtProf'],
 }
-# ------------------------------------------------------------- Extensions (End)
+#endregion -------------------------------------------------------- Extensions
 
-
-
-# ----------------------------------------------------------------- Images
+#region --------------------------------------------------------------- Images
 image = { # Information regarding images
 	#--> paths to images in:
 	'icon' : path['Images'] / 'icon2.ico',
@@ -749,11 +705,9 @@ image = { # Information regarding images
 	#--> 
 	'DPI'  : 300, # dpi resolution for the matplotlib images
 }
-# ----------------------------------------------------------------- Images (END)
+#endregion ------------------------------------------------------------ Images
 
-
-
-# -------------------------------------------------------------------- URL
+#region ------------------------------------------------------------------ URL
 url = { # Selected URL needed by umsap.
 	'Home'     : "https://www.umsap.nl",
 	'Update'   : 'https://www.umsap.nl/umsap-release-notes',
@@ -762,11 +716,9 @@ url = { # Selected URL needed by umsap.
 	'Uniprot'  : 'https://www.uniprot.org/uniprot/',
 	'Pdb'      : 'http://www.rcsb.org/pdb/files/'
 }
-# -------------------------------------------------------------------- URL (END)
+#endregion --------------------------------------------------------------- URL
 
-
-
-# --------------------------------------------------------------- ListCtrl
+#region ------------------------------------------------------------- ListCtrl
 listctrl = { # Information regarding the col width and header of list boxes
 	'Widths' : { # width for each column
 		name['TarProt']      : (40, 200),
@@ -793,11 +745,9 @@ listctrl = { # Information regarding the col width and header of list boxes
 		name['MergeAA']     : ['#', 'Files to merge']		
 	},
 }
-# --------------------------------------------------------------- ListCtrl (END)
+#endregion ---------------------------------------------------------- ListCtrl
 
-
-
-# -------------------------------------------------- ComboBox and RadioBox
+#region ------------------------------------------------ ComboBox and RadioBox
 combobox = { # Information for combo boxes
 	'NormValues': [
 		'None', 
@@ -850,11 +800,9 @@ combobox = { # Information for combo boxes
 radiobox = { # Information for radio boxes
 	'CheckUpdate' : ['Automatically', 'Never']
 }
-# -------------------------------------------------- ComboBox and RadioBox (END)
+#endregion --------------------------------------------- ComboBox and RadioBox
 
-
-
-# --------------------------------------------------------------- Messages
+#region ------------------------------------------------------------- Messages
 msg = { # Text messages used in the programm
 	'StaticBoxNames' : { # Name of the StaticBoxes
 		'Files'  : 'Files',
@@ -863,19 +811,21 @@ msg = { # Text messages used in the programm
 	},
 	'TextInput' : { # For text in input dialog
 		'msg': {
+			'aVal'           : "α value:",
 			'ZScoreThreshold': "Z score threshold value (%):",
 			'Filter_ZScore'  : "Threshold value: (%):",
 			'Filter_Log2FC'  : 'Threshold value (absolute value):',
 			'Filter_P'       : 'Threshold value:',
-			'Filter_OneP'    : 'α value',
+			'Filter_OneP'    : 'Threshold value:',
 		},
 		'caption' : {
-			'ZScoreThreshold': "Z score threshold for Volcano plot",
+			'aVal'           : 'α value for the Volcano plot',
+			'ZScoreThreshold': "Z score threshold for the Volcano plot",
 			'Filter_ZScore'  : "Filter results by Z score",
 			'Filter_Log2FC'  : 'Filter results by Log2FC value',
 			'Filter_P'       : 'Filter results by P value',
 			'Filter_Remove'  : 'Remove filters',
-			'Filter_OneP'    : ("Filter Relevant points by α threshold."),
+			'Filter_OneP'    : 'Filter relevant points by α value',
 		}
 	},
 	'Open' : { # For open file dialogues
@@ -1033,8 +983,6 @@ msg = { # Text messages used in the programm
 		'NTPperCond_PP' : ("Results - Control experiments must contain the same"
 			" number of relevant points for each condition."),
 		'TyepResRowCol': ("must contain a positive integer number."),
-		'ZscoreVal' : ("The Z score threshold must be a decimal number between "
-			"0 and 100."),
 		'NConds_PP' : ("The number of conditions in Conditions and Results are "
 			"different."),
 		'NTimeP_PP' : ("The number of relevant points in Relevant points and "
@@ -1138,15 +1086,11 @@ msg = { # Text messages used in the programm
 		'ScoreValPP' : ("Detected proteins will be considered relevant if their"
 			" score values are higher than the Score value defined here.\n"
 			"e.g. 50.7"),
-		'aValPP' : ("Significance level for the t test."),	
 		'CharacterPP' : ("Character used to separate protein names in the data"
 			" file.\ne.g. ;"),		
 		'MedianCorrection' : ("Apply median correction to Results columns after"
 			" normalization."),
 		'TimeP' : ("Name of the relevant points tested.\ne.g. 0H, 1H, 24H"),
-		'ZScore' : ("Z score threshold in % to identify up and down regulated "
-			"protein.\ne.g. 10 means find the top 10% up and down regulated "
-			"proteins."),
 		'CorrP' : ("Method to correct the calculated p values"),
 		'GeneN' : ("Column number with the gene names of the identified "
 			"proteins.\ne.g. 6"),			
@@ -1333,7 +1277,7 @@ msg = { # Text messages used in the programm
 			'Filter_ZScore': 'e.g. < 10 or > 20',
 			'Filter_Log2FC': 'e.g. < 2 or > 1.4',
 			'Filter_P'     : 'e.g. < 0.05 or > 0.001',
-			'Filter_OneP'  : '0.01',
+			'Filter_OneP'  : 'e.g. 0.01',
 		},
 		'StatusBar' : {
 			'Filter_ZScore': 'Zscore',
@@ -1344,11 +1288,9 @@ msg = { # Text messages used in the programm
 	},		
 	'OptVal' : ("\n---\nThis field is optional (NA)."),	
 }
-# --------------------------------------------------------------- Messages (END)
+#endregion ---------------------------------------------------------- Messages
 
-
-
-# --------------------------------------------------------------- Tooltips
+#region ------------------------------------------------------------- Tooltips
 tooltip = { # This dict makes it easier to set the tooltips based on the name of the window
 	name['Main'] : { # Main Window
 		'LimProt'  : msg['Button']['LimProt'],
@@ -1384,13 +1326,11 @@ tooltip = { # This dict makes it easier to set the tooltips based on the name of
 		'ResultsW'            : msg['Button']['ResultsW'],
 		'ResultsL'            : msg['Button']['ResultsL'],
 		'ScoreVal'            : msg['StaticText']['ScoreValPP'],
-		'aVal'                : msg['StaticText']['aValPP'],
 		'MedianCorrection'    : msg['StaticText']['MedianCorrection'],
 		'Character'           : msg['StaticText']['CharacterPP'],
 		'Results'             : msg['StaticText']['ResultsPP'],
 		'Conditions'          : msg['StaticText']['Conditions'],
 		'TimeP'               : msg['StaticText']['TimeP'],
-		'ZScore'              : msg['StaticText']['ZScore'],
 		'CorrP'               : msg['StaticText']['CorrP'],
 		'GeneN'               : msg['StaticText']['GeneN'],
 		'Exclude'             : msg['StaticText']['Exclude'],
@@ -1517,9 +1457,24 @@ tooltip = { # This dict makes it easier to set the tooltips based on the name of
 		'Cols'  : msg['Button']['Cols']
 	},
 }
-# --------------------------------------------------------------- Tooltips (END)
+#endregion ---------------------------------------------------------- Tooltips
 
+#region ----------------------------------------------------------- Menu items
+addColumnsTo = {
+	name['TarProt'] : ['Sequences', 'Detected proteins', 'Score', 
+			'Columns to extract'],
+	name['LimProt'] : ['Sequences', 'Detected proteins', 'Score', 
+			'Columns to extract'],
+	name['ProtProf'] : ['Detected proteins', 'Gene names', 'Score', 
+			'Exclude proteins', 'Columns to extract'],
+}
 
+modules = {
+	1: 'Limited Proteolysis',
+	2: 'Proteome Profiling',
+	3: 'Targeted Proteolysis',
+}
+#endregion -------------------------------------------------------- Menu items
 
 #-------------------------------------------------------- GUI dictionaries
 #--- The name of the dict is the class where the dict is used or
@@ -1530,7 +1485,7 @@ dictElemHelpRun = { # Label for the help run buttons
 	'Run'  : 'Start analysis',
 }
 
-####----> File section
+#region --------------------------------------------------------- File section
 dictWinUtilUno = { # Label for the text control in the values section (aadist util)
 	name['AAdist'] : {
 		'StaticLabel' : 'Positions'
@@ -1836,7 +1791,9 @@ dictElemOutputFileFolder = { # To create an Output file/folder element in the Fi
 		'NA'           : False
 	},
 }
-####----> Values Section
+#endregion ------------------------------------------------------ File section
+
+#region ------------------------------------------------------- Values Section
 dictElemChar = { # To check the user input in a Character element in the Values section
 	name['ProtProf'] : {
 		'DefNameFile'  : None
@@ -1901,8 +1858,9 @@ dictElemHistWin = { # To check user input in a Histogram windos element in the V
 		'DelRepeat': True
 	}
 }
+#endregion ---------------------------------------------------- Values Section
 
-####----> Columns section
+#region ------------------------------------------------------ Columns Section
 dictElemSeqCol = { # To check user input in Sequence Col element in the Columns section
 	name['TarProt'] : {
 		't'   : 'int',
@@ -1966,16 +1924,6 @@ dictElemGeneNCol = { # To check user input in a Gene names Col in the Columns se
 		'comp': 'egt',
 		'NA'  : False,
 		'val' : 0
-	},
-}
-
-dictElemZscoreVal = { # To check user input in a Z score (%) Col in the Values section
-	name['ProtProf'] : {
-		't'   : 'float',
-		'comp': 'egt',
-		'NA'  : False,
-		'val' : 0,
-		'val2': 100,
 	},
 }
 
@@ -2130,7 +2078,6 @@ dictCheckFatalErrorMsg = { ####----> Fatal error messages
 		'Outputfolder'    : msg['Errors']['Outputfolder'],
 		'Outputname'      : msg['Errors']['Outputname'],
 		'Scorevalue'      : msg['Errors']['Scorevalue'],
-		'ZscoreVal'       : msg['Errors']['ZscoreVal'],
 		'DetectProtCol'   : msg['Errors']['DetectProtCol'],
 		'GeneNCol'        : msg['Errors']['GeneNCol'],
 		'ScoreCol'        : msg['Errors']['ScoreCol'],
@@ -2290,11 +2237,11 @@ dictCheckFatalErrorMsg = { ####----> Fatal error messages
 		'UMSAPSite' : msg['Errors']['UMSAPSite'],
 	},	
 }
+#endregion --------------------------------------------------- Columns Section
+
 #-------------------------------------------------------- GUI dictionaries (END)
 
-
-
-#------------------------------------------------------------- Translation
+#region ---------------------------------------------------------- Translation
 dictComparisonToText = { # Comparison translation
 	'gt' : 'greater than',
 	'egt': 'equal or greater than',
@@ -2345,9 +2292,7 @@ dictUserInput2UscrFile = { # Equivalence between the uscr file and the self.do d
 		'Outputfolder'   : 'Output folder',
 		'Outputname'     : 'Output name',
 		'Scorevalue'     : 'Score value',
-		'ZscoreVal'      : 'Z score',
 		'Datanorm'       : 'Data normalization',
-		'aVal'           : 'a-value',
 		'median'         : 'Median correction',
 		'CorrP'          : 'P correction',
 		'DetectProtCol'  : 'Detected proteins',
@@ -2404,20 +2349,16 @@ dictCorrectP = { # Correct P value method name to statsmodels.stats.multitest.mu
     'Benjamini - Hochberg' : 'fdr_bh',
     'Benjamini - Yekutieli': 'fdr_by',
 }
-#------------------------------------------------------------- Translation (END)
+#endregion ------------------------------------------------------- Translation
 
-
-
-#------------------------------------------------------------- Coordinates
+#region ---------------------------------------------------------- Coordinates
 coord = { # Selected coordinates
 	'TopLeft': topLeftCoord,
 	'TopXY'  : topXY,
 }
-#------------------------------------------------------------- Coordinates (END)
+#endregion ------------------------------------------------------- Coordinates
 
-
-
-#-------------------------------------------------------------------- Lists
+#region ---------------------------------------------------------------- Lists
 naVals = [ # Possible NA values
 	'N', 'n', 'No', 'NO', 'NA', ''
 ]
@@ -2446,31 +2387,23 @@ winNoMinMainUtil = [ # List of windows that do not minimize Main when opening
 	name['UpdateNotice'],
 	name['About'],
 ]
-#-------------------------------------------------------------------- Lists(END)
+#endregion ------------------------------------------------------------- Lists
 
-
-
-#----------------------------------------------------------------- Strings
+#region -------------------------------------------------------------- Strings
 PDBformat = ("{:6s}{:5d} {:^4s}{:1s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}"
 	"{:8.3f}{:6.2f}{:6.2f}      {:4s}{:2s}")
-#----------------------------------------------------------------- Strings (END)
+#endregion ----------------------------------------------------------- Strings
 
-
-
-#--------------------------------------------------------------- Variables
+#region ------------------------------------------------------------ Variables
 updateAvail = None # To hold the result of dmethods.VersionCompare
-#--------------------------------------------------------------- Variables (END)
+#endregion --------------------------------------------------------- Variables
 
-
-
-# ----------- Fonts. Set from Umsap.py because it requires a wx.App object
+#region --------- Fonts. Set from Umsap.py because it requires a wx.App object
 font = {
 }
-# ----------- Fonts. Set from Umsap.py because it requires a wx.App object (END)
+#endregion ------ Fonts. Set from Umsap.py because it requires a wx.App object
 
-
-
-# ----------- Pointers. Fill in Umsap.py to avoid importing modules here
+#region ----------- Pointers. Fill in Umsap.py to avoid importing modules here
 pointer = { # pointer to methods in different classes to avoid repeating if statements 
 	'menu' : {
 		'toolmenu' : {}, # Tool menus for main menubar
@@ -2486,8 +2419,7 @@ pointer = { # pointer to methods in different classes to avoid repeating if stat
 		'WinCreate' : {}, # Methods to create a window
 	},
 }
-# ----------- Pointers. Fill in Umsap.py to avoid importing modules here (END)
-
+#endregion -------- Pointers. Fill in Umsap.py to avoid importing modules here
 
 
 # ------------------------------------------------------------------------------
@@ -2495,11 +2427,11 @@ pointer = { # pointer to methods in different classes to avoid repeating if stat
 # ------------------------------------------------------------------------------		
 
 
-
 # These dicts are saved/load to/from the configuration file
 # The values here are to start the app for the first time
 # They must be a dict to save/load with json in/from the configuration file
 
+#region -------------------------------------------- User configurable options
 general = { # General options
 	'checkUpdate' : 1 # 1 Check, 0 No check 
 }
@@ -2576,13 +2508,12 @@ cutpropU = { # Options for the cleavages per residue plot
 	'Char'     : '*',
 	'CharColor': 'RED'
 }
-
+#endregion ----------------------------------------- User configurable options
 
 
 # ------------------------------------------------------------------------------
 # Methods
 # ------------------------------------------------------------------------------		
-
 
 
 def ConfigLoad(file):

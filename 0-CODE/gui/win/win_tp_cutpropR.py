@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,40 +12,29 @@
 """ This module generate a graphical output for a cutprop file """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import pandas as pd
 from pathlib import Path
-## My modules
+
 import config.config     as config
 import gui.menu.menu     as menu
 import gui.gui_classes   as gclasses
 import gui.gui_methods   as gmethods
 import data.data_methods as dmethods
 import data.data_classes as dclasses 
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinCutPropRes(gclasses.WinGraph):
 	""" Creates the window to show the results in a .cutprop file """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the .cutprop file (string or Path) """
 	 #--> Initial Setup
 		self.name = config.name['CutPropRes']
 		super().__init__(file)
+	 #---
 	 #--> Variables
 		self.data    = self.fileObj.data
 		self.nExp    = self.fileObj.nExp
@@ -59,6 +48,7 @@ class WinCutPropRes(gclasses.WinGraph):
 		self.norm = 0    # 0 Reg 1 Norm 
 		self.exp  = 0    # 0 Total 1, 2, 3 .... 
 		self.comp = None # 0 Total 1, 2, 3 ....
+	 #---
 	 #--> Menu
 		self.menubar = menu.MainMenuBarWithTools(
 			self.name, 
@@ -68,14 +58,18 @@ class WinCutPropRes(gclasses.WinGraph):
 			self.exp, 
 			self.comp)
 		self.SetMenuBar(self.menubar)
+	 #---
 	 #--> Draw
 		self.DrawConfig()
+	 #---
 	 #--> Show	
 		self.Show()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
-	##-- Binding
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- Binding Methods
 	def WinPos(self):
 		""" Set the position of a new window depending on the number of same 
 			windows already open 
@@ -86,55 +80,75 @@ class WinCutPropRes(gclasses.WinGraph):
 		yo = config.size['Screen'][1] - yw + config.size['TaskBarHeight']
 		x = xo - config.win['CutpropResNum'] * config.win['DeltaNewWin']
 		y = yo - config.win['CutpropResNum'] * config.win['DeltaNewWin']
+	 #---
 	 #--> Position
 		self.SetPosition(pt=(x, y))
+	 #---
 	 #--> Number of created windows
 		config.win['CutpropResNum'] = config.win['CutpropResNum'] + 1
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def OnClick(self, event):
 		""" To process click events """
-		if event.button == 3:
 	 #-->
-			Tmenu = menu.ToolMenuCutPropRes(
+		if event.button == 3:
+	 	 #-->
+			Tmenu = menu.ToolsCutRes(
 				self.nExp, 
 				self.seq, 
 				self.norm, 
 				self.exp, 
 				self.comp
 			)
-	 #--> Submenus in pop up menu do not work on Windows
+		 #---
+	 	 #--> Submenus in pop up menu do not work on Windows
 			if config.cOS == 'Windows':
 				for i in ['Experiments', 'Compare to']:
 					Tmenu.DestroyItem(Tmenu.FindItem(i))
 				self.PopupMenu(Tmenu)
 			else:
 				pass
-	 #-->
+		 #---
+	 	 #-->
 			self.PopupMenu(Tmenu)
+		 #---
 		else:
 			pass
+	 #---
+	 #-->
 		return True
+	 #---
 	#---
+	#endregion ----------------------------------------------- Binding Methods
 
-	##-- Menu
-	def OnReset(self, Mid):
+	#region ----------------------------------------------------- Menu Methods
+	def OnReset(self):
 		""" Reset the window 
 			---
 			Mid: ID of the selected menu item (int)
 		"""
+	 #--> Variables
 		self.norm = 0
 		self.seq =  0
 		self.exp =  0
 		self.comp = None
-		self.menubar.Check(503, True)
-		self.menubar.Check(505, True)
-		self.menubar.Check(507, True)
-		self.menubar.Check(Mid+1, True)
+	 #---
+	 #--> Menu
+		self.menubar.Tools.Check(100, True)
+		self.menubar.Tools.Check(200, True)
+		self.menubar.Tools.Check(302, True)
+		self.menubar.Tools.Check(304, True)
+	 #---
+	 #-->
 		self.DrawConfig()
+	 #---
+	 #-->
 		return True
+	 #---
 	#---
 
 	def OnSeq(self, Mid):
@@ -143,10 +157,10 @@ class WinCutPropRes(gclasses.WinGraph):
 			Mid: ID of the selected menu item
 		"""
 		self.menubar.Check(Mid, True)
-		if Mid == 502:
-			self.seq = 2
-		else:
+		if Mid == 302:
 			self.seq = 0
+		else:
+			self.seq = 2
 		self.DrawConfig()
 		return True
 	#---
@@ -157,7 +171,7 @@ class WinCutPropRes(gclasses.WinGraph):
 			Mid: ID of the selected menu item 
 		"""
 		self.menubar.Check(Mid, True)
-		if Mid == 504:
+		if Mid == 303:
 			self.norm = 1
 		else:
 			self.norm = 0
@@ -171,19 +185,19 @@ class WinCutPropRes(gclasses.WinGraph):
 			Mid: ID of the selected menu item (int)
 		"""
 		self.menubar.Check(Mid, True)
-		self.exp = Mid - 507
+		self.exp = Mid - 100
 		self.DrawConfig()
 		return True
 	#--- 
 
-	def OnComp(self, Mid, rMid):
+	def OnComp(self, Mid):
 		""" Changes the plot if comp changes 
 			---
 			Mid: ID of the selected menu item (int)
 			rMid: reference ID (int)
 		"""
 		self.menubar.Check(Mid, True)
-		val = Mid - rMid - 1
+		val = Mid - 200
 		if val == 0:
 			self.comp = None
 		else:
@@ -191,8 +205,9 @@ class WinCutPropRes(gclasses.WinGraph):
 		self.DrawConfig()
 		return True
 	#---
-
-	##-- Plot
+	#endregion ----------------------------------------------- Binding Methods
+	
+	#region ----------------------------------------------------- Plot Methods
 	def DrawConfig(self):
 		""" Configure the plot """
 	 #--> Variables
@@ -208,9 +223,11 @@ class WinCutPropRes(gclasses.WinGraph):
 			val = 'Absolute values'
 		else:
 			val = 'Normalized values'
+	 #---
 	 #--> x values
 		xcol = int(self.seq / 2)
 		self.x = self.data.iloc[:,xcol]
+	 #---
 	 #--> Get exp or FP values
 		if self.exp == 0:
 			indy = config.cutprop['NColFPStart'] + self.seq + self.norm
@@ -223,6 +240,7 @@ class WinCutPropRes(gclasses.WinGraph):
 			yTitle = "Experiment " + str(self.exp)
 			self.title = (yTitle + "\n(" + prot + ", " +  val + ")")
 		self.y = self.data.iloc[:,indy]
+	 #---
 	 #--> Comparison
 		if self.comp is None:
 			self.z = None
@@ -238,15 +256,18 @@ class WinCutPropRes(gclasses.WinGraph):
 				self.title = (yTitle + " vs Experiment " + str(self.comp) 
 					+  "\n(" + prot + ", " +  val + ")")
 			self.z = self.data.iloc[:,indz]
+	 #---
 	 #--> Coordinates of the highlight symbol
 		self.charXY, self.charY = self.DrawConfigHelper(self.y)
 		if self.z is None:
 			pass
 		else:
 			self.charXZ, self.charZ = self.DrawConfigHelper(self.z)
+	 #---
 	 #--> Draw & Return
 		self.Draw() 
 		return True
+	 #---
 	#---
 
 	def DrawConfigHelper(self, y):
@@ -265,8 +286,10 @@ class WinCutPropRes(gclasses.WinGraph):
 		""" Draw the plot """
 	 #--> Clear
 		self.ClearPlot()
+	 #---
 	 #--> Title
 		self.axes.set_title(self.title)
+	 #---
 	 #--> Draw
 		#---# Improve two colors to highlight the nat and rec sequence (Down)
 		self.axes.plot(self.x, self.y, 'b-', label=self.labelxy)
@@ -276,16 +299,19 @@ class WinCutPropRes(gclasses.WinGraph):
 			self.axes.plot(self.x, self.z, 'r-', label=self.labelxz)
 			self.axes.legend(loc='upper left', bbox_to_anchor=(1, 1))
 		#---# Improve two colors to highlight the nat and rec sequence (Up)			
+	 #---
 	 #--> Plot highlight
 		self.DrawHelper(self.charXY, self.charY)
 		if self.z is None:
 			pass
 		else:
 			self.DrawHelper(self.charXZ, self.charZ)
+	 #---
 	 #--> Axis, draw & return
 		self.SetAxis()
 		self.canvas.draw()
 		return True
+	 #---
 	#---
 
 	def DrawHelper(self, x, y):
@@ -307,6 +333,7 @@ class WinCutPropRes(gclasses.WinGraph):
 		self.axes.grid(True, linestyle=':')
 		self.axes.set_xlabel('Residue number', fontweight='bold')
 		self.axes.set_ylabel('Number of cleavages', fontweight='bold')
+	 #---
 	 #--> Vertical lines to be removed if you managed bocolored line
 		#---# Improve two colors to highlight the nat and rec sequence (Down)
 		if self.seq == 0 and self.natProt:
@@ -328,12 +355,15 @@ class WinCutPropRes(gclasses.WinGraph):
 		else:
 			pass
 		#---# Improve two colors to highlight the nat and rec sequence (Up)
+	 #---
 	 #-->
 		self.axes.relim()
 		self.axes.set_xlim([self.pRes[0], self.pRes[3]])
 		self.axes.autoscale_view(scalex=False)
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def UpdateStatusBar(self, event):
@@ -411,6 +441,7 @@ class WinCutPropRes(gclasses.WinGraph):
 					xo = str(x) + ' (NA)'			
 		return xo
 	#--- 
+	#endregion -------------------------------------------------- Plot Methods
 #---
 
 

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,47 +12,34 @@
 """ This module creates the window for the TarProt module of the app """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import wx
 import pandas as pd
-## My modules
+
 import config.config      as config
 import gui.menu.menu      as menu
 import gui.gui_classes    as gclasses
 import gui.gui_methods    as gmethods
 import data.data_classes  as dclasses
 import data.data_methods  as dmethods
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinTarProt(gclasses.WinModule):
 	""" Creates the window for the TarProt module of the app. """ 
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=None):
 		""" parent: parent of the widgets
 			style: style of the windows
 		"""
 	 #--> Initial Setup
 		self.name  = config.name['TarProt']
-		super().__init__(parent=parent, style=style)
+		super().__init__(parent=parent, name=self.name, style=style)
+	 #---
 	 #--> Variables
 		self.CType = config.combobox['ControlType'][0] # Needed for self.CheckGuiResultControl
-	 #--> Menu
-		self.menubar = menu.MainMenuBarWithTools(self.name)
-		self.SetMenuBar(self.menubar)
+	 #---
 	 #--> Sizers
 	  #--> Central static boxes
 	   #--> Files
@@ -83,6 +70,7 @@ class WinTarProt(gclasses.WinModule):
 			flag=wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxFilesWid.Add(self.tcOutName,        border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)		
+	   #---
 	   #--> Values
 		self.sizerboxValuesWid = wx.FlexGridSizer(4, 4, 1, 1)
 		self.sizerboxValues.Add(self.sizerboxValuesWid, border=2, 
@@ -119,6 +107,7 @@ class WinTarProt(gclasses.WinModule):
 			flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxValuesWid.Add(self.tcPDB      , border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+	   #---
 	   #--> Columns
 		self.sizerboxColumnsWid = wx.GridBagSizer(1, 1)
 		self.sizerboxColumns.Add(self.sizerboxColumnsWid, border=2, 
@@ -148,14 +137,20 @@ class WinTarProt(gclasses.WinModule):
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerboxColumnsWid.Add(self.buttonResultsL,  pos=(5,2), border=2, 
 			flag=wx.ALIGN_RIGHT|wx.ALL)
-	   #--> Fit
+	   #---
+	  #---
+	  #--> Fit
 		self.sizer.Fit(self)
+	  #---
+	 #---
 	 #--> Tooltips
 		self.stResults.SetToolTip(config.tooltip[self.name]['Results'])
+	 #---
 	 #--> Bind
 		self.buttonPDBFile.Bind(wx.EVT_BUTTON, self.OnPDBFile)
 		for child in self.GetChildren():
 			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+	 #---
 	 #--> Initial default values
 		self.tcSeqNatFile.SetValue('NA')
 		self.tcPDBFile.SetValue('NA')
@@ -164,15 +159,16 @@ class WinTarProt(gclasses.WinModule):
 		self.tcHistWin.SetValue('NA') 
 		self.tcPDB.SetValue('NA')
 		self.tcScoreVal.SetValue('0') 
+	 #---
 		
-		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!!
+	 
+	 #--> INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! ##########
+		import getpass
+		user = getpass.getuser()
 		if config.cOS == 'Darwin':
-			# self.tcDataFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt') 
-			# self.tcSeqRecFile.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-seq.txt')
-			# self.tcOutputFF.SetLabel('/Users/bravo/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
-			self.tcDataFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')
-			self.tcSeqRecFile.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-seq.txt')
-			self.tcOutputFF.SetLabel('/Users/kenny/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
+			self.tcDataFile.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')
+			self.tcSeqRecFile.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-seq.txt')
+			self.tcOutputFF.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
 		elif config.cOS == 'Windows':
 			from pathlib import Path
 			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/TarProt/Mod-Enz-Dig-data-ms.txt'))) 
@@ -196,13 +192,17 @@ class WinTarProt(gclasses.WinModule):
 		self.tcColExt.SetLabel('0 1 2 3 4-10')
 		self.tcResults.SetLabel('98-105; 109-111; 112 113 114; 115-117 120')
 		#self.tcResults.SetLabel('98-104; 106 107; 108 109; 110 111; 112 113; 114 115; 116 117; 118 119')
-		################################################################################ INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! 
+	 #--- INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! ##########
+	 
+	 
 	 #--> Show
 		self.Show()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
-	##-- Bind
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- Binding Methods
 	def OnClearFilesDef(self):
 		""" Specific clear for Files section for this module """
 		self.tcPDBFile.SetValue('NA')
@@ -231,14 +231,6 @@ class WinTarProt(gclasses.WinModule):
 		return True
 	#---
 
-	def OnPopUpMenu(self, event):
-		""" Show the pop up menu in the wx.ListCtrl. Binding is done in
-			the base class 
-		"""
-		self.PopupMenu(menu.ToolMenuTarProtMod())
-		return True
-	#---
-
 	def OnPDBFile(self, event):
 		""" Select the pdb file """
 		if gmethods.TextCtrlFromFF(self.tcPDBFile, 
@@ -247,15 +239,17 @@ class WinTarProt(gclasses.WinModule):
 		else:
 			return False
 	#---
+	#endregion ----------------------------------------------- Binding Methods
 
-	##-- Menu (Other methods in gclasses.WinModule)
+	#region ----------------------------------------------------- Menu Methods
 	def OnSaveInputF(self):
 		""" Save the .uscr file with the data in the window """
 	 #--> Variables
 		k = True
 		dlg = gclasses.DlgSaveFile(config.extLong['Uscr'])
-	 #--> Initial data & path to the uscr file
+	 #---
 		if dlg.ShowModal() == wx.ID_OK:
+		 #--> Initial data & path to the uscr file
 			temp = {
 				          'Data file' :   self.tcDataFile.GetValue(),       
 				     'Sequence (rec)' : self.tcSeqRecFile.GetValue(),     
@@ -278,19 +272,23 @@ class WinTarProt(gclasses.WinModule):
 				            'Results' :    self.tcResults.GetValue(),
 				             'Module' : config.mod[config.name['TarProt']]	
 			}
-	 #--> Write
+	 	 #---
+	 	 #--> Write
 			if dmethods.FFsWriteDict2Uscr(dlg.GetPath(), iDict=temp):
 				k = True
 			else:
 				k = False
+		 #---
 		else:
 			k = False
 	 #--> Destroy & Return
 		dlg.Destroy()
 		return k
+	 #---
 	#---
+	#endregion -------------------------------------------------- Menu Methods
 
-	###--- Run
+	#region ------------------------------------------------------ Run Methods
 	def CheckInput(self):
 		""" """
 	 #--> Files and Folders
@@ -304,6 +302,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Sequence (rec)
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Sequence (rec)', 1)
@@ -314,6 +313,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False		
+	  #---
 	  #--> Sequence (nat)
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Sequence (nat)', 1)
@@ -325,6 +325,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False		
+	  #---
 	  #--> PDB file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: PDB file', 1)
@@ -336,6 +337,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Output folder
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Output folder', 1)
@@ -346,6 +348,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False		
+	  #---
 	  #--> Output name
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Output name', 1)
@@ -356,6 +359,8 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False		
+	  #---
+	 #---
 	 #--> Values
 	  #--> Target protein
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -365,7 +370,8 @@ class WinTarProt(gclasses.WinModule):
 			config.dictCheckFatalErrorMsg[self.name]['Targetprotein']):
 			pass
 		else:
-			return False	
+			return False
+	  #---	
 	  #--> Score value
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Score value', 1)
@@ -375,6 +381,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False	
+	  #---
 	  #--> Data normalization
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Data normalization', 1)
@@ -385,12 +392,14 @@ class WinTarProt(gclasses.WinModule):
 			cbalO = cbal
 		self.d['Datanorm'] = cbal
 		self.do['Datanorm'] = cbalO
+	  #---
 	  #--> alpha value
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: alpha value', 1)
 		cbal = self.cbaVal.GetValue()
 		self.d['aVal'] = cbal
 		self.do['aVal'] = float(cbal)
+	  #---
 	  #--> Positions
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Positions', 1)
@@ -403,6 +412,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Sequence length
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Sequence length', 1)
@@ -415,6 +425,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Histogram windows
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Histogram windows', 1)
@@ -433,6 +444,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	   #---
 	   #--> When only one value if 0 --> None
 		if self.do['Histogramwindows'] is not None:
 			if (len(self.do['Histogramwindows']) == 1 and 
@@ -442,6 +454,8 @@ class WinTarProt(gclasses.WinModule):
 				pass
 		else:
 			pass
+	   #---
+	  #---
 	  #--> PDB ID
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: PDB ID', 1)
@@ -456,6 +470,8 @@ class WinTarProt(gclasses.WinModule):
 			self.do['PDBID'] = [None, None]
 		else:
 			pass
+	  #---
+	 #---
 	 #--> Columns
 	  #--> Sequences
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -469,7 +485,8 @@ class WinTarProt(gclasses.WinModule):
 			NA   = config.dictElemSeqCol[self.name]['NA']):
 			pass
 		else:
-			return False		
+			return False
+	  #---		
 	  #--> Detected protein
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Detected proteins', 1)
@@ -483,6 +500,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False		
+	  #---
 	  #--> Score
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Score', 1)
@@ -496,6 +514,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Columns to extract
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Columns to extract', 1)		
@@ -513,6 +532,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Results 
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Results', 1)
@@ -534,9 +554,13 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	   #---
 	   #--> Final setting
 		self.do['Control'] = dmethods.ListFlatNLevels(self.do['Control'],1)[1]
 		self.do['Results'] = dmethods.ListFlatNLevels(self.do['Results'],1)[1]
+	   #---
+	  #---
+	 #---
 	 #--> Repeating element
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Unique column numbers', 1)
@@ -549,14 +573,17 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	 #---
 	 #--> Variables needed below
 		self.l = l 
 		if self.do['ColExtract'] == None:
 			self.lcExt = self.l
 		else:
 			self.lcExt = self.l + self.do['ColExtract']
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---					
 
 	def ReadInputFiles(self):
@@ -568,12 +595,14 @@ class WinTarProt(gclasses.WinModule):
 			self.dataFileObj = dclasses.DataObjDataFile(self.do['Datafile'])
 		except Exception:
 			return False
+	 #---
 	 #--> Check column numbers
 		if self.CheckGuiColNumbersInDataFile(self.lcExt, self.dataFileObj.nCols,
 			config.dictCheckFatalErrorMsg[self.name]['ColNumber']):
 			pass
 		else:
 			return False
+	 #---
 	 #--> Seq rec file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Reading input files: Recombinant sequence', 1)
@@ -582,6 +611,7 @@ class WinTarProt(gclasses.WinModule):
 				seqP=self.do['Seq_rec'])
 		except Exception as e:
 			return False
+	 #---
 	 #--> Seq nat file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Reading input files: Native sequence', 1)
@@ -593,6 +623,7 @@ class WinTarProt(gclasses.WinModule):
 				return False
 		else:
 			pass
+	 #---
 	 #--> PDB file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Reading input files: PDB file', 1)
@@ -607,7 +638,11 @@ class WinTarProt(gclasses.WinModule):
 				pass
 			else:
 				return False
+	  #---
+	 #---
+	 #-->
 		return True
+	 #---
 	#---
 
 	def SetVariable(self):
@@ -616,6 +651,7 @@ class WinTarProt(gclasses.WinModule):
 			'Setting up the analysis: Data frame', 1)
 	 #--> Dict for data frame type assigment
 		self.DtypeDictBuilder()
+	 #---
 	 #--> Data frame	
 		out, self.dataV = dmethods.DFSelFilterNSet(self.dataFileObj.dataFrame,
 			self.l, 
@@ -627,10 +663,12 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	 #---
 	 #--> Data frame dimension
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Data frame dimension', 1)
 		self.tentry, self.tcol = self.dataV.shape
+	 #---
 	 #--> Sequences
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Recombinant sequence', 1)
@@ -640,6 +678,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			self.natSeqSeq = self.natSeqObj.seq
+	 #---
 	 #--> Seq Length
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Sequence lengths', 1)
@@ -648,6 +687,7 @@ class WinTarProt(gclasses.WinModule):
 		else:
 			self.do['protSeqLength'] = (self.recSeqObj.seqLength, 
 			self.natSeqObj.seqLength)
+	 #---
 	 #--> Prot Loc & mist
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Protein location and mistmatch', 1)
@@ -661,24 +701,29 @@ class WinTarProt(gclasses.WinModule):
 				pass
 			else:
 				return False
+	 #---
 	 #--> nExp
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Number of experiments', 1)
 		self.nExp = len(self.do['Results'])
+	 #---
 	 #--> Output header
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting up the analysis: Output header', 1)
 		i = 0
 		self.colOut, self.colOutExpIndex = dmethods.ListColHeaderTarProtFile(
 			self.nExp)
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DtypeDictBuilder(self):
 		""" Creates the dtype dict to convert the data type in the dataFrame """
 	 #--> Get columns name
 		self.header = self.dataFileObj.header
+	 #---
 	 #--> Create dict
 		self.dtypeDict = {
 			self.header[self.do['SeqCol']] : 'object',
@@ -691,8 +736,10 @@ class WinTarProt(gclasses.WinModule):
 		out, res = dmethods.ListFlatNLevels(self.do['Results'])
 		for a in res:
 			self.dtypeDict[self.header[a]] = 'float'
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def RunAnalysis(self):
@@ -709,6 +756,7 @@ class WinTarProt(gclasses.WinModule):
 			pass
 		else:
 			return False
+	 #---
 	 #--> Run analysis
 		rows = []
 		i = 1
@@ -721,12 +769,15 @@ class WinTarProt(gclasses.WinModule):
 			else:
 				return False
 			i += 1
+	 #---
 	 #--> Create & sort data frame
 		self.dataO = pd.DataFrame(rows, columns=self.colOut)
 		self.dataO.sort_values(by=config.tarprot['SortBy'], inplace=True)
 		self.dataO.reset_index(drop=True, inplace=True)
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def RunAnalysisFunction(self, row):
@@ -736,6 +787,7 @@ class WinTarProt(gclasses.WinModule):
 		"""
 	 #--> Output list
 		rowO = []
+	 #---
 	 #--> N, C, Nfix and Cfix
 		tseq = row[0]
 		tscore = row[2]
@@ -761,6 +813,7 @@ class WinTarProt(gclasses.WinModule):
 			msg = config.dictCheckFatalErrorMsg[self.name]['NoPeptInRecSeq']
 			gclasses.DlgFatalErrorMsg(msg, seq=tseq)
 			return [False]
+	 #---
 	 #--> Control
 		control = []
 		s = 3
@@ -768,6 +821,7 @@ class WinTarProt(gclasses.WinModule):
 			control.append(row[s])
 			s += 1
 		rowO.append(control)
+	 #---
 	 #--> Exp
 		for j in self.do['Results']:
 			exp = []
@@ -781,11 +835,14 @@ class WinTarProt(gclasses.WinModule):
 			resexp.append(res)
 			resexp.append(exp)
 			rowO.append(resexp) 
+	 #---
 	 #--> Sequence and Score
 		rowO.append(tseq)
 		rowO.append(tscore)
+	 #---
 	 #--> Return
 		return [True, rowO]
+	 #---
 	#---
 
 	def WriteOF(self):
@@ -793,6 +850,7 @@ class WinTarProt(gclasses.WinModule):
 			'Writing output files', 1)
 	 #--> Create output folder
 		self.do['Outputfolder'].mkdir()
+	 #---
 	 #--> Intermediate files
 		folderD = self.do['Outputfolder'] / 'Data_Steps'
 		folderD.mkdir()
@@ -802,6 +860,7 @@ class WinTarProt(gclasses.WinModule):
 		dmethods.FFsWriteCSV(file, self.dataN)
 		file = folderD / 'data-02-Results.txt'
 		dmethods.FFsWriteCSV(file, self.dataO)		
+	 #---
 	 #--> tarprot file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Writing output files: tarprot file', 1)
@@ -815,8 +874,10 @@ class WinTarProt(gclasses.WinModule):
 			'R' : self.dataO.to_dict()
 			}
 		dmethods.FFsWriteJSON(self.tarprotFile, data)
+	 #---
 	 #--> Create tarprot object
 		self.tarprotObj = dclasses.DataObjTarProtFile(self.tarprotFile)
+	 #---
 	 #--> uscr file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Writing output files: uscr file', 1)
@@ -825,6 +886,7 @@ class WinTarProt(gclasses.WinModule):
 			iDict=self.tarprotObj.Fdata['I'],
 			hDict=config.dictUserInput2UscrFile[self.name]
 		)
+	 #---
 	 #--> Short data files
 		if self.do['ColExtract'] is None:
 			pass
@@ -835,21 +897,24 @@ class WinTarProt(gclasses.WinModule):
 			self.dataOutFolder = self.do['Outputfolder'] / 'Data'
 			self.dataOutFolder.mkdir()
 			self.tarprotObj.ToSDataFile(self.dataOutFolder)
+	 #---
 	 #--> Check if there is something else to write
 		if self.tarprotObj.checkFP:
-	  #--> filtpept file
+	  	 #--> filtpept file
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Writing output files: filtpept file', 1)
 			self.filtpeptFile = self.tarprotFile.with_suffix(
 				config.extShort['FiltPept'][0])
 			self.tarprotObj.TarProt2FiltPept(self.filtpeptFile)
-	  #--> cutprop file
+		 #---
+	  	 #--> cutprop file
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Writing output files: cutprop file', 1)
 			self.cutpropFile = self.tarprotFile.with_suffix(
 				config.extShort['CutProp'][0])
 			self.tarprotObj.TarProt2CutProp(self.cutpropFile)
-	  #--> aadist file
+		 #---
+	  	 #--> aadist file
 			if self.do['Positions'] is None:
 				pass
 			else:
@@ -861,7 +926,8 @@ class WinTarProt(gclasses.WinModule):
 					pass
 				else:
 					return False
-	  #--> histograms				
+	  	 #---
+		 #--> histograms				
 			if self.do['Histogramwindows'] is None:
 				pass
 			else:
@@ -871,7 +937,8 @@ class WinTarProt(gclasses.WinModule):
 				self.histoFile = self.tarprotFile.with_suffix(
 					config.extShort['Histo'][0])
 				self.tarprotObj.TarProt2HistoFile(self.histoFile)
-	  #--> sequence alignments
+		 #---
+	  	 #--> sequence alignments
 			if self.do['Sequencelength'] is None:
 				pass
 			else:
@@ -881,7 +948,8 @@ class WinTarProt(gclasses.WinModule):
 				self.seqAOutFolder = self.do['Outputfolder'] / 'Sequences'
 				self.seqAOutFolder.mkdir()
 				self.tarprotObj.TarProt2SeqAlign(self.seqAOutFolder)
-	  #--> PDB
+	  	 #---
+		 #--> PDB
 			if self.do['PDBID'][1] is None:
 				pass
 			else:
@@ -898,8 +966,10 @@ class WinTarProt(gclasses.WinModule):
 				nothing='E',
 			)
 			return False
-	  #--> Return
+	 #---
+	 #--> Return
 		return True		
+	 #---
 	#---
 
 	def ShowRes(self):
@@ -908,20 +978,22 @@ class WinTarProt(gclasses.WinModule):
 			'Generating graphical output', 1)
 	 #--> Check if there is anything to show
 		if self.tarprotObj.checkFP:
-	 #--> .tarprot
+	 	 #--> .tarprot
 			gmethods.UpdateGaugeText(self.gauge, self.stProgress,
 				'Generating graphical output: tarprot file', 1)
 			wx.Yield()
 			gmethods.WinGraphResCreate(config.name['TarProtRes'], 
 				self.tarprotFile)	
-	 #--> cutprop
+	 	 #---
+		 #--> cutprop
 			gmethods.UpdateGaugeText(self.gauge, self.stProgress,
 				'Generating graphical output: cutprop file', 1)
 			wx.Yield()
 			gmethods.WinGraphResCreate(config.name['CutPropRes'], 
 				self.cutpropFile)
+		 #---
+		 #--> histo
 			if self.do['Histogramwindows'] != None:
-	 #--> histo
 				gmethods.UpdateGaugeText(self.gauge, self.stProgress,
 					'Generating graphical output: histo file', 1)
 				wx.Yield()
@@ -929,7 +1001,8 @@ class WinTarProt(gclasses.WinModule):
 					self.histoFile)
 			else:
 				pass
-	 #--> aadist
+		 #---
+	 	 #--> aadist
 			if self.do['Positions']:
 				gmethods.UpdateGaugeText(self.gauge, self.stProgress,
 					'Generating graphical output: aadist file', 1)
@@ -938,11 +1011,15 @@ class WinTarProt(gclasses.WinModule):
 					self.aadistFile)							
 			else:
 				pass
+		 #---
 		else:
 			pass
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
+	#endregion --------------------------------------------------- Run Methods
 #---
 
 
