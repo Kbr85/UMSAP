@@ -108,7 +108,6 @@ class UtilTarProt(wx.Menu):
 		self.aaDist  = self.Append(-1, 'AA Distribution')
 		self.cutRes  = self.Append(-1, 'Cleavages per Residue')
 		self.cut2Pdb = self.Append(-1, 'Cleavages to PDB Files')
-		self.fpList  = self.Append(-1, 'Filtered Peptide List')
 		self.histo   = self.Append(-1, 'Histograms')
 		self.seqAli  = self.Append(-1, 'Sequence Alignments')
 		self.AppendSeparator()
@@ -118,8 +117,7 @@ class UtilTarProt(wx.Menu):
 	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnAAdist,       source=self.aaDist)
 		self.Bind(wx.EVT_MENU, self.OnCutRes,       source=self.cutRes)
-		self.Bind(wx.EVT_MENU, self.OnCut2Pdb,      source=self.cut2Pdb)	
-		self.Bind(wx.EVT_MENU, self.OnFPList,       source=self.fpList)			
+		self.Bind(wx.EVT_MENU, self.OnCut2Pdb,      source=self.cut2Pdb)		
 		self.Bind(wx.EVT_MENU, self.OnHisto,        source=self.histo)
 		self.Bind(wx.EVT_MENU, self.OnSeqAli,       source=self.seqAli)
 		self.Bind(wx.EVT_MENU, self.OnUpdateRes,    source=self.updateRes)
@@ -149,14 +147,6 @@ class UtilTarProt(wx.Menu):
 		"""
 		gmethods.WinMUCreate(config.name['Cuts2PDB'])	
 		return True
-	#---
-
-	def OnFPList(self, event):
-		""" Reads a .tarprot file and creates a .filtpept file """	
-		if gmethods.MenuOnFPList():
-			return True
-		else:
-			return False
 	#---
 
 	def OnHisto(self, event):
@@ -203,12 +193,14 @@ class UtilGeneral(wx.Menu):
 	 #--> Menu items
 		self.corrA   = self.Append(-1, 'Correlation Analysis')
 		self.inputF  = self.Append(-1, 'Create Input File')
+		self.export  = self.Append(-1, 'Export Data')
 		self.mergeAA = self.Append(-1, 'Merge aadist Files')
 		self.shortDF = self.Append(-1, 'Short Data Files')
 	 #---
 	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnCorrA,   source=self.corrA)	 
 		self.Bind(wx.EVT_MENU, self.OnInputF,  source=self.inputF)
+		self.Bind(wx.EVT_MENU, self.OnExport,  source=self.export)
 		self.Bind(wx.EVT_MENU, self.OnMergeAA, source=self.mergeAA)
 		self.Bind(wx.EVT_MENU, self.OnShortDF, source=self.shortDF)
 	 #---
@@ -228,6 +220,12 @@ class UtilGeneral(wx.Menu):
 			return True
 		else:
 			return False
+	#---
+
+	def OnExport(self, event):
+		""" Export data from the json format to csv """
+		gmethods.MenuOnExport()
+		return True
 	#---
 
 	def OnMergeAA(self, event):
