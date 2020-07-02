@@ -1039,7 +1039,23 @@ class DataObjCorrFile():
 	 #---
 	 #--> fileD
 		self.fileD = Path(self.Fdata['CI']['Datafile'])
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True
 	 #---> Return
+		return True
+	 #---
+	#---
+
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+
+	 #--> Write
+		dmethods.FFsWriteCSV(fPath, self.data)
+	 #---
+	 #--> Return
 		return True
 	 #---
 	#---
@@ -2336,8 +2352,11 @@ class DataObjProtProfFile(MyModules):
 	 #---
 	#---
 
-	def ExportData(self, path):
-		""" Export the data results to a csv format """
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
 
 	 #--> Get new df with correct labels
 		df = self.dataFrame.copy()
@@ -2345,7 +2364,7 @@ class DataObjProtProfFile(MyModules):
 		df.rename(columns=self.col4Export[2], level=2, inplace=True)
 	 #---
 	 #--> Write
-		dmethods.FFsWriteCSV(path, df)
+		dmethods.FFsWriteCSV(fPath, df)
 	 #---
 	 #--> Return
 		return True

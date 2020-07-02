@@ -469,16 +469,16 @@ class CorrAResExport(wx.Menu):
 	 #--> Menu items & Bind
 		for k, e in config.modules.items():
 			self.Append(k, e)
-			self.Bind(wx.EVT_MENU, self.OnExport, id=k)
+			self.Bind(wx.EVT_MENU, self.OnExportColumn, id=k)
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
 
 	#region -------------------------------------------------------- MyMethods
-	def OnExport(self, event):
+	def OnExportColumn(self, event):
 		""" Export columns in the correlation plot """	
 		win = self.GetWindow()
-		if win.OnExport(event.GetId()):
+		if win.OnExportColumn(event.GetId()):
 			return True
 		else:
 			return True
@@ -1050,17 +1050,28 @@ class ToolsCorrARes(wx.Menu):
 	 #---
 	 #--> Menu items
 		self.Export = CorrAResExport()
-		self.AppendSubMenu(self.Export, 'Export Data to')
+		self.AppendSubMenu(self.Export, 'Export Columns to')
+		self.expData = self.Append(-1, 'Export Data')
 		self.AppendSeparator()
 		self.saveImg = self.Append(-1, 'Save Plot Image')
 	 #---
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnSavePlot, source=self.saveImg)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot,   source=self.saveImg)
+		self.Bind(wx.EVT_MENU, self.OnExportData, source=self.expData)
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
 
 	#region ------------------------------------------------------- My Methods
+	def OnExportData(self, event):
+		""" Export data to csv format """
+		win = self.GetWindow()
+		if win.OnExportData():
+			return True
+		else:
+			return False
+	#---
+
 	def OnSavePlot(self, event):
 		""" Save image of the plot """
 		win = self.GetWindow()

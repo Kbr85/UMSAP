@@ -219,6 +219,7 @@ class SplashWindow(wx.adv.SplashScreen):
 			config.name['TarProtRes']	  : dclasses.DataObjTarProtFile,
 			config.extShort['TarProt'][0] : dclasses.DataObjTarProtFile,
 			config.name['CorrARes']	      : dclasses.DataObjCorrFile,
+			config.extShort['CorrA'][0]	  : dclasses.DataObjCorrFile,
 			config.name['CutPropRes']	  : dclasses.DataObjCutpropFile,
 			config.name['AAdistR']		  : dclasses.DataObjAAdistFile,
 			config.name['HistoRes']	      : dclasses.DataObjHistFile,
