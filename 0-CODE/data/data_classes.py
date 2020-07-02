@@ -2335,6 +2335,22 @@ class DataObjProtProfFile(MyModules):
 		return col
 	 #---
 	#---
+
+	def ExportData(self, path):
+		""" Export the data results to a csv format """
+
+	 #--> Get new df with correct labels
+		df = self.dataFrame.copy()
+		df.rename(columns=self.col4Export[1], level=1, inplace=True)
+		df.rename(columns=self.col4Export[2], level=2, inplace=True)
+	 #---
+	 #--> Write
+		dmethods.FFsWriteCSV(path, df)
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---
 	#endregion ---------------------------------------------------- My Methods
 #---
 
