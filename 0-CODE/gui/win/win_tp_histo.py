@@ -144,7 +144,7 @@ class WinHisto(gclasses.WinUtilUno):
 	def WriteOF(self):
 		""" Write the output """
 	 #--> Check if there is something to write
-		if self.tarprotObj.checkFP:
+		if self.tarprotObj.checkExport:
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Writing output files: hist file', 1)
 	 #---
@@ -164,7 +164,7 @@ class WinHisto(gclasses.WinUtilUno):
 	def ShowRes(self):
 		""" Show graph results """
 	 #--> Check if there is something to show & Show
-		if self.tarprotObj.checkFP:
+		if self.tarprotObj.checkExport:
 			gmethods.UpdateGaugeText(self.gauge, self.stProgress,
 				'Generating graphical output', 1)			
 			gmethods.WinGraphResCreate(config.name['HistoRes'], 

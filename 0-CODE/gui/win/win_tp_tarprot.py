@@ -899,13 +899,13 @@ class WinTarProt(gclasses.WinModule):
 			self.tarprotObj.ToSDataFile(self.dataOutFolder)
 	 #---
 	 #--> Check if there is something else to write
-		if self.tarprotObj.checkFP:
+		if self.tarprotObj.checkExport:
 	  	 #--> filtpept file
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
-				'Writing output files: filtpept file', 1)
-			self.filtpeptFile = self.tarprotFile.with_suffix(
-				config.extShort['FiltPept'][0])
-			self.tarprotObj.TarProt2FiltPept(self.filtpeptFile)
+				'Writing output files: summary data file', 1)
+			self.exportDataFile = self.tarprotFile.with_suffix(
+				config.extShort['Data'][0])
+			self.tarprotObj.ExportData(self.exportDataFile)
 		 #---
 	  	 #--> cutprop file
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -977,7 +977,7 @@ class WinTarProt(gclasses.WinModule):
 		gmethods.UpdateGaugeText(self.gauge, self.stProgress,
 			'Generating graphical output', 1)
 	 #--> Check if there is anything to show
-		if self.tarprotObj.checkFP:
+		if self.tarprotObj.checkExport:
 	 	 #--> .tarprot
 			gmethods.UpdateGaugeText(self.gauge, self.stProgress,
 				'Generating graphical output: tarprot file', 1)

@@ -873,57 +873,52 @@ def MenuOnUpdateTP():
 
 def MenuOnExport():
 	""" Export data from json to csv """
-	print('Hooked')
-	return True
-#---
 
-# def MenuOnFPList():
-# 	""" Reads a .tarprot file and creates a .filtpept file """
-#  #--> Variables
-# 	k = True	
-# 	dlgi = gclasses.DlgOpenFile(config.msg['Open']['TarProtFile'],
-# 		config.extLong['TarProt'])
-#  #---
-#  #--> Get file Path
-# 	if dlgi.ShowModal() == wx.ID_OK:
-# 		fLoc = Path(dlgi.GetPath())
-#  	 #--> Get output folder
-# 		dlgo = gclasses.DlgSaveFile(config.extLong['FiltPept'])
-# 		if dlgo.ShowModal() == wx.ID_OK:
-# 			fLocO = Path(dlgo.GetPath())
-#  	 	 #--> Create tarprot object
-# 			try:
-# 				fileObj = dclasses.DataObjTarProtFile(fLoc)
-# 			except Exception:
-# 				k = False
-# 		 #---
-#  	 	 #--> Create filter peptide file
-# 			if k:
-# 				if fileObj.checkFP:
-# 					if fileObj.TarProt2FiltPept(fLocO):
-# 						gclasses.DlgSuccessMsg()
-# 					else:
-# 						k = False
-# 				else:
-# 					gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
-# 					k = False				
-# 			else:
-# 				k = False
-# 		 #---
-# 		else:
-# 			k = False
-# 	 #---
-#  #---
-#  #--> Destroy dlgo
-# 		dlgo.Destroy()
-# 	else:
-# 		k = False
-#  #---
-#  #--> Destroy dlgi & Return
-# 	dlgi.Destroy()
-# 	return k
-#  #---
-# #---
+ #--> Variables
+	k = True	
+	dlgi = gclasses.DlgOpenFile(config.msg['Open']['UMSAPFile'],
+		config.extLong['UmsapR'])
+ #---
+ #--> Get file Path
+	if dlgi.ShowModal() == wx.ID_OK:
+		fLoc = Path(dlgi.GetPath())
+ 	 #--> Get output folder
+		dlgo = gclasses.DlgSaveFile(config.extLong['Data'])
+		if dlgo.ShowModal() == wx.ID_OK:
+			fLocO = Path(dlgo.GetPath())
+ 	 	 #--> Create file object
+			try:
+				fileObj = config.pointer['dclasses']['DataObj'][fLoc.suffix](fLoc)
+			except Exception:
+				k = False
+		 #---
+ 	 	 #--> Create filter peptide file
+			if k:
+				if fileObj.checkExport:
+					if fileObj.ExportData(fLocO):
+						gclasses.DlgSuccessMsg()
+					else:
+						k = False
+				else:
+					gclasses.DlgFatalErrorMsg(config.msg['FailExport'])
+					k = False				
+			else:
+				k = False
+		 #---
+		else:
+			k = False
+	 #---
+ #---
+ #--> Destroy dlgo
+		dlgo.Destroy()
+	else:
+		k = False
+ #---
+ #--> Destroy dlgi & Return
+	dlgi.Destroy()
+	return k
+ #---
+#---
 
 def MenuOnCInputFile():
 	""" Reads a module main output file (.tarprot, etc) and creates a .uscr file
@@ -1005,7 +1000,7 @@ def MenuOnCutProp():
  		 #---
 		 #--> Create cutprop file
 			if k:
-				if tarprotObj.checkFP:
+				if tarprotObj.checkExport:
 					if tarprotObj.TarProt2CutProp(fLocO):
 						WinGraphResCreate(config.name['CutPropRes'], fLocO)
 						gclasses.DlgSuccessMsg()

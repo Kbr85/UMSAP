@@ -1545,8 +1545,8 @@ class DataObjLimProtFile(MyModules):
 	 #--> filterPeptDF
 		self.SetfilterPeptDF()
 	 #---
-	 #--> checkFP
-		self.checkFP = True if self.filterPeptDF.shape[0] > 0 else False
+	 #--> checkExport
+		self.checkExport = True if self.filterPeptDF.shape[0] > 0 else False
 	 #---
 	 #--> Lanes
 		self.Lanes = self.Fdata['CI']['Lanes']
@@ -1696,13 +1696,13 @@ class DataObjLimProtFile(MyModules):
 	#---
 
 	#--> filtpept file
-	def LimProt2FiltPept(self, fileO):
+	def ExportData(self, fileO):
 		""" Writes a filtered peptide file
 			---
 			fileO : path to the output file (string or Path)
 		"""
 	 #--> If there is something to export: Format, Export & Return
-		if self.checkFP:
+		if self.checkExport:
 		 #--> Drop columns
 			dropL = ['ttest', 'delta', 'I', 'Control Exp']
 			filterpeptDF = self.filterPeptDF.drop(columns=dropL, level=2)
@@ -1820,7 +1820,7 @@ class DataObjLimProtFile(MyModules):
 	  #--> selected-columns-FP-prot-records
 		name = 'selected-columns-FP-' + targetProtN + '-records.txt'
 		file = folderO / name
-		if self.checkFP:
+		if self.checkExport:
 			dataFSF = dataF[dataF[seqColDN].isin(self.filterPeptDF[seqColTN])]
 			dataFSF = dmethods.DFSelCol(dataFSF, selCol)[1] 
 			dmethods.FFsWriteCSV(file, dataFSF)
@@ -2132,7 +2132,7 @@ class DataObjProtProfFile(MyModules):
 		- fileP      : 
 		- Fdata      : 
 		- dataFrame  : 
-		- checkFP    : check that there are some proteins in self.Fdata['R']
+		- checkExport    : check that there are some proteins in self.Fdata['R']
 		- nConds     : number of conditions in the file
 		- timeP      : number of relevant points per conditions, including the reference
 		- loga       : -log10[aVal]
@@ -2180,8 +2180,8 @@ class DataObjProtProfFile(MyModules):
 		self.dataFrame.reset_index(drop=True, inplace=True)
 	  #---
 	 #---
-	 #-->  checkFP
-		self.checkFP = True if self.dataFrame.shape[0] > 0 else False
+	 #-->  checkExport
+		self.checkExport = True if self.dataFrame.shape[0] > 0 else False
 	 #---
 	 #--> nConds
 		self.nConds = self.Fdata['CI']['NCond']
@@ -2354,7 +2354,7 @@ class DataObjTarProtFile(MyModules):
 		- nLines : = self.nExp. Mainly for ElementFragPanel. It is needed to make the ElementGelPanel to work together with ElementFragPanel 
 		- nExpLabels  : Label of the experiments (__init__)
 		- filterPeptDF: Dataframe of all peptide identified in at least one exp. It is used everywhere so set in (__init__)
-		- checkFP     : True if FP is not empty False otherwise
+		- checkExport : True if FP is not empty False otherwise
 		- pRes        : numbers for the recProt length, natProt loc (__init__)
 		- pLength     : length of the Rec and Nat proteins (__init__)
 		- natProtPres : Boolean for the native sequence presence (__init__)
@@ -2815,8 +2815,8 @@ class DataObjTarProtFile(MyModules):
 	 #--> filterPeptDF
 		self.SetfilterPeptDF()
 	 #---
-	 #--> checkFP
-		self.checkFP = True if self.filterPeptDF.shape[0] > 0 else False
+	 #--> checkExport
+		self.checkExport = True if self.filterPeptDF.shape[0] > 0 else False
 	 #---
 	 #--> pRes 
 		self.pRes = self.Fdata['CI']['pRes']
@@ -2941,13 +2941,13 @@ class DataObjTarProtFile(MyModules):
 
 	###--- Write output files
 	#--> filtpept file
-	def TarProt2FiltPept(self, fileO):
+	def ExportData(self, fileO):
 		""" Writes a filtered peptide file 
 			---
 			fileO: path to the output file 
 		"""
 	 #--> If there is anything to export format Exp columns, Export & Return
-		if self.checkFP:
+		if self.checkExport:
 		 #--> Remove control column
 			filterPeptDF = self.filterPeptDF.drop(axis=1, labels='Control Exp')
 		 #--> Map Exp to 0 or 1
@@ -2990,7 +2990,7 @@ class DataObjTarProtFile(MyModules):
 			If fileO is None returns the dataframe instead of writing to disk  
 		"""
 	 #--> Check that there is something to write
-		if self.checkFP:
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
@@ -3101,7 +3101,7 @@ class DataObjTarProtFile(MyModules):
 			posI : number of positions to consider (int)
 		"""
 	 #--> Check that there is indeed something to write
-		if self.checkFP:
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
@@ -3324,7 +3324,7 @@ class DataObjTarProtFile(MyModules):
 	 #--> selected-columns-FP-prot-records
 		name = 'selected-columns-FP-' + targetProtN + '-records.txt'
 		file = folderO / name
-		if self.checkFP:
+		if self.checkExport:
 			dataFSF = dataF[dataF[seqColDN].isin(self.filterPeptDF[seqColTN])]
 			dataFSF = dmethods.DFSelCol(dataFSF, selCol)[1] 
 			dmethods.FFsWriteCSV(file, dataFSF)
@@ -3346,7 +3346,7 @@ class DataObjTarProtFile(MyModules):
 			win: residue numbers forming the windows (list of int)
 		"""
 	 #--> Check that there is something to write first
-		if self.checkFP:
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
@@ -3490,7 +3490,7 @@ class DataObjTarProtFile(MyModules):
 			resN: number of residue per line (int)
 		"""
 	 #--> Check that there is anythin to write
-		if self.checkFP:
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
@@ -3604,7 +3604,7 @@ class DataObjTarProtFile(MyModules):
 			stProgress: None or stProgress in the GUI
 			"""
 	 #--> Check that there is something to write
-		if self.checkFP:
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
@@ -3814,7 +3814,7 @@ class DataObjTarProtFile(MyModules):
 			folderO: folder to write the output file 
 		"""
 	 #--> Check that there are FPs in the file
-		if self.checkFP:
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['Errors']['FiltPept'])
@@ -3843,8 +3843,8 @@ class DataObjTarProtFile(MyModules):
 		)
 	  #---
 	  #--> filtlist
-		pathP = pathP.with_suffix('.filtpept')
-		self.TarProt2FiltPept(pathP)
+		pathP = pathP.with_suffix('.txt')
+		self.ExportData(pathP)
 	  #---
 	  #--> cutprop
 		pathP = pathP.with_suffix('.cutprop')

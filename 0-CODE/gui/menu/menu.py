@@ -713,7 +713,7 @@ class ToolsTarProtRes(wx.Menu):
 		""" """
 		super().__init__()
 	 #--> Menu items
-		self.expFP = self.Append(-1, 'Export Filtered Peptides')
+		self.expFP = self.Append(-1, 'Export Data')
 		self.AppendSeparator()
 		self.saveF = self.Append(-1, 'Save Fragments Image')
 		self.saveP = self.Append(-1, 'Save Plot Image')
@@ -754,7 +754,7 @@ class ToolsTarProtRes(wx.Menu):
 	def OnExportFP(self, event):
 		""" Export the list of filtered peptides """
 		win = self.GetWindow()
-		win.OnExportFP()
+		win.OnExportData()
 		return True
 	#---
 	#endregion ---------------------------------------------------- My Methods	
@@ -1254,7 +1254,7 @@ class ToolsLimProtRes(wx.Menu):
 	 #--> Menu items
 		self.selM = self.Append(100, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
 		self.AppendSeparator()
-		self.expFP = self.Append(-1, 'Export Filtered Peptides')
+		self.expData = self.Append(-1, 'Export Data')
 		self.AppendSeparator()
 		self.saveF = self.Append(-1, 'Save Fragments Image')
 		self.saveG = self.Append(-1, 'Save Gel Image')
@@ -1262,11 +1262,11 @@ class ToolsLimProtRes(wx.Menu):
 		self.reset = self.Append(-1, 'Reset View')
 	 #---
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,    source=self.reset)
-		self.Bind(wx.EVT_MENU, self.OnSaveGel,  source=self.saveG)
-		self.Bind(wx.EVT_MENU, self.OnSaveFrag, source=self.saveF)
-		self.Bind(wx.EVT_MENU, self.OnExportFP, source=self.expFP)
-		self.Bind(wx.EVT_MENU, self.OnSelM,     source=self.selM)
+		self.Bind(wx.EVT_MENU, self.OnReset,      source=self.reset)
+		self.Bind(wx.EVT_MENU, self.OnSaveGel,    source=self.saveG)
+		self.Bind(wx.EVT_MENU, self.OnSaveFrag,   source=self.saveF)
+		self.Bind(wx.EVT_MENU, self.OnExportData, source=self.expData)
+		self.Bind(wx.EVT_MENU, self.OnSelM,       source=self.selM)
 	 #---
 	 #--> Current Status
 		if selM:
@@ -1278,10 +1278,10 @@ class ToolsLimProtRes(wx.Menu):
 	#endregion ------------------------------------------------ Instance Setup
  	
 	#region ------------------------------------------------------- My Methods
-	def OnExportFP(self, event):
+	def OnExportData(self, event):
 		""" Export the list of filtered peptides """
 		win = self.GetWindow()
-		win.OnExportFP()
+		win.OnExportData()
 		return True
 	#---
 
@@ -1493,7 +1493,7 @@ class Filter(wx.Menu):
 		self.AppendSubMenu(self.Remove, 'Remove')
 		self.reset = self.Append(-1, 'Reset')
 		self.AppendSeparator()
-		self.iExport = self.Append(-1, 'Export Results')
+		self.iExport = self.Append(-1, 'Export Data')
 	 #---
 	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnReset,  source=self.reset)
