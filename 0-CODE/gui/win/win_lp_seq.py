@@ -128,7 +128,7 @@ class WinSeqAlignLP(gclasses.WinUtilUno):
 	def WriteOF(self):
 		""" Write the output """
 		#--> Check if there is something to write before writting
-		if self.fileObj.checkFP:
+		if self.fileObj.checkExport:
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Writing output file: seq.pdf file', 1)		
 			self.fileObj.LimProt2SeqPDF(self.do['Outputfile'], 

@@ -13,6 +13,7 @@
 
 
 #region -------------------------------------------------------------- Imports
+import wx
 import pandas as pd
 from pathlib import Path
 
@@ -150,6 +151,25 @@ class WinCutPropRes(gclasses.WinGraph):
 		return True
 	 #---
 	#---
+
+	def OnExportData(self):
+		""" Export data to a csv file """
+	 #--> Variables
+		msg = config.msg['Save']['ExportData']
+		dlg = gclasses.DlgSaveFile(config.extLong['Data'], msg)
+	 #---
+	 #--> Get path & write
+		if dlg.ShowModal() == wx.ID_CANCEL:
+			pass
+		else:
+			p = Path(dlg.GetPath())
+			self.fileObj.ExportData(p)
+	 #---
+	 #--> Destroy & Return 
+		dlg.Destroy()
+		return True	
+	 #---
+	#---	
 
 	def OnSeq(self, Mid):
 		""" Change the plot if the sequence changes 

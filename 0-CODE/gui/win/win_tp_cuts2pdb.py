@@ -197,7 +197,7 @@ class WinCuts2PDB(gclasses.WinUtilUno):
 	def WriteOF(self):
 		""" Write the output """
 	 #--> Check if there is something to write
-		if self.fileObj.checkFP:
+		if self.fileObj.checkExport:
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Writing output files: pdb files', 1)
 	  #--> write		

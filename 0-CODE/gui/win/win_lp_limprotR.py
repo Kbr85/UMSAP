@@ -43,8 +43,8 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 			raise ValueError('')
 	 #---
 	 #--> Check that there is something to show
-		self.checkFP = self.fileObj.checkFP
-		if self.checkFP:
+		self.checkExport = self.fileObj.checkExport
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(
@@ -133,18 +133,18 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 	#endregion ----------------------------------------------- Binding Methods
 
 	#region ----------------------------------------------------- Menu Methods
-	def OnExportFP(self):
+	def OnExportData(self):
 		""" Export the FP list """
 	 #--> Variables
-		msg = config.msg['Save']['FiltPept']
-		dlg = gclasses.DlgSaveFile(config.extLong['FiltPept'], msg)
+		msg = config.msg['Save']['ExportData']
+		dlg = gclasses.DlgSaveFile(config.extLong['Data'], msg)
 	 #---
 	 #--> Get path & save	
 		if dlg.ShowModal() == wx.ID_CANCEL:
 			pass
 		else:
 			p = Path(dlg.GetPath())
-			self.fileObj.LimProt2FiltPept(p)
+			self.fileObj.ExportData(p)
 	 #---
 	 #--> Destroy & Return
 		dlg.Destroy()

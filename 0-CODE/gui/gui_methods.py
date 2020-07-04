@@ -871,35 +871,36 @@ def MenuOnUpdateTP():
  #---
 #---
 
-def MenuOnFPList():
-	""" Reads a .tarprot file and creates a .filtpept file """
+def MenuOnExport():
+	""" Export data from json to csv """
+
  #--> Variables
 	k = True	
-	dlgi = gclasses.DlgOpenFile(config.msg['Open']['TarProtFile'],
-		config.extLong['TarProt'])
+	dlgi = gclasses.DlgOpenFile(config.msg['Open']['UMSAPFile'],
+		config.extLong['UmsapR'])
  #---
  #--> Get file Path
 	if dlgi.ShowModal() == wx.ID_OK:
 		fLoc = Path(dlgi.GetPath())
  	 #--> Get output folder
-		dlgo = gclasses.DlgSaveFile(config.extLong['FiltPept'])
+		dlgo = gclasses.DlgSaveFile(config.extLong['Data'])
 		if dlgo.ShowModal() == wx.ID_OK:
 			fLocO = Path(dlgo.GetPath())
- 	 	 #--> Create tarprot object
+ 	 	 #--> Create file object
 			try:
-				fileObj = dclasses.DataObjTarProtFile(fLoc)
+				fileObj = config.pointer['dclasses']['DataObj'][fLoc.suffix](fLoc)
 			except Exception:
 				k = False
 		 #---
  	 	 #--> Create filter peptide file
 			if k:
-				if fileObj.checkFP:
-					if fileObj.TarProt2FiltPept(fLocO):
+				if fileObj.checkExport:
+					if fileObj.ExportData(fLocO):
 						gclasses.DlgSuccessMsg()
 					else:
 						k = False
 				else:
-					gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
+					gclasses.DlgFatalErrorMsg(config.msg['FailExport'])
 					k = False				
 			else:
 				k = False
@@ -999,7 +1000,7 @@ def MenuOnCutProp():
  		 #---
 		 #--> Create cutprop file
 			if k:
-				if tarprotObj.checkFP:
+				if tarprotObj.checkExport:
 					if tarprotObj.TarProt2CutProp(fLocO):
 						WinGraphResCreate(config.name['CutPropRes'], fLocO)
 						gclasses.DlgSuccessMsg()

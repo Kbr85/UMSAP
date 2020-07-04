@@ -656,7 +656,6 @@ extLong = { # string for the dlg windows representing the extension of the files
 	'Histo'   : 'hist files (*.hist)|*.hist',
 	'CorrA'   : 'corr files (*.corr)|*.corr',
 	'Uscr'    : 'uscr files (*.uscr)|*.uscr',
-	'FiltPept': 'filtpept files (*.filtpept)|*.filtpept',
 	'CutProp' : 'cutprop files (*.cutprop)|*.cutprop',
 	'UmsapM'  : ("UMSAP main output files (*.tarprot; *.limprot; *.protprof)"
 		"|*.tarprot;*.limprot;*.protprof"),
@@ -681,7 +680,6 @@ extShort = { # extension of selected files to get default values. When more than
 	'Histo'   : ['.hist'],
 	'CorrA'   : ['.corr'],
 	'Uscr'    : ['.uscr'],
-	'FiltPept': ['.filtpept'],
 	'CutProp' : ['.cutprop'],
 	'UmsapM'  : ['.tarprot', '.limprot', '.protprof'],
 	'UmsapR'  : ['.tarprot', '.cutprop', '.aadist', '.hist', '.corr', 
@@ -844,7 +842,7 @@ msg = { # Text messages used in the programm
 	'Save' : { # For save file dialogues
 		'OutFile'        : 'Select the output file',
 		'PlotImage'      : 'Save plot image',
-		'FiltPept'       : 'Save filtered peptide list',
+		'ExportData'     : 'Save data as',
 		'TarProtFragImg' : 'Save image of the fragments',
 		'LimProtGelImg'  : 'Save image of the gel',
 	},
@@ -993,6 +991,8 @@ msg = { # Text messages used in the programm
 			"filter."),
 		'No_Filters' : ("There are no applied filters."),
 		'NoExport' : ("There is nothing to export."),
+		'FailExport' : ("It was not possible to export the data in the "
+			"selected file."),
 	 #--> Image related
 		'ImgNotSaved' : ("The image could not be saved."),
 	 #--> Option related
@@ -1154,8 +1154,7 @@ msg = { # Text messages used in the programm
 			" a protein structure."),
 		'CInputFile' : ("Create an input file for UMSAP from a .tarprot "
 			"file."),
-		'FPList' : ("Create a filtered peptide list file from a .tarprot "
-			"file."),
+		'Export' : ("Export selected data to a file with CSV format."),
 		'CHist' : ("Generate histograms of the detected cleavage sites "
 			"found in a .tarprot file."),
 		'SeqAlign' : ("Generate sequence alignments based on the peptides found"
@@ -1307,7 +1306,7 @@ tooltip = { # This dict makes it easier to set the tooltips based on the name of
 	    'CutPerRes' : msg['Button']['CutPerRes'],
 	    'Cuts2PDB'  : msg['Button'][ 'Cuts2PDB'],
 	    'CInputFile': msg['Button']['CInputFile'],
-	    'FPList'    : msg['Button']['FPList'],
+	    'Export'    : msg['Button']['Export'],
 	    'CHist'     : msg['Button']['CHist'],
 	    'SeqAlign'  : msg['Button']['SeqAlign'],
 	    'ShortFile' : msg['Button']['ShortFile'],
@@ -2409,7 +2408,7 @@ pointer = { # pointer to methods in different classes to avoid repeating if stat
 		'toolmenu' : {}, # Tool menus for main menubar
 	},
 	'dclasses' : { # pointer to methods in data.data_classes
-		'DataObj' : {}, # Classes creating data file objects
+		'DataObj' : {}, # Classes creating data file objects 
 	},
 	'dmethods' : {
 		'fillListCtrl' : {}, # Methods to get information to fill a ListCtrl

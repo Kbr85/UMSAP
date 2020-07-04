@@ -108,7 +108,6 @@ class UtilTarProt(wx.Menu):
 		self.aaDist  = self.Append(-1, 'AA Distribution')
 		self.cutRes  = self.Append(-1, 'Cleavages per Residue')
 		self.cut2Pdb = self.Append(-1, 'Cleavages to PDB Files')
-		self.fpList  = self.Append(-1, 'Filtered Peptide List')
 		self.histo   = self.Append(-1, 'Histograms')
 		self.seqAli  = self.Append(-1, 'Sequence Alignments')
 		self.AppendSeparator()
@@ -118,8 +117,7 @@ class UtilTarProt(wx.Menu):
 	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnAAdist,       source=self.aaDist)
 		self.Bind(wx.EVT_MENU, self.OnCutRes,       source=self.cutRes)
-		self.Bind(wx.EVT_MENU, self.OnCut2Pdb,      source=self.cut2Pdb)	
-		self.Bind(wx.EVT_MENU, self.OnFPList,       source=self.fpList)			
+		self.Bind(wx.EVT_MENU, self.OnCut2Pdb,      source=self.cut2Pdb)		
 		self.Bind(wx.EVT_MENU, self.OnHisto,        source=self.histo)
 		self.Bind(wx.EVT_MENU, self.OnSeqAli,       source=self.seqAli)
 		self.Bind(wx.EVT_MENU, self.OnUpdateRes,    source=self.updateRes)
@@ -149,14 +147,6 @@ class UtilTarProt(wx.Menu):
 		"""
 		gmethods.WinMUCreate(config.name['Cuts2PDB'])	
 		return True
-	#---
-
-	def OnFPList(self, event):
-		""" Reads a .tarprot file and creates a .filtpept file """	
-		if gmethods.MenuOnFPList():
-			return True
-		else:
-			return False
 	#---
 
 	def OnHisto(self, event):
@@ -203,12 +193,14 @@ class UtilGeneral(wx.Menu):
 	 #--> Menu items
 		self.corrA   = self.Append(-1, 'Correlation Analysis')
 		self.inputF  = self.Append(-1, 'Create Input File')
+		self.export  = self.Append(-1, 'Export Data')
 		self.mergeAA = self.Append(-1, 'Merge aadist Files')
 		self.shortDF = self.Append(-1, 'Short Data Files')
 	 #---
 	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnCorrA,   source=self.corrA)	 
 		self.Bind(wx.EVT_MENU, self.OnInputF,  source=self.inputF)
+		self.Bind(wx.EVT_MENU, self.OnExport,  source=self.export)
 		self.Bind(wx.EVT_MENU, self.OnMergeAA, source=self.mergeAA)
 		self.Bind(wx.EVT_MENU, self.OnShortDF, source=self.shortDF)
 	 #---
@@ -228,6 +220,12 @@ class UtilGeneral(wx.Menu):
 			return True
 		else:
 			return False
+	#---
+
+	def OnExport(self, event):
+		""" Export data from the json format to csv """
+		gmethods.MenuOnExport()
+		return True
 	#---
 
 	def OnMergeAA(self, event):
@@ -471,16 +469,16 @@ class CorrAResExport(wx.Menu):
 	 #--> Menu items & Bind
 		for k, e in config.modules.items():
 			self.Append(k, e)
-			self.Bind(wx.EVT_MENU, self.OnExport, id=k)
+			self.Bind(wx.EVT_MENU, self.OnExportColumn, id=k)
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
 
 	#region -------------------------------------------------------- MyMethods
-	def OnExport(self, event):
+	def OnExportColumn(self, event):
 		""" Export columns in the correlation plot """	
 		win = self.GetWindow()
-		if win.OnExport(event.GetId()):
+		if win.OnExportColumn(event.GetId()):
 			return True
 		else:
 			return True
@@ -507,6 +505,8 @@ class ToolsHistoRes(wx.Menu):
 		self.Append(504, 'All cleavages',        kind=wx.ITEM_RADIO)
 		self.Append(505, 'Unique cleavages',     kind=wx.ITEM_RADIO)
 		self.AppendSeparator()
+		self.expData = self.Append(-1, 'Export Data')
+		self.AppendSeparator()
 		self.Append(506, 'Save Plot Image')
 		self.AppendSeparator()
 		self.Append(501, 'Reset View')
@@ -521,6 +521,7 @@ class ToolsHistoRes(wx.Menu):
 		self.Bind(wx.EVT_MENU, self.OnUni,      id=504)
 		self.Bind(wx.EVT_MENU, self.OnUni,      id=505)
 		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=506)
+		self.Bind(wx.EVT_MENU, self.OnExportData, source=self.expData)
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
@@ -541,6 +542,15 @@ class ToolsHistoRes(wx.Menu):
 		else:
 			self.Check(505, True)
 		return True
+	#---
+
+	def OnExportData(self, event):
+		""" Export data to csv format """
+		win = self.GetWindow()
+		if win.OnExportData():
+			return True
+		else:
+			return False
 	#---
 
 	def OnReset(self, event):
@@ -715,7 +725,7 @@ class ToolsTarProtRes(wx.Menu):
 		""" """
 		super().__init__()
 	 #--> Menu items
-		self.expFP = self.Append(-1, 'Export Filtered Peptides')
+		self.expFP = self.Append(-1, 'Export Data')
 		self.AppendSeparator()
 		self.saveF = self.Append(-1, 'Save Fragments Image')
 		self.saveP = self.Append(-1, 'Save Plot Image')
@@ -756,7 +766,7 @@ class ToolsTarProtRes(wx.Menu):
 	def OnExportFP(self, event):
 		""" Export the list of filtered peptides """
 		win = self.GetWindow()
-		win.OnExportFP()
+		win.OnExportData()
 		return True
 	#---
 	#endregion ---------------------------------------------------- My Methods	
@@ -1052,17 +1062,28 @@ class ToolsCorrARes(wx.Menu):
 	 #---
 	 #--> Menu items
 		self.Export = CorrAResExport()
-		self.AppendSubMenu(self.Export, 'Export Data to')
+		self.AppendSubMenu(self.Export, 'Export Columns to')
+		self.expData = self.Append(-1, 'Export Data')
 		self.AppendSeparator()
 		self.saveImg = self.Append(-1, 'Save Plot Image')
 	 #---
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnSavePlot, source=self.saveImg)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot,   source=self.saveImg)
+		self.Bind(wx.EVT_MENU, self.OnExportData, source=self.expData)
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
 
 	#region ------------------------------------------------------- My Methods
+	def OnExportData(self, event):
+		""" Export data to csv format """
+		win = self.GetWindow()
+		if win.OnExportData():
+			return True
+		else:
+			return False
+	#---
+
 	def OnSavePlot(self, event):
 		""" Save image of the plot """
 		win = self.GetWindow()
@@ -1091,11 +1112,14 @@ class ToolsAAdistRes(wx.Menu):
 		self.AppendSubMenu(self.Exp, 'Experiments')
 		self.AppendSubMenu(self.Pos, 'Compare Positions')
 		self.AppendSeparator()
+		self.expData = self.Append(-1, 'Export Data')
+		self.AppendSeparator()
 		self.save = self.Append(-1, 'Save Plot Image')
 		self.AppendSeparator()
 		self.reset = self.Append(-1, 'Reset View')
 	 #---
 	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnExportData, source=self.expData)
 		self.Bind(wx.EVT_MENU, self.OnSavePlotImage, source=self.save)
 		self.Bind(wx.EVT_MENU, self.OnReset, source=self.reset)
 	 #---
@@ -1116,6 +1140,15 @@ class ToolsAAdistRes(wx.Menu):
 		self.Pos.Check(200+pos, True)
 		return True
 	#----
+
+	def OnExportData(self, event):
+		""" Export data to csv format """
+		win = self.GetWindow()
+		if win.OnExportData():
+			return True
+		else:
+			return False
+	#---
 
 	def OnSavePlotImage(self, event):
 		""" Save image of the plot """
@@ -1160,17 +1193,20 @@ class ToolsCutRes(wx.Menu):
 		self.Append(303, 'Normalized Values', kind=wx.ITEM_RADIO)
 		self.Append(304, 'Regular Values',    kind=wx.ITEM_RADIO)
 		self.AppendSeparator()
+		self.expData = self.Append(-1, 'Export Data')
+		self.AppendSeparator()
 		self.save = self.Append(-1, 'Save Plot Image')
 		self.AppendSeparator()
 		self.reset = self.Append(-1, 'Reset View')
 	 #---
 	 #--> Bind		
-		self.Bind(wx.EVT_MENU, self.OnSeq,      id=301)
-		self.Bind(wx.EVT_MENU, self.OnSeq,      id=302)
-		self.Bind(wx.EVT_MENU, self.OnNorm,     id=303)
-		self.Bind(wx.EVT_MENU, self.OnNorm,     id=304)
-		self.Bind(wx.EVT_MENU, self.OnSavePlot, source=self.save)
-		self.Bind(wx.EVT_MENU, self.OnReset,    source=self.reset)
+		self.Bind(wx.EVT_MENU, self.OnSeq,        id=301)
+		self.Bind(wx.EVT_MENU, self.OnSeq,        id=302)
+		self.Bind(wx.EVT_MENU, self.OnNorm,       id=303)
+		self.Bind(wx.EVT_MENU, self.OnNorm,       id=304)
+		self.Bind(wx.EVT_MENU, self.OnExportData, source=self.expData)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot,   source=self.save)
+		self.Bind(wx.EVT_MENU, self.OnReset,      source=self.reset)
 	 #---
 	 #--> Check defaults
 		self.CurrentState(nExp, seq, norm, exp, comp)
@@ -1212,7 +1248,16 @@ class ToolsCutRes(wx.Menu):
 	 #-->
 		return True
 	 #---
-	#---	
+	#---
+
+	def OnExportData(self, event):
+		""" Export data to csv format """
+		win = self.GetWindow()
+		if win.OnExportData():
+			return True
+		else:
+			return False
+	#---
 
 	def OnSeq(self, event):
 		""" Change the plot if the sequence changes """
@@ -1256,7 +1301,7 @@ class ToolsLimProtRes(wx.Menu):
 	 #--> Menu items
 		self.selM = self.Append(100, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
 		self.AppendSeparator()
-		self.expFP = self.Append(-1, 'Export Filtered Peptides')
+		self.expData = self.Append(-1, 'Export Data')
 		self.AppendSeparator()
 		self.saveF = self.Append(-1, 'Save Fragments Image')
 		self.saveG = self.Append(-1, 'Save Gel Image')
@@ -1264,11 +1309,11 @@ class ToolsLimProtRes(wx.Menu):
 		self.reset = self.Append(-1, 'Reset View')
 	 #---
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,    source=self.reset)
-		self.Bind(wx.EVT_MENU, self.OnSaveGel,  source=self.saveG)
-		self.Bind(wx.EVT_MENU, self.OnSaveFrag, source=self.saveF)
-		self.Bind(wx.EVT_MENU, self.OnExportFP, source=self.expFP)
-		self.Bind(wx.EVT_MENU, self.OnSelM,     source=self.selM)
+		self.Bind(wx.EVT_MENU, self.OnReset,      source=self.reset)
+		self.Bind(wx.EVT_MENU, self.OnSaveGel,    source=self.saveG)
+		self.Bind(wx.EVT_MENU, self.OnSaveFrag,   source=self.saveF)
+		self.Bind(wx.EVT_MENU, self.OnExportData, source=self.expData)
+		self.Bind(wx.EVT_MENU, self.OnSelM,       source=self.selM)
 	 #---
 	 #--> Current Status
 		if selM:
@@ -1280,10 +1325,10 @@ class ToolsLimProtRes(wx.Menu):
 	#endregion ------------------------------------------------ Instance Setup
  	
 	#region ------------------------------------------------------- My Methods
-	def OnExportFP(self, event):
+	def OnExportData(self, event):
 		""" Export the list of filtered peptides """
 		win = self.GetWindow()
-		win.OnExportFP()
+		win.OnExportData()
 		return True
 	#---
 
@@ -1495,7 +1540,7 @@ class Filter(wx.Menu):
 		self.AppendSubMenu(self.Remove, 'Remove')
 		self.reset = self.Append(-1, 'Reset')
 		self.AppendSeparator()
-		self.iExport = self.Append(-1, 'Export Results')
+		self.iExport = self.Append(-1, 'Export Data')
 	 #---
 	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnReset,  source=self.reset)

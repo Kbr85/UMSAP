@@ -905,7 +905,7 @@ class WinLimProt(gclasses.WinModule):
 		#--# Improve Something unexpected may go wrong saving the uscr file (UP)
 	 #---
 	 #--> Files that depend on FP being not empty
-		if self.limprotObj.checkFP:
+		if self.limprotObj.checkExport:
 	 	 #--> short data
 			if self.do['ColExtract'] is None:
 				pass
@@ -945,7 +945,7 @@ class WinLimProt(gclasses.WinModule):
 
 		gmethods.UpdateGaugeText(self.gauge, self.stProgress,
 			'Generating graphical output', 1)
-		if self.limprotObj.checkFP:
+		if self.limprotObj.checkExport:
 			gmethods.UpdateGaugeText(self.gauge, self.stProgress,
 				'Generating graphical output: limprot file', 1)
 			wx.Yield()

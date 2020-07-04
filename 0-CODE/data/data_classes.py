@@ -994,6 +994,7 @@ class DataObjCorrFile():
 		- numCol: total number of columns in data
 		- colNum: the number of the columns in the data file
 		- fileD : data file used to calculate the coefficients
+		- checkExport : to fit into the Export Data methods in mods & utils
 		----> Methods of the class
 		None
 	"""
@@ -1039,7 +1040,23 @@ class DataObjCorrFile():
 	 #---
 	 #--> fileD
 		self.fileD = Path(self.Fdata['CI']['Datafile'])
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True
 	 #---> Return
+		return True
+	 #---
+	#---
+
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+
+	 #--> Write
+		dmethods.FFsWriteCSV(fPath, self.data)
+	 #---
+	 #--> Return
 		return True
 	 #---
 	#---
@@ -1062,6 +1079,8 @@ class DataObjCutpropFile():
 		- mist : difference between the rec and nat residue number	
 		- pResNat: same as pRes but for the native sequence residue numbers
 		- natProtPres: boolean to state if there is info about the native sequence in the file
+		- checkExport : to fit into the Export Data methods in mods & utils
+		- col4Export : pretty print column names in df for export		
 		----> Methods of the class
 		None	
 	"""
@@ -1111,6 +1130,9 @@ class DataObjCutpropFile():
 	 #--> natProtPres
 		self.natProtPres = self.Fdata['CI']['natProtPres']	
 	 #---
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True	 
+	 #---	 
 	 #--> Return
 		return True
 	 #---
@@ -1130,7 +1152,21 @@ class DataObjCutpropFile():
 	 #--> Return
 		return True
 	 #---
+
 	#---
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+
+	 #--> Write
+		dmethods.FFsWriteCSV(fPath, self.data, index=True)
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---	
 	#endregion ---------------------------------------------------- My Methods
 #---
 
@@ -1158,6 +1194,8 @@ class DataObjAAdistFile():
 		- aVal : alpha value used to create the file
 		- recSeq : recombinant sequence from which the file was originated
 		- dfCol : columns in the dataframe
+		- checkExport : to fit into the Export Data methods in mods & utils
+		- col4Export : pretty print column names in df for export
 		----> Methods of the class
 		- GetChiColor
 	"""
@@ -1231,8 +1269,32 @@ class DataObjAAdistFile():
 	 #--> dfCol
 		self.dfCol = list(self.dataDF.columns.values) 
 	 #---
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True	 
+	 #---
+	 #-->
+		self.col4Export = self.ColForExport()
+	 #---
 	 #--> Return
 		return True
+	 #---
+	#---
+
+	#--> col4Export
+	def ColForExport(self):
+		""" Column names for the export data """
+	 #-->
+		col = {'AA': 'AA'}
+	 #---
+	 #-->
+		for k in range(0, self.nPos):
+			if k < self.nPosD2:
+				col[k] = k - self.nPosD2
+			else:
+				col[k] = k + 1 - self.nPosD2
+	 #---
+	 #-->
+		return col
 	 #---
 	#---
 
@@ -1297,6 +1359,23 @@ class DataObjAAdistFile():
 			return config.colors[self.name]['ChiColor-']
 	 #---
 	#---
+
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+	 #--> Get new df with correct labels
+		df = self.dataDF.copy()
+		df.rename(columns=self.col4Export, inplace=True)
+	 #---
+	 #--> Write
+		dmethods.FFsWriteCSV(fPath, df, index=True)
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---	
 	#endregion ---------------------------------------------------- My Methods
 #---
 
@@ -1312,6 +1391,7 @@ class DataObjHistFile():
 		- nExpFP : number of experiments in the file plus the FP "experiment"
 		- barWidth : width of each bar in the plot 
 		- dfDict : dict containing all four dataframes
+		- checkExport : to fit into the Export Data methods in mods & utils		
 		----> Methods of the class
 		- GetlWin : list with the windows in a given dataframe
 		- GetnWin : number of windows in a given dataframe
@@ -1353,6 +1433,9 @@ class DataObjHistFile():
 	 #--> dfDict
 		self.SetdfDict()
 	 #---
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True	 
+	 #---	 
 	 #--> Return
 		return True
 	 #---
@@ -1394,6 +1477,24 @@ class DataObjHistFile():
 		""" Get the number of windows in self.dfDict[tkey] """
 		return len(self.GetlWin(tkey))
 	#---
+
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+
+	 #--> Write
+		with open(fPath, 'w') as file:	
+			for k,i in self.dfDict.items():
+				file.write(k + '\n')
+				i.to_csv(file, sep='\t', na_rep='NA', index=False)
+				file.write('\n')
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---	
 	#endregion ---------------------------------------------------- My Methods	
 #---
 
@@ -1545,8 +1646,8 @@ class DataObjLimProtFile(MyModules):
 	 #--> filterPeptDF
 		self.SetfilterPeptDF()
 	 #---
-	 #--> checkFP
-		self.checkFP = True if self.filterPeptDF.shape[0] > 0 else False
+	 #--> checkExport
+		self.checkExport = True if self.filterPeptDF.shape[0] > 0 else False
 	 #---
 	 #--> Lanes
 		self.Lanes = self.Fdata['CI']['Lanes']
@@ -1696,13 +1797,13 @@ class DataObjLimProtFile(MyModules):
 	#---
 
 	#--> filtpept file
-	def LimProt2FiltPept(self, fileO):
+	def ExportData(self, fileO):
 		""" Writes a filtered peptide file
 			---
 			fileO : path to the output file (string or Path)
 		"""
 	 #--> If there is something to export: Format, Export & Return
-		if self.checkFP:
+		if self.checkExport:
 		 #--> Drop columns
 			dropL = ['ttest', 'delta', 'I', 'Control Exp']
 			filterpeptDF = self.filterPeptDF.drop(columns=dropL, level=2)
@@ -1820,7 +1921,7 @@ class DataObjLimProtFile(MyModules):
 	  #--> selected-columns-FP-prot-records
 		name = 'selected-columns-FP-' + targetProtN + '-records.txt'
 		file = folderO / name
-		if self.checkFP:
+		if self.checkExport:
 			dataFSF = dataF[dataF[seqColDN].isin(self.filterPeptDF[seqColTN])]
 			dataFSF = dmethods.DFSelCol(dataFSF, selCol)[1] 
 			dmethods.FFsWriteCSV(file, dataFSF)
@@ -2132,17 +2233,18 @@ class DataObjProtProfFile(MyModules):
 		- fileP      : 
 		- Fdata      : 
 		- dataFrame  : 
-		- checkFP    : check that there are some proteins in self.Fdata['R']
+		- checkExport    : check that there are some proteins in self.Fdata['R']
 		- nConds     : number of conditions in the file
 		- timeP      : number of relevant points per conditions, including the reference
-		- loga       : -log10[aVal]
-		# - aVal       : alpha value used when creating the file
+		- loga       : -log10[aVal] used by default
+		- aVal       : alpha value used by default
 		- NProt      : number of protein detected
 		- xCoordTimeA: list of list with x coordinates for the time analysis plot for each condition
 		- ZscoreVal  : value of the zscore in the file 
 		- ZscoreValP : value of the zscore in the file in % 
 		- nCondsL    : list with Conditions name
 		- nTimePL    : list with relevant points names including reference
+		- col4Export : pretty print column names in df for export
 		----> Methods of the class
 		None
 	"""
@@ -2180,8 +2282,8 @@ class DataObjProtProfFile(MyModules):
 		self.dataFrame.reset_index(drop=True, inplace=True)
 	  #---
 	 #---
-	 #-->  checkFP
-		self.checkFP = True if self.dataFrame.shape[0] > 0 else False
+	 #-->  checkExport
+		self.checkExport = True if self.dataFrame.shape[0] > 0 else False
 	 #---
 	 #--> nConds
 		self.nConds = self.Fdata['CI']['NCond']
@@ -2335,6 +2437,25 @@ class DataObjProtProfFile(MyModules):
 		return col
 	 #---
 	#---
+
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+
+	 #--> Get new df with correct labels
+		df = self.dataFrame.copy()
+		df.rename(columns=self.col4Export[1], level=1, inplace=True)
+		df.rename(columns=self.col4Export[2], level=2, inplace=True)
+	 #---
+	 #--> Write
+		dmethods.FFsWriteCSV(fPath, df)
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---
 	#endregion ---------------------------------------------------- My Methods
 #---
 
@@ -2354,7 +2475,7 @@ class DataObjTarProtFile(MyModules):
 		- nLines : = self.nExp. Mainly for ElementFragPanel. It is needed to make the ElementGelPanel to work together with ElementFragPanel 
 		- nExpLabels  : Label of the experiments (__init__)
 		- filterPeptDF: Dataframe of all peptide identified in at least one exp. It is used everywhere so set in (__init__)
-		- checkFP     : True if FP is not empty False otherwise
+		- checkExport : True if FP is not empty False otherwise
 		- pRes        : numbers for the recProt length, natProt loc (__init__)
 		- pLength     : length of the Rec and Nat proteins (__init__)
 		- natProtPres : Boolean for the native sequence presence (__init__)
@@ -2815,8 +2936,8 @@ class DataObjTarProtFile(MyModules):
 	 #--> filterPeptDF
 		self.SetfilterPeptDF()
 	 #---
-	 #--> checkFP
-		self.checkFP = True if self.filterPeptDF.shape[0] > 0 else False
+	 #--> checkExport
+		self.checkExport = True if self.filterPeptDF.shape[0] > 0 else False
 	 #---
 	 #--> pRes 
 		self.pRes = self.Fdata['CI']['pRes']
@@ -2941,13 +3062,13 @@ class DataObjTarProtFile(MyModules):
 
 	###--- Write output files
 	#--> filtpept file
-	def TarProt2FiltPept(self, fileO):
+	def ExportData(self, fileO):
 		""" Writes a filtered peptide file 
 			---
 			fileO: path to the output file 
 		"""
 	 #--> If there is anything to export format Exp columns, Export & Return
-		if self.checkFP:
+		if self.checkExport:
 		 #--> Remove control column
 			filterPeptDF = self.filterPeptDF.drop(axis=1, labels='Control Exp')
 		 #--> Map Exp to 0 or 1
@@ -2990,7 +3111,7 @@ class DataObjTarProtFile(MyModules):
 			If fileO is None returns the dataframe instead of writing to disk  
 		"""
 	 #--> Check that there is something to write
-		if self.checkFP:
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
@@ -3101,7 +3222,7 @@ class DataObjTarProtFile(MyModules):
 			posI : number of positions to consider (int)
 		"""
 	 #--> Check that there is indeed something to write
-		if self.checkFP:
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
@@ -3324,7 +3445,7 @@ class DataObjTarProtFile(MyModules):
 	 #--> selected-columns-FP-prot-records
 		name = 'selected-columns-FP-' + targetProtN + '-records.txt'
 		file = folderO / name
-		if self.checkFP:
+		if self.checkExport:
 			dataFSF = dataF[dataF[seqColDN].isin(self.filterPeptDF[seqColTN])]
 			dataFSF = dmethods.DFSelCol(dataFSF, selCol)[1] 
 			dmethods.FFsWriteCSV(file, dataFSF)
@@ -3346,7 +3467,7 @@ class DataObjTarProtFile(MyModules):
 			win: residue numbers forming the windows (list of int)
 		"""
 	 #--> Check that there is something to write first
-		if self.checkFP:
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
@@ -3490,7 +3611,7 @@ class DataObjTarProtFile(MyModules):
 			resN: number of residue per line (int)
 		"""
 	 #--> Check that there is anythin to write
-		if self.checkFP:
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
@@ -3604,7 +3725,7 @@ class DataObjTarProtFile(MyModules):
 			stProgress: None or stProgress in the GUI
 			"""
 	 #--> Check that there is something to write
-		if self.checkFP:
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
@@ -3814,7 +3935,7 @@ class DataObjTarProtFile(MyModules):
 			folderO: folder to write the output file 
 		"""
 	 #--> Check that there are FPs in the file
-		if self.checkFP:
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['Errors']['FiltPept'])
@@ -3843,8 +3964,8 @@ class DataObjTarProtFile(MyModules):
 		)
 	  #---
 	  #--> filtlist
-		pathP = pathP.with_suffix('.filtpept')
-		self.TarProt2FiltPept(pathP)
+		pathP = pathP.with_suffix('.txt')
+		self.ExportData(pathP)
 	  #---
 	  #--> cutprop
 		pathP = pathP.with_suffix('.cutprop')
