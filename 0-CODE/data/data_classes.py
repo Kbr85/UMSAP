@@ -1079,6 +1079,8 @@ class DataObjCutpropFile():
 		- mist : difference between the rec and nat residue number	
 		- pResNat: same as pRes but for the native sequence residue numbers
 		- natProtPres: boolean to state if there is info about the native sequence in the file
+		- checkExport : to fit into the Export Data methods in mods & utils
+		- col4Export : pretty print column names in df for export		
 		----> Methods of the class
 		None	
 	"""
@@ -1128,6 +1130,9 @@ class DataObjCutpropFile():
 	 #--> natProtPres
 		self.natProtPres = self.Fdata['CI']['natProtPres']	
 	 #---
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True	 
+	 #---	 
 	 #--> Return
 		return True
 	 #---
@@ -1147,7 +1152,21 @@ class DataObjCutpropFile():
 	 #--> Return
 		return True
 	 #---
+
 	#---
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+
+	 #--> Write
+		dmethods.FFsWriteCSV(fPath, self.data, index=True)
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---	
 	#endregion ---------------------------------------------------- My Methods
 #---
 

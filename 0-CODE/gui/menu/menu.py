@@ -1181,17 +1181,20 @@ class ToolsCutRes(wx.Menu):
 		self.Append(303, 'Normalized Values', kind=wx.ITEM_RADIO)
 		self.Append(304, 'Regular Values',    kind=wx.ITEM_RADIO)
 		self.AppendSeparator()
+		self.expData = self.Append(-1, 'Export Data')
+		self.AppendSeparator()
 		self.save = self.Append(-1, 'Save Plot Image')
 		self.AppendSeparator()
 		self.reset = self.Append(-1, 'Reset View')
 	 #---
 	 #--> Bind		
-		self.Bind(wx.EVT_MENU, self.OnSeq,      id=301)
-		self.Bind(wx.EVT_MENU, self.OnSeq,      id=302)
-		self.Bind(wx.EVT_MENU, self.OnNorm,     id=303)
-		self.Bind(wx.EVT_MENU, self.OnNorm,     id=304)
-		self.Bind(wx.EVT_MENU, self.OnSavePlot, source=self.save)
-		self.Bind(wx.EVT_MENU, self.OnReset,    source=self.reset)
+		self.Bind(wx.EVT_MENU, self.OnSeq,        id=301)
+		self.Bind(wx.EVT_MENU, self.OnSeq,        id=302)
+		self.Bind(wx.EVT_MENU, self.OnNorm,       id=303)
+		self.Bind(wx.EVT_MENU, self.OnNorm,       id=304)
+		self.Bind(wx.EVT_MENU, self.OnExportData, source=self.expData)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot,   source=self.save)
+		self.Bind(wx.EVT_MENU, self.OnReset,      source=self.reset)
 	 #---
 	 #--> Check defaults
 		self.CurrentState(nExp, seq, norm, exp, comp)
@@ -1233,7 +1236,16 @@ class ToolsCutRes(wx.Menu):
 	 #-->
 		return True
 	 #---
-	#---	
+	#---
+
+	def OnExportData(self, event):
+		""" Export data to csv format """
+		win = self.GetWindow()
+		if win.OnExportData():
+			return True
+		else:
+			return False
+	#---
 
 	def OnSeq(self, event):
 		""" Change the plot if the sequence changes """
