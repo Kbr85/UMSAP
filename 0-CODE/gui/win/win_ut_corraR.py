@@ -16,6 +16,7 @@
 import wx
 import numpy as np
 import matplotlib as mpl
+from pathlib import Path
 
 import config.config     as config
 import gui.menu.menu     as menu
@@ -94,7 +95,7 @@ class WinCorrARes(gclasses.WinGraph):
 	#endregion ----------------------------------------------- Binding Methods
 
 	#region ----------------------------------------------------- Menu Methods
-	def OnExport(self, mID):
+	def OnExportColumn(self, mID):
 		""" Export columns in the correlation plot 
 			---
 			mID: menu ID triggering the export
@@ -128,6 +129,25 @@ class WinCorrARes(gclasses.WinGraph):
 		return True
 	 #---
 	#---
+
+	def OnExportData(self):
+		""" Export data to a csv file """
+	 #--> Variables
+		msg = config.msg['Save']['ExportData']
+		dlg = gclasses.DlgSaveFile(config.extLong['Data'], msg)
+	 #---
+	 #--> Get path & write
+		if dlg.ShowModal() == wx.ID_CANCEL:
+			pass
+		else:
+			p = Path(dlg.GetPath())
+			self.fileObj.ExportData(p)
+	 #---
+	 #--> Destroy & Return 
+		dlg.Destroy()
+		return True	
+	 #---
+	#---	
 	#endregion -------------------------------------------------- Menu Methods
 
 	#region ----------------------------------------------------- Plot Methods

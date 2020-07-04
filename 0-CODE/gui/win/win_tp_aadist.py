@@ -132,7 +132,7 @@ class WinAAdist(gclasses.WinUtilUno):
 	def WriteOF(self):
 		""" Write the output """
 	 #--> Check if there is something to write & write
-		if self.tarprotObj.checkFP:
+		if self.tarprotObj.checkExport:
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Writing output files: aadist file', 1)		
 			self.tarprotObj.TarProt2AAdist(self.do['Outputfile'], 
@@ -150,7 +150,7 @@ class WinAAdist(gclasses.WinUtilUno):
 	def ShowRes(self):
 		""" Show graph results """
 	 #--> Check if there is something to show & show
-		if self.tarprotObj.checkFP:
+		if self.tarprotObj.checkExport:
 			gmethods.UpdateGaugeText(self.gauge, self.stProgress,
 			'Generating graphical output', 1)
 			gmethods.WinGraphResCreate(config.name['AAdistR'],

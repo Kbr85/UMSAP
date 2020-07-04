@@ -13,7 +13,9 @@
 
 
 #region -------------------------------------------------------------- Imports
+import wx
 import matplotlib.patches as mpatches
+from pathlib import Path
 
 import config.config     as config
 import gui.menu.menu     as menu
@@ -123,6 +125,25 @@ class WinAAdistRes(gclasses.WinGraph):
 	#endregion ----------------------------------------------- Binding Methods
 	
 	#region ----------------------------------------------------- Menu Methods
+	def OnExportData(self):
+		""" Export data to a csv file """
+	 #--> Variables
+		msg = config.msg['Save']['ExportData']
+		dlg = gclasses.DlgSaveFile(config.extLong['Data'], msg)
+	 #---
+	 #--> Get path & write
+		if dlg.ShowModal() == wx.ID_CANCEL:
+			pass
+		else:
+			p = Path(dlg.GetPath())
+			self.fileObj.ExportData(p)
+	 #---
+	 #--> Destroy & Return 
+		dlg.Destroy()
+		return True	
+	 #---
+	#---	
+
 	def OnExp(self, Mid):
 		""" Show the AAdist for a particular experiment 
 			---

@@ -128,7 +128,7 @@ class WinSeqAlign(gclasses.WinUtilUno):
 	def WriteOF(self):
 		""" Write the output """
 	 #--> Check if there is something to write & Write
-		if self.fileObj.checkFP:
+		if self.fileObj.checkExport:
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Writing output files: txt files', 1)		
 			self.fileObj.TarProt2SeqAlign(self.do['Outputfolder'], 
