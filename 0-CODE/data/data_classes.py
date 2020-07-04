@@ -1271,6 +1271,7 @@ class DataObjAAdistFile():
 	 #---
 	 #--> checkExport Needed to match other data classes
 		self.checkExport = True	 
+	 #---
 	 #-->
 		self.col4Export = self.ColForExport()
 	 #---
@@ -1390,6 +1391,7 @@ class DataObjHistFile():
 		- nExpFP : number of experiments in the file plus the FP "experiment"
 		- barWidth : width of each bar in the plot 
 		- dfDict : dict containing all four dataframes
+		- checkExport : to fit into the Export Data methods in mods & utils		
 		----> Methods of the class
 		- GetlWin : list with the windows in a given dataframe
 		- GetnWin : number of windows in a given dataframe
@@ -1431,6 +1433,9 @@ class DataObjHistFile():
 	 #--> dfDict
 		self.SetdfDict()
 	 #---
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True	 
+	 #---	 
 	 #--> Return
 		return True
 	 #---
@@ -1472,6 +1477,24 @@ class DataObjHistFile():
 		""" Get the number of windows in self.dfDict[tkey] """
 		return len(self.GetlWin(tkey))
 	#---
+
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+
+	 #--> Write
+		with open(fPath, 'w') as file:	
+			for k,i in self.dfDict.items():
+				file.write(k + '\n')
+				i.to_csv(file, sep='\t', na_rep='NA', index=False)
+				file.write('\n')
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---	
 	#endregion ---------------------------------------------------- My Methods	
 #---
 

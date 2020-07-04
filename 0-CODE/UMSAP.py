@@ -225,6 +225,7 @@ class SplashWindow(wx.adv.SplashScreen):
 			config.name['AAdistR']		  : dclasses.DataObjAAdistFile,
 			config.extShort['AAdist'][0]  : dclasses.DataObjAAdistFile,
 			config.name['HistoRes']	      : dclasses.DataObjHistFile,
+			config.extShort['Histo'][0]   : dclasses.DataObjHistFile,
 			config.name['LimProtRes']	  : dclasses.DataObjLimProtFile,
 			config.extShort['LimProt'][0] : dclasses.DataObjLimProtFile,
 			config.extShort['ProtProf'][0]: dclasses.DataObjProtProfFile,

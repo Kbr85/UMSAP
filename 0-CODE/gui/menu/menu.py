@@ -505,6 +505,8 @@ class ToolsHistoRes(wx.Menu):
 		self.Append(504, 'All cleavages',        kind=wx.ITEM_RADIO)
 		self.Append(505, 'Unique cleavages',     kind=wx.ITEM_RADIO)
 		self.AppendSeparator()
+		self.expData = self.Append(-1, 'Export Data')
+		self.AppendSeparator()
 		self.Append(506, 'Save Plot Image')
 		self.AppendSeparator()
 		self.Append(501, 'Reset View')
@@ -519,6 +521,7 @@ class ToolsHistoRes(wx.Menu):
 		self.Bind(wx.EVT_MENU, self.OnUni,      id=504)
 		self.Bind(wx.EVT_MENU, self.OnUni,      id=505)
 		self.Bind(wx.EVT_MENU, self.OnSavePlot, id=506)
+		self.Bind(wx.EVT_MENU, self.OnExportData, source=self.expData)
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
@@ -539,6 +542,15 @@ class ToolsHistoRes(wx.Menu):
 		else:
 			self.Check(505, True)
 		return True
+	#---
+
+	def OnExportData(self, event):
+		""" Export data to csv format """
+		win = self.GetWindow()
+		if win.OnExportData():
+			return True
+		else:
+			return False
 	#---
 
 	def OnReset(self, event):
