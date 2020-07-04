@@ -888,16 +888,13 @@ def MenuOnExport():
 			fLocO = Path(dlgo.GetPath())
  	 	 #--> Create file object
 			try:
-				print(fLoc.suffix, fLoc)
 				fileObj = config.pointer['dclasses']['DataObj'][fLoc.suffix](fLoc)
-				print('File Object created')
 			except Exception:
 				k = False
 		 #---
  	 	 #--> Create filter peptide file
 			if k:
 				if fileObj.checkExport:
-					print('checkExport passed')
 					if fileObj.ExportData(fLocO):
 						gclasses.DlgSuccessMsg()
 					else:

@@ -994,6 +994,7 @@ class DataObjCorrFile():
 		- numCol: total number of columns in data
 		- colNum: the number of the columns in the data file
 		- fileD : data file used to calculate the coefficients
+		- checkExport : to fit into the Export Data methods in mods & utils
 		----> Methods of the class
 		None
 	"""
@@ -1174,6 +1175,8 @@ class DataObjAAdistFile():
 		- aVal : alpha value used to create the file
 		- recSeq : recombinant sequence from which the file was originated
 		- dfCol : columns in the dataframe
+		- checkExport : to fit into the Export Data methods in mods & utils
+		- col4Export : pretty print column names in df for export
 		----> Methods of the class
 		- GetChiColor
 	"""
@@ -1247,8 +1250,31 @@ class DataObjAAdistFile():
 	 #--> dfCol
 		self.dfCol = list(self.dataDF.columns.values) 
 	 #---
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True	 
+	 #-->
+		self.col4Export = self.ColForExport()
+	 #---
 	 #--> Return
 		return True
+	 #---
+	#---
+
+	#--> col4Export
+	def ColForExport(self):
+		""" Column names for the export data """
+	 #-->
+		col = {'AA': 'AA'}
+	 #---
+	 #-->
+		for k in range(0, self.nPos):
+			if k < self.nPosD2:
+				col[k] = k - self.nPosD2
+			else:
+				col[k] = k + 1 - self.nPosD2
+	 #---
+	 #-->
+		return col
 	 #---
 	#---
 
@@ -1313,6 +1339,23 @@ class DataObjAAdistFile():
 			return config.colors[self.name]['ChiColor-']
 	 #---
 	#---
+
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+	 #--> Get new df with correct labels
+		df = self.dataDF.copy()
+		df.rename(columns=self.col4Export, inplace=True)
+	 #---
+	 #--> Write
+		dmethods.FFsWriteCSV(fPath, df, index=True)
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---	
 	#endregion ---------------------------------------------------- My Methods
 #---
 
@@ -2151,14 +2194,15 @@ class DataObjProtProfFile(MyModules):
 		- checkExport    : check that there are some proteins in self.Fdata['R']
 		- nConds     : number of conditions in the file
 		- timeP      : number of relevant points per conditions, including the reference
-		- loga       : -log10[aVal]
-		# - aVal       : alpha value used when creating the file
+		- loga       : -log10[aVal] used by default
+		- aVal       : alpha value used by default
 		- NProt      : number of protein detected
 		- xCoordTimeA: list of list with x coordinates for the time analysis plot for each condition
 		- ZscoreVal  : value of the zscore in the file 
 		- ZscoreValP : value of the zscore in the file in % 
 		- nCondsL    : list with Conditions name
 		- nTimePL    : list with relevant points names including reference
+		- col4Export : pretty print column names in df for export
 		----> Methods of the class
 		None
 	"""
