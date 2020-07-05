@@ -99,10 +99,13 @@ class WinCorrA(gclasses.WinUtilUno):
 		self.stMethod.SetToolTip(config.tooltip[self.name]["CorrelationM"])
 	 #---
 	 #--> Bind
-		for child in self.GetChildren():
-			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
-		self.lbo.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		if config.cOS != 'Windows':
+			self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+			self.lbo.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+			for child in self.GetChildren():
+				child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		else:
+			pass
 		self.buttonAddCol.Bind(wx.EVT_BUTTON, self.OnAddCol)
 	 #---
 	 #--> Default values

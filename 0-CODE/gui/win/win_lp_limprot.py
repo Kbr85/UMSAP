@@ -184,8 +184,11 @@ class WinLimProt(gclasses.WinModule):
 			config.tooltip[self.name]['SeqLength'] + config.msg['OptVal'])
 	 #---
 	 #--> Binding
-		for child in self.GetChildren():
-			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		if config.cOS != 'Windows':
+			for child in self.GetChildren():
+				child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		else:
+			pass
 	 #---
 	 #--> Default values
 		self.tcSeqNatFile.SetValue('NA')

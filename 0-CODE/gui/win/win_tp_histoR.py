@@ -89,9 +89,13 @@ class WinHistoRes(gclasses.WinGraph):
 	def OnClick(self, event):
 		""" To process click events """
 		if event.button == 3:
-			self.PopupMenu(menu.ToolsHistoRes(self.seq, self.uni))
+			if config.cOS != 'Windows':
+				self.PopupMenu(menu.ToolsHistoRes(self.seq, self.uni))
+			else:
+				pass
 		else:
 			pass
+		
 		return True
 	#---
 

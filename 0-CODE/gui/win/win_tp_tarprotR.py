@@ -89,7 +89,10 @@ class WinTarProtRes(gclasses.WinResUno):
 		self.WinPos()	
 	 #---
 	 #--> Bind
-		self.p2.canvas.mpl_connect('button_press_event', self.OnClick)		
+		if config.cOS != 'Windows':
+			self.p2.canvas.mpl_connect('button_press_event', self.OnClick)		
+		else:
+			pass
 	 #---
 	 #--> Show
 		self.Show()
@@ -108,7 +111,10 @@ class WinTarProtRes(gclasses.WinResUno):
 	def OnClick(self, event):
 		""" To process click events """
 		if event.button == 3:
-			self.PopupMenu(menu.ToolsTarProtRes())
+			if config.cOS != 'Windows':
+				self.PopupMenu(menu.ToolsTarProtRes())
+			else:
+				pass
 		else:
 			pass
 		return True

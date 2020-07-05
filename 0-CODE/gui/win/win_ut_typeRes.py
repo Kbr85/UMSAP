@@ -222,7 +222,10 @@ class WinTypeRes(gclasses.WinMyFrame, gclasses.GuiChecks):
 		self.btnCreate.Bind(wx.EVT_BUTTON, self.CreateM)
 		self.btnCancel.Bind(wx.EVT_BUTTON, self.OnClose)
 		self.btnOk.Bind(wx.EVT_BUTTON, self.OnExport)
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		if config.cOS != 'Windows':
+			self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		else:
+			pass
 	 #---
 	 #--> If Results has information fill swMatrix
 	  #--> Get rows and cols

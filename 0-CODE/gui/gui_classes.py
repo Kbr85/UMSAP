@@ -1816,12 +1816,16 @@ class ElementListCtrlSearch():
 	  #---
 	 #---
 	 #--> Binding
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+		if config.cOS != 'Windows':
+			self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+			self.search.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)	
+		else:
+			pass
 		self.lb.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)	
 		#---
 		self.search.Bind(wx.EVT_SEARCHCTRL_SEARCH_BTN, self.OnSearchCtrl)
 		self.search.Bind(wx.EVT_TEXT_ENTER, self.OnSearchCtrl)
-		self.search.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)	
+		
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
@@ -3118,11 +3122,14 @@ class WinGraph(WinMyFrame):
 	 #---
 	 #--> Bind
 		self.canvas.mpl_connect('motion_notify_event', self.UpdateStatusBar)
-		self.canvas.mpl_connect('button_press_event', self.OnClick)
 		self.cursor = Cursor(self.axes, useblit=True, 
 			color=config.colors['cursorColor'], 
 			linewidth=config.cursor['lineWidth'], 
 			linestyle=config.cursor['lineStyle'])
+		if config.cOS != 'Windows':
+			self.canvas.mpl_connect('button_press_event', self.OnClick)
+		else:
+			pass
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
@@ -3374,7 +3381,10 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 	 #--> Binding
 		self.buttonSeqRecFile.Bind(wx.EVT_BUTTON, self.OnSeqRecFile)
 		self.buttonSeqNatFile.Bind(wx.EVT_BUTTON, self.OnSeqNatFile)
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		if config.cOS != 'Windows':
+			self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		else:
+			pass
 	 #---
 	 #--> Default values
 		self.tcOutputFF.SetValue('NA')
@@ -3692,7 +3702,10 @@ class WinRes(WinMyFrame, GuiChecks, ElementListCtrlSearch):
 			self.lb.Bind(wx.EVT_KILL_FOCUS, self.OnFocusKill)
 		else:
 			pass
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		# if config.cOS != 'Windows':
+		# 	self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		# else:
+		# 	pass
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
@@ -3734,10 +3747,10 @@ class WinRes(WinMyFrame, GuiChecks, ElementListCtrlSearch):
 		return True
 	#---
 
-	def OnPopUpMenu(self, event):
-		""" Show the pop up menu in the wx.ListCtrl. Override as needed """
-		pass
-	#---	
+	# def OnPopUpMenu(self, event):
+	# 	""" Show the pop up menu in the wx.ListCtrl. Override as needed """
+	# 	pass
+	# #---	
 #---
 
 class WinResUno(WinRes, ElementFragPanel):
@@ -3820,9 +3833,12 @@ class WinResUno(WinRes, ElementFragPanel):
 		self.Bind(wx.EVT_SIZE, self.OnSize)
 		#---
 		self.p1.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
-		self.p1.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
-		#---
-		self.text.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)	
+		if config.cOS != 'Windows':
+			self.p1.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+			#---
+			self.text.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)	
+		else:
+			pass
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup

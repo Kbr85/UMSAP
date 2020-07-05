@@ -179,8 +179,11 @@ class WinProtProf(gclasses.WinModule):
 			config.tooltip[self.name]['Exclude'] + config.msg['OptVal'])
 	 #---
 	 #--> Binding
-		for child in self.GetChildren():
-			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		if config.cOS != 'Windows':
+			for child in self.GetChildren():
+				child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		else:
+			pass
 	 #---
 	 #--> Default values
 		self.tcOutputFF.SetValue('NA')

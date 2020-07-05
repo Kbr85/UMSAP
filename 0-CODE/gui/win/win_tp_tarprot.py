@@ -148,8 +148,11 @@ class WinTarProt(gclasses.WinModule):
 	 #---
 	 #--> Bind
 		self.buttonPDBFile.Bind(wx.EVT_BUTTON, self.OnPDBFile)
-		for child in self.GetChildren():
-			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		if config.cOS != 'Windows':
+			for child in self.GetChildren():
+				child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		else:
+			pass
 	 #---
 	 #--> Initial default values
 		self.tcSeqNatFile.SetValue('NA')
