@@ -103,7 +103,7 @@ The second representation allows to compare the AA distribution in one position 
 
 \textit{\textbf{The Tools menu}}
 
-By default, the AA distribution for all AA in the FP list will be shown when the .aadist file is loaded. The Tools menu in the window allows user to change the displayed experiment or to select the position for which results in the experiments should be compared. In addition, users may select to save a figure of the plot and to reset the view. 
+By default, the AA distribution for all AA in the FP list will be shown when the .aadist file is loaded. The Tools menu in the window allows user to change the displayed experiment or to select the position for which results in the experiments should be compared. In addition, users may select to export the data shown in the window, save a figure of the plot and to reset the view. 
 
 \subsection{Cleavages per Residue}
 \label{subsec:utilCutsPerRes}
@@ -123,7 +123,7 @@ The output file from the Cleavages per residue utility will be shown as a simple
 
 \textit{\textbf{The Tools menu}}
 
-The window shows by default the absolute number of cleavages considering all FP for the recombinant protein. The Tools menu allows users to change this. Users may select to plot the results for a particular experiment or to compare two experiments. In addition, only the native sequence could be plotted or the normalized cleavages per residue values may be shown. An image of the plot can be created using the Save Plot Image entry in the Tools menu. The Reset View option restores the default appearance of the window.   
+The window shows by default the absolute number of cleavages considering all FP for the recombinant protein. The Tools menu allows users to change this. Users may select to plot the results for a particular experiment or to compare two experiments. In addition, only the native sequence could be plotted or the normalized cleavages per residue values may be shown. An image of the plot can be created using the Save Plot Image entry in the Tools menu. The Reset View option restores the default appearance of the window. The Export Data option allows to save the data shown in the window to a plain text file.  
 
 \begin{figure}[h]
 	\centering
@@ -165,23 +165,6 @@ First, UMSAP will check the validity of the user provided input. Then, a tempora
 \textit{\textbf{The output}}
 
 The output from this utility is a series of .pdb files that will be saved in a PDB folder. Each file contains the number of cleavages mapped to the beta field of the corresponding residue in the .pdb structure. The results for each experiment and the FP list are mapped to individual files. The mapped values can be visualized by opening the .pdb files with VMD, PyMol or Chimera and coloring the structure by beta factors.
-
-\subsection{Filtered Peptide List}
-\label{subsec:utilFiltPept}
-
-The Filtered Peptide List utility allows users to read a .tarprot file and to create a .filtpept file containing the FP list. How to generate the .tarprot file is discussed in \autoref{chap:tarprot}. The FP list is a non redundant list of all peptides identified during the Targeted Proteolysis analysis.
-
-\textit{\textbf{The interface}}
-
-The Filtered Peptide List utility does not have a window since there are no options to specify. When the utility is selected users will be asked to select a .tarprot file and then users must select the output file. That is all.
-
-\textit{\textbf{The analysis}}
-
-First, UMSAP will check the validity of the user provided input. Then the .tarprot file will be read in and all FP will be saved to the output file.
-
-\textit{\textbf{The output}}
-
-The .filtpept file has a tabular format in which the first row contains the name of the columns and columns are tab separated. It is a plain text file that can be read with any text editor. The file list all filtered peptides indicating the first and last residue number of the peptides and in which experiments were the peptide detected. A value of 1 in the experiment columns indicates that the peptide has intensity values that are significantly different to the control at the chosen significance level. A value of 0 indicates otherwise.
 
 \subsection{Histograms}
 \label{subsec:utilHistoCut}
@@ -225,7 +208,7 @@ The Histograms analysis window will display the results contained in a .hist fil
 
 \textit{\textbf{The Tools menu}}
 
-The Tools menu allows to show the results for the recombinant or native sequence and to show only unique cleavages or the total count of the detected cleavages. In addition, users may save an image of the plot or reset the state of the plot.
+The Tools menu allows to show the results for the recombinant or native sequence and to show only unique cleavages or the total count of the detected cleavages. In addition, users may export the data shown in the window to a plain text file, save an image of the plot or reset the state of the plot.
 
 \subsection{Sequence Alignments}
 \label{subsec:utilSeqAli}
@@ -353,7 +336,7 @@ The extension .corr is reserved for a file containing the output from a correlat
 
 The Tools menu in the configuration window of the correlation analysis, see \autoref{fig:utilCorrAnalysis} allows users to empty the right list box or to remove only the selected rows.
 
-The Tools menu in the window showing the results in a .corr file, see \autoref{fig:utilCorrAnalysisRes} allows user to create an image of the plot and to export the results to one of the modules in UMSAP. After selecting to export the data, the same window used to configure the Results - Control Experiment for the selected module will appear allowing users to configure this parameter and send the configuration to the module window. The exported information includes the path to the Data file used to calculate the correlation coefficients.
+The Tools menu in the window showing the results in a .corr file, see \autoref{fig:utilCorrAnalysisRes} allows user to create an image of the plot and to export the results to one of the modules in UMSAP. After selecting to export the data, the same window used to configure the Results - Control Experiment for the selected module will appear allowing users to configure this parameter and send the configuration to the module window. If the Data file used to generate the .corr file cannot be located in the file system, then UMSAP will ask for the location of the Data file before showing the Result - Control Experiment window. The exported information includes the path to the Data file. In addition, the data shown in the window can also be exported to a plain text file. 
 
 \subsection{Create Input File}
 \label{subsec:utilUscrFile}
@@ -442,6 +425,51 @@ Columns to extract: 0 1 2 3 4-10\newline
 Results: 98-105; 109-111; 112 113 114; 115-117 120\newline
 
 The menu entry Run Input File in the Script menu allows to load the .uscr file into UMSAP.
+
+\subsection{Export Data}
+\label{subsec:utilExpData}
+
+The Export Data utility will read an UMSAP file and will export the data present in the file to a table in a plain text file with tab separated columns. This utility is provided just in case users need to perform further data processing on the results of UMSAP. There is no interface for this utility since the only needed information needed is the location of the UMSAP file and the location for the output file.  
+
+\textit{\textbf{The analysis}}
+
+First, UMSAP will check the validity of the user provided input. Then, the UMSAP file will be read in and if needed the column names for the data will be updated. After this, the output file is generated.
+
+\textit{\textbf{The output}}
+
+The output file will be a plain text file with .txt extension containing a table with the data present in the selected UMSAP file. Columns in the file will be tab separated and the first row or rows will contain the names of the columns. The following is a general description of each one of the imported files.
+
+\textit{\textbf{Limited proteolysis}}
+
+The generated file contains information about each one of the detected FP. The information includes the N and C-terminus number for the recombinant and native protein, The results of the equivalence test for each analyzed gel spot and the sequence and score of the peptides. The results of the equivalence test are given as 0 (not equivalent) or 1 (equivalent).
+
+\textit{\textbf{Proteome Profiling}}
+
+The generated file contains information about each one of the proteins present in the .protprof file selected. The information includes the protein ID, gene name and score. After these three columns the table in the file is divided in information about the volcano plots (v) and the relevant points (rp).
+
+The information for the volcano plots includes the regular (P) and corrected (Pc) p values as calculated and as $-log$ values (pP and pPc), the fold change (log2FC and FC) as well as the average and standard deviation of the intensity values for the control and the experiment. This information is given for each condition and relevant point.
+
+The information for the relevant points comparison includes the calculated (P) and corrected (Pc) p values for the comparison of the relevant points across the different conditions and the average and standard deviation for the intensity ratios. This information is given for each relevant point.
+
+\textit{\textbf{Targeted proteolysis}} 
+
+The generated file contains information about each one of the detected FP. The information includes the N and C-terminus number for the recombinant and native protein, The results of the ANCOVA test for each analyzed experiment and the sequence and score of the peptides. The results of the ANCOVA test are given as 0 (not different to the control) or 1 (different to the control and slope greater than 0).
+
+\textit{\textbf{AA distribution}}
+
+The generated file contains a matrix with the number of times each AA appears at one of the analyzed positions. This information is given for each experiment, for the FP list as a whole and for the random cleavages (RD) generated for the $\chi^2$ test. The experiment and AA in each row is given in the first and third column of the table. Columns fourth to the end of the table contains the data with the position around the cleavages indicated in the column name.
+
+\textit{\textbf{Cleavages per residue}}
+
+The generated file contains the number of times each residue is found at the C-terminus of a cleavage. The residue numbers are given for the recombinant and native protein. The number of cleavages are given for each experiment and sequence in the form of absolute and normalized (0 to 1 range) values.
+
+\textit{\textbf{Correlation analysis exported data}} 
+
+The generated file contains a square matrix with the correlation coefficients. The name of the columns in the matrix are explicitly written in the file. The name of the rows are the same as the columns with the same order and are not written to the file.
+
+\textbf{\textit{Histograms}}
+
+The generated file contains the window definitions and the results for the FP and each experiment. This information is given for the recombinant and native protein sequence and considering unique cleavages or all cleavages.
 
 \subsection{Merge aadist Files}
 \label{subsec:utilMergeAadistFiles}
