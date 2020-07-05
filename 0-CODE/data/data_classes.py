@@ -1161,7 +1161,7 @@ class DataObjCutpropFile():
 		"""
 
 	 #--> Write
-		dmethods.FFsWriteCSV(fPath, self.data, index=True)
+		dmethods.FFsWriteCSV(fPath, self.data)
 	 #---
 	 #--> Return
 		return True
@@ -2446,6 +2446,11 @@ class DataObjProtProfFile(MyModules):
 
 	 #--> Get new df with correct labels
 		df = self.dataFrame.copy()
+		df.rename(
+			columns=(lambda x: 'rp' if x == 'tp' else x), 
+			level=0, 
+			inplace=True,
+		) # IMPROVMENT The df will have rp and this will be deleted
 		df.rename(columns=self.col4Export[1], level=1, inplace=True)
 		df.rename(columns=self.col4Export[2], level=2, inplace=True)
 	 #---
@@ -4004,7 +4009,7 @@ class DataObjTarProtFile(MyModules):
 		if colExt != None and dataI.is_file(): 
 			pathP = pathP.parent / 'Data'
 			try:
-				self.TarProt2SDataFile(pathP, colOut=colExt, dataF=dataI)
+				self.ToSDataFile(pathP, colOut=colExt, dataF=dataI)
 			except Exception:
 				pass
 		else:
