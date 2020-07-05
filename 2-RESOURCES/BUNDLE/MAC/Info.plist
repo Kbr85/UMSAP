@@ -22,7 +22,7 @@
 	<key>CFBundleExecutable</key>
 	<string>MacOS/UMSAP</string>
 	<key>CFBundleIconFile</key>
-	<string>mac-icon.icns</string>
+	<string>icon.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>UMSAP</string>
 	<key>CFBundleInfoDictionaryVersion</key>
