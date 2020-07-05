@@ -162,9 +162,12 @@ class WinProtProfRes(gclasses.WinResDosDos):
 		gmethods.MinSize(self)
 	 #---	
 	 #--> Binding
-		self.p3.canvas.mpl_connect("button_press_event", self.OnClick3)
-		#---
-		self.p2.canvas.mpl_connect("button_press_event", self.OnClick2)
+		if config.cOS != 'Windows':
+			self.p3.canvas.mpl_connect("button_press_event", self.OnClick3)
+			#---
+			self.p2.canvas.mpl_connect("button_press_event", self.OnClick2)
+		else:
+			pass
 		self.p2.canvas.mpl_connect("pick_event", self.OnPick2)
 	 #---
 	 #--> Draw
@@ -319,15 +322,10 @@ class WinProtProfRes(gclasses.WinResDosDos):
 	#---
 
 	def OnRightDown(self, event):
-		""" Display the popup menu. In this case the list box and search will
-		not display anything because is way to messy to have the volcano and
-		time menu in a pop menu """
-		return True
-	#---
+		""" Show the pop up menu in the wx.ListCtrl. Binding is done in base 
+			class.
+		"""
 
-	def OnPopUpMenu(self, event):
-		""" Show the pop up menu in the wx.ListCtrl. Binding is done in
-		 the base class """
 		self.PopupMenu(menu.Filter())
 		return True
 	#---

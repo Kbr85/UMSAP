@@ -87,7 +87,10 @@ class WinCorrARes(gclasses.WinGraph):
 	def OnClick(self, event):
 		""" To process click events """
 		if event.button == 3:
-			self.PopupMenu(menu.ToolsCorrARes())
+			if config.cOS != 'Windows':
+				self.PopupMenu(menu.ToolsCorrARes())
+			else:
+				pass
 		else:
 			pass
 		return True

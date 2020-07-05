@@ -130,7 +130,10 @@ class WinMergeAAFiles(gclasses.WinMyFrame, gclasses.ElementHelpRun,
 	 #--> Binding
 		self.buttonOutFile.Bind(wx.EVT_BUTTON, self.OnOutFile)
 		self.buttonFile.Bind(wx.EVT_BUTTON, self.OnAAfiles)
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+		if config.cOS != 'Windows':
+			self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+		else:
+			pass
 		self.tcOutFile.Bind(wx.EVT_TEXT, self.OnTextChange)
 	 #---
 	 #--> Show
