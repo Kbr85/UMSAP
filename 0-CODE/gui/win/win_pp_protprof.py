@@ -202,8 +202,10 @@ class WinProtProf(gclasses.WinModule):
 			self.tcOutputFF.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
 		elif config.cOS == 'Windows':
 			from pathlib import Path
-			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/PROTPROF/proteinGroups-kbr.txt'))) 
-			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/test2')))
+			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/PROTPROF/proteinGroups-kbr.txt'))) 
+			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/test')))
+		else:
+			pass
 		self.tcOutName.SetValue('myProtTest')
 		self.tcScoreVal.SetValue('320')
 		self.chb.SetValue(True)

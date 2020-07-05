@@ -1637,7 +1637,7 @@ class MainMenuBar(wx.MenuBar):
 	 #---
 	 #--> Append to menubar
 		if config.cOS != 'Darwin':
-			self.Append(UMSAP, '&UMSAP')
+			self.Append(self.UMSAP, '&UMSAP')
 		else:
 			pass
 		self.Append(self.ModuleUtil, '&Modules')

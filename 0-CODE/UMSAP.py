@@ -39,7 +39,7 @@ class UmsapApp(wx.App):
 			# )
 		 ############################################# Change before releasing
 		else:
-			image_loc = 'UPDATE'
+			image_loc = cwd + '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
 		
 		bitmap = wx.Bitmap(image_loc, type=wx.BITMAP_TYPE_PNG)
 		

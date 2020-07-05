@@ -116,8 +116,10 @@ class WinCorrA(gclasses.WinUtilUno):
 		if config.cOS == "Darwin":
 			self.tcDataFile.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt")
 			self.tcOutputFF.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Untitled.corr")
-			# self.tcDataFile.SetValue('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')
-			# self.tcOutputFF.SetValue('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/TARPROT/Untitled.corr')
+		elif config.cOS == 'Windows':
+			from pathlib import Path
+			self.tcDataFile.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
+			self.tcOutputFF.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/test.corr')))
 		else:
 			pass
 	 #--- INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! ##########
