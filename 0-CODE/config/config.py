@@ -28,14 +28,17 @@ import wx
 
 
 #region --------------------------------------------------- General parameters
-version       = '2.1.0 (beta)' # String to write in the output files
-versionUpdate = [2, 0, 1]      # List to match against the version online
-dictVersion   = { # dict for directly write into output files
+development = True # To control variables with different values in dev or prod
+
+version         = '2.1.0 (beta)' # String to write in the output files
+versionUpdate   = [2, 0, 1]      # List to match against the version online
+versionInternet = None           # To hold the version found in the Internet
+dictVersion     = { # dict for directly write into output files
 	'version': version,
 }
-versionInternet = None              # To hold the version found in the Internet
-cOS             = platform.system() # Current operating system
-cwd             = Path(os.path.abspath(os.path.dirname(__file__))) # current working directory
+
+cOS = platform.system() # Current operating system
+cwd = Path(os.path.abspath(os.path.dirname(__file__))) # Current working directory
 #endregion ------------------------------------------------ General parameters
 
 #region ---------------------------------------- PLATFORM DEPENDENT PARAMETERS
@@ -43,11 +46,10 @@ if cOS == 'Darwin':
 	#--> Fix cwd and set the location of the Resources folder
 	cwd = cwd.parent
 	cwd = cwd.parent
-	
-	#################################################### Change before releasing
-	# res = cwd / 'Resources'
-	res = cwd / 'BORRAR-UMSAP/RESOURCES'
-	#################################################### Change before releasing
+	if development:
+		res = cwd / 'BORRAR-UMSAP/RESOURCES'
+	else:
+		res = cwd / 'Resources'	
 	
 	#--> Set top left coordinate
 	topLeftCoord = (0, 21)
@@ -706,13 +708,17 @@ image = { # Information regarding images
 #endregion ------------------------------------------------------------ Images
 
 #region ------------------------------------------------------------------ URL
+url_home = 'https://www.umsap.nl'
+
 url = { # Selected URL needed by umsap.
-	'Home'     : "https://www.umsap.nl",
-	'Update'   : 'https://www.umsap.nl/umsap-release-notes',
+ #--> Third party sites
+	'Uniprot'  : 'https://www.uniprot.org/uniprot/',
+	'Pdb'      : 'http://www.rcsb.org/pdb/files/',
+ #--> www.umsap.nl
+	'Home'     : url_home,
+	'Update'   : f"{url_home}/page/release-notes",
 	'Tutorial' : ("https://www.umsap.nl/learn-how-to-use-umsap/tutorials-for-"
 		"learning-how-to-use-umsap/umsap-2-0"),
-	'Uniprot'  : 'https://www.uniprot.org/uniprot/',
-	'Pdb'      : 'http://www.rcsb.org/pdb/files/'
 }
 #endregion --------------------------------------------------------------- URL
 

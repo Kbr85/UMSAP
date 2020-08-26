@@ -124,10 +124,10 @@ def UpdateCheck(ori, ):
 		if r.status_code == requests.codes.ok:
 			text = r.text.split('\n')
 			for i in text:
-				if 'UMSAP v' in i:
+				if '<h1>UMSAP' in i:
 					versionI = i
 					break
-			versionI = versionI.split('UMSAP v')[1].split()[0].split('.')
+			versionI = versionI.split('UMSAP')[1].split('</h1>')[0].split('.')
 			config.versionInternet = list(map(int, versionI))
  		 #--> Compare with program version
 			config.updateAvail = dmethods.VersionCompare()
