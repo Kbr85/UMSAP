@@ -102,8 +102,15 @@ class ElementHelpRun():
 	# ------------------------------------------------------------- My Methods
 	def OnHelp(self, event):
 		""" Default behavior of Help button: go to UMSAP v2.1 tutorial """
-		webbrowser.open_new(config.url['Tutorial'])
+	 #--> Show specific tutorial or the general list of tutorials
+		try:
+			webbrowser.open_new(config.url[self.name])
+		except KeyError:
+			webbrowser.open_new(config.url['Tutorial'])
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def OnRun(self, event):

@@ -709,16 +709,27 @@ image = { # Information regarding images
 
 #region ------------------------------------------------------------------ URL
 url_home = 'https://www.umsap.nl'
+url_tutorial = f"{url_home}/tutorial/2-1-0"
 
 url = { # Selected URL needed by umsap.
  #--> Third party sites
 	'Uniprot'  : 'https://www.uniprot.org/uniprot/',
 	'Pdb'      : 'http://www.rcsb.org/pdb/files/',
  #--> www.umsap.nl
-	'Home'     : url_home,
-	'Update'   : f"{url_home}/page/release-notes",
-	'Tutorial' : ("https://www.umsap.nl/learn-how-to-use-umsap/tutorials-for-"
-		"learning-how-to-use-umsap/umsap-2-0"),
+	'Home'            : url_home,
+	'Update'          : f"{url_home}/page/release-notes",
+	'Tutorial'        : f"{url_tutorial}/start",
+	name['CorrA']     : f"{url_tutorial}/correlation-analysis",
+	name['MergeAA']   : f"{url_tutorial}/merge-aadist-files",
+	name['ShortDFile']: f"{url_tutorial}/short-data-files",
+	name['TarProt']   : f"{url_tutorial}/targeted-proteolysis",
+	name['AAdist']    : f"{url_tutorial}/aa-distribution",
+	name['Cuts2PDB']  : f"{url_tutorial}/cleavages-pdb-files",
+	name['Histo']     : f"{url_tutorial}/histograms",
+	name['SeqAlign']  : f"{url_tutorial}/sequence-alignment",
+	name['LimProt']   : f"{url_tutorial}/limited-proteolysis",
+	name['SeqH']      : f"{url_tutorial}/sequence-highlight",
+	name['ProtProf']  : f"{url_tutorial}/proteome-profiling",
 }
 #endregion --------------------------------------------------------------- URL
 
