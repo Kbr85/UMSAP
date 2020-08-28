@@ -1064,7 +1064,7 @@ msg = { # Text messages used in the programm
 		'HistWin' : ("Histogram window sizes.\nOne number will result in "
 			"multiple windows with the same width. Multiple numbers will "
 			"define custom sized windows.\nSee the manual for more details."
-			"\ne.g. 50"),
+			"\ne.g. 50 or 0 50 100 200 400"),
 		'PDBID' : ("The PDB code and the chain/segment that will be used to map"
 			" the detected cleavages.\nIf a local file has being specified only"
 			" the chain/segment is needed here.\ne.g. A or SEGA or 2Y4F;A or "
@@ -1084,11 +1084,8 @@ msg = { # Text messages used in the programm
 			"three different experiments:\n98-105; 109-111; 112 113 114; "
 			"115-117 120"),
 		'ResultsPP' : ("Column number(s) in the data file containing the "
-			"experiment(s) Results.\nReplicates from different experiments are "
-			"comma (,) separated. Different conditions are separated by a "
-			"semicolon (;)\ne.g. Two conditions with three relevant points and "
-			"two replicates per time point:"
-			"\n105 125, 106 126, 101 121; 130 132, 108 128, 103 123"),
+			"Results and Control experiments.\nIn this case the values cannot "
+			"be directly typed.\nPlease use the Type value or Load values."),
 		'ResultsLP' : ("Column number(s) in the data file containing the "
 			"Results and Control experiment.\nReplicates from different lanes" 
 			" are comma (,) separated. Different bands are separated by a "
