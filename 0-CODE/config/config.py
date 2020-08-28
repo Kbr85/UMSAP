@@ -1076,9 +1076,6 @@ msg = { # Text messages used in the programm
 		'Score' : ("Column number in the data file containing the Score values."
 			"\ne.g. 44"),
 		'ColExt' : ("Column number(s) in the data file to be written to the "
-			"short data output files.\nNA means no short data output"
-			" files.\ne.g. 0-2 35 40-50 51"),
-		'ColExt2' : ("Column number(s) in the data file to be written to the "
 			"short data output files.\ne.g. 0-2 35 40-50 51"),
 		'Results' : ("Column number(s) in the data file containing the "
 			"Results and Control experiments.\nReplicates from different "
@@ -1169,15 +1166,14 @@ msg = { # Text messages used in the programm
 			".tarprot file."),
 		'Cuts2PDB' : ("Map the number of cleavages found in a .tarprot file to"
 			" a protein structure."),
-		'CInputFile' : ("Create an input file for UMSAP from a .tarprot "
-			"file."),
+		'CInputFile' : ("Create an input file from a main UMSAP output file."),
 		'Export' : ("Export selected data to a file with CSV format."),
 		'CHist' : ("Generate histograms of the detected cleavage sites "
 			"found in a .tarprot file."),
 		'SeqAlign' : ("Generate sequence alignments based on the peptides found"
 			" in a .tarprot file."),
 		'ShortFile' : ("Generate short versions of a data file based on a "
-			".tarprot file."),
+			"main UMSAP output file."),
 		'CorrA' : ("Perform a correlation analysis of the data in a data "
 			"file."),
 		'AAdistM' : ("Merge several .aadist files."),
@@ -1187,7 +1183,8 @@ msg = { # Text messages used in the programm
 			"and generate UMSAP result files compatible with the current "
 			"version of UMSAP."),
 		'ReadTP' : ("Read a .tarprot file from a previous version of UMSAP and "
-			"start the Targeted Proteolysis module."),
+			"load the Targeted Proteolysis module with the data in the "
+			".tarprot file."),
 		'RunScript' : ("Read an input file and configure the window of the "
 			"corresponding module."),
 		'SeqH' : ("Highlight the detected fragments in the sequence of the "
@@ -1270,13 +1267,13 @@ msg = { # Text messages used in the programm
 		'UMSAPMFile' : ("Browse the file system to select the main output file"
 			" from a module."),
 	 #--> Help Run
-		'Help' : ("Show the online tutorials for UMSAP v2.1."),
+		'Help' : ("Show the online tutorials at www.umsap.nl."),
 		'Run' : ("Start the analysis."),
 	 #--> Clear buttons
 		'All' : ("Clear the content of all user provided input."),
-		'Files' : ("Clear the paths to all user provided files."),
-		'Values' : ("Clear the content of all user provided values."),
-		'Cols' : ("Clear the content of all user provided column numbers."),
+		'Files' : ("Clear the content of section Files."),
+		'Values' : ("Clear the content of section Values."),
+		'Cols' : ("Clear the content of section Column numbers."),
 	 #--> Used in TypeRes
 		'Create' : ("Create the matrix of text fields to write the column "
 			"numbers."),
@@ -1403,7 +1400,7 @@ tooltip = { # This dict makes it easier to set the tooltips based on the name of
 		'UMSAPMFile'             : msg['Button']['UMSAPMFile'],
 		'OutputFolderUMSAPFile': msg['Button']['OutputFolderUMSAPFile'],
 		'DataFile'               : msg['Button']['DataFile2'],
-		'ValueFieldTooltip'      : msg['StaticText']['ColExt2'],
+		'ValueFieldTooltip'      : msg['StaticText']['ColExt'],
 	},
 	name['Cuts2PDB'] : { # Cleavages to PDB Util
 		'TarProtFile'            : msg['Button']['TarProtFile'],
