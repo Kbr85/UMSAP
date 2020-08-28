@@ -2319,7 +2319,11 @@ class GuiChecks():
 	 #---
 	 #--> PDBFile & PDBID both None
 		if self.do[n] == None and self.do[nold] == None:
-			return True
+			if NA:
+				return True
+			else:
+				DlgFatalErrorMsg(msg)
+				return False
 		else:
 			pass
 	 #---
