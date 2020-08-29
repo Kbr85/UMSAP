@@ -243,13 +243,14 @@ path = { # Path to folders containing UMSAP files independently of the OS
 	'Resources': res,            # Resources folder
 	'Images'   : res / 'IMAGES', # Images folder
 	'Config'   : res / 'CONFIG', # Configuration folder
+	'UserHome' : Path.home(),    # User home folder
 }
 #endregion ------------------------------------------------------------- Paths
 
 #region ---------------------------------------------------------------- Files
 file = { # Path to critical files
-	'Config'   : path['Config'] / 'config.json',     # User config file
-	'ConfigDef': path['Config'] / 'config_def.json', # Default config file
+	'Config'   : path['UserHome'] / '.umsap_config.json', # User config file
+	'ConfigDef': path['Config'] / 'config_def.json',      # Default config file
 	'Manual'   : path['Resources'] / 'MANUAL/manual.pdf', # UMSAP Manual
 }
 #endregion ------------------------------------------------------------- Files
