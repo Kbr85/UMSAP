@@ -174,12 +174,14 @@ class WinLimProt(gclasses.WinModule):
 	  #---
 	 #---		
 	 #--> Tooltips
-		self.buttonOutName.SetToolTip(config.tooltip[self.name]['OutName'])
+		self.buttonOutName.SetToolTip(
+			config.tooltip[self.name]['OutName'] + config.msg['OptVal']) 
 		self.staVal.SetToolTip(config.tooltip[self.name]['aVal'])
 		self.stbVal.SetToolTip(config.tooltip[self.name]['bVal'])
 		self.styVal.SetToolTip(config.tooltip[self.name]['yVal'])
 		self.stDelta.SetToolTip(config.tooltip[self.name]['dmaxVal'])
-		self.stDeltaU.SetToolTip(config.tooltip[self.name]['dVal'])
+		self.stDeltaU.SetToolTip(
+			config.tooltip[self.name]['dVal'] + config.msg['OptVal'])
 		self.stSeqLength.SetToolTip(
 			config.tooltip[self.name]['SeqLength'] + config.msg['OptVal'])
 	 #---

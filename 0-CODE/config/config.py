@@ -28,14 +28,17 @@ import wx
 
 
 #region --------------------------------------------------- General parameters
-version       = '2.1.0 (beta)' # String to write in the output files
-versionUpdate = [2, 0, 1]      # List to match against the version online
-dictVersion   = { # dict for directly write into output files
+development = True # To control variables with different values in dev or prod
+
+version         = '2.1.0 (beta)' # String to write in the output files
+versionUpdate   = [2, 0, 1]      # List to match against the version online
+versionInternet = None           # To hold the version found in the Internet
+dictVersion     = { # dict for directly write into output files
 	'version': version,
 }
-versionInternet = None              # To hold the version found in the Internet
-cOS             = platform.system() # Current operating system
-cwd             = Path(os.path.abspath(os.path.dirname(__file__))) # current working directory
+
+cOS = platform.system() # Current operating system
+cwd = Path(os.path.abspath(os.path.dirname(__file__))) # Current working directory
 #endregion ------------------------------------------------ General parameters
 
 #region ---------------------------------------- PLATFORM DEPENDENT PARAMETERS
@@ -43,11 +46,10 @@ if cOS == 'Darwin':
 	#--> Fix cwd and set the location of the Resources folder
 	cwd = cwd.parent
 	cwd = cwd.parent
-	
-	#################################################### Change before releasing
-	# res = cwd / 'Resources'
-	res = cwd / 'BORRAR-UMSAP/RESOURCES'
-	#################################################### Change before releasing
+	if development:
+		res = cwd / 'BORRAR-UMSAP/RESOURCES'
+	else:
+		res = cwd / 'Resources'	
 	
 	#--> Set top left coordinate
 	topLeftCoord = (0, 21)
@@ -241,13 +243,14 @@ path = { # Path to folders containing UMSAP files independently of the OS
 	'Resources': res,            # Resources folder
 	'Images'   : res / 'IMAGES', # Images folder
 	'Config'   : res / 'CONFIG', # Configuration folder
+	'UserHome' : Path.home(),    # User home folder
 }
 #endregion ------------------------------------------------------------- Paths
 
 #region ---------------------------------------------------------------- Files
 file = { # Path to critical files
-	'Config'   : path['Config'] / 'config.json',     # User config file
-	'ConfigDef': path['Config'] / 'config_def.json', # Default config file
+	'Config'   : path['UserHome'] / '.umsap_config.json', # User config file
+	'ConfigDef': path['Config'] / 'config_def.json',      # Default config file
 	'Manual'   : path['Resources'] / 'MANUAL/manual.pdf', # UMSAP Manual
 }
 #endregion ------------------------------------------------------------- Files
@@ -706,13 +709,28 @@ image = { # Information regarding images
 #endregion ------------------------------------------------------------ Images
 
 #region ------------------------------------------------------------------ URL
+url_home = 'https://www.umsap.nl'
+url_tutorial = f"{url_home}/tutorial/2-1-0"
+
 url = { # Selected URL needed by umsap.
-	'Home'     : "https://www.umsap.nl",
-	'Update'   : 'https://www.umsap.nl/umsap-release-notes',
-	'Tutorial' : ("https://www.umsap.nl/learn-how-to-use-umsap/tutorials-for-"
-		"learning-how-to-use-umsap/umsap-2-0"),
+ #--> Third party sites
 	'Uniprot'  : 'https://www.uniprot.org/uniprot/',
-	'Pdb'      : 'http://www.rcsb.org/pdb/files/'
+	'Pdb'      : 'http://www.rcsb.org/pdb/files/',
+ #--> www.umsap.nl
+	'Home'            : url_home,
+	'Update'          : f"{url_home}/page/release-notes",
+	'Tutorial'        : f"{url_tutorial}/start",
+	name['CorrA']     : f"{url_tutorial}/correlation-analysis",
+	name['MergeAA']   : f"{url_tutorial}/merge-aadist-files",
+	name['ShortDFile']: f"{url_tutorial}/short-data-files",
+	name['TarProt']   : f"{url_tutorial}/targeted-proteolysis",
+	name['AAdist']    : f"{url_tutorial}/aa-distribution",
+	name['Cuts2PDB']  : f"{url_tutorial}/cleavages-pdb-files",
+	name['Histo']     : f"{url_tutorial}/histograms",
+	name['SeqAlign']  : f"{url_tutorial}/sequence-alignment",
+	name['LimProt']   : f"{url_tutorial}/limited-proteolysis",
+	name['SeqH']      : f"{url_tutorial}/sequence-highlight",
+	name['ProtProf']  : f"{url_tutorial}/proteome-profiling",
 }
 #endregion --------------------------------------------------------------- URL
 
@@ -1047,7 +1065,7 @@ msg = { # Text messages used in the programm
 		'HistWin' : ("Histogram window sizes.\nOne number will result in "
 			"multiple windows with the same width. Multiple numbers will "
 			"define custom sized windows.\nSee the manual for more details."
-			"\ne.g. 50"),
+			"\ne.g. 50 or 0 50 100 200 400"),
 		'PDBID' : ("The PDB code and the chain/segment that will be used to map"
 			" the detected cleavages.\nIf a local file has being specified only"
 			" the chain/segment is needed here.\ne.g. A or SEGA or 2Y4F;A or "
@@ -1059,9 +1077,6 @@ msg = { # Text messages used in the programm
 		'Score' : ("Column number in the data file containing the Score values."
 			"\ne.g. 44"),
 		'ColExt' : ("Column number(s) in the data file to be written to the "
-			"short data output files.\nNA means no short data output"
-			" files.\ne.g. 0-2 35 40-50 51"),
-		'ColExt2' : ("Column number(s) in the data file to be written to the "
 			"short data output files.\ne.g. 0-2 35 40-50 51"),
 		'Results' : ("Column number(s) in the data file containing the "
 			"Results and Control experiments.\nReplicates from different "
@@ -1070,11 +1085,8 @@ msg = { # Text messages used in the programm
 			"three different experiments:\n98-105; 109-111; 112 113 114; "
 			"115-117 120"),
 		'ResultsPP' : ("Column number(s) in the data file containing the "
-			"experiment(s) Results.\nReplicates from different experiments are "
-			"comma (,) separated. Different conditions are separated by a "
-			"semicolon (;)\ne.g. Two conditions with three relevant points and "
-			"two replicates per time point:"
-			"\n105 125, 106 126, 101 121; 130 132, 108 128, 103 123"),
+			"Results and Control experiments.\nIn this case the values cannot "
+			"be directly typed.\nPlease use the Type value or Load values."),
 		'ResultsLP' : ("Column number(s) in the data file containing the "
 			"Results and Control experiment.\nReplicates from different lanes" 
 			" are comma (,) separated. Different bands are separated by a "
@@ -1152,15 +1164,14 @@ msg = { # Text messages used in the programm
 			".tarprot file."),
 		'Cuts2PDB' : ("Map the number of cleavages found in a .tarprot file to"
 			" a protein structure."),
-		'CInputFile' : ("Create an input file for UMSAP from a .tarprot "
-			"file."),
+		'CInputFile' : ("Create an input file from a main UMSAP output file."),
 		'Export' : ("Export selected data to a file with CSV format."),
 		'CHist' : ("Generate histograms of the detected cleavage sites "
 			"found in a .tarprot file."),
 		'SeqAlign' : ("Generate sequence alignments based on the peptides found"
 			" in a .tarprot file."),
 		'ShortFile' : ("Generate short versions of a data file based on a "
-			".tarprot file."),
+			"main UMSAP output file."),
 		'CorrA' : ("Perform a correlation analysis of the data in a data "
 			"file."),
 		'AAdistM' : ("Merge several .aadist files."),
@@ -1170,7 +1181,8 @@ msg = { # Text messages used in the programm
 			"and generate UMSAP result files compatible with the current "
 			"version of UMSAP."),
 		'ReadTP' : ("Read a .tarprot file from a previous version of UMSAP and "
-			"start the Targeted Proteolysis module."),
+			"load the Targeted Proteolysis module with the data in the "
+			".tarprot file."),
 		'RunScript' : ("Read an input file and configure the window of the "
 			"corresponding module."),
 		'SeqH' : ("Highlight the detected fragments in the sequence of the "
@@ -1253,13 +1265,13 @@ msg = { # Text messages used in the programm
 		'UMSAPMFile' : ("Browse the file system to select the main output file"
 			" from a module."),
 	 #--> Help Run
-		'Help' : ("Show the online tutorials for UMSAP v2.1."),
+		'Help' : ("Show the online tutorials at www.umsap.nl."),
 		'Run' : ("Start the analysis."),
 	 #--> Clear buttons
 		'All' : ("Clear the content of all user provided input."),
-		'Files' : ("Clear the paths to all user provided files."),
-		'Values' : ("Clear the content of all user provided values."),
-		'Cols' : ("Clear the content of all user provided column numbers."),
+		'Files' : ("Clear the content of section Files."),
+		'Values' : ("Clear the content of section Values."),
+		'Cols' : ("Clear the content of section Column numbers."),
 	 #--> Used in TypeRes
 		'Create' : ("Create the matrix of text fields to write the column "
 			"numbers."),
@@ -1386,7 +1398,7 @@ tooltip = { # This dict makes it easier to set the tooltips based on the name of
 		'UMSAPMFile'             : msg['Button']['UMSAPMFile'],
 		'OutputFolderUMSAPFile': msg['Button']['OutputFolderUMSAPFile'],
 		'DataFile'               : msg['Button']['DataFile2'],
-		'ValueFieldTooltip'      : msg['StaticText']['ColExt2'],
+		'ValueFieldTooltip'      : msg['StaticText']['ColExt'],
 	},
 	name['Cuts2PDB'] : { # Cleavages to PDB Util
 		'TarProtFile'            : msg['Button']['TarProtFile'],

@@ -26,7 +26,7 @@ import data.data_methods as dmethods
 
 
 class WinMergeAAFiles(gclasses.WinMyFrame, gclasses.ElementHelpRun, 
-	gclasses.ElementClearAF):
+	gclasses.ElementClearAF, gclasses.GuiChecks):
 	""" Creates the window to merge aadist files """
 
 	#region --------------------------------------------------- Instance Setup

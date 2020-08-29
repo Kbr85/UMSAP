@@ -102,8 +102,15 @@ class ElementHelpRun():
 	# ------------------------------------------------------------- My Methods
 	def OnHelp(self, event):
 		""" Default behavior of Help button: go to UMSAP v2.1 tutorial """
-		webbrowser.open_new(config.url['Tutorial'])
+	 #--> Show specific tutorial or the general list of tutorials
+		try:
+			webbrowser.open_new(config.url[self.name])
+		except KeyError:
+			webbrowser.open_new(config.url['Tutorial'])
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def OnRun(self, event):
@@ -2316,7 +2323,11 @@ class GuiChecks():
 	 #---
 	 #--> PDBFile & PDBID both None
 		if self.do[n] == None and self.do[nold] == None:
-			return True
+			if NA:
+				return True
+			else:
+				DlgFatalErrorMsg(msg)
+				return False
 		else:
 			pass
 	 #---

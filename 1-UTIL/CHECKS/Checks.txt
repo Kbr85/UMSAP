@@ -40,6 +40,9 @@
 
 	-- Format of output file change to json or csv to allow easier reading by
 		users needing to manipulate the output files.
+
+	-- Remove filtered peptide utility and implemented Export Data in every 
+		UMSAP file
 	
 	-- List of filtered peptide in the .filtpept file simplified.
 

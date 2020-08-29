@@ -13,23 +13,23 @@ cOS = platform.system()
 
 if cOS == 'Darwin':
 	pathF = '/Users/'
-	spec = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/BUNDLE/MAC/UMSAPm.spec')
+	spec = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/BUNDLE/MAC/UMSAPm.spec')
 else:
 	pathF = 'C:/Users/'
-	spec  = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/BUNDLE/WIN/UMSAP.spec')
-	specH = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/BUNDLE/WIN/version.txt')
+	spec  = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/BUNDLE/WIN/UMSAP.spec')
+	specH = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/BUNDLE/WIN/version.txt')
 
 #--> FOLDERS TO COPY
-source = Path(pathF + user + '/Dropbox/UMSAP/CODE/0-CODE/')
-img    = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/IMAGES/')
-data   = Path(pathF + user + '/Dropbox/UMSAP/LOCAL/DATA/')
-dataF  = ['LIMPROT', 'TARPROT', 'PROTPROF']
+source = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/0-CODE/')
+img    = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/IMAGES/')
+data   = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/')
+dataF  = ['LIMPROT', 'TARPROT', 'PROTPROF', 'UMSAP-TEST-DATA']
 
 #--> FILES TO COPY
-icon   = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/ICON/MAC/icon.icns')
-icon2  = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/ICON/WIN/icon2.ico')
-manual = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/MANUAL/manual.pdf')
-config = Path(pathF + user + '/Dropbox/UMSAP/CODE/2-RESOURCES/CONFIG/config_def.json')
+icon   = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/ICON/MAC/icon.icns')
+icon2  = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/ICON/WIN/icon2.ico')
+manual = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/MANUAL/manual.pdf')
+config = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/CONFIG/config_def.json')
 
 #--> START RUNNING
 ##--> ASK IF PLAYGROUND FOLDER CAN BE DELETED

@@ -295,6 +295,9 @@ class WinCorrA(gclasses.WinUtilUno):
 	 #--> Get the list of columns indixes selected or all of them
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			"Setting variables: Column's indexes", 1)
+	  #--> Quick fix for issue 53.   Just deselect everything before running
+		gmethods.ListCtrlDeSelAll(self.lbo)
+	  #---
 		self.colCorr = gmethods.ListCtrlGetColVal(self.lbo, t="int")
 		self.d["SelCol"] = self.colCorr
 		self.do["SelCol"] = self.colCorr

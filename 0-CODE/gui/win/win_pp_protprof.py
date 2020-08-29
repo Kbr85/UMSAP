@@ -171,7 +171,8 @@ class WinProtProf(gclasses.WinModule):
 	 #--> Tooltips
 		self.stScoreVal.SetToolTip(config.tooltip[self.name]['ScoreVal'])
 		self.stResults.SetToolTip(config.tooltip[self.name]['Results'])
-		self.buttonOutName.SetToolTip(config.tooltip[self.name]['OutName'])
+		self.buttonOutName.SetToolTip(
+			config.tooltip[self.name]['OutName'] + config.msg['OptVal'])
 		self.stChB.SetToolTip(config.tooltip[self.name]['MedianCorrection'])
 		self.stCorrP.SetToolTip(config.tooltip[self.name]['CorrP'])
 		self.stGeneN.SetToolTip(config.tooltip[self.name]['GeneN'])

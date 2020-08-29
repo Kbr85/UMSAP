@@ -2587,7 +2587,7 @@ class DataObjTarProtFile(MyModules):
 				self.Fdata['I']["ScoreCol"        ] = temp[23][1]
 				self.Fdata['I']["ColExtract"      ] = temp[24][1]
 				self.Fdata['I']["Control"         ] = temp[25][1]
-				self.Fdata['I']["Results"         ] = temp[26][1]				
+				self.Fdata['I']["Results"         ] = temp[26][1]		
 			else:
 				return False
 		except Exception:
@@ -2716,7 +2716,11 @@ class DataObjTarProtFile(MyModules):
 			---
 			l: control experiment to fix
 		"""
-		return list(map(float, l[1:-1].strip().split(',')))
+		try:
+			l = list(map(float, l[1:-1].strip().split(',')))
+		except Exception:
+			l = [0]
+		return l
 	#---
 
 	def FixExpNV2(self, l):
