@@ -37,11 +37,11 @@ def WinMUCreate(winID):
 	if winID in config.winNoMinMainUtil:
 		pass
 	elif winID != config.name['Main']:
-		config.win['Main'].Iconize(True)
-		try:
-			config.win['Util'].Iconize(True)
-		except Exception:
-			pass
+		for a in [config.win['Main'], config.win['Util']]:
+			try:
+				a.Iconize(True)
+			except Exception:
+				pass
 	else:
 		pass
  #---	
