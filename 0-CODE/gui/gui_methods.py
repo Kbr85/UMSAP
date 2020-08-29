@@ -957,17 +957,19 @@ def MenuOnCInputFile():
 				k = False
 		 #---
 		else:
-			k = False
+			pass
 	 #---
  #---
  #--> Destroy dlgo
 		dlgo.Destroy()
 	else:
-		k = False
+		pass
  #---
+ #--> Destroy dlgi
+	dlgi.Destroy()
+ #---
+ #--> Return
 	if k:
- 	 #--> Destroy dlgi & Return
-		dlgi.Destroy()
 		return k
 	 #---
 	else:
@@ -976,6 +978,7 @@ def MenuOnCInputFile():
 		gclasses.DlgFatalErrorMsg(msg)
 		return False		
 	 #---
+ #---
 #---
 
 def MenuOnCutProp():
