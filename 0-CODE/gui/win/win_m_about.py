@@ -45,7 +45,7 @@ class WinAbout(gclasses.WinMyFrame):
 	  #---
 	  #--> StaticText
 		self.text1 = wx.StaticText(self.panel,
-			label='Copyright © 2017-2019 Kenny Bravo Rodriguez')
+			label='Copyright © 2017 Kenny Bravo Rodriguez')
 	  #---
 	  #--> TextCtrl
 		self.MyText = wx.TextCtrl(self.panel, size=(100, 500), 
@@ -115,25 +115,26 @@ myText = """UMSAP: Fast post-processing of mass spectrometry data
 
 UMSAP 2.1.0 (beta) is written in Python 3.7.1 and uses the following modules:
 
-Biopython (1.73)  
-pyFPDF (1.7.2) 
-Matplotlib (3.0.2) 
-NumPy (1.16.1) 
-Pandas (0.24.2)   
-PyInstaller (3.4) 
-Requests (2.21.0) 
-Scipy (1.2.0) 
-Statsmodels (0.9.0)
-wxPython (4.0.4)
+Biopython 1.73  
+pyFPDF 1.7.2 
+Python 3.7.1
+Matplotlib 3.0.2 
+NumPy 1.16.1
+Pandas 0.24.2   
+PyInstaller 3.4 
+Requests 2.21.0 
+Scipy 1.2.0 
+Statsmodels 0.9.0
+wxPython 4.0.4
 
 Copyright notice and License for the modules can be found in the User's manual of UMSAP.
 
 -- Acknowledgments --
 
-I would like to thank all the persons that have contributed to the development of UMSAP,
-either by contributing ideas and suggestions or by testing the code. Special thanks goes
-to: Dr. Farnusch Kaschani, Dr. Juliana Rey, Prof. Dr. Daniel Hoffmann and the mass
-spectrometry group at MPI Dortmund.
+I would like to thank all the persons that have contributed to the development 
+of UMSAP, either by contributing ideas and suggestions or by testing the code. 
+Special thanks go to: Dr. Farnusch Kaschani, Dr. Juliana Rey, Dr. Petra Janning 
+and Prof. Dr. Daniel Hoffmann.
 
 In particular, I would like to thank Prof. Dr. Michael Ehrmann for the support and 
 useful discussions during my postdoc stay in his group at the University of Duisburg-Essen.
@@ -156,20 +157,20 @@ Licensee may not sell any derivative work based on the Software under any circum
 5. KBR shall have the right to terminate this license immediately by written notice upon Licensee’s breach of, or non-compliance with, any terms of the license. Licensee may be held legally responsible for any copyright infringement that is caused or encouraged by its failure to abide by the terms of this license. Upon termination, Licensee agrees to destroy all copies of the Software in its possession and to verify such destruction in writing.
 
 6. Licensee agrees that any reports or published results obtained with the Software will acknowledge its use by the appropriate citation as follows:
-”Utilities for Mass Spectrometry Analysis of Proteins was developed by Kenny Bravo Rodriguez at the University of Duisburg-Essen.”
+”Utilities for Mass Spectrometry Analysis of Proteins was created by Kenny Bravo Rodriguez at the University of Duisburg-Essen and is currently developed at the Max Planck Institute of Molecular Physiology.”
 Any published work, which utilizes Utilities for Mass Spectrometry Analysis of Proteins, shall include the following reference:
 Kenny Bravo-Rodriguez, Birte Hagemeier, Lea Drescher, Marian Lorenz, Michael Meltzer, Farnusch Kaschani, Markus Kaiser and Michael Ehrmann. (2018). Utilities for Mass Spectrometry Analysis of Proteins (UMSAP): Fast post-processing of mass spectrometry data. Rapid Communications in Mass Spectrometry, 32(19), 1659–1667.
 Electronic documents will include a direct link to the official Utilities for Mass Spec- trometry Analysis of Proteins page at: www.umsap.nl
 
 7. Commercial use of the Software, or derivative works based thereon, REQUIRES A COMMERCIAL LICENSE. Should Licensee wish to make commercial use of the Software, Licensee will contact KBR to negotiate an appropriate license for such use. Commercial use includes: (1) integration of all or part of the Software into a product for sale, lease or license by or on behalf of Licensee to third parties, or (2) distribution of the Software to third parties that need it to commercialize product sold or licensed by or on behalf of Licensee.
 
-8. Utilities for Mass Spectrometry Analysis of Proteins is being distributed as a research tool and as such, KBR encourages contributions from users of the code that might, at KBR’s sole discretion, be used or incorporated to make the basic operating framework of the Software a more stable, flexible, and/or useful product. Licensees who contribute their code to become an internal portion of the Software agree that such code may be distributed by KBR under the terms of this License and may be required to sign an ”Agreement Regarding Contributory Code for Utilities for Mass Spectrometry Analysis of Proteins Software” before KBR can accept it (contact umsap-licenses@umsap.nl for a copy).
+8. Utilities for Mass Spectrometry Analysis of Proteins is being distributed as a research tool and as such, KBR encourages contributions from users of the code that might, at KBR’s sole discretion, be used or incorporated to make the basic operating framework of the Software a more stable, flexible, and/or useful product. Licensees who contribute their code to become an internal portion of the Software agree that such code may be distributed by KBR under the terms of this License and may be required to sign an ”Agreement Regarding Contributory Code for Utilities for Mass Spectrometry Analysis of Proteins Software” before KBR can accept it (contact umsap@umsap.nl for a copy).
 
 UNDERSTOOD AND AGREED.
 
 Contact Information:
 
-The best contact path for licensing issues is by e-mail to umsap-licenses@umsap.nl
+The best contact path for licensing issues is by e-mail to umsap@umsap.nl
 """
 
 
