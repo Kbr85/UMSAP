@@ -835,14 +835,11 @@ class ToolsProtProfResRP(wx.Menu):
 		self.Append(301, 'Same Color', kind=wx.ITEM_CHECK)
 		self.AppendSeparator()
 		self.saveRP = self.Append(-1, 'Save Plot Image')
-		self.AppendSeparator()
-		self.reset = self.Append(-1, 'Reset View')
 	 #---
 	 #--> Current
 		self.CurrentState(allL, grayC)
 	 #---
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,    source=self.reset)
 		self.Bind(wx.EVT_MENU, self.OnSavePlot, source=self.saveRP)
 		self.Bind(wx.EVT_MENU, self.OnAll,      id=300)
 		self.Bind(wx.EVT_MENU, self.OnColor,    id=301)
@@ -881,13 +878,6 @@ class ToolsProtProfResRP(wx.Menu):
 		win.OnColor()
 		return True
 	#---		
-
-	def OnReset(self, event):
-		""" Reset the window """
-		win = self.GetWindow()
-		win.OnReset()
-		return True
-	#---
 
 	def OnSavePlot(self, event):
 		""" Save image of the plot """
@@ -1385,12 +1375,9 @@ class ToolsProtProfResV(wx.Menu):
 		self.zScore = self.Append(-1, 'Z score Threshold')
 		self.AppendSeparator()
 		self.saveV = self.Append(-1, 'Save Plot Image')
-		self.AppendSeparator()
-		self.reset = self.Append(-1, 'Reset View')
 	  #---
 	 #---
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,        source=self.reset)
 		self.Bind(wx.EVT_MENU, self.OnSavePlot,     source=self.saveV)
 		self.Bind(wx.EVT_MENU, self.OnaVal,         source=self.aVal)
 		self.Bind(wx.EVT_MENU, self.OnZScore,       source=self.zScore)
@@ -1421,13 +1408,6 @@ class ToolsProtProfResV(wx.Menu):
 		""" Set new Z score threshold in % """
 		win = self.GetWindow()
 		win.OnZScore()
-		return True
-	#---
-
-	def OnReset(self, event):
-		""" Reset the window """
-		win = self.GetWindow()
-		win.OnReset()
 		return True
 	#---
 
@@ -1536,38 +1516,11 @@ class Filter(wx.Menu):
 		self.Add = FilterAdd()
 		self.Remove = FilterRemove()
 
-		self.AppendSubMenu(self.Add, 'Add')
-		self.AppendSubMenu(self.Remove, 'Remove')
-		self.reset = self.Append(-1, 'Reset')
-		self.AppendSeparator()
-		self.iExport = self.Append(-1, 'Export Data')
-	 #---
-	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnReset,  source=self.reset)
-		self.Bind(wx.EVT_MENU, self.OnExport, source=self.iExport)
+		self.AppendSubMenu(self.Add, 'Add Filter')
+		self.AppendSubMenu(self.Remove, 'Remove Filter')
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
-
-	#region ------------------------------------------------------- My Methods
-	def OnReset(self, event):
-		""" Remove all Filters """
-		win = self.GetWindow()
-		if win.OnFilter_None():
-			return True
-		else:
-			return False
-	#---
-
-	def OnExport(self, event):
-		""""""
-		win = self.GetWindow()
-		if win.OnExport():
-			return True
-		else:
-			return False
-	#---	
-	#endregion ---------------------------------------------------- My Methods
 #---
 
 class ToolsProtProfRes(wx.Menu):
@@ -1595,9 +1548,15 @@ class ToolsProtProfRes(wx.Menu):
 		self.AppendSubMenu(self.Filter, 'Filters')
 		self.AppendSeparator()
 		self.corrP = self.Append(600, 'Corrected P Values', kind=wx.ITEM_CHECK)
+		self.AppendSeparator()
+		self.iExport = self.Append(-1, 'Export Data')
+		self.AppendSeparator()
+		self.reset = self.Append(-1, 'Reset View')		
 	 #---
 	 #--> Bind
-		self.Bind(wx.EVT_MENU, self.OnCorrP, source=self.corrP)
+		self.Bind(wx.EVT_MENU, self.OnCorrP,  source=self.corrP)
+		self.Bind(wx.EVT_MENU, self.OnExport, source=self.iExport)
+		self.Bind(wx.EVT_MENU, self.OnReset,  source=self.reset)
 	 #---
 	#---
 	#endregion ------------------------------------------------ Instance Setup
@@ -1609,6 +1568,24 @@ class ToolsProtProfRes(wx.Menu):
 		win.OnCorrP()
 		return True 
 	#---
+
+	def OnExport(self, event):
+		""""""
+		win = self.GetWindow()
+		if win.OnExport():
+			return True
+		else:
+			return False
+	#---	
+
+	def OnReset(self, event):
+		""" Remove all Filters """
+		win = self.GetWindow()
+		if win.OnFilter_None():
+			return True
+		else:
+			return False
+	#--- 	
 	#endregion ----------------------------------------------------- MyMethods
 #---
 #endregion ------------------------------------------------------- Mixed menus
@@ -1637,7 +1614,7 @@ class MainMenuBar(wx.MenuBar):
 	 #---
 	 #--> Append to menubar
 		if config.cOS != 'Darwin':
-			self.Append(UMSAP, '&UMSAP')
+			self.Append(self.UMSAP, '&UMSAP')
 		else:
 			pass
 		self.Append(self.ModuleUtil, '&Modules')

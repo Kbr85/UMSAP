@@ -222,7 +222,10 @@ class WinTypeRes(gclasses.WinMyFrame, gclasses.GuiChecks):
 		self.btnCreate.Bind(wx.EVT_BUTTON, self.CreateM)
 		self.btnCancel.Bind(wx.EVT_BUTTON, self.OnClose)
 		self.btnOk.Bind(wx.EVT_BUTTON, self.OnExport)
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		if config.cOS != 'Windows':
+			self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		else:
+			pass
 	 #---
 	 #--> If Results has information fill swMatrix
 	  #--> Get rows and cols
@@ -1112,6 +1115,8 @@ class WinTypeRes(gclasses.WinMyFrame, gclasses.GuiChecks):
 		nCols = len(list(set([len(x) for x in oldRes])))
 		if nCols == 1:
 			pass
+		elif nCols == 2 and self.CType == config.combobox['ControlType'][0]:
+			pass 
 		else:
 			return [False, []] 
 	  #---

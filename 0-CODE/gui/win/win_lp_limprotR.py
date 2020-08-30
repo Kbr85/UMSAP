@@ -115,7 +115,10 @@ class WinLimProtRes(gclasses.WinResUno, gclasses.ElementGelPanel):
 		self.WinPos()
 	 #---
 	 #--> Binding
-		self.p2.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+		if config.cOS != 'Windows':
+			self.p2.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+		else:
+			pass
 	 #---
 	 #--> Show
 		self.Show()

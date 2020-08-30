@@ -99,10 +99,13 @@ class WinCorrA(gclasses.WinUtilUno):
 		self.stMethod.SetToolTip(config.tooltip[self.name]["CorrelationM"])
 	 #---
 	 #--> Bind
-		for child in self.GetChildren():
-			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
-		self.lbo.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		if config.cOS != 'Windows':
+			self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+			self.lbo.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+			for child in self.GetChildren():
+				child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		else:
+			pass
 		self.buttonAddCol.Bind(wx.EVT_BUTTON, self.OnAddCol)
 	 #---
 	 #--> Default values
@@ -116,8 +119,10 @@ class WinCorrA(gclasses.WinUtilUno):
 		if config.cOS == "Darwin":
 			self.tcDataFile.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt")
 			self.tcOutputFF.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Untitled.corr")
-			# self.tcDataFile.SetValue('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')
-			# self.tcOutputFF.SetValue('/Users/kenny/TEMP-GUI/BORRAR-GUI/PlayDATA/TARPROT/Untitled.corr')
+		elif config.cOS == 'Windows':
+			from pathlib import Path
+			self.tcDataFile.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
+			self.tcOutputFF.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/test.corr')))
 		else:
 			pass
 	 #--- INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! ##########
@@ -290,6 +295,9 @@ class WinCorrA(gclasses.WinUtilUno):
 	 #--> Get the list of columns indixes selected or all of them
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			"Setting variables: Column's indexes", 1)
+	  #--> Quick fix for issue 53.   Just deselect everything before running
+		gmethods.ListCtrlDeSelAll(self.lbo)
+	  #---
 		self.colCorr = gmethods.ListCtrlGetColVal(self.lbo, t="int")
 		self.d["SelCol"] = self.colCorr
 		self.do["SelCol"] = self.colCorr

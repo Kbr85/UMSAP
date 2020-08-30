@@ -37,11 +37,11 @@ def WinMUCreate(winID):
 	if winID in config.winNoMinMainUtil:
 		pass
 	elif winID != config.name['Main']:
-		config.win['Main'].Iconize(True)
-		try:
-			config.win['Util'].Iconize(True)
-		except Exception:
-			pass
+		for a in [config.win['Main'], config.win['Util']]:
+			try:
+				a.Iconize(True)
+			except Exception:
+				pass
 	else:
 		pass
  #---	
@@ -124,10 +124,10 @@ def UpdateCheck(ori, ):
 		if r.status_code == requests.codes.ok:
 			text = r.text.split('\n')
 			for i in text:
-				if 'UMSAP v' in i:
+				if '<h1>UMSAP' in i:
 					versionI = i
 					break
-			versionI = versionI.split('UMSAP v')[1].split()[0].split('.')
+			versionI = versionI.split('UMSAP')[1].split('</h1>')[0].split('.')
 			config.versionInternet = list(map(int, versionI))
  		 #--> Compare with program version
 			config.updateAvail = dmethods.VersionCompare()
@@ -957,17 +957,19 @@ def MenuOnCInputFile():
 				k = False
 		 #---
 		else:
-			k = False
+			pass
 	 #---
  #---
  #--> Destroy dlgo
 		dlgo.Destroy()
 	else:
-		k = False
+		pass
  #---
+ #--> Destroy dlgi
+	dlgi.Destroy()
+ #---
+ #--> Return
 	if k:
- 	 #--> Destroy dlgi & Return
-		dlgi.Destroy()
 		return k
 	 #---
 	else:
@@ -976,6 +978,7 @@ def MenuOnCInputFile():
 		gclasses.DlgFatalErrorMsg(msg)
 		return False		
 	 #---
+ #---
 #---
 
 def MenuOnCutProp():

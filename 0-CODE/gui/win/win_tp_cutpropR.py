@@ -97,26 +97,17 @@ class WinCutPropRes(gclasses.WinGraph):
 		""" To process click events """
 	 #-->
 		if event.button == 3:
-	 	 #-->
-			Tmenu = menu.ToolsCutRes(
-				self.nExp, 
-				self.seq, 
-				self.norm, 
-				self.exp, 
-				self.comp
-			)
-		 #---
-	 	 #--> Submenus in pop up menu do not work on Windows
-			if config.cOS == 'Windows':
-				for i in ['Experiments', 'Compare to']:
-					Tmenu.DestroyItem(Tmenu.FindItem(i))
+			if config.cOS != 'Windows':
+				Tmenu = menu.ToolsCutRes(
+					self.nExp, 
+					self.seq, 
+					self.norm, 
+					self.exp, 
+					self.comp
+				)
 				self.PopupMenu(Tmenu)
 			else:
 				pass
-		 #---
-	 	 #-->
-			self.PopupMenu(Tmenu)
-		 #---
 		else:
 			pass
 	 #---

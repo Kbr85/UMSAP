@@ -98,26 +98,16 @@ class WinAAdistRes(gclasses.WinGraph):
 	def OnClick(self, event):
 		""" To process click events """
 		if event.button == 3:
-			if config.cOS == 'Windows':
+			if config.cOS != 'Windows':
 				Tmenu = menu.ToolsAAdistRes(
 					self.exp, 
 					self.pos,
 					self.nExp, 
 					self.nPosName
 				)
-				#--> Submenus do not work on Windows
-				for i in ['Experiments', 'Compare Positions']:
-					Tmenu.DestroyItem(Tmenu.FindItem(i))
 				self.PopupMenu(Tmenu)
 			else:
-				self.PopupMenu(
-					menu.ToolsAAdistRes(
-						self.exp, 
-						self.pos,
-						self.nExp, 
-						self.nPosName
-					)
-				)
+				pass
 		else:
 			pass
 		return True

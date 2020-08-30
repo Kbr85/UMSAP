@@ -148,8 +148,11 @@ class WinTarProt(gclasses.WinModule):
 	 #---
 	 #--> Bind
 		self.buttonPDBFile.Bind(wx.EVT_BUTTON, self.OnPDBFile)
-		for child in self.GetChildren():
-			child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		if config.cOS != 'Windows':
+			for child in self.GetChildren():
+				child.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		else:
+			pass
 	 #---
 	 #--> Initial default values
 		self.tcSeqNatFile.SetValue('NA')
@@ -171,10 +174,12 @@ class WinTarProt(gclasses.WinModule):
 			self.tcOutputFF.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
 		elif config.cOS == 'Windows':
 			from pathlib import Path
-			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/TarProt/Mod-Enz-Dig-data-ms.txt'))) 
-			self.tcSeqRecFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/TarProt/Mod-Enz-Dig-data-seq.txt')))
-			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-GUI/PlayDATA/test2')))
+			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TarProt/Mod-Enz-Dig-data-ms.txt'))) 
+			self.tcSeqRecFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TarProt/Mod-Enz-Dig-data-seq.txt')))
+			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/test')))
 		# 	#self.tcPDBFile.SetLabel(str(Path('C:/Users/bravo/Downloads/2y4f-kbr.pdb')))
+		else:
+			pass
 		self.tcSeqNatFile.SetLabel('P31545')
 		#self.tcSeqNatFile.SetLabel('NA')
 		self.tcPDB.SetLabel('NA')       

@@ -20,6 +20,10 @@ import wx
 import wx.adv
 #endregion ----------------------------------------------------------- Imports
 
+
+DEVELOPMENT = True # # To control variables with different values in dev or prod
+
+
 class UmsapApp(wx.App):
 	""" Start the UMSAP app """
 
@@ -31,15 +35,15 @@ class UmsapApp(wx.App):
 		cOS = platform.system()
 
 		if cOS == 'Darwin':
-		 ############################################# Change before releasing
-			image_loc = cwd + '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
-			# image_loc = (
-			# 	cwd 
-			# 	+ '/UMSAP.app/Contents/Resources/IMAGES/SPLASHSCREEN/splash.png'
-			# )
-		 ############################################# Change before releasing
+			if DEVELOPMENT:
+				image_loc = cwd + '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
+			else:
+				image_loc = (
+					cwd 
+					+ '/UMSAP.app/Contents/Resources/IMAGES/SPLASHSCREEN/splash.png'
+				)
 		else:
-			image_loc = 'UPDATE'
+			image_loc = cwd + '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
 		
 		bitmap = wx.Bitmap(image_loc, type=wx.BITMAP_TYPE_PNG)
 		
