@@ -14,17 +14,17 @@ So far, UMSAP have been tested in MacOS X \num[parse-numbers=false]{10.12.6} and
 
 Unzip the file you just downloaded from \href{https://www.umsap.nl}{www.umsap.nl}. Then, copy the folder UMSAP to the location in your file system where you want to keep it. Finally, create a shortcut to the executable file UMSAP.exe found inside the main folder UMSAP. That is all. You are now ready to use UMSAP.
 
-\textit{\textbf{MacOS X}}
+\textit{\textbf{macOS}}
 
 Unzip the file you just downloaded from \href{https://www.umsap.nl}{www.umsap.nl}. Then, just move the UMSAP.app folder to /Applications/. That is all. You are now ready to use UMSAP. 
 
-Depending on the security settings in the Mac computer, it may be needed to explicitly allow UMSAP to be opened the first time the app is used.
+Depending on the security settings in macOS, it may be needed to explicitly allow UMSAP to be opened the first time the app is used.
 
 \textit{\textbf{Linux}}
 
 Currently, there are no precompiled versions of UMSAP for Linux. Therefore, users using a computer running Linux need to install all the required modules before using UMSAP. For UMSAP \num[parse-numbers=false]{2.1.0} the list of required modules is:
 
-Biopython \num{1.73}, Matplotlib \num[parse-numbers=false]{3.0.2}, NumPy \num[parse-numbers=false]{1.16.1}, Python \num[parse-numbers=false]{3.7.1}, Requests \num[parse-numbers=false]{2.21.0} and wxPython \num[parse-numbers=false]{4.0.4}.
+Biopython \num{1.73},\newline pyFPDF \num[parse-numbers=false]{1.7.2}, \newline Python \num[parse-numbers=false]{3.7.1}, \newline Matplotlib \num[parse-numbers=false]{3.0.2}, \newline NumPy \num[parse-numbers=false]{1.16.1},\newline Pandas \num[parse-numbers=false]{0.24.2}, \newline PyInstaller \num[parse-numbers=false]{3.4}, \newline Requests \num[parse-numbers=false]{2.21.0},\newline Scipy \num[parse-numbers=false]{1.2.0}, \newline Statsmodels \num[parse-numbers=false]{0.9.0}, \newline wxPython \num[parse-numbers=false]{4.0.4}
 
 If all these modules are already installed in the computer, then using UMSAP is straightforward. Go to the Downloads page and download the source files for UMSAP \num[parse-numbers=false]{2.1.0}.  Unzip the files. In the terminal, navigate to the newly created UMSAP folder and type python UMSAP.py. This will launch the GUI.
 
@@ -48,13 +48,8 @@ conda install python==3.7.1
 \newline
 pip install biopython==1.73
 \newline
-pip install requests==2.21.0
-\newline
-pip install matplotlib==3.0.2
 
-Installing matplotlib should install numpy 1.16.1 or superior, if this is not the case type
-
-pip install numpy==1.16.1
+and so on for all the modules listed before.
 
 If you found a compatible wheel for wxPython and your Linux distribution, then install it using pip. You will need to change the gtk version and the linux distribution to suit your case. For example, for gtk3 and ubuntu 16.04 the command line is:
 
@@ -64,4 +59,4 @@ And finally, you are all set. Download the source files for UMSAP \num[parse-num
 
 \section{Uninstalling Utilities for Mass Spectrometry Analysis of Proteins}
 
-UMSAP will not create any installation file in your computer. Therefore, the only thing you need to do, to completely uninstall UMSAP, is to delete the folder UMSAP.app in MacOS X or UMSAP in Windows/Linux. In addition, you should delete any shortcut pointing to the executable file of UMSAP. That is all.  
+UMSAP will not create any installation file in your computer. Therefore, the only thing you need to do, to completely uninstall UMSAP, is to delete the folder UMSAP.app in macOS or UMSAP in Windows/Linux. You should also delete any shortcut pointing to the executable file of UMSAP and the configuration file .umap\_config.json in your home folder. That is all.  
