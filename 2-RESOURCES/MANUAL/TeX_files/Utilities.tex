@@ -17,7 +17,7 @@ The utilities are organized in General Utilities and utilities that are specific
 
 \subsection{Sequence highlight}
 \label{subsec:utilSeqHigh}
-The Sequence Highlight utility allows user to highlight on the sequence of the Target protein the peptides detected in each gel lane/band considered in the .limprot file. The sequences with the highlighted peptides are saved in a .pdf file. How to generate a .limprot file is discussed in \autoref{chap:limprot}.
+The Sequence Highlight utility allows user to highlight on the sequence of the Target protein the peptides detected in each gel spot considered in the .limprot file. The sequences with the highlighted peptides are saved in a .pdf file. How to generate a .limprot file is discussed in \autoref{chap:limprot}.
 
 \textit{\textbf{The interface}}
 
@@ -26,12 +26,12 @@ The window of the Sequence Highlight utility is divided in three regions.
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.7\textwidth]{./IMAGES/UTIL-SEQUENCE-HIGHLIGHT/sequence-highlight.jpg}	    
-	\caption[The Sequence Highlight utility window]{\textbf{The Sequence Highlight utility window.} This window allows to generate a .pdf file showing the location of the peptides detected in the investigated gel lane/band on the sequence of the Target protein.} 
+	\caption[The Sequence Highlight utility window]{\textbf{The Sequence Highlight utility window.} This window allows to generate a .pdf file showing the location of the peptides detected in the investigated gel spot on the sequence of the Target protein.} 
 	\label{fig:seqhighwindow}
 	\vspace{-5pt} 	
 \end{figure} 
 
-Region \num{1} contains three buttons allowing users to quickly delete all provided input to generate a new .pdf file. The Clear all button will delete all user provided input. The Clear files button will delete the path to all user provided files. Finally, the Clear values button will delete all user provided numerical values.
+Region \num{1} contains three buttons allowing users to quickly delete all provided input to generate a new .pdf file. The Clear all button will delete all user provided input. The Clear files button will delete all values in section Files of Region \num{2}. Finally, the Clear values button will delete all values in section Values of Region \num{2}.
 
 Region \num{2} contains the fields where users provide the information needed in order to create the .pdf file with the highlighted sequences. The Limprot file button allows users to browse the file system to select the .limprot file that will be used for the generation of the .pdf file. Only one .limprot file can be provided here. The Output file button allows users to browse the file system to select the location and name of the .pdf file. If left empty, then the .pdf file, resulting from the analysis, will be saved in the same directory containing the .limprot file and will have the same name as the .limprot file. If the folder containing the selected .limprot file already contains a .pdf file with the same name as the selected .limprot file, then UMSAP will add the current date and time to the second to the end of the .pdf file name in order to avoid overwriting the older .pdf file without explicit user permission.
 
@@ -41,11 +41,11 @@ Region \num{3} contains the Help and Start analysis buttons and a progress bar. 
 
 \textit{\textbf{The analysis}}
 
-First, UMSAP will check the validity of the user provided input. After this, for each gel lane/band analyzed in the .limprot file, UMSAP will print the sequence of the Target protein to the .pdf file with the peptides found in the gel lane/band highlighted in red.
+First, UMSAP will check the validity of the user provided input. After this, for each gel spot analyzed in the .limprot file, UMSAP will print the sequence of the Target protein to the .pdf file with the peptides found in the gel spot highlighted in red.
 
 \textit{\textbf{The output}} 
 
-The output is a .pdf file containing a page for each gel lane/band found in the .limprot file. As described before, each page contains the sequence of the Target protein with the detected peptides highlighted in red. In addition, the residue number of the beginning and ending of the highlighted fragments are also given. If the sequence of the native protein was provided when creating the .limprot file, then the information is given for the recombinant and native protein. 
+The output is a .pdf file containing a page for each gel spot found in the .limprot file. As described before, each page contains the sequence of the Target protein with the detected peptides highlighted in red. In addition, the residue number of the beginning and ending of the highlighted fragments are also given. If the sequence of the native protein was provided when creating the .limprot file, then the information is given for the recombinant and native protein. 
 
 \textit{\textbf{The Tools menu}}
 
@@ -69,7 +69,7 @@ The window of the AA Distribution utility is divided in three regions (\autoref{
 	\vspace{-5pt} 	
 \end{figure}
 
-Region \num{1} contains three buttons allowing users to quickly delete all provided input and start a new distribution analysis. The Clear all button will delete all user provided input. The Clear files button will delete the path to all user provided files. Finally, the Clear values button will delete all user provided numerical values.
+Region \num{1} contains three buttons allowing users to quickly delete all provided input to generate a new .pdf file. The Clear all button will delete all user provided input. The Clear files button will delete all values in section Files of Region \num{2}. Finally, the Clear values button will delete all values in section Values of Region \num{2}.
 
 Region \num{2} contains the fields where users provide the information needed in order to perform the AA distribution calculation. The Tarprot file button allows users to browse the file system to select the .tarprot file that will be used for the analysis. Only one .tarprot file can be provided here. The Output file button allows users to browse the file system to select the location and name of the Output file. If left empty, then the .aadist file, resulting from the analysis, will be saved in the same directory containing the .tarprot file and will have the same name as the .tarprot file. If the folder containing the selected .tarprot file already contains a .aadist file with the same name as the selected .tarprot file, then UMSAP will add the current date and time to the seconds to the end of the .aadist file in order to avoid overwriting the older .aadist file without explicit user permission.    
 
@@ -103,7 +103,7 @@ The second representation allows to compare the AA distribution in one position 
 
 \textit{\textbf{The Tools menu}}
 
-By default, the AA distribution for all AA in the FP list will be shown when the .aadist file is loaded. The Tools menu in the window allows user to change the displayed experiment or to select the position for which results in the experiments should be compared. In addition, users may select to export the data shown in the window, save a figure of the plot and to reset the view. 
+By default, the AA distribution for all AA in the FP list will be shown when the .aadist file is loaded. The Tools menu in the window allows user to change the displayed experiment or to select the position for which results in the experiments should be compared. In addition, users may select to export the data shown in the window (see \autoref{subsec:utilExpData}), save a figure of the plot and to reset the view. 
 
 \subsection{Cleavages per Residue}
 \label{subsec:utilCutsPerRes}
@@ -142,11 +142,11 @@ The Cleavages to PDB Files utility maps the number of cleavages per residue foun
 
 The Cleavages to PDB Files window is divided in three regions, see \autoref{fig:utilCut2PDB}.
 
-Region \num{1} contains three buttons allowing users to quickly delete all provided input and start a new distribution analysis. The Clear all button will delete all user provided input. The Clear files button will delete the path to all user provided files. Finally, the Clear values button will delete all user provided numerical values.
+Region \num{1} contains three buttons allowing users to quickly delete all provided input to generate a new .pdf file. The Clear all button will delete all user provided input. The Clear files button will delete all values in section Files of Region \num{2}. Finally, the Clear values button will delete all values in section Values of Region \num{2}.
 
 Region \num{2} contains the fields where users provide the information needed in order to perform the mapping of the number of cleavages. The Tarprot file button allows users to browse the file system to select the .tarprot file that will be use for the analysis. Only one .tarprot file can be provided here. The PDB file allows user to browse the file system to select a .pdb file. The .pdb file will contain the structure of the Target protein. This field can be left empty if the PDB file is to be downloaded from the PDB database. The Output folder button allows users to browse the file system to select the location of the resulting PDB folder containing the results. If left empty, then the PDB folder, resulting from the analysis, will be saved in the same directory containing the .tarprot file. If the Output folder option is left empty and the folder containing the selected .tarprot file already contains a PDB folder, then UMSAP will add the current date and time to the second to the end of the folder name in order to avoid overwriting the older PDB folder without explicit user permission.
 
-The PDB ID field allows users to specify the chain or the segment id in the .pdb file that should be used for the mapping. Alternatively, if the PDB file field is left empty a code from the PDB database plus the chain or segment id may be given here. In this case, the pdb file will be directly downloaded from the PDB database. The expected syntax in this case is code:chain or code:segment for example, 2f4y:A or 2f4y:PROA.  
+The PDB ID field allows users to specify the chain or the segment id in the .pdb file that should be used for the mapping. Alternatively, if the PDB file field is left empty a code from the PDB database plus the chain or segment id may be given here. In this case, the pdb file will be directly downloaded from the PDB database. The expected syntax in this case is code;chain or code;segment for example, 2f4y;A or 2f4y;PROA.  
 
 Region \num{3} contains the Help and Start analysis buttons and a progress bar. The Help button leads to an online tutorial while the Start analysis button will start the analysis. The progress bar will give users a rough idea of the remaining processing time once the analysis is started.
 
@@ -182,7 +182,7 @@ The Histograms window is divided in three regions (\autoref{fig:utilHistoCut}).
 	\vspace{-5pt} 	
 \end{figure}
 
-Region \num{1} contains three buttons allowing users to quickly delete all provided input and start a new calculation. The Clear all button will delete all user provided input. The Clear files button will delete the path to all user provided files. Finally, the Clear values button will delete all user provided numerical values.
+Region \num{1} contains three buttons allowing users to quickly delete all provided input to generate a new .pdf file. The Clear all button will delete all user provided input. The Clear files button will delete all values in section Files of Region \num{2}. Finally, the Clear values button will delete all values in section Values of Region \num{2}.
 
 Region \num{2} contains the fields where users provide the information needed in order to create the histograms. The Tarprot file button allows users to browse the file system to select the .tarprot file that will be used for the analysis. Only one .tarprot file can be selected here. The Output file button allows users to browse the file system to select the location of the .hist file to be created. If no Output file is selected the .hist file will be created in the same directory as the selected .tarprot file. If an older .hist file exists in the selected folder, UMSAP will append the date and time to the second to the end of the .hist file name in order to avoid overwriting the old .hist file. 
 
@@ -192,7 +192,7 @@ Region \num{3} contains the Help and Start analysis buttons and a progress bar. 
 
 \textit{\textbf{The analysis}}
 
-First, UMSAP will check the validity of the user provided input. After this, the windows of the histograms will be created and for each experiment in the .tarprot file the detected cleavage sites will be assigned to the corresponding windows. Cleavage sites are only counted once per experiment, independently of how many peptides share the same cleavage site. In addition, the total number of cleavage sites identified considering the results of all experiments is also calculated. Since most of the time the protein under study is a recombinant protein containing purification tags or only a region of the native protein, histograms are created for the residue numbers in the recombinant protein and for the residue numbers in the native protein. For this to be possible the sequence of the native protein must have been provided during the creation of the .tarprot file. In the last case cleavage sites outside the native sequence contained in the recombinant protein are discarded and the residue numbers used for the definition of the windows and cleavages sites are the residue numbers of the native sequence. After the analysis is done the .hist file will be automatically loaded and the results shown in a new window (\autoref{fig:utilHistoCutShow}).
+First, UMSAP will check the validity of the user provided input. After this, the windows of the histograms will be created and for each experiment in the .tarprot file the detected cleavage sites will be assigned to the corresponding windows. Since most of the time the protein under study is a recombinant protein containing purification tags or only a region of the native protein, histograms are created for the residue numbers in the recombinant protein and for the residue numbers in the native protein. For this to be possible the sequence of the native protein must have been provided during the creation of the .tarprot file. In the last case cleavage sites outside the native sequence contained in the recombinant protein are discarded and the residue numbers used for the definition of the windows and cleavages sites are the residue numbers of the native sequence. After the analysis is done the .hist file will be automatically loaded and the results shown in a new window (\autoref{fig:utilHistoCutShow}).
 
 \textit{\textbf{The output}}
 
@@ -208,7 +208,7 @@ The Histograms analysis window will display the results contained in a .hist fil
 
 \textit{\textbf{The Tools menu}}
 
-The Tools menu allows to show the results for the recombinant or native sequence and to show only unique cleavages or the total count of the detected cleavages. In addition, users may export the data shown in the window to a plain text file, save an image of the plot or reset the state of the plot.
+The Tools menu allows to show the results for the recombinant or native sequence and to show only unique cleavages or the total count of the detected cleavages. In addition, users may export the data shown in the window to a plain text file (see \autoref{subsec:utilExpData}), save an image of the plot or reset the state of the plot.
 
 \subsection{Sequence Alignments}
 \label{subsec:utilSeqAli}
@@ -218,7 +218,7 @@ The Sequence Alignments utility generates sequence alignments between the FP for
 
 The Sequence Alignments window is divided in three regions, see \autoref{fig:utilSeqAli}.
 
-Region \num{1} contains three buttons allowing user to quickly delete all provided input and start a new calculation. The Clear all button will delete all user provided input. The Clear files button will delete the path to all user provided files. Finally, the Clear values button will delete all user provided numerical values.
+Region \num{1} contains three buttons allowing users to quickly delete all provided input to generate a new .pdf file. The Clear all button will delete all user provided input. The Clear files button will delete all values in section Files of Region \num{2}. Finally, the Clear values button will delete all values in section Values of Region \num{2}.
 
 Region \num{2} contains the fields where users provide the information needed in order to generate the alignments. The Tarprot file button allows users to browse the file system to select the .tarprot file that will be used for the analysis. Only one .tarprot file can be provided here. The Sequence alignments utility generates multiple files that will be saved in a folder named Sequences. The Output folder button allows users to browse the file system to select a location for the output folder Sequences. If the Output folder option is left empty, the output folder Sequences will be created in the same directory as the .tarprot file. If there is a Sequence folder in the selected Output folder, then UMSAP will create a new Sequences folder with the date and time to the second added to the end of the name in order to avoid overwriting any file. 
 
@@ -257,7 +257,7 @@ UMSAP will read the .tarprot file and will perform the optional analysis specifi
 
 \textit{\textbf{The output}}
 
-UMSAP will generate the files discussed in this chapter as required by the specified optional analyses found in the given .tarprot file. All generated files will be saved in a TarProtUpdate folder created inside the specified Output folder. If there is already a TarProtUpdate folder in the Output folder, then the current date and time to the second will be add to the folder name in order to avoid overwriting previous files. 
+UMSAP will generate the files discussed in this chapter as required by the specified optional analyses found in the given .tarprot file. All generated files will be saved in a TarProt-Update folder created inside the specified Output folder. If there is already a TarProt-Update folder in the Output folder, then the current date and time to the second will be add to the folder name in order to avoid overwriting previous files. 
 
 \subsection{Custom Update of Results }
 \label{subsec:utilReanalyzeTarprot}
@@ -286,21 +286,21 @@ The Correlation Analysis utility calculates the correlation in the MS data used 
 
 The Correlation Analysis window is divided in four regions, \autoref{fig:utilCorrAnalysis}. 
 
-Region \num{1} contains three buttons allowing users to quickly delete all provided input and start a new calculation. The Clear all button will delete all user provided input and will reset the state of the list boxes in Region \num{3}. The Clear files button will delete the path to the user provided files and will reset the state of the list boxes in Region \num{3}. Finally, the Clear values button will delete all user provided values.
+Region \num{1} contains three buttons allowing users to quickly delete all provided input and start a new calculation. The Clear all button will delete all user provided input and will reset the state of the list boxes of Region \num{3}. The Clear files button will delete all values in section Files of Region \num{2} and will reset the state of the list boxes of Region \num{3}. Finally, the Clear values button will delete all values in section Values of Region \num{2}.
 
-Region \num{2} contains the fields where users provide the information needed in order to calculate the correlation between the data. The section \textit{Files} contains two buttons.
+Region \num{2} contains the fields where users provide the information needed in order to calculate the correlation between the data. Section Files contains two buttons.
 
 \num{1}.- The Data file button allows users to browse the file system to select the Data file that will be used for the analysis. The Data file is expected to be a plain text file with tab separated columns and the name of the columns in the first row of the file. In addition, columns to be analyzed must contain only numbers and must be of the same length. Only .txt files can be provided here. 
 
-\num{2}.- The Output file button allows users to browse the file system to select the location and name of the output file. If left empty, the name of the output file will be the same as the Data file and the .corr file will be saved in the same folder containing the data file. If this default behavior leads to an old file been overwritten, then the date and time to the second will be used to make the name of the .corr file unique and avoid overwriting older files. 
+\num{2}.- The Output file button allows users to browse the file system to select the location and name of the output file. If left empty, the name of the output file will be the same as the Data file and the .corr file will be saved in the same folder containing the Data file. If this default behavior leads to an old file been overwritten, then the date and time to the second will be used to make the name of the .corr file unique and avoid overwriting older files. 
 
-The section \textit{Values} contains two parameters.
+Section Values contains two parameters.
 
 \num{1}.- The parameter Data normalization allows users to select a normalization algorithm to be performed before the correlation analysis. Currently, only a $Log_{2}$ normalization or no normalization is possible. The list will we expanded in future versions. 
 
 \num{2}.- The parameter Correlation method allows to select the correlation method to use.
 
-Region \num{3} contains two list boxes and a button. The list box to the left will display the names of the columns present in the Data file, once the data file is selected. Loading of the column names is automatically done after selecting the Data file using the Data file button in Region \num{2} or pressing the Enter key while the text box has the focus of the keyboard. Columns in the left list box can not be deleted, except in the case of loading a different Data file or using the Clear input or Clear all buttons in Region \num{1}. 
+Region \num{3} contains two list boxes and a button. The list box to the left will display the names of the columns present in the Data file, once the Data file is selected. Loading of the column names is automatically done after selecting the Data file using the Data file button in Region \num{2} or pressing the Enter key while the text box has the focus of the keyboard. Columns in the left list box can not be deleted, except in the case of loading a different Data file or using the Clear input or Clear all buttons in Region \num{1}. 
 
 The Add columns button in the middle of Region \num{3} will add the selected columns in the left list box to the right list box. The columns will be added to the right list box in the same order as they are selected from the left list box. 
 
@@ -330,7 +330,7 @@ First, UMSAP will check the validity of the user provided input. Then, columns i
 
 \textit{\textbf{The output}}
 
-The extension .corr is reserved for a file containing the output from a correlation analysis. The results in a .corr file will be shown as a color coded matrix, see \autoref{fig:utilCorrAnalysisRes}. Values between \numrange{-1}{0} will be shown in shades of red, \num{0} will be shown as white and values between \numrange{0}{1} will be shown in shades of blue. NA values will be shown in green. The columns and rows of the matrix are the column numbers used to calculate the correlation. Information about a specific matrix element can be obtain by simply putting the mouse pointer over the matrix element.  
+The extension .corr is reserved for a file containing the output from a correlation analysis. The results in a .corr file will be shown as a color coded matrix, see \autoref{fig:utilCorrAnalysisRes}. Values between \numrange{-1}{0} will be shown in shades of red, \num{0} will be shown as white and values between \numrange{0}{1} will be shown in shades of blue. NA values will be shown in green. The columns and rows of the matrix are the column names used to calculate the correlation. Information about a specific matrix element can be obtain by simply putting the mouse pointer over the matrix element.  
 
 \textit{\textbf{The Tools menu}}
 
@@ -429,7 +429,7 @@ The menu entry Run Input File in the Script menu allows to load the .uscr file i
 \subsection{Export Data}
 \label{subsec:utilExpData}
 
-The Export Data utility will read an UMSAP file and will export the data present in the file to a table in a plain text file with tab separated columns. This utility is provided just in case users need to perform further data processing on the results of UMSAP. There is no interface for this utility since the only needed information needed is the location of the UMSAP file and the location for the output file.  
+The Export Data utility will read an UMSAP file and will export the data present in the file to a table in a plain text file with tab separated columns. This utility is provided just in case users need to perform further data processing on the results of UMSAP. There is no interface for this utility since the only needed information is the location of the UMSAP file and the location for the output file.  
 
 \textit{\textbf{The analysis}}
 
@@ -437,11 +437,11 @@ First, UMSAP will check the validity of the user provided input. Then, the UMSAP
 
 \textit{\textbf{The output}}
 
-The output file will be a plain text file with .txt extension containing a table with the data present in the selected UMSAP file. Columns in the file will be tab separated and the first row or rows will contain the names of the columns. The following is a general description of each one of the imported files.
+The output file will be a plain text file with .txt extension containing a table with the data present in the selected UMSAP file. Columns in the file will be tab separated and the first row or rows will contain the names of the columns. The following is a general description of the content of the plain text files.
 
 \textit{\textbf{Limited proteolysis}}
 
-The generated file contains information about each one of the detected FP. The information includes the N and C-terminus number for the recombinant and native protein, The results of the equivalence test for each analyzed gel spot and the sequence and score of the peptides. The results of the equivalence test are given as 0 (not equivalent) or 1 (equivalent).
+The generated file contains information about each one of the detected FP. The information includes the N and C-terminus number for the recombinant and native protein sequence, The results of the equivalence test for each analyzed gel spot and the sequence and score of the peptides. The results of the equivalence test are given as 0 (not equivalent) or 1 (equivalent).
 
 \textit{\textbf{Proteome Profiling}}
 
@@ -453,7 +453,7 @@ The information for the relevant points comparison includes the calculated (P) a
 
 \textit{\textbf{Targeted proteolysis}} 
 
-The generated file contains information about each one of the detected FP. The information includes the N and C-terminus number for the recombinant and native protein, The results of the ANCOVA test for each analyzed experiment and the sequence and score of the peptides. The results of the ANCOVA test are given as 0 (not different to the control) or 1 (different to the control and slope greater than 0).
+The generated file contains information about each one of the detected FP. The information includes the N and C-terminus number for the recombinant and native protein sequence, The results of the ANCOVA test for each analyzed experiment and the sequence and score of the peptides. The results of the ANCOVA test are given as 0 (not different to the control) or 1 (different to the control and slope greater than 0).
 
 \textit{\textbf{AA distribution}}
 
@@ -488,7 +488,7 @@ The Merge aadist Files window is divided in four regions, see \autoref{fig:utilM
 	\vspace{-5pt} 	
 \end{figure}
 
-Region \num{1} contains two buttons allowing users to quickly delete all provided input and start a new calculation. The Clear all button will delete all user provided input and will reset the state of the list box in Region \num{3}. The Clear files button will reset the state of the list box in Region \num{3} and delete all user provided paths to files.
+Region \num{1} contains three buttons allowing users to quickly delete all provided input to generate a new .pdf file. The Clear all button will delete all user provided input. The Clear files button will delete all values in section Files of Region \num{2}.
 
 Region \num{2} contains the fields where users provide the information needed in order to merge the .aadist files. The aadist files button allows users to browse the file system to select multiple .aadist file from a folder. Only .aadist files can be selected here. Once the files are selected the complete path to the files will be displayed in the list box in Region \num{3}. The Output file button allows users to browse the file system to select the location and name of the output file.
 
@@ -507,12 +507,12 @@ The Merge aadist Files utility generates a .aadist file. This file can be visual
 \subsection{Read Output File}
 \label{subsec:utilReadOutF}
 
-The Read Output File utility simply loads an output file generated by UMSAP. After selecting this option from the Utility window (\autoref{fig:utilWindow}) or the Utilities menu entry, a dialog box will be presented allowing users to select some of the output files generated by UMSAP. Currently, only .aadist, .corr, .cutprop, .hist, .limprot, .protprof, and .tarprot files can be selected. After selecting the file, the appropriate window showing the graphical representation of the file will be created. 
+The Read Output File utility simply loads an output file generated by UMSAP. After selecting this option from the Utility window (\autoref{fig:utilWindow}) or the Utilities menu entry, a dialog box will be presented allowing users to select some of the output files generated by UMSAP. Currently, only .aadist, .corr, .cutprop, .hist, .limprot, .protprof, and .tarprot files can be selected. After selecting the file, the appropriate window showing the graphical representation of the file will be created. This utility can also be started with the shortcut Ctrl/Cmd+R.
 
 \subsection{Run Input File}
 \label{subsec:utilReadUscr}
 
-The Run Input File utility allows to load a .uscr file and launches the appropriate module. The information found in the selected .uscr file is used to fill the interface of the module. Incorrect keywords - value pairs in the .uscr are silently ignored. This utility does not have an interface since the only thing required is users to select a .uscr file.
+The Run Input File utility allows to load a .uscr file and launches the appropriate module. The information found in the selected .uscr file is used to fill the interface of the module. Incorrect keywords - value pairs in the .uscr are silently ignored. This utility does not have an interface since the only thing required is users to select a .uscr file. This utility can also be started with the shortcut Ctrl/Cmd+I.
 
 \subsection{Short Data Files}
 \label{subsec:utilShortDF}
@@ -531,7 +531,7 @@ The Short Data Files window is divided in three regions, see \autoref{fig:utilSh
 	\vspace{-5pt} 	
 \end{figure} 
 
-Region \num{1} contains three buttons allowing user to quickly delete all provided input and start a new analysis. The Clear all button will delete all user provided input. The Clear files button will delete the path to all user provided files. Finally, the Clear values button will delete all user provided numerical values.
+Region \num{1} contains three buttons allowing users to quickly delete all provided input to generate a new .pdf file. The Clear all button will delete all user provided input. The Clear files button will delete all values in section Files of Region \num{2}. Finally, the Clear columns button will delete all values in section Column numbers of Region \num{2}.
 
 Region \num{2} contains the fields where users provide the information needed in order to generate the short data files. The UMSAP file button allows users to browse the file system to select the .limprot, .protprof or .tarprot file that will be used for the analysis. Only one file can be provided here. The Data file button allows users to browse the file system to select the Data file that will be used for the analysis. The Short Data File utility generates multiple files that will be saved in a folder named Data. The Output folder button allows users to browse the file system to select a location for the output folder Data. If the Output folder option is left empty, the output folder Data will be created in the same directory as the UMSAP file. If there is a Data folder in the selected Output folder, then UMSAP will create a new Data folder with the date and time to the second added to the end of the name in order to avoid overwriting any file. 
 
@@ -541,7 +541,7 @@ Region \num{3} contains the Help and Start analysis buttons and a progress bar. 
 
 \textit{\textbf{The analysis}}
 
-First, UMSAP will check the validity of the user provided input. If only an UMSAP file is given, then the data file location will be read from the UMSAP file. After this, the short data files will be written to the Data folder.
+First, UMSAP will check the validity of the user provided input. If only an UMSAP file is given, then the Data file location will be read from the UMSAP file. After this, the short data files will be written to the Data folder.
 
 \textit{\textbf{The output}}
 

@@ -12,7 +12,7 @@ Before explaining in detail the interface of the module and how does the module 
 
 \phantomsection
 \begin{itemize}
-	\item \textit{Recombinant protein}: actual amino acid sequence used in the mass spectrometry experiments. It may be identical to the native sequence of the target protein under study or not.
+	\item \textit{Recombinant protein}: actual amino acid sequence used in the mass spectrometry experiments. It may be identical to the native sequence of the Target protein under study or not.
 	\item \textit{Native protein}: full amino acid sequence expressed in wild type cells.
 	\item \textit{Detected peptide}: any peptide detected in any of the mass spectrometry experiments including the control experiments.
 	\item \textit{Relevant peptide}: a detected peptide with a Score value above a user defined threshold (see page \pageref{par:limprotScoreValue}).
@@ -29,25 +29,25 @@ For example, there are three fragments in the alignment shown below. The first f
 	\hideconsensus
 \end{texshade}
 
-\section{The input data files}
+\section{The input files}
 
-The Limited Proteolysis module requires a data file containing the detected peptides and a sequence file containing the amino acid sequence of the recombinant protein used in the study. Both files must follow the guidelines specified in \autoref{sec:dataFile}. In short, the data file must have a tabular format with tab separated columns and the name of the columns are expected as first row. The sequence file is expected to contain only one sequence and to be FASTA formatted with or without the header line. All columns given as input in the section \textit{Column numbers} in Region \num{2} of the interface of the module must be present in the data file. Optionally, another sequence file with the sequence of the native target protein may be specified.
+The Limited Proteolysis module requires a Data file containing the detected peptides and a sequence file containing the amino acid sequence of the recombinant protein used in the study. Both files must follow the guidelines specified in \autoref{sec:dataFile}. In short, the Data file must have a tabular format with tab separated columns and the name of the columns are expected as first row. The sequence file is expected to contain only one sequence and to be FASTA formatted with or without the header line. All columns given as input in the section \textit{Column numbers} in Region \num{2} of the interface of the module must be present in the Data file. Optionally, another sequence file with the sequence of the native Target protein may be specified.
 
 \section{The interface}
 
 The window of the Limited Proteolysis module is divided in four regions (\autoref{fig:limprotMainWindow}). 
 
-Region \num{1} contains four buttons allowing users to quickly delete all provided input and start a new analysis. The Clear all button will delete all user provided input and will empty the list box in Region \num{3}. The Clear files button will delete the path to all user provided files and will empty the list box in Region \num{3}. The Clear values button will delete all user provided input for the section Values in Region \num{2}. Finally, the Clear columns button will delete all user provided column numbers. 
+Region \num{1} contains four buttons allowing users to quickly delete all provided input and start a new analysis. The Clear all button will delete all user provided input and will empty the list box in Region \num{3}. The Clear files button will delete all values in section Files of Region \num{2} and will empty the list box in Region \num{3}. The Clear values button will delete all values in section Values of Region \num{2}. Finally, the Clear columns button will delete all values in section Column numbers of Region \num{2}. 
 
-Region \num{2} contains the fields where users provide the information needed in order to perform the post-processing of the Data file. The section \textit{Files} in Region \num{2} will provide the path to the input and output files. It contains five buttons. 
+Region \num{2} contains the fields where users provide the information needed in order to perform the post-processing of the Data file. The section \textit{Files} of Region \num{2} will provide the path to the input and output files. It contains five buttons. 
 
-\num{1}.- The Data file button allows users to browse the file system and select a Data file. Only .txt files can be selected here. Once the data file is selected, the name of the columns in the file will be shown in the list box in Region \num{3}. If the path to the data file is typed in, the display of the name of the columns in Region \num{3} can be triggered by pressing the Enter key in the keyboard while the Data file entry box has the focus of the keyboard.
+\num{1}.- The Data file button allows users to browse the file system and select a Data file. Only .txt files can be selected here. Once the data file is selected, the name of the columns in the file will be shown in the list box of Region \num{3}. If the path to the Data file is typed in, the display of the name of the columns in Region \num{3} can be triggered by pressing the Enter key in the keyboard while the Data file entry box has the focus of the keyboard.
 
 \num{2}.- The Sequence (rec) button allows users to browse the file system and select the file containing the sequence of the recombinant protein under study. Only .txt or .fasta files can be selected here. Alternatively, a UNIPROT code may be given in this field.
 
 \num{3}.- The Sequence (nat) button allows to select the file containing the sequence of the native protein. Only .txt or .fasta files can be selected here. Alternatively, a UNIPROT code may be given in this field. The sequence of the native protein is an optional field. A value of NA means that no native sequence file will be given. 
 
-See \autoref{sec:dataFile} for more details about the data files.
+See \autoref{sec:dataFile} for more details about the Data files.
 
 \begin{figure}[h]
 	\centering
@@ -61,7 +61,7 @@ See \autoref{sec:dataFile} for more details about the data files.
 
 \num{5}.- The Output name button does nothing but the text box to its right allows users to specify the name of the files that will be generated during the analysis. If this field is left empty, then the name limprot will be used for the output files. 
 
-The section \textit{Values} in Region \num{2} contains nine parameters. Here, users provide information about the Target protein, how the Data file should be processed and which optional analysis will be performed.
+The section \textit{Values} of Region \num{2} contains nine parameters. Here, users provide information about the Target protein, how the Data file should be processed and which optional analysis will be performed.
 
 \phantomsection
 \num{1}.- The parameter Target protein\label{par:limprotTargetProtein} allows users to specify which of the proteins detected in the MS experiments was used as substrate during the enzymatic digestions. Users may type here any unique protein identifier present in the Data file. The search for the Target protein is case sensitive, meaning that eFeB is not the same as efeb.
@@ -76,13 +76,13 @@ The section \textit{Values} in Region \num{2} contains nine parameters. Here, us
 
 \numrange[range-phrase = --]{5}{9}.- The parameters $\alpha$, $\beta$, $\gamma$, $\Theta$ and $\Theta$max are used to configure the equivalence test\cite{Limentani2005} performed to identify peptides in the selected gel spots with a similar intensity values to the control spots. See \autoref{sec:limprotEquivalenceTest} for more details.
 
-The section \textit{Column numbers} in Region \num{2} contains five parameters. Here, users provide the column numbers in the Data file from where UMSAP will get the information needed to perform the analysis of the limited proteolysis results. All columns specified in this section must be present in the Data file. Users must be aware that Python starts counting from \num{0}. Therefore, the number of the columns in the Data file starts from \num{0} and not from \num{1}. The column numbers displayed in the list box in Region \num{3} after the Data file is selected can be directly used for the Column numbers values.  
+The section \textit{Column numbers} of Region \num{2} contains five parameters. Here, users provide the column numbers in the Data file from where UMSAP will get the information needed to perform the analysis of the limited proteolysis results. All columns specified in this section must be present in the Data file. Users must be aware that Python starts counting from \num{0}. Therefore, the number of the columns in the Data file starts from \num{0} and not from \num{1}. The column numbers displayed in the list box of Region \num{3} after the Data file is selected can be directly used for the Column numbers values.  
 
 \num{1}.- The parameter Sequences allows users to specify the column in the Data file containing the sequences of the peptides identified in the MS experiments. Only one integer number equal or greater than zero will be accepted here.
 
-\num{2}.- The parameter Detected proteins allows users to specify the column in the Data file containing the unique protein identifier for the proteins detected in the MS experiments. It is in this column where the program will look for the Target protein value given in the section \textit{Values} in Region \num{2} of the interface. Only one integer number equal or greater than zero will be accepted here.
+\num{2}.- The parameter Detected proteins allows users to specify the column in the Data file containing the unique protein identifier for the proteins detected in the MS experiments. It is in this column where the program will look for the Target protein value given in the section \textit{Values} of Region \num{2} of the interface. It is important that in this column the Target protein value is used to refer to only one protein. Only one integer number equal or greater than zero will be accepted here.
 
-\num{3}.- The parameter Score allows users to specify the column in the Data file containing the Score values. It is in this column where the program will look for the values to be compared against the Score threshold given in the section \textit{Values} in Region \num{2} of the interface.
+\num{3}.- The parameter Score allows users to specify the column in the Data file containing the Score values. It is in this column where the program will look for the values to be compared against the Score threshold given in the section \textit{Values} of Region \num{2} of the interface.
 
 \phantomsection
 \num{4}.- The parameter Columns to extract\label{par:limprotColumnExtract} allows users to specify which columns in the Data file will be copy to the shorter versions of the Data file, see page \pageref{subsec:utilShortDF} for more details. A range of columns may be specified as \numrange[range-phrase = --]{4}{10} with both numbers included in the range. Any number of columns may be specified here. Only integer numbers equal or greater than zero will be accepted. A value of NA means no shorter version of the Data files will be created.
@@ -90,9 +90,9 @@ The section \textit{Column numbers} in Region \num{2} contains five parameters. 
 \phantomsection
 \num{5}.- \label{par:limprotResultControl}The parameter Results - Control experiments allows users to specify the columns in the Data file containing the results of the control and enzymatic digestion experiments. For the Limited Proteolysis module, there are three ways to provide the information for this parameter. Users can directly type the column numbers corresponding to the control and digestion experiments, load the values from a .txt file using the Load values button or use the Type values button to call a helper window, see \autoref{fig:limprotResControlWindow}. 
 
-Independently of the chosen method, the expected input here is a matrix in which each element contains the column numbers with the MS results for a gel spot. Matrix elements are coma (,) separated while rows are semicolon (;) separated. Notice that the last row does not end with a semicolon (;). The first row of the matrix should contain only one element corresponding to the control experiments. Duplicate values are not allowed. 
+Independently of the chosen method, the expected input here is a matrix in which each element contains the column numbers with the MS results for a gel spot. Matrix elements are coma (,) separated while rows are semicolon (;) separated. Notice that the last row does not end with a semicolon (;). The first row of the matrix should contain only one element corresponding to the control experiments. Duplicate column numbers are not allowed. 
 
-The helper window is divided in four Regions. Region \num{1} allows to define the number of bands and lanes of interest in the gel and create the matrix in Region \num{2}. Each text field in Region \num{2} should contain the column numbers containing the MS results for the given gel spot. The values for the text fields should be positive integer numbers or a range of integers, e.g. \numrange[range-phrase=--]{60}{62} or NA for empty gel spots. Fields left empty are set to NA when the values are exported to the window of the module. The column numbers can be seen in the list box in Region \num{3}. Selected entries in the list box can be copied and then pasted to the text fields using the right mouse button or the Tools menu. Region \num{4} contains two buttons to Cancel or to Export the values to the window of the module. 
+The helper window is divided in four Regions. Region \num{1} allows to define the number of bands and lanes of interest in the gel and create the matrix in Region \num{2}. Each text field in Region \num{2} should contain the column numbers with the MS results for the given gel spot. The values for the text fields should be positive integer numbers or a range of integers, e.g. \numrange[range-phrase=--]{60}{62} or NA for empty gel spots. Fields left empty are set to NA when the values are exported to the window of the module. The column numbers can be seen in the list box in Region \num{3}. Selected entries in the list box can be copied and then pasted to the text fields using the right mouse button or the Tools menu. Region \num{4} contains two buttons to Cancel or to Export the values to the window of the module. 
 
 \begin{figure}[h]
 	\centering
@@ -112,17 +112,17 @@ The same matrix can be directly typed in the text field of the parameter Results
 
 \numrange[range-phrase=--]{60}{62}; \num{63} \num{64} \num{65}, \numrange[range-phrase=--]{66}{67} \num{68}; NA, \numrange[range-phrase=--]{70}{72}
 
-Region \num{3} of the Limited Proteolysis module main window contains a list box that will display the number and name of the columns found in the Data file. The list box is automatically filled when the Data file is selected. Selected columns in the list box can be directly added to any field in the section \textit{Column numbers} in Region \num{2} of the interface using the right mouse button over the list box or the Tools menu.
+Region \num{3} of the Limited Proteolysis module main window contains a list box that will display the number and name of the columns found in the Data file. The list box is automatically filled when the Data file is selected. Selected columns in the list box can be directly added to any field in the section \textit{Column numbers} of Region \num{2} of the module interface using the right mouse button over the list box or the Tools menu.
 
 Region \num{4} contains two buttons and the progress bar. The Help button leads to an online tutorial while the Start analysis button will trigger the processing of the data file. The progress bar will give users a rough idea of the remaining processing time, once the analysis is started.
 
 \subsection{The Tools menu}
 
-The tools menu in the module window allows to copy the selected columns in the list box in Region \num{3} of the interface to the fields of section \textit{Column numbers} in Region \num{2} of the interface. The list box in Region \num{3} of the interface can also be cleared. In addition, through this menu users can create a .uscr file with the given options to the module before running the analysis. If something goes wrong during the analysis having the .uscr file means that users do not have to type the values of all the parameters again, see \autoref{subsec:utilUscrFile} for more details.   
+The tools menu in the module window allows to copy the selected columns in the list box of Region \num{3} of the interface to the fields of section \textit{Column numbers} of Region \num{2}. The list box of Region \num{3} of the interface can also be cleared. In addition, through this menu users can create a .uscr file with the given options to the module before running the analysis. If something goes wrong during the analysis, having the .uscr file means that users do not have to type the values of all the parameters again, see \autoref{subsec:utilUscrFile} for more details. 
 
 \section{The analysis}
 \label{sec:limprotEquivalenceTest}
-First, UMSAP will check the validity of the user provided input. Then, the Data file is processed as follow. All rows in the data file containing peptides that do not belong to the Target protein are removed. Then, all rows containing peptides from the Target protein but with Score values lower than the user defined Score threshold are removed. These steps leave only relevant peptides, this means, peptides with a Score value higher than the user defined threshold that belong to the Target protein. For each one of these relevant peptides the equivalence test is performed\cite{Limentani2005}.
+First, UMSAP will check the validity of the user provided input. Then, the Data file is processed as follow. All rows in the Data file containing peptides that do not belong to the Target protein are removed. Then, all rows containing peptides from the Target protein but with Score values lower than the user defined Score threshold are removed. These steps leave only relevant peptides, this means, peptides with a Score value higher than the user defined threshold that belong to the Target protein. For each one of these relevant peptides the equivalence test is performed \cite{Limentani2005}.
 
 The implementation of the equivalence test is based on the following equations:
 \begin{equation}
@@ -143,9 +143,9 @@ where $s^*$ is an estimate of the upper confidence limit of the standard deviati
 \label{eq:poolStDev}
 s_p =  \sqrt{\frac{(n_1-1)s^2_1+(n_2-1)s^2_2}{n_1+n_2-2}}
 \end{equation}
-$\alpha$, $\beta$, $\gamma$ and $\Theta$ are the parameters defined in Region \num{2} of the main window of the module.
+$\alpha$, $\beta$, $\gamma$ and $\Theta$ are the parameters defined in section Values of Region \num{2} of the main window of the module.
 
-In essence, for each relevant peptide, the control experiments are used to estimate the upper confidence limit for the standard deviation using \autoref{eq:limprotDeviationUpperLimit} and then the acceptance criterion is calculated with \autoref{eq:limprotAcceptanceCriterion} Finally, the confidence interval for the mean difference for the gel spot and the control is calculated with \autoref{eq:limprotEquivalenceTest} and compare to $\Theta$. Peptides with equivalent mean intensity in at least one gel spot and the control are retained while not equivalent peptides are discarded. 
+In essence, for each relevant peptide, the control experiments are used to estimate the upper confidence limit for the standard deviation using \autoref{eq:limprotDeviationUpperLimit} and then the acceptance criterion is calculated with \autoref{eq:limprotAcceptanceCriterion}. Finally, the confidence interval for the mean difference for the gel spot and the control is calculated with \autoref{eq:limprotEquivalenceTest} and compare to $\Theta$. Peptides with equivalent mean intensity in at least one gel spot and the control are retained while not equivalent peptides are discarded. 
 
 If the value of $\Theta$ is given in Region \num{2} of the module's interface then only the confidence interval for the mean difference is calculated and the value is directly compared to the given $\Theta$ value. The maximum possible $\Theta$ value must always be provided. The reason for this is that when only a few replicates of the experiments are performed the calculated $\Theta$ value may be to large and then the equivalence test is not able to detect the peptides with intensity values in the experiments lower than in the control.
 
@@ -155,7 +155,7 @@ After the filtered peptide (FP) are identified the modules creates the output fi
 
 \section{The output files}
 
-All the output generated by the Limited Proteolysis module will be contained in a LimProt folder created inside the selected Output folder. If the Output folder field in the section \textit{Files} in Region \num{2} of the interface is left empty, then the LimProt folder will be created in the directory containing the Data file. If the selected Output folder already contains a LimProt folder, then the current date and time to the second will be added to the name in order to avoid overwriting files from previous analyses. By default the LimProt folder will contain two files with extensions .limprot and .uscr and a Data{\_}Steps folder. The name of these files is provided with the Output name field in the section \textit{Files} of Region \num{2} of the interface. Depending on the user provided input extra folders and files will be created inside the LimProt folder (\autoref{fig:limprotOutFolder}). For the rest of this chapter we will assume that the user provided name for the Output folder was \textit{t}, the Output name was myLimTest, the Target protein was \textit{Mis18alpha} and all optional analyses were performed.
+All the output generated by the Limited Proteolysis module will be contained in a LimProt folder created inside the selected Output folder. If the Output folder field in section \textit{Files} of Region \num{2} of the interface is left empty, then the LimProt folder will be created in the directory containing the Data file. If the selected Output folder already contains a LimProt folder, then the current date and time to the second will be added to the name in order to avoid overwriting files from previous analyses. By default the LimProt folder will contain two files with extensions .limprot and .uscr and a Data{\_}Steps folder. The name of these files is provided with the Output name field in section \textit{Files} of Region \num{2} of the interface. Depending on the user provided input extra folders and files will be created inside the LimProt folder (\autoref{fig:limprotOutFolder}). For the rest of this chapter we will assume that the user provided name for the Output folder was \textit{t}, the Output name was myLimTest, the Target protein was \textit{Mis18alpha} and all optional analyses were performed.
 
 Information regarding the content and use of the .uscr file can be found in \autoref{subsec:utilUscrFile}.
 
@@ -165,7 +165,7 @@ If the parameter Columns to extract is different than NA, then the folder Data w
 
 The folder Data\_Steps contains a step by step account of all the calculations performed so users can check the accuracy of the calculation or perform further analysis. The files inside Data\_Steps are plain text file with tab separated columns. The first line contains the name of the columns in the file.
 
-A file containing a list of FP can also be generated as indicated in \autoref{subsec:limprotToolsMenu}.
+A file containing a list of FP can also be generated as indicated in \autoref{subsec:utilExpData}.
 
 \begin{figure}[h]
 	\centering
@@ -177,7 +177,7 @@ A file containing a list of FP can also be generated as indicated in \autoref{su
 
 \section{Visualizing the output files}
 
-The main output of the module is the .limprot file. This file contains the list of FP,  all parameters values and all the information needed to visualize the results with UMSAP. After creating the file at the end of the analysis the Limited Proteolysis module will automatically load the file and create a windows to display the results, see \autoref{fig:limprotResultsWindow}.
+The main output of the module is the .limprot file. This file contains the list of FP,  all parameters values and all the information needed to visualize the results with UMSAP. After creating the file at the end of the analysis, the Limited Proteolysis module will automatically load the file and create a windows to display the results, see \autoref{fig:limprotResultsWindow}.
 
 \begin{figure}[h]
 	\centering
@@ -202,6 +202,6 @@ Region \num{4} will show information about the selected lane/band or gel spot in
 \subsection{The Tools menu}
 \label{subsec:limprotToolsMenu}
 
-The Tools menu for the window allows changing the selection mode in Region \num{2}, export the data shown in the window, save an image of Region \num{2} or \num{3} and to reset the view of the window.
+The Tools menu for the window allows changing the selection mode in Region \num{2}, export the data shown in the window (see \autoref{subsec:utilExpData}), save an image of Region \num{2} or \num{3} and to reset the view of the window.
 
 The file containing the exported list of FP will have a tabular format with tab delimited columns. Each row of the file will contain a FP. The columns in the file contain information about the N and C residue numbers, the sequence and Score of the FP. In addition, the results of the equivalence test for each gel spot is given as 0 or 1 value, with 0 meaning not equivalent. The file will have a .txt extension and can be viewed with a simple text editor or Excel.
