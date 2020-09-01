@@ -557,6 +557,15 @@ cutprop = { # Information about the cutprop file
 	'DistBetExp'   :  4, # Number of columns for each experiment
 }
 
+cutevo = { # Information about the cutevo file
+	'ColNames' : [ # Col names in the cutevo data frame 
+		'Residue Number',
+	],
+	'SortBy' : [ # Col name to sort the data frame
+		'Residue Number',
+	],
+}
+
 aadist = { # Information about the aadist file
 	'FillChar'  : '-',   # Character used by BioPython to fill sequence gaps
 	'FP'        : 'FP',  # Name for the Filtered Peptide key
@@ -660,6 +669,7 @@ extLong = { # string for the dlg windows representing the extension of the files
 	'CorrA'   : 'corr files (*.corr)|*.corr',
 	'Uscr'    : 'uscr files (*.uscr)|*.uscr',
 	'CutProp' : 'cutprop files (*.cutprop)|*.cutprop',
+	'CutEvo'  : 'cutevo files (*.cutevo)|*.cutevo',
 	'UmsapM'  : ("UMSAP main output files (*.tarprot; *.limprot; *.protprof)"
 		"|*.tarprot;*.limprot;*.protprof"),
 	'UmsapR'  : ("UMSAP files (*.tarprot; *.cutprop; *.aadist; *.hist; "
@@ -684,6 +694,7 @@ extShort = { # extension of selected files to get default values. When more than
 	'CorrA'   : ['.corr'],
 	'Uscr'    : ['.uscr'],
 	'CutProp' : ['.cutprop'],
+	'CutEvo'  : ['.cutevo'],
 	'UmsapM'  : ['.tarprot', '.limprot', '.protprof'],
 	'UmsapR'  : ['.tarprot', '.cutprop', '.aadist', '.hist', '.corr', 
 		'.limprot', '.uscr', '.protprof'],

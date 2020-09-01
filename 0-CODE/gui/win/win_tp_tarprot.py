@@ -180,21 +180,19 @@ class WinTarProt(gclasses.WinModule):
 		# 	#self.tcPDBFile.SetLabel(str(Path('C:/Users/bravo/Downloads/2y4f-kbr.pdb')))
 		else:
 			pass
-		self.tcSeqNatFile.SetLabel('P31545')
-		#self.tcSeqNatFile.SetLabel('NA')
+		# self.tcSeqNatFile.SetLabel('P31545')
 		self.tcPDB.SetLabel('NA')       
 		self.tcOutName.SetLabel('myTarTest')
 		self.tcTarprot.SetLabel('efeB')   
 		self.tcScoreVal.SetLabel('200')  
-		self.tcPositions.SetLabel('5')  
-		self.tcSeqLength.SetLabel('100') 
-		self.tcHistWin.SetLabel('50')
-		#self.tcPDB.SetLabel('2y4f;A')       
-		self.tcPDB.SetLabel('NA')       
+		# self.tcPositions.SetLabel('5')  
+		# self.tcSeqLength.SetLabel('100') 
+		# self.tcHistWin.SetLabel('50')
+		# self.tcPDB.SetLabel('2y4f;A')              
 		self.tcSeq.SetLabel('0')       
 		self.tcDetProt.SetLabel('38')   
 		self.tcScore.SetLabel('44')     
-		self.tcColExt.SetLabel('0 1 2 3 4-10')
+		# self.tcColExt.SetLabel('0 1 2 3 4-10')
 		self.tcResults.SetLabel('98-105; 109-111; 112 113 114; 115-117 120')
 		#self.tcResults.SetLabel('98-104; 106 107; 108 109; 110 111; 112 113; 114 115; 116 117; 118 119')
 	 #--- INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! ##########
@@ -919,6 +917,14 @@ class WinTarProt(gclasses.WinModule):
 				config.extShort['CutProp'][0])
 			self.tarprotObj.TarProt2CutProp(self.cutpropFile)
 		 #---
+		 #--> Cleavage evolution
+			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
+				'Writing output files: cutevo file', 1)
+			self.cutevoFile = self.tarprotFile.with_suffix(
+				config.extShort['CutEvo'][0]
+			)
+			self.tarprotObj.TarProt2CutEvolution(self.cutevoFile)
+		 #---		 
 	  	 #--> aadist file
 			if self.do['Positions'] is None:
 				pass
@@ -965,6 +971,7 @@ class WinTarProt(gclasses.WinModule):
 				self.pdbOutFolder.mkdir()
 				self.tarprotObj.TarProt2PDB(self.pdbOutFolder, self.pdbObj, 
 					self.recSeqObj, self.stProgress)
+		 #---
 		else:
 			gclasses.DlgFatalErrorMsg(
 				config.msg['Errors']['FiltPept'],

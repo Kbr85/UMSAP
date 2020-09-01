@@ -448,6 +448,20 @@ def ListColHeaderCutPropFile(nExp):
  #---
 #---
 
+def ListColHeaderCutEvolutionFile(nExp):
+	""" Creates the column's header for the cleavage evolution dataframe """
+ #--> Get fix columns
+	colOut = config.cutevo['ColNames'][:]
+ #---
+ #--> Add experiments
+	for i in range(1, nExp+1, 1):
+		colOut.append('Exp'+str(i))
+ #---
+ #--> Return
+	return colOut
+ #---
+#---
+
 def ListColHeaderProtProfFile(Xv, Yv, Xtp, Ytp):
 	""" Generates the multiindex columns for the output in ProtProf.
 		This is meant to hold the analysis done over a matrix like:
