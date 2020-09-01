@@ -1027,6 +1027,53 @@ def MenuOnCutProp():
 	dlgi.Destroy()
 	return k	
 #---
+
+def MenuOnCutEvo():
+	""" Creates the .cutevo file from a .tarprot file """
+ #--> Variables
+	k = True
+	dlgi = gclasses.DlgOpenFile(config.msg['Open']['TarProtFile'], 
+		config.extLong['TarProt'])
+ #---
+ #--> Get path to the file
+	if dlgi.ShowModal() == wx.ID_OK:
+		fLoc = Path(dlgi.GetPath())
+ 	 #--> Get path to the output
+		dlgo = gclasses.DlgSaveFile(config.extLong['CutEvo'])
+		if dlgo.ShowModal() == wx.ID_OK:
+			fLocO = Path(dlgo.GetPath())
+ 		 #--> Create tarprot file
+			try:
+				tarprotObj = dclasses.DataObjTarProtFile(fLoc)
+			except Exception:
+				k = False
+ 		 #---
+		 #--> Create cutevo file
+			if k:
+				if tarprotObj.checkExport:
+					if tarprotObj.TarProt2CutEvolution(fLocO):
+						#WinGraphResCreate(config.name['CutPropRes'], fLocO)
+						gclasses.DlgSuccessMsg()
+					else:
+						k = False
+				else:
+					gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
+					k = False
+			else:
+				k = False						
+		 #---
+		else:
+			k = False
+	 #---
+ #---
+ #--> Destroy dlgo
+		dlgo.Destroy()		
+	else:
+		k = False
+ #--> Destroy dlgi & Return
+	dlgi.Destroy()
+	return k	
+#---
 #---# Improve (UP) Perhaps these methods can be combined in just one
 
 def MenuOnReadOutFile():

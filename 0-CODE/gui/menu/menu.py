@@ -106,6 +106,7 @@ class UtilTarProt(wx.Menu):
 		super().__init__()
 	 #--> Menu items
 		self.aaDist  = self.Append(-1, 'AA Distribution')
+		self.cutEvo  = self.Append(-1, 'Cleavages Evolution')
 		self.cutRes  = self.Append(-1, 'Cleavages per Residue')
 		self.cut2Pdb = self.Append(-1, 'Cleavages to PDB Files')
 		self.histo   = self.Append(-1, 'Histograms')
@@ -116,6 +117,7 @@ class UtilTarProt(wx.Menu):
 	 #---
 	 #--> Bind
 		self.Bind(wx.EVT_MENU, self.OnAAdist,       source=self.aaDist)
+		self.Bind(wx.EVT_MENU, self.OnCutEvo,       source=self.cutEvo)
 		self.Bind(wx.EVT_MENU, self.OnCutRes,       source=self.cutRes)
 		self.Bind(wx.EVT_MENU, self.OnCut2Pdb,      source=self.cut2Pdb)		
 		self.Bind(wx.EVT_MENU, self.OnHisto,        source=self.histo)
@@ -131,6 +133,14 @@ class UtilTarProt(wx.Menu):
 		""" Window to get the aa distribution files from a tarprot file """
 		gmethods.WinMUCreate(config.name['AAdist'])	
 		return True
+	#---
+
+	def OnCutEvo(self, event):
+		""" Creates the cleavage evolution file from a .tarprot file """
+		if gmethods.MenuOnCutEvo():
+			return True
+		else:
+			return False
 	#---
 
 	def OnCutRes(self, event):
