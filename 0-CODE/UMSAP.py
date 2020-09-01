@@ -21,7 +21,7 @@ import wx.adv
 #endregion ----------------------------------------------------------- Imports
 
 
-DEVELOPMENT = True # # To control variables with different values in dev or prod
+DEVELOPMENT = False # # To control variables with different values in dev or prod
 
 
 class UmsapApp(wx.App):

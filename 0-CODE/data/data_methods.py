@@ -809,7 +809,6 @@ def VersionCompare(la=None, lb=None):
 		Returns:
 		0  list la = lb
 		1  list la > lb Update available
-		-1 list la < lb Using a beta version? 
 		---
 		la : first list (list 3 elements)
 		lb : second list (list 3 elements)
@@ -839,11 +838,11 @@ def VersionCompare(la=None, lb=None):
 				elif zI == zU:
 					return 0
 				else:
-					return -1
+					return 0
 			else:
-				return -1
+				return 0
 		else:
-			return -1
+			return 0
 	else:
 		return 0
  #---

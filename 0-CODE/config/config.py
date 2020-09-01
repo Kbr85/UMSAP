@@ -28,10 +28,10 @@ import wx
 
 
 #region --------------------------------------------------- General parameters
-development = True # To control variables with different values in dev or prod
+development = False # To control variables with different values in dev or prod
 
-version         = '2.1.0 (beta)' # String to write in the output files
-versionUpdate   = [2, 0, 1]      # List to match against the version online
+version         = '2.1.0' # String to write in the output files
+versionUpdate   = [2, 1, 0]      # List to match against the version online
 versionInternet = None           # To hold the version found in the Internet
 dictVersion     = { # dict for directly write into output files
 	'version': version,

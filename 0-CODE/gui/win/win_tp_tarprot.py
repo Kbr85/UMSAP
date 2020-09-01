@@ -163,43 +163,6 @@ class WinTarProt(gclasses.WinModule):
 		self.tcPDB.SetValue('NA')
 		self.tcScoreVal.SetValue('0') 
 	 #---
-		
-	 
-	 #--> INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! ##########
-		import getpass
-		user = getpass.getuser()
-		if config.cOS == 'Darwin':
-			self.tcDataFile.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')
-			self.tcSeqRecFile.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-seq.txt')
-			self.tcOutputFF.SetLabel('/Users/' + str(user) + '/TEMP-GUI/BORRAR-UMSAP/PlayDATA/test')
-		elif config.cOS == 'Windows':
-			from pathlib import Path
-			self.tcDataFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TarProt/Mod-Enz-Dig-data-ms.txt'))) 
-			self.tcSeqRecFile.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TarProt/Mod-Enz-Dig-data-seq.txt')))
-			self.tcOutputFF.SetLabel(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/test')))
-		# 	#self.tcPDBFile.SetLabel(str(Path('C:/Users/bravo/Downloads/2y4f-kbr.pdb')))
-		else:
-			pass
-		self.tcSeqNatFile.SetLabel('P31545')
-		#self.tcSeqNatFile.SetLabel('NA')
-		self.tcPDB.SetLabel('NA')       
-		self.tcOutName.SetLabel('myTarTest')
-		self.tcTarprot.SetLabel('efeB')   
-		self.tcScoreVal.SetLabel('200')  
-		self.tcPositions.SetLabel('5')  
-		self.tcSeqLength.SetLabel('100') 
-		self.tcHistWin.SetLabel('50')
-		#self.tcPDB.SetLabel('2y4f;A')       
-		self.tcPDB.SetLabel('NA')       
-		self.tcSeq.SetLabel('0')       
-		self.tcDetProt.SetLabel('38')   
-		self.tcScore.SetLabel('44')     
-		self.tcColExt.SetLabel('0 1 2 3 4-10')
-		self.tcResults.SetLabel('98-105; 109-111; 112 113 114; 115-117 120')
-		#self.tcResults.SetLabel('98-104; 106 107; 108 109; 110 111; 112 113; 114 115; 116 117; 118 119')
-	 #--- INITIAL VALUES FOR TESTING. DELETE BEFORE RELEASING!!!!!!!! ##########
-	 
-	 
 	 #--> Show
 		self.Show()
 	 #---
