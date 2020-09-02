@@ -1064,6 +1064,58 @@ class DataObjCorrFile():
 	#endregion ---------------------------------------------------- My Methods
 #---
 
+class DataObjCutEvoFile():
+	""" Class to handle .cutevo files
+	
+	"""
+	
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, file):
+		""""""
+	 #--> Variables
+		self.name  = config.name['CutEvoObj']
+		self.fileP = Path(file)
+	 #---
+	 #--> Read .cutevo file
+		try:
+			self.Fdata = dmethods.FFsReadJSON(self.fileP)
+		except Exception:
+			msg = config.dictCheckFatalErrorMsg[self.name]['CutEvoFileFormat']
+			gclasses.DlgFatalErrorMsg(msg)
+			raise ValueError('')
+	 #---
+	 #--> Extra variables
+		self.SetVariables()
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup		
+
+	def SetVariables(self):
+		""" Set extra vriables needed for the class """
+	 #--> data  
+		self.data = pd.DataFrame(self.Fdata['R'])
+		self.data.sort_values(by=config.cutprop['SortBy'], inplace=True,)
+		self.data = self.data.astype({'Residue Number': 'int32'})
+	 #---
+	 #--> nExp
+		self.nExp = self.Fdata['CI']['nExp']
+	 #---
+	#---
+
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+	 #--> Write
+		dmethods.FFsWriteCSV(fPath, self.data, index=False)
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---	
+#---
+
 class DataObjCutpropFile():
 	""" Class to handle a cutprop file 
 		Attributes of the class are set in __init__ or SetVariables, unless they
@@ -4120,7 +4172,7 @@ class DataObjTarProtFile(MyModules):
 	 #---
 	 #---
 	 #--> Write to file & Return
-		dmethods.FFsWriteCSV(fileO, df_out.sort_values(by=['Residue Number']))
+		dmethods.FFsWriteJSON(fileO, data)
 		return True
 	 #---
 	#---

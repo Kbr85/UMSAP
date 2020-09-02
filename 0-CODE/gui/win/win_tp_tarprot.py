@@ -917,7 +917,7 @@ class WinTarProt(gclasses.WinModule):
 				config.extShort['CutProp'][0])
 			self.tarprotObj.TarProt2CutProp(self.cutpropFile)
 		 #---
-		 #--> Cleavage evolution
+		 #--> cutevo file
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Writing output files: cutevo file', 1)
 			self.cutevoFile = self.tarprotFile.with_suffix(

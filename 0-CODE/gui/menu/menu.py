@@ -435,6 +435,51 @@ class ToolsTypeResults(wx.Menu):
 	#endregion ---------------------------------------------------- My Methods
 #---
 
+class ToolsCutEvoRes(wx.Menu):
+	""" Creates the Tools menu for the CutEvoRes window """
+
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self):
+		""" """
+		super().__init__()
+	 #--> Menu items
+		self.expFP = self.Append(-1, 'Export Data')
+		self.AppendSeparator()
+		self.saveP = self.Append(-1, 'Save Plot Image')
+		self.AppendSeparator()
+		self.reset = self.Append(-1, 'Reset View')
+	 #---
+	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnReset,    source=self.reset)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot, source=self.saveP)
+		self.Bind(wx.EVT_MENU, self.OnExportFP, source=self.expFP)
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup
+		
+	#region ------------------------------------------------------- My Methods
+	def OnSavePlot(self, event):
+		""" Save image of the plot """
+		win = self.GetWindow()
+		win.OnSavePlot()
+		return True
+	#---
+
+	def OnReset(self, event):
+		""" Reset the view """
+		win = self.GetWindow()
+		win.OnResetView()
+		return True
+	#---
+
+	def OnExportFP(self, event):
+		""" Export the list of filtered peptides """
+		win = self.GetWindow()
+		win.OnExportData()
+		return True
+	#---
+#---
+
 class ToolsCorrAUtil(wx.Menu):
 	""" Creates the tools menu for the correlation analysis window """
 	

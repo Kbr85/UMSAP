@@ -103,6 +103,7 @@ class SplashWindow(wx.adv.SplashScreen):
 		from gui.win.win_tp_histo	    import WinHisto
 		from gui.win.win_tp_seqalign	import WinSeqAlign
 		from gui.win.win_tp_aadist	    import WinAAdist
+		from gui.win.win_tp_cutevoR     import WinCutEvoRes
 		from gui.win.win_tp_cutpropR	import WinCutPropRes
 		from gui.win.win_tp_histoR	    import WinHistoRes
 		from gui.win.win_tp_aadistR	    import WinAAdistRes
@@ -186,6 +187,7 @@ class SplashWindow(wx.adv.SplashScreen):
  			config.name['Histo']     : WinHisto,
  			config.name['SeqAlign']  : WinSeqAlign,
  			config.name['AAdist']    : WinAAdist,
+			config.name['CutEvoRes'] : WinCutEvoRes,
  			config.name['CutPropRes']: WinCutPropRes,
  			config.name['HistoRes']  : WinHistoRes,
  			config.name['AAdistR']   : WinAAdistRes,
@@ -213,6 +215,7 @@ class SplashWindow(wx.adv.SplashScreen):
 			#--> Result windows
 			config.name['TarProtRes']: menu.ToolsTarProtRes,
 			config.name['LimProtRes']: menu.ToolsLimProtRes,
+			config.name['CutEvoRes'] : menu.ToolsCutEvoRes,
 			config.name['CutPropRes']: menu.ToolsCutRes,
 			config.name['HistoRes']  : menu.ToolsHistoRes,
 			config.name['AAdistR']   : menu.ToolsAAdistRes,
@@ -226,6 +229,8 @@ class SplashWindow(wx.adv.SplashScreen):
 			config.extShort['CorrA'][0]	  : dclasses.DataObjCorrFile,
 			config.name['CutPropRes']	  : dclasses.DataObjCutpropFile,
 			config.extShort['CutProp'][0] : dclasses.DataObjCutpropFile,
+			config.name['CutEvoRes']	  : dclasses.DataObjCutEvoFile,
+			config.extShort['CutEvo'][0]  : dclasses.DataObjCutEvoFile,			
 			config.name['AAdistR']		  : dclasses.DataObjAAdistFile,
 			config.extShort['AAdist'][0]  : dclasses.DataObjAAdistFile,
 			config.name['HistoRes']	      : dclasses.DataObjHistFile,
@@ -239,6 +244,7 @@ class SplashWindow(wx.adv.SplashScreen):
 			config.name['TarProtRes']  : dmethods.Get_Data4ListCtrl_TarProtRes,
 			config.name['LimProtRes']  : dmethods.Get_Data4ListCtrl_LimProtRes,
 			config.name['ProtProfRes'] : dmethods.Get_Data4ListCtrl_ProtProfRes,
+			config.name['CutEvoRes']   : dmethods.Get_Data4ListCtrl_CutEvoRes,
 		}
 	  #---
 	 #---

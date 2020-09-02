@@ -121,6 +121,7 @@ name = { # Unique names to identify windows/objects through the config file
 	'TarProt'   : 'TarProt',
 	'TarProtRes': 'TarProtRes',
 	'CutPropRes': 'Cleavage propensity',
+	'CutEvoRes' : 'Cleavage evolution',
 	'AAdist'    : 'AA Distribution',
 	'AAdistR'   : 'AA Distribution Results',
 	'Histo'     : 'Histograms',
@@ -141,6 +142,7 @@ name = { # Unique names to identify windows/objects through the config file
 	'PdbObj'     : 'PdbObj',
 	'CorrObj'    : 'CorrObj',
 	'CutPropObj' : 'CutPropObj',
+	'CutEvoObj'  : 'CutEvoObj',
 	'HistoObj'   : 'HistoObj',
 	'TarProtObj' : 'TarProtObj',
 	'AAdistObj'  : 'AAdistObj',
@@ -168,6 +170,7 @@ title = { # Title of the windows
 	name['TarProt']   : 'UMSAP - Targeted Proteolysis',
 	name['TarProtRes']: 'UMSAP - TarProt - Fragments',
 	name['CutPropRes']: 'UMSAP - Util - Cleavages per Residue',
+	name['CutEvoRes'] : 'UMSAP - Util - Cleavages Evolution',
 	name['AAdist']    : 'UMSAP - Util - AA Distribution',
 	name['AAdistR']   : 'UMSAP - Util - AA Distribution',
 	name['Histo']     : 'UMSAP - Util - Histograms',
@@ -263,6 +266,7 @@ size = { # Size for different widgets in the GUI
 		name['TarProtRes'] : (560, 560),
 		name['LimProtRes'] : (560, 560),
 		name['ProtProfRes']: (560, 560),
+		name['CutEvoRes']  : (560, 560),
 	},
 	'Panel' : { # Size for wx.Panels
 		name['LimProtRes'] : {
@@ -301,10 +305,11 @@ size = { # Size for different widgets in the GUI
 		},				
 	},
 	'ListBox' : { # Size for wx.ListCtrl
-		name['TarProtRes' ]: (250, 200),
+		name['TarProtRes'] : (250, 200),
 		name['TarProt']    : (250, 200),
+		name['CutEvoRes']  : (150, 200),
 		name['LimProt']    : (250, 200),
-		name['LimProtRes' ]: (250, 200),
+		name['LimProtRes'] : (250, 200),
 		name['ProtProfRes']: (275, 200),
 		name['ProtProf']   : (250, 200),
 		name['TypeRes']    : (250, 200),
@@ -314,6 +319,7 @@ size = { # Size for different widgets in the GUI
 		name['TarProtRes'] : (250,-1),
 		name['LimProtRes'] : (250,-1),
 		name['ProtProfRes']: (250,-1),
+		name['CutEvoRes']  : (150,-1),
 	},
 	'Drawings' : { # General size settings to make all drawings the same
 		'RectH'     : 20, # Height of a rectangle representing a fragment
@@ -672,9 +678,9 @@ extLong = { # string for the dlg windows representing the extension of the files
 	'CutEvo'  : 'cutevo files (*.cutevo)|*.cutevo',
 	'UmsapM'  : ("UMSAP main output files (*.tarprot; *.limprot; *.protprof)"
 		"|*.tarprot;*.limprot;*.protprof"),
-	'UmsapR'  : ("UMSAP files (*.tarprot; *.cutprop; *.aadist; *.hist; "
-		"*.corr; *.limprot; *.protprof)|*.tarprot;*.cutprop;*.aadist;*.hist;"
-		"*.corr;*.limprot;*.protprof"),
+	'UmsapR'  : ("UMSAP files (*.tarprot; *.cutprop; *.cutevo; *.aadist; "
+		"*.hist; *.corr; *.limprot; *.protprof)|*.tarprot;*.cutprop;*cutevo;"
+		"*.aadist;*.hist;*.corr;*.limprot;*.protprof"),
 	'MatplotSaveImage' : ("Portable Document File (*.pdf)|*.pdf|Portable "
 		"Network Graphic (*.png)|*.png|Scalable Vector Graphic (*.svg)|*.svg|"
 		"Tagged Image File (*.tif)|*.tif"),
@@ -696,7 +702,7 @@ extShort = { # extension of selected files to get default values. When more than
 	'CutProp' : ['.cutprop'],
 	'CutEvo'  : ['.cutevo'],
 	'UmsapM'  : ['.tarprot', '.limprot', '.protprof'],
-	'UmsapR'  : ['.tarprot', '.cutprop', '.aadist', '.hist', '.corr', 
+	'UmsapR'  : ['.tarprot', '.cutprop', '.cutevo', '.aadist', '.hist', '.corr', 
 		'.limprot', '.uscr', '.protprof'],
 }
 
@@ -748,16 +754,17 @@ url = { # Selected URL needed by umsap.
 #region ------------------------------------------------------------- ListCtrl
 listctrl = { # Information regarding the col width and header of list boxes
 	'Widths' : { # width for each column
-		name['TarProt']      : (40, 200),
-		name['LimProt']      : (40, 200),
-		name['ProtProf']     : (40, 200),
-		name['TypeRes']      : (40, 200),
-		name['TarProtRes']   : (40, 200),
-		name['LimProtRes']   : (40, 200),
-		name['ProtProfRes']  : (45, 75, 140),
-		name['MergeAA']      : (40, 560),
-		name['CorrA']        : (40, 200),
-		'CorrA2'             : (40, 200)
+		name['TarProt']    : (40, 200),
+		name['LimProt']    : (40, 200),
+		name['ProtProf']   : (40, 200),
+		name['TypeRes']    : (40, 200),
+		name['TarProtRes'] : (40, 200),
+		name['CutEvoRes']  : (40, 100),
+		name['LimProtRes'] : (40, 200),
+		name['ProtProfRes']: (45, 75, 140),
+		name['MergeAA']    : (40, 560),
+		name['CorrA']      : (40, 200),
+		     'CorrA2'      : (40, 200)
 	},
 	'Header' : { # Name of each column
 		name['TarProt']     : ['#', 'Columns in the Data File'],
@@ -768,6 +775,7 @@ listctrl = { # Information regarding the col width and header of list boxes
 		name['CorrA']       : ['#', 'Columns in the Data File'],
 		'CorrA2'            : ['#', 'Selected columns'],
 		name['TarProtRes']  : ['#', 'Sequences in the FP list'],
+		name['CutEvoRes']   : ['#', 'Residue number'],
 		name['LimProtRes']  : ['#', 'Sequences in the FP list'],
 		name['MergeAA']     : ['#', 'Files to merge']		
 	},
@@ -917,6 +925,7 @@ msg = { # Text messages used in the programm
 			"damaged."),
 		'CorrFileFormat' : ("The given .corr file appears to be damaged."),
 		'CutPropFileFormat': ("The given .cutprop file appears to be damaged."),
+		'CutEvoFileFormat' : ("The given .cutevo file appears to be damaged."),
 		'HistoFileFormat' : ("The given .hist file apperrs to be damaged."),
 		'AAdistFileFormat' : ("The given .aadist file appears to be damaged."),
 		'UscrFileNoModule' : ("The given .uscr file does not contain the "
@@ -2185,22 +2194,25 @@ dictCheckFatalErrorMsg = { ####----> Fatal error messages
 	},
 	name['TarProtRes'] : {
 		'FiltPept2'      : msg['Errors']['FiltPept2'],
-		'FileFormatSort' : msg['Errors']['TarProtFileFormat']
+		'FileFormatSort' : msg['Errors']['TarProtFileFormat'],
 	},
 	name['CutPropObj'] : {
-		'CutPropFileFormat' : msg['Errors']['CutPropFileFormat']	
+		'CutPropFileFormat' : msg['Errors']['CutPropFileFormat'],	
 	},
+	name['CutEvoObj'] : {
+		'CutEvoFileFormat' : msg['Errors']['CutEvoFileFormat'],
+	},	
 	name['Histo'] : {
 		'TarProtFile'      : msg['Errors']['TarProtFile'],
 		'OutputFile'       : msg['Errors']['OutputFile'],
 		'Histogramwindows2': msg['Errors']['Histogramwindows2'],
-		'FiltPept2'        : msg['Errors']['FiltPept2'] 
+		'FiltPept2'        : msg['Errors']['FiltPept2'],
 	},
 	name['SeqH'] : {
 		'LimProtFile'    : msg['Errors']['LimProtFile'],
 		'OutputFile'     : msg['Errors']['OutputFile'],
 		'Sequencelength' : msg['Errors']['Sequencelength2'],
-		'FiltPept2'      : msg['Errors']['FiltPept2LP'] 
+		'FiltPept2'      : msg['Errors']['FiltPept2LP'],
 	},
 	name['SeqAlign'] : {
 		'TarProtFile'    : msg['Errors']['TarProtFile'],

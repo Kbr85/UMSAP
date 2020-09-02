@@ -1905,6 +1905,26 @@ def Get_Data4ListCtrl_ProtProfRes(self, col=None, df=None):
 	return l
  #---
 #---
+
+def Get_Data4ListCtrl_CutEvoRes(self, col=None, df=None):
+	""" 	"""
+ #--> Default values
+	if col is None:
+		col = [('Residue Number')]
+	else:
+		pass
+	if df is None:
+		df = self.fileObj.data
+	else:
+		pass
+ #---
+ #--> Get info
+	l = df.loc[:,col].values.tolist()
+ #---
+ #--> Return
+	return l
+ #---
+#---
 #endregion -------------------------- Data to fill ListCtrl in a Result Window
 
 

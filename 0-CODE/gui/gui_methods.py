@@ -1098,6 +1098,9 @@ def MenuOnReadOutFile():
 		elif ext == config.extShort['CutProp'][0]:
 			name = [config.name['CutPropRes']]		
 		#---
+		elif ext == config.extShort['CutEvo'][0]:
+			name = [config.name['CutEvoRes']]
+		#---
 		elif ext == config.extShort['Histo'][0]:
 			name = [config.name['HistoRes']]	
 		#---

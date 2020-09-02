@@ -3685,8 +3685,12 @@ class WinRes(WinMyFrame, GuiChecks, ElementListCtrlSearch):
 	 #--> Widgets
 	  #--> wx.ListBox & wx.SearchCtrl
 		ElementListCtrlSearch.__init__(self, parent=self.panel)
-		self.lb.SetWindowStyleFlag(
-			style=wx.LC_REPORT|wx.BORDER_SIMPLE|wx.LC_SINGLE_SEL)
+		if self.name != config.name['CutEvoRes']:
+			self.lb.SetWindowStyleFlag(
+				style=wx.LC_REPORT|wx.BORDER_SIMPLE|wx.LC_SINGLE_SEL
+			)
+		else:
+			pass
 	  #---
 	  #--- Lines
 		self.VI1 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
