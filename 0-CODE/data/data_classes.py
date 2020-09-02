@@ -1094,7 +1094,8 @@ class DataObjCutEvoFile():
 		""" Set extra vriables needed for the class """
 	 #--> data  
 		self.data = pd.DataFrame(self.Fdata['R'])
-		self.data.sort_values(by=config.cutprop['SortBy'], inplace=True,)
+		self.data.sort_values(by=config.cutprop['SortBy'], inplace=True)
+		self.data = self.data.reset_index(drop=True)
 		self.data = self.data.astype({'Residue Number': 'int32'})
 	 #---
 	 #--> nExp

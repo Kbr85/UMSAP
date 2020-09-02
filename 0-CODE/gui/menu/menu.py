@@ -443,6 +443,8 @@ class ToolsCutEvoRes(wx.Menu):
 		""" """
 		super().__init__()
 	 #--> Menu items
+		self.mono  = self.Append(-1, 'Monotonic')
+		self.AppendSeparator()
 		self.expFP = self.Append(-1, 'Export Data')
 		self.AppendSeparator()
 		self.saveP = self.Append(-1, 'Save Plot Image')
@@ -450,6 +452,7 @@ class ToolsCutEvoRes(wx.Menu):
 		self.reset = self.Append(-1, 'Reset View')
 	 #---
 	 #--> Bind
+		self.Bind(wx.EVT_MENU, self.OnMono,     source=self.mono)
 		self.Bind(wx.EVT_MENU, self.OnReset,    source=self.reset)
 		self.Bind(wx.EVT_MENU, self.OnSavePlot, source=self.saveP)
 		self.Bind(wx.EVT_MENU, self.OnExportFP, source=self.expFP)
@@ -458,6 +461,14 @@ class ToolsCutEvoRes(wx.Menu):
 	#endregion ------------------------------------------------ Instance Setup
 		
 	#region ------------------------------------------------------- My Methods
+	def OnMono(self, event):
+		""" Select only """
+		win = self.GetWindow()
+		win.OnMono()
+		return True
+	#---
+
+
 	def OnSavePlot(self, event):
 		""" Save image of the plot """
 		win = self.GetWindow()
@@ -478,6 +489,7 @@ class ToolsCutEvoRes(wx.Menu):
 		win.OnExportData()
 		return True
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class ToolsCorrAUtil(wx.Menu):

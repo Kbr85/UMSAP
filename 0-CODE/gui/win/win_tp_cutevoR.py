@@ -35,9 +35,10 @@ class WinCutEvoRes(gclasses.WinResDos):
 		super().__init__(self, None)
 	 #---
 	 #--> Variables
-		self.data = self.fileObj.data
-		self.nExp = self.fileObj.nExp
-		self.x    = [x for x in range(1, self.nExp+1, 1)]
+		self.data       = self.fileObj.data
+		self.dataFilter = None
+		self.nExp       = self.fileObj.nExp
+		self.x          = [x for x in range(1, self.nExp+1, 1)]
 	 #---
 	 #--> Menu
 		self.menubar = menu.MainMenuBarWithTools(self.name)
@@ -51,6 +52,7 @@ class WinCutEvoRes(gclasses.WinResDos):
 			self.p2.canvas.mpl_connect('button_press_event', self.OnClick)
 		else:
 			pass
+		self.lb.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnListSelect)
 	 #---
 	 #--> Draw
 		self.DrawConfig()
@@ -129,6 +131,29 @@ class WinCutEvoRes(gclasses.WinResDos):
 	 #-->
 		return True
 	 #---
+	#---
+
+	def OnMono(self):
+		""" Identify residues with monotonic behavior """
+		mask = self.data.iloc[:,1:].apply(self.OnMonoFind, axis=1, raw=False)
+		df = self.data[mask]
+		idx = df.index.values.tolist()
+		if idx:
+			gmethods.ListCtrlDeSelAll(self.lb)
+			for e in idx:
+				self.lb.Select(e, on=1)
+		else:
+			msg = "No residue with monotonic behavior was found."
+			gclasses.DlgWarningOk(msg)
+			return True
+	#---
+
+	def OnMonoFind(self, row):
+		""" """
+		if row.is_monotonic_increasing:
+			return True
+		else:
+			return False
 	#---
 	#endregion ---------------------------------------------------------- Menu
 
