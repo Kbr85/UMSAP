@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,19 +12,7 @@
 """ This module contains the methods helping to control the GUI of the app """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import wx
 import os
 import math
@@ -32,16 +20,14 @@ import requests
 import webbrowser
 import pandas as pd
 from pathlib import Path
-## My modules
+
 import config.config     as config
 import gui.gui_classes   as gclasses
 import data.data_classes as dclasses
 import data.data_methods as dmethods
-#---
+#endregion ----------------------------------------------------------- Imports
 
-
-
-# -------------------------------------------------------- Window creation
+#region ------------------------------------------------------ Window creation
 def WinMUCreate(winID):
 	""" Creates the window for modules and utilities in the GUI.
 		---
@@ -51,13 +37,14 @@ def WinMUCreate(winID):
 	if winID in config.winNoMinMainUtil:
 		pass
 	elif winID != config.name['Main']:
-		config.win['Main'].Iconize(True)
-		try:
-			config.win['Util'].Iconize(True)
-		except Exception:
-			pass
+		for a in [config.win['Main'], config.win['Util']]:
+			try:
+				a.Iconize(True)
+			except Exception:
+				pass
 	else:
-		pass	
+		pass
+ #---	
  #--> Create window or Raise already created window
 	if config.win[winID] is None:
 		config.win[winID] = config.pointer['gmethods']['WinCreate'][winID]()
@@ -66,8 +53,10 @@ def WinMUCreate(winID):
 	else:
 		config.win[winID].Iconize(False)
 		config.win[winID].Raise()
+ #---
  #--> Return
 	return True	
+ #---
 #---
 
 def WinGraphResCreate(winID, file):
@@ -77,14 +66,19 @@ def WinGraphResCreate(winID, file):
 		file: file with results (string or Path)
 	"""
  #--> Create the window
-	#try:
 	test = config.pointer['gmethods']['WinCreate'][winID](file)
 	config.win['Open'].append(test)
-	config.win['Main'].Iconize(True)
-	#except Exception:
-	#	return False
+	config.win['Main'].Iconize(True) 
+	# try:
+	# 	test = config.pointer['gmethods']['WinCreate'][winID](file)
+	# 	config.win['Open'].append(test)
+	# 	config.win['Main'].Iconize(True)
+	# except Exception:
+	# 	return False
+ #---
  #--> Return
 	return True
+ #---
 #---
 
 def WinTypeResCreate(winID, parent, parentName=None):
@@ -98,17 +92,19 @@ def WinTypeResCreate(winID, parent, parentName=None):
  #--> Check that no other window for this module already exists
 	if parent.name in config.win['TypeRes'].keys():
 		config.win['TypeRes'][parent.name].Iconize(False)
+		config.win['TypeRes'][parent.name].Raise()
 	else:
+ #---
  #--> Create the window
 		config.win['TypeRes'][parent.name] = config.pointer['gmethods']['WinCreate'][winID](parent, parentName)
+ #---
  #--> Return
 	return True
+ #---
 #---
-# -------------------------------------------------------- Window creation (END)
+#endregion --------------------------------------------------- Window creation
 
-
-
-# ----------------------------------------------------------------- Update
+#region --------------------------------------------------------------- Update
 def UpdateCheck(ori, ):
 	""" Check for updates for UMSAP from another thread 
 		---
@@ -116,34 +112,39 @@ def UpdateCheck(ori, ):
 	"""
  #--> Variables
 	k = True
+ #---
  #--> Get text from Internet
 	try:
 		r = requests.get(config.url['Update'])
 	except Exception:
 		k = False
+ #---
  #--> Get Internet version
 	if k:
 		if r.status_code == requests.codes.ok:
 			text = r.text.split('\n')
 			for i in text:
-				if 'UMSAP v' in i:
+				if '<h1>UMSAP' in i:
 					versionI = i
 					break
-			versionI = versionI.split('UMSAP v')[1].split()[0].split('.')
+			versionI = versionI.split('UMSAP')[1].split('</h1>')[0].split('.')
 			config.versionInternet = list(map(int, versionI))
- #--> Compare with program version
+ 		 #--> Compare with program version
 			config.updateAvail = dmethods.VersionCompare()
- #--> Prompt msg
+		 #---
+ 		 #--> Prompt msg
 			if config.updateAvail == 1:
 				wx.CallAfter(WinMUCreate, config.name['UpdateNotice'])
 			elif config.updateAvail == 0 and ori == 'menu':
 				wx.CallAfter(WinMUCreate, config.name['UpdateNotice'])
 			else:
 				pass
+		 #---
 		else:
 			k = False
 	else:
 		pass
+ #---
  #--> Return
 	if k:
 		return True
@@ -151,6 +152,7 @@ def UpdateCheck(ori, ):
 		msg = config.dictCheckFatalErrorMsg[config.name['UpdateNotice']]['UMSAPSite']
 		wx.CallAfter(gclasses.DlgFatalErrorMsg, msg)
 		return False
+ #---
 #---
 
 def UpdateGaugeText(gauge, sT, msg, val=1):
@@ -178,21 +180,17 @@ def UpdateText(sT, msg):
 	sT.SetLabel(msg)
 	return True
 #---
-# ----------------------------------------------------------------- Update (END)
+#endregion ------------------------------------------------------------ Update
 
-
-
-# -------------------------------------------------------------- Statusbar
+#region ------------------------------------------------------------ Statusbar
 def StatusBarXY(x, y):
 	""" Takes x, y coordinates and return formatted string """
 	string = "x=" + "{0:.2f}".format(x) + "  y=" + "{0:.2f}".format(y)
 	return string
 #---
-# -------------------------------------------------------------- Statusbar (END)
+#endregion --------------------------------------------------------- Statusbar
 
-
-
-# ------------------------------------------------------------ wx.ListCtrl
+#region ---------------------------------------------------------- wx.ListCtrl
 def ListCtrlHeaders(lb, name):
 	""" Add the header # and Column Name to a ListCtrl plus the widths 
 		---
@@ -202,12 +200,15 @@ def ListCtrlHeaders(lb, name):
  #--> Get header & size
 	header = config.listctrl['Header'][name] 
 	size   = config.listctrl['Widths'][name]
+ #---
  #--> Fill the wx.ListBox
 	for i in range(0, len(header), 1):
 		lb.InsertColumn(i, header[i])
 		lb.SetColumnWidth(i, size[i])		
+ #---
  #--> Return
 	return True
+ #---
 #---
 
 def ListCtrlColNames(file, lb, mode='file', delAll=True, startIn=0):
@@ -229,16 +230,19 @@ def ListCtrlColNames(file, lb, mode='file', delAll=True, startIn=0):
 		line = file
 	else:
 		return False
+ #---
  #--> Delete previous values in wx.ListBox and set the value for # column in wx.ListBox
 	if delAll:
 		lb.DeleteAllItems()
 		n = 0 + startIn
 	else:
 		n = lb.GetItemCount()
+ #---	 
  #--> Fill the wx.ListBox
 	for i in line:
   #--> Add row number
 		index = lb.InsertItem(n, " " + str(n))
+  #---
   #--> Check i for list of list & write
 		if isinstance(i, list):
 			col = 1
@@ -253,9 +257,13 @@ def ListCtrlColNames(file, lb, mode='file', delAll=True, startIn=0):
 			else:
 				return False
 		n += 1
+ #---
  #--> Color & Return
 	ListCtrlZebraStyle(lb)
+ #---
+ #-->
 	return True
+ #---
 #---
 
 def ListCtrlColNamesHelper(lb, index, i, col=1):
@@ -277,10 +285,13 @@ def ListCtrlColNamesHelper(lb, index, i, col=1):
 				fi = str(i)
 			except Exception:
 				return False
+ #---
  #--> Fill wx.ListBox	
 	lb.SetItem(index, col, fi)
+ #---
  #--> Return
 	return True
+ #---
 #---
 
 def ListCtrlZebraStyle(lb, color=config.colors['listctrlZebra']):
@@ -291,6 +302,7 @@ def ListCtrlZebraStyle(lb, color=config.colors['listctrlZebra']):
 	"""
  #--> Get total items in wx.ListBox
 	totalItems = lb.GetItemCount()
+ #---
  #--> Set color
 	for i in range(totalItems):
 		r = i % 2
@@ -298,8 +310,10 @@ def ListCtrlZebraStyle(lb, color=config.colors['listctrlZebra']):
 			lb.SetItemBackgroundColour(i, color)
 		else:
 			lb.SetItemBackgroundColour(i, 'white')
+ #---
  #--> Return
 	return True
+ #---
 #---
 
 def ListCtrlGetSelected(lb): 
@@ -310,14 +324,20 @@ def ListCtrlGetSelected(lb):
  #--> Variables
 	totalItems = lb.GetItemCount()
 	selItems   = []
+ #---
  #--> Get selected
+	#--# IMPROVED (DOWN) This means that you have to iterate the entire list
+	# Should be faster with GetFirstSelected, GetNextSelected and GetSelecteItemCount
 	for i in range(totalItems):
 		if lb.IsSelected(i):
 			selItems.append(i)
 		else:
 			pass
+	#--# IMPROVED (UP)
+ #---
  #--> Return
 	return selItems
+ #---
 #---
 
 def ListCtrlDeleteSelected(lb):
@@ -328,16 +348,20 @@ def ListCtrlDeleteSelected(lb):
  #--> Get selected items 
 	sel = ListCtrlGetSelected(lb)
 	sel.sort(reverse=True)
+ #---
  #--> Delete in reverse order to avoid changing undeleted indexes
 	for i in sel:
 		lb.DeleteItem(i)
+ #---
  #--> Color remaining rows
 	if lb.GetItemCount() > 0:
 		ListCtrlZebraStyle(lb)
 	else:
 		pass
+ #---
  #--> Return
 	return True
+ #---
 #---
 
 def ListCtrlGetColVal(lb, col=0, sel=None, t='int'):
@@ -358,11 +382,14 @@ def ListCtrlGetColVal(lb, col=0, sel=None, t='int'):
 			selW = selItems
 	else:
 		selW = sel
+ #---
  #--> Variables
 	colV = []
+ #---
  #--> Get value in column
 	for i in selW:
 		colV.append(lb.GetItemText(i, col).strip())
+ #---
  #--> Adjust type of values
 	if t == None:
 		pass		
@@ -370,8 +397,10 @@ def ListCtrlGetColVal(lb, col=0, sel=None, t='int'):
 		colV = list(map(int, colV))
 	elif t == 'str':
 		colV = list(map(str, colV))
+ #---
  #--> Return
 	return colV
+ #---
 #---
 
 def ListCtrlSearchVal(lb, string, startI=1):
@@ -384,8 +413,9 @@ def ListCtrlSearchVal(lb, string, startI=1):
 	"""
  #--> Variables
 	sel  = []
-	seqs = [] 
+	seqs = []
 	totalItems = lb.GetItemCount()
+ #---
  #--> Search the wx.ListBox
 	for i in range(totalItems):
 		for c in range(0, lb.GetColumnCount(), 1):
@@ -397,6 +427,7 @@ def ListCtrlSearchVal(lb, string, startI=1):
 				pass
 			if s == string:
 				sel.append(i)
+ #---
  #--> Show results
 	n = len(sel)
   #--> n>1
@@ -406,10 +437,13 @@ def ListCtrlSearchVal(lb, string, startI=1):
 			"regenerate the file using UMSAP.")
 		gclasses.DlgFatalErrorMsg(msg)
 		return False
+  #---
   #--> n == 1
 	elif n == 1:
 		ListCtrlDeSelAll(lb)
 		lb.Select(sel[0])
+		lb.EnsureVisible(sel[0])
+  #---
   #--> n == 0
 	elif n == 0:
 		m = len(seqs)
@@ -422,6 +456,7 @@ def ListCtrlSearchVal(lb, string, startI=1):
 				+ mes)
 			gclasses.DlgScrolledDialog(msg)
 			return True
+   #---
    #--> m == 0	
 		elif m == 0:
 			msg = ("The exact string " + string + " was not found in the list\n"
@@ -430,6 +465,9 @@ def ListCtrlSearchVal(lb, string, startI=1):
 			return True
 		else:
 			pass
+   #---
+  #---
+ #---
 #---
 
 def ListCtrlDeSelAll(lb):
@@ -439,10 +477,12 @@ def ListCtrlDeSelAll(lb):
 	"""
  #--> Get Selected
 	selected = ListCtrlGetSelected(lb)
+ #---
  #--> Deselect & Return
 	for s in selected:
 		lb.Select(s, on=0)
 	return True
+ #---
 #---
 
 def ListCtrlRenumberLB(lb):
@@ -453,17 +493,17 @@ def ListCtrlRenumberLB(lb):
 	"""
  #--> Total item
 	totalItems = lb.GetItemCount()	
+ #---
  #--> Renumber
 	for i in range(totalItems):
 		j = i + 1
 		lb.SetItem(i, 0, ' ' + str(j))
 	return True
+ #---
 #---
-# ------------------------------------------------------------ wx.ListCtrl (END)
+#endregion ------------------------------------------------------- wx.ListCtrl
 
-
-
-# ------------------------------------------------------------ wx.TextCtrl
+#region ---------------------------------------------------------- wx.TextCtrl
 def TextCtrlEmpty(sb):
 	""" Set the values of all wx.TextCtrl that are children of a wx.StaticBox 
 		to ''.
@@ -472,12 +512,15 @@ def TextCtrlEmpty(sb):
 	"""
  #--> Get all childrens of sb
 	children = sb.GetChildren()
+ #---
  #--> Set wx.TextCtrl to ''
 	for child in children:
 		if isinstance(child, wx.TextCtrl):
 			child.SetValue("")
+ #---
  #--> Return
 	return True
+ #---
 #---
 
 def TextCtrlFromFF(tc, mode='file', msg=None, wcard=None):
@@ -497,20 +540,21 @@ def TextCtrlFromFF(tc, mode='file', msg=None, wcard=None):
 		dlg = gclasses.DlgSaveFile(wcard, msg)
 	else:
 		pass
+ #---
  #--> Show the window and set the value of wx.TextCtrl 
 	if dlg.ShowModal() == wx.ID_OK:
 		tc.SetValue(dlg.GetPath())
 	else:
 		pass	
+ #---
  #--> Destroy & Return
 	dlg.Destroy()
 	return True		
+ #---
 #---
-# ------------------------------------------------------------ wx.TextCtrl (END)
+#endregion ------------------------------------------------------- wx.TextCtrl
 
-
-
-# ---------------------------------------------- Windows Position and size
+#region -------------------------------------------- Windows Position and size
 def MinSize(win):
 	""" Set the minimum size of a window to its minimum size when 
 		initially drawn
@@ -521,11 +565,9 @@ def MinSize(win):
 	win.SetMinSize(size)
 	return True
 #---
-# ---------------------------------------------- Windows Position and size (END)
+#endregion ----------------------------------------- Windows Position and size
 
-
-
-# ---------------------------------------------------------- Launch module
+#region -------------------------------------------------------- Launch module
 def LaunchTarProt(data):
 	""" Launch the tarprotM with the data from a uscr file 
 		---
@@ -533,37 +575,42 @@ def LaunchTarProt(data):
 	"""
  #--> Create the window
 	WinMUCreate(config.name['TarProt'])
+ #---
  #--> Clear all wx.TextCtrl
 	config.win['TarProt'].OnClearAll('event')
+ #---
  #--> Define dict with the involved widgets. Cannot be in config because
  #		when config is imported for the first type config.win['TarProt'] is None
  # 		and does not have any of the widgets
 	widgets = {
-		'Datafile'       : config.win['TarProt'].tcDataFile,
-		'Seq_rec'        : config.win['TarProt'].tcSeqRecFile,
-		'Seq_nat'        : config.win['TarProt'].tcSeqNatFile,
-		'PDBfile'        : config.win['TarProt'].tcPDBFile,
-		'Outputfolder'   : config.win['TarProt'].tcOutputFF,
-		'Outputname'     : config.win['TarProt'].tcOutName,
-		'Targetprotein'  : config.win['TarProt'].tcTarprot,
-		'Scorevalue'     : config.win['TarProt'].tcScoreVal,
-		'Datanorm'       : config.win['TarProt'].cbDataNorm,
-		'aVal'           : config.win['TarProt'].cbaVal,
-		'Positions'      : config.win['TarProt'].tcPositions,
-		'Sequencelength' : config.win['TarProt'].tcSeqLength,
-		'Histogramwindow': config.win['TarProt'].tcHistWin,
-		'PDBID'          : config.win['TarProt'].tcPDB,
-		'SeqCol'         : config.win['TarProt'].tcSeq,
-		'DetectProtCol'  : config.win['TarProt'].tcDetProt,
-		'ScoreCol'       : config.win['TarProt'].tcScore,
-		'ColExtract'     : config.win['TarProt'].tcColExt,
-		'Results'        : config.win['TarProt'].tcResults,
+		'Datafile'        : config.win['TarProt'].tcDataFile,
+		'Seq_rec'         : config.win['TarProt'].tcSeqRecFile,
+		'Seq_nat'         : config.win['TarProt'].tcSeqNatFile,
+		'PDBfile'         : config.win['TarProt'].tcPDBFile,
+		'Outputfolder'    : config.win['TarProt'].tcOutputFF,
+		'Outputname'      : config.win['TarProt'].tcOutName,
+		'Targetprotein'   : config.win['TarProt'].tcTarprot,
+		'Scorevalue'      : config.win['TarProt'].tcScoreVal,
+		'Datanorm'        : config.win['TarProt'].cbDataNorm,
+		'aVal'            : config.win['TarProt'].cbaVal,
+		'Positions'       : config.win['TarProt'].tcPositions,
+		'Sequencelength'  : config.win['TarProt'].tcSeqLength,
+		'Histogramwindows': config.win['TarProt'].tcHistWin,
+		'PDBID'           : config.win['TarProt'].tcPDB,
+		'SeqCol'          : config.win['TarProt'].tcSeq,
+		'DetectProtCol'   : config.win['TarProt'].tcDetProt,
+		'ScoreCol'        : config.win['TarProt'].tcScore,
+		'ColExtract'      : config.win['TarProt'].tcColExt,
+		'Results'         : config.win['TarProt'].tcResults,
 	}
+ #---
  #--> Set data
 	LaunchHelper(data, widgets)	
+ #---
  #--> Raise the window & Return		
 	config.win['TarProt'].Iconize(False)
 	return True	
+ #---
 #---
 
 def LaunchLimProt(data):
@@ -573,8 +620,10 @@ def LaunchLimProt(data):
 	"""
  #--> Create the window
 	WinMUCreate(config.name['LimProt'])
+ #---
  #--> Empty all wx.TextCtrl
 	config.win['LimProt'].OnClearAll('event')
+ #---
  #--> Define dict with the involved widgets. Cannot be in config because
  #		when config is imported for the first type config.win['LimProt'] is None
  # 		and does not have any of the widgets
@@ -599,11 +648,14 @@ def LaunchLimProt(data):
 		'ColExtract'    : config.win['LimProt'].tcColExt,
 		'Results'       : config.win['LimProt'].tcResults,
 	}
+ #---
  #--> Set data
 	LaunchHelper(data, widgets)
+ #---
  #--> Raise & Return		
 	config.win['LimProt'].Iconize(False)
 	return True	
+ #---
 #---
 
 def LaunchProtProf(data):
@@ -613,8 +665,10 @@ def LaunchProtProf(data):
 	"""
  #--> Create window
 	WinMUCreate(config.name['ProtProf'])
+ #---
  #--> Empty all wx.TextCtrl
 	config.win['ProtProf'].OnClearAll('event')
+ #---
  #--> Define dict with the involved widgets. Cannot be in config because
  #		when config is imported for the first type config.win['ProtProf'] 
  # 		is None and does not have any of the widgets
@@ -623,17 +677,17 @@ def LaunchProtProf(data):
 		'Outputfolder' : config.win['ProtProf'].tcOutputFF,
 		'Outputname'   : config.win['ProtProf'].tcOutName,
 		'Scorevalue'   : config.win['ProtProf'].tcScoreVal,
-		'ZscoreVal'    : config.win['ProtProf'].tcZscore,
 		'Datanorm'     : config.win['ProtProf'].cbDataNorm,
-		'aVal'         : config.win['ProtProf'].cbaVal,
 		'median'       : config.win['ProtProf'].chb,
 		'CorrP'        : config.win['ProtProf'].cbCorrP,
 		'DetectProtCol': config.win['ProtProf'].tcDetProt,
 		'GeneNCol'     : config.win['ProtProf'].tcGeneN,
 		'ScoreCol'     : config.win['ProtProf'].tcScore,
+		'ExcludeCol'   : config.win['ProtProf'].tcExclude,
 		'ColExtract'   : config.win['ProtProf'].tcColExt,
 		'Results'      : config.win['ProtProf'].tcResults,
 	}
+ #---
  #--> Fix data type to avoid error in LauchHelper
 	try:
 		if data['median'] == 'True':
@@ -644,6 +698,7 @@ def LaunchProtProf(data):
 			pass
 	except KeyError:
 		pass
+ #---
  #--> Set data
 	LaunchHelper(data, widgets)
   #--> Further options
@@ -665,9 +720,12 @@ def LaunchProtProf(data):
 		config.win['ProtProf'].LabelRP = [x.strip() for x in a]    
 	except KeyError:
 		pass
+  #---
+ #---
  #--> Raise & Return		
 	config.win['ProtProf'].Iconize(False)
 	return True	
+ #---
 #---
 
 def LaunchHelper(data, widgets):
@@ -682,14 +740,14 @@ def LaunchHelper(data, widgets):
 			widgets[k].SetValue(v)
 		except KeyError:
 			pass
+ #---
  #--> Return
 	return True
+ #---
 #---
-# ---------------------------------------------------------- Launch module (END)
+#endregion ----------------------------------------------------- Launch module
 
-
-
-# ---------------------------------------------------------- Image Methods
+#region -------------------------------------------------------- Image Methods
 def SaveMatPlotImage(figure, wcard, msg):
 	""" Save an image to path from a matplotlib figure object 
 		---
@@ -700,6 +758,7 @@ def SaveMatPlotImage(figure, wcard, msg):
  #--> Variables
 	k   = True
 	dlg = gclasses.DlgSaveFile(wcard, msg)
+ #---
  #--> Show dlg window & Save
 	if dlg.ShowModal() == wx.ID_OK:
 		path = dlg.GetPath()
@@ -710,9 +769,11 @@ def SaveMatPlotImage(figure, wcard, msg):
 			k = False
 	else:
 		k = False
+ #---
  #--> Destroy & Return
 	dlg.Destroy()
 	return k
+ #---
 #---
 
 def NoDataImage(win):
@@ -726,12 +787,10 @@ def NoDataImage(win):
 	win.canvas.draw()
 	return True
 #---
-# ---------------------------------------------------------- Image Methods (END)
+#endregion ----------------------------------------------------- Image Methods
 
-
-
-# ------------------------------------------------------------------- Menu
-####---- 200 Section
+# ----------------------------------------------------------------------- Menu
+#region ---------------------------------------------------------- 200 Section
 #---# Improve (DOWN) Perhaps these methods can be combined in just one
 def MenuOnReanalyseTP():
 	""" Read a .tarprot file and fill the Tarprot module with the input 
@@ -743,24 +802,29 @@ def MenuOnReanalyseTP():
 	k = True
 	dlg = gclasses.DlgOpenFile(config.msg['Open']['TarProtFile'],
 		config.extLong['TarProt'])
+ #---
  #--> Get path to file
 	if dlg.ShowModal() == wx.ID_OK:
 		fLoc = Path(dlg.GetPath())
- #--> Create tarprot object
+ 	 #--> Create tarprot object
 		try:
 			fileObj = dclasses.DataObjTarProtFile(fLoc)
 		except Exception:
 			k = False
- #--> Fill the module window
+	 #---
+ 	 #--> Fill the module window
 		if k:
 			fileObj.TarProtFile2TarProtModule()
 		else:
 			pass
+	 #---
 	else:
 		k = False
+ #---
  #--> Destroy & Return
 	dlg.Destroy()
 	return k
+ #---
 #---
 
 def MenuOnUpdateTP():
@@ -769,21 +833,21 @@ def MenuOnUpdateTP():
 	k = True
 	dlgi = gclasses.DlgOpenFile(config.msg['Open']['TarProtFile'],
 		config.extLong['TarProt'])
+ #---
  #--> Get path to file
 	if dlgi.ShowModal() == wx.ID_OK:
 		fLoc = Path(dlgi.GetPath())
- #--> Get path to output folder
+ 	 #--> Get path to output folder
 		dlgo = gclasses.DlgOpenDir()
 		if dlgo.ShowModal() == wx.ID_OK:
 			fLocO = Path(dlgo.GetPath())
- #--> Create tarprot object
+ 	 	 #--> Create tarprot object
 			try:
-				print('Creating fileObj')
 				fileObj = dclasses.DataObjTarProtFile(fLoc)
-				print('Created fileObj')
 			except Exception:
 				k = False
- #--> Run update
+		 #---
+ 		 #--> Run update
 			if k:			
 				if fileObj.TarProtUpdate(fLocO):
 					gclasses.DlgSuccessMsg()
@@ -791,56 +855,69 @@ def MenuOnUpdateTP():
 					k = False
 			else:
 				k = False
+		 #---
 		else:
 			k = False
+	 #---
+ #---
  #--> Destroy dlgo
 		dlgo.Destroy()	
 	else:
 		k = False
+ #---
  #--> Destroy dlgi & Return
 	dlgi.Destroy()
 	return k
+ #---
 #---
 
-def MenuOnFPList():
-	""" Reads a .tarprot file and creates a .filtpept file """
+def MenuOnExport():
+	""" Export data from json to csv """
+
  #--> Variables
 	k = True	
-	dlgi = gclasses.DlgOpenFile(config.msg['Open']['TarProtFile'],
-		config.extLong['TarProt'])
+	dlgi = gclasses.DlgOpenFile(config.msg['Open']['UMSAPFile'],
+		config.extLong['UmsapR'])
+ #---
  #--> Get file Path
 	if dlgi.ShowModal() == wx.ID_OK:
 		fLoc = Path(dlgi.GetPath())
- #--> Get output folder
-		dlgo = gclasses.DlgSaveFile(config.extLong['FiltPept'])
+ 	 #--> Get output folder
+		dlgo = gclasses.DlgSaveFile(config.extLong['Data'])
 		if dlgo.ShowModal() == wx.ID_OK:
 			fLocO = Path(dlgo.GetPath())
- #--> Create tarprot object
+ 	 	 #--> Create file object
 			try:
-				fileObj = dclasses.DataObjTarProtFile(fLoc)
+				fileObj = config.pointer['dclasses']['DataObj'][fLoc.suffix](fLoc)
 			except Exception:
 				k = False
- #--> Create filter peptide file
+		 #---
+ 	 	 #--> Create filter peptide file
 			if k:
-				if fileObj.checkFP:
-					if fileObj.TarProt2FiltPept(fLocO):
+				if fileObj.checkExport:
+					if fileObj.ExportData(fLocO):
 						gclasses.DlgSuccessMsg()
 					else:
 						k = False
 				else:
-					gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
+					gclasses.DlgFatalErrorMsg(config.msg['FailExport'])
 					k = False				
 			else:
 				k = False
+		 #---
 		else:
 			k = False
+	 #---
+ #---
  #--> Destroy dlgo
 		dlgo.Destroy()
 	else:
 		k = False
+ #---
  #--> Destroy dlgi & Return
 	dlgi.Destroy()
 	return k
+ #---
 #---
 
 def MenuOnCInputFile():
@@ -850,21 +927,24 @@ def MenuOnCInputFile():
 	k = True
 	dlgi = gclasses.DlgOpenFile(config.msg['Open']['UMSAPMFile'],
 		config.extLong['UmsapM'])
+ #---
  #--> Get path to the file
 	if dlgi.ShowModal() == wx.ID_OK:
 		fLoc = Path(dlgi.GetPath())
- #--> Get path to the output
+ 	 #--> Get path to the output
 		dlgo = gclasses.DlgSaveFile(config.extLong['Uscr'])
 		if dlgo.ShowModal() == wx.ID_OK:
 			fLocO = Path(dlgo.GetPath())
- #--> Get file extension
+ 		 #--> Get file extension
 			ext = fLoc.suffix
- #--> Create file object
+ 		 #---
+		 #--> Create file object
 			try:
 				fileObj = config.pointer['dclasses']['DataObj'][ext](fLoc)
 			except Exception:
 				k = False
- #--> Create uscr
+ 		 #---
+		 #--> Create uscr
 			if k:
 				out = dmethods.FFsWriteDict2Uscr(fLocO,
 					iDict=fileObj.Fdata['I'],
@@ -875,21 +955,30 @@ def MenuOnCInputFile():
 					k = False				
 			else:
 				k = False
+		 #---
 		else:
-			k = False
+			pass
+	 #---
+ #---
  #--> Destroy dlgo
 		dlgo.Destroy()
 	else:
-		k = False
+		pass
+ #---
+ #--> Destroy dlgi
+	dlgi.Destroy()
+ #---
+ #--> Return
 	if k:
- #--> Destroy dlgi & Return
-		dlgi.Destroy()
 		return k
+	 #---
 	else:
- #--> Show unknown error and exit
+ 	 #--> Show unknown error and exit
 		msg = config.msg['UErrors']['Unknown']
 		gclasses.DlgFatalErrorMsg(msg)
 		return False		
+	 #---
+ #---
 #---
 
 def MenuOnCutProp():
@@ -898,21 +987,23 @@ def MenuOnCutProp():
 	k = True
 	dlgi = gclasses.DlgOpenFile(config.msg['Open']['TarProtFile'], 
 		config.extLong['TarProt'])
+ #---
  #--> Get path to the file
 	if dlgi.ShowModal() == wx.ID_OK:
 		fLoc = Path(dlgi.GetPath())
- #--> Get path to the output
+ 	 #--> Get path to the output
 		dlgo = gclasses.DlgSaveFile(config.extLong['CutProp'])
 		if dlgo.ShowModal() == wx.ID_OK:
 			fLocO = Path(dlgo.GetPath())
- #--> Create tarprot file
+ 		 #--> Create tarprot file
 			try:
 				tarprotObj = dclasses.DataObjTarProtFile(fLoc)
 			except Exception:
 				k = False
- #--> Create cutprop file
+ 		 #---
+		 #--> Create cutprop file
 			if k:
-				if tarprotObj.checkFP:
+				if tarprotObj.checkExport:
 					if tarprotObj.TarProt2CutProp(fLocO):
 						WinGraphResCreate(config.name['CutPropRes'], fLocO)
 						gclasses.DlgSuccessMsg()
@@ -923,9 +1014,12 @@ def MenuOnCutProp():
 					k = False
 			else:
 				k = False						
+		 #---
 		else:
 			k = False
- #--: Destroy dlgo
+	 #---
+ #---
+ #--> Destroy dlgo
 		dlgo.Destroy()		
 	else:
 		k = False
@@ -941,10 +1035,11 @@ def MenuOnReadOutFile():
 	k = True
 	dlg = gclasses.DlgOpenFile(config.msg['Open']['UMSAPFile'], 
 		config.extLong['UmsapR'])
+ #---
  #--> Get the path to the file
 	if dlg.ShowModal() == wx.ID_OK:
 		fLoc = Path(dlg.GetPath())
- #--> Get extension & set name
+ 	 #--> Get extension & set name
 		ext = fLoc.suffix
 		#---
 		if ext == config.extShort['CorrA'][0]:
@@ -971,7 +1066,8 @@ def MenuOnReadOutFile():
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['Errors']['FileExt'])
 			k = False
- #--> Create window 
+	 #---
+ 	 #--> Create window 
 		if k:
 			for a in name:	
 				if WinGraphResCreate(a, fLoc):
@@ -980,18 +1076,23 @@ def MenuOnReadOutFile():
 					k = False
 		else:
 			k = False	
+	 #---
 	else:
 		k = False
+ #---
  #--> Destroy & Return
 	dlg.Destroy()
 	return k
+ #---
 #---
+#endregion ------------------------------------------------------- 200 Section
 
-####---- 300 Section
+#region ---------------------------------------------------------- 300 Section
 def MenuOnHelpManual():
 	""" Shows the manual with the default pdfviewer in the system """
  #--> Get path
 	manual = str(config.file['Manual'])
+ #---
  #--> Open file
 	if config.cOS == 'Darwin':
 		com = "open "
@@ -1006,8 +1107,10 @@ def MenuOnHelpManual():
 	except Exception as e:
 		gclasses.DlgUnexpectedErrorMsg(str(e))
 		return False
+ #---
  #--> Return
 	return True
+ #---
 #---
 
 def MenuOnHelpTutorials():
@@ -1019,8 +1122,9 @@ def MenuOnHelpTutorials():
 		return False
 	return True
 #---
+#endregion ------------------------------------------------------- 300 Section
 
-####---- 400 Section
+#region ---------------------------------------------------------- 400 Section
 def MenuOnMinimizeAll():
 	""" Minimize all UMSAP windows """
 	for v in config.win['Open']:
@@ -1040,23 +1144,28 @@ def MenuOnQuitUMSAP():
 			pass
 	return True
 #---
+#endregion ------------------------------------------------------- 400 Section
 
-####---- 600
+#region ---------------------------------------------------------- 600 Section
 def MenuOnRInputFile():
 	""" Run the script """
  #--> Variables
 	k = True
-	dlg = gclasses.DlgOpenFile(config.msg['Open']['InputF'],
-		config.extLong['Uscr'])
+	dlg = gclasses.DlgOpenFile(
+		config.msg['Open']['InputF'],
+		config.extLong['Uscr']
+	)
+ #---
  #--> Get path to the file
 	if dlg.ShowModal() == wx.ID_OK:
 		fLoc = Path(dlg.GetPath())
- #--> Create script object
+ 	 #--> Create script object
 		try:
 			fileObj = dclasses.DataObjScriptFile(fLoc)
 		except Exception:
 			k = False
- #--> Launch module
+	 #---
+ 	 #--> Launch module
 		if k:
 			if fileObj.LaunchModule():
 				pass
@@ -1064,13 +1173,16 @@ def MenuOnRInputFile():
 				k = False
 		else:
 			k = False
+	 #---
 	else:
 		k = False
+ #---
  #--> Destroy & Return
 	dlg.Destroy()
 	return k
+ #---
 #---
-# ------------------------------------------------------------------- Menu (END)
+#endregion ------------------------------------------------------- 600 Section
 
 
 

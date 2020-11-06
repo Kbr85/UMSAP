@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,33 +12,21 @@
 """ This module creates the AA distribution utility window """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import wx
-## My modules
+
 import config.config     as config
 import gui.gui_classes   as gclasses
 import gui.gui_methods   as gmethods
 import data.data_classes as dclasses
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinAAdist(gclasses.WinUtilUno):
 	""" Creates the GUI for the AA distribution utility. The utility generates 
 		the distributions from a .tarprot file """
-	
+
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=None):
 		""" parent: parent of the widgets
 			style: style of the windows
@@ -46,16 +34,21 @@ class WinAAdist(gclasses.WinUtilUno):
 	 #--> Initial setup
 		self.name = config.name['AAdist']
 		super().__init__(parent=parent, style=style, length=17)
+	 #---
 	 #--> Sizers
 		self.sizer.Fit(self)
+	 #---
 	 #--> Position
 		self.Center()
+	 #---
 	 #--> Show
 		self.Show()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
-	##-- Binding here of parent classes
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- Binding Methods
 	def OnClearFilesDef(self):
 		""" """
 		if config.dictElemOutputFileFolder[self.name]['NA']:
@@ -64,8 +57,9 @@ class WinAAdist(gclasses.WinUtilUno):
 			pass
 		return True
 	#---
+	#endregion ----------------------------------------------- Binding Methods
 
-	##-- Run
+	#region ------------------------------------------------------ Run Methods
 	def CheckInput(self):
 		""" Check the user provided input """
 	 #--> Files
@@ -79,6 +73,7 @@ class WinAAdist(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	  #---
 	  #--> Output file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Output file', 1)
@@ -91,6 +86,8 @@ class WinAAdist(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	  #---
+	 #---
 	 #--> Values		
 	  #--> Positions
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -104,8 +101,11 @@ class WinAAdist(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	  #---
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def ReadInputFiles(self):
@@ -132,7 +132,7 @@ class WinAAdist(gclasses.WinUtilUno):
 	def WriteOF(self):
 		""" Write the output """
 	 #--> Check if there is something to write & write
-		if self.tarprotObj.checkFP:
+		if self.tarprotObj.checkExport:
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Writing output files: aadist file', 1)		
 			self.tarprotObj.TarProt2AAdist(self.do['Outputfile'], 
@@ -141,23 +141,28 @@ class WinAAdist(gclasses.WinUtilUno):
 			gclasses.DlgFatalErrorMsg(
 				config.dictCheckFatalErrorMsg[self.name]['FiltPept2'])
 			return False
+	 #---
 	 #--> Return			
 		return True
+	 #---
 	#---
 
 	def ShowRes(self):
 		""" Show graph results """
 	 #--> Check if there is something to show & show
-		if self.tarprotObj.checkFP:
+		if self.tarprotObj.checkExport:
 			gmethods.UpdateGaugeText(self.gauge, self.stProgress,
 			'Generating graphical output', 1)
 			gmethods.WinGraphResCreate(config.name['AAdistR'],
 				self.do['Outputfile'])
 		else:
 			return False
+	 #---
 	 #--> Return
 		return True
-	#---	
+	 #---
+	#---
+	#endregion --------------------------------------------------- Run Methods	
 #---
 
 

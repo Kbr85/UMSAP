@@ -30,13 +30,13 @@ StringFileInfo(
   StringTable(
     u'040904B0',
     [StringStruct(u'CompanyName', u''),
-    StringStruct(u'FileDescription', u'umsap'),
-    StringStruct(u'FileVersion', u'2.1.0 (beta)'),
+    StringStruct(u'FileDescription', u'UMSAP.exe'),
+    StringStruct(u'FileVersion', u'2.1.0'),
     StringStruct(u'InternalName', u'umsap'),
-    StringStruct(u'LegalCopyright', u'Copyright (c) 2017 - 2019 Kenny Bravo Rodriguez'),
+    StringStruct(u'LegalCopyright', u'Copyright (c) 2017 Kenny Bravo Rodriguez'),
     StringStruct(u'OriginalFilename', u'UMSAP.exe'),
     StringStruct(u'ProductName', u'UMSAP'),
-    StringStruct(u'ProductVersion', u'2.1.0 (beta)')])
+    StringStruct(u'ProductVersion', u'2.1.0')])
   ]), 
 VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
   ]

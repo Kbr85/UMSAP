@@ -39,7 +39,7 @@ app = BUNDLE(coll,
                'NSHighResolutionCapable': 'True',
                'NSPrincipleClass': 'NSApplication',
                'NSAppleScriptEnabled': False,
-               'CFBundleShortVersionString': '2.0',
+               'CFBundleShortVersionString': '2.1.0',
                'CFBundleDocumentTypes': [
                   {
                     'CFBundleTypeName': 'My File Format',

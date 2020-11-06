@@ -1,25 +1,35 @@
 #--> Imports
 import platform
 import shutil
+import getpass
 
 from distutils.dir_util import copy_tree
 from pathlib            import Path
 
 #--> VARIABLES 
 cwd = Path.cwd()
+user = getpass.getuser()
+cOS = platform.system()
+
+if cOS == 'Darwin':
+	pathF = '/Users/'
+	spec = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/BUNDLE/MAC/UMSAPm.spec')
+else:
+	pathF = 'C:/Users/'
+	spec  = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/BUNDLE/WIN/UMSAP.spec')
+	specH = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/BUNDLE/WIN/version.txt')
 
 #--> FOLDERS TO COPY
-source = Path('/Users/kenny/Dropbox/UMSAP/CODE/0-CODE/')
-img    = Path('/Users/kenny/Dropbox/UMSAP/CODE/2-RESOURCES/IMAGES/')
-data   = Path('/Users/kenny/Dropbox/UMSAP/LOCAL/DATA/')
-dataF  = ['LIMPROT', 'TARPROT', 'PROTPROF']
+source = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/0-CODE/')
+img    = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/IMAGES/')
+data   = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/')
+dataF  = ['LIMPROT', 'TARPROT', 'PROTPROF', 'UMSAP-TEST-DATA']
 
 #--> FILES TO COPY
-icon   = Path('/Users/kenny/Dropbox/UMSAP/CODE/2-RESOURCES/ICON/MAC/icon.icns')
-icon2  = Path('/Users/kenny/Dropbox/UMSAP/CODE/2-RESOURCES/ICON/WIN/icon2.ico')
-manual = Path('/Users/kenny/Dropbox/UMSAP/CODE/2-RESOURCES/MANUAL/manual.pdf')
-spec   = Path('/Users/kenny/Dropbox/UMSAP/CODE/2-RESOURCES/BUNDLE/MAC/UMSAPm.spec')
-config = Path('/Users/kenny/Dropbox/UMSAP/CODE/2-RESOURCES/CONFIG/config_def.json')
+icon   = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/ICON/MAC/icon.icns')
+icon2  = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/ICON/WIN/icon2.ico')
+manual = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/MANUAL/manual.pdf')
+config = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/CONFIG/config_def.json')
 
 #--> START RUNNING
 ##--> ASK IF PLAYGROUND FOLDER CAN BE DELETED
@@ -79,6 +89,12 @@ if var == "Y" or var == "y":
 	print('Copying Resources: ' + str(spec))		
 	loc = cwd / spec.name
 	shutil.copyfile(spec, loc)
+	if cOS == 'Windows':
+		print('Copying Resources: ' + str(specH))		
+		loc = cwd / specH.name
+		shutil.copyfile(specH, loc)		
+	else:
+		pass
    ###--> DATA FOLDER
 	print('')
 	print('Copying PlayDATA folders')
@@ -86,7 +102,8 @@ if var == "Y" or var == "y":
 	for f in dataF:
 		print('Copying PlayDATA folders: ' + f)
 		lf = data / f
-		copy_tree(str(lf), str(resD))
+		resDf = resD  / f
+		copy_tree(str(lf), str(resDf))
    ###--> FINAL PRINT
 	print("\nAll Done. Enjoy!!")
 else:

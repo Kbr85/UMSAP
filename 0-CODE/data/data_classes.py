@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,51 +12,32 @@
 """ This module provides the clasess to handle the data files """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import copy
 import itertools
 import json
 import math
 import numpy  as np
 import pandas as pd
+
 import wx
 from Bio import pairwise2
 from Bio.SubsMat.MatrixInfo import blosum62
 from fpdf    import FPDF
 from pathlib import Path
-## My modules 
+
 import config.config        as config
 import checks.checks_single as check
 import gui.gui_classes      as gclasses
 import gui.gui_methods      as gmethods
 import data.data_methods    as dmethods
-#---
+#endregion ----------------------------------------------------------- Imports
 
-
-
-# ------------------------------------------------------ Base Data Classes
+#region ---------------------------------------------------- Base Data Classes
 class MyModules():
-	""" Common methods for classes handling the output files from modules 
-		----> Methods of the class
-		- SetlocProtType
-		- FixRes
-		- SetFragments
-	"""
+	""" Common methods for classes handling the output files from modules """
 
-	####---- Methods of the class
-	#--> locProtType
+	#region ------------------------------------------------------- My Methods
 	def SetlocProtType(self):
 		""" Set how to represent the protein in the Fragment view """
 		if self.pRes[1] == None and self.pRes[2] == None:
@@ -75,7 +56,6 @@ class MyModules():
 		return True
 	#---
 
-	#--> 
 	def FixRes(self, r):
 		""" Fix the residue number based on the mistmatch value 
 			---
@@ -90,8 +70,6 @@ class MyModules():
 			return None
 	#---
 
-	###--- SetFragments Helpers
-	#---
 	def SetFragmentsHelper0(self, j, k, fpL, fra, L, name):
 		""" Helper to SetFragments 
 			---
@@ -104,50 +82,67 @@ class MyModules():
 		"""
 	 #--> Start value
 		if j == 0:
-			#--> Variables
+		 #--> Variables
 			self.n, self.c   = k
 			self.no = self.n
 			self.tcuts  = []
 			self.tcutsN = []
-			#--> Start new fragment
+		 #---
+		 #--> Start new fragment
 			self.SetFragmentsHelper1(j, self.n, self.no, self.c, fpL)
+		 #---
+	 #---
 	 #--> Middle values
 		elif j > 0:
 			self.nt, self.ct = k
-			#--> Current n < n. Fatal Error
+		 #--> Current n < n. Fatal Error
 			if self.nt < self.n:
 				msg = config.dictCheckFatalErrorMsg[self.name]['FileFormatSort']
 				gclasses.DlgFatalErrorMsg(msg)
 				return False
-			#--> Extend fragment
+		 #---
+		 #--> Extend fragment
 			elif self.nt >= self.n and self.nt <= self.c:
-				#--> Update variables
+			 #--> Update variables
 				self.SetFragmentsHelper2(j, self.no, self.nt, self.ct, fpL)
-				#--> Update n
+			 #---
+			 #--> Update n
 				self.n = self.nt
-				#--> Update c
+			 #---
+			 #--> Update c
 				if self.ct > self.c:
 					self.c = self.ct
 				else:
 					pass
-			#--> End fragment and start new one
+			 #---
+		 #---
+		 #--> End fragment and start new one
 			elif self.nt > self.c:
-				#--- End fragment
+			 #--- End fragment
 				self.SetFragmentsHelper3(self.c)
 				fra.append(self.lo)
-				#--- Start new one
+			 #---
+			 #--- Start new one
 				self.n, self.c   = k
 				self.no = self.n
 				self.SetFragmentsHelper1(j, self.n, self.no, self.c, fpL)
-	 #--> Final value
-		if j == L - 1:
-			#--- End fragment
-			self.SetFragmentsHelper3(self.c)
-			fra.append(self.lo)
+			 #---
+		 #---
 		else:
 			pass
-	  #--> Return
+	 #---
+	 #--> Final value
+		if j == L - 1:
+		 #--- End fragment
+			self.SetFragmentsHelper3(self.c)
+			fra.append(self.lo)
+		 #---
+		else:
+			pass
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def SetFragmentsHelper1(self, j, n, no, c, fpL):
@@ -159,20 +154,28 @@ class MyModules():
 			c: reference c-term residue number (int)
 			fpL: list of column names in the data frame with the results (list)
 		"""
-	  #--> Variables
+	 #--> Variables
 		self.lo     = ['Temp', 'Temp']
 		self.cuts   = []
 		self.cutsN  = []
 		self.seqP   = []
 		self.seqF   = []
 		self.seqN   = 0
-	  #--> Add to lo
+	 #---
+	 #--> Add to lo
 		self.lo.append(n)
 		self.lo.append(self.FixRes(n))
+	 #---
+	 #--> 
 	  #--> 
+	 #--> 
 		self.SetFragmentsHelper2(j, no, n, c, fpL)
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
+	#---		
+	 #---
 	#---		
 
 	def SetFragmentsHelper2(self, j, nl, n, c, fpL):
@@ -184,7 +187,7 @@ class MyModules():
 			c: reference c-term residue number (int)
 			fpL: list of column names in the data frame with the results (list)
 		"""
-	  #--> Cleavages
+	 #--> Cleavages
 		if n - 1 > 0: 
 			self.cuts.append(n-1)
 			self.tcuts.append(n-1)
@@ -195,7 +198,8 @@ class MyModules():
 			self.tcuts.append(c)
 		else:
 			pass
-	  #--> Native cleavages
+	 #---
+	 #--> Native cleavages
 		nf = self.FixRes(n)
 		if nf != None and nf - 1 > 0:
 			self.cutsN.append(nf - 1)
@@ -208,7 +212,8 @@ class MyModules():
 			self.tcutsN.append(cf)
 		else:
 			pass
-	  #--> Sequences
+	 #---
+	 #--> Sequences
 		s = n - nl
 		seqF = fpL.at[j, 'Sequence']
 		seqP = ' ' * s + seqF
@@ -221,8 +226,10 @@ class MyModules():
 				self.seqN = None
 		else:
 			pass
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def SetFragmentsHelper3(self, c):
@@ -244,18 +251,16 @@ class MyModules():
 			self.lo.append(0)
 		return True
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
-# ------------------------------------------------------ Base Data Classes (END)
+#endregion -------------------------------------------------- Base Data Classes
 
-
-
-# -------------------------------------------------------------- PDF Files
-# -----------------
+#region ------------------------------------------------------------ PDF Files
 class MyPDF(FPDF):
 	""" To create a pdf with footer containing Page #/#T """
 
-	#--> Page footer
 	def footer(self):
+		""" Set page footer """
 	  #--> Position at 1.5 cm from bottom
 		self.set_y(-15)
 	  #--> Arial italic 8
@@ -264,11 +269,9 @@ class MyPDF(FPDF):
 		self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
 	#---
 #---
-# -------------------------------------------------------------- PDF Files (END)
+#endregion --------------------------------------------------------- PDF Files
 
-
-
-# ------------------------------------------ Files used as input for UMSAP
+#region ---------------------------------------- Files used as input for UMSAP
 class DataObjDataFile():
 	""" Object containing information about a data file. 
 		Attributes of the class are set in __init__ or SetVariables, unless they
@@ -283,32 +286,44 @@ class DataObjDataFile():
 		- nCols : number of columns in the data file
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file is the Path to the data file """
-	  #--> Variables
+	 #--> Variables
 		self.fileP = Path(file)
 		self.name = config.name['DataObj']
-	  #--> Load the file
+	 #---
+	 #--> Load the file
 		try:
 			self.Fdata = dmethods.FFsCVS2DF(self.fileP)	
 		except Exception:
 			msg = config.dictCheckFatalErrorMsg[self.name]['BadCsvFile']
 			gclasses.DlgFatalErrorMsg(msg)
 			raise ValueError('')
-	  #--> Other variables
+	 #---
+	 #--> Other variables
 		self.SetVariables()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
+	#region ------------------------------------------------------- My Methods
 	def SetVariables(self):
 		""" Set other variables needed by the class """
-	  #--> header: list with the name of the columns in the data file
+	 #--> header: list with the name of the columns in the data file
 		self.header = list(self.Fdata.columns)
-	  #--> dataframe : copy of self.Fdata to modify it without altering the original data
+	 #---
+	 #--> dataframe : copy of self.Fdata to modify it without altering the original data
 		self.dataFrame = self.Fdata.copy()
-	  #--> nRows, nCols
+	 #---
+	 #--> nRows, nCols
 		self.nRows, self.nCols = self.dataFrame.shape
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class DataObjSequenceFile():
@@ -333,13 +348,17 @@ class DataObjSequenceFile():
 		- GetresNumMatch	
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, seqP=None, seqM=None):
 		""" seqP : either file path (string or Path) or request response
 			seqM : is for directly passing a sequence instead of a file or web content 
 		"""
-	  #--> name to search for in config file
+	 #--> name to search for in config file
 		self.name = config.name['SeqObj']
+	 #---
+	 #--> Fdata: list of list with the sequence 
 	  #--> Fdata: list of list with the sequence 
+	 #--> Fdata: list of list with the sequence 
 		if seqP != None:
 			if (str(type(seqP)) == "<class 'pathlib.WindowsPath'>" or 
 				str(type(seqP)) == "<class 'pathlib.PosixPath'>"):
@@ -354,26 +373,33 @@ class DataObjSequenceFile():
 				raise ValueError('')
 			else:
 				self.Fdata = seqM
-	  #--> Other variables
+	 #---
+	 #--> Other variables
 		self.SetVariables()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
+	#region ------------------------------------------------------- My Methods
 	def SetVariables(self):
 		""" Set other variables needed by the class """
-	  #--> seq as a string
+	 #--> seq as a string
 		self.SetSeq()
-	  #--> seqLength
+	 #---
+	 #--> seqLength
 		self.seqLength = len(self.seq)
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
-	####--- SetVariables Helpers
 	def SetSeq(self):
 		""" Set the sequence in the local or web file """
-	  #--> Variables
+	 #--> Variables
 		datao = []
-	  #--> Get lines with residues
+	 #---
+	 #--> Get lines with residues
 		for l in self.Fdata:
 			if l == '':
 				pass
@@ -381,13 +407,15 @@ class DataObjSequenceFile():
 				pass
 			else:
 				datao.append(l)
-	  #--> Join to string
+	 #---
+	 #--> Join to string
 		self.seq = ''.join(datao)
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
-	####---- Methods of the class
 	#--> align
 	def GetAlign(self, seqB):
 		""" Sequence alignment given by BioPython alignment between self.seq 
@@ -395,7 +423,7 @@ class DataObjSequenceFile():
 			---
 			seqB : sequence to align with self.seq (string)
 		"""
-	  #--> Create alignment & Return
+	 #--> Create alignment & Return
 		try:
 			return [True, pairwise2.align.globalds(self.seq, seqB, blosum62, 
 				-10, -0.5)]
@@ -403,6 +431,7 @@ class DataObjSequenceFile():
 			msg = config.dictCheckFatalErrorMsg[self.name]['NoAlign'] 
 			gclasses.DlgFatalErrorMsg(msg)
 			return [False, None]
+	 #---
 	#---
 
 	#--> seqOverLapRegion
@@ -415,7 +444,7 @@ class DataObjSequenceFile():
 			seqB : sequence to align to self.seq (string)
 			align: to skip calculation of the alignment. It is assume that self.seq is the first sequence in the alignment object (BioPython alignment object)
 		"""
-	  #--> Check align variables
+	 #--> Check align variables
 		if align == None:
 			try:
 				align = self.GetAlign(seqB)[1]
@@ -423,12 +452,14 @@ class DataObjSequenceFile():
 				return [False, None]
 		else:
 			pass
-	  #--> Variables
+	 #---
+	 #--> Variables
 		seqAa            = align[0][0]
 		seqBa            = align[0][1]
 		seqOverLapRegion = []
 		start            = True
 		equal            = False
+	 #---
 	  #---# Improve with a dataframe perhaps (Down)
 		for k in range(0, len(seqAa), 1):
 			if start:
@@ -467,12 +498,13 @@ class DataObjSequenceFile():
 			seqB : sequence to align to self.seq
 			align: here is irrelvant. It is given to avoid calculating the align more than once in methods below. 
 		"""
-	  #--> Get the overlap regions
+	 #--> Get the overlap regions
 		try:
 			seqOverLapRegion = self.GetseqOverLapRegion(seqB, align=align)[1]
 		except Exception:
 			return [False, None]
-	  ####---- Check the regions
+	 #---
+	 #--> Check the regions
 		k = 0 # will hold the current larger region
 		e = 0 # will hold the index in seqOverLapRegion with the current largest region
 		Nregions = len(seqOverLapRegion)
@@ -481,9 +513,11 @@ class DataObjSequenceFile():
 			msg = config.dictCheckFatalErrorMsg[self.name]['NoOverlap'] 
 			gclasses.DlgFatalErrorMsg(msg)
 			return [False, None]
+	  #---
 	  #--> Only one overlap region
 		if Nregions == 1:
 			return [True, seqOverLapRegion[0]]
+	  #---
 	  #--> More than one overlap regions
 		else:
 			for j, i in enumerate(seqOverLapRegion):
@@ -494,6 +528,8 @@ class DataObjSequenceFile():
 				else:
 					pass
 			return [True, seqOverLapRegion[e]]
+	  #---
+	 #---
 	#---
 
 	#--> protLoc
@@ -504,7 +540,7 @@ class DataObjSequenceFile():
 			seqB : sequence to align to self.seq
 			align: to skip calculation of the alignment. It is assume that self.seq is the first sequence in the alignment object (BioPython alignment object)
 		"""
-	  #--> Check align variables
+	 #--> Check align variables
 		if align == None:
 			try:
 				align = self.GetAlign(seqB)[1]
@@ -512,19 +548,23 @@ class DataObjSequenceFile():
 				return [False, None]
 		else:
 			pass 
-	  #--> seqOverLap
+	 #---
+	 #--> seqOverLap
 		try:
 			largerSeqOverLapRegion = self.GetlargerSeqOverLapRegion(seqB,
 				align=align)[1]
 		except Exception:
 			return [False, None]
-	  #--> protein location
+	 #---
+	 #--> protein location
 		seqAa = list(str(align[0][0]))
 		tc = self.GetspaceBis(seqAa, largerSeqOverLapRegion[0])
 		protLoc = (largerSeqOverLapRegion[0] - tc + 1, 
 				   largerSeqOverLapRegion[1] - tc + 1)
-	  #--> return
+	 #---
+	 #--> Return
 		return [True, protLoc]
+	 #---
 	#---
 
 	def GetspaceBis(self, seq, res):
@@ -533,16 +573,19 @@ class DataObjSequenceFile():
 			seq : sequence from an alignment object containing - characters (string)
 			res : seq will be scan up to residue res (int)
 		"""
-	  #--> Variables
+	 #--> Variables
 		tc = 0
-	  #--> Get all - bis res
+	 #---
+	 #--> Get all - bis res
 		for k in range(0, res, 1):
 			if seq[k] == '-':
 				tc = tc + 1
 			else:
 				pass
-	  #--> Return
+	 #---
+	 #--> Return
 		return tc
+	 #---
 	#---
 
 	#--> mist
@@ -554,7 +597,7 @@ class DataObjSequenceFile():
 			seqB: sequence to align to self.seq
 			align: to skip calculation of the alignment. It is assume that self.seq is the first sequence in the alignment object (BioPython alignment object)
 		"""
-	  #--> Check align variables
+	 #--> Check align variables
 		if align == None:
 			try:
 				align = self.GetAlign(seqB)[1]
@@ -567,15 +610,18 @@ class DataObjSequenceFile():
 				align=align)[1]
 		except Exception:
 			return [False, None]
-	  #---> Calculate mist			
+	 #---
+	 #--> Calculate mist			
 		res = largerSeqOverLapRegion[0]
 		seqAa = list(str(align[0][0]))
 		seqBa = list(str(align[0][1]))
 		tca = self.GetspaceBis(seqAa, res)
 		tcb = self.GetspaceBis(seqBa, res)
 		mist = tca - tcb
-	  #--> Return
+	 #---
+	 #--> Return
 		return [True, mist]
+	 #---
 	#---
 
 	#--> protLoc and mist in one go
@@ -586,7 +632,7 @@ class DataObjSequenceFile():
 			seqB: sequence to align to self.seq
 			align: to skip calculation of the alignment. It is assume that self.seq is the first sequence in the alignment object (BioPython alignment object)		
 		"""
-	  #--> Check align variables
+	 #--> Check align variables
 		if align == None:
 			try:
 				align = self.GetAlign(seqB)[1]
@@ -594,25 +640,30 @@ class DataObjSequenceFile():
 				return [False, None, None]
 		else:
 			pass 
-	  #--> overlap region
+	 #---
+	 #--> overlap region
 		try:
 			largerSeqOverLapRegion = self.GetlargerSeqOverLapRegion(seqB,
 				align=align)[1]
 		except Exception:
 			return [False, None, None]
-	  #-->	mist
+	 #---
+	 #--> mist
 		res = largerSeqOverLapRegion[0]
 		seqAa = list(str(align[0][0]))
 		seqBa = list(str(align[0][1]))
 		tca = self.GetspaceBis(seqAa, res)
 		tcb = self.GetspaceBis(seqBa, res)
 		mist = tca - tcb
-	  #--> protLoc
+	 #---
+	 #--> protLoc
 		tc = self.GetspaceBis(seqAa, res)
 		protLoc = (largerSeqOverLapRegion[0] - tc + 1, 
 				   largerSeqOverLapRegion[1] - tc + 1)
-	  #--> Return
+	 #---
+	 #--> Return
 		return [True, protLoc, mist]
+	 #---
 	#---	
 
 	def FindSeq(self, seq):
@@ -620,21 +671,25 @@ class DataObjSequenceFile():
 			---
 			seq : peptide sequence (string)
 		"""
-	  #--> Check self.seq
+	 #--> Check self.seq
 		try:
 			self.seq
 		except Exception:
 			self.SetSeq()
-	  #--> Find seq in self.seq
+	 #---
+	 #--> Find seq in self.seq
 		nt = self.seq.find(seq)
-	  #--> Get n, c
-		if check.CheckNumComp(nt, comp='gt'):
+	 #---
+	 #--> Get n, c
+		if check.CheckNumComp(nt, comp='egt'):
 			n = nt + 1
 		else:
 			return [False, None, None]
 		c = n + len(seq) - 1
-	  #--> Return
+	 #---
+	 #--> Return
 		return [True, n, c]
+	 #---
 	#---
 
 	#--- resNumMatch
@@ -646,13 +701,14 @@ class DataObjSequenceFile():
 			---
 			pdbDF : data frame from DataObjPDBFile  
 		"""
-	  #--> Variables
+	 #--> Variables
 		seqB = ''.join(pdbDF['ResName'].tolist())
 		try:
 			align = self.GetAlign(seqB)[1]
 		except Exception:
 			return False
-	  #--> Get the match
+	 #---
+	 #--> Get the match
 		resNumMatch = []
 		A = align[0][0]
 		B = align[0][1]
@@ -670,9 +726,12 @@ class DataObjSequenceFile():
 			else:
 				pass
 		pdbDF.loc[:,'ResMatch'] = resNumMatch
+	 #---
 	 #--> Return
 		return pdbDF
+	 #---
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class DataObjPDBFile():
@@ -695,17 +754,19 @@ class DataObjPDBFile():
 		- WritePDBHelper
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, pdbP=None, code=None, cs=None):
 		""" pdbP: path to the pdb file (Path) 
 			code: is the PDB code or the downloaded content to avoid double download (string or request)
 			cs  : is the chain/segment id (string)
 		"""
-	  #--> Variables
+	 #--> Variables
 		self.name = config.name['PdbObj']
 		self.pdbP = pdbP
 		self.code = code
 		self.cs   = cs
-	  #--> PDB data
+	 #---
+	 #--> PDB data
 		if pdbP != None:
 			self.Fdata = dmethods.FFsRead(self.pdbP, char=None)
 			self.Fdata = dmethods.ListFlatNLevels(self.Fdata)[1]
@@ -716,26 +777,34 @@ class DataObjPDBFile():
 					self.Fdata = mcode.text.split('\n')	 
 			else:
 				self.Fdata = self.code.text.split('\n')
-	  #--> Extra variables
+	 #---
+	 #--> Extra variables
 		self.SetVariables()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
+	#region ------------------------------------------------------- My Methods
 	def SetVariables(self):
 		""" Set extra variables needed by the class """
-	  #--> atomDF
+	 #--> atomDF
 		self.SetatomDF()
-	  #--> csInFile
+	 #---
+	 #--> csInFile
 		self.SetcsInFile()
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
-	####---- SetVariables Helper
 	#--> atomDF
 	def SetatomDF(self):
 		""" Set a dataframe with all ATOM and HETATM record of the PDB file """
-	  #--> Variables
+	 #--> Variables
 		ldf = []
-	  #--> Get data
+	 #---
+	 #--> Get data
 		for l in self.Fdata:
 			if l[0:4] == 'ATOM' or l[0:6] == 'HETATM':
 				lo = []
@@ -757,25 +826,31 @@ class DataObjPDBFile():
 				ldf.append(lo)
 			else:
 				pass
-	  #--> Create data frame		
+	 #---
+	 #--> Create data frame		
 		self.atomDF = pd.DataFrame(ldf, 
 			columns=config.pdbFile['Coord records']['DFHeader'])
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	#--> csInFile
 	def SetcsInFile(self):
 		""" list of list with all [[chains], [segments]] in the pdb """
-	  #--> Variables
+	 #--> Variables
 		self.csInFile = []
-	  #--> Get infor from aelf.atomDF data frame
+	 #---
+	 #--> Get infor from aelf.atomDF data frame
 		self.csInFile.append(self.atomDF.Chain.unique().tolist())
 		self.csInFile.append(self.atomDF.Segment.unique().tolist())
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
-	####---- Methods of the class
 	#--> atomDFcs
 	def GetatomDFcs(self, cs):
 		""" Set a dataframe with the ATOM, HETATM records in the given pdb but 
@@ -783,7 +858,7 @@ class DataObjPDBFile():
 			---
 			cs: chain or segment ID (string, len <= 4)
 		"""
-	  #--> Set chain or segment
+	 #--> Set chain or segment
 		lcs = len(cs)
 		if lcs == 1:
 			col = 'Chain'
@@ -791,10 +866,13 @@ class DataObjPDBFile():
 			col = 'Segment'
 		else:
 			return [False, None]
-	  #--> Get data
+	 #---
+	 #--> Get data
 		atomDFcs = self.atomDF.loc[self.atomDF.loc[:,col] == cs]
-	  #--> Return
+	 #---
+	 #--> Return
 		return [True, atomDFcs]
+	 #---
 	#---
 
 	def GetProtSeq(self, cs, three=True):
@@ -806,7 +884,7 @@ class DataObjPDBFile():
 			cs : chain or segment ID (string)
 			three: Return three letter code AA or one letter (Boolean)
 		"""
-	  #--> Get residues 
+	 #--> Get residues 
 		out, df = self.GetatomDFcs(cs)
 		if out:
 			dfd  = df.drop_duplicates(subset='ResNum', keep='first', inplace=False)
@@ -814,13 +892,16 @@ class DataObjPDBFile():
 			seqT = dfd['ResName'].tolist()
 		else:
 			return [False, None]
-	  #--> 1 or 3 letter result
+	 #---
+	 #--> 1 or 3 letter result
 		if three:
 			pass
 		else:
 			seqT = ''.join([config.dictAA3toAA1[v] for v in seqT])
-	  #--> Return
+	 #---
+	 #--> Return
 		return [True, seqT]
+	 #---
 	#---
 
 	def GetProtSeqResNumDF(self, cs, three=True):
@@ -831,7 +912,7 @@ class DataObjPDBFile():
 			cs : chain or segment ID (string)
 			three: Return three letter code AA or one letter (Boolean)
 		"""
-	  #--> Get data
+	 #--> Get data
 		out, df  = self.GetatomDFcs(cs)
 		if out:
 			dfd = df.drop_duplicates(subset='ResNum', keep='first', inplace=False)
@@ -840,15 +921,18 @@ class DataObjPDBFile():
 			dfo.reset_index(inplace=True, drop=True)
 		else:
 			return [False, None]
-	  #--> 3 or 1 letter result
+	 #---
+	 #--> 3 or 1 letter result
 		if three:
 			pass
 		else:
 			seqT = dfo['ResName'].tolist()
 			seqT = [config.dictAA3toAA1[v] for v in seqT]
 			dfo.loc[:,'ResName'] = seqT
-	  #--> 
+	 #---
+	 #--> 
 		return [True, dfo]	
+	 #---
 	#---
 
 	#--# Improve It is to slow (DOWN)
@@ -858,15 +942,19 @@ class DataObjPDBFile():
 			file: path to the output file (string or Path)
 			df : data frame with the data
 		"""
-	  #--> Open file for writing
+	 #--> Open file for writing
 		fileO = open(file, 'w')
-	  #--> Write
+	 #---
+	 #--> Write
 		df.apply(self.WritePDBHelper, axis=1, args=[fileO])
 		fileO.write('END')
-	  #--> Close file
+	 #---
+	 #--> Close file
 		fileO.close()
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def WritePDBHelper(self, line, fileO):
@@ -875,21 +963,23 @@ class DataObjPDBFile():
 			line : line from the data frame
 			fileO: handler for writting to a file
 		"""
-	  #--> Line formatting
+	 #--> Line formatting
 		l = list(line)
 		lo = config.PDBformat.format(*l)
-	  #--> Write line to the file
+	 #---
+	 #--> Write line to the file
 		fileO.write(lo+'\n')
-	  #--> Return 
+	 #---
+	 #--> Return 
 		return True
+	 #---
 	#---
 	#--# Improve It is to slow (UP)
+	#endregion ---------------------------------------------------- My Methods
 #---
-# ------------------------------------------ Files used as input for UMSAP (END)
+#endregion ------------------------------------- Files used as input for UMSAP
 
-
-
-# ----------------------------------------------- Files generated by UMSAP
+#region --------------------------------------------- Files generated by UMSAP
 class DataObjCorrFile():
 	""" Object containing information about a corr file.
 		Attributes of the class are set in __init__ or SetVariables, unless they
@@ -904,43 +994,73 @@ class DataObjCorrFile():
 		- numCol: total number of columns in data
 		- colNum: the number of the columns in the data file
 		- fileD : data file used to calculate the coefficients
+		- checkExport : to fit into the Export Data methods in mods & utils
 		----> Methods of the class
 		None
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, fileP):
 		""" fileP: path to the corr file (string or Path)"""
-	  #--> Variables
+	 #--> Variables
 		self.fileP = fileP
 		self.name  = config.name['CorrObj']
-	  #--> Read .corr file
+	 #---
+	 #--> Read .corr file
 		try:
 			self.Fdata = dmethods.FFsReadJSON(self.fileP)
 		except Exception:
 			msg = config.dictCheckFatalErrorMsg[self.name]['CorrFileFormat']
 			gclasses.DlgFatalErrorMsg(msg)
 			raise ValueError('')
-	  #--> Extra variables
+	 #---
+	 #--> Extra variables
 		self.SetVariables()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def SetVariables(self):
 		""" Set extra variables needed for the class """
-		#--> data
+	 #--> data
 		self.data = pd.DataFrame(self.Fdata['R'], dtype='float64')
-		#--> method
+	 #---
+	 #--> method
 		self.method = self.Fdata['I']['Method']
-		#--> gtitle
+	 #---
+	 #--> gtitle
 		self.gtitle = str(self.method) + ' correlation coefficients'
-		#--> numCol
+	 #---
+	 #--> numCol
 		self.numCol = self.data.shape[0]
-		#--> colNum
+	 #---
+	 #--> colNum
 		self.colNum = self.Fdata['I']['SelCol']
-		#--> fileD
+	 #---
+	 #--> fileD
 		self.fileD = Path(self.Fdata['CI']['Datafile'])
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True
+	 #---> Return
 		return True
+	 #---
 	#---
+
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+
+	 #--> Write
+		dmethods.FFsWriteCSV(fPath, self.data)
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class DataObjCutpropFile():
@@ -959,50 +1079,68 @@ class DataObjCutpropFile():
 		- mist : difference between the rec and nat residue number	
 		- pResNat: same as pRes but for the native sequence residue numbers
 		- natProtPres: boolean to state if there is info about the native sequence in the file
+		- checkExport : to fit into the Export Data methods in mods & utils
+		- col4Export : pretty print column names in df for export		
 		----> Methods of the class
 		None	
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the .cutprop file (string or Path) """
-	  #--> Variables
+	 #--> Variables
 		self.name  = config.name['CutPropObj']
 		self.fileP = file
-	  #--> Read .cutprop file
+	 #---
+	 #--> Read .cutprop file
 		try:
 			self.Fdata = dmethods.FFsReadJSON(self.fileP)
 		except Exception:
 			msg = config.dictCheckFatalErrorMsg[self.name]['CutPropFileFormat']
 			gclasses.DlgFatalErrorMsg(msg)
 			raise ValueError('')
-	  #--> Extra variables
+	 #---
+	 #--> Extra variables
 		self.SetVariables()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
+	#region ------------------------------------------------------- My Methods
 	def SetVariables(self):
 		""" Set extra vriables needed for the class """
-		#--> data  
+	 #--> data  
 		self.data = pd.DataFrame(self.Fdata['R'])
 		self.data.sort_values(by=config.cutprop['SortBy'], inplace=True)
-		#--> nExp    
+	 #---
+	 #--> nExp    
 		self.nExp = self.Fdata['CI']['nExp']
-		#--> header  
+	 #---
+	 #--> header  
 		self.header = list(self.data.columns)
-		#--> pRes    
+	 #---
+	 #--> pRes    
 		self.pRes = self.Fdata['CI']['pRes']
-		#--> mist    
+	 #---
+	 #--> mist    
 		self.mist = self.Fdata['CI']['mist']
-		#--> pResNat 
+	 #---
+	 #--> pResNat 
 		self.SetpResNat()
-		#--> natProtPres
+	 #--> natProtPres
 		self.natProtPres = self.Fdata['CI']['natProtPres']	
+	 #---
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True	 
+	 #---	 
+	 #--> Return
 		return True
+	 #---
 	#---
-
-	####---- SetVariables Helpers
+	
 	def SetpResNat(self):
 		""" Same as pRes but for the native sequence """
-	  #--> Check if there is infor about the native sequence and set the pResNat
+	 #--> Check if there is infor about the native sequence and set the pResNat
 		if self.mist is None:
 			self.pResNat = [None] * 4
 		else:
@@ -1010,9 +1148,26 @@ class DataObjCutpropFile():
 		 	self.pResNat.append(self.pRes[1] + self.mist)
 		 	self.pResNat.append(self.pRes[2] + self.mist)
 		 	self.pResNat.append(self.Fdata['CI']['pLength'][1])
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
+
 	#---
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+
+	 #--> Write
+		dmethods.FFsWriteCSV(fPath, self.data)
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---	
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class DataObjAAdistFile():
@@ -1039,16 +1194,20 @@ class DataObjAAdistFile():
 		- aVal : alpha value used to create the file
 		- recSeq : recombinant sequence from which the file was originated
 		- dfCol : columns in the dataframe
+		- checkExport : to fit into the Export Data methods in mods & utils
+		- col4Export : pretty print column names in df for export
 		----> Methods of the class
 		- GetChiColor
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the aadist file (string or Path)"""
-	  #--> Variables
+	 #--> Variables
 		self.name  = config.name['AAdistObj']
 		self.fileP = file
-	  #--> Read aadist file
+	 #---
+	 #--> Read aadist file
 		try:
 			self.Fdata  = dmethods.FFsReadJSON(self.fileP)
 			self.dataDF = dmethods.DictAAdist2DF(self.Fdata['R'],
@@ -1057,72 +1216,116 @@ class DataObjAAdistFile():
 			msg = config.dictCheckFatalErrorMsg[self.name]['AAdistFileFormat']
 			gclasses.DlgFatalErrorMsg(msg)
 			raise ValueError('')
-	  #--> Extra variables
+	 #---
+	 #--> Extra variables
 		self.SetVariables()
-	#---	
+	 #---
+	#---
+	#endregion ------------------------------------------------ Instance Setup	
 
+	#region ------------------------------------------------------- My Methods
 	def SetVariables(self):
 		""" Set extra variables needed by the class """
-		#--> keysInInd 
+	 #--> keysInInd 
 		self.keysInInd = list(set(
 			[x[0] for x in self.dataDF.index.values.tolist()]))
-		#--> dataPerCent 
+	 #---
+	 #--> dataPerCent
 		self.SetdataPerCent()
-		#--> nExp  
+	 #---
+	 #--> nExp  
 		self.nExp = int(self.Fdata['CI']['nExp'])
-		#--> nExpFP
+	 #---
+	 #--> nExpFP
 		self.nExpFP = int(self.nExp + 1)
-		#--> nPosD2
+	 #---
+	 #--> nPosD2
 		self.nPosD2 = int(self.Fdata['CI']['Positions'])
-		#--> nPos  
+	 #---
+	 #--> nPos  
 		self.nPos = int(2 * self.nPosD2)
-		#--> nPosName 
+	 #---
+	 #--> nPosName 
 		self.SetnPosName()
-		#--> aaKeys 
+	 #---
+	 #--> aaKeys 
 		self.aaKeys = [k for k in self.dataDF.loc['FP'].loc[:,'AA'].tolist() 
 			if k != config.aadist['Poskey']]
-		#--> barWidth 
+	 #--> barWidth 
 		self.barWidth = config.aadist['Twidth'] / self.nExpFP
-		#--> aaCount 
+	 #---
+	 #--> aaCount 
 		self.aaCount = dmethods.ListCharCount(self.Fdata['CI']['RecSeq'])
-		#--> indKey 
+	 #---
+	 #--> indKey 
 		self.indKeys = list(self.Fdata['R'].keys())
-		#--> aVal
+	 #---
+	 #--> aVal
 		self.aVal = float(self.Fdata['CI']['aVal'])
-		#--> recSeq
+	 #---
+	 #--> recSeq
 		self.recSeq = self.Fdata['CI']['RecSeq']
-		#--> dfCol
+	 #---
+	 #--> dfCol
 		self.dfCol = list(self.dataDF.columns.values) 
-
+	 #---
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True	 
+	 #---
+	 #-->
+		self.col4Export = self.ColForExport()
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
-	####---- SetVariables Helper
+	#--> col4Export
+	def ColForExport(self):
+		""" Column names for the export data """
+	 #-->
+		col = {'AA': 'AA'}
+	 #---
+	 #-->
+		for k in range(0, self.nPos):
+			if k < self.nPosD2:
+				col[k] = k - self.nPosD2
+			else:
+				col[k] = k + 1 - self.nPosD2
+	 #---
+	 #-->
+		return col
+	 #---
+	#---
+
 	#--> dataPerCent
 	def SetdataPerCent(self):
 		""" Set a df without RD and Pos and in % """
-	  #--> Set local variables
+	 #--> Set local variables
 		keys = self.keysInInd[:]
 		keys.remove(config.aadist['RD'])
 		a = self.dataDF.drop(config.aadist['RD'], axis=0)
 		a.drop(index=a.loc[a.loc[:,'AA'] == config.aadist['Poskey']].index,
 			inplace=True) 
 		col = a.iloc[:,1:].columns
-	  #--> Calculate %
+	 #---
+	 #--> Calculate %
 		for k in keys:
 			a.loc[k, col] = a.loc[k, col].div(a.loc[k, col].sum(axis=0), axis=1).multiply(100).values
 		self.dataPerCent = a
-	  #--> Return
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	#--> nPosName
 	def SetnPosName(self):
 		""" Creates a list with the positions labels """
-	  #--> Variables
+	 #--> Variables
 		self.nPosName = []
 		i = 1
-	  #--> Set positions name
+	 #---
+	 #--> Set positions name
 		while i <= self.nPosD2:
 			j = self.nPosD2 - i + 1 
 			self.nPosName.append('P' + str(j))
@@ -1131,8 +1334,10 @@ class DataObjAAdistFile():
 			j = i - self.nPosD2
 			self.nPosName.append('P' + str(j) + '\'')
 			i = i + 1
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	####---- Methods of the class
@@ -1140,18 +1345,38 @@ class DataObjAAdistFile():
 		""" Return a color based on the value of Pos for a given experiment and
 			a position 
 		"""
-	  #--> Variables
+	 #--> Variables
 		a = self.dataDF.loc[self.dataDF.loc[:, 'AA'] == config.aadist['Poskey']] 
 		b = a.loc[tkey].values.tolist()
 		val = b[0][c+1]
-	  #--> Color & Return
+	 #---
+	 #--> Color & Return
 		if val > 0:
 			return config.colors[self.name]['ChiColor1']
 		elif val == 0:
 			return config.colors[self.name]['ChiColor0']
 		else:
 			return config.colors[self.name]['ChiColor-']
+	 #---
 	#---
+
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+	 #--> Get new df with correct labels
+		df = self.dataDF.copy()
+		df.rename(columns=self.col4Export, inplace=True)
+	 #---
+	 #--> Write
+		dmethods.FFsWriteCSV(fPath, df, index=True)
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---	
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class DataObjHistFile():
@@ -1166,47 +1391,63 @@ class DataObjHistFile():
 		- nExpFP : number of experiments in the file plus the FP "experiment"
 		- barWidth : width of each bar in the plot 
 		- dfDict : dict containing all four dataframes
+		- checkExport : to fit into the Export Data methods in mods & utils		
 		----> Methods of the class
 		- GetlWin : list with the windows in a given dataframe
 		- GetnWin : number of windows in a given dataframe
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the hist file (string or Path) """
-	  #--> Variables
+	 #--> Variables
 		self.name  = config.name['HistoObj']
 		self.fileP = Path(file)
-	  #--> Read the file
+	 #---
+	 #--> Read the file
 		try:
 			self.Fdata = dmethods.FFsReadJSON(self.fileP)
 		except Exception:
 			msg = config.dictCheckFatalErrorMsg[self.name]['HistoFileFormat']
 			gclasses.DlgFatalErrorMsg(msg)
 			raise ValueError('')
-	  #--> Extra variables
+	 #---
+	 #--> Extra variables
 		self.SetVariables()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
+	#region ------------------------------------------------------- My Methods
 	def SetVariables(self):
 		""" Set extra variables needed by the class """
-		#--> nExp
+	 #--> nExp
 		self.nExp = int(self.Fdata['CI']['nExp'])
-		#--> nExpFP
+	 #---
+	 #--> nExpFP
 		self.nExpFP = int(self.nExp + 1)
-		#--> barWidth
+	 #---
+	 #--> barWidth
 		self.barWidth = config.hist['Twidth'] / self.nExpFP
-		#--> dfDict
+	 #---
+	 #--> dfDict
 		self.SetdfDict()
+	 #---
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True	 
+	 #---	 
+	 #--> Return
 		return True
+	 #---
 	#---
 
-	####---- SetVariables Helpers 
 	#--> dfDict
 	def SetdfDict(self):
 		""" Set a dict with the same keys and dataframes as values """
-	  #--> Variables
+	 #--> Variables
 		self.dfDict = {}			
-	  #--> Fill the dict
+	 #---
+	 #--> Fill the dict
 		for k in config.hist['DictKeys']:
 			if self.Fdata['R'][k] is None:
 				self.dfDict[k] = None
@@ -1214,8 +1455,10 @@ class DataObjHistFile():
 				self.dfDict[k] = pd.DataFrame(self.Fdata['R'][k])
 				self.dfDict[k]['Windows'] = self.dfDict[k]['Windows'].apply(
 					self.WinFormat)
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def WinFormat(self, l):
@@ -1225,7 +1468,6 @@ class DataObjHistFile():
 		return a
 	#---
 
-	####---- Methods of the class
 	def GetlWin(self, tkey):
 		""" Get a list with the windows in self.dfDict[tkey] """
 		return self.dfDict[tkey]['Windows'].tolist()
@@ -1234,7 +1476,26 @@ class DataObjHistFile():
 	def GetnWin(self, tkey):
 		""" Get the number of windows in self.dfDict[tkey] """
 		return len(self.GetlWin(tkey))
+	#---
+
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+
+	 #--> Write
+		with open(fPath, 'w') as file:	
+			for k,i in self.dfDict.items():
+				file.write(k + '\n')
+				i.to_csv(file, sep='\t', na_rep='NA', index=False)
+				file.write('\n')
+	 #---
+	 #--> Return
+		return True
+	 #---
 	#---	
+	#endregion ---------------------------------------------------- My Methods	
 #---
 
 class DataObjScriptFile():
@@ -1251,18 +1512,21 @@ class DataObjScriptFile():
 		- LaunchModule
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the uscr file (string or Path) """
 	 #--> Variables
 		self.name  = config.name['ScriptObj']
 		self.fileP = Path(file)
 		dataD      = {}
+	 #---
 	 #--> Read the uscr file and create the temporal data dict
 		self.Fdata = dmethods.FFsRead(self.fileP, char=':')
 		for e in self.Fdata:
 			#--> To keep Windows paths after the splitting in dmethods.FFsRead
 			a = [x.strip() for x in e[1:]]
 			dataD[e[0]] = ':'.join(a)
+	 #---
 	 #--> Get module
 		try:
 			self.module = dataD['Module']
@@ -1270,6 +1534,7 @@ class DataObjScriptFile():
 			msg = config.dictCheckFatalErrorMsg[self.name]['NoModule']
 			gclasses.DlgFatalErrorMsg(msg)
 			raise ValueError('')
+	 #---
 	 #--> Check module exists 
 		if self.module in config.mod.values():
 			pass
@@ -1277,6 +1542,7 @@ class DataObjScriptFile():
 			msg = config.dictCheckFatalErrorMsg[self.name]['UnknownModule']
 			gclasses.DlgFatalErrorMsg(msg)
 			raise ValueError('')
+	 #---
 	 #--> Fill self.data dict.					
 		self.data = {}
 		modname = config.mod[self.module]
@@ -1285,6 +1551,7 @@ class DataObjScriptFile():
 				self.data[k] = dataD[v] # Skip not valid keywords
 			except Exception:
 				pass
+	 #---
 	 #--> Check that there are at least two keywords. Module is already checked
 		if len(self.data) > 1:
 			pass
@@ -1292,14 +1559,17 @@ class DataObjScriptFile():
 			msg = config.dictCheckFatalErrorMsg[self.name]['NoKeywords']
 			gclasses.DlgFatalErrorMsg(msg)
 			raise ValueError('')
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	#region ------------------------------------------------------- My Methods
 	def LaunchModule(self):
 		""" Launch the module """
 		config.pointer['gmethods']['LaunchUscr'][self.module](self.data)
 		return True
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class DataObjLimProtFile(MyModules):
@@ -1338,91 +1608,119 @@ class DataObjLimProtFile(MyModules):
 		- LimProt2SeqPDF
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the limprot file (string or Path) """
-	  #--> Variables
+	 #--> Variables
 		self.name  = config.name['LimProtObj']
 		self.fileP = Path(file)
-	  #--> Read the limprot file
+	 #---
+	 #--> Read the limprot file
 		try:
 			self.Fdata      = dmethods.FFsReadJSON(self.fileP)
 			self.Fdata['R'] = dmethods.DictStringKey2TuplesKey(self.Fdata['R'])
 		except Exception:
 			msg = config.dictCheckFatalErrorMsg[self.name]['Fileformat'] 
 			gclasses.DlgFatalErrorMsg(msg)
-	  #--> Extra variables
+	 #---
+	 #--> Extra variables
 		self.SetVariables()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
+	#region ------------------------------------------------------- My Methods
 	def SetVariables(self):
 		""" Set extra varaibles needed by the class """
-		#--> module so LimProt2Uscr can add the module name
+	 #--> module so LimProt2Uscr can add the module name
 		self.Fdata['I']['Module'] = config.mod[config.name['LimProt']]
-		#--> dataF
+	 #---
+	 #--> dataF
 		self.dataF = pd.DataFrame(self.Fdata['R'])
 		self.dataF.sort_values(by=config.limprot['SortBy'], inplace=True)
 		self.dataF.reset_index(drop=True, inplace=True)		
-		#--> aVal
+	 #---
+	 #--> aVal
 		self.aVal = self.Fdata['CI']['aVal']
-		#--> filterPeptDF
+	 #---
+	 #--> filterPeptDF
 		self.SetfilterPeptDF()
-		#--> checkFP
-		self.checkFP = True if self.filterPeptDF.shape[0] > 0 else False
-		#--> Lanes
+	 #---
+	 #--> checkExport
+		self.checkExport = True if self.filterPeptDF.shape[0] > 0 else False
+	 #---
+	 #--> Lanes
 		self.Lanes = self.Fdata['CI']['Lanes']
-		#--> Bands
+	 #---
+	 #--> Bands
 		self.Bands = self.Fdata['CI']['Bands']
-		#--> nLinesT to determine the h of the ElementFragPanel that goes 
-		#    together with the ElementGelPanel
+	 #---
+	 #--> nLinesT to determine the h of the ElementFragPanel that goes 
+	 #    together with the ElementGelPanel
 		self.nLinesT = self.Bands if self.Bands > self.Lanes else self.Lanes
-		#--> nLines
+	 #---
+	 #--> nLines
 		self.nLines = self.Bands
-		#--> Results
+	 #---
+	 #--> Results
 		self.Results = self.Fdata['CI']['Results']
-		#--> pRes
+	 #---
+	 #--> pRes
 		self.pRes = self.Fdata['CI']['pRes']
-		#--> locProtType
+	 #---
+	 #--> locProtType
 		self.SetlocProtType()
-		#--> mist
+	 #---
+	 #--> mist
 		self.mist = self.Fdata['CI']['mist']
-		#--> pLength
+	 #---
+	 #--> pLength
 		self.pLength = self.Fdata['CI']['protSeqLength']
-		#--> natProtPres
+	 #---
+	 #--> natProtPres
 		self.natProtPres = False if self.pLength[1] == None else True  
-		#--> colHeader
+	 #---
+	 #--> colHeader
 		self.colHeader = dmethods.ListColHeaderLimProtFile(self.Bands, 
 			self.Lanes)[1] 
-		#--> seq
+	 #---
+	 #--> seq
 		self.seqRec  = self.Fdata['CI']['RecSeq']
-		#--> seqN
+	 #---
+	 #--> seqN
 		self.seqNat = self.Fdata['CI']['NatSeq']
-		#--> listOfProt
+	 #---
+	 #--> listOfProt
 		self.listOfProt = self.Fdata['CI']['ListOfProt']
-		#--> tarprot
+	 #---
+	 #--> tarprot
 		self.tarprot = self.Fdata['CI']['Targetprotein']
+	 #--> Retuen
 		return True    
+	 #---
 	#---
 
-	####---- SetVariables Helpers
 	#--> filterPeptDF
 	def SetfilterPeptDF(self):
 		""" Set the FP dataframe. The data frame has the same structure as the 
 			data frame with the results in the limprot file.
 		"""
-	  #--> Variables
+	 #--> Variables
 		idx       = pd.IndexSlice
 		a         = self.dataF.loc[:,idx[:,:,'tost']] < self.aVal
 		self.Mask = a.any(axis=0)
 		b         = a.any(axis=1)
-	  #--> Set the data frame
+	 #---
+	 #--> Set the data frame
 		self.filterPeptDF = self.dataF.loc[b.values,:].copy()
 		self.filterPeptDF.sort_values(by=config.limprot['SortBy'], inplace=True)
 		self.filterPeptDF.reset_index(drop=True, inplace=True)		
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
-	####---- Methods of the class
 	def GetFragments(self):
 		""" Creates a data frame to hold the fragments identified in the data 
 			The DF looks like
@@ -1438,22 +1736,24 @@ class DataObjLimProtFile(MyModules):
 			Ln  Bn  Fn
 			           TCut and TCutNat are the same for all Frags in aa L and B
 		"""	
-	  #--> Variables	
+	 #--> Variables	
 		fragDF_L = [] # Individual data frames to form the multi index DF at the Lane level
 		Lkeys    = [] # Keys for the index in fragDF_L
-	  #--> For each Lane
+	 #---
+	 #--> For each Lane
 		for l in range(1, self.Lanes+1, 1):
 			fragDF_B = [] # Individual data frames to form the multi index DF at the Band level
 			Bkeys    = [] # Keys for the index in fragDF_B
-	  #--> For each Band
+		 #--> For each Band
 			for b in range(1, self.Bands+1, 1):
-				#--> Variables
+			 #--> Variables
 				fra  = [] # Each element is a fragment in the current band/lane
 				# True/False values for each tost column in current band/lane 
 				mask = self.dataF.loc[:,('B'+str(b),'L'+str(l),'tost')] < self.aVal
-				#--> Set the fragments
+			 #---
+			 #--> Set the fragments
 				if mask.any():					
-					#--> Fragment elements
+				 #--> Fragment elements
 					col = self.dataF.loc[mask.values,config.limprot['ColNamFrags']]
 					col.columns = col.columns.droplevel(level=[0,1])
 					col = col.reset_index(drop=True)
@@ -1461,57 +1761,73 @@ class DataObjLimProtFile(MyModules):
 					NCtL = len(NCt)
 					for k, m in enumerate(NCt):
 						self.SetFragmentsHelper0(k, m, col, fra, NCtL, self.name)
-					#--> Total cuts
+				 #---
+				 #--> Total cuts
 					tc = len(set(self.tcuts))
 					tcN = len(set(self.tcutsN))
 					for z in range(0, len(fra), 1):
 						fra[z][0] = tc
 						fra[z][1] = tcN
-					#--> Update lists for Band level
+				 #---
+				 #--> Update lists for Band level
 					fragDF_B.append(pd.DataFrame(fra, 
 						columns=config.limprot['ColNamFragsOut']))
 					Bkeys.append('B'+str(b))
+				 #---
 				else:
 					pass
-			#--> Create Band level entry if there are fragments for this band/lane
+			 #---
+		 #---
+		 #--> Create Band level entry if there are fragments for this band/lane
 			if len(fragDF_B) > 0:
 				fragDF_L.append(pd.concat(fragDF_B, keys=Bkeys))
 				Lkeys.append('L'+str(l))
 			else:
 				pass
-	  #--> Create DF & Return
-		#--> Create the Lane level if there is any band level entry
+		 #---
+	 #---
+	 #--> Create DF & Return
+	  #--> Create the Lane level if there is any band level entry
 		if len(fragDF_L) > 0:
 			return [True, pd.concat(fragDF_L, keys=Lkeys)]
 		else:
 			return [False, None]
+	  #---
+	 #---
 	#---
 
-	###--- Write to file
 	#--> filtpept file
-	def LimProt2FiltPept(self, fileO):
+	def ExportData(self, fileO):
 		""" Writes a filtered peptide file
 			---
 			fileO : path to the output file (string or Path)
 		"""
 	 #--> If there is something to export: Format, Export & Return
-		if self.checkFP:
+		if self.checkExport:
 		 #--> Drop columns
 			dropL = ['ttest', 'delta', 'I', 'Control Exp']
 			filterpeptDF = self.filterPeptDF.drop(columns=dropL, level=2)
+		 #---
 		 #--> Format values
 			idx = pd.IndexSlice
 			filterpeptDF.loc[:,idx[:,:,'tost']] = filterpeptDF.loc[:,idx[:,:,'tost']].apply(self.LimProt2FiltPeptHelper, axis=0)
+		 #---
 		 #--> Export to file
 			dmethods.FFsWriteCSV(str(fileO), filterpeptDF)
+		 #---
 		 #--> Return
 			return True		
+		 #---
+	 #---
 	 #--> If not, show error msg & Return
 		else:
 		 #--> Error msg
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
+		 #---
 		 #--> Return
 			return False
+		 #---
+	 #---
 	#---
 
 	def LimProt2FiltPeptHelper(self, col):
@@ -1522,6 +1838,7 @@ class DataObjLimProtFile(MyModules):
 		"""	
 	 #--> New values
 		nV = []
+	 #---
 	 #--> Add values
 		for i in col:
 			if i == None:
@@ -1530,8 +1847,10 @@ class DataObjLimProtFile(MyModules):
 				nV.append(1)
 			else:
 				nV.append(0)
+	 #---
 	 #--> Return
 		return nV
+	 #---
 	#---
 
 	#--- short data files. General name needed here
@@ -1542,7 +1861,7 @@ class DataObjLimProtFile(MyModules):
 			colOut : columns to extract from the data file (flat list of int)
 			dataF  : dataF path to the data file. If None the record in self.Fdata is used 
 		"""
-	  #--- Locate and read the dataF
+	 #--- Locate and read the dataF
 		if dataF is None:
 			tdataF = Path(self.Fdata['CI']['Datafile'])
 			if check.CheckFileRead(tdataF):
@@ -1553,13 +1872,15 @@ class DataObjLimProtFile(MyModules):
 				return False
 		else:
 			tdataF = dataF
-	  #--> Set colOut
+	 #---
+	 #--> Set colOut
 		if colOut == None:
 			selCol = self.Fdata['CI']['ColExtract']
 		else:
 			selCol = colOut	
 		dataObj = DataObjDataFile(tdataF)
-	  #---> Variables, here because the colHeader need the data object
+	 #---
+	 #--> Variables, here because the colHeader need the data object
 		targetProtN = self.Fdata['CI']['Targetprotein']
 		targetProtC = self.Fdata['CI']['DetectProtCol']
 		scoreV      = self.Fdata['CI']['Scorevalue']
@@ -1568,34 +1889,39 @@ class DataObjLimProtFile(MyModules):
 		typeV       = {colHeaderD[scoreC]:'float'}
 		seqColDN    = colHeaderD[self.Fdata['CI']['SeqCol']]
 		seqColTN    = self.colHeader[config.limprot['SeqColInd']]
-	  #--- Create folderO
+	 #---
+	 #--> Create folderO
 		try:
 			folderO.mkdir()
 		except Exception:
 			pass
-	  ####---> Write the files
-	  #--- all-columns-all-prot-records
+	 #---
+	 #--> Write the files
+	  #--> all-columns-all-prot-records
 		dataF = dmethods.DFColValFilter(dataObj.dataFrame,
 			targetProtN, targetProtC)[1]
 		name = 'all-columns-all-' + targetProtN + '-records.txt'
 		file = folderO / name
 		dmethods.FFsWriteCSV(file, dataF)
-	  #--- selected-columns-all-prot-records
+	  #---
+	  #--> selected-columns-all-prot-records
 		dataFS = dmethods.DFSelCol(dataF, selCol)[1]
 		name = 'selected-columns-all-' + targetProtN + '-records.txt'
 		file = folderO / name
 		dmethods.FFsWriteCSV(file, dataFS)
-	  #--- selected-columns-relevant-prot-records
+	  #---
+	  #--> selected-columns-relevant-prot-records
 		dataFSR = dataF.astype(typeV)
 		dataFSR = dataFSR.loc[dataFSR.iloc[:,scoreC] >= scoreV]
 		dataFSR = dmethods.DFSelCol(dataFSR, selCol)[1]
 		name = 'selected-columns-relevant-' + targetProtN + '-records.txt'
 		file = folderO / name
 		dmethods.FFsWriteCSV(file, dataFSR)
-	  #--- selected-columns-FP-prot-records
+	  #---
+	  #--> selected-columns-FP-prot-records
 		name = 'selected-columns-FP-' + targetProtN + '-records.txt'
 		file = folderO / name
-		if self.checkFP:
+		if self.checkExport:
 			dataFSF = dataF[dataF[seqColDN].isin(self.filterPeptDF[seqColTN])]
 			dataFSF = dmethods.DFSelCol(dataFSF, selCol)[1] 
 			dmethods.FFsWriteCSV(file, dataFSF)
@@ -1603,8 +1929,11 @@ class DataObjLimProtFile(MyModules):
 			fileO = open(file, 'w')
 			fileO.write(config.dictCheckFatalErrorMsg[self.name]['FiltPept2'])
 			fileO.close()
-	  #--> Return
+	  #---
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	##-- seqPDF & Helpers
@@ -1615,41 +1944,50 @@ class DataObjLimProtFile(MyModules):
 			fileO: path to the output file (string or path)
 			Nres : number of residues per line (int) 
 		"""
-	  #--> Get fragments
+	 #--> Get fragments
 		out, f = self.GetFragments()
 		if out:
 			pass
 		else:
 			return False
-	  #--> Set the pdf object and its variables
+	 #---
+	 #--> Set the pdf object and its variables
 		self.pdf = MyPDF()
 		self.pdf.alias_nb_pages()
-		#--- Get default margins
+	  #--> Get default margins
 		left   = self.pdf.l_margin
 		right  = self.pdf.r_margin
 		top    = self.pdf.t_margin
 		bottom = self.pdf.b_margin
-		#--- Effective page width and height
+	  #---
+	  #--> Effective page width and height
 		epw = self.pdf.w - left - right
 		eph = self.pdf.h - top - bottom
-		#--- Get x
+	  #---
+	  #--> Get x
 		sx = self.seqRec[0:Nres]
 		self.pdf.set_font('Courier', '', 9)
 		w = self.pdf.get_string_width(sx)
 		x = ((epw - w) / 2) + left		
-		#--- 
+	  #---
+	  #--> 
 		self.cont = False
-		#--- colors
+	  #---
+	  #--> colors
 		self.rColor = config.colors[self.name]['RegColor']
 		self.hColor = config.colors[self.name]['HColor']
-	  #--> Write to the file
+	  #---
+	 #---
+	 #--> Write to the file
 		for i in range(1, self.Lanes+1, 1):
 			self.LimProt2SeqPDFHelper(i, 'Lane ', 'L', f, Nres, x)
 		for i in range(1, self.Bands+1, 1):
 			self.LimProt2SeqPDFHelper(i, 'Band ', 'B', f, Nres, x)
 		self.pdf.output(str(fileO), 'F')	
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---	
 
 	#-->
@@ -1663,14 +2001,15 @@ class DataObjLimProtFile(MyModules):
 			NRes: number of residues to write in one line (int)
 			x   : adjusted starting x coordinate for the sequence in the pdf   
 		"""
-	  #--> PDF page setup
+	 #--> PDF page setup
 		self.pdf.add_page()
 		self.pdf.set_font('Arial', 'I', 16)
 		self.pdf.set_text_color(0, 0, 0)
 		th = self.pdf.font_size
 		self.pdf.cell(0, th, LBl + str(i), 0, 0, 'L', 0)
 		self.pdf.ln(2*th)
-	  #--> Get fragments for the current lane/band
+	 #---
+	 #--> Get fragments for the current lane/band
 		try:
 			if LBs == 'L':
 				df = f.loc[LBs+str(i)]
@@ -1683,7 +2022,8 @@ class DataObjLimProtFile(MyModules):
 				goL = True
 		except Exception:
 			goL = False
-	  #--- Write the sequence
+	 #---
+	 #--> Write the sequence
 		#---# Improve the function with extra helpers (Down)
 		if goL:
 			lenS = len(self.seqRec)
@@ -1744,8 +2084,10 @@ class DataObjLimProtFile(MyModules):
 			else:
 				self.pdf.cell(0, th, 'Empty Band', 0, 0, 'L', 0)
 		self.pdf.set_text_color(0,0,0)  
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	#--> 
@@ -1773,21 +2115,24 @@ class DataObjLimProtFile(MyModules):
 			th: height of the line
 			RN: write the info for the Recombinant or Native protein
 		"""
-	  #--> Get the correct sequence
+	 #--> Get the correct sequence
 		if RN == 'R':
 			tseq = self.seqRec
 		else:
 			tseq = self.seqNat
-	  #--> Variables
+	 #---
+	 #--> Variables
 		self.pdf.set_x(x)
 		fr = sfr = s
 		end = s + Nres
-	  #--> Set the proper color for the residue segments
+	 #---
+	 #--> Set the proper color for the residue segments
 		for t in dfFrag:
-	   #--> Change t[0] and t[1] from residue numbers to list numbers
+		 #--> Change t[0] and t[1] from residue numbers to list numbers
 			n = 'NA' if t[0] == 'NA' else t[0] - 1
 			c = 'NA' if t[1] == 'NA' else t[1] - 1
-	   #--> Check
+		 #---
+		 #--> Check
 			if n >= end:
 				pass
 			elif n == 'NA' or c == 'NA':
@@ -1863,6 +2208,8 @@ class DataObjLimProtFile(MyModules):
 					break																
 				else:
 					pass
+		 #---
+	 #---
 		if fr < end:
 			sr = tseq[fr:end]
 			#---
@@ -1870,9 +2217,11 @@ class DataObjLimProtFile(MyModules):
 		else:
 			pass
 		self.pdf.ln(th)
-	  #--> Return
+	 #--> Return
 		return True
+	 #--- 
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---							
 
 class DataObjProtProfFile(MyModules):
@@ -1884,71 +2233,94 @@ class DataObjProtProfFile(MyModules):
 		- fileP      : 
 		- Fdata      : 
 		- dataFrame  : 
-		- checkFP    : check that there are some proteins in self.Fdata['R']
+		- checkExport    : check that there are some proteins in self.Fdata['R']
 		- nConds     : number of conditions in the file
 		- timeP      : number of relevant points per conditions, including the reference
-		- loga       : -log10[aVal]
-		- aVal       : alpha value used when creating the file
+		- loga       : -log10[aVal] used by default
+		- aVal       : alpha value used by default
 		- NProt      : number of protein detected
 		- xCoordTimeA: list of list with x coordinates for the time analysis plot for each condition
 		- ZscoreVal  : value of the zscore in the file 
 		- ZscoreValP : value of the zscore in the file in % 
 		- nCondsL    : list with Conditions name
 		- nTimePL    : list with relevant points names including reference
+		- col4Export : pretty print column names in df for export
 		----> Methods of the class
 		None
 	"""
-
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the protprof file (string or Path) """
-	  #--> Variables
+	 #--> Variables
 		self.name = config.name['ProtProfObj']
 		self.fileP = Path(file)
-	  #--> Read the protprof file
+	 #---
+	 #--> Read the protprof file
 		try:
 			self.Fdata = dmethods.FFsReadJSON(self.fileP)
 			self.Fdata['R'] = dmethods.DictStringKey2TuplesKey(self.Fdata['R'])
 		except Exception:
 			gclasses.DlgFatalErrorMsg(
 				 config.dictCheckFatalErrorMsg[self.name]['FileFormat'])
-	  #--> Extra variables neede by the class
+	 #---
+	 #--> Extra variables neede by the class
 		self.SetVariables()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
+	#region ------------------------------------------------------- My Methods
 	def SetVariables(self):
 		""" Set extra variables needed by the class """
-		#--> To include module in uscr file
+	 #--> To include module in uscr file
 		self.Fdata['I']['Module'] = config.mod[config.name['ProtProf']]
-		#--> dataFrame
+	 #---
+	 #--> dataFrame
 		self.dataFrame = pd.DataFrame(self.Fdata['R'])
-		 #--> Sort & Reset is needed bacause writing reading breaks the order
+	  #--> Sort & Reset is needed bacause writing reading breaks the order
 		self.dataFrame.sort_values(by=config.protprof['SortBy'], inplace=True)
 		self.dataFrame.reset_index(drop=True, inplace=True)
-		#-->  checkFP
-		self.checkFP = True if self.dataFrame.shape[0] > 0 else False
-		#--> nConds
+	  #---
+	 #---
+	 #-->  checkExport
+		self.checkExport = True if self.dataFrame.shape[0] > 0 else False
+	 #---
+	 #--> nConds
 		self.nConds = self.Fdata['CI']['NCond']
 		self.Xv = self.Fdata['CI']['Xv']
-		#--> timeP
+	 #---
+	 #--> timeP
 		self.timeP = self.Fdata['CI']['NTimeP']
 		self.Yv = self.Fdata['CI']['Yv']
-		#--> loga
+	 #---
+	 #--> loga
 		self.loga = self.Fdata['CI']['loga']
-		#--> aVal
-		self.aVal = self.Fdata['CI']['aVal']
-		#--> NProt
+	 #---
+	 #--> aVal
+		self.aVal = 0.05  # This is the default value 
+	 #---
+	 #--> NProt
 		self.NProt = self.dataFrame.shape[0]
-		#--> ZscoreVal
+	 #---
+	 #--> ZscoreVal
 		self.ZscoreVal  = self.Fdata['CI']['ZscoreVal']
-		self.ZscoreValP = self.Fdata['I']['ZscoreVal'] 
-		#--> Legends
+		self.ZscoreValP = 10 # This is the default value 
+	 #---
+	 #--> Legends
 		self.nCondsL      = self.Fdata['CI']['LabelCond']
 		self.nTimePL      = self.Fdata['CI']['LabelRP']
 		self.ControlLabel = self.Fdata['CI']['LabelControl']
 		self.CType        = self.Fdata['CI']['CType']
-		#--> xCoordTimeA
+	 #---
+	 #--> xCoordTimeA
 		self.SetMissingTP()
+	 #---
+	 #--> col4Export
+		self.col4Export = self.ColForExport()
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	####---- SetVariables Helpers
@@ -1956,9 +2328,10 @@ class DataObjProtProfFile(MyModules):
 		""" Set a list indicating the x values for the
 			time analysis plot in protprofRes 
 		"""
-	  #--> Variables
+	 #--> Variables
 		self.xCoordTimeA = []
-	  #--> Fill the list
+	 #---
+	 #--> Fill the list
 		if self.CType == config.combobox['ControlType'][1]:
 			for y in range(1, self.Yv+1, 1):
 				xL = [0]
@@ -1983,8 +2356,10 @@ class DataObjProtProfFile(MyModules):
 						xL.append(t)
 					t += 1
 				self.xCoordTimeA.append(xL)
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	##--> short data files. General name needed for this method
@@ -2006,23 +2381,87 @@ class DataObjProtProfFile(MyModules):
 				return False
 		else:
 			tdataF = dataF
+	 #---
 	 #--> Set columns to extract
 		if colOut == None:
 			selCol = self.Fdata['CI']['ColExtract']
 		else:
 			selCol = colOut	
+	 #---
 	 #--> Create data file object
 		dataObj = DataObjDataFile(tdataF)
+	 #---
 	 #--> Get the data frame
 		df = dmethods.DFSelCol(
 			dataObj.dataFrame,
 			selCol,
 		)[1]
+	 #---
 	 #-->
 		dmethods.FFsWriteCSV(fileO, df)
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
+
+	def ColForExport(self):
+		""" Return a dict mapping the Xn and Yn in the df to the real
+			conditions / time points depending on Ctype
+			---
+			Return a nested dict with one dict for each level 
+		"""
+	 #--> Output dict
+		col = {1 : {}, 2 : {},}
+	 #---
+	 #--> Volcano region
+		if self.CType == config.combobox['ControlType'][1]:
+			for k, i in enumerate(self.nTimePL, start=1):
+				col[1]['X'+str(k)] = i
+			for k, i in enumerate(self.nCondsL, start=1):
+				col[2]['Y'+str(k)] = i
+		else:
+			for k, i in enumerate(self.nCondsL, start=1):
+				col[1]['X'+str(k)] = i
+			for k, i in enumerate(self.nTimePL, start=1):
+				col[2]['Y'+str(k)] = i
+		col[2]['Y0'] = self.ControlLabel			
+	 #---
+	 #--> Relevant Points region
+		for k,i in enumerate(self.nTimePL, start=1):
+			col[1]['T'+str(k)] = i
+		for k,i in enumerate(self.nCondsL, start=1):
+			col[2]['C'+str(k)] = i
+		col[2]['C0'] = self.ControlLabel
+	 #--> Return
+		return col
+	 #---
+	#---
+
+	def ExportData(self, fPath):
+		""" Export the data results to a csv format 
+			---
+			fPath: file path to save the file (str or Path)
+		"""
+
+	 #--> Get new df with correct labels
+		df = self.dataFrame.copy()
+		df.rename(
+			columns=(lambda x: 'rp' if x == 'tp' else x), 
+			level=0, 
+			inplace=True,
+		) # IMPROVMENT The df will have rp and this will be deleted
+		df.rename(columns=self.col4Export[1], level=1, inplace=True)
+		df.rename(columns=self.col4Export[2], level=2, inplace=True)
+	 #---
+	 #--> Write
+		dmethods.FFsWriteCSV(fPath, df)
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
 
 class DataObjTarProtFile(MyModules):
@@ -2041,7 +2480,7 @@ class DataObjTarProtFile(MyModules):
 		- nLines : = self.nExp. Mainly for ElementFragPanel. It is needed to make the ElementGelPanel to work together with ElementFragPanel 
 		- nExpLabels  : Label of the experiments (__init__)
 		- filterPeptDF: Dataframe of all peptide identified in at least one exp. It is used everywhere so set in (__init__)
-		- checkFP     : True if FP is not empty False otherwise
+		- checkExport : True if FP is not empty False otherwise
 		- pRes        : numbers for the recProt length, natProt loc (__init__)
 		- pLength     : length of the Rec and Nat proteins (__init__)
 		- natProtPres : Boolean for the native sequence presence (__init__)
@@ -2056,12 +2495,14 @@ class DataObjTarProtFile(MyModules):
 		- All writing methods
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the tarprot file (string or Path)"""
-	  #--> Variables
+	 #--> Variables
 		self.fileP = Path(file)
 		self.name  = config.name['TarProtObj']
-	  #--- Read file
+	 #---
+	 #--> Read file
 		try:
 			self.Fdata = dmethods.FFsReadJSON(self.fileP)
 		except Exception:
@@ -2072,32 +2513,37 @@ class DataObjTarProtFile(MyModules):
 				gclasses.DlgFatalErrorMsg(
 				  config.dictCheckFatalErrorMsg[self.name]['TarProtFileFormat'])
 				raise ValueError('')
-	  #--- Fix for all versions
+	 #---
+	 #--> Fix for all versions
 		self.FixFdataAllV() # R already fix by self.CreateFdataDict
-	  #--- Set extra variables
+	 #---
+	 #--> Set extra variables
 		self.SetVariables()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Helpers to __init__
-	#-->
+	#region ------------------------------------------------------- My Methods
 	def CreateFdataDict(self, temp):
 		""" Create the Fdata dict. Types will be adjusted in another method 
 			---
 			temp: result from dmethods.FFsReadCSV
 		"""
-	  #--> Create the dict
+	 #--> Create the dict
 		self.Fdata = {
 			'I'  : {},
 			'CI' : {},
 			'R'  : {},
 			'V'  : {}
 		}
-	  #--> Get version
+	 #---
+	 #--> Get version
 		try:
 			version = temp[-1][1]
 		except Exception:
 			version = '1.0.0'
-	  #--> I
+	 #---
+	 #--> I
 		try:
 			if version == '1.0.0':
 				self.Fdata['I']["Datafile"        ] = temp[5][1]
@@ -2141,12 +2587,13 @@ class DataObjTarProtFile(MyModules):
 				self.Fdata['I']["ScoreCol"        ] = temp[23][1]
 				self.Fdata['I']["ColExtract"      ] = temp[24][1]
 				self.Fdata['I']["Control"         ] = temp[25][1]
-				self.Fdata['I']["Results"         ] = temp[26][1]				
+				self.Fdata['I']["Results"         ] = temp[26][1]		
 			else:
 				return False
 		except Exception:
 			return False
-	  #--> CI
+	 #---
+	 #--> CI
 		self.Fdata['CI'] = copy.deepcopy(self.Fdata['I'])
 		if version == '1.0.0':
 			self.Fdata['CI']['RecSeq'] = temp[41][1]
@@ -2157,7 +2604,8 @@ class DataObjTarProtFile(MyModules):
 		self.Fdata['CI']["protSeqLength"] = [temp[-2][0], temp[-2][1]]
 		self.Fdata['CI']["mist"] = temp[-2][3]
 		self.Fdata['CI']["ProtLoc"] = [temp[-2][4], temp[-2][5]]	
-	  #--- R
+	 #---
+	 #--> R
 		if version == '1.0.0':
 			lines = temp[48:-2]
 		elif version == '2.0' or version == '2.0.1':
@@ -2172,13 +2620,16 @@ class DataObjTarProtFile(MyModules):
 		for k, l in enumerate(lines):
 			for j in range(0, llines, 1):
 				self.Fdata['R'][colN[j]][str(k)] = l[j]
-	  #--- V
+	 #---
+	 #--> V
 		self.Fdata['V']['version'] = version
-	  #--- Fix Results & Return
+	 #---
+	 #--> Fix Results & Return
 		if self.FixFdataR(nExp, version):
 			return True
 		else:
 			return False
+	 #---
 	#---
 
 	###--- Fix data methods
@@ -2189,20 +2640,23 @@ class DataObjTarProtFile(MyModules):
 			nExp: number of experiments in the file (int)
 			version : version in the file (string)
 		"""	
-	  #--> Set myF list with fix methods for the control and results experiments
+	 #--> Set myF list with fix methods for the control and results experiments
 		if version == '1.0.0':
 			myF = [self.FixControlExpV1, self.FixExpNV1]
 		elif version == '2.0' or version == '2.0.1': 
 			myF = [self.FixControlExpV2, self.FixExpNV2]
-	  #--> Fix Control
+	 #---
+	 #--> Fix Control
 		for k, v in self.Fdata['R']['Control Exp'].items():
 			self.Fdata['R']['Control Exp'][k] = myF[0](v)
-	  #--> Fix Experiments
+	 #---
+	 #--> Fix Experiments
 		for i in range(1, nExp+1, 1):
 			label = 'Exp' + str(i)
 			for k, v in self.Fdata['R'][label].items():
 				self.Fdata['R'][label][k] = myF[1](v)
-	  #--> Fix the column number
+	 #---
+	 #--> Fix the column number
 		for i in config.tarprot['ColNamFrags']:
 			for k, v in self.Fdata['R'][i].items():
 				try:
@@ -2215,8 +2669,10 @@ class DataObjTarProtFile(MyModules):
 							self.Fdata['R'][i][k] = None
 						else:
 							self.Fdata['R'][i][k] = str(v)
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 	
 	#-->
@@ -2234,19 +2690,24 @@ class DataObjTarProtFile(MyModules):
 			---
 			l: list with an experiment to fix
 		"""
-	  #--> Variables
+	 #--> Variables
 		b = l.split('} {')
 		lo = []
-	  #--> Fix each element
+	 #---
+	 #--> Fix each element
 		for e in b:
 			a = e.replace('{', '')
 			a = a.replace('}', '')
 			a.strip()
 			a = a.split(' ')
 			lo.append(a)
-	  #--> Final Fix & Return
+	 #---
+	 #--> Final Fix & Return
 		lo = self.FixExpHelper(lo)
+	 #---
+	 #-->
 		return lo
+	 #---
 	#---
 
 	#-->
@@ -2255,22 +2716,31 @@ class DataObjTarProtFile(MyModules):
 			---
 			l: control experiment to fix
 		"""
-		return list(map(float, l[1:-1].strip().split(',')))
+		try:
+			l = list(map(float, l[1:-1].strip().split(',')))
+		except Exception:
+			l = [0]
+		return l
 	#---
 
 	def FixExpNV2(self, l):
 		""" Fix the types in the experiment columns 
 			l: experiment entry to fix
 		"""
-	  #--> Variables
+	 #--> Variables
 		b  = l[2:-2].split('], [')
 		lo = []
-	  #--> Fix each element 
+	 #---
+	 #--> Fix each element 
 		for e in b:
 			lo.append(e.strip().split(', '))
-	  #--> Final fix & Return
+	 #---
+	 #--> Final fix & Return
 		lo = self.FixExpHelper(lo)	
+	 #---
+	 #-->
 		return lo
+	 #---
 	#---
 
 	#--> 
@@ -2294,8 +2764,8 @@ class DataObjTarProtFile(MyModules):
 	#-->
 	def FixFdataAllV(self):
 		""" Fix I, CI and V """
-	  #--> I
-	   #--> Remove control and modify results
+	 #--> I
+	  #--> Remove control and modify results
 		try:
 			self.Fdata['I']['Results'] = (
 				self.Fdata['I']['Control'] 
@@ -2305,41 +2775,51 @@ class DataObjTarProtFile(MyModules):
 			del(self.Fdata['I']['Control'])
 		except Exception:
 			pass
-	   #--> Module
+	  #---
+	  #--> Module
 		self.Fdata['I']['Module'] = config.mod[config.name['TarProt']]
-	  #--> CI
-	   #--> Data File
+	  #---
+	 #---
+	 #--> CI
+	  #--> Data File
 		self.Fdata['CI']['Datafile'] = Path(self.Fdata['CI']['Datafile']) 
-	   #--> PDB File
+	  #---
+	  #--> PDB File
 		if (self.Fdata['CI']['PDBfile'] == None or 
 			self.Fdata['CI']['PDBfile'] == 'None' or
 			self.Fdata['CI']['PDBfile'] == 'NA'):
 			self.Fdata['CI']['PDBfile'] = None
 		else:
 			pass
-	   #--> Seq_nat
+	  #---
+	  #--> Seq_nat
 		if (self.Fdata['CI']['Seq_nat'] == None or 
 			self.Fdata['CI']['Seq_nat'] == 'None' or
 			self.Fdata['CI']['Seq_nat'] == 'NA'):
 			self.Fdata['CI']['Seq_nat'] = None
 		else:
 			pass
-	   #--> Scorevalue
+	  #---
+	  #--> Scorevalue
 		self.Fdata['CI']['Scorevalue'] = float(self.Fdata['CI']['Scorevalue'])
-	   #--> aVal
+	  #---
+	  #--> aVal
 		self.Fdata['CI']['aVal'] = float(self.Fdata['CI']['aVal'])
-	   #--> Positions
+	  #---
+	  #--> Positions
 		try:
 			self.Fdata['CI']['Positions'] = int(self.Fdata['CI']['Positions'])
 		except Exception:
 			pass
-	   #--> Sequencelength
+	  #---
+	  #--> Sequencelength
 		try:
 			self.Fdata['CI']['Sequencelength'] = int(
 				self.Fdata['CI']['Sequencelength'])
 		except Exception:
 			pass
-	   #--> histogramwindows
+	  #---
+	  #--> histogramwindows
 		if isinstance(self.Fdata['CI']['Histogramwindows'], list):
 			pass
 		else:
@@ -2352,7 +2832,8 @@ class DataObjTarProtFile(MyModules):
 							(self.Fdata['CI']['Histogramwindows'].split(' '))))
 				a.sort()
 				self.Fdata['CI']['Histogramwindows'] = a
-	   #--> PDB ID
+	  #---
+	  #--> PDB ID
 		if self.Fdata['V']['version'] == '1.0.0':
 			self.Fdata['CI']['PDBID'] = [None, None]
 			char = None
@@ -2373,14 +2854,18 @@ class DataObjTarProtFile(MyModules):
 				else:
 					self.Fdata['CI']['PDBID'] = [None, 
 			 			self.Fdata['CI']['PDBID'][0]]
-	   #--> SeqCol
+	  #---
+	  #--> SeqCol
 		self.Fdata['CI']['SeqCol'] = int(self.Fdata['CI']['SeqCol'])
-	   #--> DetectProtCol
+	  #---
+	  #--> DetectProtCol
 		self.Fdata['CI']['DetectProtCol'] = int(
 			self.Fdata['CI']['DetectProtCol'])
-	   #--> ScoreCol
+	  #---
+	  #--> ScoreCol
 		self.Fdata['CI']['ScoreCol'] = int(self.Fdata['CI']['ScoreCol'])
-	   #--> Detected Columns
+	  #---
+	  #--> Detected Columns
 		if isinstance(self.Fdata['CI']['ColExtract'], list):
 			pass
 		elif isinstance(self.Fdata['CI']['ColExtract'], str):
@@ -2388,7 +2873,8 @@ class DataObjTarProtFile(MyModules):
 			self.Fdata['CI']['ColExtract'] = dmethods.ListExpand(a)	
 		else:
 			pass
-	   #--> Control and Results
+	  #---
+	  #--> Control and Results
 		try:
 			self.Fdata['CI']['Results'] = (
 				self.Fdata['CI']['Control'] 
@@ -2398,14 +2884,16 @@ class DataObjTarProtFile(MyModules):
 			del(self.Fdata['CI']['Control'])
 		except Exception:
 			pass
-	   #--> ProtLoc
+	  #---
+	  #--> ProtLoc
 		try:
 			self.Fdata['CI']['ProtLoc'][0] = int(self.Fdata['CI']['ProtLoc'][0])
 			self.Fdata['CI']['ProtLoc'][1] = int(self.Fdata['CI']['ProtLoc'][1])
 		except Exception:
 			self.Fdata['CI']['ProtLoc'][0] = None
 			self.Fdata['CI']['ProtLoc'][1] = None
-	   #--> protSeqLength
+	  #---
+	  #--> protSeqLength
 		self.Fdata['CI']['protSeqLength'][0] = int(
 			self.Fdata['CI']['protSeqLength'][0])
 		try:
@@ -2413,54 +2901,74 @@ class DataObjTarProtFile(MyModules):
 				self.Fdata['CI']['protSeqLength'][1])
 		except Exception:
 			self.Fdata['CI']['protSeqLength'][1] = None
-	   #--> mist
+	  #---
+	  #--> mist
 		try:
 			self.Fdata['CI']['mist'] = int(self.Fdata['CI']['mist'])
 		except Exception:
 			self.Fdata['CI']['mist'] = None
-	   #--> pRes
+	  #---
+	  #--> pRes
 		self.Fdata['CI']['pRes'] = [
 			1, 
 			*self.Fdata['CI']['ProtLoc'], 
 			self.Fdata['CI']['protSeqLength'][0],
 		]
-	  #-- Return
+	  #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	###--- SetVariables and helpers
 	def SetVariables(self):
 		""" Set extra variables needed by the class """
-		#--> nExp
+	 #--> nExp
 		self.nExp = (len(self.Fdata['R'].keys()) 
 					 - config.tarprot['NumColsHeader'])
-		#--> nLinesT to calculate the h of ElementFragPanel
+	 #---
+	 #--> nLinesT to calculate the h of ElementFragPanel
 		self.nLinesT = self.nExp
-		#--> nLines for the labels of ElementFragPanel
+	 #---
+	 #--> nLines for the labels of ElementFragPanel
 		self.nLines = self.nExp
-		#--> colHeader and colExpInd 
+	 #---
+	 #--> colHeader and colExpInd 
 		self.colHeader, self.colExpInd = dmethods.ListColHeaderTarProtFile(self.nExp)     
-		#--> dataF
+	 #---
+	 #--> dataF
 		self.dataF = pd.DataFrame(self.Fdata['R'])
-		#--> nExpLabels
+	 #---
+	 #--> nExpLabels
 		self.nExpLabels = ['Exp'+str(x) for x in range(1, self.nExp+1, 1)]   
-		#--> filterPeptDF
+	 #---
+	 #--> filterPeptDF
 		self.SetfilterPeptDF()
-		#--> checkFP
-		self.checkFP = True if self.filterPeptDF.shape[0] > 0 else False
-		#--> pRes 
+	 #---
+	 #--> checkExport
+		self.checkExport = True if self.filterPeptDF.shape[0] > 0 else False
+	 #---
+	 #--> pRes 
 		self.pRes = self.Fdata['CI']['pRes']
-		#--> pLength  
+	 #---
+	 #--> pLength  
 		self.pLength = self.Fdata['CI']["protSeqLength"]
-		#--> natProtPres
+	 #---
+	 #--> natProtPres
 		self.natProtPres = False if self.pLength[1] == None else True  
-		#--> mist    
+	 #---
+	 #--> mist    
 		self.mist = self.Fdata['CI']['mist']
-		#--> recSeq  
+	 #---
+	 #--> recSeq  
 		self.recSeq = self.Fdata['CI']['RecSeq']     
-		#--> locProtType 
+	 #---
+	 #--> locProtType 
 		self.SetlocProtType()
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def SetfilterPeptDF(self):
@@ -2491,14 +2999,17 @@ class DataObjTarProtFile(MyModules):
 			---
 			exp: experiment number (int)
 		"""
-	  #--> correct exp to math the index in self.colExpInd
+	 #--> correct exp to math the index in self.colExpInd
 		i = self.colExpInd[exp - 1]
-	  #--> Get the data frame
+	 #---
+	 #--> Get the data frame
 		tempDF = self.filterPeptDF[self.filterPeptDF.iloc[:,i].str[0].str[0].isin([1.0])].copy()
 		tempDF.sort_values(by=config.tarprot['SortBy'], inplace=True)
 		tempDF.reset_index(drop=True, inplace=True)
-	  #--> Return. It could return an empty DF
+	 #---
+	 #--> Return. It could return an empty DF
 		return tempDF
+	 #---
 	#---
 
 	#--> fragments
@@ -2513,10 +3024,11 @@ class DataObjTarProtFile(MyModules):
 		       1
 				TCut and TCutNat are the same for all Frags in an Exp	
 		"""
-	  #--> Variables
+	 #--> Variables
 		fragmentsDF = [] # will hold the list of dataframes
 		fragmentsLL = [] # will hold the keys used as labels
-	  #--> Loop over experiments
+	 #---
+	 #--> Loop over experiments
 		for i in range(1, self.nExp+1, 1):
 			fra = []
 			fpL = self.FiltPeptDFForOneExp(i)
@@ -2539,11 +3051,13 @@ class DataObjTarProtFile(MyModules):
 				fragmentsDF.append(pd.DataFrame(fra, 
 					columns=config.tarprot['ColNamFragsOut']))
 				fragmentsLL.append('E'+str(i))
-	  #--> Return
+	 #---
+	 #--> Return
 		if len(fragmentsDF) > 0:
 			return pd.concat(fragmentsDF, keys=fragmentsLL)
 		else:
 			return None
+	 #---
 	#---
 
 	#-->
@@ -2557,13 +3071,13 @@ class DataObjTarProtFile(MyModules):
 
 	###--- Write output files
 	#--> filtpept file
-	def TarProt2FiltPept(self, fileO):
+	def ExportData(self, fileO):
 		""" Writes a filtered peptide file 
 			---
 			fileO: path to the output file 
 		"""
 	 #--> If there is anything to export format Exp columns, Export & Return
-		if self.checkFP:
+		if self.checkExport:
 		 #--> Remove control column
 			filterPeptDF = self.filterPeptDF.drop(axis=1, labels='Control Exp')
 		 #--> Map Exp to 0 or 1
@@ -2572,12 +3086,14 @@ class DataObjTarProtFile(MyModules):
 			dmethods.FFsWriteCSV(str(fileO), filterPeptDF)
 	 	 #--> Return
 			return True	
+	 #---
 	 #--> If not, show error msg & Return	
 		else:
 		 #--> Error msg
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
 		 #--> Return
 			return False
+	 #---
 	#---
 
 	def TarProt2FiltPeptHelper(self, col):
@@ -2588,11 +3104,14 @@ class DataObjTarProtFile(MyModules):
 		"""
 	 #--> List with modified values
 		nV = []
+	 #---
 	 #--> Add modified values to list
 		for i in col:
 			nV.append(i[0][0])
+	 #---
 	 #--> Return
 		return nV
+	 #---
 	#---
 
 	##--> cutprop file
@@ -2600,16 +3119,18 @@ class DataObjTarProtFile(MyModules):
 		""" Writes a cutprop file based on the tarprot file. 
 			If fileO is None returns the dataframe instead of writing to disk  
 		"""
-	  #--> Check that there is something to write
-		if self.checkFP:
+	 #--> Check that there is something to write
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
 			return False
-	  #--- Variables
+	 #---
+	 #--> Variables
 		u, d, t, c = self.pRes
 		colHeader = dmethods.ListColHeaderCutPropFile(self.nExp)[0]
-	  #--- Create the empty data frame with 0 in Exp and Totals
+	 #---
+	 #--> Create the empty data frame with 0 in Exp and Totals
 		rows = []
 		colHeaderLen = len(colHeader)
 		for i in range(1, c+1):
@@ -2628,14 +3149,17 @@ class DataObjTarProtFile(MyModules):
 				row[1] = None
 			rows.append(row)
 		cutpropDF = pd.DataFrame(rows, columns=colHeader)
-	  #--- Count the cleavages for each experiment
+	 #---
+	 #--> Count the cleavages for each experiment
 		for i in range(1, self.nExp+1, 1):
 			NC = self.FiltPeptDFForOneExp(i)
 			self.TarProt2CutPropHelper(NC, cutpropDF, i)
-	  #--- Fill FP columns
+	 #---
+	 #--> Fill FP columns
 		i += 1
 		self.TarProt2CutPropHelper(self.filterPeptDF, cutpropDF, i)	
-	  #--- Write to file or return cutpropDF
+	 #---
+	 #--> Write to file or return cutpropDF
 		if fileO is None:
 			return cutpropDF
 		else:
@@ -2652,6 +3176,7 @@ class DataObjTarProtFile(MyModules):
 			}
 			dmethods.FFsWriteJSON(fileO, data)
 			return True
+	 #---
 	#---
 	
 	#--> 
@@ -2662,14 +3187,15 @@ class DataObjTarProtFile(MyModules):
 			dfo: dataframe with the output (DF)
 			i: number of experiment (int)
 		"""
-	  #--> Get the cleavages
+	 #--> Get the cleavages
 		dft = pd.DataFrame(dfi['Nterm'].copy())
 		dft.loc[:,'Nterm'] = dft['Nterm'] - 1
 		l = list(dft['Nterm'].values) + list(dfi['Cterm'].values)
 		dft = pd.DataFrame(l, columns=['Merge'])
 		count = dft['Merge'].value_counts().to_dict()	
 		tindcp = dmethods.CalCutpropInd(i)
-	  #--> Assign the values
+	 #---
+	 #--> Assign the values
 		#---# Improve (Down) 
 		for k in count:
 			row = int(k - 1)
@@ -2679,18 +3205,22 @@ class DataObjTarProtFile(MyModules):
 		dfo.iloc[:,tindcpu] = dmethods.DataNormDFCol(
 			dfo.iloc[:,tindcp])
 		tindcpd = tindcp + 2
-	  #--> The same for the native sequence
+	 #---
+	 #--> The same for the native sequence
 		if self.natProtPres:
 			dfo.iloc[:,tindcpd] = dfo.apply(
 			  lambda row: None if np.isnan(row[1]) else row[tindcp], axis=1)
 		else:
 			dfo.iloc[:,tindcpd] = np.nan
-	  #--> Normalize values				
+	 #---
+	 #--> Normalize values				
 		tindcpt = tindcp + 3
 		dfo.iloc[:,tindcpt] = dmethods.DataNormDFCol(
 			dfo.iloc[:,tindcpd])
+	 #---
 	 #--> Return	
 		return True
+	 #---
 	#---
 
 	##--> aadist file
@@ -2700,22 +3230,24 @@ class DataObjTarProtFile(MyModules):
 			fileO: path to the aadist file (string or Path)
 			posI : number of positions to consider (int)
 		"""
-	  #--> Check that there is indeed something to write
-		if self.checkFP:
+	 #--> Check that there is indeed something to write
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
 			return False			
-	  #--> Variables
+	 #---
+	 #--> Variables
 		if posI == None:
 			pos = self.Fdata['CI']['Positions']
 		else:
 			pos = posI
 		aVal   = self.Fdata['CI']['aVal'] 
 		aaL    = dmethods.ListAddExtraAA(self.recSeq)
-	  #--> Fill the dicts
+	 #---
+	 #--> Fill the dicts
 		aadist = {}
-	   #--> Exp
+	  #--> Exp
 		for i in range(1, self.nExp+1, 1):
 			label = 'Exp' + str(i)
 			fpDF = self.FiltPeptDFForOneExp(i)
@@ -2725,17 +3257,20 @@ class DataObjTarProtFile(MyModules):
 			else:
 				return False
 		out = self.AAdistDict(self.filterPeptDF, pos, aaL)
-	   #--> FP
+	  #---
+	  #--> FP
 		if out[0]:
 			aadist[config.aadist['FP']] = out[1]
 		else:
 			return False
-	   #--> RD
+	  #---
+	  #--> RD
 		out = self.AAdistDictRD(pos, aaL)
 		if out[0]:
 			aadist[config.aadist['RD']] = out[1]
 		else:
 			return False
+	  #---
 	  #--> Stats chi comp
 		for k in aadist:
 			if k != config.aadist['RD']:
@@ -2743,6 +3278,7 @@ class DataObjTarProtFile(MyModules):
 					aadist[config.aadist['RD']], aVal)
 			else:
 				aadist[k]['Pos'] = [0] * 2 * pos
+	  #---
 	  #--> data
 		data = {
 			'V' : config.dictVersion, 
@@ -2754,9 +3290,12 @@ class DataObjTarProtFile(MyModules):
 				},
 			'R' : aadist			
 		}
-	  #--> Write to file & Return
+	  #---
+	 #---
+	 #--> Write to file & Return
 		dmethods.FFsWriteJSON(fileO, data)
 		return True
+	 #---
 	#---
 
 	#-->
@@ -2767,9 +3306,10 @@ class DataObjTarProtFile(MyModules):
 			pos: number of positions to consider (int)
 			aaL: list of one letter aa code to considerer (list)
 		"""
-	  #--> Create empty output dict
+	 #--> Create empty output dict
 		oDict = dmethods.DictStartAAdist(pos, aaL)
-	  #--> Fill the out dict
+	 #---
+	 #--> Fill the out dict
 		for row in fpDF.itertuples(index=False):
 			resl = []
 			resl.append(row[0] - 1)
@@ -2782,8 +3322,10 @@ class DataObjTarProtFile(MyModules):
 					oDict = dmethods.DictUpdateAAdist(oDict, seq)
 				else:	
 					pass
-	  #--> Return	
+	 #---
+	 #--> Return	
 		return [True, oDict]
+	 #---
 	#---
 
 	#-->
@@ -2793,9 +3335,10 @@ class DataObjTarProtFile(MyModules):
 			pos: number of positions to consider (int)
 			aaL: one letter aa to consider (list)
 		"""
-	  #--> Create output dict
+	 #--> Create output dict
 		oDict = dmethods.DictStartAAdist(pos, aaL)
-	  #--> Fill it
+	 #---
+	 #--> Fill it
 		for r in range(1, self.pRes[3]+1, 1):
 			if r > 0 and r < self.pRes[3]:
 				i = r - 1 # Require for StringCharForAAdist
@@ -2804,8 +3347,10 @@ class DataObjTarProtFile(MyModules):
 				oDict = dmethods.DictUpdateAAdist(oDict, seq)
 			else:
 				pass
-	  #--> Return
+	 #---
+	 #--> Return
 		return [True, oDict]
+	 #---
 	#---
 
 	#-->
@@ -2818,9 +3363,10 @@ class DataObjTarProtFile(MyModules):
 			aVal: alpha level (float <= 1)"""
 	 #--> Positions list
 		PosCol = []
+	 #---
 	 #--> Calculate chi for each position in the dict
 		for i in range(0, len(oDict['A'])):
-	  #--> Merge AA by AA type
+	  	 #--> Merge AA by AA type
 			lO = []
 			lE = []
 			for g in config.aaGroups:
@@ -2831,10 +3377,14 @@ class DataObjTarProtFile(MyModules):
 					sE += eDict[e][i]
 				lO.append(sO)
 				lE.append(sE)
-	  #--> Calculate chi
+		 #---
+	  	 #--> Calculate chi
 			PosCol.append(dmethods.StatChiSquare(lO, lE, aVal))
+		 #---
+	 #---
 	 #--> Return
 		return PosCol
+	 #---
 	#---
 
 	##--> short data files. General name needed for this method
@@ -2845,7 +3395,7 @@ class DataObjTarProtFile(MyModules):
 			colOut: columns to extract (list of int)
 			dataF : path to the data file if None read from tarprot
 		"""
-	  #--- Locate and read the dataF
+	 #--- Locate and read the dataF
 		if dataF is None:
 			tdataF = Path(self.Fdata['CI']['Datafile'])
 			if check.CheckFileRead(tdataF):
@@ -2856,13 +3406,15 @@ class DataObjTarProtFile(MyModules):
 				return False
 		else:
 			tdataF = dataF
-	  #--> Set columns to extract
+	 #---
+	 #--> Set columns to extract
 		if colOut == None:
 			selCol = self.Fdata['CI']['ColExtract']
 		else:
 			selCol = colOut	
 		dataObj = DataObjDataFile(tdataF)
-	  #--> Variables, here because the colHeader need the data object
+	 #---
+	 #--> Variables, here because the colHeader need the data object
 		targetProtN = self.Fdata['CI']['Targetprotein']
 		targetProtC = self.Fdata['CI']['DetectProtCol']
 		scoreV      = self.Fdata['CI']['Scorevalue']
@@ -2871,33 +3423,38 @@ class DataObjTarProtFile(MyModules):
 		typeV = {colHeaderD[scoreC]:'float'}
 		seqColDN = colHeaderD[self.Fdata['CI']['SeqCol']]
 		seqColTN = self.colHeader[config.tarprot['SeqColInd']]
-	  #--> Create folderO
+	 #---
+	 #--> Create folderO
 		try:
 			folderO.mkdir()
 		except Exception:
 			pass
-	  #--> all-columns-all-prot-records
+	 #---
+	 #--> all-columns-all-prot-records
 		dataF = dmethods.DFColValFilter(dataObj.dataFrame,
 			targetProtN, targetProtC)[1]
 		name = 'all-columns-all-' + targetProtN + '-records.txt'
 		file = folderO / name
 		dmethods.FFsWriteCSV(file, dataF)
-	  #--> selected-columns-all-prot-records
+	 #---
+	 #--> selected-columns-all-prot-records
 		dataFS = dmethods.DFSelCol(dataF, selCol)[1]
 		name = 'selected-columns-all-' + targetProtN + '-records.txt'
 		file = folderO / name
 		dmethods.FFsWriteCSV(file, dataFS)
-	  #--> selected-columns-relevant-prot-records
+	 #---
+	 #--> selected-columns-relevant-prot-records
 		dataFSR = dataF.astype(typeV)
 		dataFSR = dataFSR.loc[dataFSR.iloc[:,scoreC] >= scoreV]
 		dataFSR = dmethods.DFSelCol(dataFSR, selCol)[1]
 		name = 'selected-columns-relevant-' + targetProtN + '-records.txt'
 		file = folderO / name
 		dmethods.FFsWriteCSV(file, dataFSR)
-	  #--> selected-columns-FP-prot-records
+	 #---
+	 #--> selected-columns-FP-prot-records
 		name = 'selected-columns-FP-' + targetProtN + '-records.txt'
 		file = folderO / name
-		if self.checkFP:
+		if self.checkExport:
 			dataFSF = dataF[dataF[seqColDN].isin(self.filterPeptDF[seqColTN])]
 			dataFSF = dmethods.DFSelCol(dataFSF, selCol)[1] 
 			dmethods.FFsWriteCSV(file, dataFSF)
@@ -2905,8 +3462,10 @@ class DataObjTarProtFile(MyModules):
 			fileO = open(file, 'w')
 			fileO.write(config.dictCheckFatalErrorMsg[self.name]['FiltPept2'])
 			fileO.close()
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	##--> histogram file
@@ -2916,13 +3475,14 @@ class DataObjTarProtFile(MyModules):
 			fileO: path to the output file (string or Path)
 			win: residue numbers forming the windows (list of int)
 		"""
-	  #--> Check that there is something to write first
-		if self.checkFP:
+	 #--> Check that there is something to write first
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
 			return False	
-	  #--- Variables
+	 #---
+	 #--> Variables
 		natLength = self.pLength[1]
 		if win is None:
 			twin = self.Fdata['CI']['Histogramwindows']
@@ -2941,8 +3501,9 @@ class DataObjTarProtFile(MyModules):
 				histowinNat = dmethods.ListHistWin(width, natLength)
 			else:
 				histowinNat = None				
-	  #--- Create histograms
-	   #--> FP and creates the dataframe for output
+	 #---
+	 #--> Create histograms
+	  #--> FP and creates the dataframe for output
 		labelI = [('Nterm', 'Cterm'), ('Fixed Nterm', 'Fixed Cterm')]
 		binI = [histowinRec, histowinNat]
 		lFP = self.TarProt2HistoFileHelper(self.filterPeptDF, labelI, binI)
@@ -2960,7 +3521,8 @@ class DataObjTarProtFile(MyModules):
 			histoNatUni = pd.DataFrame(data=d)		
 		else:
 			pass
-	   #--> Exp
+	  #---
+	  #--> Exp
 		for i in range(1, self.nExp+1, 1):
 			df = self.FiltPeptDFForOneExp(i)
 			l = self.TarProt2HistoFileHelper(df, labelI, binI)
@@ -2972,7 +3534,9 @@ class DataObjTarProtFile(MyModules):
 				histoNatUni[n] = l[5]				
 			else:
 				pass
-	  #--- Writeoutput
+	  #---
+	 #---
+	 #--> Writeoutput
 		histoRecAll.iloc[:,0] = histoRecAll.iloc[:,0].astype(str)
 		histoRecUni.iloc[:,0] = histoRecUni.iloc[:,0].astype(str)
 		results = {
@@ -2995,8 +3559,10 @@ class DataObjTarProtFile(MyModules):
 			'R' : results			
 		}
 		dmethods.FFsWriteJSON(fileO, data)
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	#-->
@@ -3008,11 +3574,12 @@ class DataObjTarProtFile(MyModules):
 			labelI: is a list of tuple with the two columns to be used for Rec and Nat. 
 			binI: limits of the bin for the histograms (list of tuples)
 		"""
-	  #--> Variables
+	 #--> Variables
 		label = labelI[0]
 		binL  = binI[0]
 		NCall = pd.DataFrame(df[label[0]].copy())
-	  #--> Rec Prot
+	 #---
+	 #--> Rec Prot
 		NCall[label[0]] = NCall[label[0]] - 1
 		l       = list(NCall[label[0]].values) + list(df[label[1]].values)
 		NCall   = pd.DataFrame(l, columns=['Merge'])
@@ -3021,7 +3588,8 @@ class DataObjTarProtFile(MyModules):
 		lrecAll = a.tolist()
 		NCall.drop_duplicates(keep='first', inplace=True)
 		lrecUni = pd.cut(NCall['Merge'], binL).value_counts(sort=False).tolist()
-	  #--> Nat Prot
+	 #---
+	 #--> Nat Prot
 		if self.pLength[1] is None:
 			lnatAll = None
 			lnatUni = None
@@ -3038,8 +3606,10 @@ class DataObjTarProtFile(MyModules):
 			lnatAll = a.tolist()
 			NCall.drop_duplicates(keep='first', inplace=True)
 			lnatUni = pd.cut(NCall['Merge'], binL).value_counts(sort=False).tolist()
-	  #--> Return
+	 #---
+	 #--> Return
 		return [winRec, lrecAll, lrecUni, winNat, lnatAll, lnatUni]
+	 #---
 	#---
 
 	##-- sequence alignment file
@@ -3049,23 +3619,26 @@ class DataObjTarProtFile(MyModules):
 			folderO: path to the output folder (string or Path)
 			resN: number of residue per line (int)
 		"""
-	  #--> Check that there is anythin to write
-		if self.checkFP:
+	 #--> Check that there is anythin to write
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
 			return False	
-	  #--> Variables
+	 #---
+	 #--> Variables
 		if resN == None:
 			N = self.Fdata['CI']['Sequencelength']
 		else:
 			N = resN
-	  #--> Folder
+	 #---
+	 #--> Folder
 		try:
 			folderO.mkdir()
 		except Exception:
 			pass
-	  #--> Files
+	 #---
+	 #--> Files
 		file = folderO / 'FP-rec.txt'
 		self.TarProt2SeqAlignHelper(file, self.filterPeptDF, self.recSeq, N)
 		file = folderO / 'FP-nat.txt'
@@ -3085,8 +3658,10 @@ class DataObjTarProtFile(MyModules):
 			file = folderO / name
 			df = df.dropna()
 			self.TarProt2SeqAlignHelper(file, df, self.recSeq, N)
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	#-->
@@ -3099,10 +3674,11 @@ class DataObjTarProtFile(MyModules):
 			seq: sequence of the protein (string)
 			L: residue number per line (None or int)
 		"""
-	  #--> Variables
+	 #--> Variables
 		longL = []
 		longL.append(seq)
-	  #--> Create long file
+	 #---
+	 #--> Create long file
 		for row in df.itertuples(index=False):
 			l = [' '] * int(row[0] - 1)
 			l.append(row[-2])
@@ -3111,7 +3687,8 @@ class DataObjTarProtFile(MyModules):
 		fileO = open(file, 'w')
 		[fileO.write(x + '\n') for x in longL]
 		fileO.close()
-	  #--> Short File
+	 #---
+	 #--> Short File
 		if L is None:
 			pass
 		else:
@@ -3140,8 +3717,10 @@ class DataObjTarProtFile(MyModules):
 						pass
 				fileO.write('\n')
 			fileO.close()
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	##-- pdb files
@@ -3154,19 +3733,21 @@ class DataObjTarProtFile(MyModules):
 			recSeqObj: None or SeqObj
 			stProgress: None or stProgress in the GUI
 			"""
-	  #--> Check that there is something to write
-		if self.checkFP:
+	 #--> Check that there is something to write
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['FiltPept'])
 			return False	
-	  #--- Variables
-	   #--> seq object
+	 #---
+	 #--> Variables
+	  #--> seq object
 		if recSeqObj is None:
 			recSeqObj = DataObjSequenceFile(seqP=None, seqM=self.recSeq)
 		else:
 			pass
-	   #--> pdb object
+	  #---
+	  #--> pdb object
 		if pdbObj is None:
 			pdbObj = DataObjPDBFile(self.Fdata['CI']['PDBfile'],
 				self.Fdata['CI']['PDBID'][0],
@@ -3178,26 +3759,32 @@ class DataObjTarProtFile(MyModules):
 		except Exception:
 			pdbObj.SetatomDF()
 		pdbProtSeqResNumDF = pdbObj.GetProtSeqResNumDF(pdbObj.cs, three=False)[1]
-	   #--> cuts
+	  #---
+	  #--> cuts
 		#---# Improvement (DOWN) Could be taken from the window calling
 		cutpropDF = self.TarProt2CutProp()
 		#---# Improvement (UP)
+	  #---
 	  #--> Align recSeq and pdbSeq and ResNumber mapping
 		pdbDF = recSeqObj.GetresNumMatch(pdbProtSeqResNumDF)
+	  #---
 	  #--> folderO
 		try:
 			folderO.mkdir()
 		except Exception:
 			pass
-	  #--> Write files
+	  #---
+	 #---
+	 #--> Write files
 		count = 1
 		total = 1 + self.nExp
-	   #--> FP		
+	  #--> FP		
 		indC  = [-4, -3, -2, -1]
 		label = 'FP-cleavages-'
 		self.TarProt2PDBHelper(count, total, pdbDF, cutpropDF, indC, folderO,
 			label, pdbObj, self.Fdata['CI']['PDBID'][1], stProgress)
-	   #--> Exp
+	  #---
+	  #--> Exp
 		for i in range(1, self.nExp+1, 1):
 			count += 1
 			#---
@@ -3209,8 +3796,11 @@ class DataObjTarProtFile(MyModules):
 			self.TarProt2PDBHelper(count, total, pdbDF, cutpropDF, indC, 
 				folderO, label, pdbObj, self.Fdata['CI']['PDBID'][1],
 				stProgress)
-	  #--> Return
+	  #---
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def TarProt2PDBHelper(self, count, total, pdbDF, cutpropDF, indC, folderO,
@@ -3248,12 +3838,13 @@ class DataObjTarProtFile(MyModules):
 			cutDF
 			indC is a list with four number to get BetaR, BetaRNorm, BetaN, BetaNNorm in one go. 
 		"""
-	  #--- Variables
+	 #--> Variables
 		cutsR = []
 		cutsRNorm = []
 		cutsN = []
 		cutsNNorm = []
-	  #--- 
+	 #---
+	 #--> 
 		for row in pdbDF.itertuples(index=False):
 			try:
 				a = cutDF.loc[cutDF.iloc[:,0] == row.ResMatch].index.item()
@@ -3266,13 +3857,16 @@ class DataObjTarProtFile(MyModules):
 				cutsRNorm.append(0.00)
 				cutsN.append(0.00)
 				cutsNNorm.append(0.00) 
-	  #---
+	 #---
+	 #-->
 		pdbDF.loc[:,'BetaR'] = cutsR
 		pdbDF.loc[:,'BetaRNorm'] = cutsRNorm
 		pdbDF.loc[:,'BetaN'] = cutsN
 		pdbDF.loc[:,'BetaNNorm'] = cutsNNorm
-	  #---
+	 #---
+	 #--> Return
 		return pdbDF
+	 #---
 	#---
 
 	def TarProt2PDBHelper3(self, folderO, label, pdbDF, pdbObj, cs):
@@ -3284,10 +3878,11 @@ class DataObjTarProtFile(MyModules):
 			pdbObj:
 			cs:
 		"""
-	  #--- Variables
+	 #--> Variables
 		df = pdbObj.GetatomDFcs(cs).copy()[1]
 		df2w = df.copy()
-	  #---
+	 #---
+	 #-->
 		betaR     = []
 		betaRNorm = []
 		betaN     = []
@@ -3310,12 +3905,14 @@ class DataObjTarProtFile(MyModules):
 				betaRNorm.append(0.00)
 				betaN.append(0.00)
 				betaNNorm.append(0.00)
-	  #---
+	 #---
+	 #-->
 		df.loc[:,'betaR'] = betaR
 		df.loc[:,'betaRNorm'] = betaRNorm
 		df.loc[:,'betaN'] = betaN
 		df.loc[:,'betaNNorm'] = betaNNorm
-	  #---
+	 #---
+	 #-->
 		df2w.loc[:,'beta'] = df['betaR']
 		name = label + 'rec.pdb'
 		file = folderO / name
@@ -3335,8 +3932,10 @@ class DataObjTarProtFile(MyModules):
 			pdbObj.WritePDB(file, df2w)
 		else:
 			pass
-	  #--- 
+	 #---
+	 #--> 
 		return True
+	 #---
 	#---
 
 	def TarProtUpdate(self, folderO):
@@ -3344,13 +3943,14 @@ class DataObjTarProtFile(MyModules):
 			---
 			folderO: folder to write the output file 
 		"""
-	  #--> Check that there are FPs in the file
-		if self.checkFP:
+	 #--> Check that there are FPs in the file
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(config.msg['Errors']['FiltPept'])
 			return False
-	  #--> Check folderO
+	 #---
+	 #--> Check folderO
 		folderOF = folderO / 'TarProt-Update'
 		if folderOF.is_dir():
 			dateN = dmethods.DateTimeNow()
@@ -3358,10 +3958,12 @@ class DataObjTarProtFile(MyModules):
 			folderOF = folderO / Fname
 		else:
 			pass
-	  #--> Variables
+	 #---
+	 #--> Variables
 		pathP = folderOF / self.fileP.name
 	  #--> FolderO
 		folderOF.mkdir()
+	  #---
 	  #--> uscr
 		pathP = pathP.with_suffix('.uscr')
 		dmethods.FFsWriteDict2Uscr(
@@ -3369,12 +3971,15 @@ class DataObjTarProtFile(MyModules):
 			iDict=self.Fdata['I'],
 			hDict=config.dictUserInput2UscrFile[config.name['TarProt']]
 		)
+	  #---
 	  #--> filtlist
-		pathP = pathP.with_suffix('.filtpept')
-		self.TarProt2FiltPept(pathP)
+		pathP = pathP.with_suffix('.txt')
+		self.ExportData(pathP)
+	  #---
 	  #--> cutprop
 		pathP = pathP.with_suffix('.cutprop')
 		self.TarProt2CutProp(pathP)
+	  #---
 	  #--> aadist
 		try:
 			aapos = int(self.Fdata['I']["Positions"])
@@ -3382,6 +3987,7 @@ class DataObjTarProtFile(MyModules):
 			self.TarProt2AAdist(pathP, aapos)
 		except Exception:
 			pass
+	  #---
 	  #--> Hist
 		pathP = pathP.with_suffix('.hist')
 		try:
@@ -3392,6 +3998,7 @@ class DataObjTarProtFile(MyModules):
 				pass
 		except Exception:
 			pass			
+	  #---
 	  #--> Seq
 		pathP = pathP.parent / 'Sequences'
 		try:
@@ -3399,17 +4006,19 @@ class DataObjTarProtFile(MyModules):
 			self.TarProt2SeqAlign(pathP, resN=seqL)
 		except Exception:
 			pass
+	  #---
 	  #--> data
 		colExt = self.Fdata['CI']["ColExtract"]
 		dataI = Path(self.Fdata['CI']['Datafile'])
 		if colExt != None and dataI.is_file(): 
 			pathP = pathP.parent / 'Data'
 			try:
-				self.TarProt2SDataFile(pathP, colOut=colExt, dataF=dataI)
+				self.ToSDataFile(pathP, colOut=colExt, dataF=dataI)
 			except Exception:
 				pass
 		else:
 			pass
+	  #---
 	  #--> PDB
 		code, cs = self.Fdata['CI']["PDBID"]
 		if cs != None:
@@ -3423,12 +4032,21 @@ class DataObjTarProtFile(MyModules):
 			self.TarProt2PDB(pathP, pdbObj=pdbObj)
 		else:
 			pass
+	  #---
 	  #--> Copy old file to TarProtUpdate
 		name = str(self.fileP.stem) + '_old.tarprot'
 		fileO = pathP.parent / name
 		fileO.write_text(self.fileP.read_text())
-	  #--> Return
+	  #---
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
+	#endregion ---------------------------------------------------- My Methods
 #---
-# ----------------------------------------------- Files generated by UMSAP (END)
+#endregion ------------------------------------------ Files generated by UMSAP
+
+
+
+

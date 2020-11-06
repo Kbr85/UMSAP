@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,57 +12,46 @@
 """ This module contains the base classes for the GUI of the app """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
-import wx
-import wx.lib.dialogs
+#region -------------------------------------------------------------- Imports
 import webbrowser
 import _thread
-import pandas as pd
+
 import matplotlib as mpl
+import pandas as pd
+import wx
+import wx.lib.dialogs
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.widgets import Cursor
 from pathlib import Path
-## My modules
-import config.config          as config
-import gui.menu.menu          as menu
-import gui.gui_methods        as gmethods
-import data.data_classes      as dclasses
-import data.data_methods      as dmethods
+
 import checks.checks_multiple as checkM
 import checks.checks_single   as check
-#---
+import config.config          as config
+import data.data_classes      as dclasses
+import data.data_methods      as dmethods
+import gui.gui_methods        as gmethods
+import gui.menu.menu          as menu
+#endregion ----------------------------------------------------------- Imports
 
-
-
-# ----------------------------------------------------------- GUI ELEMENTS
+#region --------------------------------------------------------- GUI ELEMENTS
 class ElementHelpRun():
 	""" A sizer with the Help and Start buttoms. Between the buttons there is a 
 		static text and below the text a gauge. """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent, length=25):
 		""" parent: parent of the widgets
 			length: length of the gauge
 		"""
-	  #--> Widgets
-	   #--> StaticText
+	 #--> Widgets
+	  #--> StaticText
 		self.stProgress = wx.StaticText(
 			parent, 
 			label='', 
 			style=wx.ALIGN_LEFT
 		)
-	   #--> Button
+	  #---
+	  #--> Button
 		self.buttonHelp = wx.Button(
 			parent, 
 			label=config.dictElemHelpRun['Help']
@@ -71,13 +60,17 @@ class ElementHelpRun():
 			parent, 
 			label=config.dictElemHelpRun['Run']
 		)
-	   #--> Gauge
+	  #---
+	  #--> Gauge
 		self.gauge = wx.Gauge(parent=parent, range=length)
-		self.gauge.SetValue(0)
-	  #--> Sizers
-	   #--> New sizers
+		self.gauge.SetValue(0)	
+	  #---
+	 #---
+	 #--> Sizers
+	  #--> New sizers
 		self.sizerBottom = wx.GridBagSizer(1, 1)
-	   #--> Add elements
+	  #---
+	  #--> Add elements
 		self.sizerBottom.Add(self.buttonHelp, pos=(0, 0), 
 			border=2, 
 			flag=wx.ALIGN_LEFT|wx.ALL)
@@ -90,21 +83,34 @@ class ElementHelpRun():
 		self.sizerBottom.Add(self.gauge,      pos=(1, 0), span=(0, 3),
 			border=2, 
 			flag=wx.EXPAND|wx.ALIGN_LEFT|wx.ALL)
-	   #--> Grow able columns
+	  #---
+	  #--> Grow able columns
 		self.sizerBottom.AddGrowableCol(1, 1)
-	  #--> Tooltips
+	  #---
+	 #---
+	 #--> Tooltips
 		self.buttonRun.SetToolTip(config.tooltip['HelpRun']['Run'])
 		self.buttonHelp.SetToolTip(config.tooltip['HelpRun']['Help'])
-	  #--> Bind
+	 #---
+	 #--> Bind
 		self.buttonHelp.Bind(wx.EVT_BUTTON, self.OnHelp)
 		self.buttonRun.Bind(wx.EVT_BUTTON, self.OnRun)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnHelp(self, event):
 		""" Default behavior of Help button: go to UMSAP v2.1 tutorial """
-		webbrowser.open_new(config.url['Tutorial'])
+	 #--> Show specific tutorial or the general list of tutorials
+		try:
+			webbrowser.open_new(config.url[self.name])
+		except KeyError:
+			webbrowser.open_new(config.url['Tutorial'])
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def OnRun(self, event):
@@ -118,11 +124,12 @@ class ElementHelpRun():
 
 	def run(self, test):
 		""" Analyse the data and generate the results """
-	  #--> Variables
+	 #--> Variables
 		self.dateN = dmethods.DateTimeNow()	
 		self.d  = {}
 		self.do = {}
-	  #--> Check input
+	 #---
+	 #--> Check input
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input', 2)
 		if self.CheckInput():
@@ -130,7 +137,8 @@ class ElementHelpRun():
 		else:
 			wx.CallAfter(self.Checkrun)
 			return False
-	  #--> Start analysis
+	 #---
+	 #--> Start analysis
 	  #--> Read input files
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Reading files', 2)		
@@ -139,6 +147,7 @@ class ElementHelpRun():
 		else:
 			wx.CallAfter(self.Checkrun)
 			return False
+	  #---
 	  #--> Set initial variables
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Setting variables', 2)		
@@ -147,6 +156,7 @@ class ElementHelpRun():
 		else:
 			wx.CallAfter(self.Checkrun)
 			return False
+	  #---
 	  #--> Run the analysis
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Running analysis', 2)
@@ -155,6 +165,7 @@ class ElementHelpRun():
 		else:
 			wx.CallAfter(self.Checkrun)
 			return False
+	  #---
 	  #--> Write the output
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Writing output', 2)
@@ -163,37 +174,44 @@ class ElementHelpRun():
 		else:
 			wx.CallAfter(self.Checkrun)
 			return False
+	  #---
 	  #--> Call Checkrun to launch Show Results from the main thread
 		self.runEnd = True
 		wx.CallAfter(self.Checkrun)
-	  #--> Return
+	  #---
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def Checkrun(self):
 		""" Check if the thread finished correctly. Runs from the main thread """
-	  #--> Check if self.run finished ok
+	 #--> Check if self.run finished ok
 		if self.runEnd:
-	  #--> Show graphic output. Needs to be from main thread in macOS
+		 #--> Show graphic output. Needs to be from main thread in macOS
 			if self.ShowRes():
 				DlgSuccessMsg()
 			else:
 				pass
+		 #---
 		else:
 			pass
-	  #--> Restore module initial state 
+	 #---
+	 #--> Restore module initial state 
 		self.stProgress.SetLabel('')
 		self.gauge.SetValue(0)
 		self.buttonRun.Enable()
 		self.buttonRun.SetLabel(config.dictElemHelpRun['Run'])
 		self.runEnd = False
 		self.overW = False
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
-	####---- Dummy methods to avoid errors when method not needed. 
-	#		 Override as needed
+	####---- Dummy methods. Override as needed
 	def CheckInput(self):
 		""" Check the user provided input """
 		return True
@@ -231,20 +249,25 @@ class ElementClearAFVC():
 		the clear methods will set the value of the wx.TextCtrl to '' 
 	"""
 
+	#region --------------------------------------------------- Instance Setup  
 	def __init__(self, parent):
 		""" parent: parent of the class """
-	  #--> Variables
+	 #--> Variables
 		self.parent = parent
-	  #--> Widgets
-	   #--> Button
+	 #---
+	 #--> Widgets
+	  #--> Button
 		self.buttonClearAll     = wx.Button(parent, label='Clear all')
 		self.buttonClearFiles   = wx.Button(parent, label='Clear files')
 		self.buttonClearValues  = wx.Button(parent, label='Clear values')
 		self.buttonClearColumns = wx.Button(parent, label='Clear columns')
-	  #--> Sizer
-	   #--> New sizers
+	  #---
+	 #---
+	 #--> Sizer
+	  #--> New sizers
 		self.sizerClear = wx.BoxSizer(wx.VERTICAL)
-	   #--> Add Elements
+	  #---
+	  #--> Add Elements
 		self.sizerClear.Add(self.buttonClearAll,     
 			border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
@@ -257,19 +280,24 @@ class ElementClearAFVC():
 		self.sizerClear.Add(self.buttonClearColumns, 
 			border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
-	  #--> Tooltips
+	  #---
+	 #---
+	 #--> Tooltips
 		self.buttonClearAll.SetToolTip(config.tooltip['Clear']['All'])
 		self.buttonClearFiles.SetToolTip(config.tooltip['Clear']['Files'])
 		self.buttonClearValues.SetToolTip(config.tooltip['Clear']['Values'])
 		self.buttonClearColumns.SetToolTip(config.tooltip['Clear']['Cols'])
-	  #--> Bind
+	 #---
+	 #--> Bind
 		self.buttonClearFiles.Bind(wx.EVT_BUTTON, self.OnClearFiles)
 		self.buttonClearValues.Bind(wx.EVT_BUTTON, self.OnClearValues)
 		self.buttonClearColumns.Bind(wx.EVT_BUTTON, self.OnClearColumns)
 		self.buttonClearAll.Bind(wx.EVT_BUTTON, self.OnClearAll)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup  
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnClearFiles(self, event):
 		""" Set the value of all wx.TextCtrl in a wx.StaticBox to ''. Override
 			as needed 
@@ -333,17 +361,21 @@ class ElementClearAFVC():
 class ElementClearAF(ElementClearAFVC):
 	""" Clear all and Clear files buttons in the left of the module. """
 	
+	#region --------------------------------------------------- Instance Setup  
 	def __init__(self, parent):
 		""" parent: parent of the widgets """
 
 		super().__init__(parent=parent)
-	  #--> Widgets
-	   #--> Buttons
+	 #--> Widgets
+	  #--> Buttons
 		self.buttonClearValues.Destroy()
 		self.buttonClearColumns.Destroy()
+	  #---
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup  
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnClearAll(self, event):
 		""" Override to ElementClearAFVC """
 		self.OnClearFiles(event)
@@ -354,16 +386,20 @@ class ElementClearAF(ElementClearAFVC):
 class ElementClearAFV(ElementClearAFVC):
 	""" Clear values button in the left of the module. """
 	
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent):
 		""" parent: parent of the widgets """
 
 		super().__init__(parent)
-	  #--> Widgets
-	   #--> Button
+	 #--> Widgets
+	  #--> Button
 		self.buttonClearColumns.Destroy()
+	  #---
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnClearAll(self, event):
 		""" Override to ElementClearAFVC """
 		self.OnClearFiles(event)
@@ -375,16 +411,20 @@ class ElementClearAFV(ElementClearAFVC):
 class ElementClearAFC(ElementClearAFVC):
 	""" Clear column button in the left of the module """
 	
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent):
 		""" parent: parent of the widgets """
 
 		super().__init__(parent)
-	  #--> Widgets
-	   #--> Buttons
+	 #--> Widgets
+	  #--> Buttons
 		self.buttonClearValues.Destroy()
+	  #---
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnClearAll(self, event):
 		""" Override to ElementClearAFVC """
 		self.OnClearFiles(event)
@@ -397,45 +437,53 @@ class ElementDataFile():
 	""" Creates the button and text ctrl for the data file in modules and 
 		utilities 
 	"""
-
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent):
 		""" parent: parent of the widgets """
 	
-	  #--> Widgets
-	   #--> Buttons
+	 #--> Widgets
+	  #--> Buttons
 		self.buttonDataFile = wx.Button(parent=parent, 
 			label=config.dictElemDataFile[self.name]['ButtonLabel'])
-	   #--> TextCtrl
+	  #---
+	  #--> TextCtrl
 		self.tcDataFile = wx.TextCtrl(parent=parent, value="", 
 			size=config.size['TextCtrl']['DataFile'])
-	  #--> Tooltips
+	  #---
+	 #---
+	 #--> Tooltips
 		self.buttonDataFile.SetToolTip(
 			config.dictElemDataFile[self.name]['ButtonTooltip'])
-	  #--> Bind
+	 #---
+	 #--> Bind
 		self.buttonDataFile.Bind(wx.EVT_BUTTON, self.OnDataFile)
 		if config.dictElemDataFile[self.name]['BindEnter']:
 			self.tcDataFile.Bind(wx.EVT_CHAR_HOOK, self.OnDataInputEnter)
 		else:
 			pass
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnDataFile(self, event):
 		""" Select the data file and fill the list box """
-	  #--> Variables
+	 #--> Variables
 		k     = True
 		msg   = config.dictElemDataFile[self.name]['MsgOpenFile']
 		wcard = config.dictElemDataFile[self.name]['ExtLong']
-	  #--> Open File & Fill/Empty wx.ListBox
+	 #---
+	 #--> Open File & Fill/Empty wx.ListBox
 		dlg = DlgOpenFile(msg, wcard)
 		if dlg.ShowModal() == wx.ID_OK:
-			#--> Put path in wx.TextCtrl
+		 #--> Put path in wx.TextCtrl
 			self.tcDataFile.SetValue(dlg.GetPath())
-			#--> Fill wx.ListBox if needed
+		 #---
+		 #--> Fill wx.ListBox if needed
 			if config.dictElemDataFile[self.name]['FillListCtrl']:
 				if gmethods.ListCtrlColNames(dlg.GetPath(), self.lb, 
 					mode='file'):
-					#--> Empty second wx.ListBox if needed
+				 #--> Empty second wx.ListBox if needed
 					go = (
 					  config.dictElemDataFile[self.name]['EmptySecondListCtrl'])
 					if go: 
@@ -443,30 +491,35 @@ class ElementDataFile():
 						self.lboE = []
 					else:
 						pass
+				 #---
 				else:
 					k = False
 			else:
 				pass
+		 #---
 		else:
 			k = False
-	  #--- Destroy & Return
+	 #---
+	 #--> Destroy & Return
 		dlg.Destroy()
 		return k
+	 #---
 	#---
 
 	def OnDataInputEnter(self, event):
 		""" Enter Key Action on the wx.TexTCtrl with the data file path """
-	  #--> Process enter key stroke
+	 #--> Process enter key stroke
 		if event.GetKeyCode() == wx.WXK_RETURN:		
-	   #--> Get file path
+	   	 #--> Get file path
 			file = self.tcDataFile.GetValue()
-	   #--> Check file can be read
+	   	 #---
+		 #--> Check file can be read
 			if checkM.CheckMFileRead(file,  
 					config.dictElemDataFile[self.name]['ExtShort']):
-	   #--> Fill first wx.ListBox
+	   		 #--> Fill first wx.ListBox
 				if config.dictElemDataFile[self.name]['FillListCtrl']:
 					if gmethods.ListCtrlColNames(file, self.lb, mode='file'):
-	   #--> Empty second wx.ListBox if needed
+	   				 #--> Empty second wx.ListBox if needed
 						go = (
 					  	config.dictElemDataFile[self.name]['EmptySecondListCtrl'])
 						if go: 
@@ -474,19 +527,24 @@ class ElementDataFile():
 							self.lboE = []
 						else:
 							pass
+					 #---
 					else:
 						return False
 				else:
 					pass
+			 #---
 			else:
 				msg = config.dictCheckFatalErrorMsg[self.name]['Datafile']
 				DlgFatalErrorMsg(msg)
 				return False
+		 #---
 		else:
 			pass
-	  #--> Skip event & Return
+	 #---
+	 #--> Skip event & Return
 		event.Skip()
 		return True
+	 #---
 	#---
 #---
 
@@ -495,40 +553,49 @@ class ElementOutputFileFolder():
 		modules and utilities 
 	"""
 	
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent):
 		""" parent: parent of the widgets """
-	  #--> Variables
+	 #--> Variables
 		self.overW = False
-	  #--> Widgets
-	   #--> Buttons
+	 #---
+	 #--> Widgets
+	  #--> Buttons
 		self.buttonOutputFF = wx.Button(parent=parent, 
 			label=config.dictElemOutputFileFolder[self.name]['ButtonLabel'])
-	   #--> TextCtrl
+	  #---
+	  #--> TextCtrl
 		self.tcOutputFF = wx.TextCtrl(parent=parent, value="", 
 			size=config.size['TextCtrl']['OutputFF'])
-	  #--> Tooltips
+	  #---
+	 #--> Tooltips
 		msg = (config.dictElemOutputFileFolder[self.name]['ButtonTooltip']
 			+ config.msg['OptVal'])
 		self.buttonOutputFF.SetToolTip(msg)
-	  #--> Bind
+	 #---
+	 #--> Bind
 		if config.dictElemOutputFileFolder[self.name]['FolderOrFile']:
 			self.buttonOutputFF.Bind(wx.EVT_BUTTON, self.OnOutputFolder)
 		else:
 			self.buttonOutputFF.Bind(wx.EVT_BUTTON, self.OnOutputFile)
-	   #--> Conditional Binding 
+	 #---
+	 #--> Conditional Binding 
 		temp = 'Output file'
 		if config.dictElemOutputFileFolder[self.name]['ButtonLabel'] == temp:
 			self.tcOutputFF.Bind(wx.EVT_TEXT, self.OnTextChange)
 		else:
 			pass
-	  #--> Default values
+	 #---
+	 #--> Default values
 		if config.dictElemOutputFileFolder[self.name]['NA']:
 			self.tcOutputFF.SetValue('NA')
 		else:
 			pass
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnTextChange(self, event):
 		""" Set self.overW = False if the user change the path to the file """
 		self.overW = False
@@ -559,6 +626,7 @@ class ElementOutputFileFolder():
 class ElementResults():
 	""" To create the Results widgets, tooltips and methods """
 	
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent):
 		""" parent: parent of the widgets 
 		"""
@@ -566,6 +634,7 @@ class ElementResults():
 		self.MyOptHandler = { # To handle loading a file with options
 			config.name['ProtProf'] : self.MyOptHandlerProtProf,
 		}
+	 #---
 	 #--> Widgets
 	  #--> TextCtrl
 		self.tcResults = wx.TextCtrl(
@@ -573,25 +642,32 @@ class ElementResults():
 			value="", 
 			size=config.size['TextCtrl'][self.name]['tcResults']
 		)
+	  #---
 	  #--> StaticText
 		self.stResults = wx.StaticText(
 			parent=parent, 
 			label="Results - Control experiments", 
 			style=wx.ALIGN_RIGHT
-		)		
+		)
+	  #---		
 	  #--> Buttons
 		self.buttonResultsW = wx.Button(parent=parent, label='Type values')
 		self.buttonResultsL = wx.Button(parent=parent, label='Load values')	
+	  #---
+	 #---
 	 #--> Tooltips
 		self.stResults.SetToolTip(config.tooltip[self.name]['Results'])
 		self.buttonResultsW.SetToolTip(config.tooltip[self.name]['ResultsW'])
 		self.buttonResultsL.SetToolTip(config.tooltip[self.name]['ResultsL'])
+	 #---
 	 #--> Bind
 		self.buttonResultsW.Bind(wx.EVT_BUTTON, self.OnResW)
 		self.buttonResultsL.Bind(wx.EVT_BUTTON, self.OnResL)			
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnResW(self, event):
 		""" Open the win_ut_typeRes window to write the results columns. """
 		#--# Improve Should read the value of self.tcResults and show it with
@@ -607,15 +683,18 @@ class ElementResults():
 		""" Load the results from a text file """
 	 #--> Variables
 		k = True
+	 #---
 	 #--> Open file
 		dlg = DlgOpenFile(
 			config.dictElemDataFile2[self.name]['MsgOpenFile'],
 			config.dictElemDataFile2[self.name]['ExtLong'])
+	 #---
 	 #--> If file selected 
 		if dlg.ShowModal() == wx.ID_OK:
-	 #--> Read file		
+	 	 #--> Read file		
 			lines = dmethods.FFsRead(dlg.GetPath(), char=None)
-	 #--> Create string
+	 	 #---
+		 #--> Create string
 			myRes = ''
 			myOpt = {}
 			for l in lines:
@@ -629,18 +708,23 @@ class ElementResults():
 					)
 					myRes = myRes + '; '
 			myRes = myRes[0:-2]
-	 #--> Place string
+		 #---
+	 	 #--> Place string
 			self.tcResults.SetValue(myRes)
-	 #--> Variables in parent module
+		 #---
+	 	 #--> Variables in parent module
 			if myOpt:
 				self.MyOptHandler[self.name](myOpt)
 			else:
 				pass
+		 #---
 		else:
 			k = False
-	  #--> Destroy modal window & Return
+	 #---
+	 #--> Destroy modal window & Return
 		dlg.Destroy()
 		return k
+	 #---
 	#---
 
 	def MyOptHandlerProtProf(self, iDict):
@@ -648,6 +732,7 @@ class ElementResults():
 			---
 			iDict: keys are the option name and values are the values
 		""" 
+	 #-->
 		try:
 			self.CType = iDict[config.dictUserLoadRes[self.name]['CType']]
 		except Exception:
@@ -668,8 +753,10 @@ class ElementResults():
 			self.LabelRP = val
 		except Exception:
 			pass
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 #---
 
@@ -700,32 +787,42 @@ class ElementGelPanel():
 		The content of the df are the fragment for each band (BY) in each lane (LX)
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent):
 		""" parent: parent of the widgets"""
-	  #--> Widgets
-	   #--> Panel
+	 #--> Widgets
+	  #--> Panel
 		self.p2 = wx.Panel(parent=parent, 
 			size=config.size['Panel'][self.name]['PanelGel'])
 		self.p2.SetBackgroundColour('WHITE')
-	  #--> Bind
+	  #---
+	 #---
+	 #--> Bind
 		self.p2.Bind(wx.EVT_PAINT, self.OnPaintGel)
 		self.p2.Bind(wx.EVT_LEFT_UP, self.OnP2LeftUp)
 		self.p2.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
+	#region ------------------------------------------- Binding & Menu Methods
 	def OnSaveGel(self):
 		""" Save image of the fragments """	
-	  #--> Adjust the height
+	 #--> Adjust the height
 		h = (config.size['Panel'][self.name]['PanelGel'][1] 
 			+ config.tarprot['ImageH'])
-	  #--> Create the bitmap
+	 #---
+	 #--> Create the bitmap
 		bmp = wx.Bitmap(self.p2.w, h)
-	  #--> Create memDC
+	 #---
+	 #--> Create memDC
 		memDC = wx.MemoryDC()
-	  #--> Select object for the memDC
+	 #---
+	 #--> Select object for the memDC
 		memDC.SelectObject(bmp)
-	  #--> Draw
+	 #---
+	 #--> Draw
 		memDC.SetBrush(wx.Brush(wx.Colour('WHITE')))
 		memDC.DrawRectangle(0, 0, self.p2.w, h)
 		self.DrawGel(memDC)
@@ -733,9 +830,11 @@ class ElementGelPanel():
 		self.DrawHGel(memDC)
 		self.DrawSGel(memDC)
 		self.DrawTGel(memDC)
-	  #--> Deselect bitmap
+	 #---
+	 #--> Deselect bitmap
 		memDC.SelectObject(wx.NullBitmap)
-	  #--> Save
+	 #---
+	 #--> Save
 		img = bmp.ConvertToImage()
 		msg = config.msg['Save']['LimProtGelImg']
 		dlg = DlgSaveFile(config.extLong['FragImage'], msg)
@@ -753,9 +852,11 @@ class ElementGelPanel():
 				img.SaveFile(str(p), wx.BITMAP_TYPE_PNG)
 			else:
 				pass
-	  #--> Destroy modal window & Return
+	 #---
+	 #--> Destroy modal window & Return
 		dlg.Destroy()
 		return True
+	 #---
 	#---
 
 	def OnSetFocus(self, event):
@@ -767,28 +868,32 @@ class ElementGelPanel():
 
 	def OnP2LeftUp(self, event):
 		""" Select whole lane, whole band or a particular spot """
-	  #--> Event coordinates
+	 #--> Event coordinates
 		x              = event.x
 		y              = event.y
 		LaneBandOld    = (self.TLane, self.TBand)
-	  #--> Get Lane, Band selected
+	 #---
+	 #--> Get Lane, Band selected
 		out, self.TLane, self.TBand = dmethods.GHelperXYLocate(x, y, 
 			self.coordsGel)
-	  #--- Nothing selected leave
+	 #---
+	 #--> Nothing selected leave
 		if (self.TLane == None and self.selM == True or 
 			self.TBand == None and self.selM == False):
 			self.TLane, self.TBand = LaneBandOld
 			return True
 		else:
 			pass
-	  #--- Keep selected fragment selected if the same lane/band is clicked
+	 #---
+	 #--> Keep selected fragment selected if the same lane/band is clicked
 		if ((self.selM == True and LaneBandOld[0] == self.TLane and self.TBand == None) or
 			(self.selM != True and LaneBandOld[1] == self.TBand and self.TLane == None)):
 			self.TLane, self.TBand = LaneBandOld
 			return True
 		else:
 			self.kf = [None, None]
-	  #--- Do nothing if clicked in non-used band-lane positions
+	 #---
+	 #--> Do nothing if clicked in non-used band-lane positions
 		if self.TLane != None and self.TBand != None:
 			b = self.TBand - 1
 			l = self.TLane
@@ -811,7 +916,8 @@ class ElementGelPanel():
 				self.kf = [None, None]		
 		else:
 			pass
-	  #--- Select the lane or the band 
+	 #--- 
+	 #--> Select the lane or the band 
 		if self.selM == True:
 			try:
 				l = self.TLane + 1
@@ -828,28 +934,33 @@ class ElementGelPanel():
 			except Exception as e:
 				self.fPlot = False
 				self.f     = None
-	  #--- Select the sequence in list box
+	 #---
+	 #--> Select the sequence in list box
 		if self.selSeq == None:
 			self.lbSelPlotG = False
 			self.lbSelPlot = False
 		else:
 			dmethods.GHelperLBSelUpdate(self)			
-	  #--- Final configuration and print to wx.TextCtrl
+	 #---
+	 #--> Final configuration and print to wx.TextCtrl
 		self.GetLBF()
 		self.PrintW()
 		self.ShowDetails()
-	  #--- Draw
+	 #---
+	 #--> Draw
 		self.Refresh()
 		self.Update()
-	  #--- Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def GetLBF(self):
 		""" Set the variables needed for printing lane, bands or fragments 
 			details 
 		"""
-	  #--> Lane and Band
+	 #--> Lane and Band
 		if self.selM:
 			try:
 				self.TextL = self.TLane + 1	
@@ -871,13 +982,16 @@ class ElementGelPanel():
 				self.TextL = self.TLane + 1
 			else:
 				self.TextL = None	
-	  #--- Fragment
+	 #---
+	 #--> Fragment
 		if self.kf[1] == None:
 			self.TextF = None
 		else:
 			self.TextF = self.kf[1] + 1 
-	  #--- Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def PrintW(self):
@@ -901,25 +1015,29 @@ class ElementGelPanel():
 			self.TextM = 4	
 		return True
 	#---	
+	#endregion ---------------------------------------- Binding & Menu Methods
 
-	## Paint Gel
+	#region ------------------------------------------------ Paint Gel Methods
 	def OnPaintGel(self, event):
 		""" Handles the PAINT event. Split in parts for easier handling. """
-	  #--> Variables
+	 #--> Variables
 		dc = wx.PaintDC(self.p2)
 		self.p2.w, self.p2.h = self.p2.GetSize()
 		self.coordsGel = {
 			'y' : {},
 			'x' : {}
 		}
-	  #--> Paint
+	 #---
+	 #--> Paint
 		self.DrawGel(dc)
 		self.DrawGelLabels(dc)
 		self.DrawHGel(dc)
 		self.DrawSGel(dc)
 		self.DrawTGel(dc)
-	  #-- Results
+	 #---
+	 #--> Results
 		return True
+	 #---
 	#---
 
 	def DrawGel(self, dc):
@@ -927,9 +1045,10 @@ class ElementGelPanel():
 			---
 			dc: paint handler
 		"""
-	  #--> Variables
+	 #--> Variables
 		self.GrH, self.GrHT, self.GrCH, self.GrW, self.GrWT, self.GrCW = self.SetUpGel()
-	  #--> Draw spots
+	 #---
+	 #--> Draw spots
 		for b in range(1, self.Bands+1, 1): # Loop bands
 			bb = b - 1
 			for l in range(1, self.Lanes+1, 1): # Loop lanes
@@ -940,8 +1059,10 @@ class ElementGelPanel():
 					self.DrawOneFragmentG(dc, b, l, 'White')
 				else:
 					self.DrawOneFragmentG(dc, b, l, 'Black')
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DrawGelLabels(self, dc):
@@ -949,7 +1070,7 @@ class ElementGelPanel():
 			---
 			dc : draw handler
 		"""
-	  #--> Draw Lane labels
+	 #--> Draw Lane labels
 		for i in range(1, self.Lanes+1, 1):
 			xi = config.limprot['RectSxg'] + (i - 1) * self.GrWT + self.GrCW
 			y  = 0
@@ -957,7 +1078,8 @@ class ElementGelPanel():
 			h  = config.limprot['RectSxg']
 			rect = (xi, y, w, h)
 			dc.DrawLabel('Lane'+str(i), rect, alignment=wx.ALIGN_CENTER)
-	  #--> Draw Band labels
+	 #---
+	 #--> Draw Band labels
 		for i in range(1, self.Bands+1, 1):
 			x = 0
 			y = config.limprot['RectSxg'] + (i - 1) * self.GrHT + self.GrCH  
@@ -965,8 +1087,10 @@ class ElementGelPanel():
 			h = self.GrH
 			rect = (x,y,w,h)
 			dc.DrawLabel('Band'+str(i), rect, alignment=wx.ALIGN_CENTER)
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DrawHGel(self, dc):
@@ -974,7 +1098,7 @@ class ElementGelPanel():
 			---
 			dc : draw handler
 		"""
-	  #--> Lane
+	 #--> Lane
 		if self.selM == True and self.TLane != None:
 			xi, xf = self.coordsGel['x'][1][self.TLane]
 			xi = xi - config.limprot['LBLineW']
@@ -986,7 +1110,8 @@ class ElementGelPanel():
 			dc.SetPen(wx.Pen(config.colors[self.name]['GBBorder'], 
 				config.limprot['LBLineW'], wx.SOLID))
 			dc.DrawRectangle(xi, yi, xf-xi, yf-yi)
-	  #--> Band
+	 #---
+	 #--> Band
 		elif self.selM == False and self.TBand != None:
 			yi, yf = self.coordsGel['y'][self.TBand][0]
 			yi = yi - config.limprot['LBLineW']
@@ -1000,8 +1125,10 @@ class ElementGelPanel():
 			dc.DrawRectangle(xi, yi, xf-xi, yf-yi)			
 		else:
 			pass
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DrawSGel(self, dc):
@@ -1022,25 +1149,31 @@ class ElementGelPanel():
 			ll: row from a data frame
 			dc: draw handler
 		"""
-	  #--> Variables
+	 #--> Variables
 		l = int(ll.name[0][1:]) - 1
 		b = int(ll.name[1][1:])
-	  #--> Get coordinates for the rectangle
-	   #--> y
+	 #---
+	 #--> Get coordinates for the rectangle
+	  #--> y
 		yi, yf = self.coordsGel['y'][b][0]
 		y = yi + config.limprot['LBTopGap']
 		h = (yf - y - 1 * config.limprot['LBTopGap'])
-	   #--> x
+	  #---
+	  #--> x
 		xi, xf = self.coordsGel['x'][b][l]
 		xi = xi + config.limprot['LBTopGap']
 		xf = xf - config.limprot['LBTopGap']
-	  #--> Draw
+	  #---
+	 #---
+	 #--> Draw
 		dc.SetBrush(wx.Brush(wx.TRANSPARENT_BRUSH)) 
 		dc.SetPen(wx.Pen(config.colors[self.name]['LBBorder'], 
 			config.limprot['LBLineW'], wx.SOLID))
 		dc.DrawRectangle(xi, y, xf-xi, h)		
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DrawTGel(self, dc):
@@ -1048,8 +1181,8 @@ class ElementGelPanel():
 			---
 			dc : draw handler
 		"""
-	  #--> Draw
-	   #--> Locate the spot 
+	 #--> Draw
+	  #--> Locate the spot 
 		if self.TBand != None and self.TLane != None and self.GelText == True:
 			b = self.TBand - 1
 			l = self.TLane
@@ -1057,25 +1190,32 @@ class ElementGelPanel():
 				self.Results[b][l][0] == 'None'):
 				pass
 			else:
-	   #--> Set coordinates
+	  #---
+	  #--> Set coordinates
 	   #--> x
 				xi, xf = self.coordsGel['x'][self.TBand][self.TLane]
 				xi = xi + 4 * config.lpprot[self.name]['TextRectWLat']
 				xf = xf - 4 * config.lpprot[self.name]['TextRectWLat']
+	   #---
 	   #--> y
 				yi, yf = self.coordsGel['y'][self.TBand][0]
 				a = yf - yi
 				y = yi + (a / 2) - config.lpprot[self.name]['LBTopGap']
+	   #---
 	   #--> Draw
 				dc.SetBrush(wx.Brush(config.colors[self.name]['Lines'])) 
 				dc.SetPen(wx.Pen(config.colors[self.name]['Lines'], 
 					config.limprot['LBLineW'], wx.SOLID))
 				dc.DrawRectangle(xi, y, xf-xi, 
 					config.lpprot[self.name]['LBTopGap'])				
+	   #---
+	  #---
 		else:
 			pass
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DrawOneFragmentG(self, dc, b, l, c):
@@ -1086,11 +1226,12 @@ class ElementGelPanel():
 			l: lane
 			c: color
 		"""
-	  #--> Coordinates
+	 #--> Coordinates
 		y  = config.limprot['RectSxg'] + (b - 1) * self.GrHT + self.GrCH
 		xi = config.limprot['RectSxg'] + (l - 1) * self.GrWT + self.GrCW
 		xf = xi + self.GrW
-	  #--> Pen & Brush for painting
+	 #---
+	 #--> Pen & Brush for painting
 		dc.SetPen(wx.Pen(c, 1, wx.SOLID))
 		if self.Mask[('B'+str(b), 'L'+str(l), 'tost')]:
 			if self.selM:
@@ -1099,23 +1240,28 @@ class ElementGelPanel():
 				dc.SetBrush(wx.Brush(wx.Colour(self.Colors[l-1])))
 		else:
 			dc.SetBrush(wx.Brush(wx.Colour('WHITE')))
-	  #--> Draw
+	 #---
+	 #--> Draw
 		dc.DrawRectangle(xi, y, self.GrW, self.GrH)
-	  #--> Record coordinates
-	   #--> y
+	 #---
+	 #--> Record coordinates
+	  #--> y
 		if b in self.coordsGel['y'].keys():
 			pass
 		else:
 			self.coordsGel['y'][b] = []
 			self.coordsGel['y'][b].append((y, y+self.GrH))
-	   #--> x
+	  #---
+	  #--> x
 		if b in self.coordsGel['x'].keys():
 			pass
 		else:
 			self.coordsGel['x'][b] = []
 		self.coordsGel['x'][b].append((xi, xf))
-	  #--> Return
+	  #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def SetUpGel(self):
@@ -1129,6 +1275,7 @@ class ElementGelPanel():
 		rCW = (rWT - rW) / 2
 		return [rH, rHT, rCH, rW, rWT, rCW]
 	#---	
+	#endregion --------------------------------------------- Paint Gel Methods
 #---
 
 class ElementFragPanel():
@@ -1146,34 +1293,43 @@ class ElementFragPanel():
 		The first index must be one letter number E1 or B1 or L1. Columns
 		Nterm and Cterm must be present in the data frame
 	"""
-
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent):
 		""" parent: parent of the widgets """
-	  #--> Variables
+	 #--> Variables
 		self.lbSelH = (config.lpprot[self.name]['RectH'] 
 					   - 2 * config.lpprot[self.name]['LBTopGap'])
-	  #--> Widgets
-	   #--> Panel
+	 #---
+	 #--> Widgets
+	  #--> Panel
 		self.p1 = wx.ScrolledWindow(parent=parent, size=(1000, self.h))
 		self.p1.SetVirtualSize(1000, self.hT)
 		self.p1.SetScrollRate(20, 20)
 		self.p1.SetBackgroundColour('WHITE')
-	  #--> Bind
+	  #---
+	 #---
+	 #--> Bind
 		self.p1.Bind(wx.EVT_PAINT, self.OnPaint)
 		self.p1.Bind(wx.EVT_LEFT_UP, self.OnLeftUpFrag)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
+	#region ------------------------------------------- Binding & Menu Methods
 	def OnSaveFrag(self):
 		""" Save image of the fragments """	
-	  #--> Adjust the height
+	 #--> Adjust the height
 		h = self.hT + config.tarprot['ImageH']
-	  #--> Create the bitmap
+	 #---
+	 #--> Create the bitmap
 		bmp = wx.Bitmap(self.p1.w, h)
 	  #--> Create memDC
 		memDC = wx.MemoryDC()
+	  #---
 	  #--> Select object for the memDC
 		memDC.SelectObject(bmp)
+	  #---
 	  #--> Draw
 		memDC.SetBrush(wx.Brush(wx.Colour('WHITE')))
 		memDC.DrawRectangle(0, 0, self.p1.w, h)
@@ -1183,8 +1339,10 @@ class ElementFragPanel():
 		self.DrawLbInfoFrag(memDC)
 		self.DrawTeInfo(memDC)
 		self.DrawLines(memDC)
+	  #---
 	  #--> Deselect bitmap
 		memDC.SelectObject(wx.NullBitmap)
+	  #---
 	  #--> Save
 		img = bmp.ConvertToImage()
 		msg = config.msg['Save']['TarProtFragImg']
@@ -1203,20 +1361,24 @@ class ElementFragPanel():
 				img.SaveFile(str(p), wx.BITMAP_TYPE_PNG)
 			else:
 				pass
-	  #--> Destroy modal windows & Return
+	  #---
+	 #---
+	 #--> Destroy modal windows & Return
 		dlg.Destroy()
 		return True
+	 #---
 	#---
 
 	def OnLeftUpFrag(self, event):
 		""" When selecting a fragment in p1 show a black line and text in p3 """
-	  #--> Get coordinates
+	 #--> Get coordinates
 		self.kf = [None, None]
 		scrollX = self.p1.GetScrollPos(wx.VERTICAL)
 		scrollStep = self.p1.GetScrollPixelsPerUnit()[1]
 		x, y = event.GetPosition()
 		y = y + scrollX * scrollStep
-	  #--> Get Experiment
+	 #---
+	 #--> Get Experiment
 		for k in self.coordsFrag['y'].keys():
 			yi, yo = self.coordsFrag['y'][k][0]
 			if check.CheckabWithincd(y, y, yi, yo):
@@ -1224,7 +1386,8 @@ class ElementFragPanel():
 				break
 			else:
 				pass
-	  #--> Get Fragment
+	 #---
+	 #--> Get Fragment
 		if self.kf[0] != None and len(self.coordsFrag['x'][self.kf[0]]) > 0:
 			for j, l in enumerate(self.coordsFrag['x'][k]):
 				xi, xo = l
@@ -1235,7 +1398,8 @@ class ElementFragPanel():
 					pass
 		else:
 			pass
-	  #--> Draw
+	 #---
+	 #--> Draw
 		if self.kf[0] != None and self.kf[1] != None:
 			#<<<--->>> Needed for LimProtRes to work
 			self.GelText = False
@@ -1245,13 +1409,14 @@ class ElementFragPanel():
 			self.ShowFragDet()
 		else:
 			pass
-	  #--> Return
+	 #--> Return
 		return True
+	 #---
 	#---		
 
 	def OnPaint(self, event):
 		""" Handles the PAINT event. Split in parts for easier handling. """
-	  #--> Variables
+	 #--> Variables
 		dc = wx.PaintDC(self.p1)
 		self.p1.PrepareDC(dc)
 		self.p1.w, self.p1.h = self.p1.GetSize()
@@ -1259,23 +1424,28 @@ class ElementFragPanel():
 			'y' : {},
 			'x' : {}
 		}
-	  #--> Draw
+	 #---
+	 #--> Draw
 		self.DrawLabel(dc)
 		self.DrawReProtein(dc)
 		self.DrawAllFrag(dc)
 		self.DrawLbInfoFrag(dc)
 		self.DrawTeInfo(dc)
 		self.DrawLines(dc)
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
+	#endregion ---------------------------------------- Binding & Menu Methods
 
+	#region ---------------------------------------------------- Paint Methods
 	def DrawLabel(self, dc):
 		""" Draw the labels 
 			---
 			dc: paint handler
 		"""
-	  #--> Residue numbers Top
+	 #--> Residue numbers Top
 		rect = (config.lpprot[self.name]['RectSx'], 0, 
 				config.lpprot[self.name]['LabelW'], 
 				config.lpprot[self.name]['RectT'])
@@ -1285,7 +1455,8 @@ class ElementFragPanel():
 				 - config.lpprot[self.name]['RectEx']), 
 				config.lpprot[self.name]['RectT'])
 		dc.DrawLabel(str(self.pRes[3]), rect, alignment=wx.ALIGN_RIGHT)
-	  #--> Residue numbers bottom
+	 #---
+	 #--> Residue numbers bottom
 		if self.locProtType == 2:
 			xi = self.Res2Pix(self.pRes[2]) - 52
 			rect = (xi, config.lpprot[self.name]['LabelpLocY'], 
@@ -1309,7 +1480,8 @@ class ElementFragPanel():
 					config.lpprot[self.name]['LabelW'], 
 					config.lpprot[self.name]['RectH'])
 			dc.DrawLabel(str(self.pRes[1]), rect, alignment=wx.ALIGN_LEFT)
-	  #--> Experiments labels
+	 #---
+	 #--> Experiments labels
 		i = 0
 		while i < self.nLines:
 			j = i + 1
@@ -1319,8 +1491,10 @@ class ElementFragPanel():
 				config.lpprot[self.name]['RectH'])
 			dc.DrawLabel(text, rect, alignment=wx.ALIGN_CENTER)
 			i = i + 1
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DrawReProtein(self, dc):
@@ -1328,7 +1502,7 @@ class ElementFragPanel():
 			---
 			dc: paint handler
 		"""
-	  #--> Type 1
+	 #--> Type 1
 		if self.locProtType == 1:
 			dc.SetBrush(wx.Brush(wx.Colour(config.colors[self.name]['Nat'])))
 			xi = self.Res2Pix(self.pRes[0])
@@ -1336,7 +1510,8 @@ class ElementFragPanel():
 			w  = self.FragWidth(xi, xf) 
 			dc.DrawRectangle(xi, config.lpprot[self.name]['RectH'], 
 							  w, config.lpprot[self.name]['RectH'])
-	  #--> Type 2
+	 #---
+	 #--> Type 2
 		elif self.locProtType == 2:
 			dc.SetBrush(wx.Brush(wx.Colour(config.colors[self.name]['Nat'])))
 			xi = self.Res2Pix(self.pRes[0])
@@ -1350,7 +1525,8 @@ class ElementFragPanel():
 			w  = self.FragWidth(xi, xf) 
 			dc.DrawRectangle(xi, config.lpprot[self.name]['RectH'], 
 							  w, config.lpprot[self.name]['RectH'])						
-	  #--> Type 3
+	 #---
+	 #--> Type 3
 		elif self.locProtType == 3:
 			dc.SetBrush(wx.Brush(wx.Colour(config.colors[self.name]['Rec'])))
 			xi = self.Res2Pix(self.pRes[0])
@@ -1370,7 +1546,8 @@ class ElementFragPanel():
 			w  = self.FragWidth(xi, xf) 
 			dc.DrawRectangle(xi, config.lpprot[self.name]['RectH'], 
 							  w, config.lpprot[self.name]['RectH'])						
-	  #--> Type 4
+	 #---
+	 #--> Type 4
 		elif self.locProtType == 4:
 			dc.SetBrush(wx.Brush(wx.Colour(config.colors[self.name]['Rec'])))
 			xi = self.Res2Pix(self.pRes[0])
@@ -1384,7 +1561,8 @@ class ElementFragPanel():
 			w  = self.FragWidth(xi, xf) 
 			dc.DrawRectangle(xi, config.lpprot[self.name]['RectH'], 
 							  w, config.lpprot[self.name]['RectH'])
-	  #--> Type 5
+	 #---
+	 #--> Type 5
 		elif self.locProtType == 5:
 			dc.SetBrush(wx.Brush(wx.Colour(config.colors[self.name]['Rec']))) 
 			xi = self.Res2Pix(self.pRes[0])
@@ -1392,8 +1570,10 @@ class ElementFragPanel():
 			w  = self.FragWidth(xi, xf) 
 			dc.DrawRectangle(xi, config.lpprot[self.name]['RectH'], 
 							  w, config.lpprot[self.name]['RectH'])
-	  #--> Return
+	 
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DrawAllFrag(self, dc):
@@ -1414,14 +1594,15 @@ class ElementFragPanel():
 			ll: row from a data frame
 			dc: paint handler
 		"""
-	  #--> Variables
+	 #--> Variables
 		b = int(ll.name[0][1:])
 		xi = self.Res2Pix(ll['Nterm'])
 		xf = self.Res2Pix(ll['Cterm'])
 		w = self.FragWidth(xi, xf)
 		dc.SetBrush(wx.Brush(wx.Colour(self.Colors[b-1]))) 
 		y = self.Exp2Piy(b-1)
-	  #--> Draw
+	 #---
+	 #--> Draw
 		dc.DrawRectangle(xi, y, w, config.lpprot[self.name]['RectH'])
 	  #--> Coordinates
 	   #--> y
@@ -1431,14 +1612,19 @@ class ElementFragPanel():
 			self.coordsFrag['y'][b] = []
 			self.coordsFrag['y'][b].append((y, 
 					y + config.lpprot[self.name]['RectH']))
+	   #---
 	   #--> x
 		if b in self.coordsFrag['x'].keys():
 			pass
 		else:
 			self.coordsFrag['x'][b] = []
 		self.coordsFrag['x'][b].append((xi, xf))
-	  #--> Return
+	   #---
+	  #---
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DrawLbInfoFrag(self, dc):
@@ -1459,7 +1645,7 @@ class ElementFragPanel():
 			ll: row from data frame
 			dc: paint handler
 		"""
-	  #--> Coordinates
+	 #--> Coordinates
 		yk, xInd = ll.name
 		yk = int(yk[1:])
 		xInd = int(xInd)
@@ -1468,14 +1654,18 @@ class ElementFragPanel():
 		xi, xf = self.coordsFrag['x'][yk][xInd]
 		xi = xi + config.lpprot[self.name]['LBTopGap']
 		xf = xf - config.lpprot[self.name]['LBTopGap']
-	  #--> Pen & Brush
+	 #---
+	 #--> Pen & Brush
 		dc.SetBrush(wx.Brush(wx.TRANSPARENT_BRUSH)) 
 		dc.SetPen(wx.Pen(config.colors[self.name]['LBBorder'], 
 			config.lpprot[self.name]['LBLineW'], wx.SOLID))
-	  #--> Draw
+	 #---
+	 #--> Draw
 		dc.DrawRectangle(xi, y, xf-xi, self.lbSelH)		
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---
 
 	def DrawTeInfo(self, dc):
@@ -1483,28 +1673,33 @@ class ElementFragPanel():
 			---
 			dc: paint handler
 		"""
-	  #--> Get fragment
+	 #--> Get fragment
 		if self.kf[0] != None and self.kf[1] != None:
 			k = self.kf[0]
 			b = self.kf[1]	
-	  #--> Pen & Brush
+	 #---
+	 #--> Pen & Brush
 			dc.SetPen(wx.Pen(config.colors[self.name]['FragLines'], 
 				config.lpprot[self.name]['LBLineW'], wx.SOLID))				
 			dc.SetBrush(wx.Brush(wx.Colour(
 				config.colors[self.name]['FragLines'])))
-	  #--> Coordinates
+	 #---
+	 #--> Coordinates
 			a = (config.lpprot[self.name]['RectH'] 
 				 - config.lpprot[self.name]['TextRectH'])
 			y = (self.coordsFrag['y'][k][0][0] + (a / 2))
 			xi, xf = self.coordsFrag['x'][k][b]
 			xi = xi + 4 * config.lpprot[self.name]['TextRectWLat']
 			xf = xf - 4 * config.lpprot[self.name]['TextRectWLat']
-	  #--> Draw
+	 #---
+	 #--> Draw
 			dc.DrawRectangle(xi, y, xf-xi, config.lpprot[self.name]['TextRectH'])
 		else:
 			pass
-	  #--> Return	
+	 #---
+	 #--> Return	
 		return True
+	 #---
 	#---				
 
 	def DrawLines(self, dc):
@@ -1512,16 +1707,18 @@ class ElementFragPanel():
 			---
 			dc: paint handler
 		"""
-	  #--> Pen
+	 #--> Pen
 		dc.SetPen(wx.Pen(config.colors[self.name]['Lines'], 1, wx.DOT))
-	  #--> Type 2
+	 #---
+	 #--> Type 2
 		if self.locProtType == 2:
 			xi = self.Res2Pix(self.pRes[2])
 			yi = config.lpprot[self.name]['RectT']
 			xf = xi
 			yf = self.hT + 20
 			dc.DrawLine(xi, yi, xf, yf)
-	  #--> Type 3
+	 #---
+	 #--> Type 3
 		elif self.locProtType == 3:
 			for i in [self.pRes[2], self.pRes[1]]:
 				xi = self.Res2Pix(i)
@@ -1529,7 +1726,8 @@ class ElementFragPanel():
 				xf = xi
 				yf = self.hT + 20
 				dc.DrawLine(xi, yi, xf, yf)
-	  #--> Type 4
+	 #---
+	 #--> Type 4
 		elif self.locProtType == 4:
 			xi = self.Res2Pix(self.pRes[1])
 			yi = config.lpprot[self.name]['RectT']
@@ -1538,8 +1736,10 @@ class ElementFragPanel():
 			dc.DrawLine(xi, yi, xf, yf)
 		else:
 			pass
-	  #--> Return
+	 #---
+	 #--> Return
 		return True
+	 #---
 	#---	
 
 	def Res2Pix(self, res):
@@ -1548,14 +1748,17 @@ class ElementFragPanel():
 			---
 			res: residue number (int)
 		"""
-	  #--> Variables
+	 #--> Variables
 		Sx  = config.lpprot[self.name]['RectSx']
 		Ex  = self.p1.w - config.lpprot[self.name]['RectEx']
 		Exx = self.pRes[3]
-	  #--> Get x
+	 #---
+	 #--> Get x
 		x = ((Ex - Sx) / (Exx - 1)) * (res - 1) + Sx
-	  #--- Return
+	 #---
+	 #--> Return
 		return x
+	 #---
 	#---
 
 	def Exp2Piy(self, exp):
@@ -1573,32 +1776,37 @@ class ElementFragPanel():
 		w = xf - xi
 		return w
 	#---
+	#endregion ------------------------------------------------- Paint Methods
 #---
 
 class ElementListCtrlSearch():
 	""" Creates a list ctrl and a search ctrl separated by a line inside a
 		sizer 
 	"""
-
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent):
 		""" parent: parent for the widgets """
-
-	  #--> Widgets
-	   #--> Listbox
+	 #--> Widgets
+	  #--> Listbox
 		self.lb = wx.ListCtrl(parent=parent, 
 			size=config.size['ListBox'][self.name], 
 			style=wx.LC_REPORT|wx.BORDER_SIMPLE)
 		gmethods.ListCtrlHeaders(self.lb, self.name)
+	  #---
 	  #--> Line
 		self.lineHI1 = wx.StaticLine(parent=parent)
+	  #---
 	  #--> SearchCtrl
 		self.search = wx.SearchCtrl(parent=parent, 
 			size=config.size['SearchCtrl'][self.name], 
 			style=wx.TE_PROCESS_ENTER)
-	  #--> Sizers
-	   #--> New Sizer
+	  #---
+	 #---
+	 #--> Sizers
+	  #--> New Sizer
 		self.sizerLB = wx.GridBagSizer(1, 1)
-	   #--> Add
+	  #---
+	  #--> Add
 		self.sizerLB.Add(self.lb,       pos=(0, 0), 
 			border=2, 
 			flag=wx.EXPAND|wx.ALIGN_TOP|wx.ALL)
@@ -1608,19 +1816,28 @@ class ElementListCtrlSearch():
 		self.sizerLB.Add(self.search,   pos=(2, 0), 
 			border=2, 
 			flag=wx.EXPAND|wx.ALIGN_BOTTOM|wx.ALL)
-	   #--> Grow Row/Col
+	  #---
+	  #--> Grow Row/Col
 		self.sizerLB.AddGrowableRow(0, 1)
 		self.sizerLB.AddGrowableCol(0, 1)
-	  #--> Binding
-		self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+	  #---
+	 #---
+	 #--> Binding
+		if config.cOS != 'Windows':
+			self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+			self.search.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)	
+		else:
+			pass
 		self.lb.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)	
 		#---
 		self.search.Bind(wx.EVT_SEARCHCTRL_SEARCH_BTN, self.OnSearchCtrl)
 		self.search.Bind(wx.EVT_TEXT_ENTER, self.OnSearchCtrl)
-		self.search.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)	
+		
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnRightDown(self, event):
 		""" To show pop up menu over the listbox. Overrride as needed """
 		return True
@@ -1646,6 +1863,7 @@ class ElementGraphPanel(wx.Panel):
 		a matplotlib plot 
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent, name, stBar=False, dpi=None, id=wx.ID_ANY, 
 		pos=wx.DefaultPosition, size=None):
 		""" parent: parent for the widgets
@@ -1656,17 +1874,19 @@ class ElementGraphPanel(wx.Panel):
 			pos: position of the panel
 			size: size of the panel
 		"""
-	  #--> Variables
+	 #--> Variables
 		self.name = name
 		if size == None:
 			size = config.size['GraphPanel'][self.name]
 		else:
 			pass
 		self.statusbar = stBar
-	  #--> Widgets
-	   #--> Panel
+	 #---
+	 #--> Widgets
+	  #--> Panel
 		super().__init__(parent, id, pos, size, style=wx.BORDER_SIMPLE)
-	   #--> Plot area
+	  #---
+	  #--> Plot area
 		self.figure  = mpl.figure.Figure(dpi=dpi, figsize=(5, 5))
 		self.figure.set_tight_layout(True)
 		self.axes    = self.figure.add_subplot(111)
@@ -1676,22 +1896,30 @@ class ElementGraphPanel(wx.Panel):
             arrowprops=dict(arrowstyle="->"))
 		self.annot.set_visible(False)
 		self.canvas.mpl_connect("motion_notify_event", self.OnHover)
-	  #--> Sizers
-	   #--> New Sizers
+	  #---
+	 #---
+	 #--> Sizers
+	  #--> New Sizers
 		self.sizerPlot = wx.BoxSizer(wx.VERTICAL)
-	   #--> Add
+	  #---
+	  #--> Add
 		self.sizerPlot.Add(self.canvas, 1, wx.EXPAND)
-	   #--> Set & Fit sizer
+	  #---
+	  #--> Set & Fit sizer
 		self.SetSizer(self.sizerPlot)
 		self.sizerPlot.Fit(self)	
-	  #--> Bind
+	  #---
+	 #---
+	 #--> Bind
 		if stBar != False:
 			self.canvas.mpl_connect('motion_notify_event', self.UpdateStatusBar)
 		else:
 			pass	
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnHover(self, event):
 		""" To annotate text when mouse over. Override as needed """
 		pass
@@ -1703,21 +1931,24 @@ class ElementGraphPanel(wx.Panel):
 			wcard: file extension as needed by wxPython
 			msg: msg to show (string) 
 		"""
-	  #--> Msg
+	 #--> Msg
 		if msg == None:
 			msg = config.msg['Save']['PlotImage']
 		else:
 			pass
-	  #--> Wcard
+	 #---
+	 #--> Wcard
 		if wcard == None:
 			wcard = config.extLong['MatplotSaveImage']
 		else:
 			pass
-	  #--> Save & Return
+	 #---
+	 #--> Save & Return
 		if gmethods.SaveMatPlotImage(self.figure, wcard, msg):
 			return True
 		else:
 			return False
+	 #---
 	#---
 
 	def ClearPlot(self):
@@ -1737,17 +1968,15 @@ class ElementGraphPanel(wx.Panel):
 		return True
 	#---
 #---
-# ----------------------------------------------------------- GUI ELEMENTS (END)
+#endregion ------------------------------------------------------ GUI ELEMENTS
 
-
-
-# ------------------------------------------------------------- GUI-Checks
+#region ----------------------------------------------------------- GUI-Checks
 class GuiChecks():
 	""" This class holds all checks needed in the GUI for the user input 
 		In addition, the methods fill the self.d and self.do dicts 
 	"""
 	
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def CheckGuiTcFileRead(self, tc, ext, n, msg, NA=False):
 		""" Checks that a tc holds the path to a file with extention ext that 
 			can be read. 
@@ -1758,9 +1987,10 @@ class GuiChecks():
 			msg: error msg (string)
 			NA: empty wx.TextCtrl is possible or not (boolean)
 		"""
-	  #--> Initial set
+	 #--> Initial set
 		self.SetInitVal(tc, n)
-	  #--> Check NA
+	 #---
+	 #--> Check NA
 		if self.do[n] == None:
 			if self.CheckNA(n, NA):
 				return True
@@ -1769,15 +1999,18 @@ class GuiChecks():
 				return False
 		else:
 			pass
-	  #--> Check file can be read & create Path instance for self.do[n]
+	 #---
+	 #--> Check file can be read & create Path instance for self.do[n]
 		if checkM.CheckMFileRead(self.d[n], ext):
 			self.do[n] = Path(self.d[n])
 			return True
 		else:
 			pass				
-	  #--> If not error msg & Return
+	 #---
+	 #--> If not error msg & Return
 		DlgFatalErrorMsg(msg)
 		return False
+	 #---
 	#---
 
 	def CheckGuiTcSeqFileCode(self, tc, ext, n, msg, NA=False):
@@ -1790,9 +2023,10 @@ class GuiChecks():
 			msg: error msg, 
 			NA: is to flag element as optional  
 		"""
-	  #--> Initial set
+	 #--> Initial set
 		self.SetInitVal(tc, n)
-	  #--> Check NA
+	 #---
+	 #--> Check NA
 		if self.do[n] == None:
 			if self.CheckNA(n, NA):
 				return True
@@ -1801,21 +2035,25 @@ class GuiChecks():
 				return False
 		else:
 			pass
-	  #--> Check file can be read
+	 #---
+	 #--> Check file can be read
 		if checkM.CheckMFileRead(self.d[n], ext):
 			self.do[n] = Path(self.d[n])
 			return True
 		else:
 			pass
-	  #--> If not assume uniprot code		
+	 #---
+	 #--> If not assume uniprot code		
 		out, self.do[n] = check.CheckUniprot(self.d[n])
 		if out:
 			return True
 		else:
 			pass
-	  #--> If nothing error msg & Return 
+	 #---
+	 #--> If nothing error msg & Return 
 		DlgFatalErrorMsg(msg)
 		return False					
+	 #---
 	#---
 
 	def CheckGuiTcOutputFolder(self, tcout, tcin, n, msg):
@@ -1829,9 +2067,10 @@ class GuiChecks():
 			n: dict key to store output (string)
 			msg: error msg (string)
 		"""
-	  #--> Initial set
+	 #--> Initial set
 		self.SetInitVal(tcout, n)
-	  #--> Check Output folder can be used
+	 #---
+	 #--> Check Output folder can be used
 		out, self.do[n] = checkM.CheckMOutputFolder(tcout, tcin,
 			config.dictElemOutputFileFolder[self.name]['DefNameFolder'],
 			self.dateN)
@@ -1839,9 +2078,11 @@ class GuiChecks():
 			return True
 		else:
 			pass
-	  #--> Error msg & Return
+	 #---
+	 #--> Error msg & Return
 		DlgFatalErrorMsg(msg)
 		return False
+	 #---
 	#---
 
 	def CheckGuiTcOutputFile(self, tcout, tcin, defName, ext, n, msg):
@@ -1856,9 +2097,10 @@ class GuiChecks():
 			n: dict key to store output (string)
 			msg: error msg (string)
 		"""
-	  #--> Initial set
+	 #--> Initial set
 		self.SetInitVal(tcout, n)
-	  #--> Check output file
+	 #---
+	 #--> Check output file
 		extStr = ext[0]
 		#---# Improve checkM.CheckMOutputFile handle tcin=None
 		out, self.do[n] = checkM.CheckMOutputFile(tcout, tcin, defName, extStr, 
@@ -1868,9 +2110,11 @@ class GuiChecks():
 			return True
 		else:
 			pass
-	  #--> Error msg & Return
+	 #---
+	 #--> Error msg & Return
 		DlgFatalErrorMsg(msg)
 		return False		
+	 #---
 	#--- 
 
 	def CheckGuiTcOutputFile2(self, tcout, ext, n, msg):
@@ -1894,26 +2138,30 @@ class GuiChecks():
 			msg: error msg (string)
 			defName: default name for the variable (string)
 		"""
-	  #--> Variables	
+	 #--> Variables	
 		var = tc.GetValue()
 		k   = True
-	  #--> Check default name
+	 #---
+	 #--> Check default name
 		if var in config.naVals and defName == None:
 			k = False
 		elif var in config.naVals and defName != None:
 			var = defName
 		else:
 			pass
-	  #--> Set self.d[n] & self.do[n]
+	 #---
+	 #--> Set self.d[n] & self.do[n]
 		if k:
 			self.d[n] = var
 			self.do[n] = var
 			return True
 		else:
 			pass
-	  #--> Error msg & Return
+	 #---
+	 #--> Error msg & Return
 		DlgFatalErrorMsg(msg)
 		return False
+	 #---
 	#---
 
 	def CheckGui1Number(self, tc, n, msg, t='float', comp='egt', val=0, 
@@ -1928,9 +2176,10 @@ class GuiChecks():
 			val: value to compare against (number)
 			NA: NA allowed (boolean)
 			 """
-	  #--> Initial set
+	 #--> Initial set
 		self.SetInitVal(tc, n)
-	  #--> Check NA
+	 #---
+	 #--> Check NA
 		if self.do[n] == None:
 			if self.CheckNA(n, NA):
 				return True
@@ -1939,15 +2188,18 @@ class GuiChecks():
 				return False
 		else:
 			pass
-	  #--> Compare
+	 #---
+	 #--> Compare
 		out, self.do[n] = checkM.CheckMNumberComp(self.d[n], t, comp, val, val2)
 		if out:
 			return True
 		else:
 			pass
-	  #--> Error msg & Return
+	 #---
+	 #--> Error msg & Return
 		DlgFatalErrorMsg(msg)
 		return False
+	 #---
 	#---
 
 	def CheckGuiListNumber(self, tc, n, msg, t='int', comp='egt', val=0, 
@@ -1963,12 +2215,13 @@ class GuiChecks():
 			NA: NA allowed (boolean)
 			Rage: Range allowed (boolean)
 			Order: list must be ordered low -> high (boolean)
-			Unique: elements ust be unique (boolean)
+			Unique: elements must be unique (boolean)
 			DelRepeat: delete repeating elements (boolean)								
 		"""
-	  #--> Initial set
+	 #--> Initial set
 		self.SetInitVal(tc, n)
-	  #--> Check NA
+	 #---
+	 #--> Check NA
 		if self.do[n] == None:
 			if self.CheckNA(n, NA):
 				return True
@@ -1977,7 +2230,8 @@ class GuiChecks():
 				return False
 		else:
 			pass
-	  #--> Check list elements
+	 #---
+	 #--> Check list elements
 		out, self.do[n] = checkM.CheckMListNumber(self.d[n], 
 			t=t, 
 			comp=comp, 
@@ -1991,9 +2245,11 @@ class GuiChecks():
 			return True
 		else:
 			pass
-	  #--> Error msg & Return
+	 #---
+	 #--> Error msg & Return
 		DlgFatalErrorMsg(msg)
 		return False					
+	 #---
 	#---
 
 	def CheckGuiListUniqueElements(self, l, msg, NA=False):
@@ -2004,17 +2260,19 @@ class GuiChecks():
 			msg: error msg (string)
 			NA: NA values allowed (boolean)
 		"""
-	  #--> Check list
+	 #--> Check list
 		out, elem = dmethods.ListUnique(l, NA=NA)
 		if out:
 			return True
 		else:
 			pass
-	  #--> Error msg & Return
+	 #---
+	 #--> Error msg & Return
 		mmsg  = msg
 		mmsg += '\nRepeated values: ' + ', '.join(list(map(str, elem)))
 		DlgFatalErrorMsg(mmsg)
 		return False
+	 #---
 	#---
 
 	def CheckGuiColNumbersInDataFile(self, l, nCols, msg, NA=False):
@@ -2025,16 +2283,19 @@ class GuiChecks():
 			msg: error msg (string)
 			NA: NA values allowed (boolean)
 		"""
-	  #--> Remove NA values if needed
+	 #--> Remove NA values if needed
 		if NA == True:
 			l = [x for x in l if x != None]
 		else:
 			pass
-	  #--> Needed to correct the cero based counting
+	 #---
+	 #--> Needed to correct the cero based counting
 		col = nCols - 1
-	  #--> Get values > nCols - 1 
+	 #---
+	 #--> Get values > nCols - 1 
 		h = [x for x in l if x > col]
-	  #--> Error msg & Return
+	 #---
+	 #--> Error msg & Return
 		if len(h) > 0:
 			mmsg = msg
 			mmsg += '\nNumber of columns: ' + str(nCols)
@@ -2043,6 +2304,7 @@ class GuiChecks():
 			return False
 		else:
 			return True
+	 #---
 	#---  
 
 	def CheckGuiPDBID(self, tc, n, nold, msg, NA=True):
@@ -2056,16 +2318,23 @@ class GuiChecks():
 			msg: error msg (string)
 			NA: NA values allowed (boolean)
 		"""
-	  #--> Initial set
+	 #--> Initial set
 		self.SetInitVal(tc, n)
-	  #--> PDBFile & PDBID both None
+	 #---
+	 #--> PDBFile & PDBID both None
 		if self.do[n] == None and self.do[nold] == None:
-			return True
+			if NA:
+				return True
+			else:
+				DlgFatalErrorMsg(msg)
+				return False
 		else:
 			pass
-	  #--> Set code and cs as a list in val	
+	 #---
+	 #--> Set code and cs as a list in val	
 		val = [x.strip() for x in self.d[n].split(';')]			
-	  #--> Set len(val)
+	 #---
+	 #--> Set len(val)
 		lval = len(val)
 	  #--> More than three values in PDBID 
 		if lval > 2:
@@ -2073,6 +2342,7 @@ class GuiChecks():
 			return False
 		else:
 			pass
+	  #---
 	  #--> Two values in PDBID
 		if lval == 2:
 	   #--> First check valid chain or segment ID
@@ -2080,12 +2350,14 @@ class GuiChecks():
 				DlgFatalErrorMsg(msg)
 				return False
 			else:
+	   #---
    	   #--> PDBFile != None
 				if lval == 2 and self.do[nold] != None:
 					self.do[n] = [None, val[1]]
 					return True
 				else:
 					pass
+	   #---
 	   #--> PDBFile == None
 				if lval == 2 and self.do[nold] == None:
 					out, pdb = check.CheckPDB(val[0])
@@ -2097,8 +2369,10 @@ class GuiChecks():
 						return False
 				else:
 					pass
+	   #---
 		else:
 			pass
+	  #---
 	  #--> One value in PDBID
 		if lval == 1:
 	   #--> PDBFile == None
@@ -2107,12 +2381,14 @@ class GuiChecks():
 				return False
 			else:
 				pass
+	   #---
 	   #--> Check valid chain or segment ID
 			if len(val[0]) >= 5:
 				DlgFatalErrorMsg(msg)
 				return False
 			else:
 				pass
+	   #---
 	   #--> PDBFile != None				
 			if self.do[nold] != None:
 				self.do[n] = [None, val[0]]
@@ -2121,9 +2397,12 @@ class GuiChecks():
 				pass
 		else:
 			pass
-	  #--> Unknown error & Return
+	  #---
+	 #---
+	 #--> Unknown error & Return
 		DlgFatalErrorMsg(config.msg['Unknown'])
 		return False					
+	 #---
 	#---
 
 	def CheckGuiResultControl(self, tc, n, msg, t, comp, val, Range, Order, 
@@ -2146,24 +2425,29 @@ class GuiChecks():
 		"""
 	 #--> Get user given value
 		res = self.d[n] = tc.GetValue()
+	 #---
 	 #--> Check empty value
 		if check.CheckVarEmpty(res):
-	 #--> Turn string into list of list
+	 	 #--> Turn string into list of list
 			out, resS = dmethods.ListResult(res, self.name, self.CType)
 			if out:
 				pass
 			else:
 				return False
-	 #--> Check Control is not empty or NA
+	 	 #---
+		 #--> Check Control is not empty or NA
 			if check.CheckControlExpNA(resS):
 				pass
 			else:
 				return False
+		 #---
+	 #---
 	 #--> Check proper shape of matrix
 			if check.CheckListNElements(resS, mod=self.name):
 				pass
 			else:
 				return False
+	 #---
 	 #--> Check elements
 			resO = []
 			for e in resS: # Loop cond/band
@@ -2179,6 +2463,7 @@ class GuiChecks():
 							DlgFatalErrorMsg(msg)
 							return False
 				resO.append(resE)
+	 #---
 	 #--> Check number of replicates
 			if Rep:
 				if check.CheckListEqualElements(
@@ -2190,6 +2475,7 @@ class GuiChecks():
 					return False					
 			else:	
 				pass	
+	 #---
 	 #--> Flat list and Check Unique
 			onlyRes = [x[1:] for x in resO]
 			onlyCon = [x[0] for x in resO]
@@ -2203,11 +2489,14 @@ class GuiChecks():
 			else:
 				DlgFatalErrorMsg(msg)
 				return False					
+	 #---
+	 #-->
 		else:
 			DlgFatalErrorMsg(msg)
 			return False											
 	 #--> Return
 		return True			
+	 #---
 	#---
 
 	def CheckGuiCSinPDB(self, pdbObj, cs, msg):
@@ -2217,14 +2506,16 @@ class GuiChecks():
 			cs : chain or segment ID (string less than 5 characters)
 			msg : error msg (string)
 		"""
-	  #--> Get cs in object
+	 #--> Get cs in object
 		csInFile = pdbObj.csInFile
-	  #--> Check if given cs is found in object & Return
+	 #---
+	 #--> Check if given cs is found in object & Return
 		if cs in csInFile[0] or cs in csInFile[1]:
 			return True
 		else:
 			DlgFatalErrorMsg(msg)
 			return False
+	 #---
 	#---
 
 	####---- Helper methods
@@ -2234,16 +2525,19 @@ class GuiChecks():
 			tc: wx.TextCtrl with the user given value
 			n: key for self.d & self.do
 		"""
-	  #--> Get string in tc
+	 #--> Get string in tc
 		val = tc.GetValue()
-	  #--> Set self.d[n] & self.do[n]
+	 #---
+	 #--> Set self.d[n] & self.do[n]
 		if val in config.naVals:
 			self.d[n] = val
 			self.do[n] = None
 		else:
 			self.d[n] = self.do[n] = val
-	  #--> Return	
+	 #---
+	 #--> Return	
 		return True
+	 #---
 	#---
 
 	def CheckNA(self, n, NA):
@@ -2254,18 +2548,17 @@ class GuiChecks():
 			n: dict key to check (string)
 			NA: NA values are allowed or not (boolean) 
 		"""
-	  #--> Check NA
+	 #--> Check NA
 		if NA:
 			return True
 		else:
 			return False
+	 #---
 	#---
 #---
-# ------------------------------------------------------------- GUI-Checks (END)
+#endregion -------------------------------------------------------- GUI-Checks
 
-
-
-# ------------------------------------------------------------ DLG WINDOWS
+#region ---------------------------------------------------------- DLG WINDOWS
 class DlgOpenDir(wx.DirDialog):
 	""" Select folder dialog """
 	
@@ -2310,9 +2603,12 @@ class DlgOpenFile(wx.FileDialog):
 class DlgTextInput(wx.TextEntryDialog):
 	""" Creates a Text Input Dialog """
 
-	def __init__(self, parent, message, value=''):
+	def __init__(self, parent, message, value='', caption=''):
 		""" message: msg to show """
-		super().__init__(parent, message, value=value)
+		if caption == '':
+			super().__init__(parent, message, value=value)
+		else:
+			super().__init__(parent, message, value=value, caption=caption)
 		self.Center()
 	#---
 #---
@@ -2345,7 +2641,7 @@ class DlgWarningYesNo(wx.MessageDialog):
 	#---
 #---
 
-####---- These dialogs show and destroy themselves
+#--> Dialogs below show and destroy themselves (DOWN)
 class DlgFatalErrorMsg(wx.MessageDialog):
 	""" A fatal error message """
 	
@@ -2404,13 +2700,21 @@ class DlgSuccessMsg(wx.MessageDialog):
 class DlgWarningOk(wx.MessageDialog):
 	""" Defines a custom warning message """
 
-	def __init__(self, message):
+	def __init__(self, message, nothing=False):
 		""" message: msg to show (string) """
-		super().__init__(None, message=message, caption='Warning', 
+	 #--> Configure msg
+		if nothing:
+			msg = message + config.msg['Errors']['Nothing']
+		else:
+			msg = message
+	 #---
+	 #--> Create, Center, Show & Destroy
+		super().__init__(None, message=msg, caption='Warning', 
 			style=wx.OK|wx.ICON_EXCLAMATION)
 		self.Center()
 		self.ShowModal()
 		self.Destroy()
+	 #---
 	#---
 #---
 
@@ -2431,11 +2735,215 @@ class DlgScrolledDialog(wx.lib.dialogs.ScrolledMessageDialog):
 		self.Destroy()
 	#--
 #---
-# ------------------------------------------------------------ DLG WINDOWS (END)
+#--> Dialogs below show and destroy themselves (UP)
 
+class DlgFilterOneText(wx.Dialog):
+	""" Creates a dialog window with one text field. 
 
+		It is similar to wx.TextEntryDialog but it allows to use SetHint
+	"""
 
-# ------------------------------------------------------------ GUI WINDOWS
+	#region --------------------------------------------------- Instance setup  
+	def __init__(self, parent, label, hint=None, title=''):
+		""""""
+		super().__init__(parent, title=title)
+	 #--> Widgets
+	  #--> StaticText
+		self.stText = wx.StaticText(self, label=label)
+	  #---
+	  #--> TextCtrl
+		self.tcText = wx.TextCtrl(self, size=(300, 23))
+		if hint is None:
+			pass
+		else:
+			self.tcText.SetHint(hint)
+	  #---
+	  #--> Buttons
+		self.btnOK     = wx.Button(self, wx.ID_OK)
+		self.btnCancel = wx.Button(self, wx.ID_CANCEL)
+		self.btnOK.SetDefault() # Set focus on btnOk
+	  #---
+	 #---
+	 #--> Sizers
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.sizer.Add(self.stText, 0, wx.ALL, 5)
+		self.sizer.Add(self.tcText, 0, wx.ALL, 5)
+
+		self.sizer_btn = wx.StdDialogButtonSizer()
+		self.sizer_btn.AddButton(self.btnOK)
+		self.sizer_btn.AddButton(self.btnCancel)
+		self.sizer_btn.Realize()
+		self.sizer.Add(self.sizer_btn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+
+		self.SetSizer(self.sizer)
+		self.sizer.Fit(self)
+	 #--- Sizers
+	#---
+	#endregion ------------------------------------------------ Instance setup
+
+	#region ---------------------------------------------------------- Methods
+	def GetValue(self):
+		""" Returns the text in self.tcText """
+		return self.tcText.GetValue()
+	#---
+	#endregion ------------------------------------------------------- Methods
+#---
+
+class DlgFilterPvalues(wx.Dialog):
+	""" Creates the dialog window to filter results by P values in ProtProfR """
+	
+	def __init__(self, parent, title=''):
+		""""""
+		super().__init__(parent, title=title)
+	 #--> Widgets
+	  #--> StaticText
+		self.stText = wx.StaticText(
+			self, 
+			label=config.msg['TextInput']['msg']['Filter_P']
+		)
+	  #---
+	  #--> TextCtrl
+		self.tcText = wx.TextCtrl(
+			self,
+			size=(300, 23),
+		)
+		self.tcText.SetHint(config.msg['FilteredValues']['Examples']['Filter_P'])
+	  #---
+	  #--> CheckBox
+		self.cbLogP  = wx.CheckBox(self, label='-Log10P')
+		self.cbCorrP = wx.CheckBox(self, label='Corrected P')
+	  #---
+	  #--> Buttons
+		self.btnOK     = wx.Button(self, wx.ID_OK)
+		self.btnCancel = wx.Button(self, wx.ID_CANCEL)
+		self.btnOK.SetDefault() # Set focus on btnOk
+	  #---
+	 #---
+	 #--> Sizers
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.sizer.Add(self.stText, 0, wx.ALL, 5)
+		self.sizer.Add(self.tcText, 0, wx.ALL, 5)
+
+		self.box_check = wx.BoxSizer(wx.HORIZONTAL)
+		self.box_check.Add(self.cbLogP, 0, wx.ALL, 5)
+		self.box_check.Add(self.cbCorrP, 0, wx.ALL, 5)
+		self.sizer.Add(self.box_check, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
+
+		self.sizer_btn = wx.StdDialogButtonSizer()
+		self.sizer_btn.AddButton(self.btnOK)
+		self.sizer_btn.AddButton(self.btnCancel)
+		self.sizer_btn.Realize()
+		self.sizer.Add(self.sizer_btn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+
+		self.SetSizer(self.sizer)
+		self.sizer.Fit(self)
+	 #--- Sizers
+	#---
+#---
+
+class DlgFilterOnePvalues(wx.Dialog):
+	""" Creates the dialog window to filter results by P values in ProtProfR 
+		Relevant Points
+	"""
+	def __init__(self, parent, title=''):
+		""""""
+		super().__init__(parent, title=title)
+	 #--> Widgets
+	  #--> StaticText
+		self.stText = wx.StaticText(
+			self, 
+			label=config.msg['TextInput']['msg']['Filter_OneP']
+		)
+	  #---
+	  #--> TextCtrl
+		self.tcText = wx.TextCtrl(
+			self, 
+			size=(300, 23),
+		)
+		self.tcText.SetHint(config.msg['FilteredValues']['Examples']['Filter_OneP'])
+	  #---
+	  #--> CheckBox
+		self.cbCorrP = wx.CheckBox(self, label='Corrected P')
+	  #---
+	  #--> Buttons
+		self.btnOK     = wx.Button(self, wx.ID_OK)
+		self.btnCancel = wx.Button(self, wx.ID_CANCEL)
+		self.btnOK.SetDefault() # Set focus on btnOk
+	  #---
+	 #---
+	 #--> Sizers
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.sizer.Add(self.stText, 0, wx.ALL, 5)
+		self.sizer.Add(self.tcText, 0, wx.ALL, 5)
+
+		self.box_check = wx.BoxSizer(wx.HORIZONTAL)
+		self.box_check.Add(self.cbCorrP, 0, wx.ALL, 5)
+		self.sizer.Add(self.box_check, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
+
+		self.sizer_btn = wx.StdDialogButtonSizer()
+		self.sizer_btn.AddButton(self.btnOK)
+		self.sizer_btn.AddButton(self.btnCancel)
+		self.sizer_btn.Realize()
+		self.sizer.Add(self.sizer_btn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+
+		self.SetSizer(self.sizer)
+		self.sizer.Fit(self)
+	 #--- Sizers
+	#---
+#---
+
+class DlgFilterRemove(wx.Dialog):
+	""" Show applied filter and remove the selected one """
+	def __init__(self, parent, filters, title=''):
+		""" parent: parent window
+			filter: dict with the applied filters and further info. See 
+				WinProtProfRes.filter_steps
+			title: title for the window
+		"""
+		super().__init__(parent, title=title)
+	 #--> Widgets
+	  #--> StaticText
+		self.stText = wx.StaticText(self, label='Select filters to be removed')
+	  #---
+	  #--> CheckBox
+		self.checkBoxes = []
+		for k, i in filters.items():
+			self.checkBoxes.append(wx.CheckBox(self, label=i[1]))
+	  #---
+	  #--> Buttons
+		self.btnOK     = wx.Button(self, wx.ID_OK)
+		self.btnCancel = wx.Button(self, wx.ID_CANCEL)
+		self.btnOK.SetDefault() # Set focus on btnOk
+	  #---
+	 #--- Widgets
+	 #--> Sizers
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.sizer.Add(self.stText, 0, wx.ALL, 5)
+
+		for k in self.checkBoxes:
+			self.sizer.Add(k, 0, wx.ALL, 5)
+
+		self.sizer_btn = wx.StdDialogButtonSizer()
+		self.sizer_btn.AddButton(self.btnOK)
+		self.sizer_btn.AddButton(self.btnCancel)
+		self.sizer_btn.Realize()
+		self.sizer.Add(self.sizer_btn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+
+		self.SetSizer(self.sizer)
+		self.sizer.Fit(self)
+	 #--- Sizers
+	 #--> Position
+		self.CenterOnParent()
+	 #---
+	#---
+#---
+#endregion ------------------------------------------------------- DLG WINDOWS
+
+#region ---------------------------------------------------------- GUI WINDOWS
 class WinMyFrame(wx.Frame):
 	""" Base class for all windows.	
 		The class define the outer borders and a sizerIN to hold all other 
@@ -2443,6 +2951,7 @@ class WinMyFrame(wx.Frame):
 		is set. 
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent, title=None, style=None):
 		""" parent: parent of the widgets 
 			title: title of the window (string or None)
@@ -2458,21 +2967,27 @@ class WinMyFrame(wx.Frame):
 		else:
 			self.title = title
 		super().__init__(parent=parent, title=self.title, style=style)
+	 #---
 	 #--> Menu
 		self.menubar = menu.MainMenuBar()
 		self.SetMenuBar(self.menubar) 
+	 #---
 	 #--> Widgets
 	  #--> Panel
 		self.panel   = wx.Panel(self)
+	  #---
 	  #--> Lines
 		self.lineH1 = wx.StaticLine(self.panel)
 		self.lineH2 = wx.StaticLine(self.panel)		
 		self.lineV1 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
 		self.lineV2 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
+	  #---
+	 #---
 	 #--> Sizers
 	  #--> New Sizers
 		self.sizer   = wx.GridBagSizer(1, 1)
 		self.sizerIN = wx.GridBagSizer(1, 1)
+	  #---
 	  #--> Add
 		self.sizer.Add(self.lineH1,  pos=(0, 1), border=2, 
 			flag=wx.EXPAND|wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER)
@@ -2483,6 +2998,7 @@ class WinMyFrame(wx.Frame):
 		self.sizer.Add(self.lineV2,  pos=(1, 2), border=2, 
 			flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.ALIGN_CENTER)
 		self.sizer.Add(self.sizerIN, pos=(1, 1), flag=wx.EXPAND|wx.ALIGN_CENTER)
+	  #---
 	  #--> Grow Col/Row
 		self.sizer.AddGrowableCol(0, 0)
 		self.sizer.AddGrowableCol(1, 1)
@@ -2490,35 +3006,45 @@ class WinMyFrame(wx.Frame):
 		self.sizer.AddGrowableRow(0, 0)
 		self.sizer.AddGrowableRow(1, 1)
 		self.sizer.AddGrowableRow(2, 0)
+	  #---
 	  #--> Set sizer
 		self.panel.SetSizer(self.sizer)
+	  #---
+	 #---
 	 #--> Icon
 		self.SetIcon(wx.Icon(str(config.image['icon'])))	
+	 #---
 	 #--> Bind
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 		self.Bind(wx.EVT_CHAR_HOOK, self.CloseThisWin)
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------- My Methods
 	def OnClose(self, event):
 		""" Update config.winOpen, config.WinNameVar and close the window 
 			It mus be override for results windows and for TypeRes windows
 		"""
 	 #--> Remove from Open list
 		config.win['Open'].remove(config.win[self.name])
+	 #---
 	 #--> Set win to None to be able to create a new window like this
 		if self.name in config.win.keys():
 			config.win[self.name] = None
 		else:
 			pass
+	 #---
 	 #--> Check that the TypeResults window is also deleted
 		try:
 			del(config.win['TypeRes'][self.name])
 		except Exception:
 			pass
+	 #---
 	 #--> Destroy & Return
 		self.Destroy()
 		return True
+	 #---
 	#--- 
 
 	def CloseThisWin(self, event):
@@ -2532,16 +3058,20 @@ class WinMyFrame(wx.Frame):
 				pass
 		else:
 			pass
+	 #---
 	 #--> Skip event for furhter system processing of the keyboard input
 		event.Skip()		
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 #---
 
 class WinGraph(WinMyFrame):
 	""" Creates a window showing a graph """
 	
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file, style=wx.DEFAULT_FRAME_STYLE, 
 		parent=None, dpi=None):
 		""" file: file with the results (string or Path)
@@ -2558,46 +3088,64 @@ class WinGraph(WinMyFrame):
 		fname = file.name
 		title = config.title[self.name] + ' (' + str(fname) + ')'
 		super().__init__(parent=parent, title=title, style=style)
+	 #---
 	 #--> Widgets
 	  #--> Panel
 		self.p = wx.Panel(self.panel, style=wx.BORDER_SIMPLE)
+	  #---
 	  #--> Figure
 		self.figure  = mpl.figure.Figure(dpi=dpi, figsize=(5, 5))
 		self.figure.set_tight_layout(True)
 		self.axes    = self.figure.add_subplot(111)
 		self.canvas  = FigureCanvas(self.p, -1, self.figure)
 		self.axes.set_axisbelow(True)
+	  #---
 	  #--> Statusbar
 		self.statusbar = self.CreateStatusBar()
+	  #---
+	 #---
 	 #--> Sizers
 	  #--> New Sizers
 		self.sizerPlot = wx.BoxSizer(wx.VERTICAL)
+	  #---
 	  #--> Add
 		self.sizerPlot.Add(self.canvas, 1, wx.EXPAND)
+	  #---
 	  #--> Set
 		self.p.SetSizer(self.sizerPlot)
+	  #---
 	  #--> All together in sizerin
 		self.sizerIN.Add(self.p, pos=(0, 0), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+	  #---
 	  #--> Fit sizer
 		self.sizerPlot.Fit(self)
 		self.sizer.Fit(self)
+	  #---
 	  #--> Set growable col/rwo
 		self.sizerIN.AddGrowableCol(0, 1)
 		self.sizerIN.AddGrowableRow(0, 1)			
+	  #---
+	 #---
 	 #--> Positions and minimal size
 		gmethods.MinSize(self)
 		self.WinPos()
+	 #---
 	 #--> Bind
 		self.canvas.mpl_connect('motion_notify_event', self.UpdateStatusBar)
-		self.canvas.mpl_connect('button_press_event', self.OnClick)
 		self.cursor = Cursor(self.axes, useblit=True, 
 			color=config.colors['cursorColor'], 
 			linewidth=config.cursor['lineWidth'], 
 			linestyle=config.cursor['lineStyle'])
+		if config.cOS != 'Windows':
+			self.canvas.mpl_connect('button_press_event', self.OnClick)
+		else:
+			pass
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnSavePlotImage(self, wcard=None, msg=None):
 		""" Save an image of the plot.
 			---
@@ -2613,11 +3161,13 @@ class WinGraph(WinMyFrame):
 			wcard = config.extLong['MatplotSaveImage']
 		else:
 			pass
+	 #---
 	 #--> Save & Return
 		if gmethods.SaveMatPlotImage(self.figure, wcard, msg):
 			return True
 		else:
 			return False
+	 #---
 	#---
 
 	def ClearPlot(self):
@@ -2664,7 +3214,8 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 	ElementDataFile, ElementOutputFileFolder, ElementResults):
 	""" Basic elements of the modules windows. Used in TarProt, LimProt """
 	
-	def __init__(self, parent, style=None, length=60):
+	#region ---------------------------------------------------- Initial Setup
+	def __init__(self, parent, name, style=None, length=60):
 		""" parent: parent of the widgets
 			style: style of the window
 			length: length of the gauge in ElementHelpRun
@@ -2673,11 +3224,13 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 		WinMyFrame.__init__(self, parent=parent, style=style)
 		ElementClearAFVC.__init__(self, self.panel)
 		ElementHelpRun.__init__(self, self.panel, length=length)
+	 #---
 	 #--> Widgets
 	  #--> Lines
 		self.lineHI1 = wx.StaticLine(self.panel)
 		self.lineVI1 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
 		self.lineVI2 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
+	  #---
 	  #--> Static boxes
 		self.boxFiles   = wx.StaticBox(
 			self.panel, 
@@ -2691,15 +3244,18 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 			self.panel, 
 			label=config.msg['StaticBoxNames']['Columns']
 		)
+	  #---
 	  #--> Needs to be here because of self.boxFiles
 		ElementDataFile.__init__(self, self.boxFiles)
 		ElementOutputFileFolder.__init__(self, self.boxFiles)
 		ElementResults.__init__(self, self.boxColumns)
+	  #---
 	  #--> Buttons
 		self.buttonSeqRecFile = wx.Button(self.boxFiles, label='Sequence (rec)')
 		self.buttonSeqNatFile = wx.Button(self.boxFiles, label='Sequence (nat)')
 		self.buttonPDBFile    = wx.Button(self.boxFiles, label='PDB file')
 		self.buttonOutName    = wx.Button(self.boxFiles, label='Output name')
+	  #---
 	  #--> Static text
 		self.stTarprot    = wx.StaticText(self.boxValues, 
 			label='Target protein', style=wx.ALIGN_RIGHT)
@@ -2725,6 +3281,7 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 			label='Score', style=wx.ALIGN_RIGHT)
 		self.stColExt     = wx.StaticText(self.boxColumns, 
 			label='Columns to extract', style=wx.ALIGN_RIGHT)
+	  #---
 	  #--> Text control
 		self.tcSeqRecFile = wx.TextCtrl(self.boxFiles, value="", size=(495, 22))
 		self.tcSeqNatFile = wx.TextCtrl(self.boxFiles, value="", size=(495, 22))
@@ -2740,29 +3297,39 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 		self.tcSeqLength = wx.TextCtrl(self.boxValues, value="", size=(180, 22))		
 		self.tcHistWin   = wx.TextCtrl(self.boxValues, value="", size=(180, 22))		
 		self.tcPDB       = wx.TextCtrl(self.boxValues, value="", size=(180, 22))	
+	  #---
 	  #--> Combo box
 		self.cbDataNorm = wx.ComboBox(self.boxValues, value='Log2',  
 			choices=config.combobox['NormValues'], style=wx.CB_READONLY)		
 		self.cbaVal     = wx.ComboBox(self.boxValues, value='0.050', 
 			choices=config.combobox['Avalues'], style=wx.CB_READONLY)
+	  #---
 	  #--> Listbox
 		self.lb = wx.ListCtrl(self.panel, 
 			size=config.size['ListBox'][self.name], 
 			style=wx.LC_REPORT|wx.BORDER_SIMPLE)
 		gmethods.ListCtrlHeaders(self.lb, self.name)
+	  #---
+	 #---
 	 #--> Dict for adding from listbox. Override as needed
 		self.ColDic = {
-			101: self.tcSeq, 
-			102: self.tcDetProt, 
-			103: self.tcScore, 
-			104: self.tcColExt,
+			1: self.tcSeq, 
+			2: self.tcDetProt, 
+			3: self.tcScore, 
+			4: self.tcColExt,
 		}
+	 #---
+	 #--> Menu
+		self.menubar = menu.MainMenuBarWithTools(self.name, self.name)
+		self.SetMenuBar(self.menubar)
+	 #---
 	 #--> Sizers
 	  #--> Central static boxes
 		self.sizerboxFiles = wx.StaticBoxSizer(self.boxFiles, wx.VERTICAL)
 		self.sizerboxValues = wx.StaticBoxSizer(self.boxValues, wx.VERTICAL)
 		self.sizerboxColumns = wx.StaticBoxSizer(self.boxColumns, wx.VERTICAL)
 		self.sizerBoxes = wx.BoxSizer(wx.VERTICAL)
+	  #---
 	  #--> Add
 		self.sizerBoxes.Add(self.sizerboxFiles,   border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
@@ -2770,6 +3337,7 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerBoxes.Add(self.sizerboxColumns, border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+	  #---
 	  #--> All together in sizerin
 		self.sizerIN.Add(self.sizerClear, pos=(0, 0), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_TOP|wx.ALL)
@@ -2785,8 +3353,11 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerIN.Add(self.sizerBottom, pos=(2, 0), border=2, span=(0, 5),
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+	  #---
+	 #---
 	 #--> Position
 		self.SetPosition(pt=config.coord['TopLeft'])
+	 #---
 	 #--> Tooltips
 	  #--> Buttons
 		self.buttonSeqRecFile.SetToolTip(config.tooltip['WinModule']['SeqRec'])
@@ -2796,6 +3367,7 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 			config.tooltip['WinModule']['PDBFile'] + config.msg['OptVal'])
 		self.buttonOutName.SetToolTip(
 			config.tooltip['WinModule']['OutName'] + config.msg['OptVal'])
+	  #---
 	  #--> Static Text
 		self.stTarprot.SetToolTip(config.tooltip['WinModule']['TarProt'])
 		self.stScoreVal.SetToolTip(config.tooltip['WinModule']['ScoreVal'])
@@ -2815,18 +3387,27 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 		self.stScore.SetToolTip(config.tooltip['WinModule']['Score'])
 		self.stColExt.SetToolTip(
 			config.tooltip['WinModule']['ColExt'] + config.msg['OptVal'])
+	  #---
+	 #---
 	 #--> Binding
 		self.buttonSeqRecFile.Bind(wx.EVT_BUTTON, self.OnSeqRecFile)
 		self.buttonSeqNatFile.Bind(wx.EVT_BUTTON, self.OnSeqNatFile)
+		if config.cOS != 'Windows':
+			self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		else:
+			pass
+	 #---
 	 #--> Default values
 		self.tcOutputFF.SetValue('NA')
 		self.tcOutName.SetValue('NA')
 		self.tcColExt.SetValue('NA')
 		self.tcScoreVal.SetValue('0')
+	 #---
 	#---
+	#endregion ------------------------------------------------- Initial Setup
 
-	####---- Methods of the class
-	##-- General	
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- General Methods	
 	def WidgetsDestroy(self, name):
 		""" Destroy default widgets not needed for window with name """
 	 #--> ProtProf
@@ -2840,7 +3421,9 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 				 self.stPDB,            self.tcPDB,
 				 self.stSeqLength,      self.tcSeqLength,
 				 self.stSeq,            self.tcSeq,
+				 self.staVal,           self.cbaVal,
 				 ]
+	 #---
 	 #--> Limprot
 		elif name == config.name['LimProt']:
 			l = [self.buttonPDBFile,    self.tcPDBFile,
@@ -2850,17 +3433,23 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 	 			 ]
 		else:
 			pass
+	 #---
 	 #--> Destroy
 		for k in l:
 			k.Destroy()	
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
+	#endregion ----------------------------------------------- General Methods	
 
-	##-- Bind
+	#region ----------------------------------------------------  Bind Methods
 	def OnPopUpMenu(self, event):
-		""" Show the pop up menu in the wx.ListCtrl. Override as needed """
-		pass
+		""" Show the pop up menu in the wx.ListCtrl. Binding is done in
+		 the base class """
+		self.PopupMenu(menu.ToolsModule(self.name))
+		return True
 	#---
 
 	def OnSeqRecFile(self, event):
@@ -2882,7 +3471,9 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 		else:
 			return False
 	#---
-	##-- Menu
+	#endregion -------------------------------------------------- Bind Methods
+
+	#region ----------------------------------------------------- Menu Methods
 	def AddFromList(self, MId):
 		""" Adds the selected columns in the list box to the appropiate field in
 			Columns in the input file. 
@@ -2892,20 +3483,24 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 	 #--> Variables
 		addlist = gmethods.ListCtrlGetSelected(self.lb)
 		target  = self.ColDic[MId] # wx.TextCtrl to write to the selected columns in the wx.ListBox
+	 #---
 	 #--> Add values
 		if addlist:
 			val = target.GetValue()
-	  #--> Check initial value in wx.TextCtrl before adding the new column numbers 
+	 	 #--> Check initial value in wx.TextCtrl before adding the new column numbers 
 			if val == '' or val in config.naVals:
 				target.SetValue(' '.join(str(e) for e in addlist))
 			else:
 				val = val.split(' ')
 				val = val + addlist
 				target.SetValue(' '.join(str(e) for e in val))
+		 #---
 		else:
 			pass
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def ClearListCtrl(self):
@@ -2918,6 +3513,7 @@ class WinModule(WinMyFrame, GuiChecks, ElementClearAFVC, ElementHelpRun,
 		""" Save a uscr directly from the module. Override in module """
 		pass
 	#---	
+	#endregion -------------------------------------------------- Menu Methods
 #---
 
 class WinUtilUno(WinMyFrame, GuiChecks, ElementClearAFV, ElementHelpRun, 
@@ -2925,6 +3521,7 @@ class WinUtilUno(WinMyFrame, GuiChecks, ElementClearAFV, ElementHelpRun,
 	""" Basic elements for the util windows. Used in: AA dist, Correlation,
 		Histograms, Sequence Alignment """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent, style=None, length=20):
 		""" parent: parent of the widgets 
 			style: style of the widgets
@@ -2934,11 +3531,13 @@ class WinUtilUno(WinMyFrame, GuiChecks, ElementClearAFV, ElementHelpRun,
 		WinMyFrame.__init__(self, parent=parent, style=style)
 		ElementClearAFV.__init__(self, self.panel)
 		ElementHelpRun.__init__(self, self.panel, length=length)
+	 #---
 	 #--> Widgets
 	  #--> Lines
 		self.lineHI1 = wx.StaticLine(self.panel)
 		self.lineHI2 = wx.StaticLine(self.panel)
 		self.lineVI1 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
+	  #---
 	  #--> Static boxes
 		self.boxFiles   = wx.StaticBox(
 			self.panel, 
@@ -2948,13 +3547,16 @@ class WinUtilUno(WinMyFrame, GuiChecks, ElementClearAFV, ElementHelpRun,
 			self.panel, 
 			label=config.msg['StaticBoxNames']['Values']
 		)
+	  #---
 	  #--> Needs to be here because of self.boxFiles
 		ElementDataFile.__init__(self, self.boxFiles)
 		ElementOutputFileFolder.__init__(self, self.boxFiles)
+	  #---
 	  #--> StaticText
 		self.stValue = wx.StaticText(self.boxValues, 
 			label=config.dictWinUtilUno[self.name]['StaticLabel'], 
 			style=wx.ALIGN_RIGHT)
+	  #---
 	  #--> TextCtrl or ComboBox and Extra Horizontal line
 		if self.name == config.name['CorrA']:
 			self.TextCtrlorCBox = wx.ComboBox(self.boxValues, value='Log2',  
@@ -2966,8 +3568,11 @@ class WinUtilUno(WinMyFrame, GuiChecks, ElementClearAFV, ElementHelpRun,
 		else:
 			self.TextCtrlorCBox = wx.TextCtrl(self.boxValues, value="", 
 				size=(450, 22))	
+	  #---
+	 #---
 	 #--> Tooltips
 		self.stValue.SetToolTip(config.tooltip[self.name]['ValueFieldTooltip'])	
+	 #---
 	 #--> Sizers
 	  #--> Central static boxes
 	   #--> Files
@@ -2984,6 +3589,7 @@ class WinUtilUno(WinMyFrame, GuiChecks, ElementClearAFV, ElementHelpRun,
 			flag=wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxFilesWid.Add(self.tcOutputFF,      border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+	   #---
 	   #--> Values
 		self.sizerboxValues = wx.StaticBoxSizer(self.boxValues, wx.VERTICAL)
 		if self.name == config.name['CorrA']:
@@ -3004,12 +3610,15 @@ class WinUtilUno(WinMyFrame, GuiChecks, ElementClearAFV, ElementHelpRun,
 				flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		else:
 			pass
+	   #---
+	  #---
 	  #--> Central Sizer
 		self.sizerBoxes = wx.BoxSizer(wx.VERTICAL)
 		self.sizerBoxes.Add(self.sizerboxFiles,   border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerBoxes.Add(self.sizerboxValues,  border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+	  #---
 	  #--- All together in sizerin
 		self.sizerIN.Add(self.sizerBoxes,    pos=(0, 2), border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
@@ -3033,9 +3642,12 @@ class WinUtilUno(WinMyFrame, GuiChecks, ElementClearAFV, ElementHelpRun,
 				flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 			self.sizerIN.Add(self.sizerBottom, pos=(2, 0), border=2, 
 				span=(0, 3), flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)		
+	  #---
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------- My Methods
 	def OnDF(self, event):
 		""" To select the data/pdb file in shortDF and cuts2PDB """
 	 #--> Variables
@@ -3043,20 +3655,24 @@ class WinUtilUno(WinMyFrame, GuiChecks, ElementClearAFV, ElementHelpRun,
 		msg = config.dictElemDataFile2[self.name]['MsgOpenFile']
 		wcard = config.dictElemDataFile2[self.name]['ExtLong']	
 		dlg = DlgOpenFile(msg, wcard)
+	 #---
 	 #--> Open file
 		if dlg.ShowModal() == wx.ID_OK:
 			self.tcDF.SetValue(dlg.GetPath())
 		else:
 			k = False
+	 #---
 	 #--> Destroy & Return
 		dlg.Destroy()	
 		return k
+	 #---
 	#---
 #---
 
-class WinRes(WinMyFrame, ElementListCtrlSearch):
+class WinRes(WinMyFrame, GuiChecks, ElementListCtrlSearch):
 	""" Basic elements for the util windows. Used in: tarprotR and limprotR """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=wx.DEFAULT_FRAME_STYLE):
 		""" parent: parent of the widgets 
 			style: style of the window
@@ -3065,52 +3681,63 @@ class WinRes(WinMyFrame, ElementListCtrlSearch):
 		fname = self.fileP.name
 		title = config.title[self.name] + ' (' + str(fname) + ')'
 		WinMyFrame.__init__(self, parent=parent, title=title, style=style)
+	 #---
 	 #--> Widgets
 	  #--> wx.ListBox & wx.SearchCtrl
 		ElementListCtrlSearch.__init__(self, parent=self.panel)
 		self.lb.SetWindowStyleFlag(
 			style=wx.LC_REPORT|wx.BORDER_SIMPLE|wx.LC_SINGLE_SEL)
+	  #---
 	  #--- Lines
 		self.VI1 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
+	  #---
+	 #---
 	 #--> Automatically create the file object based on self.name
 		try:
 			self.fileObj
 		except Exception:
 			try:
 				self.fileObj = config.pointer['dclasses']['DataObj'][self.name](self.fileP)
-			except Exception:
+			except Exception as e:
 				raise ValueError('')
+	 #---
 	 #--> Automatically fill the listbox
-		self.FillListBox()
+		try:
+			self.FillListBox()
+		except Exception as e:
+			DlgUnexpectedErrorMsg(str(e))
+			raise ValueError('')
+	 #---
 	 #--> Bind
 		if config.cOS == 'Darwin':
 			self.lb.Bind(wx.EVT_KILL_FOCUS, self.OnFocusKill)
 		else:
 			pass
+		# if config.cOS != 'Windows':
+		# 	self.lb.Bind(wx.EVT_RIGHT_DOWN, self.OnPopUpMenu)
+		# else:
+		# 	pass
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
-	def FillListBox(self):
+	# ------------------------------------------------------------- My Methods
+	def FillListBox(self, col=None, df=None):
 		""" Fill the list box depending on self.name """
-	 #--> TarProtRes
-		if self.name == config.name['TarProtRes']:
-			l = self.fileObj.filterPeptDF.loc[:,'Sequence'].tolist()
-			gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
-	 #--> ProtProfRes
-		elif self.name == config.name['ProtProfRes']:
-			col = [('Gene','Gene','Gene','Gene'), ('Protein','Protein','Protein','Protein')]
-			l = self.fileObj.dataFrame.loc[:,col].values.tolist()
-			gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
-	 #--> LimProtRes
-		elif self.name == config.name['LimProtRes']:
-			col = ('Sequence','Sequence','Sequence')
-			l = self.fileObj.filterPeptDF.loc[:,col].tolist()
-			gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
-	 #--> 
-		else:
-			pass
-	 #--> Return
+
+	 #--> Get new information
+		l = config.pointer['dmethods']['fillListCtrl'][self.name](
+			self,
+			col=col, 
+			df=df,
+		)
+	 #---
+	 #--> Show items. This methods delete any previous items in the listbox
+		gmethods.ListCtrlColNames(l, self.lb, mode='list', startIn=1)
+	 #---
+	 #-->
 		return True
+	 #---
 	#---
 	
 	def OnClose(self, event):
@@ -3129,12 +3756,18 @@ class WinRes(WinMyFrame, ElementListCtrlSearch):
 		"""
 		self.lb.SetFocus()
 		return True
-	#---	
+	#---
+
+	# def OnPopUpMenu(self, event):
+	# 	""" Show the pop up menu in the wx.ListCtrl. Override as needed """
+	# 	pass
+	# #---	
 #---
 
 class WinResUno(WinRes, ElementFragPanel):
 	""" Basic elements for the util windows. Used in: tarprotR and limprotR """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=wx.DEFAULT_FRAME_STYLE):
 		""" parent: parent of the widgets 
 			style: style of the window
@@ -3144,13 +3777,16 @@ class WinResUno(WinRes, ElementFragPanel):
 			WinRes.__init__(self, parent=parent, style=style)
 		except Exception:
 			raise ValueError('')
+	 #---
 	 #--> Variables
 	  #--> nLines is the number of experiments in tarprotR or the maximum
 	  #    number of bands in limprotR
 		self.nLinesT = self.fileObj.nLinesT
 		self.nLines  = self.fileObj.nLines
+	  #---
 	  #--> Colors
 		self.Colors = dmethods.GetColors(self.nLines)
+	  #---
 	  #--> Total height of self.p1		
 		self.hT = (config.lpprot[self.name]['RectH'] 
 			+ (self.nLinesT + 1) * config.lpprot[self.name]['RectT'])
@@ -3161,18 +3797,24 @@ class WinResUno(WinRes, ElementFragPanel):
 					- config.lpprot[self.name]['PanelBelow'])
 		else:
 			self.h = self.hT				
+	  #---
+	 #---
 	 #--> Widgets
 	  #--> Frag panel
 		ElementFragPanel.__init__(self, parent=self.panel)
+	  #---
 	  #--> Text Ctrl
 		self.text = wx.TextCtrl(self.panel, 
 			size=config.size['TextCtrl'][self.name]['TextPanel'], 
 			style=wx.BORDER_SIMPLE|wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL)
 		self.text.SetFont(config.font[self.name])
+	  #---
 	  #--> Lines
 		self.VI1 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
 		self.lineHI1 = wx.StaticLine(self.panel)
 		self.lineVI2 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
+	  #---
+	 #---
 	 #--> Sizers
 	  #--> Add 	
 		self.sizerIN.Add(self.sizerLB, pos=(0,0), border=2, span=(3, 0), 
@@ -3188,22 +3830,31 @@ class WinResUno(WinRes, ElementFragPanel):
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerIN.Add(self.text,    pos=(2,4), border=2,
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+	  #---
 	  #--> Grow Col/Row
 		self.sizerIN.AddGrowableRow(2, 0)
 		self.sizerIN.AddGrowableCol(2, 0)
 		self.sizerIN.AddGrowableCol(4, 0)		
+	  #---
+	 #---
 	 #--> Automatically fill the listbox
 		self.FillListBox()
+	 #---
 	 #--> Bind
 		self.Bind(wx.EVT_SIZE, self.OnSize)
 		#---
 		self.p1.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
-		self.p1.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
-		#---
-		self.text.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)	
+		if config.cOS != 'Windows':
+			self.p1.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+			#---
+			self.text.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)	
+		else:
+			pass
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
+	# ------------------------------------------------------------- My Methods
 	def OnClick(self, event):
 		""" To show the menu in the matplotlib panel. Override as needed """
 		return True
@@ -3259,12 +3910,15 @@ class WinResUno(WinRes, ElementFragPanel):
 			dmethods.GHelperLBSelUpdate(self)
 		else:
 			pass
+	 #---
 	 #--> Draw
 		self.p1.Refresh()
 		self.p2.Refresh()
 		self.Update()
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def WinPos(self):
@@ -3272,22 +3926,27 @@ class WinResUno(WinRes, ElementFragPanel):
 		windows already open """
 	 #--> Variables
 		xo, yo = config.coord['TopXY']
+	 #---
 	 #--> Number of windows already created
 		if self.name == config.name['TarProtRes']:
 			Nwin = config.win['TarProtResNum']
 		elif self.name == config.name['LimProtRes']:
 			Nwin = config.win['LimProtResNum']
+	 #---
 	 #--> Position of the new window
 		x = xo + Nwin * config.win['DeltaNewWin']
 		y = yo + Nwin * config.win['DeltaNewWin']
 		self.SetPosition(pt=(x, y))
+	 #---
 	 #--> Update the number of created windows
 		if self.name == config.name['TarProtRes']:
 			config.win['TarProtResNum'] = config.win['TarProtResNum'] + 1
 		elif self.name == config.name['LimProtRes']:
 			config.win['LimProtResNum'] = config.win['LimProtResNum'] + 1		
+	 #---
 	 #--> Return
 		return True 
+	 #---
 	#---
 
 	def SeqMatch(self, row, seqS):
@@ -3309,6 +3968,7 @@ class WinResDos(WinRes):
 	""" To show a window with the listbox/search tuple plus a matplotlib panel
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, win, parent):
 		""" win: reference to the window to create the statusbar 
 			parent: parent for the widgets
@@ -3317,14 +3977,19 @@ class WinResDos(WinRes):
 		try:
 			super().__init__(parent=parent)
 		except Exception:
-			raise ValueError('')			
+			raise ValueError('')
+	 #---			
 	 #--> Widgets
 	  #--> Lines
 		self.lineVI10 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
+	  #---
 	  #--> Status bar
 		self.statusbar = win.CreateStatusBar()
+	  #---
 	  #--> Graph panel
 		self.p2 = ElementGraphPanel(self.panel, self.name, stBar=self.statusbar)
+	  #---
+	 #---
 	 #--> Sizers
 	  #--> Add
 		self.sizerIN.Add(self.sizerLB,  pos=(0,0), border=2,
@@ -3333,16 +3998,19 @@ class WinResDos(WinRes):
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
 		self.sizerIN.Add(self.p2,       pos=(0,2), border=2,
 			flag=wx.EXPAND|wx.ALIGN_TOP|wx.ALL)
+	  #---
 	  #--> Grow Col/Row
 		self.sizerIN.AddGrowableRow(0, 1)
 		self.sizerIN.AddGrowableCol(2, 1)
+	  #---
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
-	##-- Menu
+	# ------------------------------------------------------------- My Methods
 	def OnSavePlotImage(self):
 		""" Save plot in the graph """
-		if self.p3.OnSaveImage():
+		if self.p2.OnSaveImage():
 			return True
 		else:
 			return False
@@ -3361,22 +4029,29 @@ class WinResDosDos(WinResDos):
 			super().__init__(win, parent)
 		except Exception:
 			raise ValueError('')
+	 #---
 	 #--> Widgets
 	  #--> Second Graph panel
 		self.p3 = ElementGraphPanel(self.panel, self.name, stBar=self.statusbar)
+	  #---
 	  #--> Vertical line
 		self.VI2 = wx.StaticLine(self.panel, style=wx.LI_VERTICAL)
+	  #---
+	 #---
 	 #--> Sizers
 	  #--> Add
 		self.sizerIN.Add(self.VI2, pos=(0,3), border=2,
 			flag=wx.EXPAND|wx.ALIGN_TOP|wx.ALL)
 		self.sizerIN.Add(self.p3,  pos=(0,4), border=2,
 			flag=wx.EXPAND|wx.ALIGN_TOP|wx.ALL)	
+	  #---
 	  #--> Grow Col/Row
 		self.sizerIN.AddGrowableCol(4, 1)		
+	  #---
+	 #---
 	#---
 #---
-# ------------------------------------------------------------ GUI WINDOWS (END)
+#endregion ------------------------------------------------------- GUI WINDOWS
 
 
 

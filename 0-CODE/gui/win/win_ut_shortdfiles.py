@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,26 +12,14 @@
 """ This module creates the Short Data Files utility window """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import wx
-## My modules
+
 import config.config   as config
 import gui.gui_classes as gclasses 
 import gui.gui_methods as gmethods
 import data.data_classes as dclasses 
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinShortDataFiles(gclasses.WinUtilUno):
@@ -39,6 +27,7 @@ class WinShortDataFiles(gclasses.WinUtilUno):
 		short data files from a module main output file and a data file 
 	"""
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=None):
 		""" parent: parent for the widgets
 			style: style of the window
@@ -46,26 +35,34 @@ class WinShortDataFiles(gclasses.WinUtilUno):
 	 #--> Initial Setup
 		self.name = config.name['ShortDFile']
 		super().__init__(parent=parent, style=style, length=17)
+	 #---
 	 #--> Variables
 		self.folder = True
+	 #---
 	 #--> Widgets
 	  #--> Buttons
 		self.buttonDF = wx.Button(self.boxFiles, label='Data file')	
+	  #---
 	  #--> TextCtrl
 		self.tcDF = wx.TextCtrl(self.boxFiles, value="", 
 			size=config.size['TextCtrl']['DataFile'])
+	  #---
 	  #--> Rename
 		self.boxValues.SetLabel(config.msg['StaticBoxNames']['Columns'])
 		self.buttonClearValues.SetLabel('Clear columns')
+	  #---
+	 #---
 	 #--> Tooltips
 		self.buttonClearValues.SetToolTip(config.tooltip['Clear']['Cols'])
 		msg = config.tooltip[self.name]['DataFile'] + config.msg['OptVal']
 		self.buttonDF.SetToolTip(msg)
+	 #---
 	 #--> Sizers
 	  #--> Configure
 		self.sizerboxFilesWid.SetRows(3)
 		self.sizerboxFilesWid.Detach(self.buttonOutputFF)
 		self.sizerboxFilesWid.Detach(self.tcOutputFF)
+	  #---
 	  #--> Add
 		self.sizerboxFilesWid.Add(self.buttonDF,  border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
@@ -75,20 +72,28 @@ class WinShortDataFiles(gclasses.WinUtilUno):
 			flag=wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxFilesWid.Add(self.tcOutputFF,  border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL)				
+	  #---
 	  #--> Fit
 		self.sizer.Fit(self)
+	  #---
+	 #---
 	 #--> Position
 		self.Center()
+	 #---
 	 #--> Bind
 		self.buttonDF.Bind(wx.EVT_BUTTON, self.OnDF)
+	 #---
 	 #--> Default values
 		self.tcDF.SetValue('NA')
+	 #---
 	 #--> Show	
 		self.Show()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
-	##-- Binding
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- Binding Methods
 	def OnClearFilesDef(self):
 		""" Specific clear for File section ni this window """
 		self.tcOutputFF.SetValue('NA')
@@ -104,13 +109,17 @@ class WinShortDataFiles(gclasses.WinUtilUno):
 		k = True
 		msg   = config.dictElemDataFile[self.name]['MsgOpenFile']
 		wcard = config.dictElemDataFile[self.name]['ExtLong']
+	 #---
 	 #--> Open File & Change GUI and variables based on file extension
 		dlg = gclasses.DlgOpenFile(msg, wcard)
 		if dlg.ShowModal() == wx.ID_OK:
-	  #--> Put path in wx.TextCtrl
+	  	 #--> Put path in wx.TextCtrl
 			self.tcDataFile.SetValue(dlg.GetPath())
-	  #--> Get extension
+		 #---
+	  	 #--> Get extension
 			ext = dlg.GetPath().split('.')[-1].strip()
+		 #---
+		 #-->
 			if ext == 'protprof':
 				self.buttonOutputFF.SetLabel('Output file')
 				msg = (
@@ -129,14 +138,18 @@ class WinShortDataFiles(gclasses.WinUtilUno):
 				self.buttonOutputFF.SetToolTip(msg)		
 				self.buttonOutputFF.Bind(wx.EVT_BUTTON, self.OnOutputFolder)		
 				self.folder = True
+		 #---
 		else:
 			k = False
-	  #--- Destroy & Return
+	 #---
+	 #--> Destroy & Return
 		dlg.Destroy()
 		return k
-	#---	
+	 #---
+	#---
+	#endregion ----------------------------------------------- Binding Methods	
 
-	###--- Run
+	#region ------------------------------------------------------ Run Methods
 	def CheckInput(self):
 		""" Check the user provided input """
 	 #--> Files
@@ -151,8 +164,11 @@ class WinShortDataFiles(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	   #---
 	   #--> Get extension of the file
 		self.ext = self.do['UMSAPFile'].suffix
+	   #---
+	  #---
 	  #--> Data file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Data file', 1)
@@ -164,6 +180,7 @@ class WinShortDataFiles(gclasses.WinUtilUno):
 			pass
 		else:
 			return False			
+	  #---
 	  #--> Output folder | file
 		if self.folder:
 			wx.CallAfter(
@@ -200,7 +217,9 @@ class WinShortDataFiles(gclasses.WinUtilUno):
 			):
 				pass
 			else:
-				return False			
+				return False
+	  #---
+	 #---			
 	 #--> Values
 	  #--> Columns to extract
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -219,6 +238,8 @@ class WinShortDataFiles(gclasses.WinUtilUno):
 		else:
 			return False			
 		return True
+	  #---
+	 #---
 	#---
 
 	def ReadInputFiles(self):
@@ -245,7 +266,7 @@ class WinShortDataFiles(gclasses.WinUtilUno):
 	def WriteOF(self):
 		""" Write the output """
 	 #--> Check if there is something to write & Write
-		if self.fileObj.checkFP:
+		if self.fileObj.checkExport:
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Writing output files: txt files', 1)		
 			if self.fileObj.ToSDataFile(
@@ -259,12 +280,16 @@ class WinShortDataFiles(gclasses.WinUtilUno):
 		else:
 			gclasses.DlgFatalErrorMsg(
 				config.dictCheckFatalErrorMsg[self.name]['FiltPept2'])
-			return False		
+			return False
+	 #---
+	 #-->		
 		return True
+	 #---
 	#---
 
 	def ShowRes(self):
 		""" Show graph results """
 		return True
-	#---	
+	#---
+	#endregion --------------------------------------------------- Run Methods	
 #---

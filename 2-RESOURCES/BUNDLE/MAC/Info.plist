@@ -22,7 +22,7 @@
 	<key>CFBundleExecutable</key>
 	<string>MacOS/UMSAP</string>
 	<key>CFBundleIconFile</key>
-	<string>mac-icon.icns</string>
+	<string>icon.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>UMSAP</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -32,7 +32,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.1.0 (beta)</string>
+	<string>2.1.0</string>
 	<key>NSAppleScriptEnabled</key>
 	<false/>
 	<key>NSHighResolutionCapable</key>
@@ -40,6 +40,6 @@
 	<key>NSPrincipleClass</key>
 	<string>NSApplication</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2017–2019 Kenny Bravo Rodriguez. All rights reserved.</string>
+	<string>Copyright © 2017 Kenny Bravo Rodriguez. All rights reserved.</string>
 </dict>
 </plist>

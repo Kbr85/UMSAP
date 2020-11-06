@@ -33,13 +33,13 @@ coll = COLLECT(exe,
                name='UMSAP')
 app = BUNDLE(coll,
              name='UMSAP.app',
-             icon='RESOURCES/IMAGES/mac-icon.icns',
+             icon='RESOURCES/IMAGES/icon.icns',
              bundle_identifier=None,
              info_plist={
                'NSHighResolutionCapable': 'True',
                'NSPrincipleClass': 'NSApplication',
                'NSAppleScriptEnabled': False,
-               'CFBundleShortVersionString': '2.1',
+               'CFBundleShortVersionString': '2.1.0',
                'CFBundleDocumentTypes': [
                   {
                     'CFBundleTypeName': 'My File Format',

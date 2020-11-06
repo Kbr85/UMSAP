@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,36 +12,24 @@
 """ Creates the window showing the results in a .tarprot file """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import wx
 import pandas as pd
 from pathlib import Path
-## My modules
+
 import config.config     as config
 import gui.menu.menu     as menu
 import gui.gui_classes   as gclasses
 import gui.gui_methods   as gmethods
 import data.data_classes as dclasses
 import data.data_methods as dmethods
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinTarProtRes(gclasses.WinResUno):
 	""" To show the results in a tarprot file """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, file):
 		""" file: path to the .tarprot file (string or Path) """
 	 #--> Initial Setup
@@ -51,8 +39,8 @@ class WinTarProtRes(gclasses.WinResUno):
 			self.fileObj = dclasses.DataObjTarProtFile(self.fileP)
 		except Exception:
 			raise ValueError('')
-		self.checkFP = self.fileObj.checkFP
-		if self.checkFP:
+		self.checkExport = self.fileObj.checkExport
+		if self.checkExport:
 			pass
 		else:
 			gclasses.DlgFatalErrorMsg(
@@ -62,6 +50,7 @@ class WinTarProtRes(gclasses.WinResUno):
 			super().__init__(parent=None)
 		except Exception:
 			raise ValueError('')
+	 #---
 	 #--> Variables
 		self.locProtType = self.fileObj.locProtType
 		self.nExp        = self.fileObj.nExp
@@ -76,66 +65,91 @@ class WinTarProtRes(gclasses.WinResUno):
 		self.lbSelPlotG = False
 		#--->>>> Needed for LimProtRes to work
 		self.GelText     = True
+	 #---
 	 #--> Menu
 		self.menubar = menu.MainMenuBarWithTools(self.name)
 		self.SetMenuBar(self.menubar)
+	 #---
 	 #--> Widgets
 	  #--> Drawing panel for Gel or Intensity
 		self.p2 = gclasses.ElementGraphPanel(parent=self.panel, name=self.name)
+	  #---
+	 #---
 	 #--> Sizers
 	  #--> Add
 		self.sizerIN.Add(self.p2,      pos=(2,2), border=2,
 			flag=wx.EXPAND|wx.ALIGN_CENTER|wx.ALL)
+	  #---
 	  #--> Fit
 		self.sizer.Fit(self)
+	  #---
+	 #---
 	 #--> Positions and minimal size
 		gmethods.MinSize(self)
 		self.WinPos()	
+	 #---
 	 #--> Bind
-		self.p2.canvas.mpl_connect('button_press_event', self.OnClick)		
+		if config.cOS != 'Windows':
+			self.p2.canvas.mpl_connect('button_press_event', self.OnClick)		
+		else:
+			pass
+	 #---
 	 #--> Show
 		self.Show()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	###---- Methods of the class
-	##-- Binding
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- Binding Methods
 	def OnRightDown(self, event):
 		""" Display the popup menu """
-		self.PopupMenu(menu.ToolMenuTarProtRes())
+		self.PopupMenu(menu.ToolsTarProtRes())
 		return True
 	#---
 
 	def OnClick(self, event):
 		""" To process click events """
 		if event.button == 3:
-			self.PopupMenu(menu.ToolMenuTarProtRes())
+			if config.cOS != 'Windows':
+				self.PopupMenu(menu.ToolsTarProtRes())
+			else:
+				pass
 		else:
 			pass
 		return True
 	#---
+	#endregion ----------------------------------------------- Binding Methods
 
-	##-- Menu
+	#region ----------------------------------------------------- Menu Methods
 	def OnResetView(self):
 		""" Reset the view of the window """
 	 #--> Reset p1 panel
 		self.seqC      = None
 		self.kf        = [None, None]
 		self.lbSelPlot = False
+	 #---
 	 #--> Reset listbox
 		gmethods.ListCtrlDeSelAll(self.lb)
+	 #---
 	 #--> Reset p2 panel
 		self.p2.axes.clear()
 		self.SetAxis()
 		self.p2.canvas.draw()
+	 #---
 	 #--> Reset p3
 		self.text.Clear()
+	 #---
 	 #--> Reset SearchCtrl
 		self.search.Clear()
+	 #---
 	 #-->
 		self.Refresh()
 		self.Update()
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def OnSavePlot(self):
@@ -145,23 +159,27 @@ class WinTarProtRes(gclasses.WinResUno):
 		return True
 	#---
 
-	def OnExportFP(self):
+	def OnExportData(self):
 		""" Export the FP list """
 	 #--> Variables
-		msg = config.msg['Save']['FiltPept']
-		dlg = gclasses.DlgSaveFile(config.extLong['FiltPept'], msg)
+		msg = config.msg['Save']['ExportData']
+		dlg = gclasses.DlgSaveFile(config.extLong['Data'], msg)
+	 #---
 	 #--> Get path & write
 		if dlg.ShowModal() == wx.ID_CANCEL:
 			pass
 		else:
 			p = Path(dlg.GetPath())
-			self.fileObj.TarProt2FiltPept(p)
+			self.fileObj.ExportData(p)
+	 #---
 	 #--> Destroy & Return 
 		dlg.Destroy()
 		return True	
+	 #---
 	#---
+	#endregion -------------------------------------------------- Menu Methods
 
-	##-- Inten
+	#region ----------------------------------------------- Intensitiy Methods
 	def DFL2DF(self, intL, label):
 		""" Takes the intL and converts it to a proper DF 
 			---
@@ -182,16 +200,20 @@ class WinTarProtRes(gclasses.WinResUno):
 				lok.append(int(ints[0][0]))
 
 		d = pd.DataFrame(dict([(k, pd.Series(v)) for k,v in lo.items()]))
+	 #---
 	 #-->
 		maxV = d.max().max()
 		minV = d.min().min()
 		intLplot = (d - minV) / (maxV - minV) 
+	 #---
 	 #--> Return
 		return [intLplot, lok]
+	 #---
 	#---
 
 	def SetAxis(self):
 		""" General details of the plot area """
+
 		self.p2.axes.set_xlabel('Experiments', fontweight='bold')
 		self.p2.axes.set_ylabel('Normalized Intensities', fontweight='bold')
 		self.p2.xticksloc = range(self.nExp + 3)
@@ -211,16 +233,20 @@ class WinTarProtRes(gclasses.WinResUno):
 		""" Draw the intensities for a selected peptide """
 	 #--> Clear plot
 		self.p2.axes.clear()
+	 #---
 	 #--> Get x
 		x = list(range(1, self.nExp+2, 1))
+	 #---
 	 #--> Title
 		self.p2.axes.set_title(str(seq))
+	 #---
 	 #--> Plot errorbar
 		tempM = intLplot.mean()
 		tempSD = intLplot.std()
 		self.p2.axes.errorbar(x, tempM, yerr=tempSD, fmt='D', 
 			markeredgecolor='#000000', color='#00FFFF', ecolor='k', 
 			markersize=8, capsize=4)
+	 #---
 	 #--> Plot line
 		tx = []
 		y = []
@@ -232,22 +258,28 @@ class WinTarProtRes(gclasses.WinResUno):
 			else:
 				pass
 		self.p2.axes.plot(tx, y, 'b-')
+	 #---
 	 #-->  Plot values
 		intLplot = intLplot.transpose()
 		self.p2.axes.plot(x, intLplot, 'ro', markeredgecolor='#000000')
+	 #---
 	 #--> Axis & Draw
 		self.SetAxis()
 		self.p2.canvas.draw()
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
+	#endregion --------------------------------------------- Intensity Methods
 
-	##--- Text
+	#region ----------------------------------------------------- Text Methods
 	def ShowFragDet(self):
 		""" """
 		dmethods.GHelperShowFragDet(self)
 		return True
 	#---	
+	#endregion -------------------------------------------------- Text Methods
 #---
 
 

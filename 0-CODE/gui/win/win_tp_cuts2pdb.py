@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-#	Copyright (C) 2017-2019 Kenny Bravo Rodriguez <www.umsap.nl>
+#	Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
 	
 #	This program is distributed for free in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,31 +12,20 @@
 """ This module creates the Cleavages to PDB utility window """
 
 
-# ------------------------------------------------------------------------------
-# Classes
-# ------------------------------------------------------------------------------
-
-
-# ------------------------------------------------------------------------------
-# Methods
-# ------------------------------------------------------------------------------
-
-
-#--- Imports
-## Standard modules
+#region -------------------------------------------------------------- Imports
 import wx
-## My modules
+
 import config.config     as config
 import gui.gui_classes   as gclasses
 import gui.gui_methods   as gmethods
 import data.data_classes as dclasses
-#---
-
+#endregion ----------------------------------------------------------- Imports
 
 
 class WinCuts2PDB(gclasses.WinUtilUno):
 	""" Generates the pdb from a tarprot file and a pdb file """
 
+	#region --------------------------------------------------- Instance Setup
 	def __init__(self, parent=None, style=None):
 		""" parent: parent for the widgets
 			style: style of the windows
@@ -44,20 +33,26 @@ class WinCuts2PDB(gclasses.WinUtilUno):
 	 #--> Initial setup
 		self.name = config.name['Cuts2PDB']
 		super().__init__(parent=parent, style=style, length=18)
+	 #---
 	 #--> Widgets
 	  #--> Buttons
 		self.buttonDF = wx.Button(self.boxFiles, label='PDB file')	
+	  #---
 	  #--> TextCtrl
 		self.tcDF = wx.TextCtrl(self.boxFiles, value="", 
 			size=config.size['TextCtrl']['DataFile'])
+	  #---
+	 #---
 	 #--> Tooltips
 		msg = config.tooltip[self.name]['PDBFile'] + config.msg['OptVal']
 		self.buttonDF.SetToolTip(msg)
+	 #---
 	 #--> Sizers
 	  #--> Config
 		self.sizerboxFilesWid.SetRows(3)
 		self.sizerboxFilesWid.Detach(self.buttonOutputFF)
 		self.sizerboxFilesWid.Detach(self.tcOutputFF)
+	  #---
 	  #--> Add
 		self.sizerboxFilesWid.Add(self.buttonDF,  border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
@@ -67,28 +62,37 @@ class WinCuts2PDB(gclasses.WinUtilUno):
 			flag=wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL)
 		self.sizerboxFilesWid.Add(self.tcOutputFF,  border=2, 
 			flag=wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL)				
+	  #---
 	  #--> Fit
 		self.sizer.Fit(self)
+	  #---
+	 #---
 	 #--> Position
 		self.Center()
+	 #---
 	 #--> Bind
 		self.buttonDF.Bind(wx.EVT_BUTTON, self.OnDF)
+	 #---
 	 #--> Default values
 		self.tcDF.SetValue('NA')
+	 #---
 	 #--> Show	
 		self.Show()
+	 #---
 	#---
+	#endregion ------------------------------------------------ Instance Setup
 
-	####---- Methods of the class
-	##-- Binding
+	# ------------------------------------------------------------- My Methods
+	#region -------------------------------------------------- Binding Methods
 	def OnClearFilesDef(self):
 		""" Specific clear for Files section in this window """
 		self.tcOutputFF.SetValue('NA')
 		self.tcDF.SetValue('NA')
 		return True
 	#---
+	#endregion ----------------------------------------------- Binding Methods
 
-	###--- Run
+	#region ------------------------------------------------------ Run Methods
 	def CheckInput(self):
 		""" Check the user provided input """
 	 #--> Files
@@ -102,6 +106,7 @@ class WinCuts2PDB(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	  #---
 	  #--> PDB file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Data file', 1)
@@ -113,6 +118,7 @@ class WinCuts2PDB(gclasses.WinUtilUno):
 			pass
 		else:
 			return False			
+	  #---
 	  #--> Output folder
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Checking user input: Output folder', 1)
@@ -123,6 +129,8 @@ class WinCuts2PDB(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	  #---
+	 #---
 	 #--> Values
 	  #--> PDB ID
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
@@ -139,8 +147,11 @@ class WinCuts2PDB(gclasses.WinUtilUno):
 			self.do['PDBID'] = [None, None]
 		else:
 			pass
+	  #---
+	 #---
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def ReadInputFiles(self):
@@ -152,6 +163,7 @@ class WinCuts2PDB(gclasses.WinUtilUno):
 			self.fileObj = dclasses.DataObjTarProtFile(self.do['TarProtFile'])
 		except Exception:
 			return False
+	 #---
 	 #--> Pdb file
 		wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 			'Reading input files: PDB file', 1)
@@ -165,7 +177,11 @@ class WinCuts2PDB(gclasses.WinUtilUno):
 			pass
 		else:
 			return False
+	  #---
+	 #---
+	 #-->
 		return True
+	 #---
 	#---
 	
 	def SetVariable(self):
@@ -181,7 +197,7 @@ class WinCuts2PDB(gclasses.WinUtilUno):
 	def WriteOF(self):
 		""" Write the output """
 	 #--> Check if there is something to write
-		if self.fileObj.checkFP:
+		if self.fileObj.checkExport:
 			wx.CallAfter(gmethods.UpdateGaugeText, self.gauge, self.stProgress,
 				'Writing output files: pdb files', 1)
 	  #--> write		
@@ -190,15 +206,19 @@ class WinCuts2PDB(gclasses.WinUtilUno):
 		else:
 			gclasses.DlgFatalErrorMsg(
 				config.dictCheckFatalErrorMsg[self.name]['FiltPept2'])
-			return False		
+			return False
+	  #---
+	 #---		
 	 #--> Return
 		return True
+	 #---
 	#---
 
 	def ShowRes(self):
 		""" Show graph results """
 		return True
 	#---		
+	#endregion --------------------------------------------------- Run Methods
 #---
 
 
