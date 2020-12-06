@@ -11,8 +11,7 @@
 # ------------------------------------------------------------------------------
 
 
-"""Main windows and dialogs of the App
-"""
+"""Main windows and dialogs of the App """
 
 
 #region -------------------------------------------------------------> Imports
@@ -27,6 +26,7 @@ import dat4s_core.widget.wx_window as dtsWindow
 import dat4s_core.data.string as dtsStr
 
 import config.config as config
+import gui.tab as Tab
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -119,11 +119,11 @@ class MainWindow(wx.Frame):
 	def __init__(self, parent=None):
 		""""""
 		#region -----------------------------------------------> Initial setup
-		self.name = config.name['MainW']
+		self.name = 'MainW'
 
-		# self.tabMethods = {
-		# 	'Start'  : Tab.StartTab,
-		# }
+		self.tabMethods = {
+			'Start'  : Tab.Start,
+		}
 
 		super().__init__(
 			parent = parent,
@@ -152,6 +152,11 @@ class MainWindow(wx.Frame):
 		self.SetSizer(self.Sizer)
 		#endregion ---------------------------------------------------> Sizers
 
+		#region --------------------------------------------> Create Start Tab
+		self.CreateTab('Start')
+		self.notebook.SetCloseButton(0, False)
+		#endregion -----------------------------------------> Create Start Tab
+		
 		#region ---------------------------------------------> Position & Show
 		self.Center()
 		self.Show()
@@ -175,46 +180,32 @@ class MainWindow(wx.Frame):
 			name : str
 				One of the values in config.name for tabs
 		"""
-		# #region -----------------------------------------------------> Get tab
-		# win = self.FindWindowByName(name)
-		# #endregion --------------------------------------------------> Get tab
-		# if win is None:
-		#  #--> Create tab
-		# 	if name in ('LicAgr', 'Help'):
-		# 		self.notebook.AddPage(
-		# 			dtsWindow.TxtContentWin(
-		# 				self.notebook,
-		# 				config.file[name],
-		# 				name,
-		# 			),
-		# 			config.title[name],
-		# 		)
-		# 		self.notebook.SetSelection(
-		# 			self.notebook.GetPageIndex(
-		# 				self.FindWindowByName(
-		# 					name
-		# 				)
-		# 			)
-		# 		)
-		# 	else:
-		# 		self.notebook.AddPage(
-		# 			self.tabMethods[name](
-		# 				self.notebook,
-		# 				name,
-		# 				self.statusbar,
-		# 			),
-		# 			config.title[name],
-		# 		)
-		# 		self.notebook.SetSelection(
-		# 			self.notebook.GetPageIndex(
-		# 				self.FindWindowByName(
-		# 					name
-		# 				)
-		# 			)
-		# 		)
-		# else:
-		#  #--> Focus
-		# 	self.notebook.SetSelection(self.notebook.GetPageIndex(win))
+		#region -----------------------------------------------------> Get tab
+		win = self.FindWindowByName(name)
+		#endregion --------------------------------------------------> Get tab
+		
+		#region ------------------------------------------> Find/Create & Show
+		if win is None:
+		 #--> Create tab
+			self.notebook.AddPage(
+				self.tabMethods[name](
+					self.notebook,
+					name,
+					self.statusbar,
+				),
+				config.title[name],
+			)
+			self.notebook.SetSelection(
+				self.notebook.GetPageIndex(
+					self.FindWindowByName(
+						name
+					)
+				)
+			)
+		else:
+		 #--> Focus
+			self.notebook.SetSelection(self.notebook.GetPageIndex(win))
+		#endregion ---------------------------------------> Find/Create & Show
 	#---
 	#endregion -------------------------------------------------> Menu methods
 #---
@@ -281,6 +272,13 @@ class CheckUpdateResult(wx.Dialog):
 		self.Sizer.Fit(self)
 		#endregion ---------------------------------------------------> Sizers
 
+		#region --------------------------------------------------------> Bind
+		if checkRes is not None:
+			self.stLink.Bind(adv.EVT_HYPERLINK, self.OnLink)
+		else:
+			pass
+		#endregion -----------------------------------------------------> Bind
+
 		#region ---------------------------------------------> Position & Show
 		if parent is None:
 			self.CenterOnScreen()
@@ -291,5 +289,19 @@ class CheckUpdateResult(wx.Dialog):
 		#endregion ------------------------------------------> Position & Show
 	#---
 	#endregion -----------------------------------------------> Instance setup
+	
+	#region ---------------------------------------------------> Class Methods
+	def OnLink(self, event):
+		"""Process the link event 
+		
+			Parameters
+			----------
+			event : wx.adv.Event
+				Information about the event
+		"""
+		event.Skip()
+		self.EndModal(1)
+		self.Destroy()
+	#endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------------> Classes

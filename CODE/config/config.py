@@ -60,7 +60,7 @@ name = { # Unique names to identify windows/objects through the app
 	'MainW' : 'MainW',
 	'CheckUpdateRes' : 'CehckUpdateRes',
 	#--> Tab for notebook windows
-
+	'Start' : 'Start',
 	#--> Panes
 }
 
@@ -70,9 +70,8 @@ title = { # Title of windows, tabs and panes
 		f"Utilities for Mass Spectrometry Analysis of Proteins "
 		f"{version}"),
 	'CheckUpdateRes' : f"Check for Updates",
-
 	#--> Tab
-
+	'Start' : 'Start',
 	#--> Pane
 
 }
@@ -95,7 +94,7 @@ file = { # Location of important files
 
 #region ---------------------------------------------------------------> Sizes
 size = { # Base size for widgets
-	'MainW' : (900, 480),
+	'MainW' : (900, 620),
 }
 #endregion ------------------------------------------------------------> Sizes
 
@@ -143,6 +142,12 @@ msg = { # Messages for the user of the App
 }
 #endregion ---------------------------------------------------------> Messages
 
+#region --------------------------------------------------------------- Images
+img = { # Information regarding images
+	#--> paths to images in:
+	'Start' : path['Images'] / 'MAIN-WINDOW/p97-2.png',
+}
+#endregion ------------------------------------------------------------ Images
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
 
 
