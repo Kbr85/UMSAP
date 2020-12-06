@@ -26,6 +26,7 @@ import dat4s_core.widget.wx_window as dtsWindow
 import dat4s_core.data.string as dtsStr
 
 import config.config as config
+import menu.menu as menu
 import gui.tab as Tab
 #endregion ----------------------------------------------------------> Imports
 
@@ -133,8 +134,8 @@ class MainWindow(wx.Frame):
 		#endregion --------------------------------------------> Initial setup
 
 		#region ---------------------------------------------> Default MenuBar
-		# self.menubar = menu.MainMenuBar()
-		# self.SetMenuBar(self.menubar) 
+		self.menubar = menu.MainMenuBar()
+		self.SetMenuBar(self.menubar) 
 		#endregion ------------------------------------------> Default MenuBar
 
 		#region -----------------------------------------------------> Widgets
@@ -156,7 +157,7 @@ class MainWindow(wx.Frame):
 		self.CreateTab('Start')
 		self.notebook.SetCloseButton(0, False)
 		#endregion -----------------------------------------> Create Start Tab
-		
+
 		#region ---------------------------------------------> Position & Show
 		self.Center()
 		self.Show()

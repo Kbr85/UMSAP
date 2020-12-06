@@ -26,13 +26,43 @@ import config.config as config
 class Start(wx.Panel):
 	"""Start tab
 	
+		Parameters
+		----------
+		parent : wx widget
+			Parent of the tab. 
+		name : str
+			Name of the tab. Unique name for the application
+		statusbar : wx.SatusBar
+			Statusbar to display info
+
+		Attributes
+		----------
+		parent : wx widget
+			Parent of the tab. 
+		name : str
+			Name of the tab. Unique name for the application
+		statusbar : wx.SatusBar
+			Statusbar to display info
+		btnLimProt : wx.Button
+			Launch the Limited Proteolysis module
+		btnProtProf : wx.Button
+			Launch the Proteome profiling module
+		btnTarProt : wx.Button
+			Launch the Targeted Proteolysis module
+		Sizer : wx.BoxSizer
+			Main sizer of the app
+		SizerGrid : wx.GridBagSizer
+			Sizer to hold the widgets
+		Sizerbtn : wx.BoxSizer
+			Sizer for the buttons
 	"""
 
 	#region --------------------------------------------------> Instance setup
 	def __init__(self, parent, name, statusbar):
 		""""""
 		#region -----------------------------------------------> Initial setup
-		self.name = name
+		self.name   = name
+		self.parent = parent
 
 		super().__init__(parent = parent)
 		#endregion --------------------------------------------> Initial setup
@@ -54,6 +84,13 @@ class Start(wx.Panel):
 		self.btnProtProf = wx.Button(self, label='Proteome Profiling')
 		self.btnTarProt  = wx.Button(self, label='Targeted Proteolysis')
 		#endregion --------------------------------------------------> Widgets
+
+		#region ----------------------------------------------------> Tooltips
+		self.btnLimProt.SetToolTip(config.tooltip[self.name]['LimProt'])
+		self.btnTarProt.SetToolTip(config.tooltip[self.name]['TarProt'])
+		self.btnProtProf.SetToolTip(config.tooltip[self.name]['ProtProf'])
+		#endregion -------------------------------------------------> Tooltips
+		
 		#region ------------------------------------------------------> Sizers
 		#--> Sizers
 		self.Sizer     = wx.BoxSizer(wx.VERTICAL)
@@ -88,10 +125,14 @@ class Start(wx.Panel):
 			self.SizerGrid, 0, wx.CENTER|wx.ALL, 5
 		)
 		self.Sizer.AddStretchSpacer(1)
-		
+
 		self.SetSizer(self.Sizer)
 		self.Sizer.Fit(self)
 		#endregion ---------------------------------------------------> Sizers
+
+		#region --------------------------------------------------------> Bind
+		
+		#endregion -----------------------------------------------------> Bind
 	#endregion -----------------------------------------------> Instance setup
 #---
 #endregion ----------------------------------------------------------> Classes

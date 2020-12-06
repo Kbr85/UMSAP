@@ -142,12 +142,23 @@ msg = { # Messages for the user of the App
 }
 #endregion ---------------------------------------------------------> Messages
 
-#region --------------------------------------------------------------- Images
+#region --------------------------------------------------------------> Images
 img = { # Information regarding images
 	#--> paths to images in:
 	'Start' : path['Images'] / 'MAIN-WINDOW/p97-2.png',
 }
-#endregion ------------------------------------------------------------ Images
+#endregion -----------------------------------------------------------> Images
+
+#region ------------------------------------------------------------> Tooltips
+tooltip = { # Tooltips of the app
+	'Start' : { # gui.tab.Start
+		'LimProt' : 'Start the module Limited Proteolysis',
+		'TarProt' : 'Start the module Target Proteolysis',
+		'ProtProf': 'Start the module Proteome Profiling',
+	}
+}
+#endregion ---------------------------------------------------------> Tooltips
+
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
 
 
@@ -1610,11 +1621,7 @@ except Exception:
 # 			'Exclude proteins', 'Columns to extract'],
 # }
 
-# modules = {
-# 	1: 'Limited Proteolysis',
-# 	2: 'Proteome Profiling',
-# 	3: 'Targeted Proteolysis',
-# }
+
 # #endregion -------------------------------------------------------- Menu items
 
 # #-------------------------------------------------------- GUI dictionaries
