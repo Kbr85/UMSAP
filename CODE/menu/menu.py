@@ -18,10 +18,39 @@
 import wx
 #endregion ----------------------------------------------------------> Imports
 
+#region --------------------------------------------------------> Base Classes
+class MenuMethods():
+	"""Base class to hold common methods to the menus
+	
+		Methods
+		-------
+	"""
+
+	def OnCreateTab(self, event):
+		"""Creates a new tab in the main window
+		
+			Parameters
+			----------
+			event : wx.Event
+				Information about the event
+		"""
+		win = self.GetWindow()
+		win.CreateTab(self.name[event.GetId()])
+		return True
+	#---
+
+#---
+#endregion -----------------------------------------------------> Base Classes
 
 #region ----------------------------------------------------> Individual menus
-class Module(wx.Menu):
-	"""Menu with module entries"""
+class Module(wx.Menu, MenuMethods):
+	"""Menu with module entries
+	
+		Attributes
+		----------
+		name : dict
+			Keys are the menu ids and values the tupples to create the tabs
+	"""
 	#region --------------------------------------------------- Instance setup
 	def __init__(self):
 		""" """
@@ -36,7 +65,7 @@ class Module(wx.Menu):
 		#endregion -----------------------------------------------> Menu items
 
 		#region -------------------------------------------------------> Names
-		self.name = { # Associate IDs with Tab names. Avoids IDs manual set
+		self.name = { # Associate IDs with Tab names. Avoid manual set of IDs
 			self.limprot.GetId() : 'LimProt',
 			self.protprof.GetId(): 'ProtProf',
 			self.tarprot.GetId() : 'TarProt',
@@ -44,93 +73,57 @@ class Module(wx.Menu):
 		#endregion ----------------------------------------------------> Names
 
 		#region --------------------------------------------------------> Bind
-		self.Bind(wx.EVT_MENU, self.OnModule, source=self.limprot)
-		self.Bind(wx.EVT_MENU, self.OnModule, source=self.protprof)
-		self.Bind(wx.EVT_MENU, self.OnModule, source=self.tarprot)
+		self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.limprot)
+		self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.protprof)
+		self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.tarprot)
 		#endregion -----------------------------------------------------> Bind
 	#endregion ------------------------------------------------ Instance Setup
-
-	#region ---------------------------------------------------> Class Methods
-	def OnModule(self, event):
-		"""Creates the module configuration tab 
-		
-			Parameters
-			----------
-			event : wx.Event
-				Information about the event
-		"""
-		win = self.GetWindow()
-		win.CreateTab(self.name[event.GetId()])
-		return True
-	#---
-	#endregion ------------------------------------------------> Class Methods
 #---
 
-# class UtilGeneral(wx.Menu):
-# 	""" General utilities """
-# 	#region --------------------------------------------------> Instance Setup
-# 	def __init__(self):
-# 		""""""
-# 		#region -----------------------------------------------> Initial Setup
-# 		super().__init__()
-# 		#endregion --------------------------------------------> Initial Setup
-		
-# 		#region --------------------------------------------------> Menu items
-# 		self.corrA   = self.Append(-1, 'Correlation Analysis')
-# 		self.inputF  = self.Append(-1, 'Create Input File')
-# 		self.export  = self.Append(-1, 'Export Data')
-# 		self.mergeAA = self.Append(-1, 'Merge aadist Files')
-# 		self.shortDF = self.Append(-1, 'Short Data Files')
-# 		#endregion -----------------------------------------------> Menu items
+class UtilGeneral(wx.Menu, MenuMethods):
+	""" General utilities """
+	#region --------------------------------------------------> Instance Setup
+	def __init__(self):
+		""""""
+		#region -----------------------------------------------> Initial Setup
+		super().__init__()
+		#endregion --------------------------------------------> Initial Setup
 
-# 		#region --------------------------------------------------------> Bind
-# 		self.Bind(wx.EVT_MENU, self.OnCorrA,   source=self.corrA)	 
-# 		self.Bind(wx.EVT_MENU, self.OnInputF,  source=self.inputF)
-# 		self.Bind(wx.EVT_MENU, self.OnExport,  source=self.export)
-# 		self.Bind(wx.EVT_MENU, self.OnMergeAA, source=self.mergeAA)
-# 		self.Bind(wx.EVT_MENU, self.OnShortDF, source=self.shortDF)
-# 		#endregion -----------------------------------------------------> Bind
-# 	#---
-# 	#endregion -----------------------------------------------> Instance Setup
+		#region --------------------------------------------------> Menu items
+		self.corrA   = self.Append(-1, 'Correlation Analysis')
+		#endregion -----------------------------------------------> Menu items
 
-# 	#region ---------------------------------------------------> Class Methods
-# 	def OnCorrA(self, event):
-# 		""" Creates the correlation analysis window """
-# 		gmethods.WinMUCreate(config.name['CorrA'])	
-# 		return True
-# 	#---
+		#region -------------------------------------------------------> Names
+		self.name = { # Associate IDs with Tab names. Avoid manual set of IDs
+			self.corrA.GetId() : 'CorrA',
+		}
+		#endregion ----------------------------------------------------> Names
 
-# 	def OnInputF(self, event):
-# 		""" Reads a .tarprot file and creates a .uscr file """	
-# 		if gmethods.MenuOnCInputFile():
-# 			return True
-# 		else:
-# 			return False
-# 	#---
-
-# 	def OnExport(self, event):
-# 		""" Export data from the json format to csv """
-# 		gmethods.MenuOnExport()
-# 		return True
-# 	#---
-
-# 	def OnMergeAA(self, event):
-# 		""" Merge aadist files util window """
-# 		gmethods.WinMUCreate(config.name['MergeAA'])
-# 		return True
-# 	#---
-
-# 	def OnShortDF(self, event):
-# 		""" Window to create the short data files from a module main output file
-# 		"""
-# 		gmethods.WinMUCreate(config.name['ShortDFile'])
-# 		return True
-# 	#---
-# 	#endregion ----------------------------------------------------- MyMethods
-# #---
+		#region --------------------------------------------------------> Bind
+		self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.corrA)
+		#endregion -----------------------------------------------------> Bind
+	#---
+	#endregion -----------------------------------------------> Instance Setup
+#---
 #endregion -------------------------------------------------> Individual menus
 
 #region -----------------------------------------------------------> Mix menus
+class Utility(wx.Menu):
+	"""Utilites menu"""
+	#region --------------------------------------------------> Instance Setup
+	def __init__(self):
+		""""""
+		#region -----------------------------------------------> Initial Setup
+		super().__init__()
+		#endregion --------------------------------------------> Initial Setup
+
+		#region --------------------------------------------------> Menu items
+		self.General = UtilGeneral()
+		#---
+		self.AppendSubMenu(self.General, 'General Utilities')
+		#endregion -----------------------------------------------> Menu items
+	#endregion -----------------------------------------------> Instance Setup
+#---
 #endregion --------------------------------------------------------> Mix menus
 
 #region -------------------------------------------------------------> Menubar
@@ -145,11 +138,13 @@ class MainMenuBar(wx.MenuBar):
 		#endregion --------------------------------------------> Initial Setup
 		
 		#region --------------------------------------------------> Menu items
-		self.Module = Module()
+		self.Module  = Module()
+		self.Utility = Utility()
 		#endregion -----------------------------------------------> Menu items
 
 		#region -------------------------------------------> Append to menubar
 		self.Append(self.Module, '&Modules')
+		self.Append(self.Utility, '&Utilities')
 		#endregion ----------------------------------------> Append to menubar
 	#endregion ------------------------------------------------ Instance Setup
 

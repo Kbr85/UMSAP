@@ -30,7 +30,7 @@ DEVELOPMENT = True # Track state, development (True) or production (False)
 
 #region -------------------------------------------------------------> Classes
 class UmsapApp(wx.App):
-	"""Start the UMSAP app """
+	"""Start the UMSAP app"""
 
 	#region ----------------------------------------------> Overridden methods
 	def OnInit(self):
@@ -60,7 +60,13 @@ class UmsapApp(wx.App):
 #---
 
 class SplashWindow(wx.adv.SplashScreen):
-	""" Create splash screen """
+	""" Create splash screen 
+	
+		Parameters
+		----------
+		imgPath : str or Path
+			Path to the image to use in the splash window
+	"""
 	#region --------------------------------------------------> Instance setup
 	def __init__(self, imgPath):
 		"""Creates the splash window to show when starting the application 

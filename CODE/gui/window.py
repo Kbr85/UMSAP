@@ -124,6 +124,7 @@ class MainWindow(wx.Frame):
 
 		self.tabMethods = {
 			'Start'  : Tab.Start,
+			'CorrA'  : Tab.CorrA,
 		}
 
 		super().__init__(
@@ -168,18 +169,56 @@ class MainWindow(wx.Frame):
 			_thread.start_new_thread(UpdateCheck, ("main", self))
 		else:
 			pass
-		#endregion	---------------------------------------------------> Update
+		#endregion	--------------------------------------------------> Update
+
+		#region --------------------------------------------------------> Bind
+		self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
+		#endregion -----------------------------------------------------> Bind
 	#---
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ----------------------------------------------------> Menu methods
-	def CreateTab(self, name):
+	def OnTabClose(self, event):
+		"""Make sure to show the Start Tab if no other tab exists
+		
+			Parameters
+			----------
+			event : wx.aui.Event
+				Information about the event
+		"""
+		#--> Close Tab
+		event.Skip()
+		#--> Number of tabs
+		pageC = self.notebook.GetPageCount() - 1
+		#--> Remove close button from Start tab
+		if pageC == 1:
+			if (win := self.FindWindowByName('Start')) is not None:
+				self.notebook.SetCloseButton(
+					self.notebook.GetPageIndex(win), 
+					False,
+				)
+			else:
+				pass
+		#--> Show Start Tab without close button, if there is no other tab
+		elif pageC == 0:
+			self.CreateTab('Start')
+			self.notebook.SetCloseButton(
+				self.notebook.GetPageIndex(self.FindWindowByName('Start')), 
+				False,
+			)
+		else:
+			pass
+	#---
+
+	def CreateTab(self, name, iFile=None):
 		"""Create a tab
 		
 			Parameters
 			----------
 			name : str
 				One of the values in config.name for tabs
+			iFile : str or Path
+				Location of file to open in the new tab
 		"""
 		#region -----------------------------------------------------> Get tab
 		win = self.FindWindowByName(name)
@@ -193,20 +232,29 @@ class MainWindow(wx.Frame):
 					self.notebook,
 					name,
 					self.statusbar,
+					iFile,
 				),
 				config.title[name],
-			)
-			self.notebook.SetSelection(
-				self.notebook.GetPageIndex(
-					self.FindWindowByName(
-						name
-					)
-				)
+				select = True,
 			)
 		else:
 		 #--> Focus
 			self.notebook.SetSelection(self.notebook.GetPageIndex(win))
 		#endregion ---------------------------------------> Find/Create & Show
+
+		#region ---------------------------------------------------> Start Tab
+		if self.notebook.GetPageCount() > 1:
+			winS = self.FindWindowByName('Start')
+			if winS is not None:
+				self.notebook.SetCloseButton(
+					self.notebook.GetPageIndex(winS), 
+					True,
+				)
+			else:
+				pass
+		else:
+			pass
+		#endregion ------------------------------------------------> Start Tab
 	#---
 	#endregion -------------------------------------------------> Menu methods
 #---

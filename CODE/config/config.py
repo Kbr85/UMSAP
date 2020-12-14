@@ -57,10 +57,11 @@ elif cOS == 'Linux':
 #region ----------------------------------------------------> Names and titles
 name = { # Unique names to identify windows/objects through the app
 	#--> Main windows & Dialogs
-	'MainW' : 'MainW',
-	'CheckUpdateRes' : 'CehckUpdateRes',
+	'MainW'         : 'MainW',
+	'CheckUpdateRes': 'CheckUpdateRes',
 	#--> Tab for notebook windows
 	'Start' : 'Start',
+	'CorrA' : 'CorrA',
 	#--> Panes
 }
 
@@ -72,6 +73,7 @@ title = { # Title of windows, tabs and panes
 	'CheckUpdateRes' : f"Check for Updates",
 	#--> Tab
 	'Start' : 'Start',
+	'CorrA' : 'CorrA',
 	#--> Pane
 
 }

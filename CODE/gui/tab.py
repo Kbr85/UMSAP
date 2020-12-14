@@ -34,6 +34,7 @@ class Start(wx.Panel):
 			Name of the tab. Unique name for the application
 		statusbar : wx.SatusBar
 			Statusbar to display info
+		args : extra arguments
 
 		Attributes
 		----------
@@ -58,13 +59,13 @@ class Start(wx.Panel):
 	"""
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, parent, name, statusbar):
+	def __init__(self, parent, name, statusbar, *args):
 		""""""
 		#region -----------------------------------------------> Initial setup
 		self.name   = name
 		self.parent = parent
 
-		super().__init__(parent = parent)
+		super().__init__(parent=parent, name=name)
 		#endregion --------------------------------------------> Initial setup
 		
 		#region -----------------------------------------------------> Widgets
@@ -134,5 +135,50 @@ class Start(wx.Panel):
 		
 		#endregion -----------------------------------------------------> Bind
 	#endregion -----------------------------------------------> Instance setup
+#---
+
+class CorrA(wx.Panel):
+	"""Creates the tab for the corralation analysis 
+	
+		Parameters
+		----------
+		parent : wx widget
+			Parent of the tab. 
+		name : str
+			Name of the tab. Unique name for the application
+		statusbar : wx.SatusBar
+			Statusbar to display info
+		iFiles : tupple
+			Location of .corr files to open in the tab
+	"""
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, parent, name, statusbar, *iFiles):
+		""""""
+		#region -----------------------------------------------> Initial setup
+		self.name   = name
+		self.parent = parent
+		self.iFiles = iFiles
+
+		super().__init__(parent=parent, name=name)
+		#endregion --------------------------------------------> Initial setup
+		
+		#region -----------------------------------------------------> Widgets
+		#--> Statusbar
+		self.statusbar = statusbar
+		#--> 
+		self.conf = True
+		#endregion --------------------------------------------------> Widgets
+
+		
+		
+
+		
+
+		#region --------------------------------------------------------> Bind
+		
+		#endregion -----------------------------------------------------> Bind
+	#endregion -----------------------------------------------> Instance setup
+#---
+
 #---
 #endregion ----------------------------------------------------------> Classes
