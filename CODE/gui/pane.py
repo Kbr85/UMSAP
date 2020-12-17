@@ -170,6 +170,7 @@ class BaseConfPane(wx.Panel,
 			border = 5
 		)
 		self.sizersbFileWid.AddGrowableCol(1,1)
+		self.sizersbFileWid.AddGrowableRow(0,1)
 
 		self.Sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -188,7 +189,6 @@ class BaseConfPane(wx.Panel,
 	#region ---------------------------------------------------> Class methods
 	#endregion ------------------------------------------------> Class methods
 #---
-
 
 class CorrAConf(BaseConfPane):
 	"""Creates the configuration pane for Correlation Analysis
@@ -217,10 +217,130 @@ class CorrAConf(BaseConfPane):
 		#endregion --------------------------------------------> Initial setup
 		
 		#region -----------------------------------------------------> Widgets
-		
+		#--> Values
+		self.normMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
+			label     = config.label[self.name]['NormMethod'],
+			choices   = config.choice[self.name]['NormMethod'],
+			validator = dtsValidator.IsNotEmpty(
+				self,
+				message = config.msg['Error'][self.name]['NormMethod'],
+			),
+		)
+		self.corrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
+			label     = config.label[self.name]['CorrMethod'],
+			choices   = config.choice[self.name]['CorrMethod'],
+			validator = dtsValidator.IsNotEmpty(
+				self,
+				message = config.msg['Error'][self.name]['CorrMethod'],
+			),
+		)
+		#--> Columns
+		self.btnAdd = wx.Button(
+			self.sbColumn, 
+			label = config.label[self.name]['Add'],
+		)
+		self.stListI = wx.StaticText(
+			self.sbColumn, 
+			label = config.label[self.name]['iList'],
+		)
+		self.stListO = wx.StaticText(
+			self.sbColumn, 
+			label = config.label[self.name]['oList'],
+		)
+		self.lbI = dtsWidget.ListZebra(self.sbColumn, 
+			colLabel = config.label[self.name]['ListColumn'],
+			colSize  = config.size[self.name]['List'],
+		)
+		self.lbO = dtsWidget.ListZebra(self.sbColumn, 
+			colLabel = config.label[self.name]['ListColumn'],
+			colSize  = config.size[self.name]['List'],
+		)
+
+		self.iFile.listCtrl = self.lbI
 		#endregion --------------------------------------------------> Widgets
 
 		#region ------------------------------------------------------> Sizers
+		#--> Expand Column section
+		item = self.Sizer.GetItem(self.sizersbColumn)
+		item.Proportion = 1
+		item = self.sizersbColumn.GetItem(self.sizersbColumnWid)
+		item.Proportion = 1
+		#--> Values
+		self.sizersbValueWid.Add(
+			1, 1,
+			pos    = (0,0),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5
+		)
+		self.sizersbValueWid.Add(
+			self.normMethod.st,
+			pos    = (0,1),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
+			border = 5,
+		)
+		self.sizersbValueWid.Add(
+			self.normMethod.cb,
+			pos    = (0,2),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
+			border = 5,
+		)
+		self.sizersbValueWid.Add(
+			self.corrMethod.st,
+			pos    = (0,3),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
+			border = 5,
+		)
+		self.sizersbValueWid.Add(
+			self.corrMethod.cb,
+			pos    = (0,4),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
+			border = 5,
+		)
+		self.sizersbValueWid.Add(
+			1, 1,
+			pos    = (0,5),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5
+		)
+		self.sizersbValueWid.AddGrowableCol(0, 1)
+		self.sizersbValueWid.AddGrowableCol(5, 1)
+		
+		#--> Columns
+		self.sizersbColumnWid.Add(
+			self.stListI,
+			pos    = (0,0),
+			flag   = wx.ALIGN_CENTRE|wx.ALL,
+			border = 5
+		)
+		self.sizersbColumnWid.Add(
+			self.stListO,
+			pos    = (0,2),
+			flag   = wx.ALIGN_CENTRE|wx.ALL,
+			border = 5
+		)
+		self.sizersbColumnWid.Add(
+			self.lbI,
+			pos    = (1,0),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5
+		)
+		self.sizersbColumnWid.Add(
+			self.btnAdd,
+			pos    = (1,1),
+			flag   = wx.ALIGN_CENTRE_VERTICAL|wx.ALL,
+			border = 5
+		)
+		self.sizersbColumnWid.Add(
+			self.lbO,
+			pos    = (1,2),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5
+		)
+		self.sizersbColumnWid.AddGrowableCol(0, 1)
+		self.sizersbColumnWid.AddGrowableCol(2, 1)
+		self.sizersbColumnWid.AddGrowableRow(1, 1)
+
+		#--> Main Sizer
 		self.SetSizer(self.Sizer)
 		self.Sizer.Fit(self)
 		#endregion ---------------------------------------------------> Sizers

@@ -105,6 +105,9 @@ file = { # Location of important files
 #region ---------------------------------------------------------------> Sizes
 size = { # Base size for widgets
 	'MainW' : (900, 620),
+	'CorrAConf' : { # Correlation Analysis Configuration pane
+		'List' : [50, 150],
+	}
 }
 #endregion ------------------------------------------------------------> Sizes
 
@@ -154,8 +157,14 @@ label = { # Label for widgets
 		'Run' : 'Start analysis',
 	},
 	'CorrAConf' : { # Correlation Analysis Configuration Pane
-		'iFile' : 'Data File',
-		'oFile' : 'Output File',
+		'iFile'     : 'Data File',
+		'oFile'     : 'Output File',
+		'NormMethod': 'Normalization Method',
+		'CorrMethod': 'Correlation Method',
+		'ListColumn': ['#', 'Name'],
+		'iList' : 'Columns in the Data File',
+		'oList' : 'Columns to analyse',
+		'Add'   : '-- Add columns ->',
 	},
 }
 #endregion -----------------------------------------------------------> Labels
@@ -168,6 +177,15 @@ hint = { # Hint for widgets
 	},
 }
 #endregion ------------------------------------------------------------> Hints
+
+#region -------------------------------------------------------------> Choices
+choice = { # Choices for the wx.ComboBox
+	'CorrAConf' : { # Correlation Analysis Configuration Pane
+		'NormMethod' : ['', 'None', 'Log2'],
+		'CorrMethod' : ['', 'Pearson', 'Kendall', 'Spearman'],
+	},
+}
+#endregion ----------------------------------------------------------> Choices
 
 #region ------------------------------------------------------------> Messages
 msg = { # Messages for the user of the App
@@ -182,8 +200,14 @@ msg = { # Messages for the user of the App
 				f"The path to the {label['CorrAConf']['iFile']} is not valid."),
 			'oFile' : (
 				f"The path to the {label['CorrAConf']['oFile']} is not valid."),
-		}
-	}
+			'NormMethod' : (
+				f"The {label['CorrAConf']['NormMethod']} was not selected."
+			),
+			'CorrMethod' : (
+				f"The {label['CorrAConf']['CorrMethod']} was not selected."
+			),
+		},
+	},
 }
 #endregion ---------------------------------------------------------> Messages
 
