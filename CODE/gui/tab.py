@@ -15,8 +15,10 @@
 
 #region -------------------------------------------------------------> Imports
 import wx
+import wx.lib.agw.aui as aui
 
 import config.config as config
+import gui.pane as Pane
 #endregion ----------------------------------------------------------> Imports
 
 #region -------------------------------------------------------------> Methods
@@ -94,7 +96,7 @@ class Start(wx.Panel):
 		
 		#region ------------------------------------------------------> Sizers
 		#--> Sizers
-		self.Sizer     = wx.BoxSizer(wx.VERTICAL)
+		self.Sizer	 = wx.BoxSizer(wx.VERTICAL)
 		self.SizerGrid = wx.GridBagSizer(1,1)
 		self.SizerBtn  = wx.BoxSizer(wx.VERTICAL)
 		#--> Add widgets
@@ -110,13 +112,13 @@ class Start(wx.Panel):
 
 		self.SizerGrid.Add(
 			self.img, 
-			pos    = (0,0),
+			pos	= (0,0),
 			flag   = wx.EXPAND|wx.ALL,
 			border = 5,
 		)
 		self.SizerGrid.Add(
 			self.SizerBtn, 
-			pos    = (0,1),
+			pos	= (0,1),
 			flag   = wx.ALIGN_CENTRE_VERTICAL|wx.ALL,
 			border = 5,
 		)
@@ -150,34 +152,127 @@ class CorrA(wx.Panel):
 			Statusbar to display info
 		iFiles : tupple
 			Location of .corr files to open in the tab
+		
+		Attributes
+		----------
+		parent : wx widget
+			Parent of the tab. 
+		name : str
+			Name of the tab. Unique name for the application
+		statusbar : wx.SatusBar
+			Statusbar to display info
+		iFiles : tupple
+			Location of .corr files to open in the tab
+		confPane : Pane.CorrAConf or None
+			Configuration panel
+		_mgr : aui.AuiManager
+			Pane manager
 	"""
 	#region --------------------------------------------------> Instance setup
 	def __init__(self, parent, name, statusbar, *iFiles):
 		""""""
 		#region -----------------------------------------------> Initial setup
-		self.name   = name
-		self.parent = parent
-		self.iFiles = iFiles
+		self.parent    = parent
+		self.name      = name
+		self.statusbar = statusbar
+		self.iFiles    = iFiles
+		self.confPane  = None
 
 		super().__init__(parent=parent, name=name)
 		#endregion --------------------------------------------> Initial setup
 		
+		#region -------------------------------------------------> AUI Control
+		self._mgr = aui.AuiManager()
+		self._mgr.SetManagedWindow(self)
+		#endregion ----------------------------------------------> AUI Control
+
 		#region -----------------------------------------------------> Widgets
-		#--> Statusbar
-		self.statusbar = statusbar
-		#--> 
-		self.conf = True
+		#-->
+		if iFiles[0] is None:
+			self.CreateConfPane()
+		else:
+			pass
 		#endregion --------------------------------------------------> Widgets
 
-		
-		
-
-		
-
 		#region --------------------------------------------------------> Bind
-		
+		self.Bind(aui.EVT_AUI_PANE_CLOSE, self.OnPaneClose)
 		#endregion -----------------------------------------------------> Bind
 	#endregion -----------------------------------------------> Instance setup
+	
+	#region ---------------------------------------------------> Class Methods
+	def OnPaneClose(self, event):
+		"""Adjust self.confPane if the configuration pane is destroy
+	
+			Parameters
+			----------
+			event : aui.Event
+				Information about the event
+		"""
+		#-->
+		if (tPane := event.GetPane()).name == 'CorrAConf':
+			self._mgr.ClosePane(tPane)
+			self._mgr.DetachPane(self.confPane)
+			self._mgr.Update()
+			self.confPane = None
+		else:
+			pass
+		#-->
+		event.Skip()
+	#---
+
+
+	def CreateConfPane(self):
+		"""Creates the configuration pane
+		
+			Improve
+			-------
+			- Restore leaves a non-functional ToolBar icon
+		"""
+		if self.confPane is None:
+			#-->
+			self.confPane = Pane.CorrAConf(
+				self, 
+				config.url['CorrA'], 
+				self.statusbar,
+			)
+			#-->
+			self._mgr.AddPane(
+				self.confPane,
+				aui.AuiPaneInfo(
+					).CenterPane(
+					).Name(
+						'CorrAConf'
+					).Caption(
+						config.title['CorrAConf']
+					).CaptionVisible(
+					).CloseButton(
+					).MinimizeButton(
+					).Floatable(
+						b=False
+					).MinimizeMode(
+						aui.AUI_MINIMIZE_POS_TOP
+				),
+			)
+			self._mgr.Update()
+		else:
+			#-->
+			tPane = self._mgr.GetPaneByName('CorrAConf')
+			#-->
+			if tPane.IsMinimized():
+				#-->
+				self._mgr.RestorePane(tPane)
+				#-->
+				for k in self._mgr.GetAllPanes():
+					if k.IsToolbar():
+						pass
+					else:
+						pass
+			else:
+				pass
+			#-->
+			self._mgr.Update()
+			self._mgr.RequestUserAttention(self.confPane)
+	#endregion ------------------------------------------------> Class Methods
 #---
 
 #---

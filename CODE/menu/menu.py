@@ -105,6 +105,38 @@ class UtilGeneral(wx.Menu, MenuMethods):
 	#---
 	#endregion -----------------------------------------------> Instance Setup
 #---
+
+class ToolsCorrA(wx.Menu):
+	"""Creates the tools menu for the Correlation Analysis Tab"""
+	#region -----------------------------------------------------> Class setup
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self):
+		""" """
+		#region -----------------------------------------------> Initial Setup
+		super().__init__()
+		#endregion --------------------------------------------> Initial Setup
+
+		#region --------------------------------------------------> Menu Items
+		self.confPane = self.Append(-1, 'Create Configuration Panel')
+		#endregion -----------------------------------------------> Menu Items
+
+		#region --------------------------------------------------------> Bind
+		self.Bind(wx.EVT_MENU, self.OnCreateCorrAConfTab, source=self.confPane)
+		#endregion -----------------------------------------------------> Bind
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	def OnCreateCorrAConfTab(self, event):
+		"""Creates the configuration panel"""
+		win = self.GetWindow()
+		tab = win.FindWindowByName("CorrA")
+		tab.CreateConfPane()
+	#---
+	#endregion ------------------------------------------------> Class methods
+#---
 #endregion -------------------------------------------------> Individual menus
 
 #region -----------------------------------------------------------> Mix menus
@@ -140,12 +172,16 @@ class MainMenuBar(wx.MenuBar):
 		#region --------------------------------------------------> Menu items
 		self.Module  = Module()
 		self.Utility = Utility()
+		self.Tool    = wx.Menu()
+		self.Script  = wx.Menu()
 		#endregion -----------------------------------------------> Menu items
 
 		#region -------------------------------------------> Append to menubar
 		self.Append(self.Module, '&Modules')
 		self.Append(self.Utility, '&Utilities')
+		self.Append(self.Tool, '&Tools')
+		self.Append(self.Script, '&Script')
 		#endregion ----------------------------------------> Append to menubar
 	#endregion ------------------------------------------------ Instance Setup
-
+#---
 #endregion ----------------------------------------------------------> Menubar

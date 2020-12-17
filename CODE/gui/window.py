@@ -22,8 +22,10 @@ import wx
 import wx.adv as adv
 import wx.lib.agw.aui as aui
 
-import dat4s_core.widget.wx_window as dtsWindow
 import dat4s_core.data.string as dtsStr
+import dat4s_core.menu.menu as dtsMenu
+import dat4s_core.widget.wx_window as dtsWindow
+
 
 import config.config as config
 import menu.menu as menu
@@ -116,13 +118,20 @@ class MainWindow(wx.Frame):
 		Sizer : wx.BoxSizer
 			Sizer for the window
 	"""
+	#region -----------------------------------------------------> Class Setup
+	tabMenus = { # Keys are the unique names of the tabs
+		'Start' : wx.Menu,
+		'CorrA' : menu.ToolsCorrA,
+	}
+	#endregion --------------------------------------------------> Class Setup
+	
 	#region --------------------------------------------------> Instance setup
 	def __init__(self, parent=None):
 		""""""
 		#region -----------------------------------------------> Initial setup
 		self.name = 'MainW'
 
-		self.tabMethods = {
+		self.tabMethods = { # Keys are the unique names of the tabs
 			'Start'  : Tab.Start,
 			'CorrA'  : Tab.CorrA,
 		}
@@ -136,7 +145,8 @@ class MainWindow(wx.Frame):
 
 		#region ---------------------------------------------> Default MenuBar
 		self.menubar = menu.MainMenuBar()
-		self.SetMenuBar(self.menubar) 
+		self.SetMenuBar(self.menubar)
+		self.menubar.EnableTop(config.toolsMenuIdx, False)
 		#endregion ------------------------------------------> Default MenuBar
 
 		#region -----------------------------------------------------> Widgets
@@ -173,6 +183,7 @@ class MainWindow(wx.Frame):
 
 		#region --------------------------------------------------------> Bind
 		self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
+		self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnTabChanged)
 		#endregion -----------------------------------------------------> Bind
 	#---
 	#endregion -----------------------------------------------> Instance setup
@@ -255,6 +266,28 @@ class MainWindow(wx.Frame):
 		else:
 			pass
 		#endregion ------------------------------------------------> Start Tab
+	#---
+
+	def OnTabChanged(self, event):
+		"""Updates Tools menu
+
+			Parameters
+			----------
+			event : aui.Event
+				Information about the event
+		"""
+		#-->
+		name = self.notebook.GetPage(self.notebook.GetSelection()).name
+		toolMenu = self.tabMenus[name]()
+		#-->
+		dtsMenu.ReplaceTopMenu(
+			self.menubar, 
+			config.toolsMenuIdx, 
+			toolMenu,
+			config.name['Tool'],
+		)
+		#-->
+		event.Skip()
 	#---
 	#endregion -------------------------------------------------> Menu methods
 #---

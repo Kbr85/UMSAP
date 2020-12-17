@@ -45,13 +45,16 @@ if cOS == 'Darwin':
 		res = cwd / 'BORRAR-UMSAP/RESOURCES'
 	else:
 		res = cwd / 'Resources'
+	toolsMenuIdx = 2
 elif cOS == 'Windows':
 	#--> Fix cwd and set the location of the Resources folder
 	cwd = cwd.parent
 	res = cwd / 'RESOURCES'
+	toolsMenuIdx = 3
 elif cOS == 'Linux':
 	#--> Fix cwd and set the location of the Resources folder
 	res = cwd / 'RESOURCES'	
+	toolsMenuIdx = 3
 #endregion ------------------------------------- PLATFORM DEPENDENT PARAMETERS
 
 #region ----------------------------------------------------> Names and titles
@@ -63,6 +66,11 @@ name = { # Unique names to identify windows/objects through the app
 	'Start' : 'Start',
 	'CorrA' : 'CorrA',
 	#--> Panes
+
+	#--> Menu
+	'Module' : 'Modules',
+	'Utility': 'Utilities',
+	'Tool'   : 'Tools',
 }
 
 title = { # Title of windows, tabs and panes
@@ -75,7 +83,7 @@ title = { # Title of windows, tabs and panes
 	'Start' : 'Start',
 	'CorrA' : 'CorrA',
 	#--> Pane
-
+	'CorrAConf' : 'Correlation Analysis Configuration',
 }
 #endregion -------------------------------------------------> Names and titles
 
@@ -128,8 +136,16 @@ url = { # Selected URL needed by umsap.
 
 #region --------------------------------------------------------------> Labels
 label = { # Label for widgets
+	'StaticBox' : {
+		'File'  : 'File',
+		'Value' : 'User-defined values',
+		'Column': 'Column numbers',
+	},
 	'CheckUpdateRes' : { # gui.window.CheckUpdateResult
 		'Latest' : "You are using the latest version of UMSAP.",
+	},
+	'Button' : {
+		'Run' : 'Start analysis',
 	},
 }
 #endregion -----------------------------------------------------------> Labels
