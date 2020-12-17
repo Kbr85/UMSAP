@@ -134,6 +134,12 @@ url = { # Selected URL needed by umsap.
 }
 #endregion --------------------------------------------------------------- URL
 
+#region ----------------------------------------------------------- Extensions
+extLong = { # string for wx.Dialogs representing the extension of the files
+	'Data'    : 'txt files (*.txt)|*.txt',
+}
+#endregion -------------------------------------------------------- Extensions
+
 #region --------------------------------------------------------------> Labels
 label = { # Label for widgets
 	'StaticBox' : {
@@ -147,8 +153,21 @@ label = { # Label for widgets
 	'Button' : {
 		'Run' : 'Start analysis',
 	},
+	'CorrAConf' : { # Correlation Analysis Configuration Pane
+		'iFile' : 'Data File',
+		'oFile' : 'Output File',
+	},
 }
 #endregion -----------------------------------------------------------> Labels
+
+#region ---------------------------------------------------------------> Hints
+hint = { # Hint for widgets
+	'CorrAConf' : { # Correlation Analysis Configuration Pane
+		'iFile' : f"Path to the {label['CorrAConf']['iFile']}",
+		'oFile' : f"Path to the {label['CorrAConf']['oFile']}",
+	},
+}
+#endregion ------------------------------------------------------------> Hints
 
 #region ------------------------------------------------------------> Messages
 msg = { # Messages for the user of the App
@@ -157,6 +176,14 @@ msg = { # Messages for the user of the App
 			'Failed': f"Check for Updates failed. Please try again later."
 		},
 	},
+	'Error' : { # Error messages
+		'CorrAConf': { # Correlation Analysis Configuration Pane
+			'iFile' : (
+				f"The path to the {label['CorrAConf']['iFile']} is not valid."),
+			'oFile' : (
+				f"The path to the {label['CorrAConf']['oFile']} is not valid."),
+		}
+	}
 }
 #endregion ---------------------------------------------------------> Messages
 

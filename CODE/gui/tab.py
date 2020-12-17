@@ -150,7 +150,7 @@ class CorrA(wx.Panel):
 			Name of the tab. Unique name for the application
 		statusbar : wx.SatusBar
 			Statusbar to display info
-		iFiles : tupple
+		corrFiles : tupple
 			Location of .corr files to open in the tab
 		
 		Attributes
@@ -161,7 +161,7 @@ class CorrA(wx.Panel):
 			Name of the tab. Unique name for the application
 		statusbar : wx.SatusBar
 			Statusbar to display info
-		iFiles : tupple
+		corrFiles : tupple
 			Location of .corr files to open in the tab
 		confPane : Pane.CorrAConf or None
 			Configuration panel
@@ -169,13 +169,13 @@ class CorrA(wx.Panel):
 			Pane manager
 	"""
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, parent, name, statusbar, *iFiles):
+	def __init__(self, parent, name, statusbar, *corrFiles):
 		""""""
 		#region -----------------------------------------------> Initial setup
 		self.parent    = parent
 		self.name      = name
 		self.statusbar = statusbar
-		self.iFiles    = iFiles
+		self.corrFiles = corrFiles
 		self.confPane  = None
 
 		super().__init__(parent=parent, name=name)
@@ -188,7 +188,7 @@ class CorrA(wx.Panel):
 
 		#region -----------------------------------------------------> Widgets
 		#-->
-		if iFiles[0] is None:
+		if corrFiles[0] is None:
 			self.CreateConfPane()
 		else:
 			pass

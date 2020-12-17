@@ -19,6 +19,7 @@ import wx
 import webbrowser
 
 import dat4s_core.widget.wx_widget as dtsWidget
+import dat4s_core.validator.validator as dtsValidator
 
 import config.config as config
 #endregion ----------------------------------------------------------> Imports
@@ -104,7 +105,7 @@ class BaseConfPane(wx.Panel,
 		):
 		""" """
 		#region -----------------------------------------------> Initial Setup
-		self.name = name
+		self.name   = name
 		self.parent = parent
 
 		wx.Panel.__init__(self, parent, name=name)
@@ -122,10 +123,54 @@ class BaseConfPane(wx.Panel,
 		#endregion --------------------------------------------> Initial Setup
 
 		#region -----------------------------------------------------> Widgets
-		
+		self.iFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
+			btnLabel  = config.label[self.name]['iFile'],
+			ext       = config.extLong['Data'],
+			tcHint    = config.hint[self.name]['iFile'],
+			validator = dtsValidator.IsNotEmpty(
+				self,
+				message = config.msg['Error'][self.name]['iFile'],
+			)
+		)
+		self.oFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
+			btnLabel  = config.label[self.name]['oFile'],
+			mode      = 'save',
+			ext       = config.extLong['Data'],
+			tcHint    = config.hint[self.name]['oFile'],
+			validator = dtsValidator.IsNotEmpty(
+				self,
+				message = config.msg['Error'][self.name]['oFile'],
+			)
+		)
 		#endregion --------------------------------------------------> Widgets
 
 		#region ------------------------------------------------------> Sizers
+		self.sizersbFileWid.Add(
+			self.iFile.btn,
+			pos    = (0,0),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5
+		)
+		self.sizersbFileWid.Add(
+			self.iFile.tc,
+			pos    = (0,1),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5
+		)
+		self.sizersbFileWid.Add(
+			self.oFile.btn,
+			pos    = (1,0),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5
+		)
+		self.sizersbFileWid.Add(
+			self.oFile.tc,
+			pos    = (1,1),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5
+		)
+		self.sizersbFileWid.AddGrowableCol(1,1)
+
 		self.Sizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.Sizer.Add(self.sizersbFile, 0, wx.EXPAND|wx.ALL, 5)
