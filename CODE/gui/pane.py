@@ -53,6 +53,8 @@ class BaseConfPane(wx.Panel,
 			Label of the Value wx.StaticBox
 		labelC : str
 			Label of the Column wx.StaticBox
+		rightDelete : Boolean
+			Enables clearing wx.StaticBox input with right click
 
 		Attributes
 		----------
@@ -97,11 +99,12 @@ class BaseConfPane(wx.Panel,
 
 	#region --------------------------------------------------> Instance setup
 	def __init__(self, parent, url, name,  
-		statusbar = None,
-		labelR    = config.label['Button']['Run'],
-		labelF    = config.label['StaticBox']['File'],
-		labelV    = config.label['StaticBox']['Value'],
-		labelC    = config.label['StaticBox']['Column'],
+		statusbar   = None,
+		labelR      = config.label['Button']['Run'],
+		labelF      = config.label['StaticBox']['File'],
+		labelV      = config.label['StaticBox']['Value'],
+		labelC      = config.label['StaticBox']['Column'],
+		rightDelete = True
 		):
 		""" """
 		#region -----------------------------------------------> Initial Setup
@@ -116,9 +119,10 @@ class BaseConfPane(wx.Panel,
 		)
 
 		dtsWidget.StaticBoxes.__init__(self, self, 
-			labelF = labelF,
-			labelV = labelV,
-			labelC = labelC,
+			labelF      = labelF,
+			labelV      = labelV,
+			labelC      = labelC,
+			rightDelete = rightDelete,
 		)
 		#endregion --------------------------------------------> Initial Setup
 
@@ -254,6 +258,8 @@ class CorrAConf(BaseConfPane):
 		self.lbO = dtsWidget.ListZebra(self.sbColumn, 
 			colLabel = config.label[self.name]['ListColumn'],
 			colSize  = config.size[self.name]['List'],
+			canPaste = True,
+			canCut   = True,
 		)
 
 		self.iFile.listCtrl = self.lbI
@@ -346,7 +352,21 @@ class CorrAConf(BaseConfPane):
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind
-		
+		self.btnAdd.Bind(wx.EVT_BUTTON, self.OnAdd)
 		#endregion -----------------------------------------------------> Bind
 	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class Methods
+	def OnAdd(self, event):
+		"""Add selected columns from self.lbI to self.lbO
+	
+			Parameters
+			----------
+			event : wx.Event
+				Information about the event
+		"""
+		dtsWidget.LC_CopyListCtrlSelection(self.lbI, self.lbO)
+	#---
+	#endregion ------------------------------------------------> Class Methods
+	
 #endregion ----------------------------------------------------------> Classes
