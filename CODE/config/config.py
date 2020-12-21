@@ -46,15 +46,18 @@ if cOS == 'Darwin':
 	else:
 		res = cwd / 'Resources'
 	toolsMenuIdx = 2
+	copyShortCut = 'Cmd'
 elif cOS == 'Windows':
 	#--> Fix cwd and set the location of the Resources folder
 	cwd = cwd.parent
 	res = cwd / 'RESOURCES'
 	toolsMenuIdx = 3
+	copyShortCut = 'Ctrl'
 elif cOS == 'Linux':
 	#--> Fix cwd and set the location of the Resources folder
 	res = cwd / 'RESOURCES'	
 	toolsMenuIdx = 3
+	copyShortCut = 'Ctrl'
 #endregion ------------------------------------- PLATFORM DEPENDENT PARAMETERS
 
 #region ----------------------------------------------------> Names and titles
@@ -79,6 +82,8 @@ title = { # Title of windows, tabs and panes
 		f"Utilities for Mass Spectrometry Analysis of Proteins "
 		f"{version}"),
 	'CheckUpdateRes' : f"Check for Updates",
+	#--> Progress Dialog
+	'CorrA_PD' : 'Calculating Correlation Coefficients',
 	#--> Tab
 	'Start' : 'Start',
 	'CorrA' : 'CorrA',
@@ -140,6 +145,7 @@ url = { # Selected URL needed by umsap.
 #region ----------------------------------------------------------- Extensions
 extLong = { # string for wx.Dialogs representing the extension of the files
 	'Data'    : 'txt files (*.txt)|*.txt',
+	'CorrA'   : 'corr files (*.corr)|*.corr',
 }
 #endregion -------------------------------------------------------- Extensions
 
@@ -163,7 +169,7 @@ label = { # Label for widgets
 		'CorrMethod': 'Correlation Method',
 		'ListColumn': ['#', 'Name'],
 		'iList' : 'Columns in the Data File',
-		'oList' : 'Columns to analyse',
+		'oList' : 'Columns to Analyse',
 		'Add'   : '-- Add columns ->',
 	},
 }
@@ -224,7 +230,16 @@ tooltip = { # Tooltips of the app
 		'LimProt' : 'Start the module Limited Proteolysis',
 		'TarProt' : 'Start the module Target Proteolysis',
 		'ProtProf': 'Start the module Proteome Profiling',
-	}
+	},
+	'CorrAConf' : {
+		'stListI' : (
+			f"Selected rows can be copied ({copyShortCut}+C) but the list "
+			f"cannot be modified."),
+		'stListO' : (
+			f"New rows can be pasted ({copyShortCut}+V) after the last "
+			f"selected element and existing one cut/deleted ({copyShortCut}+X) "
+			f"or copied ({copyShortCut}+C)."),
+	},
 }
 #endregion ---------------------------------------------------------> Tooltips
 

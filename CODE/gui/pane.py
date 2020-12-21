@@ -14,12 +14,14 @@
 """ Panes of the application"""
 
 #region -------------------------------------------------------------> Imports
-import wx
-
+import _thread
 import webbrowser
 
-import dat4s_core.widget.wx_widget as dtsWidget
+import wx
+
 import dat4s_core.validator.validator as dtsValidator
+import dat4s_core.widget.wx_widget as dtsWidget
+import dat4s_core.widget.wx_window as dtsWindow
 
 import config.config as config
 #endregion ----------------------------------------------------------> Imports
@@ -115,7 +117,6 @@ class BaseConfPane(wx.Panel,
 
 		dtsWidget.ButtonOnlineHelpClearAllRun.__init__(self, self, url, 
 			labelR    = labelR,
-			statusbar = statusbar,
 		)
 
 		dtsWidget.StaticBoxes.__init__(self, self, 
@@ -221,6 +222,8 @@ class CorrAConf(BaseConfPane):
 		#endregion --------------------------------------------> Initial setup
 		
 		#region -----------------------------------------------------> Widgets
+		#--> Files
+		self.oFile.ext = config.extLong['CorrA']
 		#--> Values
 		self.normMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
 			label     = config.label[self.name]['NormMethod'],
@@ -239,30 +242,28 @@ class CorrAConf(BaseConfPane):
 			),
 		)
 		#--> Columns
-		self.btnAdd = wx.Button(
-			self.sbColumn, 
-			label = config.label[self.name]['Add'],
-		)
 		self.stListI = wx.StaticText(
 			self.sbColumn, 
 			label = config.label[self.name]['iList'],
 		)
+		self.stListI.SetToolTip(config.tooltip[self.name]['stListI'])
 		self.stListO = wx.StaticText(
 			self.sbColumn, 
 			label = config.label[self.name]['oList'],
 		)
 		self.lbI = dtsWidget.ListZebra(self.sbColumn, 
-			colLabel = config.label[self.name]['ListColumn'],
-			colSize  = config.size[self.name]['List'],
+			colLabel     = config.label[self.name]['ListColumn'],
+			colSize      = config.size[self.name]['List'],
 		)
 		self.lbO = dtsWidget.ListZebra(self.sbColumn, 
-			colLabel = config.label[self.name]['ListColumn'],
-			colSize  = config.size[self.name]['List'],
-			canPaste = True,
-			canCut   = True,
+			colLabel     = config.label[self.name]['ListColumn'],
+			colSize      = config.size[self.name]['List'],
+			canPaste     = True,
+			canCut       = True,
 		)
-
-		self.iFile.listCtrl = self.lbI
+		self.stListO.SetToolTip(config.tooltip[self.name]['stListO'])
+		#--> Needs lbI
+		self.iFile.listCtrl = self.lbI 
 		#endregion --------------------------------------------------> Widgets
 
 		#region ------------------------------------------------------> Sizers
@@ -320,7 +321,7 @@ class CorrAConf(BaseConfPane):
 		)
 		self.sizersbColumnWid.Add(
 			self.stListO,
-			pos    = (0,2),
+			pos    = (0,1),
 			flag   = wx.ALIGN_CENTRE|wx.ALL,
 			border = 5
 		)
@@ -328,22 +329,16 @@ class CorrAConf(BaseConfPane):
 			self.lbI,
 			pos    = (1,0),
 			flag   = wx.EXPAND|wx.ALL,
-			border = 5
-		)
-		self.sizersbColumnWid.Add(
-			self.btnAdd,
-			pos    = (1,1),
-			flag   = wx.ALIGN_CENTRE_VERTICAL|wx.ALL,
-			border = 5
+			border = 20
 		)
 		self.sizersbColumnWid.Add(
 			self.lbO,
-			pos    = (1,2),
+			pos    = (1,1),
 			flag   = wx.EXPAND|wx.ALL,
-			border = 5
+			border = 20
 		)
 		self.sizersbColumnWid.AddGrowableCol(0, 1)
-		self.sizersbColumnWid.AddGrowableCol(2, 1)
+		self.sizersbColumnWid.AddGrowableCol(1, 1)
 		self.sizersbColumnWid.AddGrowableRow(1, 1)
 
 		#--> Main Sizer
@@ -352,20 +347,36 @@ class CorrAConf(BaseConfPane):
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind
-		self.btnAdd.Bind(wx.EVT_BUTTON, self.OnAdd)
 		#endregion -----------------------------------------------------> Bind
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class Methods
-	def OnAdd(self, event):
-		"""Add selected columns from self.lbI to self.lbO
-	
-			Parameters
-			----------
-			event : wx.Event
-				Information about the event
-		"""
-		dtsWidget.LC_CopyListCtrlSelection(self.lbI, self.lbO)
+	def OnRun(self, event):
+		""""""
+		
+		self.dlg = dtsWindow.MyProgressDialog(
+			self, config.title['CorrA_PD'], 100
+		)
+		#region ------------------------------------------------------> Thread
+		_thread.start_new_thread(self.Run, ('test',))
+		#endregion ---------------------------------------------------> Thread
+
+		if self.dlg.ShowModal() == wx.ID_OK:
+			self.dlg.Destroy()
+		else:
+			self.dlg.Destroy()
+
+		return True
+	#---
+
+	def CheckInput(self):
+		"""Check user input"""
+
+		wx.CallAfter(self.dlg.UpdateState, 50, 'Checking input')
+		return True
+
+
+
 	#---
 	#endregion ------------------------------------------------> Class Methods
 	
