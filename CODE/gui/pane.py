@@ -19,9 +19,9 @@ import webbrowser
 
 import wx
 
-import dat4s_core.validator.validator as dtsValidator
-import dat4s_core.widget.wx_widget as dtsWidget
-import dat4s_core.widget.wx_window as dtsWindow
+import dat4s_core.gui.wx.validator as dtsValidator
+import dat4s_core.gui.wx.widget as dtsWidget
+import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
 #endregion ----------------------------------------------------------> Imports
@@ -348,6 +348,7 @@ class CorrAConf(BaseConfPane):
 
 		#region --------------------------------------------------------> Bind
 		#endregion -----------------------------------------------------> Bind
+	#---
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class Methods
@@ -374,10 +375,7 @@ class CorrAConf(BaseConfPane):
 
 		wx.CallAfter(self.dlg.UpdateState, 50, 'Checking input')
 		return True
-
-
-
 	#---
 	#endregion ------------------------------------------------> Class Methods
-	
+#---
 #endregion ----------------------------------------------------------> Classes

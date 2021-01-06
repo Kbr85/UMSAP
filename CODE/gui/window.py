@@ -23,12 +23,12 @@ import wx.adv as adv
 import wx.lib.agw.aui as aui
 
 import dat4s_core.data.string as dtsStr
-import dat4s_core.menu.menu as dtsMenu
-import dat4s_core.widget.wx_window as dtsWindow
+import dat4s_core.gui.wx.menu as dtsMenu
+import dat4s_core.gui.wx.window as dtsWindow
 
 
 import config.config as config
-import menu.menu as menu
+import gui.menu as Menu
 import gui.tab as Tab
 #endregion ----------------------------------------------------------> Imports
 
@@ -121,7 +121,7 @@ class MainWindow(wx.Frame):
 	#region -----------------------------------------------------> Class Setup
 	tabMenus = { # Keys are the unique names of the tabs
 		'Start' : wx.Menu,
-		'CorrA' : menu.ToolsCorrA,
+		'CorrA' : Menu.ToolsCorrA,
 	}
 	#endregion --------------------------------------------------> Class Setup
 	
@@ -144,7 +144,7 @@ class MainWindow(wx.Frame):
 		#endregion --------------------------------------------> Initial setup
 
 		#region ---------------------------------------------> Default MenuBar
-		self.menubar = menu.MainMenuBar()
+		self.menubar = Menu.MainMenuBar()
 		self.SetMenuBar(self.menubar)
 		self.menubar.EnableTop(config.toolsMenuIdx, False)
 		#endregion ------------------------------------------> Default MenuBar

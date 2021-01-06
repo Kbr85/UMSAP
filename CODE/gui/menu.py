@@ -26,6 +26,7 @@ class MenuMethods():
 		-------
 	"""
 
+	#region ---------------------------------------------------> Class Methods
 	def OnCreateTab(self, event):
 		"""Creates a new tab in the main window
 		
@@ -38,7 +39,7 @@ class MenuMethods():
 		win.CreateTab(self.name[event.GetId()])
 		return True
 	#---
-
+	#endregion ------------------------------------------------> Class Methods
 #---
 #endregion -----------------------------------------------------> Base Classes
 

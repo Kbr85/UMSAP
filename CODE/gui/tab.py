@@ -274,6 +274,4 @@ class CorrA(wx.Panel):
 			self._mgr.RequestUserAttention(self.confPane)
 	#endregion ------------------------------------------------> Class Methods
 #---
-
-#---
 #endregion ----------------------------------------------------------> Classes
