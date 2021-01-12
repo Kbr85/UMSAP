@@ -202,6 +202,7 @@ label = { # Label for widgets
 		'ReadFile': 'Reading input files: ',
 		'Run'     : 'Running analysis: ',
 		'Write'   : 'Writing output: ',
+		'Load'    : 'Loading output files: ',
 		'Error'   : 'Fatal Error',
 		'Done'    : 'All Done',
 	}
@@ -290,7 +291,7 @@ tooltip = { # Tooltips of the app
 
 #region --------------------------------------------------> Gauge total counts
 gauge = { # Total gauge count for each window performing a calculation 
-	'CorrAConf' : 10,
+	'CorrAConf' : 14,
 }
 #endregion -----------------------------------------------> Gauge total counts
 

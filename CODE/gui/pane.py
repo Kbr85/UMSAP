@@ -17,6 +17,7 @@
 import _thread
 import webbrowser
 from datetime import datetime
+from pathlib import Path
 
 import wx
 
@@ -245,6 +246,9 @@ class CorrAConf(BaseConfPane):
 		self.msgError = None # Error msg to show in self.RunEnd
 		self.d        = {} # Dict with the user input as given
 		self.do       = {} # Dict with the processed user input
+		self.dfI      = None # pd.DataFrame for initial, normalized and
+		self.dfN      = None # correlation coefficients
+		self.dfCC     = None
 
 		super().__init__(parent, url, self.name)
 		#endregion --------------------------------------------> Initial setup
@@ -392,11 +396,11 @@ class CorrAConf(BaseConfPane):
 		user = getpass.getuser()
 		if config.cOS == "Darwin":
 			self.iFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt")
-			#self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Untitled.corr")
+			self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Correlation-Analysis")
 		elif config.cOS == 'Windows':
 			from pathlib import Path
 			self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
-			#self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/test.corr')))
+			self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/Correlation-Analysis')))
 		else:
 			pass
 		self.normMethod.cb.SetValue("Log2")
@@ -439,7 +443,7 @@ class CorrAConf(BaseConfPane):
 				Event information
 		"""
 		#region --------------------------------------------------> Dlg window
-		self.dlg = dtsWindow.MyProgressDialog(
+		self.dlg = dtsWindow.ProgressDialog(
 			self, 
 			config.title['CorrA_PD'], 
 			config.gauge[self.name], 
@@ -538,7 +542,7 @@ class CorrAConf(BaseConfPane):
 				unique = True,
 			)
 		else:
-			outP = val
+			outP = Path(val)
 			self.date = dtsMethod.StrNow()
 		#--> Dict with all values
 		self.do = {
@@ -670,19 +674,31 @@ class CorrAConf(BaseConfPane):
 		#endregion -----------------------------------------------> Data files
 
 		#region ---------------------------------------------------> Print
-		print('Input')
-		for k,v in self.do.items():
-			print(str(k)+': '+str(v))
+		# print('Input')
+		# for k,v in self.do.items():
+		# 	print(str(k)+': '+str(v))
 		
-		print("DataFrames: Initial")
-		print(self.dfI)
-		print("")
-		print("DataFrames: Norm")
-		print(self.dfN)
-		print("")
-		print("DataFrames: CC")
-		print(self.dfCC)
+		# print("DataFrames: Initial")
+		# print(self.dfI)
+		# print("")
+		# print("DataFrames: Norm")
+		# print(self.dfN)
+		# print("")
+		# print("DataFrames: CC")
+		# print(self.dfCC)
 		#endregion ------------------------------------------------> Print
+
+		return True
+	#---
+
+	def LoadResults(self):
+		"""Load .corr file"""
+		#region ---------------------------------------------------------> Msg
+		msgPrefix = config.label['DlgProgress']['Load']
+		#endregion ------------------------------------------------------> Msg
+
+		msgStep = msgPrefix + '.corr'
+		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 
 		return True
 	#---
@@ -699,10 +715,16 @@ class CorrAConf(BaseConfPane):
 			)
 		#endregion ------------------------------------> Dlg progress dialogue
 
-		#region ---------------------------------------------------> Variables
-		self.msgError = None
-		self.do  = {}
-		#endregion ------------------------------------------------> Variables
+		#region -------------------------------------------------------> Reset
+		self.msgError = None # Error msg to show in self.RunEnd
+		self.d        = {} # Dict with the user input as given
+		self.do       = {} # Dict with the processed user input
+		self.dfI      = None # pd.DataFrame for initial, normalized and
+		self.dfN      = None # correlation coefficients
+		self.dfCC     = None
+
+		self.oFile.tc.SetValue('') # Avoid overwrite
+		#endregion ----------------------------------------------------> Reset
 	#---
 	#endregion ------------------------------------------------> Class Methods
 #---
