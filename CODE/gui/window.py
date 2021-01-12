@@ -22,7 +22,7 @@ import wx
 import wx.adv as adv
 import wx.lib.agw.aui as aui
 
-import dat4s_core.data.string as dtsStr
+import dat4s_core.data.method as dtsMethod
 import dat4s_core.gui.wx.menu as dtsMenu
 import dat4s_core.gui.wx.window as dtsWindow
 
@@ -72,7 +72,7 @@ def UpdateCheck(ori, win=None):
 
 	#region -----------------------------------------------> Compare & message
 	#--> Compare
-	updateAvail = dtsStr.VersionCompare(versionI, config.version)
+	updateAvail = dtsMethod.VersionCompare(versionI, config.version)
 	#--> Message
 	if updateAvail:
 		wx.CallAfter(

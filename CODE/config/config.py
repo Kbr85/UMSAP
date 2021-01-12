@@ -29,7 +29,7 @@ development = True # Track state, development (True) or production (False)
 
 version     = '2.2.0 (beta)' # String to write in the output files
 dictVersion = { # dict for directly write into output files
-	'version': version,
+	'Version': version,
 }
 
 cOS = platform.system() # Current operating system
@@ -37,6 +37,7 @@ cwd = Path(os.path.abspath(os.path.dirname(__file__))) # Current work directory
 #endregion -----------------------------------------------> General parameters
 
 #region ---------------------------------------- PLATFORM DEPENDENT PARAMETERS
+# There are some that must be defined in other sections
 if cOS == 'Darwin':
 	#--> Fix cwd and set the location of the Resources folder
 	cwd = cwd.parent
@@ -47,6 +48,7 @@ if cOS == 'Darwin':
 		res = cwd / 'Resources'
 	toolsMenuIdx = 2
 	copyShortCut = 'Cmd'
+
 elif cOS == 'Windows':
 	#--> Fix cwd and set the location of the Resources folder
 	cwd = cwd.parent
@@ -100,10 +102,32 @@ path = { # Relevant paths
 	'Config'   : res / 'CONFIG', # Configuration folder
 	'UserHome' : Path.home(),    # User home folder
 }
-file = { # Location of important files
-	'Config'   : path['UserHome'] / '.umsap_config.json', # User config file
-	'ConfigDef': path['Config'] / 'config_def.json',      # Default config file
-	'Manual'   : path['Resources'] / 'MANUAL/manual.pdf', # UMSAP Manual
+
+file = { # Location of important files and default file names & ID
+	'Path' : {
+		'Config'   : path['UserHome'] / '.umsap_config.json', # User config file
+		'ConfigDef': path['Config'] / 'config_def.json',      # Default config file
+		'Manual'   : path['Resources'] / 'MANUAL/manual.pdf', # UMSAP Manual
+	},
+	'Name' : {
+		'DataStep' : { # Data analysis steps
+			'Init' : '1-Data-Initial.txt',
+			'Norm' : '2-Data-Normalization.txt',
+		},
+		'CorrAConf' : { # pane
+			'Main' : 'correlation-analysis.corr',
+			'MainD': '3-Data-CC-Values.txt',
+		},
+	},
+	'ID' : {
+		'CorrAConf' : 'Correlation-Analysis',
+	},
+}
+
+folder = { # Location of important folders and default folder names
+	'Name' : {
+		'CorrAConf' : 'Correlation-Analysis',
+	},
 }
 #endregion ---------------------------------------------------> Path and Files
 
@@ -164,14 +188,23 @@ label = { # Label for widgets
 	},
 	'CorrAConf' : { # Correlation Analysis Configuration Pane
 		'iFile'     : 'Data File',
-		'oFile'     : 'Output File',
+		'oFile'     : 'Output Folder',
 		'NormMethod': 'Normalization Method',
 		'CorrMethod': 'Correlation Method',
 		'ListColumn': ['#', 'Name'],
-		'iList' : 'Columns in the Data File',
-		'oList' : 'Columns to Analyse',
-		'Add'   : '-- Add columns ->',
+		'iList'     : 'Columns in the Data File',
+		'oList'     : 'Columns to Analyse',
+		'Add'       : 'Add columns',
 	},
+	'DlgProgress' : {
+		'Check'   : 'Checking user input: ',
+		'Prepare' : 'Preparing analysis: ',
+		'ReadFile': 'Reading input files: ',
+		'Run'     : 'Running analysis: ',
+		'Write'   : 'Writing output: ',
+		'Error'   : 'Fatal Error',
+		'Done'    : 'All Done',
+	}
 }
 #endregion -----------------------------------------------------------> Labels
 
@@ -179,7 +212,9 @@ label = { # Label for widgets
 hint = { # Hint for widgets
 	'CorrAConf' : { # Correlation Analysis Configuration Pane
 		'iFile' : f"Path to the {label['CorrAConf']['iFile']}",
-		'oFile' : f"Path to the {label['CorrAConf']['oFile']}",
+		'oFile' : (
+			f"Path to the {label['CorrAConf']['oFile']} or empty for default "
+			f"location and name"),
 	},
 }
 #endregion ------------------------------------------------------------> Hints
@@ -201,17 +236,22 @@ msg = { # Messages for the user of the App
 		},
 	},
 	'Error' : { # Error messages
+		'PD' : { # Errors related to pandas
+			'DataType' : 'Unexpected data type.',
+			'DataTypeCol' : 'Unexpected data type in the selected columns.',
+		},
 		'CorrAConf': { # Correlation Analysis Configuration Pane
 			'iFile' : (
 				f"The path to the {label['CorrAConf']['iFile']} is not valid."),
 			'oFile' : (
 				f"The path to the {label['CorrAConf']['oFile']} is not valid."),
 			'NormMethod' : (
-				f"The {label['CorrAConf']['NormMethod']} was not selected."
-			),
+				f"The {label['CorrAConf']['NormMethod']} was not selected."),
 			'CorrMethod' : (
-				f"The {label['CorrAConf']['CorrMethod']} was not selected."
-			),
+				f"The {label['CorrAConf']['CorrMethod']} was not selected."),
+			'oList' : (
+				f"The list of {label['CorrAConf']['oList']} must contain at "
+				f"least two items."),
 		},
 	},
 }
@@ -220,7 +260,8 @@ msg = { # Messages for the user of the App
 #region --------------------------------------------------------------> Images
 img = { # Information regarding images
 	#--> paths to images in:
-	'Start' : path['Images'] / 'MAIN-WINDOW/p97-2.png',
+	'Start': path['Images'] / 'MAIN-WINDOW/p97-2.png',
+	'Icon' : path['Images'] / 'DIALOGUE'/'dlg.png',
 }
 #endregion -----------------------------------------------------------> Images
 
@@ -239,9 +280,26 @@ tooltip = { # Tooltips of the app
 			f"New rows can be pasted ({copyShortCut}+V) after the last "
 			f"selected element and existing one cut/deleted ({copyShortCut}+X) "
 			f"or copied ({copyShortCut}+C)."),
+		'btnAddCol' : (
+			f"Add selected columns in the Data File to the list of Columns to "
+			f"analyse. New columns will be added after the last selected "
+			f"element in Columns to analyse. Duplicate columns are discarded."),
 	},
 }
 #endregion ---------------------------------------------------------> Tooltips
+
+#region --------------------------------------------------> Gauge total counts
+gauge = { # Total gauge count for each window performing a calculation 
+	'CorrAConf' : 10,
+}
+#endregion -----------------------------------------------> Gauge total counts
+
+#region --------------------------------------------------------> ChangeKeys
+changeKey = { # Keys whose values need to be str for json.dump
+	'CorrAConf' : ['iFile', 'oFolder'],
+}
+#endregion -----------------------------------------------------> ChangeKeys
+
 
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
 
