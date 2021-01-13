@@ -147,6 +147,7 @@ class BaseConfPane(wx.Panel,
 			tcHint    = config.hint[self.name]['iFile'],
 			validator = dtsValidator.IsNotEmpty(self),
 		)
+
 		self.oFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
 			btnLabel  = config.label[self.name]['oFile'],
 			mode      = oMode,
@@ -232,9 +233,48 @@ class CorrAConf(BaseConfPane):
 				'Column'    : [selected columns as integers],
 			}
 		d : dict
-			Similar to do but with the values given by the user
+			Similar to 'do' but with the values given by the user
+		dfI : pdDataFrame
+			Dataframe with initial values after columns were extracted and type
+			assigned.
+		dfN : pdDataFrame
+			Dataframe after normalization
+		dfCC : pdDataFrame
+			Dataframe with correlation coefficients
 		date : str
 			Date time stamp as given by dtsMethod.StrNow()
+		corrP : Path
+			Path to the corr file that will be created
+
+
+		Notes
+		-----
+		Running the analysis results in the creation of
+		OutPut-Folder
+		|
+		 - Data
+		   |
+		    - OutPut-Folder-1-Data-Initial.txt
+			- OutPut-Folder-2-Data-Normalization.txt
+			- OutPut-Folder-3-Data-CC-Values.txt
+		 - OutPut-Folder.corr
+		
+		The files in Data are regular csv files with the data at the end of the
+		corresponding step.
+
+		The .corr file conteins the information about the calculations, e.g
+
+		{
+			'Correlation-Analysis : {
+				'20210324-165609': {
+					'V' : config.dictVersion,
+					'I' : self.d,
+					'CI': self.do,
+					'R' : pd.DataFrame (dict) with the correlation coefficients
+				}
+			}
+		}
+
 
 	"""
 	#region --------------------------------------------------> Instance setup
@@ -249,6 +289,8 @@ class CorrAConf(BaseConfPane):
 		self.dfI      = None # pd.DataFrame for initial, normalized and
 		self.dfN      = None # correlation coefficients
 		self.dfCC     = None
+		self.date     = None # date for corr file
+		self.corrP    = None # path to the corr file that will be created
 
 		super().__init__(parent, url, self.name)
 		#endregion --------------------------------------------> Initial setup
@@ -534,16 +576,14 @@ class CorrAConf(BaseConfPane):
 
 		msgStep = msgPrefix + 'User input, processing'
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
-		#--> Output path
-		if (val := self.oFile.tc.GetValue()) == '':
-			outP, self.date = self.iFile.OutputPath(
-				self.oFile.tc.GetValue(), 
-				config.folder['Name'][self.name],
-				unique = True,
-			)
-		else:
-			outP = Path(val)
-			self.date = dtsMethod.StrNow()
+		#--> Output path & date
+		outP, self.date = self.iFile.OutputPath(
+			self.oFile.tc.GetValue(), 
+			config.folder['Name'][self.name],
+			unique = True,
+		)
+		#--> file base name
+		self.fileBaseName = outP.name
 		#--> Dict with all values
 		self.do = {
 			'iFile'     : self.iFile.tc.GetValue(),
@@ -632,9 +672,9 @@ class CorrAConf(BaseConfPane):
 		#region ----------------------------------------------> Create folders
 		msgStep = msgPrefix + 'Creating needed folders'
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
-		self.do['oFolder'].mkdir()
+		self.do['oFolder'].mkdir(parents=True, exist_ok=True)
 		dataFolder = self.do['oFolder']/'Data'
-		dataFolder.mkdir()
+		dataFolder.mkdir(parents=True, exist_ok=True)
 		#endregion -------------------------------------------> Create folders
 		
 		#region --------------------------------------------------> Data files
@@ -644,9 +684,9 @@ class CorrAConf(BaseConfPane):
 		dtsFF.WriteDFs2CSV(
 			dataFolder, 
 			{
-				config.file['Name']['DataStep']['Init'] : self.dfI,
-				config.file['Name']['DataStep']['Norm'] : self.dfN,
-				config.file['Name'][self.name]['MainD'] : self.dfCC,
+				self.fileBaseName + '-' + config.file['Name']['DataStep']['Init'] : self.dfI,
+				self.fileBaseName + '-' + config.file['Name']['DataStep']['Norm'] : self.dfN,
+				self.fileBaseName + '-' + config.file['Name'][self.name]['MainD'] : self.dfCC,
 			},
 		)
 		#endregion -----------------------------------------------> Data files
@@ -655,7 +695,7 @@ class CorrAConf(BaseConfPane):
 		msgStep = msgPrefix + 'Main file'
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 
-		fileP   = self.do['oFolder'] / config.file['Name'][self.name]['Main']
+		self.corrP = self.do['oFolder'] / (self.fileBaseName + config.extShort[self.name][0])
 		outData = {
 			config.file['ID'][self.name]: {
 				self.date : {
@@ -663,14 +703,15 @@ class CorrAConf(BaseConfPane):
 					'I' : self.d,
 					'CI': dtsMethod.DictVal2Str(
 						self.do, 
-						config.changeKey[self.name]
+						config.changeKey[self.name],
+						new = True,
 					),
 					'R' : self.dfCC.to_dict(),
 				}
 			}
 		}
 
-		dtsFF.WriteJSON(fileP, outData)
+		dtsFF.WriteJSON(self.corrP, outData)
 		#endregion -----------------------------------------------> Data files
 
 		#region ---------------------------------------------------> Print
@@ -697,8 +738,12 @@ class CorrAConf(BaseConfPane):
 		msgPrefix = config.label['DlgProgress']['Load']
 		#endregion ------------------------------------------------------> Msg
 
+		#region --------------------------------------------------------> Load
 		msgStep = msgPrefix + '.corr'
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
+		
+		wx.CallAfter(self.parent.LoadCorrFile, self.corrP)
+		#endregion -----------------------------------------------------> Load
 
 		return True
 	#---
@@ -722,6 +767,8 @@ class CorrAConf(BaseConfPane):
 		self.dfI      = None # pd.DataFrame for initial, normalized and
 		self.dfN      = None # correlation coefficients
 		self.dfCC     = None
+		self.date     = None # date for corr file
+		self.corrP    = None # path to the corr file that will be created
 
 		self.oFile.tc.SetValue('') # Avoid overwrite
 		#endregion ----------------------------------------------------> Reset

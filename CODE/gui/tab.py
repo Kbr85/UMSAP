@@ -220,7 +220,6 @@ class CorrA(wx.Panel):
 		event.Skip()
 	#---
 
-
 	def CreateConfPane(self):
 		"""Creates the configuration pane
 		
@@ -231,7 +230,7 @@ class CorrA(wx.Panel):
 		if self.confPane is None:
 			#-->
 			self.confPane = Pane.CorrAConf(
-				self, 
+				self,
 				config.url['CorrA'], 
 				self.statusbar,
 			)
@@ -272,6 +271,18 @@ class CorrA(wx.Panel):
 			#-->
 			self._mgr.Update()
 			self._mgr.RequestUserAttention(self.confPane)
+	#---
+
+	def LoadCorrFile(self, fileP):
+		"""Load a corr file
+	
+			Parameters
+			----------
+			fileP : Path
+				Path to the file
+		"""
+		pass
+	#---
 	#endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------------> Classes

@@ -154,8 +154,29 @@ class Utility(wx.Menu):
 		self.General = UtilGeneral()
 		#---
 		self.AppendSubMenu(self.General, 'General Utilities')
+		self.AppendSeparator()
+		self.readFile = self.Append(-1, 'Read File\tCtrl+R')
 		#endregion -----------------------------------------------> Menu items
+
+		#region --------------------------------------------------------> Bind
+		self.Bind(wx.EVT_MENU, self.OnReadFile, source=self.readFile)
+		#endregion -----------------------------------------------------> Bind
 	#endregion -----------------------------------------------> Instance Setup
+
+	#region ---------------------------------------------------> Class Methods
+	def OnReadFile(self, event):
+		"""Read an UMSAP output file
+	
+			Parameters
+			----------
+			event : wx.EVENT
+				Information about the event
+
+		"""
+		pass
+	#---
+	#endregion ------------------------------------------------> Class Methods
+	
 #---
 #endregion --------------------------------------------------------> Mix menus
 

@@ -115,7 +115,6 @@ file = { # Location of important files and default file names & ID
 			'Norm' : '2-Data-Normalization.txt',
 		},
 		'CorrAConf' : { # pane
-			'Main' : 'correlation-analysis.corr',
 			'MainD': '3-Data-CC-Values.txt',
 		},
 	},
@@ -170,6 +169,10 @@ url = { # Selected URL needed by umsap.
 extLong = { # string for wx.Dialogs representing the extension of the files
 	'Data'    : 'txt files (*.txt)|*.txt',
 	'CorrA'   : 'corr files (*.corr)|*.corr',
+}
+
+extShort = { # string representation of the extensions. First item is default
+	'CorrAConf' : ['.corr'],
 }
 #endregion -------------------------------------------------------- Extensions
 
@@ -282,8 +285,8 @@ tooltip = { # Tooltips of the app
 			f"selected element and existing one cut/deleted ({copyShortCut}+X) "
 			f"or copied ({copyShortCut}+C)."),
 		'btnAddCol' : (
-			f"Add selected columns in the Data File to the list of Columns to "
-			f"analyse. New columns will be added after the last selected "
+			f"Add selected Columns in the Data File to the list of Columns to "
+			f"Analyse. New columns will be added after the last selected "
 			f"element in Columns to analyse. Duplicate columns are discarded."),
 	},
 }
