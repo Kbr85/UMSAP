@@ -26,7 +26,6 @@ import dat4s_core.data.method as dtsMethod
 import dat4s_core.gui.wx.menu as dtsMenu
 import dat4s_core.gui.wx.window as dtsWindow
 
-
 import config.config as config
 import gui.menu as Menu
 import gui.tab as Tab
@@ -93,6 +92,7 @@ def UpdateCheck(ori, win=None):
  #---
 #---
 #endregion ----------------------------------------------------------> Methods
+
 
 #region -------------------------------------------------------------> Classes
 class MainWindow(wx.Frame):
@@ -221,15 +221,13 @@ class MainWindow(wx.Frame):
 			pass
 	#---
 
-	def CreateTab(self, name, iFile=None):
+	def CreateTab(self, name):
 		"""Create a tab
 		
 			Parameters
 			----------
 			name : str
 				One of the values in config.name for tabs
-			iFile : str or Path
-				Location of file to open in the new tab
 		"""
 		#region -----------------------------------------------------> Get tab
 		win = self.FindWindowByName(name)
@@ -243,7 +241,6 @@ class MainWindow(wx.Frame):
 					self.notebook,
 					name,
 					self.statusbar,
-					iFile,
 				),
 				config.title[name],
 				select = True,
@@ -291,6 +288,7 @@ class MainWindow(wx.Frame):
 	#---
 	#endregion -------------------------------------------------> Menu methods
 #---
+
 
 class CheckUpdateResult(wx.Dialog):
 	"""Show a dialog with the result of the check for update operation.
@@ -386,4 +384,66 @@ class CheckUpdateResult(wx.Dialog):
 		self.Destroy()
 	#endregion ------------------------------------------------> Class Methods
 #---
+
+# class CorrAPlot(dtsWidget.MatPlotPanel):
+# 	"""Show the results of a correlation analysis
+
+# 		Parameters
+# 		----------
+# 		parent : wx widget or none
+# 			Parent of the panel
+# 		name : str
+# 			Unique name to id the panel
+# 		fileP : str or Path
+# 			Path to the .corr file
+# 		dpi : int
+# 			DPI for the plot. Default is 300
+
+# 		Attributes
+# 		----------
+		
+
+# 		Raises
+# 		------
+		
+
+# 		Methods
+# 		-------
+		
+# 	"""
+# 	#region -----------------------------------------------------> Class setup
+	
+# 	#endregion --------------------------------------------------> Class setup
+
+# 	#region --------------------------------------------------> Instance setup
+# 	def __init__(self, parent, name, fileP, dpi=300):
+# 		""" """
+# 		#region -------------------------------------------------> Check Input
+# 		self.parent = parent
+# 		self.fileP  = fileP
+# 		#endregion ----------------------------------------------> Check Input
+
+# 		#region -----------------------------------------------> Initial Setup
+# 		super().__init__(parent, name, dpi=dpi)
+# 		#endregion --------------------------------------------> Initial Setup
+
+# 		#region -----------------------------------------------------> Widgets
+		
+# 		#endregion --------------------------------------------------> Widgets
+
+# 		#region ------------------------------------------------------> Sizers
+		
+# 		#endregion ---------------------------------------------------> Sizers
+
+# 		#region --------------------------------------------------------> Bind
+		
+# 		#endregion -----------------------------------------------------> Bind
+# 	#---
+# 	#endregion -----------------------------------------------> Instance setup
+
+# 	#region ---------------------------------------------------> Class methods
+	
+# 	#endregion ------------------------------------------------> Class methods
+# #---
+
 #endregion ----------------------------------------------------------> Classes

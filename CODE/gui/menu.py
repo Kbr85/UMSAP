@@ -18,6 +18,7 @@
 import wx
 #endregion ----------------------------------------------------------> Imports
 
+
 #region --------------------------------------------------------> Base Classes
 class MenuMethods():
 	"""Base class to hold common methods to the menus
@@ -42,6 +43,7 @@ class MenuMethods():
 	#endregion ------------------------------------------------> Class Methods
 #---
 #endregion -----------------------------------------------------> Base Classes
+
 
 #region ----------------------------------------------------> Individual menus
 class Module(wx.Menu, MenuMethods):
@@ -81,6 +83,7 @@ class Module(wx.Menu, MenuMethods):
 	#endregion ------------------------------------------------ Instance Setup
 #---
 
+
 class UtilGeneral(wx.Menu, MenuMethods):
 	""" General utilities """
 	#region --------------------------------------------------> Instance Setup
@@ -106,6 +109,7 @@ class UtilGeneral(wx.Menu, MenuMethods):
 	#---
 	#endregion -----------------------------------------------> Instance Setup
 #---
+
 
 class ToolsCorrA(wx.Menu):
 	"""Creates the tools menu for the Correlation Analysis Tab"""
@@ -139,6 +143,7 @@ class ToolsCorrA(wx.Menu):
 	#endregion ------------------------------------------------> Class methods
 #---
 #endregion -------------------------------------------------> Individual menus
+
 
 #region -----------------------------------------------------------> Mix menus
 class Utility(wx.Menu):
@@ -176,9 +181,9 @@ class Utility(wx.Menu):
 		pass
 	#---
 	#endregion ------------------------------------------------> Class Methods
-	
 #---
 #endregion --------------------------------------------------------> Mix menus
+
 
 #region -------------------------------------------------------------> Menubar
 class MainMenuBar(wx.MenuBar):

@@ -59,6 +59,7 @@ class UmsapApp(wx.App):
 	#endregion -------------------------------------------> Overridden methods
 #---
 
+
 class SplashWindow(wx.adv.SplashScreen):
 	""" Create splash screen 
 	
@@ -69,13 +70,7 @@ class SplashWindow(wx.adv.SplashScreen):
 	"""
 	#region --------------------------------------------------> Instance setup
 	def __init__(self, imgPath):
-		"""Creates the splash window to show when starting the application 
-
-			Parameters
-			----------
-			imgPath : str or Path
-				Path to the image to show in the splash window
-		"""
+		"""		"""
 		#region -----------------------------------------------> Initial setup
 		super().__init__(
 			wx.Bitmap(imgPath, type=wx.BITMAP_TYPE_PNG), 
@@ -142,6 +137,7 @@ class SplashWindow(wx.adv.SplashScreen):
 	#endregion ------------------------------------------------> Class methods
 #---
 #endregion ----------------------------------------------------------> Classes
+
 
 if __name__ == "__main__":
 	app = UmsapApp()

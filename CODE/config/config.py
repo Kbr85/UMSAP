@@ -36,6 +36,7 @@ cOS = platform.system() # Current operating system
 cwd = Path(os.path.abspath(os.path.dirname(__file__))) # Current work directory
 #endregion -----------------------------------------------> General parameters
 
+
 #region ---------------------------------------- PLATFORM DEPENDENT PARAMETERS
 # There are some that must be defined in other sections
 if cOS == 'Darwin':
@@ -62,6 +63,7 @@ elif cOS == 'Linux':
 	copyShortCut = 'Ctrl'
 #endregion ------------------------------------- PLATFORM DEPENDENT PARAMETERS
 
+
 #region ----------------------------------------------------> Names and titles
 name = { # Unique names to identify windows/objects through the app
 	#--> Main windows & Dialogs
@@ -70,8 +72,6 @@ name = { # Unique names to identify windows/objects through the app
 	#--> Tab for notebook windows
 	'Start' : 'Start',
 	'CorrA' : 'CorrA',
-	#--> Panes
-
 	#--> Menu
 	'Module' : 'Modules',
 	'Utility': 'Utilities',
@@ -89,10 +89,9 @@ title = { # Title of windows, tabs and panes
 	#--> Tab
 	'Start' : 'Start',
 	'CorrA' : 'CorrA',
-	#--> Pane
-	'CorrAConf' : 'Correlation Analysis Configuration',
 }
 #endregion -------------------------------------------------> Names and titles
+
 
 #region ------------------------------------------------------> Path and Files
 path = { # Relevant paths
@@ -114,30 +113,32 @@ file = { # Location of important files and default file names & ID
 			'Init' : '1-Data-Initial.txt',
 			'Norm' : '2-Data-Normalization.txt',
 		},
-		'CorrAConf' : { # pane
+		'CorrA' : { # pane
 			'MainD': '3-Data-CC-Values.txt',
 		},
 	},
 	'ID' : {
-		'CorrAConf' : 'Correlation-Analysis',
+		'CorrA' : 'Correlation-Analysis',
 	},
 }
 
 folder = { # Location of important folders and default folder names
 	'Name' : {
-		'CorrAConf' : 'Correlation-Analysis',
+		'CorrA' : 'Correlation-Analysis',
 	},
 }
 #endregion ---------------------------------------------------> Path and Files
 
+
 #region ---------------------------------------------------------------> Sizes
 size = { # Base size for widgets
 	'MainW' : (900, 620),
-	'CorrAConf' : { # Correlation Analysis Configuration pane
+	'CorrA' : { # Correlation Analysis Configuration pane
 		'List' : [50, 150],
 	}
 }
 #endregion ------------------------------------------------------------> Sizes
+
 
 #region ------------------------------------------------------------------ URL
 url_home = 'https://www.umsap.nl'
@@ -165,6 +166,7 @@ url = { # Selected URL needed by umsap.
 }
 #endregion --------------------------------------------------------------- URL
 
+
 #region ----------------------------------------------------------- Extensions
 extLong = { # string for wx.Dialogs representing the extension of the files
 	'Data'    : 'txt files (*.txt)|*.txt',
@@ -172,9 +174,10 @@ extLong = { # string for wx.Dialogs representing the extension of the files
 }
 
 extShort = { # string representation of the extensions. First item is default
-	'CorrAConf' : ['.corr'],
+	'CorrA' : ['.corr'],
 }
 #endregion -------------------------------------------------------- Extensions
+
 
 #region --------------------------------------------------------------> Labels
 label = { # Label for widgets
@@ -189,7 +192,7 @@ label = { # Label for widgets
 	'Button' : {
 		'Run' : 'Start analysis',
 	},
-	'CorrAConf' : { # Correlation Analysis Configuration Pane
+	'CorrA' : { # Correlation Analysis Configuration Pane
 		'iFile'     : 'Data File',
 		'oFile'     : 'Output Folder',
 		'NormMethod': 'Normalization Method',
@@ -212,25 +215,28 @@ label = { # Label for widgets
 }
 #endregion -----------------------------------------------------------> Labels
 
+
 #region ---------------------------------------------------------------> Hints
 hint = { # Hint for widgets
-	'CorrAConf' : { # Correlation Analysis Configuration Pane
-		'iFile' : f"Path to the {label['CorrAConf']['iFile']}",
+	'CorrA' : { # Correlation Analysis Configuration Pane
+		'iFile' : f"Path to the {label['CorrA']['iFile']}",
 		'oFile' : (
-			f"Path to the {label['CorrAConf']['oFile']} or empty for default "
+			f"Path to the {label['CorrA']['oFile']} or empty for default "
 			f"location and name"),
 	},
 }
 #endregion ------------------------------------------------------------> Hints
 
+
 #region -------------------------------------------------------------> Choices
 choice = { # Choices for the wx.ComboBox
-	'CorrAConf' : { # Correlation Analysis Configuration Pane
+	'CorrA' : { # Correlation Analysis Configuration Pane
 		'NormMethod' : ['', 'None', 'Log2'],
 		'CorrMethod' : ['', 'Pearson', 'Kendall', 'Spearman'],
 	},
 }
 #endregion ----------------------------------------------------------> Choices
+
 
 #region ------------------------------------------------------------> Messages
 msg = { # Messages for the user of the App
@@ -244,22 +250,23 @@ msg = { # Messages for the user of the App
 			'DataType' : 'Unexpected data type.',
 			'DataTypeCol' : 'Unexpected data type in the selected columns.',
 		},
-		'CorrAConf': { # Correlation Analysis Configuration Pane
+		'CorrA': { # Correlation Analysis Configuration Pane
 			'iFile' : (
-				f"The path to the {label['CorrAConf']['iFile']} is not valid."),
+				f"The path to the {label['CorrA']['iFile']} is not valid."),
 			'oFile' : (
-				f"The path to the {label['CorrAConf']['oFile']} is not valid."),
+				f"The path to the {label['CorrA']['oFile']} is not valid."),
 			'NormMethod' : (
-				f"The {label['CorrAConf']['NormMethod']} was not selected."),
+				f"The {label['CorrA']['NormMethod']} was not selected."),
 			'CorrMethod' : (
-				f"The {label['CorrAConf']['CorrMethod']} was not selected."),
+				f"The {label['CorrA']['CorrMethod']} was not selected."),
 			'oList' : (
-				f"The list of {label['CorrAConf']['oList']} must contain at "
+				f"The list of {label['CorrA']['oList']} must contain at "
 				f"least two items."),
 		},
 	},
 }
 #endregion ---------------------------------------------------------> Messages
+
 
 #region --------------------------------------------------------------> Images
 img = { # Information regarding images
@@ -269,6 +276,7 @@ img = { # Information regarding images
 }
 #endregion -----------------------------------------------------------> Images
 
+
 #region ------------------------------------------------------------> Tooltips
 tooltip = { # Tooltips of the app
 	'Start' : { # gui.tab.Start
@@ -276,7 +284,7 @@ tooltip = { # Tooltips of the app
 		'TarProt' : 'Start the module Target Proteolysis',
 		'ProtProf': 'Start the module Proteome Profiling',
 	},
-	'CorrAConf' : {
+	'CorrA' : {
 		'stListI' : (
 			f"Selected rows can be copied ({copyShortCut}+C) but the list "
 			f"cannot be modified."),
@@ -292,15 +300,17 @@ tooltip = { # Tooltips of the app
 }
 #endregion ---------------------------------------------------------> Tooltips
 
+
 #region --------------------------------------------------> Gauge total counts
 gauge = { # Total gauge count for each window performing a calculation 
-	'CorrAConf' : 14,
+	'CorrA' : 14,
 }
 #endregion -----------------------------------------------> Gauge total counts
 
+
 #region --------------------------------------------------------> ChangeKeys
 changeKey = { # Keys whose values need to be str for json.dump
-	'CorrAConf' : ['iFile', 'oFolder'],
+	'CorrA' : ['iFile', 'oFolder'],
 }
 #endregion -----------------------------------------------------> ChangeKeys
 
@@ -317,11 +327,13 @@ font = {
 }
 #endregion ---------------> Fonts. Set from UMSAP.py, requires a wx.App object
 
+
 #region -----------------------------------------------------> General options
 general = { # General options
 	'checkUpdate' : True # True Check, False No check 
 }
 #endregion --------------------------------------------------> General options
+
 
 
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS
@@ -360,6 +372,7 @@ def ConfigLoad(file):
 	return True
 #---
 
+
 def ConfigSave(file):
 	""" Save the configuration options to a file. 
 
@@ -388,6 +401,7 @@ def ConfigSave(file):
 
 	return True
 #---
+
 
 #--> Try to load user config, if file exists
 try:
