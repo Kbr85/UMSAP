@@ -28,6 +28,7 @@ import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
 import dat4s_core.gui.wx.menu as dtsMenu
 import dat4s_core.gui.wx.window as dtsWindow
+import dat4s_core.gui.wx.widget as dtsWidget
 
 import config.config as config
 import gui.menu as menu
@@ -126,6 +127,8 @@ class BaseWindow(wx.Frame):
 			Unique name of the window
 		parent : wx Widget or None
 			Parent of the window
+		statusbar : wx.StatusBar
+			Windows statusbar
 	"""
 	#region -----------------------------------------------------> Class setup
 	#endregion --------------------------------------------------> Class setup
@@ -144,6 +147,7 @@ class BaseWindow(wx.Frame):
 			parent = parent,
 			size   = config.size[self.name]['Window'],
 			title  = config.title[self.name] if title is None else title,
+			name   = self.name
 		)
 		#endregion --------------------------------------------> Initial Setup
 		
@@ -157,7 +161,7 @@ class BaseWindow(wx.Frame):
 		#endregion -----------------------------------------------------> Menu
 		
 		#region ------------------------------------------------------> Sizers
-		self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.Sizer = wx.BoxSizer(wx.VERTICAL)
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind
@@ -190,14 +194,7 @@ class CorrAPlot(BaseWindow):
 			Unique name of the window
 		parent : wx Widget or None
 			Parent of the window
-
-		Raises
-		------
-		
-
-		Methods
-		-------
-		
+		plot : dtsWidget.MatPlotPanel 
 	"""
 	#region -----------------------------------------------------> Class setup
 	
@@ -220,11 +217,11 @@ class CorrAPlot(BaseWindow):
 		#endregion --------------------------------------------> Initial Setup
 
 		#region -----------------------------------------------------> Widgets
-		
+		self.plot = dtsWidget.MatPlotPanel(self, statusbar=self.statusbar)
 		#endregion --------------------------------------------------> Widgets
 
 		#region ------------------------------------------------------> Sizers
-		
+		self.Sizer.Add(self.plot, 1, wx.EXPAND|wx.ALL, 5)
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind

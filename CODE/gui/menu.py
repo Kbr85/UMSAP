@@ -46,6 +46,20 @@ class MenuMethods():
 		config.mainW.CreateTab(self.name[event.GetId()])
 		return True
 	#---
+
+	def OnZoomReset(self, event):
+		"""Reset the zoom level of a matlibplot. Assumes the plot comes from
+			dtsWidget.MatPlotPanel and it is called plot in the window.
+	
+			Parameters
+			----------
+			event : wx.Event
+				Information about the event
+		"""
+		win = self.GetWindow()
+		win.plot.ZoomResetPlot()
+		return True
+	#---
 	#endregion ------------------------------------------------> Class Methods
 #---
 #endregion -----------------------------------------------------> Base Classes
@@ -111,7 +125,7 @@ class Utility(wx.Menu, MenuMethods):
 		#endregion ----------------------------------------------------> Names
 
 		#region --------------------------------------------------------> Bind
-		self.Bind(wx.EVT_MENU, self.OnReadFile, source=self.readFile)
+		self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.readFile)
 		self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.corrA)
 		#endregion -----------------------------------------------------> Bind
 	#endregion -----------------------------------------------> Instance Setup
@@ -156,7 +170,7 @@ class Utility(wx.Menu, MenuMethods):
 	#endregion ------------------------------------------------> Class Methods
 #---
 
-class CorrAPlotToolMenu(wx.Menu):
+class CorrAPlotToolMenu(wx.Menu, MenuMethods):
 	""" """
 	#region -----------------------------------------------------> Class setup
 	
@@ -170,11 +184,13 @@ class CorrAPlotToolMenu(wx.Menu):
 		#endregion --------------------------------------------> Initial Setup
 
 		#region --------------------------------------------------> Menu Items
-		self.saveI = self.Append(-1, 'Save Image')
+		self.saveI = self.Append(-1, 'Save Image\tCtrl+S')
+		self.AppendSeparator()
+		self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
 		#endregion -----------------------------------------------> Menu Items
 
 		#region --------------------------------------------------------> Bind
-		
+		self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.zoomR)
 		#endregion -----------------------------------------------------> Bind
 	#---
 	#endregion -----------------------------------------------> Instance setup
