@@ -15,7 +15,14 @@
 
 
 #region -------------------------------------------------------------> Imports
+from pathlib import Path
+
 import wx
+
+import dat4s_core.gui.wx.window as dtsWindow
+import dat4s_core.gui.wx.menu as dtsMenu
+
+import config.config as config
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -36,8 +43,7 @@ class MenuMethods():
 			event : wx.Event
 				Information about the event
 		"""
-		win = self.GetWindow()
-		win.CreateTab(self.name[event.GetId()])
+		config.mainW.CreateTab(self.name[event.GetId()])
 		return True
 	#---
 	#endregion ------------------------------------------------> Class Methods
@@ -83,70 +89,7 @@ class Module(wx.Menu, MenuMethods):
 	#endregion ------------------------------------------------ Instance Setup
 #---
 
-
-class UtilGeneral(wx.Menu, MenuMethods):
-	""" General utilities """
-	#region --------------------------------------------------> Instance Setup
-	def __init__(self):
-		""""""
-		#region -----------------------------------------------> Initial Setup
-		super().__init__()
-		#endregion --------------------------------------------> Initial Setup
-
-		#region --------------------------------------------------> Menu items
-		self.corrA   = self.Append(-1, 'Correlation Analysis')
-		#endregion -----------------------------------------------> Menu items
-
-		#region -------------------------------------------------------> Names
-		self.name = { # Associate IDs with Tab names. Avoid manual set of IDs
-			self.corrA.GetId() : 'CorrA',
-		}
-		#endregion ----------------------------------------------------> Names
-
-		#region --------------------------------------------------------> Bind
-		self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.corrA)
-		#endregion -----------------------------------------------------> Bind
-	#---
-	#endregion -----------------------------------------------> Instance Setup
-#---
-
-
-class ToolsCorrA(wx.Menu):
-	"""Creates the tools menu for the Correlation Analysis Tab"""
-	#region -----------------------------------------------------> Class setup
-	#endregion --------------------------------------------------> Class setup
-
-	#region --------------------------------------------------> Instance setup
-	def __init__(self):
-		""" """
-		#region -----------------------------------------------> Initial Setup
-		super().__init__()
-		#endregion --------------------------------------------> Initial Setup
-
-		#region --------------------------------------------------> Menu Items
-		self.confPane = self.Append(-1, 'Create Configuration Panel')
-		#endregion -----------------------------------------------> Menu Items
-
-		#region --------------------------------------------------------> Bind
-		self.Bind(wx.EVT_MENU, self.OnCreateCorrAConfTab, source=self.confPane)
-		#endregion -----------------------------------------------------> Bind
-	#---
-	#endregion -----------------------------------------------> Instance setup
-
-	#region ---------------------------------------------------> Class methods
-	def OnCreateCorrAConfTab(self, event):
-		"""Creates the configuration panel"""
-		win = self.GetWindow()
-		tab = win.FindWindowByName("CorrA")
-		tab.CreateConfPane()
-	#---
-	#endregion ------------------------------------------------> Class methods
-#---
-#endregion -------------------------------------------------> Individual menus
-
-
-#region -----------------------------------------------------------> Mix menus
-class Utility(wx.Menu):
+class Utility(wx.Menu, MenuMethods):
 	"""Utilites menu"""
 	#region --------------------------------------------------> Instance Setup
 	def __init__(self):
@@ -156,15 +99,20 @@ class Utility(wx.Menu):
 		#endregion --------------------------------------------> Initial Setup
 
 		#region --------------------------------------------------> Menu items
-		self.General = UtilGeneral()
-		#---
-		self.AppendSubMenu(self.General, 'General Utilities')
+		self.corrA   = self.Append(-1, 'Correlation Analysis')
 		self.AppendSeparator()
 		self.readFile = self.Append(-1, 'Read File\tCtrl+R')
 		#endregion -----------------------------------------------> Menu items
 
+		#region -------------------------------------------------------> Names
+		self.name = { # Associate IDs with Tab names. Avoid manual set of IDs
+			self.corrA.GetId() : 'CorrA',
+		}
+		#endregion ----------------------------------------------------> Names
+
 		#region --------------------------------------------------------> Bind
 		self.Bind(wx.EVT_MENU, self.OnReadFile, source=self.readFile)
+		self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.corrA)
 		#endregion -----------------------------------------------------> Bind
 	#endregion -----------------------------------------------> Instance Setup
 
@@ -178,10 +126,68 @@ class Utility(wx.Menu):
 				Information about the event
 
 		"""
-		pass
+		#region ---------------------------------------------------> Get files
+		try:
+			fileP = dtsMenu.GetFilePath('openM', config.extLong['UMSAPOut'])
+		except Exception as e:
+			dtsWindow.NotificationDialog(
+				'errorF', 
+				details = (
+					f"It was not possible to show the file selector dialog."
+					f"\n\nFurther details:\n{e}"
+				), 
+				parent=self.GetWindow(),
+				img = config.img['Icon'],
+			)
+			return False
+		#endregion ------------------------------------------------> Get files
+		
+		#region --------------------------------------------------> Open files
+		if fileP is not None:
+			#-->
+			for f in fileP:
+				config.mainW.ReadUMSAPOutFile(f)
+			#-->
+			return True
+		else:
+			return False
+		#endregion -----------------------------------------------> Open files
 	#---
 	#endregion ------------------------------------------------> Class Methods
 #---
+
+class CorrAPlotToolMenu(wx.Menu):
+	""" """
+	#region -----------------------------------------------------> Class setup
+	
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self):
+		""" """
+		#region -----------------------------------------------> Initial Setup
+		super().__init__()
+		#endregion --------------------------------------------> Initial Setup
+
+		#region --------------------------------------------------> Menu Items
+		self.saveI = self.Append(-1, 'Save Image')
+		#endregion -----------------------------------------------> Menu Items
+
+		#region --------------------------------------------------------> Bind
+		
+		#endregion -----------------------------------------------------> Bind
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	
+	#endregion ------------------------------------------------> Class methods
+#---
+#endregion -------------------------------------------------> Individual menus
+
+
+#region -----------------------------------------------------------> Mix menus
+
 #endregion --------------------------------------------------------> Mix menus
 
 
@@ -199,16 +205,38 @@ class MainMenuBar(wx.MenuBar):
 		#region --------------------------------------------------> Menu items
 		self.Module  = Module()
 		self.Utility = Utility()
-		self.Tool    = wx.Menu()
-		self.Script  = wx.Menu()
 		#endregion -----------------------------------------------> Menu items
 
 		#region -------------------------------------------> Append to menubar
 		self.Append(self.Module, '&Modules')
 		self.Append(self.Utility, '&Utilities')
-		self.Append(self.Tool, '&Tools')
-		self.Append(self.Script, '&Script')
 		#endregion ----------------------------------------> Append to menubar
+	#endregion ------------------------------------------------ Instance Setup
+#---
+
+class ToolMenuBar(MainMenuBar):
+	"""Menu bar for a window showing the corresponding tool menu"""
+
+	#region -----------------------------------------------------> Class Setup
+	toolClass = { # Key are window name
+		'CorrAPlot' : CorrAPlotToolMenu,
+	}
+	#endregion --------------------------------------------------> Class Setup
+	
+	#region --------------------------------------------------- Instance Setup
+	def __init__(self, name):
+		""" """
+		#region -----------------------------------------------> Initial Setup
+		super().__init__()
+		#endregion --------------------------------------------> Initial Setup
+		
+		#region -----------------------------------------> Menu items & Append
+		if name != 'MainW':
+			self.Tool  = self.toolClass[name]()
+			self.Insert(config.toolsMenuIdx, self.Tool, 'Tools')
+		else:
+			pass
+		#endregion --------------------------------------> Menu items & Append
 	#endregion ------------------------------------------------ Instance Setup
 #---
 #endregion ----------------------------------------------------------> Menubar

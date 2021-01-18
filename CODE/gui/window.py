@@ -16,19 +16,22 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
+import json
+from pathlib import Path
 
 import requests
 import wx
 import wx.adv as adv
 import wx.lib.agw.aui as aui
 
+import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
 import dat4s_core.gui.wx.menu as dtsMenu
 import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
-import gui.menu as Menu
-import gui.tab as Tab
+import gui.menu as menu
+import gui.tab as tab
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -49,9 +52,14 @@ def UpdateCheck(ori, win=None):
 	except Exception as e:
 		msg = (
 			f"{config.msg['ErrorU']['UpdateCheck']['Failed']}\n\n"
-			f"Error message: {e}"
+			f"Further details:\n {e}"
 		)
-		wx.CallAfter(dtsWindow.MessageDialog, 'errorU', msg)
+		wx.CallAfter(
+			dtsWindow.NotificationDialog, 
+			'errorU', 
+			details=msg,
+			img = config.img['Icon'],
+		)
 		return False
 	#endregion ------------------------------> Get web page text from Internet
 	
@@ -65,7 +73,13 @@ def UpdateCheck(ori, win=None):
 		versionI = versionI.split('UMSAP')[1].split('</h1>')[0]
 	else:
 		msg = f"{config.msg['ErrorU']['UpdateCheck']['Failed']}"
-		wx.CallAfter(dtsWindow.MessageDialog, 'errorU', msg)
+		wx.CallAfter(
+			dtsWindow.NotificationDialog, 
+			'errorU', 
+			msg     = 'dfbjkfb',
+			details = msg,
+			img = config.img['Icon']
+		)
 		return False
 	#endregion -----------------------------------------> Get Internet version
 
@@ -95,7 +109,138 @@ def UpdateCheck(ori, win=None):
 
 
 #region -------------------------------------------------------------> Classes
-class MainWindow(wx.Frame):
+#---------------------------------------------------------------> Base classes
+class BaseWindow(wx.Frame):
+	"""Base window for UMSAP
+
+		Parameters
+		----------
+		name : str
+			Unique name of the window
+		parent : wx Widget or None
+			Parent of the window
+
+		Attributes
+		----------
+		name : str
+			Unique name of the window
+		parent : wx Widget or None
+			Parent of the window
+	"""
+	#region -----------------------------------------------------> Class setup
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, name, parent=None, title=None):
+		""" """
+		#region -------------------------------------------------> Check Input
+		#endregion ----------------------------------------------> Check Input
+
+		#region -----------------------------------------------> Initial Setup
+		self.name   = name
+		self.parent = parent
+
+		super().__init__(
+			parent = parent,
+			size   = config.size[self.name]['Window'],
+			title  = config.title[self.name] if title is None else title,
+		)
+		#endregion --------------------------------------------> Initial Setup
+		
+		#region -----------------------------------------------------> Widgets
+		self.statusbar = self.CreateStatusBar()
+		#endregion --------------------------------------------------> Widgets
+
+		#region --------------------------------------------------------> Menu
+		self.menubar = menu.ToolMenuBar(self.name)
+		self.SetMenuBar(self.menubar)		
+		#endregion -----------------------------------------------------> Menu
+		
+		#region ------------------------------------------------------> Sizers
+		self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+		#endregion ---------------------------------------------------> Sizers
+
+		#region --------------------------------------------------------> Bind
+		#endregion -----------------------------------------------------> Bind
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	#endregion ------------------------------------------------> Class methods
+#---
+
+#-------------------------------------------------------------------> wx.Frame
+class CorrAPlot(BaseWindow):
+	"""Creates the window showing the results of a correlation analysis
+
+		Parameters
+		----------
+		fileP : Path
+			Path to the UMSAP file with results from a correlation analysis
+		name : str
+			Unique name of the window
+		parent : wx Widget or None
+			Parent of the window
+
+		Attributes
+		----------
+		fileP : Path
+			Path to the UMSAP file with results from a correlation analysis
+		name : str
+			Unique name of the window
+		parent : wx Widget or None
+			Parent of the window
+
+		Raises
+		------
+		
+
+		Methods
+		-------
+		
+	"""
+	#region -----------------------------------------------------> Class setup
+	
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, fileP, name='CorrAPlot', parent=None):
+		""" """
+		#region -------------------------------------------------> Check Input
+		#endregion ----------------------------------------------> Check Input
+
+		#region -----------------------------------------------> Initial Setup
+		self.fileP = fileP
+
+		super().__init__(
+			name, 
+			parent=parent, 
+			title=config.title[name] + fileP.name
+		)		
+		#endregion --------------------------------------------> Initial Setup
+
+		#region -----------------------------------------------------> Widgets
+		
+		#endregion --------------------------------------------------> Widgets
+
+		#region ------------------------------------------------------> Sizers
+		
+		#endregion ---------------------------------------------------> Sizers
+
+		#region --------------------------------------------------------> Bind
+		
+		#endregion -----------------------------------------------------> Bind
+
+		self.Show()
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	
+	#endregion ------------------------------------------------> Class methods
+#---
+
+class MainWindow(BaseWindow):
 	"""Creates the main window of the App 
 	
 		Parameters
@@ -119,39 +264,24 @@ class MainWindow(wx.Frame):
 			Sizer for the window
 	"""
 	#region -----------------------------------------------------> Class Setup
-	tabMenus = { # Keys are the unique names of the tabs
-		'Start' : wx.Menu,
-		'CorrA' : Menu.ToolsCorrA,
+	tabMethods = { # Keys are the unique names of the tabs
+		'Start'  : tab.Start,
+		'CorrA'  : tab.CorrA,
+	}
+
+	resultWindow = { # Keys are the file extensions e.g. '.corr'
+		'.corr' : CorrAPlot,
 	}
 	#endregion --------------------------------------------------> Class Setup
 	
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, parent=None):
+	def __init__(self, name='MainW', parent=None):
 		""""""
 		#region -----------------------------------------------> Initial setup
-		self.name = 'MainW'
-
-		self.tabMethods = { # Keys are the unique names of the tabs
-			'Start'  : Tab.Start,
-			'CorrA'  : Tab.CorrA,
-		}
-
-		super().__init__(
-			parent = parent,
-			size   = config.size[self.name],
-			title  = config.title['MainW'],
-		)
+		super().__init__(name, parent=parent)
 		#endregion --------------------------------------------> Initial setup
 
-		#region ---------------------------------------------> Default MenuBar
-		self.menubar = Menu.MainMenuBar()
-		self.SetMenuBar(self.menubar)
-		self.menubar.EnableTop(config.toolsMenuIdx, False)
-		#endregion ------------------------------------------> Default MenuBar
-
 		#region -----------------------------------------------------> Widgets
-		self.statusbar = self.CreateStatusBar()
-
 		self.notebook = aui.auibook.AuiNotebook(
 			self,
 			agwStyle=aui.AUI_NB_TOP|aui.AUI_NB_CLOSE_ON_ALL_TABS|aui.AUI_NB_TAB_MOVE,
@@ -159,7 +289,6 @@ class MainWindow(wx.Frame):
 		#endregion --------------------------------------------------> Widgets
 
 		#region ------------------------------------------------------> Sizers
-		self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.Sizer.Add(self.notebook, 1, wx.EXPAND|wx.ALL, 5)
 		self.SetSizer(self.Sizer)
 		#endregion ---------------------------------------------------> Sizers
@@ -183,7 +312,6 @@ class MainWindow(wx.Frame):
 
 		#region --------------------------------------------------------> Bind
 		self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
-		self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnTabChanged)
 		#endregion -----------------------------------------------------> Bind
 	#---
 	#endregion -----------------------------------------------> Instance setup
@@ -265,30 +393,22 @@ class MainWindow(wx.Frame):
 		#endregion ------------------------------------------------> Start Tab
 	#---
 
-	def OnTabChanged(self, event):
-		"""Updates Tools menu
-
+	def ReadUMSAPOutFile(self, fileP):
+		"""Read and display the information in an UMSAP output file.
+	
 			Parameters
 			----------
-			event : aui.Event
-				Information about the event
+			fileP : Path
+				Path to the UMSAP output file
+
 		"""
-		#-->
-		name = self.notebook.GetPage(self.notebook.GetSelection()).name
-		toolMenu = self.tabMenus[name]()
-		#-->
-		dtsMenu.ReplaceTopMenu(
-			self.menubar, 
-			config.toolsMenuIdx, 
-			toolMenu,
-			config.name['Tool'],
-		)
-		#-->
-		event.Skip()
+		fileP = Path(fileP)	
+		self.resultWindow[fileP.suffix](fileP)
+		return True		
 	#---
 	#endregion -------------------------------------------------> Menu methods
 #---
-
+#------------------------------------------------------------------> wx.Dialog
 
 class CheckUpdateResult(wx.Dialog):
 	"""Show a dialog with the result of the check for update operation.

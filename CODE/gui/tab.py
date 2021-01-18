@@ -392,8 +392,6 @@ class CorrA(BaseConfPanel):
 				}
 			}
 		}
-
-
 	"""
 	#region -----------------------------------------------------> Class Setup
 	name = 'CorrA'
@@ -610,7 +608,7 @@ class CorrA(BaseConfPanel):
 			self, 
 			config.title['CorrA_PD'], 
 			config.gauge[self.name], 
-			img = str(config.img['Icon']),
+			img = config.img['Icon'],
 		)
 		#endregion -----------------------------------------------> Dlg window
 
@@ -863,7 +861,7 @@ class CorrA(BaseConfPanel):
 		msgStep = msgPrefix + '.corr'
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		
-		wx.CallAfter(self.parent.LoadCorrFile, self.corrP)
+		wx.CallAfter(config.mainW.ReadUMSAPOutFile, self.corrP)
 		#endregion -----------------------------------------------------> Load
 
 		return True

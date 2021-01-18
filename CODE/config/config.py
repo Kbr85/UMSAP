@@ -34,6 +34,8 @@ dictVersion = { # dict for directly write into output files
 
 cOS = platform.system() # Current operating system
 cwd = Path(os.path.abspath(os.path.dirname(__file__))) # Current work directory
+
+mainW = None
 #endregion -----------------------------------------------> General parameters
 
 
@@ -66,8 +68,10 @@ elif cOS == 'Linux':
 
 #region ----------------------------------------------------> Names and titles
 name = { # Unique names to identify windows/objects through the app
-	#--> Main windows & Dialogs
-	'MainW'         : 'MainW',
+	#--> Main windows
+	'MainW'    : 'MainW',
+	'CorrAPlot': 'CorrAPlot',
+	#--> Dialogs
 	'CheckUpdateRes': 'CheckUpdateRes',
 	#--> Tab for notebook windows
 	'Start' : 'Start',
@@ -79,10 +83,11 @@ name = { # Unique names to identify windows/objects through the app
 }
 
 title = { # Title of windows, tabs and panes
-	#--> Window
+	#--> Windows & Dialog
 	'MainW'   : (
 		f"Utilities for Mass Spectrometry Analysis of Proteins "
 		f"{version}"),
+	'CorrAPlot' : 'CorrA - ', 
 	'CheckUpdateRes' : f"Check for Updates",
 	#--> Progress Dialog
 	'CorrA_PD' : 'Calculating Correlation Coefficients',
@@ -132,9 +137,14 @@ folder = { # Location of important folders and default folder names
 
 #region ---------------------------------------------------------------> Sizes
 size = { # Base size for widgets
-	'MainW' : (900, 620),
-	'CorrA' : { # Correlation Analysis Configuration pane
+	'MainW' : { # Main window
+		'Window' :(900, 620),
+	},
+	'CorrA' : { # Correlation Analysis Configuration tab
 		'List' : [50, 150],
+	},
+	'CorrAPlot' : { # Correlation analysis results window
+		'Window' : (500, 500)
 	}
 }
 #endregion ------------------------------------------------------------> Sizes
@@ -171,6 +181,8 @@ url = { # Selected URL needed by umsap.
 extLong = { # string for wx.Dialogs representing the extension of the files
 	'Data'    : 'txt files (*.txt)|*.txt',
 	'CorrA'   : 'corr files (*.corr)|*.corr',
+	'UMSAPOut': ("UMSAP files (*.tarprot; *.corr; *.limprot; *.protprof)"
+		"|*.tarprot;*.corr;*.limprot;*.protprof"),
 }
 
 extShort = { # string representation of the extensions. First item is default
@@ -346,7 +358,7 @@ def ConfigLoad(file):
 	
 		Parameters
 		----------
-		file : str or Path
+		file : Path
 			Location of the configuration file to load info from
 
 		Returns
@@ -378,7 +390,7 @@ def ConfigSave(file):
 
 		Parameters
 		----------
-		file : str or Path
+		file : Path
 			Location of the configuration file to save to
 
 		Returns
