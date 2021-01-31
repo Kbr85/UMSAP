@@ -102,6 +102,7 @@ class SplashWindow(wx.adv.SplashScreen):
 		"""
 		#region	-----------------------------------------------------> Imports
 		import config.config as config
+		import gui.menu as menu
 		import gui.window as window
 		#endregion---------------------------------------------------> Imports
 
@@ -124,6 +125,14 @@ class SplashWindow(wx.adv.SplashScreen):
 			gclasses.DlgUnexpectedErrorMsg(config.msg["UErrors"]["OS"])
 			return False
 		#endregion ----------------------------------------------------> Fonts
+
+		#region --------------------------------------------------------> Menu
+		if config.cOS == "Darwin":
+			wx.MenuBar.MacSetCommonMenuBar(menu.MainMenuBar())
+		else:
+			pass
+		#endregion -----------------------------------------------------> Menu
+		
 
 		#region ------------------------------------------> Create main window
 		config.mainW = window.MainWindow()

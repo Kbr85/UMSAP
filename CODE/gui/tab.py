@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread 
+from pathlib import Path
 
 import wx
 import wx.lib.agw.aui as aui
@@ -29,6 +30,7 @@ import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
+import gui.dtscore as dtscore
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -38,12 +40,15 @@ import config.config as config
 
 #region -------------------------------------------------------------> Classes
 #--> Base classses
-class BaseConfPanel(wx.Panel,
+class BaseConfPanel(
+	wx.Panel,
 	dtsWidget.StaticBoxes, 
 	dtsWidget.ButtonOnlineHelpClearAllRun
 	):
 	"""Creates the skeleton of a configuration tab. This includes the 
-		wx.StaticBox, the Bottom Buttons and the statusbar
+		wx.StaticBox, the Bottom Buttons and the statusbar.
+
+		See Notes
 
 		Parameters
 		----------
@@ -73,6 +78,13 @@ class BaseConfPanel(wx.Panel,
 
 		Attributes
 		----------
+		lbI : wx.ListCtrl
+			ListCtrl to show information about the main input file
+		lbO : wx.ListCtrl
+			ListCtrl to show selected columns in lbI
+		lbL : list of wx.ListCtrl
+			To use when deleting the content on the wx.ListCtrl 
+			e.g. self.LCtrlEmpty
 		name : str
 			Unique name of the tab
 		btnRun : wx.Button
@@ -104,8 +116,8 @@ class BaseConfPanel(wx.Panel,
 		Sizer : wx.BoxSizer
 			Main sizer of the tab
 		
-		Methods
-		-------
+		Notes
+		-----
 		
 	"""
 	#region -----------------------------------------------------> Class setup
@@ -144,18 +156,22 @@ class BaseConfPanel(wx.Panel,
 
 		#region -----------------------------------------------------> Widgets
 		self.iFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
-			btnLabel  = config.label[self.name]['iFile'],
-			ext       = config.extLong['Data'],
-			tcHint    = config.hint[self.name]['iFile'],
-			validator = dtsValidator.IsNotEmpty(self),
+			btnLabel   = config.label[self.name]['iFile'],
+			ext        = config.extLong['Data'],
+			tcHint     = config.hint[self.name]['iFile'],
+			tcStyle    = wx.TE_READONLY,
+			validator  = wx.DefaultValidator,
+			ownCopyCut = True,
 		)
 
 		self.oFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
-			btnLabel  = config.label[self.name]['oFile'],
-			mode      = oMode,
-			ext       = ext,
-			tcHint    = config.hint[self.name]['oFile'],
-			validator = wx.DefaultValidator,
+			btnLabel   = config.label[self.name]['oFile'],
+			mode       = oMode,
+			ext        = ext,
+			tcHint     = config.hint[self.name]['oFile'],
+			tcStyle    = wx.TE_READONLY,
+			validator  = wx.DefaultValidator,
+			ownCopyCut = True,
 		)
 		#endregion --------------------------------------------------> Widgets
 
@@ -201,7 +217,67 @@ class BaseConfPanel(wx.Panel,
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
+	def LCtrlFill(self, fileP):
+		"""Fill the wx.ListCtrl after selecting path to the folder. This is
+			called from within self.iFile
+	
+			Parameters
+			----------
+			fileP : Path
+				Folder path
+		"""
+		#region ----------------------------------------------------> Del list
+		self.LCtrlEmpty()
+		#endregion -------------------------------------------------> Del list
+		
+		#region ---------------------------------------------------> Fill list
+		try:
+			dtsMethod.LCtrlFillColNames(self.lbI, fileP)
+		except Exception as e:
+			dtscore.Notification(
+				'errorF',
+				msg        = str(e),
+				tException = e,
+			)
+			return False
+		#endregion ------------------------------------------------> Fill list
+		
+		#region -----------------------------------------> Columns in the file
+		self.NCol = self.lbI.GetItemCount()
+		#endregion --------------------------------------> Columns in the file
 
+		return True
+	#---	
+
+	def OnIFileEmpty(self, event):
+		"""Clear GUI elements when Data Folder is ''
+	
+			Parameters
+			----------
+			event: wx.Event
+				Information about the event		
+		"""
+		if self.iFile.tc.GetValue() == '':
+			self.LCtrlEmpty()
+		else:
+			pass
+
+		return True
+	#---
+
+	def LCtrlEmpty(self):
+		"""Clear wx.ListCtrl and NCol """
+		#region -------------------------------------------------> Delete list
+		for l in self.lbL:
+			l.DeleteAllItems()
+		#endregion ----------------------------------------------> Delete list
+		
+		#region ---------------------------------------------------> Set NCol
+		self.NCol = None
+		#endregion ------------------------------------------------> Set NCol
+
+		return True
+	#---
 	#endregion ------------------------------------------------> Class methods
 #---
 
@@ -242,13 +318,13 @@ class Start(wx.Panel):
 	"""
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, parent, name, statusbar, *args):
+	def __init__(self, parent, statusbar):
 		""""""
 		#region -----------------------------------------------> Initial setup
-		self.name   = name
+		self.name   = 'Start'
 		self.parent = parent
 
-		super().__init__(parent=parent, name=name)
+		super().__init__(parent=parent, name=self.name)
 		#endregion --------------------------------------------> Initial setup
 		
 		#region -----------------------------------------------------> Widgets
@@ -398,7 +474,7 @@ class CorrA(BaseConfPanel):
 	#endregion --------------------------------------------------> Class Setup
 	
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, parent, url, statusbar):
+	def __init__(self, parent, statusbar):
 		""""""
 		#region -----------------------------------------------> Initial setup
 		self.parent   = parent
@@ -411,22 +487,37 @@ class CorrA(BaseConfPanel):
 		self.date     = None # date for corr file
 		self.corrP    = None # path to the corr file that will be created
 
-		super().__init__(parent, url, self.name)
+		super().__init__(parent, config.url[self.name], self.name)
 		#endregion --------------------------------------------> Initial setup
 		
 		#region -----------------------------------------------------> Widgets
-		#--> Values
+		#------------------------------> File
+		self.iFile.tc.SetValidator(
+			dtsValidator.InputFF(
+				fof = 'file',
+				ext = config.extShort['Data'],
+			)
+		)
+		self.iFile.afterBtn = self.LCtrlFill
+
+		self.oFile.tc.SetValidator(
+			dtsValidator.OutputFF(
+				fof = 'folder',
+				opt = False,
+			)
+		)
+		#------------------------------> Values
 		self.normMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
 			label     = config.label[self.name]['NormMethod'],
 			choices   = config.choice[self.name]['NormMethod'],
-			validator = dtsValidator.IsNotEmpty(self),
+			validator = dtsValidator.IsNotEmpty(),
 		)
 		self.corrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
 			label     = config.label[self.name]['CorrMethod'],
 			choices   = config.choice[self.name]['CorrMethod'],
-			validator = dtsValidator.IsNotEmpty(self),
+			validator = dtsValidator.IsNotEmpty(),
 		)
-		#--> Columns
+		#------------------------------> Columns
 		self.stListI = wx.StaticText(
 			self.sbColumn, 
 			label = config.label[self.name]['iList'],
@@ -435,6 +526,7 @@ class CorrA(BaseConfPanel):
 			self.sbColumn, 
 			label = config.label[self.name]['oList'],
 		)
+
 		self.lbI = dtsWidget.ListZebra(self.sbColumn, 
 			colLabel     = config.label[self.name]['ListColumn'],
 			colSize      = config.size[self.name]['List'],
@@ -445,14 +537,14 @@ class CorrA(BaseConfPanel):
 			canPaste     = True,
 			canCut       = True,
 		)
+		self.lbL = [self.lbI, self.lbO]
+
 		self.addCol = wx.Button(self.sbColumn, 
 			label = config.label[self.name]['Add'],
 		)
 		self.addCol.SetBitmap(wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD), 
 			dir = wx.RIGHT,
 		)
-		#--> Needs lbI
-		self.iFile.listCtrl = self.lbI
 		#endregion --------------------------------------------------> Widgets
 
 		#region -----------------------------------------------------> Tooltip
@@ -462,12 +554,12 @@ class CorrA(BaseConfPanel):
 		#endregion --------------------------------------------------> Tooltip
 
 		#region ------------------------------------------------------> Sizers
-		#--> Expand Column section
+		#------------------------------> Expand Column section
 		item = self.Sizer.GetItem(self.sizersbColumn)
 		item.Proportion = 1
 		item = self.sizersbColumn.GetItem(self.sizersbColumnWid)
 		item.Proportion = 1
-		#--> Values
+		#------------------------------> Values
 		self.sizersbValueWid.Add(
 			1, 1,
 			pos    = (0,0),
@@ -506,8 +598,7 @@ class CorrA(BaseConfPanel):
 		)
 		self.sizersbValueWid.AddGrowableCol(0, 1)
 		self.sizersbValueWid.AddGrowableCol(5, 1)
-		
-		#--> Columns
+		#------------------------------> Columns
 		self.sizersbColumnWid.Add(
 			self.stListI,
 			pos    = (0,0),
@@ -541,15 +632,14 @@ class CorrA(BaseConfPanel):
 		self.sizersbColumnWid.AddGrowableCol(0, 1)
 		self.sizersbColumnWid.AddGrowableCol(2, 1)
 		self.sizersbColumnWid.AddGrowableRow(1, 1)
-
-		#--> Main Sizer
+		#------------------------------> Main Sizer
 		self.SetSizer(self.Sizer)
 		self.Sizer.Fit(self)
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind
 		self.addCol.Bind(wx.EVT_BUTTON, self.OnAdd)
-		self.iFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnEnter)
+		self.iFile.tc.Bind(wx.EVT_TEXT, self.OnIFileEmpty)
 		#endregion -----------------------------------------------------> Bind
 	
 		#region --------------------------------------------------------> Test
@@ -557,11 +647,11 @@ class CorrA(BaseConfPanel):
 		user = getpass.getuser()
 		if config.cOS == "Darwin":
 			self.iFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt")
-			self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Correlation-Analysis")
+			self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT")
 		elif config.cOS == 'Windows':
 			from pathlib import Path
 			self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
-			self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/Correlation-Analysis')))
+			self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT')))
 		else:
 			pass
 		self.normMethod.cb.SetValue("Log2")
@@ -581,17 +671,6 @@ class CorrA(BaseConfPanel):
 		"""
 		self.lbI.Copy()
 		self.lbO.Paste()
-	#---
-
-	def OnEnter(self, event):
-		"""Process and Enter key stroke in the wx.TextCtrl of Data File
-	
-			Parameters
-			----------
-			event : wx.Event
-				Event information
-		"""
-		self.iFile.FillListCtrl(self.iFile.tc.GetValue())
 	#---
 
 	#-------------------------------------> Run analysis methods
@@ -634,34 +713,41 @@ class CorrA(BaseConfPanel):
 		#endregion ------------------------------------------------------> Msg
 		
 		#region -------------------------------------------> Individual Fields
-		#--> Input file
+		#------------------------------> Input file
 		msgStep = msgPrefix + config.label[self.name]['iFile']
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
-		if self.iFile.tc.GetValidator().Validate(self):
+		a, b = self.iFile.tc.GetValidator().Validate()
+		if a:
 			pass
 		else:
-			self.msgError = config.msg['Error'][self.name]['iFile']
+			self.msgError = config.msg['Error'][self.name]['iFile'][b[0]]
 			return False
-		
-		#--> Normalization
+		#------------------------------> Output Folder
+		msgStep = msgPrefix + config.label[self.name]['oFile']
+		wx.CallAfter(self.dlg.UpdateStG, msgStep)
+		a, b = self.oFile.tc.GetValidator().Validate()
+		if a:
+			pass
+		else:
+			self.msgError = config.msg['Error'][self.name]['oFile'][b[0]]
+			return False
+		#------------------------------> Normalization
 		msgStep = msgPrefix + config.label[self.name]['NormMethod']
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
-		if self.normMethod.cb.GetValidator().Validate(self):
+		if self.normMethod.cb.GetValidator().Validate()[0]:
 			pass
 		else:
 			self.msgError = config.msg['Error'][self.name]['NormMethod']
 			return False
-		
-		#--> Corr Method
+		#------------------------------> Corr Method
 		msgStep = msgPrefix + config.label[self.name]['CorrMethod']
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
-		if self.corrMethod.cb.GetValidator().Validate(self):
+		if self.corrMethod.cb.GetValidator().Validate()[0]:
 			pass
 		else:
 			self.msgError = config.msg['Error'][self.name]['CorrMethod']
 			return False
-		
-		#--> ListCtrl
+		#------------------------------> ListCtrl
 		msgStep = msgPrefix + config.label[self.name]['oList']
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		if self.lbO.GetItemCount() > 1:
@@ -670,7 +756,7 @@ class CorrA(BaseConfPanel):
 			self.msgError = config.msg['Error'][self.name]['oList']
 			return False
 		#endregion ----------------------------------------> Individual Fields
-		
+
 		return True
 	#---
 
@@ -684,7 +770,7 @@ class CorrA(BaseConfPanel):
 		#region -------------------------------------------------------> Input
 		msgStep = msgPrefix + 'User input, reading'
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
-		#--> As given
+		#------------------------------> As given
 		self.d = {
 			'iFile'     : self.iFile.tc.GetValue(),
 			'oFolder'   : self.oFile.tc.GetValue(),
@@ -695,22 +781,18 @@ class CorrA(BaseConfPanel):
 
 		msgStep = msgPrefix + 'User input, processing'
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
-		#--> Output path & date
-		outP, self.date = self.iFile.OutputPath(
-			self.oFile.tc.GetValue(), 
-			config.folder['Name'][self.name],
-			unique = True,
-		)
-		#--> file base name
-		self.fileBaseName = outP.name
-		#--> Dict with all values
+		#------------------------------> Dict with all values
 		self.do = {
-			'iFile'     : self.iFile.tc.GetValue(),
-			'oFolder'   : outP,
+			'iFile'     : Path(self.d['iFile']),
+			'oFolder'   : Path(self.d['oFolder']),
 			'NormMethod': self.normMethod.cb.GetValue(),
 			'CorrMethod': self.corrMethod.cb.GetValue(),
 			'Column'    : [int(x) for x in self.lbO.GetColContent(0)],
 		}
+		#------------------------------> File base name
+		self.fileBaseName = self.do['oFolder'].name
+		#------------------------------> Date
+		self.date = dtsMethod.StrNow()
 		#endregion ----------------------------------------------------> Input
 
 		return True
@@ -726,7 +808,7 @@ class CorrA(BaseConfPanel):
 		msgStep = msgPrefix + f"{config.label[self.name]['iFile']}, reading"
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		try:
-			self.iFileObj = dtsFF.CSVFile(self.iFile.tc.GetValue())
+			self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
 		except dtsException.FileIOError as e:
 			self.msgError = str(e)
 			return False
@@ -834,18 +916,21 @@ class CorrA(BaseConfPanel):
 		#endregion -----------------------------------------------> Data files
 
 		#region ---------------------------------------------------> Print
-		# print('Input')
-		# for k,v in self.do.items():
-		# 	print(str(k)+': '+str(v))
-		
-		# print("DataFrames: Initial")
-		# print(self.dfI)
-		# print("")
-		# print("DataFrames: Norm")
-		# print(self.dfN)
-		# print("")
-		# print("DataFrames: CC")
-		# print(self.dfCC)
+		if config.development:
+			print('Input')
+			for k,v in self.do.items():
+				print(str(k)+': '+str(v))
+
+			print("DataFrames: Initial")
+			print(self.dfI)
+			print("")
+			print("DataFrames: Norm")
+			print(self.dfN)
+			print("")
+			print("DataFrames: CC")
+			print(self.dfCC)
+		else:
+			pass
 		#endregion ------------------------------------------------> Print
 
 		return True
@@ -872,6 +957,7 @@ class CorrA(BaseConfPanel):
 		#region ---------------------------------------> Dlg progress dialogue
 		if self.msgError is None:
 			self.dlg.SuccessMessage(config.label['DlgProgress']['Done'])
+			self.oFile.tc.SetValue('') # Avoid overwrite only if ended fine
 		else:
 			self.dlg.ErrorMessage(
 				config.label['DlgProgress']['Error'], 
@@ -888,8 +974,6 @@ class CorrA(BaseConfPanel):
 		self.dfCC     = None
 		self.date     = None # date for corr file
 		self.corrP    = None # path to the corr file that will be created
-
-		self.oFile.tc.SetValue('') # Avoid overwrite
 		#endregion ----------------------------------------------------> Reset
 	#---
 	#endregion ------------------------------------------------> Class Methods

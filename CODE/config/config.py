@@ -28,6 +28,7 @@ from pathlib import Path
 development = True # Track state, development (True) or production (False)
 
 version     = '2.2.0 (beta)' # String to write in the output files
+software    = 'UMSAP'
 dictVersion = { # dict for directly write into output files
 	'Version': version,
 }
@@ -83,12 +84,14 @@ name = { # Unique names to identify windows/objects through the app
 }
 
 title = { # Title of windows, tabs and panes
-	#--> Windows & Dialog
+	#--> Windows
 	'MainW'   : (
 		f"Utilities for Mass Spectrometry Analysis of Proteins "
 		f"{version}"),
 	'CorrAPlot' : 'CorrA - ', 
+	#--> Dialog
 	'CheckUpdateRes' : f"Check for Updates",
+	'Notification' : f"{software} Notification",
 	#--> Progress Dialog
 	'CorrA_PD' : 'Calculating Correlation Coefficients',
 	#--> Tab
@@ -123,12 +126,6 @@ file = { # Location of important files and default file names & ID
 		},
 	},
 	'ID' : {
-		'CorrA' : 'Correlation-Analysis',
-	},
-}
-
-folder = { # Location of important folders and default folder names
-	'Name' : {
 		'CorrA' : 'Correlation-Analysis',
 	},
 }
@@ -186,7 +183,8 @@ extLong = { # string for wx.Dialogs representing the extension of the files
 }
 
 extShort = { # string representation of the extensions. First item is default
-	'CorrA' : ['.corr'],
+	'Data' : ['.txt'],
+	'CorrA': ['.corr'],
 }
 #endregion -------------------------------------------------------- Extensions
 
@@ -194,7 +192,7 @@ extShort = { # string representation of the extensions. First item is default
 #region --------------------------------------------------------------> Labels
 label = { # Label for widgets
 	'StaticBox' : {
-		'File'  : 'File',
+		'File'  : 'Files && Folders',
 		'Value' : 'User-defined values',
 		'Column': 'Column numbers',
 	},
@@ -232,9 +230,7 @@ label = { # Label for widgets
 hint = { # Hint for widgets
 	'CorrA' : { # Correlation Analysis Configuration Pane
 		'iFile' : f"Path to the {label['CorrA']['iFile']}",
-		'oFile' : (
-			f"Path to the {label['CorrA']['oFile']} or empty for default "
-			f"location and name"),
+		'oFile' : f"Path to the {label['CorrA']['oFile']}",
 	},
 }
 #endregion ------------------------------------------------------------> Hints
@@ -258,15 +254,37 @@ msg = { # Messages for the user of the App
 		},
 	},
 	'Error' : { # Error messages
+		'File' : { # General file errors
+			'Content' : (
+				f"The file content is missing critical information and cannot "
+				f"be used by UMSAP."),
+			'Selector' : (
+				f"It was not possible to show the file selecting dialog."),
+		},
 		'PD' : { # Errors related to pandas
 			'DataType' : 'Unexpected data type.',
 			'DataTypeCol' : 'Unexpected data type in the selected columns.',
 		},
 		'CorrA': { # Correlation Analysis Configuration Pane
-			'iFile' : (
-				f"The path to the {label['CorrA']['iFile']} is not valid."),
-			'oFile' : (
-				f"The path to the {label['CorrA']['oFile']} is not valid."),
+			'iFile' : {
+				'NotPath' : (
+					f"The path to the {label['CorrA']['iFile']} is not valid."),
+				'NotFile' : (
+					f"The path to the {label['CorrA']['iFile']} does not point "
+					f"to a file."),
+				'NoRead' : (
+					f"The given {label['CorrA']['iFile']} cannot be read."),
+				'FileExt' : (
+					f"The given {label['CorrA']['iFile']} does not have the "
+					f"correct extension."),
+			},
+			'oFile' : {
+				'NotPath' : (
+					f"The path to the {label['CorrA']['oFile']} is not valid."),
+				'NoWrite' : (
+					f"It is not possible to write into the "
+					f"{label['CorrA']['oFile']}"),
+			},
 			'NormMethod' : (
 				f"The {label['CorrA']['NormMethod']} was not selected."),
 			'CorrMethod' : (
@@ -274,6 +292,9 @@ msg = { # Messages for the user of the App
 			'oList' : (
 				f"The list of {label['CorrA']['oList']} must contain at "
 				f"least two items."),
+		},
+		'CorrAFile' : { # Correlation Analysis File 
+			'InputType' : (f"The input must be a Path or a dictionary."),
 		},
 	},
 }
@@ -315,7 +336,7 @@ tooltip = { # Tooltips of the app
 
 #region --------------------------------------------------> Gauge total counts
 gauge = { # Total gauge count for each window performing a calculation 
-	'CorrA' : 14,
+	'CorrA' : 15,
 }
 #endregion -----------------------------------------------> Gauge total counts
 
@@ -325,6 +346,14 @@ changeKey = { # Keys whose values need to be str for json.dump
 	'CorrA' : ['iFile', 'oFolder'],
 }
 #endregion -----------------------------------------------------> ChangeKeys
+
+
+#region ---------------------------------------------------> File Content Keys
+fileContentCheck = { # The keys here must be in the file content
+	'Parts' : ['V', 'I', 'CI', 'R'],
+	'CorrAFile': ['iFile', 'oFolder', 'NormMethod', 'CorrMethod', 'Column'],
+}
+#endregion ------------------------------------------------> File Content Keys
 
 
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS

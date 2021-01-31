@@ -31,8 +31,10 @@ import dat4s_core.gui.wx.window as dtsWindow
 import dat4s_core.gui.wx.widget as dtsWidget
 
 import config.config as config
+import data.file as file
 import gui.menu as menu
 import gui.tab as tab
+import gui.dtscore as dtscore
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -51,15 +53,11 @@ def UpdateCheck(ori, win=None):
 	try:
 		r = requests.get(config.url['Update'])
 	except Exception as e:
-		msg = (
-			f"{config.msg['ErrorU']['UpdateCheck']['Failed']}\n\n"
-			f"Further details:\n {e}"
-		)
 		wx.CallAfter(
-			dtsWindow.NotificationDialog, 
-			'errorU', 
-			details=msg,
-			img = config.img['Icon'],
+			dtscore.Notification, 
+			'errorU',
+			msg        = config.msg['ErrorU']['UpdateCheck']['Failed'],
+			tException = e,
 		)
 		return False
 	#endregion ------------------------------> Get web page text from Internet
@@ -73,13 +71,10 @@ def UpdateCheck(ori, win=None):
 				break
 		versionI = versionI.split('UMSAP')[1].split('</h1>')[0]
 	else:
-		msg = f"{config.msg['ErrorU']['UpdateCheck']['Failed']}"
 		wx.CallAfter(
-			dtsWindow.NotificationDialog, 
+			dtscore.Notification, 
 			'errorU', 
-			msg     = 'dfbjkfb',
-			details = msg,
-			img = config.img['Icon']
+			msg = config.msg['ErrorU']['UpdateCheck']['Failed'],
 		)
 		return False
 	#endregion -----------------------------------------> Get Internet version
@@ -110,7 +105,7 @@ def UpdateCheck(ori, win=None):
 
 
 #region -------------------------------------------------------------> Classes
-#---------------------------------------------------------------> Base classes
+#------------------------------> Base classes
 class BaseWindow(wx.Frame):
 	"""Base window for UMSAP
 
@@ -173,7 +168,7 @@ class BaseWindow(wx.Frame):
 	#endregion ------------------------------------------------> Class methods
 #---
 
-#-------------------------------------------------------------------> wx.Frame
+#------------------------------> wx.Frame
 class CorrAPlot(BaseWindow):
 	"""Creates the window showing the results of a correlation analysis
 
@@ -194,16 +189,21 @@ class CorrAPlot(BaseWindow):
 			Unique name of the window
 		parent : wx Widget or None
 			Parent of the window
-		plot : dtsWidget.MatPlotPanel 
+		plot : dtsWidget.MatPlotPanel
+			Main plot of the window
 	"""
 	#region -----------------------------------------------------> Class setup
-	
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
 	def __init__(self, fileP, name='CorrAPlot', parent=None):
 		""" """
 		#region -------------------------------------------------> Check Input
+		#------------------------------> No window with false file
+		try:
+			self.fileObj = file.CorrAFile(fileP)
+		except Exception as e:
+			raise e
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup
@@ -211,8 +211,8 @@ class CorrAPlot(BaseWindow):
 
 		super().__init__(
 			name, 
-			parent=parent, 
-			title=config.title[name] + fileP.name
+			parent = parent,
+			title  = config.title[name] + fileP.name
 		)		
 		#endregion --------------------------------------------> Initial Setup
 
@@ -236,6 +236,7 @@ class CorrAPlot(BaseWindow):
 	
 	#endregion ------------------------------------------------> Class methods
 #---
+
 
 class MainWindow(BaseWindow):
 	"""Creates the main window of the App 
@@ -322,12 +323,13 @@ class MainWindow(BaseWindow):
 			event : wx.aui.Event
 				Information about the event
 		"""
-		#--> Close Tab
+		#------------------------------> Close Tab
 		event.Skip()
-		#--> Number of tabs
+		#------------------------------> Number of tabs
 		pageC = self.notebook.GetPageCount() - 1
-		#--> Remove close button from Start tab
+		#------------------------------> Update tabs & close buttons
 		if pageC == 1:
+			#------------------------------> Remove close button from Start tab
 			if (win := self.FindWindowByName('Start')) is not None:
 				self.notebook.SetCloseButton(
 					self.notebook.GetPageIndex(win), 
@@ -335,8 +337,8 @@ class MainWindow(BaseWindow):
 				)
 			else:
 				pass
-		#--> Show Start Tab without close button, if there is no other tab
 		elif pageC == 0:
+			#------------------------------> Show Start Tab with close button
 			self.CreateTab('Start')
 			self.notebook.SetCloseButton(
 				self.notebook.GetPageIndex(self.FindWindowByName('Start')), 
@@ -360,18 +362,17 @@ class MainWindow(BaseWindow):
 		
 		#region ------------------------------------------> Find/Create & Show
 		if win is None:
-		 #--> Create tab
+			#------------------------------> Create tab
 			self.notebook.AddPage(
 				self.tabMethods[name](
 					self.notebook,
-					name,
 					self.statusbar,
 				),
 				config.title[name],
 				select = True,
 			)
 		else:
-		 #--> Focus
+			#------------------------------> Focus
 			self.notebook.SetSelection(self.notebook.GetPageIndex(win))
 		#endregion ---------------------------------------> Find/Create & Show
 
@@ -399,14 +400,18 @@ class MainWindow(BaseWindow):
 				Path to the UMSAP output file
 
 		"""
-		fileP = Path(fileP)	
-		self.resultWindow[fileP.suffix](fileP)
+		#region ---------------------------------------------------> Read file
+		try:
+			self.resultWindow[fileP.suffix](fileP)
+		except Exception as e:
+			raise e
+		#endregion ------------------------------------------------> Read file
+			
 		return True		
 	#---
 	#endregion -------------------------------------------------> Menu methods
 #---
-#------------------------------------------------------------------> wx.Dialog
-
+#------------------------------> wx.Dialog
 class CheckUpdateResult(wx.Dialog):
 	"""Show a dialog with the result of the check for update operation.
 	
@@ -432,6 +437,7 @@ class CheckUpdateResult(wx.Dialog):
 		#endregion --------------------------------------------> Initial setup
 
 		#region -----------------------------------------------------> Widgets
+		#------------------------------> Msg
 		if checkRes is None:
 			msg = config.label[self.name]['Latest']
 		else:
@@ -444,6 +450,7 @@ class CheckUpdateResult(wx.Dialog):
 			label = msg,
 			style = wx.ALIGN_LEFT,
 		)
+		#------------------------------> Link	
 		if checkRes is not None:
 			self.stLink = adv.HyperlinkCtrl(
 				self,
@@ -452,19 +459,35 @@ class CheckUpdateResult(wx.Dialog):
 			)
 		else:
 			pass
+		#------------------------------> Img
+		self.img = wx.StaticBitmap(
+			self,
+			bitmap = wx.Bitmap(str(config.img['Icon']), wx.BITMAP_TYPE_PNG),
+		)
 		#endregion --------------------------------------------------> Widgets
 
 		#region ------------------------------------------------------> Sizers
-		#--> Button Sizers
+		#------------------------------> Button Sizers
 		self.btnSizer = self.CreateStdDialogButtonSizer(wx.OK)
-		#--> Main Sizer
-		self.Sizer = wx.BoxSizer(wx.VERTICAL)
-		self.Sizer.Add(self.stMsg, 0, wx.ALIGN_LEFT|wx.ALL, 10)
+		#------------------------------> TextSizer
+		self.tSizer = wx.BoxSizer(wx.VERTICAL)
+		
+		self.tSizer.Add(self.stMsg, 0, wx.ALIGN_LEFT|wx.ALL, 10)
 		if checkRes is not None:
-			self.Sizer.Add(self.stLink, 0, wx.ALIGN_RIGHT|wx.ALL, 10)
+			self.tSizer.Add(self.stLink, 0, wx.ALIGN_CENTER|wx.ALL, 10)
 		else:
 			pass
-		self.Sizer.Add(self.btnSizer, 0, wx.ALIGN_RIGHT|wx.TOP, 10)
+		#------------------------------> Image Sizer
+		self.imgSizer = wx.BoxSizer(wx.HORIZONTAL)
+		
+		self.imgSizer.Add(self.img, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+		self.imgSizer.Add(self.tSizer, 0, wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
+		#------------------------------> Main Sizer
+		self.Sizer = wx.BoxSizer(wx.VERTICAL)
+		
+		self.Sizer.Add(self.imgSizer, 0, wx.ALIGN_CENTER|wx.TOP|wx.LEFT|wx.RIGHT, 25)
+		self.Sizer.Add(self.btnSizer, 0, wx.ALIGN_RIGHT|wx.RIGHT|wx.BOTTOM, 10)
+		
 		self.SetSizer(self.Sizer)
 		self.Sizer.Fit(self)
 		#endregion ---------------------------------------------------> Sizers
@@ -501,66 +524,4 @@ class CheckUpdateResult(wx.Dialog):
 		self.Destroy()
 	#endregion ------------------------------------------------> Class Methods
 #---
-
-# class CorrAPlot(dtsWidget.MatPlotPanel):
-# 	"""Show the results of a correlation analysis
-
-# 		Parameters
-# 		----------
-# 		parent : wx widget or none
-# 			Parent of the panel
-# 		name : str
-# 			Unique name to id the panel
-# 		fileP : str or Path
-# 			Path to the .corr file
-# 		dpi : int
-# 			DPI for the plot. Default is 300
-
-# 		Attributes
-# 		----------
-		
-
-# 		Raises
-# 		------
-		
-
-# 		Methods
-# 		-------
-		
-# 	"""
-# 	#region -----------------------------------------------------> Class setup
-	
-# 	#endregion --------------------------------------------------> Class setup
-
-# 	#region --------------------------------------------------> Instance setup
-# 	def __init__(self, parent, name, fileP, dpi=300):
-# 		""" """
-# 		#region -------------------------------------------------> Check Input
-# 		self.parent = parent
-# 		self.fileP  = fileP
-# 		#endregion ----------------------------------------------> Check Input
-
-# 		#region -----------------------------------------------> Initial Setup
-# 		super().__init__(parent, name, dpi=dpi)
-# 		#endregion --------------------------------------------> Initial Setup
-
-# 		#region -----------------------------------------------------> Widgets
-		
-# 		#endregion --------------------------------------------------> Widgets
-
-# 		#region ------------------------------------------------------> Sizers
-		
-# 		#endregion ---------------------------------------------------> Sizers
-
-# 		#region --------------------------------------------------------> Bind
-		
-# 		#endregion -----------------------------------------------------> Bind
-# 	#---
-# 	#endregion -----------------------------------------------> Instance setup
-
-# 	#region ---------------------------------------------------> Class methods
-	
-# 	#endregion ------------------------------------------------> Class methods
-# #---
-
 #endregion ----------------------------------------------------------> Classes

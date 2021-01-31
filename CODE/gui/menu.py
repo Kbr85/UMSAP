@@ -23,16 +23,13 @@ import dat4s_core.gui.wx.window as dtsWindow
 import dat4s_core.gui.wx.menu as dtsMenu
 
 import config.config as config
+import gui.dtscore as dtscore
 #endregion ----------------------------------------------------------> Imports
 
 
 #region --------------------------------------------------------> Base Classes
 class MenuMethods():
-	"""Base class to hold common methods to the menus
-	
-		Methods
-		-------
-	"""
+	"""Base class to hold common methods to the menus """
 
 	#region ---------------------------------------------------> Class Methods
 	def OnCreateTab(self, event):
@@ -144,14 +141,11 @@ class Utility(wx.Menu, MenuMethods):
 		try:
 			fileP = dtsMenu.GetFilePath('openM', config.extLong['UMSAPOut'])
 		except Exception as e:
-			dtsWindow.NotificationDialog(
+			dtscore.Notification(
 				'errorF', 
-				details = (
-					f"It was not possible to show the file selector dialog."
-					f"\n\nFurther details:\n{e}"
-				), 
-				parent=self.GetWindow(),
-				img = config.img['Icon'],
+				msg        = config.msg['Error']['File']['Selector'],
+				tException = e,
+				parent     = self.GetWindow(),
 			)
 			return False
 		#endregion ------------------------------------------------> Get files
@@ -160,7 +154,15 @@ class Utility(wx.Menu, MenuMethods):
 		if fileP is not None:
 			#-->
 			for f in fileP:
-				config.mainW.ReadUMSAPOutFile(f)
+				try:
+					config.mainW.ReadUMSAPOutFile(Path(f))
+				except Exception as e:
+					dtscore.Notification(
+						'errorF', 
+						msg        = str(e),
+						tException = e,
+						parent     = self.GetWindow(),
+					)
 			#-->
 			return True
 		else:
