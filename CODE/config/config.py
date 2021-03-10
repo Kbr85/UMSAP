@@ -149,6 +149,16 @@ label = { # Label for widgets
 	'LCtrlColName_I' :  ['#', 'Name'],
 	#------------------------------> wx.CheckBox
 	'CbCheck' : 'Append new data to selected output file',
+	#------------------------------> Progress Dialog
+	'PdCheck'   : 'Checking user input: ',
+	'PdPrepare' : 'Preparing analysis: ',
+	'PdReadFile': 'Reading input files: ',
+	'PdRun'     : 'Running analysis: ',
+	'PdWrite'   : 'Writing output: ',
+	'PdLoad'    : 'Loading output files: ',
+	'PdError'   : 'Fatal Error',
+	'PdDone'    : 'All Done',
+	'PdEllapsed': 'Ellapsed time: ',
 }
 #endregion -----------------------------------------------------------> Labels
 
@@ -247,7 +257,7 @@ StartTab = { # gui.tab
 }
 
 
-CorrATab = { # gui.tab
+CorrATab = { # gui.tab, conf
 	#------------------------------> URL
 	'URL' : url['CorrA'],
 	#------------------------------> Labels
@@ -280,6 +290,35 @@ CorrATab = { # gui.tab
 		f"Add selected Columns in the Data File to the list of Columns to "
 		f"Analyse. New columns will be added after the last selected "
 		f"element in Columns to analyse. Duplicate columns are discarded."),
+	#------------------------------> Progress Dialog
+	'TitlePD' : 'Calculating Correlation Coefficients',
+	'GaugePD' : 15,
+}
+
+CorrATabMsg = { # gui.tab, error msg
+	'iFile' : {
+		'NotPath' : (
+			f"The path to the {CorrATab['iFileL']} is not valid."),
+		'NotFile' : (
+			f"The path to the {CorrATab['iFileL']} does not point to a file."),
+		'NoRead' : (
+			f"The given {CorrATab['iFileL']} cannot be read."),
+		'FileExt' : (
+			f"The given {CorrATab['iFileL']} does not have the correct "
+			f"extension."),
+	},
+	'oFile' : {
+		'NotPath' : (
+			f"The path to the {CorrATab['oFileL']} is not valid."),
+		'NoWrite' : (
+			f"It is not possible to write into the {CorrATab['oFileL']}"),
+	},
+	'NormMethod' : (
+		f"The {CorrATab['NormMethodL']} was not selected."),
+	'CorrMethod' : (
+		f"The {CorrATab['CorrMethodL']} was not selected."),
+	'oList' : (
+		f"The list of {CorrATab['oListL']} must contain at least two items."),
 }
 
 
@@ -420,32 +459,6 @@ except Exception as e:
 
 
 
-# title = { # Title of windows, tabs and panes
-# 	#--> Windows
-# 	'MainW'   : (
-# 		
-# 	'CorrAPlot' : 'CorrA - ', 
-# 	#--> Dialog
-# 	'Notification' : f"{software} Notification",
-# 	#--> Progress Dialog
-# 	'CorrA_PD' : 'Calculating Correlation Coefficients',
-# 	#--> Tab
-# 	'Start' : 'Start',
-# 	'CorrA' : 'CorrA',
-# }
-
-
-
-# #region ---------------------------------------------------------------> Sizes
-# size = { # Base size for widgets
-# 	'CorrA' : { # Correlation Analysis Configuration tab
-# 		'List' : [50, 150],
-# 	},
-# 	'CorrAPlot' : { # Correlation analysis results window
-# 		'Window' : (500, 500)
-# 	}
-# }
-# #endregion ------------------------------------------------------------> Sizes
 
 
 
@@ -457,14 +470,7 @@ except Exception as e:
 # #region --------------------------------------------------------------> Labels
 # label = { # Label for widgets
 # 	'DlgProgress' : {
-# 		'Check'   : 'Checking user input: ',
-# 		'Prepare' : 'Preparing analysis: ',
-# 		'ReadFile': 'Reading input files: ',
-# 		'Run'     : 'Running analysis: ',
-# 		'Write'   : 'Writing output: ',
-# 		'Load'    : 'Loading output files: ',
-# 		'Error'   : 'Fatal Error',
-# 		'Done'    : 'All Done',
+# 		
 # 	}
 # }
 # #endregion -----------------------------------------------------------> Labels
@@ -485,47 +491,12 @@ except Exception as e:
 # 			'DataType' : 'Unexpected data type.',
 # 			'DataTypeCol' : 'Unexpected data type in the selected columns.',
 # 		},
-# 		'CorrA': { # Correlation Analysis Configuration Pane
-# 			'iFile' : {
-# 				'NotPath' : (
-# 					f"The path to the {label['CorrA']['iFile']} is not valid."),
-# 				'NotFile' : (
-# 					f"The path to the {label['CorrA']['iFile']} does not point "
-# 					f"to a file."),
-# 				'NoRead' : (
-# 					f"The given {label['CorrA']['iFile']} cannot be read."),
-# 				'FileExt' : (
-# 					f"The given {label['CorrA']['iFile']} does not have the "
-# 					f"correct extension."),
-# 			},
-# 			'oFile' : {
-# 				'NotPath' : (
-# 					f"The path to the {label['CorrA']['oFile']} is not valid."),
-# 				'NoWrite' : (
-# 					f"It is not possible to write into the "
-# 					f"{label['CorrA']['oFile']}"),
-# 			},
-# 			'NormMethod' : (
-# 				f"The {label['CorrA']['NormMethod']} was not selected."),
-# 			'CorrMethod' : (
-# 				f"The {label['CorrA']['CorrMethod']} was not selected."),
-# 			'oList' : (
-# 				f"The list of {label['CorrA']['oList']} must contain at "
-# 				f"least two items."),
-# 		},
 # 		'CorrAFile' : { # Correlation Analysis File 
 # 			'InputType' : (f"The input must be a Path or a dictionary."),
 # 		},
 # 	},
 # }
 # #endregion ---------------------------------------------------------> Messages
-
-
-# #region --------------------------------------------------> Gauge total counts
-# gauge = { # Total gauge count for each window performing a calculation 
-# 	'CorrA' : 15,
-# }
-# #endregion -----------------------------------------------> Gauge total counts
 
 
 # #region --------------------------------------------------------> ChangeKeys

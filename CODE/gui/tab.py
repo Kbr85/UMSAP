@@ -34,6 +34,7 @@ import gui.dtscore as dtscore
 
 
 #region -------------------------------------------------------------> Methods
+
 #endregion ----------------------------------------------------------> Methods
 
 
@@ -57,9 +58,6 @@ class BaseConfPanel(
 			Unique name of the tab
 		oMode : str
 			One of 'openO', 'openM', 'save', 'folder'. Default is 'folder'
-		ext : str
-			File extension for output file. Default is None since default for
-			oMode is 'folder'
 		statusbar : wx.StatusBar
 			Statusbar of the application to display messages
 		labeR : str
@@ -75,6 +73,29 @@ class BaseConfPanel(
 
 		Attributes
 		----------
+		parent : wx Widget
+			Parent of the widgets
+		statusbar : wx.StatusBar
+			Statusbar of the application to display messages
+		confOpt : dict
+			Dict with configuration options
+		confMsg dict or None
+			Messages for user
+		msgError : Str or None
+			Error message to show when analysis fails
+		d : dict
+			Dict with user input. See keys in Child class
+		do : dict
+			Dict with processed user input. See keys in Child class
+		dfI : pdDataFrame or None
+			Dataframe with initial values after columns were extracted and type
+			assigned.
+		dfN : pdDataFrame or None
+			Dataframe after normalization
+		date : str or None
+			Date time stamp as given by dtsMethod.StrNow()
+		oFolder : Path or None
+			Folder to contain the output
 		lbI : wx.ListCtrl
 			ListCtrl to show information about the main input file
 		lbO : wx.ListCtrl
@@ -82,8 +103,6 @@ class BaseConfPanel(
 		lbL : list of wx.ListCtrl
 			To use when deleting the content on the wx.ListCtrl 
 			e.g. self.LCtrlEmpty
-		name : str
-			Unique name of the tab
 		btnRun : wx.Button
 			Run button
 		btnHelp : wx.Button
@@ -138,6 +157,14 @@ class BaseConfPanel(
 		self.confOpt = getattr(config, self.name)
 		self.confMsg = getattr(config, self.name+'Msg', None)
 
+		self.msgError = None # Error msg to show in self.RunEnd
+		self.d        = {} # Dict with the user input as given
+		self.do       = {} # Dict with the processed user input
+		self.dfI      = None # pd.DataFrame for initial, 
+		self.dfN      = None # normalized and
+		self.date     = None # date for corr file
+		self.oFolder  = None # folder for output
+
 		wx.Panel.__init__(self, parent, name=name)
 
 		dtsWidget.ButtonOnlineHelpClearAllRun.__init__(
@@ -171,7 +198,11 @@ class BaseConfPanel(
 			mode       = oMode,
 			ext        = config.extLong['UMSAP'],
 			tcStyle    = wx.TE_READONLY,
-			validator  = wx.DefaultValidator,
+			validator  = dtsValidator.OutputFF(
+				fof = 'file',
+				opt = False,
+				ext = config.extShort['UMSAP'][0],
+			),
 			ownCopyCut = True,
 		)
 
@@ -231,6 +262,20 @@ class BaseConfPanel(
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
+	def OnIFileEnter(self, event):
+		"""Reload column names in the data file when pressing enter
+	
+			Parameters
+			----------
+			event : wx.Event
+				Information about the event
+		"""
+		if self.LCtrlFill(self.iFile.tc.GetValue()):
+			return True
+		else:
+			return False
+	#---
+
 	def LCtrlFill(self, fileP):
 		"""Fill the wx.ListCtrl after selecting path to the folder. This is
 			called from within self.iFile
@@ -444,12 +489,8 @@ class CorrA(BaseConfPanel):
 
 		Attributes
 		----------
-		parent : wx Widget
-			Parent of the widgets
 		name : str
 			Unique id of the pane in the app
-		msgError : Str or None
-			Error message to show when analysis fails
 		do : dict
 			Dict with the processed user input
 			{
@@ -461,18 +502,9 @@ class CorrA(BaseConfPanel):
 			}
 		d : dict
 			Similar to 'do' but with the values given by the user
-		dfI : pdDataFrame
-			Dataframe with initial values after columns were extracted and type
-			assigned.
-		dfN : pdDataFrame
-			Dataframe after normalization
 		dfCC : pdDataFrame
 			Dataframe with correlation coefficients
-		date : str
-			Date time stamp as given by dtsMethod.StrNow()
-		corrP : Path
-			Path to the corr file that will be created
-
+		See parent class for more attributes
 
 		Notes
 		-----
@@ -510,15 +542,7 @@ class CorrA(BaseConfPanel):
 	def __init__(self, parent, statusbar):
 		""""""
 		#region -----------------------------------------------> Initial setup
-		self.parent   = parent
-		self.msgError = None # Error msg to show in self.RunEnd
-		self.d        = {} # Dict with the user input as given
-		self.do       = {} # Dict with the processed user input
-		self.dfI      = None # pd.DataFrame for initial, 
-		self.dfN      = None # normalized and
 		self.dfCC     = None # correlation coefficients
-		self.date     = None # date for corr file
-		self.corrP    = None # path to the corr file that will be created
 
 		super().__init__(
 			parent,
@@ -536,13 +560,6 @@ class CorrA(BaseConfPanel):
 			)
 		)
 		self.iFile.afterBtn = self.LCtrlFill
-
-		self.oFile.tc.SetValidator(
-			dtsValidator.OutputFF(
-				fof = 'folder',
-				opt = False,
-			)
-		)
 		#------------------------------> Values
 		self.normMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
 			label     = self.confOpt['NormMethodL'],
@@ -682,6 +699,7 @@ class CorrA(BaseConfPanel):
 		#region --------------------------------------------------------> Bind
 		self.addCol.Bind(wx.EVT_BUTTON, self.OnAdd)
 		self.iFile.tc.Bind(wx.EVT_TEXT, self.OnIFileEmpty)
+		self.iFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnIFileEnter)
 		#endregion -----------------------------------------------------> Bind
 	
 		#region --------------------------------------------------------> Test
@@ -689,7 +707,7 @@ class CorrA(BaseConfPanel):
 		user = getpass.getuser()
 		if config.cOS == "Darwin":
 			self.iFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt")
-			self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT")
+			self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/tarprot.umsap")
 		elif config.cOS == 'Windows':
 			from pathlib import Path
 			self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
@@ -725,11 +743,10 @@ class CorrA(BaseConfPanel):
 				Event information
 		"""
 		#region --------------------------------------------------> Dlg window
-		self.dlg = dtsWindow.ProgressDialog(
+		self.dlg = dtscore.ProgressDialog(
 			self, 
-			config.title['CorrA_PD'], 
-			config.gauge[self.name], 
-			img = config.img['Icon'],
+			self.confOpt['TitlePD'], 
+			self.confOpt['GaugePD'],
 		)
 		#endregion -----------------------------------------------> Dlg window
 
@@ -751,51 +768,51 @@ class CorrA(BaseConfPanel):
 		"""Check user input"""
 		
 		#region ---------------------------------------------------------> Msg
-		msgPrefix = config.label['DlgProgress']['Check']
+		msgPrefix = config.label['PdCheck']
 		#endregion ------------------------------------------------------> Msg
 		
 		#region -------------------------------------------> Individual Fields
 		#------------------------------> Input file
-		msgStep = msgPrefix + config.label[self.name]['iFile']
+		msgStep = msgPrefix + self.confOpt['iFileL']
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		a, b = self.iFile.tc.GetValidator().Validate()
 		if a:
 			pass
 		else:
-			self.msgError = config.msg['Error'][self.name]['iFile'][b[0]]
+			self.msgError = self.confMsg['iFile'][b[0]]
 			return False
 		#------------------------------> Output Folder
-		msgStep = msgPrefix + config.label[self.name]['oFile']
+		msgStep = msgPrefix + self.confOpt['oFileL']
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		a, b = self.oFile.tc.GetValidator().Validate()
 		if a:
 			pass
 		else:
-			self.msgError = config.msg['Error'][self.name]['oFile'][b[0]]
+			self.msgError = self.confMsg['oFile'][b[0]]
 			return False
 		#------------------------------> Normalization
-		msgStep = msgPrefix + config.label[self.name]['NormMethod']
+		msgStep = msgPrefix + self.confOpt['NormMethodL']
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		if self.normMethod.cb.GetValidator().Validate()[0]:
 			pass
 		else:
-			self.msgError = config.msg['Error'][self.name]['NormMethod']
+			self.msgError = self.confMsg['NormMethod']
 			return False
 		#------------------------------> Corr Method
-		msgStep = msgPrefix + config.label[self.name]['CorrMethod']
+		msgStep = msgPrefix + self.confOpt['CorrMethodL']
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		if self.corrMethod.cb.GetValidator().Validate()[0]:
 			pass
 		else:
-			self.msgError = config.msg['Error'][self.name]['CorrMethod']
+			self.msgError = self.confMsg['CorrMethod']
 			return False
 		#------------------------------> ListCtrl
-		msgStep = msgPrefix + config.label[self.name]['oList']
+		msgStep = msgPrefix + self.confOpt['oListL']
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		if self.lbO.GetItemCount() > 1:
 			pass
 		else:
-			self.msgError = config.msg['Error'][self.name]['oList']
+			self.msgError = self.confMsg['oList']
 			return False
 		#endregion ----------------------------------------> Individual Fields
 
@@ -806,7 +823,7 @@ class CorrA(BaseConfPanel):
 		"""Set variable and prepare data for analysis."""
 		
 		#region ---------------------------------------------------------> Msg
-		msgPrefix = config.label['DlgProgress']['Prepare']
+		msgPrefix = config.label['PdPrepare']
 		#endregion ------------------------------------------------------> Msg
 
 		#region -------------------------------------------------------> Input
@@ -815,7 +832,7 @@ class CorrA(BaseConfPanel):
 		#------------------------------> As given
 		self.d = {
 			'iFile'     : self.iFile.tc.GetValue(),
-			'oFolder'   : self.oFile.tc.GetValue(),
+			'oFile'     : self.oFile.tc.GetValue(),
 			'NormMethod': self.normMethod.cb.GetValue(),
 			'CorrMethod': self.corrMethod.cb.GetValue(),
 			'Column'    : [int(x) for x in self.lbO.GetColContent(0)],
@@ -826,13 +843,14 @@ class CorrA(BaseConfPanel):
 		#------------------------------> Dict with all values
 		self.do = {
 			'iFile'     : Path(self.d['iFile']),
-			'oFolder'   : Path(self.d['oFolder']),
+			'oFile'     : Path(self.d['oFile']),
 			'NormMethod': self.normMethod.cb.GetValue(),
 			'CorrMethod': self.corrMethod.cb.GetValue(),
 			'Column'    : [int(x) for x in self.lbO.GetColContent(0)],
 		}
 		#------------------------------> File base name
-		self.fileBaseName = self.do['oFolder'].name
+		self.oFolder = self.do['oFile'].parent
+		print(self.oFolder)
 		#------------------------------> Date
 		self.date = dtsMethod.StrNow()
 		#endregion ----------------------------------------------------> Input
@@ -842,65 +860,65 @@ class CorrA(BaseConfPanel):
 
 	def ReadInputFiles(self):
 		"""Read input file and check data"""
-		#region ---------------------------------------------------------> Msg
-		msgPrefix = config.label['DlgProgress']['ReadFile']
-		#endregion ------------------------------------------------------> Msg
+		# #region ---------------------------------------------------------> Msg
+		# msgPrefix = config.label['DlgProgress']['ReadFile']
+		# #endregion ------------------------------------------------------> Msg
 
-		#region ---------------------------------------------------> Data file
-		msgStep = msgPrefix + f"{config.label[self.name]['iFile']}, reading"
-		wx.CallAfter(self.dlg.UpdateStG, msgStep)
-		try:
-			self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
-		except dtsException.FileIOError as e:
-			self.msgError = str(e)
-			return False
-		#endregion ------------------------------------------------> Data file
+		# #region ---------------------------------------------------> Data file
+		# msgStep = msgPrefix + f"{config.label[self.name]['iFile']}, reading"
+		# wx.CallAfter(self.dlg.UpdateStG, msgStep)
+		# try:
+		# 	self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
+		# except dtsException.FileIOError as e:
+		# 	self.msgError = str(e)
+		# 	return False
+		# #endregion ------------------------------------------------> Data file
 
-		#region ------------------------------------------------------> Column
-		msgStep = msgPrefix + f"{config.label[self.name]['iFile']}, data type"
-		wx.CallAfter(self.dlg.UpdateStG, msgStep)
-		self.df = self.iFileObj.df.iloc[:,self.do['Column']]
-		try:
-			self.dfI = self.df.astype('float')
-		except Exception as e:
-			self.msgError = (
-				config.msg['Error']['PD']['DataTypeCol']
-				+ f"\n\nFurther details:\n{e}\n"
-			)
-			return False
-		#endregion ---------------------------------------------------> Column
+		# #region ------------------------------------------------------> Column
+		# msgStep = msgPrefix + f"{config.label[self.name]['iFile']}, data type"
+		# wx.CallAfter(self.dlg.UpdateStG, msgStep)
+		# self.df = self.iFileObj.df.iloc[:,self.do['Column']]
+		# try:
+		# 	self.dfI = self.df.astype('float')
+		# except Exception as e:
+		# 	self.msgError = (
+		# 		config.msg['Error']['PD']['DataTypeCol']
+		# 		+ f"\n\nFurther details:\n{e}\n"
+		# 	)
+		# 	return False
+		# #endregion ---------------------------------------------------> Column
 
 		return True
 	#---
 
 	def RunAnalysis(self):
 		"""Calculate coefficients"""
-		#region ---------------------------------------------------------> Msg
-		msgPrefix = config.label['DlgProgress']['Run']
-		#endregion ------------------------------------------------------> Msg
+		# #region ---------------------------------------------------------> Msg
+		# msgPrefix = config.label['DlgProgress']['Run']
+		# #endregion ------------------------------------------------------> Msg
 
-		#region -----------------------------------------------> Normalization
-		msgStep = msgPrefix + f"Data normalization"
-		wx.CallAfter(self.dlg.UpdateStG, msgStep)
-		if self.do['NormMethod'] != 'None':
-			try:
-				self.dfN = dtsStatistic.DataNormalization(
-					self.dfI,
-					sel = None,
-					method = self.do['NormMethod'],
-				)
-			except Exception as e:
-				self.msgError = str(e)
-				return False
-		else:
-			self.dfN = self.dfI.copy()
-		#endregion --------------------------------------------> Normalization
+		# #region -----------------------------------------------> Normalization
+		# msgStep = msgPrefix + f"Data normalization"
+		# wx.CallAfter(self.dlg.UpdateStG, msgStep)
+		# if self.do['NormMethod'] != 'None':
+		# 	try:
+		# 		self.dfN = dtsStatistic.DataNormalization(
+		# 			self.dfI,
+		# 			sel = None,
+		# 			method = self.do['NormMethod'],
+		# 		)
+		# 	except Exception as e:
+		# 		self.msgError = str(e)
+		# 		return False
+		# else:
+		# 	self.dfN = self.dfI.copy()
+		# #endregion --------------------------------------------> Normalization
 
-		#region ------------------------------------> Correlation coefficients
-		msgStep = msgPrefix + f"Correlation coefficients calculation"
-		wx.CallAfter(self.dlg.UpdateStG, msgStep)
-		self.dfCC = self.dfN.corr(method=self.do['CorrMethod'].lower())
-		#endregion ---------------------------------> Correlation coefficients
+		# #region ------------------------------------> Correlation coefficients
+		# msgStep = msgPrefix + f"Correlation coefficients calculation"
+		# wx.CallAfter(self.dlg.UpdateStG, msgStep)
+		# self.dfCC = self.dfN.corr(method=self.do['CorrMethod'].lower())
+		# #endregion ---------------------------------> Correlation coefficients
 
 		return True
 	#---
@@ -908,88 +926,88 @@ class CorrA(BaseConfPanel):
 	def WriteOutput(self):
 		"""Write output. Override as needed """
 		
-		#region ---------------------------------------------------------> Msg
-		msgPrefix = config.label['DlgProgress']['Write']
-		#endregion ------------------------------------------------------> Msg
+		# #region ---------------------------------------------------------> Msg
+		# msgPrefix = config.label['DlgProgress']['Write']
+		# #endregion ------------------------------------------------------> Msg
 		
-		#region ----------------------------------------------> Create folders
-		msgStep = msgPrefix + 'Creating needed folders'
-		wx.CallAfter(self.dlg.UpdateStG, msgStep)
-		self.do['oFolder'].mkdir(parents=True, exist_ok=True)
-		dataFolder = self.do['oFolder']/'Data'
-		dataFolder.mkdir(parents=True, exist_ok=True)
-		#endregion -------------------------------------------> Create folders
+		# #region ----------------------------------------------> Create folders
+		# msgStep = msgPrefix + 'Creating needed folders'
+		# wx.CallAfter(self.dlg.UpdateStG, msgStep)
+		# self.do['oFolder'].mkdir(parents=True, exist_ok=True)
+		# dataFolder = self.do['oFolder']/'Data'
+		# dataFolder.mkdir(parents=True, exist_ok=True)
+		# #endregion -------------------------------------------> Create folders
 		
-		#region --------------------------------------------------> Data files
-		msgStep = msgPrefix + 'Data files'
-		wx.CallAfter(self.dlg.UpdateStG, msgStep)
+		# #region --------------------------------------------------> Data files
+		# msgStep = msgPrefix + 'Data files'
+		# wx.CallAfter(self.dlg.UpdateStG, msgStep)
 
-		dtsFF.WriteDFs2CSV(
-			dataFolder, 
-			{
-				self.fileBaseName + '-' + config.file['Name']['DataStep']['Init'] : self.dfI,
-				self.fileBaseName + '-' + config.file['Name']['DataStep']['Norm'] : self.dfN,
-				self.fileBaseName + '-' + config.file['Name'][self.name]['MainD'] : self.dfCC,
-			},
-		)
-		#endregion -----------------------------------------------> Data files
+		# dtsFF.WriteDFs2CSV(
+		# 	dataFolder, 
+		# 	{
+		# 		self.fileBaseName + '-' + config.file['Name']['DataStep']['Init'] : self.dfI,
+		# 		self.fileBaseName + '-' + config.file['Name']['DataStep']['Norm'] : self.dfN,
+		# 		self.fileBaseName + '-' + config.file['Name'][self.name]['MainD'] : self.dfCC,
+		# 	},
+		# )
+		# #endregion -----------------------------------------------> Data files
 		
-		#region --------------------------------------------------> Data files
-		msgStep = msgPrefix + 'Main file'
-		wx.CallAfter(self.dlg.UpdateStG, msgStep)
+		# #region --------------------------------------------------> Data files
+		# msgStep = msgPrefix + 'Main file'
+		# wx.CallAfter(self.dlg.UpdateStG, msgStep)
 
-		self.corrP = self.do['oFolder'] / (self.fileBaseName + config.extShort[self.name][0])
-		outData = {
-			config.file['ID'][self.name]: {
-				self.date : {
-					'V' : config.dictVersion,
-					'I' : self.d,
-					'CI': dtsMethod.DictVal2Str(
-						self.do, 
-						config.changeKey[self.name],
-						new = True,
-					),
-					'R' : self.dfCC.to_dict(),
-				}
-			}
-		}
+		# self.corrP = self.do['oFolder'] / (self.fileBaseName + config.extShort[self.name][0])
+		# outData = {
+		# 	config.file['ID'][self.name]: {
+		# 		self.date : {
+		# 			'V' : config.dictVersion,
+		# 			'I' : self.d,
+		# 			'CI': dtsMethod.DictVal2Str(
+		# 				self.do, 
+		# 				config.changeKey[self.name],
+		# 				new = True,
+		# 			),
+		# 			'R' : self.dfCC.to_dict(),
+		# 		}
+		# 	}
+		# }
 
-		dtsFF.WriteJSON(self.corrP, outData)
-		#endregion -----------------------------------------------> Data files
+		# dtsFF.WriteJSON(self.corrP, outData)
+		# #endregion -----------------------------------------------> Data files
 
-		#region ---------------------------------------------------> Print
-		if config.development:
-			print('Input')
-			for k,v in self.do.items():
-				print(str(k)+': '+str(v))
+		# #region ---------------------------------------------------> Print
+		# if config.development:
+		# 	print('Input')
+		# 	for k,v in self.do.items():
+		# 		print(str(k)+': '+str(v))
 
-			print("DataFrames: Initial")
-			print(self.dfI)
-			print("")
-			print("DataFrames: Norm")
-			print(self.dfN)
-			print("")
-			print("DataFrames: CC")
-			print(self.dfCC)
-		else:
-			pass
-		#endregion ------------------------------------------------> Print
+		# 	print("DataFrames: Initial")
+		# 	print(self.dfI)
+		# 	print("")
+		# 	print("DataFrames: Norm")
+		# 	print(self.dfN)
+		# 	print("")
+		# 	print("DataFrames: CC")
+		# 	print(self.dfCC)
+		# else:
+		# 	pass
+		# #endregion ------------------------------------------------> Print
 
 		return True
 	#---
 
 	def LoadResults(self):
 		"""Load .corr file"""
-		#region ---------------------------------------------------------> Msg
-		msgPrefix = config.label['DlgProgress']['Load']
-		#endregion ------------------------------------------------------> Msg
+		# #region ---------------------------------------------------------> Msg
+		# msgPrefix = config.label['DlgProgress']['Load']
+		# #endregion ------------------------------------------------------> Msg
 
-		#region --------------------------------------------------------> Load
-		msgStep = msgPrefix + '.corr'
-		wx.CallAfter(self.dlg.UpdateStG, msgStep)
+		# #region --------------------------------------------------------> Load
+		# msgStep = msgPrefix + '.corr'
+		# wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		
-		wx.CallAfter(config.mainW.ReadUMSAPOutFile, self.corrP)
-		#endregion -----------------------------------------------------> Load
+		# wx.CallAfter(config.mainW.ReadUMSAPOutFile, self.corrP)
+		# #endregion -----------------------------------------------------> Load
 
 		return True
 	#---
@@ -998,11 +1016,14 @@ class CorrA(BaseConfPanel):
 		"""Restart GUI and needed variables"""
 		#region ---------------------------------------> Dlg progress dialogue
 		if self.msgError is None:
-			self.dlg.SuccessMessage(config.label['DlgProgress']['Done'])
+			self.dlg.SuccessMessage(
+				config.label['PdDone'],
+				eTime=(config.label['PdEllapsed'] + self.deltaT),
+			)
 			self.oFile.tc.SetValue('') # Avoid overwrite only if ended fine
 		else:
 			self.dlg.ErrorMessage(
-				config.label['DlgProgress']['Error'], 
+				config.label['PdError'], 
 				error = self.msgError,
 			)
 		#endregion ------------------------------------> Dlg progress dialogue
@@ -1015,9 +1036,11 @@ class CorrA(BaseConfPanel):
 		self.dfN      = None # correlation coefficients
 		self.dfCC     = None
 		self.date     = None # date for corr file
+		self.oFolder  = None # folder for output
 		self.corrP    = None # path to the corr file that will be created
+		self.deltaT   = None
 		#endregion ----------------------------------------------------> Reset
 	#---
 	#endregion ------------------------------------------------> Class Methods
-# #---
+#---
 #endregion ----------------------------------------------------------> Classes

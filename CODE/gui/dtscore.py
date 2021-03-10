@@ -15,6 +15,8 @@
 
 
 #region -------------------------------------------------------------> Imports
+import wx
+
 import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
@@ -23,11 +25,19 @@ import config.config as config
 
 class Notification(dtsWindow.NotificationDialog):
 	"""This avoids to type the title and the image of the window every time	"""
-	def __init__(self, mode, msg=None, tException=None, parent=None, img=None, 
-		button=1,):
+	def __init__(self, mode, msg=None, tException=None, parent=None, 
+		img=config.file['ImgIcon'], button=1,):
 		""" """
 		super().__init__(mode, msg=msg, tException=tException, parent=parent,
-			button=button, img=config.img['Icon'], 
-			title=config.title['Notification'])
+			button=button, img=img, title=config.title['Notification'])
+	#---
+#---
+
+class ProgressDialog(dtsWindow.ProgressDialog):
+	"""This avoids to type the icon every time """
+	def __init__(self, parent, title, count, img=config.file['ImgIcon'],
+		style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER):	
+		""""""
+		super().__init__(parent, title, count, img=img, style=style)
 	#---
 #---
