@@ -122,8 +122,7 @@ class SplashWindow(wx.adv.SplashScreen):
 		elif config.cOS == "Linux":
 			config.font['SeqAlign'] = SeqAlignFont.SetPointSize(11)
 		else:
-			gclasses.DlgUnexpectedErrorMsg(config.msg["UErrors"]["OS"])
-			return False
+			config.font['SeqAlign'] = SeqAlignFont
 		#endregion ----------------------------------------------------> Fonts
 
 		#region --------------------------------------------------------> Menu

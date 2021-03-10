@@ -19,7 +19,6 @@ from pathlib import Path
 
 import wx
 
-import dat4s_core.gui.wx.window as dtsWindow
 import dat4s_core.gui.wx.menu as dtsMenu
 
 import config.config as config
@@ -75,13 +74,14 @@ class Module(wx.Menu, MenuMethods):
 	def __init__(self):
 		""" """
 		#region -----------------------------------------------> Initial Setup
+		self.confOpt = getattr(config, 'ModuleMenu')
 		super().__init__()
 		#endregion --------------------------------------------> Initial Setup
 
 		#region --------------------------------------------------> Menu items
-		self.limprot  = self.Append(-1, 'Limited Proteolysis\tALT+Ctrl+L')
-		self.protprof = self.Append(-1, 'Proteome Profiling\tALT+Ctrl+P')
-		self.tarprot  = self.Append(-1, 'Targeted Proteolysis\tALT+Ctrl+T')
+		self.limprot  = self.Append(-1, self.confOpt['LimProt']+'\tALT+Ctrl+L')
+		self.protprof = self.Append(-1, self.confOpt['ProtProf']+'\tALT+Ctrl+P')
+		self.tarprot  = self.Append(-1, self.confOpt['TarProt']+'\tALT+Ctrl+T')
 		#endregion -----------------------------------------------> Menu items
 
 		#region -------------------------------------------------------> Names
@@ -106,6 +106,8 @@ class Utility(wx.Menu, MenuMethods):
 	def __init__(self):
 		""""""
 		#region -----------------------------------------------> Initial Setup
+		self.name = 'UtilityMenu'
+		self.confMsg = getattr(config, self.name+'Msg')
 		super().__init__()
 		#endregion --------------------------------------------> Initial Setup
 
@@ -139,11 +141,11 @@ class Utility(wx.Menu, MenuMethods):
 		"""
 		#region ---------------------------------------------------> Get files
 		try:
-			fileP = dtsMenu.GetFilePath('openM', config.extLong['UMSAPOut'])
+			fileP = dtsMenu.GetFilePath('openM', config.extLong['UMSAP'])
 		except Exception as e:
 			dtscore.Notification(
 				'errorF', 
-				msg        = config.msg['Error']['File']['Selector'],
+				msg        = self.confMsg['Selector'],
 				tException = e,
 				parent     = self.GetWindow(),
 			)

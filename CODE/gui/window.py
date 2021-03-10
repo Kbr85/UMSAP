@@ -16,22 +16,17 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
-import json
-from pathlib import Path
 
 import requests
 import wx
 import wx.adv as adv
 import wx.lib.agw.aui as aui
 
-import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
-import dat4s_core.gui.wx.menu as dtsMenu
-import dat4s_core.gui.wx.window as dtsWindow
-import dat4s_core.gui.wx.widget as dtsWidget
+# import dat4s_core.gui.wx.widget as dtsWidget
 
 import config.config as config
-import data.file as file
+# import data.file as file
 import gui.menu as menu
 import gui.tab as tab
 import gui.dtscore as dtscore
@@ -49,14 +44,18 @@ def UpdateCheck(ori, win=None):
 		win : wx widget
 			To center the result window in this widget
 	"""
+	#region ---------------------------------------------------------> Options
+	confOpt = getattr(config, 'UpdateCheckMethod')
+	#endregion ------------------------------------------------------> Options
+	
 	#region ---------------------------------> Get web page text from Internet
 	try:
-		r = requests.get(config.url['Update'])
+		r = requests.get(confOpt['UpdateUrl'])
 	except Exception as e:
 		wx.CallAfter(
 			dtscore.Notification, 
 			'errorU',
-			msg        = config.msg['ErrorU']['UpdateCheck']['Failed'],
+			msg        = confOpt['UpdateCheckFailed'],
 			tException = e,
 		)
 		return False
@@ -70,11 +69,12 @@ def UpdateCheck(ori, win=None):
 				versionI = i
 				break
 		versionI = versionI.split('UMSAP')[1].split('</h1>')[0]
+		versionI = versionI.strip()
 	else:
 		wx.CallAfter(
 			dtscore.Notification, 
 			'errorU', 
-			msg = config.msg['ErrorU']['UpdateCheck']['Failed'],
+			msg = confOpt['UpdateCheckFailed'],
 		)
 		return False
 	#endregion -----------------------------------------> Get Internet version
@@ -122,6 +122,10 @@ class BaseWindow(wx.Frame):
 			Unique name of the window
 		parent : wx Widget or None
 			Parent of the window
+		confOpt : dict
+			Dictionary with configuration options
+		confMsg : dict
+			Dictionary with messages
 		statusbar : wx.StatusBar
 			Windows statusbar
 	"""
@@ -129,7 +133,7 @@ class BaseWindow(wx.Frame):
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, name, parent=None, title=None):
+	def __init__(self, name, parent=None):
 		""" """
 		#region -------------------------------------------------> Check Input
 		#endregion ----------------------------------------------> Check Input
@@ -137,11 +141,13 @@ class BaseWindow(wx.Frame):
 		#region -----------------------------------------------> Initial Setup
 		self.name   = name
 		self.parent = parent
+		self.confOpt = getattr(config, self.name)
+		self.confMsg = getattr(config, self.name+'Msg', None)
 
 		super().__init__(
 			parent = parent,
-			size   = config.size[self.name]['Window'],
-			title  = config.title[self.name] if title is None else title,
+			size   = self.confOpt['Size'],
+			title  = self.confOpt['Title'],
 			name   = self.name
 		)
 		#endregion --------------------------------------------> Initial Setup
@@ -169,73 +175,150 @@ class BaseWindow(wx.Frame):
 #---
 
 #------------------------------> wx.Frame
-class CorrAPlot(BaseWindow):
-	"""Creates the window showing the results of a correlation analysis
+# class CorrAPlot(BaseWindow):
+# 	"""Creates the window showing the results of a correlation analysis
 
-		Parameters
-		----------
-		fileP : Path
-			Path to the UMSAP file with results from a correlation analysis
-		name : str
-			Unique name of the window
-		parent : wx Widget or None
-			Parent of the window
+# 		Parameters
+# 		----------
+# 		fileP : Path
+# 			Path to the UMSAP file with results from a correlation analysis
+# 		name : str
+# 			Unique name of the window
+# 		parent : wx Widget or None
+# 			Parent of the window
 
-		Attributes
-		----------
-		fileP : Path
-			Path to the UMSAP file with results from a correlation analysis
-		name : str
-			Unique name of the window
-		parent : wx Widget or None
-			Parent of the window
-		plot : dtsWidget.MatPlotPanel
-			Main plot of the window
-	"""
-	#region -----------------------------------------------------> Class setup
-	#endregion --------------------------------------------------> Class setup
+# 		Attributes
+# 		----------
+# 		fileP : Path
+# 			Path to the UMSAP file with results from a correlation analysis
+# 		name : str
+# 			Unique name of the window
+# 		parent : wx Widget or None
+# 			Parent of the window
+# 		plot : dtsWidget.MatPlotPanel
+# 			Main plot of the window
+# 	"""
+# 	#region -----------------------------------------------------> Class setup
+# 	#endregion --------------------------------------------------> Class setup
 
-	#region --------------------------------------------------> Instance setup
-	def __init__(self, fileP, name='CorrAPlot', parent=None):
-		""" """
-		#region -------------------------------------------------> Check Input
-		#------------------------------> No window with false file
-		try:
-			self.fileObj = file.CorrAFile(fileP)
-		except Exception as e:
-			raise e
-		#endregion ----------------------------------------------> Check Input
+# 	#region --------------------------------------------------> Instance setup
+# 	def __init__(self, fileP, name='CorrAPlot', parent=None):
+# 		""" """
+# 		#region -------------------------------------------------> Check Input
+# 		#------------------------------> No window with false file
+# 		try:
+# 			self.fileObj = file.CorrAFile(fileP)
+# 		except Exception as e:
+# 			raise e
+# 		#endregion ----------------------------------------------> Check Input
 
-		#region -----------------------------------------------> Initial Setup
-		self.fileP = fileP
+# 		#region -----------------------------------------------> Initial Setup
+# 		self.fileP = fileP
 
-		super().__init__(
-			name, 
-			parent = parent,
-			title  = config.title[name] + fileP.name
-		)		
-		#endregion --------------------------------------------> Initial Setup
+# 		super().__init__(
+# 			name, 
+# 			parent = parent,
+# 			title  = config.title[name] + fileP.name
+# 		)		
+# 		#endregion --------------------------------------------> Initial Setup
 
-		#region -----------------------------------------------------> Widgets
-		self.plot = dtsWidget.MatPlotPanel(self, statusbar=self.statusbar)
-		#endregion --------------------------------------------------> Widgets
+# 		#region -----------------------------------------------------> Widgets
+# 		self.plot = dtsWidget.MatPlotPanel(
+# 			self, 
+# 			statusbar    = self.statusbar,
+# 			statusMethod = self.UpdateStatusBar,
+# 		)
+# 		#endregion --------------------------------------------------> Widgets
 
-		#region ------------------------------------------------------> Sizers
-		self.Sizer.Add(self.plot, 1, wx.EXPAND|wx.ALL, 5)
-		#endregion ---------------------------------------------------> Sizers
+# 		#region ------------------------------------------------------> Sizers
+# 		self.Sizer.Add(self.plot, 1, wx.EXPAND|wx.ALL, 5)
 
-		#region --------------------------------------------------------> Bind
+# 		self.SetSizer(self.Sizer)
+# 		#endregion ---------------------------------------------------> Sizers
+
+# 		#region --------------------------------------------------------> Bind
 		
-		#endregion -----------------------------------------------------> Bind
+# 		#endregion -----------------------------------------------------> Bind
 
-		self.Show()
-	#---
-	#endregion -----------------------------------------------> Instance setup
+# 		self.Draw()
+# 		self.Show()
+# 	#---
+# 	#endregion -----------------------------------------------> Instance setup
 
-	#region ---------------------------------------------------> Class methods
+# 	#region ---------------------------------------------------> Class methods
+# 	def Draw(self):
+# 		""" Draw into the plot. """
+# 	 #-->
+# 		self.plot.axes.set_title('My Plot')
+# 	 #---
+# 	#  #--> Plot
+# 	# 	self.axes.pcolormesh(
+# 	# 		self.data, 
+# 	# 		cmap=self.MatplotLibCmap(),
+# 	# 		vmin=-1, 
+# 	# 		vmax=1,
+# 	# 		antialiased=True,
+# 	# 		edgecolors='k',
+# 	# 		lw=0.005,
+# 	# 	)
+# 	#  #---
+# 	 #--> Update axis and draw
+# 		self.SetAxis()
+# 		self.plot.canvas.draw()
+# 	 #---
+# 	 #--> Return
+# 		return True
+# 	 #---
+# 	#---
+
+# 	def SetAxis(self):
+# 		""" General details of the plot area """
+# 	 #-->
+# 		self.plot.axes.grid(True)
+# 	 #---
+# 	#  #--> 
+# 	# 	if self.numCol <= 30:
+# 	# 		step = 1
+# 	# 	elif self.numCol > 30 and self.numCol <= 60:
+# 	# 		step = 2
+# 	# 	else:
+# 	# 		step = 3
+# 	# 	self.xlabel = []
+# 	# 	self.xticksloc = []
+# 	#  #---
+# 	#  #-->
+# 	# 	for i in range(0, self.numCol, step):
+# 	# 		self.xticksloc.append(i + 0.5)		
+# 	# 		self.xlabel.append(self.data.columns[i])
+# 	#  #---
+# 	#  #-->
+# 	# 	self.axes.set_xticks(self.xticksloc)
+# 	# 	self.axes.set_xticklabels(self.xlabel, rotation=90)
+# 	#  #---
+# 	#  #-->
+# 	# 	self.axes.set_yticks(self.xticksloc)
+# 	# 	self.axes.set_yticklabels(self.xlabel)
+# 	#  #---
+# 	#  #-->
+# 	# 	self.figure.subplots_adjust(bottom=0.13)
+# 	#  #---
+# 	 #-->
+# 		return True
+# 	 #---
+# 	#---
+
+# 	def UpdateStatusBar(self, event):
+# 		"""Update the statusbar info
 	
-	#endregion ------------------------------------------------> Class methods
-#---
+# 			Parameters
+# 			----------
+# 			event: matplotlib event
+# 				Information about the event
+# 		"""
+# 		self.statusbar.SetStatusText('My text from window')
+# 	#---
+# 	#endregion ------------------------------------------------> Class methods
+# #---
 
 
 class MainWindow(BaseWindow):
@@ -264,11 +347,7 @@ class MainWindow(BaseWindow):
 	#region -----------------------------------------------------> Class Setup
 	tabMethods = { # Keys are the unique names of the tabs
 		'Start'  : tab.Start,
-		'CorrA'  : tab.CorrA,
-	}
-
-	resultWindow = { # Keys are the file extensions e.g. '.corr'
-		'.corr' : CorrAPlot,
+		# 'CorrA'  : tab.CorrA,
 	}
 	#endregion --------------------------------------------------> Class Setup
 	
@@ -368,7 +447,7 @@ class MainWindow(BaseWindow):
 					self.notebook,
 					self.statusbar,
 				),
-				config.title[name],
+				self.confOpt['TitleTab'][name],
 				select = True,
 			)
 		else:
@@ -401,16 +480,18 @@ class MainWindow(BaseWindow):
 
 		"""
 		#region ---------------------------------------------------> Read file
-		try:
-			self.resultWindow[fileP.suffix](fileP)
-		except Exception as e:
-			raise e
+		# try:
+		# 	self.resultWindow[fileP.suffix](fileP)
+		# except Exception as e:
+		# 	raise e
 		#endregion ------------------------------------------------> Read file
 			
 		return True		
 	#---
 	#endregion -------------------------------------------------> Menu methods
 #---
+
+
 #------------------------------> wx.Dialog
 class CheckUpdateResult(wx.Dialog):
 	"""Show a dialog with the result of the check for update operation.
@@ -430,16 +511,17 @@ class CheckUpdateResult(wx.Dialog):
 	def __init__(self, parent=None, checkRes=None):
 		""""""
 		#region -----------------------------------------------> Initial setup
-		self.name = 'CheckUpdateRes'
+		self.name = 'CheckUpdateResDialog'
+		self.confOpt = getattr(config, self.name)
 
 		style = wx.CAPTION|wx.CLOSE_BOX
-		super().__init__(parent, title =config.title[self.name], style=style)
+		super().__init__(parent, title=self.confOpt['Title'], style=style)
 		#endregion --------------------------------------------> Initial setup
 
 		#region -----------------------------------------------------> Widgets
 		#------------------------------> Msg
 		if checkRes is None:
-			msg = config.label[self.name]['Latest']
+			msg = self.confOpt['LabelLatest']
 		else:
 			msg = (
 				f"UMSAP {checkRes} is already available.\n"
@@ -454,15 +536,15 @@ class CheckUpdateResult(wx.Dialog):
 		if checkRes is not None:
 			self.stLink = adv.HyperlinkCtrl(
 				self,
-				label = 'Read the Release Notes.',
-				url   = config.url['Update'],
+				label = self.confOpt['LabelLink'],
+				url   = self.confOpt['UpdateUrl'],
 			)
 		else:
 			pass
 		#------------------------------> Img
 		self.img = wx.StaticBitmap(
 			self,
-			bitmap = wx.Bitmap(str(config.img['Icon']), wx.BITMAP_TYPE_PNG),
+			bitmap = wx.Bitmap(str(self.confOpt['Icon']), wx.BITMAP_TYPE_PNG),
 		)
 		#endregion --------------------------------------------------> Widgets
 

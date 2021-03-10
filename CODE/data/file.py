@@ -30,8 +30,8 @@ import config.config as config
 class CommonMethods():
 	"""Common methods to all file content classes """
 	#region -----------------------------------------------------> Class setup
-	gK = config.fileContentCheck['Parts']
-	vK = ['Version']
+	gKey = config.fileContentCheck['Parts']
+	vKey = ['Version']
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
@@ -49,7 +49,7 @@ class CommonMethods():
 			ciK
 		"""
 		#region -----------------------------------------------> Check top key
-		dtStamps = self.data[self.topK]
+		dtStamps = self.data[self.topKey]
 		#endregion --------------------------------------------> Check top key
 		
 		#region -----------> Check date-time stamps, general & particular keys
@@ -98,9 +98,9 @@ class CorrAFile(CommonMethods):
 
 		Attributes
 		----------
-		topK
-		iK
-		ciK
+		topKey
+		iKey
+		ciKey
 		name
 		data
 		df
@@ -117,9 +117,9 @@ class CorrAFile(CommonMethods):
 		
 	"""
 	#region -----------------------------------------------------> Class setup
-	name = 'CorrAFile'
-	topK = config.file['ID']['CorrA']
-	iK = ciK = config.fileContentCheck[name]
+	name   = 'CorrAFile'
+	topKey = config.file['ID']['CorrA']
+	iKey   = ciKey = config.fileContentCheck[name]
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
@@ -151,12 +151,37 @@ class CorrAFile(CommonMethods):
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup
-		
+		self.SetVariables()
 		#endregion --------------------------------------------> Initial Setup
 		#---
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
-
+	def SetVariables(self):
+		"""Set instance variables needed for file visualization"""
+		#--> data
+		self.df = pd.DataFrame(self.data['R'], dtype='float64')
+	 #---
+	 #--> method
+		self.method = self.Fdata['I']['Method']
+	 #---
+	 #--> gtitle
+		self.gtitle = str(self.method) + ' correlation coefficients'
+	 #---
+	 #--> numCol
+		self.numCol = self.data.shape[0]
+	 #---
+	 #--> colNum
+		self.colNum = self.Fdata['I']['SelCol']
+	 #---
+	 #--> fileD
+		self.fileD = Path(self.Fdata['CI']['Datafile'])
+	 #--> checkExport Needed to match other data classes
+		self.checkExport = True
+	 #---> Return
+		return True
+	 #---
+	#---
+	#---
 	#endregion ------------------------------------------------> Class methods
 #---

@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import os
+import json
 import platform
 from pathlib import Path
 #endregion ----------------------------------------------------------> Imports
@@ -34,7 +35,7 @@ dictVersion = { # dict for directly write into output files
 }
 
 cOS = platform.system() # Current operating system
-cwd = Path(os.path.abspath(os.path.dirname(__file__))) # Current work directory
+cwd = Path(os.path.abspath(os.path.dirname(__file__))) # Work directory
 
 mainW = None
 #endregion -----------------------------------------------> General parameters
@@ -55,50 +56,47 @@ if cOS == 'Darwin':
 
 elif cOS == 'Windows':
 	#--> Fix cwd and set the location of the Resources folder
-	cwd = cwd.parent
-	res = cwd / 'RESOURCES'
+	cwd          = cwd.parent
+	res          = cwd / 'RESOURCES'
 	toolsMenuIdx = 3
 	copyShortCut = 'Ctrl'
 elif cOS == 'Linux':
 	#--> Fix cwd and set the location of the Resources folder
-	res = cwd / 'RESOURCES'	
+	cwd          = cwd.parent
+	res          = cwd / 'RESOURCES'
 	toolsMenuIdx = 3
 	copyShortCut = 'Ctrl'
 #endregion ------------------------------------- PLATFORM DEPENDENT PARAMETERS
 
 
-#region ----------------------------------------------------> Names and titles
+#region ---------------------------------------------------------------> Names
 name = { # Unique names to identify windows/objects through the app
 	#--> Main windows
-	'MainW'    : 'MainW',
-	'CorrAPlot': 'CorrAPlot',
+	'MainW' : 'MainW',
+	'CorrAW': 'CorrAW',
 	#--> Dialogs
-	'CheckUpdateRes': 'CheckUpdateRes',
+	'CheckUpdateResDialog': 'CheckUpdateResDialog',
 	#--> Tab for notebook windows
-	'Start' : 'Start',
-	'CorrA' : 'CorrA',
+	'StartTab' : 'StartTab',
+	'CorrATab' : 'CorrATab',
 	#--> Menu
-	'Module' : 'Modules',
-	'Utility': 'Utilities',
-	'Tool'   : 'Tools',
+	'ModuleMenu' : 'ModuleMenu',
+	'UtilityMenu': 'UtilityMenu',
+	'ToolMenu'   : 'ToolMenu',
+	#--> Methods
+	'UpdateCheckMethod' : 'UpdateCheckMethod',
 }
 
-title = { # Title of windows, tabs and panes
-	#--> Windows
-	'MainW'   : (
-		f"Utilities for Mass Spectrometry Analysis of Proteins "
-		f"{version}"),
-	'CorrAPlot' : 'CorrA - ', 
-	#--> Dialog
-	'CheckUpdateRes' : f"Check for Updates",
-	'Notification' : f"{software} Notification",
-	#--> Progress Dialog
-	'CorrA_PD' : 'Calculating Correlation Coefficients',
-	#--> Tab
-	'Start' : 'Start',
-	'CorrA' : 'CorrA',
+nameModules = { # Name of the modules
+	'LimProt' : 'Limited Proteolysis',
+	'TarProt' : 'Targeted Proteolysis',
+	'ProtProf': 'Proteome Profiling',
 }
-#endregion -------------------------------------------------> Names and titles
+
+nameUtilities = { # Name of the utilities
+
+}
+#endregion ------------------------------------------------------------> Names
 
 
 #region ------------------------------------------------------> Path and Files
@@ -110,45 +108,33 @@ path = { # Relevant paths
 	'UserHome' : Path.home(),    # User home folder
 }
 
-file = { # Location of important files and default file names & ID
-	'Path' : {
-		'Config'   : path['UserHome'] / '.umsap_config.json', # User config file
-		'ConfigDef': path['Config'] / 'config_def.json',      # Default config file
-		'Manual'   : path['Resources'] / 'MANUAL/manual.pdf', # UMSAP Manual
-	},
-	'Name' : {
-		'DataStep' : { # Data analysis steps
-			'Init' : '1-Data-Initial.txt',
-			'Norm' : '2-Data-Normalization.txt',
-		},
-		'CorrA' : { # pane
-			'MainD': '3-Data-CC-Values.txt',
-		},
-	},
-	'ID' : {
-		'CorrA' : 'Correlation-Analysis',
-	},
+file = { # Location of important files
+	'Config'   : path['UserHome'] / '.umsap_config.json', # User config file
+	'ConfigDef': path['Config'] / 'config_def.json',      # Default config file
+	'Manual'   : path['Resources'] / 'MANUAL/manual.pdf', # UMSAP Manual
+	#------------------------------> Images
+	'ImgStart': path['Images'] / 'MAIN-WINDOW/p97-2.png',
+	'ImgIcon' : path['Images'] / 'DIALOGUE'/'dlg.png',
 }
 #endregion ---------------------------------------------------> Path and Files
 
 
-#region ---------------------------------------------------------------> Sizes
-size = { # Base size for widgets
-	'MainW' : { # Main window
-		'Window' :(900, 620),
+#region ------------------------------------------------------------> Messages
+msg = { # Messages used by more than one object
+	'File' : {
+		'Selector' : (
+			f"It was not possible to show the file selecting dialog."),
 	},
-	'CorrA' : { # Correlation Analysis Configuration tab
-		'List' : [50, 150],
-	},
-	'CorrAPlot' : { # Correlation analysis results window
-		'Window' : (500, 500)
-	}
 }
-#endregion ------------------------------------------------------------> Sizes
+#endregion ---------------------------------------------------------> Messages
+
+
+
+
 
 
 #region ------------------------------------------------------------------ URL
-url_home = 'https://www.umsap.nl'
+url_home     = 'https://www.umsap.nl'
 url_tutorial = f"{url_home}/tutorial/2-1-0"
 
 url = { # Selected URL needed by umsap.
@@ -174,190 +160,68 @@ url = { # Selected URL needed by umsap.
 #endregion --------------------------------------------------------------- URL
 
 
-#region ----------------------------------------------------------- Extensions
-extLong = { # string for wx.Dialogs representing the extension of the files
-	'Data'    : 'txt files (*.txt)|*.txt',
-	'CorrA'   : 'corr files (*.corr)|*.corr',
-	'UMSAPOut': ("UMSAP files (*.tarprot; *.corr; *.limprot; *.protprof)"
-		"|*.tarprot;*.corr;*.limprot;*.protprof"),
-}
-
-extShort = { # string representation of the extensions. First item is default
-	'Data' : ['.txt'],
-	'CorrA': ['.corr'],
-}
-#endregion -------------------------------------------------------- Extensions
-
-
-#region --------------------------------------------------------------> Labels
-label = { # Label for widgets
-	'StaticBox' : {
-		'File'  : 'Files && Folders',
-		'Value' : 'User-defined values',
-		'Column': 'Column numbers',
-	},
-	'CheckUpdateRes' : { # gui.window.CheckUpdateResult
-		'Latest' : "You are using the latest version of UMSAP.",
-	},
-	'Button' : {
-		'Run' : 'Start analysis',
-	},
-	'CorrA' : { # Correlation Analysis Configuration Pane
-		'iFile'     : 'Data File',
-		'oFile'     : 'Output Folder',
-		'NormMethod': 'Normalization Method',
-		'CorrMethod': 'Correlation Method',
-		'ListColumn': ['#', 'Name'],
-		'iList'     : 'Columns in the Data File',
-		'oList'     : 'Columns to Analyse',
-		'Add'       : 'Add columns',
-	},
-	'DlgProgress' : {
-		'Check'   : 'Checking user input: ',
-		'Prepare' : 'Preparing analysis: ',
-		'ReadFile': 'Reading input files: ',
-		'Run'     : 'Running analysis: ',
-		'Write'   : 'Writing output: ',
-		'Load'    : 'Loading output files: ',
-		'Error'   : 'Fatal Error',
-		'Done'    : 'All Done',
-	}
-}
-#endregion -----------------------------------------------------------> Labels
-
-
-#region ---------------------------------------------------------------> Hints
-hint = { # Hint for widgets
-	'CorrA' : { # Correlation Analysis Configuration Pane
-		'iFile' : f"Path to the {label['CorrA']['iFile']}",
-		'oFile' : f"Path to the {label['CorrA']['oFile']}",
+#region ---------------------------------------------------> Objects's options
+#------------------------------> Windows
+MainW = { # Main Window, conf
+	'Size' : (900, 620),
+	'Title': f"Utilities for Mass Spectrometry Analysis of Proteins {version}",
+	'TitleTab' : {
+		'Start' : 'Start',
 	},
 }
-#endregion ------------------------------------------------------------> Hints
 
 
-#region -------------------------------------------------------------> Choices
-choice = { # Choices for the wx.ComboBox
-	'CorrA' : { # Correlation Analysis Configuration Pane
-		'NormMethod' : ['', 'None', 'Log2'],
-		'CorrMethod' : ['', 'Pearson', 'Kendall', 'Spearman'],
-	},
+#------------------------------> Dialogs
+CheckUpdateResDialog = { # gui.window
+	#------------------------------> Title
+	'Title'    : f"Check for Updates",
+	#------------------------------> Label
+	'LabelLatest': "You are using the latest version of UMSAP.",
+	'LabelLink'  : 'Read the Release Notes.',
+	#------------------------------> URL
+	'UpdateUrl'  : url['Update'],
+	#------------------------------> Files
+	'Icon' : file['ImgIcon'],
 }
-#endregion ----------------------------------------------------------> Choices
 
 
-#region ------------------------------------------------------------> Messages
-msg = { # Messages for the user of the App
-	'ErrorU' : { # Unexpected error messages
-		'UpdateCheck' : { # gui.window.UpdateCheck
-			'Failed': f"Check for Updates failed. Please try again later."
-		},
-	},
-	'Error' : { # Error messages
-		'File' : { # General file errors
-			'Content' : (
-				f"The file content is missing critical information and cannot "
-				f"be used by UMSAP."),
-			'Selector' : (
-				f"It was not possible to show the file selecting dialog."),
-		},
-		'PD' : { # Errors related to pandas
-			'DataType' : 'Unexpected data type.',
-			'DataTypeCol' : 'Unexpected data type in the selected columns.',
-		},
-		'CorrA': { # Correlation Analysis Configuration Pane
-			'iFile' : {
-				'NotPath' : (
-					f"The path to the {label['CorrA']['iFile']} is not valid."),
-				'NotFile' : (
-					f"The path to the {label['CorrA']['iFile']} does not point "
-					f"to a file."),
-				'NoRead' : (
-					f"The given {label['CorrA']['iFile']} cannot be read."),
-				'FileExt' : (
-					f"The given {label['CorrA']['iFile']} does not have the "
-					f"correct extension."),
-			},
-			'oFile' : {
-				'NotPath' : (
-					f"The path to the {label['CorrA']['oFile']} is not valid."),
-				'NoWrite' : (
-					f"It is not possible to write into the "
-					f"{label['CorrA']['oFile']}"),
-			},
-			'NormMethod' : (
-				f"The {label['CorrA']['NormMethod']} was not selected."),
-			'CorrMethod' : (
-				f"The {label['CorrA']['CorrMethod']} was not selected."),
-			'oList' : (
-				f"The list of {label['CorrA']['oList']} must contain at "
-				f"least two items."),
-		},
-		'CorrAFile' : { # Correlation Analysis File 
-			'InputType' : (f"The input must be a Path or a dictionary."),
-		},
-	},
+#------------------------------> Tabs
+StartTab = { # gui.tab
+	#------------------------------> Labels
+	'LimProtLabel' : nameModules['LimProt'],
+	'TarProtLabel' : nameModules['TarProt'],
+	'ProtProfLabel': nameModules['ProtProf'],
+	#------------------------------> Tooltips
+	'LimProtTT' : 'Start the module Limited Proteolysis',
+	'TarProtTT' : 'Start the module Target Proteolysis',
+	'ProtProfTT': 'Start the module Proteome Profiling',
+	#------------------------------> Files
+	'Img' : file['ImgStart'],
 }
-#endregion ---------------------------------------------------------> Messages
 
 
-#region --------------------------------------------------------------> Images
-img = { # Information regarding images
-	#--> paths to images in:
-	'Start': path['Images'] / 'MAIN-WINDOW/p97-2.png',
-	'Icon' : path['Images'] / 'DIALOGUE'/'dlg.png',
+#------------------------------> Menu
+ModuleMenu = { # Module menu, conf
+	#------------------------------> Labels
+	'LimProt' : nameModules['LimProt'],
+	'TarProt' : nameModules['TarProt'],
+	'ProtProf': nameModules['ProtProf'],
 }
-#endregion -----------------------------------------------------------> Images
 
-
-#region ------------------------------------------------------------> Tooltips
-tooltip = { # Tooltips of the app
-	'Start' : { # gui.tab.Start
-		'LimProt' : 'Start the module Limited Proteolysis',
-		'TarProt' : 'Start the module Target Proteolysis',
-		'ProtProf': 'Start the module Proteome Profiling',
-	},
-	'CorrA' : {
-		'stListI' : (
-			f"Selected rows can be copied ({copyShortCut}+C) but the list "
-			f"cannot be modified."),
-		'stListO' : (
-			f"New rows can be pasted ({copyShortCut}+V) after the last "
-			f"selected element and existing one cut/deleted ({copyShortCut}+X) "
-			f"or copied ({copyShortCut}+C)."),
-		'btnAddCol' : (
-			f"Add selected Columns in the Data File to the list of Columns to "
-			f"Analyse. New columns will be added after the last selected "
-			f"element in Columns to analyse. Duplicate columns are discarded."),
-	},
+UtilityMenuMsg = { # Utility menu, msg
+	'Selector': msg['File']['Selector'],
 }
-#endregion ---------------------------------------------------------> Tooltips
 
 
-#region --------------------------------------------------> Gauge total counts
-gauge = { # Total gauge count for each window performing a calculation 
-	'CorrA' : 15,
+#------------------------------> Methods 
+UpdateCheckMethod = { # UpdateCheck Method in gui.window, conf & msg
+	'UpdateUrl' : url['Update'],
+	'UpdateCheckFailed' : f"Check for Updates failed. Please try again later.",
 }
-#endregion -----------------------------------------------> Gauge total counts
-
-
-#region --------------------------------------------------------> ChangeKeys
-changeKey = { # Keys whose values need to be str for json.dump
-	'CorrA' : ['iFile', 'oFolder'],
-}
-#endregion -----------------------------------------------------> ChangeKeys
-
-
-#region ---------------------------------------------------> File Content Keys
-fileContentCheck = { # The keys here must be in the file content
-	'Parts' : ['V', 'I', 'CI', 'R'],
-	'CorrAFile': ['iFile', 'oFolder', 'NormMethod', 'CorrMethod', 'Column'],
-}
-#endregion ------------------------------------------------> File Content Keys
+#endregion ------------------------------------------------> Objects's options
 
 
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
-
 
 
 #region ---------------------------------------------> CONFIGURABLE PARAMETERS
@@ -376,9 +240,7 @@ general = { # General options
 #endregion --------------------------------------------------> General options
 
 
-
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS
-
 
 
 #region -------------------------------------------------------------> METHODS
@@ -447,9 +309,311 @@ def ConfigSave(file):
 #--> Try to load user config, if file exists
 try:
 	ConfigLoad(file['Config'])
-except Exception:
+except Exception as e:
 	pass
 #endregion ----------------------------------------------------------> METHODS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# title = { # Title of windows, tabs and panes
+# 	#--> Windows
+# 	'MainW'   : (
+# 		
+# 	'CorrAPlot' : 'CorrA - ', 
+# 	#--> Dialog
+# 	'Notification' : f"{software} Notification",
+# 	#--> Progress Dialog
+# 	'CorrA_PD' : 'Calculating Correlation Coefficients',
+# 	#--> Tab
+# 	'Start' : 'Start',
+# 	'CorrA' : 'CorrA',
+# }
+
+
+# #region ------------------------------------------------------> Path and Files
+# path = { # Relevant paths
+# 	'CWD'      : cwd,            # Root of the folders containing UMSAP files
+# 	'Resources': res,            # Resources folder
+# 	'Images'   : res / 'IMAGES', # Images folder
+# 	'Config'   : res / 'CONFIG', # Configuration folder
+# 	'UserHome' : Path.home(),    # User home folder
+# }
+
+# file = { # Location of important files and default file names & ID
+# 	'Path' : {
+# 		'Config'   : path['UserHome'] / '.umsap_config.json', # User config file
+# 		'ConfigDef': path['Config'] / 'config_def.json',      # Default config file
+# 		'Manual'   : path['Resources'] / 'MANUAL/manual.pdf', # UMSAP Manual
+# 	},
+# 	'Name' : {
+# 		'DataStep' : { # Data analysis steps
+# 			'Init' : '1-Data-Initial.txt',
+# 			'Norm' : '2-Data-Normalization.txt',
+# 		},
+# 		'CorrA' : { # pane
+# 			'MainD': '3-Data-CC-Values.txt',
+# 		},
+# 	},
+# 	'ID' : {
+# 		'CorrA' : 'Correlation-Analysis',
+# 	},
+# }
+# #endregion ---------------------------------------------------> Path and Files
+
+
+# #region ---------------------------------------------------------------> Sizes
+# size = { # Base size for widgets
+# 	'CorrA' : { # Correlation Analysis Configuration tab
+# 		'List' : [50, 150],
+# 	},
+# 	'CorrAPlot' : { # Correlation analysis results window
+# 		'Window' : (500, 500)
+# 	}
+# }
+# #endregion ------------------------------------------------------------> Sizes
+
+
+# #region ------------------------------------------------------------------ URL
+# url_home = 'https://www.umsap.nl'
+# url_tutorial = f"{url_home}/tutorial/2-1-0"
+
+# url = { # Selected URL needed by umsap.
+# 	#--> Third party sites
+# 	'Uniprot'  : 'https://www.uniprot.org/uniprot/',
+# 	'Pdb'      : 'http://www.rcsb.org/pdb/files/',
+# 	#--> www.umsap.nl
+# 	'Home'      : url_home,
+# 	'Update'    : f"{url_home}/page/release-notes",
+# 	'Tutorial'  : f"{url_tutorial}/start",
+# 	'CorrA'     : f"{url_tutorial}/correlation-analysis",
+# 	'MergeAA'   : f"{url_tutorial}/merge-aadist-files",
+# 	'ShortDFile': f"{url_tutorial}/short-data-files",
+# 	'TarProt'   : f"{url_tutorial}/targeted-proteolysis",
+# 	'AAdist'    : f"{url_tutorial}/aa-distribution",
+# 	'Cuts2PDB'  : f"{url_tutorial}/cleavages-pdb-files",
+# 	'Histo'     : f"{url_tutorial}/histograms",
+# 	'SeqAlign'  : f"{url_tutorial}/sequence-alignment",
+# 	'LimProt'   : f"{url_tutorial}/limited-proteolysis",
+# 	'SeqH'      : f"{url_tutorial}/sequence-highlight",
+# 	'ProtProf'  : f"{url_tutorial}/proteome-profiling",
+# }
+# #endregion --------------------------------------------------------------- URL
+
+
+# #region ----------------------------------------------------------- Extensions
+# extLong = { # string for wx.Dialogs representing the extension of the files
+# 	'Data' : 'txt files (*.txt)|*.txt',
+# 	'UMSAP': 'UMSAP files (*.umsap)|*.umsap',
+# }
+
+# extShort = { # string representation of the extensions. First item is default
+# 	'Data' : ['.txt'],
+# 	'UMSAP': ['.umsap'],
+# }
+# #endregion -------------------------------------------------------- Extensions
+
+
+# #region --------------------------------------------------------------> Labels
+# label = { # Label for widgets
+# 	'StaticBox' : {
+# 		'File'  : 'Files && Folders',
+# 		'Value' : 'User-defined values',
+# 		'Column': 'Column numbers',
+# 	},
+# 	'Button' : {
+# 		'Run' : 'Start analysis',
+# 	},
+# 	'CorrA' : { # Correlation Analysis Configuration Pane
+# 		'iFile'     : 'Data File',
+# 		'oFile'     : 'Output File',
+# 		'NormMethod': 'Normalization Method',
+# 		'CorrMethod': 'Correlation Method',
+# 		'ListColumn': ['#', 'Name'],
+# 		'iList'     : 'Columns in the Data File',
+# 		'oList'     : 'Columns to Analyse',
+# 		'Add'       : 'Add columns',
+# 		'Check'     : 'Append new data to selected output file',
+# 	},
+# 	'DlgProgress' : {
+# 		'Check'   : 'Checking user input: ',
+# 		'Prepare' : 'Preparing analysis: ',
+# 		'ReadFile': 'Reading input files: ',
+# 		'Run'     : 'Running analysis: ',
+# 		'Write'   : 'Writing output: ',
+# 		'Load'    : 'Loading output files: ',
+# 		'Error'   : 'Fatal Error',
+# 		'Done'    : 'All Done',
+# 	}
+# }
+# #endregion -----------------------------------------------------------> Labels
+
+
+# #region ---------------------------------------------------------------> Hints
+# hint = { # Hint for widgets
+# 	'CorrA' : { # Correlation Analysis Configuration Pane
+# 		'iFile' : f"Path to the {label['CorrA']['iFile']}",
+# 		'oFile' : f"Path to the {label['CorrA']['oFile']}",
+# 	},
+# }
+# #endregion ------------------------------------------------------------> Hints
+
+
+# #region -------------------------------------------------------------> Choices
+# choice = { # Choices for the wx.ComboBox
+# 	'CorrA' : { # Correlation Analysis Configuration Pane
+# 		'NormMethod' : ['', 'None', 'Log2'],
+# 		'CorrMethod' : ['', 'Pearson', 'Kendall', 'Spearman'],
+# 	},
+# }
+# #endregion ----------------------------------------------------------> Choices
+
+
+# #region ------------------------------------------------------------> Messages
+# msg = { # Messages for the user of the App
+# 	'Error' : { # Error messages
+# 		'File' : { # General file errors
+# 			'Content' : (
+# 				f"The file content is missing critical information and cannot "
+# 				f"be used by UMSAP."),
+# 		},
+# 		'PD' : { # Errors related to pandas
+# 			'DataType' : 'Unexpected data type.',
+# 			'DataTypeCol' : 'Unexpected data type in the selected columns.',
+# 		},
+# 		'CorrA': { # Correlation Analysis Configuration Pane
+# 			'iFile' : {
+# 				'NotPath' : (
+# 					f"The path to the {label['CorrA']['iFile']} is not valid."),
+# 				'NotFile' : (
+# 					f"The path to the {label['CorrA']['iFile']} does not point "
+# 					f"to a file."),
+# 				'NoRead' : (
+# 					f"The given {label['CorrA']['iFile']} cannot be read."),
+# 				'FileExt' : (
+# 					f"The given {label['CorrA']['iFile']} does not have the "
+# 					f"correct extension."),
+# 			},
+# 			'oFile' : {
+# 				'NotPath' : (
+# 					f"The path to the {label['CorrA']['oFile']} is not valid."),
+# 				'NoWrite' : (
+# 					f"It is not possible to write into the "
+# 					f"{label['CorrA']['oFile']}"),
+# 			},
+# 			'NormMethod' : (
+# 				f"The {label['CorrA']['NormMethod']} was not selected."),
+# 			'CorrMethod' : (
+# 				f"The {label['CorrA']['CorrMethod']} was not selected."),
+# 			'oList' : (
+# 				f"The list of {label['CorrA']['oList']} must contain at "
+# 				f"least two items."),
+# 		},
+# 		'CorrAFile' : { # Correlation Analysis File 
+# 			'InputType' : (f"The input must be a Path or a dictionary."),
+# 		},
+# 	},
+# }
+# #endregion ---------------------------------------------------------> Messages
+
+
+# #region ------------------------------------------------------------> Tooltips
+# tooltip = { # Tooltips of the app
+# 	'CorrA' : {
+# 		'stListI' : (
+# 			f"Selected rows can be copied ({copyShortCut}+C) but the list "
+# 			f"cannot be modified."),
+# 		'stListO' : (
+# 			f"New rows can be pasted ({copyShortCut}+V) after the last "
+# 			f"selected element and existing one cut/deleted ({copyShortCut}+X) "
+# 			f"or copied ({copyShortCut}+C)."),
+# 		'btnAddCol' : (
+# 			f"Add selected Columns in the Data File to the list of Columns to "
+# 			f"Analyse. New columns will be added after the last selected "
+# 			f"element in Columns to analyse. Duplicate columns are discarded."),
+# 	},
+# }
+# #endregion ---------------------------------------------------------> Tooltips
+
+
+# #region --------------------------------------------------> Gauge total counts
+# gauge = { # Total gauge count for each window performing a calculation 
+# 	'CorrA' : 15,
+# }
+# #endregion -----------------------------------------------> Gauge total counts
+
+
+# #region --------------------------------------------------------> ChangeKeys
+# changeKey = { # Keys whose values need to be str for json.dump
+# 	'CorrA' : ['iFile', 'oFolder'],
+# }
+# #endregion -----------------------------------------------------> ChangeKeys
+
+
+# #region ---------------------------------------------------> File Content Keys
+# fileContentCheck = { # The keys here must be in the file content
+# 	'Parts' : ['V', 'I', 'CI', 'R'],
+# 	'CorrAFile': ['iFile', 'oFolder', 'NormMethod', 'CorrMethod', 'Column'],
+# }
+# #endregion ------------------------------------------------> File Content Keys
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
