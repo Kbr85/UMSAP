@@ -53,8 +53,6 @@ class BaseConfPanel(
 		----------
 		parent : wx Widget
 			Parent of the widgets
-		url : str
-			URL for the Help button
 		name : str
 			Unique name of the tab
 		oMode : str
@@ -162,7 +160,7 @@ class BaseConfPanel(
 			btnLabel   = self.confOpt['iFileL'],
 			tcHint     = self.confOpt['iFileH'],
 			ext        = config.extLong['Data'],
-			tcStyle    = wx.TE_READONLY,
+			tcStyle    = wx.TE_READONLY|wx.TE_PROCESS_ENTER,
 			validator  = wx.DefaultValidator,
 			ownCopyCut = True,
 		)
@@ -307,9 +305,12 @@ class BaseConfPanel(
 			self.sizersbFileWid.Hide(self.checkB)
 			self.Sizer.Layout()
 		else:
-			self.checkB.SetValue(True)
-			self.sizersbFileWid.Show(self.checkB)
-			self.Sizer.Layout()
+			if Path(self.oFile.tc.GetValue()).exists():
+				self.checkB.SetValue(True)
+				self.sizersbFileWid.Show(self.checkB)
+				self.Sizer.Layout()
+			else:
+				pass
 	#---
 	#endregion ------------------------------------------------> Class methods
 #---
