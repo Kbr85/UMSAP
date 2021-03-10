@@ -107,19 +107,20 @@ class Utility(wx.Menu, MenuMethods):
 		""""""
 		#region -----------------------------------------------> Initial Setup
 		self.name = 'UtilityMenu'
+		self.confOpt = getattr(config, self.name)
 		self.confMsg = getattr(config, self.name+'Msg')
 		super().__init__()
 		#endregion --------------------------------------------> Initial Setup
 
 		#region --------------------------------------------------> Menu items
-		self.corrA   = self.Append(-1, 'Correlation Analysis')
+		self.corrA   = self.Append(-1, self.confOpt['CorrA'])
 		self.AppendSeparator()
-		self.readFile = self.Append(-1, 'Read File\tCtrl+R')
+		self.readFile = self.Append(-1, self.confOpt['ReadF']+'\tCtrl+R')
 		#endregion -----------------------------------------------> Menu items
 
 		#region -------------------------------------------------------> Names
 		self.name = { # Associate IDs with Tab names. Avoid manual set of IDs
-			self.corrA.GetId() : 'CorrA',
+			self.corrA.GetId() : 'CorrATab',
 		}
 		#endregion ----------------------------------------------------> Names
 

@@ -346,8 +346,8 @@ class MainWindow(BaseWindow):
 	"""
 	#region -----------------------------------------------------> Class Setup
 	tabMethods = { # Keys are the unique names of the tabs
-		'Start'  : tab.Start,
-		# 'CorrA'  : tab.CorrA,
+		'StartTab'  : tab.Start,
+		'CorrATab'  : tab.CorrA,
 	}
 	#endregion --------------------------------------------------> Class Setup
 	
@@ -371,7 +371,7 @@ class MainWindow(BaseWindow):
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------> Create Start Tab
-		self.CreateTab('Start')
+		self.CreateTab('StartTab')
 		self.notebook.SetCloseButton(0, False)
 		#endregion -----------------------------------------> Create Start Tab
 
@@ -409,7 +409,7 @@ class MainWindow(BaseWindow):
 		#------------------------------> Update tabs & close buttons
 		if pageC == 1:
 			#------------------------------> Remove close button from Start tab
-			if (win := self.FindWindowByName('Start')) is not None:
+			if (win := self.FindWindowByName('StartTab')) is not None:
 				self.notebook.SetCloseButton(
 					self.notebook.GetPageIndex(win), 
 					False,
@@ -418,9 +418,9 @@ class MainWindow(BaseWindow):
 				pass
 		elif pageC == 0:
 			#------------------------------> Show Start Tab with close button
-			self.CreateTab('Start')
+			self.CreateTab('StartTab')
 			self.notebook.SetCloseButton(
-				self.notebook.GetPageIndex(self.FindWindowByName('Start')), 
+				self.notebook.GetPageIndex(self.FindWindowByName('StartTab')), 
 				False,
 			)
 		else:
@@ -457,7 +457,7 @@ class MainWindow(BaseWindow):
 
 		#region ---------------------------------------------------> Start Tab
 		if self.notebook.GetPageCount() > 1:
-			winS = self.FindWindowByName('Start')
+			winS = self.FindWindowByName('StartTab')
 			if winS is not None:
 				self.notebook.SetCloseButton(
 					self.notebook.GetPageIndex(winS), 

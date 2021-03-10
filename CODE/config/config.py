@@ -94,7 +94,8 @@ nameModules = { # Name of the modules
 }
 
 nameUtilities = { # Name of the utilities
-
+	'CorrA' : 'Correlation Analysis',
+	'ReadF' : 'Read File', 
 }
 #endregion ------------------------------------------------------------> Names
 
@@ -119,6 +120,55 @@ file = { # Location of important files
 #endregion ---------------------------------------------------> Path and Files
 
 
+#region ----------------------------------------------------------- Extensions
+extLong = { # string for wx.Dialogs representing the extension of the files
+	'Data' : 'txt files (*.txt)|*.txt',
+	'UMSAP': 'UMSAP files (*.umsap)|*.umsap',
+}
+
+extShort = { # string representation of the extensions. First item is default
+	'Data' : ['.txt'],
+	'UMSAP': ['.umsap'],
+}
+#endregion -------------------------------------------------------- Extensions
+
+
+#region --------------------------------------------------------------> Labels
+label = { # Label for widgets
+	#------------------------------> wx.StaticBox
+	'StBoxFile'  : 'Files && Folders',
+	'StBoxValue' : 'User-defined values',
+	'StBoxColumn': 'Column numbers',
+	#------------------------------> wx.Button
+	'BtnRun'     : 'Start analysis',
+	'BtnDataFile': 'Data File',
+	'BtnOutFile' : 'Output File',
+	#------------------------------> wx.ComboBox
+	'CbNormalization' : 'Normalization Method',
+	#------------------------------> wx.ListCtrl
+	'LCtrlColName_I' :  ['#', 'Name'],
+	#------------------------------> wx.CheckBox
+	'CbCheck' : 'Append new data to selected output file',
+}
+#endregion -----------------------------------------------------------> Labels
+
+
+#region -------------------------------------------------------------> Choices
+choice = { # Choices for the wx.ComboBox
+	'NormMethod' : ['', 'None', 'Log2'],
+}
+#endregion ----------------------------------------------------------> Choices
+
+
+#region ---------------------------------------------------------------> Sizes
+size = { # Base size for widgets
+	#------------------------------> wx.ListCtrl
+	'LCtrl#Name' : [50, 150],
+	
+}
+#endregion ------------------------------------------------------------> Sizes
+
+
 #region ------------------------------------------------------------> Messages
 msg = { # Messages used by more than one object
 	'File' : {
@@ -127,10 +177,6 @@ msg = { # Messages used by more than one object
 	},
 }
 #endregion ---------------------------------------------------------> Messages
-
-
-
-
 
 
 #region ------------------------------------------------------------------ URL
@@ -166,7 +212,8 @@ MainW = { # Main Window, conf
 	'Size' : (900, 620),
 	'Title': f"Utilities for Mass Spectrometry Analysis of Proteins {version}",
 	'TitleTab' : {
-		'Start' : 'Start',
+		'StartTab' : 'Start',
+		'CorrATab' : nameUtilities['CorrA'],
 	},
 }
 
@@ -188,9 +235,9 @@ CheckUpdateResDialog = { # gui.window
 #------------------------------> Tabs
 StartTab = { # gui.tab
 	#------------------------------> Labels
-	'LimProtLabel' : nameModules['LimProt'],
-	'TarProtLabel' : nameModules['TarProt'],
-	'ProtProfLabel': nameModules['ProtProf'],
+	'LimProtL' : nameModules['LimProt'],
+	'TarProtL' : nameModules['TarProt'],
+	'ProtProfL': nameModules['ProtProf'],
 	#------------------------------> Tooltips
 	'LimProtTT' : 'Start the module Limited Proteolysis',
 	'TarProtTT' : 'Start the module Target Proteolysis',
@@ -200,12 +247,55 @@ StartTab = { # gui.tab
 }
 
 
+CorrATab = { # gui.tab
+	#------------------------------> URL
+	'URL' : url['CorrA'],
+	#------------------------------> Labels
+	'iFileL'     : label['BtnDataFile'],
+	'oFileL'     : label['BtnOutFile'],
+	'NormMethodL': label['CbNormalization'],
+	'CorrMethodL': 'Correlation Method',
+	'ListColumnL': label['LCtrlColName_I'],
+	'iListL'     : 'Columns in the Data File',
+	'oListL'     : 'Columns to Analyse',
+	'AddL'       : 'Add columns',
+	'CheckL'     : label['CbCheck'],
+	#------------------------------> Hint
+	'iFileH' : f"Path to the {label['BtnDataFile']}",
+	'oFileH' : f"Path to the {label['BtnOutFile']}",
+	#------------------------------> Choices
+	'NormMethod' : choice['NormMethod'],
+	'CorrMethod' : ['', 'Pearson', 'Kendall', 'Spearman'],
+	#------------------------------> Size
+	'LCtrlColS' : size['LCtrl#Name'],
+	#------------------------------> Tooltips
+	'iListTT' : (
+		f"Selected rows can be copied ({copyShortCut}+C) but the list "
+		f"cannot be modified."),
+	'oListTT' : (
+		f"New rows can be pasted ({copyShortCut}+V) after the last "
+		f"selected element and existing one cut/deleted ({copyShortCut}+X) "
+		f"or copied ({copyShortCut}+C)."),
+	'AddTT' : (
+		f"Add selected Columns in the Data File to the list of Columns to "
+		f"Analyse. New columns will be added after the last selected "
+		f"element in Columns to analyse. Duplicate columns are discarded."),
+}
+
+
 #------------------------------> Menu
 ModuleMenu = { # Module menu, conf
 	#------------------------------> Labels
 	'LimProt' : nameModules['LimProt'],
 	'TarProt' : nameModules['TarProt'],
 	'ProtProf': nameModules['ProtProf'],
+}
+
+
+UtilityMenu = { # Utility menu, conf
+	#------------------------------> Labels
+	'CorrA' : nameUtilities['CorrA'],
+	'ReadF' : nameUtilities['ReadF'],
 }
 
 UtilityMenuMsg = { # Utility menu, msg
@@ -345,36 +435,6 @@ except Exception as e:
 # }
 
 
-# #region ------------------------------------------------------> Path and Files
-# path = { # Relevant paths
-# 	'CWD'      : cwd,            # Root of the folders containing UMSAP files
-# 	'Resources': res,            # Resources folder
-# 	'Images'   : res / 'IMAGES', # Images folder
-# 	'Config'   : res / 'CONFIG', # Configuration folder
-# 	'UserHome' : Path.home(),    # User home folder
-# }
-
-# file = { # Location of important files and default file names & ID
-# 	'Path' : {
-# 		'Config'   : path['UserHome'] / '.umsap_config.json', # User config file
-# 		'ConfigDef': path['Config'] / 'config_def.json',      # Default config file
-# 		'Manual'   : path['Resources'] / 'MANUAL/manual.pdf', # UMSAP Manual
-# 	},
-# 	'Name' : {
-# 		'DataStep' : { # Data analysis steps
-# 			'Init' : '1-Data-Initial.txt',
-# 			'Norm' : '2-Data-Normalization.txt',
-# 		},
-# 		'CorrA' : { # pane
-# 			'MainD': '3-Data-CC-Values.txt',
-# 		},
-# 	},
-# 	'ID' : {
-# 		'CorrA' : 'Correlation-Analysis',
-# 	},
-# }
-# #endregion ---------------------------------------------------> Path and Files
-
 
 # #region ---------------------------------------------------------------> Sizes
 # size = { # Base size for widgets
@@ -388,67 +448,14 @@ except Exception as e:
 # #endregion ------------------------------------------------------------> Sizes
 
 
-# #region ------------------------------------------------------------------ URL
-# url_home = 'https://www.umsap.nl'
-# url_tutorial = f"{url_home}/tutorial/2-1-0"
-
-# url = { # Selected URL needed by umsap.
-# 	#--> Third party sites
-# 	'Uniprot'  : 'https://www.uniprot.org/uniprot/',
-# 	'Pdb'      : 'http://www.rcsb.org/pdb/files/',
-# 	#--> www.umsap.nl
-# 	'Home'      : url_home,
-# 	'Update'    : f"{url_home}/page/release-notes",
-# 	'Tutorial'  : f"{url_tutorial}/start",
-# 	'CorrA'     : f"{url_tutorial}/correlation-analysis",
-# 	'MergeAA'   : f"{url_tutorial}/merge-aadist-files",
-# 	'ShortDFile': f"{url_tutorial}/short-data-files",
-# 	'TarProt'   : f"{url_tutorial}/targeted-proteolysis",
-# 	'AAdist'    : f"{url_tutorial}/aa-distribution",
-# 	'Cuts2PDB'  : f"{url_tutorial}/cleavages-pdb-files",
-# 	'Histo'     : f"{url_tutorial}/histograms",
-# 	'SeqAlign'  : f"{url_tutorial}/sequence-alignment",
-# 	'LimProt'   : f"{url_tutorial}/limited-proteolysis",
-# 	'SeqH'      : f"{url_tutorial}/sequence-highlight",
-# 	'ProtProf'  : f"{url_tutorial}/proteome-profiling",
-# }
-# #endregion --------------------------------------------------------------- URL
 
 
-# #region ----------------------------------------------------------- Extensions
-# extLong = { # string for wx.Dialogs representing the extension of the files
-# 	'Data' : 'txt files (*.txt)|*.txt',
-# 	'UMSAP': 'UMSAP files (*.umsap)|*.umsap',
-# }
 
-# extShort = { # string representation of the extensions. First item is default
-# 	'Data' : ['.txt'],
-# 	'UMSAP': ['.umsap'],
-# }
-# #endregion -------------------------------------------------------- Extensions
+
 
 
 # #region --------------------------------------------------------------> Labels
 # label = { # Label for widgets
-# 	'StaticBox' : {
-# 		'File'  : 'Files && Folders',
-# 		'Value' : 'User-defined values',
-# 		'Column': 'Column numbers',
-# 	},
-# 	'Button' : {
-# 		'Run' : 'Start analysis',
-# 	},
-# 	'CorrA' : { # Correlation Analysis Configuration Pane
-# 		'iFile'     : 'Data File',
-# 		'oFile'     : 'Output File',
-# 		'NormMethod': 'Normalization Method',
-# 		'CorrMethod': 'Correlation Method',
-# 		'ListColumn': ['#', 'Name'],
-# 		'iList'     : 'Columns in the Data File',
-# 		'oList'     : 'Columns to Analyse',
-# 		'Add'       : 'Add columns',
-# 		'Check'     : 'Append new data to selected output file',
-# 	},
 # 	'DlgProgress' : {
 # 		'Check'   : 'Checking user input: ',
 # 		'Prepare' : 'Preparing analysis: ',
@@ -463,24 +470,7 @@ except Exception as e:
 # #endregion -----------------------------------------------------------> Labels
 
 
-# #region ---------------------------------------------------------------> Hints
-# hint = { # Hint for widgets
-# 	'CorrA' : { # Correlation Analysis Configuration Pane
-# 		'iFile' : f"Path to the {label['CorrA']['iFile']}",
-# 		'oFile' : f"Path to the {label['CorrA']['oFile']}",
-# 	},
-# }
-# #endregion ------------------------------------------------------------> Hints
 
-
-# #region -------------------------------------------------------------> Choices
-# choice = { # Choices for the wx.ComboBox
-# 	'CorrA' : { # Correlation Analysis Configuration Pane
-# 		'NormMethod' : ['', 'None', 'Log2'],
-# 		'CorrMethod' : ['', 'Pearson', 'Kendall', 'Spearman'],
-# 	},
-# }
-# #endregion ----------------------------------------------------------> Choices
 
 
 # #region ------------------------------------------------------------> Messages
@@ -529,25 +519,6 @@ except Exception as e:
 # 	},
 # }
 # #endregion ---------------------------------------------------------> Messages
-
-
-# #region ------------------------------------------------------------> Tooltips
-# tooltip = { # Tooltips of the app
-# 	'CorrA' : {
-# 		'stListI' : (
-# 			f"Selected rows can be copied ({copyShortCut}+C) but the list "
-# 			f"cannot be modified."),
-# 		'stListO' : (
-# 			f"New rows can be pasted ({copyShortCut}+V) after the last "
-# 			f"selected element and existing one cut/deleted ({copyShortCut}+X) "
-# 			f"or copied ({copyShortCut}+C)."),
-# 		'btnAddCol' : (
-# 			f"Add selected Columns in the Data File to the list of Columns to "
-# 			f"Analyse. New columns will be added after the last selected "
-# 			f"element in Columns to analyse. Duplicate columns are discarded."),
-# 	},
-# }
-# #endregion ---------------------------------------------------------> Tooltips
 
 
 # #region --------------------------------------------------> Gauge total counts
