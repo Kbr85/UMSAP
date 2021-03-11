@@ -109,13 +109,18 @@ path = { # Relevant paths
 	'UserHome' : Path.home(),    # User home folder
 }
 
-file = { # Location of important files
+file = { # Location & names of important files
+	#------------------------------> General 
 	'Config'   : path['UserHome'] / '.umsap_config.json', # User config file
 	'ConfigDef': path['Config'] / 'config_def.json',      # Default config file
 	'Manual'   : path['Resources'] / 'MANUAL/manual.pdf', # UMSAP Manual
 	#------------------------------> Images
 	'ImgStart': path['Images'] / 'MAIN-WINDOW/p97-2.png',
 	'ImgIcon' : path['Images'] / 'DIALOGUE'/'dlg.png',
+	#------------------------------> Dataframe names
+	'InitialN' : 'Data-01-Initial',
+	'NormN'    : 'Data-02-Normalization',
+
 }
 #endregion ---------------------------------------------------> Path and Files
 
@@ -155,7 +160,7 @@ label = { # Label for widgets
 	'PdReadFile': 'Reading input files: ',
 	'PdRun'     : 'Running analysis: ',
 	'PdWrite'   : 'Writing output: ',
-	'PdLoad'    : 'Loading output files: ',
+	'PdLoad'    : 'Loading output file',
 	'PdError'   : 'Fatal Error',
 	'PdDone'    : 'All Done',
 	'PdEllapsed': 'Ellapsed time: ',
@@ -181,10 +186,12 @@ size = { # Base size for widgets
 
 #region ------------------------------------------------------------> Messages
 msg = { # Messages used by more than one object
-	'File' : {
-		'Selector' : (
+	#------------------------------> Files
+	'FileSelector' : (
 			f"It was not possible to show the file selecting dialog."),
-	},
+	#------------------------------> Pandas
+	'PDDataType'   : 'Unexpected data type.',
+	'PDDataTypeCol': 'Unexpected data type in the selected columns.',
 }
 #endregion ---------------------------------------------------------> Messages
 
@@ -293,6 +300,10 @@ CorrATab = { # gui.tab, conf
 	#------------------------------> Progress Dialog
 	'TitlePD' : 'Calculating Correlation Coefficients',
 	'GaugePD' : 15,
+	#------------------------------> Output
+	'Section'  : nameUtilities['CorrA'],
+	'MainData' : 'Data-03-CorrelationCoefficients',
+	'ChangeKey': ['iFile', 'oFile'],
 }
 
 CorrATabMsg = { # gui.tab, error msg
@@ -321,7 +332,6 @@ CorrATabMsg = { # gui.tab, error msg
 		f"The list of {CorrATab['oListL']} must contain at least two items."),
 }
 
-
 #------------------------------> Menu
 ModuleMenu = { # Module menu, conf
 	#------------------------------> Labels
@@ -338,7 +348,7 @@ UtilityMenu = { # Utility menu, conf
 }
 
 UtilityMenuMsg = { # Utility menu, msg
-	'Selector': msg['File']['Selector'],
+	'Selector': msg['FileSelector'],
 }
 
 
@@ -467,13 +477,6 @@ except Exception as e:
 
 
 
-# #region --------------------------------------------------------------> Labels
-# label = { # Label for widgets
-# 	'DlgProgress' : {
-# 		
-# 	}
-# }
-# #endregion -----------------------------------------------------------> Labels
 
 
 
@@ -487,23 +490,12 @@ except Exception as e:
 # 				f"The file content is missing critical information and cannot "
 # 				f"be used by UMSAP."),
 # 		},
-# 		'PD' : { # Errors related to pandas
-# 			'DataType' : 'Unexpected data type.',
-# 			'DataTypeCol' : 'Unexpected data type in the selected columns.',
-# 		},
 # 		'CorrAFile' : { # Correlation Analysis File 
 # 			'InputType' : (f"The input must be a Path or a dictionary."),
 # 		},
 # 	},
 # }
 # #endregion ---------------------------------------------------------> Messages
-
-
-# #region --------------------------------------------------------> ChangeKeys
-# changeKey = { # Keys whose values need to be str for json.dump
-# 	'CorrA' : ['iFile', 'oFolder'],
-# }
-# #endregion -----------------------------------------------------> ChangeKeys
 
 
 # #region ---------------------------------------------------> File Content Keys
