@@ -23,6 +23,7 @@ import dat4s_core.gui.wx.menu as dtsMenu
 
 import config.config as config
 import gui.dtscore as dtscore
+import gui.window as window
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -39,7 +40,17 @@ class MenuMethods():
 			event : wx.Event
 				Information about the event
 		"""
-		config.mainW.CreateTab(self.name[event.GetId()])
+		#region -------------------------------------------------> Check MainW
+		if config.mainW is None:
+			config.mainW = window.MainWindow()
+		else:
+			pass
+		#endregion ----------------------------------------------> Check MainW
+		
+		#region --------------------------------------------------> Create Tab
+		config.mainW.CreateTab(self.name[event.GetId()])		
+		#endregion -----------------------------------------------> Create Tab
+		
 		return True
 	#---
 
@@ -157,7 +168,7 @@ class Utility(wx.Menu, MenuMethods):
 		"""
 		#region ---------------------------------------------------> Get files
 		try:
-			fileP = dtsMenu.GetFilePath('openM', config.extLong['UMSAP'])
+			fileP = dtsMenu.GetFilePath('openO', config.extLong['UMSAP'])
 		except Exception as e:
 			dtscore.Notification(
 				'errorF', 
@@ -170,17 +181,13 @@ class Utility(wx.Menu, MenuMethods):
 		
 		#region --------------------------------------------------> Open files
 		if fileP is not None:
-			#-->
-			for f in fileP:
-				try:
-					config.mainW.ReadUMSAPOutFile(Path(f))
-				except Exception as e:
-					dtscore.Notification(
-						'errorF', 
-						msg        = str(e),
-						tException = e,
-						parent     = self.GetWindow(),
-					)
+			fileU = Path(fileP[0])
+			name  = fileU.name
+			#------------------------------> Check file is open
+			if config.umsapW.get(name, '') == '':
+				config.umsapW[name] = window.UMSAPFile(fileU)
+			else:
+				config.umsapW[name].Raise()
 			#-->
 			return True
 		else:
@@ -255,7 +262,10 @@ class ToolMenuBar(MainMenuBar):
 
 	#region -----------------------------------------------------> Class Setup
 	toolClass = { # Key are window name
-		'CorrAPlot' : CorrAPlotToolMenu,
+		'MainW'    : None,
+		'UMSAPF'   : None,
+		'CorrAPlot': CorrAPlotToolMenu,
+		
 	}
 	#endregion --------------------------------------------------> Class Setup
 	
@@ -267,7 +277,7 @@ class ToolMenuBar(MainMenuBar):
 		#endregion --------------------------------------------> Initial Setup
 		
 		#region -----------------------------------------> Menu items & Append
-		if name != 'MainW':
+		if self.toolClass[name] is not None:
 			self.Tool  = self.toolClass[name]()
 			self.Insert(config.toolsMenuIdx, self.Tool, 'Tools')
 		else:

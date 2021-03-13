@@ -167,15 +167,424 @@ class BaseWindow(wx.Frame):
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind
+		self.Bind(wx.EVT_CLOSE, self.OnClose)
 		#endregion -----------------------------------------------------> Bind
 	#---
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
+	def OnClose(self, event):
+		"""Destroy window. Override as needed
+	
+			Parameters
+			----------
+			event: wx.Event
+				Information about the event
+		"""
+		self.Destroy()
+	#---
 	#endregion ------------------------------------------------> Class methods
 #---
 
 #------------------------------> wx.Frame
+class MainWindow(BaseWindow):
+	"""Creates the main window of the App 
+	
+		Parameters
+		----------
+		parent : wx widget or None
+			parent of the main window
+		
+		Attributes
+		----------
+		name : str
+			Name to id the window
+		confOpt : dict
+			Dict with configuration options
+		confMsg dict or None
+			Messages for users
+		tabMethods: dict
+			Methods to create the tabs
+		menubar : wx.MenuBar
+			wx.Menubar associated with the window
+		statusbar : wx.StatusBar
+			wx.StatusBar associated with the window
+		notebook : wx.lib.agw.aui.auibook.AuiNotebook
+			Notebook associated with the window
+		Sizer : wx.BoxSizer
+			Sizer for the window
+	"""
+	#region -----------------------------------------------------> Class Setup
+	tabMethods = { # Keys are the unique names of the tabs
+		'StartTab'  : tab.Start,
+		'CorrATab'  : tab.CorrA,
+	}
+	#endregion --------------------------------------------------> Class Setup
+	
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, name='MainW', parent=None):
+		""""""
+		#region -----------------------------------------------> Initial setup
+		self.confOpt = { # Main Window, conf
+			#------------------------------> Titles
+			'Title': "Analysis Setup",
+			'TitleTab' : {
+				'StartTab' : 'Start',
+				'CorrATab' : config.nameUtilities['CorrA'],
+			},
+			#------------------------------> Size
+			'Size' : (900, 620),
+		}
+
+		super().__init__(name, parent=parent)
+		#endregion --------------------------------------------> Initial setup
+
+		#region -----------------------------------------------------> Widgets
+		self.notebook = aui.auibook.AuiNotebook(
+			self,
+			agwStyle=aui.AUI_NB_TOP|aui.AUI_NB_CLOSE_ON_ALL_TABS|aui.AUI_NB_TAB_MOVE,
+		)
+		#endregion --------------------------------------------------> Widgets
+
+		#region ------------------------------------------------------> Sizers
+		self.Sizer.Add(self.notebook, 1, wx.EXPAND|wx.ALL, 5)
+		#endregion ---------------------------------------------------> Sizers
+
+		#region --------------------------------------------> Create Start Tab
+		self.CreateTab('StartTab')
+		self.notebook.SetCloseButton(0, False)
+		#endregion -----------------------------------------> Create Start Tab
+
+		#region ---------------------------------------------> Position & Show
+		self.Center()
+		self.Show()
+		#endregion ------------------------------------------> Position & Show
+
+		#region	------------------------------------------------------> Update
+		if config.general["checkUpdate"]:
+			_thread.start_new_thread(UpdateCheck, ("main", self))
+		else:
+			pass
+		#endregion	--------------------------------------------------> Update
+
+		#region --------------------------------------------------------> Bind
+		self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
+		#endregion -----------------------------------------------------> Bind
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ----------------------------------------------------> Menu methods
+	def OnTabClose(self, event):
+		"""Make sure to show the Start Tab if no other tab exists
+		
+			Parameters
+			----------
+			event : wx.aui.Event
+				Information about the event
+		"""
+		#------------------------------> Close Tab
+		event.Skip()
+		#------------------------------> Number of tabs
+		pageC = self.notebook.GetPageCount() - 1
+		#------------------------------> Update tabs & close buttons
+		if pageC == 1:
+			#------------------------------> Remove close button from Start tab
+			if (win := self.FindWindowByName('StartTab')) is not None:
+				self.notebook.SetCloseButton(
+					self.notebook.GetPageIndex(win), 
+					False,
+				)
+			else:
+				pass
+		elif pageC == 0:
+			#------------------------------> Show Start Tab with close button
+			self.CreateTab('StartTab')
+			self.notebook.SetCloseButton(
+				self.notebook.GetPageIndex(self.FindWindowByName('StartTab')), 
+				False,
+			)
+		else:
+			pass
+	#---
+
+	def CreateTab(self, name):
+		"""Create a tab
+		
+			Parameters
+			----------
+			name : str
+				One of the values in config.name for tabs
+		"""
+		#region -----------------------------------------------------> Get tab
+		win = self.FindWindowByName(name)
+		#endregion --------------------------------------------------> Get tab
+		
+		#region ------------------------------------------> Find/Create & Show
+		if win is None:
+			#------------------------------> Create tab
+			self.notebook.AddPage(
+				self.tabMethods[name](
+					self.notebook,
+					self.statusbar,
+				),
+				self.confOpt['TitleTab'][name],
+				select = True,
+			)
+		else:
+			#------------------------------> Focus
+			self.notebook.SetSelection(self.notebook.GetPageIndex(win))
+		#endregion ---------------------------------------> Find/Create & Show
+
+		#region ---------------------------------------------------> Start Tab
+		if self.notebook.GetPageCount() > 1:
+			winS = self.FindWindowByName('StartTab')
+			if winS is not None:
+				self.notebook.SetCloseButton(
+					self.notebook.GetPageIndex(winS), 
+					True,
+				)
+			else:
+				pass
+		else:
+			pass
+		#endregion ------------------------------------------------> Start Tab
+	#---
+
+	def OnClose(self, event):
+		"""Destroy window and set config.MainW
+	
+			Parameters
+			----------
+			event: wx.Event
+				Information about the event
+		"""
+		config.mainW = None
+		self.Destroy()
+	#---
+	#endregion -------------------------------------------------> Menu methods
+#---
+
+class UMSAPFile(BaseWindow):
+	"""
+
+		Parameters
+		----------
+		fileP : Path
+			Path to the umsap file to be opened
+		parent : wx.Window or None
+			Parent of the window
+
+		Attributes
+		----------
+		name : str
+			Name of the window. Basically fileP.name
+
+		Raises
+		------
+		
+
+		Methods
+		-------
+		
+	"""
+	#region -----------------------------------------------------> Class setup
+	
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, fileP, name='UMSAPF', parent=None):
+		""" """
+		#region -------------------------------------------------> Check Input
+		
+		#endregion ----------------------------------------------> Check Input
+
+		#region -----------------------------------------------> Initial Setup
+		self.confOpt = {
+			'Title': fileP.name,
+			'Size' : (400, 700),
+		}
+		
+		super().__init__(name, parent=parent)
+		#endregion --------------------------------------------> Initial Setup
+
+		#region --------------------------------------------------------> Menu
+		
+		#endregion -----------------------------------------------------> Menu
+
+		#region -----------------------------------------------------> Widgets
+		
+		#endregion --------------------------------------------------> Widgets
+
+		#region ------------------------------------------------------> Sizers
+		
+		#endregion ---------------------------------------------------> Sizers
+
+		#region --------------------------------------------------------> Bind
+		
+		#endregion -----------------------------------------------------> Bind
+
+		#region ---------------------------------------------> Window position
+		self.Show()
+		#endregion ------------------------------------------> Window position
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	def OnClose(self, event):
+		"""Destroy window and remove reference from config.umsapW
+	
+			Parameters
+			----------
+			event: wx.Event
+				Information about the event
+		"""
+		del(config.umsapW[self.confOpt['Title']])
+		self.Destroy()
+	#---
+	#endregion ------------------------------------------------> Class methods
+#---
+
+
+#------------------------------> wx.Dialog
+class CheckUpdateResult(wx.Dialog):
+	"""Show a dialog with the result of the check for update operation.
+	
+		Parameters
+		----------
+		parent : wx widget or None
+			To center the dialog in parent. Default None
+		checkRes : str or None
+			Internet lastest version. Default None
+
+		Attributes:
+		confOpt : dict
+			Dict with configuration options
+		name : str
+			Unique window id
+	"""
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, parent=None, checkRes=None):
+		""""""
+		#region -----------------------------------------------> Initial setup
+		self.name = 'CheckUpdateResDialog'
+		
+		self.confOpt = {
+			#------------------------------> Title
+			'Title'    : f"Check for Updates",
+			#------------------------------> Label
+			'LabelLatest': "You are using the latest version of UMSAP.",
+			'LabelLink'  : 'Read the Release Notes.',
+			#------------------------------> URL
+			'UpdateUrl'  : config.url['Update'],
+			#------------------------------> Files
+			'Icon' : config.file['ImgIcon'],
+		}
+
+		style = wx.CAPTION|wx.CLOSE_BOX
+		super().__init__(parent, title=self.confOpt['Title'], style=style)
+		#endregion --------------------------------------------> Initial setup
+
+		#region -----------------------------------------------------> Widgets
+		#------------------------------> Msg
+		if checkRes is None:
+			msg = self.confOpt['LabelLatest']
+		else:
+			msg = (
+				f"UMSAP {checkRes} is already available.\n"
+				f"You are currently using UMSAP {config.version}."
+			)
+		self.stMsg = wx.StaticText(
+			self, 
+			label = msg,
+			style = wx.ALIGN_LEFT,
+		)
+		#------------------------------> Link	
+		if checkRes is not None:
+			self.stLink = adv.HyperlinkCtrl(
+				self,
+				label = self.confOpt['LabelLink'],
+				url   = self.confOpt['UpdateUrl'],
+			)
+		else:
+			pass
+		#------------------------------> Img
+		self.img = wx.StaticBitmap(
+			self,
+			bitmap = wx.Bitmap(str(self.confOpt['Icon']), wx.BITMAP_TYPE_PNG),
+		)
+		#endregion --------------------------------------------------> Widgets
+
+		#region ------------------------------------------------------> Sizers
+		#------------------------------> Button Sizers
+		self.btnSizer = self.CreateStdDialogButtonSizer(wx.OK)
+		#------------------------------> TextSizer
+		self.tSizer = wx.BoxSizer(wx.VERTICAL)
+		
+		self.tSizer.Add(self.stMsg, 0, wx.ALIGN_LEFT|wx.ALL, 10)
+		if checkRes is not None:
+			self.tSizer.Add(self.stLink, 0, wx.ALIGN_CENTER|wx.ALL, 10)
+		else:
+			pass
+		#------------------------------> Image Sizer
+		self.imgSizer = wx.BoxSizer(wx.HORIZONTAL)
+		
+		self.imgSizer.Add(self.img, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+		self.imgSizer.Add(self.tSizer, 0, wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
+		#------------------------------> Main Sizer
+		self.Sizer = wx.BoxSizer(wx.VERTICAL)
+		
+		self.Sizer.Add(self.imgSizer, 0, wx.ALIGN_CENTER|wx.TOP|wx.LEFT|wx.RIGHT, 25)
+		self.Sizer.Add(self.btnSizer, 0, wx.ALIGN_RIGHT|wx.RIGHT|wx.BOTTOM, 10)
+		
+		self.SetSizer(self.Sizer)
+		self.Sizer.Fit(self)
+		#endregion ---------------------------------------------------> Sizers
+
+		#region --------------------------------------------------------> Bind
+		if checkRes is not None:
+			self.stLink.Bind(adv.EVT_HYPERLINK, self.OnLink)
+		else:
+			pass
+		#endregion -----------------------------------------------------> Bind
+
+		#region ---------------------------------------------> Position & Show
+		if parent is None:
+			self.CenterOnScreen()
+		else:
+			self.CentreOnParent()
+		self.ShowModal()
+		self.Destroy()
+		#endregion ------------------------------------------> Position & Show
+	#---
+	#endregion -----------------------------------------------> Instance setup
+	
+	#region ---------------------------------------------------> Class Methods
+	def OnLink(self, event):
+		"""Process the link event 
+		
+			Parameters
+			----------
+			event : wx.adv.Event
+				Information about the event
+		"""
+		event.Skip()
+		self.EndModal(1)
+		self.Destroy()
+	#endregion ------------------------------------------------> Class Methods
+#---
+#endregion ----------------------------------------------------------> Classes
+
+
+
+
+
+
+
+
+
+
+
+
 # class CorrAPlot(BaseWindow):
 # 	"""Creates the window showing the results of a correlation analysis
 
@@ -320,320 +729,3 @@ class BaseWindow(wx.Frame):
 # 	#---
 # 	#endregion ------------------------------------------------> Class methods
 # #---
-
-
-class MainWindow(BaseWindow):
-	"""Creates the main window of the App 
-	
-		Parameters
-		----------
-		parent : wx widget or None
-			parent of the main window
-		
-		Attributes
-		----------
-		name : str
-			Name to id the window
-		confOpt : dict
-			Dict with configuration options
-		confMsg dict or None
-			Messages for users
-		tabMethods: dict
-			Methods to create the tabs
-		menubar : wx.MenuBar
-			wx.Menubar associated with the window
-		statusbar : wx.StatusBar
-			wx.StatusBar associated with the window
-		notebook : wx.lib.agw.aui.auibook.AuiNotebook
-			Notebook associated with the window
-		Sizer : wx.BoxSizer
-			Sizer for the window
-	"""
-	#region -----------------------------------------------------> Class Setup
-	tabMethods = { # Keys are the unique names of the tabs
-		'StartTab'  : tab.Start,
-		'CorrATab'  : tab.CorrA,
-	}
-	#endregion --------------------------------------------------> Class Setup
-	
-	#region --------------------------------------------------> Instance setup
-	def __init__(self, name='MainW', parent=None):
-		""""""
-		#region -----------------------------------------------> Initial setup
-		self.confOpt = { # Main Window, conf
-			#------------------------------> Titles
-			'Title': (
-				f"Utilities for Mass Spectrometry Analysis of Proteins "
-				f"{config.version}"),
-			'TitleTab' : {
-				'StartTab' : 'Start',
-				'CorrATab' : config.nameUtilities['CorrA'],
-			},
-			#------------------------------> Size
-			'Size' : (900, 620),
-		}
-
-		super().__init__(name, parent=parent)
-		#endregion --------------------------------------------> Initial setup
-
-		#region -----------------------------------------------------> Widgets
-		self.notebook = aui.auibook.AuiNotebook(
-			self,
-			agwStyle=aui.AUI_NB_TOP|aui.AUI_NB_CLOSE_ON_ALL_TABS|aui.AUI_NB_TAB_MOVE,
-		)
-		#endregion --------------------------------------------------> Widgets
-
-		#region ------------------------------------------------------> Sizers
-		self.Sizer.Add(self.notebook, 1, wx.EXPAND|wx.ALL, 5)
-		#endregion ---------------------------------------------------> Sizers
-
-		#region --------------------------------------------> Create Start Tab
-		self.CreateTab('StartTab')
-		self.notebook.SetCloseButton(0, False)
-		#endregion -----------------------------------------> Create Start Tab
-
-		#region ---------------------------------------------> Position & Show
-		self.Center()
-		self.Show()
-		#endregion ------------------------------------------> Position & Show
-
-		#region	------------------------------------------------------> Update
-		if config.general["checkUpdate"]:
-			_thread.start_new_thread(UpdateCheck, ("main", self))
-		else:
-			pass
-		#endregion	--------------------------------------------------> Update
-
-		#region --------------------------------------------------------> Bind
-		self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
-		#endregion -----------------------------------------------------> Bind
-	#---
-	#endregion -----------------------------------------------> Instance setup
-
-	#region ----------------------------------------------------> Menu methods
-	def OnTabClose(self, event):
-		"""Make sure to show the Start Tab if no other tab exists
-		
-			Parameters
-			----------
-			event : wx.aui.Event
-				Information about the event
-		"""
-		#------------------------------> Close Tab
-		event.Skip()
-		#------------------------------> Number of tabs
-		pageC = self.notebook.GetPageCount() - 1
-		#------------------------------> Update tabs & close buttons
-		if pageC == 1:
-			#------------------------------> Remove close button from Start tab
-			if (win := self.FindWindowByName('StartTab')) is not None:
-				self.notebook.SetCloseButton(
-					self.notebook.GetPageIndex(win), 
-					False,
-				)
-			else:
-				pass
-		elif pageC == 0:
-			#------------------------------> Show Start Tab with close button
-			self.CreateTab('StartTab')
-			self.notebook.SetCloseButton(
-				self.notebook.GetPageIndex(self.FindWindowByName('StartTab')), 
-				False,
-			)
-		else:
-			pass
-	#---
-
-	def CreateTab(self, name):
-		"""Create a tab
-		
-			Parameters
-			----------
-			name : str
-				One of the values in config.name for tabs
-		"""
-		#region -----------------------------------------------------> Get tab
-		win = self.FindWindowByName(name)
-		#endregion --------------------------------------------------> Get tab
-		
-		#region ------------------------------------------> Find/Create & Show
-		if win is None:
-			#------------------------------> Create tab
-			self.notebook.AddPage(
-				self.tabMethods[name](
-					self.notebook,
-					self.statusbar,
-				),
-				self.confOpt['TitleTab'][name],
-				select = True,
-			)
-		else:
-			#------------------------------> Focus
-			self.notebook.SetSelection(self.notebook.GetPageIndex(win))
-		#endregion ---------------------------------------> Find/Create & Show
-
-		#region ---------------------------------------------------> Start Tab
-		if self.notebook.GetPageCount() > 1:
-			winS = self.FindWindowByName('StartTab')
-			if winS is not None:
-				self.notebook.SetCloseButton(
-					self.notebook.GetPageIndex(winS), 
-					True,
-				)
-			else:
-				pass
-		else:
-			pass
-		#endregion ------------------------------------------------> Start Tab
-	#---
-
-	def ReadUMSAPOutFile(self, fileP):
-		"""Read and display the information in an UMSAP output file.
-	
-			Parameters
-			----------
-			fileP : Path
-				Path to the UMSAP output file
-
-		"""
-		#region ---------------------------------------------------> Read file
-		# try:
-		# 	self.resultWindow[fileP.suffix](fileP)
-		# except Exception as e:
-		# 	raise e
-		#endregion ------------------------------------------------> Read file
-			
-		return True		
-	#---
-	#endregion -------------------------------------------------> Menu methods
-#---
-
-
-#------------------------------> wx.Dialog
-class CheckUpdateResult(wx.Dialog):
-	"""Show a dialog with the result of the check for update operation.
-	
-		Parameters
-		----------
-		parent : wx widget or None
-			To center the dialog in parent. Default None
-		checkRes : str or None
-			Internet lastest version. Default None
-
-		Attributes:
-		confOpt : dict
-			Dict with configuration options
-		name : str
-			Unique window id
-	"""
-	#region --------------------------------------------------> Instance setup
-	def __init__(self, parent=None, checkRes=None):
-		""""""
-		#region -----------------------------------------------> Initial setup
-		self.name = 'CheckUpdateResDialog'
-		
-		self.confOpt = {
-			#------------------------------> Title
-			'Title'    : f"Check for Updates",
-			#------------------------------> Label
-			'LabelLatest': "You are using the latest version of UMSAP.",
-			'LabelLink'  : 'Read the Release Notes.',
-			#------------------------------> URL
-			'UpdateUrl'  : config.url['Update'],
-			#------------------------------> Files
-			'Icon' : config.file['ImgIcon'],
-		}
-
-		style = wx.CAPTION|wx.CLOSE_BOX
-		super().__init__(parent, title=self.confOpt['Title'], style=style)
-		#endregion --------------------------------------------> Initial setup
-
-		#region -----------------------------------------------------> Widgets
-		#------------------------------> Msg
-		if checkRes is None:
-			msg = self.confOpt['LabelLatest']
-		else:
-			msg = (
-				f"UMSAP {checkRes} is already available.\n"
-				f"You are currently using UMSAP {config.version}."
-			)
-		self.stMsg = wx.StaticText(
-			self, 
-			label = msg,
-			style = wx.ALIGN_LEFT,
-		)
-		#------------------------------> Link	
-		if checkRes is not None:
-			self.stLink = adv.HyperlinkCtrl(
-				self,
-				label = self.confOpt['LabelLink'],
-				url   = self.confOpt['UpdateUrl'],
-			)
-		else:
-			pass
-		#------------------------------> Img
-		self.img = wx.StaticBitmap(
-			self,
-			bitmap = wx.Bitmap(str(self.confOpt['Icon']), wx.BITMAP_TYPE_PNG),
-		)
-		#endregion --------------------------------------------------> Widgets
-
-		#region ------------------------------------------------------> Sizers
-		#------------------------------> Button Sizers
-		self.btnSizer = self.CreateStdDialogButtonSizer(wx.OK)
-		#------------------------------> TextSizer
-		self.tSizer = wx.BoxSizer(wx.VERTICAL)
-		
-		self.tSizer.Add(self.stMsg, 0, wx.ALIGN_LEFT|wx.ALL, 10)
-		if checkRes is not None:
-			self.tSizer.Add(self.stLink, 0, wx.ALIGN_CENTER|wx.ALL, 10)
-		else:
-			pass
-		#------------------------------> Image Sizer
-		self.imgSizer = wx.BoxSizer(wx.HORIZONTAL)
-		
-		self.imgSizer.Add(self.img, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-		self.imgSizer.Add(self.tSizer, 0, wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
-		#------------------------------> Main Sizer
-		self.Sizer = wx.BoxSizer(wx.VERTICAL)
-		
-		self.Sizer.Add(self.imgSizer, 0, wx.ALIGN_CENTER|wx.TOP|wx.LEFT|wx.RIGHT, 25)
-		self.Sizer.Add(self.btnSizer, 0, wx.ALIGN_RIGHT|wx.RIGHT|wx.BOTTOM, 10)
-		
-		self.SetSizer(self.Sizer)
-		self.Sizer.Fit(self)
-		#endregion ---------------------------------------------------> Sizers
-
-		#region --------------------------------------------------------> Bind
-		if checkRes is not None:
-			self.stLink.Bind(adv.EVT_HYPERLINK, self.OnLink)
-		else:
-			pass
-		#endregion -----------------------------------------------------> Bind
-
-		#region ---------------------------------------------> Position & Show
-		if parent is None:
-			self.CenterOnScreen()
-		else:
-			self.CentreOnParent()
-		self.ShowModal()
-		self.Destroy()
-		#endregion ------------------------------------------> Position & Show
-	#---
-	#endregion -----------------------------------------------> Instance setup
-	
-	#region ---------------------------------------------------> Class Methods
-	def OnLink(self, event):
-		"""Process the link event 
-		
-			Parameters
-			----------
-			event : wx.adv.Event
-				Information about the event
-		"""
-		event.Skip()
-		self.EndModal(1)
-		self.Destroy()
-	#endregion ------------------------------------------------> Class Methods
-#---
-#endregion ----------------------------------------------------------> Classes

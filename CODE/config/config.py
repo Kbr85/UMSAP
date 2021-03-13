@@ -37,7 +37,8 @@ dictVersion = { # dict for directly write into output files
 cOS = platform.system() # Current operating system
 cwd = Path(os.path.abspath(os.path.dirname(__file__))) # Work directory
 
-mainW = None
+mainW  = None
+umsapW = {}
 #endregion -----------------------------------------------> General parameters
 
 
@@ -77,6 +78,7 @@ name = { # Unique names to identify windows/objects through the app
 	'ToolMenu'   : 'ToolMenu',
 	#--> Main windows
 	'MainW' : 'MainW',
+	'UMSAPF': 'UMSAPF',
 	'CorrAW': 'CorrAW',
 	#--> Dialogs
 	'CheckUpdateResDialog': 'CheckUpdateResDialog',
