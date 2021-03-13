@@ -77,10 +77,6 @@ class BaseConfPanel(
 			Parent of the widgets
 		statusbar : wx.StatusBar
 			Statusbar of the application to display messages
-		confOpt : dict
-			Dict with configuration options
-		confMsg dict or None
-			Messages for user
 		msgError : Str or None
 			Error message to show when analysis fails
 		d : dict
@@ -156,8 +152,6 @@ class BaseConfPanel(
 		#region -----------------------------------------------> Initial Setup
 		self.parent    = parent
 		self.statusbar = statusbar
-		self.confOpt = getattr(config, self.name)
-		self.confMsg = getattr(config, self.name+'Msg', None)
 
 		self.msgError   = None # Error msg to show in self.RunEnd
 		self.d          = {} # Dict with the user input as given
@@ -422,6 +416,10 @@ class Start(wx.Panel):
 
 		Attributes
 		----------
+		confOpt : dict
+			Dict with configuration options
+		confMsg dict or None
+			Messages for users
 		parent : wx widget
 			Parent of the tab. 
 		name : str
@@ -446,9 +444,21 @@ class Start(wx.Panel):
 	def __init__(self, parent, statusbar):
 		""""""
 		#region -----------------------------------------------> Initial setup
-		self.name   = 'StartTab'
-		self.parent = parent
-		self.confOpt = getattr(config, self.name)
+		self.name    = 'StartTab'
+		self.parent  = parent
+		
+		self.confOpt = {
+			#------------------------------> Labels
+			'LimProtL' : config.nameModules['LimProt'],
+			'TarProtL' : config.nameModules['TarProt'],
+			'ProtProfL': config.nameModules['ProtProf'],
+			#------------------------------> Tooltips
+			'LimProtTT' : 'Start the module Limited Proteolysis',
+			'TarProtTT' : 'Start the module Target Proteolysis',
+			'ProtProfTT': 'Start the module Proteome Profiling',
+			#------------------------------> Files
+			'Img' : config.file['ImgStart'],
+		}
 
 		super().__init__(parent=parent, name=self.name)
 		#endregion --------------------------------------------> Initial setup
@@ -537,6 +547,10 @@ class CorrA(BaseConfPanel):
 		----------
 		name : str
 			Unique id of the pane in the app
+		confOpt : dict
+			Dict with configuration options
+		confMsg dict or None
+			Messages for users
 		do : dict
 			Dict with the processed user input
 			{
@@ -590,6 +604,79 @@ class CorrA(BaseConfPanel):
 		""""""
 		#region -----------------------------------------------> Initial setup
 		self.dfCC     = None # correlation coefficients
+
+		self.confOpt = { # gui.tab, conf
+			#------------------------------> URL
+			'URL' : config.url['CorrA'],
+			#------------------------------> Labels
+			'iFileL'     : config.label['BtnDataFile'],
+			'oFileL'     : config.label['BtnOutFile'],
+			'NormMethodL': config.label['CbNormalization'],
+			'CorrMethodL': 'Correlation Method',
+			'ListColumnL': config.label['LCtrlColName_I'],
+			'iListL'     : 'Columns in the Data File',
+			'oListL'     : 'Columns to Analyse',
+			'AddL'       : 'Add columns',
+			'CheckL'     : config.label['CbCheck'],
+			#------------------------------> Hint
+			'iFileH' : f"Path to the {config.label['BtnDataFile']}",
+			'oFileH' : f"Path to the {config.label['BtnOutFile']}",
+			#------------------------------> Choices
+			'NormMethod' : config.choice['NormMethod'],
+			'CorrMethod' : ['', 'Pearson', 'Kendall', 'Spearman'],
+			#------------------------------> Size
+			'LCtrlColS' : config.size['LCtrl#Name'],
+			#------------------------------> Tooltips
+			'iListTT' : (
+				f"Selected rows can be copied ({config.copyShortCut}+C) but "
+				f"the list cannot be modified."),
+			'oListTT' : (
+				f"New rows can be pasted ({config.copyShortCut}+V) after the "
+				f"last selected element and existing one cut/deleted "
+				f"({config.copyShortCut}+X) or copied "
+				f"({config.copyShortCut}+C)."),
+			'AddTT' : (
+				f"Add selected Columns in the Data File to the list of Columns "
+				f"to Analyse. New columns will be added after the last "
+				f"selected element in Columns to analyse. Duplicate columns "
+				f"are discarded."),
+			#------------------------------> Progress Dialog
+			'TitlePD' : 'Calculating Correlation Coefficients',
+			'GaugePD' : 15,
+			#------------------------------> Output
+			'Section'  : config.nameUtilities['CorrA'],
+			'MainData' : 'Data-03-CorrelationCoefficients',
+			'ChangeKey': ['iFile', 'oFile'],
+		}
+
+		self.confMsg = { # gui.tab, error msg
+			'iFile' : {
+				'NotPath' : (
+					f"The path to the {self.confOpt['iFileL']} is not valid."),
+				'NotFile' : (
+					f"The path to the {self.confOpt['iFileL']} does not point "
+					f"to a file."),
+				'NoRead' : (
+					f"The given {self.confOpt['iFileL']} cannot be read."),
+				'FileExt' : (
+					f"The given {self.confOpt['iFileL']} does not have the "
+					f"correct extension."),
+			},
+			'oFile' : {
+				'NotPath' : (
+					f"The path to the {self.confOpt['oFileL']} is not valid."),
+				'NoWrite' : (
+					f"It is not possible to write into the "
+					f"{self.confOpt['oFileL']}"),
+			},
+			'NormMethod' : (
+				f"The {self.confOpt['NormMethodL']} was not selected."),
+			'CorrMethod' : (
+				f"The {self.confOpt['CorrMethodL']} was not selected."),
+			'oList' : (
+				f"The list of {self.confOpt['oListL']} must contain at least "
+				f"two items."),
+		}
 
 		super().__init__(
 			parent,

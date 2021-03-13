@@ -74,7 +74,13 @@ class Module(wx.Menu, MenuMethods):
 	def __init__(self):
 		""" """
 		#region -----------------------------------------------> Initial Setup
-		self.confOpt = getattr(config, 'ModuleMenu')
+		self.confOpt = {
+			#------------------------------> Labels
+			'LimProt' : config.nameModules['LimProt'],
+			'TarProt' : config.nameModules['TarProt'],
+			'ProtProf': config.nameModules['ProtProf'],
+		}
+
 		super().__init__()
 		#endregion --------------------------------------------> Initial Setup
 
@@ -107,8 +113,17 @@ class Utility(wx.Menu, MenuMethods):
 		""""""
 		#region -----------------------------------------------> Initial Setup
 		self.name = 'UtilityMenu'
-		self.confOpt = getattr(config, self.name)
-		self.confMsg = getattr(config, self.name+'Msg')
+		
+		self.confOpt = { # Utility menu, conf
+			#------------------------------> Labels
+			'CorrA' : config.nameUtilities['CorrA'],
+			'ReadF' : config.nameUtilities['ReadF'],
+		}
+		
+		self.confMsg = {
+			'Selector': config.msg['FileSelector'],
+		}
+		
 		super().__init__()
 		#endregion --------------------------------------------> Initial Setup
 

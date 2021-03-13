@@ -71,6 +71,10 @@ elif cOS == 'Linux':
 
 #region ---------------------------------------------------------------> Names
 name = { # Unique names to identify windows/objects through the app
+	#--> Menu
+	'ModuleMenu' : 'ModuleMenu',
+	'UtilityMenu': 'UtilityMenu',
+	'ToolMenu'   : 'ToolMenu',
 	#--> Main windows
 	'MainW' : 'MainW',
 	'CorrAW': 'CorrAW',
@@ -79,12 +83,6 @@ name = { # Unique names to identify windows/objects through the app
 	#--> Tab for notebook windows
 	'StartTab' : 'StartTab',
 	'CorrATab' : 'CorrATab',
-	#--> Menu
-	'ModuleMenu' : 'ModuleMenu',
-	'UtilityMenu': 'UtilityMenu',
-	'ToolMenu'   : 'ToolMenu',
-	#--> Methods
-	'UpdateCheckMethod' : 'UpdateCheckMethod',
 }
 
 nameModules = { # Name of the modules
@@ -151,7 +149,7 @@ label = { # Label for widgets
 	#------------------------------> wx.ComboBox
 	'CbNormalization' : 'Normalization Method',
 	#------------------------------> wx.ListCtrl
-	'LCtrlColName_I' :  ['#', 'Name'],
+	'LCtrlColName_I' : ['#', 'Name'],
 	#------------------------------> wx.CheckBox
 	'CbCheck' : 'Append new data to selected output file',
 	#------------------------------> Progress Dialog
@@ -179,7 +177,6 @@ choice = { # Choices for the wx.ComboBox
 size = { # Base size for widgets
 	#------------------------------> wx.ListCtrl
 	'LCtrl#Name' : [50, 150],
-	
 }
 #endregion ------------------------------------------------------------> Sizes
 
@@ -221,143 +218,6 @@ url = { # Selected URL needed by umsap.
 	'ProtProf'  : f"{url_tutorial}/proteome-profiling",
 }
 #endregion --------------------------------------------------------------- URL
-
-
-#region ---------------------------------------------------> Objects's options
-#------------------------------> Windows
-MainW = { # Main Window, conf
-	'Size' : (900, 620),
-	'Title': f"Utilities for Mass Spectrometry Analysis of Proteins {version}",
-	'TitleTab' : {
-		'StartTab' : 'Start',
-		'CorrATab' : nameUtilities['CorrA'],
-	},
-}
-
-
-#------------------------------> Dialogs
-CheckUpdateResDialog = { # gui.window
-	#------------------------------> Title
-	'Title'    : f"Check for Updates",
-	#------------------------------> Label
-	'LabelLatest': "You are using the latest version of UMSAP.",
-	'LabelLink'  : 'Read the Release Notes.',
-	#------------------------------> URL
-	'UpdateUrl'  : url['Update'],
-	#------------------------------> Files
-	'Icon' : file['ImgIcon'],
-}
-
-
-#------------------------------> Tabs
-StartTab = { # gui.tab
-	#------------------------------> Labels
-	'LimProtL' : nameModules['LimProt'],
-	'TarProtL' : nameModules['TarProt'],
-	'ProtProfL': nameModules['ProtProf'],
-	#------------------------------> Tooltips
-	'LimProtTT' : 'Start the module Limited Proteolysis',
-	'TarProtTT' : 'Start the module Target Proteolysis',
-	'ProtProfTT': 'Start the module Proteome Profiling',
-	#------------------------------> Files
-	'Img' : file['ImgStart'],
-}
-
-
-CorrATab = { # gui.tab, conf
-	#------------------------------> URL
-	'URL' : url['CorrA'],
-	#------------------------------> Labels
-	'iFileL'     : label['BtnDataFile'],
-	'oFileL'     : label['BtnOutFile'],
-	'NormMethodL': label['CbNormalization'],
-	'CorrMethodL': 'Correlation Method',
-	'ListColumnL': label['LCtrlColName_I'],
-	'iListL'     : 'Columns in the Data File',
-	'oListL'     : 'Columns to Analyse',
-	'AddL'       : 'Add columns',
-	'CheckL'     : label['CbCheck'],
-	#------------------------------> Hint
-	'iFileH' : f"Path to the {label['BtnDataFile']}",
-	'oFileH' : f"Path to the {label['BtnOutFile']}",
-	#------------------------------> Choices
-	'NormMethod' : choice['NormMethod'],
-	'CorrMethod' : ['', 'Pearson', 'Kendall', 'Spearman'],
-	#------------------------------> Size
-	'LCtrlColS' : size['LCtrl#Name'],
-	#------------------------------> Tooltips
-	'iListTT' : (
-		f"Selected rows can be copied ({copyShortCut}+C) but the list "
-		f"cannot be modified."),
-	'oListTT' : (
-		f"New rows can be pasted ({copyShortCut}+V) after the last "
-		f"selected element and existing one cut/deleted ({copyShortCut}+X) "
-		f"or copied ({copyShortCut}+C)."),
-	'AddTT' : (
-		f"Add selected Columns in the Data File to the list of Columns to "
-		f"Analyse. New columns will be added after the last selected "
-		f"element in Columns to analyse. Duplicate columns are discarded."),
-	#------------------------------> Progress Dialog
-	'TitlePD' : 'Calculating Correlation Coefficients',
-	'GaugePD' : 15,
-	#------------------------------> Output
-	'Section'  : nameUtilities['CorrA'],
-	'MainData' : 'Data-03-CorrelationCoefficients',
-	'ChangeKey': ['iFile', 'oFile'],
-}
-
-CorrATabMsg = { # gui.tab, error msg
-	'iFile' : {
-		'NotPath' : (
-			f"The path to the {CorrATab['iFileL']} is not valid."),
-		'NotFile' : (
-			f"The path to the {CorrATab['iFileL']} does not point to a file."),
-		'NoRead' : (
-			f"The given {CorrATab['iFileL']} cannot be read."),
-		'FileExt' : (
-			f"The given {CorrATab['iFileL']} does not have the correct "
-			f"extension."),
-	},
-	'oFile' : {
-		'NotPath' : (
-			f"The path to the {CorrATab['oFileL']} is not valid."),
-		'NoWrite' : (
-			f"It is not possible to write into the {CorrATab['oFileL']}"),
-	},
-	'NormMethod' : (
-		f"The {CorrATab['NormMethodL']} was not selected."),
-	'CorrMethod' : (
-		f"The {CorrATab['CorrMethodL']} was not selected."),
-	'oList' : (
-		f"The list of {CorrATab['oListL']} must contain at least two items."),
-}
-
-#------------------------------> Menu
-ModuleMenu = { # Module menu, conf
-	#------------------------------> Labels
-	'LimProt' : nameModules['LimProt'],
-	'TarProt' : nameModules['TarProt'],
-	'ProtProf': nameModules['ProtProf'],
-}
-
-
-UtilityMenu = { # Utility menu, conf
-	#------------------------------> Labels
-	'CorrA' : nameUtilities['CorrA'],
-	'ReadF' : nameUtilities['ReadF'],
-}
-
-UtilityMenuMsg = { # Utility menu, msg
-	'Selector': msg['FileSelector'],
-}
-
-
-#------------------------------> Methods 
-UpdateCheckMethod = { # UpdateCheck Method in gui.window, conf & msg
-	'UpdateUrl' : url['Update'],
-	'UpdateCheckFailed' : f"Check for Updates failed. Please try again later.",
-}
-#endregion ------------------------------------------------> Objects's options
 
 
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS

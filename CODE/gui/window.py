@@ -23,10 +23,8 @@ import wx.adv as adv
 import wx.lib.agw.aui as aui
 
 import dat4s_core.data.method as dtsMethod
-# import dat4s_core.gui.wx.widget as dtsWidget
 
 import config.config as config
-# import data.file as file
 import gui.menu as menu
 import gui.tab as tab
 import gui.dtscore as dtscore
@@ -45,7 +43,11 @@ def UpdateCheck(ori, win=None):
 			To center the result window in this widget
 	"""
 	#region ---------------------------------------------------------> Options
-	confOpt = getattr(config, 'UpdateCheckMethod')
+	confOpt = { # UpdateCheck Method in gui.window, conf & msg
+		'UpdateUrl' : config.url['Update'],
+		'UpdateCheckFailed' : (
+			f"Check for Updates failed. Please try again later."),
+	}
 	#endregion ------------------------------------------------------> Options
 	
 	#region ---------------------------------> Get web page text from Internet
@@ -141,8 +143,6 @@ class BaseWindow(wx.Frame):
 		#region -----------------------------------------------> Initial Setup
 		self.name   = name
 		self.parent = parent
-		self.confOpt = getattr(config, self.name)
-		self.confMsg = getattr(config, self.name+'Msg', None)
 
 		super().__init__(
 			parent = parent,
@@ -163,6 +163,7 @@ class BaseWindow(wx.Frame):
 		
 		#region ------------------------------------------------------> Sizers
 		self.Sizer = wx.BoxSizer(wx.VERTICAL)
+		self.SetSizer(self.Sizer)
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind
@@ -333,6 +334,10 @@ class MainWindow(BaseWindow):
 		----------
 		name : str
 			Name to id the window
+		confOpt : dict
+			Dict with configuration options
+		confMsg dict or None
+			Messages for users
 		tabMethods: dict
 			Methods to create the tabs
 		menubar : wx.MenuBar
@@ -355,6 +360,19 @@ class MainWindow(BaseWindow):
 	def __init__(self, name='MainW', parent=None):
 		""""""
 		#region -----------------------------------------------> Initial setup
+		self.confOpt = { # Main Window, conf
+			#------------------------------> Titles
+			'Title': (
+				f"Utilities for Mass Spectrometry Analysis of Proteins "
+				f"{config.version}"),
+			'TitleTab' : {
+				'StartTab' : 'Start',
+				'CorrATab' : config.nameUtilities['CorrA'],
+			},
+			#------------------------------> Size
+			'Size' : (900, 620),
+		}
+
 		super().__init__(name, parent=parent)
 		#endregion --------------------------------------------> Initial setup
 
@@ -367,7 +385,6 @@ class MainWindow(BaseWindow):
 
 		#region ------------------------------------------------------> Sizers
 		self.Sizer.Add(self.notebook, 1, wx.EXPAND|wx.ALL, 5)
-		self.SetSizer(self.Sizer)
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------> Create Start Tab
@@ -504,6 +521,8 @@ class CheckUpdateResult(wx.Dialog):
 			Internet lastest version. Default None
 
 		Attributes:
+		confOpt : dict
+			Dict with configuration options
 		name : str
 			Unique window id
 	"""
@@ -512,7 +531,18 @@ class CheckUpdateResult(wx.Dialog):
 		""""""
 		#region -----------------------------------------------> Initial setup
 		self.name = 'CheckUpdateResDialog'
-		self.confOpt = getattr(config, self.name)
+		
+		self.confOpt = {
+			#------------------------------> Title
+			'Title'    : f"Check for Updates",
+			#------------------------------> Label
+			'LabelLatest': "You are using the latest version of UMSAP.",
+			'LabelLink'  : 'Read the Release Notes.',
+			#------------------------------> URL
+			'UpdateUrl'  : config.url['Update'],
+			#------------------------------> Files
+			'Icon' : config.file['ImgIcon'],
+		}
 
 		style = wx.CAPTION|wx.CLOSE_BOX
 		super().__init__(parent, title=self.confOpt['Title'], style=style)
