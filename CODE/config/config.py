@@ -362,7 +362,6 @@ except Exception as e:
 
 # #region ---------------------------------------------------> File Content Keys
 # fileContentCheck = { # The keys here must be in the file content
-# 	'Parts' : ['V', 'I', 'CI', 'R'],
 # 	'CorrAFile': ['iFile', 'oFolder', 'NormMethod', 'CorrMethod', 'Column'],
 # }
 # #endregion ------------------------------------------------> File Content Keys

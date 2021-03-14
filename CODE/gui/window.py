@@ -21,6 +21,7 @@ import requests
 import wx
 import wx.adv as adv
 import wx.lib.agw.aui as aui
+import wx.lib.agw.customtreectrl as wxCT
 
 import dat4s_core.data.method as dtsMethod
 
@@ -28,6 +29,7 @@ import config.config as config
 import gui.menu as menu
 import gui.tab as tab
 import gui.dtscore as dtscore
+import data.file as file
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -364,6 +366,7 @@ class MainWindow(BaseWindow):
 	#endregion -------------------------------------------------> Menu methods
 #---
 
+
 class UMSAPFile(BaseWindow):
 	"""
 
@@ -395,20 +398,23 @@ class UMSAPFile(BaseWindow):
 	def __init__(self, fileP, name='UMSAPF', parent=None):
 		""" """
 		#region -------------------------------------------------> Check Input
-		
+		try:
+			self.umsapF = file.UMSAPFile(fileP)
+		except Exception as e:
+			raise e
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup
 		self.confOpt = {
-			'Title': fileP.name,
+			'Title': self.umsapF.file.name,
 			'Size' : (400, 700),
 		}
-		
+
 		super().__init__(name, parent=parent)
 		#endregion --------------------------------------------> Initial Setup
 
 		#region -----------------------------------------------------> Widgets
-		self.trc = wx.TreeCtrl(self)
+		self.trc = wxCT.CustomTreeCtrl(self)
 		self.SetTree()
 		#endregion --------------------------------------------------> Widgets
 
@@ -429,11 +435,24 @@ class UMSAPFile(BaseWindow):
 	#region ---------------------------------------------------> Class methods
 	def SetTree(self):
 		"""Set the elements of the wx.TreeCtrl """
-		root = self.trc.AddRoot(self.confOpt['Title'])
-		ca = self.trc.AppendItem(root, 'Correlation Analysis')
-		self.trc.AppendItem(ca, '20210214-104532')
-		self.trc.AppendItem(ca, '20210428-095549')
-		self.trc.Expand(root)
+		#region ----------------------------------------------------> Add root
+		root = self.trc.AddRoot(self.umsapF.file.name)		
+		#endregion -------------------------------------------------> Add root
+		
+		#region ------------------------------------------------> Add elements
+		for a, b in self.umsapF.data.items():
+			childa = self.trc.AppendItem(root, a, ct_type=1)
+			for c, d in b.items():
+				childb = self.trc.AppendItem(childa, c)
+				for e, f in d['I'].items():
+					self.trc.AppendItem(childb, f"{e}: {f}")		
+		#endregion ---------------------------------------------> Add elements
+		
+		#region -------------------------------------------------> Expand root
+		self.trc.Expand(root)		
+		#endregion ----------------------------------------------> Expand root
+		
+		return True
 	#---
 	
 	def OnClose(self, event):

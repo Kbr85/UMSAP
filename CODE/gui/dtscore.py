@@ -29,7 +29,7 @@ class Notification(dtsWindow.NotificationDialog):
 		img=config.file['ImgIcon'], button=1,):
 		""" """
 		super().__init__(mode, msg=msg, tException=tException, parent=parent,
-			button=button, img=img, title=config.title['Notification'])
+			button=button, img=img, title='UMSAP - Notification')
 	#---
 #---
 

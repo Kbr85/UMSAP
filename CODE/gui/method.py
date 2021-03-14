@@ -17,16 +17,19 @@
 #region -------------------------------------------------------------> Imports
 import config.config as config
 import gui.window as window
+import gui.dtscore as dtscore
 #endregion ----------------------------------------------------------> Imports
 
 
-def LoadUMSAPFile(fileP):
+def LoadUMSAPFile(fileP, parent=None):
 	"""Load an UMSAP file
 
 		Parameters
 		----------
 		fileP : Path
 			Path to the UMSAP file
+		parent : wx.Window or None
+			To center notification alert
 
 		Returns
 		-------
@@ -38,7 +41,16 @@ def LoadUMSAPFile(fileP):
 	
 	#region -------------------------------------------------------> Load file
 	if config.umsapW.get(name, '') == '':
-		config.umsapW[name] = window.UMSAPFile(fileP)
+		try:
+			config.umsapW[name] = window.UMSAPFile(fileP)
+		except Exception as e:
+			dtscore.Notification(
+				mode       = 'errorF',
+				msg        = str(e),
+				tException = e,
+				parent     = parent
+			)
+			return False
 	else:
 		config.umsapW[name].Raise()
 	#endregion ----------------------------------------------------> Load file

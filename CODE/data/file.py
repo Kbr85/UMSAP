@@ -17,20 +17,20 @@
 #region -------------------------------------------------------------> Imports
 import json
 import pandas as pd
-from pathlib import Path
+# from pathlib import Path
 
 import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
-import dat4s_core.exception.exception as dtsException
+# import dat4s_core.exception.exception as dtsException
 
-import config.config as config
+# import config.config as config
 #endregion ----------------------------------------------------------> Imports
 
 #---------------------------------------------------------------- Base classes
 class CommonMethods():
 	"""Common methods to all file content classes """
 	#region -----------------------------------------------------> Class setup
-	gKey = config.fileContentCheck['Parts']
+	gKey = ['V', 'I', 'CI', 'R']
 	vKey = ['Version']
 	#endregion --------------------------------------------------> Class setup
 
@@ -111,32 +111,17 @@ class UMSAPFile():
 	def __init__(self, fileP):
 		""" """
 		#region -------------------------------------------------> Check Input
-		
+		self.data = dtsFF.ReadJSON(fileP)
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup
 		
 		#endregion --------------------------------------------> Initial Setup
 
-		#region --------------------------------------------------------> Menu
+		#region ---------------------------------------------------> Variables
+		self.file = fileP
+		#endregion ------------------------------------------------> Variables
 		
-		#endregion -----------------------------------------------------> Menu
-
-		#region -----------------------------------------------------> Widgets
-		
-		#endregion --------------------------------------------------> Widgets
-
-		#region ------------------------------------------------------> Sizers
-		
-		#endregion ---------------------------------------------------> Sizers
-
-		#region --------------------------------------------------------> Bind
-		
-		#endregion -----------------------------------------------------> Bind
-
-		#region ---------------------------------------------> Window position
-		
-		#endregion ------------------------------------------> Window position
 	#---
 	#endregion -----------------------------------------------> Instance setup
 
@@ -145,105 +130,105 @@ class UMSAPFile():
 	#endregion ------------------------------------------------> Class methods
 #---
 
-class CorrAFile(CommonMethods):
-	"""Read and analyse a correlation analysis file or a correlation analysis
-		section of a file.
+# class CorrAFile(CommonMethods):
+# 	"""Read and analyse a correlation analysis file or a correlation analysis
+# 		section of a file.
 
-		Parameters
-		----------
-		data : Path or dict
-			If a path is given then it is the path to an UMSAP output file
-			containing a Correlation-Analysis section.
-			If a dict is given then it is the Correlation-Analysis section.
-		fileP : Path
-			For error printing only
+# 		Parameters
+# 		----------
+# 		data : Path or dict
+# 			If a path is given then it is the path to an UMSAP output file
+# 			containing a Correlation-Analysis section.
+# 			If a dict is given then it is the Correlation-Analysis section.
+# 		fileP : Path
+# 			For error printing only
 
-		Attributes
-		----------
-		topKey
-		iKey
-		ciKey
-		name
-		data
-		df
+# 		Attributes
+# 		----------
+# 		topKey
+# 		iKey
+# 		ciKey
+# 		name
+# 		data
+# 		df
 
-		Raises
-		------
-		InputError:
-			- When file content is missing critical keys
+# 		Raises
+# 		------
+# 		InputError:
+# 			- When file content is missing critical keys
 
-		Notes
-		-----
-		See UTIL/DETAILS/details.py -> Correlation Analysis file for a 
-		description of the file/section content
+# 		Notes
+# 		-----
+# 		See UTIL/DETAILS/details.py -> Correlation Analysis file for a 
+# 		description of the file/section content
 		
-	"""
-	#region -----------------------------------------------------> Class setup
-	name   = 'CorrAFile'
-	topKey = config.file['ID']['CorrA']
-	iKey   = ciKey = config.fileContentCheck[name]
-	#endregion --------------------------------------------------> Class setup
+# 	"""
+# 	#region -----------------------------------------------------> Class setup
+# 	name   = 'CorrAFile'
+# 	topKey = config.file['ID']['CorrA']
+# 	iKey   = ciKey = config.fileContentCheck[name]
+# 	#endregion --------------------------------------------------> Class setup
 
-	#region --------------------------------------------------> Instance setup
-	def __init__(self, data, fileP=None):
-		""" """
-		#region -------------------------------------------------> Check Input
-		#------------------------------> fileP, needed for error msg here
-		self.fileP = fileP if fileP is not None else data
-		#------------------------------> Input type
-		if isinstance(data, dict):
-			self.data = data
-		elif isinstance(data, Path):
-			self.data = dtsFF.ReadJSON(data)
-		else:
-			msg = (
-				config.msg[self.name]['InputType'] 
-				+ f"\nThe given input has type: {type(data)}"
-			)
-			raise dtsException.InputError(msg)
-		#------------------------------> Keys in dict
-		try:
-			self.CheckFileContent()
-		except Exception as e:
-			msg = (
-				config.msg['Error']['File']['Content']
-				+ f"\nSelected file:\n{self.fileP}"
-			)
-			raise dtsException.InputError(msg)
-		#endregion ----------------------------------------------> Check Input
+# 	#region --------------------------------------------------> Instance setup
+# 	def __init__(self, data, fileP=None):
+# 		""" """
+# 		#region -------------------------------------------------> Check Input
+# 		#------------------------------> fileP, needed for error msg here
+# 		self.fileP = fileP if fileP is not None else data
+# 		#------------------------------> Input type
+# 		if isinstance(data, dict):
+# 			self.data = data
+# 		elif isinstance(data, Path):
+# 			self.data = dtsFF.ReadJSON(data)
+# 		else:
+# 			msg = (
+# 				config.msg[self.name]['InputType'] 
+# 				+ f"\nThe given input has type: {type(data)}"
+# 			)
+# 			raise dtsException.InputError(msg)
+# 		#------------------------------> Keys in dict
+# 		try:
+# 			self.CheckFileContent()
+# 		except Exception as e:
+# 			msg = (
+# 				config.msg['Error']['File']['Content']
+# 				+ f"\nSelected file:\n{self.fileP}"
+# 			)
+# 			raise dtsException.InputError(msg)
+# 		#endregion ----------------------------------------------> Check Input
 
-		#region -----------------------------------------------> Initial Setup
-		self.SetVariables()
-		#endregion --------------------------------------------> Initial Setup
-		#---
-	#endregion -----------------------------------------------> Instance setup
+# 		#region -----------------------------------------------> Initial Setup
+# 		self.SetVariables()
+# 		#endregion --------------------------------------------> Initial Setup
+# 		#---
+# 	#endregion -----------------------------------------------> Instance setup
 
-	#region ---------------------------------------------------> Class methods
-	def SetVariables(self):
-		"""Set instance variables needed for file visualization"""
-		#--> data
-		self.df = pd.DataFrame(self.data['R'], dtype='float64')
-	 #---
-	 #--> method
-		self.method = self.Fdata['I']['Method']
-	 #---
-	 #--> gtitle
-		self.gtitle = str(self.method) + ' correlation coefficients'
-	 #---
-	 #--> numCol
-		self.numCol = self.data.shape[0]
-	 #---
-	 #--> colNum
-		self.colNum = self.Fdata['I']['SelCol']
-	 #---
-	 #--> fileD
-		self.fileD = Path(self.Fdata['CI']['Datafile'])
-	 #--> checkExport Needed to match other data classes
-		self.checkExport = True
-	 #---> Return
-		return True
-	 #---
-	#---
-	#---
-	#endregion ------------------------------------------------> Class methods
-#---
+# 	#region ---------------------------------------------------> Class methods
+# 	def SetVariables(self):
+# 		"""Set instance variables needed for file visualization"""
+# 		#--> data
+# 		self.df = pd.DataFrame(self.data['R'], dtype='float64')
+# 	 #---
+# 	 #--> method
+# 		self.method = self.Fdata['I']['Method']
+# 	 #---
+# 	 #--> gtitle
+# 		self.gtitle = str(self.method) + ' correlation coefficients'
+# 	 #---
+# 	 #--> numCol
+# 		self.numCol = self.data.shape[0]
+# 	 #---
+# 	 #--> colNum
+# 		self.colNum = self.Fdata['I']['SelCol']
+# 	 #---
+# 	 #--> fileD
+# 		self.fileD = Path(self.Fdata['CI']['Datafile'])
+# 	 #--> checkExport Needed to match other data classes
+# 		self.checkExport = True
+# 	 #---> Return
+# 		return True
+# 	 #---
+# 	#---
+# 	#---
+# 	#endregion ------------------------------------------------> Class methods
+# #---
