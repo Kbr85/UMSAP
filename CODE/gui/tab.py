@@ -30,6 +30,7 @@ import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
 import gui.dtscore as dtscore
+import gui.method as guiMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -678,11 +679,7 @@ class CorrA(BaseConfPanel):
 				f"two items."),
 		}
 
-		super().__init__(
-			parent,
-			self.name, 
-			statusbar=statusbar
-		)
+		super().__init__(parent, self.name, statusbar=statusbar)
 		#endregion --------------------------------------------> Initial setup
 		
 		#region -----------------------------------------------------> Widgets
@@ -965,24 +962,24 @@ class CorrA(BaseConfPanel):
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		#------------------------------> As given
 		self.d = {
-			'iFile'     : self.iFile.tc.GetValue(),
-			'oFile'     : self.oFile.tc.GetValue(),
-			'NormMethod': self.normMethod.cb.GetValue(),
-			'CorrMethod': self.corrMethod.cb.GetValue(),
-			'Column'    : [int(x) for x in self.lbO.GetColContent(0)],
-			'Check'     : self.checkB.GetValue(),
+			self.confOpt['iFileL']     : self.iFile.tc.GetValue(),
+			self.confOpt['oFileL']     : self.oFile.tc.GetValue(),
+			self.confOpt['NormMethodL']: self.normMethod.cb.GetValue(),
+			self.confOpt['CorrMethodL']: self.corrMethod.cb.GetValue(),
+			'Selected Columns': [int(x) for x in self.lbO.GetColContent(0)],
+			'Append to file'  : self.checkB.GetValue(),
 		}
 
 		msgStep = msgPrefix + 'User input, processing'
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		#------------------------------> Dict with all values
 		self.do = {
-			'iFile'     : Path(self.d['iFile']),
-			'oFile'     : Path(self.d['oFile']),
-			'NormMethod': self.normMethod.cb.GetValue(),
-			'CorrMethod': self.corrMethod.cb.GetValue(),
-			'Column'    : [int(x) for x in self.lbO.GetColContent(0)],
-			'Check'     : self.checkB.GetValue(),
+			'iFile'     : Path(self.d[self.confOpt['iFileL']]),
+			'oFile'     : Path(self.d[self.confOpt['oFileL']]),
+			'NormMethod': self.d[self.confOpt['NormMethodL']],
+			'CorrMethod': self.d[self.confOpt['CorrMethodL']],
+			'Column'    : self.d['Selected Columns'],
+			'Check'     : self.d['Append to file'],
 		}
 		#------------------------------> File base name
 		self.oFolder = self.do['oFile'].parent
@@ -1144,7 +1141,7 @@ class CorrA(BaseConfPanel):
 		#region --------------------------------------------------------> Load
 		wx.CallAfter(self.dlg.UpdateStG, msgPrefix)
 		
-		wx.CallAfter(config.mainW.ReadUMSAPOutFile, self.do['oFile'])
+		wx.CallAfter(guiMethod.LoadUMSAPFile, self.do['oFile'])
 		#endregion -----------------------------------------------------> Load
 
 		return True

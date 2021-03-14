@@ -83,6 +83,68 @@ class CommonMethods():
 	#endregion ------------------------------------------------> Class methods
 #---
 
+class UMSAPFile():
+	"""Read and analyse an umsap file
+
+		Parameters
+		----------
+		fileP : Path
+			Path to the UMSAP file
+
+		Attributes
+		----------
+		
+
+		Raises
+		------
+		
+
+		Methods
+		-------
+		
+	"""
+	#region -----------------------------------------------------> Class setup
+	
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, fileP):
+		""" """
+		#region -------------------------------------------------> Check Input
+		
+		#endregion ----------------------------------------------> Check Input
+
+		#region -----------------------------------------------> Initial Setup
+		
+		#endregion --------------------------------------------> Initial Setup
+
+		#region --------------------------------------------------------> Menu
+		
+		#endregion -----------------------------------------------------> Menu
+
+		#region -----------------------------------------------------> Widgets
+		
+		#endregion --------------------------------------------------> Widgets
+
+		#region ------------------------------------------------------> Sizers
+		
+		#endregion ---------------------------------------------------> Sizers
+
+		#region --------------------------------------------------------> Bind
+		
+		#endregion -----------------------------------------------------> Bind
+
+		#region ---------------------------------------------> Window position
+		
+		#endregion ------------------------------------------> Window position
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	
+	#endregion ------------------------------------------------> Class methods
+#---
+
 class CorrAFile(CommonMethods):
 	"""Read and analyse a correlation analysis file or a correlation analysis
 		section of a file.

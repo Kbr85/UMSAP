@@ -24,6 +24,7 @@ import dat4s_core.gui.wx.menu as dtsMenu
 import config.config as config
 import gui.dtscore as dtscore
 import gui.window as window
+import gui.method as guiMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -182,12 +183,8 @@ class Utility(wx.Menu, MenuMethods):
 		#region --------------------------------------------------> Open files
 		if fileP is not None:
 			fileU = Path(fileP[0])
-			name  = fileU.name
 			#------------------------------> Check file is open
-			if config.umsapW.get(name, '') == '':
-				config.umsapW[name] = window.UMSAPFile(fileU)
-			else:
-				config.umsapW[name].Raise()
+			guiMethod.LoadUMSAPFile(fileU)
 			#-->
 			return True
 		else:

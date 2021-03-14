@@ -407,16 +407,13 @@ class UMSAPFile(BaseWindow):
 		super().__init__(name, parent=parent)
 		#endregion --------------------------------------------> Initial Setup
 
-		#region --------------------------------------------------------> Menu
-		
-		#endregion -----------------------------------------------------> Menu
-
 		#region -----------------------------------------------------> Widgets
-		
+		self.trc = wx.TreeCtrl(self)
+		self.SetTree()
 		#endregion --------------------------------------------------> Widgets
 
 		#region ------------------------------------------------------> Sizers
-		
+		self.Sizer.Add(self.trc, 1, wx.EXPAND|wx.ALL, 5)
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind
@@ -430,6 +427,15 @@ class UMSAPFile(BaseWindow):
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
+	def SetTree(self):
+		"""Set the elements of the wx.TreeCtrl """
+		root = self.trc.AddRoot(self.confOpt['Title'])
+		ca = self.trc.AppendItem(root, 'Correlation Analysis')
+		self.trc.AppendItem(ca, '20210214-104532')
+		self.trc.AppendItem(ca, '20210428-095549')
+		self.trc.Expand(root)
+	#---
+	
 	def OnClose(self, event):
 		"""Destroy window and remove reference from config.umsapW
 	
