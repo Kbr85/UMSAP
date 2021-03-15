@@ -563,7 +563,8 @@ class CorrA(BaseConfPanel):
 				'Check      : 'Append to existing output file or not',
 			}
 		d : dict
-			Similar to 'do' but with the values given by the user
+			Similar to 'do' but with the values given by the user and keys as 
+			in the GUI of the tab
 		dfCC : pdDataFrame
 			Dataframe with correlation coefficients
 		See parent class for more attributes
@@ -571,19 +572,14 @@ class CorrA(BaseConfPanel):
 		Notes
 		-----
 		Running the analysis results in the creation of
-		OutPut-Folder
-		|
-		 - Data
-		   |
-		    - OutPut-Folder-1-Data-Initial.txt
-			- OutPut-Folder-2-Data-Normalization.txt
-			- OutPut-Folder-3-Data-CC-Values.txt
-		 - OutPut-Folder.corr
+		Data-20210324-165609-Correlation-Analysis
+		output-file.umsap
 		
 		The files in Data are regular csv files with the data at the end of the
 		corresponding step.
 
-		The .corr file conteins the information about the calculations, e.g
+		The Correlation Analysis section in output-file.umsap conteins the 
+		information about the calculations, e.g
 
 		{
 			'Correlation-Analysis : {

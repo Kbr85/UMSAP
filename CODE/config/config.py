@@ -85,6 +85,9 @@ name = { # Unique names to identify windows/objects through the app
 	#--> Tab for notebook windows
 	'StartTab' : 'StartTab',
 	'CorrATab' : 'CorrATab',
+	#--> Files
+	'UMSAPFile' : 'UMSAPFile',
+	'CorrAFile' : 'CorrAFile',
 }
 
 nameModules = { # Name of the modules
@@ -341,31 +344,6 @@ except Exception as e:
 
 
 
-
-
-
-
-# #region ------------------------------------------------------------> Messages
-# msg = { # Messages for the user of the App
-# 	'Error' : { # Error messages
-# 		'File' : { # General file errors
-# 			'Content' : (
-# 				f"The file content is missing critical information and cannot "
-# 				f"be used by UMSAP."),
-# 		},
-# 		'CorrAFile' : { # Correlation Analysis File 
-# 			'InputType' : (f"The input must be a Path or a dictionary."),
-# 		},
-# 	},
-# }
-# #endregion ---------------------------------------------------------> Messages
-
-
-# #region ---------------------------------------------------> File Content Keys
-# fileContentCheck = { # The keys here must be in the file content
-# 	'CorrAFile': ['iFile', 'oFolder', 'NormMethod', 'CorrMethod', 'Column'],
-# }
-# #endregion ------------------------------------------------> File Content Keys
 
 
 

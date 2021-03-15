@@ -490,7 +490,7 @@ class UMSAPFile(BaseWindow):
 	def SetTree(self):
 		"""Set the elements of the wx.TreeCtrl """
 		#region ----------------------------------------------------> Add root
-		root = self.trc.AddRoot(self.obj.fileP.name)		
+		root = self.trc.AddRoot(self.obj.fileP.name)
 		#endregion -------------------------------------------------> Add root
 		
 		#region ------------------------------------------------> Add elements
@@ -538,7 +538,6 @@ class UMSAPFile(BaseWindow):
 			data = self.obj.GetSectionData(section)
 		except Exception as e:
 			dtscore.Notification('errorU', msg=str(e), tException=e)
-			event.Skip()
 			return False		
 		#endregion -------------------------------------------------> Get data
 		
@@ -549,7 +548,6 @@ class UMSAPFile(BaseWindow):
 			)
 		except Exception as e:
 			dtscore.Notification('errorU', msg=str(e), tException=e)
-			event.Skip()
 			return False
 		#endregion --------------------------------------------> Create window
 		
@@ -601,8 +599,8 @@ class CorrAPlot(BaseWindowPlot):
 
 		Parameters
 		----------
-		fileP : Path
-			Path to the UMSAP file with results from a correlation analysis
+		data : dict
+			Correlation Analysis section from an UMSAP file
 		name : str
 			Unique name of the window
 		parent : wx Widget or None
@@ -610,8 +608,6 @@ class CorrAPlot(BaseWindowPlot):
 
 		Attributes
 		----------
-		data : dict
-			Section Correlation Analysis from an UMSAP file
 		name : str
 			Unique name of the window
 		parent : wx Widget or None
@@ -626,10 +622,16 @@ class CorrAPlot(BaseWindowPlot):
 	def __init__(self, data, parent, name='CorrAPlot'):
 		""" """
 		#region -------------------------------------------------> Check Input
-		# try:
-		# 	self.obj = file.CorrAFile(data)
-		# except Exception as e:
-		# 	raise e
+		try:
+			self.obj = file.CorrAFile(data)
+		except Exception as e:
+			raise e
+
+		for k,v in self.obj.plotData.items():
+			print(str(k)+': '+str(v))
+
+		for k,v in self.obj.menuEntry.items():
+			print(str(k)+': '+str(v))
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup

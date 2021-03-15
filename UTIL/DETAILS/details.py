@@ -1,6 +1,11 @@
-#region -----------------------------------------------------------------> Correlation Analysis file 
-The .corr file or a correlation analysis section in an UMSAP output file has the
-following structure:
+#region ----------------------------------------------------------> UMSAP File
+"""The umsap file contains the output from UMSAP. The file is json formated 
+and contains the sections described below."""
+#endregion -------------------------------------------------------> UMSAP File
+
+#region ----------------------------------------> Correlation Analysis section
+"""The section Correlation Analysis in an UMSAP File has the following 
+structure:"""
 
 {
 	'Correlation-Analysis' : {
@@ -14,6 +19,7 @@ following structure:
 				'NormMethod': 'normalization method',
 				'CorrMethod': 'correlation method',
 				'Column'    : [selected columns as integers],
+				'Check      : 'Append to existing output file or not',
 			},
 			'CI': { # Ready to use values
 				'iFile'     : 'input file path',
@@ -21,12 +27,14 @@ following structure:
 				'NormMethod': 'normalization method',
 				'CorrMethod': 'correlation method',
 				'Column'    : [selected columns as integers],
+				'Check      : 'Append to existing output file or not',
 			},
 			'R' : pd.DataFrame (dict) with the correlation coefficients,
 		}
 	}
 }
 
+"""
 The date-time stamp ('20210324-165609') indicates when the analysis was 
 performed. 
 
@@ -40,4 +48,6 @@ Intensity 04      0.135884      0.110859      0.775442      1.000000      0.0102
 Intensity 05      0.565985      0.588783     -0.010327      0.010221      1.000000
 
 The index and column names are the name of the selected columns in the Data File.
-#endregion --------------------------------------------------------------> Correlation Analysis file 
+"""
+#endregion -------------------------------------> Correlation Analysis section
+

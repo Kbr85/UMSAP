@@ -118,6 +118,7 @@ class Module(wx.Menu, MenuMethods):
 	#endregion ------------------------------------------------ Instance Setup
 #---
 
+
 class Utility(wx.Menu, MenuMethods):
 	"""Utilites menu"""
 	#region --------------------------------------------------> Instance Setup
@@ -194,6 +195,7 @@ class Utility(wx.Menu, MenuMethods):
 	#endregion ------------------------------------------------> Class Methods
 #---
 
+
 class CorrAPlotToolMenu(wx.Menu, MenuMethods):
 	""" """
 	#region -----------------------------------------------------> Class setup
@@ -254,6 +256,7 @@ class MainMenuBar(wx.MenuBar):
 	#endregion ------------------------------------------------ Instance Setup
 #---
 
+
 class ToolMenuBar(MainMenuBar):
 	"""Menu bar for a window showing the corresponding tool menu"""
 
@@ -262,7 +265,6 @@ class ToolMenuBar(MainMenuBar):
 		'MainW'    : None,
 		'UMSAPF'   : None,
 		'CorrAPlot': CorrAPlotToolMenu,
-		
 	}
 	#endregion --------------------------------------------------> Class Setup
 	
