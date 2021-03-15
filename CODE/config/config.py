@@ -79,7 +79,7 @@ name = { # Unique names to identify windows/objects through the app
 	#--> Main windows
 	'MainW' : 'MainW',
 	'UMSAPF': 'UMSAPF',
-	'CorrAW': 'CorrAW',
+	'CorrAPlot': 'CorrAPlot',
 	#--> Dialogs
 	'CheckUpdateResDialog': 'CheckUpdateResDialog',
 	#--> Tab for notebook windows
@@ -177,6 +177,7 @@ choice = { # Choices for the wx.ComboBox
 
 #region ---------------------------------------------------------------> Sizes
 size = { # Base size for widgets
+	'Plot' : (560, 560),
 	#------------------------------> wx.ListCtrl
 	'LCtrl#Name' : [50, 150],
 }

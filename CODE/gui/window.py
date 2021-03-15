@@ -24,6 +24,7 @@ import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
 
 import dat4s_core.data.method as dtsMethod
+import dat4s_core.gui.wx.widget as dtsWidget
 
 import config.config as config
 import gui.menu as menu
@@ -183,6 +184,48 @@ class BaseWindow(wx.Frame):
 			event: wx.Event
 				Information about the event
 		"""
+		self.Destroy()
+	#---
+	#endregion ------------------------------------------------> Class methods
+#---
+
+class BaseWindowPlot(BaseWindow):
+	"""Base class for windows showing a plot with common methods
+
+		Parameters
+		----------
+		name : str
+			Name of the window
+		parent : wx.Window or None
+			Parent of the window
+	"""
+	#region -----------------------------------------------------> Class setup
+	
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, name, parent):
+		""" """
+		#region -----------------------------------------------> Initial Setup
+		super().__init__(name, parent = parent)
+		#endregion --------------------------------------------> Initial Setup
+
+		#region --------------------------------------------------------> Bind
+		self.Bind(wx.EVT_CLOSE, self.OnClose)
+		#endregion -----------------------------------------------------> Bind
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	def OnClose(self, event):
+		"""Close window and uncheck section in UMSAPFile window
+	
+			Parameters
+			----------
+			event: wx.Event
+				Information about the event
+		"""
+		self.parent.UnCheckSection(self.confOpt['Section'])
 		self.Destroy()
 	#---
 	#endregion ------------------------------------------------> Class methods
@@ -368,7 +411,7 @@ class MainWindow(BaseWindow):
 
 
 class UMSAPFile(BaseWindow):
-	"""
+	"""Control for an umsap file. 
 
 		Parameters
 		----------
@@ -381,6 +424,10 @@ class UMSAPFile(BaseWindow):
 		----------
 		name : str
 			Name of the window. Basically fileP.name
+		obj : file.UMSAPFile
+			Object to handle UMSAP files
+		confOpt : dict
+			Configuration options
 
 		Raises
 		------
@@ -399,15 +446,22 @@ class UMSAPFile(BaseWindow):
 		""" """
 		#region -------------------------------------------------> Check Input
 		try:
-			self.umsapF = file.UMSAPFile(fileP)
+			self.obj = file.UMSAPFile(fileP)
 		except Exception as e:
 			raise e
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup
 		self.confOpt = {
-			'Title': self.umsapF.file.name,
+			'Title': self.obj.fileP.name,
 			'Size' : (400, 700),
+			'Plot' : { # Methods to create plot windows
+				config.nameUtilities['CorrA'] : CorrAPlot
+			},
+			'Section' : { # Reference to section items in wxCT.CustomTreeCtrl
+			},
+			'Window' : { # Reference to plot windows
+			},
 		}
 
 		super().__init__(name, parent=parent)
@@ -423,7 +477,7 @@ class UMSAPFile(BaseWindow):
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind
-		
+		self.trc.Bind(wxCT.EVT_TREE_ITEM_CHECKING, self.OnCheckItem)
 		#endregion -----------------------------------------------------> Bind
 
 		#region ---------------------------------------------> Window position
@@ -436,12 +490,13 @@ class UMSAPFile(BaseWindow):
 	def SetTree(self):
 		"""Set the elements of the wx.TreeCtrl """
 		#region ----------------------------------------------------> Add root
-		root = self.trc.AddRoot(self.umsapF.file.name)		
+		root = self.trc.AddRoot(self.obj.fileP.name)		
 		#endregion -------------------------------------------------> Add root
 		
 		#region ------------------------------------------------> Add elements
-		for a, b in self.umsapF.data.items():
+		for a, b in self.obj.data.items():
 			childa = self.trc.AppendItem(root, a, ct_type=1)
+			self.confOpt['Section'][a] = childa
 			for c, d in b.items():
 				childb = self.trc.AppendItem(childa, c)
 				for e, f in d['I'].items():
@@ -451,6 +506,77 @@ class UMSAPFile(BaseWindow):
 		#region -------------------------------------------------> Expand root
 		self.trc.Expand(root)		
 		#endregion ----------------------------------------------> Expand root
+		
+		return True
+	#---
+
+	def OnCheckItem(self, event):
+		"""Show window when section is checked
+	
+			Parameters
+			----------
+			event : wxCT.Event
+				Information about the event
+		"""
+		#region ------------------------------------------> Get Item & Section
+		item    = event.GetItem()
+		section = self.trc.GetItemText(item)
+		#endregion ---------------------------------------> Get Item & Section
+
+		#region ----------------------------------------------> Destroy window
+		#------------------------------> Event trigers before checkbox changes
+		if self.trc.IsItemChecked(item):
+			self.confOpt['Window'][section].Destroy()
+			event.Skip()
+			return True
+		else:
+			pass
+		#endregion -------------------------------------------> Destroy window
+				
+		#region ----------------------------------------------------> Get data
+		try:
+			data = self.obj.GetSectionData(section)
+		except Exception as e:
+			dtscore.Notification('errorU', msg=str(e), tException=e)
+			event.Skip()
+			return False		
+		#endregion -------------------------------------------------> Get data
+		
+		#region -----------------------------------------------> Create window
+		try:
+			self.confOpt['Window'][section] = (
+				self.confOpt['Plot'][section](data, self)
+			)
+		except Exception as e:
+			dtscore.Notification('errorU', msg=str(e), tException=e)
+			event.Skip()
+			return False
+		#endregion --------------------------------------------> Create window
+		
+		event.Skip()
+		return True
+	#---
+
+	def UnCheckSection(self, sectionName):
+		"""Method to uncheck a section when the plot window is closed by the 
+			user
+	
+			Parameters
+			----------
+			sectionName : str
+				Section name like in config.nameModules config.nameUtilities
+		"""
+		#region -----------------------------------------------------> Uncheck
+		self.trc.SetItem3StateValue(
+			self.confOpt['Section'][sectionName],
+			wx.CHK_UNCHECKED,
+		)		
+		#endregion --------------------------------------------------> Uncheck
+		
+		#region -----------------------------------------------------> Repaint
+		self.Update()
+		self.Refresh()		
+		#endregion --------------------------------------------------> Repaint
 		
 		return True
 	#---
@@ -465,6 +591,152 @@ class UMSAPFile(BaseWindow):
 		"""
 		del(config.umsapW[self.confOpt['Title']])
 		self.Destroy()
+	#---
+	#endregion ------------------------------------------------> Class methods
+#---
+
+
+class CorrAPlot(BaseWindowPlot):
+	"""Creates the window showing the results of a correlation analysis
+
+		Parameters
+		----------
+		fileP : Path
+			Path to the UMSAP file with results from a correlation analysis
+		name : str
+			Unique name of the window
+		parent : wx Widget or None
+			Parent of the window
+
+		Attributes
+		----------
+		data : dict
+			Section Correlation Analysis from an UMSAP file
+		name : str
+			Unique name of the window
+		parent : wx Widget or None
+			Parent of the window
+		plot : dtsWidget.MatPlotPanel
+			Main plot of the window
+	"""
+	#region -----------------------------------------------------> Class setup
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, data, parent, name='CorrAPlot'):
+		""" """
+		#region -------------------------------------------------> Check Input
+		# try:
+		# 	self.obj = file.CorrAFile(data)
+		# except Exception as e:
+		# 	raise e
+		#endregion ----------------------------------------------> Check Input
+
+		#region -----------------------------------------------> Initial Setup
+		self.confOpt = {
+			'Section' : config.nameUtilities['CorrA'],
+			'Title' : (
+				f"{parent.confOpt['Title']} - {config.nameUtilities['CorrA']}"),
+			'Size' : config.size['Plot'],
+		}
+
+		super().__init__(name, parent = parent)		
+		#endregion --------------------------------------------> Initial Setup
+
+		#region -----------------------------------------------------> Widgets
+		self.plot = dtsWidget.MatPlotPanel(
+			self, 
+			statusbar    = self.statusbar,
+			statusMethod = self.UpdateStatusBar,
+		)
+		#endregion --------------------------------------------------> Widgets
+
+		#region ------------------------------------------------------> Sizers
+		self.Sizer.Add(self.plot, 1, wx.EXPAND|wx.ALL, 5)
+
+		self.SetSizer(self.Sizer)
+		#endregion ---------------------------------------------------> Sizers
+
+		#region --------------------------------------------------------> Bind
+		
+		#endregion -----------------------------------------------------> Bind
+
+		self.Draw()
+		self.Show()
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	def Draw(self):
+		""" Draw into the plot. """
+	 #-->
+		self.plot.axes.set_title('My Plot')
+	 #---
+	#  #--> Plot
+	# 	self.axes.pcolormesh(
+	# 		self.data, 
+	# 		cmap=self.MatplotLibCmap(),
+	# 		vmin=-1, 
+	# 		vmax=1,
+	# 		antialiased=True,
+	# 		edgecolors='k',
+	# 		lw=0.005,
+	# 	)
+	#  #---
+	 #--> Update axis and draw
+		self.SetAxis()
+		self.plot.canvas.draw()
+	 #---
+	 #--> Return
+		return True
+	 #---
+	#---
+
+	def SetAxis(self):
+		""" General details of the plot area """
+	 #-->
+		self.plot.axes.grid(True)
+	 #---
+	#  #--> 
+	# 	if self.numCol <= 30:
+	# 		step = 1
+	# 	elif self.numCol > 30 and self.numCol <= 60:
+	# 		step = 2
+	# 	else:
+	# 		step = 3
+	# 	self.xlabel = []
+	# 	self.xticksloc = []
+	#  #---
+	#  #-->
+	# 	for i in range(0, self.numCol, step):
+	# 		self.xticksloc.append(i + 0.5)		
+	# 		self.xlabel.append(self.data.columns[i])
+	#  #---
+	#  #-->
+	# 	self.axes.set_xticks(self.xticksloc)
+	# 	self.axes.set_xticklabels(self.xlabel, rotation=90)
+	#  #---
+	#  #-->
+	# 	self.axes.set_yticks(self.xticksloc)
+	# 	self.axes.set_yticklabels(self.xlabel)
+	#  #---
+	#  #-->
+	# 	self.figure.subplots_adjust(bottom=0.13)
+	#  #---
+	 #-->
+		return True
+	 #---
+	#---
+
+	def UpdateStatusBar(self, event):
+		"""Update the statusbar info
+	
+			Parameters
+			----------
+			event: matplotlib event
+				Information about the event
+		"""
+		self.statusbar.SetStatusText('My text from window')
 	#---
 	#endregion ------------------------------------------------> Class methods
 #---
@@ -610,147 +882,3 @@ class CheckUpdateResult(wx.Dialog):
 
 
 
-# class CorrAPlot(BaseWindow):
-# 	"""Creates the window showing the results of a correlation analysis
-
-# 		Parameters
-# 		----------
-# 		fileP : Path
-# 			Path to the UMSAP file with results from a correlation analysis
-# 		name : str
-# 			Unique name of the window
-# 		parent : wx Widget or None
-# 			Parent of the window
-
-# 		Attributes
-# 		----------
-# 		fileP : Path
-# 			Path to the UMSAP file with results from a correlation analysis
-# 		name : str
-# 			Unique name of the window
-# 		parent : wx Widget or None
-# 			Parent of the window
-# 		plot : dtsWidget.MatPlotPanel
-# 			Main plot of the window
-# 	"""
-# 	#region -----------------------------------------------------> Class setup
-# 	#endregion --------------------------------------------------> Class setup
-
-# 	#region --------------------------------------------------> Instance setup
-# 	def __init__(self, fileP, name='CorrAPlot', parent=None):
-# 		""" """
-# 		#region -------------------------------------------------> Check Input
-# 		#------------------------------> No window with false file
-# 		try:
-# 			self.fileObj = file.CorrAFile(fileP)
-# 		except Exception as e:
-# 			raise e
-# 		#endregion ----------------------------------------------> Check Input
-
-# 		#region -----------------------------------------------> Initial Setup
-# 		self.fileP = fileP
-
-# 		super().__init__(
-# 			name, 
-# 			parent = parent,
-# 			title  = config.title[name] + fileP.name
-# 		)		
-# 		#endregion --------------------------------------------> Initial Setup
-
-# 		#region -----------------------------------------------------> Widgets
-# 		self.plot = dtsWidget.MatPlotPanel(
-# 			self, 
-# 			statusbar    = self.statusbar,
-# 			statusMethod = self.UpdateStatusBar,
-# 		)
-# 		#endregion --------------------------------------------------> Widgets
-
-# 		#region ------------------------------------------------------> Sizers
-# 		self.Sizer.Add(self.plot, 1, wx.EXPAND|wx.ALL, 5)
-
-# 		self.SetSizer(self.Sizer)
-# 		#endregion ---------------------------------------------------> Sizers
-
-# 		#region --------------------------------------------------------> Bind
-		
-# 		#endregion -----------------------------------------------------> Bind
-
-# 		self.Draw()
-# 		self.Show()
-# 	#---
-# 	#endregion -----------------------------------------------> Instance setup
-
-# 	#region ---------------------------------------------------> Class methods
-# 	def Draw(self):
-# 		""" Draw into the plot. """
-# 	 #-->
-# 		self.plot.axes.set_title('My Plot')
-# 	 #---
-# 	#  #--> Plot
-# 	# 	self.axes.pcolormesh(
-# 	# 		self.data, 
-# 	# 		cmap=self.MatplotLibCmap(),
-# 	# 		vmin=-1, 
-# 	# 		vmax=1,
-# 	# 		antialiased=True,
-# 	# 		edgecolors='k',
-# 	# 		lw=0.005,
-# 	# 	)
-# 	#  #---
-# 	 #--> Update axis and draw
-# 		self.SetAxis()
-# 		self.plot.canvas.draw()
-# 	 #---
-# 	 #--> Return
-# 		return True
-# 	 #---
-# 	#---
-
-# 	def SetAxis(self):
-# 		""" General details of the plot area """
-# 	 #-->
-# 		self.plot.axes.grid(True)
-# 	 #---
-# 	#  #--> 
-# 	# 	if self.numCol <= 30:
-# 	# 		step = 1
-# 	# 	elif self.numCol > 30 and self.numCol <= 60:
-# 	# 		step = 2
-# 	# 	else:
-# 	# 		step = 3
-# 	# 	self.xlabel = []
-# 	# 	self.xticksloc = []
-# 	#  #---
-# 	#  #-->
-# 	# 	for i in range(0, self.numCol, step):
-# 	# 		self.xticksloc.append(i + 0.5)		
-# 	# 		self.xlabel.append(self.data.columns[i])
-# 	#  #---
-# 	#  #-->
-# 	# 	self.axes.set_xticks(self.xticksloc)
-# 	# 	self.axes.set_xticklabels(self.xlabel, rotation=90)
-# 	#  #---
-# 	#  #-->
-# 	# 	self.axes.set_yticks(self.xticksloc)
-# 	# 	self.axes.set_yticklabels(self.xlabel)
-# 	#  #---
-# 	#  #-->
-# 	# 	self.figure.subplots_adjust(bottom=0.13)
-# 	#  #---
-# 	 #-->
-# 		return True
-# 	 #---
-# 	#---
-
-# 	def UpdateStatusBar(self, event):
-# 		"""Update the statusbar info
-	
-# 			Parameters
-# 			----------
-# 			event: matplotlib event
-# 				Information about the event
-# 		"""
-# 		self.statusbar.SetStatusText('My text from window')
-# 	#---
-# 	#endregion ------------------------------------------------> Class methods
-# #---

@@ -21,7 +21,7 @@ import pandas as pd
 
 import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
-# import dat4s_core.exception.exception as dtsException
+import dat4s_core.exception.exception as dtsException
 
 # import config.config as config
 #endregion ----------------------------------------------------------> Imports
@@ -93,11 +93,15 @@ class UMSAPFile():
 
 		Attributes
 		----------
-		
+		fileP : Path
+			Path to the UMSAP file
+		data : dict
+			Data read from json formatted file
 
 		Raises
 		------
-		
+		ExecutionError
+			- When a requested section is not found in the file (GetSectionData)
 
 		Methods
 		-------
@@ -110,6 +114,11 @@ class UMSAPFile():
 	#region --------------------------------------------------> Instance setup
 	def __init__(self, fileP):
 		""" """
+		#region ---------------------------------------------------> Variables
+		
+		self.fileP = fileP
+		#endregion ------------------------------------------------> Variables
+
 		#region -------------------------------------------------> Check Input
 		self.data = dtsFF.ReadJSON(fileP)
 		#endregion ----------------------------------------------> Check Input
@@ -118,15 +127,43 @@ class UMSAPFile():
 		
 		#endregion --------------------------------------------> Initial Setup
 
-		#region ---------------------------------------------------> Variables
-		self.file = fileP
-		#endregion ------------------------------------------------> Variables
+		
 		
 	#---
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
+	def GetSectionData(self, sectionName):
+		"""Get the dict with the data for a section
 	
+			Parameters
+			----------
+			sectionName : str
+				Section name like in config.Modules or config.Utilities
+	
+			Returns
+			-------
+			dict:
+				Section data
+
+			Raise
+			-----
+			ExecutionError
+				- When the section is not found in the file
+		"""
+		#region ---------------------------------------------------> Variables
+		confMsg = {
+			'NoSection' : (
+				f"Section {sectionName} was not found in the content of "
+				f"file:\n{self.fileP}"),
+		}
+		#endregion ------------------------------------------------> Variables
+		
+		if (data := self.data.get(sectionName, '')) != '':
+			return data
+		else:
+			raise dtsException.ExecutionError(confMsg['NoSection'])
+	#---
 	#endregion ------------------------------------------------> Class methods
 #---
 
