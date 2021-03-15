@@ -120,7 +120,8 @@ class BaseWindow(wx.Frame):
 			Unique name of the window
 		parent : wx Widget or None
 			Parent of the window
-
+		menuDate : dict or None
+			Date entries for menu of plotting windows
 		Attributes
 		----------
 		name : str
@@ -138,7 +139,7 @@ class BaseWindow(wx.Frame):
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, name, parent=None):
+	def __init__(self, name, parent=None, menuDate=None):
 		""" """
 		#region -------------------------------------------------> Check Input
 		#endregion ----------------------------------------------> Check Input
@@ -160,7 +161,7 @@ class BaseWindow(wx.Frame):
 		#endregion --------------------------------------------------> Widgets
 
 		#region --------------------------------------------------------> Menu
-		self.menubar = menu.ToolMenuBar(self.name)
+		self.menubar = menu.ToolMenuBar(self.name, menuDate)
 		self.SetMenuBar(self.menubar)		
 		#endregion -----------------------------------------------------> Menu
 		
@@ -204,10 +205,10 @@ class BaseWindowPlot(BaseWindow):
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, name, parent):
+	def __init__(self, name, parent, menuDate):
 		""" """
 		#region -----------------------------------------------> Initial Setup
-		super().__init__(name, parent = parent)
+		super().__init__(name, parent=parent, menuDate=menuDate)
 		#endregion --------------------------------------------> Initial Setup
 
 		#region --------------------------------------------------------> Bind
@@ -410,7 +411,7 @@ class MainWindow(BaseWindow):
 #---
 
 
-class UMSAPFile(BaseWindow):
+class UMSAPControl(BaseWindow):
 	"""Control for an umsap file. 
 
 		Parameters
@@ -442,16 +443,15 @@ class UMSAPFile(BaseWindow):
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, fileP, name='UMSAPF', parent=None):
+	def __init__(self, obj, name='UMSAPF', parent=None):
 		""" """
 		#region -------------------------------------------------> Check Input
-		try:
-			self.obj = file.UMSAPFile(fileP)
-		except Exception as e:
-			raise e
+		
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup
+		self.obj = obj
+
 		self.confOpt = {
 			'Title': self.obj.fileP.name,
 			'Size' : (400, 700),
@@ -463,6 +463,11 @@ class UMSAPFile(BaseWindow):
 			'Window' : { # Reference to plot windows
 			},
 		}
+
+		self.obj = obj
+
+		for k,v in self.obj.confData.items():
+			print(str(k)+': '+str(v))
 
 		super().__init__(name, parent=parent)
 		#endregion --------------------------------------------> Initial Setup
@@ -599,10 +604,8 @@ class CorrAPlot(BaseWindowPlot):
 
 		Parameters
 		----------
-		data : dict
-			Correlation Analysis section from an UMSAP file
-		name : str
-			Unique name of the window
+		obj : data.fileUMSAPFile
+			Reference to the UMSAP file object created in UMSAPControl
 		parent : wx Widget or None
 			Parent of the window
 
@@ -616,22 +619,14 @@ class CorrAPlot(BaseWindowPlot):
 			Main plot of the window
 	"""
 	#region -----------------------------------------------------> Class setup
+	name='CorrAPlot'
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, data, parent, name='CorrAPlot'):
+	def __init__(self, obj, parent):
 		""" """
 		#region -------------------------------------------------> Check Input
-		try:
-			self.obj = file.CorrAFile(data)
-		except Exception as e:
-			raise e
-
-		for k,v in self.obj.plotData.items():
-			print(str(k)+': '+str(v))
-
-		for k,v in self.obj.menuEntry.items():
-			print(str(k)+': '+str(v))
+		
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup
@@ -642,7 +637,7 @@ class CorrAPlot(BaseWindowPlot):
 			'Size' : config.size['Plot'],
 		}
 
-		super().__init__(name, parent = parent)		
+		super().__init__(self.name, parent, self.obj.menuDate)		
 		#endregion --------------------------------------------> Initial Setup
 
 		#region -----------------------------------------------------> Widgets

@@ -68,6 +68,29 @@ class MenuMethods():
 		win.plot.ZoomResetPlot()
 		return True
 	#---
+
+	def AddDateItems(self, menuDate):
+		"""Add the date to plot
+	
+			Parameters
+			----------
+			menuDate: dict
+		"""
+		#region ---------------------------------------------------> Add items
+		for k, v in menuDate.items():
+			i = self.AppendRadioItem(-1, k)
+			if not v:
+				i.Enable(enable=False)
+				i.Check(check=False)
+			else:
+				pass
+		#endregion ------------------------------------------------> Add items
+		
+		#region -----------------------------------------------> Add Separator
+		self.AppendSeparator()
+		#endregion --------------------------------------------> Add Separator
+		
+	#---
 	#endregion ------------------------------------------------> Class Methods
 #---
 #endregion -----------------------------------------------------> Base Classes
@@ -203,13 +226,16 @@ class CorrAPlotToolMenu(wx.Menu, MenuMethods):
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self):
+	def __init__(self, menuDate):
 		""" """
 		#region -----------------------------------------------> Initial Setup
 		super().__init__()
 		#endregion --------------------------------------------> Initial Setup
 
 		#region --------------------------------------------------> Menu Items
+		#------------------------------> Add Dates
+		self.AddDateItems(menuDate)
+		#------------------------------> Other items
 		self.saveI = self.Append(-1, 'Save Image\tCtrl+S')
 		self.AppendSeparator()
 		self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
@@ -269,7 +295,7 @@ class ToolMenuBar(MainMenuBar):
 	#endregion --------------------------------------------------> Class Setup
 	
 	#region --------------------------------------------------- Instance Setup
-	def __init__(self, name):
+	def __init__(self, name, menuDate=None):
 		""" """
 		#region -----------------------------------------------> Initial Setup
 		super().__init__()
@@ -277,7 +303,7 @@ class ToolMenuBar(MainMenuBar):
 		
 		#region -----------------------------------------> Menu items & Append
 		if self.toolClass[name] is not None:
-			self.Tool  = self.toolClass[name]()
+			self.Tool  = self.toolClass[name](menuDate)
 			self.Insert(config.toolsMenuIdx, self.Tool, 'Tools')
 		else:
 			pass

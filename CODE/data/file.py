@@ -17,7 +17,9 @@
 #region -------------------------------------------------------------> Imports
 import json
 import pandas as pd
-# from pathlib import Path
+from pathlib import Path
+
+import wx
 
 import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
@@ -41,8 +43,12 @@ class UMSAPFile():
 			Unique name of the class
 		fileP : Path
 			Path to the UMSAP file
+		confOpt : dict
+			Configuration options
 		data : dict
 			Data read from json formatted file
+		confData : dict
+			Configured data. See Notes
 
 		Raises
 		------
@@ -51,6 +57,23 @@ class UMSAPFile():
 
 		Methods
 		-------
+
+		Notes
+		-----
+		The general structure of confData is
+		{
+			'Correlation Analysis' : {
+				'PlotData' : { # Only valid date sections
+					'Date' : { 
+						'DF' : pd.DataFrame with Result values,
+						'Col' : list of columns,
+					},
+				},
+				'MenuItem : { # All date sections
+					'Date' : Boolean, DateSection is corrupted or not
+				},
+			},
+		}
 		
 	"""
 	#region -----------------------------------------------------> Class setup
@@ -62,19 +85,112 @@ class UMSAPFile():
 		""" """
 		#region ---------------------------------------------------> Variables
 		self.fileP = fileP
+
+		self.confOpt = {
+			#------------------------------> Names of the sections
+			'CorrA' : config.nameUtilities['CorrA'],
+			#------------------------------> Configure section methods
+			'Configure' : { 
+				config.nameUtilities['CorrA'] : self.ConfigureCorrA,
+			}
+		}
+		#------------------------------> See Notes about the structure of dict
+		self.confData = {}
 		#endregion ------------------------------------------------> Variables
 
 		#region -------------------------------------------------> Check Input
 		self.data = dtsFF.ReadJSON(fileP)
 		#endregion ----------------------------------------------> Check Input
-
-		#region -----------------------------------------------> Initial Setup
-		
-		#endregion --------------------------------------------> Initial Setup
 	#---
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
+	def Configure(self, dlg=None):
+		"""Prepare data for each section in the file and for the CustomTreeCtrl
+			in the control window. See Notes.
+	
+			Parameters
+			----------
+			dlg : wx.Dialog or None
+				To show configuration progress.
+	
+			Notes
+			-----
+			If dlg is provided, then it is assumed the configuration is done 
+			from another thread and calls to dlg methods should be made with
+			wx.CallAfter()
+		"""
+		#region ------------------------------------------> Configure sections
+		for k in self.data.keys():
+			#------------------------------> Update dlg
+			if dlg is not None:
+				wx.CallAfter(dlg.UpdateStG, f"Configuring section: {k}")
+			else:
+				pass
+			#------------------------------> Configure
+			self.confOpt['Configure'][k]()
+		#endregion ---------------------------------------> Configure sections
+		
+		#region ----------------------------------------------> Configure tree
+		wx.CallAfter(dlg.UpdateStG, f"Configuring tree data")
+		
+		#endregion -------------------------------------------> Configure tree
+		
+		#region -------------------------------------------------> Destroy dlg
+		if dlg is not None:
+			wx.CallAfter(dlg.EndModal, 1)
+			wx.CallAfter(dlg.Destroy)
+		else:
+			pass		
+		#endregion ----------------------------------------------> Destroy dlg
+	
+		return True
+	#---
+
+	def ConfigureCorrA(self):
+		"""Configure a Correlation Analysis section	"""
+		#region -------------------------------------------------> Plot & Menu
+		#------------------------------> Empty start
+		plotData = {}
+		menuItem = {}
+		#------------------------------> Fill
+		for k,v in self.data[self.confOpt['CorrA']].items():
+			try:
+				#------------------------------> Create data
+				df  = pd.DataFrame(v['R'], dtype='float64')
+				col = v['CI']['Column']
+				#------------------------------> Add to dict if no error
+				plotData[k] = {
+					'DF' : df,
+					'Col' : col,
+				}
+				menuItem[k] = True
+			except Exception:
+				menuItem[k] = False
+		#endregion ----------------------------------------------> Plot & Menu
+		
+		#region -------------------------------------------> Add/Reset section 
+		self.confData[self.confOpt['CorrA']] = {
+			'PlotData' : plotData,
+			'MenuItem' : menuItem,
+		}
+		#endregion ----------------------------------------> Add/Reset section 
+		
+		return True
+	#---
+
+
+	def GetSectionCount(self):
+		"""Get the total number of sections in file
+
+			Returns
+			-------
+			int:
+				Number of sections in the file	
+		"""
+		return len(self.data.keys())
+	#---
+
 	def GetSectionData(self, sectionName):
 		"""Get the dict with the data for a section
 	
@@ -106,96 +222,16 @@ class UMSAPFile():
 		else:
 			raise dtsException.ExecutionError(confMsg['NoSection'])
 	#---
+
+
+
+
+
+
+
+
+
 	#endregion ------------------------------------------------> Class methods
 #---
 
 
-class CorrAFile():
-	"""Read and analyse a correlation analysis file or a correlation analysis
-		section of a file.
-
-		Parameters
-		----------
-		data : dict
-			Correlation-Analysis section from an UMSAP File.
-		fileP : Path
-			For error printing only
-
-		Attributes
-		----------
-		name : str
-			Unique name for the class
-		data : dict
-			Correlation-Analysis section from an UMSAP File.
-		plotData : dict
-			{'Date' : {'DF': df, 'Column' : list}, } One for each valid date
-		menuEntry : 
-
-		Raises
-		------
-		InputError:
-			- When file content is missing critical keys
-
-		Notes
-		-----
-		See UTIL/DETAILS/details.py -> Correlation Analysis file for a 
-		description of the file/section content
-		
-	"""
-	#region -----------------------------------------------------> Class setup
-	name   = 'CorrAFile'
-	#endregion --------------------------------------------------> Class setup
-
-	#region --------------------------------------------------> Instance setup
-	def __init__(self, data):
-		""" """
-		#region ---------------------------------------------------> Variables
-		self.data = data
-		self.confMSg = {
-			'NoDateSection' : (
-				f"The {config.nameUtilities['CorrA']} section of the UMSAP "
-				f"file is corrupted."),
-		}
-		#endregion ------------------------------------------------> Variables
-		
-		#region -------------------------------------------------> Check Input
-		
-		#endregion ----------------------------------------------> Check Input
-
-		#region -----------------------------------------------> Initial Setup
-		if self.SetVariables():
-			pass
-		else:
-			raise dtsException.InputError(self.confMSg['NoDateSection'])
-		#endregion --------------------------------------------> Initial Setup
-		#---
-	#endregion -----------------------------------------------> Instance setup
-
-	#region ---------------------------------------------------> Class methods
-	def SetVariables(self):
-		"""Set instance variables needed for file visualization"""
-		#region -------------------------------------------------> Plot & Menu
-		#------------------------------> Dicts
-		self.plotData = {}
-		self.menuEntry = {}
-		#------------------------------> Fill
-		for k,v in self.data.items():
-			self.plotData[k] = {}
-			try:
-				self.plotData[k]['DF'] = pd.DataFrame(v['R'], dtype='float64')
-				self.plotData[k]['Col'] = v['CI']['Column']
-				self.menuEntry[k] = True
-			except Exception:
-				self.menuEntry[k] = False
-		#endregion ----------------------------------------------> Plot & Menu
-		
-		#region ---------------------------> Check there is somenthing to plot
-		if not any(self.menuEntry.values()):
-			return False
-		else:
-			return True
-		#endregion ------------------------> Check there is somenthing to plot
-		
-	#---
-	#endregion ------------------------------------------------> Class methods
-#---
