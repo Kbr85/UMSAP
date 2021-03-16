@@ -398,6 +398,37 @@ class BaseConfPanel(
 
 		return outData
 	#---
+
+	def EqualLenLabel(self, label):
+		"""Add empty space to the end of label to match the length of
+			self.confOpt['LenLongest']
+	
+			Parameters
+			----------
+			label : str
+				Original label
+	
+			Returns
+			-------
+			str
+				Label with added empty strings at the end to match the length of
+				self.confOpt['LenLongest']
+	
+			Raise
+			-----
+			ExecutionError
+				- When self.confOpt does not have LenLongest
+		"""
+		#region -------------------------------------------------> Check input
+		if self.confOpt.get('LenLongest', '') == '':
+			raise dtsException.ExecutionError(
+				f"The key 'LenLongest' is not present in self.confOpt."
+			)
+		else:
+			return f"{label}{(self.confOpt['LenLongest'] - len(label))*' '}"
+		#endregion ----------------------------------------------> Check input
+		
+	#---
 	#endregion ------------------------------------------------> Class methods
 #---
 
@@ -600,13 +631,14 @@ class CorrA(BaseConfPanel):
 	def __init__(self, parent, statusbar):
 		""""""
 		#region -----------------------------------------------> Initial setup
-		self.dfCC     = None # correlation coefficients
-
+		self.dfCC = None # correlation coefficients
+		
 		self.confOpt = { # gui.tab, conf
 			#------------------------------> URL
 			'URL' : config.url['CorrA'],
 			#------------------------------> Labels
-			'iFileL'     : config.label['BtnDataFile'],
+			'LenLongest' : len(config.label['CbNormalization']),
+			'iFileL'     : config.label['BtnDataFile'], 
 			'oFileL'     : config.label['BtnOutFile'],
 			'NormMethodL': config.label['CbNormalization'],
 			'CorrMethodL': 'Correlation Method',
@@ -958,24 +990,29 @@ class CorrA(BaseConfPanel):
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		#------------------------------> As given
 		self.d = {
-			self.confOpt['iFileL']     : self.iFile.tc.GetValue(),
-			self.confOpt['oFileL']     : self.oFile.tc.GetValue(),
-			self.confOpt['NormMethodL']: self.normMethod.cb.GetValue(),
-			self.confOpt['CorrMethodL']: self.corrMethod.cb.GetValue(),
-			'Selected Columns': [int(x) for x in self.lbO.GetColContent(0)],
-			'Append to file'  : self.checkB.GetValue(),
+			self.EqualLenLabel(self.confOpt['iFileL']) : (
+				self.iFile.tc.GetValue()),
+			self.EqualLenLabel(self.confOpt['oFileL']) : (
+				self.oFile.tc.GetValue()),
+			self.EqualLenLabel(self.confOpt['NormMethodL']) : (
+				self.normMethod.cb.GetValue()),
+			self.EqualLenLabel(self.confOpt['CorrMethodL']) : (
+				self.corrMethod.cb.GetValue()),
+			self.EqualLenLabel('Selected Columns') : (
+				[int(x) for x in self.lbO.GetColContent(0)]),
+			self.EqualLenLabel('Append to File') : self.checkB.GetValue(),
 		}
 
 		msgStep = msgPrefix + 'User input, processing'
 		wx.CallAfter(self.dlg.UpdateStG, msgStep)
 		#------------------------------> Dict with all values
 		self.do = {
-			'iFile'     : Path(self.d[self.confOpt['iFileL']]),
-			'oFile'     : Path(self.d[self.confOpt['oFileL']]),
-			'NormMethod': self.d[self.confOpt['NormMethodL']],
-			'CorrMethod': self.d[self.confOpt['CorrMethodL']],
-			'Column'    : self.d['Selected Columns'],
-			'Check'     : self.d['Append to file'],
+			'iFile'     : Path(self.iFile.tc.GetValue()),
+			'oFile'     : Path(self.oFile.tc.GetValue()),
+			'NormMethod': self.normMethod.cb.GetValue(),
+			'CorrMethod': self.corrMethod.cb.GetValue(),
+			'Column'    : [int(x) for x in self.lbO.GetColContent(0)],
+			'Check'     : self.checkB.GetValue(),
 		}
 		#------------------------------> File base name
 		self.oFolder = self.do['oFile'].parent

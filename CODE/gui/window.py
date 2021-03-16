@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
+from pathlib import Path
 
 import requests
 import wx
@@ -458,6 +459,7 @@ class UMSAPControl(BaseWindow):
 			'Plot' : { # Methods to create plot windows
 				config.nameUtilities['CorrA'] : CorrAPlot
 			},
+			'FileLabelCheck' : ['Data File'],
 			'Section' : { # Reference to section items in wxCT.CustomTreeCtrl
 			},
 			'Window' : { # Reference to plot windows
@@ -466,14 +468,12 @@ class UMSAPControl(BaseWindow):
 
 		self.obj = obj
 
-		for k,v in self.obj.confData.items():
-			print(str(k)+': '+str(v))
-
 		super().__init__(name, parent=parent)
 		#endregion --------------------------------------------> Initial Setup
 
 		#region -----------------------------------------------------> Widgets
 		self.trc = wxCT.CustomTreeCtrl(self)
+		self.trc.SetFont(config.font['TreeItem'])
 		self.SetTree()
 		#endregion --------------------------------------------------> Widgets
 
@@ -500,12 +500,44 @@ class UMSAPControl(BaseWindow):
 		
 		#region ------------------------------------------------> Add elements
 		for a, b in self.obj.data.items():
-			childa = self.trc.AppendItem(root, a, ct_type=1)
+			#------------------------------> Add section node
+			if self.obj.confTree['Sections'][a]:
+				childa = self.trc.AppendItem(root, a, ct_type=1)
+			else:
+				childa = self.trc.AppendItem(root, a, ct_type=0)
+				self.trc.SetItemFont(childa, config.font['TreeItemFalse'])
+			#------------------------------> Keep reference
 			self.confOpt['Section'][a] = childa
+			
 			for c, d in b.items():
+				#------------------------------> Add date node
 				childb = self.trc.AppendItem(childa, c)
+				#------------------------------> Set font
+				if self.obj.confTree[a][c]:
+					pass
+				else:
+					self.trc.SetItemFont(childb, config.font['TreeItemFalse'])
+
 				for e, f in d['I'].items():
-					self.trc.AppendItem(childb, f"{e}: {f}")		
+					#------------------------------> Add date items
+					childc = self.trc.AppendItem(childb, f"{e}: {f}")
+					#------------------------------> Set font
+					if e.strip() in self.confOpt['FileLabelCheck']:
+						if Path(f).exists():
+							self.trc.SetItemFont(
+							childc, 
+							config.font['TreeItemDataFile']
+						)
+						else:
+							self.trc.SetItemFont(
+							childc, 
+							config.font['TreeItemDataFileFalse']
+						)
+					else:		
+						self.trc.SetItemFont(
+							childc, 
+							config.font['TreeItemDataFile']
+						)
 		#endregion ---------------------------------------------> Add elements
 		
 		#region -------------------------------------------------> Expand root

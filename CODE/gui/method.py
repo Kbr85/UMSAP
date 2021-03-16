@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
+import wx
 
 import config.config as config
 import gui.window as window
@@ -24,7 +25,7 @@ import data.file as file
 #endregion ----------------------------------------------------------> Imports
 
 
-def LoadUMSAPFile(fileP, parent=None):
+def LoadUMSAPFile(fileP, dlg):
 	"""Load an UMSAP file
 
 		Parameters
@@ -37,55 +38,29 @@ def LoadUMSAPFile(fileP, parent=None):
 		Returns
 		-------
 		Boolean
-	"""
+	"""	
 	#region -------------------------------------------------------> Variables
 	confOpt = {
-		'ExtraConfStep' : 1,
+		'N' : 1
 	}
-	name  = fileP.name
 	#endregion ----------------------------------------------------> Variables
 	
-	#region ----------------------------> Raise window if file is already open
-	if config.umsapW.get(name, '') != '':
-		config.umsapW[name].Raise()
-		return True
-	else:
-		pass		
-	#endregion -------------------------> Raise window if file is already open
-
 	#region -------------------------------------------------------> Read file
+	wx.CallAfter(dlg.UpdateStG, f"Reading file: {fileP.name}")
 	try:
-		obj = file.UMSAPFile(fileP)
+		config.obj = file.UMSAPFile(fileP)
 	except Exception as e:
-		dtscore.Notification(
-			mode       = 'errorF',
-			msg        = str(e),
+		wx.CallAfter(dlg.ErrorMessage,
+			label = config.label['PdError'],
+			error        = str(e),
 			tException = e,
-			parent     = parent
 		)
-		return False
 	#endregion ----------------------------------------------------> Read file
-	
-	#region -------------------------------------------------> Progress Dialog
-	dlg = dtscore.ProgressDialog(
-		None, 
-		obj.fileP.name, 
-		obj.GetSectionCount()+confOpt['ExtraConfStep'],
-	)
-	#endregion ----------------------------------------------> Progress Dialog
-	
-	#region ---------------------------------------------------> Configure obj
-	_thread.start_new_thread(obj.Configure, (dlg,))
-	#endregion ------------------------------------------------> Configure obj
-	
-	#region ------------------------------------------------------> Show modal
-	#------------------------------> This will be destroy by obj.Configure()
-	dlg.ShowModal()
-	#endregion ---------------------------------------------------> Show modal
-	
-	#region -----------------------------------------------------> Show window
-	config.umsapW[name] = window.UMSAPControl(obj)
-	#endregion --------------------------------------------------> Show window
 
+	#region --------------------------------------------------> Configure file
+	dlg.g.SetRange((2*config.obj.GetSectionCount())+confOpt['N'])
+	config.obj.Configure(dlg)
+	#endregion -----------------------------------------------> Configure file
+	
 	return True
 #---

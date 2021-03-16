@@ -30,7 +30,7 @@ import config.config as config
 
 
 class UMSAPFile():
-	"""Read and analyse an umsap file
+	"""Read and analyse an umsap file.
 
 		Parameters
 		----------
@@ -60,19 +60,19 @@ class UMSAPFile():
 
 		Notes
 		-----
-		The general structure of confData is
+		The general structure of confData is:
 		{
 			'Correlation Analysis' : {
-				'PlotData' : { # Only valid date sections
-					'Date' : { 
-						'DF' : pd.DataFrame with Result values,
-						'Col' : list of columns,
-					},
-				},
-				'MenuItem : { # All date sections
-					'Date' : Boolean, DateSection is corrupted or not
+				'Date' : { # Only valid date sections
+					'DF' : pd.DataFrame with Result values,
 				},
 			},
+		}
+
+		The general structure of confTree is:
+		{
+			'Sections': { 'A': True, 'B': False},
+			'Correlation Analysis' : {DateA': True, 'DateB': False},
 		}
 		
 	"""
@@ -89,13 +89,16 @@ class UMSAPFile():
 		self.confOpt = {
 			#------------------------------> Names of the sections
 			'CorrA' : config.nameUtilities['CorrA'],
-			#------------------------------> Configure section methods
+			#------------------------------> Configure data to plot
 			'Configure' : { 
-				config.nameUtilities['CorrA'] : self.ConfigureCorrA,
-			}
+				config.nameUtilities['CorrA'] : self.ConfigureDataCorrA,
+			},
 		}
 		#------------------------------> See Notes about the structure of dict
 		self.confData = {}
+		self.confTree = {
+			'Sections' : {},
+		}
 		#endregion ------------------------------------------------> Variables
 
 		#region -------------------------------------------------> Check Input
@@ -122,24 +125,27 @@ class UMSAPFile():
 		"""
 		#region ------------------------------------------> Configure sections
 		for k in self.data.keys():
-			#------------------------------> Update dlg
+			#------------------------------> Configure data to plot
+			#--------------> Update dlg
 			if dlg is not None:
 				wx.CallAfter(dlg.UpdateStG, f"Configuring section: {k}")
 			else:
 				pass
-			#------------------------------> Configure
+			#--------------> Configure data to plot
 			self.confOpt['Configure'][k]()
+			#------------------------------> Configure tree
+			#--------------> Update dlg
+			if dlg is not None:
+				wx.CallAfter(dlg.UpdateG)
+			else:
+				pass
+			#--------------> Configure tree
+			self.ConfigureTree(k)
 		#endregion ---------------------------------------> Configure sections
-		
-		#region ----------------------------------------------> Configure tree
-		wx.CallAfter(dlg.UpdateStG, f"Configuring tree data")
-		
-		#endregion -------------------------------------------> Configure tree
 		
 		#region -------------------------------------------------> Destroy dlg
 		if dlg is not None:
 			wx.CallAfter(dlg.EndModal, 1)
-			wx.CallAfter(dlg.Destroy)
 		else:
 			pass		
 		#endregion ----------------------------------------------> Destroy dlg
@@ -147,36 +153,56 @@ class UMSAPFile():
 		return True
 	#---
 
-	def ConfigureCorrA(self):
+	def ConfigureDataCorrA(self):
 		"""Configure a Correlation Analysis section	"""
 		#region -------------------------------------------------> Plot & Menu
 		#------------------------------> Empty start
 		plotData = {}
-		menuItem = {}
 		#------------------------------> Fill
 		for k,v in self.data[self.confOpt['CorrA']].items():
 			try:
 				#------------------------------> Create data
 				df  = pd.DataFrame(v['R'], dtype='float64')
-				col = v['CI']['Column']
 				#------------------------------> Add to dict if no error
 				plotData[k] = {
 					'DF' : df,
-					'Col' : col,
 				}
-				menuItem[k] = True
 			except Exception:
-				menuItem[k] = False
+				pass
+
 		#endregion ----------------------------------------------> Plot & Menu
 		
 		#region -------------------------------------------> Add/Reset section 
-		self.confData[self.confOpt['CorrA']] = {
-			'PlotData' : plotData,
-			'MenuItem' : menuItem,
-		}
+		self.confData[self.confOpt['CorrA']] = plotData
 		#endregion ----------------------------------------> Add/Reset section 
 		
 		return True
+	#---
+
+	def ConfigureTree(self, section):
+		"""Configure a section for the Tree widget.
+			This is intended to be used after ConfigureDataX
+
+			Parameters
+			----------
+			section : str
+				One of config.nameUtilities or config.nameModules
+		"""
+		#region -----------------------------------------> Add Section Boolean
+		self.confTree['Sections'][section] = (
+			any(self.confData[section].keys())
+		)
+		#endregion --------------------------------------> Add Section Boolean
+		
+		#region ---------------------------------------------------> Add Dates
+		#------------------------------> Dicts
+		self.confTree[section] = {}
+		#------------------------------> Date
+		for k in self.data[section].keys():
+			self.confTree[section][k] = (
+				k in self.confData[section]
+			)
+		#endregion ------------------------------------------------> Add Dates
 	#---
 
 

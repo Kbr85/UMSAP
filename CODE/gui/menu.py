@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-
+import _thread
 import wx
 
 import dat4s_core.gui.wx.menu as dtsMenu
@@ -25,6 +25,7 @@ import config.config as config
 import gui.dtscore as dtscore
 import gui.window as window
 import gui.method as guiMethod
+import data.file as file
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -204,16 +205,40 @@ class Utility(wx.Menu, MenuMethods):
 			return False
 		#endregion ------------------------------------------------> Get files
 		
-		#region --------------------------------------------------> Open files
-		if fileP is not None:
-			fileU = Path(fileP[0])
-			#------------------------------> Check file is open
-			guiMethod.LoadUMSAPFile(fileU)
-			#-->
+		#region ----------------------------------------------------> Get Path
+		if fileP is None:
+			return False
+		else:
+			fileP = Path(fileP[0])
+		#endregion -------------------------------------------------> Get Path
+
+		#region ------------------------> Raise window if file is already open
+		if config.umsapW.get(fileP.name, '') != '':
+			config.umsapW[fileP.name].Raise()
 			return True
 		else:
-			return False
-		#endregion -----------------------------------------------> Open files
+			pass		
+		#endregion ---------------------> Raise window if file is already open
+
+		#region ---------------------------------------------> Progress Dialog
+		dlg = dtscore.ProgressDialog(None, f"Analysing file {fileP.name}", 100)
+		#endregion ------------------------------------------> Progress Dialog
+
+		#region -----------------------------------------------> Configure obj
+		#------------------------------> UMSAPFile obj is placed in config.obj
+		_thread.start_new_thread(guiMethod.LoadUMSAPFile, (fileP, dlg))
+		#endregion --------------------------------------------> Configure obj
+
+		#region --------------------------------------------------> Show modal
+		if dlg.ShowModal() == 1:
+			config.umsapW[fileP.name] = window.UMSAPControl(config.obj)
+		else:
+			pass
+
+		dlg.Destroy()
+		#endregion -----------------------------------------------> Show modal
+
+		return True
 	#---
 	#endregion ------------------------------------------------> Class Methods
 #---

@@ -107,6 +107,7 @@ class SplashWindow(wx.adv.SplashScreen):
 		#endregion---------------------------------------------------> Imports
 
 		#region -------------------------------------------------------> Fonts
+		#------------------------------> Sequence alignments in a panel
 		SeqAlignFont = wx.Font(
 			14,
 			wx.FONTFAMILY_ROMAN,
@@ -115,14 +116,61 @@ class SplashWindow(wx.adv.SplashScreen):
 			False,
 			faceName="Courier",
 		)
+		TreeItem = wx.Font(
+			12,
+			wx.FONTFAMILY_ROMAN,
+			wx.FONTSTYLE_NORMAL,
+			wx.FONTWEIGHT_NORMAL,
+			False,
+			faceName="Arial",
+		)
+		TreeItemFalse = wx.Font(
+			12,
+			wx.FONTFAMILY_ROMAN,
+			wx.FONTSTYLE_ITALIC,
+			wx.FONTWEIGHT_NORMAL,
+			False,
+			faceName="Arial",
+		)
+		TreeItemFileData = wx.Font(
+			12,
+			wx.FONTFAMILY_ROMAN,
+			wx.FONTSTYLE_NORMAL,
+			wx.FONTWEIGHT_NORMAL,
+			False,
+			faceName="Courier",
+		)
+		TreeItemFileDataFalse = wx.Font(
+			12,
+			wx.FONTFAMILY_ROMAN,
+			wx.FONTSTYLE_ITALIC,
+			wx.FONTWEIGHT_NORMAL,
+			False,
+			faceName="Courier",
+		)
 		if config.cOS == "Darwin":
-			config.font['SeqAlign'] = SeqAlignFont
+			config.font['SeqAlign']              = SeqAlignFont
+			config.font['TreeItem']              = TreeItem
+			config.font['TreeItemFalse']         = TreeItemFalse
+			config.font['TreeItemDataFile']      = TreeItemFileData
+			config.font['TreeItemDataFileFalse'] = TreeItemFileDataFalse
 		elif config.cOS == "Windows":
-			config.font['SeqAlign'] = SeqAlignFont.SetPointSize(12)
+			config.font['SeqAlign']              = SeqAlignFont.SetPointSize(12)
+			config.font['TreeItem']              = TreeItem
+			config.font['TreeItemFalse']         = TreeItemFalse
+			config.font['TreeItemDataFile']      = TreeItemFileData
+			config.font['TreeItemDataFileFalse'] = TreeItemFileDataFalse
 		elif config.cOS == "Linux":
-			config.font['SeqAlign'] = SeqAlignFont.SetPointSize(11)
+			config.font['SeqAlign']              = SeqAlignFont.SetPointSize(11)
+			config.font['TreeItem']              = TreeItem
+			config.font['TreeItemFalse']         = TreeItemFalse
+			config.font['TreeItemDataFile']      = TreeItemFileData
+			config.font['TreeItemDataFileFalse'] = TreeItemFileDataFalse
 		else:
-			config.font['SeqAlign'] = SeqAlignFont
+			config.font['SeqAlign']              = SeqAlignFont
+			config.font['TreeItem']              = TreeItem
+			config.font['TreeItemDataFile']      = TreeItemFileData
+			config.font['TreeItemDataFileFalse'] = TreeItemFileDataFalse
 		#endregion ----------------------------------------------------> Fonts
 
 		#region --------------------------------------------------------> Menu
