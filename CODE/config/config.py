@@ -30,15 +30,13 @@ development = True # Track state, development (True) or production (False)
 
 version     = '2.2.0 (beta)' # String to write in the output files
 software    = 'UMSAP'
+softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
 dictVersion = { # dict for directly write into output files
 	'Version': version,
 }
 
 cOS = platform.system() # Current operating system
 cwd = Path(os.path.abspath(os.path.dirname(__file__))) # Work directory
-
-mainW  = None
-umsapW = {}
 #endregion -----------------------------------------------> General parameters
 
 
@@ -52,22 +50,43 @@ if cOS == 'Darwin':
 		res = cwd / 'BORRAR-UMSAP/RESOURCES'
 	else:
 		res = cwd / 'Resources'
+	#------------------------------> Index of the Tool Menu in the MenuBar
 	toolsMenuIdx = 2
+	#------------------------------> Key for shortcuts
 	copyShortCut = 'Cmd'
-
-elif cOS == 'Windows':
-	#--> Fix cwd and set the location of the Resources folder
+	#------------------------------> Statusbar split size
+	if development:
+		sbConf = [-1, 350]
+	else:
+		sbConf = [-1, 300]
+	sbPlot = [-1, 120]
+elif cOS == 'Windows': 
 	cwd          = cwd.parent
 	res          = cwd / 'RESOURCES'
 	toolsMenuIdx = 3
 	copyShortCut = 'Ctrl'
+	sbConf = [-1, 300]
+	sbPlot = [-1, 100]
 elif cOS == 'Linux':
-	#--> Fix cwd and set the location of the Resources folder
 	cwd          = cwd.parent
 	res          = cwd / 'RESOURCES'
 	toolsMenuIdx = 3
 	copyShortCut = 'Ctrl'
+	sbConf = [-1, 300]
+	sbPlot = [-1, 100]
 #endregion ------------------------------------- PLATFORM DEPENDENT PARAMETERS
+
+
+#region -------------------------------------------------------------> Windows
+#------------------------------> Reference to main window
+mainW  = None
+#------------------------------> Track open umsap files
+# Keys: UMSAP File name - Values: Reference to control window
+umsapW = {}
+#------------------------------> Number of windows for screen positioning
+# Keys: Windows ID - Values: Total number of opened windows
+winNumber = {}
+#endregion ----------------------------------------------------------> Windows
 
 
 #region ---------------------------------------------------------------> Names
@@ -183,6 +202,8 @@ size = { # Base size for widgets
 	'Plot' : (560, 560),
 	#------------------------------> wx.ListCtrl
 	'LCtrl#Name' : [50, 150],
+	#------------------------------> Statusbar
+
 }
 #endregion ------------------------------------------------------------> Sizes
 

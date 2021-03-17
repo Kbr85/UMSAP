@@ -26,6 +26,7 @@ import wx.lib.agw.customtreectrl as wxCT
 
 import dat4s_core.data.method as dtsMethod
 import dat4s_core.gui.wx.widget as dtsWidget
+import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
 import gui.menu as menu
@@ -212,6 +213,10 @@ class BaseWindowPlot(BaseWindow):
 		super().__init__(name, parent=parent, menuDate=menuDate)
 		#endregion --------------------------------------------> Initial Setup
 
+		#region -----------------------------------------------------> Widgets
+		self.statusbar.SetFieldsCount(2, config.sbPlot)
+		#endregion --------------------------------------------------> Widgets
+		
 		#region --------------------------------------------------------> Bind
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 		#endregion -----------------------------------------------------> Bind
@@ -287,6 +292,10 @@ class MainWindow(BaseWindow):
 		#endregion --------------------------------------------> Initial setup
 
 		#region -----------------------------------------------------> Widgets
+		#------------------------------> StatusBar fields
+		self.statusbar.SetFieldsCount(2, config.sbConf)
+		self.statusbar.SetStatusText(f"{config.softwareF} {config.version}", 1)
+		#------------------------------> Notebook
 		self.notebook = aui.auibook.AuiNotebook(
 			self,
 			agwStyle=aui.AUI_NB_TOP|aui.AUI_NB_CLOSE_ON_ALL_TABS|aui.AUI_NB_TAB_MOVE,
@@ -639,6 +648,10 @@ class CorrAPlot(BaseWindowPlot):
 			Unique name of the window
 		parent : wx Widget or None
 			Parent of the window
+		confOpt : dict
+			Configuration options
+		confMsg : dict
+			User's messages
 		obj : parent.obj
 			Pointer to the UMSAPFile object in parent. Instead of modifying this
 			object here, modify the configure step or add a Get method
@@ -672,6 +685,11 @@ class CorrAPlot(BaseWindowPlot):
 			'Size' : config.size['Plot'],
 		}
 
+		self.confMsg = {
+			'ExportFailed' : (
+				f"It was not possible to write the data to the selected file"),
+		}
+
 		self.parent  = parent
 		self.section = self.confOpt['Section']
 		self.data    = self.obj.confData[self.section]
@@ -703,7 +721,6 @@ class CorrAPlot(BaseWindowPlot):
 		#region --------------------------------------------------------> Bind
 		
 		#endregion -----------------------------------------------------> Bind
-		print(self.date)
 		self.Draw(self.date[0])
 		self.Show()
 	#---
@@ -731,47 +748,59 @@ class CorrAPlot(BaseWindowPlot):
 		#endregion -----------------------------------------------------> Plot
 		
 		#region -------------------------------------------------> Axis & Plot
-		self.SetAxis()
+		self.SetAxis(tDate)
 		self.plot.canvas.draw()
 		#endregion ----------------------------------------------> Axis & Plot
+
+		#region ---------------------------------------------------> Statusbar
+		self.statusbar.SetStatusText(tDate, 1)
+		#endregion ------------------------------------------------> Statusbar
+		
 		
 		return True
 	#---
 
-	def SetAxis(self):
-		""" General details of the plot area """
-	 #-->
-		self.plot.axes.grid(True)
-	 #---
-	#  #--> 
-	# 	if self.numCol <= 30:
-	# 		step = 1
-	# 	elif self.numCol > 30 and self.numCol <= 60:
-	# 		step = 2
-	# 	else:
-	# 		step = 3
-	# 	self.xlabel = []
-	# 	self.xticksloc = []
-	#  #---
-	#  #-->
-	# 	for i in range(0, self.numCol, step):
-	# 		self.xticksloc.append(i + 0.5)		
-	# 		self.xlabel.append(self.data.columns[i])
-	#  #---
-	#  #-->
-	# 	self.axes.set_xticks(self.xticksloc)
-	# 	self.axes.set_xticklabels(self.xlabel, rotation=90)
-	#  #---
-	#  #-->
-	# 	self.axes.set_yticks(self.xticksloc)
-	# 	self.axes.set_yticklabels(self.xlabel)
-	#  #---
-	#  #-->
-	# 	self.figure.subplots_adjust(bottom=0.13)
-	#  #---
-	 #-->
+	def SetAxis(self, tDate):
+		""" General details of the plot area 
+		
+			Parameters
+			----------
+			tDate : str
+				A date-time string available in the section for plotting
+		"""
+		#region --------------------------------------------------------> Grid
+		self.plot.axes.grid(True)		
+		#endregion -----------------------------------------------------> Grid
+		
+		#region ---------------------------------------------------> Variables
+		xlabel    = []
+		xticksloc = []
+		
+		if (self.data[tDate]['NumCol']) <= 30:
+			step = 1
+		elif self.data[tDate]['NumCol'] > 30 and self.data[tDate]['NumCol'] <= 60:
+			step = 2
+		else:
+			step = 3		
+		#endregion ------------------------------------------------> Variables
+		
+		#region ---------------------------------------------------> Set ticks
+		for i in range(0, self.data[tDate]['NumCol'], step):
+			xticksloc.append(i + 0.5)		
+			xlabel.append(self.data[tDate]['DF'].columns[i])
+
+		self.plot.axes.set_xticks(xticksloc)
+		self.plot.axes.set_xticklabels(xlabel, rotation=90)
+
+		self.plot.axes.set_yticks(xticksloc)
+		self.plot.axes.set_yticklabels(xlabel)
+		#endregion ------------------------------------------------> Set ticks
+		
+		#region -----------------------------------------------> Adjust figure
+		self.plot.figure.subplots_adjust(bottom=0.13)
+		#endregion --------------------------------------------> Adjust figure
+
 		return True
-	 #---
 	#---
 
 	def UpdateStatusBar(self, event):
@@ -782,8 +811,66 @@ class CorrAPlot(BaseWindowPlot):
 			event: matplotlib event
 				Information about the event
 		"""
-		self.statusbar.SetStatusText('My text from window')
+		#region ---------------------------------------------------> Variables
+		tDate = self.statusbar.GetStatusText(1)
+		#endregion ------------------------------------------------> Variables
+		
+		#region ----------------------------------------------> Statusbar Text
+		if event.inaxes:
+			try:
+				#------------------------------> Set variables
+				x, y = event.xdata, event.ydata
+				xf = int(x)
+				xs = self.data[tDate]['DF'].columns[xf]
+				yf = int(y)
+				ys = self.data[tDate]['DF'].columns[yf]
+				zf = '{:.2f}'.format(self.data[tDate]['DF'].iat[yf,xf])
+				#------------------------------> Print
+				self.statusbar.SetStatusText(
+					f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
+				)
+			except Exception:
+				self.statusbar.SetStatusText('')
+		else:
+			self.statusbar.SetStatusText('')
+		#endregion -------------------------------------------> Statusbar Text
+		
+		return True
 	#---
+
+	def OnExportPlotData(self):
+		""" Export data to a csv file """
+		#region --------------------------------------------------> Dlg window
+		dlg = dtsWindow.FileSelectDialog(
+			'save',
+			config.extLong['Data'],
+			parent=self
+		)
+		#endregion -----------------------------------------------> Dlg window
+		
+		#region ---------------------------------------------------> Get Path
+		if dlg.ShowModal() == wx.ID_OK:
+			#------------------------------> Variables
+			p     = Path(dlg.GetPath())
+			tDate = self.statusbar.GetStatusText(1)
+			#------------------------------> Export
+			try:
+				self.obj.ExportPlotData(self.section, tDate, p)
+			except Exception as e:
+				dtscore.Notification(
+					'errorF',
+					msg        = self.confMsg['ExportFailed'],
+					tException = e,
+					parent     = self,
+				)
+		else:
+			pass
+		#endregion ------------------------------------------------> Get Path
+	 
+		dlg.Destroy()
+		return True	
+	 #---
+	#---	
 	#endregion ------------------------------------------------> Class methods
 #---
 

@@ -164,9 +164,14 @@ class UMSAPFile():
 			try:
 				#------------------------------> Create data
 				df  = pd.DataFrame(v['R'], dtype='float64')
+				if (numCol := len(v['CI']['Column'])) == df.shape[0]:
+					pass
+				else:
+					raise Exception
 				#------------------------------> Add to dict if no error
 				plotData[k] = {
-					'DF' : df,
+					'DF'    : df,
+					'NumCol': numCol,
 				}
 			except Exception:
 				pass
@@ -219,12 +224,12 @@ class UMSAPFile():
 		return len(self.data.keys())
 	#---
 
-	def GetSectionData(self, sectionName):
+	def GetSectionData(self, tSection):
 		"""Get the dict with the data for a section
 	
 			Parameters
 			----------
-			sectionName : str
+			tSection : str
 				Section name like in config.Modules or config.Utilities
 	
 			Returns
@@ -240,16 +245,57 @@ class UMSAPFile():
 		#region ---------------------------------------------------> Variables
 		confMsg = {
 			'NoSection' : (
-				f"Section {sectionName} was not found in the content of "
+				f"Section {tSection} was not found in the content of "
 				f"file:\n{self.fileP}"),
 		}
 		#endregion ------------------------------------------------> Variables
 		
-		if (data := self.data.get(sectionName, '')) != '':
+		if (data := self.data.get(tSection, '')) != '':
 			return data
 		else:
 			raise dtsException.ExecutionError(confMsg['NoSection'])
-	#---	
+	#---
+
+	def GetSectionDateDF(self, tSection, tDate):
+		"""Get the dataframe for the section and date
+	
+			Parameters
+			----------
+			tSection : str
+				Section name
+			tDate : str
+				The date
+	
+			Returns
+			-------
+			pd.DataFrame
+		"""
+		try:
+			return self.confData[tSection][tDate]['DF']
+		except Exception as e:
+			raise e
+	#---
+
+	#region -----------------------------------------------------> Export data
+	def ExportPlotData(self, tSection, tDate, fileP):
+		"""Export the plot data
+	
+			Parameters
+			----------
+			tSection : str
+				Section name
+			tDate : str
+				The date
+			fileP : Path
+				Path to the file
+		"""
+		try:
+			dtsFF.WriteDF2CSV(fileP, self.GetSectionDateDF(tSection, tDate))
+		except Exception as e:
+			raise e
+	#---
+	#endregion --------------------------------------------------> Export data
+	
 	#endregion --------------------------------------------------> Get Methods
 #---
 
