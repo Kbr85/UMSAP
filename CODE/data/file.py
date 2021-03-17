@@ -107,7 +107,8 @@ class UMSAPFile():
 	#---
 	#endregion -----------------------------------------------> Instance setup
 
-	#region ---------------------------------------------------> Class methods
+	#----------------------------------------------------------> Class methods
+	#region -------------------------------------------------------> Configure
 	def Configure(self, dlg=None):
 		"""Prepare data for each section in the file and for the CustomTreeCtrl
 			in the control window. See Notes.
@@ -204,8 +205,9 @@ class UMSAPFile():
 			)
 		#endregion ------------------------------------------------> Add Dates
 	#---
-
-
+	#endregion ----------------------------------------------------> Configure
+	
+	#region -----------------------------------------------------> Get Methods
 	def GetSectionCount(self):
 		"""Get the total number of sections in file
 
@@ -247,17 +249,8 @@ class UMSAPFile():
 			return data
 		else:
 			raise dtsException.ExecutionError(confMsg['NoSection'])
-	#---
-
-
-
-
-
-
-
-
-
-	#endregion ------------------------------------------------> Class methods
+	#---	
+	#endregion --------------------------------------------------> Get Methods
 #---
 
 

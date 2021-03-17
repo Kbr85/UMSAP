@@ -75,16 +75,12 @@ class MenuMethods():
 	
 			Parameters
 			----------
-			menuDate: dict
+			menuDate: list
+				Available dates to plot
 		"""
 		#region ---------------------------------------------------> Add items
-		for k, v in menuDate.items():
+		for k in menuDate:
 			i = self.AppendRadioItem(-1, k)
-			if not v:
-				i.Enable(enable=False)
-				i.Check(check=False)
-			else:
-				pass
 		#endregion ------------------------------------------------> Add items
 		
 		#region -----------------------------------------------> Add Separator

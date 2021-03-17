@@ -569,19 +569,11 @@ class UMSAPControl(BaseWindow):
 		else:
 			pass
 		#endregion -------------------------------------------> Destroy window
-				
-		#region ----------------------------------------------------> Get data
-		try:
-			data = self.obj.GetSectionData(section)
-		except Exception as e:
-			dtscore.Notification('errorU', msg=str(e), tException=e)
-			return False		
-		#endregion -------------------------------------------------> Get data
 		
 		#region -----------------------------------------------> Create window
 		try:
 			self.confOpt['Window'][section] = (
-				self.confOpt['Plot'][section](data, self)
+				self.confOpt['Plot'][section](self)
 			)
 		except Exception as e:
 			dtscore.Notification('errorU', msg=str(e), tException=e)
@@ -647,6 +639,9 @@ class CorrAPlot(BaseWindowPlot):
 			Unique name of the window
 		parent : wx Widget or None
 			Parent of the window
+		obj : parent.obj
+			Pointer to the UMSAPFile object in parent. Instead of modifying this
+			object here, modify the configure step or add a Get method
 		plot : dtsWidget.MatPlotPanel
 			Main plot of the window
 	"""
@@ -655,13 +650,14 @@ class CorrAPlot(BaseWindowPlot):
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, obj, parent):
+	def __init__(self, parent):
 		""" """
 		#region -------------------------------------------------> Check Input
 		
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup
+		self.obj = parent.obj
 		self.confOpt = {
 			'Section' : config.nameUtilities['CorrA'],
 			'Title' : (
@@ -669,7 +665,11 @@ class CorrAPlot(BaseWindowPlot):
 			'Size' : config.size['Plot'],
 		}
 
-		super().__init__(self.name, parent, self.obj.menuDate)		
+		super().__init__(
+			self.name, 
+			parent, 
+			self.obj.confData[self.confOpt['Section']].keys(),
+		)		
 		#endregion --------------------------------------------> Initial Setup
 
 		#region -----------------------------------------------------> Widgets
