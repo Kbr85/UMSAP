@@ -642,6 +642,12 @@ class CorrAPlot(BaseWindowPlot):
 		obj : parent.obj
 			Pointer to the UMSAPFile object in parent. Instead of modifying this
 			object here, modify the configure step or add a Get method
+		data : parent.obj.confData[Section]
+			Data for the Correlation Analysis section
+		date : parent.obj.confData[Section].keys()
+			List of dates availables for plotting
+		cmap : Matplotlib cmap
+			CMAP to use in the plot
 		plot : dtsWidget.MatPlotPanel
 			Main plot of the window
 	"""
@@ -658,6 +664,7 @@ class CorrAPlot(BaseWindowPlot):
 
 		#region -----------------------------------------------> Initial Setup
 		self.obj = parent.obj
+		
 		self.confOpt = {
 			'Section' : config.nameUtilities['CorrA'],
 			'Title' : (
@@ -665,11 +672,18 @@ class CorrAPlot(BaseWindowPlot):
 			'Size' : config.size['Plot'],
 		}
 
-		super().__init__(
-			self.name, 
-			parent, 
-			self.obj.confData[self.confOpt['Section']].keys(),
-		)		
+		self.parent  = parent
+		self.section = self.confOpt['Section']
+		self.data    = self.obj.confData[self.section]
+		self.date    = [x for x in self.data.keys()]
+		self.cmap    = dtsMethod.MatplotLibCmap(
+			N  = config.color[self.section]['CMAP']['N'],
+			c1 = config.color[self.section]['CMAP']['c1'],
+			c2 = config.color[self.section]['CMAP']['c2'],
+			c3 = config.color[self.section]['CMAP']['c3'],
+		)
+
+		super().__init__(self.name, self.parent, self.date)		
 		#endregion --------------------------------------------> Initial Setup
 
 		#region -----------------------------------------------------> Widgets
@@ -689,36 +703,39 @@ class CorrAPlot(BaseWindowPlot):
 		#region --------------------------------------------------------> Bind
 		
 		#endregion -----------------------------------------------------> Bind
-
-		self.Draw()
+		print(self.date)
+		self.Draw(self.date[0])
 		self.Show()
 	#---
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
-	def Draw(self):
-		""" Draw into the plot. """
-	 #-->
-		self.plot.axes.set_title('My Plot')
-	 #---
-	#  #--> Plot
-	# 	self.axes.pcolormesh(
-	# 		self.data, 
-	# 		cmap=self.MatplotLibCmap(),
-	# 		vmin=-1, 
-	# 		vmax=1,
-	# 		antialiased=True,
-	# 		edgecolors='k',
-	# 		lw=0.005,
-	# 	)
-	#  #---
-	 #--> Update axis and draw
+	def Draw(self, tDate):
+		""" Plot data from a given date.
+		
+			Paramenters
+			-----------
+			tDate : str
+				A date-time string available in the section for plotting
+		"""
+		#region --------------------------------------------------------> Plot
+		self.plot.axes.pcolormesh(
+			self.data[tDate]['DF'], 
+			cmap=self.cmap,
+			vmin=-1, 
+			vmax=1,
+			antialiased=True,
+			edgecolors='k',
+			lw=0.005,
+		)		
+		#endregion -----------------------------------------------------> Plot
+		
+		#region -------------------------------------------------> Axis & Plot
 		self.SetAxis()
 		self.plot.canvas.draw()
-	 #---
-	 #--> Return
+		#endregion ----------------------------------------------> Axis & Plot
+		
 		return True
-	 #---
 	#---
 
 	def SetAxis(self):

@@ -244,6 +244,20 @@ general = { # General options
 }
 #endregion --------------------------------------------------> General options
 
+#region --------------------------------------------------------------> Colors
+color = { # Colors for the app
+	'Zebra' : '#ffe6e6',
+	nameUtilities['CorrA'] : { # Color for plot in Correlation Analysis
+		'CMAP' : { # CMAP colors and interval
+			'N' : 128,
+			'c1': [255, 0, 0],
+			'c2': [255, 255, 255],
+			'c3': [0, 0, 255],
+		},
+	},
+}
+#endregion -----------------------------------------------------------> Colors
+
 
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS
 

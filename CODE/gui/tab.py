@@ -740,11 +740,11 @@ class CorrA(BaseConfPanel):
 			label = self.confOpt['oListL'],
 		)
 
-		self.lbI = dtsWidget.ListZebra(self.sbColumn, 
+		self.lbI = dtscore.ListZebra(self.sbColumn, 
 			colLabel     = self.confOpt['ListColumnL'],
-			colSize      = self.confOpt['LCtrlColS'],
+			colSize      = self.confOpt['LCtrlColS'], 
 		)
-		self.lbO = dtsWidget.ListZebra(self.sbColumn, 
+		self.lbO = dtscore.ListZebra(self.sbColumn, 
 			colLabel     = self.confOpt['ListColumnL'],
 			colSize      = self.confOpt['LCtrlColS'],
 			canPaste     = True,

@@ -18,6 +18,7 @@
 import wx
 
 import dat4s_core.gui.wx.window as dtsWindow
+import dat4s_core.gui.wx.widget as dtsWidget
 
 import config.config as config
 #endregion ----------------------------------------------------------> Imports
@@ -39,5 +40,18 @@ class ProgressDialog(dtsWindow.ProgressDialog):
 		style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER):	
 		""""""
 		super().__init__(parent, title, count, img=img, style=style)
+	#---
+#---
+
+class ListZebra(dtsWidget.ListZebra):
+	""" This avoids defining the color for the zebra style every time """
+	def __init__(self, parent, color=config.color['Zebra'], colLabel=None, 
+		colSize=None, canCopy=True, canCut=False, canPaste=False, 
+		pasteUnique=True, selAll=True, style=wx.LC_REPORT):
+		""""""
+		super().__init__(
+			parent, color=color, colLabel=colLabel, colSize=colSize, 
+			canCopy=canCopy, canCut=canCut, canPaste=canPaste, 
+			pasteUnique=pasteUnique, selAll=selAll, style=style)
 	#---
 #---

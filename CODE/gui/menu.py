@@ -71,22 +71,46 @@ class MenuMethods():
 	#---
 
 	def AddDateItems(self, menuDate):
-		"""Add the date to plot
+		"""Add and bind the date to plot
 	
 			Parameters
 			----------
 			menuDate: list
 				Available dates to plot
 		"""
+		#region ---------------------------------------------------> Variables
+		self.plotDate = {
+
+		}
+		#endregion ------------------------------------------------> Variables
+		
 		#region ---------------------------------------------------> Add items
 		for k in menuDate:
+			#------------------------------> Add item
 			i = self.AppendRadioItem(-1, k)
+			#------------------------------> Add to plotDate
+			self.plotDate[i.GetId()] = k
+			#------------------------------> Bind
+			self.Bind(wx.EVT_MENU, self.OnPlotDate, source=i)
 		#endregion ------------------------------------------------> Add items
 		
 		#region -----------------------------------------------> Add Separator
 		self.AppendSeparator()
 		#endregion --------------------------------------------> Add Separator
+	#---
+
+	def OnPlotDate(self, event):
+		"""Plot a date of a section in an UMSAP file
+	
+			Parameters
+			----------
+			event : wx.Event
+				Information about the event
 		
+		"""
+		win = self.GetWindow()
+		win.Draw(self.plotDate[event.GetId()])
+		return True
 	#---
 	#endregion ------------------------------------------------> Class Methods
 #---
