@@ -310,8 +310,9 @@ class MainWindow(BaseWindow):
 	"""
 	#region -----------------------------------------------------> Class Setup
 	tabMethods = { # Keys are the unique names of the tabs
-		'StartTab'  : tab.Start,
-		'CorrATab'  : tab.CorrA,
+		'StartTab'   : tab.Start,
+		'CorrATab'   : tab.CorrA,
+		'ProtProfTab': tab.ProtProf,
 	}
 	#endregion --------------------------------------------------> Class Setup
 	
@@ -468,8 +469,13 @@ class UMSAPControl(BaseWindow):
 
 		Parameters
 		----------
-		fileP : Path
-			Path to the umsap file to be opened
+		obj : file.UMSAPFile
+			UMSAP File obj for the window
+		shownSection : list of str or None
+			If called from Update File Content menu list the sections that were
+			checked when starting the update
+		name : str
+			Unique window ID
 		parent : wx.Window or None
 			Parent of the window
 
@@ -495,7 +501,7 @@ class UMSAPControl(BaseWindow):
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, obj, name='UMSAPF', parent=None):
+	def __init__(self, obj, shownSection=None, name='UMSAPF', parent=None):
 		""" """
 		#region -------------------------------------------------> Check Input
 		
@@ -540,6 +546,20 @@ class UMSAPControl(BaseWindow):
 		self.WinPos()
 		self.Show()
 		#endregion ------------------------------------------> Window position
+
+		#region ----------------------------------------> Show opened Sections
+		if shownSection is not None:
+			for k in shownSection:
+				try:
+					self.trc.CheckItem(
+						self.confOpt['Section'][k],
+						checked=True,
+					)
+				except Exception:
+					pass
+		else:
+			pass
+		#endregion -------------------------------------> Show opened Sections
 	#---
 	#endregion -----------------------------------------------> Instance setup
 
@@ -681,6 +701,11 @@ class UMSAPControl(BaseWindow):
 		
 		return True
 	#---
+
+	def GetCheckedSection(self):
+		"""Get a list with the name of all checked sections """
+		return [k for k, v in self.confOpt['Section'].items() if v.IsChecked()]
+	#---
 	
 	def OnClose(self, event):
 		"""Destroy window and remove reference from config.umsapW
@@ -706,6 +731,16 @@ class UMSAPControl(BaseWindow):
 		self.Destroy()
 		#endregion --------------------------------------------------> Destroy
 		
+		return True
+	#---
+
+	def UpdateFileContent(self):
+		"""Update the content of the file. """
+		method.LoadUMSAPFile(
+			fileP        = self.obj.fileP,
+			shownSection = self.GetCheckedSection(),
+		)
+
 		return True
 	#---
 	#endregion ------------------------------------------------> Class methods

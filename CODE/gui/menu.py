@@ -15,17 +15,11 @@
 
 
 #region -------------------------------------------------------------> Imports
-from pathlib import Path
-import _thread
 import wx
 
-import dat4s_core.gui.wx.menu as dtsMenu
-
 import config.config as config
-import gui.dtscore as dtscore
 import gui.window as window
-import gui.method as guiMethod
-import data.file as file
+import gui.method as method
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -218,9 +212,9 @@ class Module(wx.Menu, MenuMethods):
 
 		#region -------------------------------------------------------> Names
 		self.name = { # Associate IDs with Tab names. Avoid manual set of IDs
-			self.limprot.GetId() : 'LimProt',
-			self.protprof.GetId(): 'ProtProf',
-			self.tarprot.GetId() : 'TarProt',
+			self.limprot.GetId() : 'LimProtTab',
+			self.protprof.GetId(): 'ProtProfTab',
+			self.tarprot.GetId() : 'TarProtTab',
 		}
 		#endregion ----------------------------------------------------> Names
 
@@ -246,11 +240,7 @@ class Utility(wx.Menu, MenuMethods):
 			'CorrA' : config.nameUtilities['CorrA'],
 			'ReadF' : config.nameUtilities['ReadF'],
 		}
-		
-		self.confMsg = {
-			'Selector': config.msg['FileSelector'],
-		}
-		
+
 		super().__init__()
 		#endregion --------------------------------------------> Initial Setup
 
@@ -282,51 +272,8 @@ class Utility(wx.Menu, MenuMethods):
 				Information about the event
 
 		"""
-		#region ---------------------------------------------------> Get files
-		try:
-			fileP = dtsMenu.GetFilePath('openO', config.extLong['UMSAP'])
-		except Exception as e:
-			dtscore.Notification(
-				'errorF', 
-				msg        = self.confMsg['Selector'],
-				tException = e,
-				parent     = self.GetWindow(),
-			)
-			return False
-		#endregion ------------------------------------------------> Get files
-		
-		#region ----------------------------------------------------> Get Path
-		if fileP is None:
-			return False
-		else:
-			fileP = Path(fileP[0])
-		#endregion -------------------------------------------------> Get Path
-
-		#region ------------------------> Raise window if file is already open
-		if config.umsapW.get(fileP, '') != '':
-			config.umsapW[fileP].Raise()
-			return True
-		else:
-			pass		
-		#endregion ---------------------> Raise window if file is already open
-
-		#region ---------------------------------------------> Progress Dialog
-		dlg = dtscore.ProgressDialog(None, f"Analysing file {fileP.name}", 100)
-		#endregion ------------------------------------------> Progress Dialog
-
-		#region -----------------------------------------------> Configure obj
-		#------------------------------> UMSAPFile obj is placed in config.obj
-		_thread.start_new_thread(guiMethod.LoadUMSAPFile, (fileP, dlg))
-		#endregion --------------------------------------------> Configure obj
-
-		#region --------------------------------------------------> Show modal
-		if dlg.ShowModal() == 1:
-			config.umsapW[fileP] = window.UMSAPControl(config.obj)
-		else:
-			pass
-
-		dlg.Destroy()
-		#endregion -----------------------------------------------> Show modal
+		win = self.GetWindow()
+		method.LoadUMSAPFile(win=win)
 
 		return True
 	#---
@@ -356,13 +303,24 @@ class FileControlToolMenu(wx.Menu):
 		#endregion -----------------------------------------------> Menu Items
 
 		#region --------------------------------------------------------> Bind
-		
+		self.Bind(wx.EVT_MENU, self.OnUpdateFileContent, source=self.updateFile)
 		#endregion -----------------------------------------------------> Bind
 	#---
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
+	def OnUpdateFileContent(self, event):
+		"""Update the file content shown in the window
 	
+			Parameters
+			----------
+			event: wx.Event
+				Information about the event
+		"""
+		win = self.GetWindow()
+		win.UpdateFileContent()
+		return True
+	#---
 	#endregion ------------------------------------------------> Class methods
 #---
 

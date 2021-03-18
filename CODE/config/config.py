@@ -114,9 +114,9 @@ name = { # Unique names to identify windows/objects through the app
 	#--> Tab for notebook windows
 	'StartTab' : 'StartTab',
 	'CorrATab' : 'CorrATab',
+	'ProtProfTab' : 'ProtProfTab',
 	#--> Files
 	'UMSAPFile' : 'UMSAPFile',
-	'CorrAFile' : 'CorrAFile',
 }
 
 nameModules = { # Name of the modules
@@ -127,7 +127,7 @@ nameModules = { # Name of the modules
 
 nameUtilities = { # Name of the utilities
 	'CorrA' : 'Correlation Analysis',
-	'ReadF' : 'Read File', 
+	'ReadF' : 'Read UMSAP File', 
 }
 #endregion ------------------------------------------------------------> Names
 
@@ -241,23 +241,23 @@ url_tutorial = f"{url_home}/tutorial/2-1-0"
 
 url = { # Selected URL needed by umsap.
 	#--> Third party sites
-	'Uniprot'  : 'https://www.uniprot.org/uniprot/',
-	'Pdb'      : 'http://www.rcsb.org/pdb/files/',
+	# 'Uniprot'  : 'https://www.uniprot.org/uniprot/',
+	# 'Pdb'      : 'http://www.rcsb.org/pdb/files/',
 	#--> www.umsap.nl
 	'Home'      : url_home,
 	'Update'    : f"{url_home}/page/release-notes",
 	'Tutorial'  : f"{url_tutorial}/start",
-	'CorrA'     : f"{url_tutorial}/correlation-analysis",
-	'MergeAA'   : f"{url_tutorial}/merge-aadist-files",
-	'ShortDFile': f"{url_tutorial}/short-data-files",
-	'TarProt'   : f"{url_tutorial}/targeted-proteolysis",
-	'AAdist'    : f"{url_tutorial}/aa-distribution",
-	'Cuts2PDB'  : f"{url_tutorial}/cleavages-pdb-files",
-	'Histo'     : f"{url_tutorial}/histograms",
-	'SeqAlign'  : f"{url_tutorial}/sequence-alignment",
-	'LimProt'   : f"{url_tutorial}/limited-proteolysis",
-	'SeqH'      : f"{url_tutorial}/sequence-highlight",
-	'ProtProf'  : f"{url_tutorial}/proteome-profiling",
+	'CorrATab'     : f"{url_tutorial}/correlation-analysis",
+	# 'MergeAA'   : f"{url_tutorial}/merge-aadist-files",
+	# 'ShortDFile': f"{url_tutorial}/short-data-files",
+	# 'TarProt'   : f"{url_tutorial}/targeted-proteolysis",
+	# 'AAdist'    : f"{url_tutorial}/aa-distribution",
+	# 'Cuts2PDB'  : f"{url_tutorial}/cleavages-pdb-files",
+	# 'Histo'     : f"{url_tutorial}/histograms",
+	# 'SeqAlign'  : f"{url_tutorial}/sequence-alignment",
+	# 'LimProt'   : f"{url_tutorial}/limited-proteolysis",
+	# 'SeqH'      : f"{url_tutorial}/sequence-highlight",
+	'ProtProfTab'  : f"{url_tutorial}/proteome-profiling",
 }
 #endregion --------------------------------------------------------------- URL
 

@@ -16,14 +16,106 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
+from pathlib import Path
+
 import wx
+
+import dat4s_core.gui.wx.menu as dtsMenu
 
 import config.config as config
 import data.file as file
+import gui.dtscore as dtscore
+import gui.window as window
 #endregion ----------------------------------------------------------> Imports
 
 
-def LoadUMSAPFile(fileP, dlg):
+def LoadUMSAPFile(fileP=None, win=None, shownSection=None):
+	"""Load an UMSAP File either from Read UMSAP File menu, LoadResults
+		method in Tab or Update File Content menu
+
+		Parameters
+		----------
+		fileP : Path or None
+			If None, it is assumed the method is called from Read UMSAP File
+			menu. Default is None.
+		win : wx.Window or None
+			If called from menu it is used to center the Select file dialog.
+			Default is None.
+		shownSection : list of str
+			List with the name of all checked sections in File Control window
+
+	"""
+	#region -------------------------------------------------------> Variables
+	confMsg = {
+		'Selector': config.msg['FileSelector'],
+	}
+	#endregion ----------------------------------------------------> Variables
+	
+	#region --------------------------------------------> Get file from Dialog
+	if fileP is None:
+		try:
+			#------------------------------> Get File
+			fileP = dtsMenu.GetFilePath('openO', config.extLong['UMSAP'])
+			#------------------------------> Set Path
+			if fileP is None:
+				#------------------------------> No file selected
+				return False
+			else:
+				#------------------------------> Set Path
+				fileP = Path(fileP[0])
+		except Exception as e:
+			dtscore.Notification(
+				'errorF', 
+				msg        = confMsg['Selector'],
+				tException = e,
+				parent     = win,
+			)
+			return False
+	else:
+		pass
+	#endregion -----------------------------------------> Get file from Dialog
+	
+	#region ----------------------------> Raise window if file is already open
+	if shownSection is None:
+		#------------------------------> Check file is opened & Raise it
+		if config.umsapW.get(fileP, '') != '':
+			config.umsapW[fileP].Raise()
+			return True
+		else:
+			pass		
+	else:
+		#------------------------------> Check file is opened & Close window
+		if config.umsapW.get(fileP, '') != '':
+			config.umsapW[fileP].Close()
+		else:
+			pass
+	#endregion -------------------------> Raise window if file is already open
+
+	#region ---------------------------------------------> Progress Dialog
+	dlg = dtscore.ProgressDialog(None, f"Analysing file {fileP.name}", 100)
+	#endregion ------------------------------------------> Progress Dialog
+
+	#region -----------------------------------------------> Configure obj
+	#------------------------------> UMSAPFile obj is placed in config.obj
+	_thread.start_new_thread(_LoadUMSAPFile, (fileP, dlg))
+	#endregion --------------------------------------------> Configure obj
+
+	#region --------------------------------------------------> Show modal
+	if dlg.ShowModal() == 1:
+		config.umsapW[fileP] = window.UMSAPControl(
+			config.obj, 
+			shownSection = shownSection,
+		)
+	else:
+		pass
+
+	dlg.Destroy()
+	#endregion -----------------------------------------------> Show modal
+
+	return True
+#---
+
+def _LoadUMSAPFile(fileP, dlg):
 	"""Load an UMSAP file
 
 		Parameters
