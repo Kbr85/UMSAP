@@ -855,7 +855,11 @@ class CorrAPlot(BaseWindowPlot):
 		#endregion -----------------------------------------------------> Plot
 		
 		#region -------------------------------------------------> Axis & Plot
+		#------------------------------> Axis properties
 		self.SetAxis(tDate)
+		#------------------------------> Zoom Out level
+		self.plot.ZoomResetSetValues()
+		#------------------------------> Draw
 		self.plot.canvas.draw()
 		#endregion ----------------------------------------------> Axis & Plot
 

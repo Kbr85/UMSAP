@@ -434,6 +434,7 @@ class ToolMenuBar(MainMenuBar):
 		'MainW'    : None,
 		'UMSAPF'   : FileControlToolMenu,
 		'CorrAPlot': CorrAPlotToolMenu,
+		'ProtProf' : None,
 	}
 	#endregion --------------------------------------------------> Class Setup
 	
