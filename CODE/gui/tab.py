@@ -145,9 +145,10 @@ class BaseConfListTab(BaseConfTab):
 		""" """
 		#region -----------------------------------------------> Initial Setup
 		confOpt = {
+			#------------------------------> Labels
 			'ColLabel' : config.label['LCtrlColName_I'],
 			'ColSize'  : config.size['LCtrl#Name'],
-			'TP_List'  : config.label['TP_ListPane']
+			'TP_List'  : config.label['TP_ListPane'],
 		}
 
 		super().__init__(parent)
@@ -156,11 +157,14 @@ class BaseConfListTab(BaseConfTab):
 		#endregion --------------------------------------------> Initial Setup
 
 		#region -----------------------------------------------------> Widgets
-		self.lc = dtscore.ListZebra(
+		self.lc = dtscore.ListZebraMaxWidth(
 			self, 
 			colLabel=self.confOpt['ColLabel'],
 			colSize=self.confOpt['ColSize'],
 		)
+		#----------------------------> Pointer to lc to load data file content
+		self.conf.lbI = self.lc
+		self.conf.lbL = [self.lc]
 		#endregion --------------------------------------------------> Widgets
 		
 		#region -------------------------------------------------> Aui control

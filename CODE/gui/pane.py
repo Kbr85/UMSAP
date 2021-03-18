@@ -69,6 +69,10 @@ class BaseConfPanel(
 			Parent of the widgets
 		statusbar : wx.StatusBar
 			Statusbar of the application to display messages
+		lbI : wx.ListCtrl or None
+			Pointer to the default wx.ListCtrl to load Data File content to. 
+		lbL : list of wx.ListCtrl
+			To clear all wx.ListCtrl in the Tab
 		msgError : Str or None
 			Error message to show when analysis fails
 		d : dict
@@ -144,6 +148,10 @@ class BaseConfPanel(
 		#region -----------------------------------------------> Initial Setup
 		self.parent    = parent
 		self.statusbar = statusbar
+		#------------------------------> This is needed to handle Data File 
+		# content load to the wx.ListCtrl in Tabs with multiple panels
+		self.lbI       = None # Default wx.ListCtrl to load data file content
+		self.lbL       = [self.lbI]
 
 		self.msgError   = None # Error msg to show in self.RunEnd
 		self.d          = {} # Dict with the user input as given
@@ -180,6 +188,7 @@ class BaseConfPanel(
 			validator  = wx.DefaultValidator,
 			ownCopyCut = True,
 		)
+		self.iFile.afterBtn = self.LCtrlFill
 
 		self.oFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
 			btnLabel   = self.confOpt['oFileL'],
@@ -245,6 +254,8 @@ class BaseConfPanel(
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind
+		self.iFile.tc.Bind(wx.EVT_TEXT, self.OnIFileEmpty)
+		self.iFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnIFileEnter)
 		self.oFile.tc.Bind(wx.EVT_TEXT, self.OnOFileChange)
 		#endregion -----------------------------------------------------> Bind
 	#---
@@ -575,7 +586,6 @@ class CorrA(BaseConfPanel):
 				ext = config.extShort['Data'],
 			)
 		)
-		self.iFile.afterBtn = self.LCtrlFill
 		#------------------------------> Values
 		self.normMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
 			label     = self.confOpt['NormMethodL'],
@@ -714,8 +724,6 @@ class CorrA(BaseConfPanel):
 
 		#region --------------------------------------------------------> Bind
 		self.addCol.Bind(wx.EVT_BUTTON, self.OnAdd)
-		self.iFile.tc.Bind(wx.EVT_TEXT, self.OnIFileEmpty)
-		self.iFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnIFileEnter)
 		#endregion -----------------------------------------------------> Bind
 	
 		#region --------------------------------------------------------> Test
@@ -1114,7 +1122,6 @@ class ProtProf(BaseConfPanel):
 			'iFileL'     : config.label['BtnDataFile'], 
 			'oFileL'     : config.label['BtnOutFile'],
 			'NormMethodL': config.label['CbNormalization'],
-			'ListColumnL': config.label['LCtrlColName_I'],
 			'CheckL'     : config.label['CbCheck'],
 			#------------------------------> Hint
 			'iFileH' : f"Path to the {config.label['BtnDataFile']}",
@@ -1122,7 +1129,7 @@ class ProtProf(BaseConfPanel):
 			#------------------------------> Choices
 			'NormMethod' : config.choice['NormMethod'],
 			#------------------------------> Size
-			'LCtrlColS' : config.size['LCtrl#Name'],
+			
 			#------------------------------> Tooltips
 			'iListTT' : (
 				f"Selected rows can be copied ({config.copyShortCut}+C) but "
