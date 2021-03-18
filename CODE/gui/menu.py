@@ -289,8 +289,8 @@ class Utility(wx.Menu, MenuMethods):
 		#endregion -------------------------------------------------> Get Path
 
 		#region ------------------------> Raise window if file is already open
-		if config.umsapW.get(fileP.name, '') != '':
-			config.umsapW[fileP.name].Raise()
+		if config.umsapW.get(fileP, '') != '':
+			config.umsapW[fileP].Raise()
 			return True
 		else:
 			pass		
@@ -307,7 +307,7 @@ class Utility(wx.Menu, MenuMethods):
 
 		#region --------------------------------------------------> Show modal
 		if dlg.ShowModal() == 1:
-			config.umsapW[fileP.name] = window.UMSAPControl(config.obj)
+			config.umsapW[fileP] = window.UMSAPControl(config.obj)
 		else:
 			pass
 

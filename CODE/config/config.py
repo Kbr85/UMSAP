@@ -60,20 +60,30 @@ if cOS == 'Darwin':
 	else:
 		sbConf = [-1, 300]
 	sbPlot = [-1, 120]
+	#------------------------------> Delta space between consecutive windows
+	deltaWin = 23
 elif cOS == 'Windows': 
 	cwd          = cwd.parent
 	res          = cwd / 'RESOURCES'
 	toolsMenuIdx = 3
 	copyShortCut = 'Ctrl'
-	sbConf = [-1, 300]
+	if development:
+		sbConf = [-1, 350]
+	else:
+		sbConf = [-1, 300]
 	sbPlot = [-1, 100]
+	deltaWin = 20
 elif cOS == 'Linux':
 	cwd          = cwd.parent
 	res          = cwd / 'RESOURCES'
 	toolsMenuIdx = 3
 	copyShortCut = 'Ctrl'
-	sbConf = [-1, 300]
+	if development:
+		sbConf = [-1, 350]
+	else:
+		sbConf = [-1, 300]
 	sbPlot = [-1, 100]
+	deltaWin = 20
 #endregion ------------------------------------- PLATFORM DEPENDENT PARAMETERS
 
 
@@ -81,7 +91,7 @@ elif cOS == 'Linux':
 #------------------------------> Reference to main window
 mainW  = None
 #------------------------------> Track open umsap files
-# Keys: UMSAP File name - Values: Reference to control window
+# Keys: UMSAP File path - Values: Reference to control window
 umsapW = {}
 #------------------------------> Number of windows for screen positioning
 # Keys: Windows ID - Values: Total number of opened windows

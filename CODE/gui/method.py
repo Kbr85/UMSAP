@@ -19,8 +19,6 @@ import _thread
 import wx
 
 import config.config as config
-import gui.window as window
-import gui.dtscore as dtscore
 import data.file as file
 #endregion ----------------------------------------------------------> Imports
 
@@ -63,4 +61,52 @@ def LoadUMSAPFile(fileP, dlg):
 	#endregion -----------------------------------------------> Configure file
 	
 	return True
+#---
+
+def GetDisplayInfo(win):
+	"""This will get the information needed to set the position of a window.
+		Should be called after Fitting sizers for accurate window size 
+		information
+
+		Parameters
+		----------
+		win : wx.Frame
+			Window to be positioned
+
+		Returns
+		-------
+		dict
+			{
+				'D' : {'xo':X, 'yo':Y, 'w':W, 'h':h},
+				'W' : {'N': N, 'w':W, 'h', H}
+			}
+	"""
+	
+	#region ----------------------------------------------------> Display info
+	d = wx.Display(win)
+	xd, yd, wd, hd = d.GetClientArea()
+	#endregion -------------------------------------------------> Display info
+	
+	#region -----------------------------------------------------> Window info
+	nw = config.winNumber.get(win.name, 0)
+	ww, hw = win.GetSize()
+	#endregion --------------------------------------------------> Window info
+	
+	#region ------------------------------------------------------------> Dict
+	data = {
+		'D' : {
+			'xo' : xd,
+			'yo' : yd,
+			'w'  : wd,
+			'h'  : hd,
+		},
+		'W' : {
+			'N' : nw,
+			'w' : ww,
+			'h' : hw,
+		},
+	}
+	#endregion ---------------------------------------------------------> Dict
+	
+	return data
 #---

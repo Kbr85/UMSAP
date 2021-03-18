@@ -27,12 +27,13 @@ import wx.lib.agw.customtreectrl as wxCT
 import dat4s_core.data.method as dtsMethod
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
+import dat4s_core.generator.generator as dtsGenerator
 
 import config.config as config
 import gui.menu as menu
 import gui.tab as tab
 import gui.dtscore as dtscore
-import data.file as file
+import gui.method as method
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -187,10 +188,22 @@ class BaseWindow(wx.Frame):
 			event: wx.Event
 				Information about the event
 		"""
+		#region -------------------------------------------> Reduce win number
+		try:
+			config.winNumber[self.name] -= 1
+		except Exception:
+			pass
+		#endregion ----------------------------------------> Reduce win number
+		
+		#region -----------------------------------------------------> Destroy
 		self.Destroy()
+		#endregion --------------------------------------------------> Destroy
+		
+		return True
 	#---
 	#endregion ------------------------------------------------> Class methods
 #---
+
 
 class BaseWindowPlot(BaseWindow):
 	"""Base class for windows showing a plot with common methods
@@ -232,11 +245,23 @@ class BaseWindowPlot(BaseWindow):
 			event: wx.Event
 				Information about the event
 		"""
-		self.parent.UnCheckSection(self.confOpt['Section'])
+		#region -----------------------------------------------> Update parent
+		self.parent.UnCheckSection(self.confOpt['Section'])		
+		#endregion --------------------------------------------> Update parent
+		
+		#region ------------------------------------> Reduce number of windows
+		config.winNumber[self.name] -= 1
+		#endregion ---------------------------------> Reduce number of windows
+		
+		#region -----------------------------------------------------> Destroy
 		self.Destroy()
+		#endregion --------------------------------------------------> Destroy
+		
+		return True
 	#---
 	#endregion ------------------------------------------------> Class methods
 #---
+
 
 #------------------------------> wx.Frame
 class MainWindow(BaseWindow):
@@ -495,12 +520,35 @@ class UMSAPControl(BaseWindow):
 		#endregion -----------------------------------------------------> Bind
 
 		#region ---------------------------------------------> Window position
+		self.WinPos()
 		self.Show()
 		#endregion ------------------------------------------> Window position
 	#---
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
+	def WinPos(self):
+		"""Set the position on the screen and adjust the total number of
+			shown windows
+		"""
+		#region ---------------------------------------------------> Variables
+		info = method.GetDisplayInfo(self)
+		#endregion ------------------------------------------------> Variables
+				
+		#region ------------------------------------------------> Set Position
+		self.SetPosition(pt=(
+			info['D']['xo'] + info['W']['N']*config.deltaWin,
+			info['D']['yo'] + info['W']['N']*config.deltaWin,
+		))
+		#endregion ---------------------------------------------> Set Position
+
+		#region ----------------------------------------------------> Update N
+		config.winNumber[self.name] = info['W']['N'] + 1
+		#endregion -------------------------------------------------> Update N
+
+		return True
+	#---
+
 	def SetTree(self):
 		"""Set the elements of the wx.TreeCtrl """
 		#region ----------------------------------------------------> Add root
@@ -625,8 +673,23 @@ class UMSAPControl(BaseWindow):
 			event: wx.Event
 				Information about the event
 		"""
-		del(config.umsapW[self.confOpt['Title']])
+		#region -----------------------------------> Update list of open files
+		del(config.umsapW[self.obj.fileP])
+		#endregion --------------------------------> Update list of open files
+		
+		#region ------------------------------------> Reduce number of windows
+		config.winNumber[self.name] -= 1
+		#endregion ---------------------------------> Reduce number of windows
+		
+		#region -----------------------------------------------------> Destroy
+		#------------------------------> Childs
+		for child in dtsGenerator.FindTopLevelChildren(self):
+			child.Close()
+		#------------------------------> Self
 		self.Destroy()
+		#endregion --------------------------------------------------> Destroy
+		
+		return True
 	#---
 	#endregion ------------------------------------------------> Class methods
 #---
@@ -721,12 +784,38 @@ class CorrAPlot(BaseWindowPlot):
 		#region --------------------------------------------------------> Bind
 		
 		#endregion -----------------------------------------------------> Bind
+
+		#region ----------------------------------------------------> Position
 		self.Draw(self.date[0])
+		self.WinPos()
 		self.Show()
+		#endregion -------------------------------------------------> Position
 	#---
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
+	def WinPos(self):
+		"""Set the position on the screen and adjust the total number of
+			shown windows
+		"""
+		#region ---------------------------------------------------> Variables
+		info = method.GetDisplayInfo(self)
+		#endregion ------------------------------------------------> Variables
+				
+		#region ------------------------------------------------> Set Position
+		self.SetPosition(pt=(
+			info['D']['w'] - (info['W']['N']*config.deltaWin + info['W']['w']),
+			info['D']['yo'] + info['W']['N']*config.deltaWin,
+		))
+		#endregion ---------------------------------------------> Set Position
+
+		#region ----------------------------------------------------> Update N
+		config.winNumber[self.name] = info['W']['N'] + 1
+		#endregion -------------------------------------------------> Update N
+
+		return True
+	#---
+
 	def Draw(self, tDate):
 		""" Plot data from a given date.
 		
