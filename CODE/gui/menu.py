@@ -125,6 +125,19 @@ class MenuMethods():
 		win.OnExportPlotData()
 		return True
 	#---
+
+	def OnSavePlot(self, event):
+		"""Save an image of a plot
+	
+			Parameters
+			----------
+			event : wx.Event
+				Information about the event
+		"""
+		win = self.GetWindow()
+		win.OnSavePlot()
+		return True
+	#---
 	#endregion ------------------------------------------------> Class Methods
 #---
 
@@ -160,8 +173,9 @@ class PlotMenu(wx.Menu, MenuMethods):
 		#endregion -----------------------------------------------> Menu Items
 
 		#region --------------------------------------------------------> Bind
-		self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.zoomR)
+		self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.zoomR)
 		self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.saveD)
+		self.Bind(wx.EVT_MENU, self.OnSavePlot,       source=self.saveI)
 		#endregion -----------------------------------------------------> Bind
 	#---
 	#endregion -----------------------------------------------> Instance setup

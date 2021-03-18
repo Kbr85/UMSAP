@@ -159,8 +159,13 @@ file = { # Location & names of important files
 
 #region ----------------------------------------------------------- Extensions
 extLong = { # string for wx.Dialogs representing the extension of the files
-	'Data' : 'txt files (*.txt)|*.txt',
-	'UMSAP': 'UMSAP files (*.umsap)|*.umsap',
+	'Data'        : 'txt files (*.txt)|*.txt',
+	'UMSAP'       : 'UMSAP files (*.umsap)|*.umsap',
+	'MatPlotSaveI': (
+		"Portable Document File (*.pdf)|*.pdf|"
+		"Portable Network Graphic (*.png)|*.png|"
+		"Scalable Vector Graphic (*.svg)|*.svg|"
+		"Tagged Image File (*.tif)|*.tif"),
 }
 
 extShort = { # string representation of the extensions. First item is default
@@ -271,7 +276,8 @@ font = {
 
 #region -----------------------------------------------------> General options
 general = { # General options
-	'checkUpdate' : True # True Check, False No check 
+	'checkUpdate' : True, # True Check, False No check 
+	'DPI' : 100, # DPI for plot images
 }
 #endregion --------------------------------------------------> General options
 

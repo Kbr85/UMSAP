@@ -28,6 +28,7 @@ import dat4s_core.data.method as dtsMethod
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
 import dat4s_core.generator.generator as dtsGenerator
+import dat4s_core.exception.exception as dtsException
 
 import config.config as config
 import gui.menu as menu
@@ -237,6 +238,22 @@ class BaseWindowPlot(BaseWindow):
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
+	def OnSavePlot(self):
+		"""Save an image of the plot.	"""
+		try:
+			self.plot.SaveImage(
+				ext=config.extLong['MatPlotSaveI'],
+				parent=self, 
+				)
+		except Exception as e:
+			dtscore.Notification(
+				'errorF',
+				msg        = str(e),
+				tException = e,
+				parent     = self,
+			)
+	#---
+
 	def OnClose(self, event):
 		"""Close window and uncheck section in UMSAPFile window
 	
@@ -772,6 +789,7 @@ class CorrAPlot(BaseWindowPlot):
 			self, 
 			statusbar    = self.statusbar,
 			statusMethod = self.UpdateStatusBar,
+			dpi          = config.general['DPI'],
 		)
 		#endregion --------------------------------------------------> Widgets
 
