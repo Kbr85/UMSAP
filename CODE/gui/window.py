@@ -326,6 +326,7 @@ class MainWindow(BaseWindow):
 			'TitleTab' : {
 				'StartTab' : 'Start',
 				'CorrATab' : config.nameUtilities['CorrA'],
+				'ProtProfTab' : config.nameModules['ProtProf'],
 			},
 			#------------------------------> Size
 			'Size' : (900, 620),
@@ -424,7 +425,6 @@ class MainWindow(BaseWindow):
 			self.notebook.AddPage(
 				self.tabMethods[name](
 					self.notebook,
-					self.statusbar,
 				),
 				self.confOpt['TitleTab'][name],
 				select = True,

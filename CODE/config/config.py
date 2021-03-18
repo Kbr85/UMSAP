@@ -106,15 +106,18 @@ name = { # Unique names to identify windows/objects through the app
 	'UtilityMenu': 'UtilityMenu',
 	'ToolMenu'   : 'ToolMenu',
 	#--> Main windows
-	'MainW' : 'MainW',
-	'UMSAPF': 'UMSAPF',
+	'MainW'    : 'MainW',
+	'UMSAPF'   : 'UMSAPF',
 	'CorrAPlot': 'CorrAPlot',
 	#--> Dialogs
 	'CheckUpdateResDialog': 'CheckUpdateResDialog',
 	#--> Tab for notebook windows
-	'StartTab' : 'StartTab',
-	'CorrATab' : 'CorrATab',
-	'ProtProfTab' : 'ProtProfTab',
+	'StartTab'   : 'StartTab',
+	'CorrATab'   : 'CorrATab',
+	'ProtProfTab': 'ProtProfTab',
+	#--> Individual Panes
+	'CorrAPane'   : 'CorrAPane',
+	'ProtProfPane': 'ProtProfPane',
 	#--> Files
 	'UMSAPFile' : 'UMSAPFile',
 }
@@ -182,7 +185,7 @@ label = { # Label for widgets
 	'StBoxValue' : 'User-defined values',
 	'StBoxColumn': 'Column numbers',
 	#------------------------------> wx.Button
-	'BtnRun'     : 'Start analysis',
+	'BtnRun'     : 'Start Analysis',
 	'BtnDataFile': 'Data File',
 	'BtnOutFile' : 'Output File',
 	#------------------------------> wx.ComboBox
@@ -201,6 +204,9 @@ label = { # Label for widgets
 	'PdError'   : 'Fatal Error',
 	'PdDone'    : 'All Done',
 	'PdEllapsed': 'Ellapsed time: ',
+	#------------------------------> Titles for Panes (TP)
+	'TP_ConfPane' : 'Configuration Options',
+	'TP_ListPane' : 'Data File Content',
 }
 #endregion -----------------------------------------------------------> Labels
 
@@ -247,7 +253,7 @@ url = { # Selected URL needed by umsap.
 	'Home'      : url_home,
 	'Update'    : f"{url_home}/page/release-notes",
 	'Tutorial'  : f"{url_tutorial}/start",
-	'CorrATab'     : f"{url_tutorial}/correlation-analysis",
+	'CorrAPane'     : f"{url_tutorial}/correlation-analysis",
 	# 'MergeAA'   : f"{url_tutorial}/merge-aadist-files",
 	# 'ShortDFile': f"{url_tutorial}/short-data-files",
 	# 'TarProt'   : f"{url_tutorial}/targeted-proteolysis",
@@ -257,7 +263,7 @@ url = { # Selected URL needed by umsap.
 	# 'SeqAlign'  : f"{url_tutorial}/sequence-alignment",
 	# 'LimProt'   : f"{url_tutorial}/limited-proteolysis",
 	# 'SeqH'      : f"{url_tutorial}/sequence-highlight",
-	'ProtProfTab'  : f"{url_tutorial}/proteome-profiling",
+	'ProtProfPane'  : f"{url_tutorial}/proteome-profiling",
 }
 #endregion --------------------------------------------------------------- URL
 
