@@ -11,7 +11,7 @@
 # ------------------------------------------------------------------------------
 
 
-""" Tabs of the application"""
+""" Panels of the application"""
 
 
 #region -------------------------------------------------------------> Imports
@@ -30,6 +30,7 @@ import dat4s_core.data.statistic as dtsStatistic
 import config.config as config
 import gui.dtscore as dtscore
 import gui.method as method
+import gui.widget as widget
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -476,7 +477,7 @@ class BaseConfPanel(
 #---
 
 
-class BaseConfModPanel(BaseConfPanel):
+class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 	"""Base panel for a module
 
 		Parameters
@@ -526,6 +527,9 @@ class BaseConfModPanel(BaseConfPanel):
 			'DetectedProtL': 'Detected Proteins',
 			'ScoreL'       : 'Score',
 			'ColExtractL'  : 'Columns to Extract',
+			'ResultL'      : 'Results - Control experiments',
+			'TypeResL'     : 'Type Values',
+			'LoadResL'     : 'Load Values',
 			#------------------------------> Hint
 			
 			#------------------------------> Size
@@ -545,8 +549,10 @@ class BaseConfModPanel(BaseConfPanel):
 		else:
 			pass
 
-		super().__init__(parent, rightDelete=rightDelete, confOpt=confOptM,
-			confMsg=confMsgM)
+		BaseConfPanel.__init__(self, parent, rightDelete=rightDelete, 
+			confOpt=confOptM, confMsg=confMsgM)
+
+		widget.ResControl.__init__(self, self.sbColumn)
 		#endregion --------------------------------------------> Initial Setup
 
 		#region --------------------------------------------------------> Menu
@@ -1477,6 +1483,13 @@ class ProtProf(BaseConfModPanel):
 			flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
 			border = 5,
 			span   = (0, 5),
+		)
+		self.sizersbColumnWid.Add(
+			self.sizerRes,
+			pos    = (3,0),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
+			border = 0,
+			span   = (0,6),
 		)
 		self.sizersbColumnWid.AddGrowableCol(1,1)
 		self.sizersbColumnWid.AddGrowableCol(3,1)
