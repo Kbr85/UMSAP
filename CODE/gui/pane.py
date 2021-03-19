@@ -34,6 +34,7 @@ import gui.method as method
 
 
 #region -------------------------------------------------------------> Classes
+#------------------------------> Base Classes
 class BaseConfPanel(
 	wx.Panel,
 	dtsWidget.StaticBoxes, 
@@ -62,13 +63,19 @@ class BaseConfPanel(
 			Label of the Column wx.StaticBox
 		rightDelete : Boolean
 			Enables clearing wx.StaticBox input with right click
+		confOpt : dict or None
+			Extra options from child class. Default is None
+		confMsg : dict or None
+			Extra messages from child class. Default is None
 
 		Attributes
 		----------
 		parent : wx Widget
 			Parent of the widgets
-		statusbar : wx.StatusBar
-			Statusbar of the application to display messages
+		confOpt : dict or None
+			Configuration options after updating with info from child class
+		confMsg : dict or None
+			Error messages after updating with info from child class
 		lbI : wx.ListCtrl or None
 			Pointer to the default wx.ListCtrl to load Data File content to. 
 		lbL : list of wx.ListCtrl
@@ -138,21 +145,72 @@ class BaseConfPanel(
 	def __init__(self, parent,
 		oMode       = 'save',
 		statusbar   = None,
-		labelR      = config.label['BtnRun'],
-		labelF      = config.label['StBoxFile'],
-		labelV      = config.label['StBoxValue'],
-		labelC      = config.label['StBoxColumn'],
-		rightDelete = True
+		rightDelete = True,
+		confOpt     = None,
+		confMsg     = None,
 		):
 		""" """
 		#region -----------------------------------------------> Initial Setup
 		self.parent    = parent
 		self.statusbar = statusbar
+		#------------------------------> Configuration options
+		#--------------> From self
+		self.confOpt = {
+			#------------------------------> Label
+			'iFileL'     : config.label['BtnDataFile'],
+			'oFileL'     : config.label['BtnOutFile'],
+			'NormMethodL': config.label['CbNormalization'],
+			'CheckL'     : config.label['CbCheck'],
+			'RunBtnL'    : config.label['BtnRun'],
+			'FileBoxL'   : config.label['StBoxFile'],
+			'ValueBoxL'  : config.label['StBoxValue'],
+			'ColumnBoxL' : config.label['StBoxColumn'],
+			#------------------------------> Hint
+			'iFileH' : f"Path to the {config.label['BtnDataFile']}",
+			'oFileH' : f"Path to the {config.label['BtnOutFile']}",
+			#------------------------------> Choices
+			'NormMethod' : config.choice['NormMethod'],
+		}
+		#--------------> From child class
+		if confOpt is not None:
+			self.confOpt.update(confOpt)
+		else:
+			pass
+		#------------------------------> Messages
+		#--------------> From self
+		self.confMsg = { # gui.tab, error msg
+			'iFile' : {
+				'NotPath' : (
+					f"The path to the {self.confOpt['iFileL']} is not valid."),
+				'NotFile' : (
+					f"The path to the {self.confOpt['iFileL']} does not point "
+					f"to a file."),
+				'NoRead' : (
+					f"The given {self.confOpt['iFileL']} cannot be read."),
+				'FileExt' : (
+					f"The given {self.confOpt['iFileL']} does not have the "
+					f"correct extension."),
+			},
+			'oFile' : {
+				'NotPath' : (
+					f"The path to the {self.confOpt['oFileL']} is not valid."),
+				'NoWrite' : (
+					f"It is not possible to write into the "
+					f"{self.confOpt['oFileL']}"),
+			},
+			'NormMethod' : (
+				f"The {self.confOpt['NormMethodL']} was not selected."),
+		}
+		#--------------> From child class
+		if confMsg is not None:
+			self.confMsg.update(confMsg)
+		else:
+			pass
 		#------------------------------> This is needed to handle Data File 
 		# content load to the wx.ListCtrl in Tabs with multiple panels
 		self.lbI       = None # Default wx.ListCtrl to load data file content
 		self.lbL       = [self.lbI]
-
+		#------------------------------> Needed to Run the analysis
 		self.msgError   = None # Error msg to show in self.RunEnd
 		self.d          = {} # Dict with the user input as given
 		self.do         = {} # Dict with the processed user input
@@ -161,20 +219,20 @@ class BaseConfPanel(
 		self.date       = None # date for corr file
 		self.oFolder    = None # folder for output
 		self.tException = None # Exception raised during analysis
-
+		#------------------------------> Parent init
 		wx.Panel.__init__(self, parent, name=self.name)
 
 		dtsWidget.ButtonOnlineHelpClearAllRun.__init__(
 			self, 
 			self, 
 			self.confOpt['URL'], 
-			labelR    = labelR,
+			labelR    = self.confOpt['RunBtnL'],
 		)
 
 		dtsWidget.StaticBoxes.__init__(self, self, 
-			labelF      = labelF,
-			labelV      = labelV,
-			labelC      = labelC,
+			labelF      = self.confOpt['FileBoxL'],
+			labelV      = self.confOpt['ValueBoxL'],
+			labelC      = self.confOpt['ColumnBoxL'],
 			rightDelete = rightDelete,
 		)
 		#endregion --------------------------------------------> Initial Setup
@@ -435,6 +493,68 @@ class BaseConfPanel(
 #---
 
 
+class BaseConfModPanel(BaseConfPanel):
+	"""Base panel for a module
+
+		Parameters
+		----------
+		
+
+		Attributes
+		----------
+		
+
+		Raises
+		------
+		
+
+		Methods
+		-------
+		
+	"""
+	#region -----------------------------------------------------> Class setup
+	
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, ):
+		""" """
+		#region -------------------------------------------------> Check Input
+		
+		#endregion ----------------------------------------------> Check Input
+
+		#region -----------------------------------------------> Initial Setup
+		
+		#endregion --------------------------------------------> Initial Setup
+
+		#region --------------------------------------------------------> Menu
+		
+		#endregion -----------------------------------------------------> Menu
+
+		#region -----------------------------------------------------> Widgets
+		
+		#endregion --------------------------------------------------> Widgets
+
+		#region ------------------------------------------------------> Sizers
+		
+		#endregion ---------------------------------------------------> Sizers
+
+		#region --------------------------------------------------------> Bind
+		
+		#endregion -----------------------------------------------------> Bind
+
+		#region ---------------------------------------------> Window position
+		
+		#endregion ------------------------------------------> Window position
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	
+	#endregion ------------------------------------------------> Class methods
+#---
+
+
 class CorrA(BaseConfPanel):
 	"""Creates the configuration tab for Correlation Analysis
 	
@@ -501,25 +621,17 @@ class CorrA(BaseConfPanel):
 		#region -----------------------------------------------> Initial setup
 		self.dfCC = None # correlation coefficients
 		
-		self.confOpt = { # gui.tab, conf
+		confOpt = { # gui.tab, conf
 			#------------------------------> URL
 			'URL' : config.url['CorrAPane'],
 			#------------------------------> Labels
 			'LenLongest' : len(config.label['CbNormalization']),
-			'iFileL'     : config.label['BtnDataFile'], 
-			'oFileL'     : config.label['BtnOutFile'],
-			'NormMethodL': config.label['CbNormalization'],
 			'CorrMethodL': 'Correlation Method',
 			'ListColumnL': config.label['LCtrlColName_I'],
 			'iListL'     : 'Columns in the Data File',
 			'oListL'     : 'Columns to Analyse',
 			'AddL'       : 'Add columns',
-			'CheckL'     : config.label['CbCheck'],
-			#------------------------------> Hint
-			'iFileH' : f"Path to the {config.label['BtnDataFile']}",
-			'oFileH' : f"Path to the {config.label['BtnOutFile']}",
 			#------------------------------> Choices
-			'NormMethod' : config.choice['NormMethod'],
 			'CorrMethod' : ['', 'Pearson', 'Kendall', 'Spearman'],
 			#------------------------------> Size
 			'LCtrlColS' : config.size['LCtrl#Name'],
@@ -546,36 +658,15 @@ class CorrA(BaseConfPanel):
 			'ChangeKey': ['iFile', 'oFile'],
 		}
 
-		self.confMsg = { # gui.tab, error msg
-			'iFile' : {
-				'NotPath' : (
-					f"The path to the {self.confOpt['iFileL']} is not valid."),
-				'NotFile' : (
-					f"The path to the {self.confOpt['iFileL']} does not point "
-					f"to a file."),
-				'NoRead' : (
-					f"The given {self.confOpt['iFileL']} cannot be read."),
-				'FileExt' : (
-					f"The given {self.confOpt['iFileL']} does not have the "
-					f"correct extension."),
-			},
-			'oFile' : {
-				'NotPath' : (
-					f"The path to the {self.confOpt['oFileL']} is not valid."),
-				'NoWrite' : (
-					f"It is not possible to write into the "
-					f"{self.confOpt['oFileL']}"),
-			},
-			'NormMethod' : (
-				f"The {self.confOpt['NormMethodL']} was not selected."),
+		confMsg = { # gui.tab, error msg
 			'CorrMethod' : (
-				f"The {self.confOpt['CorrMethodL']} was not selected."),
+				f"The {confOpt['CorrMethodL']} was not selected."),
 			'oList' : (
-				f"The list of {self.confOpt['oListL']} must contain at least "
+				f"The list of {confOpt['oListL']} must contain at least "
 				f"two items."),
 		}
 
-		super().__init__(parent)
+		super().__init__(parent, confOpt=confOpt, confMsg=confMsg)
 		#endregion --------------------------------------------> Initial setup
 		
 		#region -----------------------------------------------------> Widgets
@@ -1114,28 +1205,22 @@ class ProtProf(BaseConfPanel):
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup
-		self.confOpt = { # gui.tab, conf
+		confOpt = { # gui.tab, conf
 			#------------------------------> URL
 			'URL' : config.url['ProtProfPane'],
 			#------------------------------> Labels
 			# 'LenLongest' : len(config.label['CbNormalization']),
-			'iFileL'     : config.label['BtnDataFile'], 
-			'oFileL'     : config.label['BtnOutFile'],
-			'NormMethodL': config.label['CbNormalization'],
-			'CheckL'     : config.label['CbCheck'],
+			
 			#------------------------------> Hint
-			'iFileH' : f"Path to the {config.label['BtnDataFile']}",
-			'oFileH' : f"Path to the {config.label['BtnOutFile']}",
+	
 			#------------------------------> Choices
-			'NormMethod' : config.choice['NormMethod'],
+			
 			#------------------------------> Size
 			
 			#------------------------------> Tooltips
-			'iListTT' : (
-				f"Selected rows can be copied ({config.copyShortCut}+C) but "
-				f"the list cannot be modified."),
+			
 			#------------------------------> Progress Dialog
-			'TitlePD' : f"{config.nameModules['ProtProf']} Analysis",
+			'TitlePD' : f"Running {config.nameModules['ProtProf']} Analysis",
 			'GaugePD' : 15,
 			#------------------------------> Output
 			'Section'  : config.nameModules['ProtProf'],
@@ -1143,36 +1228,11 @@ class ProtProf(BaseConfPanel):
 			'ChangeKey': ['iFile', 'oFile'],
 		}
 
-		self.confMsg = { # gui.tab, error msg
-			# 'iFile' : {
-			# 	'NotPath' : (
-			# 		f"The path to the {self.confOpt['iFileL']} is not valid."),
-			# 	'NotFile' : (
-			# 		f"The path to the {self.confOpt['iFileL']} does not point "
-			# 		f"to a file."),
-			# 	'NoRead' : (
-			# 		f"The given {self.confOpt['iFileL']} cannot be read."),
-			# 	'FileExt' : (
-			# 		f"The given {self.confOpt['iFileL']} does not have the "
-			# 		f"correct extension."),
-			# },
-			# 'oFile' : {
-			# 	'NotPath' : (
-			# 		f"The path to the {self.confOpt['oFileL']} is not valid."),
-			# 	'NoWrite' : (
-			# 		f"It is not possible to write into the "
-			# 		f"{self.confOpt['oFileL']}"),
-			# },
-			# 'NormMethod' : (
-			# 	f"The {self.confOpt['NormMethodL']} was not selected."),
-			# 'CorrMethod' : (
-			# 	f"The {self.confOpt['CorrMethodL']} was not selected."),
-			# 'oList' : (
-			# 	f"The list of {self.confOpt['oListL']} must contain at least "
-			# 	f"two items."),
+		confMsg = { # gui.tab, error msg
+			
 		}
 
-		super().__init__(parent)
+		super().__init__(parent, confOpt=confOpt, confMsg=confMsg)
 		#endregion --------------------------------------------> Initial Setup
 
 		#region --------------------------------------------------------> Menu

@@ -126,16 +126,21 @@ class BaseWindow(wx.Frame):
 			Parent of the window
 		menuDate : dict or None
 			Date entries for menu of plotting windows
+		confOpt : dict or None
+			Extra options from child class. Default is None
+		confMsg : dict or None
+			Extra messages from child class. Default is None
+
 		Attributes
 		----------
 		name : str
 			Unique name of the window
 		parent : wx Widget or None
 			Parent of the window
-		confOpt : dict
-			Dictionary with configuration options
-		confMsg : dict
-			Dictionary with messages
+		confOpt : dict or None
+			Configuration options after updating with info from child class
+		confMsg : dict or None
+			Error messages after updating with info from child class
 		statusbar : wx.StatusBar
 			Windows statusbar
 	"""
@@ -143,7 +148,8 @@ class BaseWindow(wx.Frame):
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, name, parent=None, menuDate=None):
+	def __init__(self, name, parent=None, menuDate=None, confOpt=None, 
+		confMsg=None):
 		""" """
 		#region -------------------------------------------------> Check Input
 		#endregion ----------------------------------------------> Check Input
@@ -151,7 +157,23 @@ class BaseWindow(wx.Frame):
 		#region -----------------------------------------------> Initial Setup
 		self.name   = name
 		self.parent = parent
-
+		#------------------------------> Configuration options
+		#--------------> From self
+		self.confOpt = {}
+		#--------------> From child class
+		if confOpt is not None:
+			self.confOpt.update(confOpt)
+		else:
+			pass
+		#------------------------------> Messages
+		#--------------> From self
+		self.confMsg = { }
+		#--------------> From child class
+		if confMsg is not None:
+			self.confMsg.update(confMsg)
+		else:
+			pass
+		#------------------------------> Parent init
 		super().__init__(
 			parent = parent,
 			size   = self.confOpt['Size'],
@@ -215,16 +237,24 @@ class BaseWindowPlot(BaseWindow):
 			Name of the window
 		parent : wx.Window or None
 			Parent of the window
+		menuDate : dict or None
+			Date entries for menu of plotting windows
+		confOpt : dict or None
+			Extra options from child class. Default is None
+		confMsg : dict or None
+			Extra messages from child class. Default is None
 	"""
 	#region -----------------------------------------------------> Class setup
 	
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, name, parent, menuDate):
+	def __init__(self, name, parent, menuDate, confOpt=None, confMsg=None):
 		""" """
 		#region -----------------------------------------------> Initial Setup
-		super().__init__(name, parent=parent, menuDate=menuDate)
+
+		super().__init__(name, parent=parent, menuDate=menuDate, 
+			confOpt=confOpt, confMsg=confMsg)
 		#endregion --------------------------------------------> Initial Setup
 
 		#region -----------------------------------------------------> Widgets
@@ -320,7 +350,7 @@ class MainWindow(BaseWindow):
 	def __init__(self, name='MainW', parent=None):
 		""""""
 		#region -----------------------------------------------> Initial setup
-		self.confOpt = { # Main Window, conf
+		confOpt = { # Main Window, conf
 			#------------------------------> Titles
 			'Title': "Analysis Setup",
 			'TitleTab' : {
@@ -332,7 +362,7 @@ class MainWindow(BaseWindow):
 			'Size' : (900, 620),
 		}
 
-		super().__init__(name, parent=parent)
+		super().__init__(name, parent=parent, confOpt=confOpt)
 		#endregion --------------------------------------------> Initial setup
 
 		#region -----------------------------------------------------> Widgets
@@ -510,7 +540,7 @@ class UMSAPControl(BaseWindow):
 		#region -----------------------------------------------> Initial Setup
 		self.obj = obj
 
-		self.confOpt = {
+		confOpt = {
 			'Title': self.obj.fileP.name,
 			'Size' : (400, 700),
 			'Plot' : { # Methods to create plot windows
@@ -525,7 +555,7 @@ class UMSAPControl(BaseWindow):
 
 		self.obj = obj
 
-		super().__init__(name, parent=parent)
+		super().__init__(name, parent=parent, confOpt=confOpt)
 		#endregion --------------------------------------------> Initial Setup
 
 		#region -----------------------------------------------------> Widgets
@@ -791,22 +821,20 @@ class CorrAPlot(BaseWindowPlot):
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup
-		self.obj = parent.obj
-		
-		self.confOpt = {
+		confOpt = {
 			'Section' : config.nameUtilities['CorrA'],
 			'Title' : (
 				f"{parent.confOpt['Title']} - {config.nameUtilities['CorrA']}"),
 			'Size' : config.size['Plot'],
 		}
 
-		self.confMsg = {
+		confMsg = {
 			'ExportFailed' : (
 				f"It was not possible to write the data to the selected file"),
 		}
 
-		self.parent  = parent
-		self.section = self.confOpt['Section']
+		self.obj     = parent.obj
+		self.section = confOpt['Section']
 		self.data    = self.obj.confData[self.section]
 		self.date    = [x for x in self.data.keys()]
 		self.cmap    = dtsMethod.MatplotLibCmap(
@@ -816,7 +844,8 @@ class CorrAPlot(BaseWindowPlot):
 			c3 = config.color[self.section]['CMAP']['c3'],
 		)
 
-		super().__init__(self.name, self.parent, self.date)		
+		super().__init__(self.name, parent, self.date, confOpt=confOpt,
+			confMsg=confMsg)
 		#endregion --------------------------------------------> Initial Setup
 
 		#region -----------------------------------------------------> Widgets

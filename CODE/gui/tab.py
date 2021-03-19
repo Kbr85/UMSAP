@@ -38,15 +38,19 @@ class BaseConfTab(wx.Panel):
 		----------
 		parent : wx.Window
 			Parent of the tab 
+		confOpt : dict or None
+			Extra options from child class. Default is None
+		confMsg : dict or None
+			Extra messages from child class. Default is None
 
 		Attributes
 		----------
 		parent : wx.Window
 			Parent of the tab 
-		confClass : dict
-			Classes to create the configuration panel. Keys are Tab names
-		confOpt : dict
-			Configuration options
+		confOpt : dict or None
+			Configuration options after updating with info from child class
+		confMsg : dict or None
+			Error messages after updating with info from child class
 
 		Raises
 		------
@@ -60,17 +64,33 @@ class BaseConfTab(wx.Panel):
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, parent):
+	def __init__(self, parent, confOpt=None, confMsg=None):
 		""" """
 		#region -----------------------------------------------> Initial Setup
 		self.parent = parent
+		#------------------------------> Class creating the conf panel
 		self.confClass = {
 			'CorrATab'   : pane.CorrA,
 			'ProtProfTab': pane.ProtProf,
 		}
+		#------------------------------> Configuration options
+		#--------------> From self
 		self.confOpt = {
 			'TP_Conf' : config.label['TP_ConfPane'],
 		}
+		#--------------> From child class
+		if confOpt is not None:
+			self.confOpt.update(confOpt)
+		else:
+			pass
+		#------------------------------> Messages
+		#--------------> From self
+		self.confMsg = { }
+		#--------------> From child class
+		if confMsg is not None:
+			self.confMsg.update(confMsg)
+		else:
+			pass
 		
 		super().__init__(parent, name=self.name)
 		#endregion --------------------------------------------> Initial Setup
@@ -141,19 +161,19 @@ class BaseConfListTab(BaseConfTab):
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, parent):
+	def __init__(self, parent, confOpt=None, confMsg=None):
 		""" """
 		#region -----------------------------------------------> Initial Setup
-		confOpt = {
+		confOptM = {
 			#------------------------------> Labels
 			'ColLabel' : config.label['LCtrlColName_I'],
 			'ColSize'  : config.size['LCtrl#Name'],
 			'TP_List'  : config.label['TP_ListPane'],
 		}
+		if confOpt is not None:
+			confOptM.update(confOpt)
 
-		super().__init__(parent)
-
-		self.confOpt.update(confOpt)
+		super().__init__(parent, confOpt=confOptM, confMsg=confMsg)
 		#endregion --------------------------------------------> Initial Setup
 
 		#region -----------------------------------------------------> Widgets
