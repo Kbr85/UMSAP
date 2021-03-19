@@ -189,7 +189,7 @@ label = { # Label for widgets
 	'BtnDataFile': 'Data File',
 	'BtnOutFile' : 'Output File',
 	#------------------------------> wx.ComboBox
-	'CbNormalization' : 'Normalization Method',
+	'CbNormalization' : 'Data Normalization',
 	#------------------------------> wx.ListCtrl
 	'LCtrlColName_I' : ['#', 'Name'],
 	#------------------------------> wx.CheckBox
@@ -214,6 +214,16 @@ label = { # Label for widgets
 #region -------------------------------------------------------------> Choices
 choice = { # Choices for the wx.ComboBox
 	'NormMethod' : ['', 'None', 'Log2'],
+	'CorrectP'   : ['None',
+		'Benjamini - Hochberg',  
+		'Benjamini - Yekutieli',
+		'Bonferroni',            
+		'Holm',                  
+		'Holm - Sidak',          
+		'Hommel',        
+		'Sidak',                 
+		'Simes-Hochberg',],
+	'YesNo' : ['', 'Yes', 'No'],
 }
 #endregion ----------------------------------------------------------> Choices
 
@@ -223,7 +233,8 @@ size = { # Base size for widgets
 	'Plot' : (560, 560),
 	#------------------------------> wx.ListCtrl
 	'LCtrl#Name' : [50, 150],
-	#------------------------------> Statusbar
+	#------------------------------> wx.TextCtrl
+	'TwoInRow' : (50, 22) # Two wx.TextCtrl in the same row
 
 }
 #endregion ------------------------------------------------------------> Sizes
@@ -1132,17 +1143,6 @@ except Exception as e:
 # 	'Yvalues': [
 # 		'1.0', '0.9', '0.8', '0.7', '0.6', '0.5', '0.4', '0.3', 
 # 		'0.2', '0.1', '0.0'
-# 	],
-# 	'CorrectP': [
-# 		'None',
-# 		'Benjamini - Hochberg',  
-# 		'Benjamini - Yekutieli',
-# 		'Bonferroni',            
-# 		'Holm',                  
-# 		'Holm - Sidak',          
-# 		'Hommel',        
-# 		'Sidak',                 
-# 		'Simes-Hochberg',
 # 	],
 # 	'ControlType' : [
 # 		'One Control', 'One Control per Column', 'One Control per Row',

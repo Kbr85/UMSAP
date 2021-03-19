@@ -49,18 +49,6 @@ class BaseConfPanel(
 		----------
 		parent : wx Widget
 			Parent of the widgets
-		oMode : str
-			One of 'openO', 'openM', 'save', 'folder'. Default is 'folder'
-		statusbar : wx.StatusBar
-			Statusbar of the application to display messages
-		labeR : str
-			Label of the Run button
-		labelF : str
-			Label of the File wx.StaticBox
-		labelV : str
-			Label of the Value wx.StaticBox
-		labelC : str
-			Label of the Column wx.StaticBox
 		rightDelete : Boolean
 			Enables clearing wx.StaticBox input with right click
 		confOpt : dict or None
@@ -142,17 +130,10 @@ class BaseConfPanel(
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, parent,
-		oMode       = 'save',
-		statusbar   = None,
-		rightDelete = True,
-		confOpt     = None,
-		confMsg     = None,
-		):
+	def __init__(self, parent, rightDelete=True, confOpt=None, confMsg=None):
 		""" """
 		#region -----------------------------------------------> Initial Setup
-		self.parent    = parent
-		self.statusbar = statusbar
+		self.parent = parent
 		#------------------------------> Configuration options
 		#--------------> From self
 		self.confOpt = {
@@ -170,6 +151,8 @@ class BaseConfPanel(
 			'oFileH' : f"Path to the {config.label['BtnOutFile']}",
 			#------------------------------> Choices
 			'NormMethod' : config.choice['NormMethod'],
+			#------------------------------> Others
+			'oMode' : 'save',
 		}
 		#--------------> From child class
 		if confOpt is not None:
@@ -251,7 +234,7 @@ class BaseConfPanel(
 		self.oFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
 			btnLabel   = self.confOpt['oFileL'],
 			tcHint     = self.confOpt['oFileH'],
-			mode       = oMode,
+			mode       = self.confOpt['oMode'],
 			ext        = config.extLong['UMSAP'],
 			tcStyle    = wx.TE_READONLY,
 			validator  = dtsValidator.OutputFF(
@@ -498,7 +481,18 @@ class BaseConfModPanel(BaseConfPanel):
 
 		Parameters
 		----------
-		
+		parent : wx Widget
+			Parent of the widgets
+		oMode : str
+			One of 'openO', 'openM', 'save', 'folder'. Default is 'folder'
+		statusbar : wx.StatusBar
+			Statusbar of the application to display messages
+		rightDelete : Boolean
+			Enables clearing wx.StaticBox input with right click
+		confOpt : dict or None
+			Extra options from child class. Default is None
+		confMsg : dict or None
+			Extra messages from child class. Default is None
 
 		Attributes
 		----------
@@ -517,14 +511,42 @@ class BaseConfModPanel(BaseConfPanel):
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, ):
+	def __init__(self, parent, rightDelete=True, confOpt=None, confMsg=None):
 		""" """
 		#region -------------------------------------------------> Check Input
 		
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup
-		
+		#------------------------------> Configuration options
+		#--------------> From self
+		confOptM = { 
+			#------------------------------> Label
+			'ScoreValueL'  : 'Score Value',
+			'DetectedProtL': 'Detected Proteins',
+			'ScoreL'       : 'Score',
+			'ColExtractL'  : 'Columns to Extract',
+			#------------------------------> Hint
+			
+			#------------------------------> Size
+			'TwoInRow'  : config.size['TwoInRow'],
+		}
+		#--------------> From child class
+		if confOpt is not None:
+			confOptM.update(confOpt)
+		else:
+			pass
+		#------------------------------> Messages
+		#--------------> From self
+		confMsgM = { }
+		#--------------> From child class
+		if confMsg is not None:
+			confMsgM.update(confMsg)
+		else:
+			pass
+
+		super().__init__(parent, rightDelete=rightDelete, confOpt=confOptM,
+			confMsg=confMsgM)
 		#endregion --------------------------------------------> Initial Setup
 
 		#region --------------------------------------------------------> Menu
@@ -532,7 +554,55 @@ class BaseConfModPanel(BaseConfPanel):
 		#endregion -----------------------------------------------------> Menu
 
 		#region -----------------------------------------------------> Widgets
-		
+		self.normMethod = dtsWidget.StaticTextComboBox(
+			self.sbValue, 
+			label     = self.confOpt['NormMethodL'],
+			choices   = self.confOpt['NormMethod'],
+			validator = dtsValidator.IsNotEmpty(),
+		)
+
+		self.scoreVal = dtsWidget.StaticTextCtrl(
+			self.sbValue,
+			stLabel   = self.confOpt['ScoreValueL'],
+			tcSize    = self.confOpt['TwoInRow'],
+			validator = dtsValidator.NumberList(
+				numType = 'float',
+				nN      = 1,
+			)
+		)
+
+		self.detectedProt = dtsWidget.StaticTextCtrl(
+			self.sbColumn,
+			stLabel   = self.confOpt['DetectedProtL'],
+			tcSize    = self.confOpt['TwoInRow'],
+			validator = dtsValidator.NumberList(
+				numType = 'int',
+				nN      = 1,
+				vMin    = 0,
+			)
+		)
+
+		self.score = dtsWidget.StaticTextCtrl(
+			self.sbColumn,
+			stLabel   = self.confOpt['ScoreL'],
+			tcSize    = self.confOpt['TwoInRow'],
+			validator = dtsValidator.NumberList(
+				numType = 'int',
+				nN      = 1,
+				vMin    = 0,
+			)
+		)
+
+		self.colExtract = dtsWidget.StaticTextCtrl(
+			self.sbColumn,
+			stLabel   = self.confOpt['ColExtractL'],
+			tcSize    = self.confOpt['TwoInRow'],
+			validator = dtsValidator.NumberList(
+				numType = 'int',
+				nN      = 1,
+				vMin    = 0,
+			)
+		)
 		#endregion --------------------------------------------------> Widgets
 
 		#region ------------------------------------------------------> Sizers
@@ -1173,13 +1243,12 @@ class CorrA(BaseConfPanel):
 #---
 
 
-class ProtProf(BaseConfPanel):
+class ProtProf(BaseConfModPanel):
 	"""Creates the Proteome Profiling configuration tab
 
 		Parameters
 		----------
 		parent
-		statusbar
 
 		Attributes
 		----------
@@ -1210,11 +1279,15 @@ class ProtProf(BaseConfPanel):
 			'URL' : config.url['ProtProfPane'],
 			#------------------------------> Labels
 			# 'LenLongest' : len(config.label['CbNormalization']),
-			
+			'CorrectPL'   : 'P Correction',
+			'MedianL'     : 'Median Correction',
+			'GeneNameL'   : 'Gene Names',
+			'ExcludeProtL': 'Exclude Proteins',
 			#------------------------------> Hint
 	
 			#------------------------------> Choices
-			
+			'CorrectPChoice' : config.choice['CorrectP'],
+			'MedianChoice' : config.choice['YesNo'],
 			#------------------------------> Size
 			
 			#------------------------------> Tooltips
@@ -1240,11 +1313,182 @@ class ProtProf(BaseConfPanel):
 		#endregion -----------------------------------------------------> Menu
 
 		#region -----------------------------------------------------> Widgets
+		self.correctP = dtsWidget.StaticTextComboBox(
+			self.sbValue,
+			self.confOpt['CorrectPL'],
+			self.confOpt['CorrectPChoice'],
+			validator = dtsValidator.IsNotEmpty(),
+		)
+
+		self.median = dtsWidget.StaticTextComboBox(
+			self.sbValue,
+			self.confOpt['MedianL'],
+			self.confOpt['MedianChoice'],
+			validator = dtsValidator.IsNotEmpty(),
+		)
+
+		self.geneName = dtsWidget.StaticTextCtrl(
+			self.sbColumn,
+			stLabel   = self.confOpt['GeneNameL'],
+			tcSize    = self.confOpt['TwoInRow'],
+			validator = dtsValidator.NumberList(
+				numType = 'int',
+				nN      = 1,
+				vMin    = 0,
+			)
+		)
 		
+		self.excludeProt = dtsWidget.StaticTextCtrl(
+			self.sbColumn,
+			stLabel   = self.confOpt['ExcludeProtL'],
+			tcSize    = self.confOpt['TwoInRow'],
+			validator = dtsValidator.NumberList(
+				numType = 'int',
+				vMin    = 0,
+			)
+		)
 		#endregion --------------------------------------------------> Widgets
 
 		#region ------------------------------------------------------> Sizers
-		
+		#------------------------------> Sizer Values
+		self.sizersbValueWid.Add(
+			1, 1,
+			pos    = (0,0),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5,
+			span   = (2, 0),
+		)
+		self.sizersbValueWid.Add(
+			self.scoreVal.st,
+			pos    = (0,1),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+			border = 5,
+		)
+		self.sizersbValueWid.Add(
+			self.scoreVal.tc,
+			pos    = (0,2),
+			flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+			border = 5,
+		)
+		self.sizersbValueWid.Add(
+			self.normMethod.st,
+			pos    = (1,1),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+			border = 5,
+		)
+		self.sizersbValueWid.Add(
+			self.normMethod.cb,
+			pos    = (1,2),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5,
+		)
+		self.sizersbValueWid.Add(
+			self.median.st,
+			pos    = (0,3),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+			border = 5,
+		)
+		self.sizersbValueWid.Add(
+			self.median.cb,
+			pos    = (0,4),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5,
+		)
+		self.sizersbValueWid.Add(
+			self.correctP.st,
+			pos    = (1,3),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+			border = 5,
+		)
+		self.sizersbValueWid.Add(
+			self.correctP.cb,
+			pos    = (1,4),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5,
+		)
+		self.sizersbValueWid.Add(
+			1, 1,
+			pos    = (0,5),
+			flag   = wx.EXPAND|wx.ALL,
+			border = 5,
+			span   = (2, 0),
+		)
+		self.sizersbValueWid.AddGrowableCol(0, 1)
+		self.sizersbValueWid.AddGrowableCol(5, 1)
+		#------------------------------> Sizer Columns
+		self.sizersbColumnWid.Add(
+			self.detectedProt.st,
+			pos    = (0,0),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+			border = 5,
+		)
+		self.sizersbColumnWid.Add(
+			self.detectedProt.tc,
+			pos    = (0,1),
+			flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+			border = 5,
+		)
+		self.sizersbColumnWid.Add(
+			self.geneName.st,
+			pos    = (0,2),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+			border = 5,
+		)
+		self.sizersbColumnWid.Add(
+			self.geneName.tc,
+			pos    = (0,3),
+			flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+			border = 5,
+		)
+		self.sizersbColumnWid.Add(
+			self.score.st,
+			pos    = (0,4),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+			border = 5,
+		)
+		self.sizersbColumnWid.Add(
+			self.score.tc,
+			pos    = (0,5),
+			flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+			border = 5,
+		)
+		self.sizersbColumnWid.Add(
+			self.excludeProt.st,
+			pos    = (1,0),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+			border = 5,
+		)
+		self.sizersbColumnWid.Add(
+			self.excludeProt.tc,
+			pos    = (1,1),
+			flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+			border = 5,
+			span   = (0, 5),
+		)
+		self.sizersbColumnWid.Add(
+			self.colExtract.st,
+			pos    = (2,0),
+			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+			border = 5,
+		)
+		self.sizersbColumnWid.Add(
+			self.colExtract.tc,
+			pos    = (2,1),
+			flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+			border = 5,
+			span   = (0, 5),
+		)
+		self.sizersbColumnWid.AddGrowableCol(1,1)
+		self.sizersbColumnWid.AddGrowableCol(3,1)
+		self.sizersbColumnWid.AddGrowableCol(5,1)
+		#------------------------------> Hide Checkbox
+		if self.oFile.tc.GetValue() == '':
+			self.sizersbFileWid.Hide(self.checkB)
+		else:
+			pass
+		#------------------------------> Main Sizer
+		self.SetSizer(self.Sizer)
+		self.Sizer.Fit(self)
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind
