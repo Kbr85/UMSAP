@@ -179,8 +179,9 @@ class BaseConfListTab(BaseConfTab):
 		#region -----------------------------------------------------> Widgets
 		self.lc = dtscore.ListZebraMaxWidth(
 			self, 
-			colLabel=self.confOpt['ColLabel'],
-			colSize=self.confOpt['ColSize'],
+			colLabel        = self.confOpt['ColLabel'],
+			colSize         = self.confOpt['ColSize'],
+			copyFullContent = False,
 		)
 		#----------------------------> Pointer to lc to load data file content
 		self.conf.lbI = self.lc

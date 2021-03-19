@@ -775,14 +775,16 @@ class CorrA(BaseConfPanel):
 		)
 
 		self.lbI = dtscore.ListZebra(self.sbColumn, 
-			colLabel     = self.confOpt['ListColumnL'],
-			colSize      = self.confOpt['LCtrlColS'], 
+			colLabel        = self.confOpt['ListColumnL'],
+			colSize         = self.confOpt['LCtrlColS'],
+			copyFullContent = True,
 		)
 		self.lbO = dtscore.ListZebra(self.sbColumn, 
-			colLabel     = self.confOpt['ListColumnL'],
-			colSize      = self.confOpt['LCtrlColS'],
-			canPaste     = True,
-			canCut       = True,
+			colLabel        = self.confOpt['ListColumnL'],
+			colSize         = self.confOpt['LCtrlColS'],
+			canPaste        = True,
+			canCut          = True,
+			copyFullContent = True,
 		)
 		self.lbL = [self.lbI, self.lbO]
 

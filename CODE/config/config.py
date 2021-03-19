@@ -214,7 +214,9 @@ label = { # Label for widgets
 #region -------------------------------------------------------------> Choices
 choice = { # Choices for the wx.ComboBox
 	'NormMethod' : ['', 'None', 'Log2'],
-	'CorrectP'   : ['None',
+	'CorrectP'   : [
+		'',
+		'None',
 		'Benjamini - Hochberg',  
 		'Benjamini - Yekutieli',
 		'Bonferroni',            

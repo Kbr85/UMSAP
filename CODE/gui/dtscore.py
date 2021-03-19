@@ -47,12 +47,14 @@ class ListZebra(dtsWidget.ListZebra):
 	""" This avoids defining the color for the zebra style every time """
 	def __init__(self, parent, color=config.color['Zebra'], colLabel=None, 
 		colSize=None, canCopy=True, canCut=False, canPaste=False, 
-		pasteUnique=True, selAll=True, style=wx.LC_REPORT):
+		copyFullContent=False, pasteUnique=True, selAll=True, 
+		style=wx.LC_REPORT):
 		""""""
 		super().__init__(
 			parent, color=color, colLabel=colLabel, colSize=colSize, 
 			canCopy=canCopy, canCut=canCut, canPaste=canPaste, 
-			pasteUnique=pasteUnique, selAll=selAll, style=style)
+			copyFullContent=copyFullContent, pasteUnique=pasteUnique, 
+			selAll=selAll, style=style)
 	#---
 #---
 
@@ -60,10 +62,12 @@ class ListZebraMaxWidth(dtsWidget.ListZebraMaxWidth):
 	"""This avoids defining the color for the zebra style every time """
 	def __init__(self, parent, color=config.color['Zebra'], colLabel=None, 
 		colSize=None, canCopy=True, canCut=False, canPaste=False, 
-		pasteUnique=True, selAll=True, style=wx.LC_REPORT):
+		copyFullContent=False, pasteUnique=True, selAll=True, 
+		style=wx.LC_REPORT):
 		""""""
 		super().__init__(
 			parent, color=color, colLabel=colLabel, colSize=colSize, 
 			canCopy=canCopy, canCut=canCut, canPaste=canPaste, 
-			pasteUnique=pasteUnique, selAll=selAll, style=style)
+			copyFullContent=copyFullContent, pasteUnique=pasteUnique, 
+			selAll=selAll, style=style)
 	#---	
