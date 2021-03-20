@@ -122,7 +122,7 @@ class BaseConfTab(wx.Panel):
 				).Movable(
 					b=False
 				).PaneBorder(
-					visible=False,
+					visible=True,
 			),
 		)
 		#endregion ----------------------------------------------> Aui control
@@ -181,7 +181,6 @@ class BaseConfListTab(BaseConfTab):
 			self, 
 			colLabel        = self.confOpt['ColLabel'],
 			colSize         = self.confOpt['ColSize'],
-			copyFullContent = False,
 		)
 		#----------------------------> Pointer to lc to load data file content
 		self.conf.lbI = self.lc
@@ -202,7 +201,7 @@ class BaseConfListTab(BaseConfTab):
 				).Movable(
 					b=False
 				).PaneBorder(
-					visible=False,
+					visible=True,
 			),
 		)
 		#endregion ----------------------------------------------> Aui control
@@ -213,6 +212,8 @@ class BaseConfListTab(BaseConfTab):
 	
 	#endregion ------------------------------------------------> Class methods
 #---
+
+
 #------------------------------> 
 class Start(wx.Panel):
 	"""Start tab

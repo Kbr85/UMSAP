@@ -111,6 +111,7 @@ name = { # Unique names to identify windows/objects through the app
 	'CorrAPlot': 'CorrAPlot',
 	#--> Dialogs
 	'CheckUpdateResDialog': 'CheckUpdateResDialog',
+	'ResControlExp'       : 'ResControlExp',
 	#--> Tab for notebook windows
 	'StartTab'   : 'StartTab',
 	'CorrATab'   : 'CorrATab',

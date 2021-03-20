@@ -18,6 +18,8 @@
 import wx
 
 import dat4s_core.gui.wx.validator as dtsValidator
+
+import gui.window as window
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -110,13 +112,26 @@ class ResControl():
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind
-		
+		self.btnResultsW.Bind(wx.EVT_BUTTON, self.OnResW)
+		self.btnResultsL.Bind(wx.EVT_BUTTON, self.OnResL)
 		#endregion -----------------------------------------------------> Bind
 	#---
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
-	
+	def OnResW(self, event):
+		""" Open the window to write the results columns. """
+		
+		with window.ResControlExp(self) as dlg:
+			dlg.ShowModal()
+
+		return True
+	#---
+
+	def OnResL(self, event):
+		""" Load the results from a text file """
+		pass
+	#---
 	#endregion ------------------------------------------------> Class methods
 #---
 

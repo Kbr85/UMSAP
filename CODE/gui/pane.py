@@ -948,10 +948,8 @@ class CorrA(BaseConfPanel):
 		#endregion ---------------------------------------------------> Thread
 
 		#region ----------------------------------------> Show progress dialog
-		if self.dlg.ShowModal() == wx.ID_OK:
-			self.dlg.Destroy()
-		else:
-			self.dlg.Destroy()
+		self.dlg.ShowModal()
+		self.dlg.Destroy()
 		#endregion -------------------------------------> Show progress dialog
 
 		return True
@@ -1504,6 +1502,79 @@ class ProtProf(BaseConfModPanel):
 		#------------------------------> Main Sizer
 		self.SetSizer(self.Sizer)
 		self.Sizer.Fit(self)
+		#endregion ---------------------------------------------------> Sizers
+
+		#region --------------------------------------------------------> Bind
+		
+		#endregion -----------------------------------------------------> Bind
+
+		#region --------------------------------------------------------> Test
+		import getpass
+		user = getpass.getuser()
+		if config.cOS == "Darwin":
+			self.iFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/PROTPROF/proteinGroups-kbr.txt")
+			# self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/tarprot.umsap")
+		elif config.cOS == 'Windows':
+			from pathlib import Path
+			# self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
+			# self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT')))
+		else:
+			pass
+		self.normMethod.cb.SetValue("Log2")
+		#endregion -----------------------------------------------------> Test
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	
+	#endregion ------------------------------------------------> Class methods
+#---
+
+
+class ResControlExp(wx.Panel):
+	"""
+
+		Parameters
+		----------
+		
+
+		Attributes
+		----------
+		
+
+		Raises
+		------
+		
+
+		Methods
+		-------
+		
+	"""
+	#region -----------------------------------------------------> Class setup
+	
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, parent):
+		""" """
+		#region -------------------------------------------------> Check Input
+		
+		#endregion ----------------------------------------------> Check Input
+
+		#region -----------------------------------------------> Initial Setup
+		super().__init__(parent)
+		#endregion --------------------------------------------> Initial Setup
+
+		#region --------------------------------------------------------> Menu
+		
+		#endregion -----------------------------------------------------> Menu
+
+		#region -----------------------------------------------------> Widgets
+		
+		#endregion --------------------------------------------------> Widgets
+
+		#region ------------------------------------------------------> Sizers
+		
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind

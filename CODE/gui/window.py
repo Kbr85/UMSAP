@@ -28,13 +28,13 @@ import dat4s_core.data.method as dtsMethod
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
 import dat4s_core.generator.generator as dtsGenerator
-import dat4s_core.exception.exception as dtsException
 
 import config.config as config
 import gui.menu as menu
 import gui.tab as tab
 import gui.dtscore as dtscore
 import gui.method as method
+import gui.pane as pane
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -1176,6 +1176,144 @@ class CheckUpdateResult(wx.Dialog):
 		self.EndModal(1)
 		self.Destroy()
 	#endregion ------------------------------------------------> Class Methods
+#---
+
+
+class ResControlExp(wx.Dialog):
+	"""
+
+		Parameters
+		----------
+		parent : wx.Panel
+			This is the pane calling the dialog
+
+		Attributes
+		----------
+		parent : wx.Panel
+			This is the pane calling the dialog
+		confOpt : dict
+			Configuration options
+
+		Raises
+		------
+		
+
+		Methods
+		-------
+		
+	"""
+	#region -----------------------------------------------------> Class setup
+	name = 'ResControlExp'
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, parent):
+		""" """
+		#region -------------------------------------------------> Check Input
+		if (iFile := parent.iFile.tc.GetValue()) == '':
+			dlg = dtsWindow.FileSelectDialog(
+				'openO',
+				config.extLong['Data'],
+				parent = parent
+			)
+			if dlg.ShowModal() == wx.ID_OK:
+				iFile = Path(dlg.GetPath()[0])
+				dlg.Destroy()
+			else:
+				dlg.Destroy()
+				raise Exception
+		else:
+			pass
+		#endregion ----------------------------------------------> Check Input
+
+		#region -----------------------------------------------> Initial Setup
+		self.parent = parent
+
+		self.confOpt = {
+			'Title' : f"Results - Control Experiments",
+			#------------------------------> Label
+			'ColLabel' : config.label['LCtrlColName_I'],
+			'TP_List'  : config.label['TP_ListPane'],
+			'TP_Conf'  : config.label['TP_ConfPane'],
+			#------------------------------> Size
+			'ColSize'  : config.size['LCtrl#Name'],
+		}
+		
+		style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
+		super().__init__(parent, title=self.confOpt['Title'], style=style)
+		#endregion --------------------------------------------> Initial Setup
+
+		#region --------------------------------------------------------> Menu
+		
+		#endregion -----------------------------------------------------> Menu
+
+		#region -----------------------------------------------------> Widgets
+		self.conf = pane.ResControlExp(self)
+		#------------------------------> ListCtrl and fill it
+		self.lc = dtscore.ListZebraMaxWidth(
+			self, 
+			colLabel        = self.confOpt['ColLabel'],
+			colSize         = self.confOpt['ColSize'],
+		)
+		dtsMethod.LCtrlFillColNames(self.lc, iFile)
+		#endregion --------------------------------------------------> Widgets
+
+		#region -------------------------------------------------> Aui control
+		#------------------------------> AUI control
+		self._mgr = aui.AuiManager()
+		#------------------------------> AUI which frame to use
+		self._mgr.SetManagedWindow(self)
+		#------------------------------> Add Configuration panel
+		self._mgr.AddPane( 
+			self.conf, 
+			aui.AuiPaneInfo(
+				).Center(
+				).Caption(
+					self.confOpt['TP_Conf']
+				).Floatable(
+					b=False
+				).CloseButton(
+					visible=False
+				).Movable(
+					b=False
+				).PaneBorder(
+					visible=True,
+			),
+		)
+
+		self._mgr.AddPane(
+			self.lc, 
+			aui.AuiPaneInfo(
+				).Right(
+				).Caption(
+					self.confOpt['TP_List']
+				).Floatable(
+					b=False
+				).CloseButton(
+					visible=False
+				).Movable(
+					b=False
+				).PaneBorder(
+					visible=True,
+			),
+		)
+
+		self._mgr.Update()
+		#endregion ----------------------------------------------> Aui control
+
+		#region --------------------------------------------------------> Bind
+		
+		#endregion -----------------------------------------------------> Bind
+
+		#region ---------------------------------------------> Window position
+		self.CenterOnParent()
+		#endregion ------------------------------------------> Window position
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	
+	#endregion ------------------------------------------------> Class methods
 #---
 #endregion ----------------------------------------------------------> Classes
 
