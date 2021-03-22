@@ -117,8 +117,10 @@ name = { # Unique names to identify windows/objects through the app
 	'CorrATab'   : 'CorrATab',
 	'ProtProfTab': 'ProtProfTab',
 	#--> Individual Panes
-	'CorrAPane'   : 'CorrAPane',
-	'ProtProfPane': 'ProtProfPane',
+	'CorrAPane'                : 'CorrAPane',
+	'ProtProfPane'             : 'ProtProfPane',
+	'ResControlExpPane'        : 'ResControlExpPane',
+	'ProtProfResControlExpPane': 'ProtProfResControlExpPane',
 	#--> Files
 	'UMSAPFile' : 'UMSAPFile',
 }
@@ -227,6 +229,12 @@ choice = { # Choices for the wx.ComboBox
 		'Sidak',                 
 		'Simes-Hochberg',],
 	'YesNo' : ['', 'Yes', 'No'],
+	'ControlType' : [
+		'',
+		'One Control', 
+		'One Control per Column', 
+		'One Control per Row',
+	],
 }
 #endregion ----------------------------------------------------------> Choices
 
@@ -237,8 +245,7 @@ size = { # Base size for widgets
 	#------------------------------> wx.ListCtrl
 	'LCtrl#Name' : [50, 150],
 	#------------------------------> wx.TextCtrl
-	'TwoInRow' : (50, 22) # Two wx.TextCtrl in the same row
-
+	'TwoInRow' : (50, 22), # Two wx.TextCtrl in the same row
 }
 #endregion ------------------------------------------------------------> Sizes
 

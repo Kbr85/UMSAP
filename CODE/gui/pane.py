@@ -19,6 +19,8 @@ import _thread
 from pathlib import Path
 
 import wx
+from wx.core import Validator, WindowDestroyEvent
+import wx.lib.agw.aui as aui
 
 import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
@@ -631,6 +633,311 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 #---
 
 
+class ResControlExpConfBase(wx.Panel):
+	"""Parent class for the configuration panel in the dialog Results - Control
+		Experiments
+
+		Parameters
+		----------
+		parent : wx.Widget
+			Parent of the widgets
+		name : str	
+			Unique name of the panel
+		pName : str
+			Tab calling the window
+
+		Attributes
+		----------
+		confOpt : dict
+			Configuration options
+		stLabel : list of wx.StaticText
+			List with the labels name
+		tcLabel : list of wx.TextCtrl
+			To input the number of labels
+		tcDict : dict of lists of wx.TextCtrl
+			Keys are 1 to N and values are lists of wx.TextCtrl
+
+		Raises
+		------
+		
+
+		Methods
+		-------
+		
+	"""
+	#region -----------------------------------------------------> Class setup
+	
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, parent, name, pName, confOpt=None):
+		""" """
+		#region -------------------------------------------------> Check Input
+		
+		#endregion ----------------------------------------------> Check Input
+
+		#region -----------------------------------------------> Initial Setup
+		self.confOpt = {
+			'N' : {
+				'ProtProfTab': 2,
+				'TarProtTab' : 1,
+				'LimProt'    : 2,
+			},
+			#------------------------------> Labels
+			'SetupL': 'Setup Fields',
+			'StText': {
+				'ProtProfTab' : { # Keys runs in range(1, N+1)
+					1 : 'Conditions:',
+					2 : 'Relevant points:',
+				},
+				'TarProtTab' : {
+					1 : 'Experiments:',
+				},
+				'LimProtTab' : {
+					1 : 'Lanes:',
+					2 : 'Bands:',
+				},
+			},
+			'LabelText' : {
+				'ProtProfTab' : { # Keys runs in range(1, N+1)
+					1 : 'C',
+					2 : 'RP',
+				},
+				'TarProtTab' : {
+					1 : 'Exp',
+				},
+				'LimProtTab' : {
+					1 : 'L',
+					2 : 'B',
+				},
+			},
+			#------------------------------> Size
+			'TotalFieldS' : config.size['TwoInRow'],
+			'LabelS'      : (100,22),
+			#------------------------------> Hint
+			'TotalFieldH': '#',
+			'ControlH'   : 'Name',
+			#------------------------------> Tooltips
+			'TotalFieldTT': (
+				f"Type an integer number greater than cero and press ENTER"),
+			'ControlTT'   : 'Name of the control experiment',
+		}
+
+		self.pName = pName
+		self.N = self.confOpt['N'][self.pName]
+		#--------------> From child class
+		if confOpt is not None:
+			self.confOpt.update(confOpt)
+		else:
+			pass
+
+		super().__init__(parent, name=name)
+		#endregion --------------------------------------------> Initial Setup
+
+		#region --------------------------------------------------------> Menu
+		
+		#endregion -----------------------------------------------------> Menu
+
+		#region -----------------------------------------------------> Widgets
+		#------------------------------> wx.ScrolledWindow
+		self.swLabel    = wx.ScrolledWindow(self)
+		self.swMatrix = wx.ScrolledWindow(self)
+		self.swMatrix.SetBackgroundColour('WHITE')
+		#------------------------------> wx.StaticText & wx.TextCtrl
+		#--------------> Experiment design
+		self.stLabel = []
+		self.tcLabel = []
+		self.tcDict = {}
+		for k in range(1, self.N+1):
+			#------------------------------> tcDict key
+			self.tcDict[k] = []
+			#------------------------------> wx.StaticText
+			a = wx.StaticText(
+					self.swLabel, 
+					label=self.confOpt['StText'][self.pName][k],
+				)
+			a.SetToolTip(self.confOpt['TotalFieldTT'])
+			self.stLabel.append(a)
+			#------------------------------> wx.TextCtrl for the label
+			a = wx.TextCtrl(
+					self.swLabel,
+					size      = self.confOpt['TotalFieldS'],
+					style     = wx.TE_PROCESS_ENTER,
+					name      = str(k),
+					validator = dtsValidator.NumberList(vMin=0, nN=1),
+				)
+			a.SetHint('#')
+			self.tcLabel.append(a)
+		#------------------------------> wx.Button
+		self.btnCreate = wx.Button(self, label=self.confOpt['SetupL'])
+		#endregion --------------------------------------------------> Widgets
+
+		#region ------------------------------------------------------> Sizers
+		#------------------------------> Main Sizer
+		self.Sizer    = wx.BoxSizer(wx.VERTICAL)
+		#------------------------------> Sizers for self.swLabel
+		self.sizerSWLabelMain = wx.BoxSizer(wx.VERTICAL)
+		self.sizerSWLabel = wx.FlexGridSizer(self.N,2,1,1)
+
+		# for k in range(0, self.N):
+		# 	self.sizerSWLabel.Add(
+		# 		self.stLabel[k], 
+		# 		0, 
+		# 		wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 
+		# 		5
+		# 	)
+		# 	self.sizerSWLabel.Add(
+		# 		self.tcLabel[k], 
+		# 		0, 
+		# 		wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 
+		# 		5
+		# 	)
+
+		self.Add2SWLabel()
+
+		self.sizerSWLabelMain.Add(self.sizerSWLabel, 0, wx.EXPAND|wx.ALL, 5)
+
+		self.swLabel.SetSizer(self.sizerSWLabelMain)
+		#------------------------------> Sizer with setup btn
+		self.sizerSetup = wx.BoxSizer(wx.VERTICAL)
+		self.sizerSetup.Add(self.btnCreate, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+		#------------------------------> All in Sizer
+		self.Sizer.Add(self.swLabel,    0, wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, 5)
+		self.Sizer.Add(self.sizerSetup, 0, wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM, 5)
+		self.Sizer.Add(self.swMatrix,   1, wx.EXPAND|wx.ALL, 5)
+		self.SetSizer(self.Sizer)
+		#endregion ---------------------------------------------------> Sizers
+
+		#region --------------------------------------------------------> Bind
+		for k in range(0, self.N):
+			self.tcLabel[k].Bind(wx.EVT_TEXT_ENTER, self.OnLabelEnter)
+		#endregion -----------------------------------------------------> Bind
+
+		#region ---------------------------------------------> Window position
+		
+		#endregion ------------------------------------------> Window position
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	def OnLabelEnter(self, event):
+		"""Creates fields for names when hitting enter
+	
+			Parameters
+			----------
+			event:wx.Event
+				Information about the event
+			
+	
+			Returns
+			-------
+			
+	
+			Raise
+			-----
+			
+		"""
+		#region -------------------------------------------------> Check input
+		for k in range(0, self.N):
+			if self.tcLabel[k].GetValidator().Validate()[0]:
+				pass
+			else:
+				self.tcLabel[k].SetValue("")
+				return False
+		#endregion ----------------------------------------------> Check input
+		
+		#region ---------------------------------------------------> Variables
+		vals = []
+		for k in self.tcLabel:
+			vals.append(0 if (x:=k.GetValue()) == '' else int(x))
+		vals.sort(reverse=True)
+		n = vals[0]
+
+		print(n)
+		#endregion ------------------------------------------------> Variables
+		
+		#region ------------------------------------------------> Modify sizer
+		if (N := n + 2) != self.sizerSWLabel.GetCols():
+			self.sizerSWLabel.SetCols(N)
+		else:
+			pass
+		#endregion ---------------------------------------------> Modify sizer
+		
+		#region --------------------------------------> Create/Destroy widgets
+		for k in range(0, self.N):
+			K = k + 1
+			tN = int(self.tcLabel[k].GetValue())
+			lN = len(self.tcDict[k+1])
+			if tN > lN:
+				#------------------------------> Create new widgets
+				for knew in range(lN, tN):
+					print('New widget')
+					self.tcDict[K].append(
+						wx.TextCtrl(
+							self.swLabel,
+							size  = self.confOpt['LabelS'],
+							value = f"{self.confOpt['LabelText'][self.pName][K]} knew"
+						)
+					)
+			else:
+				#------------------------------> Destroy widget
+				for knew in range(tN, lN):
+					self.tcDict[K][-1].Destroy()
+		#endregion -----------------------------------> Create/Destroy widgets
+
+		#region ------------------------------------------------> Add to sizer
+		self.Add2SWLabel()
+		#endregion ---------------------------------------------> Add to sizer
+		
+		return True
+	#---
+
+	def Add2SWLabel(self):
+		"""Add the widgets to self.sizerSWLabel. It assumes sizer already has 
+			the right number of columns and rows. """
+		#region ------------------------------------------------------> Remove
+		self.sizerSWLabel.Clear(delete_windows=False)
+		print('Clear')
+		#endregion ---------------------------------------------------> Remove
+		
+		#region ---------------------------------------------------------> Add
+		for k in range(0, self.N):
+			K = k + 1
+			self.sizerSWLabel.Add(
+				self.stLabel[k], 
+				0, 
+				wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 
+				5
+			)
+			self.sizerSWLabel.Add(
+				self.tcLabel[k], 
+				0, 
+				wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 
+				5
+			)
+			for tc in self.tcDict[K]:
+				print('Add')
+				self.sizerSWLabel.Add(
+					tc, 
+					0, 
+					wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 
+					5
+			)
+		#endregion ------------------------------------------------------> Add
+	
+		#region ------------------------------------------------------> Redraw
+		self.sizerSWLabel.Layout()
+		self.Update()
+		self.Refresh()
+		#endregion ---------------------------------------------------> Redraw
+		
+		return True
+	#---
+	#endregion ------------------------------------------------> Class methods
+#---
+
+
+#------------------------------> Utilities
 class CorrA(BaseConfPanel):
 	"""Creates the configuration tab for Correlation Analysis
 	
@@ -1249,6 +1556,7 @@ class CorrA(BaseConfPanel):
 #---
 
 
+#------------------------------> Modules
 class ProtProf(BaseConfModPanel):
 	"""Creates the Proteome Profiling configuration tab
 
@@ -1531,16 +1839,22 @@ class ProtProf(BaseConfModPanel):
 #---
 
 
-class ResControlExp(wx.Panel):
-	"""
+#------------------------------> Panes for Type Results - Control Epxeriments
+class ProtProfResControlExp(ResControlExpConfBase):
+	"""Creates the configuration panel for the Results - Control Experiments
+		dialog when called from the ProtProf Tab
 
 		Parameters
 		----------
-		
+		parent : wx.Widget
+			Parent of the panel
+		pName : str
+			Tab calling the window
 
 		Attributes
 		----------
-		
+		name : str
+			Unique name of the panel
 
 		Raises
 		------
@@ -1551,18 +1865,29 @@ class ResControlExp(wx.Panel):
 		
 	"""
 	#region -----------------------------------------------------> Class setup
-	
+	name = 'ProtProfResControlExpPane'
 	#endregion --------------------------------------------------> Class setup
 
 	#region --------------------------------------------------> Instance setup
-	def __init__(self, parent):
+	def __init__(self, parent, pName):
 		""" """
 		#region -------------------------------------------------> Check Input
 		
 		#endregion ----------------------------------------------> Check Input
 
 		#region -----------------------------------------------> Initial Setup
-		super().__init__(parent)
+		confOpt = {
+			#------------------------------> Control
+			'ControlL' : 'Control Experiment:',
+			'ControlNL' : 'Name',
+			'ControlTL': 'Type',
+			#------------------------------> Choice
+			'ControlChoice' : config.choice['ControlType'],
+			#------------------------------> Size
+			'ControlNS' : (125, 22),
+		}
+
+		super().__init__(parent, self.name, pName, confOpt=confOpt)
 		#endregion --------------------------------------------> Initial Setup
 
 		#region --------------------------------------------------------> Menu
@@ -1570,12 +1895,209 @@ class ResControlExp(wx.Panel):
 		#endregion -----------------------------------------------------> Menu
 
 		#region -----------------------------------------------------> Widgets
-		
+		#------------------------------> wx.StaticText
+		self.stControl = wx.StaticText(
+			self.swLabel, 
+			label = self.confOpt['ControlL']
+		)
+		self.stControl.SetToolTip(self.confOpt['ControlTT'])
+		self.stControlT = wx.StaticText(
+			self.swLabel, 
+			label = self.confOpt['ControlTL']
+		)
+		self.stControlN = wx.StaticText(
+			self.swLabel, 
+			label = self.confOpt['ControlNL']
+		)
+		#------------------------------> Text
+		self.tcControl = wx.TextCtrl(
+			self.swLabel, 
+			size = self.confOpt['ControlNS'],
+		)
+		#------------------------------> wx.ComboBox
+		self.cbControl = wx.ComboBox(
+			self.swLabel, 
+			choices = self.confOpt['ControlChoice'],
+			size = (-1, 22)
+		)
 		#endregion --------------------------------------------------> Widgets
 
 		#region ------------------------------------------------------> Sizers
+		self.Sizer.Fit(self)
+
+		self.sizerSWLabelControl = wx.BoxSizer(wx.HORIZONTAL)
+			
+		self.sizerSWLabelControl.Add(
+			self.stControl, 
+			0, 
+			wx.ALIGN_CENTER_VERTICAL|wx.ALL, 
+			5,
+		)
+		self.sizerSWLabelControl.Add(
+			self.stControlT, 
+			0, 
+			wx.ALIGN_CENTER_VERTICAL|wx.ALL, 
+			5,
+		)
+		self.sizerSWLabelControl.Add(
+			self.cbControl, 
+			0, 
+			wx.ALIGN_CENTER_VERTICAL|wx.ALL, 
+			5,
+		)
+		self.sizerSWLabelControl.Add(
+			self.stControlN, 
+			0, 
+			wx.ALIGN_CENTER_VERTICAL|wx.ALL, 
+			5,
+		)
+		self.sizerSWLabelControl.Add(
+			self.tcControl, 
+			1, 
+			wx.EXPAND|wx.ALL,
+			5,
+		)
 		
+		self.sizerSWLabelMain.Add(
+			self.sizerSWLabelControl, 
+			0, 
+			wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM, 
+			5,
+		)
+
+		self.Sizer.Fit(self)
 		#endregion ---------------------------------------------------> Sizers
+
+		#region --------------------------------------------------------> Bind
+		
+		#endregion -----------------------------------------------------> Bind
+
+		#region ---------------------------------------------> Window position
+		
+		#endregion ------------------------------------------> Window position
+	#---
+	#endregion -----------------------------------------------> Instance setup
+
+	#region ---------------------------------------------------> Class methods
+	
+	#endregion ------------------------------------------------> Class methods
+#---
+
+
+class ResControlExp(wx.Panel):
+	"""Creates the panel containig the panes for the dialog Results - Control
+		Experiments
+
+		Parameters
+		----------
+		parent : wx.Widget
+			Parent of the panel
+		iFile : Path
+			Path to the Data File already selected in the parent window
+		pName : str
+			Name of the module creating the dialog
+
+		Attributes
+		----------
+		name : str
+			Unique name of the panel
+		widget : ditc of methods
+			Methods to create the configuration panel
+		confOpt : dict
+			Configuration options for the panel
+
+		Raises
+		------
+		
+
+		Methods
+		-------
+		
+	"""
+	#region -----------------------------------------------------> Class setup
+	name = 'ResControlExpPane'
+
+	widget = {
+		'ProtProfTab' : ProtProfResControlExp,
+	}
+	#endregion --------------------------------------------------> Class setup
+
+	#region --------------------------------------------------> Instance setup
+	def __init__(self, parent, iFile, pName):
+		""" """
+		#region -------------------------------------------------> Check Input
+		
+		#endregion ----------------------------------------------> Check Input
+
+		#region -----------------------------------------------> Initial Setup
+		self.confOpt = {
+			'ColLabel' : config.label['LCtrlColName_I'],
+			'TP_List'  : config.label['TP_ListPane'],
+			'TP_Conf'  : config.label['TP_ConfPane'],
+			#------------------------------> Size
+			'ColSize'  : config.size['LCtrl#Name'],
+		}
+
+		super().__init__(parent, name=self.name)
+		#endregion --------------------------------------------> Initial Setup
+
+		#region --------------------------------------------------------> Menu
+		
+		#endregion -----------------------------------------------------> Menu
+
+		#region -----------------------------------------------------> Widgets
+		self.conf = self.widget[pName](self, pName)
+		#------------------------------> ListCtrl and fill it
+		self.lc = dtscore.ListZebraMaxWidth(
+			self, 
+			colLabel = self.confOpt['ColLabel'],
+			colSize  = self.confOpt['ColSize'],
+		)
+		dtsMethod.LCtrlFillColNames(self.lc, iFile)
+		#endregion --------------------------------------------------> Widgets
+
+		#region -------------------------------------------------> Aui control
+		#------------------------------> AUI control
+		self._mgr = aui.AuiManager()
+		#------------------------------> AUI which frame to use
+		self._mgr.SetManagedWindow(self)
+		#------------------------------> Add Configuration panel
+		self._mgr.AddPane( 
+			self.conf, 
+			aui.AuiPaneInfo(
+				).Center(
+				).Caption(
+					self.confOpt['TP_Conf']
+				).Floatable(
+					b=False
+				).CloseButton(
+					visible=False
+				).Movable(
+					b=False
+				).PaneBorder(
+					visible=True,
+			),
+		)
+
+		self._mgr.AddPane(
+			self.lc, 
+			aui.AuiPaneInfo(
+				).Right(
+				).Caption(
+					self.confOpt['TP_List']
+				).Floatable(
+					b=False
+				).CloseButton(
+					visible=False
+				).Movable(
+					b=False
+				).PaneBorder(
+					visible=True,
+			),
+		)
+
+		self._mgr.Update()
+		#endregion ----------------------------------------------> Aui control
 
 		#region --------------------------------------------------------> Bind
 		

@@ -1180,7 +1180,8 @@ class CheckUpdateResult(wx.Dialog):
 
 
 class ResControlExp(wx.Dialog):
-	"""
+	"""Creates the dialog to type / check loaded values for Results - Control
+		Experiments
 
 		Parameters
 		----------
@@ -1196,7 +1197,8 @@ class ResControlExp(wx.Dialog):
 
 		Raises
 		------
-		
+		Exception
+			- When no Data file is selected
 
 		Methods
 		-------
@@ -1210,7 +1212,7 @@ class ResControlExp(wx.Dialog):
 	def __init__(self, parent):
 		""" """
 		#region -------------------------------------------------> Check Input
-		if (iFile := parent.iFile.tc.GetValue()) == '':
+		if (iFile := parent.iFile.tc.GetValue())  == '':
 			dlg = dtsWindow.FileSelectDialog(
 				'openO',
 				config.extLong['Data'],
@@ -1231,16 +1233,16 @@ class ResControlExp(wx.Dialog):
 
 		self.confOpt = {
 			'Title' : f"Results - Control Experiments",
-			#------------------------------> Label
-			'ColLabel' : config.label['LCtrlColName_I'],
-			'TP_List'  : config.label['TP_ListPane'],
-			'TP_Conf'  : config.label['TP_ConfPane'],
-			#------------------------------> Size
-			'ColSize'  : config.size['LCtrl#Name'],
+			'Size'  : (900, 620),
+			'Style' : wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER,
 		}
-		
-		style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
-		super().__init__(parent, title=self.confOpt['Title'], style=style)
+
+		super().__init__(
+			parent, 
+			title = self.confOpt['Title'],
+			style = self.confOpt['Style'],
+			size  = self.confOpt['Size'],
+			)
 		#endregion --------------------------------------------> Initial Setup
 
 		#region --------------------------------------------------------> Menu
@@ -1248,59 +1250,17 @@ class ResControlExp(wx.Dialog):
 		#endregion -----------------------------------------------------> Menu
 
 		#region -----------------------------------------------------> Widgets
-		self.conf = pane.ResControlExp(self)
-		#------------------------------> ListCtrl and fill it
-		self.lc = dtscore.ListZebraMaxWidth(
-			self, 
-			colLabel        = self.confOpt['ColLabel'],
-			colSize         = self.confOpt['ColSize'],
-		)
-		dtsMethod.LCtrlFillColNames(self.lc, iFile)
+		self.conf = pane.ResControlExp(self, iFile, self.parent.name)
+		#------------------------------> Buttons
+		self.sizerBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
 		#endregion --------------------------------------------------> Widgets
 
-		#region -------------------------------------------------> Aui control
-		#------------------------------> AUI control
-		self._mgr = aui.AuiManager()
-		#------------------------------> AUI which frame to use
-		self._mgr.SetManagedWindow(self)
-		#------------------------------> Add Configuration panel
-		self._mgr.AddPane( 
-			self.conf, 
-			aui.AuiPaneInfo(
-				).Center(
-				).Caption(
-					self.confOpt['TP_Conf']
-				).Floatable(
-					b=False
-				).CloseButton(
-					visible=False
-				).Movable(
-					b=False
-				).PaneBorder(
-					visible=True,
-			),
-		)
-
-		self._mgr.AddPane(
-			self.lc, 
-			aui.AuiPaneInfo(
-				).Right(
-				).Caption(
-					self.confOpt['TP_List']
-				).Floatable(
-					b=False
-				).CloseButton(
-					visible=False
-				).Movable(
-					b=False
-				).PaneBorder(
-					visible=True,
-			),
-		)
-
-		self._mgr.Update()
-		#endregion ----------------------------------------------> Aui control
-
+		#region -------------------------------------------------------> Sizer
+		self.Sizer = wx.BoxSizer(wx.VERTICAL)
+		self.Sizer.Add(self.conf, 1, wx.EXPAND|wx.ALL, 5)
+		self.Sizer.Add(self.sizerBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+		#endregion ----------------------------------------------------> Sizer
+		
 		#region --------------------------------------------------------> Bind
 		
 		#endregion -----------------------------------------------------> Bind
