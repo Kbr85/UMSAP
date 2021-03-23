@@ -24,115 +24,113 @@ import gui.window as window
 
 
 class ResControl():
-	"""Creates the Results - Control experiment widgets. Configuration options
-		are set in the parent class in self.confOpt
+    """Creates the Results - Control experiment widgets. Configuration options
+        are set in the parent class in self.confOpt
 
-		Parameters
-		----------
-		parent : wx widget
-			Parent of the widgets
+        Parameters
+        ----------
+        parent : wx widget
+            Parent of the widgets
 
-		Attributes
-		----------
-		
+        Attributes
+        ----------
+        
 
-		Raises
-		------
-		
+        Raises
+        ------
+        
 
-		Methods
-		-------
-		
-	"""
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
 
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent):
+        """ """
+        #region -----------------------------------------------------> Widgets
+        self.tcResults = wx.TextCtrl(
+            parent    = parent,
+            style     = wx.TE_READONLY,
+            value     = "",
+            size      = self.confOpt['TwoInRow'],
+            validator = dtsValidator.IsNotEmpty(),
+        )
 
-	#region -----------------------------------------------------> Class setup
-	
-	#endregion --------------------------------------------------> Class setup
+        self.stResults = wx.StaticText(
+            parent = parent,
+            label  = self.confOpt['ResultL'],
+            style  = wx.ALIGN_RIGHT
+        )
 
-	#region --------------------------------------------------> Instance setup
-	def __init__(self, parent):
-		""" """
-		#region -----------------------------------------------------> Widgets
-		self.tcResults = wx.TextCtrl(
-			parent    = parent,
-			style     = wx.TE_READONLY,
-			value     = "",
-			size      = self.confOpt['TwoInRow'],
-			validator = dtsValidator.IsNotEmpty(),
-		)
+        self.btnResultsW = wx.Button(
+            parent = parent,
+            label  = self.confOpt['TypeResL'],
+        )
+        self.btnResultsL = wx.Button(
+            parent = parent,
+            label  = self.confOpt['LoadResL'],
+        )
+        #endregion --------------------------------------------------> Widgets
 
-		self.stResults = wx.StaticText(
-			parent = parent,
-			label  = self.confOpt['ResultL'],
-			style  = wx.ALIGN_RIGHT
-		)
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> 
+        self.sizerRes = wx.GridBagSizer(1,1)
+        #------------------------------> 
+        self.sizerRes.Add(
+            self.stResults,
+            pos    = (0,0),
+            flag   = wx.ALIGN_LEFT|wx.ALL,
+            border = 5,
+            span   = (0,2),
+        )
+        self.sizerRes.Add(
+            self.btnResultsW,
+            pos    = (1,0),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+            border = 5
+        )
+        self.sizerRes.Add(
+            self.tcResults,
+            pos    = (1,1),
+            flag   = wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+            border = 5,
+        )
+        self.sizerRes.Add(
+            self.btnResultsL,
+            pos    = (1,2),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
+            border = 5,
+        )
+        #------------------------------> 
+        self.sizerRes.AddGrowableCol(1,1)
+        #endregion ---------------------------------------------------> Sizers
 
-		self.btnResultsW = wx.Button(
-			parent = parent,
-			label  = self.confOpt['TypeResL'],
-		)
-		self.btnResultsL = wx.Button(
-			parent = parent,
-			label  = self.confOpt['LoadResL'],
-		)
-		#endregion --------------------------------------------------> Widgets
+        #region --------------------------------------------------------> Bind
+        self.btnResultsW.Bind(wx.EVT_BUTTON, self.OnResW)
+        self.btnResultsL.Bind(wx.EVT_BUTTON, self.OnResL)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-		#region ------------------------------------------------------> Sizers
-		#------------------------------> 
-		self.sizerRes = wx.GridBagSizer(1,1)
-		#------------------------------> 
-		self.sizerRes.Add(
-			self.stResults,
-			pos    = (0,0),
-			flag   = wx.ALIGN_LEFT|wx.ALL,
-			border = 5,
-			span   = (0,2),
-		)
-		self.sizerRes.Add(
-			self.btnResultsW,
-			pos    = (1,0),
-			flag   = wx.ALIGN_CENTER_VERTICAL|wx.ALL,
-			border = 5
-		)
-		self.sizerRes.Add(
-			self.tcResults,
-			pos    = (1,1),
-			flag   = wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
-			border = 5,
-		)
-		self.sizerRes.Add(
-			self.btnResultsL,
-			pos    = (1,2),
-			flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
-			border = 5,
-		)
-		#------------------------------> 
-		self.sizerRes.AddGrowableCol(1,1)
-		#endregion ---------------------------------------------------> Sizers
+    #region ---------------------------------------------------> Class methods
+    def OnResW(self, event):
+        """ Open the window to write the results columns. """
+        
+        with window.ResControlExp(self) as dlg:
+            dlg.ShowModal()
 
-		#region --------------------------------------------------------> Bind
-		self.btnResultsW.Bind(wx.EVT_BUTTON, self.OnResW)
-		self.btnResultsL.Bind(wx.EVT_BUTTON, self.OnResL)
-		#endregion -----------------------------------------------------> Bind
-	#---
-	#endregion -----------------------------------------------> Instance setup
+        return True
+    #---
 
-	#region ---------------------------------------------------> Class methods
-	def OnResW(self, event):
-		""" Open the window to write the results columns. """
-		
-		with window.ResControlExp(self) as dlg:
-			dlg.ShowModal()
-
-		return True
-	#---
-
-	def OnResL(self, event):
-		""" Load the results from a text file """
-		pass
-	#---
-	#endregion ------------------------------------------------> Class methods
+    def OnResL(self, event):
+        """ Load the results from a text file """
+        pass
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 
 
