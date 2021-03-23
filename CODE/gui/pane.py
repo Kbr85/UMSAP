@@ -19,8 +19,8 @@ import _thread
 from pathlib import Path
 
 import wx
-from wx.core import Validator, WindowDestroyEvent
 import wx.lib.agw.aui as aui
+import wx.lib.scrolledpanel as scrolled
 
 import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
@@ -712,15 +712,11 @@ class ResControlExpConfBase(wx.Panel):
 				},
 			},
 			#------------------------------> Size
-			'TotalFieldS' : config.size['TwoInRow'],
+			'TotalFieldS' : (35,22),
 			'LabelS'      : (100,22),
+			'SWLabelS'    : (670,130),
 			#------------------------------> Hint
 			'TotalFieldH': '#',
-			'ControlH'   : 'Name',
-			#------------------------------> Tooltips
-			'TotalFieldTT': (
-				f"Type an integer number greater than cero and press ENTER"),
-			'ControlTT'   : 'Name of the control experiment',
 		}
 
 		self.pName = pName
@@ -740,8 +736,11 @@ class ResControlExpConfBase(wx.Panel):
 
 		#region -----------------------------------------------------> Widgets
 		#------------------------------> wx.ScrolledWindow
-		self.swLabel    = wx.ScrolledWindow(self)
-		self.swMatrix = wx.ScrolledWindow(self)
+		self.swLabel  = scrolled.ScrolledPanel(
+			self, 
+			size=self.confOpt['SWLabelS']
+		)
+		self.swMatrix = scrolled.ScrolledPanel(self)
 		self.swMatrix.SetBackgroundColour('WHITE')
 		#------------------------------> wx.StaticText & wx.TextCtrl
 		#--------------> Experiment design
@@ -774,24 +773,10 @@ class ResControlExpConfBase(wx.Panel):
 
 		#region ------------------------------------------------------> Sizers
 		#------------------------------> Main Sizer
-		self.Sizer    = wx.BoxSizer(wx.VERTICAL)
+		self.Sizer = wx.BoxSizer(wx.VERTICAL)
 		#------------------------------> Sizers for self.swLabel
 		self.sizerSWLabelMain = wx.BoxSizer(wx.VERTICAL)
 		self.sizerSWLabel = wx.FlexGridSizer(self.N,2,1,1)
-
-		# for k in range(0, self.N):
-		# 	self.sizerSWLabel.Add(
-		# 		self.stLabel[k], 
-		# 		0, 
-		# 		wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 
-		# 		5
-		# 	)
-		# 	self.sizerSWLabel.Add(
-		# 		self.tcLabel[k], 
-		# 		0, 
-		# 		wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 
-		# 		5
-		# 	)
 
 		self.Add2SWLabel()
 
@@ -852,8 +837,6 @@ class ResControlExpConfBase(wx.Panel):
 			vals.append(0 if (x:=k.GetValue()) == '' else int(x))
 		vals.sort(reverse=True)
 		n = vals[0]
-
-		print(n)
 		#endregion ------------------------------------------------> Variables
 		
 		#region ------------------------------------------------> Modify sizer
@@ -871,12 +854,11 @@ class ResControlExpConfBase(wx.Panel):
 			if tN > lN:
 				#------------------------------> Create new widgets
 				for knew in range(lN, tN):
-					print('New widget')
 					self.tcDict[K].append(
 						wx.TextCtrl(
 							self.swLabel,
 							size  = self.confOpt['LabelS'],
-							value = f"{self.confOpt['LabelText'][self.pName][K]} knew"
+							value = f"{self.confOpt['LabelText'][self.pName][K]}{knew}"
 						)
 					)
 			else:
@@ -897,7 +879,6 @@ class ResControlExpConfBase(wx.Panel):
 			the right number of columns and rows. """
 		#region ------------------------------------------------------> Remove
 		self.sizerSWLabel.Clear(delete_windows=False)
-		print('Clear')
 		#endregion ---------------------------------------------------> Remove
 		
 		#region ---------------------------------------------------------> Add
@@ -916,7 +897,6 @@ class ResControlExpConfBase(wx.Panel):
 				5
 			)
 			for tc in self.tcDict[K]:
-				print('Add')
 				self.sizerSWLabel.Add(
 					tc, 
 					0, 
@@ -925,11 +905,12 @@ class ResControlExpConfBase(wx.Panel):
 			)
 		#endregion ------------------------------------------------------> Add
 	
-		#region ------------------------------------------------------> Redraw
+		#region --------------------------------------------------> Set scroll 
+		#------------------------------> Update sizer
 		self.sizerSWLabel.Layout()
-		self.Update()
-		self.Refresh()
-		#endregion ---------------------------------------------------> Redraw
+		#------------------------------> Scroll
+		self.swLabel.SetupScrolling()
+		#endregion -----------------------------------------------> Set scroll
 		
 		return True
 	#---
@@ -1885,6 +1866,13 @@ class ProtProfResControlExp(ResControlExpConfBase):
 			'ControlChoice' : config.choice['ControlType'],
 			#------------------------------> Size
 			'ControlNS' : (125, 22),
+			#------------------------------> Hint
+			'ControlH'   : 'Name',
+			#------------------------------> Tooltips
+			'TotalFieldTT': (
+				f"Type an integer number greater than cero in Conditions and "
+				f"Relevant Points and press ENTER."),
+			'ControlTT'   : 'Set the Type and Name of the control experiment',
 		}
 
 		super().__init__(parent, self.name, pName, confOpt=confOpt)
@@ -1914,6 +1902,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
 			self.swLabel, 
 			size = self.confOpt['ControlNS'],
 		)
+		self.tcControl.SetHint(self.confOpt['ControlH'])
 		#------------------------------> wx.ComboBox
 		self.cbControl = wx.ComboBox(
 			self.swLabel, 
@@ -1923,8 +1912,6 @@ class ProtProfResControlExp(ResControlExpConfBase):
 		#endregion --------------------------------------------------> Widgets
 
 		#region ------------------------------------------------------> Sizers
-		self.Sizer.Fit(self)
-
 		self.sizerSWLabelControl = wx.BoxSizer(wx.HORIZONTAL)
 			
 		self.sizerSWLabelControl.Add(
@@ -1964,8 +1951,6 @@ class ProtProfResControlExp(ResControlExpConfBase):
 			wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM, 
 			5,
 		)
-
-		self.Sizer.Fit(self)
 		#endregion ---------------------------------------------------> Sizers
 
 		#region --------------------------------------------------------> Bind
