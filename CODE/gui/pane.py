@@ -763,7 +763,7 @@ class ResControlExpConfBase(wx.Panel):
 					size      = self.confOpt['TotalFieldS'],
 					style     = wx.TE_PROCESS_ENTER,
 					name      = str(k),
-					validator = dtsValidator.NumberList(vMin=0, nN=1),
+					validator = dtsValidator.NumberList(vMin=1, nN=1),
 				)
 			a.SetHint('#')
 			self.tcLabel.append(a)
@@ -796,6 +796,8 @@ class ResControlExpConfBase(wx.Panel):
 		#region --------------------------------------------------------> Bind
 		for k in range(0, self.N):
 			self.tcLabel[k].Bind(wx.EVT_TEXT_ENTER, self.OnLabelEnter)
+
+		self.btnCreate.Bind(wx.EVT_BUTTON, self.OnCreate)
 		#endregion -----------------------------------------------------> Bind
 
 		#region ---------------------------------------------> Window position
@@ -805,6 +807,26 @@ class ResControlExpConfBase(wx.Panel):
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
+	def OnCreate(self, event):
+		"""Create the fields in the white panel. Override as needed.
+	
+			Parameters
+			----------
+			event:wx.Event
+				Information about the event
+			
+	
+			Returns
+			-------
+			
+	
+			Raise
+			-----
+			
+		"""
+		return True
+	#---
+
 	def OnLabelEnter(self, event):
 		"""Creates fields for names when hitting enter
 	
@@ -854,17 +876,23 @@ class ResControlExpConfBase(wx.Panel):
 			if tN > lN:
 				#------------------------------> Create new widgets
 				for knew in range(lN, tN):
+					KNEW = knew + 1
 					self.tcDict[K].append(
 						wx.TextCtrl(
 							self.swLabel,
 							size  = self.confOpt['LabelS'],
-							value = f"{self.confOpt['LabelText'][self.pName][K]}{knew}"
+							value = f"{self.confOpt['LabelText'][self.pName][K]}{KNEW}"
 						)
 					)
 			else:
 				#------------------------------> Destroy widget
 				for knew in range(tN, lN):
+					#------------------------------> Detach
+					self.sizerSWLabel.Detach(self.tcDict[K][-1])
+					#------------------------------> Destroy
 					self.tcDict[K][-1].Destroy()
+					#------------------------------> Remove from list
+					self.tcDict[K].pop()
 		#endregion -----------------------------------> Create/Destroy widgets
 
 		#region ------------------------------------------------> Add to sizer
@@ -883,7 +911,9 @@ class ResControlExpConfBase(wx.Panel):
 		
 		#region ---------------------------------------------------------> Add
 		for k in range(0, self.N):
+			#------------------------------> 
 			K = k + 1
+			#------------------------------> Add conf fields
 			self.sizerSWLabel.Add(
 				self.stLabel[k], 
 				0, 
@@ -896,6 +926,7 @@ class ResControlExpConfBase(wx.Panel):
 				wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 
 				5
 			)
+			#------------------------------> Add user fields
 			for tc in self.tcDict[K]:
 				self.sizerSWLabel.Add(
 					tc, 
@@ -903,6 +934,15 @@ class ResControlExpConfBase(wx.Panel):
 					wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 
 					5
 			)
+			#------------------------------> Add empty space
+			n = self.sizerSWLabel.GetCols()
+			l = len(self.tcDict[K]) + 2
+			
+			if n > l:
+				for c in range(l, n):
+					self.sizerSWLabel.AddSpacer(1)
+			else:
+				pass
 		#endregion ------------------------------------------------------> Add
 	
 		#region --------------------------------------------------> Set scroll 
@@ -1964,7 +2004,25 @@ class ProtProfResControlExp(ResControlExpConfBase):
 	#endregion -----------------------------------------------> Instance setup
 
 	#region ---------------------------------------------------> Class methods
+	def OnCreate(self, event):
+		"""Create the widgets in the white panel
 	
+			Parameters
+			----------
+			event:wx.Event
+				Information about the event
+			
+	
+			Returns
+			-------
+			
+	
+			Raise
+			-----
+			
+		"""
+		print('Creating')
+	#---
 	#endregion ------------------------------------------------> Class methods
 #---
 
