@@ -780,7 +780,6 @@ class ResControlExpConfBase(wx.Panel):
             a = wx.TextCtrl(
                     self.swLabel,
                     size      = self.confOpt['TotalFieldS'],
-                    style     = wx.TE_PROCESS_ENTER,
                     name      = str(k),
                     validator = dtsValidator.NumberList(vMin=1, nN=1),
                 )
@@ -2099,7 +2098,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #region ---------------------------------------------------> Variables
         control = self.cbControl.GetValue()
         
-        if control == config.choice['ControlType'][2]:
+        if control == config.choice['ControlType'][3]:
             Nc   = n[0]     # Number of rows of tc needed
             Nr   = n[1] + 1 # Number of tc needed for each row
             NCol = n[1] + 2 # Number of columns in the sizer
@@ -2113,10 +2112,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #endregion ------------------------------------------------> Variables
         
         #region -------------------------------------------> Remove from sizer
-        if control != self.controlVal:
-            self.sizerSWMatrix.Clear(delete_windows=True)
-        else:
-            self.sizerSWMatrix.Clear(delete_windows=False)
+        self.sizerSWMatrix.Clear(delete_windows=False)
         #endregion ----------------------------------------> Remove from sizer
         
         #region --------------------------------> Create/Destroy wx.StaticText
@@ -2158,9 +2154,11 @@ class ProtProfResControlExp(ResControlExpConfBase):
             #------------------------------> First row is especial
             if k == 1 and control == config.choice['ControlType'][1]:
                 if control == self.controlVal:
-                    pass
                     continue
                 else:
+                    #--------------> Destroy old widgets
+                    for j in row:
+                        j.Destroy()
                     #--------------> New Row and wx.TextCtrl
                     row = []
                     row.append(
@@ -2204,7 +2202,14 @@ class ProtProfResControlExp(ResControlExpConfBase):
                 #--------------> Remove key
                 del(self.tcDictF[k])
             else:
-                pass            
+                pass      
+        #------------------------------> Clear value if needed
+        if control != self.controlVal:
+            for v in self.tcDictF.values():
+                for j in v:
+                    j.SetValue('')
+        else:
+            pass      
         #endregion -------------------------------> Create/Destroy wx.TextCtrl
         
         #region ------------------------------------------------> Setup Sizers
@@ -2246,7 +2251,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
             NRow : int
                 Number of rows in the sizer 
         """
-        #------------------------------> Control row
+        #region -------------------------------------------------> Control Row
         self.sizerSWMatrix.Add(
             self.lbDict['Control'][0],
             0,
@@ -2261,7 +2266,9 @@ class ProtProfResControlExp(ResControlExpConfBase):
         )
         for k in range(2, NCol):
             self.sizerSWMatrix.AddSpacer(1)
-        #------------------------------> RP labels
+        #endregion ----------------------------------------------> Control Row
+        
+        #region ---------------------------------------------------> RP Labels
         #--------------> Empty space
         self.sizerSWMatrix.AddSpacer(1)
         #--------------> Labels
@@ -2272,14 +2279,16 @@ class ProtProfResControlExp(ResControlExpConfBase):
                 wx.ALIGN_CENTER|wx.ALL,
                 5
             )
-        #------------------------------> Other fields
+        #endregion ------------------------------------------------> RP Labels
+        
+        #region ------------------------------------------------> Other fields
         K = 2
         for k in self.lbDict[1]:
             #--------------> Add Label
             self.sizerSWMatrix.Add(
                 k,
                 0,
-                wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+                wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
                 5
             )
             #--------------> Add tc
@@ -2291,17 +2300,114 @@ class ProtProfResControlExp(ResControlExpConfBase):
                     5
                 )
             K += 1
-    #---
-    
-    def AddWidget_OCC(self, ):
-        """Add the widget when Control Type is One Control. It is assumed 
-            everything is ready to add the widgets"""
+        #endregion ---------------------------------------------> Other fields
+        
         return True
     #---
     
-    def AddWidget_OCR(self, ):
+    def AddWidget_OCC(self, NCol: int, NRow: int) -> bool:
         """Add the widget when Control Type is One Control. It is assumed 
             everything is ready to add the widgets"""
+        #region ---------------------------------------------------> RP Labels
+        self.sizerSWMatrix.AddSpacer(1)
+        
+        for k in self.lbDict[2]:
+            self.sizerSWMatrix.Add(
+                k,
+                0,
+                wx.ALIGN_CENTER|wx.ALL,
+                5
+            )
+        #endregion ------------------------------------------------> RP Labels
+        
+        #region -------------------------------------------------> Control Row
+        self.sizerSWMatrix.Add(
+            self.lbDict['Control'][0],
+            0,
+            wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+            5
+        )
+        
+        for k in self.tcDictF['1']:
+            self.sizerSWMatrix.Add(
+                k,
+                0,
+                wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+                5
+            )    
+        #endregion ----------------------------------------------> Control Row
+        
+        #region --------------------------------------------------> Other Rows
+        for k, v in self.tcDictF.items():
+            K = int(k) - 2
+            #------------------------------> Skip control row
+            if k == '1':
+                continue
+            else:
+                pass
+            #------------------------------> Add Label
+            self.sizerSWMatrix.Add(
+                self.lbDict[1][K],
+                0,
+                wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+                5
+            )
+            #------------------------------> Add wx.TextCtrl
+            for j in v:
+                self.sizerSWMatrix.Add(
+                j,
+                0,
+                wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+                5
+            ) 
+        #endregion -----------------------------------------------> Other Rows
+        
+        return True
+    #---
+    
+    def AddWidget_OCR(self, NCol: int, NRow: int) -> bool:
+        """Add the widget when Control Type is One Control. It is assumed 
+            everything is ready to add the widgets"""
+        #region ---------------------------------------------------> RP Labels
+        self.sizerSWMatrix.AddSpacer(1)
+        
+        self.sizerSWMatrix.Add(
+            self.lbDict['Control'][0],
+            0,
+            wx.ALIGN_CENTER|wx.ALL,
+            5
+        )
+        
+        for k in self.lbDict[2]:
+            self.sizerSWMatrix.Add(
+                k,
+                0,
+                wx.ALIGN_CENTER|wx.ALL,
+                5
+            )
+        #endregion ------------------------------------------------> RP Labels
+        
+        #region --------------------------------------------------> Other rows
+        for k, v in self.tcDictF.items():
+            #--------------> 
+            K = int(k) - 1
+            #--------------> 
+            self.sizerSWMatrix.Add(
+                self.lbDict[1][K],
+                0,
+                wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+                5
+            )
+            #-------------->
+            for j in v:
+                self.sizerSWMatrix.Add(
+                    j,
+                    0,
+                    wx.EXPAND|wx.ALL,
+                    5
+                )
+        #endregion -----------------------------------------------> Other rows
+        
         return True
     #---
     #endregion ------------------------------------------------> Class methods
