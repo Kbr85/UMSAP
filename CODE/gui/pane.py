@@ -720,7 +720,7 @@ class ResControlExpConfBase(wx.Panel):
             #------------------------------> Size
             'TotalFieldS': (35,22),
             'LabelS'     : (100,22),
-            'SWLabelS'   : (670,130),
+            'SWLabelS'   : (670,135),
             'SWMatrixS'  : (670,670),
             #------------------------------> Hint
             'TotalFieldH': '#',
@@ -817,7 +817,7 @@ class ResControlExpConfBase(wx.Panel):
 
         #region --------------------------------------------------------> Bind
         for k in range(0, self.N):
-            self.tcLabel[k].Bind(wx.EVT_TEXT_ENTER, self.OnLabelEnter)
+            self.tcLabel[k].Bind(wx.EVT_KILL_FOCUS, self.OnLabelNumber)
 
         self.btnCreate.Bind(wx.EVT_BUTTON, self.OnCreate)
         #endregion -----------------------------------------------------> Bind
@@ -849,7 +849,7 @@ class ResControlExpConfBase(wx.Panel):
         return True
     #---
 
-    def OnLabelEnter(self, event):
+    def OnLabelNumber(self, event):
         """Creates fields for names when hitting enter
     
             Parameters
@@ -1943,7 +1943,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
             #------------------------------> Tooltips
             'TotalFieldTT': (
                 f"Type an integer number greater than cero in Conditions and "
-                f"Relevant Points and press ENTER."),
+                f"Relevant Points."),
             'ControlTT'   : 'Set the Type and Name of the control experiment',
             #------------------------------> Methods
             'AddWidget' : {
