@@ -26,7 +26,7 @@ import config.config as config
 
 class Notification(dtsWindow.NotificationDialog):
     """This avoids to type the title and the image of the window every time    """
-    def __init__(self, mode, msg=None, tException=None, parent=None, 
+    def __init__(self, mode : str, msg : None =None, tException=None, parent=None, 
         img=config.file['ImgIcon'], button=1,):
         """ """
         super().__init__(mode, msg=msg, tException=tException, parent=parent,
