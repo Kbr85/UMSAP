@@ -75,6 +75,10 @@ class UMSAPFile():
     """
     #region -----------------------------------------------------> Class setup
     name = 'UMSAPFile'
+    
+    confOpt = {
+        'CorrA' : config.nameUtilities['CorrA'],
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -83,13 +87,8 @@ class UMSAPFile():
         #region ---------------------------------------------------> Variables
         self.fileP = fileP
 
-        self.confOpt = {
-            #------------------------------> Names of the sections
-            'CorrA' : config.nameUtilities['CorrA'],
-            #------------------------------> Configure data to plot
-            'Configure' : { 
-                config.nameUtilities['CorrA'] : self.ConfigureDataCorrA,
-            },
+        self.confOpt['Configure'] = { 
+            config.nameUtilities['CorrA'] : self.ConfigureDataCorrA,
         }
         #------------------------------> See Notes about the structure of dict
         self.confData = {}

@@ -126,10 +126,6 @@ class BaseWindow(wx.Frame):
             Parent of the window
         menuDate : dict or None
             Date entries for menu of plotting windows
-        confOpt : dict or None
-            Extra options from child class. Default is None
-        confMsg : dict or None
-            Extra messages from child class. Default is None
 
         Attributes
         ----------
@@ -137,10 +133,6 @@ class BaseWindow(wx.Frame):
             Unique name of the window
         parent : wx Widget or None
             Parent of the window
-        confOpt : dict or None
-            Configuration options after updating with info from child class
-        confMsg : dict or None
-            Error messages after updating with info from child class
         statusbar : wx.StatusBar
             Windows statusbar
     """
@@ -148,37 +140,19 @@ class BaseWindow(wx.Frame):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, name, parent=None, menuDate=None, confOpt=None, 
-        confMsg=None):
+    def __init__(self, parent=None, menuDate=None):
         """ """
         #region -------------------------------------------------> Check Input
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.name   = name
         self.parent = parent
-        #------------------------------> Configuration options
-        #--------------> From self
-        self.confOpt = {}
-        #--------------> From child class
-        if confOpt is not None:
-            self.confOpt.update(confOpt)
-        else:
-            pass
-        #------------------------------> Messages
-        #--------------> From self
-        self.confMsg = { }
-        #--------------> From child class
-        if confMsg is not None:
-            self.confMsg.update(confMsg)
-        else:
-            pass
-        #------------------------------> Parent init
+
         super().__init__(
             parent = parent,
             size   = self.confOpt['Size'],
             title  = self.confOpt['Title'],
-            name   = self.name
+            name   = self.name,
         )
         #endregion --------------------------------------------> Initial Setup
         
@@ -239,22 +213,17 @@ class BaseWindowPlot(BaseWindow):
             Parent of the window
         menuDate : dict or None
             Date entries for menu of plotting windows
-        confOpt : dict or None
-            Extra options from child class. Default is None
-        confMsg : dict or None
-            Extra messages from child class. Default is None
     """
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, name, parent, menuDate, confOpt=None, confMsg=None):
+    def __init__(self, parent, menuDate):
         """ """
         #region -----------------------------------------------> Initial Setup
 
-        super().__init__(name, parent=parent, menuDate=menuDate, 
-            confOpt=confOpt, confMsg=confMsg)
+        super().__init__(parent=parent, menuDate=menuDate)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -339,30 +308,32 @@ class MainWindow(BaseWindow):
             Sizer for the window
     """
     #region -----------------------------------------------------> Class Setup
+    name = 'MainW'
+    
     tabMethods = { # Keys are the unique names of the tabs
         'StartTab'   : tab.Start,
         'CorrATab'   : tab.CorrA,
         'ProtProfTab': tab.ProtProf,
     }
+    
+    confOpt = { # Main Window, conf
+        #------------------------------> Titles
+        'Title': "Analysis Setup",
+        'TitleTab' : {
+            'StartTab' : 'Start',
+            'CorrATab' : config.nameUtilities['CorrA'],
+            'ProtProfTab' : config.nameModules['ProtProf'],
+        },
+        #------------------------------> Size
+        'Size' : (900, 620),
+    }
     #endregion --------------------------------------------------> Class Setup
     
     #region --------------------------------------------------> Instance setup
-    def __init__(self, name='MainW', parent=None):
+    def __init__(self, parent=None):
         """"""
         #region -----------------------------------------------> Initial setup
-        confOpt = { # Main Window, conf
-            #------------------------------> Titles
-            'Title': "Analysis Setup",
-            'TitleTab' : {
-                'StartTab' : 'Start',
-                'CorrATab' : config.nameUtilities['CorrA'],
-                'ProtProfTab' : config.nameModules['ProtProf'],
-            },
-            #------------------------------> Size
-            'Size' : (900, 620),
-        }
-
-        super().__init__(name, parent=parent, confOpt=confOpt)
+        super().__init__(parent=parent)
         #endregion --------------------------------------------> Initial setup
 
         #region -----------------------------------------------------> Widgets
@@ -494,6 +465,279 @@ class MainWindow(BaseWindow):
 #---
 
 
+class CorrAPlot(BaseWindowPlot):
+    """Creates the window showing the results of a correlation analysis
+
+        Parameters
+        ----------
+        obj : data.fileUMSAPFile
+            Reference to the UMSAP file object created in UMSAPControl
+        parent : wx Widget or None
+            Parent of the window
+
+        Attributes
+        ----------
+        name : str
+            Unique name of the window
+        parent : wx Widget or None
+            Parent of the window
+        confOpt : dict
+            Configuration options
+        confMsg : dict
+            User's messages
+        obj : parent.obj
+            Pointer to the UMSAPFile object in parent. Instead of modifying this
+            object here, modify the configure step or add a Get method
+        data : parent.obj.confData[Section]
+            Data for the Correlation Analysis section
+        date : parent.obj.confData[Section].keys()
+            List of dates availables for plotting
+        cmap : Matplotlib cmap
+            CMAP to use in the plot
+        plot : dtsWidget.MatPlotPanel
+            Main plot of the window
+    """
+    #region -----------------------------------------------------> Class setup
+    name='CorrAPlot'
+    
+    confOpt = {
+        'Section' : config.nameUtilities['CorrA'],
+        'Size' : config.size['Plot'],
+    }
+
+    confMsg = {
+        'ExportFailed' : (
+            f"It was not possible to write the data to the selected file"),
+    }
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent):
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        self.confOpt['Title'] = (
+            f"{parent.confOpt['Title']} - {config.nameUtilities['CorrA']}"
+        )
+        self.obj     = parent.obj
+        self.section = self.confOpt['Section']
+        self.data    = self.obj.confData[self.section]
+        self.date    = [x for x in self.data.keys()]
+        self.cmap    = dtsMethod.MatplotLibCmap(
+            N  = config.color[self.section]['CMAP']['N'],
+            c1 = config.color[self.section]['CMAP']['c1'],
+            c2 = config.color[self.section]['CMAP']['c2'],
+            c3 = config.color[self.section]['CMAP']['c3'],
+        )
+
+        super().__init__(parent, self.date)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.plot = dtsWidget.MatPlotPanel(
+            self, 
+            statusbar    = self.statusbar,
+            statusMethod = self.UpdateStatusBar,
+            dpi          = config.general['DPI'],
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.Sizer.Add(self.plot, 1, wx.EXPAND|wx.ALL, 5)
+
+        self.SetSizer(self.Sizer)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ----------------------------------------------------> Position
+        self.Draw(self.date[0])
+        self.WinPos()
+        self.Show()
+        #endregion -------------------------------------------------> Position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def WinPos(self):
+        """Set the position on the screen and adjust the total number of
+            shown windows
+        """
+        #region ---------------------------------------------------> Variables
+        info = method.GetDisplayInfo(self)
+        #endregion ------------------------------------------------> Variables
+                
+        #region ------------------------------------------------> Set Position
+        self.SetPosition(pt=(
+            info['D']['w'] - (info['W']['N']*config.deltaWin + info['W']['w']),
+            info['D']['yo'] + info['W']['N']*config.deltaWin,
+        ))
+        #endregion ---------------------------------------------> Set Position
+
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.name] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
+
+        return True
+    #---
+
+    def Draw(self, tDate):
+        """ Plot data from a given date.
+        
+            Paramenters
+            -----------
+            tDate : str
+                A date-time string available in the section for plotting
+        """
+        #region --------------------------------------------------------> Plot
+        self.plot.axes.pcolormesh(
+            self.data[tDate]['DF'], 
+            cmap        = self.cmap,
+            vmin        = -1,
+            vmax        = 1,
+            antialiased = True,
+            edgecolors  = 'k',
+            lw          = 0.005,
+        )		
+        #endregion -----------------------------------------------------> Plot
+        
+        #region -------------------------------------------------> Axis & Plot
+        #------------------------------> Axis properties
+        self.SetAxis(tDate)
+        #------------------------------> Zoom Out level
+        self.plot.ZoomResetSetValues()
+        #------------------------------> Draw
+        self.plot.canvas.draw()
+        #endregion ----------------------------------------------> Axis & Plot
+
+        #region ---------------------------------------------------> Statusbar
+        self.statusbar.SetStatusText(tDate, 1)
+        #endregion ------------------------------------------------> Statusbar
+        
+        
+        return True
+    #---
+
+    def SetAxis(self, tDate):
+        """ General details of the plot area 
+        
+            Parameters
+            ----------
+            tDate : str
+                A date-time string available in the section for plotting
+        """
+        #region --------------------------------------------------------> Grid
+        self.plot.axes.grid(True)		
+        #endregion -----------------------------------------------------> Grid
+        
+        #region ---------------------------------------------------> Variables
+        xlabel    = []
+        xticksloc = []
+        
+        if (self.data[tDate]['NumCol']) <= 30:
+            step = 1
+        elif self.data[tDate]['NumCol'] > 30 and self.data[tDate]['NumCol'] <= 60:
+            step = 2
+        else:
+            step = 3		
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Set ticks
+        for i in range(0, self.data[tDate]['NumCol'], step):
+            xticksloc.append(i + 0.5)		
+            xlabel.append(self.data[tDate]['DF'].columns[i])
+
+        self.plot.axes.set_xticks(xticksloc)
+        self.plot.axes.set_xticklabels(xlabel, rotation=90)
+
+        self.plot.axes.set_yticks(xticksloc)
+        self.plot.axes.set_yticklabels(xlabel)
+        #endregion ------------------------------------------------> Set ticks
+        
+        #region -----------------------------------------------> Adjust figure
+        self.plot.figure.subplots_adjust(bottom=0.13)
+        #endregion --------------------------------------------> Adjust figure
+
+        return True
+    #---
+
+    def UpdateStatusBar(self, event):
+        """Update the statusbar info
+    
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
+        """
+        #region ---------------------------------------------------> Variables
+        tDate = self.statusbar.GetStatusText(1)
+        #endregion ------------------------------------------------> Variables
+        
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            try:
+                #------------------------------> Set variables
+                x, y = event.xdata, event.ydata
+                xf = int(x)
+                xs = self.data[tDate]['DF'].columns[xf]
+                yf = int(y)
+                ys = self.data[tDate]['DF'].columns[yf]
+                zf = '{:.2f}'.format(self.data[tDate]['DF'].iat[yf,xf])
+                #------------------------------> Print
+                self.statusbar.SetStatusText(
+                    f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
+                )
+            except Exception:
+                self.statusbar.SetStatusText('')
+        else:
+            self.statusbar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
+        
+        return True
+    #---
+
+    def OnExportPlotData(self):
+        """ Export data to a csv file """
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.FileSelectDialog(
+            'save',
+            config.extLong['Data'],
+            parent=self
+        )
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p     = Path(dlg.GetPath())
+            tDate = self.statusbar.GetStatusText(1)
+            #------------------------------> Export
+            try:
+                self.obj.ExportPlotData(self.section, tDate, p)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.confMsg['ExportFailed'],
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+     #---
+    #---	
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
 class UMSAPControl(BaseWindow):
     """Control for an umsap file. 
 
@@ -504,8 +748,6 @@ class UMSAPControl(BaseWindow):
         shownSection : list of str or None
             If called from Update File Content menu list the sections that were
             checked when starting the update
-        name : str
-            Unique window ID
         parent : wx.Window or None
             Parent of the window
 
@@ -527,11 +769,23 @@ class UMSAPControl(BaseWindow):
         
     """
     #region -----------------------------------------------------> Class setup
+    name = 'UMSAPF'
     
+    confOpt = {
+        'Size' : (400, 700),
+        'Plot' : { # Methods to create plot windows
+            config.nameUtilities['CorrA'] : CorrAPlot
+        },
+        'FileLabelCheck' : ['Data File'],
+        'Section' : { # Reference to section items in wxCT.CustomTreeCtrl
+        },
+        'Window' : { # Reference to plot windows
+        },
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, obj, shownSection=None, name='UMSAPF', parent=None):
+    def __init__(self, obj, shownSection=None, parent=None):
         """ """
         #region -------------------------------------------------> Check Input
         
@@ -539,23 +793,9 @@ class UMSAPControl(BaseWindow):
 
         #region -----------------------------------------------> Initial Setup
         self.obj = obj
+        self.confOpt['Title'] = self.obj.fileP.name,
 
-        confOpt = {
-            'Title': self.obj.fileP.name,
-            'Size' : (400, 700),
-            'Plot' : { # Methods to create plot windows
-                config.nameUtilities['CorrA'] : CorrAPlot
-            },
-            'FileLabelCheck' : ['Data File'],
-            'Section' : { # Reference to section items in wxCT.CustomTreeCtrl
-            },
-            'Window' : { # Reference to plot windows
-            },
-        }
-
-        self.obj = obj
-
-        super().__init__(name, parent=parent, confOpt=confOpt)
+        super().__init__(parent=parent)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -777,279 +1017,6 @@ class UMSAPControl(BaseWindow):
 #---
 
 
-class CorrAPlot(BaseWindowPlot):
-    """Creates the window showing the results of a correlation analysis
-
-        Parameters
-        ----------
-        obj : data.fileUMSAPFile
-            Reference to the UMSAP file object created in UMSAPControl
-        parent : wx Widget or None
-            Parent of the window
-
-        Attributes
-        ----------
-        name : str
-            Unique name of the window
-        parent : wx Widget or None
-            Parent of the window
-        confOpt : dict
-            Configuration options
-        confMsg : dict
-            User's messages
-        obj : parent.obj
-            Pointer to the UMSAPFile object in parent. Instead of modifying this
-            object here, modify the configure step or add a Get method
-        data : parent.obj.confData[Section]
-            Data for the Correlation Analysis section
-        date : parent.obj.confData[Section].keys()
-            List of dates availables for plotting
-        cmap : Matplotlib cmap
-            CMAP to use in the plot
-        plot : dtsWidget.MatPlotPanel
-            Main plot of the window
-    """
-    #region -----------------------------------------------------> Class setup
-    name='CorrAPlot'
-    #endregion --------------------------------------------------> Class setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, parent):
-        """ """
-        #region -------------------------------------------------> Check Input
-        
-        #endregion ----------------------------------------------> Check Input
-
-        #region -----------------------------------------------> Initial Setup
-        confOpt = {
-            'Section' : config.nameUtilities['CorrA'],
-            'Title' : (
-                f"{parent.confOpt['Title']} - {config.nameUtilities['CorrA']}"),
-            'Size' : config.size['Plot'],
-        }
-
-        confMsg = {
-            'ExportFailed' : (
-                f"It was not possible to write the data to the selected file"),
-        }
-
-        self.obj     = parent.obj
-        self.section = confOpt['Section']
-        self.data    = self.obj.confData[self.section]
-        self.date    = [x for x in self.data.keys()]
-        self.cmap    = dtsMethod.MatplotLibCmap(
-            N  = config.color[self.section]['CMAP']['N'],
-            c1 = config.color[self.section]['CMAP']['c1'],
-            c2 = config.color[self.section]['CMAP']['c2'],
-            c3 = config.color[self.section]['CMAP']['c3'],
-        )
-
-        super().__init__(self.name, parent, self.date, confOpt=confOpt,
-            confMsg=confMsg)
-        #endregion --------------------------------------------> Initial Setup
-
-        #region -----------------------------------------------------> Widgets
-        self.plot = dtsWidget.MatPlotPanel(
-            self, 
-            statusbar    = self.statusbar,
-            statusMethod = self.UpdateStatusBar,
-            dpi          = config.general['DPI'],
-        )
-        #endregion --------------------------------------------------> Widgets
-
-        #region ------------------------------------------------------> Sizers
-        self.Sizer.Add(self.plot, 1, wx.EXPAND|wx.ALL, 5)
-
-        self.SetSizer(self.Sizer)
-        #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
-
-        #region ----------------------------------------------------> Position
-        self.Draw(self.date[0])
-        self.WinPos()
-        self.Show()
-        #endregion -------------------------------------------------> Position
-    #---
-    #endregion -----------------------------------------------> Instance setup
-
-    #region ---------------------------------------------------> Class methods
-    def WinPos(self):
-        """Set the position on the screen and adjust the total number of
-            shown windows
-        """
-        #region ---------------------------------------------------> Variables
-        info = method.GetDisplayInfo(self)
-        #endregion ------------------------------------------------> Variables
-                
-        #region ------------------------------------------------> Set Position
-        self.SetPosition(pt=(
-            info['D']['w'] - (info['W']['N']*config.deltaWin + info['W']['w']),
-            info['D']['yo'] + info['W']['N']*config.deltaWin,
-        ))
-        #endregion ---------------------------------------------> Set Position
-
-        #region ----------------------------------------------------> Update N
-        config.winNumber[self.name] = info['W']['N'] + 1
-        #endregion -------------------------------------------------> Update N
-
-        return True
-    #---
-
-    def Draw(self, tDate):
-        """ Plot data from a given date.
-        
-            Paramenters
-            -----------
-            tDate : str
-                A date-time string available in the section for plotting
-        """
-        #region --------------------------------------------------------> Plot
-        self.plot.axes.pcolormesh(
-            self.data[tDate]['DF'], 
-            cmap=self.cmap,
-            vmin=-1, 
-            vmax=1,
-            antialiased=True,
-            edgecolors='k',
-            lw=0.005,
-        )		
-        #endregion -----------------------------------------------------> Plot
-        
-        #region -------------------------------------------------> Axis & Plot
-        #------------------------------> Axis properties
-        self.SetAxis(tDate)
-        #------------------------------> Zoom Out level
-        self.plot.ZoomResetSetValues()
-        #------------------------------> Draw
-        self.plot.canvas.draw()
-        #endregion ----------------------------------------------> Axis & Plot
-
-        #region ---------------------------------------------------> Statusbar
-        self.statusbar.SetStatusText(tDate, 1)
-        #endregion ------------------------------------------------> Statusbar
-        
-        
-        return True
-    #---
-
-    def SetAxis(self, tDate):
-        """ General details of the plot area 
-        
-            Parameters
-            ----------
-            tDate : str
-                A date-time string available in the section for plotting
-        """
-        #region --------------------------------------------------------> Grid
-        self.plot.axes.grid(True)		
-        #endregion -----------------------------------------------------> Grid
-        
-        #region ---------------------------------------------------> Variables
-        xlabel    = []
-        xticksloc = []
-        
-        if (self.data[tDate]['NumCol']) <= 30:
-            step = 1
-        elif self.data[tDate]['NumCol'] > 30 and self.data[tDate]['NumCol'] <= 60:
-            step = 2
-        else:
-            step = 3		
-        #endregion ------------------------------------------------> Variables
-        
-        #region ---------------------------------------------------> Set ticks
-        for i in range(0, self.data[tDate]['NumCol'], step):
-            xticksloc.append(i + 0.5)		
-            xlabel.append(self.data[tDate]['DF'].columns[i])
-
-        self.plot.axes.set_xticks(xticksloc)
-        self.plot.axes.set_xticklabels(xlabel, rotation=90)
-
-        self.plot.axes.set_yticks(xticksloc)
-        self.plot.axes.set_yticklabels(xlabel)
-        #endregion ------------------------------------------------> Set ticks
-        
-        #region -----------------------------------------------> Adjust figure
-        self.plot.figure.subplots_adjust(bottom=0.13)
-        #endregion --------------------------------------------> Adjust figure
-
-        return True
-    #---
-
-    def UpdateStatusBar(self, event):
-        """Update the statusbar info
-    
-            Parameters
-            ----------
-            event: matplotlib event
-                Information about the event
-        """
-        #region ---------------------------------------------------> Variables
-        tDate = self.statusbar.GetStatusText(1)
-        #endregion ------------------------------------------------> Variables
-        
-        #region ----------------------------------------------> Statusbar Text
-        if event.inaxes:
-            try:
-                #------------------------------> Set variables
-                x, y = event.xdata, event.ydata
-                xf = int(x)
-                xs = self.data[tDate]['DF'].columns[xf]
-                yf = int(y)
-                ys = self.data[tDate]['DF'].columns[yf]
-                zf = '{:.2f}'.format(self.data[tDate]['DF'].iat[yf,xf])
-                #------------------------------> Print
-                self.statusbar.SetStatusText(
-                    f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
-                )
-            except Exception:
-                self.statusbar.SetStatusText('')
-        else:
-            self.statusbar.SetStatusText('')
-        #endregion -------------------------------------------> Statusbar Text
-        
-        return True
-    #---
-
-    def OnExportPlotData(self):
-        """ Export data to a csv file """
-        #region --------------------------------------------------> Dlg window
-        dlg = dtsWindow.FileSelectDialog(
-            'save',
-            config.extLong['Data'],
-            parent=self
-        )
-        #endregion -----------------------------------------------> Dlg window
-        
-        #region ---------------------------------------------------> Get Path
-        if dlg.ShowModal() == wx.ID_OK:
-            #------------------------------> Variables
-            p     = Path(dlg.GetPath())
-            tDate = self.statusbar.GetStatusText(1)
-            #------------------------------> Export
-            try:
-                self.obj.ExportPlotData(self.section, tDate, p)
-            except Exception as e:
-                dtscore.Notification(
-                    'errorF',
-                    msg        = self.confMsg['ExportFailed'],
-                    tException = e,
-                    parent     = self,
-                )
-        else:
-            pass
-        #endregion ------------------------------------------------> Get Path
-     
-        dlg.Destroy()
-        return True	
-     #---
-    #---	
-    #endregion ------------------------------------------------> Class methods
-#---
-
-
 #------------------------------> wx.Dialog
 class CheckUpdateResult(wx.Dialog):
     """Show a dialog with the result of the check for update operation.
@@ -1067,26 +1034,33 @@ class CheckUpdateResult(wx.Dialog):
         name : str
             Unique window id
     """
+    #region -----------------------------------------------------> Class setup
+    name = 'CheckUpdateResDialog'
+    
+    confOpt = {
+        #------------------------------> Title
+        'Title' : f"Check for Updates",
+        #------------------------------> Style
+        'Style' : wx.CAPTION|wx.CLOSE_BOX,
+        #------------------------------> Label
+        'LabelLatest': "You are using the latest version of UMSAP.",
+        'LabelLink'  : 'Read the Release Notes.',
+        #------------------------------> URL
+        'UpdateUrl' : config.url['Update'],
+        #------------------------------> Files
+        'Icon' : config.file['ImgIcon'],
+    }
+    #endregion --------------------------------------------------> Class setup
+    
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent=None, checkRes=None):
         """"""
         #region -----------------------------------------------> Initial setup
-        self.name = 'CheckUpdateResDialog'
-        
-        self.confOpt = {
-            #------------------------------> Title
-            'Title'    : f"Check for Updates",
-            #------------------------------> Label
-            'LabelLatest': "You are using the latest version of UMSAP.",
-            'LabelLink'  : 'Read the Release Notes.',
-            #------------------------------> URL
-            'UpdateUrl'  : config.url['Update'],
-            #------------------------------> Files
-            'Icon' : config.file['ImgIcon'],
-        }
-
-        style = wx.CAPTION|wx.CLOSE_BOX
-        super().__init__(parent, title=self.confOpt['Title'], style=style)
+        super().__init__(
+            parent, 
+            title=self.confOpt['Title'], 
+            style=self.confOpt['Style'],
+        )
         #endregion --------------------------------------------> Initial setup
 
         #region -----------------------------------------------------> Widgets
@@ -1204,6 +1178,12 @@ class ResControlExp(wx.Dialog):
     """
     #region -----------------------------------------------------> Class setup
     name = 'ResControlExp'
+    
+    confOpt = {
+        'Title' : f"Results - Control Experiments",
+        'Size'  : (900, 620),
+        'Style' : wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER,
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -1227,12 +1207,6 @@ class ResControlExp(wx.Dialog):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.confOpt = {
-            'Title' : f"Results - Control Experiments",
-            'Size'  : (900, 620),
-            'Style' : wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER,
-        }
-
         super().__init__(
             parent, 
             title = self.confOpt['Title'],

@@ -38,19 +38,11 @@ class BaseConfTab(wx.Panel):
         ----------
         parent : wx.Window
             Parent of the tab 
-        confOpt : dict or None
-            Extra options from child class. Default is None
-        confMsg : dict or None
-            Extra messages from child class. Default is None
 
         Attributes
         ----------
         parent : wx.Window
             Parent of the tab 
-        confOpt : dict or None
-            Configuration options after updating with info from child class
-        confMsg : dict or None
-            Error messages after updating with info from child class
 
         Raises
         ------
@@ -61,36 +53,17 @@ class BaseConfTab(wx.Panel):
         
     """
     #region -----------------------------------------------------> Class setup
+    confClass = {
+        'CorrATab'   : pane.CorrA,
+        'ProtProfTab': pane.ProtProf,
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, confOpt=None, confMsg=None):
+    def __init__(self, parent):
         """ """
         #region -----------------------------------------------> Initial Setup
         self.parent = parent
-        #------------------------------> Class creating the conf panel
-        self.confClass = {
-            'CorrATab'   : pane.CorrA,
-            'ProtProfTab': pane.ProtProf,
-        }
-        #------------------------------> Configuration options
-        #--------------> From self
-        self.confOpt = {
-            'TP_Conf' : config.label['TP_ConfPane'],
-        }
-        #--------------> From child class
-        if confOpt is not None:
-            self.confOpt.update(confOpt)
-        else:
-            pass
-        #------------------------------> Messages
-        #--------------> From self
-        self.confMsg = { }
-        #--------------> From child class
-        if confMsg is not None:
-            self.confMsg.update(confMsg)
-        else:
-            pass
         
         super().__init__(parent, name=self.name)
         #endregion --------------------------------------------> Initial Setup
@@ -161,26 +134,17 @@ class BaseConfListTab(BaseConfTab):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, confOpt=None, confMsg=None):
+    def __init__(self, parent):
         """ """
         #region -----------------------------------------------> Initial Setup
-        confOptM = {
-            #------------------------------> Labels
-            'ColLabel' : config.label['LCtrlColName_I'],
-            'ColSize'  : config.size['LCtrl#Name'],
-            'TP_List'  : config.label['TP_ListPane'],
-        }
-        if confOpt is not None:
-            confOptM.update(confOpt)
-
-        super().__init__(parent, confOpt=confOptM, confMsg=confMsg)
+        super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
         self.lc = dtscore.ListZebraMaxWidth(
             self, 
-            colLabel        = self.confOpt['ColLabel'],
-            colSize         = self.confOpt['ColSize'],
+            colLabel = self.confOpt['ColLabel'],
+            colSize  = self.confOpt['ColSize'],
         )
         #----------------------------> Pointer to lc to load data file content
         self.conf.lbI = self.lc
@@ -253,27 +217,29 @@ class Start(wx.Panel):
         Sizerbtn : wx.BoxSizer
             Sizer for the buttons
     """
+    #region -----------------------------------------------------> Class setup
+    name = 'StartTab'
+    
+    confOpt = {
+        #------------------------------> Labels
+        'LimProtL' : config.nameModules['LimProt'],
+        'TarProtL' : config.nameModules['TarProt'],
+        'ProtProfL': config.nameModules['ProtProf'],
+        #------------------------------> Tooltips
+        'LimProtTT' : 'Start the module Limited Proteolysis',
+        'TarProtTT' : 'Start the module Target Proteolysis',
+        'ProtProfTT': 'Start the module Proteome Profiling',
+        #------------------------------> Files
+        'Img' : config.file['ImgStart'],
+    }
+    #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent):
         """"""
         #region -----------------------------------------------> Initial setup
-        self.name    = 'StartTab'
         self.parent  = parent
         
-        self.confOpt = {
-            #------------------------------> Labels
-            'LimProtL' : config.nameModules['LimProt'],
-            'TarProtL' : config.nameModules['TarProt'],
-            'ProtProfL': config.nameModules['ProtProf'],
-            #------------------------------> Tooltips
-            'LimProtTT' : 'Start the module Limited Proteolysis',
-            'TarProtTT' : 'Start the module Target Proteolysis',
-            'ProtProfTT': 'Start the module Proteome Profiling',
-            #------------------------------> Files
-            'Img' : config.file['ImgStart'],
-        }
-
         super().__init__(parent=parent, name=self.name)
         #endregion --------------------------------------------> Initial setup
         
@@ -363,6 +329,12 @@ class CorrA(BaseConfTab):
     """
     #region -----------------------------------------------------> Class setup
     name = 'CorrATab'
+    
+    confOpt = {
+        #region -------------------------------------------------> BaseConfTab
+        'TP_Conf' : config.label['TP_ConfPane'],
+        #endregion ----------------------------------------------> BaseConfTab
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -408,6 +380,19 @@ class ProtProf(BaseConfListTab):
     """
     #region -----------------------------------------------------> Class setup
     name = 'ProtProfTab'
+    
+    confOpt = {
+        #region -------------------------------------------------> BaseConfTab
+        'TP_Conf' : config.label['TP_ConfPane'],
+        #endregion ----------------------------------------------> BaseConfTab
+        
+        #region ---------------------------------------------> BaseConfListTab
+        #------------------------------> Labels
+        'ColLabel' : config.label['LCtrlColName_I'],
+        'ColSize'  : config.size['LCtrl#Name'],
+        'TP_List'  : config.label['TP_ListPane'],
+        #endregion ------------------------------------------> BaseConfListTab
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup

@@ -54,19 +54,11 @@ class BaseConfPanel(
             Parent of the widgets
         rightDelete : Boolean
             Enables clearing wx.StaticBox input with right click
-        confOpt : dict or None
-            Extra options from child class. Default is None
-        confMsg : dict or None
-            Extra messages from child class. Default is None
 
         Attributes
         ----------
         parent : wx Widget
             Parent of the widgets
-        confOpt : dict or None
-            Configuration options after updating with info from child class
-        confMsg : dict or None
-            Error messages after updating with info from child class
         lbI : wx.ListCtrl or None
             Pointer to the default wx.ListCtrl to load Data File content to. 
         lbL : list of wx.ListCtrl
@@ -133,65 +125,10 @@ class BaseConfPanel(
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, rightDelete=True, confOpt=None, confMsg=None):
+    def __init__(self, parent, rightDelete=True):
         """ """
         #region -----------------------------------------------> Initial Setup
         self.parent = parent
-        #------------------------------> Configuration options
-        #--------------> From self
-        self.confOpt = {
-            #------------------------------> Label
-            'iFileL'     : config.label['BtnDataFile'],
-            'oFileL'     : config.label['BtnOutFile'],
-            'NormMethodL': config.label['CbNormalization'],
-            'CheckL'     : config.label['CbCheck'],
-            'RunBtnL'    : config.label['BtnRun'],
-            'FileBoxL'   : config.label['StBoxFile'],
-            'ValueBoxL'  : config.label['StBoxValue'],
-            'ColumnBoxL' : config.label['StBoxColumn'],
-            #------------------------------> Hint
-            'iFileH' : f"Path to the {config.label['BtnDataFile']}",
-            'oFileH' : f"Path to the {config.label['BtnOutFile']}",
-            #------------------------------> Choices
-            'NormMethod' : config.choice['NormMethod'],
-            #------------------------------> Others
-            'oMode' : 'save',
-        }
-        #--------------> From child class
-        if confOpt is not None:
-            self.confOpt.update(confOpt)
-        else:
-            pass
-        #------------------------------> Messages
-        #--------------> From self
-        self.confMsg = { # gui.tab, error msg
-            'iFile' : {
-                'NotPath' : (
-                    f"The path to the {self.confOpt['iFileL']} is not valid."),
-                'NotFile' : (
-                    f"The path to the {self.confOpt['iFileL']} does not point "
-                    f"to a file."),
-                'NoRead' : (
-                    f"The given {self.confOpt['iFileL']} cannot be read."),
-                'FileExt' : (
-                    f"The given {self.confOpt['iFileL']} does not have the "
-                    f"correct extension."),
-            },
-            'oFile' : {
-                'NotPath' : (
-                    f"The path to the {self.confOpt['oFileL']} is not valid."),
-                'NoWrite' : (
-                    f"It is not possible to write into the "
-                    f"{self.confOpt['oFileL']}"),
-            },
-            'NormMethod' : (
-                f"The {self.confOpt['NormMethodL']} was not selected."),
-        }
-        #--------------> From child class
-        if confMsg is not None:
-            self.confMsg.update(confMsg)
-        else:
-            pass
         #------------------------------> This is needed to handle Data File 
         # content load to the wx.ListCtrl in Tabs with multiple panels
         self.lbI       = None # Default wx.ListCtrl to load data file content
@@ -472,8 +409,35 @@ class BaseConfPanel(
             )
         else:
             return f"{label}{(self.confOpt['LenLongest'] - len(label))*' '}"
-        #endregion ----------------------------------------------> Check input
-        
+        #endregion ----------------------------------------------> Check input 
+    #---
+    
+    def OnRun(self, event):
+        """ Start analysis of the module/utility
+
+            Parameter
+            ---------
+            event : wx.Event
+                Event information
+        """
+        #region --------------------------------------------------> Dlg window
+        self.dlg = dtscore.ProgressDialog(
+            self, 
+            self.confOpt['TitlePD'], 
+            self.confOpt['GaugePD'],
+        )
+        #endregion -----------------------------------------------> Dlg window
+
+        #region ------------------------------------------------------> Thread
+        _thread.start_new_thread(self.Run, ('test',))
+        #endregion ---------------------------------------------------> Thread
+
+        #region ----------------------------------------> Show progress dialog
+        self.dlg.ShowModal()
+        self.dlg.Destroy()
+        #endregion -------------------------------------> Show progress dialog
+
+        return True
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -492,10 +456,6 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             Statusbar of the application to display messages
         rightDelete : Boolean
             Enables clearing wx.StaticBox input with right click
-        confOpt : dict or None
-            Extra options from child class. Default is None
-        confMsg : dict or None
-            Extra messages from child class. Default is None
 
         Attributes
         ----------
@@ -514,7 +474,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, rightDelete=True, confOpt=None, confMsg=None):
+    def __init__(self, parent, rightDelete=True):
         """ """
         #region -------------------------------------------------> Check Input
         
@@ -544,7 +504,15 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             pass
         #------------------------------> Messages
         #--------------> From self
-        confMsgM = { }
+        confMsgM = { 
+            'ScoreValue' : {
+                'Error' : (
+                    f"Only one number can be accepted in "
+                    f"{confOptM['ScoreValueL']}.\n In addtions, the number "
+                    f"cannot be larger thant the total number of columns in "
+                    f"the selected Data File."),
+            },
+        }
         #--------------> From child class
         if confMsg is not None:
             confMsgM.update(confMsg)
@@ -675,87 +643,13 @@ class ResControlExpConfBase(wx.Panel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, name, topParent, NColF, 
-        confOpt=None, confMsg=None):
+    def __init__(self, parent, name, topParent, NColF):
         """ """
         #region -------------------------------------------------> Check Input
         
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        #------------------------------> confOpt
-        #--------------> From self
-        self.confOpt = {
-            'N' : {
-                'ProtProfTab': 2,
-                'TarProtTab' : 1,
-                'LimProt'    : 2,
-            },
-            #------------------------------> Labels
-            'SetupL': 'Setup Fields',
-            'StText': {
-                'ProtProfTab' : { # Keys runs in range(1, N+1)
-                    1 : 'Conditions:',
-                    2 : 'Relevant points:',
-                },
-                'TarProtTab' : {
-                    1 : 'Experiments:',
-                },
-                'LimProtTab' : {
-                    1 : 'Lanes:',
-                    2 : 'Bands:',
-                },
-            },
-            'LabelText' : {
-                'ProtProfTab' : { # Keys runs in range(1, N+1)
-                    1 : 'C',
-                    2 : 'RP',
-                },
-                'TarProtTab' : {
-                    1 : 'Exp',
-                },
-                'LimProtTab' : {
-                    1 : 'L',
-                    2 : 'B',
-                },
-            },
-            #------------------------------> Size
-            'TotalFieldS': (35,22),
-            'LabelS'     : (100,22),
-            'SWLabelS'   : (670,135),
-            'SWMatrixS'  : (670,670),
-            #------------------------------> Hint
-            'TotalFieldH': '#',
-        }
-        #--------------> From child class
-        if confOpt is not None:
-            self.confOpt.update(confOpt)
-        else:
-            pass
-        #------------------------------> confMsg
-        #--------------> From self
-        self.confMsg = {
-            'tcField' : {
-				'Error' : (
-					f"Only a space-separated list of unique non-negative "
-					f"integers can be accepted in the {self.confOpt['SetupL']}."
-					f"\nIn addition, the values must be less than or equal to "
-					f"the total number of columns in the selected file."),
-				'BadElement' : (
-					f"Incorrect input:"),
-				'NotUnique' : (
-					f"Repeated elements:"),
-                'AllUnique' : (
-                    f"{self.confOpt['SetupL']} must be unique.\nRepeated "
-                    f"elements:"),
-			},
-        }
-        #--------------> From child class
-        if confMsg is not None:
-            self.confMsg.update(confMsg)
-        else:
-            pass
-        #------------------------------> Other variables
         self.topParent = topParent
         self.pName     = self.topParent.name
         self.N         = self.confOpt['N'][self.pName]
@@ -1192,6 +1086,100 @@ class CorrA(BaseConfPanel):
     """
     #region -----------------------------------------------------> Class Setup
     name = 'CorrAPane'
+    
+    confOpt = {
+        #region -----------------------------------------------> BaseConfPanel
+        #------------------------------> URL
+        'URL' : config.url['CorrAPane'],
+        #------------------------------> Label
+        'iFileL'     : config.label['BtnDataFile'],
+        'oFileL'     : config.label['BtnOutFile'],
+        'NormMethodL': config.label['CbNormalization'],
+        'CheckL'     : config.label['CbCheck'],
+        'RunBtnL'    : config.label['BtnRun'],
+        'FileBoxL'   : config.label['StBoxFile'],
+        'ValueBoxL'  : config.label['StBoxValue'],
+        'ColumnBoxL' : config.label['StBoxColumn'],
+        #------------------------------> Hint
+        'iFileH' : f"Path to the {config.label['BtnDataFile']}",
+        'oFileH' : f"Path to the {config.label['BtnOutFile']}",
+        #------------------------------> Choices
+        'NormMethod' : config.choice['NormMethod'],
+        #------------------------------> Others
+        'oMode' : 'save',
+        #endregion --------------------------------------------> BaseConfPanel
+        
+        #region ------------------------------------------------------> Common
+        #------------------------------> For output labels in self.d
+        'LenLongest' : len(config.label['CbNormalization']),
+        #------------------------------> Progress Dialog
+        'TitlePD' : 'Calculating Correlation Coefficients',
+        'GaugePD' : 15,
+        #------------------------------> Output
+        'Section'  : config.nameUtilities['CorrA'],
+        'MainData' : 'Data-03-CorrelationCoefficients',
+        'ChangeKey': ['iFile', 'oFile'],
+        #endregion ---------------------------------------------------> Common
+        
+        #region -------------------------------------------------------> CorrA
+        #------------------------------> Labels
+        'CorrMethodL': 'Correlation Method',
+        'ListColumnL': config.label['LCtrlColName_I'],
+        'iListL'     : 'Columns in the Data File',
+        'oListL'     : 'Columns to Analyse',
+        'AddL'       : 'Add columns',
+        #------------------------------> Choices
+        'CorrMethod' : ['', 'Pearson', 'Kendall', 'Spearman'],
+        #------------------------------> Size
+        'LCtrlColS' : config.size['LCtrl#Name'],
+        #------------------------------> Tooltips
+        'iListTT' : (
+            f"Selected rows can be copied ({config.copyShortCut}+C) but "
+            f"the list cannot be modified."),
+        'oListTT' : (
+            f"New rows can be pasted ({config.copyShortCut}+V) after the "
+            f"last selected element and existing one cut/deleted "
+            f"({config.copyShortCut}+X) or copied "
+            f"({config.copyShortCut}+C)."),
+        'AddTT' : (
+            f"Add selected Columns in the Data File to the list of Columns "
+            f"to Analyse. New columns will be added after the last "
+            f"selected element in Columns to analyse. Duplicate columns "
+            f"are discarded."),        
+        #endregion ----------------------------------------------------> CorrA
+    }
+    
+    confMsg = {
+        #region -----------------------------------------------> BaseConfPanel
+        'iFile' : {
+            'NotPath' : (
+                f"The path to the {confOpt['iFileL']} is not valid."),
+            'NotFile' : (
+                f"The path to the {confOpt['iFileL']} does not point "
+                f"to a file."),
+            'NoRead' : (
+                f"The given {confOpt['iFileL']} cannot be read."),
+            'FileExt' : (
+                f"The given {confOpt['iFileL']} does not have the "
+                f"correct extension."),
+        },
+        'oFile' : {
+            'NotPath' : (
+                f"The path to the {confOpt['oFileL']} is not valid."),
+            'NoWrite' : (
+                f"It is not possible to write into the "
+                f"{confOpt['oFileL']}"),
+        },
+        'NormMethod' : (
+            f"The {confOpt['NormMethodL']} method was not selected."),
+        #endregion --------------------------------------------> BaseConfPanel
+        
+        'CorrMethod' : (
+            f"The {confOpt['CorrMethodL']} was not selected."),
+        'oList' : (
+            f"The list of {confOpt['oListL']} must contain at least "
+            f"two items."),
+    }
     #endregion --------------------------------------------------> Class Setup
     
     #region --------------------------------------------------> Instance setup
@@ -1200,52 +1188,7 @@ class CorrA(BaseConfPanel):
         #region -----------------------------------------------> Initial setup
         self.dfCC = None # correlation coefficients
         
-        confOpt = { # gui.tab, conf
-            #------------------------------> URL
-            'URL' : config.url['CorrAPane'],
-            #------------------------------> Labels
-            'LenLongest' : len(config.label['CbNormalization']),
-            'CorrMethodL': 'Correlation Method',
-            'ListColumnL': config.label['LCtrlColName_I'],
-            'iListL'     : 'Columns in the Data File',
-            'oListL'     : 'Columns to Analyse',
-            'AddL'       : 'Add columns',
-            #------------------------------> Choices
-            'CorrMethod' : ['', 'Pearson', 'Kendall', 'Spearman'],
-            #------------------------------> Size
-            'LCtrlColS' : config.size['LCtrl#Name'],
-            #------------------------------> Tooltips
-            'iListTT' : (
-                f"Selected rows can be copied ({config.copyShortCut}+C) but "
-                f"the list cannot be modified."),
-            'oListTT' : (
-                f"New rows can be pasted ({config.copyShortCut}+V) after the "
-                f"last selected element and existing one cut/deleted "
-                f"({config.copyShortCut}+X) or copied "
-                f"({config.copyShortCut}+C)."),
-            'AddTT' : (
-                f"Add selected Columns in the Data File to the list of Columns "
-                f"to Analyse. New columns will be added after the last "
-                f"selected element in Columns to analyse. Duplicate columns "
-                f"are discarded."),
-            #------------------------------> Progress Dialog
-            'TitlePD' : 'Calculating Correlation Coefficients',
-            'GaugePD' : 15,
-            #------------------------------> Output
-            'Section'  : config.nameUtilities['CorrA'],
-            'MainData' : 'Data-03-CorrelationCoefficients',
-            'ChangeKey': ['iFile', 'oFile'],
-        }
-
-        confMsg = { # gui.tab, error msg
-            'CorrMethod' : (
-                f"The {confOpt['CorrMethodL']} was not selected."),
-            'oList' : (
-                f"The list of {confOpt['oListL']} must contain at least "
-                f"two items."),
-        }
-
-        super().__init__(parent, confOpt=confOpt, confMsg=confMsg)
+        super().__init__(parent)
         #endregion --------------------------------------------> Initial setup
         
         #region -----------------------------------------------------> Widgets
@@ -1403,7 +1346,7 @@ class CorrA(BaseConfPanel):
         user = getpass.getuser()
         if config.cOS == "Darwin":
             self.iFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt")
-            self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/tarprot.umsap")
+            self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/umsap-dev.umsap")
         elif config.cOS == 'Windows':
             from pathlib import Path
             self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
@@ -1430,34 +1373,6 @@ class CorrA(BaseConfPanel):
     #---
 
     #-------------------------------------> Run analysis methods
-    def OnRun(self, event):
-        """ Start correlation coefficients calculation
-
-            Parameter
-            ---------
-            event : wx.Event
-                Event information
-        """
-        #region --------------------------------------------------> Dlg window
-        self.dlg = dtscore.ProgressDialog(
-            self, 
-            self.confOpt['TitlePD'], 
-            self.confOpt['GaugePD'],
-        )
-        #endregion -----------------------------------------------> Dlg window
-
-        #region ------------------------------------------------------> Thread
-        _thread.start_new_thread(self.Run, ('test',))
-        #endregion ---------------------------------------------------> Thread
-
-        #region ----------------------------------------> Show progress dialog
-        self.dlg.ShowModal()
-        self.dlg.Destroy()
-        #endregion -------------------------------------> Show progress dialog
-
-        return True
-    #---
-
     def CheckInput(self):
         """Check user input"""
         
@@ -1758,7 +1673,8 @@ class ProtProf(BaseConfModPanel):
 
         Parameters
         ----------
-        parent
+        parent: wx.Widget
+            Parent of the pane
 
         Attributes
         ----------
@@ -1773,7 +1689,52 @@ class ProtProf(BaseConfModPanel):
         
     """
     #region -----------------------------------------------------> Class setup
-    name = 'ProtProfTab'
+    name = 'ProtProfPane'
+    
+    confOpt = { # BaseConfModPanel.BaseConfPanel
+        #region -----------------------------------------------> BaseConfPanel
+        #------------------------------> URL
+        'URL' : config.url['ProtProfPane'],
+        #------------------------------> Label
+        'iFileL'     : config.label['BtnDataFile'],
+        'oFileL'     : config.label['BtnOutFile'],
+        'NormMethodL': config.label['CbNormalization'],
+        'CheckL'     : config.label['CbCheck'],
+        'RunBtnL'    : config.label['BtnRun'],
+        'FileBoxL'   : config.label['StBoxFile'],
+        'ValueBoxL'  : config.label['StBoxValue'],
+        'ColumnBoxL' : config.label['StBoxColumn'],
+        #------------------------------> Hint
+        'iFileH' : f"Path to the {config.label['BtnDataFile']}",
+        'oFileH' : f"Path to the {config.label['BtnOutFile']}",
+        #------------------------------> Choices
+        'NormMethod' : config.choice['NormMethod'],
+        #------------------------------> Others
+        'oMode' : 'save',
+        #endregion --------------------------------------------> BaseConfPanel
+        
+        
+        #------------------------------> Labels
+        'CorrectPL'   : 'P Correction',
+        'MedianL'     : 'Median Correction',
+        'GeneNameL'   : 'Gene Names',
+        'ExcludeProtL': 'Exclude Proteins',
+        #------------------------------> Hint
+    
+        #------------------------------> Choices
+        'CorrectPChoice': config.choice['CorrectP'],
+        'MedianChoice'  : config.choice['YesNo'],
+        #------------------------------> Size
+        
+        #------------------------------> Tooltips
+        
+        #------------------------------> Progress Dialog
+        'TitlePD' : f"Running {config.nameModules['ProtProf']} Analysis",
+        'GaugePD' : 15,
+        #------------------------------> Output
+        'Section'  : config.nameModules['ProtProf'],
+        'ChangeKey': ['iFile', 'oFile'],
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -1784,38 +1745,7 @@ class ProtProf(BaseConfModPanel):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        confOpt = { # gui.tab, conf
-            #------------------------------> URL
-            'URL' : config.url['ProtProfPane'],
-            #------------------------------> Labels
-            # 'LenLongest' : len(config.label['CbNormalization']),
-            'CorrectPL'   : 'P Correction',
-            'MedianL'     : 'Median Correction',
-            'GeneNameL'   : 'Gene Names',
-            'ExcludeProtL': 'Exclude Proteins',
-            #------------------------------> Hint
-    
-            #------------------------------> Choices
-            'CorrectPChoice' : config.choice['CorrectP'],
-            'MedianChoice' : config.choice['YesNo'],
-            #------------------------------> Size
-            
-            #------------------------------> Tooltips
-            
-            #------------------------------> Progress Dialog
-            'TitlePD' : f"Running {config.nameModules['ProtProf']} Analysis",
-            'GaugePD' : 15,
-            #------------------------------> Output
-            'Section'  : config.nameModules['ProtProf'],
-            # 'MainData' : 'Data-03-CorrelationCoefficients',
-            'ChangeKey': ['iFile', 'oFile'],
-        }
-
-        confMsg = { # gui.tab, error msg
-            
-        }
-
-        super().__init__(parent, confOpt=confOpt, confMsg=confMsg)
+        super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -1823,20 +1753,27 @@ class ProtProf(BaseConfModPanel):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
+        #------------------------------> File
+        self.iFile.tc.SetValidator(
+            dtsValidator.InputFF(
+                fof = 'file',
+                ext = config.extShort['Data'],
+            )
+        )
+        #------------------------------> Values
         self.correctP = dtsWidget.StaticTextComboBox(
             self.sbValue,
             self.confOpt['CorrectPL'],
             self.confOpt['CorrectPChoice'],
             validator = dtsValidator.IsNotEmpty(),
         )
-
         self.median = dtsWidget.StaticTextComboBox(
             self.sbValue,
             self.confOpt['MedianL'],
             self.confOpt['MedianChoice'],
             validator = dtsValidator.IsNotEmpty(),
         )
-
+        #------------------------------> Columns
         self.geneName = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.confOpt['GeneNameL'],
@@ -1847,7 +1784,6 @@ class ProtProf(BaseConfModPanel):
                 vMin    = 0,
             )
         )
-        
         self.excludeProt = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.confOpt['ExcludeProtL'],
@@ -2018,20 +1954,121 @@ class ProtProf(BaseConfModPanel):
         user = getpass.getuser()
         if config.cOS == "Darwin":
             self.iFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/PROTPROF/proteinGroups-kbr.txt")
-            # self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/tarprot.umsap")
+            self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/umsap-dev.umsap")
         elif config.cOS == 'Windows':
             from pathlib import Path
             # self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
             # self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT')))
         else:
             pass
+        self.scoreVal.tc.SetValue('320')
+        self.median.cb.SetValue('Yes')
         self.normMethod.cb.SetValue("Log2")
+        self.correctP.cb.SetValue('Benjamini - Hochberg')
+        self.detectedProt.tc.SetValue('0')
+        self.geneName.tc.SetValue('6')   
+        self.score.tc.SetValue('39')     
+        self.colExtract.tc.SetValue('0 1 2 3 4-10')
+        self.excludeProt.tc.SetValue('171 172 173')
+        #------------------------------> 
+               #--> One Control per Column, 2 Cond and 2 TP
+        self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+        self.controlType = 'One Control per Column'
+        self.lbDict = {
+            1 : ['DMSO', 'H2O'],
+            2 : ['30min', '1D'],
+            'Control' : ['MyControl'],
+        }
         #endregion -----------------------------------------------------> Test
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    
+    #------------------------------> Run methods
+    def CheckInput(self):
+        """Check user input"""
+        
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.label['PdCheck']
+        #endregion ------------------------------------------------------> Msg
+        
+        #region -------------------------------------------> Individual Fields
+        #------------------------------> Input file
+        msgStep = msgPrefix + self.confOpt['iFileL']
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.iFile.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = self.confMsg['iFile'][b[0]]
+            return False
+        #------------------------------> Output Folder
+        msgStep = msgPrefix + self.confOpt['oFileL']
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.oFile.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = self.confMsg['oFile'][b[0]]
+            return False
+        #------------------------------> Score Value
+        msgStep = msgPrefix + self.confOpt['ScoreValueL']
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.scoreVal.tc.GetValidator().Validate(
+            vMax = self.NCol,
+        )
+        if a:
+            pass
+        else:
+            self.msgError = self.confMsg['ScoreValue']['Error']
+            return False
+        #------------------------------> Normalization
+        msgStep = msgPrefix + self.confOpt['NormMethodL']
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.normMethod.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = self.confMsg['NormMethod']
+            return False
+        #------------------------------> Corr Method
+        #endregion ----------------------------------------> Individual Fields
+
+        return True
+    #---
+
+    def RunEnd(self):
+        """Restart GUI and needed variables"""
+        #region ---------------------------------------> Dlg progress dialogue
+        if self.msgError is None:
+            #--> 
+            self.dlg.SuccessMessage(
+                config.label['PdDone'],
+                eTime=(config.label['PdEllapsed'] + self.deltaT),
+            )
+            #--> Show the 
+            self.OnOFileChange('test')
+        else:
+            self.dlg.ErrorMessage(
+                config.label['PdError'], 
+                error      = self.msgError,
+                tException = self.tException
+            )
+        #endregion ------------------------------------> Dlg progress dialogue
+
+        #region -------------------------------------------------------> Reset
+        self.msgError  = None # Error msg to show in self.RunEnd
+        # self.d         = {} # Dict with the user input as given
+        # self.do        = {} # Dict with the processed user input
+        # self.dfI       = None # pd.DataFrame for initial, normalized and
+        # self.dfN       = None # correlation coefficients
+        # self.dfCC      = None
+        # self.date      = None # date for corr file
+        # self.oFolder   = None # folder for output
+        # self.corrP     = None # path to the corr file that will be created
+        self.deltaT    = None
+        self.tException = None
+        #endregion ----------------------------------------------------> Reset
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -2067,6 +2104,56 @@ class ProtProfResControlExp(ResControlExpConfBase):
     """
     #region -----------------------------------------------------> Class setup
     name = 'ProtProfResControlExpPane'
+    
+    confOpt = { # ResControlExpConfBase
+        #region ---------------------------------------> ResControlExpConfBase
+        #------------------------------> Labels
+        'N' : 2, # Number of labels without control
+        'SetupL': 'Setup Fields',
+        'StText': { # Keys runs in range(1, N+1)
+            1 : 'Conditions:',
+            2 : 'Relevant points:',
+        },
+        'LabelText' : { # Keys runs in range(1, N+1)
+            1 : 'C',
+            2 : 'RP',
+        },
+        #------------------------------> Size
+        'TotalFieldS': (35,22),
+        'LabelS'     : (100,22),
+        'SWLabelS'   : (670,135),
+        'SWMatrixS'  : (670,670),
+        #------------------------------> Hint
+        'TotalFieldH': '#',
+        #endregion ------------------------------------> ResControlExpConfBase
+        
+        #------------------------------> Control
+        'ControlL' : 'Control Experiment:',
+        'ControlNL': 'Name',
+        'ControlTL': 'Type',
+        #------------------------------> Choice
+        'ControlChoice' : config.choice['ControlType'],
+        #------------------------------> Size
+        'ControlNS' : (125, 22),
+        #------------------------------> Hint
+        'ControlH'   : 'Name',
+        #------------------------------> Tooltips
+        'TotalFieldTT': (
+            f"Type an integer number greater than cero in Conditions and "
+            f"Relevant Points."),
+        'ControlTT' : 'Set the Type and Name of the control experiment',
+    }
+    
+    objMsg = { # ResControlExpConfBase
+        #region ---------------------------------------> ResControlExpConfBase
+        'TCField' : config.msg['TCField'],
+        #endregion ------------------------------------> ResControlExpConfBase
+        
+        'NoControl' : f"Please select a Control Type.",
+        'NoCondRP'  : (
+            f"The numbers of Conditions and Relevant Points must be both "
+            f"defined."),
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -2077,42 +2164,15 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        confOpt = {
-            #------------------------------> Control
-            'ControlL' : 'Control Experiment:',
-            'ControlNL' : 'Name',
-            'ControlTL': 'Type',
-            #------------------------------> Choice
-            'ControlChoice' : config.choice['ControlType'],
-            #------------------------------> Size
-            'ControlNS' : (125, 22),
-            #------------------------------> Hint
-            'ControlH'   : 'Name',
-            #------------------------------> Tooltips
-            'TotalFieldTT': (
-                f"Type an integer number greater than cero in Conditions and "
-                f"Relevant Points."),
-            'ControlTT'   : 'Set the Type and Name of the control experiment',
-            #------------------------------> Methods
-            'AddWidget' : {
-                config.choice['ControlType'][1] : self.AddWidget_OC,
-                config.choice['ControlType'][2] : self.AddWidget_OCC,
-                config.choice['ControlType'][3] : self.AddWidget_OCR,
-            }
+        self.confOpt['AddWidget'] = {
+            config.choice['ControlType'][1] : self.AddWidget_OC,
+            config.choice['ControlType'][2] : self.AddWidget_OCC,
+            config.choice['ControlType'][3] : self.AddWidget_OCR,
         }
-        
-        confMsg = {
-            'NoControl' : f"Please select a Control Type.",
-            'NoCondRP'  : (
-                f"The numbers of Conditions and Relevant Points must be both "
-                f"defined. Did you forget to press Enter?"),
-        }
-        
+        #--------------> Control type from previous call to Setup Fields
         self.controlVal = ''
 
-        super().__init__(parent, self.name, topParent, NColF, 
-            confOpt=confOpt, confMsg=confMsg
-        )
+        super().__init__(parent, self.name, topParent, NColF)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -2144,6 +2204,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #------------------------------> wx.ComboBox
         self.cbControl = wx.ComboBox(
             self.swLabel, 
+            style     = wx.CB_READONLY,
             choices   = self.confOpt['ControlChoice'],
             validator = dtsValidator.IsNotEmpty(),
         )
@@ -2615,6 +2676,15 @@ class ResControlExp(wx.Panel):
     widget = {
         'ProtProfTab' : ProtProfResControlExp,
     }
+    
+    confOpt = {
+        #------------------------------> Labels
+        'ColLabel' : config.label['LCtrlColName_I'],
+        'TP_List'  : config.label['TP_ListPane'],
+        'TP_Conf'  : config.label['TP_ConfPane'],
+        #------------------------------> Size
+        'ColSize'  : config.size['LCtrl#Name'],
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -2625,13 +2695,7 @@ class ResControlExp(wx.Panel):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.confOpt = {
-            'ColLabel' : config.label['LCtrlColName_I'],
-            'TP_List'  : config.label['TP_ListPane'],
-            'TP_Conf'  : config.label['TP_ConfPane'],
-            #------------------------------> Size
-            'ColSize'  : config.size['LCtrl#Name'],
-        }
+        self.confOpt = config.objOpt[self.name]
 
         super().__init__(parent, name=self.name)
         #endregion --------------------------------------------> Initial Setup

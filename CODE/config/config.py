@@ -258,6 +258,12 @@ msg = { # Messages used by more than one object
 	#------------------------------> Pandas
 	'PDDataType'   : 'Unexpected data type.',
 	'PDDataTypeCol': 'Unexpected data type in the selected columns.',
+    #------------------------------> ResControlExpConfBase
+    'TCField' : (
+        "Only a space-separated list of unique non-negative integers can be "
+        "accepted in the {labelBtn}.\nIn addition, the values must be less "
+        "than or equal to the total number of columns in the selected "
+        "{labelF}."),
 }
 #endregion ---------------------------------------------------------> Messages
 
