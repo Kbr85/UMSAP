@@ -1250,7 +1250,7 @@ class ResControlExp(wx.Dialog):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
-        self.conf = pane.ResControlExp(self, iFile, self.parent.name)
+        self.conf = pane.ResControlExp(self, iFile, parent)
         #------------------------------> Buttons
         self.sizerBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
         #endregion --------------------------------------------------> Widgets
@@ -1262,7 +1262,7 @@ class ResControlExp(wx.Dialog):
         #endregion ----------------------------------------------------> Sizer
         
         #region --------------------------------------------------------> Bind
-        
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -1272,7 +1272,29 @@ class ResControlExp(wx.Dialog):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def OnOK(self, event):
+        """Validate user information and close the window
     
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        if self.conf.conf.OnOK():
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 #endregion ----------------------------------------------------------> Classes

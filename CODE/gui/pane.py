@@ -643,8 +643,8 @@ class ResControlExpConfBase(wx.Panel):
             Parent of the widgets
         name : str	
             Unique name of the panel
-        pName : str
-            Tab calling the window
+        topParent : wx.Widget
+            Top parent window
 
         Attributes
         ----------
@@ -660,11 +660,12 @@ class ResControlExpConfBase(wx.Panel):
             Keys are '1' to 'N' and values are lists of wx.TextCtrl. 
         lbDict : dict of lists of wx.StaticText for user-given labels
             Keys are 1 to N plus 'Control' and values are the the lists. 
-
+        NColF : int
+            Number of columns in the file
+            
         Raises
         ------
         
-
         Methods
         -------
         
@@ -674,7 +675,8 @@ class ResControlExpConfBase(wx.Panel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, name, pName, confOpt=None, confMsg=None):
+    def __init__(self, parent, name, topParent, NColF, 
+        confOpt=None, confMsg=None):
         """ """
         #region -------------------------------------------------> Check Input
         
@@ -732,17 +734,34 @@ class ResControlExpConfBase(wx.Panel):
             pass
         #------------------------------> confMsg
         #--------------> From self
-        self.confMsg = {}
+        self.confMsg = {
+            'tcField' : {
+				'Error' : (
+					f"Only a comma-separated list of unique non-negative "
+					f"integers can be accepted in the {self.confOpt['SetupL']}."
+					f"\nIn addition, the values must be less than or equal to "
+					f"the total number of columns in the selected file."),
+				'BadElement' : (
+					f"Incorrect input:"),
+				'NotUnique' : (
+					f"Repeated elements:"),
+                'AllUnique' : (
+                    f"{self.confOpt['SetupL']} must be unique.\nRepeated "
+                    f"elements:"),
+			},
+        }
         #--------------> From child class
         if confMsg is not None:
             self.confMsg.update(confMsg)
         else:
             pass
         #------------------------------> Other variables
-        self.pName   = pName
-        self.N       = self.confOpt['N'][self.pName]
-        self.tcDictF = {}
-        self.lbDict  = {}
+        self.topParent = topParent
+        self.pName     = self.topParent.name
+        self.N         = self.confOpt['N'][self.pName]
+        self.tcDictF   = {}
+        self.lbDict    = {}
+        self.NColF     = NColF
         #------------------------------> super()
         super().__init__(parent, name=name)
         #endregion --------------------------------------------> Initial Setup
@@ -853,7 +872,7 @@ class ResControlExpConfBase(wx.Panel):
     
             Parameters
             ----------
-            event:wx.Event
+            event : wx.Event
                 Information about the event
             
     
@@ -920,6 +939,10 @@ class ResControlExpConfBase(wx.Panel):
         self.Add2SWLabel()
         #endregion ---------------------------------------------> Add to sizer
         
+        #region --------------------------------------------------> Event Skip
+        event.Skip()
+        #endregion -----------------------------------------------> Event Skip
+        
         return True
     #---
 
@@ -981,6 +1004,64 @@ class ResControlExpConfBase(wx.Panel):
         self.swLabel.SetupScrolling()
         #endregion -----------------------------------------------> Set scroll
         
+        return True
+    #---
+    
+    def OnOK(self) -> bool:
+        """Validate and set the Results - Control Experiments text """
+        #region -------------------------------------------------> Check input
+        #------------------------------> Variables
+        tcList = []
+        oText  = ''
+        #------------------------------> Individual fields and list of tc
+        for v in self.tcDictF.values():
+            #--------------> Check values
+            for j in v:
+                #--------------> Add to lists
+                tcList.append(j)
+                oText = f"{oText}{j.GetValue()}; "
+                #--------------> Check
+                a, b = j.GetValidator().Validate()
+                if a:
+                    pass
+                else:
+                    bad = '' if b[1] is None else str(b[1])
+                    msg = (
+                        f"{self.confMsg['tcField']['Error']}\n\n"
+                        f"{self.confMsg['tcField'][b[0]]} {bad}"
+                    )
+                    dtscore.Notification(
+                        'errorF',
+                        msg    = msg,
+                        parent = self,
+                        )
+                    j.SetFocus(),
+                    return False
+            #--------------> Add row delimiter
+            oText = f"{oText[0:-2]}: "
+        #------------------------------> All unique
+        a, b = dtsValidator.UniqueNumbers(tcList)
+        if a:
+            pass
+        else:
+            msg = (
+                f"{self.confMsg['tcField']['AllUnique']} {b[1]}")
+            dtscore.Notification('errorF', msg=msg)
+            return False
+        #endregion ----------------------------------------------> Check input
+        
+        #region -----------------------------------------------> Set tcResults
+        self.topParent.tcResults.SetValue(f"{oText[0:-2]}")
+        #endregion --------------------------------------------> Set tcResults
+        
+        #region ----------------------------------------> Set parent variables
+        self.topParent.lbDict = self.lbDict
+        if self.pName == 'ProtProfTab' :
+            self.topParent.controlType = self.controlVal
+        else:
+            pass
+        #endregion -------------------------------------> Set parent variables
+
         return True
     #---
     #endregion ------------------------------------------------> Class methods
@@ -1898,8 +1979,10 @@ class ProtProfResControlExp(ResControlExpConfBase):
         ----------
         parent : wx.Widget
             Parent of the panel
-        pName : str
-            Tab calling the window
+        topParent : wx.Widget
+            Top parent window
+        NColF : int
+            Total number of columns present in the Data File
 
         Attributes
         ----------
@@ -1921,7 +2004,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, pName):
+    def __init__(self, parent, topParent, NColF):
         """ """
         #region -------------------------------------------------> Check Input
         
@@ -1961,8 +2044,9 @@ class ProtProfResControlExp(ResControlExpConfBase):
         
         self.controlVal = ''
 
-        super().__init__(parent, self.name, pName, confOpt=confOpt, 
-            confMsg=confMsg)
+        super().__init__(parent, self.name, topParent, NColF, 
+            confOpt=confOpt, confMsg=confMsg
+        )
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -2165,7 +2249,11 @@ class ProtProfResControlExp(ResControlExpConfBase):
                         wx.TextCtrl(
                             self.swMatrix,
                             size      = self.confOpt['LabelS'],
-                            validator = dtsValidator.NumberList(opt=True)
+                            validator = dtsValidator.NumberList(
+                                opt  = True,
+                                vMin = 0,
+                                vMax = self.NColF,
+                            )
                         )
                     )
                     #--------------> Assign & Continue to next for step
@@ -2181,7 +2269,11 @@ class ProtProfResControlExp(ResControlExpConfBase):
                         wx.TextCtrl(
                             self.swMatrix,
                             size      = self.confOpt['LabelS'],
-                            validator = dtsValidator.NumberList(opt=True)
+                            validator = dtsValidator.NumberList(
+                                opt  = True,
+                                vMin = 0,
+                                vMax = self.NColF,
+                            )
                         )
                     )
                 #-------------->  Add to dict
@@ -2424,8 +2516,8 @@ class ResControlExp(wx.Panel):
             Parent of the panel
         iFile : Path
             Path to the Data File already selected in the parent window
-        pName : str
-            Name of the module creating the dialog
+        topParent : wx.Widget
+            Window calling the dialog 
 
         Attributes
         ----------
@@ -2453,7 +2545,7 @@ class ResControlExp(wx.Panel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, iFile, pName):
+    def __init__(self, parent, iFile, topParent):
         """ """
         #region -------------------------------------------------> Check Input
         
@@ -2476,7 +2568,6 @@ class ResControlExp(wx.Panel):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
-        self.conf = self.widget[pName](self, pName)
         #------------------------------> ListCtrl and fill it
         self.lc = dtscore.ListZebraMaxWidth(
             self, 
@@ -2484,6 +2575,11 @@ class ResControlExp(wx.Panel):
             colSize  = self.confOpt['ColSize'],
         )
         dtsMethod.LCtrlFillColNames(self.lc, iFile)
+        #------------------------------> Conf panel here to read NRow in lc
+        self.conf = self.widget[topParent.name](
+            self, 
+            topParent, 
+            self.lc.GetItemCount())
         #endregion --------------------------------------------------> Widgets
 
         #region -------------------------------------------------> Aui control
