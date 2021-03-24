@@ -1190,8 +1190,6 @@ class ResControlExp(wx.Dialog):
 
         Attributes
         ----------
-        parent : wx.Panel
-            This is the pane calling the dialog
         confOpt : dict
             Configuration options
 
@@ -1229,8 +1227,6 @@ class ResControlExp(wx.Dialog):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.parent = parent
-
         self.confOpt = {
             'Title' : f"Results - Control Experiments",
             'Size'  : (900, 620),

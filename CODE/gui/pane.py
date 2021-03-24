@@ -657,7 +657,7 @@ class ResControlExpConfBase(wx.Panel):
         tcDict : dict of lists of wx.TextCtrl for labels
             Keys are 1 to N and values are lists of wx.TextCtrl
         tcDictF : dict of lists of wx.TextCtrl for fields
-            Keys are '1' to 'N' and values are lists of wx.TextCtrl. 
+            Keys are 1 to NRow and values are lists of wx.TextCtrl. 
         lbDict : dict of lists of wx.StaticText for user-given labels
             Keys are 1 to N plus 'Control' and values are the the lists. 
         NColF : int
@@ -940,7 +940,10 @@ class ResControlExpConfBase(wx.Panel):
         #endregion ---------------------------------------------> Add to sizer
         
         #region --------------------------------------------------> Event Skip
-        event.Skip()
+        if isinstance(event, str):
+            pass
+        else:
+            event.Skip()
         #endregion -----------------------------------------------> Event Skip
         
         return True
@@ -1055,13 +1058,75 @@ class ResControlExpConfBase(wx.Panel):
         #endregion --------------------------------------------> Set tcResults
         
         #region ----------------------------------------> Set parent variables
-        self.topParent.lbDict = self.lbDict
+        #------------------------------> Labels
+        self.topParent.lbDict = {}
+        for k, v in self.lbDict.items():
+            self.topParent.lbDict[k] = []
+            for j in v:
+                self.topParent.lbDict[k].append(j.GetLabel())
+        #------------------------------> Control type if needed
         if self.pName == 'ProtProfTab' :
             self.topParent.controlType = self.controlVal
         else:
             pass
         #endregion -------------------------------------> Set parent variables
 
+        return True
+    #---
+    
+    def SetInitialState(self) -> bool:
+        """Set the initial state of the panel. This assumes that the needed
+            values in topParent are properly configured.
+        """
+        #region -------------------------------------------------> Check input
+        if (tcFieldsVal := self.topParent.tcResults.GetValue()) != '':
+            pass
+        else:
+            return False
+        #endregion ----------------------------------------------> Check input
+
+        #region --------------------------------------------------> Add Labels
+        if config.development:
+            for k,v in self.topParent.lbDict.items():
+                print(str(k)+': '+str(v))
+        else:
+            pass
+        #------------------------------> Set the label numbers
+        for k, v in self.topParent.lbDict.items():
+            if k != 'Control':
+                self.tcLabel[k-1].SetValue(str(len(v)))
+            else:
+                pass
+        #------------------------------> Create labels fields
+        self.OnLabelNumber('test')
+        #------------------------------> Fill. 2 iterations needed. Improve
+        for k, v in self.topParent.lbDict.items():
+            if k != 'Control':
+                for j, t in enumerate(v):
+                    self.tcDict[k][j].SetValue(t)
+            else:
+                self.tcControl.SetValue(v[0])
+        #endregion -----------------------------------------------> Add Labels
+        
+        #region -------------------------------------------------> Set Control
+        if self.pName == 'ProtProfTab':
+            self.cbControl.SetValue(self.topParent.controlType)
+        else:
+            pass
+        #endregion ----------------------------------------------> Set Control
+        
+        #region ---------------------------------------------> Create tcFields
+        self.OnCreate('test')
+        #endregion ------------------------------------------> Create tcFields
+        
+        #region --------------------------------------------> Add Field Values
+        row = tcFieldsVal.split(":")
+        for k, r in enumerate(row, start=1):
+            fields = r.split(";")
+            for j, f in enumerate(fields):
+                self.tcDictF[k][j].SetValue(f)
+        #endregion -----------------------------------------> Add Field Values
+        
         return True
     #---
     #endregion ------------------------------------------------> Class methods
@@ -2132,6 +2197,11 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #region ---------------------------------------------> Window position
         
         #endregion ------------------------------------------> Window position
+        
+        #region -----------------------------------------------> Initial State
+        self.SetInitialState()
+        #endregion --------------------------------------------> Initial State
+        
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -2233,7 +2303,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #------------------------------> Widgets
         for k in range(1, Nc+1):
             #------------------------------> Get row
-            row = self.tcDictF.get(str(k), [])
+            row = self.tcDictF.get(k, [])
             lrow = len(row)
             #------------------------------> First row is especial
             if k == 1 and control == config.choice['ControlType'][1]:
@@ -2257,7 +2327,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
                         )
                     )
                     #--------------> Assign & Continue to next for step
-                    self.tcDictF[str(k)] = row
+                    self.tcDictF[k] = row
                     continue
             else:
                 pass
@@ -2277,7 +2347,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
                         )
                     )
                 #-------------->  Add to dict
-                self.tcDictF[str(k)] = row
+                self.tcDictF[k] = row
             else:
                 for j in range(Nr, lrow):
                     #-------------->  Destroy
@@ -2287,7 +2357,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #------------------------------> Drop keys and destroy from dict
         dK = [x for x in self.tcDictF.keys()]
         for k in dK:
-            if int(k) > Nc:
+            if k > Nc:
                 #--------------> Destroy this widget
                 for j in self.tcDictF[k]:
                     j.Destroy()
@@ -2351,7 +2421,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
             5
         )
         self.sizerSWMatrix.Add(
-            self.tcDictF['1'][0],
+            self.tcDictF[1][0],
             0,
             wx.EXPAND|wx.ALL,
             5
@@ -2384,7 +2454,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
                 5
             )
             #--------------> Add tc
-            for j in self.tcDictF[str(K)]:
+            for j in self.tcDictF[K]:
                 self.sizerSWMatrix.Add(
                     j,
                     0,
@@ -2420,7 +2490,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
             5
         )
         
-        for k in self.tcDictF['1']:
+        for k in self.tcDictF[1]:
             self.sizerSWMatrix.Add(
                 k,
                 0,
@@ -2431,9 +2501,9 @@ class ProtProfResControlExp(ResControlExpConfBase):
         
         #region --------------------------------------------------> Other Rows
         for k, v in self.tcDictF.items():
-            K = int(k) - 2
+            K = k - 2
             #------------------------------> Skip control row
-            if k == '1':
+            if k == 1:
                 continue
             else:
                 pass
