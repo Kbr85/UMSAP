@@ -15,17 +15,23 @@
 
 
 #region -------------------------------------------------------------> Imports
+from pathlib import Path
+
 import wx
 
 import dat4s_core.gui.wx.validator as dtsValidator
+import dat4s_core.gui.wx.window as dtsWindow
 
 import gui.window as window
+import config.config as config
+import data.file as file
+import gui.dtscore as dtscore
 #endregion ----------------------------------------------------------> Imports
 
 
 class ResControl():
     """Creates the Results - Control experiment widgets. Configuration options
-        are set in the parent class in self.confOpt
+        are set in the child class in self.confOpt
 
         Parameters
         ----------
@@ -70,10 +76,10 @@ class ResControl():
             parent = parent,
             label  = self.confOpt['TypeResL'],
         )
-        self.btnResultsL = wx.Button(
-            parent = parent,
-            label  = self.confOpt['LoadResL'],
-        )
+        # self.btnResultsL = wx.Button(
+        #     parent = parent,
+        #     label  = self.confOpt['LoadResL'],
+        # )
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
@@ -99,19 +105,19 @@ class ResControl():
             flag   = wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
             border = 5,
         )
-        self.sizerRes.Add(
-            self.btnResultsL,
-            pos    = (1,2),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
-            border = 5,
-        )
+        # self.sizerRes.Add(
+        #     self.btnResultsL,
+        #     pos    = (1,2),
+        #     flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
+        #     border = 5,
+        # )
         #------------------------------> 
         self.sizerRes.AddGrowableCol(1,1)
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
         self.btnResultsW.Bind(wx.EVT_BUTTON, self.OnResW)
-        self.btnResultsL.Bind(wx.EVT_BUTTON, self.OnResL)
+        # self.btnResultsL.Bind(wx.EVT_BUTTON, self.OnResL)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -126,10 +132,43 @@ class ResControl():
         return True
     #---
 
-    def OnResL(self, event):
-        """ Load the results from a text file """
-        pass
-    #---
+    # def OnResL(self, event):
+    #     """ Load the results from a text file """
+    #     #region ----------------------------------------------------> Get File
+    #     with dtsWindow.FileSelectDialog(
+    #         mode = 'openO',
+    #         wildcard=config.extLong['Data'],
+    #         parent = self,
+    #     ) as dlg:
+    #         if dlg.ShowModal() == wx.ID_OK:
+    #             fileP = Path(dlg.GetPath())
+    #         else:
+    #             return False
+    #     #endregion -------------------------------------------------> Get File
+        
+    #     #region --------------------------------------------------> Create Obj
+    #     try:
+    #         obj = file.ResControlFile(fileP)
+    #     except Exception as e:
+    #         dtscore.Notification(
+    #             'errorF', 
+    #             msg        = str(e),
+    #             tException = e,
+    #             parent     = self
+    #         )
+    #         return False
+    #     #endregion -----------------------------------------------> Create Obj
+        
+    #     #region ---------------------------------------------------> Fill Data
+        
+    #     #endregion ------------------------------------------------> Fill Data
+        
+    #     #region -------------------------------------------------> Show Dialog
+        
+    #     #endregion ----------------------------------------------> Show Dialog
+        
+    #     return True
+    # #---
     #endregion ------------------------------------------------> Class methods
 #---
 

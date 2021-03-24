@@ -737,7 +737,7 @@ class ResControlExpConfBase(wx.Panel):
         self.confMsg = {
             'tcField' : {
 				'Error' : (
-					f"Only a comma-separated list of unique non-negative "
+					f"Only a space-separated list of unique non-negative "
 					f"integers can be accepted in the {self.confOpt['SetupL']}."
 					f"\nIn addition, the values must be less than or equal to "
 					f"the total number of columns in the selected file."),
@@ -1022,7 +1022,7 @@ class ResControlExpConfBase(wx.Panel):
             for j in v:
                 #--------------> Add to lists
                 tcList.append(j)
-                oText = f"{oText}{j.GetValue()}; "
+                oText = f"{oText}{j.GetValue()}, "
                 #--------------> Check
                 a, b = j.GetValidator().Validate()
                 if a:
@@ -1041,9 +1041,9 @@ class ResControlExpConfBase(wx.Panel):
                     j.SetFocus(),
                     return False
             #--------------> Add row delimiter
-            oText = f"{oText[0:-2]}: "
+            oText = f"{oText[0:-2]}; "
         #------------------------------> All unique
-        a, b = dtsValidator.UniqueNumbers(tcList)
+        a, b = dtsValidator.UniqueNumbers(tcList, sep=' ')
         if a:
             pass
         else:
@@ -1120,9 +1120,9 @@ class ResControlExpConfBase(wx.Panel):
         #endregion ------------------------------------------> Create tcFields
         
         #region --------------------------------------------> Add Field Values
-        row = tcFieldsVal.split(":")
+        row = tcFieldsVal.split(";")
         for k, r in enumerate(row, start=1):
-            fields = r.split(";")
+            fields = r.split(",")
             for j, f in enumerate(fields):
                 self.tcDictF[k][j].SetValue(f)
         #endregion -----------------------------------------> Add Field Values
@@ -1854,6 +1854,7 @@ class ProtProf(BaseConfModPanel):
             tcSize    = self.confOpt['TwoInRow'],
             validator = dtsValidator.NumberList(
                 numType = 'int',
+                sep     = ' ',
                 vMin    = 0,
             )
         )
@@ -2320,6 +2321,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
                             self.swMatrix,
                             size      = self.confOpt['LabelS'],
                             validator = dtsValidator.NumberList(
+                                sep = ' ',
                                 opt  = True,
                                 vMin = 0,
                                 vMax = self.NColF,
@@ -2341,6 +2343,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
                             size      = self.confOpt['LabelS'],
                             validator = dtsValidator.NumberList(
                                 opt  = True,
+                                sep = ' ',
                                 vMin = 0,
                                 vMax = self.NColF,
                             )
