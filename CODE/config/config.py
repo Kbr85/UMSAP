@@ -30,7 +30,7 @@ from typing import TYPE_CHECKING
 #region --------------------------------------------------> General parameters
 development = True # Track state, development (True) or production (False)
 
-version     = '1.2.0 (beta)' # String to write in the output files
+version     = '2.2.0 (beta)' # String to write in the output files
 software    = 'UMSAP'
 softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
 dictVersion = { # dict for directly write into output files
@@ -178,7 +178,33 @@ esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
 
 
-# #region --------------------------------------------------------------> Labels
+#region --------------------------------------------------------------> Labels
+#------------------------------> Titles 
+lnTabStart = 'Start'
+lnPaneConf = 'Configuration Options'
+lnPDCorrA  = 'Calculating Correlation Coefficients'
+#------------------------------> wx.ComboBox or wx.CheckBox
+lCbNormMethod = 'Normalization Method'
+lCbCorrMethod = 'Correlation Method'
+lCbFileAppend = 'Append new data to selected output file'
+#------------------------------> wx.Button
+lBtnRun      = 'Start Analysis'
+lBtnDataFile = 'Data File'
+lBtnOutFile  = 'Output File'
+lBtnTypeRes  = 'Type Values'
+#------------------------------> wx.StaticText
+
+
+
+#------------------------------> wx.ListCtrl
+lLCtrlColNameI = ['#', 'Name']
+#------------------------------> wx.StaticBox
+lSbFile   = 'Files && Folders'
+lSbValue  = 'User-defined values'
+lSbColumn = 'Column numbers'
+
+
+
 # label = { # Label for widgets
 #     #------------------------------> wx.StaticText
 #     'StScoreValL '   : 'Score Value',
@@ -186,21 +212,6 @@ esUMSAP = ['.umsap']
 #     'StScoreColL'    : 'Score',
 #     'StColExtractL'  : 'Columns to Extract',
 #     'StResultL'      : 'Results - Control experiments',
-#     #------------------------------> wx.StaticBox
-#     'StBoxFile'  : 'Files && Folders',
-#     'StBoxValue' : 'User-defined values',
-#     'StBoxColumn': 'Column numbers',
-#     #------------------------------> wx.Button
-#     'BtnRun'     : 'Start Analysis',
-#     'BtnDataFile': 'Data File',
-#     'BtnOutFile' : 'Output File',
-#     'BtnTypeResL': 'Type Values',
-#     #------------------------------> wx.ComboBox
-#     'CbNormalization' : 'Data Normalization',
-#     #------------------------------> wx.ListCtrl
-#     'LCtrlColName_I' : ['#', 'Name'],
-#     #------------------------------> wx.CheckBox
-#     'CbCheck' : 'Append new data to selected output file',
 #     #------------------------------> Progress Dialog
 #     'PdCheck'   : 'Checking user input: ',
 #     'PdPrepare' : 'Preparing analysis: ',
@@ -212,50 +223,59 @@ esUMSAP = ['.umsap']
 #     'PdDone'    : 'All Done',
 #     'PdEllapsed': 'Ellapsed time: ',
 #     #------------------------------> Titles for Panes (TP)
-#     'TP_ConfPane' : 'Configuration Options',
 #     'TP_ListPane' : 'Data File Content',
 # }
-# #endregion -----------------------------------------------------------> Labels
+#endregion -----------------------------------------------------------> Labels
 
 
-# #region ---------------------------------------------------------------> Hints
-# hint = {
-#     'TcDataFile' : f"Path to the {label['BtnDataFile']}",
-#     'TCOutFile' : f"Path tot the {label['BtnOutFile']}",
-# }
-# #endregion ------------------------------------------------------------> Hints
+#region ---------------------------------------------------------------> Hints
+hTcDataFile = f"Path to the {lBtnDataFile}"
+hTcOutFile  = f"Path tot the {lBtnOutFile}"
+#endregion ------------------------------------------------------------> Hints
 
 #region ------------------------------------------------------------> Tooltips
 #------------------------------> wx.Buttons
+ttBtnCorrA    = f"Start the module {nameUtilities['CorrA']}"
 ttBtnLimProt  = f"Start the module {nameModules['LimProt']}"
 ttBtnTarProt  = f"Start the module {nameModules['TarProt']}"
 ttBtnProtProf = f"Start the module {nameModules['ProtProf']}"
+#------------------------------> wx.ListCtrl
+ttLCtrlCopyNoMod = (
+    f"Selected rows can be copied ({copyShortCut}+C) but "
+    f"the list cannot be modified."
+)
+ttLCtrlPasteMod = (
+    f"New rows can be pasted ({copyShortCut}+V) after the "
+    f"last selected element and existing one cut/deleted "
+    f"({copyShortCut}+X) or copied "
+    f"({copyShortCut}+C)."    
+)
 #endregion ---------------------------------------------------------> Tooltips
 
 
-# #region -------------------------------------------------------------> Choices
-# choice = { # Choices for the wx.ComboBox
-#     'NormMethod' : ['', 'None', 'Log2'],
-#     'CorrectP'   : [
-#         '',
-#         'None',
-#         'Benjamini - Hochberg',  
-#         'Benjamini - Yekutieli',
-#         'Bonferroni',            
-#         'Holm',                  
-#         'Holm - Sidak',          
-#         'Hommel',        
-#         'Sidak',                 
-#         'Simes-Hochberg',],
-#     'YesNo' : ['', 'Yes', 'No'],
-#     'ControlType' : [
-#         '',
-#         'One Control', 
-#         'One Control per Column', 
-#         'One Control per Row',
-#     ],
-# }
-# #endregion ----------------------------------------------------------> Choices
+#region -------------------------------------------------------------> Options
+oNormMethod = ['', 'None', 'Log2']
+oCorrMethod = ['', 'Pearson', 'Kendall', 'Spearman']
+oYesNo      = ['', 'Yes', 'No']
+oCorrectP   = [
+    '',
+    'None',
+    'Benjamini - Hochberg',  
+    'Benjamini - Yekutieli',
+    'Bonferroni',            
+    'Holm',                  
+    'Holm - Sidak',          
+    'Hommel',        
+    'Sidak',                 
+    'Simes-Hochberg',
+]
+oControlTypeProtProf = [
+    '',
+    'One Control', 
+    'One Control per Column', 
+    'One Control per Row',
+],
+#endregion ----------------------------------------------------------> Options
 
 
 #region ---------------------------------------------------------------> Sizes
@@ -263,12 +283,12 @@ ttBtnProtProf = f"Start the module {nameModules['ProtProf']}"
 sWinRegular = (900, 620)
 #------------------------------> wx.StatusBar Fields
 sSbarFieldSizeI = sbFieldSize
+#------------------------------> wx.ListCtrl
+sLCtrlColI = [50, 150] # e.g when Col Labels are #, Name
 
 # size = { # Base size for widgets
 #     #------------------------------> Window
 #     'Plot' : (560, 560),
-#     #------------------------------> wx.ListCtrl
-#     'LCtrl#Name' : [50, 150],
 #     #------------------------------> wx.TextCtrl
 #     'TwoInRow' : (50, 22), # Two wx.TextCtrl in the same row
 
@@ -295,20 +315,18 @@ sSbarFieldSizeI = sbFieldSize
 
 
 #region ------------------------------------------------------------------ URL
-urlHome     = 'https://www.umsap.nl'
-urlTutorial = f"{urlHome}/tutorial/2-1-0"
-
-urlUpdate = f"{urlHome}/page/release-notes"
+#------------------------------> www.umsap.nl
+urlHome      = 'https://www.umsap.nl'
+urlTutorial  = f"{urlHome}/tutorial/2-1-0"
+urlUpdate    = f"{urlHome}/page/release-notes"
+urlCorrAPane = f"{urlTutorial}/correlation-analysis"
 
 # url = { # Selected URL needed by umsap.
 #     #--> Third party sites
 #     # 'Uniprot'  : 'https://www.uniprot.org/uniprot/',
 #     # 'Pdb'      : 'http://www.rcsb.org/pdb/files/',
 #     #--> www.umsap.nl
-#     'Home'      : url_home,
-#     'Update'    : 
 #     'Tutorial'  : f"{url_tutorial}/start",
-#     'CorrAPane'     : f"{url_tutorial}/correlation-analysis",
 #     # 'MergeAA'   : f"{url_tutorial}/merge-aadist-files",
 #     # 'ShortDFile': f"{url_tutorial}/short-data-files",
 #     # 'TarProt'   : f"{url_tutorial}/targeted-proteolysis",

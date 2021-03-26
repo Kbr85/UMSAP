@@ -327,14 +327,14 @@ class MainWindow(BaseWindow):
     
     tabMethods = { # Keys are the unique names of the tabs
         'StartTab'   : tab.Start,
-        # 'CorrATab'   : tab.BaseConfTab,
+        'CorrATab'   : tab.BaseConfTab,
         # 'ProtProfTab': tab.BaseConfListTab,
     }
     
     cTitle = "Analysis Setup"
     
     cTitleTab = {
-        'StartTab'   : 'Start',
+        'StartTab'   : config.lnTabStart,
         'CorrATab'   : config.nameUtilities['CorrA'],
         'ProtProfTab': config.nameModules['ProtProf'],
     }

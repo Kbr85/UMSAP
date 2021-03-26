@@ -32,99 +32,95 @@ import gui.dtscore as dtscore
 
 
 #region -------------------------------------------------------------> Classes
-# #------------------------------> Base classses
-# class BaseConfTab(wx.Panel):
-#     """Base class for a Tab containing only a configuration panel. 
+#------------------------------> Base classses
+class BaseConfTab(wx.Panel):
+    """Base class for a Tab containing only a configuration panel. 
 
-#         Parameters
-#         ----------
-#         parent : wx.Window
-#             Parent of the tab
-#         name : str or None
-#             Unique name of the tab. Default is None. In this case the child 
-#             class is expected to define a name
+        Parameters
+        ----------
+        parent : wx.Window
+            Parent of the tab
+        name : str or None
+            Unique name of the tab. Default is None. In this case the child 
+            class is expected to define a name
 
-#         Attributes
-#         ----------
-#         parent : wx.Window
-#             Parent of the tab
-#         cConfPanel : dict
-#             Classes to create the configuration panel in tha Tab
-#         cConfPaneTitle : str
-#             Title for the configuration panel. 
-#             Default is config.label['TP_ConfPane'].
+        Attributes
+        ----------
+        parent : wx.Window
+            Parent of the tab
+        cConfPanel : dict
+            Classes to create the configuration panel in tha Tab
+        cConfPaneTitle : str
+            Title for the configuration panel. 
+            Default is config.label['TP_ConfPane'].
 
-#         Raises
-#         ------
+        Raises
+        ------
         
 
-#         Methods
-#         -------
+        Methods
+        -------
         
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cConfPanel = {
-#         'CorrATab'   : pane.CorrA,
-#         'ProtProfTab': pane.ProtProf,
-#     }
-#     #endregion --------------------------------------------------> Class setup
+    """
+    #region -----------------------------------------------------> Class setup
+    cmConfPanel = {
+        'CorrATab'   : pane.CorrA,
+        # 'ProtProfTab': pane.ProtProf,
+    }
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, parent: wx.Window, name: Optional[str]=None) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.parent = parent
-#         self.name   = name if name is not None else self.name
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: wx.Window, name: Optional[str]=None) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.parent = parent
+        self.name   = name if name is not None else self.name
         
-#         self.cConfPaneTitle = getattr(
-#             self, 
-#             'cConfPaneTitle', 
-#             config.label['TP_ConfPane'],
-#         )
+        self.cnPaneConf = getattr(self, 'cnPaneConf', config.lnPaneConf)
         
-#         super().__init__(parent, name=self.name)
-#         #endregion --------------------------------------------> Initial Setup
+        super().__init__(parent, name=self.name)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------------> Menu
+        #region --------------------------------------------------------> Menu
         
-#         #endregion -----------------------------------------------------> Menu
+        #endregion -----------------------------------------------------> Menu
 
-#         #region -----------------------------------------------------> Widgets
-#         self.conf = self.cConfPanel[self.name](self)
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.conf = self.cmConfPanel[self.name](self)
+        #endregion --------------------------------------------------> Widgets
         
-#         #region -------------------------------------------------> Aui control
-#         #------------------------------> AUI control
-#         self._mgr = aui.AuiManager()
-#         #------------------------------> AUI which frame to use
-#         self._mgr.SetManagedWindow(self)
-#         #------------------------------> Add Configuration panel
-#         self._mgr.AddPane( 
-#             self.conf, 
-#             aui.AuiPaneInfo(
-#                 ).Center(
-#                 ).Caption(
-#                     self.cConfPaneTitle
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-#         #------------------------------> 
-#         self._mgr.Update()
-#         #endregion ----------------------------------------------> Aui control
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region -------------------------------------------------> Aui control
+        #------------------------------> AUI control
+        self._mgr = aui.AuiManager()
+        #------------------------------> AUI which frame to use
+        self._mgr.SetManagedWindow(self)
+        #------------------------------> Add Configuration panel
+        self._mgr.AddPane( 
+            self.conf, 
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    self.cnPaneConf
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ----------------------------------------------> Aui control
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Class methods
     
-#     #endregion ------------------------------------------------> Class methods
-# #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # class BaseConfListTab(BaseConfTab):
@@ -233,10 +229,6 @@ class Start(wx.Panel):
         ----------
         parent : wx.Window
             Direct parent of the widgets in the tab.
-        topParent : wx.Window
-            Top parent of the tab
-        name : str
-            Name of the tab. Unique name for the application
         statusbar : wx.SatusBar
             Statusbar to display info
         args : extra arguments
@@ -272,11 +264,10 @@ class Start(wx.Panel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, topParent: wx.Window) -> None:
+    def __init__(self, parent: wx.Window, *args) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
-        self.parent    = parent
-        self.topParent = topParent
+        self.parent = parent
         
         super().__init__(parent=parent, name=self.name)
         #endregion --------------------------------------------> Initial setup
@@ -289,6 +280,7 @@ class Start(wx.Panel):
         )
         #---
         #--> Buttons
+        self.btnCorrA    = wx.Button(self, label=config.nameUtilities['CorrA'])
         self.btnLimProt  = wx.Button(self, label=config.nameModules['LimProt'])
         self.btnProtProf = wx.Button(self, label=config.nameModules['TarProt'])
         self.btnTarProt  = wx.Button(self, label=config.nameModules['ProtProf'])
@@ -298,6 +290,7 @@ class Start(wx.Panel):
         self.btnLimProt.SetToolTip(config.ttBtnLimProt)
         self.btnTarProt.SetToolTip(config.ttBtnTarProt)
         self.btnProtProf.SetToolTip(config.ttBtnProtProf)
+        self.btnCorrA.SetToolTip(config.ttBtnCorrA)
         #endregion -------------------------------------------------> Tooltips
         
         #region ------------------------------------------------------> Sizers
@@ -306,6 +299,9 @@ class Start(wx.Panel):
         self.SizerGrid = wx.GridBagSizer(1,1)
         self.SizerBtn  = wx.BoxSizer(wx.VERTICAL)
         #--> Add widgets
+        self.SizerBtn.Add(
+            self.btnCorrA, 0, wx.EXPAND|wx.ALL, 5
+        )
         self.SizerBtn.Add(
             self.btnLimProt, 0, wx.EXPAND|wx.ALL, 5
         )
@@ -340,9 +336,13 @@ class Start(wx.Panel):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
+        self.btnCorrA.Bind(
+            wx.EVT_BUTTON, 
+            lambda event: config.winMain.CreateTab('CorrATab')
+        )
         self.btnProtProf.Bind(
             wx.EVT_BUTTON, 
-            lambda event: self.topParent.CreateTab('ProtProfTab')
+            lambda event: config.winMain.CreateTab('ProtProfTab')
         )
         #endregion -----------------------------------------------------> Bind
     #endregion -----------------------------------------------> Instance setup
