@@ -15,6 +15,9 @@
 
 
 #region -------------------------------------------------------------> Imports
+from pathlib import Path
+from typing import Optional
+
 import wx
 
 import dat4s_core.gui.wx.window as dtsWindow
@@ -26,8 +29,9 @@ import config.config as config
 
 class Notification(dtsWindow.NotificationDialog):
     """This avoids to type the title and the image of the window every time    """
-    def __init__(self, mode : str, msg : None =None, tException=None, parent=None, 
-        img=config.file['ImgIcon'], button=1,):
+    def __init__(self, mode: str, msg: Optional[str]=None, 
+        tException: Optional[Exception]=None, parent: Optional[wx.Window]=None, 
+        img: Path=config.file['ImgIcon'], button: int=1,) -> None:
         """ """
         super().__init__(mode, msg=msg, tException=tException, parent=parent,
             button=button, img=img, title='UMSAP - Notification')
@@ -37,8 +41,9 @@ class Notification(dtsWindow.NotificationDialog):
 
 class ProgressDialog(dtsWindow.ProgressDialog):
     """This avoids to type the icon every time """
-    def __init__(self, parent, title, count, img=config.file['ImgIcon'],
-        style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER):    
+    def __init__(self, parent: Optional[wx.Window], title: str, count: int, 
+        img: Path=config.file['ImgIcon'], 
+        style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER) -> None:    
         """"""
         super().__init__(parent, title, count, img=img, style=style)
     #---
@@ -46,10 +51,11 @@ class ProgressDialog(dtsWindow.ProgressDialog):
 
 class ListZebra(dtsWidget.ListZebra):
     """ This avoids defining the color for the zebra style every time """
-    def __init__(self, parent, color=config.color['Zebra'], colLabel=None, 
-        colSize=None, canCopy=True, canCut=False, canPaste=False, 
-        copyFullContent=False, pasteUnique=True, selAll=True, 
-        style=wx.LC_REPORT):
+    def __init__(self, parent:wx.Window, color: str=config.color['Zebra'], 
+        colLabel: Optional[list[str]]=None, colSize: Optional[list[int]]=None, 
+        canCopy: bool=True, canCut: bool=False, canPaste: bool=False, 
+        copyFullContent: bool=False, pasteUnique: bool=True, selAll:bool=True, 
+        style=wx.LC_REPORT) -> None:
         """"""
         super().__init__(
             parent, color=color, colLabel=colLabel, colSize=colSize, 
@@ -61,9 +67,10 @@ class ListZebra(dtsWidget.ListZebra):
 
 class ListZebraMaxWidth(dtsWidget.ListZebraMaxWidth):
     """This avoids defining the color for the zebra style every time """
-    def __init__(self, parent, color=config.color['Zebra'], colLabel=None, 
-        colSize=None, canCopy=True, canCut=False, canPaste=False, 
-        copyFullContent=False, pasteUnique=True, selAll=True, 
+    def __init__(self, parent: wx.Window, color: str=config.color['Zebra'], 
+        colLabel: Optional[list[str]]=None, colSize: Optional[list[int]]=None, 
+        canCopy: bool=True, canCut:bool=False, canPaste: bool=False, 
+        copyFullContent: bool=False, pasteUnique: bool=True, selAll: bool=True, 
         style=wx.LC_REPORT):
         """"""
         super().__init__(
@@ -72,3 +79,5 @@ class ListZebraMaxWidth(dtsWidget.ListZebraMaxWidth):
             copyFullContent=copyFullContent, pasteUnique=pasteUnique, 
             selAll=selAll, style=style)
     #---    
+    
+    

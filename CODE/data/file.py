@@ -15,6 +15,8 @@
 
 
 #region -------------------------------------------------------------> Imports
+from typing import Optional, Literal
+
 import pandas as pd
 
 import wx
@@ -23,6 +25,12 @@ import dat4s_core.data.file as dtsFF
 import dat4s_core.exception.exception as dtsException
 
 import config.config as config
+
+if config.typeChecking:
+    #------------------------------> 
+    from pathlib import Path
+    #------------------------------> 
+    import gui.dtscore as dtscore
 #endregion ----------------------------------------------------------> Imports
 
 #region -------------------------------------------------------------> Classes
@@ -40,12 +48,16 @@ class UMSAPFile():
             Unique name of the class
         fileP : Path
             Path to the UMSAP file
-        confOpt : dict
-            Configuration options
         data : dict
             Data read from json formatted file
         confData : dict
             Configured data. See Notes
+        confTree : dict
+            Nodes for the wx.TreeCtrl in the control window. See Notes
+        cSection : dict
+            Name of the sections in the umsap file
+        cConfigure : dict
+            Configure methods. Keys are the section names as read from the file
 
         Raises
         ------
@@ -60,7 +72,7 @@ class UMSAPFile():
         The general structure of confData is:
         {
             'Correlation Analysis' : {
-                'Date' : { # Only valid date sections
+                'Date' : { # Only valid date sections e.g. 20210325-112056
                     'DF' : pd.DataFrame with Result values,
                 },
             },
@@ -76,18 +88,19 @@ class UMSAPFile():
     #region -----------------------------------------------------> Class setup
     name = 'UMSAPFile'
     
-    confOpt = {
+    cSection = {# Name of the sections in the umsap file
         'CorrA' : config.nameUtilities['CorrA'],
     }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, fileP):
+    def __init__(self, fileP: 'Path') -> None:
         """ """
         #region ---------------------------------------------------> Variables
         self.fileP = fileP
 
-        self.confOpt['Configure'] = { 
+        self.cConfigure = {# Configure methods. Keys are the section names as
+                           # read from the file
             config.nameUtilities['CorrA'] : self.ConfigureDataCorrA,
         }
         #------------------------------> See Notes about the structure of dict
@@ -105,7 +118,8 @@ class UMSAPFile():
 
     #----------------------------------------------------------> Class methods
     #region -------------------------------------------------------> Configure
-    def Configure(self, dlg=None):
+    def Configure(self, dlg: Optional['dtscore.ProgressDialog']=None,
+                 )-> Literal[True]:
         """Prepare data for each section in the file and for the CustomTreeCtrl
             in the control window. See Notes.
     
@@ -129,7 +143,7 @@ class UMSAPFile():
             else:
                 pass
             #--------------> Configure data to plot
-            self.confOpt['Configure'][k]()
+            self.cConfigure[k]()
             #------------------------------> Configure tree
             #--------------> Update dlg
             if dlg is not None:
@@ -150,20 +164,20 @@ class UMSAPFile():
         return True
     #---
 
-    def ConfigureDataCorrA(self):
+    def ConfigureDataCorrA(self) -> Literal[True]:
         """Configure a Correlation Analysis section	"""
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
         plotData = {}
         #------------------------------> Fill
-        for k,v in self.data[self.confOpt['CorrA']].items():
+        for k,v in self.data[self.cSection['CorrA']].items():
             try:
                 #------------------------------> Create data
                 df  = pd.DataFrame(v['R'], dtype='float64')
                 if (numCol := len(v['CI']['Column'])) == df.shape[0]:
                     pass
                 else:
-                    raise Exception
+                    continue
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF'    : df,
@@ -175,41 +189,43 @@ class UMSAPFile():
         #endregion ----------------------------------------------> Plot & Menu
         
         #region -------------------------------------------> Add/Reset section 
-        self.confData[self.confOpt['CorrA']] = plotData
+        self.confData[self.cSection['CorrA']] = plotData
         #endregion ----------------------------------------> Add/Reset section 
         
         return True
     #---
 
-    def ConfigureTree(self, section):
+    def ConfigureTree(self, tSection: str) -> Literal[True]:
         """Configure a section for the Tree widget.
             This is intended to be used after ConfigureDataX
 
             Parameters
             ----------
-            section : str
+            tSection : str
                 One of config.nameUtilities or config.nameModules
         """
         #region -----------------------------------------> Add Section Boolean
-        self.confTree['Sections'][section] = (
-            any(self.confData[section].keys())
+        self.confTree['Sections'][tSection] = (
+            any(self.confData[tSection].keys())
         )
         #endregion --------------------------------------> Add Section Boolean
         
         #region ---------------------------------------------------> Add Dates
         #------------------------------> Dicts
-        self.confTree[section] = {}
+        self.confTree[tSection] = {}
         #------------------------------> Date
-        for k in self.data[section].keys():
-            self.confTree[section][k] = (
-                k in self.confData[section]
+        for k in self.data[tSection].keys():
+            self.confTree[tSection][k] = (
+                k in self.confData[tSection]
             )
         #endregion ------------------------------------------------> Add Dates
+        
+        return True
     #---
     #endregion ----------------------------------------------------> Configure
     
     #region -----------------------------------------------------> Get Methods
-    def GetSectionCount(self):
+    def GetSectionCount(self) -> int:
         """Get the total number of sections in file
 
             Returns
@@ -220,7 +236,7 @@ class UMSAPFile():
         return len(self.data.keys())
     #---
 
-    def GetSectionData(self, tSection):
+    def GetSectionData(self, tSection: str) -> dict:
         """Get the dict with the data for a section
     
             Parameters
@@ -238,21 +254,17 @@ class UMSAPFile():
             ExecutionError
                 - When the section is not found in the file
         """
-        #region ---------------------------------------------------> Variables
-        confMsg = {
-            'NoSection' : (
-                f"Section {tSection} was not found in the content of "
-                f"file:\n{self.fileP}"),
-        }
-        #endregion ------------------------------------------------> Variables
-        
         if (data := self.data.get(tSection, '')) != '':
             return data
         else:
-            raise dtsException.ExecutionError(confMsg['NoSection'])
+            msg = (
+                f"Section {tSection} was not found in the content of "
+                f"file:\n{self.fileP}"
+            )
+            raise dtsException.ExecutionError(msg)
     #---
 
-    def GetSectionDateDF(self, tSection, tDate):
+    def GetSectionDateDF(self, tSection: str, tDate: str) -> pd.DataFrame:
         """Get the dataframe for the section and date
     
             Parameters
@@ -260,7 +272,7 @@ class UMSAPFile():
             tSection : str
                 Section name
             tDate : str
-                The date
+                The date e.g. 20210325-112056
     
             Returns
             -------
@@ -273,7 +285,8 @@ class UMSAPFile():
     #---
 
     #region -----------------------------------------------------> Export data
-    def ExportPlotData(self, tSection, tDate, fileP):
+    def ExportPlotData(self, tSection: str, tDate: str, fileP: 'Path'
+                      ) -> Literal[True]:
         """Export the plot data
     
             Parameters
@@ -281,7 +294,7 @@ class UMSAPFile():
             tSection : str
                 Section name
             tDate : str
-                The date
+                The date e.g. 20210325-112056
             fileP : Path
                 Path to the file
         """
@@ -289,12 +302,13 @@ class UMSAPFile():
             dtsFF.WriteDF2CSV(fileP, self.GetSectionDateDF(tSection, tDate))
         except Exception as e:
             raise e
+        
+        return True
     #---
     #endregion --------------------------------------------------> Export data
     
     #endregion --------------------------------------------------> Get Methods
 #---
-
 #endregion ----------------------------------------------------------> Classes
 
 

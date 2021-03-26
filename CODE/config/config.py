@@ -19,6 +19,8 @@ import os
 import json
 import platform
 from pathlib import Path
+
+from typing import TYPE_CHECKING
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -32,58 +34,60 @@ version     = '2.2.0 (beta)' # String to write in the output files
 software    = 'UMSAP'
 softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
 dictVersion = { # dict for directly write into output files
-	'Version': version,
+    'Version': version,
 }
 
 cOS = platform.system() # Current operating system
 cwd = Path(os.path.abspath(os.path.dirname(__file__))) # Work directory
+
+typeChecking = TYPE_CHECKING
 #endregion -----------------------------------------------> General parameters
 
 
 #region ---------------------------------------- PLATFORM DEPENDENT PARAMETERS
 # There are some that must be defined in other sections
 if cOS == 'Darwin':
-	#--> Fix cwd and set the location of the Resources folder
-	cwd = cwd.parent
-	cwd = cwd.parent
-	if development:
-		res = cwd / 'BORRAR-UMSAP/RESOURCES'
-	else:
-		res = cwd / 'Resources'
-	#------------------------------> Index of the Tool Menu in the MenuBar
-	toolsMenuIdx = 2
-	#------------------------------> Key for shortcuts
-	copyShortCut = 'Cmd'
-	#------------------------------> Statusbar split size
-	if development:
-		sbConf = [-1, 350]
-	else:
-		sbConf = [-1, 300]
-	sbPlot = [-1, 120]
-	#------------------------------> Delta space between consecutive windows
-	deltaWin = 23
+    #--> Fix cwd and set the location of the Resources folder
+    cwd = cwd.parent
+    cwd = cwd.parent
+    if development:
+        res = cwd / 'BORRAR-UMSAP/RESOURCES'
+    else:
+        res = cwd / 'Resources'
+    #------------------------------> Index of the Tool Menu in the MenuBar
+    toolsMenuIdx = 2
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Cmd'
+    #------------------------------> Statusbar split size
+    if development:
+        sbConf = [-1, 350]
+    else:
+        sbConf = [-1, 300]
+    sbPlot = [-1, 120]
+    #------------------------------> Delta space between consecutive windows
+    deltaWin = 23
 elif cOS == 'Windows': 
-	cwd          = cwd.parent
-	res          = cwd / 'RESOURCES'
-	toolsMenuIdx = 3
-	copyShortCut = 'Ctrl'
-	if development:
-		sbConf = [-1, 350]
-	else:
-		sbConf = [-1, 300]
-	sbPlot = [-1, 100]
-	deltaWin = 20
+    cwd          = cwd.parent
+    res          = cwd / 'RESOURCES'
+    toolsMenuIdx = 3
+    copyShortCut = 'Ctrl'
+    if development:
+        sbConf = [-1, 350]
+    else:
+        sbConf = [-1, 300]
+    sbPlot = [-1, 100]
+    deltaWin = 20
 elif cOS == 'Linux':
-	cwd          = cwd.parent
-	res          = cwd / 'RESOURCES'
-	toolsMenuIdx = 3
-	copyShortCut = 'Ctrl'
-	if development:
-		sbConf = [-1, 350]
-	else:
-		sbConf = [-1, 300]
-	sbPlot = [-1, 100]
-	deltaWin = 20
+    cwd          = cwd.parent
+    res          = cwd / 'RESOURCES'
+    toolsMenuIdx = 3
+    copyShortCut = 'Ctrl'
+    if development:
+        sbConf = [-1, 350]
+    else:
+        sbConf = [-1, 300]
+    sbPlot = [-1, 100]
+    deltaWin = 20
 #endregion ------------------------------------- PLATFORM DEPENDENT PARAMETERS
 
 
@@ -94,70 +98,70 @@ mainW  = None
 # Keys: UMSAP File path - Values: Reference to control window
 umsapW = {}
 #------------------------------> Number of windows for screen positioning
-# Keys: Windows ID - Values: Total number of opened windows
+# Keys: Windows ID - Values: Total number of opened windows, except conf win
 winNumber = {}
 #endregion ----------------------------------------------------------> Windows
 
 
 #region ---------------------------------------------------------------> Names
 name = { # Unique names to identify windows/objects through the app
-	#--> Menu
-	'ModuleMenu' : 'ModuleMenu',
-	'UtilityMenu': 'UtilityMenu',
-	'ToolMenu'   : 'ToolMenu',
-	#--> Main windows
-	'MainW'    : 'MainW',
-	'UMSAPF'   : 'UMSAPF',
-	'CorrAPlot': 'CorrAPlot',
-	#--> Dialogs
-	'CheckUpdateResDialog': 'CheckUpdateResDialog',
-	'ResControlExp'       : 'ResControlExp',
-	#--> Tab for notebook windows
-	'StartTab'   : 'StartTab',
-	'CorrATab'   : 'CorrATab',
-	'ProtProfTab': 'ProtProfTab',
-	#--> Individual Panes
-	'CorrAPane'                : 'CorrAPane',
-	'ProtProfPane'             : 'ProtProfPane',
-	'ResControlExpPane'        : 'ResControlExpPane',
-	'ProtProfResControlExpPane': 'ProtProfResControlExpPane',
-	#--> Files
-	'UMSAPFile' : 'UMSAPFile',
+    #------------------------------> Menu
+    'ModuleMenu' : 'ModuleMenu',
+    'UtilityMenu': 'UtilityMenu',
+    'ToolMenu'   : 'ToolMenu',
+    #------------------------------> Main windows
+    'MainW'    : 'MainW',
+    'UMSAPF'   : 'UMSAPF',
+    'CorrAPlot': 'CorrAPlot',
+    #------------------------------> Dialogs
+    'CheckUpdateResDialog': 'CheckUpdateResDialog',
+    'ResControlExp'       : 'ResControlExp',
+    #------------------------------> Tab for notebook windows
+    'StartTab'   : 'StartTab',
+    'CorrATab'   : 'CorrATab',
+    'ProtProfTab': 'ProtProfTab',
+    #------------------------------> Individual Panes
+    'CorrAPane'                : 'CorrAPane',
+    'ProtProfPane'             : 'ProtProfPane',
+    'ResControlExpPane'        : 'ResControlExpPane',
+    'ResControlExpPaneProtProf': 'ResControlExpPaneProtProf',
+    #------------------------------> Files
+    'UMSAPFile' : 'UMSAPFile',
 }
 
 nameModules = { # Name of the modules
-	'LimProt' : 'Limited Proteolysis',
-	'TarProt' : 'Targeted Proteolysis',
-	'ProtProf': 'Proteome Profiling',
+    'LimProt' : 'Limited Proteolysis',
+    'TarProt' : 'Targeted Proteolysis',
+    'ProtProf': 'Proteome Profiling',
 }
 
 nameUtilities = { # Name of the utilities
-	'CorrA' : 'Correlation Analysis',
-	'ReadF' : 'Read UMSAP File', 
+    'CorrA' : 'Correlation Analysis',
+    'ReadF' : 'Read UMSAP File', 
 }
 #endregion ------------------------------------------------------------> Names
 
 
 #region ------------------------------------------------------> Path and Files
 path = { # Relevant paths
-	'CWD'      : cwd,            # Root of the folders containing UMSAP files
-	'Resources': res,            # Resources folder
-	'Images'   : res / 'IMAGES', # Images folder
-	'Config'   : res / 'CONFIG', # Configuration folder
-	'UserHome' : Path.home(),    # User home folder
+    'CWD'      : cwd,            # Root of the folders containing UMSAP files
+    'Resources': res,            # Resources folder
+    'Images'   : res / 'IMAGES', # Images folder
+    'Config'   : res / 'CONFIG', # Configuration folder
+    'UserHome' : Path.home(),    # User home folder
 }
 
 file = { # Location & names of important files
-	#------------------------------> General 
-	'Config'   : path['UserHome'] / '.umsap_config.json', # User config file
-	'ConfigDef': path['Config'] / 'config_def.json',      # Default config file
-	'Manual'   : path['Resources'] / 'MANUAL/manual.pdf', # UMSAP Manual
-	#------------------------------> Images
-	'ImgStart': path['Images'] / 'MAIN-WINDOW/p97-2.png',
-	'ImgIcon' : path['Images'] / 'DIALOGUE'/'dlg.png',
-	#------------------------------> Dataframe names
-	'InitialN' : 'Data-01-Initial',
-	'NormN'    : 'Data-02-Normalization',
+    #------------------------------> General 
+    'Config'   : path['UserHome'] / '.umsap_config.json', # User config file
+    'ConfigDef': path['Config'] / 'config_def.json',      # Default config file
+    'Manual'   : path['Resources'] / 'MANUAL/manual.pdf', # UMSAP Manual
+    #------------------------------> Images
+    'ImgStart': path['Images'] / 'MAIN-WINDOW/p97-2.png',
+    'ImgIcon' : path['Images'] / 'DIALOGUE'/'dlg.png',
+    #------------------------------> Dataframe names
+    'InitialN' : 'Data-01-Initial',
+    'NormN'    : 'Data-02-Normalization',
 
 }
 #endregion ---------------------------------------------------> Path and Files
@@ -165,99 +169,114 @@ file = { # Location & names of important files
 
 #region ----------------------------------------------------------- Extensions
 extLong = { # string for wx.Dialogs representing the extension of the files
-	'Data'        : 'txt files (*.txt)|*.txt',
-	'UMSAP'       : 'UMSAP files (*.umsap)|*.umsap',
-	'MatPlotSaveI': (
-		"Portable Document File (*.pdf)|*.pdf|"
-		"Portable Network Graphic (*.png)|*.png|"
-		"Scalable Vector Graphic (*.svg)|*.svg|"
-		"Tagged Image File (*.tif)|*.tif"),
+    'Data'        : 'txt files (*.txt)|*.txt',
+    'UMSAP'       : 'UMSAP files (*.umsap)|*.umsap',
+    'MatPlotSaveI': (
+        "Portable Document File (*.pdf)|*.pdf|"
+        "Portable Network Graphic (*.png)|*.png|"
+        "Scalable Vector Graphic (*.svg)|*.svg|"
+        "Tagged Image File (*.tif)|*.tif"),
 }
 
 extShort = { # string representation of the extensions. First item is default
-	'Data' : ['.txt'],
-	'UMSAP': ['.umsap'],
+    'Data' : ['.txt'],
+    'UMSAP': ['.umsap'],
 }
 #endregion -------------------------------------------------------- Extensions
 
 
 #region --------------------------------------------------------------> Labels
 label = { # Label for widgets
-	#------------------------------> wx.StaticBox
-	'StBoxFile'  : 'Files && Folders',
-	'StBoxValue' : 'User-defined values',
-	'StBoxColumn': 'Column numbers',
-	#------------------------------> wx.Button
-	'BtnRun'     : 'Start Analysis',
-	'BtnDataFile': 'Data File',
-	'BtnOutFile' : 'Output File',
-	#------------------------------> wx.ComboBox
-	'CbNormalization' : 'Data Normalization',
-	#------------------------------> wx.ListCtrl
-	'LCtrlColName_I' : ['#', 'Name'],
-	#------------------------------> wx.CheckBox
-	'CbCheck' : 'Append new data to selected output file',
-	#------------------------------> Progress Dialog
-	'PdCheck'   : 'Checking user input: ',
-	'PdPrepare' : 'Preparing analysis: ',
-	'PdReadFile': 'Reading input files: ',
-	'PdRun'     : 'Running analysis: ',
-	'PdWrite'   : 'Writing output: ',
-	'PdLoad'    : 'Loading output file',
-	'PdError'   : 'Fatal Error',
-	'PdDone'    : 'All Done',
-	'PdEllapsed': 'Ellapsed time: ',
-	#------------------------------> Titles for Panes (TP)
-	'TP_ConfPane' : 'Configuration Options',
-	'TP_ListPane' : 'Data File Content',
+    #------------------------------> wx.StaticText
+    'StScoreValL '   : 'Score Value',
+    'StDetectedProtL': 'Detected Proteins',
+    'StScoreColL'    : 'Score',
+    'StColExtractL'  : 'Columns to Extract',
+    'StResultL'      : 'Results - Control experiments',
+    #------------------------------> wx.StaticBox
+    'StBoxFile'  : 'Files && Folders',
+    'StBoxValue' : 'User-defined values',
+    'StBoxColumn': 'Column numbers',
+    #------------------------------> wx.Button
+    'BtnRun'     : 'Start Analysis',
+    'BtnDataFile': 'Data File',
+    'BtnOutFile' : 'Output File',
+    'BtnTypeResL': 'Type Values',
+    #------------------------------> wx.ComboBox
+    'CbNormalization' : 'Data Normalization',
+    #------------------------------> wx.ListCtrl
+    'LCtrlColName_I' : ['#', 'Name'],
+    #------------------------------> wx.CheckBox
+    'CbCheck' : 'Append new data to selected output file',
+    #------------------------------> Progress Dialog
+    'PdCheck'   : 'Checking user input: ',
+    'PdPrepare' : 'Preparing analysis: ',
+    'PdReadFile': 'Reading input files: ',
+    'PdRun'     : 'Running analysis: ',
+    'PdWrite'   : 'Writing output: ',
+    'PdLoad'    : 'Loading output file',
+    'PdError'   : 'Fatal Error',
+    'PdDone'    : 'All Done',
+    'PdEllapsed': 'Ellapsed time: ',
+    #------------------------------> Titles for Panes (TP)
+    'TP_ConfPane' : 'Configuration Options',
+    'TP_ListPane' : 'Data File Content',
 }
 #endregion -----------------------------------------------------------> Labels
 
 
+#region ---------------------------------------------------------------> Hints
+hint = {
+    'TcDataFile' : f"Path to the {label['BtnDataFile']}",
+    'TCOutFile' : f"Path tot the {label['BtnOutFile']}",
+}
+#endregion ------------------------------------------------------------> Hints
+
+
 #region -------------------------------------------------------------> Choices
 choice = { # Choices for the wx.ComboBox
-	'NormMethod' : ['', 'None', 'Log2'],
-	'CorrectP'   : [
-		'',
-		'None',
-		'Benjamini - Hochberg',  
-		'Benjamini - Yekutieli',
-		'Bonferroni',            
-		'Holm',                  
-		'Holm - Sidak',          
-		'Hommel',        
-		'Sidak',                 
-		'Simes-Hochberg',],
-	'YesNo' : ['', 'Yes', 'No'],
-	'ControlType' : [
-		'',
-		'One Control', 
-		'One Control per Column', 
-		'One Control per Row',
-	],
+    'NormMethod' : ['', 'None', 'Log2'],
+    'CorrectP'   : [
+        '',
+        'None',
+        'Benjamini - Hochberg',  
+        'Benjamini - Yekutieli',
+        'Bonferroni',            
+        'Holm',                  
+        'Holm - Sidak',          
+        'Hommel',        
+        'Sidak',                 
+        'Simes-Hochberg',],
+    'YesNo' : ['', 'Yes', 'No'],
+    'ControlType' : [
+        '',
+        'One Control', 
+        'One Control per Column', 
+        'One Control per Row',
+    ],
 }
 #endregion ----------------------------------------------------------> Choices
 
 
 #region ---------------------------------------------------------------> Sizes
 size = { # Base size for widgets
-	'Plot' : (560, 560),
-	#------------------------------> wx.ListCtrl
-	'LCtrl#Name' : [50, 150],
-	#------------------------------> wx.TextCtrl
-	'TwoInRow' : (50, 22), # Two wx.TextCtrl in the same row
+    'Plot' : (560, 560),
+    #------------------------------> wx.ListCtrl
+    'LCtrl#Name' : [50, 150],
+    #------------------------------> wx.TextCtrl
+    'TwoInRow' : (50, 22), # Two wx.TextCtrl in the same row
 }
 #endregion ------------------------------------------------------------> Sizes
 
 
 #region ------------------------------------------------------------> Messages
 msg = { # Messages used by more than one object
-	#------------------------------> Files
-	'FileSelector' : (
-			f"It was not possible to show the file selecting dialog."),
-	#------------------------------> Pandas
-	'PDDataType'   : 'Unexpected data type.',
-	'PDDataTypeCol': 'Unexpected data type in the selected columns.',
+    #------------------------------> Files
+    'FileSelector' : (
+            f"It was not possible to show the file selecting dialog."),
+    #------------------------------> Pandas
+    'PDDataType'   : 'Unexpected data type.',
+    'PDDataTypeCol': 'Unexpected data type in the selected columns.',
     #------------------------------> ResControlExpConfBase
     'TCField' : (
         "Only a space-separated list of unique non-negative integers can be "
@@ -273,24 +292,24 @@ url_home     = 'https://www.umsap.nl'
 url_tutorial = f"{url_home}/tutorial/2-1-0"
 
 url = { # Selected URL needed by umsap.
-	#--> Third party sites
-	# 'Uniprot'  : 'https://www.uniprot.org/uniprot/',
-	# 'Pdb'      : 'http://www.rcsb.org/pdb/files/',
-	#--> www.umsap.nl
-	'Home'      : url_home,
-	'Update'    : f"{url_home}/page/release-notes",
-	'Tutorial'  : f"{url_tutorial}/start",
-	'CorrAPane'     : f"{url_tutorial}/correlation-analysis",
-	# 'MergeAA'   : f"{url_tutorial}/merge-aadist-files",
-	# 'ShortDFile': f"{url_tutorial}/short-data-files",
-	# 'TarProt'   : f"{url_tutorial}/targeted-proteolysis",
-	# 'AAdist'    : f"{url_tutorial}/aa-distribution",
-	# 'Cuts2PDB'  : f"{url_tutorial}/cleavages-pdb-files",
-	# 'Histo'     : f"{url_tutorial}/histograms",
-	# 'SeqAlign'  : f"{url_tutorial}/sequence-alignment",
-	# 'LimProt'   : f"{url_tutorial}/limited-proteolysis",
-	# 'SeqH'      : f"{url_tutorial}/sequence-highlight",
-	'ProtProfPane'  : f"{url_tutorial}/proteome-profiling",
+    #--> Third party sites
+    # 'Uniprot'  : 'https://www.uniprot.org/uniprot/',
+    # 'Pdb'      : 'http://www.rcsb.org/pdb/files/',
+    #--> www.umsap.nl
+    'Home'      : url_home,
+    'Update'    : f"{url_home}/page/release-notes",
+    'Tutorial'  : f"{url_tutorial}/start",
+    'CorrAPane'     : f"{url_tutorial}/correlation-analysis",
+    # 'MergeAA'   : f"{url_tutorial}/merge-aadist-files",
+    # 'ShortDFile': f"{url_tutorial}/short-data-files",
+    # 'TarProt'   : f"{url_tutorial}/targeted-proteolysis",
+    # 'AAdist'    : f"{url_tutorial}/aa-distribution",
+    # 'Cuts2PDB'  : f"{url_tutorial}/cleavages-pdb-files",
+    # 'Histo'     : f"{url_tutorial}/histograms",
+    # 'SeqAlign'  : f"{url_tutorial}/sequence-alignment",
+    # 'LimProt'   : f"{url_tutorial}/limited-proteolysis",
+    # 'SeqH'      : f"{url_tutorial}/sequence-highlight",
+    'ProtProfPane'  : f"{url_tutorial}/proteome-profiling",
 }
 #endregion --------------------------------------------------------------- URL
 
@@ -309,22 +328,22 @@ font = {
 
 #region -----------------------------------------------------> General options
 general = { # General options
-	'checkUpdate' : True, # True Check, False No check 
-	'DPI' : 100, # DPI for plot images
+    'checkUpdate' : True, # True Check, False No check 
+    'DPI' : 100, # DPI for plot images
 }
 #endregion --------------------------------------------------> General options
 
 #region --------------------------------------------------------------> Colors
 color = { # Colors for the app
-	'Zebra' : '#ffe6e6',
-	nameUtilities['CorrA'] : { # Color for plot in Correlation Analysis
-		'CMAP' : { # CMAP colors and interval
-			'N' : 128,
-			'c1': [255, 0, 0],
-			'c2': [255, 255, 255],
-			'c3': [0, 0, 255],
-		},
-	},
+    'Zebra' : '#ffe6e6',
+    nameUtilities['CorrA'] : { # Color for plot in Correlation Analysis
+        'CMAP' : { # CMAP colors and interval
+            'N' : 128,
+            'c1': [255, 0, 0],
+            'c2': [255, 255, 255],
+            'c3': [0, 0, 255],
+        },
+    },
 }
 #endregion -----------------------------------------------------------> Colors
 
@@ -334,72 +353,72 @@ color = { # Colors for the app
 
 #region -------------------------------------------------------------> METHODS
 def ConfigLoad(file):
-	""" Load a configuration file. 
-	
-		Parameters
-		----------
-		file : Path
-			Location of the configuration file to load info from
+    """ Load a configuration file. 
+    
+        Parameters
+        ----------
+        file : Path
+            Location of the configuration file to load info from
 
-		Returns
-		-------
-		True or error message
-			If something goes wrong returns the exception error message
-	"""
-	#region ----------> Global variables, to update with user values from file
-	global general
-	#endregion -------> Global variables, to update with user values from file
+        Returns
+        -------
+        True or error message
+            If something goes wrong returns the exception error message
+    """
+    #region ----------> Global variables, to update with user values from file
+    global general
+    #endregion -------> Global variables, to update with user values from file
 
- 	#region ------------------------------------------> Read and assign values
-	try:
-		#--> Read
-		with open(file, 'r') as fileO:
-			data = json.load(fileO)
-		#--> Set
-		general = data['general']
-	except Exception as e:
-		return e
- 	#endregion ---------------------------------------> Read and assign values
+     #region ------------------------------------------> Read and assign values
+    try:
+        #--> Read
+        with open(file, 'r') as fileO:
+            data = json.load(fileO)
+        #--> Set
+        general = data['general']
+    except Exception as e:
+        return e
+     #endregion ---------------------------------------> Read and assign values
 
-	return True
+    return True
 #---
 
 
 def ConfigSave(file):
-	""" Save the configuration options to a file. 
+    """ Save the configuration options to a file. 
 
-		Parameters
-		----------
-		file : Path
-			Location of the configuration file to save to
+        Parameters
+        ----------
+        file : Path
+            Location of the configuration file to save to
 
-		Returns
-		-------
-		True or error message
-			If something goes wrong returns the exception error message
-	"""
-	#region ---------------------------------------------> Variables into data
-	data = {}
-	data['general']  = general
-	#endregion ------------------------------------------> Variables into data
+        Returns
+        -------
+        True or error message
+            If something goes wrong returns the exception error message
+    """
+    #region ---------------------------------------------> Variables into data
+    data = {}
+    data['general']  = general
+    #endregion ------------------------------------------> Variables into data
 
-	#region ---------------------------------------------------> Write to file
-	try:
-		with open(file, 'w') as oFile:
-			json.dump(data, oFile, indent=4)
-	except Exception as e:
-		return e
-	#endregion ------------------------------------------------> Write to file
+    #region ---------------------------------------------------> Write to file
+    try:
+        with open(file, 'w') as oFile:
+            json.dump(data, oFile, indent=4)
+    except Exception as e:
+        return e
+    #endregion ------------------------------------------------> Write to file
 
-	return True
+    return True
 #---
 
 
 #--> Try to load user config, if file exists
 try:
-	ConfigLoad(file['Config'])
+    ConfigLoad(file['Config'])
 except Exception as e:
-	pass
+    pass
 #endregion ----------------------------------------------------------> METHODS
 
 

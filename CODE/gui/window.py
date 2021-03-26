@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
+from typing import Optional, Literal
 
 import requests
 import wx
@@ -30,6 +31,7 @@ import dat4s_core.gui.wx.window as dtsWindow
 import dat4s_core.generator.generator as dtsGenerator
 
 import config.config as config
+from data.file import UMSAPFile
 import gui.menu as menu
 import gui.tab as tab
 import gui.dtscore as dtscore
@@ -39,7 +41,7 @@ import gui.pane as pane
 
 
 #region -------------------------------------------------------------> Methods
-def UpdateCheck(ori, win=None):
+def UpdateCheck(ori: str, win: Optional[wx.Window]=None) -> bool:
     """ Check for updates for UMSAP from another thread.
         
         Parameters
@@ -49,24 +51,16 @@ def UpdateCheck(ori, win=None):
         win : wx widget
             To center the result window in this widget
     """
-    #region ---------------------------------------------------------> Options
-    confOpt = { # UpdateCheck Method in gui.window, conf & msg
-        'UpdateUrl' : config.url['Update'],
-        'UpdateCheckFailed' : (
-            f"Check for Updates failed. Please try again later."),
-    }
-    #endregion ------------------------------------------------------> Options
+    #region -------------------------------------------------------> Variables
+    url = config.url['Update']
+    msg = f"Check for Updates failed. Please try again later."
+    #endregion ----------------------------------------------------> Variables
     
     #region ---------------------------------> Get web page text from Internet
     try:
-        r = requests.get(confOpt['UpdateUrl'])
+        r = requests.get(url)
     except Exception as e:
-        wx.CallAfter(
-            dtscore.Notification, 
-            'errorU',
-            msg        = confOpt['UpdateCheckFailed'],
-            tException = e,
-        )
+        wx.CallAfter(dtscore.Notification, 'errorU', msg=msg, tException=e)
         return False
     #endregion ------------------------------> Get web page text from Internet
     
@@ -80,11 +74,7 @@ def UpdateCheck(ori, win=None):
         versionI = versionI.split('UMSAP')[1].split('</h1>')[0]
         versionI = versionI.strip()
     else:
-        wx.CallAfter(
-            dtscore.Notification, 
-            'errorU', 
-            msg = confOpt['UpdateCheckFailed'],
-        )
+        wx.CallAfter(dtscore.Notification, 'errorU', msg=msg)
         return False
     #endregion -----------------------------------------> Get Internet version
 
@@ -93,16 +83,9 @@ def UpdateCheck(ori, win=None):
     updateAvail = dtsMethod.VersionCompare(versionI, config.version)
     #--> Message
     if updateAvail:
-        wx.CallAfter(
-            CheckUpdateResult, 
-            parent   = win,
-            checkRes = versionI,
-        )
+        wx.CallAfter(CheckUpdateResult, parent=win, checkRes=versionI)
     elif not updateAvail and ori == 'menu':
-        wx.CallAfter(CheckUpdateResult, 
-            parent   = win,
-            checkRes = None,
-        )
+        wx.CallAfter(CheckUpdateResult, parent=win, checkRes=None)
     else:
         pass
     #endregion --------------------------------------------> Compare & message
@@ -122,36 +105,39 @@ class BaseWindow(wx.Frame):
         ----------
         name : str
             Unique name of the window
-        parent : wx Widget or None
+        parent : wx Window or None
             Parent of the window
-        menuDate : dict or None
-            Date entries for menu of plotting windows
+        menuDate : list of str or None
+            Date entries for menu of plotting windows e.g. 20210220-104527
 
         Attributes
         ----------
-        name : str
-            Unique name of the window
         parent : wx Widget or None
             Parent of the window
         statusbar : wx.StatusBar
             Windows statusbar
+        cSizeWindow : wx.Size
+            Size of the window. Default is (900, 620)
     """
     #region -----------------------------------------------------> Class setup
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent=None, menuDate=None):
+    def __init__(self, parent: Optional[wx.Window]=None, 
+        menuDate: Optional[list[str]]=None) -> None:
         """ """
         #region -------------------------------------------------> Check Input
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
         self.parent = parent
+        
+        self.cSizeWin = getattr(self, 'cSizeWindow', (900, 620))
 
         super().__init__(
             parent = parent,
-            size   = self.confOpt['Size'],
-            title  = self.confOpt['Title'],
+            size   = self.cSizeWin,
+            title  = self.cTitle,
             name   = self.name,
         )
         #endregion --------------------------------------------> Initial Setup
@@ -177,12 +163,12 @@ class BaseWindow(wx.Frame):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnClose(self, event):
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
         """Destroy window. Override as needed
     
             Parameters
             ----------
-            event: wx.Event
+            event: wx.CloseEvent
                 Information about the event
         """
         #region -------------------------------------------> Reduce win number
@@ -203,23 +189,29 @@ class BaseWindow(wx.Frame):
 
 
 class BaseWindowPlot(BaseWindow):
-    """Base class for windows showing a plot with common methods
+    """Base class for windows showing only plot with common methods
 
         Parameters
         ----------
-        name : str
-            Name of the window
         parent : wx.Window or None
             Parent of the window
-        menuDate : dict or None
-            Date entries for menu of plotting windows
+        menuDate : list of str or None
+            Date entries for menu of plotting windows e.g. 20210220-104527
+            
+        Notes
+        -----
+        - Method OnSavePlot assumes that this window has an attribute
+        plot (dtsWidget.MatPlotPanel). Override as needed
+        - Method OnClose assumes the parent is an instance of UMSAPControl. 
+        Override as needed.
     """
     #region -----------------------------------------------------> Class setup
-    
+    cSizeWindow = config.size['Plot']
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, menuDate):
+    def __init__(self, parent: Optional[wx.Window]=None, 
+        menuDate: Optional[list[str]]=None) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
 
@@ -237,32 +229,39 @@ class BaseWindowPlot(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnSavePlot(self):
-        """Save an image of the plot.	"""
+    def OnSavePlot(self) -> bool:
+        """Save an image of the plot. Override as needed. """
         try:
+            #------------------------------> 
             self.plot.SaveImage(
-                ext=config.extLong['MatPlotSaveI'],
-                parent=self, 
+                ext    = config.extLong['MatPlotSaveI'],
+                parent = self,
                 )
+            #------------------------------> 
+            return True
         except Exception as e:
+            #------------------------------> 
             dtscore.Notification(
                 'errorF',
                 msg        = str(e),
                 tException = e,
                 parent     = self,
             )
+            #------------------------------> 
+            return False
     #---
 
-    def OnClose(self, event):
-        """Close window and uncheck section in UMSAPFile window
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
+        """Close window and uncheck section in UMSAPFile window. 
+        Override as needed.
     
             Parameters
             ----------
-            event: wx.Event
+            event: wx.CloseEvent
                 Information about the event
         """
         #region -----------------------------------------------> Update parent
-        self.parent.UnCheckSection(self.confOpt['Section'])		
+        self.parent.UnCheckSection(self.cSection)		
         #endregion --------------------------------------------> Update parent
         
         #region ------------------------------------> Reduce number of windows
@@ -292,12 +291,12 @@ class MainWindow(BaseWindow):
         ----------
         name : str
             Name to id the window
-        confOpt : dict
-            Dict with configuration options
-        confMsg dict or None
-            Messages for users
         tabMethods: dict
             Methods to create the tabs
+        cTitle : str
+            Title of the window
+        cTitleTab : dict
+            Keys are Tab names & values are Tab titles
         menubar : wx.MenuBar
             wx.Menubar associated with the window
         statusbar : wx.StatusBar
@@ -312,25 +311,21 @@ class MainWindow(BaseWindow):
     
     tabMethods = { # Keys are the unique names of the tabs
         'StartTab'   : tab.Start,
-        'CorrATab'   : tab.CorrA,
-        'ProtProfTab': tab.ProtProf,
+        'CorrATab'   : tab.BaseConfTab,
+        'ProtProfTab': tab.BaseConfListTab,
     }
     
-    confOpt = { # Main Window, conf
-        #------------------------------> Titles
-        'Title': "Analysis Setup",
-        'TitleTab' : {
-            'StartTab' : 'Start',
-            'CorrATab' : config.nameUtilities['CorrA'],
-            'ProtProfTab' : config.nameModules['ProtProf'],
-        },
-        #------------------------------> Size
-        'Size' : (900, 620),
+    cTitle = "Analysis Setup"
+    
+    cTitleTab = {
+        'StartTab'   : 'Start',
+        'CorrATab'   : config.nameUtilities['CorrA'],
+        'ProtProfTab': config.nameModules['ProtProf'],
     }
     #endregion --------------------------------------------------> Class Setup
     
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[wx.Window]=None) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
         super().__init__(parent=parent)
@@ -375,7 +370,7 @@ class MainWindow(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ----------------------------------------------------> Menu methods
-    def OnTabClose(self, event):
+    def OnTabClose(self, event: wx.Event) -> Literal[True]:
         """Make sure to show the Start Tab if no other tab exists
         
             Parameters
@@ -406,9 +401,11 @@ class MainWindow(BaseWindow):
             )
         else:
             pass
+        
+        return True
     #---
 
-    def CreateTab(self, name):
+    def CreateTab(self, name: str) -> Literal[True]:
         """Create a tab
         
             Parameters
@@ -426,8 +423,9 @@ class MainWindow(BaseWindow):
             self.notebook.AddPage(
                 self.tabMethods[name](
                     self.notebook,
+                    name,
                 ),
-                self.confOpt['TitleTab'][name],
+                self.cTitleTab[name],
                 select = True,
             )
         else:
@@ -448,18 +446,21 @@ class MainWindow(BaseWindow):
         else:
             pass
         #endregion ------------------------------------------------> Start Tab
+        
+        return True
     #---
 
-    def OnClose(self, event):
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
         """Destroy window and set config.MainW
     
             Parameters
             ----------
-            event: wx.Event
+            event: wx.CloseEvent
                 Information about the event
         """
         config.mainW = None
         self.Destroy()
+        return True
     #---
     #endregion -------------------------------------------------> Menu methods
 #---
@@ -481,10 +482,6 @@ class CorrAPlot(BaseWindowPlot):
             Unique name of the window
         parent : wx Widget or None
             Parent of the window
-        confOpt : dict
-            Configuration options
-        confMsg : dict
-            User's messages
         obj : parent.obj
             Pointer to the UMSAPFile object in parent. Instead of modifying this
             object here, modify the configure step or add a Get method
@@ -498,39 +495,31 @@ class CorrAPlot(BaseWindowPlot):
             Main plot of the window
     """
     #region -----------------------------------------------------> Class setup
-    name='CorrAPlot'
+    name = 'CorrAPlot'
     
-    confOpt = {
-        'Section' : config.nameUtilities['CorrA'],
-        'Size' : config.size['Plot'],
-    }
+    cSection = config.nameUtilities['CorrA']
 
-    confMsg = {
-        'ExportFailed' : (
-            f"It was not possible to write the data to the selected file"),
-    }
+    msgExportFailed = (
+        f"It was not possible to write the data to the selected file"
+    )
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent):
+    def __init__(self, parent: 'UMSAPControl') -> None:
         """ """
         #region -------------------------------------------------> Check Input
-        
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.confOpt['Title'] = (
-            f"{parent.confOpt['Title']} - {config.nameUtilities['CorrA']}"
-        )
+        self.cTitle  = f"{parent.cTitle} - {self.cSection}"
         self.obj     = parent.obj
-        self.section = self.confOpt['Section']
-        self.data    = self.obj.confData[self.section]
+        self.data    = self.obj.confData[self.cSection]
         self.date    = [x for x in self.data.keys()]
         self.cmap    = dtsMethod.MatplotLibCmap(
-            N  = config.color[self.section]['CMAP']['N'],
-            c1 = config.color[self.section]['CMAP']['c1'],
-            c2 = config.color[self.section]['CMAP']['c2'],
-            c3 = config.color[self.section]['CMAP']['c3'],
+            N  = config.color[self.cSection]['CMAP']['N'],
+            c1 = config.color[self.cSection]['CMAP']['c1'],
+            c2 = config.color[self.cSection]['CMAP']['c2'],
+            c3 = config.color[self.cSection]['CMAP']['c3'],
         )
 
         super().__init__(parent, self.date)
@@ -564,7 +553,7 @@ class CorrAPlot(BaseWindowPlot):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def WinPos(self):
+    def WinPos(self) -> Literal[True]:
         """Set the position on the screen and adjust the total number of
             shown windows
         """
@@ -586,13 +575,13 @@ class CorrAPlot(BaseWindowPlot):
         return True
     #---
 
-    def Draw(self, tDate):
+    def Draw(self, tDate: str) -> Literal[True]:
         """ Plot data from a given date.
         
             Paramenters
             -----------
             tDate : str
-                A date-time string available in the section for plotting
+                A date in the section e.g. 20210129-094504
         """
         #region --------------------------------------------------------> Plot
         self.plot.axes.pcolormesh(
@@ -619,17 +608,16 @@ class CorrAPlot(BaseWindowPlot):
         self.statusbar.SetStatusText(tDate, 1)
         #endregion ------------------------------------------------> Statusbar
         
-        
         return True
     #---
 
-    def SetAxis(self, tDate):
+    def SetAxis(self, tDate: str) -> Literal[True]:
         """ General details of the plot area 
         
             Parameters
             ----------
             tDate : str
-                A date-time string available in the section for plotting
+                A date in the section e.g. 20210129-094504
         """
         #region --------------------------------------------------------> Grid
         self.plot.axes.grid(True)		
@@ -666,7 +654,7 @@ class CorrAPlot(BaseWindowPlot):
         return True
     #---
 
-    def UpdateStatusBar(self, event):
+    def UpdateStatusBar(self, event) -> Literal[True]:
         """Update the statusbar info
     
             Parameters
@@ -701,13 +689,13 @@ class CorrAPlot(BaseWindowPlot):
         return True
     #---
 
-    def OnExportPlotData(self):
+    def OnExportPlotData(self) -> Literal[True]:
         """ Export data to a csv file """
         #region --------------------------------------------------> Dlg window
         dlg = dtsWindow.FileSelectDialog(
             'save',
             config.extLong['Data'],
-            parent=self
+            parent = self,
         )
         #endregion -----------------------------------------------> Dlg window
         
@@ -718,11 +706,11 @@ class CorrAPlot(BaseWindowPlot):
             tDate = self.statusbar.GetStatusText(1)
             #------------------------------> Export
             try:
-                self.obj.ExportPlotData(self.section, tDate, p)
+                self.obj.ExportPlotData(self.cSection, tDate, p)
             except Exception as e:
                 dtscore.Notification(
                     'errorF',
-                    msg        = self.confMsg['ExportFailed'],
+                    msg        = self.msgExportFailed,
                     tException = e,
                     parent     = self,
                 )
@@ -731,6 +719,7 @@ class CorrAPlot(BaseWindowPlot):
         #endregion ------------------------------------------------> Get Path
      
         dlg.Destroy()
+        
         return True	
      #---
     #---	
@@ -757,8 +746,6 @@ class UMSAPControl(BaseWindow):
             Name of the window. Basically fileP.name
         obj : file.UMSAPFile
             Object to handle UMSAP files
-        confOpt : dict
-            Configuration options
 
         Raises
         ------
@@ -771,29 +758,28 @@ class UMSAPControl(BaseWindow):
     #region -----------------------------------------------------> Class setup
     name = 'UMSAPF'
     
-    confOpt = {
-        'Size' : (400, 700),
-        'Plot' : { # Methods to create plot windows
-            config.nameUtilities['CorrA'] : CorrAPlot
-        },
-        'FileLabelCheck' : ['Data File'],
-        'Section' : { # Reference to section items in wxCT.CustomTreeCtrl
-        },
-        'Window' : { # Reference to plot windows
-        },
+    cSizeWindow = (400, 700)
+    cPlotMethod = { # Methods to create plot windows
+        config.nameUtilities['CorrA'] : CorrAPlot
     }
+    cFileLabelCheck = ['Data File']
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, obj, shownSection=None, parent=None):
+    def __init__(self, obj: UMSAPFile, shownSection: Optional[list[str]]=None, 
+        parent: Optional[wx.Window]=None) -> None:
         """ """
         #region -------------------------------------------------> Check Input
         
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.obj = obj
-        self.confOpt['Title'] = self.obj.fileP.name,
+        self.obj    = obj
+        self.cTitle = self.obj.fileP.name,
+        #-------------->  Reference to section items in wxCT.CustomTreeCtrl
+        self.cSection = {}
+        #------------------------------> Reference to plot windows
+        self.cWindow = {}
 
         super().__init__(parent=parent)
         #endregion --------------------------------------------> Initial Setup
@@ -821,10 +807,7 @@ class UMSAPControl(BaseWindow):
         if shownSection is not None:
             for k in shownSection:
                 try:
-                    self.trc.CheckItem(
-                        self.confOpt['Section'][k],
-                        checked=True,
-                    )
+                    self.trc.CheckItem(self.cSection[k], checked=True)
                 except Exception:
                     pass
         else:
@@ -834,7 +817,7 @@ class UMSAPControl(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def WinPos(self):
+    def WinPos(self) -> Literal[True]:
         """Set the position on the screen and adjust the total number of
             shown windows
         """
@@ -856,7 +839,7 @@ class UMSAPControl(BaseWindow):
         return True
     #---
 
-    def SetTree(self):
+    def SetTree(self) -> Literal[True]:
         """Set the elements of the wx.TreeCtrl """
         #region ----------------------------------------------------> Add root
         root = self.trc.AddRoot(self.obj.fileP.name)
@@ -871,7 +854,7 @@ class UMSAPControl(BaseWindow):
                 childa = self.trc.AppendItem(root, a, ct_type=0)
                 self.trc.SetItemFont(childa, config.font['TreeItemFalse'])
             #------------------------------> Keep reference
-            self.confOpt['Section'][a] = childa
+            self.cSection[a] = childa
             
             for c, d in b.items():
                 #------------------------------> Add date node
@@ -886,7 +869,7 @@ class UMSAPControl(BaseWindow):
                     #------------------------------> Add date items
                     childc = self.trc.AppendItem(childb, f"{e}: {f}")
                     #------------------------------> Set font
-                    if e.strip() in self.confOpt['FileLabelCheck']:
+                    if e.strip() in self.cFileLabelCheck:
                         if Path(f).exists():
                             self.trc.SetItemFont(
                             childc, 
@@ -911,7 +894,7 @@ class UMSAPControl(BaseWindow):
         return True
     #---
 
-    def OnCheckItem(self, event):
+    def OnCheckItem(self, event) -> bool:
         """Show window when section is checked
     
             Parameters
@@ -927,7 +910,7 @@ class UMSAPControl(BaseWindow):
         #region ----------------------------------------------> Destroy window
         #------------------------------> Event trigers before checkbox changes
         if self.trc.IsItemChecked(item):
-            self.confOpt['Window'][section].Destroy()
+            self.cWindow[section].Destroy()
             event.Skip()
             return True
         else:
@@ -936,9 +919,7 @@ class UMSAPControl(BaseWindow):
         
         #region -----------------------------------------------> Create window
         try:
-            self.confOpt['Window'][section] = (
-                self.confOpt['Plot'][section](self)
-            )
+            self.cWindow[section] = self.cPlotMethod[section](self)
         except Exception as e:
             dtscore.Notification('errorU', msg=str(e), tException=e)
             return False
@@ -948,7 +929,7 @@ class UMSAPControl(BaseWindow):
         return True
     #---
 
-    def UnCheckSection(self, sectionName):
+    def UnCheckSection(self, sectionName: str) -> Literal[True]:
         """Method to uncheck a section when the plot window is closed by the 
             user
     
@@ -959,7 +940,7 @@ class UMSAPControl(BaseWindow):
         """
         #region -----------------------------------------------------> Uncheck
         self.trc.SetItem3StateValue(
-            self.confOpt['Section'][sectionName],
+            self.cSection[sectionName],
             wx.CHK_UNCHECKED,
         )		
         #endregion --------------------------------------------------> Uncheck
@@ -972,12 +953,12 @@ class UMSAPControl(BaseWindow):
         return True
     #---
 
-    def GetCheckedSection(self):
+    def GetCheckedSection(self) -> list[str]:
         """Get a list with the name of all checked sections """
-        return [k for k, v in self.confOpt['Section'].items() if v.IsChecked()]
+        return [k for k, v in self.cSection.items() if v.IsChecked()]
     #---
     
-    def OnClose(self, event):
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
         """Destroy window and remove reference from config.umsapW
     
             Parameters
@@ -1004,7 +985,7 @@ class UMSAPControl(BaseWindow):
         return True
     #---
 
-    def UpdateFileContent(self):
+    def UpdateFileContent(self) -> Literal[True]:
         """Update the content of the file. """
         method.LoadUMSAPFile(
             fileP        = self.obj.fileP,
@@ -1036,37 +1017,31 @@ class CheckUpdateResult(wx.Dialog):
     """
     #region -----------------------------------------------------> Class setup
     name = 'CheckUpdateResDialog'
-    
-    confOpt = {
-        #------------------------------> Title
-        'Title' : f"Check for Updates",
-        #------------------------------> Style
-        'Style' : wx.CAPTION|wx.CLOSE_BOX,
-        #------------------------------> Label
-        'LabelLatest': "You are using the latest version of UMSAP.",
-        'LabelLink'  : 'Read the Release Notes.',
-        #------------------------------> URL
-        'UpdateUrl' : config.url['Update'],
-        #------------------------------> Files
-        'Icon' : config.file['ImgIcon'],
-    }
+    #------------------------------> Title
+    cTitle = f"Check for Updates",
+    #------------------------------> Style
+    cStyle = wx.CAPTION|wx.CLOSE_BOX,
+    #------------------------------> Label
+    cLabelLatest = "You are using the latest version of UMSAP.",
+    cLabelLink   = 'Read the Release Notes.',
+    #------------------------------> URL
+    cUrl = config.url['Update'],
+    #------------------------------> Files
+    cIcon = config.file['ImgIcon'],
     #endregion --------------------------------------------------> Class setup
     
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent=None, checkRes=None):
+    def __init__(self, parent: Optional[wx.Window]=None, 
+        checkRes: Optional[str]=None) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
-        super().__init__(
-            parent, 
-            title=self.confOpt['Title'], 
-            style=self.confOpt['Style'],
-        )
+        super().__init__(parent, title = self.cTitle, style = self.cStyle)
         #endregion --------------------------------------------> Initial setup
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> Msg
         if checkRes is None:
-            msg = self.confOpt['LabelLatest']
+            msg = self.cLabelLatest
         else:
             msg = (
                 f"UMSAP {checkRes} is already available.\n"
@@ -1081,15 +1056,15 @@ class CheckUpdateResult(wx.Dialog):
         if checkRes is not None:
             self.stLink = adv.HyperlinkCtrl(
                 self,
-                label = self.confOpt['LabelLink'],
-                url   = self.confOpt['UpdateUrl'],
+                label = self.cLabelLink,
+                url   = self.cUrl,
             )
         else:
             pass
         #------------------------------> Img
         self.img = wx.StaticBitmap(
             self,
-            bitmap = wx.Bitmap(str(self.confOpt['Icon']), wx.BITMAP_TYPE_PNG),
+            bitmap = wx.Bitmap(str(self.cIcon), wx.BITMAP_TYPE_PNG),
         )
         #endregion --------------------------------------------------> Widgets
 
@@ -1138,7 +1113,7 @@ class CheckUpdateResult(wx.Dialog):
     #endregion -----------------------------------------------> Instance setup
     
     #region ---------------------------------------------------> Class Methods
-    def OnLink(self, event):
+    def OnLink(self, event) -> Literal[True]:
         """Process the link event 
         
             Parameters
@@ -1149,6 +1124,8 @@ class CheckUpdateResult(wx.Dialog):
         event.Skip()
         self.EndModal(1)
         self.Destroy()
+        
+        return True
     #endregion ------------------------------------------------> Class Methods
 #---
 
@@ -1178,16 +1155,16 @@ class ResControlExp(wx.Dialog):
     """
     #region -----------------------------------------------------> Class setup
     name = 'ResControlExp'
-    
-    confOpt = {
-        'Title' : f"Results - Control Experiments",
-        'Size'  : (900, 620),
-        'Style' : wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER,
-    }
+    #------------------------------> 
+    cTitle = f"Results - Control Experiments"
+    #------------------------------> 
+    cSize = (900, 620)
+    #------------------------------> 
+    cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent):
+    def __init__(self, parent:wx.Window):
         """ """
         #region -------------------------------------------------> Check Input
         if (iFile := parent.iFile.tc.GetValue())  == '':
@@ -1209,10 +1186,10 @@ class ResControlExp(wx.Dialog):
         #region -----------------------------------------------> Initial Setup
         super().__init__(
             parent, 
-            title = self.confOpt['Title'],
-            style = self.confOpt['Style'],
-            size  = self.confOpt['Size'],
-            )
+            title = self.cTitle,
+            style = self.cStyle,
+            size  = self.cSize,
+        )
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -1242,7 +1219,7 @@ class ResControlExp(wx.Dialog):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnOK(self, event):
+    def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
         """Validate user information and close the window
     
             Parameters
@@ -1264,6 +1241,8 @@ class ResControlExp(wx.Dialog):
             self.Close()
         else:
             pass
+        
+        return True
     #---
     #endregion ------------------------------------------------> Class methods
 #---

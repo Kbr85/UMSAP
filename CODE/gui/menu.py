@@ -15,6 +15,8 @@
 
 
 #region -------------------------------------------------------------> Imports
+from typing import Literal, Optional
+
 import wx
 
 import config.config as config
@@ -28,12 +30,12 @@ class MenuMethods():
     """Base class to hold common methods to the menus """
 
     #region ---------------------------------------------------> Class Methods
-    def OnCreateTab(self, event):
+    def OnCreateTab(self, event:wx.CommandEvent) -> Literal[True]:
         """Creates a new tab in the main window
         
             Parameters
             ----------
-            event : wx.Event
+            event : wx.CommandEvent
                 Information about the event
         """
         #region -------------------------------------------------> Check MainW
@@ -50,13 +52,13 @@ class MenuMethods():
         return True
     #---
 
-    def OnZoomReset(self, event):
+    def OnZoomReset(self, event: wx.CommandEvent) -> Literal[True]:
         """Reset the zoom level of a matlibplot. Assumes the plot comes from
             dtsWidget.MatPlotPanel and it is called plot in the window.
     
             Parameters
             ----------
-            event : wx.Event
+            event : wx.CommandEvent
                 Information about the event
         """
         win = self.GetWindow()
@@ -64,20 +66,14 @@ class MenuMethods():
         return True
     #---
 
-    def AddDateItems(self, menuDate):
+    def AddDateItems(self, menuDate: list[str]) -> Literal[True]:
         """Add and bind the date to plot
     
             Parameters
             ----------
-            menuDate: list
-                Available dates to plot
+            menuDate: list of str
+                Available dates to plot e.g. 20210324-123456
         """
-        #region ---------------------------------------------------> Variables
-        self.plotDate = {
-
-        }
-        #endregion ------------------------------------------------> Variables
-        
         #region ---------------------------------------------------> Add items
         for k in menuDate:
             #------------------------------> Add item
@@ -91,9 +87,11 @@ class MenuMethods():
         #region -----------------------------------------------> Add Separator
         self.AppendSeparator()
         #endregion --------------------------------------------> Add Separator
+        
+        return True
     #---
 
-    def OnPlotDate(self, event):
+    def OnPlotDate(self, event: wx.CommandEvent) -> Literal[True]:
         """Plot a date of a section in an UMSAP file
     
             Parameters
@@ -107,7 +105,7 @@ class MenuMethods():
         return True
     #---
 
-    def OnExportPlotData(self, event):
+    def OnExportPlotData(self, event: wx.CommandEvent) -> Literal[True]:
         """Export plotted data 
 
             Parameters
@@ -120,7 +118,7 @@ class MenuMethods():
         return True
     #---
 
-    def OnSavePlot(self, event):
+    def OnSavePlot(self, event: wx.CommandEvent) -> Literal[True]:
         """Save an image of a plot
     
             Parameters
@@ -150,7 +148,7 @@ class PlotMenu(wx.Menu, MenuMethods):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuDate):
+    def __init__(self, menuDate: list[str]) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
@@ -187,13 +185,17 @@ class Module(wx.Menu, MenuMethods):
     
         Attributes
         ----------
-        name : dict
-            Keys are the menu ids and values the tupples to create the tabs
+        name : str
+            Unique name of the menu
+        cName : dict
+            Name of the modules
+        nameID : dict
+            Keys are the menu ids and values the tab's unique names
     """
     #region -----------------------------------------------------> Class setup
     name = 'ModuleMenu'
 
-    confOpt = {
+    cName = {
         'LimProt' : config.nameModules['LimProt'],
         'TarProt' : config.nameModules['TarProt'],
         'ProtProf': config.nameModules['ProtProf'],
@@ -208,9 +210,9 @@ class Module(wx.Menu, MenuMethods):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu items
-        self.limprot  = self.Append(-1, self.confOpt['LimProt']+'\tALT+Ctrl+L')
-        self.protprof = self.Append(-1, self.confOpt['ProtProf']+'\tALT+Ctrl+P')
-        self.tarprot  = self.Append(-1, self.confOpt['TarProt']+'\tALT+Ctrl+T')
+        self.limprot  = self.Append(-1, self.cName['LimProt']+'\tALT+Ctrl+L')
+        self.protprof = self.Append(-1, self.cName['ProtProf']+'\tALT+Ctrl+P')
+        self.tarprot  = self.Append(-1, self.cName['TarProt']+'\tALT+Ctrl+T')
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
@@ -231,13 +233,23 @@ class Module(wx.Menu, MenuMethods):
 
 
 class Utility(wx.Menu, MenuMethods):
-    """Utilites menu"""
+    """Utilites menu
+    
+        Parameters
+        ----------
+        name : str
+            Unique name of the menu
+        cName : dict
+            Name of the modules
+        nameID : dict
+            Keys are the menu ids and values the tab's unique names
+    """
     #region -----------------------------------------------------> Class setup
     name = 'UtilityMenu'
     
-    confOpt = {
+    cName = {
         'CorrA' : config.nameUtilities['CorrA'],
-		'ReadF' : config.nameUtilities['ReadF'],
+        'ReadF' : config.nameUtilities['ReadF'],
     }
     #endregion --------------------------------------------------> Class setup
     
@@ -249,9 +261,9 @@ class Utility(wx.Menu, MenuMethods):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu items
-        self.corrA   = self.Append(-1, self.confOpt['CorrA'])
+        self.corrA   = self.Append(-1, self.cName['CorrA'])
         self.AppendSeparator()
-        self.readFile = self.Append(-1, self.confOpt['ReadF']+'\tCtrl+R')
+        self.readFile = self.Append(-1, self.cName['ReadF']+'\tCtrl+R')
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
@@ -292,7 +304,7 @@ class FileControlToolMenu(wx.Menu):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         """*args and **kwargs are needed to use this menu with ToolMenuBar
             All of them are ignored here.
         """
@@ -313,7 +325,7 @@ class FileControlToolMenu(wx.Menu):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnUpdateFileContent(self, event):
+    def OnUpdateFileContent(self, event: wx.CommandEvent) -> Literal[True]:
         """Update the file content shown in the window
     
             Parameters
@@ -330,13 +342,19 @@ class FileControlToolMenu(wx.Menu):
 
 
 class CorrAPlotToolMenu(PlotMenu):
-    """ """
+    """Creates the Tools menu for a Corelation Analysis Plot window 
+    
+        Parameters
+        ----------
+        menuDate : list of str
+            Available dates to plot e.g. 20210304-053517
+    """
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuDate):
+    def __init__(self, menuDate: list[str]) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(menuDate)
@@ -369,7 +387,7 @@ class MainMenuBar(wx.MenuBar):
     """ Creates the application menu bar"""
     
     #region --------------------------------------------------- Instance Setup
-    def __init__(self):
+    def __init__(self) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
@@ -389,7 +407,16 @@ class MainMenuBar(wx.MenuBar):
 
 
 class ToolMenuBar(MainMenuBar):
-    """Menu bar for a window showing the corresponding tool menu"""
+    """Menu bar for a window showing the corresponding tool menu
+    
+        Parameters
+        ----------
+        name : str
+            Unique name of the window/tab for which the Tool menu will be 
+            created
+        menuDate : list of str or None
+            Available dates to plot e.g. 20210304-053517. Default is None
+    """
 
     #region -----------------------------------------------------> Class Setup
     toolClass = { # Key are window name
@@ -400,7 +427,7 @@ class ToolMenuBar(MainMenuBar):
     #endregion --------------------------------------------------> Class Setup
     
     #region --------------------------------------------------- Instance Setup
-    def __init__(self, name, menuDate=None):
+    def __init__(self, name: str, menuDate: Optional[list[str]]=None) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()

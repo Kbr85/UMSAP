@@ -20,18 +20,15 @@ from pathlib import Path
 import wx
 
 import dat4s_core.gui.wx.validator as dtsValidator
-import dat4s_core.gui.wx.window as dtsWindow
 
 import gui.window as window
 import config.config as config
-import data.file as file
-import gui.dtscore as dtscore
 #endregion ----------------------------------------------------------> Imports
 
 
 class ResControl():
     """Creates the Results - Control experiment widgets. Configuration options
-        are set in the child class in self.confOpt
+        are set in the child class
 
         Parameters
         ----------
@@ -57,24 +54,25 @@ class ResControl():
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent):
         """ """
+        
         #region -----------------------------------------------------> Widgets
         self.tcResults = wx.TextCtrl(
             parent    = parent,
             style     = wx.TE_READONLY,
             value     = "",
-            size      = self.confOpt['TwoInRow'],
+            size      = self.cTcSize,
             validator = dtsValidator.IsNotEmpty(),
         )
 
         self.stResults = wx.StaticText(
             parent = parent,
-            label  = self.confOpt['ResultL'],
+            label  = 'Results - Control Experiments',
             style  = wx.ALIGN_RIGHT
         )
 
         self.btnResultsW = wx.Button(
             parent = parent,
-            label  = self.confOpt['TypeResL'],
+            label  = 'Type Values',
         )
         # self.btnResultsL = wx.Button(
         #     parent = parent,

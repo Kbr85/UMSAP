@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import _thread 
 from pathlib import Path
+from typing import Optional, Literal, Type
 
 import wx
 import wx.lib.agw.aui as aui
@@ -33,6 +34,9 @@ import config.config as config
 import gui.dtscore as dtscore
 import gui.method as method
 import gui.widget as widget
+
+if config.typeChecking:
+    import pandas as pd
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -43,10 +47,8 @@ class BaseConfPanel(
     dtsWidget.StaticBoxes, 
     dtsWidget.ButtonOnlineHelpClearAllRun
     ):
-    """Creates the skeleton of a configuration tab. This includes the 
-        wx.StaticBox, the Bottom Buttons and the statusbar.
-
-        See Notes
+    """Creates the skeleton of a configuration panel. This includes the 
+        wx.StaticBox, the bottom Buttons and the statusbar.
 
         Parameters
         ----------
@@ -59,10 +61,58 @@ class BaseConfPanel(
         ----------
         parent : wx Widget
             Parent of the widgets
-        lbI : wx.ListCtrl or None
-            Pointer to the default wx.ListCtrl to load Data File content to. 
-        lbL : list of wx.ListCtrl
-            To clear all wx.ListCtrl in the Tab
+        #------------------------------> Must be set on child
+        cURL : str (Set on child)
+            URL for the Help wx.Button
+        cSection : str (Set on child)
+            Section in the UMSAP file. One of the values in config.nameModules 
+            or config.nameUtilities
+        cLenLongestL : int (Set on child)
+            Length of the longest label in output dict
+        cTitlePD : str (Set on child)
+            Title for the Progress Dialog shown when running analysis
+        cGaugePD : int (Set on child)
+            Number of steps for the wx.Gauge in the Progress Dialog shown when 
+            running analysis
+        #------------------------------> Configuration
+        cRunBtnL : str
+            Label for the run wx.Button.
+            Default is config.label['BtnRun']
+        cFileBoxL : str
+            Label for the wx.StaticBox in section Files & Folders
+            Default is config.label['StBoxFile'].
+        cValueBoxL : str
+            Label for the wx.StaticBox in section User-defined values
+            Default is config.label['StBoxValue']
+        cColumnBoxL : str
+            Label for the wx.StaticBox in section Columns
+            Default is config.label['StBoxColumn']
+        ciMode : str
+            Mode for selecting the main input file. Default is 'openO'
+        coMode : str
+            Mode for selecting the output file. Default is 'save'
+        ciFileL : str
+            Label for the main input data wx.Button
+            Default is config.label['BtnDataFile']
+        ciFileH : str
+            Hint for the main input wx.TextCtrl
+            Default is config.hint['TcDataFile']
+        ciFileE : wxPython extension list
+            Extensions allowed for the main input file
+            Default is config.extLong['Data']
+        coFileL : str
+            Label for the output wx.Button
+            Default is config.label['BtnOutFile']
+        coFileH : str
+            Hint for the output file wx.TextCtrl
+            Default is config.hint['TcOutFile]
+        ciFileValidator : wx.Validator
+            Validator for the main input file. 
+            Default is dtsValidator.InputFF(
+                fof='file', 
+                ext = config.extShort['Data'],
+            )
+        #------------------------------> Needed to run analysis
         msgError : Str or None
             Error message to show when analysis fails
         d : dict
@@ -79,14 +129,8 @@ class BaseConfPanel(
         oFolder : Path or None
             Folder to contain the output
         tException : Exception or None
-            Exception raised during analysis
-        lbI : wx.ListCtrl
-            ListCtrl to show information about the main input file
-        lbO : wx.ListCtrl
-            ListCtrl to show selected columns in lbI
-        lbL : list of wx.ListCtrl
-            To use when deleting the content on the wx.ListCtrl 
-            e.g. self.LCtrlEmpty
+            Exception raised during analysis   
+        #------------------------------> Widgets
         btnRun : wx.Button
             Run button
         btnHelp : wx.Button
@@ -99,6 +143,12 @@ class BaseConfPanel(
             StaticBox to contain the user-defined values
         sbColumn : wx.StaticBox
             StaticBox to contain the column numbers in the input files
+        iFile : dtsWidget.ButtonTextCtrlFF
+            Attributes: btn, tc
+        oFile : dtsWidget.ButtonTextCtrlFF
+            Attributes: btn, tc
+        checkB : wx.CheckBox
+            Signal whether to add new data to existing file or not
         sizersbFile : wx.StaticBoxSizer
             StaticBoxSizer for sbFile
         sizersbValue : wx.StaticBoxSizer
@@ -114,67 +164,115 @@ class BaseConfPanel(
         btnSizer : wx.FlexGridSizer
             To align the buttons
         Sizer : wx.BoxSizer
-            Main sizer of the tab
-        
+            Main sizer of the tab        
+        #------------------------------> Other
+        lbI : wx.ListCtrl or None
+            Pointer to the default wx.ListCtrl to load Data File content to. 
+        lbL : list of wx.ListCtrl
+            To clear all wx.ListCtrl in the Tab
+                
         Notes
         -----
-        
     """
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, rightDelete=True):
+    def __init__(self, parent: wx.Window, rightDelete: bool=True) -> None:
         """ """
+        #region -------------------------------------------------> Check input
+        try:
+            attr = ['cURL', 'cSection', 'cLenLongestL', 'cTitlePD', 'cGaugePD']
+            dtsMethod.AttrInClass(self, attr)
+        except Exception as e:
+            raise e
+        #endregion ----------------------------------------------> Check input
+        
         #region -----------------------------------------------> Initial Setup
         self.parent = parent
+        #------------------------------> Labels
+        self.cRunBtnL = getattr(self, 'RunBtnL', config.label['BtnRun'])
+        self.ciFileL = getattr(self, 'ciFileL', config.label['BtnDataFile'])
+        self.coFileL = getattr(self, 'coFileL', config.label['BtnOutFile'])
+        self.cFileBoxL = getattr(self, 'cFileBoxL', config.label['StBoxFile'])
+        self.cValueBoxL = getattr(
+            self, 'cValueBoxL', config.label['StBoxValue'],
+        )
+        self.cColumnBoxL = getattr(
+            self, 'cColumnBoxL', config.label['StBoxColumn'],
+        )
+        self.cCheckL = getattr(self, 'cCheckL', config.label['CbCheck'])
+        #------------------------------> Hints
+        self.ciFileH = getattr(self, 'ciFileH', config.hint['TcDataFile'])
+        self.coFileH = getattr(self, 'coFileH', config.hint['TcOutFile'])
+        #------------------------------> Extensions
+        self.ciFileE = getattr(self, 'ciFileE', config.extLong['Data'])
+        #------------------------------> Mode
+        self.ciMode = getattr(self, 'ciMode', 'openO')
+        self.coMode = getattr(self, 'coMode', 'save')
+        #------------------------------> Validator
+        self.ciFileValidator = getattr(
+            self, 
+            'ciFileValidator',
+            dtsValidator.InputFF(
+                fof = 'file',
+                ext = config.extShort['Data'],
+            )
+        )
         #------------------------------> This is needed to handle Data File 
         # content load to the wx.ListCtrl in Tabs with multiple panels
-        self.lbI       = None # Default wx.ListCtrl to load data file content
-        self.lbL       = [self.lbI]
+        #--------------> Default wx.ListCtrl to load data file content
+        self.lbI : Optional[Type[wx.ListCtrl]]= None 
+        #--------------> List to use just in case there are more than 1 
+        self.lbL : list[Optional[Type[wx.ListCtrl]]] = [self.lbI]
         #------------------------------> Needed to Run the analysis
-        self.msgError   = None # Error msg to show in self.RunEnd
-        self.d          = {} # Dict with the user input as given
-        self.do         = {} # Dict with the processed user input
-        self.dfI        = None # pd.DataFrame for initial,
-        self.dfN        = None # normalized and
-        self.date       = None # date for corr file
-        self.oFolder    = None # folder for output
-        self.tException = None # Exception raised during analysis
+        #--------------> Dict with the user input as given
+        self.d = {}
+        #--------------> Dict with the processed user input
+        self.do = {} 
+        #--------------> Error message and exception to show in self.RunEnd
+        self.msgError   : Optional[str]       = None 
+        self.tException : Optional[Exception] = None
+        #--------------> pd.DataFrames for:
+        self.dfI : Optional['pd.DataFrame'] = None # Initial and
+        self.dfN : Optional['pd.DataFrame'] = None # Normalized values
+        #--------------> date for corr file
+        self.date : Optional[str] = None
+        #--------------> folder for output
+        self.oFolder : Optional[Path] = None
         #------------------------------> Parent init
         wx.Panel.__init__(self, parent, name=self.name)
 
-        dtsWidget.ButtonOnlineHelpClearAllRun.__init__(
-            self, 
-            self, 
-            self.confOpt['URL'], 
-            labelR    = self.confOpt['RunBtnL'],
+        dtsWidget.ButtonOnlineHelpClearAllRun.__init__(self, self, 
+            self.cURL, 
+            labelR = self.cRunBtnL,
         )
 
         dtsWidget.StaticBoxes.__init__(self, self, 
-            labelF      = self.confOpt['FileBoxL'],
-            labelV      = self.confOpt['ValueBoxL'],
-            labelC      = self.confOpt['ColumnBoxL'],
+            labelF      = self.cFileBoxL,
+            labelV      = self.cValueBoxL,
+            labelC      = self.cColumnBoxL,
             rightDelete = rightDelete,
         )
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
         self.iFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
-            btnLabel   = self.confOpt['iFileL'],
-            tcHint     = self.confOpt['iFileH'],
-            ext        = config.extLong['Data'],
+            btnLabel   = self.ciFileL,
+            tcHint     = self.ciFileH,
+            ext        = self.ciFileE,
+            mode       = self.ciMode,
             tcStyle    = wx.TE_READONLY|wx.TE_PROCESS_ENTER,
-            validator  = wx.DefaultValidator,
+            validator  = self.ciFileValidator,
             ownCopyCut = True,
+            afterBtn   = self.LCtrlFill,
         )
-        self.iFile.afterBtn = self.LCtrlFill
 
         self.oFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
-            btnLabel   = self.confOpt['oFileL'],
-            tcHint     = self.confOpt['oFileH'],
-            mode       = self.confOpt['oMode'],
+            btnLabel   = self.coFileL,
+            tcHint     = self.coFileH,
+            mode       = self.coMode,
             ext        = config.extLong['UMSAP'],
             tcStyle    = wx.TE_READONLY,
             validator  = dtsValidator.OutputFF(
@@ -185,10 +283,7 @@ class BaseConfPanel(
             ownCopyCut = True,
         )
 
-        self.checkB = wx.CheckBox(
-            self.sbFile,
-            label = self.confOpt['CheckL'],
-        )
+        self.checkB = wx.CheckBox(self.sbFile, label=self.cCheckL)
         self.checkB.SetValue(True)
         #endregion --------------------------------------------------> Widgets
 
@@ -243,7 +338,7 @@ class BaseConfPanel(
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnIFileEnter(self, event):
+    def OnIFileEnter(self, event: wx.CommandEvent) -> bool:
         """Reload column names in the data file when pressing enter
     
             Parameters
@@ -257,7 +352,7 @@ class BaseConfPanel(
             return False
     #---
 
-    def LCtrlFill(self, fileP):
+    def LCtrlFill(self, fileP: Path) -> bool:
         """Fill the wx.ListCtrl after selecting path to the folder. This is
             called from within self.iFile
     
@@ -274,11 +369,7 @@ class BaseConfPanel(
         try:
             dtsMethod.LCtrlFillColNames(self.lbI, fileP)
         except Exception as e:
-            dtscore.Notification(
-                'errorF',
-                msg        = str(e),
-                tException = e,
-            )
+            dtscore.Notification('errorF', msg=str(e), tException=e)
             return False
         #endregion ------------------------------------------------> Fill list
         
@@ -289,7 +380,7 @@ class BaseConfPanel(
         return True
     #---	
 
-    def OnIFileEmpty(self, event):
+    def OnIFileEmpty(self, event: wx.CommandEvent) -> Literal[True]:
         """Clear GUI elements when Data Folder is ''
     
             Parameters
@@ -305,7 +396,7 @@ class BaseConfPanel(
         return True
     #---
 
-    def LCtrlEmpty(self):
+    def LCtrlEmpty(self) -> Literal[True]:
         """Clear wx.ListCtrl and NCol """
         #region -------------------------------------------------> Delete list
         for l in self.lbL:
@@ -319,7 +410,7 @@ class BaseConfPanel(
         return True
     #---
 
-    def OnOFileChange(self, event):
+    def OnOFileChange(self, event: wx.CommandEvent) -> Literal[True]:
         """Show/Hide self.checkB
     
             Parameters
@@ -327,20 +418,26 @@ class BaseConfPanel(
             event: wx.Event
                 Information about the event
         """
+        #------------------------------> 
         if self.oFile.tc.GetValue() == '':
+            #------------------------------> Hide Check
             self.sizersbFileWid.Hide(self.checkB)
             self.Sizer.Layout()
         else:
             if Path(self.oFile.tc.GetValue()).exists():
+                #------------------------------> Show Check
                 self.checkB.SetValue(True)
                 self.sizersbFileWid.Show(self.checkB)
                 self.Sizer.Layout()
             else:
+                #------------------------------> Hide Check
                 self.sizersbFileWid.Hide(self.checkB)
                 self.Sizer.Layout()
+        #------------------------------> 
+        return True
     #---
 
-    def SetOutputDict(self, dateDict):
+    def SetOutputDict(self, dateDict) -> dict:
         """Creates the output dictionary to be written to the output file 
         
             Parameters
@@ -352,12 +449,17 @@ class BaseConfPanel(
                         'I' : self.d,
                         'CI': dtsMethod.DictVal2Str(
                             self.do, 
-                            self.confOpt['ChangeKey'],
+                            self.cChangeKey,
                             new = True,
                         ),
                         'R' : Results,
                     }
                 }
+            
+            Return
+            ------
+            dict
+                Output data as a dict
         """
         if self.do['oFile'].exists():
             print('File Exist')
@@ -366,25 +468,25 @@ class BaseConfPanel(
                 #--> Read old output
                 outData = dtsFF.ReadJSON(self.do['oFile'])
                 #--> Append to output
-                if outData.get(self.confOpt['Section'], False):
+                if outData.get(self.cSection, False):
                     print('Section exist')
-                    outData[self.confOpt['Section']][self.date] = dateDict[self.date]
+                    outData[self.cSection][self.date] = dateDict[self.date]
                 else:
                     print('Section does not exist')
-                    outData[self.confOpt['Section']] = dateDict	
+                    outData[self.cSection] = dateDict	
             else:
                 print('Check is False')
-                outData = {self.confOpt['Section'] : dateDict}
+                outData = {self.cSection : dateDict}
         else:
             print('File does not exist')
-            outData = {self.confOpt['Section'] : dateDict}
+            outData = {self.cSection : dateDict}
 
         return outData
     #---
 
-    def EqualLenLabel(self, label):
+    def EqualLenLabel(self, label: str) -> str:
         """Add empty space to the end of label to match the length of
-            self.confOpt['LenLongest']
+            self.cLenLongestL
     
             Parameters
             ----------
@@ -395,24 +497,12 @@ class BaseConfPanel(
             -------
             str
                 Label with added empty strings at the end to match the length of
-                self.confOpt['LenLongest']
-    
-            Raise
-            -----
-            ExecutionError
-                - When self.confOpt does not have LenLongest
+                self.cLenLongestL
         """
-        #region -------------------------------------------------> Check input
-        if self.confOpt.get('LenLongest', '') == '':
-            raise dtsException.ExecutionError(
-                f"The key 'LenLongest' is not present in self.confOpt."
-            )
-        else:
-            return f"{label}{(self.confOpt['LenLongest'] - len(label))*' '}"
-        #endregion ----------------------------------------------> Check input 
+        return f"{label}{(self.cLenLongestL - len(label))*' '}" 
     #---
     
-    def OnRun(self, event):
+    def OnRun(self, event: wx.CommandEvent) -> Literal[True]:
         """ Start analysis of the module/utility
 
             Parameter
@@ -421,11 +511,7 @@ class BaseConfPanel(
                 Event information
         """
         #region --------------------------------------------------> Dlg window
-        self.dlg = dtscore.ProgressDialog(
-            self, 
-            self.confOpt['TitlePD'], 
-            self.confOpt['GaugePD'],
-        )
+        self.dlg = dtscore.ProgressDialog(self, self.cTitlePD, self.cGaugePD)
         #endregion -----------------------------------------------> Dlg window
 
         #region ------------------------------------------------------> Thread
@@ -459,7 +545,35 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         Attributes
         ----------
-        
+        #------------------------------> Configuration
+        cScoreValL : str
+            Score value label. Default is config.label['StScoreValL].
+        cNormMethodL : str
+            Data normalization label. Default is config.label['cNormMethodL'].
+        cScoreColL : str
+            Score column. Default is config.label['StScoreColL'].
+        cNormChoice : list of str
+            Choice for normalization method. 
+            Default is config.choice['NormMethod'].
+        cTcSize : wx.Size
+            Size for the wx.TextCtrl in the panel
+        #------------------------------> Widgets
+        normMethod : dtsWidget.StaticTextComboBox
+            Attributes: st, cb
+        scoreVal : dtsWidget.StaticTextCtrl
+            Attributes: st, tc
+        detectedProt : : dtsWidget.StaticTextCtrl
+            Attributes: st, tc 
+        score : : dtsWidget.StaticTextCtrl
+            Attributes: st, tc
+        colExtract : : dtsWidget.StaticTextCtrl
+            Attributes: st, tc  
+        tcResults : wx.TextCtrl
+            For Results - Control Experiments
+        stResults : wx.StaticText
+            For Results - Control Experiments
+        btnResultsW : wx.Button
+            For Results - Control Experiments
 
         Raises
         ------
@@ -474,53 +588,38 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, rightDelete=True):
+    def __init__(self, parent: wx.Window, rightDelete: bool=True) -> None:
         """ """
         #region -------------------------------------------------> Check Input
         
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        #------------------------------> Configuration options
-        #--------------> From self
-        confOptM = { 
-            #------------------------------> Label
-            'ScoreValueL'  : 'Score Value',
-            'DetectedProtL': 'Detected Proteins',
-            'ScoreL'       : 'Score',
-            'ColExtractL'  : 'Columns to Extract',
-            'ResultL'      : 'Results - Control experiments',
-            'TypeResL'     : 'Type Values',
-            'LoadResL'     : 'Load Values',
-            #------------------------------> Hint
-            
-            #------------------------------> Size
-            'TwoInRow'  : config.size['TwoInRow'],
-        }
-        #--------------> From child class
-        if confOpt is not None:
-            confOptM.update(confOpt)
-        else:
-            pass
-        #------------------------------> Messages
-        #--------------> From self
-        confMsgM = { 
-            'ScoreValue' : {
-                'Error' : (
-                    f"Only one number can be accepted in "
-                    f"{confOptM['ScoreValueL']}.\n In addtions, the number "
-                    f"cannot be larger thant the total number of columns in "
-                    f"the selected Data File."),
-            },
-        }
-        #--------------> From child class
-        if confMsg is not None:
-            confMsgM.update(confMsg)
-        else:
-            pass
+        #------------------------------> Label
+        self.cNormMethodL = getattr(
+            self, 'cNormMethodL', config.label['CbNormalization'],
+        )
+        self.cScoreValL = getattr(
+            self, 'cScoreValL', config.label['StScoreValL'],
+        )
+        self.cDetectedProtL = getattr(
+            self, 'cDetectedProtL', config.label['StDetectedProtL'],
+        )
+        self.cScoreColL = getattr(
+            self, 'cScoreColL', config.label['StScoreColL'],
+        )
+        self.cColExtractL = getattr(
+            self, 'cColExtractL', config.label['StColExtractL'], 
+        )
+        #------------------------------> Choices
+        self.cNormChoice = getattr(
+            self, 'cNormChoice', config.choice['NormMethod']
+        )
+        #------------------------------> Size
+        self.cTcSize = getattr(self, 'cTcSize', config.size['TwoInRow'])
 
-        BaseConfPanel.__init__(self, parent, rightDelete=rightDelete, 
-            confOpt=confOptM, confMsg=confMsgM)
+        #------------------------------> __init__
+        BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
 
         widget.ResControl.__init__(self, self.sbColumn)
         #endregion --------------------------------------------> Initial Setup
@@ -532,15 +631,15 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         #region -----------------------------------------------------> Widgets
         self.normMethod = dtsWidget.StaticTextComboBox(
             self.sbValue, 
-            label     = self.confOpt['NormMethodL'],
-            choices   = self.confOpt['NormMethod'],
+            label     = self.cNormMethodL,
+            choices   = self.cNormChoice,
             validator = dtsValidator.IsNotEmpty(),
         )
 
         self.scoreVal = dtsWidget.StaticTextCtrl(
             self.sbValue,
-            stLabel   = self.confOpt['ScoreValueL'],
-            tcSize    = self.confOpt['TwoInRow'],
+            stLabel   = self.cScoreValL,
+            tcSize    = self.cTcSize,
             validator = dtsValidator.NumberList(
                 numType = 'float',
                 nN      = 1,
@@ -549,8 +648,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         self.detectedProt = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.confOpt['DetectedProtL'],
-            tcSize    = self.confOpt['TwoInRow'],
+            stLabel   = self.cDetectedProtL,
+            tcSize    = self.cTcSize,
             validator = dtsValidator.NumberList(
                 numType = 'int',
                 nN      = 1,
@@ -560,8 +659,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         self.score = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.confOpt['ScoreL'],
-            tcSize    = self.confOpt['TwoInRow'],
+            stLabel   = self.cScoreColL,
+            tcSize    = self.cTcSize,
             validator = dtsValidator.NumberList(
                 numType = 'int',
                 nN      = 1,
@@ -571,8 +670,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         self.colExtract = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.confOpt['ColExtractL'],
-            tcSize    = self.confOpt['TwoInRow'],
+            stLabel   = self.cColExtractL,
+            tcSize    = self.cTcSize,
             validator = dtsValidator.NumberList(
                 numType = 'int',
                 nN      = 1,
@@ -616,8 +715,28 @@ class ResControlExpConfBase(wx.Panel):
 
         Attributes
         ----------
-        confOpt : dict
-            Configuration options
+        topParent : wx.Widget
+            Top parent window
+        #------------------------------> Must be set on child
+        cN : int
+            Number of labels excluding control labels
+        cTotalFieldTT : str
+            Tooltip for the labels in the top region
+        cStLabel : dict
+            Keys are 1 to cN and values the text of the labels    
+        cLabelText : dict
+            Keys are 1 to cN and values the prefix for the label values   
+        #------------------------------> Configuration
+        cSWLabelS : wx.Size
+            Size for the ScrolledPanel with the label. Default is (670,135)
+        cSWMatrixS : wx.Size
+            Size for the ScrolledPanel with the fields. Default is (670,670)
+        cTotalFieldS : wx.Size
+            Size for the total wx.TextCtrl in top region. Default is (35,22)
+        cSetupL : str
+            Label for the wx.Button in top region. Default is 'Setup Fields'
+        #------------------------------> Widgets
+        #------------------------------> Manage Window
         stLabel : list of wx.StaticText
             List with the labels name
         tcLabel : list of wx.TextCtrl
@@ -643,19 +762,32 @@ class ResControlExpConfBase(wx.Panel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, name, topParent, NColF):
+    def __init__(self, parent: wx.Window, name: str, topParent: wx.Window, 
+        NColF: int) -> None:
         """ """
         #region -------------------------------------------------> Check Input
-        
+        try:
+            attr = ['cN', 'cStLabel', 'cTotalFieldTT', 'cLabelText']
+            dtsMethod.AttrInClass(self, attr)
+        except Exception as e:
+            raise e
         #endregion ----------------------------------------------> Check Input
 
-        #region -----------------------------------------------> Initial Setup
+        #region -----------------------------------------------> Initial Setup        
         self.topParent = topParent
         self.pName     = self.topParent.name
-        self.N         = self.confOpt['N'][self.pName]
         self.tcDictF   = {}
         self.lbDict    = {}
         self.NColF     = NColF
+        #------------------------------> Label
+        self.cSetupL = getattr(self, 'cSetupL', 'Setup Fields')
+        #------------------------------> Hint
+        self.cTotalFieldH = getattr(self, 'cTotalFieldH', '#')
+        #------------------------------> Size
+        self.cSWLabelS = getattr(self, 'cSWLabelS', (670,135))
+        self.cSWMatrixS = getattr(self, 'cSWMatrixS', (670,670))
+        self.cTotalFieldS = getattr(self, 'cTotalFieldS', (35,22))
+        self.cLabelS = getattr(self, 'cLabelS', (100, 22))
         #------------------------------> super()
         super().__init__(parent, name=name)
         #endregion --------------------------------------------> Initial Setup
@@ -666,40 +798,33 @@ class ResControlExpConfBase(wx.Panel):
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> wx.ScrolledWindow
-        self.swLabel  = scrolled.ScrolledPanel(
-            self, 
-            size=self.confOpt['SWLabelS']
-        )
-        self.swMatrix = scrolled.ScrolledPanel(
-            self,
-            size = self.confOpt['SWMatrixS'])
+        self.swLabel  = scrolled.ScrolledPanel(self, size=self.cSWLabelS)
+        
+        self.swMatrix = scrolled.ScrolledPanel(self, size=self.cSWMatrixS)
         self.swMatrix.SetBackgroundColour('WHITE')
         #------------------------------> wx.StaticText & wx.TextCtrl
         #--------------> Experiment design
         self.stLabel = []
         self.tcLabel = []
         self.tcDict = {}
-        for k in range(1, self.N+1):
+        for k in range(1, self.cN+1):
             #------------------------------> tcDict key
             self.tcDict[k] = []
             #------------------------------> wx.StaticText
-            a = wx.StaticText(
-                    self.swLabel, 
-                    label=self.confOpt['StText'][self.pName][k],
-                )
-            a.SetToolTip(self.confOpt['TotalFieldTT'])
+            a = wx.StaticText(self.swLabel, label=self.cStLabel[k])
+            a.SetToolTip(self.cTotalFieldTT)
             self.stLabel.append(a)
             #------------------------------> wx.TextCtrl for the label
             a = wx.TextCtrl(
                     self.swLabel,
-                    size      = self.confOpt['TotalFieldS'],
+                    size      = self.cTotalFieldS,
                     name      = str(k),
                     validator = dtsValidator.NumberList(vMin=1, nN=1),
                 )
-            a.SetHint('#')
+            a.SetHint(self.cTotalFieldH)
             self.tcLabel.append(a)
         #------------------------------> wx.Button
-        self.btnCreate = wx.Button(self, label=self.confOpt['SetupL'])
+        self.btnCreate = wx.Button(self, label=self.cSetupL)
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
@@ -741,7 +866,7 @@ class ResControlExpConfBase(wx.Panel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnCreate(self, event):
+    def OnCreate(self, event: wx.CommandEvent) -> Literal[True]:
         """Create the fields in the white panel. Override as needed.
     
             Parameters
@@ -761,8 +886,8 @@ class ResControlExpConfBase(wx.Panel):
         return True
     #---
 
-    def OnLabelNumber(self, event):
-        """Creates fields for names when hitting enter
+    def OnLabelNumber(self, event: wx.Event):
+        """Creates fields for names when the total wx.TextCtrl loose focus
     
             Parameters
             ----------
@@ -779,7 +904,7 @@ class ResControlExpConfBase(wx.Panel):
             
         """
         #region -------------------------------------------------> Check input
-        for k in range(0, self.N):
+        for k in range(0, self.cN):
             if self.tcLabel[k].GetValidator().Validate()[0]:
                 pass
             else:
@@ -803,7 +928,7 @@ class ResControlExpConfBase(wx.Panel):
         #endregion ---------------------------------------------> Modify sizer
         
         #region --------------------------------------> Create/Destroy widgets
-        for k in range(0, self.N):
+        for k in range(0, self.cN):
             K = k + 1
             tN = int(self.tcLabel[k].GetValue())
             lN = len(self.tcDict[k+1])
@@ -814,8 +939,8 @@ class ResControlExpConfBase(wx.Panel):
                     self.tcDict[K].append(
                         wx.TextCtrl(
                             self.swLabel,
-                            size  = self.confOpt['LabelS'],
-                            value = f"{self.confOpt['LabelText'][self.pName][K]}{KNEW}"
+                            size  = self.cLabelS,
+                            value = f"{self.cLabelText[self.pName][K]}{KNEW}"
                         )
                     )
             else:
@@ -851,7 +976,7 @@ class ResControlExpConfBase(wx.Panel):
         #endregion ---------------------------------------------------> Remove
         
         #region ---------------------------------------------------------> Add
-        for k in range(0, self.N):
+        for k in range(0, self.cN):
             #------------------------------> 
             K = k + 1
             #------------------------------> Add conf fields
@@ -1040,10 +1165,20 @@ class CorrA(BaseConfPanel):
         ----------
         name : str
             Unique id of the pane in the app
-        confOpt : dict
-            Dict with configuration options
-        confMsg dict or None
-            Messages for users
+        #------------------------------> Needed by BaseConfPanel
+        cURL : str
+            URL for the Help button
+        cSection : str
+            Section for the output file
+        cLenLongestLabel : int
+            Length of the longest label
+        cTitlePD : str
+            Title for hte progress dialog
+        cGaugePD : int
+        #------------------------------> For Analysis
+        cMainData : str
+            Name of the file with the correlation coefficient values
+        cChangeKey : list of str
         do : dict
             Dict with the processed user input
             {
@@ -1086,166 +1221,89 @@ class CorrA(BaseConfPanel):
     """
     #region -----------------------------------------------------> Class Setup
     name = 'CorrAPane'
-    
-    confOpt = {
-        #region -----------------------------------------------> BaseConfPanel
-        #------------------------------> URL
-        'URL' : config.url['CorrAPane'],
-        #------------------------------> Label
-        'iFileL'     : config.label['BtnDataFile'],
-        'oFileL'     : config.label['BtnOutFile'],
-        'NormMethodL': config.label['CbNormalization'],
-        'CheckL'     : config.label['CbCheck'],
-        'RunBtnL'    : config.label['BtnRun'],
-        'FileBoxL'   : config.label['StBoxFile'],
-        'ValueBoxL'  : config.label['StBoxValue'],
-        'ColumnBoxL' : config.label['StBoxColumn'],
-        #------------------------------> Hint
-        'iFileH' : f"Path to the {config.label['BtnDataFile']}",
-        'oFileH' : f"Path to the {config.label['BtnOutFile']}",
-        #------------------------------> Choices
-        'NormMethod' : config.choice['NormMethod'],
-        #------------------------------> Others
-        'oMode' : 'save',
-        #endregion --------------------------------------------> BaseConfPanel
-        
-        #region ------------------------------------------------------> Common
-        #------------------------------> For output labels in self.d
-        'LenLongest' : len(config.label['CbNormalization']),
-        #------------------------------> Progress Dialog
-        'TitlePD' : 'Calculating Correlation Coefficients',
-        'GaugePD' : 15,
-        #------------------------------> Output
-        'Section'  : config.nameUtilities['CorrA'],
-        'MainData' : 'Data-03-CorrelationCoefficients',
-        'ChangeKey': ['iFile', 'oFile'],
-        #endregion ---------------------------------------------------> Common
-        
-        #region -------------------------------------------------------> CorrA
-        #------------------------------> Labels
-        'CorrMethodL': 'Correlation Method',
-        'ListColumnL': config.label['LCtrlColName_I'],
-        'iListL'     : 'Columns in the Data File',
-        'oListL'     : 'Columns to Analyse',
-        'AddL'       : 'Add columns',
-        #------------------------------> Choices
-        'CorrMethod' : ['', 'Pearson', 'Kendall', 'Spearman'],
-        #------------------------------> Size
-        'LCtrlColS' : config.size['LCtrl#Name'],
-        #------------------------------> Tooltips
-        'iListTT' : (
-            f"Selected rows can be copied ({config.copyShortCut}+C) but "
-            f"the list cannot be modified."),
-        'oListTT' : (
-            f"New rows can be pasted ({config.copyShortCut}+V) after the "
-            f"last selected element and existing one cut/deleted "
-            f"({config.copyShortCut}+X) or copied "
-            f"({config.copyShortCut}+C)."),
-        'AddTT' : (
-            f"Add selected Columns in the Data File to the list of Columns "
-            f"to Analyse. New columns will be added after the last "
-            f"selected element in Columns to analyse. Duplicate columns "
-            f"are discarded."),        
-        #endregion ----------------------------------------------------> CorrA
-    }
-    
-    confMsg = {
-        #region -----------------------------------------------> BaseConfPanel
-        'iFile' : {
-            'NotPath' : (
-                f"The path to the {confOpt['iFileL']} is not valid."),
-            'NotFile' : (
-                f"The path to the {confOpt['iFileL']} does not point "
-                f"to a file."),
-            'NoRead' : (
-                f"The given {confOpt['iFileL']} cannot be read."),
-            'FileExt' : (
-                f"The given {confOpt['iFileL']} does not have the "
-                f"correct extension."),
-        },
-        'oFile' : {
-            'NotPath' : (
-                f"The path to the {confOpt['oFileL']} is not valid."),
-            'NoWrite' : (
-                f"It is not possible to write into the "
-                f"{confOpt['oFileL']}"),
-        },
-        'NormMethod' : (
-            f"The {confOpt['NormMethodL']} method was not selected."),
-        #endregion --------------------------------------------> BaseConfPanel
-        
-        'CorrMethod' : (
-            f"The {confOpt['CorrMethodL']} was not selected."),
-        'oList' : (
-            f"The list of {confOpt['oListL']} must contain at least "
-            f"two items."),
-    }
     #endregion --------------------------------------------------> Class Setup
     
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent):
         """"""
         #region -----------------------------------------------> Initial setup
-        self.dfCC = None # correlation coefficients
+        #------------------------------> Needed by BaseConfPanel
+        self.cURL         = config.url['CorrAPane'],
+        self.cSection     = config.nameUtilities['CorrA']
+        self.cLenLongestL = len(config.label['CbNormalization'])
+        self.cTitlePD     = 'Calculating Correlation Coefficients'
+        self.GaugePD      = 15
+        #------------------------------> Common to Run
+        self.cMainData  = 'Data-03-CorrelationCoefficients'
+        self.cChangeKey = ['iFile', 'oFile']
+        self.dfCC       = None # correlation coefficients
         
         super().__init__(parent)
         #endregion --------------------------------------------> Initial setup
         
         #region -----------------------------------------------------> Widgets
-        #------------------------------> File
-        self.iFile.tc.SetValidator(
-            dtsValidator.InputFF(
-                fof = 'file',
-                ext = config.extShort['Data'],
-            )
-        )
         #------------------------------> Values
         self.normMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
-            label     = self.confOpt['NormMethodL'],
-            choices   = self.confOpt['NormMethod'],
+            label     = config.label['CbNormalization'],
+            choices   = config.choice['NormMethod'],
             validator = dtsValidator.IsNotEmpty(),
         )
         self.corrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
-            label     = self.confOpt['CorrMethodL'],
-            choices   = self.confOpt['CorrMethod'],
+            label     = 'Correlation Method',
+            choices   = ['', 'Pearson', 'Kendall', 'Spearman'],
             validator = dtsValidator.IsNotEmpty(),
         )
         #------------------------------> Columns
         self.stListI = wx.StaticText(
             self.sbColumn, 
-            label = self.confOpt['iListL'],
+            label = 'Columns in the Data File',
         )
         self.stListO = wx.StaticText(
             self.sbColumn, 
-            label = self.confOpt['oListL'],
+            label = 'Columns to Analyse',
         )
-
         self.lbI = dtscore.ListZebra(self.sbColumn, 
-            colLabel        = self.confOpt['ListColumnL'],
-            colSize         = self.confOpt['LCtrlColS'],
+            colLabel        = config.label['LCtrlColName_I'],
+            colSize         = config.size['LCtrl#Name'],
             copyFullContent = True,
         )
         self.lbO = dtscore.ListZebra(self.sbColumn, 
-            colLabel        = self.confOpt['ListColumnL'],
-            colSize         = self.confOpt['LCtrlColS'],
+            colLabel        = config.label['LCtrlColName_I'],
+            colSize         = config.size['LCtrl#Name'],
             canPaste        = True,
             canCut          = True,
             copyFullContent = True,
         )
-        self.lbL = [self.lbI, self.lbO]
-
-        self.addCol = wx.Button(self.sbColumn, 
-            label = self.confOpt['AddL'],
+        self.lbL = [
+            self.lbI, self.lbO
+        ]
+        self.addCol = wx.Button(
+            self.sbColumn, 
+            label = 'Add columns'
         )
-        self.addCol.SetBitmap(wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD), 
+        self.addCol.SetBitmap(
+            wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD), 
             dir = wx.RIGHT,
         )
         #endregion --------------------------------------------------> Widgets
 
         #region -----------------------------------------------------> Tooltip
-        self.stListI.SetToolTip(self.confOpt['iListTT'])
-        self.stListO.SetToolTip(self.confOpt['oListTT'])
-        self.addCol.SetToolTip(self.confOpt['AddTT'])
+        self.stListI.SetToolTip(
+            f"Selected rows can be copied ({config.copyShortCut}+C) but "
+            f"the list cannot be modified."
+        )
+        self.stListO.SetToolTip(
+            f"New rows can be pasted ({config.copyShortCut}+V) after the "
+            f"last selected element and existing one cut/deleted "
+            f"({config.copyShortCut}+X) or copied "
+            f"({config.copyShortCut}+C)."    
+        )
+        self.addCol.SetToolTip(
+            f"Add selected Columns in the Data File to the list of Columns "
+            f"to Analyse. New columns will be added after the last "
+            f"selected element in Columns to analyse. Duplicate columns "
+            f"are discarded."
+        )
         #endregion --------------------------------------------------> Tooltip
 
         #region ------------------------------------------------------> Sizers
@@ -1690,51 +1748,6 @@ class ProtProf(BaseConfModPanel):
     """
     #region -----------------------------------------------------> Class setup
     name = 'ProtProfPane'
-    
-    confOpt = { # BaseConfModPanel.BaseConfPanel
-        #region -----------------------------------------------> BaseConfPanel
-        #------------------------------> URL
-        'URL' : config.url['ProtProfPane'],
-        #------------------------------> Label
-        'iFileL'     : config.label['BtnDataFile'],
-        'oFileL'     : config.label['BtnOutFile'],
-        'NormMethodL': config.label['CbNormalization'],
-        'CheckL'     : config.label['CbCheck'],
-        'RunBtnL'    : config.label['BtnRun'],
-        'FileBoxL'   : config.label['StBoxFile'],
-        'ValueBoxL'  : config.label['StBoxValue'],
-        'ColumnBoxL' : config.label['StBoxColumn'],
-        #------------------------------> Hint
-        'iFileH' : f"Path to the {config.label['BtnDataFile']}",
-        'oFileH' : f"Path to the {config.label['BtnOutFile']}",
-        #------------------------------> Choices
-        'NormMethod' : config.choice['NormMethod'],
-        #------------------------------> Others
-        'oMode' : 'save',
-        #endregion --------------------------------------------> BaseConfPanel
-        
-        
-        #------------------------------> Labels
-        'CorrectPL'   : 'P Correction',
-        'MedianL'     : 'Median Correction',
-        'GeneNameL'   : 'Gene Names',
-        'ExcludeProtL': 'Exclude Proteins',
-        #------------------------------> Hint
-    
-        #------------------------------> Choices
-        'CorrectPChoice': config.choice['CorrectP'],
-        'MedianChoice'  : config.choice['YesNo'],
-        #------------------------------> Size
-        
-        #------------------------------> Tooltips
-        
-        #------------------------------> Progress Dialog
-        'TitlePD' : f"Running {config.nameModules['ProtProf']} Analysis",
-        'GaugePD' : 15,
-        #------------------------------> Output
-        'Section'  : config.nameModules['ProtProf'],
-        'ChangeKey': ['iFile', 'oFile'],
-    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -1745,6 +1758,13 @@ class ProtProf(BaseConfModPanel):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
+        #------------------------------> Needed by BaseConfPanel
+        self.cURL         = config.url['ProtProfPane'],
+        self.cSection     = config.nameUtilities['ProtProf']
+        self.cLenLongestL = len(config.label['CbNormalization'])
+        self.cTitlePD     = f"Running {config.nameModules['ProtProf']} Analysis"
+        self.GaugePD      = 15
+        
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
 
@@ -1753,30 +1773,23 @@ class ProtProf(BaseConfModPanel):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
-        #------------------------------> File
-        self.iFile.tc.SetValidator(
-            dtsValidator.InputFF(
-                fof = 'file',
-                ext = config.extShort['Data'],
-            )
-        )
         #------------------------------> Values
         self.correctP = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            self.confOpt['CorrectPL'],
-            self.confOpt['CorrectPChoice'],
+            'P Correction',
+            config.choice['CorrectP'],
             validator = dtsValidator.IsNotEmpty(),
         )
         self.median = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            self.confOpt['MedianL'],
-            self.confOpt['MedianChoice'],
+            'Median Correction',
+            config.choice['YesNo'],
             validator = dtsValidator.IsNotEmpty(),
         )
         #------------------------------> Columns
         self.geneName = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.confOpt['GeneNameL'],
+            stLabel   = 'Gene Names',
             tcSize    = self.confOpt['TwoInRow'],
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -1786,7 +1799,7 @@ class ProtProf(BaseConfModPanel):
         )
         self.excludeProt = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.confOpt['ExcludeProtL'],
+            stLabel   = 'Exclude Proteins',
             tcSize    = self.confOpt['TwoInRow'],
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -2103,57 +2116,18 @@ class ProtProfResControlExp(ResControlExpConfBase):
         
     """
     #region -----------------------------------------------------> Class setup
-    name = 'ProtProfResControlExpPane'
-    
-    confOpt = { # ResControlExpConfBase
-        #region ---------------------------------------> ResControlExpConfBase
-        #------------------------------> Labels
-        'N' : 2, # Number of labels without control
-        'SetupL': 'Setup Fields',
-        'StText': { # Keys runs in range(1, N+1)
-            1 : 'Conditions:',
-            2 : 'Relevant points:',
-        },
-        'LabelText' : { # Keys runs in range(1, N+1)
-            1 : 'C',
-            2 : 'RP',
-        },
-        #------------------------------> Size
-        'TotalFieldS': (35,22),
-        'LabelS'     : (100,22),
-        'SWLabelS'   : (670,135),
-        'SWMatrixS'  : (670,670),
-        #------------------------------> Hint
-        'TotalFieldH': '#',
-        #endregion ------------------------------------> ResControlExpConfBase
+    name = 'ResControlExpPaneProtProf'
         
-        #------------------------------> Control
-        'ControlL' : 'Control Experiment:',
-        'ControlNL': 'Name',
-        'ControlTL': 'Type',
-        #------------------------------> Choice
-        'ControlChoice' : config.choice['ControlType'],
-        #------------------------------> Size
-        'ControlNS' : (125, 22),
-        #------------------------------> Hint
-        'ControlH'   : 'Name',
-        #------------------------------> Tooltips
-        'TotalFieldTT': (
-            f"Type an integer number greater than cero in Conditions and "
-            f"Relevant Points."),
-        'ControlTT' : 'Set the Type and Name of the control experiment',
-    }
-    
-    objMsg = { # ResControlExpConfBase
-        #region ---------------------------------------> ResControlExpConfBase
-        'TCField' : config.msg['TCField'],
-        #endregion ------------------------------------> ResControlExpConfBase
+    # objMsg = { # ResControlExpConfBase
+    #     #region ---------------------------------------> ResControlExpConfBase
+    #     'TCField' : config.msg['TCField'],
+    #     #endregion ------------------------------------> ResControlExpConfBase
         
-        'NoControl' : f"Please select a Control Type.",
-        'NoCondRP'  : (
-            f"The numbers of Conditions and Relevant Points must be both "
-            f"defined."),
-    }
+    #     'NoControl' : f"Please select a Control Type.",
+    #     'NoCondRP'  : (
+    #         f"The numbers of Conditions and Relevant Points must be both "
+    #         f"defined."),
+    # }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -2164,7 +2138,18 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.confOpt['AddWidget'] = {
+        #------------------------------> Needed by ResControlExpConfBase
+        self.cN = 2
+        self.cStLabel = { # Keys runs in range(1, N+1)
+            1 : 'Conditions:',
+            2 : 'Relevant points:',
+        }
+        self.cLabelText = { # Keys runs in range(1, N+1)
+            1 : 'C',
+            2 : 'RP',
+        }
+        #------------------------------> 
+        self.cAddWidget = {
             config.choice['ControlType'][1] : self.AddWidget_OC,
             config.choice['ControlType'][2] : self.AddWidget_OCC,
             config.choice['ControlType'][3] : self.AddWidget_OCR,
@@ -2183,29 +2168,31 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #------------------------------> wx.StaticText
         self.stControl = wx.StaticText(
             self.swLabel, 
-            label = self.confOpt['ControlL']
+            label = 'Control Experiment:'
         )
-        self.stControl.SetToolTip(self.confOpt['ControlTT'])
+        self.stControl.SetToolTip(
+            'Set the Type and Name of the control experiment'
+        )
         self.stControlT = wx.StaticText(
             self.swLabel, 
-            label = self.confOpt['ControlTL']
+            label = 'Type'
         )
         self.stControlN = wx.StaticText(
             self.swLabel, 
-            label = self.confOpt['ControlNL']
+            label = 'Name'
         )
         #------------------------------> Text
         self.tcControl = wx.TextCtrl(
             self.swLabel, 
-            size  = self.confOpt['ControlNS'],
+            size  = (125, 22),
             value = 'Control',
         )
-        self.tcControl.SetHint(self.confOpt['ControlH'])
+        self.tcControl.SetHint('Name')
         #------------------------------> wx.ComboBox
         self.cbControl = wx.ComboBox(
             self.swLabel, 
             style     = wx.CB_READONLY,
-            choices   = self.confOpt['ControlChoice'],
+            choices   = config.choice['ControlType'],
             validator = dtsValidator.IsNotEmpty(),
         )
         #endregion --------------------------------------------------> Widgets
@@ -2659,8 +2646,6 @@ class ResControlExp(wx.Panel):
             Unique name of the panel
         widget : ditc of methods
             Methods to create the configuration panel
-        confOpt : dict
-            Configuration options for the panel
 
         Raises
         ------
@@ -2676,15 +2661,6 @@ class ResControlExp(wx.Panel):
     widget = {
         'ProtProfTab' : ProtProfResControlExp,
     }
-    
-    confOpt = {
-        #------------------------------> Labels
-        'ColLabel' : config.label['LCtrlColName_I'],
-        'TP_List'  : config.label['TP_ListPane'],
-        'TP_Conf'  : config.label['TP_ConfPane'],
-        #------------------------------> Size
-        'ColSize'  : config.size['LCtrl#Name'],
-    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -2695,8 +2671,6 @@ class ResControlExp(wx.Panel):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.confOpt = config.objOpt[self.name]
-
         super().__init__(parent, name=self.name)
         #endregion --------------------------------------------> Initial Setup
 
@@ -2708,8 +2682,8 @@ class ResControlExp(wx.Panel):
         #------------------------------> ListCtrl and fill it
         self.lc = dtscore.ListZebraMaxWidth(
             self, 
-            colLabel = self.confOpt['ColLabel'],
-            colSize  = self.confOpt['ColSize'],
+            colLabel = config.label['LCtrlColName_I'],
+            colSize  = config.size['LCtrl#Name'],
         )
         dtsMethod.LCtrlFillColNames(self.lc, iFile)
         #------------------------------> Conf panel here to read NRow in lc
@@ -2730,7 +2704,7 @@ class ResControlExp(wx.Panel):
             aui.AuiPaneInfo(
                 ).Center(
                 ).Caption(
-                    self.confOpt['TP_Conf']
+                    config.label['TP_ConfPane']
                 ).Floatable(
                     b=False
                 ).CloseButton(
@@ -2747,7 +2721,7 @@ class ResControlExp(wx.Panel):
             aui.AuiPaneInfo(
                 ).Right(
                 ).Caption(
-                    self.confOpt['TP_List']
+                    config.label['TP_ListPane']
                 ).Floatable(
                     b=False
                 ).CloseButton(
