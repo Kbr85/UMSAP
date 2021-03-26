@@ -32,197 +32,197 @@ import gui.dtscore as dtscore
 
 
 #region -------------------------------------------------------------> Classes
-#------------------------------> Base classses
-class BaseConfTab(wx.Panel):
-    """Base class for a Tab containing only a configuration panel. 
+# #------------------------------> Base classses
+# class BaseConfTab(wx.Panel):
+#     """Base class for a Tab containing only a configuration panel. 
 
-        Parameters
-        ----------
-        parent : wx.Window
-            Parent of the tab
-        name : str or None
-            Unique name of the tab. Default is None. In this case the child 
-            class is expected to define a name
+#         Parameters
+#         ----------
+#         parent : wx.Window
+#             Parent of the tab
+#         name : str or None
+#             Unique name of the tab. Default is None. In this case the child 
+#             class is expected to define a name
 
-        Attributes
-        ----------
-        parent : wx.Window
-            Parent of the tab
-        cConfPanel : dict
-            Classes to create the configuration panel in tha Tab
-        cConfPaneTitle : str
-            Title for the configuration panel. 
-            Default is config.label['TP_ConfPane'].
+#         Attributes
+#         ----------
+#         parent : wx.Window
+#             Parent of the tab
+#         cConfPanel : dict
+#             Classes to create the configuration panel in tha Tab
+#         cConfPaneTitle : str
+#             Title for the configuration panel. 
+#             Default is config.label['TP_ConfPane'].
 
-        Raises
-        ------
+#         Raises
+#         ------
         
 
-        Methods
-        -------
+#         Methods
+#         -------
         
-    """
-    #region -----------------------------------------------------> Class setup
-    cConfPanel = {
-        'CorrATab'   : pane.CorrA,
-        'ProtProfTab': pane.ProtProf,
-    }
-    #endregion --------------------------------------------------> Class setup
+#     """
+#     #region -----------------------------------------------------> Class setup
+#     cConfPanel = {
+#         'CorrATab'   : pane.CorrA,
+#         'ProtProfTab': pane.ProtProf,
+#     }
+#     #endregion --------------------------------------------------> Class setup
 
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, name: Optional[str]=None) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        self.parent = parent
-        self.name   = name if name is not None else self.name
+#     #region --------------------------------------------------> Instance setup
+#     def __init__(self, parent: wx.Window, name: Optional[str]=None) -> None:
+#         """ """
+#         #region -----------------------------------------------> Initial Setup
+#         self.parent = parent
+#         self.name   = name if name is not None else self.name
         
-        self.cConfPaneTitle = getattr(
-            self, 
-            'cConfPaneTitle', 
-            config.label['TP_ConfPane'],
-        )
+#         self.cConfPaneTitle = getattr(
+#             self, 
+#             'cConfPaneTitle', 
+#             config.label['TP_ConfPane'],
+#         )
         
-        super().__init__(parent, name=self.name)
-        #endregion --------------------------------------------> Initial Setup
+#         super().__init__(parent, name=self.name)
+#         #endregion --------------------------------------------> Initial Setup
 
-        #region --------------------------------------------------------> Menu
+#         #region --------------------------------------------------------> Menu
         
-        #endregion -----------------------------------------------------> Menu
+#         #endregion -----------------------------------------------------> Menu
 
-        #region -----------------------------------------------------> Widgets
-        self.conf = self.cConfPanel[self.name](self)
-        #endregion --------------------------------------------------> Widgets
+#         #region -----------------------------------------------------> Widgets
+#         self.conf = self.cConfPanel[self.name](self)
+#         #endregion --------------------------------------------------> Widgets
         
-        #region -------------------------------------------------> Aui control
-        #------------------------------> AUI control
-        self._mgr = aui.AuiManager()
-        #------------------------------> AUI which frame to use
-        self._mgr.SetManagedWindow(self)
-        #------------------------------> Add Configuration panel
-        self._mgr.AddPane( 
-            self.conf, 
-            aui.AuiPaneInfo(
-                ).Center(
-                ).Caption(
-                    self.cConfPaneTitle
-                ).Floatable(
-                    b=False
-                ).CloseButton(
-                    visible=False
-                ).Movable(
-                    b=False
-                ).PaneBorder(
-                    visible=True,
-            ),
-        )
-        #------------------------------> 
-        self._mgr.Update()
-        #endregion ----------------------------------------------> Aui control
-    #---
-    #endregion -----------------------------------------------> Instance setup
+#         #region -------------------------------------------------> Aui control
+#         #------------------------------> AUI control
+#         self._mgr = aui.AuiManager()
+#         #------------------------------> AUI which frame to use
+#         self._mgr.SetManagedWindow(self)
+#         #------------------------------> Add Configuration panel
+#         self._mgr.AddPane( 
+#             self.conf, 
+#             aui.AuiPaneInfo(
+#                 ).Center(
+#                 ).Caption(
+#                     self.cConfPaneTitle
+#                 ).Floatable(
+#                     b=False
+#                 ).CloseButton(
+#                     visible=False
+#                 ).Movable(
+#                     b=False
+#                 ).PaneBorder(
+#                     visible=True,
+#             ),
+#         )
+#         #------------------------------> 
+#         self._mgr.Update()
+#         #endregion ----------------------------------------------> Aui control
+#     #---
+#     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+#     #region ---------------------------------------------------> Class methods
     
-    #endregion ------------------------------------------------> Class methods
-#---
+#     #endregion ------------------------------------------------> Class methods
+# #---
 
 
-class BaseConfListTab(BaseConfTab):
-    """Base class for a Tab containing a configuration panel and a right list
-        panel. 
+# class BaseConfListTab(BaseConfTab):
+#     """Base class for a Tab containing a configuration panel and a right list
+#         panel. 
 
-        Parameters
-        ----------
-        parent : wx.Window
-            Parent of the tab 
-        name : str or None
-            Unique name of the tab. Default is None. In this case the child 
-            class is expected to define a name
+#         Parameters
+#         ----------
+#         parent : wx.Window
+#             Parent of the tab 
+#         name : str or None
+#             Unique name of the tab. Default is None. In this case the child 
+#             class is expected to define a name
 
-        Attributes
-        ----------
-        cLCColLabel : list of str
-            Labels for the columns in the wx.ListCtrl.
-            Default is config.label['LCtrlColName_I']
-        cLCColSize : list of int
-            Size of the columns in the wx.ListCtrl. It should match cLCColLabel
-            Default is config.size['LCtrl#Name']
-        cLCPaneTitle : str
-            Title of the pane containing the wx.ListCtrl.
-            Default is config.label['TP_ListPane']
+#         Attributes
+#         ----------
+#         cLCColLabel : list of str
+#             Labels for the columns in the wx.ListCtrl.
+#             Default is config.label['LCtrlColName_I']
+#         cLCColSize : list of int
+#             Size of the columns in the wx.ListCtrl. It should match cLCColLabel
+#             Default is config.size['LCtrl#Name']
+#         cLCPaneTitle : str
+#             Title of the pane containing the wx.ListCtrl.
+#             Default is config.label['TP_ListPane']
             
-        Raises
-        ------
+#         Raises
+#         ------
         
 
-        Methods
-        -------
+#         Methods
+#         -------
         
-    """
-    #region -----------------------------------------------------> Class setup
-    #endregion --------------------------------------------------> Class setup
+#     """
+#     #region -----------------------------------------------------> Class setup
+#     #endregion --------------------------------------------------> Class setup
 
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, name: Optional[str]=None) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        self.cLCColLabel = getattr(
-            self, 
-            'cLCColLabel', 
-            config.label['LCtrlColName_I'],
-        )
-        self.cLCColSize = getattr(
-            self, 
-            'cLCColSize', 
-            config.size['LCtrl#Name'],
-        )
-        self.cLCPaneTitle = getattr(
-            self, 
-            'cLCPaneTitle', 
-            config.label['TP_ListPane'],
-        )
+#     #region --------------------------------------------------> Instance setup
+#     def __init__(self, parent: wx.Window, name: Optional[str]=None) -> None:
+#         """ """
+#         #region -----------------------------------------------> Initial Setup
+#         self.cLCColLabel = getattr(
+#             self, 
+#             'cLCColLabel', 
+#             config.label['LCtrlColName_I'],
+#         )
+#         self.cLCColSize = getattr(
+#             self, 
+#             'cLCColSize', 
+#             config.size['LCtrl#Name'],
+#         )
+#         self.cLCPaneTitle = getattr(
+#             self, 
+#             'cLCPaneTitle', 
+#             config.label['TP_ListPane'],
+#         )
         
-        super().__init__(parent, name=name)
-        #endregion --------------------------------------------> Initial Setup
+#         super().__init__(parent, name=name)
+#         #endregion --------------------------------------------> Initial Setup
 
-        #region -----------------------------------------------------> Widgets
-        self.lc = dtscore.ListZebraMaxWidth(
-            self, 
-            colLabel = self.cLCColLabel,
-            colSize  = self.cLCColSize,
-        )
-        #----------------------------> Pointer to lc to load data file content
-        self.conf.lbI = self.lc
-        self.conf.lbL = [self.lc]
-        #endregion --------------------------------------------------> Widgets
+#         #region -----------------------------------------------------> Widgets
+#         self.lc = dtscore.ListZebraMaxWidth(
+#             self, 
+#             colLabel = self.cLCColLabel,
+#             colSize  = self.cLCColSize,
+#         )
+#         #----------------------------> Pointer to lc to load data file content
+#         self.conf.lbI = self.lc
+#         self.conf.lbL = [self.lc]
+#         #endregion --------------------------------------------------> Widgets
         
-        #region -------------------------------------------------> Aui control
-        self._mgr.AddPane(
-            self.lc, 
-            aui.AuiPaneInfo(
-                ).Right(
-                ).Caption(
-                    self.cLCPaneTitle
-                ).Floatable(
-                    b=False
-                ).CloseButton(
-                    visible=False
-                ).Movable(
-                    b=False
-                ).PaneBorder(
-                    visible=True,
-            ),
-        )
-        #------------------------------> 
-        self._mgr.Update()
-        #endregion ----------------------------------------------> Aui control
-    #---
-    #endregion -----------------------------------------------> Instance setup
+#         #region -------------------------------------------------> Aui control
+#         self._mgr.AddPane(
+#             self.lc, 
+#             aui.AuiPaneInfo(
+#                 ).Right(
+#                 ).Caption(
+#                     self.cLCPaneTitle
+#                 ).Floatable(
+#                     b=False
+#                 ).CloseButton(
+#                     visible=False
+#                 ).Movable(
+#                     b=False
+#                 ).PaneBorder(
+#                     visible=True,
+#             ),
+#         )
+#         #------------------------------> 
+#         self._mgr.Update()
+#         #endregion ----------------------------------------------> Aui control
+#     #---
+#     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+#     #region ---------------------------------------------------> Class methods
     
-    #endregion ------------------------------------------------> Class methods
-#---
+#     #endregion ------------------------------------------------> Class methods
+# #---
 
 
 #------------------------------> 
@@ -264,17 +264,11 @@ class Start(wx.Panel):
     """
     #region -----------------------------------------------------> Class setup
     name = 'StartTab'
-    
-    #------------------------------> Labels
-    cLimProtL  = config.nameModules['LimProt']
-    cTarProtL  = config.nameModules['TarProt']
-    cProtProfL = config.nameModules['ProtProf']
     #------------------------------> Tooltips
-    cLimProtTT  = 'Start the module Limited Proteolysis'
     cTarProtTT  = 'Start the module Target Proteolysis'
     cProtProfTT = 'Start the module Proteome Profiling'
     #------------------------------> Files
-    cImg = config.file['ImgStart']
+    cImg = config.fImgStart
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -295,15 +289,15 @@ class Start(wx.Panel):
         )
         #---
         #--> Buttons
-        self.btnLimProt  = wx.Button(self, label=self.cLimProtL)
-        self.btnProtProf = wx.Button(self, label=self.cProtProfL)
-        self.btnTarProt  = wx.Button(self, label=self.cTarProtL)
+        self.btnLimProt  = wx.Button(self, label=config.nameModules['LimProt'])
+        self.btnProtProf = wx.Button(self, label=config.nameModules['TarProt'])
+        self.btnTarProt  = wx.Button(self, label=config.nameModules['ProtProf'])
         #endregion --------------------------------------------------> Widgets
 
         #region ----------------------------------------------------> Tooltips
-        self.btnLimProt.SetToolTip(self.cLimProtTT)
-        self.btnTarProt.SetToolTip(self.cTarProtTT)
-        self.btnProtProf.SetToolTip(self.cProtProfTT)
+        self.btnLimProt.SetToolTip(config.ttBtnLimProt)
+        self.btnTarProt.SetToolTip(config.ttBtnTarProt)
+        self.btnProtProf.SetToolTip(config.ttBtnProtProf)
         #endregion -------------------------------------------------> Tooltips
         
         #region ------------------------------------------------------> Sizers

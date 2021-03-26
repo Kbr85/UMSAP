@@ -39,14 +39,14 @@ class MenuMethods():
                 Information about the event
         """
         #region -------------------------------------------------> Check MainW
-        if config.mainW is None:
-            config.mainW = window.MainWindow()
+        if config.winMain is None:
+            config.winMain = window.MainWindow()
         else:
             pass
         #endregion ----------------------------------------------> Check MainW
         
         #region --------------------------------------------------> Create Tab
-        config.mainW.CreateTab(self.nameID[event.GetId()])		
+        config.winMain.CreateTab(self.nameID[event.GetId()])		
         #endregion -----------------------------------------------> Create Tab
         
         return True
@@ -92,7 +92,9 @@ class MenuMethods():
     #---
 
     def OnPlotDate(self, event: wx.CommandEvent) -> Literal[True]:
-        """Plot a date of a section in an UMSAP file
+        """Plot a date of a section in an UMSAP file. Assumes the Tools menu
+            creates a self.plotDate dict (keys are menu item id and values
+            the available dates) 
     
             Parameters
             ----------
@@ -134,48 +136,48 @@ class MenuMethods():
 #---
 
 
-class PlotMenu(wx.Menu, MenuMethods):
-    """Menu for a window plotting results, like Correlation Analysis
+# class PlotMenu(wx.Menu, MenuMethods):
+#     """Menu for a window plotting results, like Correlation Analysis
     
-        Parameters
-        ----------
-        menuDate : list of str
-            List of available dates for the menu
+#         Parameters
+#         ----------
+#         menuDate : list of str
+#             List of available dates for the menu
     
-    """
-    #region -----------------------------------------------------> Class setup
+#     """
+#     #region -----------------------------------------------------> Class setup
     
-    #endregion --------------------------------------------------> Class setup
+#     #endregion --------------------------------------------------> Class setup
 
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, menuDate: list[str]) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
+#     #region --------------------------------------------------> Instance setup
+#     def __init__(self, menuDate: list[str]) -> None:
+#         """ """
+#         #region -----------------------------------------------> Initial Setup
+#         super().__init__()
+#         #endregion --------------------------------------------> Initial Setup
 
-        #region --------------------------------------------------> Menu Items
-        #------------------------------> Add Dates
-        self.AddDateItems(menuDate)
-        #------------------------------> Other items
-        self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
-        self.saveI = self.Append(-1, 'Save Image\tCtrl+I')
-        self.AppendSeparator()
-        self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
-        #endregion -----------------------------------------------> Menu Items
+#         #region --------------------------------------------------> Menu Items
+#         #------------------------------> Add Dates
+#         self.AddDateItems(menuDate)
+#         #------------------------------> Other items
+#         self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
+#         self.saveI = self.Append(-1, 'Save Image\tCtrl+I')
+#         self.AppendSeparator()
+#         self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+#         #endregion -----------------------------------------------> Menu Items
 
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.zoomR)
-        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.saveD)
-        self.Bind(wx.EVT_MENU, self.OnSavePlot,       source=self.saveI)
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
+#         #region --------------------------------------------------------> Bind
+#         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.zoomR)
+#         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.saveD)
+#         self.Bind(wx.EVT_MENU, self.OnSavePlot,       source=self.saveI)
+#         #endregion -----------------------------------------------------> Bind
+#     #---
+#     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+#     #region ---------------------------------------------------> Class methods
     
-    #endregion ------------------------------------------------> Class methods
-#---	
+#     #endregion ------------------------------------------------> Class methods
+# #---	
 #endregion -----------------------------------------------------> Base Classes
 
 
@@ -297,83 +299,83 @@ class Utility(wx.Menu, MenuMethods):
 #---
 
 
-class FileControlToolMenu(wx.Menu):
-    """Tool menu for the UMSAP file control window """
-    #region -----------------------------------------------------> Class setup
+# class FileControlToolMenu(wx.Menu):
+#     """Tool menu for the UMSAP file control window """
+#     #region -----------------------------------------------------> Class setup
     
-    #endregion --------------------------------------------------> Class setup
+#     #endregion --------------------------------------------------> Class setup
 
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, *args, **kwargs) -> None:
-        """*args and **kwargs are needed to use this menu with ToolMenuBar
-            All of them are ignored here.
-        """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
+#     #region --------------------------------------------------> Instance setup
+#     def __init__(self, *args, **kwargs) -> None:
+#         """*args and **kwargs are needed to use this menu with ToolMenuBar
+#             All of them are ignored here.
+#         """
+#         #region -----------------------------------------------> Initial Setup
+#         super().__init__()
+#         #endregion --------------------------------------------> Initial Setup
 
-        #region --------------------------------------------------> Menu Items
-        self.updateFile = self.Append(-1, 'Update File Content')
-        self.AppendSeparator()
-        self.exportData = self.Append(-1, 'Export Data')
-        #endregion -----------------------------------------------> Menu Items
+#         #region --------------------------------------------------> Menu Items
+#         self.updateFile = self.Append(-1, 'Update File Content')
+#         self.AppendSeparator()
+#         self.exportData = self.Append(-1, 'Export Data')
+#         #endregion -----------------------------------------------> Menu Items
 
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnUpdateFileContent, source=self.updateFile)
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
+#         #region --------------------------------------------------------> Bind
+#         self.Bind(wx.EVT_MENU, self.OnUpdateFileContent, source=self.updateFile)
+#         #endregion -----------------------------------------------------> Bind
+#     #---
+#     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
-    def OnUpdateFileContent(self, event: wx.CommandEvent) -> Literal[True]:
-        """Update the file content shown in the window
+#     #region ---------------------------------------------------> Class methods
+#     def OnUpdateFileContent(self, event: wx.CommandEvent) -> Literal[True]:
+#         """Update the file content shown in the window
     
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event
-        """
-        win = self.GetWindow()
-        win.UpdateFileContent()
-        return True
-    #---
-    #endregion ------------------------------------------------> Class methods
-#---
+#             Parameters
+#             ----------
+#             event: wx.Event
+#                 Information about the event
+#         """
+#         win = self.GetWindow()
+#         win.UpdateFileContent()
+#         return True
+#     #---
+#     #endregion ------------------------------------------------> Class methods
+# #---
 
 
-class CorrAPlotToolMenu(PlotMenu):
-    """Creates the Tools menu for a Corelation Analysis Plot window 
+# class CorrAPlotToolMenu(PlotMenu):
+#     """Creates the Tools menu for a Corelation Analysis Plot window 
     
-        Parameters
-        ----------
-        menuDate : list of str
-            Available dates to plot e.g. 20210304-053517
-    """
-    #region -----------------------------------------------------> Class setup
+#         Parameters
+#         ----------
+#         menuDate : list of str
+#             Available dates to plot e.g. 20210304-053517
+#     """
+#     #region -----------------------------------------------------> Class setup
     
-    #endregion --------------------------------------------------> Class setup
+#     #endregion --------------------------------------------------> Class setup
 
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, menuDate: list[str]) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__(menuDate)
-        #endregion --------------------------------------------> Initial Setup
+#     #region --------------------------------------------------> Instance setup
+#     def __init__(self, menuDate: list[str]) -> None:
+#         """ """
+#         #region -----------------------------------------------> Initial Setup
+#         super().__init__(menuDate)
+#         #endregion --------------------------------------------> Initial Setup
 
-        #region --------------------------------------------------> Menu Items
+#         #region --------------------------------------------------> Menu Items
 
-        #endregion -----------------------------------------------> Menu Items
+#         #endregion -----------------------------------------------> Menu Items
 
-        #region --------------------------------------------------------> Bind
+#         #region --------------------------------------------------------> Bind
 
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
+#         #endregion -----------------------------------------------------> Bind
+#     #---
+#     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+#     #region ---------------------------------------------------> Class methods
     
-    #endregion ------------------------------------------------> Class methods
-#---
+#     #endregion ------------------------------------------------> Class methods
+# #---
 #endregion -------------------------------------------------> Individual menus
 
 
@@ -421,8 +423,8 @@ class ToolMenuBar(MainMenuBar):
     #region -----------------------------------------------------> Class Setup
     toolClass = { # Key are window name
         'MainW'    : None,
-        'UMSAPF'   : FileControlToolMenu,
-        'CorrAPlot': CorrAPlotToolMenu,
+        # 'UMSAPF'   : FileControlToolMenu,
+        # 'CorrAPlot': CorrAPlotToolMenu,
     }
     #endregion --------------------------------------------------> Class Setup
     

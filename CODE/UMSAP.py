@@ -65,7 +65,7 @@ class SplashWindow(wx.adv.SplashScreen):
     
         Parameters
         ----------
-        imgPath : Path
+        imgPath : str
             Path to the image to use in the splash window
     """
     #region --------------------------------------------------> Instance setup
@@ -181,7 +181,7 @@ class SplashWindow(wx.adv.SplashScreen):
         #endregion -----------------------------------------------------> Menu
         
         #region ------------------------------------------> Create main window
-        config.mainW = window.MainWindow()
+        config.winMain = window.MainWindow()
         #endregion ---------------------------------------> Create main window
 
         #region --------------------------------------------> Destroy & Return

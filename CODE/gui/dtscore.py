@@ -31,7 +31,7 @@ class Notification(dtsWindow.NotificationDialog):
     """This avoids to type the title and the image of the window every time    """
     def __init__(self, mode: str, msg: Optional[str]=None, 
         tException: Optional[Exception]=None, parent: Optional[wx.Window]=None, 
-        img: Path=config.file['ImgIcon'], button: int=1,) -> None:
+        img: Path=config.fImgIcon, button: int=1,) -> None:
         """ """
         super().__init__(mode, msg=msg, tException=tException, parent=parent,
             button=button, img=img, title='UMSAP - Notification')
@@ -42,7 +42,7 @@ class Notification(dtsWindow.NotificationDialog):
 class ProgressDialog(dtsWindow.ProgressDialog):
     """This avoids to type the icon every time """
     def __init__(self, parent: Optional[wx.Window], title: str, count: int, 
-        img: Path=config.file['ImgIcon'], 
+        img: Path=config.fImgIcon, 
         style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER) -> None:    
         """"""
         super().__init__(parent, title, count, img=img, style=style)
