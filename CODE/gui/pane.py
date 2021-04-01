@@ -1418,297 +1418,297 @@ class CorrA(BaseConfPanel):
         self.lbO.Paste()
     #---
 
-#     #-------------------------------------> Run analysis methods
-#     def CheckInput(self):
-#         """Check user input"""
+    #-------------------------------------> Run analysis methods
+    def CheckInput(self):
+        """Check user input"""
         
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.label['PdCheck']
-#         #endregion ------------------------------------------------------> Msg
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdCheck
+        #endregion ------------------------------------------------------> Msg
         
-#         #region -------------------------------------------> Individual Fields
-#         #------------------------------> Input file
-#         msgStep = msgPrefix + self.confOpt['iFileL']
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         a, b = self.iFile.tc.GetValidator().Validate()
-#         if a:
-#             pass
-#         else:
-#             self.msgError = self.confMsg['iFile'][b[0]]
-#             return False
-#         #------------------------------> Output Folder
-#         msgStep = msgPrefix + self.confOpt['oFileL']
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         a, b = self.oFile.tc.GetValidator().Validate()
-#         if a:
-#             pass
-#         else:
-#             self.msgError = self.confMsg['oFile'][b[0]]
-#             return False
-#         #------------------------------> Normalization
-#         msgStep = msgPrefix + self.confOpt['NormMethodL']
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         if self.normMethod.cb.GetValidator().Validate()[0]:
-#             pass
-#         else:
-#             self.msgError = self.confMsg['NormMethod']
-#             return False
-#         #------------------------------> Corr Method
-#         msgStep = msgPrefix + self.confOpt['CorrMethodL']
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         if self.corrMethod.cb.GetValidator().Validate()[0]:
-#             pass
-#         else:
-#             self.msgError = self.confMsg['CorrMethod']
-#             return False
-#         #------------------------------> ListCtrl
-#         msgStep = msgPrefix + self.confOpt['oListL']
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         if self.lbO.GetItemCount() > 1:
-#             pass
-#         else:
-#             self.msgError = self.confMsg['oList']
-#             return False
-#         #endregion ----------------------------------------> Individual Fields
+        #region -------------------------------------------> Individual Fields
+        #------------------------------> Input file
+        msgStep = msgPrefix + self.ciFileL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.iFile.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = self.confMsg['iFile'][b[0]]
+            return False
+        #------------------------------> Output Folder
+        msgStep = msgPrefix + self.confOpt['oFileL']
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.oFile.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = self.confMsg['oFile'][b[0]]
+            return False
+        #------------------------------> Normalization
+        msgStep = msgPrefix + self.confOpt['NormMethodL']
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.normMethod.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = self.confMsg['NormMethod']
+            return False
+        #------------------------------> Corr Method
+        msgStep = msgPrefix + self.confOpt['CorrMethodL']
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.corrMethod.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = self.confMsg['CorrMethod']
+            return False
+        #------------------------------> ListCtrl
+        msgStep = msgPrefix + self.confOpt['oListL']
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.lbO.GetItemCount() > 1:
+            pass
+        else:
+            self.msgError = self.confMsg['oList']
+            return False
+        #endregion ----------------------------------------> Individual Fields
 
-#         return True
-#     #---
+        return True
+    #---
 
-#     def PrepareRun(self):
-#         """Set variable and prepare data for analysis."""
+    def PrepareRun(self):
+        """Set variable and prepare data for analysis."""
         
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.label['PdPrepare']
-#         #endregion ------------------------------------------------------> Msg
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.label['PdPrepare']
+        #endregion ------------------------------------------------------> Msg
 
-#         #region -------------------------------------------------------> Input
-#         msgStep = msgPrefix + 'User input, reading'
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         #------------------------------> As given
-#         self.d = {
-#             self.EqualLenLabel(self.confOpt['iFileL']) : (
-#                 self.iFile.tc.GetValue()),
-#             self.EqualLenLabel(self.confOpt['oFileL']) : (
-#                 self.oFile.tc.GetValue()),
-#             self.EqualLenLabel(self.confOpt['NormMethodL']) : (
-#                 self.normMethod.cb.GetValue()),
-#             self.EqualLenLabel(self.confOpt['CorrMethodL']) : (
-#                 self.corrMethod.cb.GetValue()),
-#             self.EqualLenLabel('Selected Columns') : (
-#                 [int(x) for x in self.lbO.GetColContent(0)]),
-#             self.EqualLenLabel('Append to File') : self.checkB.GetValue(),
-#         }
+        #region -------------------------------------------------------> Input
+        msgStep = msgPrefix + 'User input, reading'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> As given
+        self.d = {
+            self.EqualLenLabel(self.confOpt['iFileL']) : (
+                self.iFile.tc.GetValue()),
+            self.EqualLenLabel(self.confOpt['oFileL']) : (
+                self.oFile.tc.GetValue()),
+            self.EqualLenLabel(self.confOpt['NormMethodL']) : (
+                self.normMethod.cb.GetValue()),
+            self.EqualLenLabel(self.confOpt['CorrMethodL']) : (
+                self.corrMethod.cb.GetValue()),
+            self.EqualLenLabel('Selected Columns') : (
+                [int(x) for x in self.lbO.GetColContent(0)]),
+            self.EqualLenLabel('Append to File') : self.checkB.GetValue(),
+        }
 
-#         msgStep = msgPrefix + 'User input, processing'
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         #------------------------------> Dict with all values
-#         self.do = {
-#             'iFile'     : Path(self.iFile.tc.GetValue()),
-#             'oFile'     : Path(self.oFile.tc.GetValue()),
-#             'NormMethod': self.normMethod.cb.GetValue(),
-#             'CorrMethod': self.corrMethod.cb.GetValue(),
-#             'Column'    : [int(x) for x in self.lbO.GetColContent(0)],
-#             'Check'     : self.checkB.GetValue(),
-#         }
-#         #------------------------------> File base name
-#         self.oFolder = self.do['oFile'].parent
-#         #------------------------------> Date
-#         self.date = dtsMethod.StrNow()
-#         #endregion ----------------------------------------------------> Input
+        msgStep = msgPrefix + 'User input, processing'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Dict with all values
+        self.do = {
+            'iFile'     : Path(self.iFile.tc.GetValue()),
+            'oFile'     : Path(self.oFile.tc.GetValue()),
+            'NormMethod': self.normMethod.cb.GetValue(),
+            'CorrMethod': self.corrMethod.cb.GetValue(),
+            'Column'    : [int(x) for x in self.lbO.GetColContent(0)],
+            'Check'     : self.checkB.GetValue(),
+        }
+        #------------------------------> File base name
+        self.oFolder = self.do['oFile'].parent
+        #------------------------------> Date
+        self.date = dtsMethod.StrNow()
+        #endregion ----------------------------------------------------> Input
 
-#         return True
-#     #---
+        return True
+    #---
 
-#     def ReadInputFiles(self):
-#         """Read input file and check data"""
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.label['PdReadFile']
-#         #endregion ------------------------------------------------------> Msg
+    def ReadInputFiles(self):
+        """Read input file and check data"""
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.label['PdReadFile']
+        #endregion ------------------------------------------------------> Msg
 
-#         #region ---------------------------------------------------> Data file
-#         msgStep = msgPrefix + f"{self.confOpt['iFileL']}, reading"
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         try:
-#             self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
-#         except dtsException.FileIOError as e:
-#             self.msgError = str(e)
-#             self.tException = e
-#             return False
-#         #endregion ------------------------------------------------> Data file
+        #region ---------------------------------------------------> Data file
+        msgStep = msgPrefix + f"{self.confOpt['iFileL']}, reading"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        try:
+            self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
+        except dtsException.FileIOError as e:
+            self.msgError = str(e)
+            self.tException = e
+            return False
+        #endregion ------------------------------------------------> Data file
 
-#         #region ------------------------------------------------------> Column
-#         msgStep = msgPrefix + f"{self.confOpt['iFileL']}, data type"
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         self.df = self.iFileObj.df.iloc[:,self.do['Column']]
-#         try:
-#             self.dfI = self.df.astype('float')
-#         except Exception as e:
-#             self.msgError  = config.msg['PDDataTypeCol']
-#             self.tException = e
-#             return False
-#         #endregion ---------------------------------------------------> Column
+        #region ------------------------------------------------------> Column
+        msgStep = msgPrefix + f"{self.confOpt['iFileL']}, data type"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        self.df = self.iFileObj.df.iloc[:,self.do['Column']]
+        try:
+            self.dfI = self.df.astype('float')
+        except Exception as e:
+            self.msgError  = config.msg['PDDataTypeCol']
+            self.tException = e
+            return False
+        #endregion ---------------------------------------------------> Column
 
-#         return True
-#     #---
+        return True
+    #---
 
-#     def RunAnalysis(self):
-#         """Calculate coefficients"""
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.label['PdRun']
-#         #endregion ------------------------------------------------------> Msg
+    def RunAnalysis(self):
+        """Calculate coefficients"""
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.label['PdRun']
+        #endregion ------------------------------------------------------> Msg
 
-#         #region -----------------------------------------------> Normalization
-#         msgStep = msgPrefix + f"Data normalization"
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         if self.do['NormMethod'] != 'None':
-#             try:
-#                 self.dfN = dtsStatistic.DataNormalization(
-#                     self.dfI,
-#                     sel = None,
-#                     method = self.do['NormMethod'],
-#                 )
-#             except Exception as e:
-#                 self.msgError = str(e)
-#                 self.tException = e
-#                 return False
-#         else:
-#             self.dfN = self.dfI.copy()
-#         #endregion --------------------------------------------> Normalization
+        #region -----------------------------------------------> Normalization
+        msgStep = msgPrefix + f"Data normalization"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.do['NormMethod'] != 'None':
+            try:
+                self.dfN = dtsStatistic.DataNormalization(
+                    self.dfI,
+                    sel = None,
+                    method = self.do['NormMethod'],
+                )
+            except Exception as e:
+                self.msgError = str(e)
+                self.tException = e
+                return False
+        else:
+            self.dfN = self.dfI.copy()
+        #endregion --------------------------------------------> Normalization
 
-#         #region ------------------------------------> Correlation coefficients
-#         msgStep = msgPrefix + f"Correlation coefficients calculation"
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         try:
-#             self.dfCC = self.dfN.corr(method=self.do['CorrMethod'].lower())
-#         except Exception as e:
-#             self.msgError = str(e)
-#             self.tException = e
-#             return False
-#         #endregion ---------------------------------> Correlation coefficients
+        #region ------------------------------------> Correlation coefficients
+        msgStep = msgPrefix + f"Correlation coefficients calculation"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        try:
+            self.dfCC = self.dfN.corr(method=self.do['CorrMethod'].lower())
+        except Exception as e:
+            self.msgError = str(e)
+            self.tException = e
+            return False
+        #endregion ---------------------------------> Correlation coefficients
 
-#         return True
-#     #---
+        return True
+    #---
 
-#     def WriteOutput(self):
-#         """Write output. Override as needed """
+    def WriteOutput(self):
+        """Write output. Override as needed """
         
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.label['PdWrite']
-#         #endregion ------------------------------------------------------> Msg
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.label['PdWrite']
+        #endregion ------------------------------------------------------> Msg
         
-#         #region -----------------------------------------------> Create folder
-#         msgStep = msgPrefix + 'Creating needed folder'
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         dataFolder = f"Data-{self.date}-{self.confOpt['Section']}"
-#         dataFolder = self.oFolder / dataFolder
-#         dataFolder.mkdir(parents=True, exist_ok=True)
-#         #endregion --------------------------------------------> Create folder
+        #region -----------------------------------------------> Create folder
+        msgStep = msgPrefix + 'Creating needed folder'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        dataFolder = f"Data-{self.date}-{self.confOpt['Section']}"
+        dataFolder = self.oFolder / dataFolder
+        dataFolder.mkdir(parents=True, exist_ok=True)
+        #endregion --------------------------------------------> Create folder
         
-#         #region --------------------------------------------------> Data files
-#         msgStep = msgPrefix + 'Data files'
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #region --------------------------------------------------> Data files
+        msgStep = msgPrefix + 'Data files'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
 
-#         dtsFF.WriteDFs2CSV(
-#             dataFolder, 
-#             {
-#                 config.file['InitialN']: self.dfI,
-#                 config.file['NormN']   : self.dfN,
-#                 self.confOpt['MainData']  : self.dfCC,
-#             },
-#         )
-#         #endregion -----------------------------------------------> Data files
+        dtsFF.WriteDFs2CSV(
+            dataFolder, 
+            {
+                config.file['InitialN']: self.dfI,
+                config.file['NormN']   : self.dfN,
+                self.confOpt['MainData']  : self.dfCC,
+            },
+        )
+        #endregion -----------------------------------------------> Data files
         
-#         #region --------------------------------------------------> Data files
-#         msgStep = msgPrefix + 'Main file'
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         #------------------------------> Create output dict
-#         dateDict = {
-#             self.date : {
-#                 'V' : config.dictVersion,
-#                 'I' : self.d,
-#                 'CI': dtsMethod.DictVal2Str(
-#                     self.do, 
-#                     self.confOpt['ChangeKey'],
-#                     new = True,
-#                 ),
-#                 'R' : self.dfCC.to_dict(),
-#             }
-#         }
-#         #------------------------------> Append or not
-#         outData = self.SetOutputDict(dateDict)
-#         #------------------------------> Write
-#         dtsFF.WriteJSON(self.do['oFile'], outData)
-#         #endregion -----------------------------------------------> Data files
+        #region --------------------------------------------------> Data files
+        msgStep = msgPrefix + 'Main file'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Create output dict
+        dateDict = {
+            self.date : {
+                'V' : config.dictVersion,
+                'I' : self.d,
+                'CI': dtsMethod.DictVal2Str(
+                    self.do, 
+                    self.confOpt['ChangeKey'],
+                    new = True,
+                ),
+                'R' : self.dfCC.to_dict(),
+            }
+        }
+        #------------------------------> Append or not
+        outData = self.SetOutputDict(dateDict)
+        #------------------------------> Write
+        dtsFF.WriteJSON(self.do['oFile'], outData)
+        #endregion -----------------------------------------------> Data files
 
-#         #region ---------------------------------------------------> Print
-#         if config.development:
-#             print('Input')
-#             for k,v in self.do.items():
-#                 print(str(k)+': '+str(v))
+        #region ---------------------------------------------------> Print
+        if config.development:
+            print('Input')
+            for k,v in self.do.items():
+                print(str(k)+': '+str(v))
 
-#             print("DataFrames: Initial")
-#             print(self.dfI)
-#             print("")
-#             print("DataFrames: Norm")
-#             print(self.dfN)
-#             print("")
-#             print("DataFrames: CC")
-#             print(self.dfCC)
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Print
+            print("DataFrames: Initial")
+            print(self.dfI)
+            print("")
+            print("DataFrames: Norm")
+            print(self.dfN)
+            print("")
+            print("DataFrames: CC")
+            print(self.dfCC)
+        else:
+            pass
+        #endregion ------------------------------------------------> Print
 
-#         return True
-#     #---
+        return True
+    #---
 
-#     def LoadResults(self):
-#         """Load output file"""
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.label['PdLoad']
-#         #endregion ------------------------------------------------------> Msg
+    def LoadResults(self):
+        """Load output file"""
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.label['PdLoad']
+        #endregion ------------------------------------------------------> Msg
 
-#         #region --------------------------------------------------------> Load
-#         wx.CallAfter(self.dlg.UpdateStG, msgPrefix)
+        #region --------------------------------------------------------> Load
+        wx.CallAfter(self.dlg.UpdateStG, msgPrefix)
         
-#         wx.CallAfter(method.LoadUMSAPFile, fileP=self.do['oFile'])
-#         #endregion -----------------------------------------------------> Load
+        wx.CallAfter(method.LoadUMSAPFile, fileP=self.do['oFile'])
+        #endregion -----------------------------------------------------> Load
 
-#         return True
-#     #---
+        return True
+    #---
 
-#     def RunEnd(self):
-#         """Restart GUI and needed variables"""
-#         #region ---------------------------------------> Dlg progress dialogue
-#         if self.msgError is None:
-#             #--> 
-#             self.dlg.SuccessMessage(
-#                 config.label['PdDone'],
-#                 eTime=(config.label['PdEllapsed'] + self.deltaT),
-#             )
-#             #--> Show the 
-#             self.OnOFileChange('test')
-#         else:
-#             self.dlg.ErrorMessage(
-#                 config.label['PdError'], 
-#                 error      = self.msgError,
-#                 tException = self.tException
-#             )
-#         #endregion ------------------------------------> Dlg progress dialogue
+    def RunEnd(self):
+        """Restart GUI and needed variables"""
+        #region ---------------------------------------> Dlg progress dialogue
+        if self.msgError is None:
+            #--> 
+            self.dlg.SuccessMessage(
+                config.label['PdDone'],
+                eTime=(config.label['PdEllapsed'] + self.deltaT),
+            )
+            #--> Show the 
+            self.OnOFileChange('test')
+        else:
+            self.dlg.ErrorMessage(
+                config.label['PdError'], 
+                error      = self.msgError,
+                tException = self.tException
+            )
+        #endregion ------------------------------------> Dlg progress dialogue
 
-#         #region -------------------------------------------------------> Reset
-#         self.msgError  = None # Error msg to show in self.RunEnd
-#         self.d         = {} # Dict with the user input as given
-#         self.do        = {} # Dict with the processed user input
-#         self.dfI       = None # pd.DataFrame for initial, normalized and
-#         self.dfN       = None # correlation coefficients
-#         self.dfCC      = None
-#         self.date      = None # date for corr file
-#         self.oFolder   = None # folder for output
-#         self.corrP     = None # path to the corr file that will be created
-#         self.deltaT    = None
-#         self.tException = None
-#         #endregion ----------------------------------------------------> Reset
-#     #---
+        #region -------------------------------------------------------> Reset
+        self.msgError  = None # Error msg to show in self.RunEnd
+        self.d         = {} # Dict with the user input as given
+        self.do        = {} # Dict with the processed user input
+        self.dfI       = None # pd.DataFrame for initial, normalized and
+        self.dfN       = None # correlation coefficients
+        self.dfCC      = None
+        self.date      = None # date for corr file
+        self.oFolder   = None # folder for output
+        self.corrP     = None # path to the corr file that will be created
+        self.deltaT    = None
+        self.tException = None
+        #endregion ----------------------------------------------------> Reset
+    #---
     #endregion ------------------------------------------------> Class Methods
 #---
 

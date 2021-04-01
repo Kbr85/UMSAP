@@ -202,7 +202,16 @@ lLCtrlColNameI = ['#', 'Name']
 lSbFile   = 'Files && Folders'
 lSbValue  = 'User-defined values'
 lSbColumn = 'Column numbers'
-
+#------------------------------> Progress Dialog
+lPdCheck    = 'Checking user input: '
+lPdPrepare  = 'Preparing analysis: '
+lPdReadFile = 'Reading input files: '
+lPdRun      = 'Running analysis: '
+lPdWrite    = 'Writing output: '
+lPdLoad     = 'Loading output file'
+lPdError    = 'Fatal Error'
+lPdDone     = 'All Done'
+lPdEllapsed = 'Ellapsed time: '
 
 
 # label = { # Label for widgets
@@ -212,16 +221,7 @@ lSbColumn = 'Column numbers'
 #     'StScoreColL'    : 'Score',
 #     'StColExtractL'  : 'Columns to Extract',
 #     'StResultL'      : 'Results - Control experiments',
-#     #------------------------------> Progress Dialog
-#     'PdCheck'   : 'Checking user input: ',
-#     'PdPrepare' : 'Preparing analysis: ',
-#     'PdReadFile': 'Reading input files: ',
-#     'PdRun'     : 'Running analysis: ',
-#     'PdWrite'   : 'Writing output: ',
-#     'PdLoad'    : 'Loading output file',
-#     'PdError'   : 'Fatal Error',
-#     'PdDone'    : 'All Done',
-#     'PdEllapsed': 'Ellapsed time: ',
+
 #     #------------------------------> Titles for Panes (TP)
 #     'TP_ListPane' : 'Data File Content',
 # }
