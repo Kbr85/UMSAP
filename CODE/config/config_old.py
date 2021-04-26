@@ -20,7 +20,6 @@ import json
 import platform
 from pathlib import Path
 
-from typing import Literal, TYPE_CHECKING
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -32,8 +31,7 @@ from typing import Literal, TYPE_CHECKING
 if cOS == 'Darwin':
     
     
-    #------------------------------> Key for shortcuts
-    copyShortCut = 'Cmd'
+    
     #------------------------------> Statusbar split size
     if development:
         sbFieldSize = [-1, 350]
@@ -85,10 +83,10 @@ name = { # Unique names to identify windows/objects through the app
     'ResControlExp'       : 'ResControlExp',
     #------------------------------> Tab for notebook windows
     
-    'CorrATab'   : 'CorrATab',
+    
     'ProtProfTab': 'ProtProfTab',
     #------------------------------> Individual Panes
-    'CorrAPane'                : 'CorrAPane',
+    
     'ProtProfPane'             : 'ProtProfPane',
     'ResControlExpPane'        : 'ResControlExpPane',
     'ResControlExpPaneProtProf': 'ResControlExpPaneProtProf',
@@ -120,56 +118,24 @@ fNameNorm    = 'Data-02-Normalization'
 #endregion ---------------------------------------------------> Path and Files
 
 
-#region ----------------------------------------------------------- Extensions
-#------------------------------> For wx.Dialogs
-elData         = 'txt files (*.txt)|*.txt'
-elUMSAP        = 'UMSAP files (*.umsap)|*.umsap'
-elMatPlotSaveI = (
-    "Portable Document File (*.pdf)|*.pdf|"
-    "Portable Network Graphic (*.png)|*.png|"
-    "Scalable Vector Graphic (*.svg)|*.svg|"
-    "Tagged Image File (*.tif)|*.tif"
-)
 
-#------------------------------> File extensions. First item is default
-esData  = ['.txt']
-esUMSAP = ['.umsap']
-#endregion -------------------------------------------------------- Extensions
 
 
 #region --------------------------------------------------------------> Labels
 #------------------------------> Titles 
-lnPaneConf = 'Configuration Options'
-lnPDCorrA  = 'Calculating Correlation Coefficients'
-#------------------------------> wx.ComboBox or wx.CheckBox
-lCbNormMethod = 'Normalization Method'
-lCbCorrMethod = 'Correlation Method'
-lCbFileAppend = 'Append new data to selected output file'
-#------------------------------> wx.Button
-lBtnRun      = 'Start Analysis'
-lBtnDataFile = 'Data File'
-lBtnOutFile  = 'Output File'
+
+
+
+
+
 lBtnTypeRes  = 'Type Values'
 #------------------------------> wx.StaticText
 
 
 
-#------------------------------> wx.ListCtrl
-lLCtrlColNameI = ['#', 'Name']
-#------------------------------> wx.StaticBox
-lSbFile   = 'Files && Folders'
-lSbValue  = 'User-defined values'
-lSbColumn = 'Column numbers'
-#------------------------------> Progress Dialog
-lPdCheck    = 'Checking user input: '
-lPdPrepare  = 'Preparing analysis: '
-lPdReadFile = 'Reading input files: '
-lPdRun      = 'Running analysis: '
-lPdWrite    = 'Writing output: '
-lPdLoad     = 'Loading output file'
-lPdError    = 'Fatal Error'
-lPdDone     = 'All Done'
-lPdEllapsed = 'Ellapsed time: '
+
+
+
 
 
 # label = { # Label for widgets
@@ -186,31 +152,12 @@ lPdEllapsed = 'Ellapsed time: '
 #endregion -----------------------------------------------------------> Labels
 
 
-#region ---------------------------------------------------------------> Hints
-hTcDataFile = f"Path to the {lBtnDataFile}"
-hTcOutFile  = f"Path tot the {lBtnOutFile}"
-#endregion ------------------------------------------------------------> Hints
 
-#region ------------------------------------------------------------> Tooltips
-#------------------------------> wx.Buttons
 
-#------------------------------> wx.ListCtrl
-ttLCtrlCopyNoMod = (
-    f"Selected rows can be copied ({copyShortCut}+C) but "
-    f"the list cannot be modified."
-)
-ttLCtrlPasteMod = (
-    f"New rows can be pasted ({copyShortCut}+V) after the "
-    f"last selected element and existing one cut/deleted "
-    f"({copyShortCut}+X) or copied "
-    f"({copyShortCut}+C)."    
-)
-#endregion ---------------------------------------------------------> Tooltips
+
 
 
 #region -------------------------------------------------------------> Options
-oNormMethod = ['', 'None', 'Log2']
-oCorrMethod = ['', 'Pearson', 'Kendall', 'Spearman']
 oYesNo      = ['', 'Yes', 'No']
 oCorrectP   = [
     '',
@@ -236,8 +183,7 @@ oControlTypeProtProf = [
 #region ---------------------------------------------------------------> Sizes
 
 
-#------------------------------> wx.ListCtrl
-sLCtrlColI = [50, 150] # e.g when Col Labels are #, Name
+
 
 # size = { # Base size for widgets
 #     #------------------------------> Window
@@ -269,8 +215,6 @@ sLCtrlColI = [50, 150] # e.g when Col Labels are #, Name
 
 #region ------------------------------------------------------------------ URL
 #------------------------------> www.umsap.nl
-urlTutorial  = f"{urlHome}/tutorial/2-1-0"
-urlCorrAPane = f"{urlTutorial}/correlation-analysis"
 
 # url = { # Selected URL needed by umsap.
 #     #--> Third party sites
@@ -306,19 +250,7 @@ confVariableList = [
 
 
 
-#region --------------------------------------------------------------> Colors
-color = { # Colors for the app
-    'Zebra' : '#ffe6e6',
-    nameUtilities['CorrA'] : { # Color for plot in Correlation Analysis
-        'CMAP' : { # CMAP colors and interval
-            'N' : 128,
-            'c1': [255, 0, 0],
-            'c2': [255, 255, 255],
-            'c3': [0, 0, 255],
-        },
-    },
-}
-#endregion -----------------------------------------------------------> Colors
+
 
 
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS

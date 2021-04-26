@@ -17,6 +17,8 @@
 #region -------------------------------------------------------------> Imports
 import platform
 from pathlib import Path
+from typing import Literal, TYPE_CHECKING
+
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -33,6 +35,8 @@ dictVersion = { # dict for directly write into output files
 
 cOS = platform.system() # Current operating system
 cwd = Path(__file__)
+
+typeCheck = TYPE_CHECKING
 #endregion -----------------------------------------------> General parameters
 
 #region ---------------------------------------- Platform Dependent Parameters
@@ -48,6 +52,8 @@ if cOS == 'Darwin':
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Cmd'
 elif cOS == 'Windows':
     #------------------------------> Root & Resources Folder
     root = cwd.parent
@@ -59,6 +65,8 @@ elif cOS == 'Windows':
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Ctrl'
 elif cOS == 'Linux':
     #------------------------------> Root & Resources Folder
     root = cwd.parent
@@ -70,6 +78,8 @@ elif cOS == 'Linux':
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Ctrl'
 #endregion ------------------------------------- Platform Dependent Parameters
 
 #region -------------------------------------------------------------> Windows
@@ -88,8 +98,9 @@ name = { # Unique names for menus, windows, tabs, panes, files, etc
     'CheckUpdateResDialog': 'CheckUpdateResDialog',
     #------------------------------> Tab for notebook windows
     'StartTab'   : 'StartTab',
+    'CorrATab'   : 'CorrATab',
     #------------------------------> Individual Panes
-    
+    'CorrAPane': 'CorrAPane',
     #------------------------------> Menu
     'ModuleMenu' : 'ModuleMenu',
     'UtilityMenu': 'UtilityMenu',
@@ -105,6 +116,22 @@ nUCorrA = 'Correlation Analysis'
 nUReadF = 'Read UMSAP File'
 #endregion ------------------------------------------------------------> Names
 
+#region ----------------------------------------------------------- Extensions
+#------------------------------> For wx.Dialogs
+elData         = 'txt files (*.txt)|*.txt'
+elUMSAP        = 'UMSAP files (*.umsap)|*.umsap'
+elMatPlotSaveI = (
+    "Portable Document File (*.pdf)|*.pdf|"
+    "Portable Network Graphic (*.png)|*.png|"
+    "Scalable Vector Graphic (*.svg)|*.svg|"
+    "Tagged Image File (*.tif)|*.tif"
+)
+
+#------------------------------> File extensions. First item is default
+esData  = ['.txt']
+esUMSAP = ['.umsap']
+#endregion -------------------------------------------------------- Extensions
+
 #region ------------------------------------------------------> Path and Files
 #------------------------------> Relevant paths
 pImages = res / 'IMAGES' # Images folder
@@ -115,26 +142,84 @@ fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 #endregion ---------------------------------------------------> Path and Files
 
 #region --------------------------------------------------------------> Labels
-#------------------------------> Titles 
-lTabStart = 'Start'
+#------------------------------> Names
+lnPaneConf = 'Configuration Options'
+lnPDCorrA  = 'Calculating Correlation Coefficients'
+#------------------------------> wx.Button
+lBtnRun      = 'Start Analysis'
+lBtnDataFile = 'Data File'
+lBtnOutFile  = 'Output File'
+#------------------------------> wx.ListCtrl
+lLCtrlColNameI = ['#', 'Name']
+#------------------------------> wx.StaticBox
+lSbFile   = 'Files && Folders'
+lSbValue  = 'User-defined values'
+lSbColumn = 'Column numbers'
+#------------------------------> wx.ComboBox or wx.CheckBox
+lCbFileAppend = 'Append new data to selected output file'
+lCbNormMethod = 'Normalization Method'
+lCbCorrMethod = 'Correlation Method'
+#------------------------------> Progress Dialog
+lPdCheck    = 'Checking user input: '
+lPdPrepare  = 'Preparing analysis: '
+lPdReadFile = 'Reading input files: '
+lPdRun      = 'Running analysis: '
+lPdWrite    = 'Writing output: '
+lPdLoad     = 'Loading output file'
+lPdError    = 'Fatal Error'
+lPdDone     = 'All Done'
+lPdEllapsed = 'Ellapsed time: '
 #endregion -----------------------------------------------------------> Labels
+
+#region ---------------------------------------------------------------> Hints
+hTcDataFile = f"Path to the {lBtnDataFile}"
+hTcOutFile  = f"Path tot the {lBtnOutFile}"
+#endregion ------------------------------------------------------------> Hints
+
+#region -------------------------------------------------------------> Options
+oNormMethod = ['', 'None', 'Log2']
+oCorrMethod = ['', 'Pearson', 'Kendall', 'Spearman']
+#endregion ----------------------------------------------------------> Options
+
+#region ------------------------------------------------------------> Tooltips
+#------------------------------> wx.ListCtrl
+ttLCtrlCopyNoMod = (
+    f"Selected rows can be copied ({copyShortCut}+C) but "
+    f"the list cannot be modified."
+)
+ttLCtrlPasteMod = (
+    f"New rows can be pasted ({copyShortCut}+V) after the "
+    f"last selected element and existing one cut/deleted "
+    f"({copyShortCut}+X) or copied "
+    f"({copyShortCut}+C)."    
+)
+#endregion ---------------------------------------------------------> Tooltips
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
 sWinRegular = (900, 620)
 #------------------------------> wx.StatusBar Fields
 sSbarFieldSizeI = sbFieldSize
+#------------------------------> wx.ListCtrl
+sLCtrlColI = [50, 150] # e.g when Col Labels are #, Name
 #endregion ------------------------------------------------------------> Sizes
 
 #region ------------------------------------------------------------------ URL
 #------------------------------> www.umsap.nl
-urlHome   = 'https://www.umsap.nl'
-urlUpdate = f"{urlHome}/page/release-notes"
+urlHome      = 'https://www.umsap.nl'
+urlUpdate    = f"{urlHome}/page/release-notes"
+urlTutorial  = f"{urlHome}/tutorial/2-1-0"
+urlCorrAPane = f"{urlTutorial}/correlation-analysis"
+
 #endregion --------------------------------------------------------------- URL
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
 
 
 #region ---------------------------------------------> CONFIGURABLE PARAMETERS
+
+#------------------------------> These must be dictionaries to save/load from
+#------------------------------> configuration file
+
 #region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object
 font = {
 }
@@ -147,7 +232,17 @@ general = { # General options
 }
 #endregion --------------------------------------------------> General options
 
-
-
-
+#region --------------------------------------------------------------> Colors
+color = { # Colors for the app
+    'Zebra' : '#ffe6e6',
+    nUCorrA : { # Color for plot in Correlation Analysis
+        'CMAP' : { # CMAP colors and interval
+            'N' : 128,
+            'c1': [255, 0, 0],
+            'c2': [255, 255, 255],
+            'c3': [0, 0, 255],
+        },
+    },
+}
+#endregion -----------------------------------------------------------> Colors
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS
