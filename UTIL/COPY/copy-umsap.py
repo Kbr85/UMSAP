@@ -57,7 +57,7 @@ if var == "Y" or var == "y":
 	copy_tree(str(source), str(cwd))
   ##--> RESOURCE
    ###--> CREATE FOLDER
-	res = cwd / 'RESOURCES'
+	res = cwd / 'Resources'
 	res.mkdir()
    ###--> IMAGES
 	print('')

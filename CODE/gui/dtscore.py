@@ -21,7 +21,7 @@ from typing import Optional
 import wx
 
 import dat4s_core.gui.wx.window as dtsWindow
-import dat4s_core.gui.wx.widget as dtsWidget
+# import dat4s_core.gui.wx.widget as dtsWidget
 
 import config.config as config
 #endregion ----------------------------------------------------------> Imports
@@ -36,48 +36,47 @@ class Notification(dtsWindow.NotificationDialog):
         super().__init__(mode, msg=msg, tException=tException, parent=parent,
             button=button, img=img, title='UMSAP - Notification')
     #---
-    
 #---
 
-class ProgressDialog(dtsWindow.ProgressDialog):
-    """This avoids to type the icon every time """
-    def __init__(self, parent: Optional[wx.Window], title: str, count: int, 
-        img: Path=config.fImgIcon, 
-        style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER) -> None:    
-        """"""
-        super().__init__(parent, title, count, img=img, style=style)
-    #---
-#---
+# class ProgressDialog(dtsWindow.ProgressDialog):
+#     """This avoids to type the icon every time """
+#     def __init__(self, parent: Optional[wx.Window], title: str, count: int, 
+#         img: Path=config.fImgIcon, 
+#         style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER) -> None:    
+#         """"""
+#         super().__init__(parent, title, count, img=img, style=style)
+#     #---
+# #---
 
-class ListZebra(dtsWidget.ListZebra):
-    """ This avoids defining the color for the zebra style every time """
-    def __init__(self, parent:wx.Window, color: str=config.color['Zebra'], 
-        colLabel: Optional[list[str]]=None, colSize: Optional[list[int]]=None, 
-        canCopy: bool=True, canCut: bool=False, canPaste: bool=False, 
-        copyFullContent: bool=False, pasteUnique: bool=True, selAll:bool=True, 
-        style=wx.LC_REPORT) -> None:
-        """"""
-        super().__init__(
-            parent, color=color, colLabel=colLabel, colSize=colSize, 
-            canCopy=canCopy, canCut=canCut, canPaste=canPaste, 
-            copyFullContent=copyFullContent, pasteUnique=pasteUnique, 
-            selAll=selAll, style=style)
-    #---
-#---
+# class ListZebra(dtsWidget.ListZebra):
+#     """ This avoids defining the color for the zebra style every time """
+#     def __init__(self, parent:wx.Window, color: str=config.color['Zebra'], 
+#         colLabel: Optional[list[str]]=None, colSize: Optional[list[int]]=None, 
+#         canCopy: bool=True, canCut: bool=False, canPaste: bool=False, 
+#         copyFullContent: bool=False, pasteUnique: bool=True, selAll:bool=True, 
+#         style=wx.LC_REPORT) -> None:
+#         """"""
+#         super().__init__(
+#             parent, color=color, colLabel=colLabel, colSize=colSize, 
+#             canCopy=canCopy, canCut=canCut, canPaste=canPaste, 
+#             copyFullContent=copyFullContent, pasteUnique=pasteUnique, 
+#             selAll=selAll, style=style)
+#     #---
+# #---
 
-class ListZebraMaxWidth(dtsWidget.ListZebraMaxWidth):
-    """This avoids defining the color for the zebra style every time """
-    def __init__(self, parent: wx.Window, color: str=config.color['Zebra'], 
-        colLabel: Optional[list[str]]=None, colSize: Optional[list[int]]=None, 
-        canCopy: bool=True, canCut:bool=False, canPaste: bool=False, 
-        copyFullContent: bool=False, pasteUnique: bool=True, selAll: bool=True, 
-        style=wx.LC_REPORT):
-        """"""
-        super().__init__(
-            parent, color=color, colLabel=colLabel, colSize=colSize, 
-            canCopy=canCopy, canCut=canCut, canPaste=canPaste, 
-            copyFullContent=copyFullContent, pasteUnique=pasteUnique, 
-            selAll=selAll, style=style)
-    #---    
+# class ListZebraMaxWidth(dtsWidget.ListZebraMaxWidth):
+#     """This avoids defining the color for the zebra style every time """
+#     def __init__(self, parent: wx.Window, color: str=config.color['Zebra'], 
+#         colLabel: Optional[list[str]]=None, colSize: Optional[list[int]]=None, 
+#         canCopy: bool=True, canCut:bool=False, canPaste: bool=False, 
+#         copyFullContent: bool=False, pasteUnique: bool=True, selAll: bool=True, 
+#         style=wx.LC_REPORT):
+#         """"""
+#         super().__init__(
+#             parent, color=color, colLabel=colLabel, colSize=colSize, 
+#             canCopy=canCopy, canCut=canCut, canPaste=canPaste, 
+#             copyFullContent=copyFullContent, pasteUnique=pasteUnique, 
+#             selAll=selAll, style=style)
+#     #---    
     
     

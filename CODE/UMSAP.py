@@ -17,8 +17,8 @@
 
 
 #region -------------------------------------------------------------> Imports
-import os
 import platform
+from pathlib import Path
 
 import wx
 import wx.adv
@@ -37,19 +37,21 @@ class UmsapApp(wx.App):
         """ Initialize the app """
 
         #region ------------------------------------------------> SplashScreen
-        cwd = os.path.abspath(os.path.dirname(__file__))
         cOS = platform.system()
         #--> Set location of splash image
         if cOS == 'Darwin':
             if DEVELOPMENT:
-                image_loc = cwd + '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
+                root = str(Path(__file__).parent)
+                image_loc = root + '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
             else:
+                root = str(Path(__file__).parent.parent)
                 image_loc = (
-                    cwd +
+                    root +
                   '/UMSAP.app/Contents/Resources/IMAGES/SPLASHSCREEN/splash.png'
                 )
         else:
-            image_loc = cwd + '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
+            root = str(Path(__file__).parent)
+            image_loc = root + '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
         #--> Launch splash window
         SplashWindow(image_loc)
         #endregion ---------------------------------------------> SplashScreen

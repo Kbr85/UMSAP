@@ -21,7 +21,7 @@ import wx
 
 import config.config as config
 import gui.window as window
-import gui.method as method
+# import gui.method as method
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -52,132 +52,132 @@ class MenuMethods():
         return True
     #---
 
-    def OnZoomReset(self, event: wx.CommandEvent) -> Literal[True]:
-        """Reset the zoom level of a matlibplot. Assumes the plot comes from
-            dtsWidget.MatPlotPanel and it is called plot in the window.
+#     def OnZoomReset(self, event: wx.CommandEvent) -> Literal[True]:
+#         """Reset the zoom level of a matlibplot. Assumes the plot comes from
+#             dtsWidget.MatPlotPanel and it is called plot in the window.
     
-            Parameters
-            ----------
-            event : wx.CommandEvent
-                Information about the event
-        """
-        win = self.GetWindow()
-        win.plot.ZoomResetPlot()
-        return True
-    #---
+#             Parameters
+#             ----------
+#             event : wx.CommandEvent
+#                 Information about the event
+#         """
+#         win = self.GetWindow()
+#         win.plot.ZoomResetPlot()
+#         return True
+#     #---
 
-    def AddDateItems(self, menuDate: list[str]) -> Literal[True]:
-        """Add and bind the date to plot
+#     def AddDateItems(self, menuDate: list[str]) -> Literal[True]:
+#         """Add and bind the date to plot
     
-            Parameters
-            ----------
-            menuDate: list of str
-                Available dates to plot e.g. 20210324-123456
-        """
-        #region ---------------------------------------------------> Add items
-        for k in menuDate:
-            #------------------------------> Add item
-            i = self.AppendRadioItem(-1, k)
-            #------------------------------> Add to plotDate
-            self.plotDate[i.GetId()] = k
-            #------------------------------> Bind
-            self.Bind(wx.EVT_MENU, self.OnPlotDate, source=i)
-        #endregion ------------------------------------------------> Add items
+#             Parameters
+#             ----------
+#             menuDate: list of str
+#                 Available dates to plot e.g. 20210324-123456
+#         """
+#         #region ---------------------------------------------------> Add items
+#         for k in menuDate:
+#             #------------------------------> Add item
+#             i = self.AppendRadioItem(-1, k)
+#             #------------------------------> Add to plotDate
+#             self.plotDate[i.GetId()] = k
+#             #------------------------------> Bind
+#             self.Bind(wx.EVT_MENU, self.OnPlotDate, source=i)
+#         #endregion ------------------------------------------------> Add items
         
-        #region -----------------------------------------------> Add Separator
-        self.AppendSeparator()
-        #endregion --------------------------------------------> Add Separator
+#         #region -----------------------------------------------> Add Separator
+#         self.AppendSeparator()
+#         #endregion --------------------------------------------> Add Separator
         
-        return True
-    #---
+#         return True
+#     #---
 
-    def OnPlotDate(self, event: wx.CommandEvent) -> Literal[True]:
-        """Plot a date of a section in an UMSAP file. Assumes the Tools menu
-            creates a self.plotDate dict (keys are menu item id and values
-            the available dates) 
+#     def OnPlotDate(self, event: wx.CommandEvent) -> Literal[True]:
+#         """Plot a date of a section in an UMSAP file. Assumes the Tools menu
+#             creates a self.plotDate dict (keys are menu item id and values
+#             the available dates) 
     
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
+#             Parameters
+#             ----------
+#             event : wx.Event
+#                 Information about the event
         
-        """
-        win = self.GetWindow()
-        win.Draw(self.plotDate[event.GetId()])
-        return True
-    #---
+#         """
+#         win = self.GetWindow()
+#         win.Draw(self.plotDate[event.GetId()])
+#         return True
+#     #---
 
-    def OnExportPlotData(self, event: wx.CommandEvent) -> Literal[True]:
-        """Export plotted data 
+#     def OnExportPlotData(self, event: wx.CommandEvent) -> Literal[True]:
+#         """Export plotted data 
 
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-        """
-        win = self.GetWindow()
-        win.OnExportPlotData()
-        return True
-    #---
+#             Parameters
+#             ----------
+#             event : wx.Event
+#                 Information about the event
+#         """
+#         win = self.GetWindow()
+#         win.OnExportPlotData()
+#         return True
+#     #---
 
-    def OnSavePlot(self, event: wx.CommandEvent) -> Literal[True]:
-        """Save an image of a plot
+#     def OnSavePlot(self, event: wx.CommandEvent) -> Literal[True]:
+#         """Save an image of a plot
     
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-        """
-        win = self.GetWindow()
-        win.OnSavePlot()
-        return True
-    #---
+#             Parameters
+#             ----------
+#             event : wx.Event
+#                 Information about the event
+#         """
+#         win = self.GetWindow()
+#         win.OnSavePlot()
+#         return True
+#     #---
     #endregion ------------------------------------------------> Class Methods
 #---
 
 
-# class PlotMenu(wx.Menu, MenuMethods):
-#     """Menu for a window plotting results, like Correlation Analysis
+# # class PlotMenu(wx.Menu, MenuMethods):
+# #     """Menu for a window plotting results, like Correlation Analysis
     
-#         Parameters
-#         ----------
-#         menuDate : list of str
-#             List of available dates for the menu
+# #         Parameters
+# #         ----------
+# #         menuDate : list of str
+# #             List of available dates for the menu
     
-#     """
-#     #region -----------------------------------------------------> Class setup
+# #     """
+# #     #region -----------------------------------------------------> Class setup
     
-#     #endregion --------------------------------------------------> Class setup
+# #     #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuDate: list[str]) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+# #     #region --------------------------------------------------> Instance setup
+# #     def __init__(self, menuDate: list[str]) -> None:
+# #         """ """
+# #         #region -----------------------------------------------> Initial Setup
+# #         super().__init__()
+# #         #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         #------------------------------> Add Dates
-#         self.AddDateItems(menuDate)
-#         #------------------------------> Other items
-#         self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
-#         self.saveI = self.Append(-1, 'Save Image\tCtrl+I')
-#         self.AppendSeparator()
-#         self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
-#         #endregion -----------------------------------------------> Menu Items
+# #         #region --------------------------------------------------> Menu Items
+# #         #------------------------------> Add Dates
+# #         self.AddDateItems(menuDate)
+# #         #------------------------------> Other items
+# #         self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
+# #         self.saveI = self.Append(-1, 'Save Image\tCtrl+I')
+# #         self.AppendSeparator()
+# #         self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+# #         #endregion -----------------------------------------------> Menu Items
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.zoomR)
-#         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.saveD)
-#         self.Bind(wx.EVT_MENU, self.OnSavePlot,       source=self.saveI)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+# #         #region --------------------------------------------------------> Bind
+# #         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.zoomR)
+# #         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.saveD)
+# #         self.Bind(wx.EVT_MENU, self.OnSavePlot,       source=self.saveI)
+# #         #endregion -----------------------------------------------------> Bind
+# #     #---
+# #     #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
+# #     #region ---------------------------------------------------> Class methods
     
-#     #endregion ------------------------------------------------> Class methods
-# #---	
+# #     #endregion ------------------------------------------------> Class methods
+# # #---	
 #endregion -----------------------------------------------------> Base Classes
 
 
@@ -198,9 +198,9 @@ class Module(wx.Menu, MenuMethods):
     name = 'ModuleMenu'
 
     cName = {
-        'LimProt' : config.nameModules['LimProt'],
-        'TarProt' : config.nameModules['TarProt'],
-        'ProtProf': config.nameModules['ProtProf'],
+        'LimProt' : config.nMLimProt,
+        'TarProt' : config.nMTarProt,
+        'ProtProf': config.nMProtProf,
     }
     #endregion --------------------------------------------------> Class setup
     
@@ -250,8 +250,8 @@ class Utility(wx.Menu, MenuMethods):
     name = 'UtilityMenu'
     
     cName = {
-        'CorrA' : config.nameUtilities['CorrA'],
-        'ReadF' : config.nameUtilities['ReadF'],
+        'CorrA' : config.nUCorrA,
+        'ReadF' : config.nUReadF,
     }
     #endregion --------------------------------------------------> Class setup
     
@@ -275,107 +275,107 @@ class Utility(wx.Menu, MenuMethods):
         #endregion ----------------------------------------------------> Names
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.readFile)
+        # self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.readFile)
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.corrA)
         #endregion -----------------------------------------------------> Bind
     #endregion -----------------------------------------------> Instance Setup
 
     #region ---------------------------------------------------> Class Methods
-    def OnReadFile(self, event):
-        """Read an UMSAP output file
+    # def OnReadFile(self, event):
+    #     """Read an UMSAP output file
     
-            Parameters
-            ----------
-            event : wx.EVENT
-                Information about the event
+    #         Parameters
+    #         ----------
+    #         event : wx.EVENT
+    #             Information about the event
 
-        """
-        win = self.GetWindow()
-        method.LoadUMSAPFile(win=win)
+    #     """
+    #     win = self.GetWindow()
+    #     method.LoadUMSAPFile(win=win)
 
-        return True
+    #     return True
     #---
     #endregion ------------------------------------------------> Class Methods
 #---
 
 
-# class FileControlToolMenu(wx.Menu):
-#     """Tool menu for the UMSAP file control window """
-#     #region -----------------------------------------------------> Class setup
+# # class FileControlToolMenu(wx.Menu):
+# #     """Tool menu for the UMSAP file control window """
+# #     #region -----------------------------------------------------> Class setup
     
-#     #endregion --------------------------------------------------> Class setup
+# #     #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, *args, **kwargs) -> None:
-#         """*args and **kwargs are needed to use this menu with ToolMenuBar
-#             All of them are ignored here.
-#         """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+# #     #region --------------------------------------------------> Instance setup
+# #     def __init__(self, *args, **kwargs) -> None:
+# #         """*args and **kwargs are needed to use this menu with ToolMenuBar
+# #             All of them are ignored here.
+# #         """
+# #         #region -----------------------------------------------> Initial Setup
+# #         super().__init__()
+# #         #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.updateFile = self.Append(-1, 'Update File Content')
-#         self.AppendSeparator()
-#         self.exportData = self.Append(-1, 'Export Data')
-#         #endregion -----------------------------------------------> Menu Items
+# #         #region --------------------------------------------------> Menu Items
+# #         self.updateFile = self.Append(-1, 'Update File Content')
+# #         self.AppendSeparator()
+# #         self.exportData = self.Append(-1, 'Export Data')
+# #         #endregion -----------------------------------------------> Menu Items
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnUpdateFileContent, source=self.updateFile)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+# #         #region --------------------------------------------------------> Bind
+# #         self.Bind(wx.EVT_MENU, self.OnUpdateFileContent, source=self.updateFile)
+# #         #endregion -----------------------------------------------------> Bind
+# #     #---
+# #     #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
-#     def OnUpdateFileContent(self, event: wx.CommandEvent) -> Literal[True]:
-#         """Update the file content shown in the window
+# #     #region ---------------------------------------------------> Class methods
+# #     def OnUpdateFileContent(self, event: wx.CommandEvent) -> Literal[True]:
+# #         """Update the file content shown in the window
     
-#             Parameters
-#             ----------
-#             event: wx.Event
-#                 Information about the event
-#         """
-#         win = self.GetWindow()
-#         win.UpdateFileContent()
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+# #             Parameters
+# #             ----------
+# #             event: wx.Event
+# #                 Information about the event
+# #         """
+# #         win = self.GetWindow()
+# #         win.UpdateFileContent()
+# #         return True
+# #     #---
+# #     #endregion ------------------------------------------------> Class methods
+# # #---
 
 
-# class CorrAPlotToolMenu(PlotMenu):
-#     """Creates the Tools menu for a Corelation Analysis Plot window 
+# # class CorrAPlotToolMenu(PlotMenu):
+# #     """Creates the Tools menu for a Corelation Analysis Plot window 
     
-#         Parameters
-#         ----------
-#         menuDate : list of str
-#             Available dates to plot e.g. 20210304-053517
-#     """
-#     #region -----------------------------------------------------> Class setup
+# #         Parameters
+# #         ----------
+# #         menuDate : list of str
+# #             Available dates to plot e.g. 20210304-053517
+# #     """
+# #     #region -----------------------------------------------------> Class setup
     
-#     #endregion --------------------------------------------------> Class setup
+# #     #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuDate: list[str]) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(menuDate)
-#         #endregion --------------------------------------------> Initial Setup
+# #     #region --------------------------------------------------> Instance setup
+# #     def __init__(self, menuDate: list[str]) -> None:
+# #         """ """
+# #         #region -----------------------------------------------> Initial Setup
+# #         super().__init__(menuDate)
+# #         #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
+# #         #region --------------------------------------------------> Menu Items
 
-#         #endregion -----------------------------------------------> Menu Items
+# #         #endregion -----------------------------------------------> Menu Items
 
-#         #region --------------------------------------------------------> Bind
+# #         #region --------------------------------------------------------> Bind
 
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+# #         #endregion -----------------------------------------------------> Bind
+# #     #---
+# #     #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
+# #     #region ---------------------------------------------------> Class methods
     
-#     #endregion ------------------------------------------------> Class methods
-# #---
+# #     #endregion ------------------------------------------------> Class methods
+# # #---
 #endregion -------------------------------------------------> Individual menus
 
 
