@@ -38,15 +38,15 @@ class Notification(dtsWindow.NotificationDialog):
     #---
 #---
 
-# class ProgressDialog(dtsWindow.ProgressDialog):
-#     """This avoids to type the icon every time """
-#     def __init__(self, parent: Optional[wx.Window], title: str, count: int, 
-#         img: Path=config.fImgIcon, 
-#         style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER) -> None:    
-#         """"""
-#         super().__init__(parent, title, count, img=img, style=style)
-#     #---
-# #---
+class ProgressDialog(dtsWindow.ProgressDialog):
+    """This avoids to type the icon every time """
+    def __init__(self, parent: Optional[wx.Window], title: str, count: int, 
+        img: Path=config.fImgIcon, 
+        style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER) -> None:    
+        """"""
+        super().__init__(parent, title, count, img=img, style=style)
+    #---
+#---
 
 class ListZebra(dtsWidget.ListZebra):
     """ This avoids defining the color for the zebra style every time """

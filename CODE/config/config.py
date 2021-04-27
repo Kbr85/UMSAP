@@ -141,6 +141,15 @@ fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 
 #endregion ---------------------------------------------------> Path and Files
 
+#region ------------------------------------------------------------------ URL
+#------------------------------> www.umsap.nl
+urlHome      = 'https://www.umsap.nl'
+urlUpdate    = f"{urlHome}/page/release-notes"
+urlTutorial  = f"{urlHome}/tutorial/2-1-0"
+urlCorrAPane = f"{urlTutorial}/correlation-analysis"
+
+#endregion --------------------------------------------------------------- URL
+
 #region --------------------------------------------------------------> Labels
 #------------------------------> Names
 lnPaneConf = 'Configuration Options'
@@ -176,6 +185,18 @@ hTcDataFile = f"Path to the {lBtnDataFile}"
 hTcOutFile  = f"Path tot the {lBtnOutFile}"
 #endregion ------------------------------------------------------------> Hints
 
+#region ------------------------------------------------------------> Tooltips
+#------------------------------> wx.Button
+ttBtnDataFile = f"Select the {lBtnDataFile}."
+ttBtnOutFile  = f"Select the {lBtnOutFile}."
+ttBtnHelp     = f"Read online tutorial at {urlHome}."
+ttBtnClearAll = f"Clear all user input."
+ttBtnRun      = f"Start the analysis."
+#------------------------------> wx.StaticText
+ttStNorm = f"Select the {lCbNormMethod}."
+ttStCorr = f"Select the {lCbCorrMethod}."
+#endregion ---------------------------------------------------------> Tooltips
+
 #region -------------------------------------------------------------> Options
 oNormMethod = ['', 'None', 'Log2']
 oCorrMethod = ['', 'Pearson', 'Kendall', 'Spearman']
@@ -203,15 +224,6 @@ sSbarFieldSizeI = sbFieldSize
 #------------------------------> wx.ListCtrl
 sLCtrlColI = [50, 150] # e.g when Col Labels are #, Name
 #endregion ------------------------------------------------------------> Sizes
-
-#region ------------------------------------------------------------------ URL
-#------------------------------> www.umsap.nl
-urlHome      = 'https://www.umsap.nl'
-urlUpdate    = f"{urlHome}/page/release-notes"
-urlTutorial  = f"{urlHome}/tutorial/2-1-0"
-urlCorrAPane = f"{urlTutorial}/correlation-analysis"
-
-#endregion --------------------------------------------------------------- URL
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
 
 

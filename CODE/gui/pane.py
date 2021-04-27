@@ -15,7 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
-# import _thread 
+import _thread 
 from pathlib import Path
 from typing import Optional, Literal, Type
 
@@ -78,40 +78,52 @@ class BaseConfPanel(
         #------------------------------> Configuration
         cRunBtnL : str
             Label for the run wx.Button.
-            Default is config.label['BtnRun']
+            Default is config.lBtnRun.
         cFileBoxL : str
             Label for the wx.StaticBox in section Files & Folders
-            Default is config.label['StBoxFile'].
+            Default is config.lStBoxFile.
         cValueBoxL : str
             Label for the wx.StaticBox in section User-defined values
-            Default is config.label['StBoxValue']
+            Default is config.lStBoxValue
         cColumnBoxL : str
             Label for the wx.StaticBox in section Columns
-            Default is config.label['StBoxColumn']
+            Default is config.lStBoxColumn
         ciMode : str
             Mode for selecting the main input file. Default is 'openO'
         coMode : str
             Mode for selecting the output file. Default is 'save'
         ciFileL : str
             Label for the main input data wx.Button
-            Default is config.label['BtnDataFile']
+            Default is config.lBtnDataFile
         ciFileH : str
             Hint for the main input wx.TextCtrl
-            Default is config.hint['TcDataFile']
+            Default is config.hTcDataFile
+        ciFileTT : str
+            Tooltip for the main input wx.TextCtrl
+            Default is config.ttTcDataFile
         ciFileE : wxPython extension list
             Extensions allowed for the main input file
-            Default is config.extLong['Data']
+            Default is config.elData
         coFileL : str
             Label for the output wx.Button
-            Default is config.label['BtnOutFile']
+            Default is config.lBtnOutFile
         coFileH : str
             Hint for the output file wx.TextCtrl
-            Default is config.hint['TcOutFile]
+            Default is config.hTcOutFile
+        coFileTT : str
+            Tooltip for the output file wx.TextCtrl
+            Default is config.ttTcOutFile
         ciFileValidator : wx.Validator
             Validator for the main input file. 
             Default is dtsValidator.InputFF(
                 fof='file', 
-                ext = config.extShort['Data'],
+                ext = config.esData,
+            )
+        coFileValidator : wx.Validator
+            Validator for the main input file. 
+            Default is dtsValidator.OutputFF(
+                fof='file', 
+                ext = config.esUMSAP[0],
             )
         #------------------------------> Needed to run analysis
         msgError : Str or None
@@ -195,6 +207,12 @@ class BaseConfPanel(
         #------------------------------> Hints
         self.ciFileH = getattr(self, 'ciFileH', config.hTcDataFile)
         self.coFileH = getattr(self, 'coFileH', config.hTcOutFile)
+        #------------------------------> Tooltips
+        self.ciFileTT    = getattr(self, 'ciFileTT', config.ttBtnDataFile)
+        self.coFileTT    = getattr(self, 'coFileTT', config.ttBtnOutFile)
+        self.cHelpTT     = getattr(self, 'cHelpTT', config.ttBtnHelp)
+        self.cClearAllTT = getattr(self, 'cClearAllTT', config.ttBtnClearAll)
+        self.cRunTT      = getattr(self, 'cRunTT', config.ttBtnRun)
         #------------------------------> Extensions
         self.ciFileE = getattr(self, 'ciFileE', config.elData)
         #------------------------------> Mode
@@ -207,6 +225,14 @@ class BaseConfPanel(
             dtsValidator.InputFF(
                 fof = 'file',
                 ext = config.esData,
+            )
+        )
+        self.coFileValidator = getattr(
+            self, 
+            'coFileValidator',
+            dtsValidator.OutputFF(
+                fof = 'file',
+                ext = config.esUMSAP[0],
             )
         )
         #------------------------------> This is needed to handle Data File 
@@ -237,6 +263,9 @@ class BaseConfPanel(
             self.cURL, 
             labelR = self.cRunBtnL,
         )
+        self.btnHelp.SetToolTip(self.cHelpTT)
+        self.btnClearAll.SetToolTip(self.cClearAllTT)
+        self.btnRun.SetToolTip(self.cRunTT)
 
         dtsWidget.StaticBoxes.__init__(self, self, 
             labelF      = self.cFileBoxL,
@@ -255,8 +284,8 @@ class BaseConfPanel(
             tcStyle    = wx.TE_READONLY|wx.TE_PROCESS_ENTER,
             validator  = self.ciFileValidator,
             ownCopyCut = True,
-            afterBtn   = self.LCtrlFill,
         )
+        self.iFile.btn.SetToolTip(self.ciFileTT)
 
         self.oFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
             btnLabel   = self.coFileL,
@@ -264,14 +293,11 @@ class BaseConfPanel(
             mode       = self.coMode,
             ext        = config.elUMSAP,
             tcStyle    = wx.TE_READONLY,
-            validator  = dtsValidator.OutputFF(
-                fof = 'file',
-                opt = False,
-                ext = config.esUMSAP[0],
-            ),
+            validator  = self.coFileValidator,
             ownCopyCut = True,
         )
-
+        self.oFile.btn.SetToolTip(self.coFileTT)
+        
         self.checkB = wx.CheckBox(self.sbFile, label=self.cCheckL)
         self.checkB.SetValue(True)
         #endregion --------------------------------------------------> Widgets
@@ -319,29 +345,29 @@ class BaseConfPanel(
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        self.iFile.tc.Bind(wx.EVT_TEXT, self.OnIFileEmpty)
-        self.iFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnIFileEnter)
+        self.iFile.tc.Bind(wx.EVT_TEXT, self.OnIFileLoad)
+        self.iFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnIFileLoad)
         self.oFile.tc.Bind(wx.EVT_TEXT, self.OnOFileChange)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnIFileEnter(self, event: wx.CommandEvent) -> bool:
-        """Reload column names in the data file when pressing enter
+    def OnIFileLoad(self, event: wx.CommandEvent) -> Literal[True]:
+        """Clear GUI elements when Data Folder is ''
     
             Parameters
             ----------
-            event : wx.Event
-                Information about the event
+            event: wx.Event
+                Information about the event		
         """
-        if self.LCtrlFill(self.iFile.tc.GetValue()):
-            return True
+        if (fileP := self.iFile.tc.GetValue()) == '':
+            return self.LCtrlEmpty()
         else:
-            return False
+            return self.OnIFileEnter('', fileP)
     #---
-
-    def LCtrlFill(self, fileP: Path) -> bool:
+    
+    def OnIFileEnter(self, event: wx.CommandEvent, fileP: Path) -> bool:
         """Fill the wx.ListCtrl after selecting path to the folder. This is
             called from within self.iFile
     
@@ -349,7 +375,18 @@ class BaseConfPanel(
             ----------
             fileP : Path
                 Folder path
+                
+            Notes
+            -----
+            Silently ignores the absence of a wx.ListCtrl as self.lbI
         """
+        #region -----------------------------------------------> Check for lbI
+        if self.lbI is None:
+            return True
+        else:
+            pass
+        #endregion --------------------------------------------> Check for lbI
+        
         #region ----------------------------------------------------> Del list
         self.LCtrlEmpty()
         #endregion -------------------------------------------------> Del list
@@ -368,22 +405,6 @@ class BaseConfPanel(
 
         return True
     #---	
-
-    def OnIFileEmpty(self, event: wx.CommandEvent) -> Literal[True]:
-        """Clear GUI elements when Data Folder is ''
-    
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event		
-        """
-        if self.iFile.tc.GetValue() == '':
-            self.LCtrlEmpty()
-        else:
-            pass
-
-        return True
-    #---
 
     def LCtrlEmpty(self) -> Literal[True]:
         """Clear wx.ListCtrl and NCol """
@@ -1210,7 +1231,6 @@ class CorrA(BaseConfPanel):
         }
     """
     #region -----------------------------------------------------> Class Setup
-    name = 'CorrAPane'
     #endregion --------------------------------------------------> Class Setup
     
     #region --------------------------------------------------> Instance setup
@@ -1218,12 +1238,18 @@ class CorrA(BaseConfPanel):
         """"""
         #region -----------------------------------------------> Initial setup
         #------------------------------> Needed by BaseConfPanel
+        self.name         = 'CorrAPane'
         self.cURL         = config.urlCorrAPane
         self.cSection     = config.nUCorrA
         self.cLenLongestL = len(config.lCbNormMethod)
         self.cTitlePD     = config.lnPDCorrA
         self.cGaugePD     = 15
-        #------------------------------> Common to Run
+        #------------------------------> Optional configuration
+        self.cHelpTT = f"Read tutorial at {config.urlCorrAPane}."
+        #------------------------------> Tooltips
+        self.cNormTT = config.ttStNorm
+        self.cCorrTT = config.ttStCorr
+        #------------------------------> Needed to Run
         self.cMainData  = 'Data-03-CorrelationCoefficients'
         self.cChangeKey = ['iFile', 'oFile']
         self.dfCC       = None # correlation coefficients
@@ -1238,11 +1264,14 @@ class CorrA(BaseConfPanel):
             choices   = config.oNormMethod,
             validator = dtsValidator.IsNotEmpty(),
         )
+        self.normMethod.st.SetToolTip(self.cNormTT)
+        
         self.corrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
             label     = config.lCbCorrMethod,
             choices   = config.oCorrMethod,
             validator = dtsValidator.IsNotEmpty(),
         )
+        self.corrMethod.st.SetToolTip(self.cCorrTT)
         #------------------------------> Columns
         self.stListI = wx.StaticText(
             self.sbColumn, 
