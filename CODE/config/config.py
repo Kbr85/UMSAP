@@ -138,7 +138,9 @@ pImages = res / 'IMAGES' # Images folder
 #------------------------------> Location & names of important files
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
-
+#------------------------------> Names
+fnInitial = "{}-Initial-Data.txt"
+fnNorm    = "{}-Normalized-Data.txt"
 #endregion ---------------------------------------------------> Path and Files
 
 #region ------------------------------------------------------------------ URL
@@ -164,6 +166,8 @@ lLCtrlColNameI = ['#', 'Name']
 lSbFile   = 'Files && Folders'
 lSbValue  = 'User-defined values'
 lSbColumn = 'Column numbers'
+#------------------------------> wx.Statictext
+lStColIFile = "Columns in the {}"
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend = 'Append new data to selected output file'
 lCbNormMethod = 'Normalization Method'
@@ -195,14 +199,6 @@ ttBtnRun      = f"Start the analysis."
 #------------------------------> wx.StaticText
 ttStNorm = f"Select the {lCbNormMethod}."
 ttStCorr = f"Select the {lCbCorrMethod}."
-#endregion ---------------------------------------------------------> Tooltips
-
-#region -------------------------------------------------------------> Options
-oNormMethod = ['', 'None', 'Log2']
-oCorrMethod = ['', 'Pearson', 'Kendall', 'Spearman']
-#endregion ----------------------------------------------------------> Options
-
-#region ------------------------------------------------------------> Tooltips
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -210,11 +206,27 @@ ttLCtrlCopyNoMod = (
 )
 ttLCtrlPasteMod = (
     f"New rows can be pasted ({copyShortCut}+V) after the "
-    f"last selected element and existing one cut/deleted "
+    f"last selected element and existing ones cut/deleted "
     f"({copyShortCut}+X) or copied "
     f"({copyShortCut}+C)."    
 )
 #endregion ---------------------------------------------------------> Tooltips
+
+#region -------------------------------------------------------------> Options
+oNormMethod = ['', 'None', 'Log2']
+oCorrMethod = ['', 'Pearson', 'Kendall', 'Spearman']
+#endregion ----------------------------------------------------------> Options
+
+#region ------------------------------------------------------------> Messages
+#------------------------------> Files 
+mFileBad = "File: '{}'\ncannot be used as {}."
+#------------------------------> Not empty
+mNotEmpty = "Please select a value for {}"
+#------------------------------> Pandas
+mPDDataType    = 'Unexpected data type.'
+mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
+#endregion ---------------------------------------------------------> Messages
+
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 

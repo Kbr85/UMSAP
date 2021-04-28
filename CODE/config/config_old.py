@@ -29,33 +29,13 @@ from pathlib import Path
 #region ---------------------------------------- PLATFORM DEPENDENT PARAMETERS
 # There are some that must be defined in other sections
 if cOS == 'Darwin':
-    
-    
-    
-    #------------------------------> Statusbar split size
-    if development:
-        sbFieldSize = [-1, 350]
-    else:
-        sbFieldSize = [-1, 300]
-    sbPlot = [-1, 120]
+    sbPlot = [-1, 100]
     #------------------------------> Delta space between consecutive windows
     deltaWin = 23
 elif cOS == 'Windows': 
-    
-    copyShortCut = 'Ctrl'
-    if development:
-        sbFieldSize = [-1, 350]
-    else:
-        sbFieldSize = [-1, 300]
     sbPlot = [-1, 100]
     deltaWin = 20
 elif cOS == 'Linux':
-    
-    copyShortCut = 'Ctrl'
-    if development:
-        sbFieldSize = [-1, 350]
-    else:
-        sbFieldSize = [-1, 300]
     sbPlot = [-1, 100]
     deltaWin = 20
 #endregion ------------------------------------- PLATFORM DEPENDENT PARAMETERS
@@ -201,8 +181,7 @@ oControlTypeProtProf = [
 #     'FileSelector' : (
 #             f"It was not possible to show the file selecting dialog."),
 #     #------------------------------> Pandas
-#     'PDDataType'   : 'Unexpected data type.',
-#     'PDDataTypeCol': 'Unexpected data type in the selected columns.',
+#     
 #     #------------------------------> ResControlExpConfBase
 #     'TCField' : (
 #         "Only a space-separated list of unique non-negative integers can be "

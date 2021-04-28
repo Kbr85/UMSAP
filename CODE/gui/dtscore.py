@@ -22,13 +22,39 @@ import wx
 
 import dat4s_core.gui.wx.window as dtsWindow
 import dat4s_core.gui.wx.widget as dtsWidget
+import dat4s_core.data.method as dtsMethod
 
 import config.config as config
 #endregion ----------------------------------------------------------> Imports
 
 
+#region -------------------------------------------------------------> Methods
+def StrSetMessage(start, end, link='\n\nFurther details:\n'):
+    """Default link for message in Progress Dialog
+
+        Parameters
+        ----------
+        start: str
+            Start of the message
+        end: str
+            End of the message
+        link : str
+            Link between strat and end. Default is '\n\nFurther details:\n'
+
+
+        Returns
+        -------
+        str:
+            The full message
+    """
+    return dtsMethod.StrSetMessage(start, end, link=link)
+#---
+#endregion ----------------------------------------------------------> Methods
+
+
+#region -------------------------------------------------------------> Classes
 class Notification(dtsWindow.NotificationDialog):
-    """This avoids to type the title and the image of the window every time    """
+    """This avoids to type the title and the image of the window every time """
     def __init__(self, mode: str, msg: Optional[str]=None, 
         tException: Optional[Exception]=None, parent: Optional[wx.Window]=None, 
         img: Path=config.fImgIcon, button: int=1,) -> None:
@@ -78,5 +104,9 @@ class ListZebraMaxWidth(dtsWidget.ListZebraMaxWidth):
             copyFullContent=copyFullContent, pasteUnique=pasteUnique, 
             selAll=selAll, style=style)
     #---    
+#---
+#endregion ----------------------------------------------------------> Classes
+
+
     
     

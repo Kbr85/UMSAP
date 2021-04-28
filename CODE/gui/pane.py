@@ -23,12 +23,12 @@ import wx
 # import wx.lib.agw.aui as aui
 # import wx.lib.scrolledpanel as scrolled
 
-# import dat4s_core.data.file as dtsFF
+import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
-# import dat4s_core.exception.exception as dtsException
+import dat4s_core.exception.exception as dtsException
 import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
-# import dat4s_core.data.statistic as dtsStatistic
+import dat4s_core.data.statistic as dtsStatistic
 
 import config.config as config
 import gui.dtscore as dtscore
@@ -233,6 +233,7 @@ class BaseConfPanel(
             dtsValidator.OutputFF(
                 fof = 'file',
                 ext = config.esUMSAP[0],
+                opt = False,
             )
         )
         #------------------------------> This is needed to handle Data File 
@@ -1194,7 +1195,7 @@ class CorrA(BaseConfPanel):
             Dict with the processed user input
             {
                 'iFile'     : 'input file path',
-                'oFolder'   : 'output folder path',
+                'oFile'     : 'output folder path',
                 'NormMethod': 'normalization method',
                 'CorrMethod': 'correlation method',
                 'Column'    : [selected columns as integers],
@@ -1244,30 +1245,35 @@ class CorrA(BaseConfPanel):
         self.cLenLongestL = len(config.lCbNormMethod)
         self.cTitlePD     = config.lnPDCorrA
         self.cGaugePD     = 15
-        #------------------------------> Optional configuration
-        self.cHelpTT = f"Read tutorial at {config.urlCorrAPane}."
+        #------------------------------> Setup attributes in base class 
+        super().__init__(parent)
+        #------------------------------> Needed to Run
+        self.cMainData  = '{}-CorrelationCoefficients-Data.txt'
+        self.cChangeKey = ['iFile', 'oFile']
+        self.dfCC       = None # correlation coefficients
+        #------------------------------> Label
+        self.cNormL     = config.lCbNormMethod
+        self.cCorrL     = config.lCbCorrMethod
+        self.ciListCtrl = config.lStColIFile.format(self.ciFileL)
+        self.coListCtrl = 'Columns to Analyse'
         #------------------------------> Tooltips
         self.cNormTT = config.ttStNorm
         self.cCorrTT = config.ttStCorr
-        #------------------------------> Needed to Run
-        self.cMainData  = 'Data-03-CorrelationCoefficients'
-        self.cChangeKey = ['iFile', 'oFile']
-        self.dfCC       = None # correlation coefficients
-        
-        super().__init__(parent)
+        #------------------------------> Optional configuration
+        self.cHelpTT = f"Read tutorial at {config.urlCorrAPane}."
         #endregion --------------------------------------------> Initial setup
         
         #region -----------------------------------------------------> Widgets
         #------------------------------> Values
         self.normMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
-            label     = config.lCbNormMethod,
+            label     = self.cNormL,
             choices   = config.oNormMethod,
             validator = dtsValidator.IsNotEmpty(),
         )
         self.normMethod.st.SetToolTip(self.cNormTT)
         
         self.corrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
-            label     = config.lCbCorrMethod,
+            label     = self.cCorrL,
             choices   = config.oCorrMethod,
             validator = dtsValidator.IsNotEmpty(),
         )
@@ -1275,11 +1281,11 @@ class CorrA(BaseConfPanel):
         #------------------------------> Columns
         self.stListI = wx.StaticText(
             self.sbColumn, 
-            label = 'Columns in the Data File',
+            label = self.ciListCtrl,
         )
         self.stListO = wx.StaticText(
             self.sbColumn, 
-            label = 'Columns to Analyse',
+            label = self.coListCtrl,
         )
         self.lbI = dtscore.ListZebra(self.sbColumn, 
             colLabel        = config.lLCtrlColNameI,
@@ -1457,40 +1463,48 @@ class CorrA(BaseConfPanel):
         if a:
             pass
         else:
-            self.msgError = self.confMsg['iFile'][b[0]]
+            self.msgError = dtscore.StrSetMessage(
+                config.mFileBad.format(b[1], self.ciFileL),
+                b[2]
+            )
             return False
         #------------------------------> Output Folder
-        msgStep = msgPrefix + self.confOpt['oFileL']
+        msgStep = msgPrefix + self.coFileL
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         a, b = self.oFile.tc.GetValidator().Validate()
         if a:
             pass
         else:
-            self.msgError = self.confMsg['oFile'][b[0]]
+            self.msgError = dtscore.StrSetMessage(
+                config.mFileBad.format(b[1], self.coFileL),
+                b[2]
+            )
             return False
         #------------------------------> Normalization
-        msgStep = msgPrefix + self.confOpt['NormMethodL']
+        msgStep = msgPrefix + self.cNormL
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         if self.normMethod.cb.GetValidator().Validate()[0]:
             pass
         else:
-            self.msgError = self.confMsg['NormMethod']
+            self.msgError = config.mNotEmpty.format(self.cNormL)
             return False
         #------------------------------> Corr Method
-        msgStep = msgPrefix + self.confOpt['CorrMethodL']
+        msgStep = msgPrefix + self.cCorrL
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         if self.corrMethod.cb.GetValidator().Validate()[0]:
             pass
         else:
-            self.msgError = self.confMsg['CorrMethod']
+            self.msgError = config.mNotEmpty.format(self.cCorrL)
             return False
         #------------------------------> ListCtrl
-        msgStep = msgPrefix + self.confOpt['oListL']
+        msgStep = msgPrefix + self.coListCtrl
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         if self.lbO.GetItemCount() > 1:
             pass
         else:
-            self.msgError = self.confMsg['oList']
+            self.msgError = (
+                f"There must be at least two items in {self.coListCtrl}"
+            )
             return False
         #endregion ----------------------------------------> Individual Fields
 
@@ -1501,7 +1515,7 @@ class CorrA(BaseConfPanel):
         """Set variable and prepare data for analysis."""
         
         #region ---------------------------------------------------------> Msg
-        msgPrefix = config.label['PdPrepare']
+        msgPrefix = config.lPdPrepare
         #endregion ------------------------------------------------------> Msg
 
         #region -------------------------------------------------------> Input
@@ -1509,13 +1523,13 @@ class CorrA(BaseConfPanel):
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> As given
         self.d = {
-            self.EqualLenLabel(self.confOpt['iFileL']) : (
+            self.EqualLenLabel(self.ciFileL) : (
                 self.iFile.tc.GetValue()),
-            self.EqualLenLabel(self.confOpt['oFileL']) : (
+            self.EqualLenLabel(self.coFileL) : (
                 self.oFile.tc.GetValue()),
-            self.EqualLenLabel(self.confOpt['NormMethodL']) : (
+            self.EqualLenLabel(self.cNormL) : (
                 self.normMethod.cb.GetValue()),
-            self.EqualLenLabel(self.confOpt['CorrMethodL']) : (
+            self.EqualLenLabel(self.cCorrL) : (
                 self.corrMethod.cb.GetValue()),
             self.EqualLenLabel('Selected Columns') : (
                 [int(x) for x in self.lbO.GetColContent(0)]),
@@ -1545,11 +1559,11 @@ class CorrA(BaseConfPanel):
     def ReadInputFiles(self):
         """Read input file and check data"""
         #region ---------------------------------------------------------> Msg
-        msgPrefix = config.label['PdReadFile']
+        msgPrefix = config.lPdReadFile
         #endregion ------------------------------------------------------> Msg
 
         #region ---------------------------------------------------> Data file
-        msgStep = msgPrefix + f"{self.confOpt['iFileL']}, reading"
+        msgStep = msgPrefix + f"{self.ciFileL}, reading"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         try:
             self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
@@ -1560,13 +1574,16 @@ class CorrA(BaseConfPanel):
         #endregion ------------------------------------------------> Data file
 
         #region ------------------------------------------------------> Column
-        msgStep = msgPrefix + f"{self.confOpt['iFileL']}, data type"
+        msgStep = msgPrefix + f"{self.ciFileL}, data type"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         self.df = self.iFileObj.df.iloc[:,self.do['Column']]
         try:
             self.dfI = self.df.astype('float')
         except Exception as e:
-            self.msgError  = config.msg['PDDataTypeCol']
+            self.msgError  = config.mPDDataTypeCol.format(
+                self.ciFileL,
+                ", ".join(map(str, self.do['Column'])),
+            )
             self.tException = e
             return False
         #endregion ---------------------------------------------------> Column
@@ -1577,7 +1594,7 @@ class CorrA(BaseConfPanel):
     def RunAnalysis(self):
         """Calculate coefficients"""
         #region ---------------------------------------------------------> Msg
-        msgPrefix = config.label['PdRun']
+        msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
 
         #region -----------------------------------------------> Normalization
@@ -1616,13 +1633,13 @@ class CorrA(BaseConfPanel):
         """Write output. Override as needed """
         
         #region ---------------------------------------------------------> Msg
-        msgPrefix = config.label['PdWrite']
+        msgPrefix = config.lPdWrite
         #endregion ------------------------------------------------------> Msg
         
         #region -----------------------------------------------> Create folder
         msgStep = msgPrefix + 'Creating needed folder'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        dataFolder = f"Data-{self.date}-{self.confOpt['Section']}"
+        dataFolder = f"Data-{self.date}-{self.cSection}"
         dataFolder = self.oFolder / dataFolder
         dataFolder.mkdir(parents=True, exist_ok=True)
         #endregion --------------------------------------------> Create folder
@@ -1634,9 +1651,9 @@ class CorrA(BaseConfPanel):
         dtsFF.WriteDFs2CSV(
             dataFolder, 
             {
-                config.file['InitialN']: self.dfI,
-                config.file['NormN']   : self.dfN,
-                self.confOpt['MainData']  : self.dfCC,
+                config.fnInitial.format('01'): self.dfI,
+                config.fnNorm.format('02')   : self.dfN,
+                self.cMainData.format('03')  : self.dfCC,
             },
         )
         #endregion -----------------------------------------------> Data files
@@ -1651,7 +1668,7 @@ class CorrA(BaseConfPanel):
                 'I' : self.d,
                 'CI': dtsMethod.DictVal2Str(
                     self.do, 
-                    self.confOpt['ChangeKey'],
+                    self.cChangeKey,
                     new = True,
                 ),
                 'R' : self.dfCC.to_dict(),
@@ -1687,13 +1704,13 @@ class CorrA(BaseConfPanel):
     def LoadResults(self):
         """Load output file"""
         #region ---------------------------------------------------------> Msg
-        msgPrefix = config.label['PdLoad']
+        msgPrefix = config.lPdLoad
         #endregion ------------------------------------------------------> Msg
 
         #region --------------------------------------------------------> Load
         wx.CallAfter(self.dlg.UpdateStG, msgPrefix)
         
-        wx.CallAfter(method.LoadUMSAPFile, fileP=self.do['oFile'])
+        # wx.CallAfter(method.LoadUMSAPFile, fileP=self.do['oFile'])
         #endregion -----------------------------------------------------> Load
 
         return True
@@ -1705,30 +1722,30 @@ class CorrA(BaseConfPanel):
         if self.msgError is None:
             #--> 
             self.dlg.SuccessMessage(
-                config.label['PdDone'],
-                eTime=(config.label['PdEllapsed'] + self.deltaT),
+                config.lPdDone,
+                eTime=f"{config.lPdEllapsed} {self.deltaT}",
             )
             #--> Show the 
-            self.OnOFileChange('test')
+            self.OnOFileChange('fEvent')
         else:
             self.dlg.ErrorMessage(
-                config.label['PdError'], 
+                config.lPdError, 
                 error      = self.msgError,
                 tException = self.tException
             )
         #endregion ------------------------------------> Dlg progress dialogue
 
         #region -------------------------------------------------------> Reset
-        self.msgError  = None # Error msg to show in self.RunEnd
-        self.d         = {} # Dict with the user input as given
-        self.do        = {} # Dict with the processed user input
-        self.dfI       = None # pd.DataFrame for initial, normalized and
-        self.dfN       = None # correlation coefficients
-        self.dfCC      = None
-        self.date      = None # date for corr file
-        self.oFolder   = None # folder for output
-        self.corrP     = None # path to the corr file that will be created
-        self.deltaT    = None
+        self.msgError   = None # Error msg to show in self.RunEnd
+        self.d          = {} # Dict with the user input as given
+        self.do         = {} # Dict with the processed user input
+        self.dfI        = None # pd.DataFrame for initial, normalized and
+        self.dfN        = None # correlation coefficients
+        self.dfCC       = None
+        self.date       = None # date for corr file
+        self.oFolder    = None # folder for output
+        self.corrP      = None # path to the corr file that will be created
+        self.deltaT     = None
         self.tException = None
         #endregion ----------------------------------------------------> Reset
     #---
