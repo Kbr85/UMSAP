@@ -40,10 +40,6 @@ name = { # Unique names to identify windows/objects through the app
     'ResControlExpPaneProtProf': 'ResControlExpPaneProtProf',
     
 }
-
-
-
-
 #endregion ------------------------------------------------------------> Names
 
 
@@ -54,7 +50,6 @@ pResources = res            # Resources folder
 pImages    = res / 'IMAGES' # Images folder
 pConfig    = res / 'CONFIG' # Configuration folder
 pUserHome  = Path.home()    # User home folder
-
 #------------------------------> Location & names of important files
 fConfig      = pUserHome / '.umsap_config.json' # User config file
 fConfigDef   = pConfig / 'config_def.json'      # Default config file
@@ -69,69 +64,10 @@ fNameNorm    = 'Data-02-Normalization'
 
 
 #region --------------------------------------------------------------> Labels
-#------------------------------> Titles 
-
-
-
-
-
 lBtnTypeRes  = 'Type Values'
-#------------------------------> wx.StaticText
-
-
-
-
-
-
-
-
-# label = { # Label for widgets
-#     #------------------------------> wx.StaticText
-#     'StScoreValL '   : 'Score Value',
-#     'StDetectedProtL': 'Detected Proteins',
-#     'StScoreColL'    : 'Score',
-#     'StColExtractL'  : 'Columns to Extract',
-#     'StResultL'      : 'Results - Control experiments',
-
-#     #------------------------------> Titles for Panes (TP)
-#     'TP_ListPane' : 'Data File Content',
-# }
 #endregion -----------------------------------------------------------> Labels
 
-
-
-
-
-
-
-#region -------------------------------------------------------------> Options
-oYesNo      = ['', 'Yes', 'No']
-oCorrectP   = [
-    '',
-    'None',
-    'Benjamini - Hochberg',  
-    'Benjamini - Yekutieli',
-    'Bonferroni',            
-    'Holm',                  
-    'Holm - Sidak',          
-    'Hommel',        
-    'Sidak',                 
-    'Simes-Hochberg',
-]
-oControlTypeProtProf = [
-    '',
-    'One Control', 
-    'One Control per Column', 
-    'One Control per Row',
-],
-#endregion ----------------------------------------------------------> Options
-
-
 #region ---------------------------------------------------------------> Sizes
-
-
-
-
 # size = { # Base size for widgets
 #     
 #     #------------------------------> wx.TextCtrl
@@ -171,7 +107,7 @@ oControlTypeProtProf = [
 #     # 'SeqAlign'  : f"{url_tutorial}/sequence-alignment",
 #     # 'LimProt'   : f"{url_tutorial}/limited-proteolysis",
 #     # 'SeqH'      : f"{url_tutorial}/sequence-highlight",
-#     'ProtProfPane'  : f"{url_tutorial}/proteome-profiling",
+#     
 # }
 #endregion --------------------------------------------------------------- URL
 

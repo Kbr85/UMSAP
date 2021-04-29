@@ -52,7 +52,7 @@ if cOS == 'Darwin':
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
-    sbPlot = [-1, 100]
+    sbPlot = [-1, 115]
     #------------------------------> Key for shortcuts
     copyShortCut = 'Cmd'
     #------------------------------> Delta space between consecutive windows
@@ -68,7 +68,7 @@ elif cOS == 'Windows':
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
-    sbPlot = [-1, 100]
+    sbPlot = [-1, 115]
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -84,7 +84,7 @@ elif cOS == 'Linux':
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
-    sbPlot = [-1, 100]
+    sbPlot = [-1, 115]
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -160,16 +160,18 @@ fnNorm    = "{}-Normalized-Data.txt"
 
 #region ------------------------------------------------------------------ URL
 #------------------------------> www.umsap.nl
-urlHome      = 'https://www.umsap.nl'
-urlUpdate    = f"{urlHome}/page/release-notes"
-urlTutorial  = f"{urlHome}/tutorial/2-1-0"
-urlCorrAPane = f"{urlTutorial}/correlation-analysis"
+urlHome         = 'https://www.umsap.nl'
+urlUpdate       = f"{urlHome}/page/release-notes"
+urlTutorial     = f"{urlHome}/tutorial/2-1-0"
+urlCorrAPane    = f"{urlTutorial}/correlation-analysis"
+urlProtProfPane = f"{urlTutorial}/proteome-profiling"
 
 #endregion --------------------------------------------------------------- URL
 
 #region --------------------------------------------------------------> Labels
 #------------------------------> Names
 lnPaneConf = 'Configuration Options'
+lnListPane = 'Data File Content'
 lnPDCorrA  = 'Calculating Correlation Coefficients'
 #------------------------------> wx.Button
 lBtnRun      = 'Start Analysis'
@@ -182,7 +184,12 @@ lSbFile   = 'Files && Folders'
 lSbValue  = 'User-defined values'
 lSbColumn = 'Column numbers'
 #------------------------------> wx.Statictext
-lStColIFile = "Columns in the {}"
+lStColIFile      = "Columns in the {}"
+lStScoreValL     = 'Score Value'
+lStDetectedProtL = 'Detected Proteins'
+lStScoreColL     = 'Score'
+lStColExtractL   = 'Columns to Extract'
+lStResultL       = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend = 'Append new data to selected output file'
 lCbNormMethod = 'Normalization Method'
@@ -208,12 +215,21 @@ hTcOutFile  = f"Path tot the {lBtnOutFile}"
 #------------------------------> wx.Button
 ttBtnDataFile = f"Select the {lBtnDataFile}."
 ttBtnOutFile  = f"Select the {lBtnOutFile}."
-ttBtnHelp     = f"Read online tutorial at {urlHome}."
+ttBtnHelpDef  = f"Read online tutorial at {urlHome}."
+ttBtnHelp     = "Read tutorial at {}."
 ttBtnClearAll = f"Clear all user input."
 ttBtnRun      = f"Start the analysis."
 #------------------------------> wx.StaticText
 ttStNorm = f"Select the {lCbNormMethod}."
 ttStCorr = f"Select the {lCbCorrMethod}."
+ttStScoreVal = f"Set the minimum acceptable Score value."
+ttStPCorrection = "Select the p correction method."
+ttStMedianCorr = "Select whether to apply a median correction."
+ttStDetectedProtL = f"Set the column number containing the detected proteins."
+ttStScore = f"Set the column number containing the Score values."
+ttStColExtract = "Set the column numbers to extract from {}."
+ttStGenName = "Set the column number containing the gene names."
+ttStExcludeProt = "Set the column number containing the protein to exclude."
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -230,6 +246,25 @@ ttLCtrlPasteMod = (
 #region -------------------------------------------------------------> Options
 oNormMethod = ['', 'None', 'Log2']
 oCorrMethod = ['', 'Pearson', 'Kendall', 'Spearman']
+oYesNo      = ['', 'Yes', 'No']
+oCorrectP   = [
+    '',
+    'None',
+    'Benjamini - Hochberg',  
+    'Benjamini - Yekutieli',
+    'Bonferroni',            
+    'Holm',                  
+    'Holm - Sidak',          
+    'Hommel',        
+    'Sidak',                 
+    'Simes-Hochberg',
+]
+oControlTypeProtProf = [
+    '',
+    'One Control', 
+    'One Control per Column', 
+    'One Control per Row',
+]
 #endregion ----------------------------------------------------------> Options
 
 #region ------------------------------------------------------------> Messages
@@ -253,6 +288,8 @@ sWinPlot = (560, 560)
 sSbarFieldSizeI = sbFieldSize
 #------------------------------> wx.ListCtrl
 sLCtrlColI = [50, 150] # e.g when Col Labels are #, Name
+#------------------------------> wx.TextCtrl
+sTc = (50, 22)
 #endregion ------------------------------------------------------------> Sizes
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
 
