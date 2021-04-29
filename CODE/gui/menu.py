@@ -146,7 +146,11 @@ class PlotMenu(wx.Menu, MenuMethods):
         ----------
         menuDate : list of str
             List of available dates for the menu
-    
+            
+        Attributes
+        ----------
+        plotDate : dict
+            Asscociate the menu item id with the date in the umsap file
     """
     #region -----------------------------------------------------> Class setup
     
@@ -157,6 +161,7 @@ class PlotMenu(wx.Menu, MenuMethods):
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
+        self.plotDate = {}
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
@@ -240,7 +245,7 @@ class Module(wx.Menu, MenuMethods):
 class Utility(wx.Menu, MenuMethods):
     """Utilites menu
     
-        Parameters
+        Attributes
         ----------
         name : str
             Unique name of the menu

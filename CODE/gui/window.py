@@ -631,6 +631,11 @@ class CorrAPlot(BaseWindowPlot):
         self.plot.axes.grid(True)		
         #endregion -----------------------------------------------------> Grid
         
+        #region --------------------------------------------------> Axis range
+        self.plot.axes.set_xlim(0, self.data[tDate]['NumCol'])
+        self.plot.axes.set_ylim(0, self.data[tDate]['NumCol']) 
+        #endregion -----------------------------------------------> Axis range
+        
         #region ---------------------------------------------------> Variables
         xlabel    = []
         xticksloc = []

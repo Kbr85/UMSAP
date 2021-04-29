@@ -106,6 +106,8 @@ winUMSAP = {}
 name = { # Unique names for menus, windows, tabs, panes, files, etc
     #------------------------------> Main windows
     'MainW'       : 'MainW',
+    'UMSAPControl': 'UMSAPControl',
+    'CorrAPlot'   : 'CorrAPlot',
     #------------------------------> Dialogs
     'CheckUpdateResDialog': 'CheckUpdateResDialog',
     #------------------------------> Tab for notebook windows
@@ -116,6 +118,7 @@ name = { # Unique names for menus, windows, tabs, panes, files, etc
     #------------------------------> Menu
     'ModuleMenu' : 'ModuleMenu',
     'UtilityMenu': 'UtilityMenu',
+    'ToolMenu'   : 'ToolMenu',
     #------------------------------> Files
     'UMSAPFile' : 'UMSAPFile',
 }

@@ -77,6 +77,8 @@ class UMSAPFile():
                 },
             },
         }
+        Each Section.Date can have additional information. See the corresponding
+        ConfigureDataSection
 
         The general structure of confTree is:
         {

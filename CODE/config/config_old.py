@@ -26,30 +26,8 @@ from pathlib import Path
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
 
 
-#region ---------------------------------------- PLATFORM DEPENDENT PARAMETERS
-# There are some that must be defined in other sections
-if cOS == 'Darwin':
-    
-    
-elif cOS == 'Windows': 
-    sbPlot = [-1, 100]
-    deltaWin = 20
-elif cOS == 'Linux':
-    sbPlot = [-1, 100]
-    deltaWin = 20
-#endregion ------------------------------------- PLATFORM DEPENDENT PARAMETERS
-
 #region ---------------------------------------------------------------> Names
 name = { # Unique names to identify windows/objects through the app
-    #------------------------------> Menu
-    
-    'ToolMenu'   : 'ToolMenu',
-    #------------------------------> Main windows
-    
-    'UMSAPControl': 'UMSAPControl',
-    'CorrAPlot'   : 'CorrAPlot',
-    #------------------------------> Dialogs
-    
     'ResControlExp'       : 'ResControlExp',
     #------------------------------> Tab for notebook windows
     
