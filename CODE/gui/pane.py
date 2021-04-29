@@ -32,7 +32,7 @@ import dat4s_core.data.statistic as dtsStatistic
 
 import config.config as config
 import gui.dtscore as dtscore
-# import gui.method as method
+import gui.method as method
 # import gui.widget as widget
 
 if config.typeCheck:
@@ -1710,7 +1710,7 @@ class CorrA(BaseConfPanel):
         #region --------------------------------------------------------> Load
         wx.CallAfter(self.dlg.UpdateStG, msgPrefix)
         
-        # wx.CallAfter(method.LoadUMSAPFile, fileP=self.do['oFile'])
+        wx.CallAfter(method.LoadUMSAPFile, fileP=self.do['oFile'])
         #endregion -----------------------------------------------------> Load
 
         return True

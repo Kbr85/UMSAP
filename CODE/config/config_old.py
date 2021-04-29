@@ -29,9 +29,8 @@ from pathlib import Path
 #region ---------------------------------------- PLATFORM DEPENDENT PARAMETERS
 # There are some that must be defined in other sections
 if cOS == 'Darwin':
-    sbPlot = [-1, 100]
-    #------------------------------> Delta space between consecutive windows
-    deltaWin = 23
+    
+    
 elif cOS == 'Windows': 
     sbPlot = [-1, 100]
     deltaWin = 20
@@ -39,15 +38,6 @@ elif cOS == 'Linux':
     sbPlot = [-1, 100]
     deltaWin = 20
 #endregion ------------------------------------- PLATFORM DEPENDENT PARAMETERS
-
-
-#region -------------------------------------------------------------> Windows
-
-#------------------------------> Track open umsap files
-# Keys: UMSAP File path - Values: Reference to control window
-winUMSAP = {}
-#endregion ----------------------------------------------------------> Windows
-
 
 #region ---------------------------------------------------------------> Names
 name = { # Unique names to identify windows/objects through the app
@@ -70,8 +60,7 @@ name = { # Unique names to identify windows/objects through the app
     'ProtProfPane'             : 'ProtProfPane',
     'ResControlExpPane'        : 'ResControlExpPane',
     'ResControlExpPaneProtProf': 'ResControlExpPaneProtProf',
-    #------------------------------> Files
-    'UMSAPFile' : 'UMSAPFile',
+    
 }
 
 
@@ -166,8 +155,7 @@ oControlTypeProtProf = [
 
 
 # size = { # Base size for widgets
-#     #------------------------------> Window
-#     'Plot' : (560, 560),
+#     
 #     #------------------------------> wx.TextCtrl
 #     'TwoInRow' : (50, 22), # Two wx.TextCtrl in the same row
 
@@ -177,11 +165,6 @@ oControlTypeProtProf = [
 
 # #region ------------------------------------------------------------> Messages
 # msg = { # Messages used by more than one object
-#     #------------------------------> Files
-#     'FileSelector' : (
-#             f"It was not possible to show the file selecting dialog."),
-#     #------------------------------> Pandas
-#     
 #     #------------------------------> ResControlExpConfBase
 #     'TCField' : (
 #         "Only a space-separated list of unique non-negative integers can be "

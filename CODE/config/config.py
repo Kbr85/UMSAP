@@ -52,8 +52,11 @@ if cOS == 'Darwin':
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
+    sbPlot = [-1, 100]
     #------------------------------> Key for shortcuts
     copyShortCut = 'Cmd'
+    #------------------------------> Delta space between consecutive windows
+    deltaWin = 23
 elif cOS == 'Windows':
     #------------------------------> Root & Resources Folder
     root = cwd.parent
@@ -65,8 +68,11 @@ elif cOS == 'Windows':
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
+    sbPlot = [-1, 100]
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
+    #------------------------------> Delta space between consecutive windows
+    deltaWin = 20
 elif cOS == 'Linux':
     #------------------------------> Root & Resources Folder
     root = cwd.parent
@@ -78,8 +84,11 @@ elif cOS == 'Linux':
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
+    sbPlot = [-1, 100]
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
+    #------------------------------> Delta space between consecutive windows
+    deltaWin = 20
 #endregion ------------------------------------- Platform Dependent Parameters
 
 #region -------------------------------------------------------------> Windows
@@ -88,6 +97,9 @@ winMain  = None
 #------------------------------> Number of windows for screen positioning
 # Keys: Windows ID - Values: Total number of opened windows, except conf win
 winNumber = {}
+#------------------------------> Track open umsap files
+# Keys: UMSAP File path - Values: Reference to control window
+winUMSAP = {}
 #endregion ----------------------------------------------------------> Windows
 
 #region ---------------------------------------------------------------> Names
@@ -105,7 +117,7 @@ name = { # Unique names for menus, windows, tabs, panes, files, etc
     'ModuleMenu' : 'ModuleMenu',
     'UtilityMenu': 'UtilityMenu',
     #------------------------------> Files
-    
+    'UMSAPFile' : 'UMSAPFile',
 }
 
 nMLimProt  = 'Limited Proteolysis'
@@ -219,6 +231,7 @@ oCorrMethod = ['', 'Pearson', 'Kendall', 'Spearman']
 
 #region ------------------------------------------------------------> Messages
 #------------------------------> Files 
+mFileSelector = f"It was not possible to show the file selecting dialog."
 mFileBad = "File: '{}'\ncannot be used as {}."
 #------------------------------> Not empty
 mNotEmpty = "Please select a value for {}"
@@ -231,6 +244,8 @@ mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
 sWinRegular = (900, 620)
+#------------------------------> Plot Window
+sWinPlot = (560, 560)
 #------------------------------> wx.StatusBar Fields
 sSbarFieldSizeI = sbFieldSize
 #------------------------------> wx.ListCtrl

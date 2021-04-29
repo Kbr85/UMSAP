@@ -16,26 +16,26 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
-# from pathlib import Path
+from pathlib import Path
 from typing import Optional, Literal
 
 import requests
 import wx
 import wx.adv as adv
 import wx.lib.agw.aui as aui
-# import wx.lib.agw.customtreectrl as wxCT
+import wx.lib.agw.customtreectrl as wxCT
 
 import dat4s_core.data.method as dtsMethod
-# import dat4s_core.gui.wx.widget as dtsWidget
-# import dat4s_core.gui.wx.window as dtsWindow
-# import dat4s_core.generator.generator as dtsGenerator
+import dat4s_core.gui.wx.widget as dtsWidget
+import dat4s_core.gui.wx.window as dtsWindow
+import dat4s_core.generator.generator as dtsGenerator
 
 import config.config as config
-# # from data.file import UMSAPFile
+from data.file import UMSAPFile
 import gui.menu as menu
 import gui.tab as tab
 import gui.dtscore as dtscore
-# import gui.method as method
+import gui.method as method
 # import gui.pane as pane
 #endregion ----------------------------------------------------------> Imports
 
@@ -143,7 +143,7 @@ class BaseWindow(wx.Frame):
         )
 
         super().__init__(
-            parent = parent,
+            parent,
             size   = self.cSizeWindow,
             title  = self.cTitle,
             name   = self.name,
@@ -196,94 +196,90 @@ class BaseWindow(wx.Frame):
 #---
 
 
-# # class BaseWindowPlot(BaseWindow):
-# #     """Base class for windows showing only plot with common methods
+class BaseWindowPlot(BaseWindow):
+    """Base class for windows showing only plot with common methods
 
-# #         Parameters
-# #         ----------
-# #         parent : wx.Window or None
-# #             Parent of the window
-# #         menuDate : list of str or None
-# #             Date entries for menu of plotting windows e.g. 20210220-104527
+        Parameters
+        ----------
+        parent : wx.Window or None
+            Parent of the window
+        menuDate : list of str or None
+            Date entries for menu of plotting windows e.g. 20210220-104527
             
-# #         Notes
-# #         -----
-# #         - Method OnSavePlot assumes that this window has an attribute
-# #         plot (dtsWidget.MatPlotPanel). Override as needed
-# #         - Method OnClose assumes the parent is an instance of UMSAPControl. 
-# #         Override as needed.
-# #     """
-# #     #region -----------------------------------------------------> Class setup
-# #     cSizeWindow = config.size['Plot']
-# #     #endregion --------------------------------------------------> Class setup
+        Notes
+        -----
+        - Method OnSavePlot assumes that this window has an attribute
+        plot (dtsWidget.MatPlotPanel). Override as needed
+        - Method OnClose assumes the parent is an instance of UMSAPControl. 
+        Override as needed.
+    """
+    #region -----------------------------------------------------> Class setup
+    cSizeWindow = config.sWinPlot
+    #endregion --------------------------------------------------> Class setup
 
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self, parent: Optional[wx.Window]=None, 
-# #         menuDate: Optional[list[str]]=None) -> None:
-# #         """ """
-# #         #region -----------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, 
+        menuDate: Optional[list[str]]=None
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
 
-# #         super().__init__(parent=parent, menuDate=menuDate)
-# #         #endregion --------------------------------------------> Initial Setup
+        super().__init__(parent=parent, menuDate=menuDate)
+        #endregion --------------------------------------------> Initial Setup
 
-# #         #region -----------------------------------------------------> Widgets
-# #         self.statusbar.SetFieldsCount(2, config.sbPlot)
-# #         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.statusbar.SetFieldsCount(2, config.sbPlot)
+        #endregion --------------------------------------------------> Widgets
         
-# #         #region --------------------------------------------------------> Bind
-# #         self.Bind(wx.EVT_CLOSE, self.OnClose)
-# #         #endregion -----------------------------------------------------> Bind
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-# #     #region ---------------------------------------------------> Class methods
-# #     def OnSavePlot(self) -> bool:
-# #         """Save an image of the plot. Override as needed. """
-# #         try:
-# #             #------------------------------> 
-# #             self.plot.SaveImage(
-# #                 ext    = config.extLong['MatPlotSaveI'],
-# #                 parent = self,
-# #                 )
-# #             #------------------------------> 
-# #             return True
-# #         except Exception as e:
-# #             #------------------------------> 
-# #             dtscore.Notification(
-# #                 'errorF',
-# #                 msg        = str(e),
-# #                 tException = e,
-# #                 parent     = self,
-# #             )
-# #             #------------------------------> 
-# #             return False
-# #     #---
+    #region ---------------------------------------------------> Class methods
+    def OnSavePlot(self) -> bool:
+        """Save an image of the plot. Override as needed. """
+        try:
+            #------------------------------> 
+            self.plot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
+            #------------------------------> 
+            return True
+        except Exception as e:
+            #------------------------------> 
+            dtscore.Notification(
+                'errorF', msg=str(e), tException=e, parent=self,
+            )
+            #------------------------------> 
+            return False
+    #---
 
-# #     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
-# #         """Close window and uncheck section in UMSAPFile window. 
-# #         Override as needed.
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
+        """Close window and uncheck section in UMSAPFile window. 
+        Override as needed.
     
-# #             Parameters
-# #             ----------
-# #             event: wx.CloseEvent
-# #                 Information about the event
-# #         """
-# #         #region -----------------------------------------------> Update parent
-# #         self.parent.UnCheckSection(self.cSection)		
-# #         #endregion --------------------------------------------> Update parent
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+        """
+        #region -----------------------------------------------> Update parent
+        self.parent.UnCheckSection(self.cSection)		
+        #endregion --------------------------------------------> Update parent
         
-# #         #region ------------------------------------> Reduce number of windows
-# #         config.winNumber[self.name] -= 1
-# #         #endregion ---------------------------------> Reduce number of windows
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.name] -= 1
+        #endregion ---------------------------------> Reduce number of windows
         
-# #         #region -----------------------------------------------------> Destroy
-# #         self.Destroy()
-# #         #endregion --------------------------------------------------> Destroy
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
         
-# #         return True
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion -----------------------------------------------------> Base Classes
 
 
@@ -478,536 +474,536 @@ class MainWindow(BaseWindow):
 #---
 
 
-# # class CorrAPlot(BaseWindowPlot):
-# #     """Creates the window showing the results of a correlation analysis
+class CorrAPlot(BaseWindowPlot):
+    """Creates the window showing the results of a correlation analysis
 
-# #         Parameters
-# #         ----------
-# #         obj : data.fileUMSAPFile
-# #             Reference to the UMSAP file object created in UMSAPControl
-# #         parent : wx Widget or None
-# #             Parent of the window
+        Parameters
+        ----------
+        obj : data.fileUMSAPFile
+            Reference to the UMSAP file object created in UMSAPControl
+        parent : wx Widget or None
+            Parent of the window
 
-# #         Attributes
-# #         ----------
-# #         name : str
-# #             Unique name of the window
-# #         parent : wx Widget or None
-# #             Parent of the window
-# #         obj : parent.obj
-# #             Pointer to the UMSAPFile object in parent. Instead of modifying this
-# #             object here, modify the configure step or add a Get method
-# #         data : parent.obj.confData[Section]
-# #             Data for the Correlation Analysis section
-# #         date : parent.obj.confData[Section].keys()
-# #             List of dates availables for plotting
-# #         cmap : Matplotlib cmap
-# #             CMAP to use in the plot
-# #         plot : dtsWidget.MatPlotPanel
-# #             Main plot of the window
-# #     """
-# #     #region -----------------------------------------------------> Class setup
-# #     name = 'CorrAPlot'
+        Attributes
+        ----------
+        name : str
+            Unique name of the window
+        parent : wx Widget or None
+            Parent of the window
+        obj : parent.obj
+            Pointer to the UMSAPFile object in parent. Instead of modifying this
+            object here, modify the configure step or add a Get method
+        data : parent.obj.confData[Section]
+            Data for the Correlation Analysis section
+        date : parent.obj.confData[Section].keys()
+            List of dates availables for plotting
+        cmap : Matplotlib cmap
+            CMAP to use in the plot
+        plot : dtsWidget.MatPlotPanel
+            Main plot of the window
+    """
+    #region -----------------------------------------------------> Class setup
+    name = 'CorrAPlot'
     
-# #     cSection = config.nameUtilities['CorrA']
+    cSection = config.nUCorrA
 
-# #     msgExportFailed = (
-# #         f"It was not possible to write the data to the selected file"
-# #     )
-# #     #endregion --------------------------------------------------> Class setup
+    msgExportFailed = (
+        f"It was not possible to write the data to the selected file"
+    )
+    #endregion --------------------------------------------------> Class setup
 
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self, parent: 'UMSAPControl') -> None:
-# #         """ """
-# #         #region -------------------------------------------------> Check Input
-# #         #endregion ----------------------------------------------> Check Input
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: 'UMSAPControl') -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        #endregion ----------------------------------------------> Check Input
 
-# #         #region -----------------------------------------------> Initial Setup
-# #         self.cTitle  = f"{parent.cTitle} - {self.cSection}"
-# #         self.obj     = parent.obj
-# #         self.data    = self.obj.confData[self.cSection]
-# #         self.date    = [x for x in self.data.keys()]
-# #         self.cmap    = dtsMethod.MatplotLibCmap(
-# #             N  = config.color[self.cSection]['CMAP']['N'],
-# #             c1 = config.color[self.cSection]['CMAP']['c1'],
-# #             c2 = config.color[self.cSection]['CMAP']['c2'],
-# #             c3 = config.color[self.cSection]['CMAP']['c3'],
-# #         )
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle  = f"{parent.cTitle} - {self.cSection}"
+        self.obj     = parent.obj
+        self.data    = self.obj.confData[self.cSection]
+        self.date    = [x for x in self.data.keys()]
+        self.cmap    = dtsMethod.MatplotLibCmap(
+            N  = config.color[self.cSection]['CMAP']['N'],
+            c1 = config.color[self.cSection]['CMAP']['c1'],
+            c2 = config.color[self.cSection]['CMAP']['c2'],
+            c3 = config.color[self.cSection]['CMAP']['c3'],
+        )
 
-# #         super().__init__(parent, self.date)
-# #         #endregion --------------------------------------------> Initial Setup
+        super().__init__(parent, self.date)
+        #endregion --------------------------------------------> Initial Setup
 
-# #         #region -----------------------------------------------------> Widgets
-# #         self.plot = dtsWidget.MatPlotPanel(
-# #             self, 
-# #             statusbar    = self.statusbar,
-# #             statusMethod = self.UpdateStatusBar,
-# #             dpi          = config.general['DPI'],
-# #         )
-# #         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.plot = dtsWidget.MatPlotPanel(
+            self, 
+            statusbar    = self.statusbar,
+            statusMethod = self.UpdateStatusBar,
+            dpi          = config.general['DPI'],
+        )
+        #endregion --------------------------------------------------> Widgets
 
-# #         #region ------------------------------------------------------> Sizers
-# #         self.Sizer.Add(self.plot, 1, wx.EXPAND|wx.ALL, 5)
+        #region ------------------------------------------------------> Sizers
+        self.Sizer.Add(self.plot, 1, wx.EXPAND|wx.ALL, 5)
 
-# #         self.SetSizer(self.Sizer)
-# #         #endregion ---------------------------------------------------> Sizers
+        self.SetSizer(self.Sizer)
+        #endregion ---------------------------------------------------> Sizers
 
-# #         #region --------------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
         
-# #         #endregion -----------------------------------------------------> Bind
+        #endregion -----------------------------------------------------> Bind
 
-# #         #region ----------------------------------------------------> Position
-# #         self.Draw(self.date[0])
-# #         self.WinPos()
-# #         self.Show()
-# #         #endregion -------------------------------------------------> Position
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
+        #region ----------------------------------------------------> Position
+        self.Draw(self.date[0])
+        self.WinPos()
+        self.Show()
+        #endregion -------------------------------------------------> Position
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-# #     #region ---------------------------------------------------> Class methods
-# #     def WinPos(self) -> Literal[True]:
-# #         """Set the position on the screen and adjust the total number of
-# #             shown windows
-# #         """
-# #         #region ---------------------------------------------------> Variables
-# #         info = method.GetDisplayInfo(self)
-# #         #endregion ------------------------------------------------> Variables
+    #region ---------------------------------------------------> Class methods
+    def WinPos(self) -> Literal[True]:
+        """Set the position on the screen and adjust the total number of
+            shown windows
+        """
+        #region ---------------------------------------------------> Variables
+        info = method.GetDisplayInfo(self)
+        #endregion ------------------------------------------------> Variables
                 
-# #         #region ------------------------------------------------> Set Position
-# #         self.SetPosition(pt=(
-# #             info['D']['w'] - (info['W']['N']*config.deltaWin + info['W']['w']),
-# #             info['D']['yo'] + info['W']['N']*config.deltaWin,
-# #         ))
-# #         #endregion ---------------------------------------------> Set Position
+        #region ------------------------------------------------> Set Position
+        self.SetPosition(pt=(
+            info['D']['w'] - (info['W']['N']*config.deltaWin + info['W']['w']),
+            info['D']['yo'] + info['W']['N']*config.deltaWin,
+        ))
+        #endregion ---------------------------------------------> Set Position
 
-# #         #region ----------------------------------------------------> Update N
-# #         config.winNumber[self.name] = info['W']['N'] + 1
-# #         #endregion -------------------------------------------------> Update N
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.name] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
 
-# #         return True
-# #     #---
+        return True
+    #---
 
-# #     def Draw(self, tDate: str) -> Literal[True]:
-# #         """ Plot data from a given date.
+    def Draw(self, tDate: str) -> Literal[True]:
+        """ Plot data from a given date.
         
-# #             Paramenters
-# #             -----------
-# #             tDate : str
-# #                 A date in the section e.g. 20210129-094504
-# #         """
-# #         #region --------------------------------------------------------> Plot
-# #         self.plot.axes.pcolormesh(
-# #             self.data[tDate]['DF'], 
-# #             cmap        = self.cmap,
-# #             vmin        = -1,
-# #             vmax        = 1,
-# #             antialiased = True,
-# #             edgecolors  = 'k',
-# #             lw          = 0.005,
-# #         )		
-# #         #endregion -----------------------------------------------------> Plot
+            Paramenters
+            -----------
+            tDate : str
+                A date in the section e.g. 20210129-094504
+        """
+        #region --------------------------------------------------------> Plot
+        self.plot.axes.pcolormesh(
+            self.data[tDate]['DF'], 
+            cmap        = self.cmap,
+            vmin        = -1,
+            vmax        = 1,
+            antialiased = True,
+            edgecolors  = 'k',
+            lw          = 0.005,
+        )		
+        #endregion -----------------------------------------------------> Plot
         
-# #         #region -------------------------------------------------> Axis & Plot
-# #         #------------------------------> Axis properties
-# #         self.SetAxis(tDate)
-# #         #------------------------------> Zoom Out level
-# #         self.plot.ZoomResetSetValues()
-# #         #------------------------------> Draw
-# #         self.plot.canvas.draw()
-# #         #endregion ----------------------------------------------> Axis & Plot
+        #region -------------------------------------------------> Axis & Plot
+        #------------------------------> Axis properties
+        self.SetAxis(tDate)
+        #------------------------------> Zoom Out level
+        self.plot.ZoomResetSetValues()
+        #------------------------------> Draw
+        self.plot.canvas.draw()
+        #endregion ----------------------------------------------> Axis & Plot
 
-# #         #region ---------------------------------------------------> Statusbar
-# #         self.statusbar.SetStatusText(tDate, 1)
-# #         #endregion ------------------------------------------------> Statusbar
+        #region ---------------------------------------------------> Statusbar
+        self.statusbar.SetStatusText(tDate, 1)
+        #endregion ------------------------------------------------> Statusbar
         
-# #         return True
-# #     #---
+        return True
+    #---
 
-# #     def SetAxis(self, tDate: str) -> Literal[True]:
-# #         """ General details of the plot area 
+    def SetAxis(self, tDate: str) -> Literal[True]:
+        """ General details of the plot area 
         
-# #             Parameters
-# #             ----------
-# #             tDate : str
-# #                 A date in the section e.g. 20210129-094504
-# #         """
-# #         #region --------------------------------------------------------> Grid
-# #         self.plot.axes.grid(True)		
-# #         #endregion -----------------------------------------------------> Grid
+            Parameters
+            ----------
+            tDate : str
+                A date in the section e.g. 20210129-094504
+        """
+        #region --------------------------------------------------------> Grid
+        self.plot.axes.grid(True)		
+        #endregion -----------------------------------------------------> Grid
         
-# #         #region ---------------------------------------------------> Variables
-# #         xlabel    = []
-# #         xticksloc = []
+        #region ---------------------------------------------------> Variables
+        xlabel    = []
+        xticksloc = []
         
-# #         if (self.data[tDate]['NumCol']) <= 30:
-# #             step = 1
-# #         elif self.data[tDate]['NumCol'] > 30 and self.data[tDate]['NumCol'] <= 60:
-# #             step = 2
-# #         else:
-# #             step = 3		
-# #         #endregion ------------------------------------------------> Variables
+        if (self.data[tDate]['NumCol']) <= 30:
+            step = 1
+        elif self.data[tDate]['NumCol'] > 30 and self.data[tDate]['NumCol'] <= 60:
+            step = 2
+        else:
+            step = 3		
+        #endregion ------------------------------------------------> Variables
         
-# #         #region ---------------------------------------------------> Set ticks
-# #         for i in range(0, self.data[tDate]['NumCol'], step):
-# #             xticksloc.append(i + 0.5)		
-# #             xlabel.append(self.data[tDate]['DF'].columns[i])
+        #region ---------------------------------------------------> Set ticks
+        for i in range(0, self.data[tDate]['NumCol'], step):
+            xticksloc.append(i + 0.5)		
+            xlabel.append(self.data[tDate]['DF'].columns[i])
 
-# #         self.plot.axes.set_xticks(xticksloc)
-# #         self.plot.axes.set_xticklabels(xlabel, rotation=90)
+        self.plot.axes.set_xticks(xticksloc)
+        self.plot.axes.set_xticklabels(xlabel, rotation=90)
 
-# #         self.plot.axes.set_yticks(xticksloc)
-# #         self.plot.axes.set_yticklabels(xlabel)
-# #         #endregion ------------------------------------------------> Set ticks
+        self.plot.axes.set_yticks(xticksloc)
+        self.plot.axes.set_yticklabels(xlabel)
+        #endregion ------------------------------------------------> Set ticks
         
-# #         #region -----------------------------------------------> Adjust figure
-# #         self.plot.figure.subplots_adjust(bottom=0.13)
-# #         #endregion --------------------------------------------> Adjust figure
+        #region -----------------------------------------------> Adjust figure
+        self.plot.figure.subplots_adjust(bottom=0.13)
+        #endregion --------------------------------------------> Adjust figure
 
-# #         return True
-# #     #---
+        return True
+    #---
 
-# #     def UpdateStatusBar(self, event) -> Literal[True]:
-# #         """Update the statusbar info
+    def UpdateStatusBar(self, event) -> Literal[True]:
+        """Update the statusbar info
     
-# #             Parameters
-# #             ----------
-# #             event: matplotlib event
-# #                 Information about the event
-# #         """
-# #         #region ---------------------------------------------------> Variables
-# #         tDate = self.statusbar.GetStatusText(1)
-# #         #endregion ------------------------------------------------> Variables
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
+        """
+        #region ---------------------------------------------------> Variables
+        tDate = self.statusbar.GetStatusText(1)
+        #endregion ------------------------------------------------> Variables
         
-# #         #region ----------------------------------------------> Statusbar Text
-# #         if event.inaxes:
-# #             try:
-# #                 #------------------------------> Set variables
-# #                 x, y = event.xdata, event.ydata
-# #                 xf = int(x)
-# #                 xs = self.data[tDate]['DF'].columns[xf]
-# #                 yf = int(y)
-# #                 ys = self.data[tDate]['DF'].columns[yf]
-# #                 zf = '{:.2f}'.format(self.data[tDate]['DF'].iat[yf,xf])
-# #                 #------------------------------> Print
-# #                 self.statusbar.SetStatusText(
-# #                     f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
-# #                 )
-# #             except Exception:
-# #                 self.statusbar.SetStatusText('')
-# #         else:
-# #             self.statusbar.SetStatusText('')
-# #         #endregion -------------------------------------------> Statusbar Text
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            try:
+                #------------------------------> Set variables
+                x, y = event.xdata, event.ydata
+                xf = int(x)
+                xs = self.data[tDate]['DF'].columns[xf]
+                yf = int(y)
+                ys = self.data[tDate]['DF'].columns[yf]
+                zf = '{:.2f}'.format(self.data[tDate]['DF'].iat[yf,xf])
+                #------------------------------> Print
+                self.statusbar.SetStatusText(
+                    f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
+                )
+            except Exception:
+                self.statusbar.SetStatusText('')
+        else:
+            self.statusbar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
         
-# #         return True
-# #     #---
+        return True
+    #---
 
-# #     def OnExportPlotData(self) -> Literal[True]:
-# #         """ Export data to a csv file """
-# #         #region --------------------------------------------------> Dlg window
-# #         dlg = dtsWindow.FileSelectDialog(
-# #             'save',
-# #             config.extLong['Data'],
-# #             parent = self,
-# #         )
-# #         #endregion -----------------------------------------------> Dlg window
+    def OnExportPlotData(self) -> Literal[True]:
+        """ Export data to a csv file """
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.FileSelectDialog(
+            'save',
+            config.elData,
+            parent = self,
+        )
+        #endregion -----------------------------------------------> Dlg window
         
-# #         #region ---------------------------------------------------> Get Path
-# #         if dlg.ShowModal() == wx.ID_OK:
-# #             #------------------------------> Variables
-# #             p     = Path(dlg.GetPath())
-# #             tDate = self.statusbar.GetStatusText(1)
-# #             #------------------------------> Export
-# #             try:
-# #                 self.obj.ExportPlotData(self.cSection, tDate, p)
-# #             except Exception as e:
-# #                 dtscore.Notification(
-# #                     'errorF',
-# #                     msg        = self.msgExportFailed,
-# #                     tException = e,
-# #                     parent     = self,
-# #                 )
-# #         else:
-# #             pass
-# #         #endregion ------------------------------------------------> Get Path
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p     = Path(dlg.GetPath())
+            tDate = self.statusbar.GetStatusText(1)
+            #------------------------------> Export
+            try:
+                self.obj.ExportPlotData(self.cSection, tDate, p)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.msgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
      
-# #         dlg.Destroy()
+        dlg.Destroy()
         
-# #         return True	
-# #      #---
-# #     #---	
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+        return True	
+     #---
+    #---	
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
-# # class UMSAPControl(BaseWindow):
-# #     """Control for an umsap file. 
+class UMSAPControl(BaseWindow):
+    """Control for an umsap file. 
 
-# #         Parameters
-# #         ----------
-# #         obj : file.UMSAPFile
-# #             UMSAP File obj for the window
-# #         shownSection : list of str or None
-# #             If called from Update File Content menu list the sections that were
-# #             checked when starting the update
-# #         parent : wx.Window or None
-# #             Parent of the window
+        Parameters
+        ----------
+        obj : file.UMSAPFile
+            UMSAP File obj for the window
+        shownSection : list of str or None
+            If called from Update File Content menu list the sections that were
+            checked when starting the update
+        parent : wx.Window or None
+            Parent of the window
 
-# #         Attributes
-# #         ----------
-# #         name : str
-# #             Name of the window. Basically fileP.name
-# #         obj : file.UMSAPFile
-# #             Object to handle UMSAP files
+        Attributes
+        ----------
+        name : str
+            Name of the window. Basically fileP.name
+        obj : file.UMSAPFile
+            Object to handle UMSAP files
 
-# #         Raises
-# #         ------
+        Raises
+        ------
         
 
-# #         Methods
-# #         -------
+        Methods
+        -------
         
-# #     """
-# #     #region -----------------------------------------------------> Class setup
-# #     name = 'UMSAPF'
+    """
+    #region -----------------------------------------------------> Class setup
+    name = 'UMSAPF'
     
-# #     cSizeWindow = (400, 700)
-# #     cPlotMethod = { # Methods to create plot windows
-# #         config.nameUtilities['CorrA'] : CorrAPlot
-# #     }
-# #     cFileLabelCheck = ['Data File']
-# #     #endregion --------------------------------------------------> Class setup
+    cSizeWindow = (400, 700)
+    cPlotMethod = { # Methods to create plot windows
+        config.nUCorrA : CorrAPlot
+    }
+    cFileLabelCheck = ['Data File']
+    #endregion --------------------------------------------------> Class setup
 
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self, obj: UMSAPFile, shownSection: Optional[list[str]]=None, 
-# #         parent: Optional[wx.Window]=None) -> None:
-# #         """ """
-# #         #region -------------------------------------------------> Check Input
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, obj: UMSAPFile, shownSection: Optional[list[str]]=None, 
+        parent: Optional[wx.Window]=None) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
         
-# #         #endregion ----------------------------------------------> Check Input
+        #endregion ----------------------------------------------> Check Input
 
-# #         #region -----------------------------------------------> Initial Setup
-# #         self.obj    = obj
-# #         self.cTitle = self.obj.fileP.name,
-# #         #-------------->  Reference to section items in wxCT.CustomTreeCtrl
-# #         self.cSection = {}
-# #         #------------------------------> Reference to plot windows
-# #         self.cWindow = {}
+        #region -----------------------------------------------> Initial Setup
+        self.obj    = obj
+        self.cTitle = self.obj.fileP.name
+        #-------------->  Reference to section items in wxCT.CustomTreeCtrl
+        self.cSection = {}
+        #------------------------------> Reference to plot windows
+        self.cWindow = {}
 
-# #         super().__init__(parent=parent)
-# #         #endregion --------------------------------------------> Initial Setup
+        super().__init__(parent=parent)
+        #endregion --------------------------------------------> Initial Setup
 
-# #         #region -----------------------------------------------------> Widgets
-# #         self.trc = wxCT.CustomTreeCtrl(self)
-# #         self.trc.SetFont(config.font['TreeItem'])
-# #         self.SetTree()
-# #         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.trc = wxCT.CustomTreeCtrl(self)
+        self.trc.SetFont(config.font['TreeItem'])
+        self.SetTree()
+        #endregion --------------------------------------------------> Widgets
 
-# #         #region ------------------------------------------------------> Sizers
-# #         self.Sizer.Add(self.trc, 1, wx.EXPAND|wx.ALL, 5)
-# #         #endregion ---------------------------------------------------> Sizers
+        #region ------------------------------------------------------> Sizers
+        self.Sizer.Add(self.trc, 1, wx.EXPAND|wx.ALL, 5)
+        #endregion ---------------------------------------------------> Sizers
 
-# #         #region --------------------------------------------------------> Bind
-# #         self.trc.Bind(wxCT.EVT_TREE_ITEM_CHECKING, self.OnCheckItem)
-# #         #endregion -----------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
+        self.trc.Bind(wxCT.EVT_TREE_ITEM_CHECKING, self.OnCheckItem)
+        #endregion -----------------------------------------------------> Bind
 
-# #         #region ---------------------------------------------> Window position
-# #         self.WinPos()
-# #         self.Show()
-# #         #endregion ------------------------------------------> Window position
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
 
-# #         #region ----------------------------------------> Show opened Sections
-# #         if shownSection is not None:
-# #             for k in shownSection:
-# #                 try:
-# #                     self.trc.CheckItem(self.cSection[k], checked=True)
-# #                 except Exception:
-# #                     pass
-# #         else:
-# #             pass
-# #         #endregion -------------------------------------> Show opened Sections
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
+        #region ----------------------------------------> Show opened Sections
+        if shownSection is not None:
+            for k in shownSection:
+                try:
+                    self.trc.CheckItem(self.cSection[k], checked=True)
+                except Exception:
+                    pass
+        else:
+            pass
+        #endregion -------------------------------------> Show opened Sections
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-# #     #region ---------------------------------------------------> Class methods
-# #     def WinPos(self) -> Literal[True]:
-# #         """Set the position on the screen and adjust the total number of
-# #             shown windows
-# #         """
-# #         #region ---------------------------------------------------> Variables
-# #         info = method.GetDisplayInfo(self)
-# #         #endregion ------------------------------------------------> Variables
+    #region ---------------------------------------------------> Class methods
+    def WinPos(self) -> Literal[True]:
+        """Set the position on the screen and adjust the total number of
+            shown windows
+        """
+        #region ---------------------------------------------------> Variables
+        info = method.GetDisplayInfo(self)
+        #endregion ------------------------------------------------> Variables
                 
-# #         #region ------------------------------------------------> Set Position
-# #         self.SetPosition(pt=(
-# #             info['D']['xo'] + info['W']['N']*config.deltaWin,
-# #             info['D']['yo'] + info['W']['N']*config.deltaWin,
-# #         ))
-# #         #endregion ---------------------------------------------> Set Position
+        #region ------------------------------------------------> Set Position
+        self.SetPosition(pt=(
+            info['D']['xo'] + info['W']['N']*config.deltaWin,
+            info['D']['yo'] + info['W']['N']*config.deltaWin,
+        ))
+        #endregion ---------------------------------------------> Set Position
 
-# #         #region ----------------------------------------------------> Update N
-# #         config.winNumber[self.name] = info['W']['N'] + 1
-# #         #endregion -------------------------------------------------> Update N
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.name] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
 
-# #         return True
-# #     #---
+        return True
+    #---
 
-# #     def SetTree(self) -> Literal[True]:
-# #         """Set the elements of the wx.TreeCtrl """
-# #         #region ----------------------------------------------------> Add root
-# #         root = self.trc.AddRoot(self.obj.fileP.name)
-# #         #endregion -------------------------------------------------> Add root
+    def SetTree(self) -> Literal[True]:
+        """Set the elements of the wx.TreeCtrl """
+        #region ----------------------------------------------------> Add root
+        root = self.trc.AddRoot(self.obj.fileP.name)
+        #endregion -------------------------------------------------> Add root
         
-# #         #region ------------------------------------------------> Add elements
-# #         for a, b in self.obj.data.items():
-# #             #------------------------------> Add section node
-# #             if self.obj.confTree['Sections'][a]:
-# #                 childa = self.trc.AppendItem(root, a, ct_type=1)
-# #             else:
-# #                 childa = self.trc.AppendItem(root, a, ct_type=0)
-# #                 self.trc.SetItemFont(childa, config.font['TreeItemFalse'])
-# #             #------------------------------> Keep reference
-# #             self.cSection[a] = childa
+        #region ------------------------------------------------> Add elements
+        for a, b in self.obj.data.items():
+            #------------------------------> Add section node
+            if self.obj.confTree['Sections'][a]:
+                childa = self.trc.AppendItem(root, a, ct_type=1)
+            else:
+                childa = self.trc.AppendItem(root, a, ct_type=0)
+                self.trc.SetItemFont(childa, config.font['TreeItemFalse'])
+            #------------------------------> Keep reference
+            self.cSection[a] = childa
             
-# #             for c, d in b.items():
-# #                 #------------------------------> Add date node
-# #                 childb = self.trc.AppendItem(childa, c)
-# #                 #------------------------------> Set font
-# #                 if self.obj.confTree[a][c]:
-# #                     pass
-# #                 else:
-# #                     self.trc.SetItemFont(childb, config.font['TreeItemFalse'])
+            for c, d in b.items():
+                #------------------------------> Add date node
+                childb = self.trc.AppendItem(childa, c)
+                #------------------------------> Set font
+                if self.obj.confTree[a][c]:
+                    pass
+                else:
+                    self.trc.SetItemFont(childb, config.font['TreeItemFalse'])
 
-# #                 for e, f in d['I'].items():
-# #                     #------------------------------> Add date items
-# #                     childc = self.trc.AppendItem(childb, f"{e}: {f}")
-# #                     #------------------------------> Set font
-# #                     if e.strip() in self.cFileLabelCheck:
-# #                         if Path(f).exists():
-# #                             self.trc.SetItemFont(
-# #                             childc, 
-# #                             config.font['TreeItemDataFile']
-# #                         )
-# #                         else:
-# #                             self.trc.SetItemFont(
-# #                             childc, 
-# #                             config.font['TreeItemDataFileFalse']
-# #                         )
-# #                     else:		
-# #                         self.trc.SetItemFont(
-# #                             childc, 
-# #                             config.font['TreeItemDataFile']
-# #                         )
-# #         #endregion ---------------------------------------------> Add elements
+                for e, f in d['I'].items():
+                    #------------------------------> Add date items
+                    childc = self.trc.AppendItem(childb, f"{e}: {f}")
+                    #------------------------------> Set font
+                    if e.strip() in self.cFileLabelCheck:
+                        if Path(f).exists():
+                            self.trc.SetItemFont(
+                            childc, 
+                            config.font['TreeItemDataFile']
+                        )
+                        else:
+                            self.trc.SetItemFont(
+                            childc, 
+                            config.font['TreeItemDataFileFalse']
+                        )
+                    else:		
+                        self.trc.SetItemFont(
+                            childc, 
+                            config.font['TreeItemDataFile']
+                        )
+        #endregion ---------------------------------------------> Add elements
         
-# #         #region -------------------------------------------------> Expand root
-# #         self.trc.Expand(root)		
-# #         #endregion ----------------------------------------------> Expand root
+        #region -------------------------------------------------> Expand root
+        self.trc.Expand(root)		
+        #endregion ----------------------------------------------> Expand root
         
-# #         return True
-# #     #---
+        return True
+    #---
 
-# #     def OnCheckItem(self, event) -> bool:
-# #         """Show window when section is checked
+    def OnCheckItem(self, event) -> bool:
+        """Show window when section is checked
     
-# #             Parameters
-# #             ----------
-# #             event : wxCT.Event
-# #                 Information about the event
-# #         """
-# #         #region ------------------------------------------> Get Item & Section
-# #         item    = event.GetItem()
-# #         section = self.trc.GetItemText(item)
-# #         #endregion ---------------------------------------> Get Item & Section
+            Parameters
+            ----------
+            event : wxCT.Event
+                Information about the event
+        """
+        #region ------------------------------------------> Get Item & Section
+        item    = event.GetItem()
+        section = self.trc.GetItemText(item)
+        #endregion ---------------------------------------> Get Item & Section
 
-# #         #region ----------------------------------------------> Destroy window
-# #         #------------------------------> Event trigers before checkbox changes
-# #         if self.trc.IsItemChecked(item):
-# #             self.cWindow[section].Destroy()
-# #             event.Skip()
-# #             return True
-# #         else:
-# #             pass
-# #         #endregion -------------------------------------------> Destroy window
+        #region ----------------------------------------------> Destroy window
+        #------------------------------> Event trigers before checkbox changes
+        if self.trc.IsItemChecked(item):
+            self.cWindow[section].Destroy()
+            event.Skip()
+            return True
+        else:
+            pass
+        #endregion -------------------------------------------> Destroy window
         
-# #         #region -----------------------------------------------> Create window
-# #         try:
-# #             self.cWindow[section] = self.cPlotMethod[section](self)
-# #         except Exception as e:
-# #             dtscore.Notification('errorU', msg=str(e), tException=e)
-# #             return False
-# #         #endregion --------------------------------------------> Create window
+        #region -----------------------------------------------> Create window
+        try:
+            self.cWindow[section] = self.cPlotMethod[section](self)
+        except Exception as e:
+            dtscore.Notification('errorU', msg=str(e), tException=e)
+            return False
+        #endregion --------------------------------------------> Create window
         
-# #         event.Skip()
-# #         return True
-# #     #---
+        event.Skip()
+        return True
+    #---
 
-# #     def UnCheckSection(self, sectionName: str) -> Literal[True]:
-# #         """Method to uncheck a section when the plot window is closed by the 
-# #             user
+    def UnCheckSection(self, sectionName: str) -> Literal[True]:
+        """Method to uncheck a section when the plot window is closed by the 
+            user
     
-# #             Parameters
-# #             ----------
-# #             sectionName : str
-# #                 Section name like in config.nameModules config.nameUtilities
-# #         """
-# #         #region -----------------------------------------------------> Uncheck
-# #         self.trc.SetItem3StateValue(
-# #             self.cSection[sectionName],
-# #             wx.CHK_UNCHECKED,
-# #         )		
-# #         #endregion --------------------------------------------------> Uncheck
+            Parameters
+            ----------
+            sectionName : str
+                Section name like in config.nameModules config.nameUtilities
+        """
+        #region -----------------------------------------------------> Uncheck
+        self.trc.SetItem3StateValue(
+            self.cSection[sectionName],
+            wx.CHK_UNCHECKED,
+        )		
+        #endregion --------------------------------------------------> Uncheck
         
-# #         #region -----------------------------------------------------> Repaint
-# #         self.Update()
-# #         self.Refresh()		
-# #         #endregion --------------------------------------------------> Repaint
+        #region -----------------------------------------------------> Repaint
+        self.Update()
+        self.Refresh()		
+        #endregion --------------------------------------------------> Repaint
         
-# #         return True
-# #     #---
+        return True
+    #---
 
-# #     def GetCheckedSection(self) -> list[str]:
-# #         """Get a list with the name of all checked sections """
-# #         return [k for k, v in self.cSection.items() if v.IsChecked()]
-# #     #---
+    def GetCheckedSection(self) -> list[str]:
+        """Get a list with the name of all checked sections """
+        return [k for k, v in self.cSection.items() if v.IsChecked()]
+    #---
     
-# #     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
-# #         """Destroy window and remove reference from config.umsapW
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
+        """Destroy window and remove reference from config.umsapW
     
-# #             Parameters
-# #             ----------
-# #             event: wx.Event
-# #                 Information about the event
-# #         """
-# #         #region -----------------------------------> Update list of open files
-# #         del(config.umsapW[self.obj.fileP])
-# #         #endregion --------------------------------> Update list of open files
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event
+        """
+        #region -----------------------------------> Update list of open files
+        del(config.winUMSAP[self.obj.fileP])
+        #endregion --------------------------------> Update list of open files
         
-# #         #region ------------------------------------> Reduce number of windows
-# #         config.winNumber[self.name] -= 1
-# #         #endregion ---------------------------------> Reduce number of windows
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.name] -= 1
+        #endregion ---------------------------------> Reduce number of windows
         
-# #         #region -----------------------------------------------------> Destroy
-# #         #------------------------------> Childs
-# #         for child in dtsGenerator.FindTopLevelChildren(self):
-# #             child.Close()
-# #         #------------------------------> Self
-# #         self.Destroy()
-# #         #endregion --------------------------------------------------> Destroy
+        #region -----------------------------------------------------> Destroy
+        #------------------------------> Childs
+        for child in dtsGenerator.FindTopLevelChildren(self):
+            child.Close()
+        #------------------------------> Self
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
         
-# #         return True
-# #     #---
+        return True
+    #---
 
-# #     def UpdateFileContent(self) -> Literal[True]:
-# #         """Update the content of the file. """
-# #         method.LoadUMSAPFile(
-# #             fileP        = self.obj.fileP,
-# #             shownSection = self.GetCheckedSection(),
-# #         )
+    def UpdateFileContent(self) -> Literal[True]:
+        """Update the content of the file. """
+        method.LoadUMSAPFile(
+            fileP        = self.obj.fileP,
+            shownSection = self.GetCheckedSection(),
+        )
 
-# #         return True
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion ----------------------------------------------------------> Classes
 
 
