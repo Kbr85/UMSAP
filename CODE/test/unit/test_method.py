@@ -17,7 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import unittest
 
-import data.method as method
+import data.method as dmethod
 #endregion ----------------------------------------------------------> Imports
 
 #region ---------------------------------------------------------> Class Setup
@@ -38,7 +38,7 @@ class Test_ResControl2ListNumber(unittest.TestCase):
         for a,b,c,d in tInput:
             with self.subTest(f"val={a}, sep={b}, numType={c}"):
                 #------------------------------>
-                result = method.ResControl2ListNumber(a, sep=b, numType=c)
+                result = dmethod.ResControl2ListNumber(a, sep=b, numType=c)
                 #------------------------------>
                 self.assertEqual(result, d)
     #---
@@ -47,3 +47,5 @@ class Test_ResControl2ListNumber(unittest.TestCase):
 #endregion ------------------------------------------------------> Class Setup
 
 
+if __name__ == '__main__':
+    unittest.main()

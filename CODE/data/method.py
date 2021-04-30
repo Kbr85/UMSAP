@@ -51,7 +51,7 @@ def ResControl2ListNumber(
         lrow = []
         #------------------------------> 
         for j in k.split(sep[1]):
-            colVal = dtsMethod.Str2ListNumber(j, numType=numType)
+            colVal = dtsMethod.Str2ListNumber(j, numType=numType, sep=sep[0])
             lrow.append(colVal)
         #------------------------------> 
         l.append(lrow)
