@@ -165,11 +165,11 @@ fnNorm    = "{}-Normalized-Data.txt"
 
 #region ------------------------------------------------------------------ URL
 #------------------------------> www.umsap.nl
-urlHome         = 'https://www.umsap.nl'
-urlUpdate       = f"{urlHome}/page/release-notes"
-urlTutorial     = f"{urlHome}/tutorial/2-1-0"
-urlCorrAPane    = f"{urlTutorial}/correlation-analysis"
-urlProtProfPane = f"{urlTutorial}/proteome-profiling"
+urlHome     = 'https://www.umsap.nl'
+urlUpdate   = f"{urlHome}/page/release-notes"
+urlTutorial = f"{urlHome}/tutorial/2-1-0"
+urlCorrA    = f"{urlTutorial}/correlation-analysis"
+urlProtProf = f"{urlTutorial}/proteome-profiling"
 
 #endregion --------------------------------------------------------------- URL
 
@@ -227,14 +227,16 @@ ttBtnRun      = f"Start the analysis."
 #------------------------------> wx.StaticText
 ttStNorm = f"Select the {lCbNormMethod}."
 ttStCorr = f"Select the {lCbCorrMethod}."
-ttStScoreVal = f"Set the minimum acceptable Score value."
+ttStScoreVal = f"Set the minimum acceptable Score value.\ne.g. -4"
 ttStPCorrection = "Select the p correction method."
 ttStMedianCorr = "Select whether to apply a median correction."
-ttStDetectedProtL = f"Set the column number containing the detected proteins."
-ttStScore = f"Set the column number containing the Score values."
-ttStColExtract = "Set the column numbers to extract from {}."
-ttStGenName = "Set the column number containing the gene names."
-ttStExcludeProt = "Set the column number containing the protein to exclude."
+ttStDetectedProtL = (
+    f"Set the column number containing the detected proteins.\ne.g. 7")
+ttStScore = f"Set the column number containing the Score values.\ne.g. 4"
+ttStColExtract = "Set the column numbers to extract from {}.\ne.g. 1-4 7 8"
+ttStGenName = "Set the column number containing the gene names.\ne.g. 3"
+ttStExcludeProt = (
+    "Set the column number containing the protein to exclude.\ne.g. 8 10-12")
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -276,16 +278,19 @@ oControlTypeProtProf = [
 #------------------------------> Files 
 mFileSelector = f"It was not possible to show the file selecting dialog."
 mFileBad = "File: '{}'\ncannot be used as {}."
+mFileColNum = (
+    "In addition, the values cannot be bigger than the total number of columns "
+    "in the {}.")
 #------------------------------> Not empty
-mNotEmpty = "Please select a value for {}"
+mNotEmpty = "Please select a value for {}."
 #------------------------------> Pandas
 mPDDataType    = 'Unexpected data type.'
 mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
 #------------------------------> User values
+mNumROne = "Only one number can be accepted in {}."
+mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
 mListNumN0L = (
-    "Only a list of unique non-negative integers can be accepted in {}.\n"
-    "In addition, the values cannot be bigger than the total number of columns "
-    "in the {}.")
+    "Only a list of unique non-negative integers can be accepted in {}.")
 #endregion ---------------------------------------------------------> Messages
 
 

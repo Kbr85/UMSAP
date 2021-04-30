@@ -51,7 +51,7 @@ class ResControl():
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent):
         """ """
-        
+        self.cResControlL = 'Results - Control Experiments'
         #region -----------------------------------------------------> Widgets
         self.tcResults = wx.TextCtrl(
             parent    = parent,
@@ -63,7 +63,7 @@ class ResControl():
 
         self.stResults = wx.StaticText(
             parent = parent,
-            label  = 'Results - Control Experiments',
+            label  = self.cResControlL,
             style  = wx.ALIGN_RIGHT
         )
 

@@ -61,6 +61,8 @@ class BaseConfPanel(
         ----------
         parent : wx Widget
             Parent of the widgets
+        NCol : int
+            Number of columns in the main input file - 1
         #------------------------------> Must be set on child
         name : str
             Unique name of the pane
@@ -405,7 +407,7 @@ class BaseConfPanel(
         #endregion ------------------------------------------------> Fill list
         
         #region -----------------------------------------> Columns in the file
-        self.NCol = self.lbI.GetItemCount()
+        self.NCol = self.lbI.GetItemCount() - 1
         #endregion --------------------------------------> Columns in the file
 
         return True
@@ -526,7 +528,9 @@ class BaseConfPanel(
                 Event information
         """
         #region --------------------------------------------------> Dlg window
-        self.dlg = dtscore.ProgressDialog(self, self.cTitlePD, self.cGaugePD)
+        self.dlg = dtscore.ProgressDialog(
+            config.winMain, self.cTitlePD, self.cGaugePD,
+        )
         #endregion -----------------------------------------------> Dlg window
 
         #region ------------------------------------------------------> Thread
@@ -625,7 +629,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         #------------------------------> Tooltips
         self.cNormMethodTT = getattr(self, 'cNormMethodTT', config.ttStNorm)
         self.cScoreValTT = getattr(self, 'cScoreValTT', config.ttStScoreVal)
-        self.cDetectedProtLTT = getattr(
+        self.cDetectedProtTT = getattr(
             self, 'cDetectedProtLTT', config.ttStDetectedProtL,
         )
         self.cScoreTT = getattr(self, 'cScoreTT', config.ttStScore)
@@ -690,8 +694,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             tcSize    = self.cTcSize,
             validator = dtsValidator.NumberList(
                 numType = 'int',
-                nN      = 1,
                 vMin    = 0,
+                sep     = ' ',
             )
         )
         #endregion --------------------------------------------------> Widgets
@@ -699,7 +703,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         #region -----------------------------------------------------> Tooltip
         self.normMethod.st.SetToolTip(self.cNormMethodTT)
         self.scoreVal.st.SetToolTip(self.cScoreValTT)
-        self.detectedProt.st.SetToolTip(self.cDetectedProtLTT)
+        self.detectedProt.st.SetToolTip(self.cDetectedProtTT)
         self.score.st.SetToolTip(self.cScoreTT)
         self.colExtract.st.SetToolTip(self.cColExtractTT)
         #endregion --------------------------------------------------> Tooltip
@@ -1086,7 +1090,7 @@ class ResControlExpConfBase(wx.Panel):
                 if a:
                     pass
                 else:
-                    msg = config.mListNumN0L.format(
+                    msg = f"{config.mListNumN0L}\n{config.mFileColNum}".format(
                             'the text fields', 
                             self.topParent.ciFileL,
                         )
@@ -1273,13 +1277,13 @@ class CorrA(BaseConfPanel):
         #region -----------------------------------------------> Initial setup
         #------------------------------> Needed by BaseConfPanel
         self.name         = 'CorrAPane'
-        self.cURL         = config.urlCorrAPane
+        self.cURL         = config.urlCorrA
         self.cSection     = config.nUCorrA
         self.cLenLongestL = len(config.lCbNormMethod)
         self.cTitlePD     = config.lnPDCorrA
         self.cGaugePD     = 15
         #------------------------------> Optional configuration
-        self.cHelpTT = config.ttBtnHelp.format(config.urlCorrAPane)
+        self.cHelpTT = config.ttBtnHelp.format(config.urlCorrA)
         #------------------------------> Setup attributes in base class 
         super().__init__(parent)
         #------------------------------> Needed to Run
@@ -1820,16 +1824,24 @@ class ProtProf(BaseConfModPanel):
 
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Needed by BaseConfPanel
-        self.cURL         = config.urlProtProfPane,
+        self.cURL         = config.urlProtProf
         self.cSection     = config.nMProtProf
         self.cLenLongestL = len(config.lCbNormMethod)
         self.cTitlePD     = f"Running {config.nMProtProf} Analysis"
-        self.GaugePD      = 15
+        self.cGaugePD     = 15
         #------------------------------> Optional configuration
-        self.cHelpTT = config.ttBtnHelp.format(config.urlProtProfPane)
-        #------------------------------> 
+        self.cHelpTT = config.ttBtnHelp.format(config.urlProtProf)
+        #------------------------------> Base attributes and setup
         super().__init__(parent)
-        #------------------------------> 
+        #------------------------------> Needed to Run
+        self.cMainData  = '{}-ProteomeProfiling-Data.txt'
+        self.cChangeKey = ['iFile', 'oFile']
+        #------------------------------> Labels
+        self.cMedianL      = 'Median Correction'
+        self.cCorrectPL    = 'P Correction'
+        self.cGeneNameL    = 'Gene Names'
+        self.cExcludeProtL = 'Exclude Proteins'
+        #------------------------------> Tooltips
         self.cCorrectPTT    = config.ttStPCorrection
         self.cMedianTT      = config.ttStMedianCorr
         self.cGeneNameTT    = config.ttStGenName
@@ -1844,20 +1856,20 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Values
         self.correctP = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            'P Correction',
+            self.cCorrectPL,
             config.oCorrectP,
             validator = dtsValidator.IsNotEmpty(),
         )
         self.median = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            'Median Correction',
+            self.cMedianL,
             config.oYesNo,
             validator = dtsValidator.IsNotEmpty(),
         )
         #------------------------------> Columns
         self.geneName = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = 'Gene Names',
+            stLabel   = self.cGeneNameL,
             tcSize    = self.cTcSize,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -1867,7 +1879,7 @@ class ProtProf(BaseConfModPanel):
         )
         self.excludeProt = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = 'Exclude Proteins',
+            stLabel   = self.cExcludeProtL,
             tcSize    = self.cTcSize,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -2091,37 +2103,125 @@ class ProtProf(BaseConfModPanel):
         if a:
             pass
         else:
-            self.msgError = ''
+            self.msgError = dtscore.StrSetMessage(
+                config.mFileBad.format(b[1], self.ciFileL), b[2],
+            )
             return False
-        # #------------------------------> Output Folder
-        # msgStep = msgPrefix + self.confOpt['oFileL']
-        # wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        # a, b = self.oFile.tc.GetValidator().Validate()
-        # if a:
-        #     pass
-        # else:
-        #     self.msgError = self.confMsg['oFile'][b[0]]
-        #     return False
-        # #------------------------------> Score Value
-        # msgStep = msgPrefix + self.confOpt['ScoreValueL']
-        # wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        # a, b = self.scoreVal.tc.GetValidator().Validate(
-        #     vMax = self.NCol,
-        # )
-        # if a:
-        #     pass
-        # else:
-        #     self.msgError = self.confMsg['ScoreValue']['Error']
-        #     return False
-        # #------------------------------> Normalization
-        # msgStep = msgPrefix + self.confOpt['NormMethodL']
-        # wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        # if self.normMethod.cb.GetValidator().Validate()[0]:
-        #     pass
-        # else:
-        #     self.msgError = self.confMsg['NormMethod']
-        #     return False
-        # #------------------------------> Corr Method
+        #------------------------------> Output Folder
+        msgStep = msgPrefix + self.coFileL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.oFile.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = dtscore.StrSetMessage(
+                config.mFileBad.format(b[1], self.coFileL), b[2],
+            )
+            return False
+        #------------------------------> Score Value
+        msgStep = msgPrefix + self.cScoreValL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.scoreVal.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = dtscore.StrSetMessage(
+                config.mNumROne.format(self.cScoreValL), b[2],
+            )
+            return False
+        #------------------------------> Normalization
+        msgStep = msgPrefix + self.cNormMethodL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.normMethod.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = config.mNotEmpty.format(self.cNormMethodL)
+            return False
+        #------------------------------> Median Correction
+        msgStep = msgPrefix + self.cMedianL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.median.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = config.mNotEmpty.format(self.cMedianL)
+            return False
+        #------------------------------> P Correction
+        msgStep = msgPrefix + self.cCorrectPL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.correctP.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = config.mNotEmpty.format(self.cCorrectPL)
+            return False
+        #------------------------------> Detected Proteins
+        msgStep = msgPrefix + self.cDetectedProtL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.detectedProt.tc.GetValidator().Validate(vMax=self.NCol)
+        if a:
+            pass
+        else:
+            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
+                self.cDetectedProtL, self.ciFileL,
+            )
+            self.msgError = dtscore.StrSetMessage(msg, b[2])
+            return False
+        #------------------------------> Gene Names
+        msgStep = msgPrefix + self.cGeneNameL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.geneName.tc.GetValidator().Validate(vMax=self.NCol)
+        if a:
+            pass
+        else:
+            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
+                self.cGeneNameL, self.ciFileL,
+            )
+            self.msgError = dtscore.StrSetMessage(msg, b[2])
+            return False
+        #------------------------------> Score
+        msgStep = msgPrefix + self.cScoreColL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.score.tc.GetValidator().Validate(vMax=self.NCol)
+        if a:
+            pass
+        else:
+            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
+                self.cScoreColL, self.ciFileL,
+            )
+            self.msgError = dtscore.StrSetMessage(msg, b[2])
+            return False
+        #------------------------------> Exclude Proteins
+        msgStep = msgPrefix + self.cExcludeProtL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.excludeProt.tc.GetValidator().Validate(vMax=self.NCol)
+        if a:
+            pass
+        else:
+            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
+                self.cExcludeProtL, self.ciFileL,
+            )
+            self.msgError = dtscore.StrSetMessage(msg, b[2])
+            return False
+        #------------------------------> Columns to Extract
+        msgStep = msgPrefix + self.cColExtractL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.colExtract.tc.GetValidator().Validate(vMax=self.NCol)
+        if a:
+            pass
+        else:
+            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
+                self.cColExtractL, self.ciFileL,
+            )
+            self.msgError = dtscore.StrSetMessage(msg, b[2])
+            return False
+        #------------------------------> Results - Control Experiment
+        msgStep = msgPrefix + self.cResControlL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.tcResults.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = config.mNotEmpty.format(self.cResControlL)
+            return False
         #endregion ----------------------------------------> Individual Fields
 
         return False
@@ -2133,14 +2233,14 @@ class ProtProf(BaseConfModPanel):
         if self.msgError is None:
             #--> 
             self.dlg.SuccessMessage(
-                config.label['PdDone'],
-                eTime=(config.label['PdEllapsed'] + self.deltaT),
+                config.lPdDone,
+                eTime=f"{config.lPdEllapsed}  {self.deltaT}",
             )
             #--> Show the 
-            self.OnOFileChange('test')
+            self.OnOFileChange('fEvent')
         else:
             self.dlg.ErrorMessage(
-                config.label['PdError'], 
+                config.lPdError, 
                 error      = self.msgError,
                 tException = self.tException
             )
