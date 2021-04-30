@@ -2060,14 +2060,14 @@ class ProtProf(BaseConfModPanel):
             self.colExtract.tc.SetValue('0 1 2 3 4-10')
             self.excludeProt.tc.SetValue('171 172 173')
             #------------------------------> 
-                   #--> One Control per Column, 2 Cond and 2 TP
-            # self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-            # self.controlType = 'One Control per Column'
-            # self.lbDict = {
-            #     1 : ['DMSO', 'H2O'],
-            #     2 : ['30min', '1D'],
-            #     'Control' : ['MyControl'],
-            # }
+            #--> One Control per Column, 2 Cond and 2 TP
+            self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            self.lbDict = {
+                1            : ['DMSO', 'H2O'],
+                2            : ['30min', '1D'],
+                'Control'    : ['MyControl'],
+                'ControlType': 'One Control per Column',
+            }
         else:
             pass
         #endregion -----------------------------------------------------> Test
@@ -2080,51 +2080,51 @@ class ProtProf(BaseConfModPanel):
         """Check user input"""
         
         #region ---------------------------------------------------------> Msg
-        msgPrefix = config.label['PdCheck']
+        msgPrefix = config.lPdCheck
         #endregion ------------------------------------------------------> Msg
         
         #region -------------------------------------------> Individual Fields
         #------------------------------> Input file
-        msgStep = msgPrefix + self.confOpt['iFileL']
+        msgStep = msgPrefix + self.ciFileL
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         a, b = self.iFile.tc.GetValidator().Validate()
         if a:
             pass
         else:
-            self.msgError = self.confMsg['iFile'][b[0]]
+            self.msgError = ''
             return False
-        #------------------------------> Output Folder
-        msgStep = msgPrefix + self.confOpt['oFileL']
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.oFile.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = self.confMsg['oFile'][b[0]]
-            return False
-        #------------------------------> Score Value
-        msgStep = msgPrefix + self.confOpt['ScoreValueL']
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.scoreVal.tc.GetValidator().Validate(
-            vMax = self.NCol,
-        )
-        if a:
-            pass
-        else:
-            self.msgError = self.confMsg['ScoreValue']['Error']
-            return False
-        #------------------------------> Normalization
-        msgStep = msgPrefix + self.confOpt['NormMethodL']
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.normMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = self.confMsg['NormMethod']
-            return False
-        #------------------------------> Corr Method
+        # #------------------------------> Output Folder
+        # msgStep = msgPrefix + self.confOpt['oFileL']
+        # wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        # a, b = self.oFile.tc.GetValidator().Validate()
+        # if a:
+        #     pass
+        # else:
+        #     self.msgError = self.confMsg['oFile'][b[0]]
+        #     return False
+        # #------------------------------> Score Value
+        # msgStep = msgPrefix + self.confOpt['ScoreValueL']
+        # wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        # a, b = self.scoreVal.tc.GetValidator().Validate(
+        #     vMax = self.NCol,
+        # )
+        # if a:
+        #     pass
+        # else:
+        #     self.msgError = self.confMsg['ScoreValue']['Error']
+        #     return False
+        # #------------------------------> Normalization
+        # msgStep = msgPrefix + self.confOpt['NormMethodL']
+        # wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        # if self.normMethod.cb.GetValidator().Validate()[0]:
+        #     pass
+        # else:
+        #     self.msgError = self.confMsg['NormMethod']
+        #     return False
+        # #------------------------------> Corr Method
         #endregion ----------------------------------------> Individual Fields
 
-        return True
+        return False
     #---
 
     def RunEnd(self):

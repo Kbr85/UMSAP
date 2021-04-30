@@ -1166,7 +1166,7 @@ class ResControlExp(wx.Dialog):
     #------------------------------> 
     cTitle = f"Results - Control Experiments"
     #------------------------------> 
-    cSize = (900, 620)
+    cSize = (900, 580)
     #------------------------------> 
     cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
     #endregion --------------------------------------------------> Class setup
@@ -1180,7 +1180,8 @@ class ResControlExp(wx.Dialog):
                 'openO', config.elData, parent=parent,
             )
             if dlg.ShowModal() == wx.ID_OK:
-                iFile = Path(dlg.GetPath()[0])
+                iFile = dlg.GetPath()
+                parent.iFile.tc.SetValue(iFile)
                 dlg.Destroy()
             else:
                 dlg.Destroy()
@@ -1191,7 +1192,7 @@ class ResControlExp(wx.Dialog):
 
         #region -----------------------------------------------> Initial Setup
         super().__init__(
-            parent, 
+            config.winMain, 
             title = self.cTitle,
             style = self.cStyle,
             size  = self.cSize,
