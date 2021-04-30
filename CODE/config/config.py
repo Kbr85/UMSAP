@@ -110,11 +110,16 @@ name = { # Unique names for menus, windows, tabs, panes, files, etc
     'CorrAPlot'   : 'CorrAPlot',
     #------------------------------> Dialogs
     'CheckUpdateResDialog': 'CheckUpdateResDialog',
+    'ResControlExp'       : 'ResControlExp',
     #------------------------------> Tab for notebook windows
     'StartTab'   : 'StartTab',
     'CorrATab'   : 'CorrATab',
+    'ProtProfTab': 'ProtProfTab',
     #------------------------------> Individual Panes
-    'CorrAPane': 'CorrAPane',
+    'CorrAPane'                : 'CorrAPane',
+    'ProtProfPane'             : 'ProtProfPane',
+    'ResControlExpPane'        : 'ResControlExpPane',
+    'ResControlExpPaneProtProf': 'ResControlExpPaneProtProf',
     #------------------------------> Menu
     'ModuleMenu' : 'ModuleMenu',
     'UtilityMenu': 'UtilityMenu',
@@ -276,6 +281,11 @@ mNotEmpty = "Please select a value for {}"
 #------------------------------> Pandas
 mPDDataType    = 'Unexpected data type.'
 mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
+#------------------------------> User values
+mListNumN0L = (
+    "Only a list of unique non-negative integers can be accepted in {}.\n"
+    "In addition, the values cannot be bigger than the total number of columns "
+    "in the {}.")
 #endregion ---------------------------------------------------------> Messages
 
 

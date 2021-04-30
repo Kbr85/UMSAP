@@ -1,47 +1,4 @@
-# ------------------------------------------------------------------------------
-# Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
-#
-# Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
-#
-# This program is distributed for free in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-# See the accompaning licence for more details.
-# ------------------------------------------------------------------------------
-
-
-"""Configuration parameters of the app """
-
-
-#region -------------------------------------------------------------> Imports
-import os
-import json
-import platform
-from pathlib import Path
-
-#endregion ----------------------------------------------------------> Imports
-
-
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
-
-
-#region ---------------------------------------------------------------> Names
-name = { # Unique names to identify windows/objects through the app
-    'ResControlExp'       : 'ResControlExp',
-    #------------------------------> Tab for notebook windows
-    
-    
-    'ProtProfTab': 'ProtProfTab',
-    #------------------------------> Individual Panes
-    
-    'ProtProfPane'             : 'ProtProfPane',
-    'ResControlExpPane'        : 'ResControlExpPane',
-    'ResControlExpPaneProtProf': 'ResControlExpPaneProtProf',
-    
-}
-#endregion ------------------------------------------------------------> Names
-
 
 #region ------------------------------------------------------> Path and Files
 #------------------------------> Relevant paths
@@ -58,24 +15,6 @@ fImgStart    = pImages / 'MAIN-WINDOW/p97-2.png'
 fNameInitial = 'Data-01-Initial'
 fNameNorm    = 'Data-02-Normalization'
 #endregion ---------------------------------------------------> Path and Files
-
-
-
-
-
-#region --------------------------------------------------------------> Labels
-lBtnTypeRes  = 'Type Values'
-#endregion -----------------------------------------------------------> Labels
-
-#region ---------------------------------------------------------------> Sizes
-# size = { # Base size for widgets
-#     
-#     #------------------------------> wx.TextCtrl
-#     'TwoInRow' : (50, 22), # Two wx.TextCtrl in the same row
-
-# }
-#endregion ------------------------------------------------------------> Sizes
-
 
 # #region ------------------------------------------------------------> Messages
 # msg = { # Messages used by more than one object

@@ -36,7 +36,7 @@ import gui.menu as menu
 import gui.tab as tab
 import gui.dtscore as dtscore
 import gui.method as method
-# import gui.pane as pane
+import gui.pane as pane
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -1140,122 +1140,118 @@ class CheckUpdateResult(wx.Dialog):
 #---
 
 
-# # class ResControlExp(wx.Dialog):
-# #     """Creates the dialog to type / check loaded values for Results - Control
-# #         Experiments
+class ResControlExp(wx.Dialog):
+    """Creates the dialog to type values for Results - Control Experiments
 
-# #         Parameters
-# #         ----------
-# #         parent : wx.Panel
-# #             This is the pane calling the dialog
+        Parameters
+        ----------
+        parent : wx.Panel
+            This is the pane calling the dialog
 
-# #         Attributes
-# #         ----------
-# #         confOpt : dict
-# #             Configuration options
-
-# #         Raises
-# #         ------
-# #         Exception
-# #             - When no Data file is selected
-
-# #         Methods
-# #         -------
+        Attributes
+        ----------
         
-# #     """
-# #     #region -----------------------------------------------------> Class setup
-# #     name = 'ResControlExp'
-# #     #------------------------------> 
-# #     cTitle = f"Results - Control Experiments"
-# #     #------------------------------> 
-# #     cSize = (900, 620)
-# #     #------------------------------> 
-# #     cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
-# #     #endregion --------------------------------------------------> Class setup
 
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self, parent:wx.Window):
-# #         """ """
-# #         #region -------------------------------------------------> Check Input
-# #         if (iFile := parent.iFile.tc.GetValue())  == '':
-# #             dlg = dtsWindow.FileSelectDialog(
-# #                 'openO',
-# #                 config.extLong['Data'],
-# #                 parent = parent
-# #             )
-# #             if dlg.ShowModal() == wx.ID_OK:
-# #                 iFile = Path(dlg.GetPath()[0])
-# #                 dlg.Destroy()
-# #             else:
-# #                 dlg.Destroy()
-# #                 raise Exception
-# #         else:
-# #             pass
-# #         #endregion ----------------------------------------------> Check Input
+        Raises
+        ------
+        Exception
+            - When no Data file is selected
 
-# #         #region -----------------------------------------------> Initial Setup
-# #         super().__init__(
-# #             parent, 
-# #             title = self.cTitle,
-# #             style = self.cStyle,
-# #             size  = self.cSize,
-# #         )
-# #         #endregion --------------------------------------------> Initial Setup
-
-# #         #region --------------------------------------------------------> Menu
+        Methods
+        -------
         
-# #         #endregion -----------------------------------------------------> Menu
+    """
+    #region -----------------------------------------------------> Class setup
+    name = 'ResControlExp'
+    #------------------------------> 
+    cTitle = f"Results - Control Experiments"
+    #------------------------------> 
+    cSize = (900, 620)
+    #------------------------------> 
+    cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
+    #endregion --------------------------------------------------> Class setup
 
-# #         #region -----------------------------------------------------> Widgets
-# #         self.conf = pane.ResControlExp(self, iFile, parent)
-# #         #------------------------------> Buttons
-# #         self.sizerBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
-# #         #endregion --------------------------------------------------> Widgets
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent:wx.Window):
+        """ """
+        #region -------------------------------------------------> Check Input
+        if (iFile := parent.iFile.tc.GetValue())  == '':
+            dlg = dtsWindow.FileSelectDialog(
+                'openO', config.elData, parent=parent,
+            )
+            if dlg.ShowModal() == wx.ID_OK:
+                iFile = Path(dlg.GetPath()[0])
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                raise Exception
+        else:
+            pass
+        #endregion ----------------------------------------------> Check Input
 
-# #         #region -------------------------------------------------------> Sizer
-# #         self.Sizer = wx.BoxSizer(wx.VERTICAL)
-# #         self.Sizer.Add(self.conf, 1, wx.EXPAND|wx.ALL, 5)
-# #         self.Sizer.Add(self.sizerBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
-# #         #endregion ----------------------------------------------------> Sizer
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(
+            parent, 
+            title = self.cTitle,
+            style = self.cStyle,
+            size  = self.cSize,
+        )
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
         
-# #         #region --------------------------------------------------------> Bind
-# #         self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
-# #         #endregion -----------------------------------------------------> Bind
+        #endregion -----------------------------------------------------> Menu
 
-# #         #region ---------------------------------------------> Window position
-# #         self.CenterOnParent()
-# #         #endregion ------------------------------------------> Window position
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
+        #region -----------------------------------------------------> Widgets
+        self.conf = pane.ResControlExp(self, iFile, parent)
+        #------------------------------> Buttons
+        self.sizerBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
+        #endregion --------------------------------------------------> Widgets
 
-# #     #region ---------------------------------------------------> Class methods
-# #     def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
-# #         """Validate user information and close the window
+        #region -------------------------------------------------------> Sizer
+        self.Sizer = wx.BoxSizer(wx.VERTICAL)
+        self.Sizer.Add(self.conf, 1, wx.EXPAND|wx.ALL, 5)
+        self.Sizer.Add(self.sizerBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #endregion ----------------------------------------------------> Sizer
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
+        """Validate user information and close the window
     
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
             
     
-# #             Returns
-# #             -------
+            Returns
+            -------
             
     
-# #             Raise
-# #             -----
+            Raise
+            -----
             
-# #         """
-# #         if self.conf.conf.OnOK():
-# #             self.EndModal(1)
-# #             self.Close()
-# #         else:
-# #             pass
+        """
+        if self.conf.conf.OnOK():
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
         
-# #         return True
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion --------------------------------------------------------> wx.Dialog
 
 
