@@ -35,6 +35,7 @@ import config.config as config
 import gui.dtscore as dtscore
 import gui.method as method
 import gui.widget as widget
+import data.check as check
 
 if config.typeCheck:
     import pandas as pd
@@ -696,6 +697,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
                 numType = 'int',
                 vMin    = 0,
                 sep     = ' ',
+                unique  = False,
             )
         )
         #endregion --------------------------------------------------> Widgets
@@ -1826,7 +1828,7 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Needed by BaseConfPanel
         self.cURL         = config.urlProtProf
         self.cSection     = config.nMProtProf
-        self.cLenLongestL = len(config.lCbNormMethod)
+        self.cLenLongestL = len(config.lStResultCtrlL)
         self.cTitlePD     = f"Running {config.nMProtProf} Analysis"
         self.cGaugePD     = 15
         #------------------------------> Optional configuration
@@ -2224,6 +2226,98 @@ class ProtProf(BaseConfModPanel):
             return False
         #endregion ----------------------------------------> Individual Fields
 
+        #region ------------------------------------------------> Mixed Fields
+        #------------------------------> 
+        msgStep = msgPrefix + 'Unique column numbers'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #--------------> 
+        l = [self.detectedProt.tc, self.geneName.tc, self.score.tc, 
+            self.excludeProt.tc,
+        ]
+        #--------------> 
+        a, b = check.UniqueColNumbers(l, self.tcResults)
+        if a:
+            pass
+        else:
+            msg = config.mColNumbers.format(config.mColNumbersNoColExtract)
+            self.msgError = dtscore.StrSetMessage(msg, b[2])
+            return False
+        #endregion ---------------------------------------------> Mixed Fields
+        
+
+        return True
+    #---
+    
+    def PrepareRun(self):
+        """Set variable and prepare data for analysis."""
+        
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdPrepare
+        #endregion ------------------------------------------------------> Msg
+
+        #region -------------------------------------------------------> Input
+        msgStep = msgPrefix + 'User input, reading'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> As given
+        self.d = {
+            self.EqualLenLabel(self.ciFileL) : (
+                self.iFile.tc.GetValue()),
+            self.EqualLenLabel(self.coFileL) : (
+                self.oFile.tc.GetValue()),
+            self.EqualLenLabel(self.cScoreValL) : (
+                self.scoreVal.tc.GetValue()),
+            self.EqualLenLabel(self.cNormMethodL) : (
+                self.normMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cMedianL) : (
+                self.median.cb.GetValue()),
+            self.EqualLenLabel(self.cCorrectPL) : (
+                self.correctP.cb.GetValue()),
+            self.EqualLenLabel(self.cDetectedProtL) : (
+                self.detectedProt.tc.GetValue()),
+            self.EqualLenLabel(self.cGeneNameL) : (
+                self.geneName.tc.GetValue()),
+            self.EqualLenLabel(self.cScoreColL) : (
+                self.score.tc.GetValue()),
+            self.EqualLenLabel(self.cExcludeProtL) : (
+                self.excludeProt.tc.GetValue()),
+            self.EqualLenLabel(self.cColExtractL) : (
+                self.colExtract.tc.GetValue()),
+            self.EqualLenLabel(config.lStProtProfCond) : (
+                self.lbDict[1]),
+            self.EqualLenLabel(config.lStProtProfRP) : (
+                self.lbDict[2]),
+            self.EqualLenLabel(f"Control {config.lStCtrlType}") : (
+                self.lbDict['ControlType']),
+            self.EqualLenLabel(f"Control {config.lStCtrlName}") : (
+                self.lbDict['Control']),
+            self.EqualLenLabel(self.cResControlL): (
+                self.tcResults.GetValue()),
+            self.EqualLenLabel('Append to File') : self.checkB.GetValue(),
+        }
+
+        msgStep = msgPrefix + 'User input, processing'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Dict with all values
+        self.do = {
+            'iFile'     : Path(self.iFile.tc.GetValue()),
+            'oFile'     : Path(self.oFile.tc.GetValue()),
+            # 'NormMethod': self.normMethod.cb.GetValue(),
+            # 'CorrMethod': self.corrMethod.cb.GetValue(),
+            # 'Column'    : [int(x) for x in self.lbO.GetColContent(0)],
+            # 'Check'     : self.checkB.GetValue(),
+        }
+        #------------------------------> File base name
+        self.oFolder = self.do['oFile'].parent
+        #------------------------------> Date
+        self.date = dtsMethod.StrNow()
+        #endregion ----------------------------------------------------> Input
+
+        for k,v in self.d.items():
+            print(str(k)+': '+str(v))
+        print('')
+        for k,v in self.do.items():
+            print(str(k)+': '+str(v))
+        
         return False
     #---
 
@@ -2308,8 +2402,8 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #------------------------------> Needed by ResControlExpConfBase
         self.cN = 2
         self.cStLabel = { # Keys runs in range(1, N+1)
-            1 : 'Conditions:',
-            2 : 'Relevant points:',
+            1 : f"{config.lStProtProfCond}:",
+            2 : f"{config.lStProtProfRP}:",
         }
         self.cLabelText = { # Keys runs in range(1, N+1)
             1 : 'C',
@@ -2349,11 +2443,11 @@ class ProtProfResControlExp(ResControlExpConfBase):
         )
         self.stControlT = wx.StaticText(
             self.swLabel, 
-            label = 'Type'
+            label = config.lStCtrlType
         )
         self.stControlN = wx.StaticText(
             self.swLabel, 
-            label = 'Name'
+            label = config.lStCtrlName
         )
         #------------------------------> Text
         self.tcControl = wx.TextCtrl(

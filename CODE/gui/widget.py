@@ -19,6 +19,7 @@ import wx
 
 import dat4s_core.gui.wx.validator as dtsValidator
 
+import config.config as config
 import gui.window as window
 #endregion ----------------------------------------------------------> Imports
 
@@ -51,7 +52,7 @@ class ResControl():
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent):
         """ """
-        self.cResControlL = 'Results - Control Experiments'
+        self.cResControlL = config.lStResultCtrlL
         #region -----------------------------------------------------> Widgets
         self.tcResults = wx.TextCtrl(
             parent    = parent,

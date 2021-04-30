@@ -185,16 +185,20 @@ lBtnOutFile  = 'Output File'
 #------------------------------> wx.ListCtrl
 lLCtrlColNameI = ['#', 'Name']
 #------------------------------> wx.StaticBox
-lSbFile   = 'Files && Folders'
-lSbValue  = 'User-defined values'
-lSbColumn = 'Column numbers'
+lSbFile         = 'Files && Folders'
+lSbValue        = 'User-defined values'
+lSbColumn       = 'Column numbers'
+lStProtProfCond = 'Conditions'
+lStProtProfRP   = 'Relevant Points'
+lStCtrlName     = 'Name'
+lStCtrlType     = 'Type'  
 #------------------------------> wx.Statictext
 lStColIFile      = "Columns in the {}"
 lStScoreValL     = 'Score Value'
 lStDetectedProtL = 'Detected Proteins'
 lStScoreColL     = 'Score'
 lStColExtractL   = 'Columns to Extract'
-lStResultL       = 'Results - Control experiments'
+lStResultCtrlL   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend = 'Append new data to selected output file'
 lCbNormMethod = 'Normalization Method'
@@ -291,6 +295,8 @@ mNumROne = "Only one number can be accepted in {}."
 mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
 mListNumN0L = (
     "Only a list of unique non-negative integers can be accepted in {}.")
+mColNumbers = f"Values in section {lSbColumn} must be unique"+"{}"
+mColNumbersNoColExtract = f", excluding {lStColExtractL}."
 #endregion ---------------------------------------------------------> Messages
 
 
