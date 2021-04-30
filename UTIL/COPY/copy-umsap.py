@@ -20,7 +20,7 @@ else:
 	specH = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/RESOURCES/BUNDLE/WIN/version.txt')
 
 #--> FOLDERS TO COPY
-source = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/CODE/')
+source = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/CODE/umsap/')
 img    = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/RESOURCES/IMAGES/')
 data   = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/')
 dataF  = ['LIMPROT', 'TARPROT', 'PROTPROF', 'UMSAP-TEST-DATA']

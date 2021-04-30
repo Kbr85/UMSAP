@@ -2301,10 +2301,16 @@ class ProtProf(BaseConfModPanel):
         self.do = {
             'iFile'     : Path(self.iFile.tc.GetValue()),
             'oFile'     : Path(self.oFile.tc.GetValue()),
-            # 'NormMethod': self.normMethod.cb.GetValue(),
-            # 'CorrMethod': self.corrMethod.cb.GetValue(),
-            # 'Column'    : [int(x) for x in self.lbO.GetColContent(0)],
-            # 'Check'     : self.checkB.GetValue(),
+            'ScoreVal'  : float(self.scoreVal.tc.GetValue()),
+            'NormMethod': self.normMethod.cb.GetValue(),
+            'Median'    : True if self.median.cb.GetValue() == 'Yes' else False,
+            'CorrectP'  : self.correctP.cb.GetValue(),
+            'DetectedP' : int(self.detectedProt.tc.GetValue()),
+            'GeneName'  : int(self.geneName.tc.GetValue()),
+            'ScoreCol'  : float(self.score.tc.GetValue()),
+            'ExcludeP'  : dtsMethod.Str2ListNumber(self.excludeProt.tc.GetValue(), sep=' '),
+            'ColExtract': dtsMethod.Str2ListNumber(self.colExtract.tc.GetValue(), sep=' '),
+            'ResControl': method.ResControl2ListNumber(self.tcResult.GetValue()),
         }
         #------------------------------> File base name
         self.oFolder = self.do['oFile'].parent
@@ -2342,13 +2348,13 @@ class ProtProf(BaseConfModPanel):
 
         #region -------------------------------------------------------> Reset
         self.msgError  = None # Error msg to show in self.RunEnd
-        # self.d         = {} # Dict with the user input as given
-        # self.do        = {} # Dict with the processed user input
+        self.d         = {} # Dict with the user input as given
+        self.do        = {} # Dict with the processed user input
         # self.dfI       = None # pd.DataFrame for initial, normalized and
         # self.dfN       = None # correlation coefficients
         # self.dfCC      = None
-        # self.date      = None # date for corr file
-        # self.oFolder   = None # folder for output
+        self.date      = None # date for corr file
+        self.oFolder   = None # folder for output
         # self.corrP     = None # path to the corr file that will be created
         self.deltaT    = None
         self.tException = None
