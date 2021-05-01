@@ -15,6 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
+import itertools
 from typing import Literal, Union
 
 import dat4s_core.data.method as dtsMethod
@@ -58,5 +59,22 @@ def ResControl2ListNumber(
     #endregion ----------------------------------------------------> Form list
     
     return l
+#---
+
+def ResControl2Flat(val: list[list[list[int]]]) -> list[int]:
+    """Result - Control list as a flat list.
+
+        Parameters
+        ----------
+        val : list of list of list of int
+            Result - Control as a list of list of list of int
+
+        Returns
+        -------
+        list of int
+            Flat Result - Control list
+    """
+    # Test in test.unit.test_method.Test_ResControl2Flat
+    return list(itertools.chain(*(itertools.chain(*val))))
 #---
 #endregion ----------------------------------------------------------> Methods

@@ -2299,7 +2299,11 @@ class ProtProf(BaseConfModPanel):
         msgStep = msgPrefix + 'User input, processing'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Dict with all values
-        self.do = {
+        scoreCol = int(self.score.tc.GetValue())
+        resctrl  = dmethod.ResControl2ListNumber(self.tcResults.GetValue())
+        column   = 
+        column.insert(0, scoreCol)
+        self.do  = {
             'iFile'     : Path(self.iFile.tc.GetValue()),
             'oFile'     : Path(self.oFile.tc.GetValue()),
             'ScoreVal'  : float(self.scoreVal.tc.GetValue()),
@@ -2308,10 +2312,11 @@ class ProtProf(BaseConfModPanel):
             'CorrectP'  : self.correctP.cb.GetValue(),
             'DetectedP' : int(self.detectedProt.tc.GetValue()),
             'GeneName'  : int(self.geneName.tc.GetValue()),
-            'ScoreCol'  : float(self.score.tc.GetValue()),
+            'ScoreCol'  : scoreCol,
             'ExcludeP'  : dtsMethod.Str2ListNumber(self.excludeProt.tc.GetValue(), sep=' '),
             'ColExtract': dtsMethod.Str2ListNumber(self.colExtract.tc.GetValue(), sep=' '),
-            'ResControl': dmethod.ResControl2ListNumber(self.tcResults.GetValue()),
+            'ResControl': resctrl,
+            'Column'    : column,
         }
         #------------------------------> File base name
         self.oFolder = self.do['oFile'].parent
@@ -2329,7 +2334,42 @@ class ProtProf(BaseConfModPanel):
         else:
             pass
         
-        return False
+        return True
+    #---
+    
+    def ReadInputFiles(self):
+        """Read input file and check data"""
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdReadFile
+        #endregion ------------------------------------------------------> Msg
+
+        #region ---------------------------------------------------> Data file
+        msgStep = msgPrefix + f"{self.ciFileL}, reading"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        try:
+            self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
+        except dtsException.FileIOError as e:
+            self.msgError = str(e)
+            self.tException = e
+            return False
+        #endregion ------------------------------------------------> Data file
+
+        #region ------------------------------------------------------> Column
+        msgStep = msgPrefix + f"{self.ciFileL}, data type"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        self.df = self.iFileObj.df.iloc[:,self.do['Column']]
+        try:
+            self.dfI = self.df.astype('float')
+        except Exception as e:
+            self.msgError  = config.mPDDataTypeCol.format(
+                self.ciFileL,
+                ", ".join(map(str, self.do['Column'])),
+            )
+            self.tException = e
+            return False
+        #endregion ---------------------------------------------------> Column
+
+        return True
     #---
 
     def RunEnd(self):
