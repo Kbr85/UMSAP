@@ -33,9 +33,10 @@ import dat4s_core.data.check as dtsCheck
 
 import config.config as config
 import gui.dtscore as dtscore
-import gui.method as method
+import gui.method as gmethod
 import gui.widget as widget
 import data.check as check
+import data.method as dmethod
 
 if config.typeCheck:
     import pandas as pd
@@ -1749,7 +1750,7 @@ class CorrA(BaseConfPanel):
         #region --------------------------------------------------------> Load
         wx.CallAfter(self.dlg.UpdateStG, msgPrefix)
         
-        wx.CallAfter(method.LoadUMSAPFile, fileP=self.do['oFile'])
+        wx.CallAfter(gmethod.LoadUMSAPFile, fileP=self.do['oFile'])
         #endregion -----------------------------------------------------> Load
 
         return True
@@ -2310,7 +2311,7 @@ class ProtProf(BaseConfModPanel):
             'ScoreCol'  : float(self.score.tc.GetValue()),
             'ExcludeP'  : dtsMethod.Str2ListNumber(self.excludeProt.tc.GetValue(), sep=' '),
             'ColExtract': dtsMethod.Str2ListNumber(self.colExtract.tc.GetValue(), sep=' '),
-            'ResControl': method.ResControl2ListNumber(self.tcResult.GetValue()),
+            'ResControl': dmethod.ResControl2ListNumber(self.tcResults.GetValue()),
         }
         #------------------------------> File base name
         self.oFolder = self.do['oFile'].parent
@@ -2318,11 +2319,15 @@ class ProtProf(BaseConfModPanel):
         self.date = dtsMethod.StrNow()
         #endregion ----------------------------------------------------> Input
 
-        for k,v in self.d.items():
-            print(str(k)+': '+str(v))
-        print('')
-        for k,v in self.do.items():
-            print(str(k)+': '+str(v))
+        if config.development:
+            print('self.d:')
+            for k,v in self.d.items():
+                print(str(k)+': '+str(v))
+            print('self.do')
+            for k,v in self.do.items():
+                print(str(k)+': '+str(v))
+        else:
+            pass
         
         return False
     #---
