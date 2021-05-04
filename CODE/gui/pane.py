@@ -1831,7 +1831,7 @@ class ProtProf(BaseConfModPanel):
         self.cSection     = config.nMProtProf
         self.cLenLongestL = len(config.lStResultCtrlL)
         self.cTitlePD     = f"Running {config.nMProtProf} Analysis"
-        self.cGaugePD     = 15
+        self.cGaugePD     = 30
         #------------------------------> Optional configuration
         self.cHelpTT = config.ttBtnHelp.format(config.urlProtProf)
         #------------------------------> Base attributes and setup
@@ -2295,14 +2295,24 @@ class ProtProf(BaseConfModPanel):
                 self.tcResults.GetValue()),
             self.EqualLenLabel('Append to File') : self.checkB.GetValue(),
         }
-
+        #------------------------------> Dict with all values
+        #--------------> 
         msgStep = msgPrefix + 'User input, processing'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Dict with all values
-        scoreCol = int(self.score.tc.GetValue())
-        resctrl  = dmethod.ResControl2ListNumber(self.tcResults.GetValue())
-        column   = 
-        column.insert(0, scoreCol)
+        #--------------> 
+        detectedProt = int(self.detectedProt.tc.GetValue())
+        geneName     = int(self.geneName.tc.GetValue())
+        scoreCol     = int(self.score.tc.GetValue())
+        excludeProt  = dtsMethod.Str2ListNumber(
+            self.excludeProt.tc.GetValue(), sep=' ',
+        )
+        colExtract = dtsMethod.Str2ListNumber(
+            self.colExtract.tc.GetValue(), sep=' ',
+        )
+        resctrl     = dmethod.ResControl2ListNumber(self.tcResults.GetValue())
+        resctrlFlat = dmethod.ResControl2Flat(resctrl)
+        resctrlDF   = dmethod.ResControl2DF(resctrl, 2+len(excludeProt)+1)
+        #--------------> 
         self.do  = {
             'iFile'     : Path(self.iFile.tc.GetValue()),
             'oFile'     : Path(self.oFile.tc.GetValue()),
@@ -2310,13 +2320,27 @@ class ProtProf(BaseConfModPanel):
             'NormMethod': self.normMethod.cb.GetValue(),
             'Median'    : True if self.median.cb.GetValue() == 'Yes' else False,
             'CorrectP'  : self.correctP.cb.GetValue(),
-            'DetectedP' : int(self.detectedProt.tc.GetValue()),
-            'GeneName'  : int(self.geneName.tc.GetValue()),
-            'ScoreCol'  : scoreCol,
-            'ExcludeP'  : dtsMethod.Str2ListNumber(self.excludeProt.tc.GetValue(), sep=' '),
-            'ColExtract': dtsMethod.Str2ListNumber(self.colExtract.tc.GetValue(), sep=' '),
-            'ResControl': resctrl,
-            'Column'    : column,
+            'oc' : {
+                'DetectedP' : detectedProt,
+                'GeneName'  : geneName,
+                'ScoreCol'  : scoreCol,
+                'ExcludeP'  : excludeProt,
+                'ColExtract': colExtract,
+                'ResCtrl': resctrl,
+                'Column'    : (
+                    [detectedProt, geneName, scoreCol] 
+                    + excludeProt 
+                    + resctrlFlat
+                ),
+            },
+            'df' : {
+                'DetectedP': 0,
+                'GeneName' : 1,
+                'ScoreCol' : 2,
+                'ExcludeP' : [2+x for x in range(1, len(excludeProt)+1)],
+                'ResCtrl'  : resctrlDF,
+                'ColumnF'  : [2] + dmethod.ResControl2Flat(resctrlDF),
+            },
         }
         #------------------------------> File base name
         self.oFolder = self.do['oFile'].parent
@@ -2357,19 +2381,50 @@ class ProtProf(BaseConfModPanel):
         #region ------------------------------------------------------> Column
         msgStep = msgPrefix + f"{self.ciFileL}, data type"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        self.df = self.iFileObj.df.iloc[:,self.do['Column']]
+        self.dfI = self.iFileObj.df.iloc[:,self.do['oc']['Column']]
         try:
-            self.dfI = self.df.astype('float')
+            self.dfI.iloc[:,self.do['df']['ColumnF']].astype('float')
         except Exception as e:
             self.msgError  = config.mPDDataTypeCol.format(
                 self.ciFileL,
-                ", ".join(map(str, self.do['Column'])),
+                ", ".join(map(str, self.do['oc']['Column'])),
             )
             self.tException = e
             return False
         #endregion ---------------------------------------------------> Column
 
+        if config.development:
+            print(self.dfI)
+        
         return True
+    #---
+    
+    def RunAnalysis(self):
+        """Calculate proteome profiling data"""
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdRun
+        #endregion ------------------------------------------------------> Msg
+
+        #region -----------------------------------------------> Normalization
+        # msgStep = msgPrefix + f"Data normalization"
+        # wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        # if self.do['NormMethod'] != 'None':
+        #     try:
+        #         self.dfN = dtsStatistic.DataNormalization(
+        #             self.dfI,
+        #             sel = None,
+        #             method = self.do['NormMethod'],
+        #         )
+        #     except Exception as e:
+        #         self.msgError = str(e)
+        #         self.tException = e
+        #         return False
+        # else:
+        #     self.dfN = self.dfI.copy()
+        #endregion --------------------------------------------> Normalization
+
+        
+        return False
     #---
 
     def RunEnd(self):
@@ -2395,7 +2450,7 @@ class ProtProf(BaseConfModPanel):
         self.msgError  = None # Error msg to show in self.RunEnd
         self.d         = {} # Dict with the user input as given
         self.do        = {} # Dict with the processed user input
-        # self.dfI       = None # pd.DataFrame for initial, normalized and
+        self.dfI       = None # pd.DataFrame for initial, normalized and
         # self.dfN       = None # correlation coefficients
         # self.dfCC      = None
         self.date      = None # date for corr file

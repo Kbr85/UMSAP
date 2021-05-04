@@ -23,9 +23,8 @@ import dat4s_core.data.method as dtsMethod
 
 #region -------------------------------------------------------------> Methods
 def ResControl2ListNumber(
-    val: str, sep: list[str]=[' ', ',', ';'], 
-    numType: Literal['int', 'float']='int',
-    ) -> list[list[list[Union[int, float]]]]:
+    val: str, sep: list[str]=[' ', ',', ';'], numType: str='int',
+    ) -> list[list[list[int]]]:
     """Return a list 
         Parameters
         ----------
@@ -76,5 +75,58 @@ def ResControl2Flat(val: list[list[list[int]]]) -> list[int]:
     """
     # Test in test.unit.test_method.Test_ResControl2Flat
     return list(itertools.chain(*(itertools.chain(*val))))
+#---
+
+def ResControl2DF(
+    val: list[list[list[int]]], start: int
+    ) -> list[list[list[int]]]:
+    """Convert the Result - Control column numbers in the original file to the
+        column numbers of the initial dataframe used in the analysis. 
+
+        Parameters
+        ----------
+        val : list of list of list of int
+            Result - Control as a list of list of list of int
+        start : int
+            Column index start of the Result - Control columns in the initial
+            dataframe 
+
+        Returns
+        -------
+        list[list[list[int]]]
+            The list has the same order as the input val but the column index
+            are adjusted
+    """
+    # Test in test.unit.test_method.Test_ResControl2DF
+    #region -------------------------------------------------------> Variables
+    idx  = start
+    outL = []
+    #endregion ----------------------------------------------------> Variables
+    
+    #region --------------------------------------------------> Adjust col idx
+    for row in val:
+        #------------------------------> 
+        outR = []
+        #------------------------------> 
+        for col in row:
+            #------------------------------> 
+            outC = []
+            #------------------------------> 
+            if len(col) > 0:
+                pass
+            else:
+                outR.append([])
+                continue
+            #------------------------------> 
+            for k in col:
+                outC.append(idx)
+                idx += 1
+            #------------------------------> 
+            outR.append(outC)
+        #------------------------------> 
+        outL.append(outR)    
+    #endregion -----------------------------------------------> Adjust col idx
+    
+    return outL
 #---
 #endregion ----------------------------------------------------------> Methods
