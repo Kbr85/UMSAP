@@ -43,7 +43,10 @@ typeCheck = TYPE_CHECKING
 # There are some that must be defined in other sections
 if cOS == 'Darwin':
     #------------------------------> Root & Resources Folder
-    root = cwd.parent.parent
+    if development:
+        root = cwd.parent.parent.parent
+    else:
+        root = cwd.parent.parent
     res = root / 'Resources'
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
@@ -207,7 +210,7 @@ lStColExtractL   = 'Columns to Extract'
 lStResultCtrlL   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
-lCbTransMethod = 'Transformation Method'
+lCbTransMethod = 'Data Transformation'
 lCbNormMethod  = 'Normalization Method'
 lCbCorrMethod  = 'Correlation Method'
 #------------------------------> Progress Dialog
@@ -238,7 +241,7 @@ ttBtnHelp     = "Read tutorial at {}."
 ttBtnClearAll = f"Clear all user input."
 ttBtnRun      = f"Start the analysis."
 #------------------------------> wx.StaticText
-ttStTrans = f"Select the {lCbTransMethod}"
+ttStTrans = f"Select the {lCbTransMethod} method."
 ttStNorm = f"Select the {lCbNormMethod}."
 ttStCorr = f"Select the {lCbCorrMethod}."
 ttStScoreVal = f"Set the minimum acceptable Score value.\ne.g. -4"

@@ -243,9 +243,7 @@ class Start(wx.Panel):
     #region -----------------------------------------------------> Class setup
     name = 'StartTab'
     #------------------------------> Tooltips
-    cBtnDataTTT = f"Start the utility {config.nUDataT}"
     cBtnCorrATT = f"Start the utility {config.nUCorrA}"
-    cBtnDataNTT = f"Start the utility {config.nUDataN}"
     cBtnLimProtTT = f"Start the module {config.nMLimProt}"
     cBtnTarProtTT = f"Start the module {config.nMTarProt}"
     cBtnProtProfTT = f"Start the module {config.nMProtProf}"
@@ -270,18 +268,14 @@ class Start(wx.Panel):
         )
         #---
         #--> Buttons
-        self.btnDataT    = wx.Button(self, label=config.nUDataT)
         self.btnCorrA    = wx.Button(self, label=config.nUCorrA)
-        self.btnDataN    = wx.Button(self, label=config.nUDataN)
         self.btnLimProt  = wx.Button(self, label=config.nMLimProt)
         self.btnProtProf = wx.Button(self, label=config.nMProtProf)
         self.btnTarProt  = wx.Button(self, label=config.nMTarProt)
         #endregion --------------------------------------------------> Widgets
 
         #region ----------------------------------------------------> Tooltips
-        self.btnDataT.SetToolTip(self.cBtnDataTTT)
         self.btnCorrA.SetToolTip(self.cBtnCorrATT)
-        self.btnDataN.SetToolTip(self.cBtnDataNTT)
         self.btnLimProt.SetToolTip(self.cBtnLimProtTT)
         self.btnProtProf.SetToolTip(self.cBtnProtProfTT)
         self.btnTarProt.SetToolTip(self.cBtnTarProtTT)
@@ -294,13 +288,7 @@ class Start(wx.Panel):
         self.SizerBtn  = wx.BoxSizer(wx.VERTICAL)
         #--> Add widgets
         self.SizerBtn.Add(
-            self.btnDataT, 0, wx.EXPAND|wx.ALL, 5
-        )
-        self.SizerBtn.Add(
             self.btnCorrA, 0, wx.EXPAND|wx.ALL, 5
-        )
-        self.SizerBtn.Add(
-            self.btnDataN, 0, wx.EXPAND|wx.ALL, 5
         )
         self.SizerBtn.Add(
             self.btnLimProt, 0, wx.EXPAND|wx.ALL, 5

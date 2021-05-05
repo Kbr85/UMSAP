@@ -41,8 +41,8 @@ class UmsapApp(wx.App):
         #--> Set location of splash image
         if cOS == 'Darwin':
             if DEVELOPMENT:
-                root = str(Path(__file__).parent)
-                image_loc = root + '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
+                root = str(Path(__file__).parent.parent)
+                image_loc = root + '/Resources/IMAGES/SPLASHSCREEN/splash.png'
             else:
                 root = str(Path(__file__).parent.parent)
                 image_loc = (
@@ -51,7 +51,7 @@ class UmsapApp(wx.App):
                 )
         else:
             root = str(Path(__file__).parent)
-            image_loc = root + '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
+            image_loc = root + '/Resources/IMAGES/SPLASHSCREEN/splash.png'
         #--> Launch splash window
         SplashWindow(image_loc)
         #endregion ---------------------------------------------> SplashScreen
