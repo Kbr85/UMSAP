@@ -1392,6 +1392,7 @@ class CorrA(BaseConfPanel):
         self.cMainData  = '{}-CorrelationCoefficients-Data.txt'
         self.cChangeKey = ['uFile', 'iFile']
         self.RDF        = None # correlation coefficients
+        self.dFile      = None
         #------------------------------> Label
         self.cTransL    = config.lCbTransMethod
         self.cCorrL     = config.lCbCorrMethod
@@ -1890,15 +1891,29 @@ class ProtProf(BaseConfModPanel):
         super().__init__(parent)
         #------------------------------> Needed to Run
         self.cMainData  = '{}-ProteomeProfiling-Data.txt'
-        self.cChangeKey = ['iFile', 'oFile']
+        self.cChangeKey = ['iFile', 'uFile']
+        self.RDF        = None
+        self.dFile      = None
         #------------------------------> Labels
         self.cCorrectPL    = 'P Correction'
         self.cGeneNameL    = 'Gene Names'
         self.cExcludeProtL = 'Exclude Proteins'
+        self.cSampleL      = 'Samples'
+        self.cRawIL        = 'Intensities'
+        #------------------------------> Choices
+        self.cSampleChoice = ['', 'Independent Samples', 'Paired Samples'] 
+        self.cRawIChoice   = ['', 'Raw Intensities', 'Ratio of Intensities'] 
         #------------------------------> Tooltips
         self.cCorrectPTT    = config.ttStPCorrection
         self.cGeneNameTT    = config.ttStGenName
         self.cExcludeProtTT = config.ttStExcludeProt
+        self.cSampleTT      = (
+            f"Specify if samples are independent or paired.\n"
+            f"For example, samples are paired when the same Petri dish is "
+            f"used for the control and experiment.")
+        self.cRawITT = (
+            f"Specify if intensities are raw intensity values or are already "
+            f"expressed as a ratio (SILAC, TMT/iTRAQ).")
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -1911,6 +1926,20 @@ class ProtProf(BaseConfModPanel):
             self.sbValue,
             self.cCorrectPL,
             config.oCorrectP,
+            validator = dtsValidator.IsNotEmpty(),
+        )
+        
+        self.sample = dtsWidget.StaticTextComboBox(
+            self.sbValue,
+            self.cSampleL,
+            self.cSampleChoice,
+            validator = dtsValidator.IsNotEmpty(),
+        )
+        
+        self.rawI = dtsWidget.StaticTextComboBox(
+            self.sbValue,
+            self.cRawIL,
+            self.cRawIChoice,
             validator = dtsValidator.IsNotEmpty(),
         )
         #------------------------------> Columns
@@ -1940,6 +1969,8 @@ class ProtProf(BaseConfModPanel):
         self.correctP.st.SetToolTip(self.cCorrectPTT)
         self.geneName.st.SetToolTip(self.cGeneNameTT)
         self.excludeProt.st.SetToolTip(self.cExcludeProtTT)
+        self.sample.st.SetToolTip(self.cSampleTT)
+        self.rawI.st.SetToolTip(self.cRawITT)
         #endregion --------------------------------------------------> Tooltip
         
         #region ------------------------------------------------------> Sizers
@@ -1952,50 +1983,74 @@ class ProtProf(BaseConfModPanel):
             span   = (2, 0),
         )
         self.sizersbValueWid.Add(
-            self.transMethod.st,
+            self.scoreVal.st,
             pos    = (0,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.transMethod.cb,
+            self.scoreVal.tc,
             pos    = (0,2),
-            flag   = wx.EXPAND|wx.ALL,
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.normMethod.st,
+            self.sample.st,
             pos    = (1,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.normMethod.cb,
+            self.sample.cb,
             pos    = (1,2),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.scoreVal.st,
+            self.rawI.st,
+            pos    = (2,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.rawI.cb,
+            pos    = (2,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.transMethod.st,
             pos    = (0,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.scoreVal.tc,
+            self.transMethod.cb,
             pos    = (0,4),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.correctP.st,
+            self.normMethod.st,
             pos    = (1,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.correctP.cb,
+            self.normMethod.cb,
             pos    = (1,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.correctP.st,
+            pos    = (2,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.correctP.cb,
+            pos    = (2,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
@@ -2106,6 +2161,8 @@ class ProtProf(BaseConfModPanel):
             self.scoreVal.tc.SetValue('320')
             self.transMethod.cb.SetValue('Log2')
             self.normMethod.cb.SetValue('Median')
+            self.sample.cb.SetValue('Independent Samples')
+            self.rawI.cb.SetValue('Raw Intensities')
             self.correctP.cb.SetValue('Benjamini - Hochberg')
             self.detectedProt.tc.SetValue('0')
             self.geneName.tc.SetValue('6')   
@@ -2137,6 +2194,17 @@ class ProtProf(BaseConfModPanel):
         #endregion ------------------------------------------------------> Msg
         
         #region -------------------------------------------> Individual Fields
+        #------------------------------> UMSAP File
+        msgStep = msgPrefix + self.cuFileL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.uFile.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = dtscore.StrSetMessage(
+                config.mFileBad.format(b[1], self.cuFileL), b[2],
+            )
+            return False
         #------------------------------> Input file
         msgStep = msgPrefix + self.ciFileL
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
@@ -2148,17 +2216,7 @@ class ProtProf(BaseConfModPanel):
                 config.mFileBad.format(b[1], self.ciFileL), b[2],
             )
             return False
-        #------------------------------> Output Folder
-        msgStep = msgPrefix + self.coFileL
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.oFile.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mFileBad.format(b[1], self.coFileL), b[2],
-            )
-            return False
+        
         #------------------------------> Score Value
         msgStep = msgPrefix + self.cScoreValL
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
@@ -2170,6 +2228,30 @@ class ProtProf(BaseConfModPanel):
                 config.mNumROne.format(self.cScoreValL), b[2],
             )
             return False
+        #------------------------------> Sample
+        msgStep = msgPrefix + self.cSampleL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.sample.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = config.mNotEmpty.format(self.cSampleL)
+            return False
+        #------------------------------> Intensity
+        msgStep = msgPrefix + self.cRawIL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.rawI.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = config.mNotEmpty.format(self.cRawIL)
+            return False
+        #------------------------------> Transformation
+        msgStep = msgPrefix + self.cTransMethodL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.transMethod.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = config.mNotEmpty.format(self.cTransMethodL)
+            return False
         #------------------------------> Normalization
         msgStep = msgPrefix + self.cNormMethodL
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
@@ -2177,14 +2259,6 @@ class ProtProf(BaseConfModPanel):
             pass
         else:
             self.msgError = config.mNotEmpty.format(self.cNormMethodL)
-            return False
-        #------------------------------> Median Correction
-        msgStep = msgPrefix + self.cMedianL
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.median.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cMedianL)
             return False
         #------------------------------> P Correction
         msgStep = msgPrefix + self.cCorrectPL
@@ -2283,8 +2357,7 @@ class ProtProf(BaseConfModPanel):
             return False
         #endregion ---------------------------------------------> Mixed Fields
         
-
-        return True
+        return False
     #---
     
     def PrepareRun(self):
@@ -2474,8 +2547,6 @@ class ProtProf(BaseConfModPanel):
                 config.lPdDone,
                 eTime=f"{config.lPdEllapsed}  {self.deltaT}",
             )
-            #--> Show the 
-            self.OnOFileChange('fEvent')
         else:
             self.dlg.ErrorMessage(
                 config.lPdError, 
@@ -2496,6 +2567,11 @@ class ProtProf(BaseConfModPanel):
         # self.corrP     = None # path to the corr file that will be created
         self.deltaT    = None
         self.tException = None
+        if self.dFile is not None:
+            self.iFile.tc.SetValue(str(self.dFile))
+        else:
+            pass
+        self.dFile = None # Data File copied to Data-Initial
         #endregion ----------------------------------------------------> Reset
     #---
     #endregion ------------------------------------------------> Class methods

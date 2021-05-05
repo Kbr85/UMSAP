@@ -79,13 +79,13 @@ class ListZebra(dtsWidget.ListZebra):
     def __init__(self, parent:wx.Window, color: str=config.color['Zebra'], 
         colLabel: Optional[list[str]]=None, colSize: Optional[list[int]]=None, 
         canCopy: bool=True, canCut: bool=False, canPaste: bool=False, 
-        copyFullContent: bool=False, pasteUnique: bool=True, selAll:bool=True, 
-        style=wx.LC_REPORT) -> None:
+        copyFullContent: bool=False, sep: str=' ', pasteUnique: bool=True, 
+        selAll:bool=True, style=wx.LC_REPORT) -> None:
         """"""
         super().__init__(
             parent, color=color, colLabel=colLabel, colSize=colSize, 
             canCopy=canCopy, canCut=canCut, canPaste=canPaste, 
-            copyFullContent=copyFullContent, pasteUnique=pasteUnique, 
+            copyFullContent=copyFullContent, sep=sep, pasteUnique=pasteUnique, 
             selAll=selAll, style=style)
     #---
 #---
@@ -95,13 +95,13 @@ class ListZebraMaxWidth(dtsWidget.ListZebraMaxWidth):
     def __init__(self, parent: wx.Window, color: str=config.color['Zebra'], 
         colLabel: Optional[list[str]]=None, colSize: Optional[list[int]]=None, 
         canCopy: bool=True, canCut:bool=False, canPaste: bool=False, 
-        copyFullContent: bool=False, pasteUnique: bool=True, selAll: bool=True, 
-        style=wx.LC_REPORT):
+        copyFullContent: bool=False, sep: str=' ', pasteUnique: bool=True, 
+        selAll: bool=True, style=wx.LC_REPORT):
         """"""
         super().__init__(
             parent, color=color, colLabel=colLabel, colSize=colSize, 
             canCopy=canCopy, canCut=canCut, canPaste=canPaste, 
-            copyFullContent=copyFullContent, pasteUnique=pasteUnique, 
+            copyFullContent=copyFullContent, sep=sep, pasteUnique=pasteUnique, 
             selAll=selAll, style=style)
     #---    
 #---

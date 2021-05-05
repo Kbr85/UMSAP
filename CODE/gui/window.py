@@ -1237,17 +1237,15 @@ class ResControlExp(wx.Dialog):
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
-        """
+            True
+            """
+        #region ---------------------------------------------------> 
         if self.conf.conf.OnOK():
             self.EndModal(1)
             self.Close()
         else:
             pass
+        #endregion ------------------------------------------------> 
         
         return True
     #---
