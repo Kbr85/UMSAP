@@ -19,7 +19,6 @@ structure:"""
 				'NormMethod': 'normalization method',
 				'CorrMethod': 'correlation method',
 				'Column'    : [selected columns as integers],
-				'Check      : 'Append to existing output file or not',
 			},
 			'CI': { # Ready to use values
 				'iFile'     : 'input file path',
@@ -27,7 +26,6 @@ structure:"""
 				'NormMethod': 'normalization method',
 				'CorrMethod': 'correlation method',
 				'Column'    : [selected columns as integers],
-				'Check      : 'Append to existing output file or not',
 			},
 			'R' : pd.DataFrame (dict) with the correlation coefficients,
 		}

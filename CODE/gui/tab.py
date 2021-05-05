@@ -243,12 +243,12 @@ class Start(wx.Panel):
     #region -----------------------------------------------------> Class setup
     name = 'StartTab'
     #------------------------------> Tooltips
-    cTarProtTT     = 'Start the module Target Proteolysis'
-    cProtProfTT    = 'Start the module Proteome Profiling'
-    cTTBtnCorrA    = f"Start the utility {config.nUCorrA}"
-    cTTBtnLimProt  = f"Start the module {config.nMLimProt}"
-    cTTBtnTarProt  = f"Start the module {config.nMTarProt}"
-    cTTBtnProtProf = f"Start the module {config.nMProtProf}"
+    cBtnDataTTT = f"Start the utility {config.nUDataT}"
+    cBtnCorrATT = f"Start the utility {config.nUCorrA}"
+    cBtnDataNTT = f"Start the utility {config.nUDataN}"
+    cBtnLimProtTT = f"Start the module {config.nMLimProt}"
+    cBtnTarProtTT = f"Start the module {config.nMTarProt}"
+    cBtnProtProfTT = f"Start the module {config.nMProtProf}"
     #------------------------------> Files
     cImg = config.fImgStart
     #endregion --------------------------------------------------> Class setup
@@ -270,17 +270,21 @@ class Start(wx.Panel):
         )
         #---
         #--> Buttons
+        self.btnDataT    = wx.Button(self, label=config.nUDataT)
         self.btnCorrA    = wx.Button(self, label=config.nUCorrA)
+        self.btnDataN    = wx.Button(self, label=config.nUDataN)
         self.btnLimProt  = wx.Button(self, label=config.nMLimProt)
         self.btnProtProf = wx.Button(self, label=config.nMProtProf)
         self.btnTarProt  = wx.Button(self, label=config.nMTarProt)
         #endregion --------------------------------------------------> Widgets
 
         #region ----------------------------------------------------> Tooltips
-        self.btnLimProt.SetToolTip(self.cTTBtnLimProt)
-        self.btnTarProt.SetToolTip(self.cTTBtnTarProt)
-        self.btnProtProf.SetToolTip(self.cTTBtnProtProf)
-        self.btnCorrA.SetToolTip(self.cTTBtnCorrA)
+        self.btnDataT.SetToolTip(self.cBtnDataTTT)
+        self.btnCorrA.SetToolTip(self.cBtnCorrATT)
+        self.btnDataN.SetToolTip(self.cBtnDataNTT)
+        self.btnLimProt.SetToolTip(self.cBtnLimProtTT)
+        self.btnProtProf.SetToolTip(self.cBtnProtProfTT)
+        self.btnTarProt.SetToolTip(self.cBtnTarProtTT)
         #endregion -------------------------------------------------> Tooltips
         
         #region ------------------------------------------------------> Sizers
@@ -290,7 +294,13 @@ class Start(wx.Panel):
         self.SizerBtn  = wx.BoxSizer(wx.VERTICAL)
         #--> Add widgets
         self.SizerBtn.Add(
+            self.btnDataT, 0, wx.EXPAND|wx.ALL, 5
+        )
+        self.SizerBtn.Add(
             self.btnCorrA, 0, wx.EXPAND|wx.ALL, 5
+        )
+        self.SizerBtn.Add(
+            self.btnDataN, 0, wx.EXPAND|wx.ALL, 5
         )
         self.SizerBtn.Add(
             self.btnLimProt, 0, wx.EXPAND|wx.ALL, 5
@@ -305,14 +315,14 @@ class Start(wx.Panel):
         self.SizerGrid.Add(
             self.img, 
             pos	= (0,0),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
+            flag   = wx.EXPAND|wx.RIGHT,
+            border = 25,
         )
         self.SizerGrid.Add(
             self.SizerBtn, 
             pos	= (0,1),
-            flag   = wx.ALIGN_CENTRE_VERTICAL|wx.ALL,
-            border = 5,
+            flag   = wx.ALIGN_CENTRE_VERTICAL|wx.LEFT,
+            border = 25,
         )
 
         self.Sizer.AddStretchSpacer(1)

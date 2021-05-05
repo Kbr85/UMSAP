@@ -132,7 +132,9 @@ nMLimProt  = 'Limited Proteolysis'
 nMTarProt  = 'Targeted Proteolysis'
 nMProtProf = 'Proteome Profiling'
 
+nUDataT = 'Data Transformation'
 nUCorrA = 'Correlation Analysis'
+nUDataN = 'Data Normalization'
 nUReadF = 'Read UMSAP File'
 #endregion ------------------------------------------------------------> Names
 
@@ -159,8 +161,11 @@ pImages = res / 'IMAGES' # Images folder
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 #------------------------------> Names
-fnInitial = "{}-Initial-Data.txt"
-fnNorm    = "{}-Normalized-Data.txt"
+fnInitial   = "{}-Initial-Data.txt"
+fnTrans     = "{}-Transformed-Data.txt"
+fnNorm      = "{}-Normalized-Data.txt"
+fnDataSteps = 'Data-Steps'
+fnDataInit  = 'Data-Files'
 #endregion ---------------------------------------------------> Path and Files
 
 #region ------------------------------------------------------------------ URL
@@ -182,6 +187,7 @@ lnPDCorrA  = 'Calculating Correlation Coefficients'
 lBtnRun      = 'Start Analysis'
 lBtnDataFile = 'Data File'
 lBtnOutFile  = 'Output File'
+lBtnUFile    = 'UMSAP File'
 #------------------------------> wx.ListCtrl
 lLCtrlColNameI = ['#', 'Name']
 #------------------------------> wx.StaticBox
@@ -200,9 +206,10 @@ lStScoreColL     = 'Score'
 lStColExtractL   = 'Columns to Extract'
 lStResultCtrlL   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
-lCbFileAppend = 'Append new data to selected output file'
-lCbNormMethod = 'Normalization Method'
-lCbCorrMethod = 'Correlation Method'
+lCbFileAppend  = 'Append new data to selected output file'
+lCbTransMethod = 'Transformation Method'
+lCbNormMethod  = 'Normalization Method'
+lCbCorrMethod  = 'Correlation Method'
 #------------------------------> Progress Dialog
 lPdCheck    = 'Checking user input: '
 lPdPrepare  = 'Preparing analysis: '
@@ -218,17 +225,20 @@ lPdEllapsed = 'Ellapsed time: '
 #region ---------------------------------------------------------------> Hints
 hTcDataFile = f"Path to the {lBtnDataFile}"
 hTcOutFile  = f"Path tot the {lBtnOutFile}"
+hTcUFile    = f"Path tot the {lBtnUFile}"
 #endregion ------------------------------------------------------------> Hints
 
 #region ------------------------------------------------------------> Tooltips
 #------------------------------> wx.Button
 ttBtnDataFile = f"Select the {lBtnDataFile}."
 ttBtnOutFile  = f"Select the {lBtnOutFile}."
+ttBtnUFile  = f"Select the {lBtnUFile}."
 ttBtnHelpDef  = f"Read online tutorial at {urlHome}."
 ttBtnHelp     = "Read tutorial at {}."
 ttBtnClearAll = f"Clear all user input."
 ttBtnRun      = f"Start the analysis."
 #------------------------------> wx.StaticText
+ttStTrans = f"Select the {lCbTransMethod}"
 ttStNorm = f"Select the {lCbNormMethod}."
 ttStCorr = f"Select the {lCbCorrMethod}."
 ttStScoreVal = f"Set the minimum acceptable Score value.\ne.g. -4"
@@ -255,7 +265,7 @@ ttLCtrlPasteMod = (
 #endregion ---------------------------------------------------------> Tooltips
 
 #region -------------------------------------------------------------> Options
-oNormMethod = ['', 'None', 'Log2']
+oTransMethod = ['', 'None', 'Log2']
 oCorrMethod = ['', 'Pearson', 'Kendall', 'Spearman']
 oYesNo      = ['', 'Yes', 'No']
 oCorrectP   = [

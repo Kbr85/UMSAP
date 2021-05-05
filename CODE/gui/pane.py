@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread 
+import shutil
 from pathlib import Path
 from typing import Optional, Literal, Type
 
@@ -203,18 +204,18 @@ class BaseConfPanel(
         self.parent = parent
         #------------------------------> Labels
         self.cRunBtnL    = getattr(self, 'RunBtnL', config.lBtnRun)
+        self.cuFileL     = getattr(self, 'cuFileL', config.lBtnUFile)
         self.ciFileL     = getattr(self, 'ciFileL', config.lBtnDataFile)
-        self.coFileL     = getattr(self, 'coFileL', config.lBtnOutFile)
         self.cFileBoxL   = getattr(self, 'cFileBoxL', config.lSbFile)
         self.cValueBoxL  = getattr(self, 'cValueBoxL', config.lSbValue)
         self.cColumnBoxL = getattr(self, 'cColumnBoxL', config.lSbColumn)
         self.cCheckL     = getattr(self, 'cCheckL', config.lCbFileAppend)
         #------------------------------> Hints
+        self.cuFileH = getattr(self, 'cuFileH', config.hTcUFile)
         self.ciFileH = getattr(self, 'ciFileH', config.hTcDataFile)
-        self.coFileH = getattr(self, 'coFileH', config.hTcOutFile)
         #------------------------------> Tooltips
+        self.cuFileTT    = getattr(self, 'cuFileTT', config.ttBtnUFile)
         self.ciFileTT    = getattr(self, 'ciFileTT', config.ttBtnDataFile)
-        self.coFileTT    = getattr(self, 'coFileTT', config.ttBtnOutFile)
         self.cHelpTT     = getattr(self, 'cHelpTT', config.ttBtnHelpDef)
         self.cClearAllTT = getattr(self, 'cClearAllTT', config.ttBtnClearAll)
         self.cRunTT      = getattr(self, 'cRunTT', config.ttBtnRun)
@@ -222,23 +223,23 @@ class BaseConfPanel(
         self.ciFileE = getattr(self, 'ciFileE', config.elData)
         #------------------------------> Mode
         self.ciMode = getattr(self, 'ciMode', 'openO')
-        self.coMode = getattr(self, 'coMode', 'save')
+        self.cuMode = getattr(self, 'coMode', 'save')
         #------------------------------> Validator
+        self.cuFileValidator = getattr(
+            self, 
+            'cuFileValidator',
+            dtsValidator.OutputFF(
+                fof = 'file',
+                ext = config.esUMSAP[0],
+                opt = False,
+            )
+        )
         self.ciFileValidator = getattr(
             self, 
             'ciFileValidator',
             dtsValidator.InputFF(
                 fof = 'file',
                 ext = config.esData,
-            )
-        )
-        self.coFileValidator = getattr(
-            self, 
-            'coFileValidator',
-            dtsValidator.OutputFF(
-                fof = 'file',
-                ext = config.esUMSAP[0],
-                opt = False,
             )
         )
         #------------------------------> This is needed to handle Data File 
@@ -279,6 +280,17 @@ class BaseConfPanel(
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
+        self.uFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
+            btnLabel   = self.cuFileL,
+            tcHint     = self.cuFileH,
+            mode       = self.cuMode,
+            ext        = config.elUMSAP,
+            tcStyle    = wx.TE_READONLY,
+            validator  = self.cuFileValidator,
+            ownCopyCut = True,
+        )
+        self.uFile.btn.SetToolTip(self.cuFileTT)
+        
         self.iFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
             btnLabel   = self.ciFileL,
             tcHint     = self.ciFileH,
@@ -289,20 +301,6 @@ class BaseConfPanel(
             ownCopyCut = True,
         )
         self.iFile.btn.SetToolTip(self.ciFileTT)
-
-        self.oFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
-            btnLabel   = self.coFileL,
-            tcHint     = self.coFileH,
-            mode       = self.coMode,
-            ext        = config.elUMSAP,
-            tcStyle    = wx.TE_READONLY,
-            validator  = self.coFileValidator,
-            ownCopyCut = True,
-        )
-        self.oFile.btn.SetToolTip(self.coFileTT)
-        
-        self.checkB = wx.CheckBox(self.sbFile, label=self.cCheckL)
-        self.checkB.SetValue(True)
         #endregion --------------------------------------------------> Widgets
         
         #region -----------------------------------------------------> Tooltip
@@ -313,34 +311,28 @@ class BaseConfPanel(
         
         #region ------------------------------------------------------> Sizers
         self.sizersbFileWid.Add(
-            self.iFile.btn,
+            self.uFile.btn,
             pos    = (0,0),
             flag   = wx.EXPAND|wx.ALL,
             border = 5
         )
         self.sizersbFileWid.Add(
-            self.iFile.tc,
+            self.uFile.tc,
             pos    = (0,1),
             flag   = wx.EXPAND|wx.ALL,
             border = 5
         )
         self.sizersbFileWid.Add(
-            self.oFile.btn,
+            self.iFile.btn,
             pos    = (1,0),
             flag   = wx.EXPAND|wx.ALL,
             border = 5
         )
         self.sizersbFileWid.Add(
-            self.oFile.tc,
+            self.iFile.tc,
             pos    = (1,1),
             flag   = wx.EXPAND|wx.ALL,
             border = 5
-        )
-        self.sizersbFileWid.Add(
-            self.checkB,
-            pos    = (2,1),
-            flag   = wx.ALIGN_LEFT|wx.ALL,
-            border = 5,
         )
         self.sizersbFileWid.AddGrowableCol(1,1)
         self.sizersbFileWid.AddGrowableRow(0,1)
@@ -356,7 +348,6 @@ class BaseConfPanel(
         #region --------------------------------------------------------> Bind
         self.iFile.tc.Bind(wx.EVT_TEXT, self.OnIFileLoad)
         self.iFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnIFileLoad)
-        self.oFile.tc.Bind(wx.EVT_TEXT, self.OnOFileChange)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -373,7 +364,7 @@ class BaseConfPanel(
         if (fileP := self.iFile.tc.GetValue()) == '':
             return self.LCtrlEmpty()
         else:
-            return self.OnIFileEnter('', fileP)
+            return self.OnIFileEnter('fEvent', fileP)
     #---
     
     def OnIFileEnter(self, event: wx.CommandEvent, fileP: Path) -> bool:
@@ -428,34 +419,7 @@ class BaseConfPanel(
 
         return True
     #---
-
-    def OnOFileChange(self, event: wx.CommandEvent) -> Literal[True]:
-        """Show/Hide self.checkB
     
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event
-        """
-        #------------------------------> 
-        if self.oFile.tc.GetValue() == '':
-            #------------------------------> Hide Check
-            self.sizersbFileWid.Hide(self.checkB)
-            self.Sizer.Layout()
-        else:
-            if Path(self.oFile.tc.GetValue()).exists():
-                #------------------------------> Show Check
-                self.checkB.SetValue(True)
-                self.sizersbFileWid.Show(self.checkB)
-                self.Sizer.Layout()
-            else:
-                #------------------------------> Hide Check
-                self.sizersbFileWid.Hide(self.checkB)
-                self.Sizer.Layout()
-        #------------------------------> 
-        return True
-    #---
-
     def SetOutputDict(self, dateDict) -> dict:
         """Creates the output dictionary to be written to the output file 
         
@@ -480,24 +444,15 @@ class BaseConfPanel(
             dict
                 Output data as a dict
         """
-        if self.do['oFile'].exists():
-            print('File Exist')
-            if self.do['Check']:
-                print('Check is True')
-                #--> Read old output
-                outData = dtsFF.ReadJSON(self.do['oFile'])
-                #--> Append to output
-                if outData.get(self.cSection, False):
-                    print('Section exist')
-                    outData[self.cSection][self.date] = dateDict[self.date]
-                else:
-                    print('Section does not exist')
-                    outData[self.cSection] = dateDict	
+        if self.do['uFile'].exists():
+            #------------------------------> 
+            outData = dtsFF.ReadJSON(self.do['uFile'])
+            #------------------------------>
+            if outData.get(self.cSection, False):
+                outData[self.cSection][self.date] = dateDict[self.date]
             else:
-                print('Check is False')
-                outData = {self.cSection : dateDict}
+                outData[self.cSection] = dateDict
         else:
-            print('File does not exist')
             outData = {self.cSection : dateDict}
 
         return outData
@@ -519,6 +474,90 @@ class BaseConfPanel(
                 self.cLenLongestL
         """
         return f"{label}{(self.cLenLongestL - len(label))*' '}" 
+    #---
+    
+    def WriteOutputData(self, stepDict: dict) -> bool:
+        """Write output. 
+        
+            Parameters
+            ----------
+            stepDict : dict
+                Dict with the data to write the step by step data files
+                Keys are file names and values pd.DataFrame with the values
+                
+            Return
+            ------
+            bool
+        """
+        
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdWrite
+        #endregion ------------------------------------------------------> Msg
+        
+        #region -----------------------------------------------> Create folder
+        #------------------------------> 
+        msgStep = msgPrefix + 'Creating needed folders, Data-Steps folder'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        dataFolder = f"{self.date}-{self.cSection}-{config.fnDataSteps}"
+        dataFolder = self.oFolder / dataFolder
+        dataFolder.mkdir(parents=True, exist_ok=True)
+        #------------------------------> 
+        msgStep = msgPrefix + 'Creating needed folders, Data-Initial folder'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        dataInit = self.oFolder / config.fnDataInit
+        dataInit.mkdir(parents=True, exist_ok=True)
+        #endregion --------------------------------------------> Create folder
+        
+        #region ------------------------------------------------> Data Initial
+        msgStep = msgPrefix + 'Data files, Data file'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        piFolder = self.do['iFile'].parent
+        puFolder = self.do['uFile'].parent / config.fnDataInit
+        #------------------------------>
+        if not piFolder == puFolder:
+            #------------------------------> 
+            name = (
+                f"{self.do['iFile'].stem}-{self.date}{self.do['iFile'].suffix}")
+            self.dFile = puFolder/name
+            #------------------------------> 
+            shutil.copy(self.do['iFile'], self.dFile)
+            #------------------------------> 
+            self.d[self.EqualLenLabel(self.ciFileL)] = str(self.dFile)
+        else:
+            self.dFile = None
+        #endregion ---------------------------------------------> Data Initial
+        
+        #region --------------------------------------------------> Data Steps
+        msgStep = msgPrefix + 'Data files, Step by Step Data files'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+
+        dtsFF.WriteDFs2CSV(dataFolder, stepDict)
+        #endregion -----------------------------------------------> Data Steps
+        
+        #region --------------------------------------------------> UMSAP File
+        msgStep = msgPrefix + 'Main file'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Create output dict
+        dateDict = {
+            self.date : {
+                'V' : config.dictVersion,
+                'I' : self.d,
+                'CI': dtsMethod.DictVal2Str(
+                    self.do, 
+                    self.cChangeKey,
+                    new = True,
+                ),
+                'R' : self.RDF.to_dict(),
+            }
+        }
+        #------------------------------> Append or not
+        outData = self.SetOutputDict(dateDict)
+        #------------------------------> Write
+        dtsFF.WriteJSON(self.do['uFile'], outData)
+        #endregion -----------------------------------------------> UMSAP File
+
+        return True
     #---
     
     def OnRun(self, event: wx.CommandEvent) -> Literal[True]:
@@ -1234,29 +1273,35 @@ class CorrA(BaseConfPanel):
         do : dict
             Dict with the processed user input
             {
-                'iFile'     : 'input file path',
-                'oFile'     : 'output folder path',
-                'NormMethod': 'normalization method',
-                'CorrMethod': 'correlation method',
-                'Column'    : [selected columns as integers],
-                'Check      : 'Append to existing output file or not',
+                'uFile'      : 'umsap file path',
+                'iFile'      : 'data file path',
+                'TransMethod': 'transformation method',
+                'CorrMethod' : 'correlation method',
+                'Column'     : [selected columns as integers],
             }
         d : dict
-            Similar to 'do' but with the values given by the user and keys as 
-            in the GUI of the tab
-        dfCC : pdDataFrame
+            Similar to 'do' but: 
+                - No uFile
+                - With the values given by the user
+                - Keys as in the GUI of the tab.
+        RDF : pdDataFrame
             Dataframe with correlation coefficients
         See parent class for more attributes
 
         Notes
         -----
         Running the analysis results in the creation of
-        Data-20210324-165609-Correlation-Analysis
-        output-file.umsap
+        - Parent Folder/
+            - 20210324-165609-Correlation-Analysis/
+            - Data_Files/
+            - output-file.umsap
         
-        The files in Data are regular csv files with the data at the end of the
-        corresponding step.
-
+        The Data_Files folder contains the original data files. These are needed 
+        for data visualization, running analysis again with different 
+        parameters, etc.
+        The Date-Section folder contains regular csv files with the step by step
+        data.
+    
         The Correlation Analysis section in output-file.umsap conteins the 
         information about the calculations, e.g
 
@@ -1270,6 +1315,17 @@ class CorrA(BaseConfPanel):
                 }
             }
         }
+        
+        The data frame has the following structure
+                      Intensity 01  Intensity 02  Intensity 03  Intensity 04  Intensity 05
+        Intensity 01      1.000000      0.771523      0.162302      0.135884      0.565985
+        Intensity 02      0.771523      1.000000      0.190120      0.110859      0.588783
+        Intensity 03      0.162302      0.190120      1.000000      0.775442     -0.010327
+        Intensity 04      0.135884      0.110859      0.775442      1.000000      0.010221
+        Intensity 05      0.565985      0.588783     -0.010327      0.010221      1.000000
+
+        The index and column names are the name of the selected columns in the 
+        Data File.
     """
     #region -----------------------------------------------------> Class Setup
     #endregion --------------------------------------------------> Class Setup
@@ -1284,33 +1340,33 @@ class CorrA(BaseConfPanel):
         self.cSection     = config.nUCorrA
         self.cLenLongestL = len(config.lCbNormMethod)
         self.cTitlePD     = config.lnPDCorrA
-        self.cGaugePD     = 15
+        self.cGaugePD     = 17
         #------------------------------> Optional configuration
         self.cHelpTT = config.ttBtnHelp.format(config.urlCorrA)
         #------------------------------> Setup attributes in base class 
         super().__init__(parent)
         #------------------------------> Needed to Run
         self.cMainData  = '{}-CorrelationCoefficients-Data.txt'
-        self.cChangeKey = ['iFile', 'oFile']
-        self.dfCC       = None # correlation coefficients
+        self.cChangeKey = ['uFile', 'iFile']
+        self.RDF        = None # correlation coefficients
         #------------------------------> Label
-        self.cNormL     = config.lCbNormMethod
+        self.cTransL    = config.lCbTransMethod
         self.cCorrL     = config.lCbCorrMethod
         self.ciListCtrl = config.lStColIFile.format(self.ciFileL)
         self.coListCtrl = 'Columns to Analyse'
         #------------------------------> Tooltips
-        self.cNormTT = config.ttStNorm
+        self.cTransTT = config.ttStTrans
         self.cCorrTT = config.ttStCorr
         #endregion --------------------------------------------> Initial setup
         
         #region -----------------------------------------------------> Widgets
         #------------------------------> Values
-        self.normMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
-            label     = self.cNormL,
-            choices   = config.oNormMethod,
+        self.transMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
+            label     = self.cTransL,
+            choices   = config.oTransMethod,
             validator = dtsValidator.IsNotEmpty(),
         )
-        self.normMethod.st.SetToolTip(self.cNormTT)
+        self.transMethod.st.SetToolTip(self.cTransTT)
         
         self.corrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
             label     = self.cCorrL,
@@ -1377,13 +1433,13 @@ class CorrA(BaseConfPanel):
             border = 5
         )
         self.sizersbValueWid.Add(
-            self.normMethod.st,
+            self.transMethod.st,
             pos    = (0,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.normMethod.cb,
+            self.transMethod.cb,
             pos    = (0,2),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
             border = 5,
@@ -1442,11 +1498,6 @@ class CorrA(BaseConfPanel):
         self.sizersbColumnWid.AddGrowableCol(0, 1)
         self.sizersbColumnWid.AddGrowableCol(2, 1)
         self.sizersbColumnWid.AddGrowableRow(1, 1)
-        #------------------------------> Hide Checkbox
-        if self.oFile.tc.GetValue() == '':
-            self.sizersbFileWid.Hide(self.checkB)
-        else:
-            pass
         #------------------------------> Main Sizer
         self.SetSizer(self.Sizer)
         self.Sizer.Fit(self)
@@ -1460,15 +1511,15 @@ class CorrA(BaseConfPanel):
         import getpass
         user = getpass.getuser()
         if config.cOS == "Darwin":
+            self.uFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/umsap-dev.umsap")
             self.iFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt")
-            self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/umsap-dev.umsap")
         elif config.cOS == 'Windows':
             from pathlib import Path
+            self.uFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT')))
             self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
-            self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT')))
         else:
             pass
-        self.normMethod.cb.SetValue("Log2")
+        self.transMethod.cb.SetValue("Log2")
         self.corrMethod.cb.SetValue("Pearson")
         #endregion -----------------------------------------------------> Test
     #---
@@ -1496,6 +1547,18 @@ class CorrA(BaseConfPanel):
         #endregion ------------------------------------------------------> Msg
         
         #region -------------------------------------------> Individual Fields
+        #------------------------------> Output Folder
+        msgStep = msgPrefix + self.cuFileL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.uFile.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = dtscore.StrSetMessage(
+                config.mFileBad.format(b[1], self.cuFileL),
+                b[2]
+            )
+            return False
         #------------------------------> Input file
         msgStep = msgPrefix + self.ciFileL
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
@@ -1508,25 +1571,13 @@ class CorrA(BaseConfPanel):
                 b[2]
             )
             return False
-        #------------------------------> Output Folder
-        msgStep = msgPrefix + self.coFileL
+        #------------------------------> Transformation
+        msgStep = msgPrefix + self.cTransL
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.oFile.tc.GetValidator().Validate()
-        if a:
+        if self.transMethod.cb.GetValidator().Validate()[0]:
             pass
         else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mFileBad.format(b[1], self.coFileL),
-                b[2]
-            )
-            return False
-        #------------------------------> Normalization
-        msgStep = msgPrefix + self.cNormL
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.normMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cNormL)
+            self.msgError = config.mNotEmpty.format(self.cTransL)
             return False
         #------------------------------> Corr Method
         msgStep = msgPrefix + self.cCorrL
@@ -1565,30 +1616,26 @@ class CorrA(BaseConfPanel):
         self.d = {
             self.EqualLenLabel(self.ciFileL) : (
                 self.iFile.tc.GetValue()),
-            self.EqualLenLabel(self.coFileL) : (
-                self.oFile.tc.GetValue()),
-            self.EqualLenLabel(self.cNormL) : (
-                self.normMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cTransL) : (
+                self.transMethod.cb.GetValue()),
             self.EqualLenLabel(self.cCorrL) : (
                 self.corrMethod.cb.GetValue()),
             self.EqualLenLabel('Selected Columns') : (
                 [int(x) for x in self.lbO.GetColContent(0)]),
-            self.EqualLenLabel('Append to File') : self.checkB.GetValue(),
         }
 
         msgStep = msgPrefix + 'User input, processing'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Dict with all values
         self.do = {
-            'iFile'     : Path(self.iFile.tc.GetValue()),
-            'oFile'     : Path(self.oFile.tc.GetValue()),
-            'NormMethod': self.normMethod.cb.GetValue(),
-            'CorrMethod': self.corrMethod.cb.GetValue(),
-            'Column'    : [int(x) for x in self.lbO.GetColContent(0)],
-            'Check'     : self.checkB.GetValue(),
+            'uFile'      : Path(self.uFile.tc.GetValue()),
+            'iFile'      : Path(self.iFile.tc.GetValue()),
+            'TransMethod': self.transMethod.cb.GetValue(),
+            'CorrMethod' : self.corrMethod.cb.GetValue(),
+            'Column'     : [int(x) for x in self.lbO.GetColContent(0)],
         }
         #------------------------------> File base name
-        self.oFolder = self.do['oFile'].parent
+        self.oFolder = self.do['uFile'].parent
         #------------------------------> Date
         self.date = dtsMethod.StrNow()
         #endregion ----------------------------------------------------> Input
@@ -1640,12 +1687,12 @@ class CorrA(BaseConfPanel):
         #region -----------------------------------------------> Normalization
         msgStep = msgPrefix + f"Data normalization"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.do['NormMethod'] != 'None':
+        if self.do['TransMethod'] != 'None':
             try:
-                self.dfN = dtsStatistic.DataNormalization(
+                self.dfN = dtsStatistic.DataTransformation(
                     self.dfI,
                     sel = None,
-                    method = self.do['NormMethod'],
+                    method = self.do['TransMethod'],
                 )
             except Exception as e:
                 self.msgError = str(e)
@@ -1659,7 +1706,7 @@ class CorrA(BaseConfPanel):
         msgStep = msgPrefix + f"Correlation coefficients calculation"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         try:
-            self.dfCC = self.dfN.corr(method=self.do['CorrMethod'].lower())
+            self.RDF = self.dfN.corr(method=self.do['CorrMethod'].lower())
         except Exception as e:
             self.msgError = str(e)
             self.tException = e
@@ -1671,55 +1718,14 @@ class CorrA(BaseConfPanel):
 
     def WriteOutput(self):
         """Write output. Override as needed """
-        
-        #region ---------------------------------------------------------> Msg
-        msgPrefix = config.lPdWrite
-        #endregion ------------------------------------------------------> Msg
-        
-        #region -----------------------------------------------> Create folder
-        msgStep = msgPrefix + 'Creating needed folder'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        dataFolder = f"Data-{self.date}-{self.cSection}"
-        dataFolder = self.oFolder / dataFolder
-        dataFolder.mkdir(parents=True, exist_ok=True)
-        #endregion --------------------------------------------> Create folder
-        
-        #region --------------------------------------------------> Data files
-        msgStep = msgPrefix + 'Data files'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-
-        dtsFF.WriteDFs2CSV(
-            dataFolder, 
-            {
-                config.fnInitial.format('01'): self.dfI,
-                config.fnNorm.format('02')   : self.dfN,
-                self.cMainData.format('03')  : self.dfCC,
-            },
-        )
-        #endregion -----------------------------------------------> Data files
-        
-        #region --------------------------------------------------> Data files
-        msgStep = msgPrefix + 'Main file'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Create output dict
-        dateDict = {
-            self.date : {
-                'V' : config.dictVersion,
-                'I' : self.d,
-                'CI': dtsMethod.DictVal2Str(
-                    self.do, 
-                    self.cChangeKey,
-                    new = True,
-                ),
-                'R' : self.dfCC.to_dict(),
-            }
+        #region --------------------------------------------------> Data Steps
+        stepDict = {
+            config.fnInitial.format('01'): self.dfI,
+            config.fnNorm.format('02')   : self.dfN,
+            self.cMainData.format('03')  : self.RDF,
         }
-        #------------------------------> Append or not
-        outData = self.SetOutputDict(dateDict)
-        #------------------------------> Write
-        dtsFF.WriteJSON(self.do['oFile'], outData)
-        #endregion -----------------------------------------------> Data files
-
+        #endregion -----------------------------------------------> Data Steps
+        
         #region ---------------------------------------------------> Print
         if config.development:
             print('Input')
@@ -1733,12 +1739,12 @@ class CorrA(BaseConfPanel):
             print(self.dfN)
             print("")
             print("DataFrames: CC")
-            print(self.dfCC)
+            print(self.RDF)
         else:
             pass
         #endregion ------------------------------------------------> Print
 
-        return True
+        return self.WriteOutputData(stepDict)
     #---
 
     def LoadResults(self):
@@ -1750,7 +1756,7 @@ class CorrA(BaseConfPanel):
         #region --------------------------------------------------------> Load
         wx.CallAfter(self.dlg.UpdateStG, msgPrefix)
         
-        wx.CallAfter(gmethod.LoadUMSAPFile, fileP=self.do['oFile'])
+        wx.CallAfter(gmethod.LoadUMSAPFile, fileP=self.do['uFile'])
         #endregion -----------------------------------------------------> Load
 
         return True
@@ -1765,8 +1771,6 @@ class CorrA(BaseConfPanel):
                 config.lPdDone,
                 eTime=f"{config.lPdEllapsed} {self.deltaT}",
             )
-            #--> Show the 
-            self.OnOFileChange('fEvent')
         else:
             self.dlg.ErrorMessage(
                 config.lPdError, 
@@ -1781,12 +1785,17 @@ class CorrA(BaseConfPanel):
         self.do         = {} # Dict with the processed user input
         self.dfI        = None # pd.DataFrame for initial, normalized and
         self.dfN        = None # correlation coefficients
-        self.dfCC       = None
+        self.RDF        = None
         self.date       = None # date for corr file
         self.oFolder    = None # folder for output
         self.corrP      = None # path to the corr file that will be created
         self.deltaT     = None
         self.tException = None
+        if self.dFile is not None:
+            self.iFile.tc.SetValue(str(self.dFile))
+        else:
+            pass
+        self.dFile = None # Data File copied to Data-Initial
         #endregion ----------------------------------------------------> Reset
     #---
     #endregion ------------------------------------------------> Class Methods
@@ -2452,7 +2461,7 @@ class ProtProf(BaseConfModPanel):
         self.do        = {} # Dict with the processed user input
         self.dfI       = None # pd.DataFrame for initial, normalized and
         # self.dfN       = None # correlation coefficients
-        # self.dfCC      = None
+        # self.RDF      = None
         self.date      = None # date for corr file
         self.oFolder   = None # folder for output
         # self.corrP     = None # path to the corr file that will be created
