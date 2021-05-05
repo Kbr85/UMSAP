@@ -348,11 +348,36 @@ class BaseConfPanel(
         #region --------------------------------------------------------> Bind
         self.iFile.tc.Bind(wx.EVT_TEXT, self.OnIFileLoad)
         self.iFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnIFileLoad)
+        self.uFile.tc.Bind(wx.EVT_TEXT, self.OnUFileChange)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def OnUFileChange(self, event: wx.CommandEvent) -> Literal[True]:
+        """Adjust default Path for Data File when an UMSAP file is selected
+    
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event		
+        """
+        #region -------------------------------------------------> Set defPath
+        if (fileP := self.uFile.tc.GetValue()) == '':
+            self.iFile.defPath = None
+        else:
+            #------------------------------> 
+            p = Path(fileP).parent / config.fnDataInit
+            #------------------------------> 
+            if p.exists():
+                self.iFile.defPath = p
+            else:
+                self.iFile.defPath = None
+        #endregion ----------------------------------------------> Set defPath
+        
+        return True
+    #---
+    
     def OnIFileLoad(self, event: wx.CommandEvent) -> Literal[True]:
         """Clear GUI elements when Data Folder is ''
     
