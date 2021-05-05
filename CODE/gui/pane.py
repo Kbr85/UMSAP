@@ -632,14 +632,19 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         ----------
         #------------------------------> Configuration
         cScoreValL : str
-            Score value label. Default is config.label['StScoreValL].
+            Score value label. Default is config.lStScoreVal.
         cNormMethodL : str
-            Data normalization label. Default is config.label['cNormMethodL'].
+            Data normalization label. Default is config.lCbNormMethod.
+        cTransMethodL : str
+            Data transformation label. Default is config.lCbTransMethod.
         cScoreColL : str
-            Score column. Default is config.label['StScoreColL'].
+            Score column. Default is config.lStScoreCol.
         cNormChoice : list of str
             Choice for normalization method. 
-            Default is config.choice['NormMethod'].
+            Default is config.oNormMethod.
+        cTransChoice : list of str
+            Choice for transformation method. 
+            Default is config.oTransMethod.
         cTcSize : wx.Size
             Size for the wx.TextCtrl in the panel
         #------------------------------> Widgets
@@ -681,19 +686,24 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Label
+        self.cScoreValL = getattr(self, 'cScoreValL', config.lStScoreVal)
         self.cNormMethodL = getattr(self, 'cNormMethodL', config.lCbNormMethod)
-        self.cScoreValL = getattr(self, 'cScoreValL', config.lStScoreValL)
-        self.cDetectedProtL = getattr(
-            self, 'cDetectedProtL', config.lStDetectedProtL,
+        self.cTransMethodL = getattr(
+            self, 'cTransMethodL', config.lCbTransMethod
         )
-        self.cScoreColL = getattr(self, 'cScoreColL', config.lStScoreColL)
-        self.cColExtractL = getattr(self, 'cColExtractL', config.lStColExtractL)
+        self.cDetectedProtL = getattr(
+            self, 'cDetectedProtL', config.lStDetectedProt,
+        )
+        self.cScoreColL = getattr(self, 'cScoreColL', config.lStScoreCol)
+        self.cColExtractL = getattr(self, 'cColExtractL', config.lStColExtract)
         #------------------------------> Choices
         self.cNormChoice = getattr(self, 'cNormChoice', config.oNormMethod)
+        self.cTransChoice = getattr(self, 'cTransChoice', config.oTransMethod)
         #------------------------------> Size
         self.cTcSize = getattr(self, 'cTcSize', config.sTc)
         #------------------------------> Tooltips
         self.cNormMethodTT = getattr(self, 'cNormMethodTT', config.ttStNorm)
+        self.cTransMethodTT = getattr(self, 'cTransMethodTT', config.ttStTrans)
         self.cScoreValTT = getattr(self, 'cScoreValTT', config.ttStScoreVal)
         self.cDetectedProtTT = getattr(
             self, 'cDetectedProtLTT', config.ttStDetectedProtL,
@@ -719,6 +729,13 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             self.sbValue, 
             label     = self.cNormMethodL,
             choices   = self.cNormChoice,
+            validator = dtsValidator.IsNotEmpty(),
+        )
+        
+        self.transMethod = dtsWidget.StaticTextComboBox(
+            self.sbValue, 
+            label     = self.cTransMethodL,
+            choices   = self.cTransChoice,
             validator = dtsValidator.IsNotEmpty(),
         )
 
@@ -769,6 +786,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         #region -----------------------------------------------------> Tooltip
         self.normMethod.st.SetToolTip(self.cNormMethodTT)
+        self.transMethod.st.SetToolTip(self.cTransMethodTT)
         self.scoreVal.st.SetToolTip(self.cScoreValTT)
         self.detectedProt.st.SetToolTip(self.cDetectedProtTT)
         self.score.st.SetToolTip(self.cScoreTT)
@@ -1863,7 +1881,7 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Needed by BaseConfPanel
         self.cURL         = config.urlProtProf
         self.cSection     = config.nMProtProf
-        self.cLenLongestL = len(config.lStResultCtrlL)
+        self.cLenLongestL = len(config.lStResultCtrl)
         self.cTitlePD     = f"Running {config.nMProtProf} Analysis"
         self.cGaugePD     = 30
         #------------------------------> Optional configuration
@@ -1874,13 +1892,11 @@ class ProtProf(BaseConfModPanel):
         self.cMainData  = '{}-ProteomeProfiling-Data.txt'
         self.cChangeKey = ['iFile', 'oFile']
         #------------------------------> Labels
-        self.cMedianL      = 'Median Correction'
         self.cCorrectPL    = 'P Correction'
         self.cGeneNameL    = 'Gene Names'
         self.cExcludeProtL = 'Exclude Proteins'
         #------------------------------> Tooltips
         self.cCorrectPTT    = config.ttStPCorrection
-        self.cMedianTT      = config.ttStMedianCorr
         self.cGeneNameTT    = config.ttStGenName
         self.cExcludeProtTT = config.ttStExcludeProt
         #endregion --------------------------------------------> Initial Setup
@@ -1895,12 +1911,6 @@ class ProtProf(BaseConfModPanel):
             self.sbValue,
             self.cCorrectPL,
             config.oCorrectP,
-            validator = dtsValidator.IsNotEmpty(),
-        )
-        self.median = dtsWidget.StaticTextComboBox(
-            self.sbValue,
-            self.cMedianL,
-            config.oYesNo,
             validator = dtsValidator.IsNotEmpty(),
         )
         #------------------------------> Columns
@@ -1928,7 +1938,6 @@ class ProtProf(BaseConfModPanel):
 
         #region -----------------------------------------------------> Tooltip
         self.correctP.st.SetToolTip(self.cCorrectPTT)
-        self.median.st.SetToolTip(self.cMedianTT)
         self.geneName.st.SetToolTip(self.cGeneNameTT)
         self.excludeProt.st.SetToolTip(self.cExcludeProtTT)
         #endregion --------------------------------------------------> Tooltip
@@ -1943,15 +1952,15 @@ class ProtProf(BaseConfModPanel):
             span   = (2, 0),
         )
         self.sizersbValueWid.Add(
-            self.scoreVal.st,
+            self.transMethod.st,
             pos    = (0,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.scoreVal.tc,
+            self.transMethod.cb,
             pos    = (0,2),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
@@ -1967,15 +1976,15 @@ class ProtProf(BaseConfModPanel):
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.median.st,
+            self.scoreVal.st,
             pos    = (0,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.median.cb,
+            self.scoreVal.tc,
             pos    = (0,4),
-            flag   = wx.EXPAND|wx.ALL,
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
@@ -2072,11 +2081,6 @@ class ProtProf(BaseConfModPanel):
         self.sizersbColumnWid.AddGrowableCol(1,1)
         self.sizersbColumnWid.AddGrowableCol(3,1)
         self.sizersbColumnWid.AddGrowableCol(5,1)
-        #------------------------------> Hide Checkbox
-        if self.oFile.tc.GetValue() == '':
-            self.sizersbFileWid.Hide(self.checkB)
-        else:
-            pass
         #------------------------------> Main Sizer
         self.SetSizer(self.Sizer)
         self.Sizer.Fit(self)
@@ -2091,8 +2095,8 @@ class ProtProf(BaseConfModPanel):
             import getpass
             user = getpass.getuser()
             if config.cOS == "Darwin":
-                self.iFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/PROTPROF/proteinGroups-kbr.txt")
-                self.oFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/PlayDATA/umsap-dev.umsap")
+                self.uFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                self.iFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt")
             elif config.cOS == 'Windows':
                 from pathlib import Path
                 # self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
@@ -2100,8 +2104,8 @@ class ProtProf(BaseConfModPanel):
             else:
                 pass
             self.scoreVal.tc.SetValue('320')
-            self.median.cb.SetValue('Yes')
-            self.normMethod.cb.SetValue("Log2")
+            self.transMethod.cb.SetValue('Log2')
+            self.normMethod.cb.SetValue('Median')
             self.correctP.cb.SetValue('Benjamini - Hochberg')
             self.detectedProt.tc.SetValue('0')
             self.geneName.tc.SetValue('6')   

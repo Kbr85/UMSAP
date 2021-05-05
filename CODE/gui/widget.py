@@ -52,7 +52,7 @@ class ResControl():
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent):
         """ """
-        self.cResControlL = config.lStResultCtrlL
+        self.cResControlL = config.lStResultCtrl
         #region -----------------------------------------------------> Widgets
         self.tcResults = wx.TextCtrl(
             parent    = parent,

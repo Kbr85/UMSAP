@@ -203,15 +203,15 @@ lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'  
 #------------------------------> wx.Statictext
 lStColIFile      = "Columns in the {}"
-lStScoreValL     = 'Score Value'
-lStDetectedProtL = 'Detected Proteins'
-lStScoreColL     = 'Score'
-lStColExtractL   = 'Columns to Extract'
-lStResultCtrlL   = 'Results - Control experiments'
+lStScoreVal      = 'Score Value'
+lStDetectedProt  = 'Detected Proteins'
+lStScoreCol      = 'Score'
+lStColExtract    = 'Columns to Extract'
+lStResultCtrl    = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
 lCbTransMethod = 'Data Transformation'
-lCbNormMethod  = 'Normalization Method'
+lCbNormMethod  = 'Data Normalization'
 lCbCorrMethod  = 'Correlation Method'
 #------------------------------> Progress Dialog
 lPdCheck    = 'Checking user input: '
@@ -242,7 +242,7 @@ ttBtnClearAll = f"Clear all user input."
 ttBtnRun      = f"Start the analysis."
 #------------------------------> wx.StaticText
 ttStTrans = f"Select the {lCbTransMethod} method."
-ttStNorm = f"Select the {lCbNormMethod}."
+ttStNorm = f"Select the {lCbNormMethod} method."
 ttStCorr = f"Select the {lCbCorrMethod}."
 ttStScoreVal = f"Set the minimum acceptable Score value.\ne.g. -4"
 ttStPCorrection = "Select the p correction method."
@@ -269,6 +269,7 @@ ttLCtrlPasteMod = (
 
 #region -------------------------------------------------------------> Options
 oTransMethod = ['', 'None', 'Log2']
+oNormMethod = ['', 'None', 'Median']
 oCorrMethod = ['', 'Pearson', 'Kendall', 'Spearman']
 oYesNo      = ['', 'Yes', 'No']
 oCorrectP   = [
@@ -309,7 +310,7 @@ mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
 mListNumN0L = (
     "Only a list of unique non-negative integers can be accepted in {}.")
 mColNumbers = f"Values in section {lSbColumn} must be unique"+"{}"
-mColNumbersNoColExtract = f", excluding {lStColExtractL}."
+mColNumbersNoColExtract = f", excluding {lStColExtract}."
 #endregion ---------------------------------------------------------> Messages
 
 
