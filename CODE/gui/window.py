@@ -127,6 +127,7 @@ class BaseWindow(wx.Frame):
             Main sizer of the window
     """
     #region -----------------------------------------------------> Class setup
+    
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -189,6 +190,20 @@ class BaseWindow(wx.Frame):
         #region -----------------------------------------------------> Destroy
         self.Destroy()
         #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    
+    def OnDupWin(self) -> Literal[True]:
+        """Duplicate window. Used by Result windows
+    
+            Returns
+            -------
+            True
+        """
+        self.parent.cWindow[self.cSection].append(
+            self.parent.cPlotMethod[self.cSection](self.parent)
+        )
         
         return True
     #---
@@ -265,7 +280,7 @@ class BaseWindowPlot(BaseWindow):
                 Information about the event
         """
         #region -----------------------------------------------> Update parent
-        self.parent.UnCheckSection(self.cSection)		
+        self.parent.UnCheckSection(self.cSection, self)		
         #endregion --------------------------------------------> Update parent
         
         #region ------------------------------------> Reduce number of windows
@@ -772,9 +787,11 @@ class UMSAPControl(BaseWindow):
     name = 'UMSAPF'
     
     cSizeWindow = (400, 700)
+    
     cPlotMethod = { # Methods to create plot windows
         config.nUCorrA : CorrAPlot
     }
+    
     cFileLabelCheck = ['Data File']
     #endregion --------------------------------------------------> Class setup
 
@@ -923,7 +940,7 @@ class UMSAPControl(BaseWindow):
         #region ----------------------------------------------> Destroy window
         #------------------------------> Event trigers before checkbox changes
         if self.trc.IsItemChecked(item):
-            self.cWindow[section].Destroy()
+            [x.Destroy() for x in self.cWindow[section]]
             event.Skip()
             return True
         else:
@@ -932,7 +949,7 @@ class UMSAPControl(BaseWindow):
         
         #region -----------------------------------------------> Create window
         try:
-            self.cWindow[section] = self.cPlotMethod[section](self)
+            self.cWindow[section] = [self.cPlotMethod[section](self)]
         except Exception as e:
             dtscore.Notification('errorU', msg=str(e), tException=e)
             return False
@@ -942,7 +959,7 @@ class UMSAPControl(BaseWindow):
         return True
     #---
 
-    def UnCheckSection(self, sectionName: str) -> Literal[True]:
+    def UnCheckSection(self, sectionName: str, win: wx.Window) -> Literal[True]:
         """Method to uncheck a section when the plot window is closed by the 
             user
     
@@ -950,20 +967,28 @@ class UMSAPControl(BaseWindow):
             ----------
             sectionName : str
                 Section name like in config.nameModules config.nameUtilities
+            win : wx.Window
+                Window that was closed
         """
-        #region -----------------------------------------------------> Uncheck
-        self.trc.SetItem3StateValue(
-            self.cSection[sectionName],
-            wx.CHK_UNCHECKED,
-        )		
-        #endregion --------------------------------------------------> Uncheck
+        #region --------------------------------------------> Remove from list
+        self.cWindow[sectionName].remove(win)
+        #endregion -----------------------------------------> Remove from list
         
-        #region -----------------------------------------------------> Repaint
-        self.Update()
-        self.Refresh()		
-        #endregion --------------------------------------------------> Repaint
-        
-        return True
+        #region --------------------------------------------------> Update GUI
+        if len(self.cWindow[sectionName]) > 0:
+            return True
+        else:
+            #------------------------------> Remove check
+            self.trc.SetItem3StateValue(
+                self.cSection[sectionName],
+                wx.CHK_UNCHECKED,
+            )		
+            #------------------------------> Repaint
+            self.Update()
+            self.Refresh()		
+            #------------------------------> 
+            return True
+        #endregion -----------------------------------------------> Update GUI
     #---
 
     def GetCheckedSection(self) -> list[str]:
@@ -990,7 +1015,7 @@ class UMSAPControl(BaseWindow):
         #region -----------------------------------------------------> Destroy
         #------------------------------> Childs
         for child in dtsGenerator.FindTopLevelChildren(self):
-            child.Close()
+            child.Destroy()
         #------------------------------> Self
         self.Destroy()
         #endregion --------------------------------------------------> Destroy

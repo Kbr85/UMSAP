@@ -135,6 +135,19 @@ class MenuMethods():
         win.OnSavePlot()
         return True
     #---
+    
+    def OnDupWin(self, event: wx.CommandEvent) -> Literal[True]:
+        """Duplicate window for better data comparison
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+        """
+        win = self.GetWindow()
+        win.OnDupWin()
+        return True
+    #---
     #endregion ------------------------------------------------> Class Methods
 #---
 
@@ -168,6 +181,8 @@ class PlotMenu(wx.Menu, MenuMethods):
         #------------------------------> Add Dates
         self.AddDateItems(menuDate)
         #------------------------------> Other items
+        self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
         self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
         self.saveI = self.Append(-1, 'Save Image\tCtrl+I')
         self.AppendSeparator()
@@ -175,6 +190,7 @@ class PlotMenu(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.dupWin)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.zoomR)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.saveD)
         self.Bind(wx.EVT_MENU, self.OnSavePlot,       source=self.saveI)
