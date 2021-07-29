@@ -543,7 +543,7 @@ class BaseConfPanel(
         if not piFolder == puFolder:
             #------------------------------> 
             name = (
-                f"{self.do['iFile'].stem}-{self.date}{self.do['iFile'].suffix}")
+                f"{self.date}-{self.do['iFile'].stem}{self.do['iFile'].suffix}")
             self.dFile = puFolder/name
             #------------------------------> 
             shutil.copy(self.do['iFile'], self.dFile)
