@@ -1381,7 +1381,7 @@ class CorrA(BaseConfPanel):
         self.name         = 'CorrAPane'
         self.cURL         = config.urlCorrA
         self.cSection     = config.nUCorrA
-        self.cLenLongestL = len(config.lCbNormMethod)
+        self.cLenLongestL = len(config.lCbTransMethod)
         self.cTitlePD     = config.lnPDCorrA
         self.cGaugePD     = 17
         #------------------------------> Optional configuration
