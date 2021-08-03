@@ -69,7 +69,9 @@ class BaseConfTab(wx.Panel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, name: Optional[str]=None) -> None:
+    def __init__(
+        self, parent: wx.Window, name: Optional[str]=None, 
+        dataI: Optional[dict]=None) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.parent = parent
@@ -85,7 +87,7 @@ class BaseConfTab(wx.Panel):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
-        self.conf = self.cmConfPanel[self.name](self)
+        self.conf = self.cmConfPanel[self.name](self, dataI)
         #endregion --------------------------------------------------> Widgets
         
         #region -------------------------------------------------> Aui control
@@ -252,7 +254,7 @@ class Start(wx.Panel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, *args) -> None:
+    def __init__(self, parent: wx.Window, *args, **kwargs) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
         self.parent = parent
