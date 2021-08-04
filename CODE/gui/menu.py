@@ -70,7 +70,8 @@ class MenuMethods():
     #---
 
     def AddDateItems(self, menuDate: list[str]) -> Literal[True]:
-        """Add and bind the date to plot
+        """Add and bind the date to plot. Based class need to have a plotDate
+            list
     
             Parameters
             ----------
@@ -82,7 +83,7 @@ class MenuMethods():
             #------------------------------> Add item
             i = self.AppendRadioItem(-1, k)
             #------------------------------> Add to plotDate
-            self.plotDate[i.GetId()] = k
+            self.plotDate.append(i)
             #------------------------------> Bind
             self.Bind(wx.EVT_MENU, self.OnPlotDate, source=i)
         #endregion ------------------------------------------------> Add items
@@ -95,9 +96,7 @@ class MenuMethods():
     #---
 
     def OnPlotDate(self, event: wx.CommandEvent) -> Literal[True]:
-        """Plot a date of a section in an UMSAP file. Assumes the Tools menu
-            creates a self.plotDate dict (keys are menu item id and values
-            the available dates) 
+        """Plot a date of a section in an UMSAP file.
     
             Parameters
             ----------
@@ -106,7 +105,7 @@ class MenuMethods():
         
         """
         win = self.GetWindow()
-        win.Draw(self.plotDate[event.GetId()])
+        win.Draw(self.GetLabelText(event.GetId()))
         return True
     #---
 
@@ -162,8 +161,8 @@ class PlotMenu(wx.Menu, MenuMethods):
             
         Attributes
         ----------
-        plotDate : dict
-            Asscociate the menu item id with the date in the umsap file
+        plotDate : list[wx.MenuItems]
+            list of available dates menu items
     """
     #region -----------------------------------------------------> Class setup
     
@@ -174,7 +173,7 @@ class PlotMenu(wx.Menu, MenuMethods):
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
-        self.plotDate = {}
+        self.plotDate = []
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
@@ -402,17 +401,79 @@ class CorrAPlotToolMenu(PlotMenu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-
+        #------------------------------> 
+        pos = self.FindChildItem(self.dupWin.GetId())[1]
+        #------------------------------> 
+        self.Insert(pos, -1, kind=wx.ITEM_SEPARATOR)
+        self.colName   = self.Insert(
+            pos, -1, "Column Names", kind=wx.ITEM_RADIO,
+        )
+        self.colNumber = self.Insert(
+            pos+1, -1, "Column Numbers (0 based)",kind=wx.ITEM_RADIO,
+        )
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-
+        self.Bind(wx.EVT_MENU, self.OnColType, source=self.colName)
+        self.Bind(wx.EVT_MENU, self.OnColType, source=self.colNumber)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def OnColType(self, event: wx.CommandEvent) -> Literal[True]:
+        """Use either the name of the columns or the 0 based number of the 
+            column for the axes
     
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event
+        """
+        #region ----------------------------------------------------> Get Date
+        for k in self.plotDate:
+            #------------------------------> 
+            iD = k.GetId()
+            #------------------------------> 
+            if self.IsChecked(iD):
+                date = self.GetLabelText(iD)
+                break
+            else:
+                pass
+        #endregion -------------------------------------------------> Get Date
+        
+        #region -----------------------------------------------------> Get Col
+        col = 'Name' if self.IsChecked(self.colName.GetId()) else 'Number'
+        #endregion --------------------------------------------------> Get Col
+        
+        #region --------------------------------------------------------> Plot
+        win = self.GetWindow()
+        win.Draw(date, col)
+        #endregion -----------------------------------------------------> Plot
+        
+        return True
+    #---
+    
+    def OnPlotDate(self, event: wx.CommandEvent) -> Literal[True]:
+        """Plot a date of a section in an UMSAP file.
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+        
+        """
+        #region -----------------------------------------------------> Get Col
+        col = 'Name' if self.IsChecked(self.colName.GetId()) else 'Number'
+        #endregion --------------------------------------------------> Get Col
+        
+        #region --------------------------------------------------------> Plot
+        win = self.GetWindow()
+        win.Draw(self.GetLabelText(event.GetId()), col)
+        #endregion -----------------------------------------------------> Plot
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 #endregion -------------------------------------------------> Individual menus

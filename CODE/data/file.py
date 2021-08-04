@@ -182,8 +182,9 @@ class UMSAPFile():
                     continue
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
-                    'DF'    : df,
-                    'NumCol': numCol,
+                    'DF'        : df,
+                    'NumCol'    : numCol,
+                    'NumColList': v['CI']['Column'],
                 }
             except Exception:
                 pass

@@ -569,7 +569,7 @@ class CorrAPlot(BaseWindowPlot):
         #endregion -----------------------------------------------------> Bind
 
         #region ----------------------------------------------------> Position
-        self.Draw(self.date[0])
+        self.Draw(self.date[0], 'Name')
         self.WinPos()
         self.Show()
         #endregion -------------------------------------------------> Position
@@ -599,13 +599,15 @@ class CorrAPlot(BaseWindowPlot):
         return True
     #---
 
-    def Draw(self, tDate: str) -> Literal[True]:
+    def Draw(self, tDate: str, col: Literal['Name', 'Number']) -> Literal[True]:
         """ Plot data from a given date.
         
             Paramenters
             -----------
             tDate : str
                 A date in the section e.g. 20210129-094504
+            col: One of Name or Number
+                Set the information to display in the axis
         """
         #region --------------------------------------------------------> Plot
         self.plot.axes.pcolormesh(
@@ -621,7 +623,7 @@ class CorrAPlot(BaseWindowPlot):
         
         #region -------------------------------------------------> Axis & Plot
         #------------------------------> Axis properties
-        self.SetAxis(tDate)
+        self.SetAxis(tDate, col)
         #------------------------------> Zoom Out level
         self.plot.ZoomResetSetValues()
         #------------------------------> Draw
@@ -635,13 +637,17 @@ class CorrAPlot(BaseWindowPlot):
         return True
     #---
 
-    def SetAxis(self, tDate: str) -> Literal[True]:
+    def SetAxis(
+        self, tDate: str, col: Literal['Name', 'Number']
+        ) -> Literal[True]:
         """ General details of the plot area 
         
             Parameters
             ----------
             tDate : str
                 A date in the section e.g. 20210129-094504
+            col: One of Name or Number
+                Set the information to display in the axis
         """
         #region --------------------------------------------------------> Grid
         self.plot.axes.grid(True)		
@@ -665,9 +671,14 @@ class CorrAPlot(BaseWindowPlot):
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> Set ticks
-        for i in range(0, self.data[tDate]['NumCol'], step):
-            xticksloc.append(i + 0.5)		
-            xlabel.append(self.data[tDate]['DF'].columns[i])
+        if col == 'Name':
+            for i in range(0, self.data[tDate]['NumCol'], step):
+                xticksloc.append(i + 0.5)		
+                xlabel.append(self.data[tDate]['DF'].columns[i])
+        else:
+            for i in range(0, self.data[tDate]['NumCol'], step):
+                xticksloc.append(i + 0.5)
+                xlabel.append(self.data[tDate]['NumColList'][i])
 
         self.plot.axes.set_xticks(xticksloc)
         self.plot.axes.set_xticklabels(xlabel, rotation=90)
