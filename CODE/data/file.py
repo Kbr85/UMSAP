@@ -182,8 +182,9 @@ class UMSAPFile():
                     continue
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
-                    'DF'    : df,
-                    'NumCol': numCol,
+                    'DF'        : df,
+                    'NumCol'    : numCol,
+                    'NumColList': v['CI']['Column'],
                 }
             except Exception:
                 pass
@@ -286,6 +287,83 @@ class UMSAPFile():
             raise e
     #---
 
+    def GetDataI(self, tSection: str, tDate: str) -> dict:
+        """ Get initial user input for one analysis
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                Date of the analysis, e.g. '20210630-143556'
+    
+            Returns
+            -------
+            dict
+    
+            Raise
+            -----
+            KeyError:
+                When tSection or tDate is not found in the file
+        """
+        try:
+            return self.data[tSection][tDate]['I']
+        except KeyError as e:
+            raise e
+    #---
+    
+    def GetDataCI(self, tSection: str, tDate: str) -> dict:
+        """ Get curated user input for one analysis
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                Date of the analysis, e.g. '20210630-143556'
+    
+            Returns
+            -------
+            dict
+    
+            Raise
+            -----
+            KeyError:
+                When tSection or tDate is not found in the file
+        """
+        try:
+            return self.data[tSection][tDate]['CI']
+        except KeyError as e:
+            raise e
+    #---
+    
+    def GetDataUser(self, tSection: str, tDate: str) -> dict:
+        """ Get both initial and curated data from the user for the analysis
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                Date of the analysis, e.g. '20210630-143556'
+    
+            Returns
+            -------
+            dict
+    
+            Raise
+            -----
+            KeyError:
+                When tSection or tDate is not found in the file
+        """
+        try:
+            return {
+                'I':  self.data[tSection][tDate]['I'], 
+                'CI': self.data[tSection][tDate]['CI'], 
+            }
+        except KeyError as e:
+            raise e
+    #---
     #region -----------------------------------------------------> Export data
     def ExportPlotData(self, tSection: str, tDate: str, fileP: 'Path'
                       ) -> Literal[True]:

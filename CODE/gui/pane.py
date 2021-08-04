@@ -543,7 +543,7 @@ class BaseConfPanel(
         if not piFolder == puFolder:
             #------------------------------> 
             name = (
-                f"{self.do['iFile'].stem}-{self.date}{self.do['iFile'].suffix}")
+                f"{self.date}-{self.do['iFile'].stem}{self.do['iFile'].suffix}")
             self.dFile = puFolder/name
             #------------------------------> 
             shutil.copy(self.do['iFile'], self.dFile)
@@ -1294,6 +1294,9 @@ class CorrA(BaseConfPanel):
         ----------
         parent : wx Widget
             Parent of the widgets
+        dataI : dict or None
+            Initial data provided by the user in a previous analysis.
+            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}
 
         Attributes
         ----------
@@ -1374,7 +1377,7 @@ class CorrA(BaseConfPanel):
     #endregion --------------------------------------------------> Class Setup
     
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent):
+    def __init__(self, parent: wx.Window, dataI: Optional[dict]):
         """"""
         #region -----------------------------------------------> Initial setup
         #------------------------------> Needed by BaseConfPanel
@@ -1552,20 +1555,27 @@ class CorrA(BaseConfPanel):
         #endregion -----------------------------------------------------> Bind
     
         #region --------------------------------------------------------> Test
-        import getpass
-        user = getpass.getuser()
-        if config.cOS == "Darwin":
-            self.uFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-            self.iFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
-        elif config.cOS == 'Windows':
-            from pathlib import Path
-            self.uFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
-            self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
+        if config.development:
+            import getpass
+            user = getpass.getuser()
+            if config.cOS == "Darwin":
+                self.uFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                self.iFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
+            elif config.cOS == 'Windows':
+                from pathlib import Path
+                self.uFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
+                self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
+            else:
+                pass
+            self.transMethod.cb.SetValue("Log2")
+            self.corrMethod.cb.SetValue("Pearson")
         else:
             pass
-        self.transMethod.cb.SetValue("Log2")
-        self.corrMethod.cb.SetValue("Pearson")
         #endregion -----------------------------------------------------> Test
+        
+        #region -------------------------------------------------------> DataI
+        self.SetInitialData(dataI)
+        #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -1582,6 +1592,57 @@ class CorrA(BaseConfPanel):
         self.lbO.Paste()
     #---
 
+    def SetInitialData(self, dataI: Optional[dict]=None) -> Literal[True]:
+        """Set initial data
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        if dataI is not None:
+            #------------------------------> 
+            self.uFile.tc.SetValue(dataI['CI']['uFile'])
+            self.iFile.tc.SetValue(dataI['I']['Data File          '])
+            #------------------------------> 
+            self.transMethod.cb.SetValue(dataI['CI']['TransMethod'])
+            self.corrMethod.cb.SetValue(dataI['CI']['CorrMethod'])
+            #------------------------------> 
+            if Path(self.iFile.tc.GetValue()).exists:
+                #------------------------------> Add columns with the same order
+                l = []
+                for k in dataI['CI']['Column']:
+                    if len(l) == 0:
+                        #------------------------------> 
+                        l.append(k)
+                        continue
+                    else:
+                        #------------------------------> 
+                        if k > l[-1]:
+                            #------------------------------> 
+                            l.append(k)
+                            continue
+                        else:
+                            #------------------------------> 
+                            self.lbI.SelectList(l)
+                            self.OnAdd('')            
+                            #------------------------------> 
+                            l = [k]
+                #------------------------------> Last past
+                self.lbI.SelectList(l)
+                self.OnAdd('')    
+            else:
+                pass
+        else:
+            pass
+    #---
     #-------------------------------------> Run analysis methods
     def CheckInput(self):
         """Check user input"""
