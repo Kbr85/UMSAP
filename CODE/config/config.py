@@ -62,13 +62,13 @@ if cOS == 'Darwin':
     deltaWin = 23
 elif cOS == 'Windows':
     #------------------------------> Root & Resources Folder
-    root = cwd.parent
+    root = cwd.parent.parent.parent
     res = root / 'Resources'
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 3
     #------------------------------> Statusbar split size
     if development:
-        sbFieldSize = [-1, 350]
+        sbFieldSize = [-1, 325]
     else:
         sbFieldSize = [-1, 300]
     sbPlot = [-1, 115]
