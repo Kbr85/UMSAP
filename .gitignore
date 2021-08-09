@@ -13,6 +13,7 @@
 *.out
 *.run.xml
 *.synctex.gz
+*.pyc
 
 # Ignore folders
 __pychache__
