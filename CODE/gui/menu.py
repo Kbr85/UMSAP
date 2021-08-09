@@ -162,7 +162,7 @@ class PlotMenu(wx.Menu, MenuMethods):
         Attributes
         ----------
         plotDate : list[wx.MenuItems]
-            list of available dates menu items
+            List of available dates menu items
     """
     #region -----------------------------------------------------> Class setup
     

@@ -42,6 +42,8 @@ class BaseConfTab(wx.Panel):
         name : str or None
             Unique name of the tab. Default is None. In this case the child 
             class is expected to define a name
+        dataI : dict or None
+            Initial data provided by the user to performed a previous analysis
 
         Attributes
         ----------
@@ -135,6 +137,8 @@ class BaseConfListTab(BaseConfTab):
         name : str or None
             Unique name of the tab. Default is None. In this case the child 
             class is expected to define a name
+        dataI : dict or None
+            Initial data provided by the user to performed a previous analysis
 
         Attributes
         ----------
@@ -160,14 +164,16 @@ class BaseConfListTab(BaseConfTab):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, name: Optional[str]=None) -> None:
+    def __init__(
+        self, parent: wx.Window, name: Optional[str]=None,
+        dataI : Optional[dict]=None) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cLCColLabel = getattr(self, 'cLCColLabel', config.lLCtrlColNameI)
         self.cLCColSize = getattr(self, 'cLCColSize', config.sLCtrlColI)
         self.cLCPaneTitle = getattr(self, 'cLCPaneTitle', config.lnListPane)
         
-        super().__init__(parent, name=name)
+        super().__init__(parent, name=name, dataI=dataI)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets

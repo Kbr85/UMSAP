@@ -141,8 +141,8 @@ class BaseConfPanel(
         dfI : pdDataFrame or None
             Dataframe with initial values after columns were extracted and type
             assigned.
-        dfN : pdDataFrame or None
-            Dataframe after normalization
+        dfT : pdDataFrame or None
+            Dataframe after data transformation
         date : str or None
             Date time stamp as given by dtsMethod.StrNow()
         oFolder : Path or None
@@ -258,7 +258,7 @@ class BaseConfPanel(
         self.tException : Optional[Exception] = None
         #--------------> pd.DataFrames for:
         self.dfI : Optional['pd.DataFrame'] = None # Initial and
-        self.dfN : Optional['pd.DataFrame'] = None # Normalized values
+        self.dfT : Optional['pd.DataFrame'] = None # Transaformed values
         #--------------> date for corr file
         self.date : Optional[str] = None
         #--------------> folder for output
@@ -780,6 +780,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
                 vMin    = 0,
                 sep     = ' ',
                 unique  = False,
+                opt     = True,
             )
         )
         #endregion --------------------------------------------------> Widgets
@@ -1642,6 +1643,8 @@ class CorrA(BaseConfPanel):
                 pass
         else:
             pass
+        
+        return True
     #---
     #-------------------------------------> Run analysis methods
     def CheckInput(self):
@@ -1794,7 +1797,7 @@ class CorrA(BaseConfPanel):
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         if self.do['TransMethod'] != 'None':
             try:
-                self.dfN = dtsStatistic.DataTransformation(
+                self.dfT = dtsStatistic.DataTransformation(
                     self.dfI,
                     sel = None,
                     method = self.do['TransMethod'],
@@ -1804,14 +1807,14 @@ class CorrA(BaseConfPanel):
                 self.tException = e
                 return False
         else:
-            self.dfN = self.dfI.copy()
+            self.dfT = self.dfI.copy()
         #endregion --------------------------------------------> Normalization
 
         #region ------------------------------------> Correlation coefficients
         msgStep = msgPrefix + f"Correlation coefficients calculation"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         try:
-            self.RDF = self.dfN.corr(method=self.do['CorrMethod'].lower())
+            self.RDF = self.dfT.corr(method=self.do['CorrMethod'].lower())
         except Exception as e:
             self.msgError = str(e)
             self.tException = e
@@ -1826,7 +1829,7 @@ class CorrA(BaseConfPanel):
         #region --------------------------------------------------> Data Steps
         stepDict = {
             config.fnInitial.format('01'): self.dfI,
-            config.fnNorm.format('02')   : self.dfN,
+            config.fnTrans.format('02')   : self.dfT,
             self.cMainData.format('03')  : self.RDF,
         }
         #endregion -----------------------------------------------> Data Steps
@@ -1840,8 +1843,8 @@ class CorrA(BaseConfPanel):
             print("DataFrames: Initial")
             print(self.dfI)
             print("")
-            print("DataFrames: Norm")
-            print(self.dfN)
+            print("DataFrames: Trans")
+            print(self.dfT)
             print("")
             print("DataFrames: CC")
             print(self.RDF)
@@ -1889,7 +1892,7 @@ class CorrA(BaseConfPanel):
         self.d          = {} # Dict with the user input as given
         self.do         = {} # Dict with the processed user input
         self.dfI        = None # pd.DataFrame for initial, normalized and
-        self.dfN        = None # correlation coefficients
+        self.dfT        = None # correlation coefficients
         self.RDF        = None
         self.date       = None # date for corr file
         self.oFolder    = None # folder for output
@@ -1933,7 +1936,7 @@ class ProtProf(BaseConfModPanel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent):
+    def __init__(self, parent, dataI: Optional[dict]):
         """ """
         #region -------------------------------------------------> Check Input
         
@@ -2022,6 +2025,7 @@ class ProtProf(BaseConfModPanel):
                 numType = 'int',
                 sep     = ' ',
                 vMin    = 0,
+                opt     = True,
             )
         )
         #endregion --------------------------------------------------> Widgets
@@ -2418,7 +2422,7 @@ class ProtProf(BaseConfModPanel):
             return False
         #endregion ---------------------------------------------> Mixed Fields
         
-        return False
+        return True
     #---
     
     def PrepareRun(self):
@@ -2435,14 +2439,14 @@ class ProtProf(BaseConfModPanel):
         self.d = {
             self.EqualLenLabel(self.ciFileL) : (
                 self.iFile.tc.GetValue()),
-            self.EqualLenLabel(self.coFileL) : (
-                self.oFile.tc.GetValue()),
+            self.EqualLenLabel(self.cuFileL) : (
+                self.uFile.tc.GetValue()),
             self.EqualLenLabel(self.cScoreValL) : (
                 self.scoreVal.tc.GetValue()),
             self.EqualLenLabel(self.cNormMethodL) : (
                 self.normMethod.cb.GetValue()),
-            self.EqualLenLabel(self.cMedianL) : (
-                self.median.cb.GetValue()),
+            self.EqualLenLabel(self.cTransMethodL) : (
+                self.transMethod.cb.GetValue()),
             self.EqualLenLabel(self.cCorrectPL) : (
                 self.correctP.cb.GetValue()),
             self.EqualLenLabel(self.cDetectedProtL) : (
@@ -2465,7 +2469,6 @@ class ProtProf(BaseConfModPanel):
                 self.lbDict['Control']),
             self.EqualLenLabel(self.cResControlL): (
                 self.tcResults.GetValue()),
-            self.EqualLenLabel('Append to File') : self.checkB.GetValue(),
         }
         #------------------------------> Dict with all values
         #--------------> 
@@ -2487,10 +2490,10 @@ class ProtProf(BaseConfModPanel):
         #--------------> 
         self.do  = {
             'iFile'     : Path(self.iFile.tc.GetValue()),
-            'oFile'     : Path(self.oFile.tc.GetValue()),
+            'uFile'     : Path(self.uFile.tc.GetValue()),
             'ScoreVal'  : float(self.scoreVal.tc.GetValue()),
             'NormMethod': self.normMethod.cb.GetValue(),
-            'Median'    : True if self.median.cb.GetValue() == 'Yes' else False,
+            'TranMethod': self.transMethod.cb.GetValue(),
             'CorrectP'  : self.correctP.cb.GetValue(),
             'oc' : {
                 'DetectedP' : detectedProt,
@@ -2498,7 +2501,7 @@ class ProtProf(BaseConfModPanel):
                 'ScoreCol'  : scoreCol,
                 'ExcludeP'  : excludeProt,
                 'ColExtract': colExtract,
-                'ResCtrl': resctrl,
+                'ResCtrl'   : resctrl,
                 'Column'    : (
                     [detectedProt, geneName, scoreCol] 
                     + excludeProt 
@@ -2515,7 +2518,7 @@ class ProtProf(BaseConfModPanel):
             },
         }
         #------------------------------> File base name
-        self.oFolder = self.do['oFile'].parent
+        self.oFolder = self.do['uFile'].parent
         #------------------------------> Date
         self.date = dtsMethod.StrNow()
         #endregion ----------------------------------------------------> Input
@@ -2576,23 +2579,55 @@ class ProtProf(BaseConfModPanel):
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
-
+        
+        if config.development:
+            print('self.dfI.shape: ', self.dfI.shape)
+        else:
+            pass
+        
+        #region ---------------------------------------------> Exclude Protein
+        #------------------------------> Msg
+        msgStep = msgPrefix + 'Excluding proteins by Exclude Proteins values'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Exclude
+        if self.do['df']['ExcludeP']:
+            a = self.dfI.iloc[:,self.do['df']['ExcludeP']].notna()
+            a = a.loc[(a==True).any(axis=1)]
+            idx = a.index
+            self.dfEx = self.dfI.drop(index=idx)
+        else:
+            self.dfEx = self.dfI.copy()
+            
+        if config.development:
+            print('self.dfEx.shape: ', self.dfEx.shape)
+        #endregion ------------------------------------------> Exclude Protein
+        
+        #region -------------------------------------------------------> Score
+        #------------------------------> Msg
+        msgStep = msgPrefix + 'Excluding proteins by Score value'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Exclude
+        self.dfS = self.dfEx.loc[self.dfEx.iloc[:,2] >= self.do['ScoreVal']]
+            
+        if config.development:
+            print('self.dfS.shape: ', self.dfS.shape)
+        #endregion ----------------------------------------------------> Score
+        
+        #region ----------------------------------------------> Transformation
+        #------------------------------> Msg
+        msgStep = (
+            f'{msgPrefix}'
+            f'Performing data transformation: {self.do["TranMethod"]}'
+        )  
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Transformed
+        self.dfT = dtsStatistic.DataTransformation(
+            self.dfS, self.do['df']['ResCtrl']
+        )
+        #endregion -------------------------------------------> Transformation
+        
         #region -----------------------------------------------> Normalization
-        # msgStep = msgPrefix + f"Data normalization"
-        # wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        # if self.do['NormMethod'] != 'None':
-        #     try:
-        #         self.dfN = dtsStatistic.DataNormalization(
-        #             self.dfI,
-        #             sel = None,
-        #             method = self.do['NormMethod'],
-        #         )
-        #     except Exception as e:
-        #         self.msgError = str(e)
-        #         self.tException = e
-        #         return False
-        # else:
-        #     self.dfN = self.dfI.copy()
+        
         #endregion --------------------------------------------> Normalization
 
         
@@ -2621,7 +2656,7 @@ class ProtProf(BaseConfModPanel):
         self.d         = {} # Dict with the user input as given
         self.do        = {} # Dict with the processed user input
         self.dfI       = None # pd.DataFrame for initial, normalized and
-        # self.dfN       = None # correlation coefficients
+        # self.dfT       = None # correlation coefficients
         # self.RDF      = None
         self.date      = None # date for corr file
         self.oFolder   = None # folder for output
