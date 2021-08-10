@@ -65,7 +65,7 @@ elif cOS == 'Windows':
     root = cwd.parent.parent.parent
     res = root / 'Resources'
     #------------------------------> Index of the Tool Menu in the MenuBar
-    toolsMenuIdx = 3
+    toolsMenuIdx = 2
     #------------------------------> Statusbar split size
     if development:
         sbFieldSize = [-1, 325]
