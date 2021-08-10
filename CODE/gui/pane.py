@@ -20,6 +20,8 @@ import shutil
 from pathlib import Path
 from typing import Optional, Literal, Type
 
+from numpy import nan
+
 import wx
 import wx.lib.agw.aui as aui
 import wx.lib.scrolledpanel as scrolled
@@ -2484,9 +2486,10 @@ class ProtProf(BaseConfModPanel):
         colExtract = dtsMethod.Str2ListNumber(
             self.colExtract.tc.GetValue(), sep=' ',
         )
-        resctrl     = dmethod.ResControl2ListNumber(self.tcResults.GetValue())
-        resctrlFlat = dmethod.ResControl2Flat(resctrl)
-        resctrlDF   = dmethod.ResControl2DF(resctrl, 2+len(excludeProt)+1)
+        resctrl       = dmethod.ResControl2ListNumber(self.tcResults.GetValue())
+        resctrlFlat   = dmethod.ResControl2Flat(resctrl)
+        resctrlDF     = dmethod.ResControl2DF(resctrl, 2+len(excludeProt)+1)
+        resctrlDFFlat = dmethod.ResControl2Flat(resctrlDF)
         #--------------> 
         self.do  = {
             'iFile'     : Path(self.iFile.tc.GetValue()),
@@ -2509,12 +2512,13 @@ class ProtProf(BaseConfModPanel):
                 ),
             },
             'df' : {
-                'DetectedP': 0,
-                'GeneName' : 1,
-                'ScoreCol' : 2,
-                'ExcludeP' : [2+x for x in range(1, len(excludeProt)+1)],
-                'ResCtrl'  : resctrlDF,
-                'ColumnF'  : [2] + dmethod.ResControl2Flat(resctrlDF),
+                'DetectedP'  : 0,
+                'GeneName'   : 1,
+                'ScoreCol'   : 2,
+                'ExcludeP'   : [2+x for x in range(1, len(excludeProt)+1)],
+                'ResCtrl'    : resctrlDF,
+                'ResCtrlFlat': resctrlDFFlat,
+                'ColumnF'    : [2] + resctrlDFFlat,
             },
         }
         #------------------------------> File base name
@@ -2569,7 +2573,7 @@ class ProtProf(BaseConfModPanel):
         #endregion ---------------------------------------------------> Column
 
         if config.development:
-            print(self.dfI)
+            print("self.dfI.shape: ", self.dfI.shape)
         
         return True
     #---
@@ -2579,11 +2583,6 @@ class ProtProf(BaseConfModPanel):
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
-        
-        if config.development:
-            print('self.dfI.shape: ', self.dfI.shape)
-        else:
-            pass
         
         #region ---------------------------------------------> Exclude Protein
         #------------------------------> Msg
@@ -2621,13 +2620,49 @@ class ProtProf(BaseConfModPanel):
         )  
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Transformed
-        self.dfT = dtsStatistic.DataTransformation(
-            self.dfS, self.do['df']['ResCtrl']
-        )
+        if self.do['TranMethod'] != 'None':
+            try:
+                self.dfT = dtsStatistic.DataTransformation(
+                    self.dfS, 
+                    self.do['df']['ResCtrlFlat'], 
+                    method = self.do['TranMethod'],
+                    rep    = nan,
+                )
+            except Exception as e:
+                self.msgError   = config.mPDDataTran
+                self.tException = e
+                return False                
+        else:
+            self.dfT = self.dfS.copy()
+        
+        
+        if config.development:
+            print('self.dfT.shape: ', self.dfT.shape)
         #endregion -------------------------------------------> Transformation
         
         #region -----------------------------------------------> Normalization
+        #------------------------------> Msg
+        msgStep = (
+            f'{msgPrefix}'
+            f'Performing data normalization: {self.do["NormMethod"]}'
+        )  
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Transformed
+        if self.do['NormMethod'] != 'None':
+            try:
+                self.dfN = dtsStatistic.DataNormalization(
+                    self.dfT, 
+                    self.do['df']['ResCtrlFlat'], 
+                    method = self.do['NormMethod'],
+                )
+            except Exception as e:
+                self.msgError   = config.mPDDataNorm
+                self.tException = e
+        else:
+            self.dfN = self.dfT.copy()
         
+        if config.development:
+            print('self.dfN.shape: ', self.dfN.shape)
         #endregion --------------------------------------------> Normalization
 
         

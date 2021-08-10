@@ -304,6 +304,8 @@ mNotEmpty = "Please select a value for {}."
 #------------------------------> Pandas
 mPDDataType    = 'Unexpected data type.'
 mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
+mPDDataTran    = 'Data Transformation failed.'
+mPDDataNorm    = 'Data Normalization failed.'
 #------------------------------> User values
 mNumROne = "Only one number can be accepted in {}."
 mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
