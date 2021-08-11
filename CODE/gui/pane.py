@@ -693,6 +693,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.cTransMethodL = getattr(
             self, 'cTransMethodL', config.lCbTransMethod
         )
+        self.cImputationL = getattr(self, 'cImputationL', config.lCbImputation)
         self.cDetectedProtL = getattr(
             self, 'cDetectedProtL', config.lStDetectedProt,
         )
@@ -701,6 +702,9 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         #------------------------------> Choices
         self.cNormChoice = getattr(self, 'cNormChoice', config.oNormMethod)
         self.cTransChoice = getattr(self, 'cTransChoice', config.oTransMethod)
+        self.cImputationChoice = getattr(
+            self, 'cImputationChoice', config.oImputation
+        )
         #------------------------------> Size
         self.cTcSize = getattr(self, 'cTcSize', config.sTc)
         #------------------------------> Tooltips
@@ -738,6 +742,13 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             self.sbValue, 
             label     = self.cTransMethodL,
             choices   = self.cTransChoice,
+            validator = dtsValidator.IsNotEmpty(),
+        )
+        
+        self.imputationMethod = dtsWidget.StaticTextComboBox(
+            self.sbValue, 
+            label     = self.cImputationL,
+            choices   = self.cImputationChoice,
             validator = dtsValidator.IsNotEmpty(),
         )
 
@@ -2110,14 +2121,26 @@ class ProtProf(BaseConfModPanel):
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.correctP.st,
+            self.imputationMethod.st,
             pos    = (2,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.correctP.cb,
+            self.imputationMethod.cb,
             pos    = (2,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.correctP.st,
+            pos    = (3,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.correctP.cb,
+            pos    = (3,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
@@ -2228,6 +2251,7 @@ class ProtProf(BaseConfModPanel):
             self.scoreVal.tc.SetValue('320')
             self.transMethod.cb.SetValue('Log2')
             self.normMethod.cb.SetValue('Median')
+            self.imputationMethod.cb.SetValue('Normal Distribution')
             self.sample.cb.SetValue('Independent Samples')
             self.rawI.cb.SetValue('Raw Intensities')
             self.correctP.cb.SetValue('Benjamini - Hochberg')
@@ -2326,6 +2350,14 @@ class ProtProf(BaseConfModPanel):
             pass
         else:
             self.msgError = config.mNotEmpty.format(self.cNormMethodL)
+            return False
+        #------------------------------> Imputation
+        msgStep = msgPrefix + self.cImputationL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.imputationMethod.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = config.mNotEmpty.format(self.cImputationL)
             return False
         #------------------------------> P Correction
         msgStep = msgPrefix + self.cCorrectPL
@@ -2445,10 +2477,12 @@ class ProtProf(BaseConfModPanel):
                 self.uFile.tc.GetValue()),
             self.EqualLenLabel(self.cScoreValL) : (
                 self.scoreVal.tc.GetValue()),
-            self.EqualLenLabel(self.cNormMethodL) : (
-                self.normMethod.cb.GetValue()),
             self.EqualLenLabel(self.cTransMethodL) : (
                 self.transMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cNormMethodL) : (
+                self.normMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cImputationL) : (
+                self.imputationMethod.cb.GetValue()),
             self.EqualLenLabel(self.cCorrectPL) : (
                 self.correctP.cb.GetValue()),
             self.EqualLenLabel(self.cDetectedProtL) : (
@@ -2497,6 +2531,7 @@ class ProtProf(BaseConfModPanel):
             'ScoreVal'  : float(self.scoreVal.tc.GetValue()),
             'NormMethod': self.normMethod.cb.GetValue(),
             'TranMethod': self.transMethod.cb.GetValue(),
+            'Imputation': self.imputationMethod.cb.GetValue(),
             'CorrectP'  : self.correctP.cb.GetValue(),
             'oc' : {
                 'DetectedP' : detectedProt,

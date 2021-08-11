@@ -212,6 +212,7 @@ lStResultCtrl    = 'Results - Control experiments'
 lCbFileAppend  = 'Append new data to selected output file'
 lCbTransMethod = 'Data Transformation'
 lCbNormMethod  = 'Data Normalization'
+lCbImputation  = 'Data Imputation'
 lCbCorrMethod  = 'Correlation Method'
 #------------------------------> Progress Dialog
 lPdCheck    = 'Checking user input: '
@@ -269,10 +270,11 @@ ttLCtrlPasteMod = (
 
 #region -------------------------------------------------------------> Options
 oTransMethod = ['', 'None', 'Log2']
-oNormMethod = ['', 'None', 'Median']
-oCorrMethod = ['', 'Pearson', 'Kendall', 'Spearman']
-oYesNo      = ['', 'Yes', 'No']
-oCorrectP   = [
+oNormMethod  = ['', 'None', 'Median']
+oImputation  = ['', 'None', 'Normal Distribution']
+oCorrMethod  = ['', 'Pearson', 'Kendall', 'Spearman']
+oYesNo       = ['', 'Yes', 'No']
+oCorrectP    = [
     '',
     'None',
     'Benjamini - Hochberg',  
@@ -302,10 +304,11 @@ mFileColNum = (
 #------------------------------> Not empty
 mNotEmpty = "Please select a value for {}."
 #------------------------------> Pandas
-mPDDataType    = 'Unexpected data type.'
-mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
-mPDDataTran    = 'Data Transformation failed.'
-mPDDataNorm    = 'Data Normalization failed.'
+mPDDataType       = 'Unexpected data type.'
+mPDDataTypeCol    = 'The {} contains unexpected data type in columns {}.'
+mPDDataTran       = 'Data Transformation failed.'
+mPDDataNorm       = 'Data Normalization failed.'
+mPDDataImputation = 'Data Imputation failed.'
 #------------------------------> User values
 mNumROne = "Only one number can be accepted in {}."
 mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
@@ -318,7 +321,7 @@ mColNumbersNoColExtract = f", excluding {lStColExtract}."
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
-sWinRegular = (900, 620)
+sWinRegular = (900, 670)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
 #------------------------------> wx.StatusBar Fields
