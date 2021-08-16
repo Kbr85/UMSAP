@@ -1236,6 +1236,7 @@ class ResControlExpConfBase(wx.Panel):
             self.topParent.lbDict[k] = []
             for j in v:
                 self.topParent.lbDict[k].append(j.GetLabel())
+                
         #------------------------------> Control type if needed
         if self.pName == 'ProtProfPane' :
             self.topParent.lbDict['ControlType'] = self.controlVal
@@ -1275,13 +1276,22 @@ class ResControlExpConfBase(wx.Panel):
             if k != 'Control' and k != 'ControlType':
                 for j, t in enumerate(v):
                     self.tcDict[k][j].SetValue(t)
-            else:
+            elif k == 'Control':
                 self.tcControl.SetValue(v[0])
+            else:
+                pass
         #endregion -----------------------------------------------> Add Labels
         
         #region -------------------------------------------------> Set Control
         if self.pName == 'ProtProfPane':
-            self.cbControl.SetValue(self.topParent.lbDict['ControlType'])
+            #------------------------------> 
+            cT = self.topParent.lbDict['ControlType']
+            self.cbControl.SetValue(cT)
+            #------------------------------> 
+            if cT == config.oControlTypeProtProf[4]:
+                self.tcControl.SetEditable(False)
+            else:
+                pass
         else:
             pass
         #endregion ----------------------------------------------> Set Control
@@ -2990,6 +3000,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
             config.oControlTypeProtProf[1] : self.AddWidget_OC,
             config.oControlTypeProtProf[2] : self.AddWidget_OCC,
             config.oControlTypeProtProf[3] : self.AddWidget_OCR,
+            config.oControlTypeProtProf[4] : self.AddWidget_Ratio,
         }
         #------------------------------> 
         self.cTotalFieldTT = [
@@ -3093,7 +3104,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        
+        self.cbControl.Bind(wx.EVT_COMBOBOX, self.OnControl)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -3108,7 +3119,35 @@ class ProtProfResControlExp(ResControlExpConfBase):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnCreate(self, event):
+    def OnControl(self, event) -> Literal[True]:
+        """Enable/Disable the Control name when selecting control type
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        #region ---------------------------------------------------> Get value
+        control = self.cbControl.GetValue()
+        #endregion ------------------------------------------------> Get value
+        
+        #region ------------------------------------------------------> Action
+        if control == config.oControlTypeProtProf[4]:
+            self.tcControl.SetValue('None')
+            self.tcControl.SetEditable(False)
+        else:
+            self.tcControl.SetEditable(True)
+        #endregion ---------------------------------------------------> Action
+        
+        return True
+    #---
+    
+    def OnCreate(self, event) -> Literal[True]:
         """Create the widgets in the white panel
     
             Parameters
@@ -3119,11 +3158,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            True
         """
         #region -------------------------------------------------> Check input
         #------------------------------> Labels
@@ -3154,6 +3189,11 @@ class ProtProfResControlExp(ResControlExpConfBase):
             Nc   = n[0]     # Number of rows of tc needed
             Nr   = n[1] + 1 # Number of tc needed for each row
             NCol = n[1] + 2 # Number of columns in the sizer
+            NRow = n[0] + 1 # Number of rows in the sizer
+        elif control == config.oControlTypeProtProf[4]:
+            Nc   = n[0]     # Number of rows of tc needed
+            Nr   = n[1]     # Number of tc needed for each row
+            NCol = n[1] + 1 # Number of columns in the sizer
             NRow = n[0] + 1 # Number of rows in the sizer
         else:
             Nc   = n[0] + 1
@@ -3194,6 +3234,10 @@ class ProtProfResControlExp(ResControlExpConfBase):
                 label = self.tcControl.GetValue(),
             )
         ]
+        if control == config.oControlTypeProtProf[4]:
+            self.lbDict['Control'][0].Hide()
+        else:
+            pass
         #endregion -----------------------------> Create/Destroy wx.StaticText
         
         #region ----------------------------------> Create/Destroy wx.TextCtrl
@@ -3438,6 +3482,45 @@ class ProtProfResControlExp(ResControlExpConfBase):
             wx.ALIGN_CENTER|wx.ALL,
             5
         )
+        
+        for k in self.lbDict[2]:
+            self.sizerSWMatrix.Add(
+                k,
+                0,
+                wx.ALIGN_CENTER|wx.ALL,
+                5
+            )
+        #endregion ------------------------------------------------> RP Labels
+        
+        #region --------------------------------------------------> Other rows
+        for k, v in self.tcDictF.items():
+            #--------------> 
+            K = int(k) - 1
+            #--------------> 
+            self.sizerSWMatrix.Add(
+                self.lbDict[1][K],
+                0,
+                wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+                5
+            )
+            #-------------->
+            for j in v:
+                self.sizerSWMatrix.Add(
+                    j,
+                    0,
+                    wx.EXPAND|wx.ALL,
+                    5
+                )
+        #endregion -----------------------------------------------> Other rows
+        
+        return True
+    #---
+    
+    def AddWidget_Ratio(self, NCol: int, NRow: int) -> bool:
+        """Add the widget when Control Type is Data as Ratios. It is assumed 
+            everything is ready to add the widgets"""
+        #region ---------------------------------------------------> RP Labels
+        self.sizerSWMatrix.AddSpacer(1)
         
         for k in self.lbDict[2]:
             self.sizerSWMatrix.Add(

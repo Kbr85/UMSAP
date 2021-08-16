@@ -302,6 +302,7 @@ oControlTypeProtProf = [
     'One Control', 
     'One Control per Column', 
     'One Control per Row',
+    'Data as Ratios',
 ]
 #endregion ----------------------------------------------------------> Options
 
