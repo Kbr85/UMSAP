@@ -39,6 +39,7 @@ cwd = Path(__file__)
 typeCheck = TYPE_CHECKING
 #endregion -----------------------------------------------> General parameters
 
+
 #region ---------------------------------------- Platform Dependent Parameters
 # There are some that must be defined in other sections
 if cOS == 'Darwin':
@@ -94,6 +95,7 @@ elif cOS == 'Linux':
     deltaWin = 20
 #endregion ------------------------------------- Platform Dependent Parameters
 
+
 #region -------------------------------------------------------------> Windows
 #------------------------------> Reference to main window
 winMain  = None
@@ -104,6 +106,7 @@ winNumber = {}
 # Keys: UMSAP File path - Values: Reference to control window
 winUMSAP = {}
 #endregion ----------------------------------------------------------> Windows
+
 
 #region ---------------------------------------------------------------> Names
 name = { # Unique names for menus, windows, tabs, panes, files, etc
@@ -141,6 +144,7 @@ nUDataN = 'Data Normalization'
 nUReadF = 'Read UMSAP File'
 #endregion ------------------------------------------------------------> Names
 
+
 #region ----------------------------------------------------------- Extensions
 #------------------------------> For wx.Dialogs
 elData         = 'txt files (*.txt)|*.txt'
@@ -157,6 +161,7 @@ esData  = ['.txt']
 esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
 
+
 #region ------------------------------------------------------> Path and Files
 #------------------------------> Relevant paths
 pImages = res / 'IMAGES' # Images folder
@@ -171,6 +176,7 @@ fnDataSteps = 'Data-Steps'
 fnDataInit  = 'Data-Files'
 #endregion ---------------------------------------------------> Path and Files
 
+
 #region ------------------------------------------------------------------ URL
 #------------------------------> www.umsap.nl
 urlHome     = 'https://www.umsap.nl'
@@ -180,6 +186,7 @@ urlCorrA    = f"{urlTutorial}/correlation-analysis"
 urlProtProf = f"{urlTutorial}/proteome-profiling"
 
 #endregion --------------------------------------------------------------- URL
+
 
 #region --------------------------------------------------------------> Labels
 #------------------------------> Names
@@ -226,11 +233,13 @@ lPdDone     = 'All Done'
 lPdEllapsed = 'Ellapsed time: '
 #endregion -----------------------------------------------------------> Labels
 
+
 #region ---------------------------------------------------------------> Hints
 hTcDataFile = f"Path to the {lBtnDataFile}"
 hTcOutFile  = f"Path tot the {lBtnOutFile}"
 hTcUFile    = f"Path tot the {lBtnUFile}"
 #endregion ------------------------------------------------------------> Hints
+
 
 #region ------------------------------------------------------------> Tooltips
 #------------------------------> wx.Button
@@ -244,6 +253,7 @@ ttBtnRun      = f"Start the analysis."
 #------------------------------> wx.StaticText
 ttStTrans = f"Select the {lCbTransMethod} method."
 ttStNorm = f"Select the {lCbNormMethod} method."
+ttStImputation = f"Select the {lCbImputation} method."
 ttStCorr = f"Select the {lCbCorrMethod}."
 ttStScoreVal = f"Set the minimum acceptable Score value.\ne.g. -4"
 ttStPCorrection = "Select the p correction method."
@@ -267,6 +277,7 @@ ttLCtrlPasteMod = (
     f"({copyShortCut}+C)."    
 )
 #endregion ---------------------------------------------------------> Tooltips
+
 
 #region -------------------------------------------------------------> Options
 oTransMethod = ['', 'None', 'Log2']
@@ -293,6 +304,13 @@ oControlTypeProtProf = [
     'One Control per Row',
 ]
 #endregion ----------------------------------------------------------> Options
+
+
+#region -----------------------------------------------------> DF Column names
+protprofFirstThree = ['Gene', 'Protein', 'Score']
+protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'P', 'Pc', 'FC', 'FCstd', 'FCz']
+#endregion --------------------------------------------------> DF Column names
+
 
 #region ------------------------------------------------------------> Messages
 #------------------------------> Files 
@@ -344,12 +362,14 @@ font = {
 }
 #endregion ---------------> Fonts. Set from UMSAP.py, requires a wx.App object
 
+
 #region -----------------------------------------------------> General options
 general = { # General options
     'checkUpdate': True, # True Check, False No check
     'DPI'        : 100,  # DPI for plot images
 }
 #endregion --------------------------------------------------> General options
+
 
 #region --------------------------------------------------------------> Colors
 color = { # Colors for the app
