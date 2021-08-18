@@ -280,36 +280,66 @@ ttLCtrlPasteMod = (
 
 
 #region -------------------------------------------------------------> Options
-oTransMethod = ['', 'None', 'Log2']
-oNormMethod  = ['', 'None', 'Median']
-oImputation  = ['', 'None', 'Normal Distribution']
-oCorrMethod  = ['', 'Pearson', 'Kendall', 'Spearman']
-oYesNo       = ['', 'Yes', 'No']
-oCorrectP    = [
-    '',
-    'None',
-    'Benjamini - Hochberg',  
-    'Benjamini - Yekutieli',
-    'Bonferroni',            
-    'Holm',                  
-    'Holm - Sidak',          
-    'Hommel',        
-    'Sidak',                 
-    'Simes-Hochberg',
-]
-oControlTypeProtProf = [
-    '',
-    'One Control', 
-    'One Control per Column', 
-    'One Control per Row',
-    'Data as Ratios',
-]
+oTransMethod = {
+    'Empty': '',
+    'Log2' : 'Log2',
+}
+oNormMethod = {
+    'Empty' : '',
+    'Median': 'Median',
+}
+oImputation = {
+    'Empty': '',
+    'ND'   : 'Normal Distribution',
+}
+oCorrMethod = {
+    'Empty'   : '',
+    'Pearson' : 'Pearson',
+    'Kendall' : 'Kendall',
+    'Spearman': 'Spearman',
+}
+oYesNo = {
+    'Empty': '',
+    'Yes'  : 'Yes',
+    'No'   : 'No',
+}
+oIntensities = {
+    'Empty' : '',
+    'RawI'  : 'Raw Intensities',
+    'RatioI': 'Ratio of Intensities',
+}
+oSamples = {
+    'Empty': '',
+    'IS'   : 'Independent Samples',
+    'PS'   : 'Paired Samples',
+}
+oCorrectP    = {
+    'Empty': '',
+    'None' : 'None',
+    'BH'   : 'Benjamini - Hochberg',
+    'BY'   : 'Benjamini - Yekutieli',
+    'B'    : 'Bonferroni',
+    'Hol'  : 'Holm',
+    'HS'   : 'Holm - Sidak',
+    'Hom'  : 'Hommel',
+    'S'    : 'Sidak',
+    'SH'   : 'Simes-Hochberg',
+}
+oControlTypeProtProf = {
+    'Empty': '',
+    'OC'   : 'One Control',
+    'OCC'  : 'One Control per Column',
+    'OCR'  : 'One Control per Row',
+    'Ratio': oIntensities['RatioI'],
+}
 #endregion ----------------------------------------------------------> Options
 
 
 #region -----------------------------------------------------> DF Column names
 protprofFirstThree = ['Gene', 'Protein', 'Score']
-protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'P', 'Pc', 'FC', 'FCstd', 'FCz']
+protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'P', 'Pc', 'FC', 'FCciL', 
+    'FCciU', 'FCz',
+]
 #endregion --------------------------------------------------> DF Column names
 
 

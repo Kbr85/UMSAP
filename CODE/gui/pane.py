@@ -647,7 +647,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             Default is config.oNormMethod.
         cTransChoice : list of str
             Choice for transformation method. 
-            Default is config.oTransMethod.
+            Default is config.oTransMethod.values().
         cTcSize : wx.Size
             Size for the wx.TextCtrl in the panel
         #------------------------------> Widgets
@@ -701,10 +701,14 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.cScoreColL = getattr(self, 'cScoreColL', config.lStScoreCol)
         self.cColExtractL = getattr(self, 'cColExtractL', config.lStColExtract)
         #------------------------------> Choices
-        self.cNormChoice = getattr(self, 'cNormChoice', config.oNormMethod)
-        self.cTransChoice = getattr(self, 'cTransChoice', config.oTransMethod)
-        self.cImputationChoice = getattr(
-            self, 'cImputationChoice', config.oImputation
+        self.cNormO = getattr(
+            self, 'cNormO', [x for x in config.oNormMethod.values()]
+        )
+        self.cTransO = getattr(
+            self, 'cTransO', [x for x in config.oTransMethod.values()]
+        )
+        self.cImputationO = getattr(
+            self, 'cImputationO', [x for x in config.oImputation.values()]
         )
         #------------------------------> Size
         self.cTcSize = getattr(self, 'cTcSize', config.sTc)
@@ -738,21 +742,21 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.normMethod = dtsWidget.StaticTextComboBox(
             self.sbValue, 
             label     = self.cNormMethodL,
-            choices   = self.cNormChoice,
+            choices   = self.cNormO,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.transMethod = dtsWidget.StaticTextComboBox(
             self.sbValue, 
             label     = self.cTransMethodL,
-            choices   = self.cTransChoice,
+            choices   = self.cTransO,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.imputationMethod = dtsWidget.StaticTextComboBox(
             self.sbValue, 
             label     = self.cImputationL,
-            choices   = self.cImputationChoice,
+            choices   = self.cImputationO,
             validator = dtsValidator.IsNotEmpty(),
         )
 
@@ -1288,7 +1292,7 @@ class ResControlExpConfBase(wx.Panel):
             cT = self.topParent.lbDict['ControlType']
             self.cbControl.SetValue(cT)
             #------------------------------> 
-            if cT == config.oControlTypeProtProf[4]:
+            if cT == config.oControlTypeProtProf['Ratio']:
                 self.tcControl.SetEditable(False)
             else:
                 pass
@@ -1430,6 +1434,9 @@ class CorrA(BaseConfPanel):
         self.cCorrL     = config.lCbCorrMethod
         self.ciListCtrl = config.lStColIFile.format(self.ciFileL)
         self.coListCtrl = 'Columns to Analyse'
+        #------------------------------> Options
+        self.cTranMethodO = [x for x in config.oTransMethod.values()]
+        self.cCorrMethodO = [x for x in config.oCorrMethod.values()]
         #------------------------------> Tooltips
         self.cTransTT = config.ttStTrans
         self.cCorrTT = config.ttStCorr
@@ -1439,14 +1446,14 @@ class CorrA(BaseConfPanel):
         #------------------------------> Values
         self.transMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
             label     = self.cTransL,
-            choices   = config.oTransMethod,
+            choices   = self.cTranMethodO,
             validator = dtsValidator.IsNotEmpty(),
         )
         self.transMethod.st.SetToolTip(self.cTransTT)
         
         self.corrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
             label     = self.cCorrL,
-            choices   = config.oCorrMethod,
+            choices   = self.cCorrMethodO,
             validator = dtsValidator.IsNotEmpty(),
         )
         self.corrMethod.st.SetToolTip(self.cCorrTT)
@@ -1821,26 +1828,27 @@ class CorrA(BaseConfPanel):
         #endregion ------------------------------------------------------> Msg
 
         #region -----------------------------------------------> Normalization
+        #------------------------------> Msg
         msgStep = msgPrefix + f"Data normalization"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.do['TransMethod'] != 'None':
-            try:
-                self.dfT = dtsStatistic.DataTransformation(
-                    self.dfI,
-                    sel = None,
-                    method = self.do['TransMethod'],
-                )
-            except Exception as e:
-                self.msgError = str(e)
-                self.tException = e
-                return False
-        else:
-            self.dfT = self.dfI.copy()
+        #------------------------------> 
+        try:
+            self.dfT = dtsStatistic.DataTransformation(
+                self.dfI,
+                sel = None,
+                method = self.do['TransMethod'],
+            )
+        except Exception as e:
+            self.msgError = str(e)
+            self.tException = e
+            return False
         #endregion --------------------------------------------> Normalization
 
         #region ------------------------------------> Correlation coefficients
+        #------------------------------> Msg
         msgStep = msgPrefix + f"Correlation coefficients calculation"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
         try:
             self.RDF = self.dfT.corr(method=self.do['CorrMethod'].lower())
         except Exception as e:
@@ -1992,8 +2000,9 @@ class ProtProf(BaseConfModPanel):
         self.cSampleL      = 'Samples'
         self.cRawIL        = 'Intensities'
         #------------------------------> Choices
-        self.cSampleChoice = ['', 'Independent Samples', 'Paired Samples'] 
-        self.cRawIChoice   = ['', 'Raw Intensities', 'Ratio of Intensities'] 
+        self.cSampleO   = [x for x in config.oSamples.values()]
+        self.cRawIO     = [x for x in config.oIntensities.values()]
+        self.cCorrectPO = [x for x in config.oCorrectP.values()]
         #------------------------------> Tooltips
         self.cCorrectPTT    = config.ttStPCorrection
         self.cGeneNameTT    = config.ttStGenName
@@ -2005,6 +2014,13 @@ class ProtProf(BaseConfModPanel):
         self.cRawITT = (
             f"Specify if intensities are raw intensity values or are already "
             f"expressed as a ratio (SILAC, TMT/iTRAQ).")
+        #------------------------------> Dict with methods
+        self.cColCtrlData = {
+            config.oControlTypeProtProf['OC']   : self.ColCtrlData_OC,
+            config.oControlTypeProtProf['OCC']  : self.ColCtrlData_OCC,
+            config.oControlTypeProtProf['OCR']  : self.ColCtrlData_OCR,
+            config.oControlTypeProtProf['Ratio']: self.ColCtrlData_Ratio,
+        }
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -2016,21 +2032,21 @@ class ProtProf(BaseConfModPanel):
         self.correctP = dtsWidget.StaticTextComboBox(
             self.sbValue,
             self.cCorrectPL,
-            config.oCorrectP,
+            self.cCorrectPO,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.sample = dtsWidget.StaticTextComboBox(
             self.sbValue,
             self.cSampleL,
-            self.cSampleChoice,
+            self.cSampleO,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.rawI = dtsWidget.StaticTextComboBox(
             self.sbValue,
             self.cRawIL,
-            self.cRawIChoice,
+            self.cRawIO,
             validator = dtsValidator.IsNotEmpty(),
         )
         #------------------------------> Columns
@@ -2461,7 +2477,21 @@ class ProtProf(BaseConfModPanel):
         #endregion ----------------------------------------> Individual Fields
 
         #region ------------------------------------------------> Mixed Fields
-        #------------------------------> 
+        #------------------------------> Raw or Ratio of intensities
+        a = self.rawI.cb.GetValue()
+        b = self.lbDict['ControlType']
+        if a == b == config.oIntensities[2]:
+            pass
+        elif a != config.oIntensities[2] and b != config.oIntensities[2]:
+            pass
+        else:
+            self.msgError = (
+                f'The values for {self.cRawIL} ({self.rawI.cb.GetValue()}) '
+                f'and Control Type ({self.lbDict["ControlType"]}) are '
+                f'incompatible with each other.'
+            )
+            return False
+        #------------------------------> Unique column numbers
         msgStep = msgPrefix + 'Unique column numbers'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #--------------> 
@@ -2793,18 +2823,8 @@ class ProtProf(BaseConfModPanel):
                     f'Calculating output data for {cN} - {tN}'
                 )  
                 wx.CallAfter(self.dlg.UpdateSt, msgStep)
-                #------------------------------> Control Column
-                if self.do['ControlT'] == 'One Control':
-                    colC = self.do['df']['ResCtrl'][0][0]                    
-                elif self.do['ControlT'] == 'One Control per Column':
-                    colC = self.do['df']['ResCtrl'][0][t] 
-                else:
-                    colC = self.do['df']['ResCtrl'][c][0]
-                #------------------------------> Data column
-                if self.do['ControlT'] == 'One Control per Row':
-                    colD = self.do['df']['ResCtrl'][c][t+1]                    
-                else:
-                    colD = self.do['df']['ResCtrl'][c+1][t]
+                #------------------------------> Control & Data Column
+                colC, colD = self.cColCtrlData[self.do['ControlT']](c, t)
                 #------------------------------> Calculate data
                 try:
                     self.CalcOutData(cN, tN, colC, colD)
@@ -2905,8 +2925,108 @@ class ProtProf(BaseConfModPanel):
         return df
     #---
     
+    def ColCtrlData_OC(self, c:int, t:int) -> list[list[int]]:
+        """Get the Ctrl and Data columns for the given condition and relevant
+            point when Control Type is: One Control
+    
+            Parameters
+            ----------
+            c: int
+                Condition index in self.do['df']['ResCtrl]
+            t: int
+                Relevant point index in self.do['df']['ResCtrl]
+    
+            Returns
+            -------
+            list[list[int]]
+        """
+        #region ---------------------------------------------------> List
+        #------------------------------> 
+        colC = self.do['df']['ResCtrl'][0][0]
+        #------------------------------> 
+        colD = self.do['df']['ResCtrl'][c+1][t]
+        #endregion ------------------------------------------------> List
+        
+        return [colC, colD]
+    #---
+    
+    def ColCtrlData_OCC(self, c:int, t:int) -> list[list[int]]:
+        """Get the Ctrl and Data columns for the given condition and relevant
+            point when Control Type is: One Control per Column
+    
+            Parameters
+            ----------
+            c: int
+                Condition index in self.do['df']['ResCtrl]
+            t: int
+                Relevant point index in self.do['df']['ResCtrl]
+    
+            Returns
+            -------
+            list[list[int]]
+        """
+        #region ---------------------------------------------------> List
+        #------------------------------> 
+        colC = self.do['df']['ResCtrl'][0][t]
+        #------------------------------> 
+        colD = self.do['df']['ResCtrl'][c+1][t]
+        #endregion ------------------------------------------------> List
+        
+        return [colC, colD]
+    #---
+    
+    def ColCtrlData_OCR(self, c:int, t:int) -> list[list[int]]:
+        """Get the Ctrl and Data columns for the given condition and relevant
+            point when Control Type is: One Control per Row
+    
+            Parameters
+            ----------
+            c: int
+                Condition index in self.do['df']['ResCtrl]
+            t: int
+                Relevant point index in self.do['df']['ResCtrl]
+    
+            Returns
+            -------
+            list[list[int]]
+        """
+        #region ---------------------------------------------------> List
+        #------------------------------> 
+        colC = self.do['df']['ResCtrl'][c][0]
+        #------------------------------> 
+        colD = self.do['df']['ResCtrl'][c][t+1]
+        #endregion ------------------------------------------------> List
+        
+        return [colC, colD]
+    #---
+    
+    def ColCtrlData_Ratio(self, c:int, t:int) -> list[Optional[list[int]]]:
+        """Get the Ctrl and Data columns for the given condition and relevant
+            point when Control Type is: Data as Ratios
+    
+            Parameters
+            ----------
+            c: int
+                Condition index in self.do['df']['ResCtrl]
+            t: int
+                Relevant point index in self.do['df']['ResCtrl]
+    
+            Returns
+            -------
+            list[list[int]]
+        """
+        #region ---------------------------------------------------> List
+        #------------------------------> 
+        colC = None
+        #------------------------------> 
+        colD = self.do['df']['ResCtrl'][c][t]
+        #endregion ------------------------------------------------> List
+        
+        return [colC, colD]
+    #---
+    
     def CalcOutData(
-        self, cN: str, tN: str, colC: list[int], colD: list[int]) -> bool:
+        self, cN: str, tN: str, colC: Optional[list[int]], colD: list[int]) -> bool:
         """Calculate the data for the main output dataframe
     
             Parameters
@@ -2925,18 +3045,45 @@ class ProtProf(BaseConfModPanel):
         if config.development:
             print(cN, tN, colC, colD)
         #------------------------------> Ave & Std
-        self.dfR.loc[:,(cN, tN, 'aveC')] = self.dfIm.iloc[:,colC].mean(
-            axis=1, skipna=True).to_numpy()
-        self.dfR.loc[:,(cN, tN, 'stdC')] = self.dfIm.iloc[:,colC].std(
-            axis=1, skipna=True).to_numpy()
+        if colC is not None:
+            self.dfR.loc[:,(cN, tN, 'aveC')] = self.dfIm.iloc[:,colC].mean(
+                axis=1, skipna=True).to_numpy()
+            self.dfR.loc[:,(cN, tN, 'stdC')] = self.dfIm.iloc[:,colC].std(
+                axis=1, skipna=True).to_numpy()
+        else:
+            self.dfR.loc[:,(cN, tN, 'aveC')] = np.nan
+            self.dfR.loc[:,(cN, tN, 'stdC')] = np.nan
+        
         self.dfR.loc[:,(cN, tN, 'ave')] = self.dfIm.iloc[:,colD].mean(
             axis=1, skipna=True).to_numpy()
         self.dfR.loc[:,(cN, tN, 'std')] = self.dfIm.iloc[:,colD].std(
             axis=1, skipna=True).to_numpy()
-        #------------------------------> 
+        #------------------------------> Intensities as log2 Intensities
+        dfLogI = self.dfIm.copy() 
+        if self.do['TranMethod'] == 'Log2':
+            pass
+        else:
+            if colC is not None:
+                dfLogI.iloc[:,colC+colD] = np.log2(dfLogI.iloc[:,colC+colD])
+            else:
+                dfLogI.iloc[:,colD] = np.log2(dfLogI.iloc[:,colD])
+        #------------------------------> log2(FC)
+        if colC is not None:
+            FC = (
+                self.dfLogI.iloc[:,colD].mean(axis=1, skipna=True)
+                - self.dfLogI.iloc[:,colC].mean(axis=1, skipna=True)
+            )
+        else:
+            FC = self.dfLogI.iloc[:,colD].mean(axis=1, skipna=True)
         
+        self.dfR.loc[:, (cN, tN, 'FC')] = FC.to_numpy()
+        #------------------------------> FCz
+        self.dfR.loc[:,(cN, tN, 'FCz')] = (FC - FC.mean()).div(FC.std()).to_numpy()
+        #------------------------------> FCci
         
-        #------------------------------> 
+        #------------------------------> P
+        
+        #------------------------------> Pc
         
         return True
     #---
@@ -2997,10 +3144,10 @@ class ProtProfResControlExp(ResControlExpConfBase):
         }
         #------------------------------> 
         self.cAddWidget = {
-            config.oControlTypeProtProf[1] : self.AddWidget_OC,
-            config.oControlTypeProtProf[2] : self.AddWidget_OCC,
-            config.oControlTypeProtProf[3] : self.AddWidget_OCR,
-            config.oControlTypeProtProf[4] : self.AddWidget_Ratio,
+            config.oControlTypeProtProf['OC']   : self.AddWidget_OC,
+            config.oControlTypeProtProf['OCC']  : self.AddWidget_OCC,
+            config.oControlTypeProtProf['OCR']  : self.AddWidget_OCR,
+            config.oControlTypeProtProf['Ratio']: self.AddWidget_Ratio,
         }
         #------------------------------> 
         self.cTotalFieldTT = [
@@ -3014,8 +3161,11 @@ class ProtProfResControlExp(ResControlExpConfBase):
             f"Both {self.cStLabel[1]} and {self.cStLabel[2]} must be defined."
         )
         self.mNoControl = (f"The Control Type must defined.")
-
+        #------------------------------> Super init
         super().__init__(parent, self.name, topParent, NColF)
+        #------------------------------> Choices
+        self.cControlTypeO = [x for x in config.oControlTypeProtProf.values()]
+        
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -3047,7 +3197,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         self.cbControl = wx.ComboBox(
             self.swLabel, 
             style     = wx.CB_READONLY,
-            choices   = config.oControlTypeProtProf,
+            choices   = self.cControlTypeO,
             validator = dtsValidator.IsNotEmpty(),
         )
         #endregion --------------------------------------------------> Widgets
@@ -3137,7 +3287,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #endregion ------------------------------------------------> Get value
         
         #region ------------------------------------------------------> Action
-        if control == config.oControlTypeProtProf[4]:
+        if control == config.oControlTypeProtProf['Ratio']:
             self.tcControl.SetValue('None')
             self.tcControl.SetEditable(False)
         else:
@@ -3185,16 +3335,16 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #region ---------------------------------------------------> Variables
         control = self.cbControl.GetValue()
         
-        if control == config.oControlTypeProtProf[3]:
+        if control == config.oControlTypeProtProf['OCR']:
             Nc   = n[0]     # Number of rows of tc needed
             Nr   = n[1] + 1 # Number of tc needed for each row
             NCol = n[1] + 2 # Number of columns in the sizer
             NRow = n[0] + 1 # Number of rows in the sizer
-        elif control == config.oControlTypeProtProf[4]:
-            Nc   = n[0]     # Number of rows of tc needed
-            Nr   = n[1]     # Number of tc needed for each row
-            NCol = n[1] + 1 # Number of columns in the sizer
-            NRow = n[0] + 1 # Number of rows in the sizer
+        elif control == config.oControlTypeProtProf['Ratio']:
+            Nc   = n[0]     
+            Nr   = n[1]     
+            NCol = n[1] + 1 
+            NRow = n[0] + 1 
         else:
             Nc   = n[0] + 1
             Nr   = n[1]
@@ -3234,7 +3384,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
                 label = self.tcControl.GetValue(),
             )
         ]
-        if control == config.oControlTypeProtProf[4]:
+        if control == config.oControlTypeProtProf['Ratio']:
             self.lbDict['Control'][0].Hide()
         else:
             pass
@@ -3247,7 +3397,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
             row = self.tcDictF.get(k, [])
             lrow = len(row)
             #------------------------------> First row is especial
-            if k == 1 and control == config.oControlTypeProtProf[1]:
+            if k == 1 and control == config.oControlTypeProtProf['OC']:
                 if control == self.controlVal:
                     continue
                 else:
