@@ -209,12 +209,13 @@ lStProtProfRP   = 'Relevant Points'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'  
 #------------------------------> wx.Statictext
-lStColIFile      = "Columns in the {}"
-lStScoreVal      = 'Score Value'
-lStDetectedProt  = 'Detected Proteins'
-lStScoreCol      = 'Score'
-lStColExtract    = 'Columns to Extract'
-lStResultCtrl    = 'Results - Control experiments'
+lStAlpha        = 'Significance level'
+lStColIFile     = "Columns in the {}"
+lStScoreVal     = 'Score Value'
+lStDetectedProt = 'Detected Proteins'
+lStScoreCol     = 'Score'
+lStColExtract   = 'Columns to Extract'
+lStResultCtrl   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
 lCbTransMethod = 'Data Transformation'
@@ -254,6 +255,7 @@ ttBtnRun      = f"Start the analysis."
 ttStTrans = f"Select the {lCbTransMethod} method."
 ttStNorm = f"Select the {lCbNormMethod} method."
 ttStImputation = f"Select the {lCbImputation} method."
+ttStAlpha = "Significance level for the statistical analysis.\ne.g. 0.05"
 ttStCorr = f"Select the {lCbCorrMethod}."
 ttStScoreVal = f"Set the minimum acceptable Score value.\ne.g. -4"
 ttStPCorrection = "Select the p correction method."
@@ -365,12 +367,13 @@ mListNumN0L = (
     "Only a list of unique non-negative integers can be accepted in {}.")
 mColNumbers = f"Values in section {lSbColumn} must be unique"+"{}"
 mColNumbersNoColExtract = f", excluding {lStColExtract}."
+mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 #endregion ---------------------------------------------------------> Messages
 
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
-sWinRegular = (900, 670)
+sWinRegular = (920, 670)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
 #------------------------------> wx.StatusBar Fields

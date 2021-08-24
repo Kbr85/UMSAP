@@ -695,6 +695,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             self, 'cTransMethodL', config.lCbTransMethod
         )
         self.cImputationL = getattr(self, 'cImputationL', config.lCbImputation)
+        self.cAlphaL = getattr(self, 'cAlpha', config.lStAlpha)
         self.cDetectedProtL = getattr(
             self, 'cDetectedProtL', config.lStDetectedProt,
         )
@@ -718,6 +719,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.cImputationTT = getattr(
             self, 'cImputationTT', config.ttStImputation,
         )
+        self.cAlphaTT = getattr(self, 'cAlphaTT', config.ttStAlpha)
         self.cScoreValTT = getattr(self, 'cScoreValTT', config.ttStScoreVal)
         self.cDetectedProtTT = getattr(
             self, 'cDetectedProtLTT', config.ttStDetectedProtL,
@@ -758,6 +760,18 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             label     = self.cImputationL,
             choices   = self.cImputationO,
             validator = dtsValidator.IsNotEmpty(),
+        )
+        
+        self.alpha = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cAlphaL,
+            tcSize    = self.cTcSize,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+                vMin    = 0,
+                vMax    = 1,
+            )
         )
 
         self.scoreVal = dtsWidget.StaticTextCtrl(
@@ -810,6 +824,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.normMethod.st.SetToolTip(self.cNormMethodTT)
         self.transMethod.st.SetToolTip(self.cTransMethodTT)
         self.imputationMethod.st.SetToolTip(self.cImputationTT)
+        self.alpha.st.SetToolTip(self.cAlphaTT)
         self.scoreVal.st.SetToolTip(self.cScoreValTT)
         self.detectedProt.st.SetToolTip(self.cDetectedProtTT)
         self.score.st.SetToolTip(self.cScoreTT)
@@ -1320,6 +1335,7 @@ class ResControlExpConfBase(wx.Panel):
 
 
 #region -------------------------------------------------------------> Classes
+#------------------------------> Utils
 class CorrA(BaseConfPanel):
     """Creates the configuration tab for Correlation Analysis
     
@@ -2163,6 +2179,18 @@ class ProtProf(BaseConfModPanel):
             border = 5,
         )
         self.sizersbValueWid.Add(
+            self.alpha.st,
+            pos    = (3,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.alpha.tc,
+            pos    = (3,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
             self.correctP.st,
             pos    = (3,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
@@ -2282,6 +2310,7 @@ class ProtProf(BaseConfModPanel):
             self.transMethod.cb.SetValue('Log2')
             self.normMethod.cb.SetValue('Median')
             self.imputationMethod.cb.SetValue('Normal Distribution')
+            self.alpha.tc.SetValue('0.05')
             self.sample.cb.SetValue('Independent Samples')
             self.rawI.cb.SetValue('Raw Intensities')
             self.correctP.cb.SetValue('Benjamini - Hochberg')
@@ -2397,6 +2426,15 @@ class ProtProf(BaseConfModPanel):
         else:
             self.msgError = config.mNotEmpty.format(self.cImputationL)
             return False
+        #------------------------------> Alpha level
+        msgStep = msgPrefix + self.cAlphaL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.alpha.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = config.mAlphaRange.format(self.cAlphaL)
+            return False
         #------------------------------> P Correction
         msgStep = msgPrefix + self.cCorrectPL
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
@@ -2480,9 +2518,9 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Raw or Ratio of intensities
         a = self.rawI.cb.GetValue()
         b = self.lbDict['ControlType']
-        if a == b == config.oIntensities[2]:
+        if a == b == config.oIntensities['RatioI']:
             pass
-        elif a != config.oIntensities[2] and b != config.oIntensities[2]:
+        elif a != config.oIntensities['RatioI'] and b != config.oIntensities['RatioI']:
             pass
         else:
             self.msgError = (
@@ -2529,12 +2567,18 @@ class ProtProf(BaseConfModPanel):
                 self.uFile.tc.GetValue()),
             self.EqualLenLabel(self.cScoreValL) : (
                 self.scoreVal.tc.GetValue()),
+            self.EqualLenLabel(self.cSampleL) : (
+                self.sample.cb.GetValue()),
+            self.EqualLenLabel(self.cRawIL) : (
+                self.rawI.cb.GetValue()),
             self.EqualLenLabel(self.cTransMethodL) : (
                 self.transMethod.cb.GetValue()),
             self.EqualLenLabel(self.cNormMethodL) : (
                 self.normMethod.cb.GetValue()),
             self.EqualLenLabel(self.cImputationL) : (
                 self.imputationMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cAlphaL) : (
+                self.alpha.tc.GetValue()),
             self.EqualLenLabel(self.cCorrectPL) : (
                 self.correctP.cb.GetValue()),
             self.EqualLenLabel(self.cDetectedProtL) : (
@@ -2581,9 +2625,12 @@ class ProtProf(BaseConfModPanel):
             'iFile'     : Path(self.iFile.tc.GetValue()),
             'uFile'     : Path(self.uFile.tc.GetValue()),
             'ScoreVal'  : float(self.scoreVal.tc.GetValue()),
+            'RawI'      : True if self.rawI.cb.GetValue() == config.oIntensities['RawI'] else False,
+            'IndS'      : True if self.sample.cb.GetValue() == config.oSamples['IS'] else False,
             'NormMethod': self.normMethod.cb.GetValue(),
             'TranMethod': self.transMethod.cb.GetValue(),
             'Imputation': self.imputationMethod.cb.GetValue(),
+            'Alpha'     : float(self.alpha.tc.GetValue()),
             'CorrectP'  : self.correctP.cb.GetValue(),
             'Cond'      : self.lbDict[1],
             'RP'        : self.lbDict[2],
@@ -2910,9 +2957,7 @@ class ProtProf(BaseConfModPanel):
         
         #region ----------------------------------------------------> Empty DF
         df = pd.DataFrame(
-            np.nan, 
-            columns=idx, 
-            index=range(self.dfIm.shape[0]),
+            np.nan, columns=idx, index=range(self.dfIm.shape[0]),
         )
         #endregion -------------------------------------------------> Empty DF
         
@@ -3070,20 +3115,44 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> log2(FC)
         if colC is not None:
             FC = (
-                self.dfLogI.iloc[:,colD].mean(axis=1, skipna=True)
-                - self.dfLogI.iloc[:,colC].mean(axis=1, skipna=True)
+                dfLogI.iloc[:,colD].mean(axis=1, skipna=True)
+                - dfLogI.iloc[:,colC].mean(axis=1, skipna=True)
             )
         else:
-            FC = self.dfLogI.iloc[:,colD].mean(axis=1, skipna=True)
+            FC = dfLogI.iloc[:,colD].mean(axis=1, skipna=True)
         
         self.dfR.loc[:, (cN, tN, 'FC')] = FC.to_numpy()
         #------------------------------> FCz
         self.dfR.loc[:,(cN, tN, 'FCz')] = (FC - FC.mean()).div(FC.std()).to_numpy()
         #------------------------------> FCci
-        
+        if self.do['RawI']:
+            self.dfR.loc[:,(cN, tN, ['FCciL', 'FCciU'])] = dtsStatistic.CI_Mean_Diff_DF(
+                dfLogI, colC, colD, self.do['Alpha'], self.do['IndS'],
+            ).to_numpy()
+        else:
+            self.dfR.loc[:,(cN, tN, ['FCciL', 'FCciU'])] = dtsStatistic.CI_Mean_DF(
+                dfLogI.iloc[:,colD], self.do['Alpha'],
+            ).to_numpy()
         #------------------------------> P
-        
+        if self.do['RawI']:
+            if self.do['IndS']:
+                self.dfR.loc[:,(cN,tN,'P')] = dtsStatistic.ttest_IS_DF(
+                    dfLogI, colC, colD,
+                ).to_numpy()        
+            else:
+                self.dfR.loc[:,(cN,tN,'P')] = dtsStatistic.ttest_PS_DF(
+                    dfLogI, colC, colD,
+                ).to_numpy()
+        else:
+            self.dfR.loc[:,(cN,tN,'P')] = dtsStatistic.ttest_IS_DF(
+                dfLogI, colC, colD, f=False,
+            ).to_numpy()
         #------------------------------> Pc
+        
+        #------------------------------> Round to .XX
+        self.dfR.loc[:,(cN,tN,config.protprofCLevel)] = (
+            self.dfR.loc[:,(cN,tN,config.protprofCLevel)].round(2)
+        )
         
         return True
     #---
