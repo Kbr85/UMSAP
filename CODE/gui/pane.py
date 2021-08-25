@@ -20,6 +20,10 @@ import shutil
 from pathlib import Path
 from typing import Optional, Literal, Type
 
+import pandas as pd
+import numpy as np
+from statsmodels.stats.multitest import multipletests
+
 import wx
 import wx.lib.agw.aui as aui
 import wx.lib.scrolledpanel as scrolled
@@ -573,7 +577,7 @@ class BaseConfPanel(
                     self.cChangeKey,
                     new = True,
                 ),
-                'R' : self.RDF.to_dict(),
+                'R' : dtsMethod.DictTuplesKey2StringKey(self.dfR.to_dict()),
             }
         }
         #------------------------------> Append or not
@@ -644,7 +648,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             Default is config.oNormMethod.
         cTransChoice : list of str
             Choice for transformation method. 
-            Default is config.oTransMethod.
+            Default is config.oTransMethod.values().
         cTcSize : wx.Size
             Size for the wx.TextCtrl in the panel
         #------------------------------> Widgets
@@ -691,19 +695,32 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.cTransMethodL = getattr(
             self, 'cTransMethodL', config.lCbTransMethod
         )
+        self.cImputationL = getattr(self, 'cImputationL', config.lCbImputation)
+        self.cAlphaL = getattr(self, 'cAlpha', config.lStAlpha)
         self.cDetectedProtL = getattr(
             self, 'cDetectedProtL', config.lStDetectedProt,
         )
         self.cScoreColL = getattr(self, 'cScoreColL', config.lStScoreCol)
         self.cColExtractL = getattr(self, 'cColExtractL', config.lStColExtract)
         #------------------------------> Choices
-        self.cNormChoice = getattr(self, 'cNormChoice', config.oNormMethod)
-        self.cTransChoice = getattr(self, 'cTransChoice', config.oTransMethod)
+        self.cNormO = getattr(
+            self, 'cNormO', [x for x in config.oNormMethod.values()]
+        )
+        self.cTransO = getattr(
+            self, 'cTransO', [x for x in config.oTransMethod.values()]
+        )
+        self.cImputationO = getattr(
+            self, 'cImputationO', [x for x in config.oImputation.values()]
+        )
         #------------------------------> Size
         self.cTcSize = getattr(self, 'cTcSize', config.sTc)
         #------------------------------> Tooltips
         self.cNormMethodTT = getattr(self, 'cNormMethodTT', config.ttStNorm)
         self.cTransMethodTT = getattr(self, 'cTransMethodTT', config.ttStTrans)
+        self.cImputationTT = getattr(
+            self, 'cImputationTT', config.ttStImputation,
+        )
+        self.cAlphaTT = getattr(self, 'cAlphaTT', config.ttStAlpha)
         self.cScoreValTT = getattr(self, 'cScoreValTT', config.ttStScoreVal)
         self.cDetectedProtTT = getattr(
             self, 'cDetectedProtLTT', config.ttStDetectedProtL,
@@ -728,15 +745,34 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.normMethod = dtsWidget.StaticTextComboBox(
             self.sbValue, 
             label     = self.cNormMethodL,
-            choices   = self.cNormChoice,
+            choices   = self.cNormO,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.transMethod = dtsWidget.StaticTextComboBox(
             self.sbValue, 
             label     = self.cTransMethodL,
-            choices   = self.cTransChoice,
+            choices   = self.cTransO,
             validator = dtsValidator.IsNotEmpty(),
+        )
+        
+        self.imputationMethod = dtsWidget.StaticTextComboBox(
+            self.sbValue, 
+            label     = self.cImputationL,
+            choices   = self.cImputationO,
+            validator = dtsValidator.IsNotEmpty(),
+        )
+        
+        self.alpha = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cAlphaL,
+            tcSize    = self.cTcSize,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+                vMin    = 0,
+                vMax    = 1,
+            )
         )
 
         self.scoreVal = dtsWidget.StaticTextCtrl(
@@ -788,6 +824,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         #region -----------------------------------------------------> Tooltip
         self.normMethod.st.SetToolTip(self.cNormMethodTT)
         self.transMethod.st.SetToolTip(self.cTransMethodTT)
+        self.imputationMethod.st.SetToolTip(self.cImputationTT)
+        self.alpha.st.SetToolTip(self.cAlphaTT)
         self.scoreVal.st.SetToolTip(self.cScoreValTT)
         self.detectedProt.st.SetToolTip(self.cDetectedProtTT)
         self.score.st.SetToolTip(self.cScoreTT)
@@ -1218,6 +1256,7 @@ class ResControlExpConfBase(wx.Panel):
             self.topParent.lbDict[k] = []
             for j in v:
                 self.topParent.lbDict[k].append(j.GetLabel())
+                
         #------------------------------> Control type if needed
         if self.pName == 'ProtProfPane' :
             self.topParent.lbDict['ControlType'] = self.controlVal
@@ -1257,13 +1296,22 @@ class ResControlExpConfBase(wx.Panel):
             if k != 'Control' and k != 'ControlType':
                 for j, t in enumerate(v):
                     self.tcDict[k][j].SetValue(t)
-            else:
+            elif k == 'Control':
                 self.tcControl.SetValue(v[0])
+            else:
+                pass
         #endregion -----------------------------------------------> Add Labels
         
         #region -------------------------------------------------> Set Control
         if self.pName == 'ProtProfPane':
-            self.cbControl.SetValue(self.topParent.lbDict['ControlType'])
+            #------------------------------> 
+            cT = self.topParent.lbDict['ControlType']
+            self.cbControl.SetValue(cT)
+            #------------------------------> 
+            if cT == config.oControlTypeProtProf['Ratio']:
+                self.tcControl.SetEditable(False)
+            else:
+                pass
         else:
             pass
         #endregion ----------------------------------------------> Set Control
@@ -1288,6 +1336,7 @@ class ResControlExpConfBase(wx.Panel):
 
 
 #region -------------------------------------------------------------> Classes
+#------------------------------> Utils
 class CorrA(BaseConfPanel):
     """Creates the configuration tab for Correlation Analysis
     
@@ -1331,7 +1380,7 @@ class CorrA(BaseConfPanel):
                 - No uFile
                 - With the values given by the user
                 - Keys as in the GUI of the tab.
-        RDF : pdDataFrame
+        dfR : pdDataFrame
             Dataframe with correlation coefficients
         See parent class for more attributes
 
@@ -1395,13 +1444,16 @@ class CorrA(BaseConfPanel):
         #------------------------------> Needed to Run
         self.cMainData  = '{}-CorrelationCoefficients-Data.txt'
         self.cChangeKey = ['uFile', 'iFile']
-        self.RDF        = None # correlation coefficients
+        self.dfR        = None # correlation coefficients
         self.dFile      = None
         #------------------------------> Label
         self.cTransL    = config.lCbTransMethod
         self.cCorrL     = config.lCbCorrMethod
         self.ciListCtrl = config.lStColIFile.format(self.ciFileL)
         self.coListCtrl = 'Columns to Analyse'
+        #------------------------------> Options
+        self.cTranMethodO = [x for x in config.oTransMethod.values()]
+        self.cCorrMethodO = [x for x in config.oCorrMethod.values()]
         #------------------------------> Tooltips
         self.cTransTT = config.ttStTrans
         self.cCorrTT = config.ttStCorr
@@ -1411,14 +1463,14 @@ class CorrA(BaseConfPanel):
         #------------------------------> Values
         self.transMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
             label     = self.cTransL,
-            choices   = config.oTransMethod,
+            choices   = self.cTranMethodO,
             validator = dtsValidator.IsNotEmpty(),
         )
         self.transMethod.st.SetToolTip(self.cTransTT)
         
         self.corrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
             label     = self.cCorrL,
-            choices   = config.oCorrMethod,
+            choices   = self.cCorrMethodO,
             validator = dtsValidator.IsNotEmpty(),
         )
         self.corrMethod.st.SetToolTip(self.cCorrTT)
@@ -1793,28 +1845,29 @@ class CorrA(BaseConfPanel):
         #endregion ------------------------------------------------------> Msg
 
         #region -----------------------------------------------> Normalization
+        #------------------------------> Msg
         msgStep = msgPrefix + f"Data normalization"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.do['TransMethod'] != 'None':
-            try:
-                self.dfT = dtsStatistic.DataTransformation(
-                    self.dfI,
-                    sel = None,
-                    method = self.do['TransMethod'],
-                )
-            except Exception as e:
-                self.msgError = str(e)
-                self.tException = e
-                return False
-        else:
-            self.dfT = self.dfI.copy()
+        #------------------------------> 
+        try:
+            self.dfT = dtsStatistic.DataTransformation(
+                self.dfI,
+                sel = None,
+                method = self.do['TransMethod'],
+            )
+        except Exception as e:
+            self.msgError = str(e)
+            self.tException = e
+            return False
         #endregion --------------------------------------------> Normalization
 
         #region ------------------------------------> Correlation coefficients
+        #------------------------------> Msg
         msgStep = msgPrefix + f"Correlation coefficients calculation"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
         try:
-            self.RDF = self.dfT.corr(method=self.do['CorrMethod'].lower())
+            self.dfR = self.dfT.corr(method=self.do['CorrMethod'].lower())
         except Exception as e:
             self.msgError = str(e)
             self.tException = e
@@ -1829,8 +1882,8 @@ class CorrA(BaseConfPanel):
         #region --------------------------------------------------> Data Steps
         stepDict = {
             config.fnInitial.format('01'): self.dfI,
-            config.fnTrans.format('02')   : self.dfT,
-            self.cMainData.format('03')  : self.RDF,
+            config.fnTrans.format('02')  : self.dfT,
+            self.cMainData.format('03')  : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
         
@@ -1847,7 +1900,7 @@ class CorrA(BaseConfPanel):
             print(self.dfT)
             print("")
             print("DataFrames: CC")
-            print(self.RDF)
+            print(self.dfR)
         else:
             pass
         #endregion ------------------------------------------------> Print
@@ -1893,7 +1946,7 @@ class CorrA(BaseConfPanel):
         self.do         = {} # Dict with the processed user input
         self.dfI        = None # pd.DataFrame for initial, normalized and
         self.dfT        = None # correlation coefficients
-        self.RDF        = None
+        self.dfR        = None
         self.date       = None # date for corr file
         self.oFolder    = None # folder for output
         self.corrP      = None # path to the corr file that will be created
@@ -1956,7 +2009,6 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Needed to Run
         self.cMainData  = '{}-ProteomeProfiling-Data.txt'
         self.cChangeKey = ['iFile', 'uFile']
-        self.RDF        = None
         self.dFile      = None
         #------------------------------> Labels
         self.cCorrectPL    = 'P Correction'
@@ -1965,8 +2017,9 @@ class ProtProf(BaseConfModPanel):
         self.cSampleL      = 'Samples'
         self.cRawIL        = 'Intensities'
         #------------------------------> Choices
-        self.cSampleChoice = ['', 'Independent Samples', 'Paired Samples'] 
-        self.cRawIChoice   = ['', 'Raw Intensities', 'Ratio of Intensities'] 
+        self.cSampleO   = [x for x in config.oSamples.values()]
+        self.cRawIO     = [x for x in config.oIntensities.values()]
+        self.cCorrectPO = [x for x in config.oCorrectP.keys()]
         #------------------------------> Tooltips
         self.cCorrectPTT    = config.ttStPCorrection
         self.cGeneNameTT    = config.ttStGenName
@@ -1978,6 +2031,13 @@ class ProtProf(BaseConfModPanel):
         self.cRawITT = (
             f"Specify if intensities are raw intensity values or are already "
             f"expressed as a ratio (SILAC, TMT/iTRAQ).")
+        #------------------------------> Dict with methods
+        self.cColCtrlData = {
+            config.oControlTypeProtProf['OC']   : self.ColCtrlData_OC,
+            config.oControlTypeProtProf['OCC']  : self.ColCtrlData_OCC,
+            config.oControlTypeProtProf['OCR']  : self.ColCtrlData_OCR,
+            config.oControlTypeProtProf['Ratio']: self.ColCtrlData_Ratio,
+        }
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -1989,21 +2049,21 @@ class ProtProf(BaseConfModPanel):
         self.correctP = dtsWidget.StaticTextComboBox(
             self.sbValue,
             self.cCorrectPL,
-            config.oCorrectP,
+            self.cCorrectPO,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.sample = dtsWidget.StaticTextComboBox(
             self.sbValue,
             self.cSampleL,
-            self.cSampleChoice,
+            self.cSampleO,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.rawI = dtsWidget.StaticTextComboBox(
             self.sbValue,
             self.cRawIL,
-            self.cRawIChoice,
+            self.cRawIO,
             validator = dtsValidator.IsNotEmpty(),
         )
         #------------------------------> Columns
@@ -2108,14 +2168,38 @@ class ProtProf(BaseConfModPanel):
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.correctP.st,
+            self.imputationMethod.st,
             pos    = (2,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.correctP.cb,
+            self.imputationMethod.cb,
             pos    = (2,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.alpha.st,
+            pos    = (3,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.alpha.tc,
+            pos    = (3,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.correctP.st,
+            pos    = (3,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.correctP.cb,
+            pos    = (3,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
@@ -2226,6 +2310,8 @@ class ProtProf(BaseConfModPanel):
             self.scoreVal.tc.SetValue('320')
             self.transMethod.cb.SetValue('Log2')
             self.normMethod.cb.SetValue('Median')
+            self.imputationMethod.cb.SetValue('Normal Distribution')
+            self.alpha.tc.SetValue('0.05')
             self.sample.cb.SetValue('Independent Samples')
             self.rawI.cb.SetValue('Raw Intensities')
             self.correctP.cb.SetValue('Benjamini - Hochberg')
@@ -2236,10 +2322,18 @@ class ProtProf(BaseConfModPanel):
             self.excludeProt.tc.SetValue('171 172 173')
             #------------------------------> 
             #--> One Control per Column, 2 Cond and 2 TP
-            self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.lbDict = {
+            #     1            : ['DMSO', 'H2O'],
+            #     2            : ['30min', '1D'],
+            #     'Control'    : ['MyControl'],
+            #     'ControlType': 'One Control per Column',
+            # }
+            #--> One Control per Column, 1 Cond and 1 TP
+            self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121')
             self.lbDict = {
-                1            : ['DMSO', 'H2O'],
-                2            : ['30min', '1D'],
+                1            : ['DMSO'],
+                2            : ['30min', '60min'],
                 'Control'    : ['MyControl'],
                 'ControlType': 'One Control per Column',
             }
@@ -2325,6 +2419,23 @@ class ProtProf(BaseConfModPanel):
         else:
             self.msgError = config.mNotEmpty.format(self.cNormMethodL)
             return False
+        #------------------------------> Imputation
+        msgStep = msgPrefix + self.cImputationL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.imputationMethod.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = config.mNotEmpty.format(self.cImputationL)
+            return False
+        #------------------------------> Alpha level
+        msgStep = msgPrefix + self.cAlphaL
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.alpha.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = config.mAlphaRange.format(self.cAlphaL)
+            return False
         #------------------------------> P Correction
         msgStep = msgPrefix + self.cCorrectPL
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
@@ -2405,7 +2516,21 @@ class ProtProf(BaseConfModPanel):
         #endregion ----------------------------------------> Individual Fields
 
         #region ------------------------------------------------> Mixed Fields
-        #------------------------------> 
+        #------------------------------> Raw or Ratio of intensities
+        a = self.rawI.cb.GetValue()
+        b = self.lbDict['ControlType']
+        if a == b == config.oIntensities['RatioI']:
+            pass
+        elif a != config.oIntensities['RatioI'] and b != config.oIntensities['RatioI']:
+            pass
+        else:
+            self.msgError = (
+                f'The values for {self.cRawIL} ({self.rawI.cb.GetValue()}) '
+                f'and Control Type ({self.lbDict["ControlType"]}) are '
+                f'incompatible with each other.'
+            )
+            return False
+        #------------------------------> Unique column numbers
         msgStep = msgPrefix + 'Unique column numbers'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #--------------> 
@@ -2443,10 +2568,18 @@ class ProtProf(BaseConfModPanel):
                 self.uFile.tc.GetValue()),
             self.EqualLenLabel(self.cScoreValL) : (
                 self.scoreVal.tc.GetValue()),
-            self.EqualLenLabel(self.cNormMethodL) : (
-                self.normMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cSampleL) : (
+                self.sample.cb.GetValue()),
+            self.EqualLenLabel(self.cRawIL) : (
+                self.rawI.cb.GetValue()),
             self.EqualLenLabel(self.cTransMethodL) : (
                 self.transMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cNormMethodL) : (
+                self.normMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cImputationL) : (
+                self.imputationMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cAlphaL) : (
+                self.alpha.tc.GetValue()),
             self.EqualLenLabel(self.cCorrectPL) : (
                 self.correctP.cb.GetValue()),
             self.EqualLenLabel(self.cDetectedProtL) : (
@@ -2484,17 +2617,25 @@ class ProtProf(BaseConfModPanel):
         colExtract = dtsMethod.Str2ListNumber(
             self.colExtract.tc.GetValue(), sep=' ',
         )
-        resctrl     = dmethod.ResControl2ListNumber(self.tcResults.GetValue())
-        resctrlFlat = dmethod.ResControl2Flat(resctrl)
-        resctrlDF   = dmethod.ResControl2DF(resctrl, 2+len(excludeProt)+1)
+        resctrl       = dmethod.ResControl2ListNumber(self.tcResults.GetValue())
+        resctrlFlat   = dmethod.ResControl2Flat(resctrl)
+        resctrlDF     = dmethod.ResControl2DF(resctrl, 2+len(excludeProt)+1)
+        resctrlDFFlat = dmethod.ResControl2Flat(resctrlDF)
         #--------------> 
         self.do  = {
             'iFile'     : Path(self.iFile.tc.GetValue()),
             'uFile'     : Path(self.uFile.tc.GetValue()),
             'ScoreVal'  : float(self.scoreVal.tc.GetValue()),
+            'RawI'      : True if self.rawI.cb.GetValue() == config.oIntensities['RawI'] else False,
+            'IndS'      : True if self.sample.cb.GetValue() == config.oSamples['IS'] else False,
             'NormMethod': self.normMethod.cb.GetValue(),
             'TranMethod': self.transMethod.cb.GetValue(),
+            'Imputation': self.imputationMethod.cb.GetValue(),
+            'Alpha'     : float(self.alpha.tc.GetValue()),
             'CorrectP'  : self.correctP.cb.GetValue(),
+            'Cond'      : self.lbDict[1],
+            'RP'        : self.lbDict[2],
+            'ControlT'  : self.lbDict['ControlType'],
             'oc' : {
                 'DetectedP' : detectedProt,
                 'GeneName'  : geneName,
@@ -2503,18 +2644,19 @@ class ProtProf(BaseConfModPanel):
                 'ColExtract': colExtract,
                 'ResCtrl'   : resctrl,
                 'Column'    : (
-                    [detectedProt, geneName, scoreCol] 
+                    [geneName, detectedProt, scoreCol] 
                     + excludeProt 
                     + resctrlFlat
                 ),
             },
             'df' : {
-                'DetectedP': 0,
-                'GeneName' : 1,
-                'ScoreCol' : 2,
-                'ExcludeP' : [2+x for x in range(1, len(excludeProt)+1)],
-                'ResCtrl'  : resctrlDF,
-                'ColumnF'  : [2] + dmethod.ResControl2Flat(resctrlDF),
+                'DetectedP'  : 0,
+                'GeneName'   : 1,
+                'ScoreCol'   : 2,
+                'ExcludeP'   : [2+x for x in range(1, len(excludeProt)+1)],
+                'ResCtrl'    : resctrlDF,
+                'ResCtrlFlat': resctrlDFFlat,
+                'ColumnF'    : [2] + resctrlDFFlat,
             },
         }
         #------------------------------> File base name
@@ -2543,8 +2685,10 @@ class ProtProf(BaseConfModPanel):
         #endregion ------------------------------------------------------> Msg
 
         #region ---------------------------------------------------> Data file
+        #------------------------------> 
         msgStep = msgPrefix + f"{self.ciFileL}, reading"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
         try:
             self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
         except dtsException.FileIOError as e:
@@ -2554,11 +2698,19 @@ class ProtProf(BaseConfModPanel):
         #endregion ------------------------------------------------> Data file
 
         #region ------------------------------------------------------> Column
+        #------------------------------> 
         msgStep = msgPrefix + f"{self.ciFileL}, data type"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
         self.dfI = self.iFileObj.df.iloc[:,self.do['oc']['Column']]
+        #------------------------------> 
         try:
-            self.dfI.iloc[:,self.do['df']['ColumnF']].astype('float')
+            self.dfF = dtsMethod.DFReplace(
+                self.dfI, [0, ''], np.nan, sel=self.do['df']['ColumnF'],
+            )
+            self.dfF.iloc[:,self.do['df']['ColumnF']] = (
+                self.dfF.iloc[:,self.do['df']['ColumnF']].astype('float')
+            )
         except Exception as e:
             self.msgError  = config.mPDDataTypeCol.format(
                 self.ciFileL,
@@ -2569,7 +2721,8 @@ class ProtProf(BaseConfModPanel):
         #endregion ---------------------------------------------------> Column
 
         if config.development:
-            print(self.dfI)
+            print("self.dfI.shape: ", self.dfI.shape)
+            print("self.dfF.shape: ", self.dfF.shape)
         
         return True
     #---
@@ -2580,23 +2733,18 @@ class ProtProf(BaseConfModPanel):
         msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
         
-        if config.development:
-            print('self.dfI.shape: ', self.dfI.shape)
-        else:
-            pass
-        
         #region ---------------------------------------------> Exclude Protein
         #------------------------------> Msg
         msgStep = msgPrefix + 'Excluding proteins by Exclude Proteins values'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Exclude
         if self.do['df']['ExcludeP']:
-            a = self.dfI.iloc[:,self.do['df']['ExcludeP']].notna()
+            a = self.dfF.iloc[:,self.do['df']['ExcludeP']].notna()
             a = a.loc[(a==True).any(axis=1)]
             idx = a.index
-            self.dfEx = self.dfI.drop(index=idx)
+            self.dfEx = self.dfF.drop(index=idx)
         else:
-            self.dfEx = self.dfI.copy()
+            self.dfEx = self.dfF.copy()
             
         if config.development:
             print('self.dfEx.shape: ', self.dfEx.shape)
@@ -2617,21 +2765,174 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Msg
         msgStep = (
             f'{msgPrefix}'
-            f'Performing data transformation: {self.do["TranMethod"]}'
+            f'Performing data transformation - {self.do["TranMethod"]}'
         )  
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Transformed
-        self.dfT = dtsStatistic.DataTransformation(
-            self.dfS, self.do['df']['ResCtrl']
-        )
+        if self.do['TranMethod'] != 'None':
+            try:
+                self.dfT = dtsStatistic.DataTransformation(
+                    self.dfS, 
+                    self.do['df']['ResCtrlFlat'], 
+                    method = self.do['TranMethod'],
+                    rep    = np.nan,
+                )
+            except Exception as e:
+                self.msgError   = config.mPDDataTran
+                self.tException = e
+                return False                
+        else:
+            self.dfT = self.dfS.copy()
+        
+        
+        if config.development:
+            print('self.dfT.shape: ', self.dfT.shape)
         #endregion -------------------------------------------> Transformation
         
         #region -----------------------------------------------> Normalization
+        #------------------------------> Msg
+        msgStep = (
+            f'{msgPrefix}'
+            f'Performing data normalization - {self.do["NormMethod"]}'
+        )  
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Normalization
+        if self.do['NormMethod'] != 'None':
+            try:
+                self.dfN = dtsStatistic.DataNormalization(
+                    self.dfT, 
+                    self.do['df']['ResCtrlFlat'], 
+                    method = self.do['NormMethod'],
+                )
+            except Exception as e:
+                self.msgError   = config.mPDDataNorm
+                self.tException = e
+        else:
+            self.dfN = self.dfT.copy()
         
+        if config.development:
+            print('self.dfN.shape: ', self.dfN.shape)
         #endregion --------------------------------------------> Normalization
 
+        #region --------------------------------------------------> Imputation
+        #------------------------------> Msg
+        msgStep = (
+            f'{msgPrefix}'
+            f'Performing data imputation - {self.do["Imputation"]}'
+        )  
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Imputation
+        try:
+            self.dfIm = dtsStatistic.DataImputation(
+                self.dfN, 
+                self.do['df']['ResCtrlFlat'], 
+                method = self.do['Imputation'],
+            )
+        except Exception as e:
+            self.msgError   = config.mPDDataImputation
+            self.tException = e
+        #------------------------------> Reset index
+        self.dfIm.reset_index(drop=True, inplace=True)
         
-        return False
+        if config.development:
+            print('self.dfIm.shape: ', self.dfIm.shape)
+            print(self.dfIm.head())
+        #endregion -----------------------------------------------> Imputation
+        
+        #region ----------------------------------------------------> Empty DF
+        #------------------------------> Msg
+        msgStep = (
+            f'{msgPrefix}'
+            f'Calculating output data - Creating empty dataframe'
+        )  
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        self.dfR = self.EmptyDFR()
+        
+        if config.development:
+            print('self.dfR.shape: ', self.dfR.shape)
+            print(self.dfR.head())
+            print('')
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region --------------------------------------------> Calculate values
+        #------------------------------> Msg
+        msgStep = (
+            f'{msgPrefix}'
+            f'Calculating output data'
+        )  
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        for c, cN in enumerate(self.do['Cond']):
+            for t, tN in enumerate(self.do['RP']):
+                #------------------------------> Message
+                msgStep = (
+                    f'{msgPrefix}'
+                    f'Calculating output data for {cN} - {tN}'
+                )  
+                wx.CallAfter(self.dlg.UpdateSt, msgStep)
+                #------------------------------> Control & Data Column
+                colC, colD = self.cColCtrlData[self.do['ControlT']](c, t)
+                #------------------------------> Calculate data
+                try:
+                    self.CalcOutData(cN, tN, colC, colD)
+                except Exception as e:
+                    self.msgError = (
+                        f'Calculation of the Proteome Profiling data for '
+                        f'point {cN} - {tN} failed.'
+                    )
+                    self.tException = e
+                    return False
+        #endregion -----------------------------------------> Calculate values
+        
+        
+        if config.development:
+            print('self.dfR.shape: ', self.dfR.shape)
+            print(self.dfR.head())
+            print('')
+        
+        return True
+    #---
+    
+    def WriteOutput(self) -> bool:
+        """Write output """
+        #region --------------------------------------------------> Data Steps
+        stepDict = {
+            config.fnInitial.format('01'): self.dfI,
+            config.fnFloat.format('02')  : self.dfF,
+            config.fnExclude.format('03'): self.dfEx,
+            config.fnScore.format('04')  : self.dfS,
+            config.fnTrans.format('05')  : self.dfT,
+            config.fnNorm.format('06')   : self.dfN,
+            config.fnImp.format('07')    : self.dfIm,
+            self.cMainData.format('08')  : self.dfR,
+        }
+        #endregion -----------------------------------------------> Data Steps
+        
+        #region ---------------------------------------------------> Print
+        if config.development:
+            print('Input')
+            for k,v in self.do.items():
+                print(str(k)+': '+str(v))
+
+            print("DataFrames: Initial")
+            print(self.dfI)
+            print("")
+            print("DataFrames: Trans")
+            print(self.dfT)
+            print("")
+            print("DataFrames: CC")
+            print(self.dfR)
+        else:
+            pass
+        #endregion ------------------------------------------------> Print
+
+        return self.WriteOutputData(stepDict)
+    #---
+
+    def LoadResults(self) -> bool:
+        """Load results. """
+        return True
     #---
 
     def RunEnd(self):
@@ -2652,23 +2953,268 @@ class ProtProf(BaseConfModPanel):
         #endregion ------------------------------------> Dlg progress dialogue
 
         #region -------------------------------------------------------> Reset
-        self.msgError  = None # Error msg to show in self.RunEnd
-        self.d         = {} # Dict with the user input as given
-        self.do        = {} # Dict with the processed user input
-        self.dfI       = None # pd.DataFrame for initial, normalized and
-        # self.dfT       = None # correlation coefficients
-        # self.RDF      = None
+        self.msgError   = None # Error msg to show in self.RunEnd
+        self.tException = None # Exception
+        self.d   = {} # Dict with the user input as given
+        self.do  = {} # Dict with the processed user input
+        self.dfI  = None # pd.DataFrame for initial, normalized and
+        self.dfF  = None
+        self.dfEx = None
+        self.dfS  = None
+        self.dfT  = None
+        self.dfN  = None
+        self.dfIm = None
+        self.dfR  = None
         self.date      = None # date for corr file
         self.oFolder   = None # folder for output
-        # self.corrP     = None # path to the corr file that will be created
         self.deltaT    = None
-        self.tException = None
+        
         if self.dFile is not None:
             self.iFile.tc.SetValue(str(self.dFile))
         else:
             pass
         self.dFile = None # Data File copied to Data-Initial
         #endregion ----------------------------------------------------> Reset
+    #---
+    
+    def EmptyDFR(self) -> 'pd.DataFrame':
+        """Creates the empty data frame for the output. This data frame contains
+            the values for Gene, Protein and Score
+    
+            Returns
+            -------
+            pd.DataFrame
+        """
+        #region -------------------------------------------------------> Index
+        #------------------------------> First Three Columns
+        aL = config.protprofFirstThree
+        bL = config.protprofFirstThree
+        cL = config.protprofFirstThree
+        #------------------------------> Columns per Point
+        n = len(config.protprofCLevel)
+        #------------------------------> Other columns
+        for c in self.do['Cond']:
+            for t in self.do['RP']:
+                aL = aL + n*[c]
+                bL = bL + n*[t]
+                cL = cL + config.protprofCLevel
+        idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
+        #endregion ----------------------------------------------------> Index
+        
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(
+            np.nan, columns=idx, index=range(self.dfIm.shape[0]),
+        )
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region -----------------------------------------> First Three Columns
+        df[(aL[0], bL[0], cL[0])] = self.dfIm.iloc[:,0]
+        df[(aL[1], bL[1], cL[1])] = self.dfIm.iloc[:,1]
+        df[(aL[2], bL[2], cL[2])] = self.dfIm.iloc[:,2]
+        #endregion --------------------------------------> First Three Columns
+        
+        return df
+    #---
+    
+    def ColCtrlData_OC(self, c:int, t:int) -> list[list[int]]:
+        """Get the Ctrl and Data columns for the given condition and relevant
+            point when Control Type is: One Control
+    
+            Parameters
+            ----------
+            c: int
+                Condition index in self.do['df']['ResCtrl]
+            t: int
+                Relevant point index in self.do['df']['ResCtrl]
+    
+            Returns
+            -------
+            list[list[int]]
+        """
+        #region ---------------------------------------------------> List
+        #------------------------------> 
+        colC = self.do['df']['ResCtrl'][0][0]
+        #------------------------------> 
+        colD = self.do['df']['ResCtrl'][c+1][t]
+        #endregion ------------------------------------------------> List
+        
+        return [colC, colD]
+    #---
+    
+    def ColCtrlData_OCC(self, c:int, t:int) -> list[list[int]]:
+        """Get the Ctrl and Data columns for the given condition and relevant
+            point when Control Type is: One Control per Column
+    
+            Parameters
+            ----------
+            c: int
+                Condition index in self.do['df']['ResCtrl]
+            t: int
+                Relevant point index in self.do['df']['ResCtrl]
+    
+            Returns
+            -------
+            list[list[int]]
+        """
+        #region ---------------------------------------------------> List
+        #------------------------------> 
+        colC = self.do['df']['ResCtrl'][0][t]
+        #------------------------------> 
+        colD = self.do['df']['ResCtrl'][c+1][t]
+        #endregion ------------------------------------------------> List
+        
+        return [colC, colD]
+    #---
+    
+    def ColCtrlData_OCR(self, c:int, t:int) -> list[list[int]]:
+        """Get the Ctrl and Data columns for the given condition and relevant
+            point when Control Type is: One Control per Row
+    
+            Parameters
+            ----------
+            c: int
+                Condition index in self.do['df']['ResCtrl]
+            t: int
+                Relevant point index in self.do['df']['ResCtrl]
+    
+            Returns
+            -------
+            list[list[int]]
+        """
+        #region ---------------------------------------------------> List
+        #------------------------------> 
+        colC = self.do['df']['ResCtrl'][c][0]
+        #------------------------------> 
+        colD = self.do['df']['ResCtrl'][c][t+1]
+        #endregion ------------------------------------------------> List
+        
+        return [colC, colD]
+    #---
+    
+    def ColCtrlData_Ratio(self, c:int, t:int) -> list[Optional[list[int]]]:
+        """Get the Ctrl and Data columns for the given condition and relevant
+            point when Control Type is: Data as Ratios
+    
+            Parameters
+            ----------
+            c: int
+                Condition index in self.do['df']['ResCtrl]
+            t: int
+                Relevant point index in self.do['df']['ResCtrl]
+    
+            Returns
+            -------
+            list[list[int]]
+        """
+        #region ---------------------------------------------------> List
+        #------------------------------> 
+        colC = None
+        #------------------------------> 
+        colD = self.do['df']['ResCtrl'][c][t]
+        #endregion ------------------------------------------------> List
+        
+        return [colC, colD]
+    #---
+    
+    def CalcOutData(
+        self, cN: str, tN: str, colC: Optional[list[int]], colD: list[int]) -> bool:
+        """Calculate the data for the main output dataframe
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            bool
+    
+            Raise
+            -----
+            ExecutionError:
+                - When the calculation fails
+        """
+        if config.development:
+            print(cN, tN, colC, colD)
+        #------------------------------> Ave & Std
+        if colC is not None:
+            self.dfR.loc[:,(cN, tN, 'aveC')] = self.dfIm.iloc[:,colC].mean(
+                axis=1, skipna=True).to_numpy()
+            self.dfR.loc[:,(cN, tN, 'stdC')] = self.dfIm.iloc[:,colC].std(
+                axis=1, skipna=True).to_numpy()
+        else:
+            self.dfR.loc[:,(cN, tN, 'aveC')] = np.nan
+            self.dfR.loc[:,(cN, tN, 'stdC')] = np.nan
+        
+        self.dfR.loc[:,(cN, tN, 'ave')] = self.dfIm.iloc[:,colD].mean(
+            axis=1, skipna=True).to_numpy()
+        self.dfR.loc[:,(cN, tN, 'std')] = self.dfIm.iloc[:,colD].std(
+            axis=1, skipna=True).to_numpy()
+        #------------------------------> Intensities as log2 Intensities
+        dfLogI = self.dfIm.copy() 
+        if self.do['TranMethod'] == 'Log2':
+            pass
+        else:
+            if colC is not None:
+                dfLogI.iloc[:,colC+colD] = np.log2(dfLogI.iloc[:,colC+colD])
+            else:
+                dfLogI.iloc[:,colD] = np.log2(dfLogI.iloc[:,colD])
+        #------------------------------> log2(FC)
+        if colC is not None:
+            FC = (
+                dfLogI.iloc[:,colD].mean(axis=1, skipna=True)
+                - dfLogI.iloc[:,colC].mean(axis=1, skipna=True)
+            )
+        else:
+            FC = dfLogI.iloc[:,colD].mean(axis=1, skipna=True)
+        
+        self.dfR.loc[:, (cN, tN, 'FC')] = FC.to_numpy()
+        #------------------------------> FCz
+        self.dfR.loc[:,(cN, tN, 'FCz')] = (FC - FC.mean()).div(FC.std()).to_numpy()
+        #------------------------------> FCci
+        if self.do['RawI']:
+            self.dfR.loc[:,(cN, tN, ['FCciL', 'FCciU'])] = dtsStatistic.CI_Mean_Diff_DF(
+                dfLogI, colC, colD, self.do['Alpha'], self.do['IndS'],
+            ).to_numpy()
+        else:
+            self.dfR.loc[:,(cN, tN, ['FCciL', 'FCciU'])] = dtsStatistic.CI_Mean_DF(
+                dfLogI.iloc[:,colD], self.do['Alpha'],
+            ).to_numpy()
+        #------------------------------> P
+        if self.do['RawI']:
+            if self.do['IndS']:
+                self.dfR.loc[:,(cN,tN,'P')] = dtsStatistic.ttest_IS_DF(
+                    dfLogI, colC, colD,
+                )['P'].to_numpy()        
+            else:
+                self.dfR.loc[:,(cN,tN,'P')] = dtsStatistic.ttest_PS_DF(
+                    dfLogI, colC, colD,
+                )['P'].to_numpy()
+        else:
+            #------------------------------> Dummy 0 columns
+            dfLogI['TEMP_Col_Full_00'] = 0
+            dfLogI['TEMP_Col_Full_01'] = 0
+            colCF = []
+            colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_00'))
+            colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_01'))
+            #------------------------------> 
+            self.dfR.loc[:,(cN,tN,'P')] = dtsStatistic.ttest_IS_DF(
+                dfLogI, colCF, colD, f=True,
+            )['P'].to_numpy()
+        #------------------------------> Pc
+        if self.do['CorrectP'] != 'None':
+            self.dfR.loc[:,(cN,tN,'Pc')] = multipletests(
+                self.dfR.loc[:,(cN,tN,'P')], 
+                self.do['Alpha'], 
+                config.oCorrectP[self.do['CorrectP']]
+            )[1]
+        else:
+            pass
+        #------------------------------> Round to .XX
+        self.dfR.loc[:,(cN,tN,config.protprofCLevel)] = (
+            self.dfR.loc[:,(cN,tN,config.protprofCLevel)].round(2)
+        )
+        
+        return True
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -2727,9 +3273,10 @@ class ProtProfResControlExp(ResControlExpConfBase):
         }
         #------------------------------> 
         self.cAddWidget = {
-            config.oControlTypeProtProf[1] : self.AddWidget_OC,
-            config.oControlTypeProtProf[2] : self.AddWidget_OCC,
-            config.oControlTypeProtProf[3] : self.AddWidget_OCR,
+            config.oControlTypeProtProf['OC']   : self.AddWidget_OC,
+            config.oControlTypeProtProf['OCC']  : self.AddWidget_OCC,
+            config.oControlTypeProtProf['OCR']  : self.AddWidget_OCR,
+            config.oControlTypeProtProf['Ratio']: self.AddWidget_Ratio,
         }
         #------------------------------> 
         self.cTotalFieldTT = [
@@ -2743,8 +3290,11 @@ class ProtProfResControlExp(ResControlExpConfBase):
             f"Both {self.cStLabel[1]} and {self.cStLabel[2]} must be defined."
         )
         self.mNoControl = (f"The Control Type must defined.")
-
+        #------------------------------> Super init
         super().__init__(parent, self.name, topParent, NColF)
+        #------------------------------> Choices
+        self.cControlTypeO = [x for x in config.oControlTypeProtProf.values()]
+        
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -2776,7 +3326,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         self.cbControl = wx.ComboBox(
             self.swLabel, 
             style     = wx.CB_READONLY,
-            choices   = config.oControlTypeProtProf,
+            choices   = self.cControlTypeO,
             validator = dtsValidator.IsNotEmpty(),
         )
         #endregion --------------------------------------------------> Widgets
@@ -2833,7 +3383,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        
+        self.cbControl.Bind(wx.EVT_COMBOBOX, self.OnControl)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -2848,7 +3398,35 @@ class ProtProfResControlExp(ResControlExpConfBase):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnCreate(self, event):
+    def OnControl(self, event) -> Literal[True]:
+        """Enable/Disable the Control name when selecting control type
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        #region ---------------------------------------------------> Get value
+        control = self.cbControl.GetValue()
+        #endregion ------------------------------------------------> Get value
+        
+        #region ------------------------------------------------------> Action
+        if control == config.oControlTypeProtProf['Ratio']:
+            self.tcControl.SetValue('None')
+            self.tcControl.SetEditable(False)
+        else:
+            self.tcControl.SetEditable(True)
+        #endregion ---------------------------------------------------> Action
+        
+        return True
+    #---
+    
+    def OnCreate(self, event) -> Literal[True]:
         """Create the widgets in the white panel
     
             Parameters
@@ -2859,11 +3437,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            True
         """
         #region -------------------------------------------------> Check input
         #------------------------------> Labels
@@ -2890,11 +3464,16 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #region ---------------------------------------------------> Variables
         control = self.cbControl.GetValue()
         
-        if control == config.oControlTypeProtProf[3]:
+        if control == config.oControlTypeProtProf['OCR']:
             Nc   = n[0]     # Number of rows of tc needed
             Nr   = n[1] + 1 # Number of tc needed for each row
             NCol = n[1] + 2 # Number of columns in the sizer
             NRow = n[0] + 1 # Number of rows in the sizer
+        elif control == config.oControlTypeProtProf['Ratio']:
+            Nc   = n[0]     
+            Nr   = n[1]     
+            NCol = n[1] + 1 
+            NRow = n[0] + 1 
         else:
             Nc   = n[0] + 1
             Nr   = n[1]
@@ -2934,6 +3513,10 @@ class ProtProfResControlExp(ResControlExpConfBase):
                 label = self.tcControl.GetValue(),
             )
         ]
+        if control == config.oControlTypeProtProf['Ratio']:
+            self.lbDict['Control'][0].Hide()
+        else:
+            pass
         #endregion -----------------------------> Create/Destroy wx.StaticText
         
         #region ----------------------------------> Create/Destroy wx.TextCtrl
@@ -2943,7 +3526,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
             row = self.tcDictF.get(k, [])
             lrow = len(row)
             #------------------------------> First row is especial
-            if k == 1 and control == config.oControlTypeProtProf[1]:
+            if k == 1 and control == config.oControlTypeProtProf['OC']:
                 if control == self.controlVal:
                     continue
                 else:
@@ -3178,6 +3761,45 @@ class ProtProfResControlExp(ResControlExpConfBase):
             wx.ALIGN_CENTER|wx.ALL,
             5
         )
+        
+        for k in self.lbDict[2]:
+            self.sizerSWMatrix.Add(
+                k,
+                0,
+                wx.ALIGN_CENTER|wx.ALL,
+                5
+            )
+        #endregion ------------------------------------------------> RP Labels
+        
+        #region --------------------------------------------------> Other rows
+        for k, v in self.tcDictF.items():
+            #--------------> 
+            K = int(k) - 1
+            #--------------> 
+            self.sizerSWMatrix.Add(
+                self.lbDict[1][K],
+                0,
+                wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+                5
+            )
+            #-------------->
+            for j in v:
+                self.sizerSWMatrix.Add(
+                    j,
+                    0,
+                    wx.EXPAND|wx.ALL,
+                    5
+                )
+        #endregion -----------------------------------------------> Other rows
+        
+        return True
+    #---
+    
+    def AddWidget_Ratio(self, NCol: int, NRow: int) -> bool:
+        """Add the widget when Control Type is Data as Ratios. It is assumed 
+            everything is ready to add the widgets"""
+        #region ---------------------------------------------------> RP Labels
+        self.sizerSWMatrix.AddSpacer(1)
         
         for k in self.lbDict[2]:
             self.sizerSWMatrix.Add(
