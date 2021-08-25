@@ -170,8 +170,12 @@ fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 #------------------------------> Names
 fnInitial   = "{}-Initial-Data.txt"
+fnFloat     = "{}-Floated-Data.txt"
+fnExclude   = "{}-After-Excluding-Data.txt"
+fnScore     = "{}-Score-Filtered-Data.txt"
 fnTrans     = "{}-Transformed-Data.txt"
 fnNorm      = "{}-Normalized-Data.txt"
+fnImp       = "{}-Imputed-Data.txt"
 fnDataSteps = 'Data-Steps'
 fnDataInit  = 'Data-Files'
 #endregion ---------------------------------------------------> Path and Files
@@ -316,16 +320,16 @@ oSamples = {
     'PS'   : 'Paired Samples',
 }
 oCorrectP    = {
-    'Empty': '',
-    'None' : 'None',
-    'BH'   : 'Benjamini - Hochberg',
-    'BY'   : 'Benjamini - Yekutieli',
-    'B'    : 'Bonferroni',
-    'Hol'  : 'Holm',
-    'HS'   : 'Holm - Sidak',
-    'Hom'  : 'Hommel',
-    'S'    : 'Sidak',
-    'SH'   : 'Simes-Hochberg',
+    ''                     : '',
+    'None'                 : 'None',
+    'Bonferroni'           : 'bonferroni',
+    'Sidak'                : 'sidak',
+    'Holm - Sidak'         : 'holm-sidak',
+    'Holm'                 : 'holm',
+    'Simes-Hochberg'       : 'simes-hochberg',
+    'Hommel'               : 'hommel',
+    'Benjamini - Hochberg' : 'fdr_bh',
+    'Benjamini - Yekutieli': 'fdr_by',
 }
 oControlTypeProtProf = {
     'Empty': '',

@@ -22,6 +22,7 @@ from typing import Optional, Literal, Type
 
 import pandas as pd
 import numpy as np
+from statsmodels.stats.multitest import multipletests
 
 import wx
 import wx.lib.agw.aui as aui
@@ -576,7 +577,7 @@ class BaseConfPanel(
                     self.cChangeKey,
                     new = True,
                 ),
-                'R' : self.RDF.to_dict(),
+                'R' : dtsMethod.DictTuplesKey2StringKey(self.dfR.to_dict()),
             }
         }
         #------------------------------> Append or not
@@ -1379,7 +1380,7 @@ class CorrA(BaseConfPanel):
                 - No uFile
                 - With the values given by the user
                 - Keys as in the GUI of the tab.
-        RDF : pdDataFrame
+        dfR : pdDataFrame
             Dataframe with correlation coefficients
         See parent class for more attributes
 
@@ -1443,7 +1444,7 @@ class CorrA(BaseConfPanel):
         #------------------------------> Needed to Run
         self.cMainData  = '{}-CorrelationCoefficients-Data.txt'
         self.cChangeKey = ['uFile', 'iFile']
-        self.RDF        = None # correlation coefficients
+        self.dfR        = None # correlation coefficients
         self.dFile      = None
         #------------------------------> Label
         self.cTransL    = config.lCbTransMethod
@@ -1866,7 +1867,7 @@ class CorrA(BaseConfPanel):
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
         try:
-            self.RDF = self.dfT.corr(method=self.do['CorrMethod'].lower())
+            self.dfR = self.dfT.corr(method=self.do['CorrMethod'].lower())
         except Exception as e:
             self.msgError = str(e)
             self.tException = e
@@ -1881,8 +1882,8 @@ class CorrA(BaseConfPanel):
         #region --------------------------------------------------> Data Steps
         stepDict = {
             config.fnInitial.format('01'): self.dfI,
-            config.fnTrans.format('02')   : self.dfT,
-            self.cMainData.format('03')  : self.RDF,
+            config.fnTrans.format('02')  : self.dfT,
+            self.cMainData.format('03')  : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
         
@@ -1899,7 +1900,7 @@ class CorrA(BaseConfPanel):
             print(self.dfT)
             print("")
             print("DataFrames: CC")
-            print(self.RDF)
+            print(self.dfR)
         else:
             pass
         #endregion ------------------------------------------------> Print
@@ -1945,7 +1946,7 @@ class CorrA(BaseConfPanel):
         self.do         = {} # Dict with the processed user input
         self.dfI        = None # pd.DataFrame for initial, normalized and
         self.dfT        = None # correlation coefficients
-        self.RDF        = None
+        self.dfR        = None
         self.date       = None # date for corr file
         self.oFolder    = None # folder for output
         self.corrP      = None # path to the corr file that will be created
@@ -2018,7 +2019,7 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Choices
         self.cSampleO   = [x for x in config.oSamples.values()]
         self.cRawIO     = [x for x in config.oIntensities.values()]
-        self.cCorrectPO = [x for x in config.oCorrectP.values()]
+        self.cCorrectPO = [x for x in config.oCorrectP.keys()]
         #------------------------------> Tooltips
         self.cCorrectPTT    = config.ttStPCorrection
         self.cGeneNameTT    = config.ttStGenName
@@ -2890,7 +2891,48 @@ class ProtProf(BaseConfModPanel):
             print(self.dfR.head())
             print('')
         
-        return False
+        return True
+    #---
+    
+    def WriteOutput(self) -> bool:
+        """Write output """
+        #region --------------------------------------------------> Data Steps
+        stepDict = {
+            config.fnInitial.format('01'): self.dfI,
+            config.fnFloat.format('02')  : self.dfF,
+            config.fnExclude.format('03'): self.dfEx,
+            config.fnScore.format('04')  : self.dfS,
+            config.fnTrans.format('05')  : self.dfT,
+            config.fnNorm.format('06')   : self.dfN,
+            config.fnImp.format('07')    : self.dfIm,
+            self.cMainData.format('08')  : self.dfR,
+        }
+        #endregion -----------------------------------------------> Data Steps
+        
+        #region ---------------------------------------------------> Print
+        if config.development:
+            print('Input')
+            for k,v in self.do.items():
+                print(str(k)+': '+str(v))
+
+            print("DataFrames: Initial")
+            print(self.dfI)
+            print("")
+            print("DataFrames: Trans")
+            print(self.dfT)
+            print("")
+            print("DataFrames: CC")
+            print(self.dfR)
+        else:
+            pass
+        #endregion ------------------------------------------------> Print
+
+        return self.WriteOutputData(stepDict)
+    #---
+
+    def LoadResults(self) -> bool:
+        """Load results. """
+        return True
     #---
 
     def RunEnd(self):
@@ -2915,12 +2957,16 @@ class ProtProf(BaseConfModPanel):
         self.tException = None # Exception
         self.d   = {} # Dict with the user input as given
         self.do  = {} # Dict with the processed user input
-        self.dfI = None # pd.DataFrame for initial, normalized and
-        # self.dfT       = None # correlation coefficients
-        # self.RDF      = None
+        self.dfI  = None # pd.DataFrame for initial, normalized and
+        self.dfF  = None
+        self.dfEx = None
+        self.dfS  = None
+        self.dfT  = None
+        self.dfN  = None
+        self.dfIm = None
+        self.dfR  = None
         self.date      = None # date for corr file
         self.oFolder   = None # folder for output
-        # self.corrP     = None # path to the corr file that will be created
         self.deltaT    = None
         
         if self.dFile is not None:
@@ -3138,17 +3184,31 @@ class ProtProf(BaseConfModPanel):
             if self.do['IndS']:
                 self.dfR.loc[:,(cN,tN,'P')] = dtsStatistic.ttest_IS_DF(
                     dfLogI, colC, colD,
-                ).to_numpy()        
+                )['P'].to_numpy()        
             else:
                 self.dfR.loc[:,(cN,tN,'P')] = dtsStatistic.ttest_PS_DF(
                     dfLogI, colC, colD,
-                ).to_numpy()
+                )['P'].to_numpy()
         else:
+            #------------------------------> Dummy 0 columns
+            dfLogI['TEMP_Col_Full_00'] = 0
+            dfLogI['TEMP_Col_Full_01'] = 0
+            colCF = []
+            colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_00'))
+            colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_01'))
+            #------------------------------> 
             self.dfR.loc[:,(cN,tN,'P')] = dtsStatistic.ttest_IS_DF(
-                dfLogI, colC, colD, f=False,
-            ).to_numpy()
+                dfLogI, colCF, colD, f=True,
+            )['P'].to_numpy()
         #------------------------------> Pc
-        
+        if self.do['CorrectP'] != 'None':
+            self.dfR.loc[:,(cN,tN,'Pc')] = multipletests(
+                self.dfR.loc[:,(cN,tN,'P')], 
+                self.do['Alpha'], 
+                config.oCorrectP[self.do['CorrectP']]
+            )[1]
+        else:
+            pass
         #------------------------------> Round to .XX
         self.dfR.loc[:,(cN,tN,config.protprofCLevel)] = (
             self.dfR.loc[:,(cN,tN,config.protprofCLevel)].round(2)
