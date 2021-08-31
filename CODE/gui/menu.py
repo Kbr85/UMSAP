@@ -382,7 +382,7 @@ class FileControlToolMenu(wx.Menu):
 
 
 class CorrAPlotToolMenu(PlotMenu):
-    """Creates the Tools menu for a Corelation Analysis Plot window 
+    """Creates the Tools menu for a Correlation Analysis Plot window 
     
         Parameters
         ----------
