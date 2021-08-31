@@ -24,11 +24,12 @@ import dat4s_core.data.method as dtsMethod
 def ResControl2ListNumber(
     val: str, sep: list[str]=[' ', ',', ';'], numType: str='int',
     ) -> list[list[list[int]]]:
-    """Return a list 
+    """Return a list.
+    
         Parameters
         ----------
         val : str
-            String with the numbers. e.g. '0-4 6', '7 8 9'; '10 13-15', ''; ...
+            String with the numbers. e.g. '0-4 6, 7 8 9; 10 13-15, ""; ...'
         sep : list of str
             Separators used in the string
         numType: str
@@ -37,7 +38,12 @@ def ResControl2ListNumber(
         Returns
         -------
         list of list of list of str
-        [[[0 1 2 3 4], [7 8 9]], [[10 13 14 15], []], ...]        
+        [[[0 1 2 3 4], [7 8 9]], [[10 13 14 15], []], ...]   
+        
+        Examples
+        --------
+        >>> ResControl2ListNumber('0 1 2, 3 4 5; 6 7 8, 9 10 11', sep=[' ', ',', ';'], numType='int')
+        >>> [[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]]
     """
     # Test in test.unit.test_method.Test_ResControl2ListNumber
     #region -------------------------------------------------------> Variables
@@ -72,6 +78,11 @@ def ResControl2Flat(val: list[list[list[int]]]) -> list[int]:
         -------
         list of int
             Flat Result - Control list
+            
+        Examples
+        --------
+        >>> ResControl2Flat([[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]])
+        >>> [0,1,2,3,4,5,6,7,8,9,10,11])
     """
     # Test in test.unit.test_method.Test_ResControl2Flat
     return list(itertools.chain(*(itertools.chain(*val))))
@@ -96,7 +107,17 @@ def ResControl2DF(
         -------
         list[list[list[int]]]
             The list has the same order as the input val but the column index
-            are adjusted
+            are adjusted.
+            
+        Notes
+        -----
+        It is assumed columns in the DF have the same order as in val.
+        Empty list as possible to mimic empty conditions in an experiment.
+        
+        Examples
+        --------
+        >>> ResControl2DF([[[0,1,2], []], [[6,7,8], []]], 1)
+        >>> [[[1,2,3],[]], [[4,5,6],[]]]
     """
     # Test in test.unit.test_method.Test_ResControl2DF
     #region -------------------------------------------------------> Variables

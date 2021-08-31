@@ -353,6 +353,7 @@ protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'P', 'Pc', 'FC', 'FCciL',
 #------------------------------> Files 
 mFileSelector = f"It was not possible to show the file selecting dialog."
 mFileBad = "File: '{}'\ncannot be used as {}."
+mFileRead = 'An error occured when reading file:\n{}'
 mFileColNum = (
     "In addition, the values cannot be bigger than the total number of columns "
     "in the {}.")

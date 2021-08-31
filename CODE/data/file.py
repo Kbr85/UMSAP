@@ -61,6 +61,8 @@ class UMSAPFile():
 
         Raises
         ------
+        InputError
+            - When fileP cannot be read.
         ExecutionError
             - When a requested section is not found in the file (GetSectionData)
 
@@ -83,7 +85,7 @@ class UMSAPFile():
         The general structure of confTree is:
         {
             'Sections': { 'A': True, 'B': False},
-            'Correlation Analysis' : {DateA': True, 'DateB': False},
+            'Correlation Analysis' : {'DateA': True, 'DateB': False},
         }
         
     """
@@ -113,15 +115,19 @@ class UMSAPFile():
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Check Input
-        self.data = dtsFF.ReadJSON(fileP)
+        try:
+            self.data = dtsFF.ReadJSON(fileP)
+        except Exception:
+            raise dtsException.InputError(config.mFileRead.format(self.fileP))
         #endregion ----------------------------------------------> Check Input
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #----------------------------------------------------------> Class methods
     #region -------------------------------------------------------> Configure
-    def Configure(self, dlg: Optional['dtscore.ProgressDialog']=None,
-                 )-> Literal[True]:
+    def Configure(
+        self, dlg: Optional['dtscore.ProgressDialog']=None,
+        ) -> Literal[True]:
         """Prepare data for each section in the file and for the CustomTreeCtrl
             in the control window. See Notes.
     
@@ -188,7 +194,6 @@ class UMSAPFile():
                 }
             except Exception:
                 pass
-
         #endregion ----------------------------------------------> Plot & Menu
         
         #region -------------------------------------------> Add/Reset section 
