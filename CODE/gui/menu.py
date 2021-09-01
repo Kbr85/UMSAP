@@ -221,9 +221,9 @@ class Module(wx.Menu, MenuMethods):
     name = 'ModuleMenu'
 
     cName = {
-        'LimProt' : config.nMLimProt,
-        'TarProt' : config.nMTarProt,
-        'ProtProf': config.nMProtProf,
+        'LimProt' : config.nmLimProt,
+        'TarProt' : config.nmTarProt,
+        'ProtProf': config.nmProtProf,
     }
     #endregion --------------------------------------------------> Class setup
     
@@ -273,8 +273,8 @@ class Utility(wx.Menu, MenuMethods):
     name = 'UtilityMenu'
     
     cName = {
-        'CorrA' : config.nUCorrA,
-        'ReadF' : config.nUReadF,
+        'CorrA' : config.nuCorrA,
+        'ReadF' : config.nuReadF,
     }
     #endregion --------------------------------------------------> Class setup
     
@@ -345,7 +345,7 @@ class FileControlToolMenu(wx.Menu):
 
     #region --------------------------------------------------> Instance setup
     def __init__(self, *args, **kwargs) -> None:
-        """*args and **kwargs are needed to use this menu with ToolMenuBar
+        """*args and **kwargs are needed to use this menu with ToolMenuBar.
             All of them are ignored here.
         """
         #region -----------------------------------------------> Initial Setup

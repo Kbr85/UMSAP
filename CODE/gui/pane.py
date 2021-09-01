@@ -1433,7 +1433,7 @@ class CorrA(BaseConfPanel):
         #------------------------------> Needed by BaseConfPanel
         self.name         = 'CorrAPane'
         self.cURL         = config.urlCorrA
-        self.cSection     = config.nUCorrA
+        self.cSection     = config.nuCorrA
         self.cLenLongestL = len(config.lCbTransMethod)
         self.cTitlePD     = config.lnPDCorrA
         self.cGaugePD     = 17
@@ -1998,9 +1998,9 @@ class ProtProf(BaseConfModPanel):
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Needed by BaseConfPanel
         self.cURL         = config.urlProtProf
-        self.cSection     = config.nMProtProf
+        self.cSection     = config.nmProtProf
         self.cLenLongestL = len(config.lStResultCtrl)
-        self.cTitlePD     = f"Running {config.nMProtProf} Analysis"
+        self.cTitlePD     = f"Running {config.nmProtProf} Analysis"
         self.cGaugePD     = 30
         #------------------------------> Optional configuration
         self.cHelpTT = config.ttBtnHelp.format(config.urlProtProf)

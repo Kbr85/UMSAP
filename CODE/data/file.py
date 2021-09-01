@@ -93,7 +93,7 @@ class UMSAPFile():
     name = 'UMSAPFile'
     
     cSection = {# Name of the sections in the umsap file
-        'CorrA' : config.nUCorrA,
+        'CorrA' : config.nuCorrA,
     }
     #endregion --------------------------------------------------> Class setup
 

@@ -251,10 +251,10 @@ class Start(wx.Panel):
     #region -----------------------------------------------------> Class setup
     name = 'StartTab'
     #------------------------------> Tooltips
-    cBtnCorrATT = f"Start the utility {config.nUCorrA}"
-    cBtnLimProtTT = f"Start the module {config.nMLimProt}"
-    cBtnTarProtTT = f"Start the module {config.nMTarProt}"
-    cBtnProtProfTT = f"Start the module {config.nMProtProf}"
+    cBtnCorrATT = f"Start the utility {config.nuCorrA}"
+    cBtnLimProtTT = f"Start the module {config.nmLimProt}"
+    cBtnTarProtTT = f"Start the module {config.nmTarProt}"
+    cBtnProtProfTT = f"Start the module {config.nmProtProf}"
     #------------------------------> Files
     cImg = config.fImgStart
     #endregion --------------------------------------------------> Class setup
@@ -276,10 +276,10 @@ class Start(wx.Panel):
         )
         #---
         #--> Buttons
-        self.btnCorrA    = wx.Button(self, label=config.nUCorrA)
-        self.btnLimProt  = wx.Button(self, label=config.nMLimProt)
-        self.btnProtProf = wx.Button(self, label=config.nMProtProf)
-        self.btnTarProt  = wx.Button(self, label=config.nMTarProt)
+        self.btnCorrA    = wx.Button(self, label=config.nuCorrA)
+        self.btnLimProt  = wx.Button(self, label=config.nmLimProt)
+        self.btnProtProf = wx.Button(self, label=config.nmProtProf)
+        self.btnTarProt  = wx.Button(self, label=config.nmTarProt)
         #endregion --------------------------------------------------> Widgets
 
         #region ----------------------------------------------------> Tooltips
