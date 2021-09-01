@@ -51,9 +51,11 @@ class UMSAPFile():
         data : dict
             Data read from json formatted file
         confData : dict
-            Configured data. See Notes
+            Configured data. Data from the umsap file is checked and converted 
+            to the proper python types. See Notes for the structure of the dict.
         confTree : dict
-            Nodes for the wx.TreeCtrl in the control window. See Notes
+            Nodes to show in the wx.TreeCtrl of the control window. 
+            See Notes for the structure of the dict.
         cSection : dict
             Name of the sections in the umsap file
         cConfigure : dict
@@ -79,15 +81,18 @@ class UMSAPFile():
                 },
             },
         }
-        Each Section.Date can have additional information. See the corresponding
-        ConfigureDataSection
+        - Each Section.Date can have additional information. 
+        See the corresponding ConfigureDataSection
 
         The general structure of confTree is:
         {
             'Sections': { 'A': True, 'B': False},
             'Correlation Analysis' : {'DateA': True, 'DateB': False},
         }
-        
+        - Sections with True are shown with a checkbox in the TreeCtrl of the
+        UMSAPControl window to signal there is something to plot in the section.
+        - Dates with False are shown with a different font in the TreeCtrl of 
+        the UMSAPControl window.
     """
     #region -----------------------------------------------------> Class setup
     name = 'UMSAPFile'
@@ -205,7 +210,7 @@ class UMSAPFile():
 
     def ConfigureTree(self, tSection: str) -> Literal[True]:
         """Configure a section for the Tree widget.
-            This is intended to be used after ConfigureDataX
+            This is intended to be used after ConfigureDataX.
 
             Parameters
             ----------

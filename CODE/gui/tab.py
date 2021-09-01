@@ -43,30 +43,27 @@ class BaseConfTab(wx.Panel):
             Unique name of the tab. Default is None. In this case the child 
             class is expected to define a name
         dataI : dict or None
-            Initial data provided by the user to performed a previous analysis
+            Initial data provided by the user to performed a previous analysis.
 
         Attributes
         ----------
+        cConfPanel : dict
+            Classes to create the configuration panel in the Tab. Keys are
+            config.ntNAMES and values the corresponding method.
+        cnPaneConf : str
+            Title for the configuration panel. 
+            Default is config.lnPaneConf.
+        conf : pane.X
+            Configuration panel to show in the tab.
+        name : str
+            Name of the tab
         parent : wx.Window
             Parent of the tab
-        cConfPanel : dict
-            Classes to create the configuration panel in tha Tab
-        cConfPaneTitle : str
-            Title for the configuration panel. 
-            Default is config.label['TP_ConfPane'].
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
     """
     #region -----------------------------------------------------> Class setup
-    cmConfPanel = {
-        'CorrATab'   : pane.CorrA,
-        'ProtProfTab': pane.ProtProf,
+    cConfPanel = {
+        config.ntCorrA   : pane.CorrA,
+        config.ntProtProf: pane.ProtProf,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -77,19 +74,15 @@ class BaseConfTab(wx.Panel):
         """ """
         #region -----------------------------------------------> Initial Setup
         self.parent = parent
-        self.name   = name if name is not None else self.name
+        self.name = name if name is not None else self.name
         
         self.cnPaneConf = getattr(self, 'cnPaneConf', config.lnPaneConf)
         
         super().__init__(parent, name=self.name)
         #endregion --------------------------------------------> Initial Setup
 
-        #region --------------------------------------------------------> Menu
-        
-        #endregion -----------------------------------------------------> Menu
-
         #region -----------------------------------------------------> Widgets
-        self.conf = self.cmConfPanel[self.name](self, dataI)
+        self.conf = self.cConfPanel[self.name](self, dataI)
         #endregion --------------------------------------------------> Widgets
         
         #region -------------------------------------------------> Aui control
@@ -135,8 +128,7 @@ class BaseConfListTab(BaseConfTab):
         parent : wx.Window
             Parent of the tab 
         name : str or None
-            Unique name of the tab. Default is None. In this case the child 
-            class is expected to define a name
+            Unique name of the tab.
         dataI : dict or None
             Initial data provided by the user to performed a previous analysis
 
@@ -144,21 +136,13 @@ class BaseConfListTab(BaseConfTab):
         ----------
         cLCColLabel : list of str
             Labels for the columns in the wx.ListCtrl.
-            Default is config.label['LCtrlColName_I']
+            Default is config.lLCtrlColNameI.
         cLCColSize : list of int
             Size of the columns in the wx.ListCtrl. It should match cLCColLabel
-            Default is config.size['LCtrl#Name']
+            Default is config.sLCtrlColI.
         cLCPaneTitle : str
             Title of the pane containing the wx.ListCtrl.
-            Default is config.label['TP_ListPane']
-            
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+            Default is config.lnListPane.
     """
     #region -----------------------------------------------------> Class setup
     #endregion --------------------------------------------------> Class setup
@@ -233,14 +217,14 @@ class Start(wx.Panel):
             Parent of the tab. 
         name : str
             Name of the tab. Unique name for the application
-        statusbar : wx.SatusBar
-            Statusbar to display info
+        btnCorrA : wx.Button
+            Launch the Correlation Analysis utility.
         btnLimProt : wx.Button
-            Launch the Limited Proteolysis module
+            Launch the Limited Proteolysis module.
         btnProtProf : wx.Button
-            Launch the Proteome profiling module
+            Launch the Proteome profiling module.
         btnTarProt : wx.Button
-            Launch the Targeted Proteolysis module
+            Launch the Targeted Proteolysis module.
         Sizer : wx.BoxSizer
             Main sizer of the app
         SizerGrid : wx.GridBagSizer
@@ -249,7 +233,7 @@ class Start(wx.Panel):
             Sizer for the buttons
     """
     #region -----------------------------------------------------> Class setup
-    name = 'StartTab'
+    name = config.ntStart
     #------------------------------> Tooltips
     cBtnCorrATT = f"Start the utility {config.nuCorrA}"
     cBtnLimProtTT = f"Start the module {config.nmLimProt}"
@@ -334,11 +318,11 @@ class Start(wx.Panel):
         #region --------------------------------------------------------> Bind
         self.btnCorrA.Bind(
             wx.EVT_BUTTON, 
-            lambda event: config.winMain.CreateTab('CorrATab')
+            lambda event: config.winMain.CreateTab(config.ntCorrA)
         )
         self.btnProtProf.Bind(
             wx.EVT_BUTTON, 
-            lambda event: config.winMain.CreateTab('ProtProfTab')
+            lambda event: config.winMain.CreateTab(config.ntProtProf)
         )
         #endregion -----------------------------------------------------> Bind
     #endregion -----------------------------------------------> Instance setup
