@@ -461,7 +461,7 @@ class BaseConfPanel(
             except Exception as e:
                 msg = (
                     "It was not possible to read the existing UMSAP file:\n"
-                    f'{self.do['uFile']}')
+                    f'{self.do["uFile"]}')
                 raise dtsException.ExecutionError(msg)
         else:
             outData = {}

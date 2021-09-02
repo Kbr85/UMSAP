@@ -237,7 +237,8 @@ class ResControlExp(wx.Panel):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: 'wx.Window', iFile: Path, topParent: 'wx.Window') -> None:
+        self, parent: 'wx.Window', iFile: 'Path', topParent: 'wx.Window',
+        ) -> None:
         """ """
         #region -------------------------------------------------> Check Input
         
