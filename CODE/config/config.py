@@ -109,40 +109,60 @@ winUMSAP = {}
 
 
 #region ---------------------------------------------------------------> Names
-name = { # Unique names for menus, windows, tabs, panes, files, etc
-    #------------------------------> Main windows
-    'MainW'       : 'MainW',
-    'UMSAPControl': 'UMSAPControl',
-    'CorrAPlot'   : 'CorrAPlot',
-    #------------------------------> Dialogs
-    'CheckUpdateResDialog': 'CheckUpdateResDialog',
-    'ResControlExp'       : 'ResControlExp',
-    #------------------------------> Tab for notebook windows
-    'StartTab'   : 'StartTab',
-    'CorrATab'   : 'CorrATab',
-    'ProtProfTab': 'ProtProfTab',
-    #------------------------------> Individual Panes
-    'CorrAPane'                : 'CorrAPane',
-    'ProtProfPane'             : 'ProtProfPane',
-    'ResControlExpPane'        : 'ResControlExpPane',
-    'ResControlExpPaneProtProf': 'ResControlExpPaneProtProf',
-    #------------------------------> Menu
-    'ModuleMenu' : 'ModuleMenu',
-    'UtilityMenu': 'UtilityMenu',
-    'ToolMenu'   : 'ToolMenu',
-    #------------------------------> Files
-    'UMSAPFile' : 'UMSAPFile',
-}
-
-nMLimProt  = 'Limited Proteolysis'
-nMTarProt  = 'Targeted Proteolysis'
-nMProtProf = 'Proteome Profiling'
-
-nUDataT = 'Data Transformation'
-nUCorrA = 'Correlation Analysis'
-nUDataN = 'Data Normalization'
-nUReadF = 'Read UMSAP File'
+#------------------------------> Default name
+nDefName = 'Default name'
+#------------------------------> Windows
+nwMain         = 'MainW'
+nwUMSAPControl = 'UMSAPControl'
+nwCorrAPlot    = 'CorrAPlot'
+#------------------------------> Dialogs
+ndCheckUpdateResDialog = 'CheckUpdateResDialog'
+ndResControlExp        = 'ResControlExp'
+#------------------------------> Tab for notebook windows
+ntStart    = 'StartTab'
+ntCorrA    = 'CorrATab'
+ntProtProf = 'ProtProfTab'
+#------------------------------> Individual Panes
+npCorrA                 = 'CorrAPane'
+npProtProf              = 'ProtProfPane'
+npResControlExp         = 'ResControlExpPane'
+npResControlExpProtProf = 'ResControlExpPaneProtProf'
+#------------------------------> Menu
+nMenModule  = 'ModuleMenu'
+nMenUtility = 'UtilityMenu'
+nMenTool    = 'ToolMenu'
+#------------------------------> Files
+nfUMSAP = 'UMSAPFile'
+#------------------------------> Modules
+nmLimProt  = 'Limited Proteolysis'
+nmTarProt  = 'Targeted Proteolysis'
+nmProtProf = 'Proteome Profiling'
+#------------------------------> Utilities
+nuDataT = 'Data Transformation'
+nuCorrA = 'Correlation Analysis'
+nuDataN = 'Data Normalization'
+nuReadF = 'Read UMSAP File'
 #endregion ------------------------------------------------------------> Names
+
+
+#region --------------------------------------------------------------> Titles
+#------------------------------> Default names
+tdW = "Untitled Window"
+tdT = "Tab"
+tdP = 'Pane'
+#------------------------------> 
+t = {
+    #------------------------------> Windows
+    nwMain    : "Analysis Setup",
+    #------------------------------> Dialogs
+    ndCheckUpdateResDialog : "Check for Updates",
+    #------------------------------> Tabs
+    ntStart   : 'Start',
+    ntCorrA   : 'CorrA',
+    ntProtProf: 'ProtProf',
+    
+}
+#endregion -----------------------------------------------------------> Titles
 
 
 #region ----------------------------------------------------------- Extensions
@@ -353,6 +373,7 @@ protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'P', 'Pc', 'FC', 'FCciL',
 #------------------------------> Files 
 mFileSelector = f"It was not possible to show the file selecting dialog."
 mFileBad = "File: '{}'\ncannot be used as {}."
+mFileRead = 'An error occured when reading file:\n{}'
 mFileColNum = (
     "In addition, the values cannot be bigger than the total number of columns "
     "in the {}.")
@@ -412,7 +433,7 @@ general = { # General options
 #region --------------------------------------------------------------> Colors
 color = { # Colors for the app
     'Zebra' : '#ffe6e6',
-    nUCorrA : { # Color for plot in Correlation Analysis
+    nuCorrA : { # Color for plot in Correlation Analysis
         'CMAP' : { # CMAP colors and interval
             'N' : 128,
             'c1': [255, 0, 0],
