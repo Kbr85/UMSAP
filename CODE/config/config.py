@@ -39,6 +39,7 @@ cwd = Path(__file__)
 typeCheck = TYPE_CHECKING
 #endregion -----------------------------------------------> General parameters
 
+
 #region ---------------------------------------- Platform Dependent Parameters
 # There are some that must be defined in other sections
 if cOS == 'Darwin':
@@ -62,13 +63,13 @@ if cOS == 'Darwin':
     deltaWin = 23
 elif cOS == 'Windows':
     #------------------------------> Root & Resources Folder
-    root = cwd.parent
+    root = cwd.parent.parent.parent
     res = root / 'Resources'
     #------------------------------> Index of the Tool Menu in the MenuBar
-    toolsMenuIdx = 3
+    toolsMenuIdx = 2
     #------------------------------> Statusbar split size
     if development:
-        sbFieldSize = [-1, 350]
+        sbFieldSize = [-1, 325]
     else:
         sbFieldSize = [-1, 300]
     sbPlot = [-1, 115]
@@ -94,6 +95,7 @@ elif cOS == 'Linux':
     deltaWin = 20
 #endregion ------------------------------------- Platform Dependent Parameters
 
+
 #region -------------------------------------------------------------> Windows
 #------------------------------> Reference to main window
 winMain  = None
@@ -105,41 +107,63 @@ winNumber = {}
 winUMSAP = {}
 #endregion ----------------------------------------------------------> Windows
 
+
 #region ---------------------------------------------------------------> Names
-name = { # Unique names for menus, windows, tabs, panes, files, etc
-    #------------------------------> Main windows
-    'MainW'       : 'MainW',
-    'UMSAPControl': 'UMSAPControl',
-    'CorrAPlot'   : 'CorrAPlot',
-    #------------------------------> Dialogs
-    'CheckUpdateResDialog': 'CheckUpdateResDialog',
-    'ResControlExp'       : 'ResControlExp',
-    #------------------------------> Tab for notebook windows
-    'StartTab'   : 'StartTab',
-    'CorrATab'   : 'CorrATab',
-    'ProtProfTab': 'ProtProfTab',
-    #------------------------------> Individual Panes
-    'CorrAPane'                : 'CorrAPane',
-    'ProtProfPane'             : 'ProtProfPane',
-    'ResControlExpPane'        : 'ResControlExpPane',
-    'ResControlExpPaneProtProf': 'ResControlExpPaneProtProf',
-    #------------------------------> Menu
-    'ModuleMenu' : 'ModuleMenu',
-    'UtilityMenu': 'UtilityMenu',
-    'ToolMenu'   : 'ToolMenu',
-    #------------------------------> Files
-    'UMSAPFile' : 'UMSAPFile',
-}
-
-nMLimProt  = 'Limited Proteolysis'
-nMTarProt  = 'Targeted Proteolysis'
-nMProtProf = 'Proteome Profiling'
-
-nUDataT = 'Data Transformation'
-nUCorrA = 'Correlation Analysis'
-nUDataN = 'Data Normalization'
-nUReadF = 'Read UMSAP File'
+#------------------------------> Default name
+nDefName = 'Default name'
+#------------------------------> Windows
+nwMain         = 'MainW'
+nwUMSAPControl = 'UMSAPControl'
+nwCorrAPlot    = 'CorrAPlot'
+#------------------------------> Dialogs
+ndCheckUpdateResDialog = 'CheckUpdateResDialog'
+ndResControlExp        = 'ResControlExp'
+#------------------------------> Tab for notebook windows
+ntStart    = 'StartTab'
+ntCorrA    = 'CorrATab'
+ntProtProf = 'ProtProfTab'
+#------------------------------> Individual Panes
+npCorrA                 = 'CorrAPane'
+npProtProf              = 'ProtProfPane'
+npResControlExp         = 'ResControlExpPane'
+npResControlExpProtProf = 'ResControlExpPaneProtProf'
+#------------------------------> Menu
+nMenModule  = 'ModuleMenu'
+nMenUtility = 'UtilityMenu'
+nMenTool    = 'ToolMenu'
+#------------------------------> Files
+nfUMSAP = 'UMSAPFile'
+#------------------------------> Modules
+nmLimProt  = 'Limited Proteolysis'
+nmTarProt  = 'Targeted Proteolysis'
+nmProtProf = 'Proteome Profiling'
+#------------------------------> Utilities
+nuDataT = 'Data Transformation'
+nuCorrA = 'Correlation Analysis'
+nuDataN = 'Data Normalization'
+nuReadF = 'Read UMSAP File'
 #endregion ------------------------------------------------------------> Names
+
+
+#region --------------------------------------------------------------> Titles
+#------------------------------> Default names
+tdW = "Untitled Window"
+tdT = "Tab"
+tdP = 'Pane'
+#------------------------------> 
+t = {
+    #------------------------------> Windows
+    nwMain    : "Analysis Setup",
+    #------------------------------> Dialogs
+    ndCheckUpdateResDialog : "Check for Updates",
+    #------------------------------> Tabs
+    ntStart   : 'Start',
+    ntCorrA   : 'CorrA',
+    ntProtProf: 'ProtProf',
+    
+}
+#endregion -----------------------------------------------------------> Titles
+
 
 #region ----------------------------------------------------------- Extensions
 #------------------------------> For wx.Dialogs
@@ -157,6 +181,7 @@ esData  = ['.txt']
 esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
 
+
 #region ------------------------------------------------------> Path and Files
 #------------------------------> Relevant paths
 pImages = res / 'IMAGES' # Images folder
@@ -165,11 +190,16 @@ fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 #------------------------------> Names
 fnInitial   = "{}-Initial-Data.txt"
+fnFloat     = "{}-Floated-Data.txt"
+fnExclude   = "{}-After-Excluding-Data.txt"
+fnScore     = "{}-Score-Filtered-Data.txt"
 fnTrans     = "{}-Transformed-Data.txt"
 fnNorm      = "{}-Normalized-Data.txt"
+fnImp       = "{}-Imputed-Data.txt"
 fnDataSteps = 'Data-Steps'
 fnDataInit  = 'Data-Files'
 #endregion ---------------------------------------------------> Path and Files
+
 
 #region ------------------------------------------------------------------ URL
 #------------------------------> www.umsap.nl
@@ -180,6 +210,7 @@ urlCorrA    = f"{urlTutorial}/correlation-analysis"
 urlProtProf = f"{urlTutorial}/proteome-profiling"
 
 #endregion --------------------------------------------------------------- URL
+
 
 #region --------------------------------------------------------------> Labels
 #------------------------------> Names
@@ -202,16 +233,18 @@ lStProtProfRP   = 'Relevant Points'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'  
 #------------------------------> wx.Statictext
-lStColIFile      = "Columns in the {}"
-lStScoreVal      = 'Score Value'
-lStDetectedProt  = 'Detected Proteins'
-lStScoreCol      = 'Score'
-lStColExtract    = 'Columns to Extract'
-lStResultCtrl    = 'Results - Control experiments'
+lStAlpha        = 'Significance level'
+lStColIFile     = "Columns in the {}"
+lStScoreVal     = 'Score Value'
+lStDetectedProt = 'Detected Proteins'
+lStScoreCol     = 'Score'
+lStColExtract   = 'Columns to Extract'
+lStResultCtrl   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
 lCbTransMethod = 'Data Transformation'
 lCbNormMethod  = 'Data Normalization'
+lCbImputation  = 'Data Imputation'
 lCbCorrMethod  = 'Correlation Method'
 #------------------------------> Progress Dialog
 lPdCheck    = 'Checking user input: '
@@ -225,11 +258,13 @@ lPdDone     = 'All Done'
 lPdEllapsed = 'Ellapsed time: '
 #endregion -----------------------------------------------------------> Labels
 
+
 #region ---------------------------------------------------------------> Hints
 hTcDataFile = f"Path to the {lBtnDataFile}"
 hTcOutFile  = f"Path tot the {lBtnOutFile}"
 hTcUFile    = f"Path tot the {lBtnUFile}"
 #endregion ------------------------------------------------------------> Hints
+
 
 #region ------------------------------------------------------------> Tooltips
 #------------------------------> wx.Button
@@ -243,6 +278,8 @@ ttBtnRun      = f"Start the analysis."
 #------------------------------> wx.StaticText
 ttStTrans = f"Select the {lCbTransMethod} method."
 ttStNorm = f"Select the {lCbNormMethod} method."
+ttStImputation = f"Select the {lCbImputation} method."
+ttStAlpha = "Significance level for the statistical analysis.\ne.g. 0.05"
 ttStCorr = f"Select the {lCbCorrMethod}."
 ttStScoreVal = f"Set the minimum acceptable Score value.\ne.g. -4"
 ttStPCorrection = "Select the p correction method."
@@ -267,43 +304,87 @@ ttLCtrlPasteMod = (
 )
 #endregion ---------------------------------------------------------> Tooltips
 
+
 #region -------------------------------------------------------------> Options
-oTransMethod = ['', 'None', 'Log2']
-oNormMethod = ['', 'None', 'Median']
-oCorrMethod = ['', 'Pearson', 'Kendall', 'Spearman']
-oYesNo      = ['', 'Yes', 'No']
-oCorrectP   = [
-    '',
-    'None',
-    'Benjamini - Hochberg',  
-    'Benjamini - Yekutieli',
-    'Bonferroni',            
-    'Holm',                  
-    'Holm - Sidak',          
-    'Hommel',        
-    'Sidak',                 
-    'Simes-Hochberg',
-]
-oControlTypeProtProf = [
-    '',
-    'One Control', 
-    'One Control per Column', 
-    'One Control per Row',
-]
+oTransMethod = {
+    'Empty': '',
+    'Log2' : 'Log2',
+}
+oNormMethod = {
+    'Empty' : '',
+    'Median': 'Median',
+}
+oImputation = {
+    'Empty': '',
+    'ND'   : 'Normal Distribution',
+}
+oCorrMethod = {
+    'Empty'   : '',
+    'Pearson' : 'Pearson',
+    'Kendall' : 'Kendall',
+    'Spearman': 'Spearman',
+}
+oYesNo = {
+    'Empty': '',
+    'Yes'  : 'Yes',
+    'No'   : 'No',
+}
+oIntensities = {
+    'Empty' : '',
+    'RawI'  : 'Raw Intensities',
+    'RatioI': 'Ratio of Intensities',
+}
+oSamples = {
+    'Empty': '',
+    'IS'   : 'Independent Samples',
+    'PS'   : 'Paired Samples',
+}
+oCorrectP    = {
+    ''                     : '',
+    'None'                 : 'None',
+    'Bonferroni'           : 'bonferroni',
+    'Sidak'                : 'sidak',
+    'Holm - Sidak'         : 'holm-sidak',
+    'Holm'                 : 'holm',
+    'Simes-Hochberg'       : 'simes-hochberg',
+    'Hommel'               : 'hommel',
+    'Benjamini - Hochberg' : 'fdr_bh',
+    'Benjamini - Yekutieli': 'fdr_by',
+}
+oControlTypeProtProf = {
+    'Empty': '',
+    'OC'   : 'One Control',
+    'OCC'  : 'One Control per Column',
+    'OCR'  : 'One Control per Row',
+    'Ratio': oIntensities['RatioI'],
+}
 #endregion ----------------------------------------------------------> Options
+
+
+#region -----------------------------------------------------> DF Column names
+protprofFirstThree = ['Gene', 'Protein', 'Score']
+protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'P', 'Pc', 'FC', 'FCciL', 
+    'FCciU', 'FCz',
+]
+#endregion --------------------------------------------------> DF Column names
+
 
 #region ------------------------------------------------------------> Messages
 #------------------------------> Files 
 mFileSelector = f"It was not possible to show the file selecting dialog."
 mFileBad = "File: '{}'\ncannot be used as {}."
+mFileRead = 'An error occured when reading file:\n{}'
 mFileColNum = (
     "In addition, the values cannot be bigger than the total number of columns "
     "in the {}.")
 #------------------------------> Not empty
 mNotEmpty = "Please select a value for {}."
 #------------------------------> Pandas
-mPDDataType    = 'Unexpected data type.'
-mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
+mPDDataType       = 'Unexpected data type.'
+mPDDataTypeCol    = 'The {} contains unexpected data type in columns {}.'
+mPDDataTran       = 'Data Transformation failed.'
+mPDDataNorm       = 'Data Normalization failed.'
+mPDDataImputation = 'Data Imputation failed.'
 #------------------------------> User values
 mNumROne = "Only one number can be accepted in {}."
 mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
@@ -311,12 +392,13 @@ mListNumN0L = (
     "Only a list of unique non-negative integers can be accepted in {}.")
 mColNumbers = f"Values in section {lSbColumn} must be unique"+"{}"
 mColNumbersNoColExtract = f", excluding {lStColExtract}."
+mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 #endregion ---------------------------------------------------------> Messages
 
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
-sWinRegular = (900, 620)
+sWinRegular = (920, 670)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
 #------------------------------> wx.StatusBar Fields
@@ -339,6 +421,7 @@ font = {
 }
 #endregion ---------------> Fonts. Set from UMSAP.py, requires a wx.App object
 
+
 #region -----------------------------------------------------> General options
 general = { # General options
     'checkUpdate': True, # True Check, False No check
@@ -346,10 +429,11 @@ general = { # General options
 }
 #endregion --------------------------------------------------> General options
 
+
 #region --------------------------------------------------------------> Colors
 color = { # Colors for the app
     'Zebra' : '#ffe6e6',
-    nUCorrA : { # Color for plot in Correlation Analysis
+    nuCorrA : { # Color for plot in Correlation Analysis
         'CMAP' : { # CMAP colors and interval
             'N' : 128,
             'c1': [255, 0, 0],
