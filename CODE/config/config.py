@@ -226,6 +226,7 @@ lBtnUFile    = 'UMSAP File'
 lLCtrlColNameI = ['#', 'Name']
 #------------------------------> wx.StaticBox
 lSbFile         = 'Files && Folders'
+lSbData         = 'Data preparation'
 lSbValue        = 'User-defined values'
 lSbColumn       = 'Column numbers'
 lStProtProfCond = 'Conditions'
@@ -242,9 +243,9 @@ lStColExtract   = 'Columns to Extract'
 lStResultCtrl   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
-lCbTransMethod = 'Data Transformation'
-lCbNormMethod  = 'Data Normalization'
-lCbImputation  = 'Data Imputation'
+lCbTransMethod = 'Transformation'
+lCbNormMethod  = 'Normalization'
+lCbImputation  = 'Imputation'
 lCbCorrMethod  = 'Correlation Method'
 #------------------------------> Progress Dialog
 lPdCheck    = 'Checking user input: '
