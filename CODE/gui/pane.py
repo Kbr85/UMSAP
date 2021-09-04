@@ -1753,21 +1753,16 @@ class CorrA(BaseConfPanel):
             Parameters
             ----------
             dataI : dict or None
-                Data to fill all fields and repeat an analysis. See Notes
-                
+                Data to fill all fields and repeat an analysis. See Notes.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            True
         """
         if dataI is not None:
             #------------------------------> 
             self.uFile.tc.SetValue(dataI['CI']['uFile'])
-            self.iFile.tc.SetValue(dataI['I']['Data File          '])
+            self.iFile.tc.SetValue(dataI['I']['Data File'])
             #------------------------------> 
             self.transMethod.cb.SetValue(dataI['CI']['TransMethod'])
             self.normMethod.cb.SetValue(dataI['CI']['NormMethod'])

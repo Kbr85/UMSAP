@@ -366,9 +366,17 @@ class UMSAPFile():
             KeyError:
                 When tSection or tDate is not found in the file
         """
+        #region ------------------------------------------------> Strip I keys
+        #------------------------------> 
+        i = {}
+        #------------------------------> 
+        for k,v in self.data[tSection][tDate]['I'].items():
+            i[k.strip()] = v
+        #endregion ---------------------------------------------> Strip I keys
+        
         try:
             return {
-                'I':  self.data[tSection][tDate]['I'], 
+                'I':  i, 
                 'CI': self.data[tSection][tDate]['CI'], 
             }
         except KeyError as e:
