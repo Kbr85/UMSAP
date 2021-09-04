@@ -196,8 +196,8 @@ fnScore     = "{}-Score-Filtered-Data.txt"
 fnTrans     = "{}-Transformed-Data.txt"
 fnNorm      = "{}-Normalized-Data.txt"
 fnImp       = "{}-Imputed-Data.txt"
-fnDataSteps = 'Data-Steps'
-fnDataInit  = 'Data-Files'
+fnDataSteps = 'Steps_Data_Files'
+fnDataInit  = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
 
 
@@ -226,6 +226,7 @@ lBtnUFile    = 'UMSAP File'
 lLCtrlColNameI = ['#', 'Name']
 #------------------------------> wx.StaticBox
 lSbFile         = 'Files && Folders'
+lSbData         = 'Data preparation'
 lSbValue        = 'User-defined values'
 lSbColumn       = 'Column numbers'
 lStProtProfCond = 'Conditions'
@@ -242,9 +243,9 @@ lStColExtract   = 'Columns to Extract'
 lStResultCtrl   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
-lCbTransMethod = 'Data Transformation'
-lCbNormMethod  = 'Data Normalization'
-lCbImputation  = 'Data Imputation'
+lCbTransMethod = 'Transformation'
+lCbNormMethod  = 'Normalization'
+lCbImputation  = 'Imputation'
 lCbCorrMethod  = 'Correlation Method'
 #------------------------------> Progress Dialog
 lPdCheck    = 'Checking user input: '
@@ -308,14 +309,17 @@ ttLCtrlPasteMod = (
 #region -------------------------------------------------------------> Options
 oTransMethod = {
     'Empty': '',
+    'None' : 'None',
     'Log2' : 'Log2',
 }
 oNormMethod = {
     'Empty' : '',
+    'None'  : 'None',
     'Median': 'Median',
 }
 oImputation = {
     'Empty': '',
+    'None' : 'None',
     'ND'   : 'Normal Distribution',
 }
 oCorrMethod = {

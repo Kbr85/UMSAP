@@ -527,7 +527,7 @@ class CorrAPlot(BaseWindowPlot):
     """
     #region -----------------------------------------------------> Class setup
     #------------------------------> To id the window
-    name = config.nuCorrA
+    name = config.nwCorrAPlot
     #------------------------------> To id the section in the umsap file 
     # shown in the window
     cSection = config.nuCorrA
@@ -813,7 +813,7 @@ class UMSAPControl(BaseWindow):
             Tree control to show the content of the umsap file.
     """
     #region -----------------------------------------------------> Class setup
-    name = 'UMSAPF'
+    name = config.nwUMSAPControl
     
     cSizeWindow = (400, 700)
     
