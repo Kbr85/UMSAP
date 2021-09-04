@@ -309,14 +309,17 @@ ttLCtrlPasteMod = (
 #region -------------------------------------------------------------> Options
 oTransMethod = {
     'Empty': '',
+    'None' : 'None',
     'Log2' : 'Log2',
 }
 oNormMethod = {
     'Empty' : '',
+    'None'  : 'None',
     'Median': 'Median',
 }
 oImputation = {
     'Empty': '',
+    'None' : 'None',
     'ND'   : 'Normal Distribution',
 }
 oCorrMethod = {
