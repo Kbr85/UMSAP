@@ -643,8 +643,8 @@ class BaseConfPanel(
         #------------------------------> 
         msgStep = msgPrefix + 'Creating needed folders, Data-Steps folder'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        dataFolder = f"{self.date}-{self.cSection}-{config.fnDataSteps}"
-        dataFolder = self.oFolder / dataFolder
+        dataFolder = f"{self.date}_{self.cSection}"
+        dataFolder = self.oFolder / config.fnDataSteps / dataFolder
         dataFolder.mkdir(parents=True, exist_ok=True)
         #------------------------------> 
         msgStep = msgPrefix + 'Creating needed folders, Data-Initial folder'
@@ -2062,10 +2062,6 @@ class CorrA(BaseConfPanel):
         
         #region ---------------------------------------------------> Print
         if config.development:
-            print('Input')
-            for k,v in self.do.items():
-                print(str(k)+': '+str(v))
-
             print("DataFrames: Initial")
             print(self.dfI.head())
             print(self.dfI.shape)

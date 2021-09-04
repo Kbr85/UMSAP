@@ -196,8 +196,8 @@ fnScore     = "{}-Score-Filtered-Data.txt"
 fnTrans     = "{}-Transformed-Data.txt"
 fnNorm      = "{}-Normalized-Data.txt"
 fnImp       = "{}-Imputed-Data.txt"
-fnDataSteps = 'Data-Steps'
-fnDataInit  = 'Data-Files'
+fnDataSteps = 'Steps_Data_Files'
+fnDataInit  = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
 
 
