@@ -1444,51 +1444,74 @@ class CorrA(BaseConfPanel):
         ----------
         name : str
             Unique id of the pane in the app
-        #------------------------------> Needed by BaseConfPanel
-        cURL : str
-            URL for the Help button
-        cSection : str
-            Section for the output file
-        cLenLongestLabel : int
-            Length of the longest label
-        cTitlePD : str
-            Title for hte progress dialog
-        cGaugePD : int
-        #------------------------------> For Analysis
-        cMainData : str
-            Name of the file with the correlation coefficient values
+        #------------------------------> Configuration
         cChangeKey : list of str
+            Keys in d and do whose values must be turn to str in order to save
+            as json.
+        cGaugePD : int
+            Number of steps needed in hte Progress Dialog.
+        cLCorr : str
+            Label for the Correlation Method widget. 
+            Default is config.lCbCorrMethod.
+        cLiListCtrl : str
+            Label for the wx.ListCtrl showing the column names in the in the 
+            input file. Default is config.lStColIFile.format(self.cLiFile).
+        cLoListCtrl : str
+            Label for the wx.ListCtrl showing the selected column.
+        cOCorrMethod : list of str
+            Options for the Correlation Methods. Default is config.oCorrMethod.
+        cSection : str
+            Section for the output file in the UMSAP file.
+        cTitlePD : str
+            Title for the progress dialog. Default is config.lnPDCorrA.
+        cTTCorr : str
+            Tooltip for the Correlation Method. Default is config.ttStTrans.
+        cTTHelp : str 
+            Tooltip for the Help button. 
+            Default is config.ttBtnHelp.format(config.urlCorrA).
+        cURL : str
+            URL for the Help button.
+        #------------------------------> For Analysis
+        cLenLongestLabel : int
+            Length of the longest label. 
+        cMainData : str
+            Name of the file with the correlation coefficient values.
         do : dict
             Dict with the processed user input
             {
                 'uFile'      : 'umsap file path',
                 'iFile'      : 'data file path',
                 'TransMethod': 'transformation method',
+                'NormMethod' : 'normalization method',
+                'ImpMethod'  : 'imputation method',
                 'CorrMethod' : 'correlation method',
                 'Column'     : [selected columns as integers],
+                'df'         : {
+                  'Column' : [cero based list of selected columns],  
+                },
             }
         d : dict
             Similar to 'do' but: 
-                - No uFile
+                - No uFile and no df dict
                 - With the values given by the user
                 - Keys as in the GUI of the tab.
-        dfR : pdDataFrame
-            Dataframe with correlation coefficients
-        See parent class for more attributes
+        
+        See parent class for more attributes.
 
         Notes
         -----
-        Running the analysis results in the creation of
+        Running the analysis results in the creation of:
+        
         - Parent Folder/
-            - 20210324-165609-Correlation-Analysis/
-            - Data_Files/
+            - Input_Data_Files/
+            - Steps_Data_Files/20210324-165609-Correlation-Analysis/
             - output-file.umsap
         
-        The Data_Files folder contains the original data files. These are needed 
-        for data visualization, running analysis again with different 
+        The Input_Data_Files folder contains the original data files. These are 
+        needed for data visualization, running analysis again with different 
         parameters, etc.
-        The Date-Section folder contains regular csv files with the step by step
-        data.
+        The Steps_Data_Files/Date-Section folder contains regular csv files with 
+        the step by step data.
     
         The Correlation Analysis section in output-file.umsap conteins the 
         information about the calculations, e.g
@@ -1499,6 +1522,13 @@ class CorrA(BaseConfPanel):
                     'V' : config.dictVersion,
                     'I' : self.d,
                     'CI': self.do,
+                    'DP': {
+                        'dfS' : pd.DataFrame with initial data as float and
+                                after discarding values by score.
+                        'dfT' : pd.DataFrame with transformed data.
+                        'dfN' : pd.DataFrame with normalized data.
+                        'dfIm': pd.DataFrame with imputed data.
+                    }
                     'R' : pd.DataFrame (dict) with the correlation coefficients
                 }
             }
@@ -1543,7 +1573,6 @@ class CorrA(BaseConfPanel):
         #------------------------------> Options
         self.cOCorrMethod = list(config.oCorrMethod.values())
         #------------------------------> Tooltips
-        self.cTTTrans = config.ttStTrans
         self.cTTCorr  = config.ttStCorr
         #endregion --------------------------------------------> Initial setup
         
