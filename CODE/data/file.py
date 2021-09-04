@@ -51,9 +51,11 @@ class UMSAPFile():
         data : dict
             Data read from json formatted file
         confData : dict
-            Configured data. See Notes
+            Configured data. Data from the umsap file is checked and converted 
+            to the proper python types. See Notes for the structure of the dict.
         confTree : dict
-            Nodes for the wx.TreeCtrl in the control window. See Notes
+            Nodes to show in the wx.TreeCtrl of the control window. 
+            See Notes for the structure of the dict.
         cSection : dict
             Name of the sections in the umsap file
         cConfigure : dict
@@ -61,6 +63,8 @@ class UMSAPFile():
 
         Raises
         ------
+        InputError
+            - When fileP cannot be read.
         ExecutionError
             - When a requested section is not found in the file (GetSectionData)
 
@@ -77,21 +81,24 @@ class UMSAPFile():
                 },
             },
         }
-        Each Section.Date can have additional information. See the corresponding
-        ConfigureDataSection
+        - Each Section.Date can have additional information. 
+        See the corresponding ConfigureDataSection
 
         The general structure of confTree is:
         {
             'Sections': { 'A': True, 'B': False},
-            'Correlation Analysis' : {DateA': True, 'DateB': False},
+            'Correlation Analysis' : {'DateA': True, 'DateB': False},
         }
-        
+        - Sections with True are shown with a checkbox in the TreeCtrl of the
+        UMSAPControl window to signal there is something to plot in the section.
+        - Dates with False are shown with a different font in the TreeCtrl of 
+        the UMSAPControl window.
     """
     #region -----------------------------------------------------> Class setup
     name = 'UMSAPFile'
     
     cSection = {# Name of the sections in the umsap file
-        'CorrA' : config.nUCorrA,
+        'CorrA' : config.nuCorrA,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -113,15 +120,19 @@ class UMSAPFile():
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Check Input
-        self.data = dtsFF.ReadJSON(fileP)
+        try:
+            self.data = dtsFF.ReadJSON(fileP)
+        except Exception:
+            raise dtsException.InputError(config.mFileRead.format(self.fileP))
         #endregion ----------------------------------------------> Check Input
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #----------------------------------------------------------> Class methods
     #region -------------------------------------------------------> Configure
-    def Configure(self, dlg: Optional['dtscore.ProgressDialog']=None,
-                 )-> Literal[True]:
+    def Configure(
+        self, dlg: Optional['dtscore.ProgressDialog']=None,
+        ) -> Literal[True]:
         """Prepare data for each section in the file and for the CustomTreeCtrl
             in the control window. See Notes.
     
@@ -188,7 +199,6 @@ class UMSAPFile():
                 }
             except Exception:
                 pass
-
         #endregion ----------------------------------------------> Plot & Menu
         
         #region -------------------------------------------> Add/Reset section 
@@ -200,7 +210,7 @@ class UMSAPFile():
 
     def ConfigureTree(self, tSection: str) -> Literal[True]:
         """Configure a section for the Tree widget.
-            This is intended to be used after ConfigureDataX
+            This is intended to be used after ConfigureDataX.
 
             Parameters
             ----------
@@ -356,9 +366,17 @@ class UMSAPFile():
             KeyError:
                 When tSection or tDate is not found in the file
         """
+        #region ------------------------------------------------> Strip I keys
+        #------------------------------> 
+        i = {}
+        #------------------------------> 
+        for k,v in self.data[tSection][tDate]['I'].items():
+            i[k.strip()] = v
+        #endregion ---------------------------------------------> Strip I keys
+        
         try:
             return {
-                'I':  self.data[tSection][tDate]['I'], 
+                'I':  i, 
                 'CI': self.data[tSection][tDate]['CI'], 
             }
         except KeyError as e:

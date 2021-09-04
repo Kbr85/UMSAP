@@ -18,14 +18,13 @@
 import _thread 
 import shutil
 from pathlib import Path
-from typing import Optional, Literal, Type
+from typing import Optional, Literal
 
 import pandas as pd
 import numpy as np
 from statsmodels.stats.multitest import multipletests
 
 import wx
-import wx.lib.agw.aui as aui
 import wx.lib.scrolledpanel as scrolled
 
 import dat4s_core.data.file as dtsFF
@@ -55,7 +54,9 @@ class BaseConfPanel(
     dtsWidget.ButtonOnlineHelpClearAllRun
     ):
     """Creates the skeleton of a configuration panel. This includes the 
-        wx.StaticBox, the bottom Buttons and the statusbar.
+        wx.StaticBox, the bottom Buttons, the statusbar and some widgets.
+        
+        See Notes below for more details.
 
         Parameters
         ----------
@@ -68,9 +69,119 @@ class BaseConfPanel(
         ----------
         parent : wx Widget
             Parent of the widgets
+        #------------------------------> Configuration
+        cEiFile : wxPython extension list
+            Extensions for the main input file. Default is config.elData.
+        cHiFile : str
+            Hint for the main input wx.TextCtrl. Default is config.hTcDataFile.
+        cHuFile : str
+            Hint for the umpsap file wx.TextCtrl. Default is config.hTcUFile.
+        cLColumnBox : str
+            Label for the wx.StaticBox in section Columns.
+            Default is config.lSbColumn.
+        cLDataBox : str
+            Label for the wx.StaticBox in section Data preparation.
+            Default is config.lSbData.
+        cLFileBox : str
+            Label for the wx.StaticBox in section Files & Folders
+            Default is config.lSBFile.
+        cLiFile : str
+            Label for the main input data wx.Button. 
+            Default is config.lBtnDataFile.
+        cLRunBtn : str
+            Label for the run wx.Button. Default is config.lBtnRun.
+        cLuFile : str
+            Label for the output wx.Button. Default is config.lBtnOutFile.
+        cLValueBox : str
+            Label for the wx.StaticBox in section User-defined values
+            Default is config.lSBValue.
+        cLImputation : str
+            Label for Imputation method. Default is config.lCbImputation.
+        cLNormMethod : str
+            Data normalization label. Default is config.lCbNormMethod.
+        cLTransMethod : str
+            Data transformation label. Default is config.lCbTransMethod.
+        cMiFile : str
+            Mode for selecting the main input file. Default is 'openO'.
+        cMuFile : str
+            Mode for selecting the umpsap file. Default is 'save'.
+        cOImputation : list of str
+            Choices for imputation method. Default is config.oImputation.
+        cONorm : list of str
+            Choice for normalization method. Default is config.oNormMethod.
+        cOTrans : list of str
+            Choice for transformation method. Default is config.oTransMethod.
+        cTTClearAll : str
+            Tooltip for the Clear All button. Default is config.ttBtnClearAll.
+        cTTHelp : str
+            Tooltip for the Help button. Default is config.ttBtnHelpDef.
+        cTTiFile : str
+            Tooltip for the input file button. Default is config.ttTcDataFile.
+        cTTRun : str
+            Tooltip for the run button. Default is config.ttBtnRun.
+        cTTuFile : str
+            Tooltip for the umsap file button. Default is config.ttBtnUFile.
+        cTTImputation : str
+            Tooltip for Imputation method. Default is config.lCbImputation.
+        cTTNormMethod : str
+            Tooltip for Normalization method. Default is config.lCbNormMethod.
+        cTTTransMethod : str
+            Tooltip for Transformation method. Default is config.ttStTrans.
+        cViFile : wx.Validator
+            Validator for the main input file. 
+            Default is dtsValidator.InputFF(fof='file', ext=config.esData)
+        cVuFile : wx.Validator
+            Validator for the main input file. 
+            Default is dtsValidator.OutputFF(fof='file', ext=config.esUMSAP[0])
+        #------------------------------> To run the analysis
+        d : dict
+            Dict with user input. See keys in Child class.
+        date : str or None
+            Date for the new section in the umsap file.
+        dFile : Path
+            Full path to copy the given input file if not in Data-Files.
+        dfI : pd.DataFrame
+            DataFrame for the initial values.
+        dfF : pd.DataFrame
+            DataFrame as float values and 0 and '' as np.nan
+        dfE : DataFrame
+            Exclude some entries by some parameters
+        dfS : DataFrame
+            Exclude entries by Score values.
+        dfT : pd.DataFrame
+            DataFrame with the transformed values.
+        dfN : pd.DataFrame
+            DataFrame with normalized values.
+        dfIm : pd.DataFrame
+            DataFrame with imputed values.
+        dfR : pd.DataFrame
+            DataFrame with the results values.
+        dlg : dtscore.ProgressDialog
+            Progress dialog.
+        do : dict
+            Dict with processed user input. See keys in Child class.
+        msgError : Str or None
+            Error message to show when analysis fails
         NCol : int
-            Number of columns in the main input file - 1
-        #------------------------------> Must be set on child
+            Number of columns in the main input file - 1. Set when the file is
+            read.
+        oFolder : Path or None
+            Folder to contain the output. Set based on the umsap file path.
+        tException : Exception or None
+            Exception raised during analysis   
+        #------------------------------> Widgets
+        iFile : dtsWidget.ButtonTextCtrlFF
+            Attributes: btn, tc
+        lbI : wx.ListCtrl or None
+            Pointer to the default wx.ListCtrl to load Data File content to. 
+        lbL : list of wx.ListCtrl
+            To clear all wx.ListCtrl in the Tab.
+        uFile : dtsWidget.ButtonTextCtrlFF
+            Attributes: btn, tc.
+            
+        Notes
+        -----
+        The following attributes must be set in the child class
         name : str
             Unique name of the pane
         cURL : str 
@@ -85,117 +196,6 @@ class BaseConfPanel(
         cGaugePD : int 
             Number of steps for the wx.Gauge in the Progress Dialog shown when 
             running analysis
-        #------------------------------> Configuration
-        cRunBtnL : str
-            Label for the run wx.Button.
-            Default is config.lBtnRun.
-        cFileBoxL : str
-            Label for the wx.StaticBox in section Files & Folders
-            Default is config.lStBoxFile.
-        cValueBoxL : str
-            Label for the wx.StaticBox in section User-defined values
-            Default is config.lStBoxValue
-        cColumnBoxL : str
-            Label for the wx.StaticBox in section Columns
-            Default is config.lStBoxColumn
-        ciMode : str
-            Mode for selecting the main input file. Default is 'openO'
-        coMode : str
-            Mode for selecting the output file. Default is 'save'
-        ciFileL : str
-            Label for the main input data wx.Button
-            Default is config.lBtnDataFile
-        ciFileH : str
-            Hint for the main input wx.TextCtrl
-            Default is config.hTcDataFile
-        ciFileTT : str
-            Tooltip for the main input wx.TextCtrl
-            Default is config.ttTcDataFile
-        ciFileE : wxPython extension list
-            Extensions allowed for the main input file
-            Default is config.elData
-        coFileL : str
-            Label for the output wx.Button
-            Default is config.lBtnOutFile
-        coFileH : str
-            Hint for the output file wx.TextCtrl
-            Default is config.hTcOutFile
-        coFileTT : str
-            Tooltip for the output file wx.TextCtrl
-            Default is config.ttTcOutFile
-        ciFileValidator : wx.Validator
-            Validator for the main input file. 
-            Default is dtsValidator.InputFF(
-                fof='file', 
-                ext = config.esData,
-            )
-        coFileValidator : wx.Validator
-            Validator for the main input file. 
-            Default is dtsValidator.OutputFF(
-                fof='file', 
-                ext = config.esUMSAP[0],
-            )
-        #------------------------------> Needed to run analysis
-        msgError : Str or None
-            Error message to show when analysis fails
-        d : dict
-            Dict with user input. See keys in Child class
-        do : dict
-            Dict with processed user input. See keys in Child class
-        dfI : pdDataFrame or None
-            Dataframe with initial values after columns were extracted and type
-            assigned.
-        dfT : pdDataFrame or None
-            Dataframe after data transformation
-        date : str or None
-            Date time stamp as given by dtsMethod.StrNow()
-        oFolder : Path or None
-            Folder to contain the output
-        tException : Exception or None
-            Exception raised during analysis   
-        #------------------------------> Widgets
-        btnRun : wx.Button
-            Run button
-        btnHelp : wx.Button
-            Help button
-        btnClearAll : wx.Button
-            Clear All button
-        sbFile : wx.StaticBox
-            StaticBox to contain the input/output file information
-        sbValue : wx.StaticBox
-            StaticBox to contain the user-defined values
-        sbColumn : wx.StaticBox
-            StaticBox to contain the column numbers in the input files
-        iFile : dtsWidget.ButtonTextCtrlFF
-            Attributes: btn, tc
-        oFile : dtsWidget.ButtonTextCtrlFF
-            Attributes: btn, tc
-        checkB : wx.CheckBox
-            Signal whether to add new data to existing file or not
-        sizersbFile : wx.StaticBoxSizer
-            StaticBoxSizer for sbFile
-        sizersbValue : wx.StaticBoxSizer
-            StaticBoxSizer for sbValue
-        sizersbColumn : wx.StaticBoxSizer
-            StaticBoxSizer for sbColumn
-        sizersbFileWid : wx.GridBagSizer
-            FlexGridSizer for widgets in sbFile
-        sizersbValueWid : wx.GridBagSizer
-            FlexGridSizer for widgets in sbValue
-        sizersbColumnWid : wx.GridBagSizer
-            FlexGridSizer for widgets in sbColumn		
-        btnSizer : wx.FlexGridSizer
-            To align the buttons
-        Sizer : wx.BoxSizer
-            Main sizer of the tab        
-        #------------------------------> Other
-        lbI : wx.ListCtrl or None
-            Pointer to the default wx.ListCtrl to load Data File content to. 
-        lbL : list of wx.ListCtrl
-            To clear all wx.ListCtrl in the Tab
-                
-        Notes
-        -----
     """
     #region -----------------------------------------------------> Class setup
     
@@ -207,110 +207,152 @@ class BaseConfPanel(
         #region -----------------------------------------------> Initial Setup
         self.parent = parent
         #------------------------------> Labels
-        self.cRunBtnL    = getattr(self, 'RunBtnL', config.lBtnRun)
-        self.cuFileL     = getattr(self, 'cuFileL', config.lBtnUFile)
-        self.ciFileL     = getattr(self, 'ciFileL', config.lBtnDataFile)
-        self.cFileBoxL   = getattr(self, 'cFileBoxL', config.lSbFile)
-        self.cValueBoxL  = getattr(self, 'cValueBoxL', config.lSbValue)
-        self.cColumnBoxL = getattr(self, 'cColumnBoxL', config.lSbColumn)
-        self.cCheckL     = getattr(self, 'cCheckL', config.lCbFileAppend)
-        #------------------------------> Hints
-        self.cuFileH = getattr(self, 'cuFileH', config.hTcUFile)
-        self.ciFileH = getattr(self, 'ciFileH', config.hTcDataFile)
-        #------------------------------> Tooltips
-        self.cuFileTT    = getattr(self, 'cuFileTT', config.ttBtnUFile)
-        self.ciFileTT    = getattr(self, 'ciFileTT', config.ttBtnDataFile)
-        self.cHelpTT     = getattr(self, 'cHelpTT', config.ttBtnHelpDef)
-        self.cClearAllTT = getattr(self, 'cClearAllTT', config.ttBtnClearAll)
-        self.cRunTT      = getattr(self, 'cRunTT', config.ttBtnRun)
-        #------------------------------> Extensions
-        self.ciFileE = getattr(self, 'ciFileE', config.elData)
-        #------------------------------> Mode
-        self.ciMode = getattr(self, 'ciMode', 'openO')
-        self.cuMode = getattr(self, 'coMode', 'save')
-        #------------------------------> Validator
-        self.cuFileValidator = getattr(
-            self, 
-            'cuFileValidator',
-            dtsValidator.OutputFF(
-                fof = 'file',
-                ext = config.esUMSAP[0],
-                opt = False,
-            )
+        self.cLRunBtn      = getattr(self, 'RunBtnL', config.lBtnRun)
+        self.cLuFile       = getattr(self, 'cuFileL', config.lBtnUFile)
+        self.cLiFile       = getattr(self, 'ciFileL', config.lBtnDataFile)
+        self.cLFileBox     = getattr(self, 'cFileBoxL', config.lSbFile)
+        self.cLDataBox     = getattr(self, 'cLDataBox', config.lSbData)
+        self.cLValueBox    = getattr(self, 'cValueBoxL', config.lSbValue)
+        self.cLColumnBox   = getattr(self, 'cColumnBoxL', config.lSbColumn)
+        self.cLNormMethod  = getattr(self, 'cLNormMethod', config.lCbNormMethod)
+        self.cLTransMethod = getattr(
+            self, 'cLTransMethod', config.lCbTransMethod)
+        self.cLImputation = getattr(self, 'cLImputation', config.lCbImputation)
+        #------------------------------> Choices
+        self.cONorm = getattr(self, 'cONorm', list(config.oNormMethod.values()))
+        self.cOTrans = getattr(
+            self, 'cOTrans', list(config.oTransMethod.values()),
         )
-        self.ciFileValidator = getattr(
+        self.cOImputation = getattr(
+            self, 'cOImputation', list(config.oImputation.values()),
+        )
+        #------------------------------> Hints
+        self.cHuFile = getattr(self, 'cuFileH', config.hTcUFile)
+        self.cHiFile = getattr(self, 'ciFileH', config.hTcDataFile)
+        #------------------------------> Tooltips
+        self.cTTuFile       = getattr(self, 'cuFileTT', config.ttBtnUFile)
+        self.cTTiFile       = getattr(self, 'ciFileTT', config.ttBtnDataFile)
+        self.cTTHelp        = getattr(self, 'cHelpTT', config.ttBtnHelpDef)
+        self.cTTClearAll    = getattr(self, 'cClearAllTT', config.ttBtnClearAll)
+        self.cTTRun         = getattr(self, 'cRunTT', config.ttBtnRun)
+        self.cTTNormMethod  = getattr(self, 'cTTNormMethod', config.ttStNorm)
+        self.cTTTransMethod = getattr(self, 'cTTTransMethod', config.ttStTrans)
+        self.cTTImputation  = getattr(
+            self, 'cTTImputation', config.ttStImputation,)
+        #------------------------------> Extensions
+        self.cEiFile = getattr(self, 'ciFileE', config.elData)
+        #------------------------------> Mode
+        self.cMiFile = getattr(self, 'cMiFile', 'openO')
+        self.cMuFile = getattr(self, 'cMuFile', 'save')
+        #------------------------------> Validator
+        self.cVuFile = getattr(
             self, 
-            'ciFileValidator',
-            dtsValidator.InputFF(
-                fof = 'file',
-                ext = config.esData,
-            )
+            'cVuFile',
+            dtsValidator.OutputFF(fof='file', ext=config.esUMSAP[0], opt=False),
+        )
+        self.cViFile = getattr(
+            self, 
+            'cViFile',
+            dtsValidator.InputFF(fof='file', ext=config.esData),
         )
         #------------------------------> This is needed to handle Data File 
         # content load to the wx.ListCtrl in Tabs with multiple panels
         #--------------> Default wx.ListCtrl to load data file content
-        self.lbI : Optional[Type[wx.ListCtrl]]= None 
+        self.lbI = None 
         #--------------> List to use just in case there are more than 1 
-        self.lbL : list[Optional[Type[wx.ListCtrl]]] = [self.lbI]
+        self.lbL = [self.lbI]
         #------------------------------> Needed to Run the analysis
         #--------------> Dict with the user input as given
         self.d = {}
         #--------------> Dict with the processed user input
         self.do = {} 
         #--------------> Error message and exception to show in self.RunEnd
-        self.msgError   : Optional[str]       = None 
-        self.tException : Optional[Exception] = None
+        self.msgError   = None 
+        self.tException = None
         #--------------> pd.DataFrames for:
-        self.dfI : Optional['pd.DataFrame'] = None # Initial and
-        self.dfT : Optional['pd.DataFrame'] = None # Transaformed values
-        #--------------> date for corr file
-        self.date : Optional[str] = None
+        self.dfI  = None # Initial and
+        self.dfF  = None # Data as float and 0 and '' values as np.nan
+        self.dfE  = None # Exclude entries by some parameter
+        self.dfS  = None # Exclude entries by Score value
+        self.dfT  = None # Transformed values
+        self.dfN  = None # Normalized Values
+        self.dfIm = None # Imputed values
+        self.dfR  = None # Results values
+        #--------------> date for umsap file
+        self.date = None
         #--------------> folder for output
-        self.oFolder : Optional[Path] = None
+        self.oFolder = None
+        #--------------> input file for directing repeating analysis from
+        # file copied to oFolder
+        self.dFile   = None
         #------------------------------> Parent init
         wx.Panel.__init__(self, parent, name=self.name)
 
-        dtsWidget.ButtonOnlineHelpClearAllRun.__init__(self, self, 
-            self.cURL, 
-            labelR = self.cRunBtnL,
+        dtsWidget.ButtonOnlineHelpClearAllRun.__init__(
+            self, self, self.cURL, labelR = self.cLRunBtn,
         )
 
         dtsWidget.StaticBoxes.__init__(self, self, 
-            labelF      = self.cFileBoxL,
-            labelV      = self.cValueBoxL,
-            labelC      = self.cColumnBoxL,
+            labelF      = self.cLFileBox,
+            labelD      = self.cLDataBox,
+            labelV      = self.cLValueBox,
+            labelC      = self.cLColumnBox,
             rightDelete = rightDelete,
         )
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
         self.uFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
-            btnLabel   = self.cuFileL,
-            tcHint     = self.cuFileH,
-            mode       = self.cuMode,
+            btnLabel   = self.cLuFile,
+            tcHint     = self.cHuFile,
+            mode       = self.cMuFile,
             ext        = config.elUMSAP,
             tcStyle    = wx.TE_READONLY,
-            validator  = self.cuFileValidator,
+            validator  = self.cVuFile,
             ownCopyCut = True,
         )
-        self.uFile.btn.SetToolTip(self.cuFileTT)
+        self.uFile.btn.SetToolTip(self.cTTuFile)
         
         self.iFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
-            btnLabel   = self.ciFileL,
-            tcHint     = self.ciFileH,
-            ext        = self.ciFileE,
-            mode       = self.ciMode,
+            btnLabel   = self.cLiFile,
+            tcHint     = self.cHiFile,
+            ext        = self.cEiFile,
+            mode       = self.cMiFile,
             tcStyle    = wx.TE_READONLY|wx.TE_PROCESS_ENTER,
-            validator  = self.ciFileValidator,
+            validator  = self.cViFile,
             ownCopyCut = True,
         )
-        self.iFile.btn.SetToolTip(self.ciFileTT)
+        self.iFile.btn.SetToolTip(self.cTTiFile)
+        
+        self.normMethod = dtsWidget.StaticTextComboBox(
+            self.sbData, 
+            label     = self.cLNormMethod,
+            choices   = self.cONorm,
+            validator = dtsValidator.IsNotEmpty(),
+        )
+        
+        self.transMethod = dtsWidget.StaticTextComboBox(
+            self.sbData, 
+            label     = self.cLTransMethod,
+            choices   = self.cOTrans,
+            validator = dtsValidator.IsNotEmpty(),
+        )
+        
+        self.imputationMethod = dtsWidget.StaticTextComboBox(
+            self.sbData, 
+            label     = self.cLImputation,
+            choices   = self.cOImputation,
+            validator = dtsValidator.IsNotEmpty(),
+        )
         #endregion --------------------------------------------------> Widgets
         
         #region -----------------------------------------------------> Tooltip
-        self.btnHelp.SetToolTip(self.cHelpTT)
-        self.btnClearAll.SetToolTip(self.cClearAllTT)
-        self.btnRun.SetToolTip(self.cRunTT)
+        self.btnHelp.SetToolTip(self.cTTHelp)
+        self.btnClearAll.SetToolTip(self.cTTClearAll)
+        self.btnRun.SetToolTip(self.cTTRun)
+        self.normMethod.st.SetToolTip(self.cTTNormMethod)
+        self.transMethod.st.SetToolTip(self.cTTTransMethod)
+        self.imputationMethod.st.SetToolTip(self.cTTImputation)
         #endregion --------------------------------------------------> Tooltip
         
         #region ------------------------------------------------------> Sizers
@@ -340,13 +382,65 @@ class BaseConfPanel(
         )
         self.sizersbFileWid.AddGrowableCol(1,1)
         self.sizersbFileWid.AddGrowableRow(0,1)
+        
+        self.sizersbDataWid.Add(
+            1, 1,
+            pos    = (0,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sizersbDataWid.Add(
+            self.transMethod.st,
+            pos    = (0,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER,
+            border = 5,
+        )
+        self.sizersbDataWid.Add(
+            self.transMethod.cb,
+            pos    = (0,2),
+            flag   = wx.ALL|wx.EXPAND,
+            border = 5,
+        )
+        self.sizersbDataWid.Add(
+            self.normMethod.st,
+            pos    = (0,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER,
+            border = 5,
+        )
+        self.sizersbDataWid.Add(
+            self.normMethod.cb,
+            pos    = (0,4),
+            flag   = wx.ALL|wx.EXPAND,
+            border = 5,
+        )
+        self.sizersbDataWid.Add(
+            self.imputationMethod.st,
+            pos    = (0,5),
+            flag   = wx.ALL|wx.ALIGN_CENTER,
+            border = 5,
+        )
+        self.sizersbDataWid.Add(
+            self.imputationMethod.cb,
+            pos    = (0,6),
+            flag   = wx.ALL|wx.EXPAND,
+            border = 5,
+        )
+        self.sizersbDataWid.Add(
+            1, 1,
+            pos    = (0,7),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sizersbDataWid.AddGrowableCol(0,1)
+        self.sizersbDataWid.AddGrowableCol(7,1)
 
         self.Sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.Sizer.Add(self.sizersbFile, 0, wx.EXPAND|wx.ALL, 5)
-        self.Sizer.Add(self.sizersbValue, 0, wx.EXPAND|wx.ALL, 5)
-        self.Sizer.Add(self.sizersbColumn, 0, wx.EXPAND|wx.ALL, 5)
-        self.Sizer.Add(self.btnSizer, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.Sizer.Add(self.sizersbFile,   0, wx.EXPAND|wx.ALL,       5)
+        self.Sizer.Add(self.sizersbData,   0, wx.EXPAND|wx.ALL,       5)
+        self.Sizer.Add(self.sizersbValue,  0, wx.EXPAND|wx.ALL,       5)
+        self.Sizer.Add(self.sizersbColumn, 0, wx.EXPAND|wx.ALL,       5)
+        self.Sizer.Add(self.btnSizer,      0, wx.ALIGN_CENTER|wx.ALL, 5)
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
@@ -359,7 +453,7 @@ class BaseConfPanel(
 
     #region ---------------------------------------------------> Class methods
     def OnUFileChange(self, event: wx.CommandEvent) -> Literal[True]:
-        """Adjust default Path for Data File when an UMSAP file is selected
+        """Adjust default Path for UMSAP File when an UMSAP file is selected.
     
             Parameters
             ----------
@@ -382,13 +476,17 @@ class BaseConfPanel(
         return True
     #---
     
-    def OnIFileLoad(self, event: wx.CommandEvent) -> Literal[True]:
+    def OnIFileLoad(self, event: wx.CommandEvent) -> bool:
         """Clear GUI elements when Data Folder is ''
     
             Parameters
             ----------
             event: wx.Event
                 Information about the event		
+                
+            Return
+            ------
+            bool
         """
         if (fileP := self.iFile.tc.GetValue()) == '':
             return self.LCtrlEmpty()
@@ -436,7 +534,12 @@ class BaseConfPanel(
     #---	
 
     def LCtrlEmpty(self) -> Literal[True]:
-        """Clear wx.ListCtrl and NCol """
+        """Clear wx.ListCtrl and NCol 
+        
+            Notes
+            -----
+            Helper function to accomodate several wx.ListCtrl in the panel.
+        """
         #region -------------------------------------------------> Delete list
         for l in self.lbL:
             l.DeleteAllItems()
@@ -472,17 +575,31 @@ class BaseConfPanel(
             ------
             dict
                 Output data as a dict
+                
+            Notes
+            -----
+            If the output file already exists the new data is added to the
+            existing data.
         """
+        #region ---------------------------------------------------> Read File
         if self.do['uFile'].exists():
-            #------------------------------> 
-            outData = dtsFF.ReadJSON(self.do['uFile'])
-            #------------------------------>
-            if outData.get(self.cSection, False):
-                outData[self.cSection][self.date] = dateDict[self.date]
-            else:
-                outData[self.cSection] = dateDict
+            try:
+                outData = dtsFF.ReadJSON(self.do['uFile'])
+            except Exception as e:
+                msg = (
+                    "It was not possible to read the existing UMSAP file:\n"
+                    f'{self.do["uFile"]}')
+                raise dtsException.ExecutionError(msg)
         else:
-            outData = {self.cSection : dateDict}
+            outData = {}
+        #endregion ------------------------------------------------> Read File
+        
+        #region ------------------------------------------------> Add new data
+        if outData.get(self.cSection, False):
+                outData[self.cSection][self.date] = dateDict[self.date]
+        else:
+            outData[self.cSection] = dateDict
+        #endregion ---------------------------------------------> Add new data
 
         return outData
     #---
@@ -502,7 +619,7 @@ class BaseConfPanel(
                 Label with added empty strings at the end to match the length of
                 self.cLenLongestL
         """
-        return f"{label}{(self.cLenLongestL - len(label))*' '}" 
+        return f"{label}{(self.cLLenLongest - len(label))*' '}" 
     #---
     
     def WriteOutputData(self, stepDict: dict) -> bool:
@@ -518,7 +635,6 @@ class BaseConfPanel(
             ------
             bool
         """
-        
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdWrite
         #endregion ------------------------------------------------------> Msg
@@ -527,8 +643,8 @@ class BaseConfPanel(
         #------------------------------> 
         msgStep = msgPrefix + 'Creating needed folders, Data-Steps folder'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        dataFolder = f"{self.date}-{self.cSection}-{config.fnDataSteps}"
-        dataFolder = self.oFolder / dataFolder
+        dataFolder = f"{self.date}_{self.cSection}"
+        dataFolder = self.oFolder / config.fnDataSteps / dataFolder
         dataFolder.mkdir(parents=True, exist_ok=True)
         #------------------------------> 
         msgStep = msgPrefix + 'Creating needed folders, Data-Initial folder'
@@ -552,7 +668,7 @@ class BaseConfPanel(
             #------------------------------> 
             shutil.copy(self.do['iFile'], self.dFile)
             #------------------------------> 
-            self.d[self.EqualLenLabel(self.ciFileL)] = str(self.dFile)
+            self.d[self.EqualLenLabel(self.cLiFile)] = str(self.dFile)
         else:
             self.dFile = None
         #endregion ---------------------------------------------> Data Initial
@@ -560,8 +676,14 @@ class BaseConfPanel(
         #region --------------------------------------------------> Data Steps
         msgStep = msgPrefix + 'Data files, Step by Step Data files'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-
-        dtsFF.WriteDFs2CSV(dataFolder, stepDict)
+        try:
+            dtsFF.WriteDFs2CSV(dataFolder, stepDict)
+        except Exception as e:
+            self.msgError = (
+                "It was not possible to create the files with the data for the "
+                "intermediate steps of the analysis.")
+            self.tException = e
+            return False
         #endregion -----------------------------------------------> Data Steps
         
         #region --------------------------------------------------> UMSAP File
@@ -572,18 +694,32 @@ class BaseConfPanel(
             self.date : {
                 'V' : config.dictVersion,
                 'I' : self.d,
-                'CI': dtsMethod.DictVal2Str(
-                    self.do, 
-                    self.cChangeKey,
-                    new = True,
-                ),
+                'CI': dtsMethod.DictVal2Str(self.do, self.cChangeKey, new=True),
+                'DP': {
+                    'dfS' : self.dfS.to_dict(),
+                    'dfT' : self.dfT.to_dict(),
+                    'dfN' : self.dfN.to_dict(),
+                    'dfIm': self.dfIm.to_dict(),
+                },
                 'R' : dtsMethod.DictTuplesKey2StringKey(self.dfR.to_dict()),
             }
         }
         #------------------------------> Append or not
-        outData = self.SetOutputDict(dateDict)
+        try:
+            outData = self.SetOutputDict(dateDict)
+        except Exception as e:
+            self.msgError = ("It was not possible ")
+            self.tException = e
+            return False
         #------------------------------> Write
-        dtsFF.WriteJSON(self.do['uFile'], outData)
+        try:
+            dtsFF.WriteJSON(self.do['uFile'], outData)
+        except Exception as e:
+            self.msgError = (
+                "It was not possible to write the results of the analysis to "
+                "the selected UMSAP file.")
+            self.tException = e
+            return False
         #endregion -----------------------------------------------> UMSAP File
 
         return True
@@ -619,63 +755,58 @@ class BaseConfPanel(
 
 
 class BaseConfModPanel(BaseConfPanel, widget.ResControl):
-    """Base panel for a module
+    """Base configuration for a panel of a module.
 
         Parameters
         ----------
         parent : wx Widget
             Parent of the widgets
-        oMode : str
-            One of 'openO', 'openM', 'save', 'folder'. Default is 'folder'
-        statusbar : wx.StatusBar
-            Statusbar of the application to display messages
         rightDelete : Boolean
             Enables clearing wx.StaticBox input with right click
 
         Attributes
         ----------
         #------------------------------> Configuration
-        cScoreValL : str
-            Score value label. Default is config.lStScoreVal.
-        cNormMethodL : str
-            Data normalization label. Default is config.lCbNormMethod.
-        cTransMethodL : str
-            Data transformation label. Default is config.lCbTransMethod.
-        cScoreColL : str
+        cLAlpha : str
+            Label for the alpha level. Default is config.lStAlpha.
+        cLColExtract : str
+            Label for Columns to Exctract. Default is config.lStColExtract.
+        cLDetectedProt : str
+            Label for Detected Proteins. Default is config.lStDetectedProt.
+        cLScoreCol : str
             Score column. Default is config.lStScoreCol.
-        cNormChoice : list of str
-            Choice for normalization method. 
-            Default is config.oNormMethod.
-        cTransChoice : list of str
-            Choice for transformation method. 
-            Default is config.oTransMethod.values().
-        cTcSize : wx.Size
+        cLScoreVal : str
+            Score value label. Default is config.lStScoreVal.
+        cSTc : wx.Size
             Size for the wx.TextCtrl in the panel
+        cTTAlpha : str
+            Tooltip for alpha level. Default is config.ttStAlpha.
+        cTTColExtract : str
+            Tooltip for Columns to Extract. Default is config.lStColExtract.
+        cTTDetectedProt : str
+            Tooltip for Detected Proteins. Default is config.lStDetectedProt.
+        cTTScore : str
+            Tooltip for Score columns. Default is config.lStScoreCol.
+        cTTScoreVal : str
+            Tooltip for Score value. Default is config.lStScoreVal.
         #------------------------------> Widgets
+        alpha : dtsWidget.StaticTextCtrl
+            Attributes: st, tc
+        colExtract : dtsWidget.StaticTextCtrl
+            Attributes: st, tc.   
+        detectedProt : : dtsWidget.StaticTextCtrl
+            Attributes: st, tc     
+        imputationMethos: dtsWidget.StaticTextComboBox
+            Attributes: st, cb
         normMethod : dtsWidget.StaticTextComboBox
             Attributes: st, cb
-        scoreVal : dtsWidget.StaticTextCtrl
-            Attributes: st, tc
-        detectedProt : : dtsWidget.StaticTextCtrl
-            Attributes: st, tc 
         score : : dtsWidget.StaticTextCtrl
             Attributes: st, tc
-        colExtract : : dtsWidget.StaticTextCtrl
-            Attributes: st, tc  
-        tcResults : wx.TextCtrl
-            For Results - Control Experiments
-        stResults : wx.StaticText
-            For Results - Control Experiments
-        btnResultsW : wx.Button
-            For Results - Control Experiments
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        scoreVal : dtsWidget.StaticTextCtrl
+            Attributes: st, tc
+        transMethod : dtsWidget.StaticTextComboBox
+            Attributes: st, cb   
+        - See also widget.ResControl
     """
     #region -----------------------------------------------------> Class setup
     
@@ -690,50 +821,30 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Label
-        self.cScoreValL = getattr(self, 'cScoreValL', config.lStScoreVal)
-        self.cNormMethodL = getattr(self, 'cNormMethodL', config.lCbNormMethod)
-        self.cTransMethodL = getattr(
-            self, 'cTransMethodL', config.lCbTransMethod
+        self.cLScoreVal = getattr(self, 'cLScoreVal', config.lStScoreVal)
+        self.cLAlpha = getattr(self, 'cLAlpha', config.lStAlpha)
+        self.cLDetectedProt = getattr(
+            self, 'cLDetectedProt', config.lStDetectedProt,
         )
-        self.cImputationL = getattr(self, 'cImputationL', config.lCbImputation)
-        self.cAlphaL = getattr(self, 'cAlpha', config.lStAlpha)
-        self.cDetectedProtL = getattr(
-            self, 'cDetectedProtL', config.lStDetectedProt,
-        )
-        self.cScoreColL = getattr(self, 'cScoreColL', config.lStScoreCol)
-        self.cColExtractL = getattr(self, 'cColExtractL', config.lStColExtract)
-        #------------------------------> Choices
-        self.cNormO = getattr(
-            self, 'cNormO', [x for x in config.oNormMethod.values()]
-        )
-        self.cTransO = getattr(
-            self, 'cTransO', [x for x in config.oTransMethod.values()]
-        )
-        self.cImputationO = getattr(
-            self, 'cImputationO', [x for x in config.oImputation.values()]
-        )
+        self.cLScoreCol = getattr(self, 'cLScoreCol', config.lStScoreCol)
+        self.cLColExtract = getattr(self, 'cLColExtract', config.lStColExtract)
         #------------------------------> Size
-        self.cTcSize = getattr(self, 'cTcSize', config.sTc)
+        self.cSTc = getattr(self, 'cSTc', config.sTc)
         #------------------------------> Tooltips
-        self.cNormMethodTT = getattr(self, 'cNormMethodTT', config.ttStNorm)
-        self.cTransMethodTT = getattr(self, 'cTransMethodTT', config.ttStTrans)
-        self.cImputationTT = getattr(
-            self, 'cImputationTT', config.ttStImputation,
+        self.cTTAlpha = getattr(self, 'cTTAlpha', config.ttStAlpha)
+        self.cTTScoreVal = getattr(self, 'cTTScoreVal', config.ttStScoreVal)
+        self.cTTDetectedProt = getattr(
+            self, 'cTTDetectedProtL', config.ttStDetectedProtL,
         )
-        self.cAlphaTT = getattr(self, 'cAlphaTT', config.ttStAlpha)
-        self.cScoreValTT = getattr(self, 'cScoreValTT', config.ttStScoreVal)
-        self.cDetectedProtTT = getattr(
-            self, 'cDetectedProtLTT', config.ttStDetectedProtL,
-        )
-        self.cScoreTT = getattr(self, 'cScoreTT', config.ttStScore)
+        self.cTTScore = getattr(self, 'cTTScore', config.ttStScore)
         #------------------------------> __init__
         BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
 
         widget.ResControl.__init__(self, self.sbColumn)
         
-        #------------------------------> Tooltips
-        self.cColExtractTT = getattr(
-            self, 'cColExtractTT', config.ttStColExtract.format(self.ciFileL),
+        #------------------------------> Here because it needs iFile
+        self.cTTColExtract = getattr(
+            self, 'cTTColExtract', config.ttStColExtract.format(self.cLiFile),
         )
         #endregion --------------------------------------------> Initial Setup
 
@@ -742,31 +853,10 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
-        self.normMethod = dtsWidget.StaticTextComboBox(
-            self.sbValue, 
-            label     = self.cNormMethodL,
-            choices   = self.cNormO,
-            validator = dtsValidator.IsNotEmpty(),
-        )
-        
-        self.transMethod = dtsWidget.StaticTextComboBox(
-            self.sbValue, 
-            label     = self.cTransMethodL,
-            choices   = self.cTransO,
-            validator = dtsValidator.IsNotEmpty(),
-        )
-        
-        self.imputationMethod = dtsWidget.StaticTextComboBox(
-            self.sbValue, 
-            label     = self.cImputationL,
-            choices   = self.cImputationO,
-            validator = dtsValidator.IsNotEmpty(),
-        )
-        
         self.alpha = dtsWidget.StaticTextCtrl(
             self.sbValue,
-            stLabel   = self.cAlphaL,
-            tcSize    = self.cTcSize,
+            stLabel   = self.cLAlpha,
+            tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'float',
                 nN      = 1,
@@ -777,8 +867,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         self.scoreVal = dtsWidget.StaticTextCtrl(
             self.sbValue,
-            stLabel   = self.cScoreValL,
-            tcSize    = self.cTcSize,
+            stLabel   = self.cLScoreVal,
+            tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'float',
                 nN      = 1,
@@ -787,8 +877,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         self.detectedProt = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.cDetectedProtL,
-            tcSize    = self.cTcSize,
+            stLabel   = self.cLDetectedProt,
+            tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
                 nN      = 1,
@@ -798,8 +888,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         self.score = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.cScoreColL,
-            tcSize    = self.cTcSize,
+            stLabel   = self.cLScoreCol,
+            tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
                 nN      = 1,
@@ -809,8 +899,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         self.colExtract = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.cColExtractL,
-            tcSize    = self.cTcSize,
+            stLabel   = self.cLColExtract,
+            tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
                 vMin    = 0,
@@ -822,14 +912,11 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         #endregion --------------------------------------------------> Widgets
 
         #region -----------------------------------------------------> Tooltip
-        self.normMethod.st.SetToolTip(self.cNormMethodTT)
-        self.transMethod.st.SetToolTip(self.cTransMethodTT)
-        self.imputationMethod.st.SetToolTip(self.cImputationTT)
-        self.alpha.st.SetToolTip(self.cAlphaTT)
-        self.scoreVal.st.SetToolTip(self.cScoreValTT)
-        self.detectedProt.st.SetToolTip(self.cDetectedProtTT)
-        self.score.st.SetToolTip(self.cScoreTT)
-        self.colExtract.st.SetToolTip(self.cColExtractTT)
+        self.alpha.st.SetToolTip(self.cTTAlpha)
+        self.scoreVal.st.SetToolTip(self.cTTScoreVal)
+        self.detectedProt.st.SetToolTip(self.cTTDetectedProt)
+        self.score.st.SetToolTip(self.cTTScore)
+        self.colExtract.st.SetToolTip(self.cTTColExtract)
         #endregion --------------------------------------------------> Tooltip
         
         #region ------------------------------------------------------> Sizers
@@ -855,6 +942,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 class ResControlExpConfBase(wx.Panel):
     """Parent class for the configuration panel in the dialog Results - Control
         Experiments
+        
+        See Notes below for more details.
 
         Parameters
         ----------
@@ -864,50 +953,71 @@ class ResControlExpConfBase(wx.Panel):
             Unique name of the panel
         topParent : wx.Widget
             Top parent window
+        NColF : int
+            Number of columns in the input file.
 
         Attributes
         ----------
         topParent : wx.Widget
             Top parent window
-        #------------------------------> Must be set on child
+        NcolF: int
+            Number of columns in the input file minus 1.
+        pName: str
+            Name of the parent window.
+        #------------------------------> Configuration
+        cHTotalField : str
+            Hint for the total number of required labels. It must be set in the
+            child class. Default is '#'.
+        cLSetup : str
+            Label for the wx.Button in top region. Default is 'Setup Fields'.
+        cSSWLabel : wx.Size
+            Size for the ScrolledPanel with the label. Default is (670,135).
+        cSSWMatrix : wx.Size
+            Size for the ScrolledPanel with the fields. Default is (670,670).
+        cSTotalField : wx.Size
+            Size for the total wx.TextCtrl in top region. Default is (35,22).
+        #------------------------------> To manage window
+        lbDict : dict of lists of wx.StaticText for user-given labels
+            Keys are 1 to N plus 'Control' and values are the lists.
+            List of wx.StaticText to show the given user labels in the Field
+            region.
+        stLabel : list of wx.StaticText
+            List of wx.StaticText with the label names. e.g. Conditions
+        tcDict : dict of lists of wx.TextCtrl for labels
+            Keys are 1 to N and values are lists of wx.TextCtrl for the user 
+            given label.
+            List of wx.TextCtrl to input the number of labels.
+        tcDictF : dict of lists of wx.TextCtrl for fields
+            Keys are 1 to NRow and values are lists of wx.TextCtrl for the user
+            given column numbers. 
+        tcLabel : list of wx.TextCtrl
+            To give the number of user defined labels. e.g. 2 Conditions.
+        
+        Notes
+        -----
+        The panel is divided in two sections. 
+        - Section Label holds information about the label for the experiments 
+        and control.
+            The number of labels and the name are set in the child class with 
+            cStLabel and cN.
+            This information is converted to stLabel (name of the label e.g 
+            Condition), tcLabel (input of number of each labels) and tcDict 
+            (name of the experiment points e.g. Cond1).
+        - Section Fields that holds the information about the column numbers
+            The name of the experiments is shown with lbDict that is populated 
+            from tcDict
+            The column numbers are stored in tcDictF.
+        #------------------------------> Attributes that must be set on child
         cN : int
-            Number of labels excluding control labels
-        cTotalFieldTT : str
+            Number of labels excluding control labels.
+        cHTotalField : str
+            Hint for the total number of required labels.
+        cTTTotalField : str
             Tooltip for the labels in the top region
         cStLabel : dict
-            Keys are 1 to cN and values the text of the labels    
+            Keys are 1 to cN and values the text of the labels. e.g. Condition.
         cLabelText : dict
-            Keys are 1 to cN and values the prefix for the label values   
-        #------------------------------> Configuration
-        cSWLabelS : wx.Size
-            Size for the ScrolledPanel with the label. Default is (670,135)
-        cSWMatrixS : wx.Size
-            Size for the ScrolledPanel with the fields. Default is (670,670)
-        cTotalFieldS : wx.Size
-            Size for the total wx.TextCtrl in top region. Default is (35,22)
-        cSetupL : str
-            Label for the wx.Button in top region. Default is 'Setup Fields'
-        #------------------------------> Widgets
-        #------------------------------> Manage Window
-        stLabel : list of wx.StaticText
-            List with the labels name
-        tcLabel : list of wx.TextCtrl
-            To input the number of labels
-        tcDict : dict of lists of wx.TextCtrl for labels
-            Keys are 1 to N and values are lists of wx.TextCtrl
-        tcDictF : dict of lists of wx.TextCtrl for fields
-            Keys are 1 to NRow and values are lists of wx.TextCtrl. 
-        lbDict : dict of lists of wx.StaticText for user-given labels
-            Keys are 1 to N plus 'Control' and values are the the lists. 
-        NColF : int
-            Number of columns in the file - 1 
-            
-        Raises
-        ------
-        
-        Methods
-        -------
-        
+            Keys are 1 to cN and values the prefix for the label values. e.g. C  
     """
     #region -----------------------------------------------------> Class setup
     
@@ -920,18 +1030,19 @@ class ResControlExpConfBase(wx.Panel):
         #region -----------------------------------------------> Initial Setup        
         self.topParent = topParent
         self.pName     = self.topParent.name
+        #------------------------------> 
         self.tcDictF   = {}
+        #------------------------------> User given labels
         self.lbDict    = {}
         self.NColF     = NColF - 1
         #------------------------------> Label
-        self.cSetupL = getattr(self, 'cSetupL', 'Setup Fields')
+        self.cLSetup = getattr(self, 'cLSetup', 'Setup Fields')
         #------------------------------> Hint
-        self.cTotalFieldH = getattr(self, 'cTotalFieldH', '#')
+        self.cHTotalField = getattr(self, 'cHTotalField', '#')
         #------------------------------> Size
-        self.cSWLabelS    = getattr(self, 'cSWLabelS', (670,135))
-        self.cSWMatrixS   = getattr(self, 'cSWMatrixS', (670,670))
-        self.cTotalFieldS = getattr(self, 'cTotalFieldS', (35,22))
-        self.cLabelS      = getattr(self, 'cLabelS', (100, 22))
+        self.cSSWLabel    = getattr(self, 'cSSWLabel', (670,135))
+        self.cSSWMatrix   = getattr(self, 'cSSWMatrix', (670,670))
+        self.cSTotalField = getattr(self, 'cSTotalField', (35,22))
         #------------------------------> super()
         super().__init__(parent, name=name)
         #endregion --------------------------------------------> Initial Setup
@@ -942,9 +1053,9 @@ class ResControlExpConfBase(wx.Panel):
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> wx.ScrolledWindow
-        self.swLabel  = scrolled.ScrolledPanel(self, size=self.cSWLabelS)
+        self.swLabel  = scrolled.ScrolledPanel(self, size=self.cSSWLabel)
         
-        self.swMatrix = scrolled.ScrolledPanel(self, size=self.cSWMatrixS)
+        self.swMatrix = scrolled.ScrolledPanel(self, size=self.cSSWMatrix)
         self.swMatrix.SetBackgroundColour('WHITE')
         #------------------------------> wx.StaticText & wx.TextCtrl
         #--------------> Experiment design
@@ -956,19 +1067,19 @@ class ResControlExpConfBase(wx.Panel):
             self.tcDict[k] = []
             #------------------------------> wx.StaticText
             a = wx.StaticText(self.swLabel, label=self.cStLabel[k])
-            a.SetToolTip(self.cTotalFieldTT[k-1])
+            a.SetToolTip(self.cTTTotalField[k-1])
             self.stLabel.append(a)
             #------------------------------> wx.TextCtrl for the label
             a = wx.TextCtrl(
                     self.swLabel,
-                    size      = self.cTotalFieldS,
+                    size      = self.cSTotalField,
                     name      = str(k),
                     validator = dtsValidator.NumberList(vMin=1, nN=1),
                 )
-            a.SetHint(self.cTotalFieldH)
+            a.SetHint(self.cHTotalField)
             self.tcLabel.append(a)
         #------------------------------> wx.Button
-        self.btnCreate = wx.Button(self, label=self.cSetupL)
+        self.btnCreate = wx.Button(self, label=self.cLSetup)
         #endregion --------------------------------------------------> Widgets
 
         #region -----------------------------------------------------> Tooltip
@@ -1018,26 +1129,11 @@ class ResControlExpConfBase(wx.Panel):
 
     #region ---------------------------------------------------> Class methods
     def OnCreate(self, event: wx.CommandEvent) -> Literal[True]:
-        """Create the fields in the white panel. Override as needed.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
+        """Create the fields in the white panel. Override as needed."""
         return True
     #---
 
-    def OnLabelNumber(self, event: wx.Event):
+    def OnLabelNumber(self, event: wx.Event) -> bool:
         """Creates fields for names when the total wx.TextCtrl loose focus
     
             Parameters
@@ -1048,11 +1144,7 @@ class ResControlExpConfBase(wx.Panel):
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            True
         """
         #region -------------------------------------------------> Check input
         for k in range(0, self.cN):
@@ -1190,8 +1282,8 @@ class ResControlExpConfBase(wx.Panel):
             in the same row and ; separate rows.
             The following dict will be set in topParent.lbDict
             {
-                1             : [values],
-                N             : [values],
+                1             : [values], # First row of labels
+                N             : [values], # N row of labels
                 'Control'     : 'Name',
                 'ControlType' : Control type,
             }
@@ -1352,51 +1444,74 @@ class CorrA(BaseConfPanel):
         ----------
         name : str
             Unique id of the pane in the app
-        #------------------------------> Needed by BaseConfPanel
-        cURL : str
-            URL for the Help button
-        cSection : str
-            Section for the output file
-        cLenLongestLabel : int
-            Length of the longest label
-        cTitlePD : str
-            Title for hte progress dialog
-        cGaugePD : int
-        #------------------------------> For Analysis
-        cMainData : str
-            Name of the file with the correlation coefficient values
+        #------------------------------> Configuration
         cChangeKey : list of str
+            Keys in d and do whose values must be turn to str in order to save
+            as json.
+        cGaugePD : int
+            Number of steps needed in hte Progress Dialog.
+        cLCorr : str
+            Label for the Correlation Method widget. 
+            Default is config.lCbCorrMethod.
+        cLiListCtrl : str
+            Label for the wx.ListCtrl showing the column names in the in the 
+            input file. Default is config.lStColIFile.format(self.cLiFile).
+        cLoListCtrl : str
+            Label for the wx.ListCtrl showing the selected column.
+        cOCorrMethod : list of str
+            Options for the Correlation Methods. Default is config.oCorrMethod.
+        cSection : str
+            Section for the output file in the UMSAP file.
+        cTitlePD : str
+            Title for the progress dialog. Default is config.lnPDCorrA.
+        cTTCorr : str
+            Tooltip for the Correlation Method. Default is config.ttStTrans.
+        cTTHelp : str 
+            Tooltip for the Help button. 
+            Default is config.ttBtnHelp.format(config.urlCorrA).
+        cURL : str
+            URL for the Help button.
+        #------------------------------> For Analysis
+        cLenLongestLabel : int
+            Length of the longest label. 
+        cMainData : str
+            Name of the file with the correlation coefficient values.
         do : dict
             Dict with the processed user input
             {
                 'uFile'      : 'umsap file path',
                 'iFile'      : 'data file path',
                 'TransMethod': 'transformation method',
+                'NormMethod' : 'normalization method',
+                'ImpMethod'  : 'imputation method',
                 'CorrMethod' : 'correlation method',
                 'Column'     : [selected columns as integers],
+                'df'         : {
+                  'Column' : [cero based list of selected columns],  
+                },
             }
         d : dict
             Similar to 'do' but: 
-                - No uFile
+                - No uFile and no df dict
                 - With the values given by the user
                 - Keys as in the GUI of the tab.
-        dfR : pdDataFrame
-            Dataframe with correlation coefficients
-        See parent class for more attributes
+        
+        See parent class for more attributes.
 
         Notes
         -----
-        Running the analysis results in the creation of
+        Running the analysis results in the creation of:
+        
         - Parent Folder/
-            - 20210324-165609-Correlation-Analysis/
-            - Data_Files/
+            - Input_Data_Files/
+            - Steps_Data_Files/20210324-165609-Correlation-Analysis/
             - output-file.umsap
         
-        The Data_Files folder contains the original data files. These are needed 
-        for data visualization, running analysis again with different 
+        The Input_Data_Files folder contains the original data files. These are 
+        needed for data visualization, running analysis again with different 
         parameters, etc.
-        The Date-Section folder contains regular csv files with the step by step
-        data.
+        The Steps_Data_Files/Date-Section folder contains regular csv files with 
+        the step by step data.
     
         The Correlation Analysis section in output-file.umsap conteins the 
         information about the calculations, e.g
@@ -1407,6 +1522,13 @@ class CorrA(BaseConfPanel):
                     'V' : config.dictVersion,
                     'I' : self.d,
                     'CI': self.do,
+                    'DP': {
+                        'dfS' : pd.DataFrame with initial data as float and
+                                after discarding values by score.
+                        'dfT' : pd.DataFrame with transformed data.
+                        'dfN' : pd.DataFrame with normalized data.
+                        'dfIm': pd.DataFrame with imputed data.
+                    }
                     'R' : pd.DataFrame (dict) with the correlation coefficients
                 }
             }
@@ -1433,55 +1555,43 @@ class CorrA(BaseConfPanel):
         #------------------------------> Needed by BaseConfPanel
         self.name         = 'CorrAPane'
         self.cURL         = config.urlCorrA
-        self.cSection     = config.nUCorrA
-        self.cLenLongestL = len(config.lCbTransMethod)
+        self.cSection     = config.nuCorrA
+        self.cLLenLongest = len(config.lCbCorrMethod)
         self.cTitlePD     = config.lnPDCorrA
         self.cGaugePD     = 17
         #------------------------------> Optional configuration
-        self.cHelpTT = config.ttBtnHelp.format(config.urlCorrA)
+        self.cTTHelp = config.ttBtnHelp.format(config.urlCorrA)
         #------------------------------> Setup attributes in base class 
         super().__init__(parent)
         #------------------------------> Needed to Run
         self.cMainData  = '{}-CorrelationCoefficients-Data.txt'
         self.cChangeKey = ['uFile', 'iFile']
-        self.dfR        = None # correlation coefficients
-        self.dFile      = None
         #------------------------------> Label
-        self.cTransL    = config.lCbTransMethod
-        self.cCorrL     = config.lCbCorrMethod
-        self.ciListCtrl = config.lStColIFile.format(self.ciFileL)
-        self.coListCtrl = 'Columns to Analyse'
+        self.cLCorr      = config.lCbCorrMethod
+        self.cLiListCtrl = config.lStColIFile.format(self.cLiFile)
+        self.cLoListCtrl = 'Columns to Analyse'
         #------------------------------> Options
-        self.cTranMethodO = [x for x in config.oTransMethod.values()]
-        self.cCorrMethodO = [x for x in config.oCorrMethod.values()]
+        self.cOCorrMethod = list(config.oCorrMethod.values())
         #------------------------------> Tooltips
-        self.cTransTT = config.ttStTrans
-        self.cCorrTT = config.ttStCorr
+        self.cTTCorr  = config.ttStCorr
         #endregion --------------------------------------------> Initial setup
         
         #region -----------------------------------------------------> Widgets
         #------------------------------> Values
-        self.transMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
-            label     = self.cTransL,
-            choices   = self.cTranMethodO,
-            validator = dtsValidator.IsNotEmpty(),
-        )
-        self.transMethod.st.SetToolTip(self.cTransTT)
-        
         self.corrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
-            label     = self.cCorrL,
-            choices   = self.cCorrMethodO,
+            label     = self.cLCorr,
+            choices   = self.cOCorrMethod,
             validator = dtsValidator.IsNotEmpty(),
         )
-        self.corrMethod.st.SetToolTip(self.cCorrTT)
+        self.corrMethod.st.SetToolTip(self.cTTCorr)
         #------------------------------> Columns
         self.stListI = wx.StaticText(
             self.sbColumn, 
-            label = self.ciListCtrl,
+            label = self.cLiListCtrl,
         )
         self.stListO = wx.StaticText(
             self.sbColumn, 
-            label = self.coListCtrl,
+            label = self.cLoListCtrl,
         )
         self.lbI = dtscore.ListZebra(self.sbColumn, 
             colLabel        = config.lLCtrlColNameI,
@@ -1533,37 +1643,25 @@ class CorrA(BaseConfPanel):
             border = 5
         )
         self.sizersbValueWid.Add(
-            self.transMethod.st,
+            self.corrMethod.st,
             pos    = (0,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.transMethod.cb,
+            self.corrMethod.cb,
             pos    = (0,2),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.corrMethod.st,
-            pos    = (0,3),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.corrMethod.cb,
-            pos    = (0,4),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
             1, 1,
-            pos    = (0,5),
+            pos    = (0,3),
             flag   = wx.EXPAND|wx.ALL,
             border = 5
         )
         self.sizersbValueWid.AddGrowableCol(0, 1)
-        self.sizersbValueWid.AddGrowableCol(5, 1)
+        self.sizersbValueWid.AddGrowableCol(3, 1)
         #------------------------------> Columns
         self.sizersbColumnWid.Add(
             self.stListI,
@@ -1621,6 +1719,8 @@ class CorrA(BaseConfPanel):
             else:
                 pass
             self.transMethod.cb.SetValue("Log2")
+            self.normMethod.cb.SetValue("Median")
+            self.imputationMethod.cb.SetValue("Normal Distribution")
             self.corrMethod.cb.SetValue("Pearson")
         else:
             pass
@@ -1633,16 +1733,18 @@ class CorrA(BaseConfPanel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Methods
-    def OnAdd(self, event):
-        """Add columns to analyse
+    def OnAdd(self, event: 'wx.Event') -> Literal[True]:
+        """Add columns to analyse using the button.
     
             Parameters
             ----------
             event : wx.Event
                 Event information
         """
-        self.lbI.Copy()
-        self.lbO.Paste()
+        self.lbI.OnCopy('')
+        self.lbO.OnPaste('')
+        
+        return True
     #---
 
     def SetInitialData(self, dataI: Optional[dict]=None) -> Literal[True]:
@@ -1650,22 +1752,21 @@ class CorrA(BaseConfPanel):
     
             Parameters
             ----------
-            
+            dataI : dict or None
+                Data to fill all fields and repeat an analysis. See Notes.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            True
         """
         if dataI is not None:
             #------------------------------> 
             self.uFile.tc.SetValue(dataI['CI']['uFile'])
-            self.iFile.tc.SetValue(dataI['I']['Data File          '])
+            self.iFile.tc.SetValue(dataI['I']['Data File'])
             #------------------------------> 
             self.transMethod.cb.SetValue(dataI['CI']['TransMethod'])
+            self.normMethod.cb.SetValue(dataI['CI']['NormMethod'])
+            self.imputationMethod.cb.SetValue(dataI['CI']['ImpMethod'])
             self.corrMethod.cb.SetValue(dataI['CI']['CorrMethod'])
             #------------------------------> 
             if Path(self.iFile.tc.GetValue()).exists:
@@ -1707,56 +1808,83 @@ class CorrA(BaseConfPanel):
         #endregion ------------------------------------------------------> Msg
         
         #region -------------------------------------------> Individual Fields
-        #------------------------------> Output Folder
-        msgStep = msgPrefix + self.cuFileL
+        #region -------------------------------------------> Output File
+        msgStep = msgPrefix + self.cLuFile
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         a, b = self.uFile.tc.GetValidator().Validate()
         if a:
             pass
         else:
             self.msgError = dtscore.StrSetMessage(
-                config.mFileBad.format(b[1], self.cuFileL),
-                b[2]
+                config.mFileBad.format(b[1], self.cLuFile), b[2]
             )
             return False
-        #------------------------------> Input file
-        msgStep = msgPrefix + self.ciFileL
+        #endregion ----------------------------------------> Output File
+        
+        #region -------------------------------------------> Input File 
+        msgStep = msgPrefix + self.cLiFile
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         a, b = self.iFile.tc.GetValidator().Validate()
         if a:
             pass
         else:
             self.msgError = dtscore.StrSetMessage(
-                config.mFileBad.format(b[1], self.ciFileL),
-                b[2]
+                config.mFileBad.format(b[1], self.cLiFile), b[2]
             )
             return False
-        #------------------------------> Transformation
-        msgStep = msgPrefix + self.cTransL
+        #endregion ----------------------------------------> Input File 
+        
+        #region -------------------------------------------> Transformation 
+        msgStep = msgPrefix + self.cLTransMethod
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         if self.transMethod.cb.GetValidator().Validate()[0]:
             pass
         else:
-            self.msgError = config.mNotEmpty.format(self.cTransL)
+            self.msgError = config.mNotEmpty.format(self.cLTransMethod)
             return False
-        #------------------------------> Corr Method
-        msgStep = msgPrefix + self.cCorrL
+        #endregion ----------------------------------------> Transformation 
+        
+        #region -------------------------------------------> Normalization
+        msgStep = msgPrefix + self.cLNormMethod
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.normMethod.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = config.mNotEmpty.format(self.cLNormMethod)
+            return False
+        #endregion ----------------------------------------> Normalization
+        
+        #region -------------------------------------------> Imputation
+        msgStep = msgPrefix + self.cLImputation
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        if self.imputationMethod.cb.GetValidator().Validate()[0]:
+            pass
+        else:
+            self.msgError = config.mNotEmpty.format(self.cLImputation)
+            return False
+        #endregion ----------------------------------------> Imputation
+        
+        #region -------------------------------------------> Correlation
+        msgStep = msgPrefix + self.cLCorr
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         if self.corrMethod.cb.GetValidator().Validate()[0]:
             pass
         else:
-            self.msgError = config.mNotEmpty.format(self.cCorrL)
+            self.msgError = config.mNotEmpty.format(self.cLCorr)
             return False
-        #------------------------------> ListCtrl
-        msgStep = msgPrefix + self.coListCtrl
+        #endregion ----------------------------------------> Correlation
+        
+        #region -------------------------------------------> ListCtrl
+        msgStep = msgPrefix + self.cLoListCtrl
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         if self.lbO.GetItemCount() > 1:
             pass
         else:
             self.msgError = (
-                f"There must be at least two items in {self.coListCtrl}"
+                f"There must be at least two items in {self.cLoListCtrl}."
             )
             return False
+        #endregion ----------------------------------------> ListCtrl
         #endregion ----------------------------------------> Individual Fields
 
         return True
@@ -1772,16 +1900,24 @@ class CorrA(BaseConfPanel):
         #region -------------------------------------------------------> Input
         msgStep = msgPrefix + 'User input, reading'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        
+        col = [int(x) for x in self.lbO.GetColContent(0)]
+        
         #------------------------------> As given
         self.d = {
-            self.EqualLenLabel(self.ciFileL) : (
+            self.EqualLenLabel(self.cLiFile) : (
                 self.iFile.tc.GetValue()),
-            self.EqualLenLabel(self.cTransL) : (
+            self.EqualLenLabel(self.cLuFile) : (
+                self.uFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLTransMethod) : (
                 self.transMethod.cb.GetValue()),
-            self.EqualLenLabel(self.cCorrL) : (
+            self.EqualLenLabel(self.cLNormMethod) : (
+                self.normMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLImputation) : (
+                self.imputationMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLCorr) : (
                 self.corrMethod.cb.GetValue()),
-            self.EqualLenLabel('Selected Columns') : (
-                [int(x) for x in self.lbO.GetColContent(0)]),
+            self.EqualLenLabel('Selected Columns') : col,
         }
 
         msgStep = msgPrefix + 'User input, processing'
@@ -1791,15 +1927,39 @@ class CorrA(BaseConfPanel):
             'uFile'      : Path(self.uFile.tc.GetValue()),
             'iFile'      : Path(self.iFile.tc.GetValue()),
             'TransMethod': self.transMethod.cb.GetValue(),
+            'NormMethod' : self.normMethod.cb.GetValue(),
+            'ImpMethod'  : self.imputationMethod.cb.GetValue(),
             'CorrMethod' : self.corrMethod.cb.GetValue(),
-            'Column'     : [int(x) for x in self.lbO.GetColContent(0)],
+            'Column'     : col,
+            'df'         : {
+                'Column' : [x for x in range(0, len(col))]
+            }
         }
         #------------------------------> File base name
         self.oFolder = self.do['uFile'].parent
         #------------------------------> Date
         self.date = dtsMethod.StrNow()
         #endregion ----------------------------------------------------> Input
-
+        
+        #region -------------------------------------------------------> Print
+        if config.development:
+            print('d:')
+            for k,v in self.d.items():
+                print(str(k)+': '+str(v))
+            print('')  
+            print('do:')
+            for k,v in self.do.items():
+                if k != 'df':
+                    print(str(k)+': '+str(v))
+                else:
+                    print('df')
+                    for j,w in v.items():
+                        print(f'\t{j}: {w}')
+            print('')    
+        else:
+            pass
+        #endregion ----------------------------------------------------> Print
+    
         return True
     #---
 
@@ -1810,7 +1970,7 @@ class CorrA(BaseConfPanel):
         #endregion ------------------------------------------------------> Msg
 
         #region ---------------------------------------------------> Data file
-        msgStep = msgPrefix + f"{self.ciFileL}, reading"
+        msgStep = msgPrefix + f"{self.cLiFile}"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         try:
             self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
@@ -1820,21 +1980,6 @@ class CorrA(BaseConfPanel):
             return False
         #endregion ------------------------------------------------> Data file
 
-        #region ------------------------------------------------------> Column
-        msgStep = msgPrefix + f"{self.ciFileL}, data type"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        self.df = self.iFileObj.df.iloc[:,self.do['Column']]
-        try:
-            self.dfI = self.df.astype('float')
-        except Exception as e:
-            self.msgError  = config.mPDDataTypeCol.format(
-                self.ciFileL,
-                ", ".join(map(str, self.do['Column'])),
-            )
-            self.tException = e
-            return False
-        #endregion ---------------------------------------------------> Column
-
         return True
     #---
 
@@ -1843,23 +1988,72 @@ class CorrA(BaseConfPanel):
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
-
+        
+        #region ------------------------------------------------------> Column
+        msgStep = msgPrefix + f"{self.cLiFile}, data type"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        self.dfI = self.iFileObj.df.iloc[:,self.do['Column']]
+        try:
+            #------------------------------> Replace 0 and ''
+            self.dfS = dtsMethod.DFReplace(
+                self.dfI, [0, ''], np.nan, sel=self.do['df']['Column'],
+            )
+            #------------------------------> Float
+            self.dfS = self.dfS.astype('float')
+        except Exception as e:
+            self.msgError  = config.mPDDataTypeCol.format(
+                self.cLiFile,
+                ", ".join(map(str, self.do['df']['Column'])),
+            )
+            self.tException = e
+            return False
+        #endregion ---------------------------------------------------> Column
+        
+        #region ---------------------------------------------> Transaformation
+        #------------------------------> Msg
+        msgStep = msgPrefix + f"Data transformation"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.dfT = dtsStatistic.DataTransformation(
+                self.dfS, sel=None, method=self.do['TransMethod'],
+            )
+        except Exception as e:
+            self.msgError = str(e)
+            self.tException = e
+            return False
+        #endregion ------------------------------------------> Transaformation
+        
         #region -----------------------------------------------> Normalization
         #------------------------------> Msg
         msgStep = msgPrefix + f"Data normalization"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
         try:
-            self.dfT = dtsStatistic.DataTransformation(
-                self.dfI,
-                sel = None,
-                method = self.do['TransMethod'],
+            self.dfN = dtsStatistic.DataNormalization(
+                self.dfT, sel=None, method=self.do['NormMethod'],
             )
         except Exception as e:
             self.msgError = str(e)
             self.tException = e
             return False
         #endregion --------------------------------------------> Normalization
+        
+        #region --------------------------------------------------> Imputation
+        #------------------------------> Msg
+        msgStep = msgPrefix + f"Data imputation"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.dfIm = dtsStatistic.DataImputation(
+                self.dfN, sel=None, method=self.do['ImpMethod'],
+            )
+        except Exception as e:
+            self.msgError = str(e)
+            self.tException = e
+            return False
+        #endregion -----------------------------------------------> Imputation
 
         #region ------------------------------------> Correlation coefficients
         #------------------------------> Msg
@@ -1867,7 +2061,7 @@ class CorrA(BaseConfPanel):
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
         try:
-            self.dfR = self.dfT.corr(method=self.do['CorrMethod'].lower())
+            self.dfR = self.dfIm.corr(method=self.do['CorrMethod'].lower())
         except Exception as e:
             self.msgError = str(e)
             self.tException = e
@@ -1882,25 +2076,23 @@ class CorrA(BaseConfPanel):
         #region --------------------------------------------------> Data Steps
         stepDict = {
             config.fnInitial.format('01'): self.dfI,
-            config.fnTrans.format('02')  : self.dfT,
-            self.cMainData.format('03')  : self.dfR,
+            config.fnFloat.format('02')  : self.dfS,
+            config.fnTrans.format('03')  : self.dfT,
+            config.fnNorm.format('04')   : self.dfN,
+            config.fnImp.format('05')    : self.dfI,
+            self.cMainData.format('06')  : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
         
         #region ---------------------------------------------------> Print
         if config.development:
-            print('Input')
-            for k,v in self.do.items():
-                print(str(k)+': '+str(v))
-
             print("DataFrames: Initial")
-            print(self.dfI)
-            print("")
-            print("DataFrames: Trans")
-            print(self.dfT)
+            print(self.dfI.head())
+            print(self.dfI.shape)
             print("")
             print("DataFrames: CC")
-            print(self.dfR)
+            print(self.dfR.head())
+            print(self.dfR.shape)
         else:
             pass
         #endregion ------------------------------------------------> Print
@@ -1929,12 +2121,11 @@ class CorrA(BaseConfPanel):
         if self.msgError is None:
             #--> 
             self.dlg.SuccessMessage(
-                config.lPdDone,
-                eTime=f"{config.lPdEllapsed} {self.deltaT}",
+                config.lPdDone, eTime=f"{config.lPdEllapsed} {self.deltaT}",
             )
         else:
             self.dlg.ErrorMessage(
-                config.lPdError, 
+                config.lPdError,  
                 error      = self.msgError,
                 tException = self.tException
             )
@@ -1942,20 +2133,25 @@ class CorrA(BaseConfPanel):
 
         #region -------------------------------------------------------> Reset
         self.msgError   = None # Error msg to show in self.RunEnd
+        self.tException = None
         self.d          = {} # Dict with the user input as given
         self.do         = {} # Dict with the processed user input
-        self.dfI        = None # pd.DataFrame for initial, normalized and
-        self.dfT        = None # correlation coefficients
+        self.dfI        = None # pd.DataFrames
+        self.dfS        = None
+        self.dfT        = None
+        self.dfN        = None
+        self.dfIm       = None
         self.dfR        = None
         self.date       = None # date for corr file
         self.oFolder    = None # folder for output
         self.corrP      = None # path to the corr file that will be created
         self.deltaT     = None
-        self.tException = None
+        #------------------------------> 
         if self.dFile is not None:
             self.iFile.tc.SetValue(str(self.dFile))
         else:
             pass
+        #------------------------------> 
         self.dFile = None # Data File copied to Data-Initial
         #endregion ----------------------------------------------------> Reset
     #---
@@ -1998,9 +2194,9 @@ class ProtProf(BaseConfModPanel):
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Needed by BaseConfPanel
         self.cURL         = config.urlProtProf
-        self.cSection     = config.nMProtProf
+        self.cSection     = config.nmProtProf
         self.cLenLongestL = len(config.lStResultCtrl)
-        self.cTitlePD     = f"Running {config.nMProtProf} Analysis"
+        self.cTitlePD     = f"Running {config.nmProtProf} Analysis"
         self.cGaugePD     = 30
         #------------------------------> Optional configuration
         self.cHelpTT = config.ttBtnHelp.format(config.urlProtProf)
@@ -3833,130 +4029,6 @@ class ProtProfResControlExp(ResControlExpConfBase):
         
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
-#---
-
-
-class ResControlExp(wx.Panel):
-    """Creates the panel containig the panes for the dialog Results - Control
-        Experiments
-
-        Parameters
-        ----------
-        parent : wx.Widget
-            Parent of the panel
-        iFile : Path
-            Path to the Data File already selected in the parent window
-        topParent : wx.Widget
-            Window calling the dialog 
-
-        Attributes
-        ----------
-        name : str
-            Unique name of the panel
-        widget : ditc of methods
-            Methods to create the configuration panel
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
-    """
-    #region -----------------------------------------------------> Class setup
-    name = 'ResControlExpPane'
-
-    widget = {
-        'ProtProfPane' : ProtProfResControlExp,
-    }
-    #endregion --------------------------------------------------> Class setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, iFile, topParent):
-        """ """
-        #region -------------------------------------------------> Check Input
-        
-        #endregion ----------------------------------------------> Check Input
-
-        #region -----------------------------------------------> Initial Setup
-        super().__init__(parent, name=self.name)
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------------> Menu
-        
-        #endregion -----------------------------------------------------> Menu
-
-        #region -----------------------------------------------------> Widgets
-        #------------------------------> ListCtrl and fill it
-        self.lc = dtscore.ListZebraMaxWidth(
-            self, 
-            colLabel = config.lLCtrlColNameI,
-            colSize  = config.sLCtrlColI,
-        )
-        dtsMethod.LCtrlFillColNames(self.lc, iFile)
-        #------------------------------> Conf panel here to read NRow in lc
-        self.conf = self.widget[topParent.name](
-            self, topParent, self.lc.GetItemCount(),
-        )
-        #endregion --------------------------------------------------> Widgets
-
-        #region -------------------------------------------------> Aui control
-        #------------------------------> AUI control
-        self._mgr = aui.AuiManager()
-        #------------------------------> AUI which frame to use
-        self._mgr.SetManagedWindow(self)
-        #------------------------------> Add Configuration panel
-        self._mgr.AddPane( 
-            self.conf, 
-            aui.AuiPaneInfo(
-                ).Center(
-                ).Caption(
-                    config.lnPaneConf
-                ).Floatable(
-                    b=False
-                ).CloseButton(
-                    visible=False
-                ).Movable(
-                    b=False
-                ).PaneBorder(
-                    visible=True,
-            ),
-        )
-
-        self._mgr.AddPane(
-            self.lc, 
-            aui.AuiPaneInfo(
-                ).Right(
-                ).Caption(
-                    config.lnListPane
-                ).Floatable(
-                    b=False
-                ).CloseButton(
-                    visible=False
-                ).Movable(
-                    b=False
-                ).PaneBorder(
-                    visible=True,
-            ),
-        )
-
-        self._mgr.Update()
-        #endregion ----------------------------------------------> Aui control
-
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
-
-        #region ---------------------------------------------> Window position
-        
-        #endregion ------------------------------------------> Window position
-    #---
-    #endregion -----------------------------------------------> Instance setup
-
-    #region ---------------------------------------------------> Class methods
-    
     #endregion ------------------------------------------------> Class methods
 #---
 #endregion ----------------------------------------------------------> Classes

@@ -25,8 +25,7 @@ import gui.window as window
 
 
 class ResControl():
-    """Creates the Results - Control experiment widgets. Configuration options
-        are set in the child class
+    """Creates the Results - Control experiment widgets.
 
         Parameters
         ----------
@@ -35,15 +34,13 @@ class ResControl():
 
         Attributes
         ----------
+        btnResultsW: wx.Button 
+        stResults: wx.StaticText
+        tcResults: wx.TextCtrl
         
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        Notes
+        -----
+        Several configuration options are taken from parent.
     """
     #region -----------------------------------------------------> Class setup
     
@@ -111,7 +108,6 @@ class ResControl():
         )
         #endregion --------------------------------------------------> Tooltip
         
-
         #region --------------------------------------------------------> Bind
         self.btnResultsW.Bind(wx.EVT_BUTTON, self.OnResW)
         #endregion -----------------------------------------------------> Bind
@@ -121,10 +117,10 @@ class ResControl():
     #region ---------------------------------------------------> Class methods
     def OnResW(self, event):
         """ Open the window to write the results columns. """
-        
+        #------------------------------> 
         with window.ResControlExp(self) as dlg:
             dlg.ShowModal()
-
+        #------------------------------> 
         return True
     #---
     #endregion ------------------------------------------------> Class methods

@@ -33,7 +33,7 @@ import gui.window as window
 def LoadUMSAPFile(fileP: Optional[Path]=None, win: Optional[wx.Window]=None, 
     shownSection: Optional[list[str]]=None) -> bool:
     """Load an UMSAP File either from Read UMSAP File menu, LoadResults
-        method in Tab or Update File Content menu
+        method in Tab or Update File Content menu.
 
         Parameters
         ----------
@@ -44,8 +44,7 @@ def LoadUMSAPFile(fileP: Optional[Path]=None, win: Optional[wx.Window]=None,
             If called from menu it is used to center the Select file dialog.
             Default is None.
         shownSection : list of str
-            List with the name of all checked sections in File Control window
-
+            List with the name of all checked sections in File Control window.
     """   
     #region --------------------------------------------> Get file from Dialog
     if fileP is None:

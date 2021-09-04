@@ -20,15 +20,17 @@ from pathlib import Path
 from typing import Optional, Literal
 
 import requests
+from requests.api import get
 import wx
 import wx.adv as adv
 import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
 
+import dat4s_core.data.check as dtsCheck
+import dat4s_core.generator.generator as dtsGenerator
 import dat4s_core.data.method as dtsMethod
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
-import dat4s_core.generator.generator as dtsGenerator
 
 import config.config as config
 from data.file import UMSAPFile
@@ -50,6 +52,10 @@ def UpdateCheck(ori: str, win: Optional[wx.Window]=None) -> bool:
             Origin of the request, 'menu' or 'main'
         win : wx widget
             To center the result window in this widget
+            
+        Return
+        ------
+        bool
     """
     #region -------------------------------------------------------> Variables
     url = config.urlUpdate
@@ -66,11 +72,16 @@ def UpdateCheck(ori: str, win: Optional[wx.Window]=None) -> bool:
     
     #region --------------------------------------------> Get Internet version
     if r.status_code == requests.codes.ok:
+        #------------------------------> 
         text = r.text.split('\n')
+        #------------------------------> 
         for i in text:
             if '<h1>UMSAP' in i:
                 versionI = i
                 break
+            else:
+                pass
+        #------------------------------> 
         versionI = versionI.split('UMSAP')[1].split('</h1>')[0]
         versionI = versionI.strip()
     else:
@@ -80,7 +91,7 @@ def UpdateCheck(ori: str, win: Optional[wx.Window]=None) -> bool:
 
     #region -----------------------------------------------> Compare & message
     #--> Compare
-    updateAvail = dtsMethod.VersionCompare(versionI, config.version)
+    updateAvail = dtsCheck.VersionCompare(versionI, config.version)[0]
     #--> Message
     if updateAvail:
         wx.CallAfter(CheckUpdateResult, parent=win, checkRes=versionI)
@@ -97,7 +108,7 @@ def UpdateCheck(ori: str, win: Optional[wx.Window]=None) -> bool:
 
 #region --------------------------------------------------------> Base Classes
 class BaseWindow(wx.Frame):
-    """Base window for UMSAP
+    """Base window for UMSAP.
 
         Parameters
         ----------
@@ -110,19 +121,18 @@ class BaseWindow(wx.Frame):
         ----------
         parent : wx.Window or None
             Parent of the window
-        #------------------------------> Must be set by Child
-        name : str
-            Unique name of the window
-        cTitle : str
-            Title for the window
         #------------------------------> Configuration
+        name : str
+            Unique name of the window. Default is config.nDefName.
+        cTitle : str
+            Title for the window. Default is config.tdW.
         cSizeWindow : wx.Size
             Size of the window. Default is config.sWinRegular
         #------------------------------> Widgets
         statusbar : wx.StatusBar
             Windows statusbar
-        cSizeWindow : wx.Size
-            Size of the window. Default is (900, 620)
+        menubar : menu.ToolMenuBar
+            Menubar for the window with a Tool menu if applicable.
         Sizer : wx.BoxSizer
             Main sizer of the window
     """
@@ -137,17 +147,16 @@ class BaseWindow(wx.Frame):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.parent: Optional[wx.Window] = parent
-        
-        self.cSizeWindow: wx.Size = getattr(
-            self, 'cSizeWindow', config.sWinRegular
+        self.parent = parent
+        #------------------------------> Def values if not given in child class
+        self.cSizeWindow = getattr(self, 'cSizeWindow', config.sWinRegular)
+        self.cTitle = getattr(
+            self, 'cTitle', config.t.get(self.name, config.tdW)
         )
-
+        self.name = getattr(self, 'name', config.nDefName)
+        #------------------------------> 
         super().__init__(
-            parent,
-            size   = self.cSizeWindow,
-            title  = self.cTitle,
-            name   = self.name,
+            parent, size=self.cSizeWindow, title=self.cTitle, name=self.name,
         )
         #endregion --------------------------------------------> Initial Setup
         
@@ -173,7 +182,7 @@ class BaseWindow(wx.Frame):
 
     #region ---------------------------------------------------> Class methods
     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
-        """Destroy window. Override as needed
+        """Destroy window. Override as needed.
     
             Parameters
             ----------
@@ -195,16 +204,17 @@ class BaseWindow(wx.Frame):
     #---
     
     def OnDupWin(self) -> Literal[True]:
-        """Duplicate window. Used by Result windows
+        """Duplicate window. Used by Result windows. Override as needed.
     
             Returns
             -------
             True
         """
+        #------------------------------> 
         self.parent.cWindow[self.cSection].append(
             self.parent.cPlotMethod[self.cSection](self.parent)
         )
-        
+        #------------------------------> 
         return True
     #---
     #endregion ------------------------------------------------> Class methods
@@ -212,19 +222,25 @@ class BaseWindow(wx.Frame):
 
 
 class BaseWindowPlot(BaseWindow):
-    """Base class for windows showing only plot with common methods
+    """Base class for windows showing only a plot.
 
         Parameters
         ----------
-        parent : wx.Window or None
-            Parent of the window
+        parent : 'UMSAPControl'
+            Parent of the window.
         menuDate : list of str or None
-            Date entries for menu of plotting windows e.g. 20210220-104527
+            Date entries for menu of plotting windows.
+            e.g. ['20210220-104527', ....]
+            
+        Attributes
+        ----------
+        cSizeWindow : wx.Size
+            Size of the window.
             
         Notes
         -----
         - Method OnSavePlot assumes that this window has an attribute
-        plot (dtsWidget.MatPlotPanel). Override as needed
+        plot (dtsWidget.MatPlotPanel). Override as needed.
         - Method OnClose assumes the parent is an instance of UMSAPControl. 
         Override as needed.
     """
@@ -239,7 +255,6 @@ class BaseWindowPlot(BaseWindow):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-
         super().__init__(parent=parent, menuDate=menuDate)
         #endregion --------------------------------------------> Initial Setup
 
@@ -255,7 +270,12 @@ class BaseWindowPlot(BaseWindow):
 
     #region ---------------------------------------------------> Class methods
     def OnSavePlot(self) -> bool:
-        """Save an image of the plot. Override as needed. """
+        """Save an image of the plot. Override as needed. 
+        
+            Notes
+            -----
+            Assumes window has a plot attribute as in dtsWidget.MatPlotPanel.
+        """
         try:
             #------------------------------> 
             self.plot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
@@ -271,8 +291,9 @@ class BaseWindowPlot(BaseWindow):
     #---
 
     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
-        """Close window and uncheck section in UMSAPFile window. 
-        Override as needed.
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
     
             Parameters
             ----------
@@ -300,47 +321,29 @@ class BaseWindowPlot(BaseWindow):
 
 #region -------------------------------------------------------------> Classes
 class MainWindow(BaseWindow):
-    """Creates the main window of the App 
+    """Creates the main window of the App.
     
         Parameters
         ----------
         parent : wx widget or None
-            parent of the main window
+            Parent of the main window.
         
         Attributes
         ----------
         name : str
             Name to id the window
         tabMethods: dict
-            Methods to create the tabs
-        cTitle : str
-            Title of the window
-        cTitleTab : dict
-            Keys are Tab names & values are Tab titles
-        menubar : wx.MenuBar
-            wx.Menubar associated with the window
-        statusbar : wx.StatusBar
-            wx.StatusBar associated with the window
+            Methods to create the tabs.
         notebook : wx.lib.agw.aui.auibook.AuiNotebook
             Notebook associated with the window
-        Sizer : wx.BoxSizer
-            Sizer for the window
     """
     #region -----------------------------------------------------> Class Setup
-    name = 'MainW'
+    name = config.nwMain
     
     tabMethods = { # Keys are the unique names of the tabs
-        'StartTab'   : tab.Start,
-        'CorrATab'   : tab.BaseConfTab,
-        'ProtProfTab': tab.BaseConfListTab,
-    }
-    
-    cTitle = "Analysis Setup"
-    
-    cTitleTab = {
-        'StartTab'   : 'Start',
-        'CorrATab'   : 'CorrA',
-        'ProtProfTab': 'ProtProf',
+        config.ntStart   : tab.Start,
+        config.ntCorrA   : tab.BaseConfTab,
+        config.ntProtProf: tab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup
     
@@ -367,7 +370,7 @@ class MainWindow(BaseWindow):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------> Create Start Tab
-        self.CreateTab('StartTab')
+        self.CreateTab(config.ntStart)
         self.notebook.SetCloseButton(0, False)
         #endregion -----------------------------------------> Create Start Tab
 
@@ -405,7 +408,7 @@ class MainWindow(BaseWindow):
         #------------------------------> Update tabs & close buttons
         if pageC == 1:
             #------------------------------> Remove close button from Start tab
-            if (win := self.FindWindowByName('StartTab')) is not None:
+            if (win := self.FindWindowByName(config.ntStart)) is not None:
                 self.notebook.SetCloseButton(
                     self.notebook.GetPageIndex(win), 
                     False,
@@ -414,9 +417,11 @@ class MainWindow(BaseWindow):
                 pass
         elif pageC == 0:
             #------------------------------> Show Start Tab with close button
-            self.CreateTab('StartTab')
+            self.CreateTab(config.ntStart)
             self.notebook.SetCloseButton(
-                self.notebook.GetPageIndex(self.FindWindowByName('StartTab')), 
+                self.notebook.GetPageIndex(
+                    self.FindWindowByName(config.ntStart)
+                ), 
                 False,
             )
         else:
@@ -426,7 +431,7 @@ class MainWindow(BaseWindow):
     #---
 
     def CreateTab(self, name: str, dataI: Optional[dict]=None) -> Literal[True]:
-        """Create a tab
+        """Create a tab.
         
             Parameters
             ----------
@@ -444,7 +449,7 @@ class MainWindow(BaseWindow):
             #------------------------------> Create tab
             self.notebook.AddPage(
                 self.tabMethods[name](self.notebook, name, dataI),
-                self.cTitleTab[name],
+                config.t.get(name, config.tdT),
                 select = True,
             )
         else:
@@ -456,7 +461,7 @@ class MainWindow(BaseWindow):
 
         #region ---------------------------------------------------> Start Tab
         if self.notebook.GetPageCount() > 1:
-            winS = self.FindWindowByName('StartTab')
+            winS = self.FindWindowByName(config.ntStart)
             if winS is not None:
                 self.notebook.SetCloseButton(
                     self.notebook.GetPageIndex(winS), 
@@ -472,7 +477,7 @@ class MainWindow(BaseWindow):
     #---
 
     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
-        """Destroy window and set config.MainW
+        """Destroy window and set config.winMain to None.
     
             Parameters
             ----------
@@ -495,36 +500,40 @@ class CorrAPlot(BaseWindowPlot):
 
         Parameters
         ----------
-        obj : data.fileUMSAPFile
-            Reference to the UMSAP file object created in UMSAPControl
-        parent : wx Widget or None
+        parent : 'UMSAPControl'
             Parent of the window
 
         Attributes
         ----------
-        name : str
-            Unique name of the window
-        parent : wx Widget or None
-            Parent of the window
-        obj : parent.obj
-            Pointer to the UMSAPFile object in parent. Instead of modifying this
-            object here, modify the configure step or add a Get method
-        data : parent.obj.confData[Section]
-            Data for the Correlation Analysis section
-        date : parent.obj.confData[Section].keys()
-            List of dates availables for plotting
         cmap : Matplotlib cmap
             CMAP to use in the plot
+        cSection : str
+            Section used as source of the data to plot here.
+        cTitle : str
+            Title of the window.
+        data : parent.obj.confData[Section]
+            Data for the Correlation Analysis section.
+        date : [parent.obj.confData[Section].keys()]
+            List of dates availables for plotting.
+        msgExportFailed : str
+            Error message.
+        name : str
+            Unique name of the window.
+        obj : parent.obj
+            Pointer to the UMSAPFile object in parent. Instead of modifying this
+            object here, modify the configure step or add a Get method.
         plot : dtsWidget.MatPlotPanel
             Main plot of the window
     """
     #region -----------------------------------------------------> Class setup
-    name = 'CorrAPlot'
-    
-    cSection = config.nUCorrA
-
+    #------------------------------> To id the window
+    name = config.nwCorrAPlot
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nuCorrA
+    #------------------------------> 
     msgExportFailed = (
-        f"It was not possible to write the data to the selected file"
+        f"It was not possible to write the data to the selected file."
     )
     #endregion --------------------------------------------------> Class setup
 
@@ -579,7 +588,7 @@ class CorrAPlot(BaseWindowPlot):
     #region ---------------------------------------------------> Class methods
     def WinPos(self) -> Literal[True]:
         """Set the position on the screen and adjust the total number of
-            shown windows
+            shown windows.
         """
         #region ---------------------------------------------------> Variables
         info = method.GetDisplayInfo(self)
@@ -732,11 +741,7 @@ class CorrAPlot(BaseWindowPlot):
     def OnExportPlotData(self) -> Literal[True]:
         """ Export data to a csv file """
         #region --------------------------------------------------> Dlg window
-        dlg = dtsWindow.FileSelectDialog(
-            'save',
-            config.elData,
-            parent = self,
-        )
+        dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
         #endregion -----------------------------------------------> Dlg window
         
         #region ---------------------------------------------------> Get Path
@@ -778,46 +783,56 @@ class UMSAPControl(BaseWindow):
             If called from Update File Content menu list the sections that were
             checked when starting the update
         parent : wx.Window or None
-            Parent of the window
+            Parent of the window.
 
         Attributes
         ----------
+        cFileLabelCheck : list[str]
+            Elements are keys in the user input dictionary of the section of the 
+            UMSAP file being shown in the window. The corresponding values
+            will be check as valid path to files when filing the tree in the 
+            window.
+        cPlotMethod : dict
+            Keys are section names and values the Window to plot the results
+        cSection : dict
+            Keys are section names and values a reference to the object in the
+            tree control.
+        cSectionTab : dict
+            Keys are section names and values the corresponding config.name
+        cSizeWindow : wx.Size
+            Size of the window.
+        cTitle: str
+            Title of the window.
+        cWindow : list[wx.Window]
+            List of plot windows associated with this window.
         name : str
             Name of the window. Basically fileP.name
         obj : file.UMSAPFile
             Object to handle UMSAP files
-        cPlotMethod : dict
-            Keys are section names and values the Window to plot the results
-        cSectionTab : dict
-            Keys are section names and values the corresponding config.name
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        trc : wxCT.CustomTreeCtrl
+            Tree control to show the content of the umsap file.
     """
     #region -----------------------------------------------------> Class setup
-    name = 'UMSAPF'
+    name = config.nwUMSAPControl
     
     cSizeWindow = (400, 700)
     
     cPlotMethod = { # Methods to create plot windows
-        config.nUCorrA : CorrAPlot
+        config.nuCorrA : CorrAPlot
     }
     
     cFileLabelCheck = ['Data File']
     
     cSectionTab = { # Section name and Tab name correlation
-        config.nUCorrA : config.name['CorrATab']
+        config.nuCorrA : config.ntCorrA
     }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, obj: UMSAPFile, shownSection: Optional[list[str]]=None, 
-        parent: Optional[wx.Window]=None) -> None:
+    def __init__(
+        self, obj: UMSAPFile, shownSection: Optional[list[str]]=None, 
+        parent: Optional[wx.Window]=None,
+        ) -> None:
         """ """
         #region -------------------------------------------------> Check Input
         
@@ -891,7 +906,12 @@ class UMSAPControl(BaseWindow):
     #---
 
     def SetTree(self) -> Literal[True]:
-        """Set the elements of the wx.TreeCtrl """
+        """Set the elements of the wx.TreeCtrl 
+        
+            Notes
+            -----
+            See data.file.UMSAPFile for the structure of obj.confTree.
+        """
         #region ----------------------------------------------------> Add root
         root = self.trc.AddRoot(self.obj.fileP.name)
         #endregion -------------------------------------------------> Add root
@@ -947,7 +967,7 @@ class UMSAPControl(BaseWindow):
     #---
     
     def OnHyperLink(self, event) -> bool:
-        """ Setup analysis
+        """ Setup analysis.
     
             Parameters
             ----------
@@ -1081,11 +1101,12 @@ class UMSAPControl(BaseWindow):
 
     def UpdateFileContent(self) -> Literal[True]:
         """Update the content of the file. """
+        #------------------------------> 
         method.LoadUMSAPFile(
             fileP        = self.obj.fileP,
             shownSection = self.GetCheckedSection(),
         )
-
+        #------------------------------> 
         return True
     #---
     #endregion ------------------------------------------------> Class methods
@@ -1104,16 +1125,13 @@ class CheckUpdateResult(wx.Dialog):
         checkRes : str or None
             Internet lastest version. Default None
 
-        Attributes:
-        confOpt : dict
-            Dict with configuration options
+        Attributes
+        ----------
         name : str
             Unique window id
     """
     #region -----------------------------------------------------> Class setup
-    name = 'CheckUpdateResDialog'
-    #------------------------------> Title
-    cTitle = f"Check for Updates"
+    name = config.ndCheckUpdateResDialog
     #------------------------------> Style
     cStyle = wx.CAPTION|wx.CLOSE_BOX
     #------------------------------> Label
@@ -1122,11 +1140,12 @@ class CheckUpdateResult(wx.Dialog):
     #endregion --------------------------------------------------> Class setup
     
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: Optional[wx.Window]=None, 
-        checkRes: Optional[str]=None) -> None:
+    def __init__(
+        self, parent: Optional[wx.Window]=None, checkRes: Optional[str]=None,
+        ) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
-        super().__init__(parent, title=self.cTitle, style=self.cStyle)
+        super().__init__(parent, title=config.t[self.name], style=self.cStyle)
         #endregion --------------------------------------------> Initial setup
 
         #region -----------------------------------------------------> Widgets
@@ -1205,17 +1224,18 @@ class CheckUpdateResult(wx.Dialog):
     
     #region ---------------------------------------------------> Class Methods
     def OnLink(self, event) -> Literal[True]:
-        """Process the link event 
+        """Process the link event.
         
             Parameters
             ----------
             event : wx.adv.Event
                 Information about the event
         """
+        #------------------------------> 
         event.Skip()
         self.EndModal(1)
         self.Destroy()
-        
+        #------------------------------> 
         return True
     #endregion ------------------------------------------------> Class Methods
 #---
@@ -1227,25 +1247,22 @@ class ResControlExp(wx.Dialog):
         Parameters
         ----------
         parent : wx.Panel
-            This is the pane calling the dialog
+            This is the pane calling the dialog.
 
         Attributes
         ----------
-        
+        name : str
+            Name of the window
+        conf :  pane.ResControlExp
+            Contains all widgets except the Ok, Cancel buttons.
 
         Raises
         ------
         Exception
-            - When no Data file is selected
-
-        Methods
-        -------
-        
+            - When no Data file is selected.
     """
     #region -----------------------------------------------------> Class setup
-    name = 'ResControlExp'
-    #------------------------------> 
-    cTitle = f"Results - Control Experiments"
+    name = config.ndResControlExp
     #------------------------------> 
     cSize = (900, 580)
     #------------------------------> 
@@ -1274,7 +1291,7 @@ class ResControlExp(wx.Dialog):
         #region -----------------------------------------------> Initial Setup
         super().__init__(
             config.winMain, 
-            title = self.cTitle,
+            title = config.t[self.name],
             style = self.cStyle,
             size  = self.cSize,
         )
