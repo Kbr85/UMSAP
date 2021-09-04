@@ -522,9 +522,9 @@ class ToolMenuBar(MainMenuBar):
 
     #region -----------------------------------------------------> Class Setup
     toolClass = { # Key are window name
-        'MainW'    : None,
-        'UMSAPF'   : FileControlToolMenu,
-        'CorrAPlot': CorrAPlotToolMenu,
+        config.nwMain        : None,
+        config.nwUMSAPControl: FileControlToolMenu,
+        config.nwCorrAPlot   : CorrAPlotToolMenu,
     }
     #endregion --------------------------------------------------> Class Setup
     
