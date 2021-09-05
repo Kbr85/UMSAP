@@ -134,6 +134,9 @@ class BaseConfPanel(
             Validator for the main input file. 
             Default is dtsValidator.OutputFF(fof='file', ext=config.esUMSAP[0])
         #------------------------------> To run the analysis
+        changeKey : list of str
+            Keys in do whose values will be turned into a str. Default to
+            ['iFile', 'uFile].
         d : dict
             Dict with user input. See keys in Child class.
         date : str or None
@@ -189,7 +192,7 @@ class BaseConfPanel(
         cSection : str 
             Section in the UMSAP file. One of the values in config.nameModules 
             or config.nameUtilities
-        cLenLongestL : int 
+        cLLenLongest : int 
             Length of the longest label in output dict
         cTitlePD : str
             Title for the Progress Dialog shown when running analysis
@@ -285,6 +288,8 @@ class BaseConfPanel(
         #--------------> input file for directing repeating analysis from
         # file copied to oFolder
         self.dFile   = None
+        #------------------------------> 
+        self.changeKey = getattr(self, 'changeKey', ['iFile', 'uFile'])
         #------------------------------> Parent init
         wx.Panel.__init__(self, parent, name=self.name)
 
@@ -563,9 +568,7 @@ class BaseConfPanel(
                         'V' : config.dictVersion,
                         'I' : self.d,
                         'CI': dtsMethod.DictVal2Str(
-                            self.do, 
-                            self.cChangeKey,
-                            new = True,
+                            self.do, self.changeKey, new=True,
                         ),
                         'R' : Results,
                     }
@@ -606,7 +609,7 @@ class BaseConfPanel(
 
     def EqualLenLabel(self, label: str) -> str:
         """Add empty space to the end of label to match the length of
-            self.cLenLongestL
+            self.cLLenLongest
     
             Parameters
             ----------
@@ -617,7 +620,7 @@ class BaseConfPanel(
             -------
             str
                 Label with added empty strings at the end to match the length of
-                self.cLenLongestL
+                self.cLLenLongest
         """
         return f"{label}{(self.cLLenLongest - len(label))*' '}" 
     #---
@@ -694,7 +697,7 @@ class BaseConfPanel(
             self.date : {
                 'V' : config.dictVersion,
                 'I' : self.d,
-                'CI': dtsMethod.DictVal2Str(self.do, self.cChangeKey, new=True),
+                'CI': dtsMethod.DictVal2Str(self.do, self.changeKey, new=True),
                 'DP': {
                     'dfS' : self.dfS.to_dict(),
                     'dfT' : self.dfT.to_dict(),
@@ -976,6 +979,8 @@ class ResControlExpConfBase(wx.Panel):
             Size for the ScrolledPanel with the fields. Default is (670,670).
         cSTotalField : wx.Size
             Size for the total wx.TextCtrl in top region. Default is (35,22).
+        cSLabel : wx.Size
+            Size for the labels wx.TextCtrl in top region. Default is (35,22).
         #------------------------------> To manage window
         lbDict : dict of lists of wx.StaticText for user-given labels
             Keys are 1 to N plus 'Control' and values are the lists.
@@ -1043,6 +1048,7 @@ class ResControlExpConfBase(wx.Panel):
         self.cSSWLabel    = getattr(self, 'cSSWLabel', (670,135))
         self.cSSWMatrix   = getattr(self, 'cSSWMatrix', (670,670))
         self.cSTotalField = getattr(self, 'cSTotalField', (35,22))
+        self.cSLabel      = getattr(self, 'cSLabel', (60,22))
         #------------------------------> super()
         super().__init__(parent, name=name)
         #endregion --------------------------------------------> Initial Setup
@@ -1088,7 +1094,6 @@ class ResControlExpConfBase(wx.Panel):
         )
         #endregion --------------------------------------------------> Tooltip
         
-
         #region ------------------------------------------------------> Sizers
         #------------------------------> Main Sizer
         self.Sizer = wx.BoxSizer(wx.VERTICAL)
@@ -1182,7 +1187,7 @@ class ResControlExpConfBase(wx.Panel):
                     self.tcDict[K].append(
                         wx.TextCtrl(
                             self.swLabel,
-                            size  = self.cLabelS,
+                            size  = self.cSLabel,
                             value = f"{self.cLabelText[K]}{KNEW}"
                         )
                     )
@@ -1445,9 +1450,6 @@ class CorrA(BaseConfPanel):
         name : str
             Unique id of the pane in the app
         #------------------------------> Configuration
-        cChangeKey : list of str
-            Keys in d and do whose values must be turn to str in order to save
-            as json.
         cGaugePD : int
             Number of steps needed in hte Progress Dialog.
         cLCorr : str
@@ -1472,7 +1474,7 @@ class CorrA(BaseConfPanel):
         cURL : str
             URL for the Help button.
         #------------------------------> For Analysis
-        cLenLongestLabel : int
+        cLLenLongest : int
             Length of the longest label. 
         cMainData : str
             Name of the file with the correlation coefficient values.
@@ -1565,7 +1567,6 @@ class CorrA(BaseConfPanel):
         super().__init__(parent)
         #------------------------------> Needed to Run
         self.cMainData  = '{}-CorrelationCoefficients-Data.txt'
-        self.cChangeKey = ['uFile', 'iFile']
         #------------------------------> Label
         self.cLCorr      = config.lCbCorrMethod
         self.cLiListCtrl = config.lStColIFile.format(self.cLiFile)
@@ -2181,7 +2182,7 @@ class ProtProf(BaseConfModPanel):
         
     """
     #region -----------------------------------------------------> Class setup
-    name = 'ProtProfPane'
+    name = config.npProtProf
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -2195,7 +2196,7 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Needed by BaseConfPanel
         self.cURL         = config.urlProtProf
         self.cSection     = config.nmProtProf
-        self.cLenLongestL = len(config.lStResultCtrl)
+        self.cLLenLongest = len(config.lStResultCtrl)
         self.cTitlePD     = f"Running {config.nmProtProf} Analysis"
         self.cGaugePD     = 30
         #------------------------------> Optional configuration
@@ -2204,8 +2205,6 @@ class ProtProf(BaseConfModPanel):
         super().__init__(parent)
         #------------------------------> Needed to Run
         self.cMainData  = '{}-ProteomeProfiling-Data.txt'
-        self.cChangeKey = ['iFile', 'uFile']
-        self.dFile      = None
         #------------------------------> Labels
         self.cCorrectPL    = 'P Correction'
         self.cGeneNameL    = 'Gene Names'
@@ -2266,7 +2265,7 @@ class ProtProf(BaseConfModPanel):
         self.geneName = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cGeneNameL,
-            tcSize    = self.cTcSize,
+            tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
                 nN      = 1,
@@ -2276,7 +2275,7 @@ class ProtProf(BaseConfModPanel):
         self.excludeProt = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cExcludeProtL,
-            tcSize    = self.cTcSize,
+            tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
                 sep     = ' ',
@@ -2316,6 +2315,18 @@ class ProtProf(BaseConfModPanel):
             border = 5,
         )
         self.sizersbValueWid.Add(
+            self.alpha.st,
+            pos    = (0,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.alpha.tc,
+            pos    = (0,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
             self.sample.st,
             pos    = (1,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
@@ -2328,6 +2339,18 @@ class ProtProf(BaseConfModPanel):
             border = 5,
         )
         self.sizersbValueWid.Add(
+            self.correctP.st,
+            pos    = (1,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.correctP.cb,
+            pos    = (1,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
             self.rawI.st,
             pos    = (2,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
@@ -2336,66 +2359,6 @@ class ProtProf(BaseConfModPanel):
         self.sizersbValueWid.Add(
             self.rawI.cb,
             pos    = (2,2),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.transMethod.st,
-            pos    = (0,3),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.transMethod.cb,
-            pos    = (0,4),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.normMethod.st,
-            pos    = (1,3),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.normMethod.cb,
-            pos    = (1,4),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.imputationMethod.st,
-            pos    = (2,3),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.imputationMethod.cb,
-            pos    = (2,4),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.alpha.st,
-            pos    = (3,1),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.alpha.tc,
-            pos    = (3,2),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.correctP.st,
-            pos    = (3,3),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.correctP.cb,
-            pos    = (3,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
@@ -3446,7 +3409,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         
     """
     #region -----------------------------------------------------> Class setup
-    name = 'ResControlExpPaneProtProf'
+    name = config.npResControlExpProtProf
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -3474,8 +3437,8 @@ class ProtProfResControlExp(ResControlExpConfBase):
             config.oControlTypeProtProf['OCR']  : self.AddWidget_OCR,
             config.oControlTypeProtProf['Ratio']: self.AddWidget_Ratio,
         }
-        #------------------------------> 
-        self.cTotalFieldTT = [
+        #------------------------------> Tooltips
+        self.cTTTotalField = [
             f'Set the number of {self.cStLabel[1]}.',
             f'Set the number of {self.cStLabel[2]}.',
         ]
@@ -3622,7 +3585,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         return True
     #---
     
-    def OnCreate(self, event) -> Literal[True]:
+    def OnCreate(self, event) -> bool:
         """Create the widgets in the white panel
     
             Parameters
@@ -3734,7 +3697,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
                     row.append(
                         wx.TextCtrl(
                             self.swMatrix,
-                            size      = self.cLabelS,
+                            size      = self.cSLabel,
                             validator = dtsValidator.NumberList(
                                 sep = ' ',
                                 opt  = True,
@@ -3755,7 +3718,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
                     row.append(
                         wx.TextCtrl(
                             self.swMatrix,
-                            size      = self.cLabelS,
+                            size      = self.cSLabel,
                             validator = dtsValidator.NumberList(
                                 opt  = True,
                                 sep = ' ',

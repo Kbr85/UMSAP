@@ -55,7 +55,7 @@ class ResControl():
             parent    = parent,
             style     = wx.TE_READONLY,
             value     = "",
-            size      = self.cTcSize,
+            size      = config.sTc,
             validator = dtsValidator.IsNotEmpty(),
         )
 
