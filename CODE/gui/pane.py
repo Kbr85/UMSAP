@@ -170,6 +170,8 @@ class BaseConfPanel(
             read.
         oFolder : Path or None
             Folder to contain the output. Set based on the umsap file path.
+        iFileObj : dtsFF.CSVFile or none
+            Input Data File Object
         tException : Exception or None
             Exception raised during analysis   
         #------------------------------> Widgets
@@ -293,6 +295,8 @@ class BaseConfPanel(
         #--------------> input file for directing repeating analysis from
         # file copied to oFolder
         self.dFile   = None
+        #--------------> Obj for the input data file
+        self.iFileObj = None
         #------------------------------> 
         self.changeKey = getattr(self, 'changeKey', ['iFile', 'uFile'])
         #------------------------------> Parent init
@@ -821,6 +825,28 @@ class BaseConfPanel(
             return False
         #endregion -----------------------------------------------> Imputation
         
+        return True
+    #---
+    
+    def ReadInputFiles(self):
+        """Read input file and check data"""
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdReadFile
+        #endregion ------------------------------------------------------> Msg
+
+        #region ---------------------------------------------------> Data file
+        #------------------------------> 
+        msgStep = msgPrefix + f"{self.cLiFile}, reading"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
+        except dtsException.FileIOError as e:
+            self.msgError = str(e)
+            self.tException = e
+            return False
+        #endregion ------------------------------------------------> Data file
+
         return True
     #---
     #endregion ------------------------------------------------> Class methods
@@ -2222,7 +2248,7 @@ class CorrA(BaseConfPanel):
         #------------------------------> 
         try:
             self.dfT = dtsStatistic.DataTransformation(
-                self.dfS, sel=None, method=self.do['TransMethod'],
+                self.dfS, sel=None, method=self.do['TransMethod'], rep=np.nan,
             )
         except Exception as e:
             self.msgError = str(e)
@@ -2810,7 +2836,7 @@ class ProtProf(BaseConfModPanel):
         #endregion ------------------------------------> Unique Column Numbers
         #endregion ---------------------------------------------> Mixed Fields
         
-        return False
+        return True
     #---
     
     def PrepareRun(self):
@@ -2825,35 +2851,35 @@ class ProtProf(BaseConfModPanel):
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> As given
         self.d = {
-            self.EqualLenLabel(self.ciFileL) : (
+            self.EqualLenLabel(self.cLiFile) : (
                 self.iFile.tc.GetValue()),
-            self.EqualLenLabel(self.cuFileL) : (
+            self.EqualLenLabel(self.cLuFile) : (
                 self.uFile.tc.GetValue()),
-            self.EqualLenLabel(self.cScoreValL) : (
+            self.EqualLenLabel(self.cLScoreVal) : (
                 self.scoreVal.tc.GetValue()),
-            self.EqualLenLabel(self.cSampleL) : (
+            self.EqualLenLabel(self.cLSample) : (
                 self.sample.cb.GetValue()),
-            self.EqualLenLabel(self.cRawIL) : (
+            self.EqualLenLabel(self.cLRawI) : (
                 self.rawI.cb.GetValue()),
-            self.EqualLenLabel(self.cTransMethodL) : (
+            self.EqualLenLabel(self.cLTransMethod) : (
                 self.transMethod.cb.GetValue()),
-            self.EqualLenLabel(self.cNormMethodL) : (
+            self.EqualLenLabel(self.cLNormMethod) : (
                 self.normMethod.cb.GetValue()),
-            self.EqualLenLabel(self.cImputationL) : (
+            self.EqualLenLabel(self.cLImputation) : (
                 self.imputationMethod.cb.GetValue()),
-            self.EqualLenLabel(self.cAlphaL) : (
+            self.EqualLenLabel(self.cLAlpha) : (
                 self.alpha.tc.GetValue()),
-            self.EqualLenLabel(self.cCorrectPL) : (
+            self.EqualLenLabel(self.cLCorrectP) : (
                 self.correctP.cb.GetValue()),
-            self.EqualLenLabel(self.cDetectedProtL) : (
+            self.EqualLenLabel(self.cLDetectedProt) : (
                 self.detectedProt.tc.GetValue()),
-            self.EqualLenLabel(self.cGeneNameL) : (
+            self.EqualLenLabel(self.cLGeneName) : (
                 self.geneName.tc.GetValue()),
-            self.EqualLenLabel(self.cScoreColL) : (
+            self.EqualLenLabel(self.cLScoreCol) : (
                 self.score.tc.GetValue()),
-            self.EqualLenLabel(self.cExcludeProtL) : (
+            self.EqualLenLabel(self.cLExcludeProt) : (
                 self.excludeProt.tc.GetValue()),
-            self.EqualLenLabel(self.cColExtractL) : (
+            self.EqualLenLabel(self.cLColExtract) : (
                 self.colExtract.tc.GetValue()),
             self.EqualLenLabel(config.lStProtProfCond) : (
                 self.lbDict[1]),
@@ -2863,7 +2889,7 @@ class ProtProf(BaseConfModPanel):
                 self.lbDict['ControlType']),
             self.EqualLenLabel(f"Control {config.lStCtrlName}") : (
                 self.lbDict['Control']),
-            self.EqualLenLabel(self.cResControlL): (
+            self.EqualLenLabel(self.cLResControl): (
                 self.tcResults.GetValue()),
         }
         #------------------------------> Dict with all values
@@ -2928,41 +2954,38 @@ class ProtProf(BaseConfModPanel):
         self.date = dtsMethod.StrNow()
         #endregion ----------------------------------------------------> Input
 
+        #region -------------------------------------------------> Print d, do
         if config.development:
+            print('')
             print('self.d:')
             for k,v in self.d.items():
                 print(str(k)+': '+str(v))
+            print('')
             print('self.do')
             for k,v in self.do.items():
-                print(str(k)+': '+str(v))
+                if k in ['oc', 'df']:
+                    print(k)
+                    for j,w in self.do[k].items():
+                        print(f'\t{j}: {w}')
+                else:
+                    print(str(k)+': '+str(v))
+            print('')
         else:
             pass
+        #endregion ----------------------------------------------> Print d, do
         
         return True
     #---
     
-    def ReadInputFiles(self):
-        """Read input file and check data"""
+    def RunAnalysis(self):
+        """Calculate proteome profiling data"""
         #region ---------------------------------------------------------> Msg
-        msgPrefix = config.lPdReadFile
+        msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
-
-        #region ---------------------------------------------------> Data file
+        
+        #region -------------------------------------------------------> Float
         #------------------------------> 
-        msgStep = msgPrefix + f"{self.ciFileL}, reading"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        try:
-            self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
-        except dtsException.FileIOError as e:
-            self.msgError = str(e)
-            self.tException = e
-            return False
-        #endregion ------------------------------------------------> Data file
-
-        #region ------------------------------------------------------> Column
-        #------------------------------> 
-        msgStep = msgPrefix + f"{self.ciFileL}, data type"
+        msgStep = msgPrefix + "Data type"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
         self.dfI = self.iFileObj.df.iloc[:,self.do['oc']['Column']]
@@ -2976,25 +2999,16 @@ class ProtProf(BaseConfModPanel):
             )
         except Exception as e:
             self.msgError  = config.mPDDataTypeCol.format(
-                self.ciFileL,
+                self.cLiFile,
                 ", ".join(map(str, self.do['oc']['Column'])),
             )
             self.tException = e
             return False
-        #endregion ---------------------------------------------------> Column
-
+        
         if config.development:
             print("self.dfI.shape: ", self.dfI.shape)
             print("self.dfF.shape: ", self.dfF.shape)
-        
-        return True
-    #---
-    
-    def RunAnalysis(self):
-        """Calculate proteome profiling data"""
-        #region ---------------------------------------------------------> Msg
-        msgPrefix = config.lPdRun
-        #endregion ------------------------------------------------------> Msg
+        #endregion ----------------------------------------------------> Float
         
         #region ---------------------------------------------> Exclude Protein
         #------------------------------> Msg
@@ -3019,7 +3033,9 @@ class ProtProf(BaseConfModPanel):
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Exclude
         self.dfS = self.dfEx.loc[self.dfEx.iloc[:,2] >= self.do['ScoreVal']]
-            
+        #------------------------------> Reset index
+        self.dfS.reset_index(drop=True, inplace=True)
+        
         if config.development:
             print('self.dfS.shape: ', self.dfS.shape)
         #endregion ----------------------------------------------------> Score
@@ -3032,21 +3048,17 @@ class ProtProf(BaseConfModPanel):
         )  
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Transformed
-        if self.do['TranMethod'] != 'None':
-            try:
-                self.dfT = dtsStatistic.DataTransformation(
-                    self.dfS, 
-                    self.do['df']['ResCtrlFlat'], 
-                    method = self.do['TranMethod'],
-                    rep    = np.nan,
-                )
-            except Exception as e:
-                self.msgError   = config.mPDDataTran
-                self.tException = e
-                return False                
-        else:
-            self.dfT = self.dfS.copy()
-        
+        try:
+            self.dfT = dtsStatistic.DataTransformation(
+                self.dfS, 
+                self.do['df']['ResCtrlFlat'], 
+                method = self.do['TranMethod'],
+                rep    = np.nan,
+            )
+        except Exception as e:
+            self.msgError   = config.mPDDataTran
+            self.tException = e
+            return False                
         
         if config.development:
             print('self.dfT.shape: ', self.dfT.shape)
@@ -3060,18 +3072,15 @@ class ProtProf(BaseConfModPanel):
         )  
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Normalization
-        if self.do['NormMethod'] != 'None':
-            try:
-                self.dfN = dtsStatistic.DataNormalization(
-                    self.dfT, 
-                    self.do['df']['ResCtrlFlat'], 
-                    method = self.do['NormMethod'],
-                )
-            except Exception as e:
-                self.msgError   = config.mPDDataNorm
-                self.tException = e
-        else:
-            self.dfN = self.dfT.copy()
+        try:
+            self.dfN = dtsStatistic.DataNormalization(
+                self.dfT, 
+                self.do['df']['ResCtrlFlat'], 
+                method = self.do['NormMethod'],
+            )
+        except Exception as e:
+            self.msgError   = config.mPDDataNorm
+            self.tException = e
         
         if config.development:
             print('self.dfN.shape: ', self.dfN.shape)
@@ -3094,8 +3103,6 @@ class ProtProf(BaseConfModPanel):
         except Exception as e:
             self.msgError   = config.mPDDataImputation
             self.tException = e
-        #------------------------------> Reset index
-        self.dfIm.reset_index(drop=True, inplace=True)
         
         if config.development:
             print('self.dfIm.shape: ', self.dfIm.shape)
@@ -3146,13 +3153,12 @@ class ProtProf(BaseConfModPanel):
                     )
                     self.tException = e
                     return False
-        #endregion -----------------------------------------> Calculate values
-        
-        
+                
         if config.development:
             print('self.dfR.shape: ', self.dfR.shape)
             print(self.dfR.head())
             print('')
+        #endregion -----------------------------------------> Calculate values
         
         return True
     #---
@@ -3171,24 +3177,6 @@ class ProtProf(BaseConfModPanel):
             self.cMainData.format('08')  : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
-        
-        #region ---------------------------------------------------> Print
-        if config.development:
-            print('Input')
-            for k,v in self.do.items():
-                print(str(k)+': '+str(v))
-
-            print("DataFrames: Initial")
-            print(self.dfI)
-            print("")
-            print("DataFrames: Trans")
-            print(self.dfT)
-            print("")
-            print("DataFrames: CC")
-            print(self.dfR)
-        else:
-            pass
-        #endregion ------------------------------------------------> Print
 
         return self.WriteOutputData(stepDict)
     #---
@@ -3218,19 +3206,20 @@ class ProtProf(BaseConfModPanel):
         #region -------------------------------------------------------> Reset
         self.msgError   = None # Error msg to show in self.RunEnd
         self.tException = None # Exception
-        self.d   = {} # Dict with the user input as given
-        self.do  = {} # Dict with the processed user input
-        self.dfI  = None # pd.DataFrame for initial, normalized and
-        self.dfF  = None
-        self.dfEx = None
-        self.dfS  = None
-        self.dfT  = None
-        self.dfN  = None
-        self.dfIm = None
-        self.dfR  = None
-        self.date      = None # date for corr file
-        self.oFolder   = None # folder for output
-        self.deltaT    = None
+        self.d          = {} # Dict with the user input as given
+        self.do         = {} # Dict with the processed user input
+        self.dfI        = None # pd.DataFrame for initial, normalized and
+        self.dfF        = None
+        self.dfEx       = None
+        self.dfS        = None
+        self.dfT        = None
+        self.dfN        = None
+        self.dfIm       = None
+        self.dfR        = None
+        self.date       = None # date for corr file
+        self.oFolder    = None # folder for output
+        self.iFileObj   = None
+        self.deltaT     = None
         
         if self.dFile is not None:
             self.iFile.tc.SetValue(str(self.dFile))
