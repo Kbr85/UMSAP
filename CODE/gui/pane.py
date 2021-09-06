@@ -188,6 +188,12 @@ class BaseConfPanel(
         -------
         CheckInput:
             Check the user input in the widgets created in __init__
+        ReadInputFiles:
+            Read the input file and create the corresponding file object.
+        LoadResults:
+            Load the created umsap file. This will reload the opened umsap file 
+            if the new information was added to it or load the new umsap file
+            just created.
             
         Notes
         -----
@@ -846,6 +852,21 @@ class BaseConfPanel(
             self.tException = e
             return False
         #endregion ------------------------------------------------> Data file
+
+        return True
+    #---
+    
+    def LoadResults(self):
+        """Load output file"""
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdLoad
+        #endregion ------------------------------------------------------> Msg
+
+        #region --------------------------------------------------------> Load
+        wx.CallAfter(self.dlg.UpdateStG, msgPrefix)
+        
+        wx.CallAfter(gmethod.LoadUMSAPFile, fileP=self.do['uFile'])
+        #endregion -----------------------------------------------------> Load
 
         return True
     #---
@@ -2262,21 +2283,6 @@ class CorrA(BaseConfPanel):
         return self.WriteOutputData(stepDict)
     #---
 
-    def LoadResults(self):
-        """Load output file"""
-        #region ---------------------------------------------------------> Msg
-        msgPrefix = config.lPdLoad
-        #endregion ------------------------------------------------------> Msg
-
-        #region --------------------------------------------------------> Load
-        wx.CallAfter(self.dlg.UpdateStG, msgPrefix)
-        
-        wx.CallAfter(gmethod.LoadUMSAPFile, fileP=self.do['uFile'])
-        #endregion -----------------------------------------------------> Load
-
-        return True
-    #---
-
     def RunEnd(self):
         """Restart GUI and needed variables"""
         #region ---------------------------------------> Dlg progress dialogue
@@ -3111,11 +3117,6 @@ class ProtProf(BaseConfModPanel):
         #endregion -----------------------------------------------> Data Steps
 
         return self.WriteOutputData(stepDict)
-    #---
-
-    def LoadResults(self) -> bool:
-        """Load results. """
-        return True
     #---
 
     def RunEnd(self):
