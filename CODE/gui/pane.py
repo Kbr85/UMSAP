@@ -1274,6 +1274,9 @@ class ResControlExpConfBase(wx.Panel):
             Keys are 1 to cN and values the text of the labels. e.g. Condition.
         cLabelText : dict
             Keys are 1 to cN and values the prefix for the label values. e.g. C  
+        
+        See OnOk method for information about how the column numbers are
+        exported to the parent panel.
     """
     #region -----------------------------------------------------> Class setup
     
@@ -2330,24 +2333,161 @@ class CorrA(BaseConfPanel):
 
 #------------------------------> Modules
 class ProtProf(BaseConfModPanel):
-    """Creates the Proteome Profiling configuration tab
+    """Creates the Proteome Profiling configuration tab.
+    
+        See Notes below for more details.
 
         Parameters
         ----------
         parent: wx.Widget
             Parent of the pane
+        dataI : dict or None
+            Initial data provided by the user in a previous analysis.
+            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
 
         Attributes
         ----------
+        name : str
+            Name of the pane. Default to config.npProtProf.
+        cURL : str
+            URL for the online help.
+        #------------------------------> Configuration
+        cLCorrectP : str
+            Label for the P correction field.
+        cLExcludeProt : str
+            Label for the Exclude Protein field.
+        cLGeneName : str
+            Label for the Gene Name field.
+        cLLenLongest : int
+            Length of the longest label in the panel.
+        cLRawI : str
+            Label for the Intensity field.
+        cLSample : str
+            Label for Sample field.
+        cOCorrectP : list of str
+            Options to correct P values.
+        cORawI : list of str
+            Options for intensity values
+        cOSample : list of str
+            Options for sample relationship.
+        cTTCorrectP : str
+            Tooltip for the correction of P values field.
+        cTTExcludeProt : str
+            Tooltip for the exclude protein field.
+        cTTGeneName : str
+            Tooltip for the Gene name field.
+        cTTHelp : str
+            Tooltip for the help button.
+        cTTRawI : str
+            Tooltip for the intensity field.
+        cTTSample : str
+            Tooltip for the sample field.
         
+        #------------------------------> To Run Analysis
+        cColCtrlData : dict
+            Keys are control type and values methods to get the Ctrl and 
+            Data columns for the given condition and relevant point.
+        cGaugePD : int
+            Number of steps for the Progress Dialog.
+        cMainData : str
+            Name of file containing the results in Steps_Data_File.
+        cSection : str
+            Name of the section. Default to config.nmProtProf.
+        cTitlePD : str
+            Name of the Progress Dialog window.
+        do: dict
+            Dictionary with checked user input. Keys are:
+            {
+                "iFile"      : "Path to input data file",
+                "uFile"      : "Path to umsap file.",
+                "ScoreVal"   : "Score value threshold",
+                "RawI"       : "Raw intensity or not. Boolean",
+                "IndS"       : "Independent sampels or not. Boolean,
+                "TransMethod": "Transformation method",
+                "NormMethod" : "Normalization method",
+                "ImpMethod"  : "Imputation method",
+                "Alpha"      : "Significance level",
+                "CorrectP"   : "Method to correct P values",
+                "Cond"       : [List of conditions],
+                "RP"         : [List of relevent points],
+                "ControlT"   : "Control type",
+                "oc": {
+                    "DetectedP": "Detected Proteins column. Int",
+                    "GeneName" : "Gene name column. Int",
+                    "ScoreCol" : "Score column. Int",
+                    "ExcludeP" : [List of columns to search for proteins to 
+                                exclude. List of int],
+                    "ColExtract": [List of columns to extract],
+                    "ResCtrl": [List of columns containing the control and 
+                                experiments column numbers],
+                    "Column": [Flat list of all column numbers with the 
+                              following order: Gene Names, Detected Proteins, 
+                              Score, Exclude Proteins, Res & Control]
+                },
+                "df": { Column numbers in the pd.df created from the input file.
+                    "DetectedP": 0,
+                    "GeneName" : 1,
+                    "ScoreCol" : 2,
+                    "ExcludeP" : [list of int],
+                    "ResCtrl": [],
+                    "ResCtrlFlat": [ResCtrl as a flat list],
+                    "ColumnF": [Columns that must contain only float numbers]
+                }
+            },    
+        d: dict
+            Dictionary with the user input. Keys are labels in the panel plus:
+            {
+                config.lStProtProfCond          : [list of conditions],
+                config.lStProtProfRP            : [list of relevant points],
+                f"Control {config.lStCtrlType}" : "Control Type",
+                f"Control {config.lStCtrlName}" : "Control Name",
+            }
+            
+        See Parent classes for more aatributes.
+        
+        Notes
+        -----
+        Running the analysis results in the creation of:
+        
+        - Parent Folder/
+            - Input_Data_Files/
+            - Steps_Data_Files/20210324-165609-Proteome-Profiling/
+            - output-file.umsap
+        
+        The Input_Data_Files folder contains the original data files. These are 
+        needed for data visualization, running analysis again with different 
+        parameters, etc.
+        The Steps_Data_Files/Date-Section folder contains regular csv files with 
+        the step by step data.
+    
+        The Proteome Profiling section in output-file.umsap conteins the 
+        information about the calculations, e.g
 
-        Raises
-        ------
+        {
+            'Proteome-Profiling : {
+                '20210324-165609': {
+                    'V' : config.dictVersion,
+                    'I' : self.d,
+                    'CI': self.do,
+                    'DP': {
+                        'dfS' : pd.DataFrame with initial data as float and
+                                after discarding values by score.
+                        'dfT' : pd.DataFrame with transformed data.
+                        'dfN' : pd.DataFrame with normalized data.
+                        'dfIm': pd.DataFrame with imputed data.
+                    }
+                    'R' : pd.DataFrame (dict) with the calculation results.
+                }
+            }
+        }
         
-
-        Methods
-        -------
+        The result data frame has the following structure:
         
+        Gene Protein Score C1 ..... CN
+        Gene Protein Score RP1 ..... RPN
+        Gene Protein Score aveC stdC ave std P Pc FC FCciL FCciU FCz
+        
+        where all FC related values are for log2FC
     """
     #region -----------------------------------------------------> Class setup
     name = config.npProtProf
@@ -2368,7 +2508,7 @@ class ProtProf(BaseConfModPanel):
         self.cTitlePD     = f"Running {config.nmProtProf} Analysis"
         self.cGaugePD     = 30
         #------------------------------> Optional configuration
-        self.cHelpTT = config.ttBtnHelp.format(config.urlProtProf)
+        self.cTTHelp = config.ttBtnHelp.format(config.urlProtProf)
         #------------------------------> Base attributes and setup
         super().__init__(parent)
         #------------------------------> Needed to Run
@@ -2380,9 +2520,9 @@ class ProtProf(BaseConfModPanel):
         self.cLSample      = 'Samples'
         self.cLRawI        = 'Intensities'
         #------------------------------> Choices
-        self.cOSample   = [x for x in config.oSamples.values()]
-        self.cORawI     = [x for x in config.oIntensities.values()]
-        self.cOCorrectP = [x for x in config.oCorrectP.keys()]
+        self.cOSample   = list(config.oSamples.values())
+        self.cORawI     = list(config.oIntensities.values())
+        self.cOCorrectP = list(config.oCorrectP.keys())
         #------------------------------> Tooltips
         self.cTTCorrectP    = config.ttStPCorrection
         self.cTTGeneName    = config.ttStGenName
@@ -2667,10 +2807,59 @@ class ProtProf(BaseConfModPanel):
         else:
             pass
         #endregion -----------------------------------------------------> Test
+        
+        #region -------------------------------------------------------> DataI
+        self.SetInitialData(dataI)
+        #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def SetInitialData(self, dataI: Optional[dict]=None) -> Literal[True]:
+        """Set initial data
+    
+            Parameters
+            ----------
+            dataI : dict or None
+                Data to fill all fields and repeat an analysis. See Notes.
+    
+            Returns
+            -------
+            True
+        """
+        #region -------------------------------------------------> Fill Fields
+        if dataI is not None:
+            #------------------------------> Files
+            self.uFile.tc.SetValue(dataI['CI']['uFile'])
+            self.iFile.tc.SetValue(dataI['I'][self.cLiFile])
+            #------------------------------> Data Preparation
+            self.transMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
+            self.normMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
+            self.imputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
+            #------------------------------> Values
+            self.scoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
+            self.sample.cb.SetValue(dataI['I'][self.cLSample])
+            self.rawI.cb.SetValue(dataI['I'][self.cLRawI])
+            self.alpha.tc.SetValue(dataI['I'][self.cLAlpha])
+            self.correctP.cb.SetValue(dataI['I'][self.cLCorrectP])
+            #------------------------------> Columns
+            self.detectedProt.tc.SetValue(dataI['I'][self.cLDetectedProt])
+            self.geneName.tc.SetValue(dataI['I'][self.cLGeneName])
+            self.score.tc.SetValue(dataI['I'][self.cLScoreCol])
+            self.excludeProt.tc.SetValue(dataI['I'][self.cLExcludeProt])
+            self.colExtract.tc.SetValue(dataI['I'][self.cLColExtract])
+            self.tcResults.SetValue(dataI['I'][self.cLResControl])
+            self.lbDict[1] = dataI['I'][config.lStProtProfCond]
+            self.lbDict[2] = dataI['I'][config.lStProtProfRP]
+            self.lbDict['ControlType'] = dataI['I'][f'Control {config.lStCtrlType}']
+            self.lbDict['Control'] = dataI['I'][f"Control {config.lStCtrlName}"]
+        else:
+            pass
+        #endregion ----------------------------------------------> Fill Fields
+        
+        return True
+    #---
+    
     #------------------------------> Run methods
     def CheckInput(self):
         """Check user input"""
@@ -2850,20 +3039,20 @@ class ProtProf(BaseConfModPanel):
         resctrlDFFlat = dmethod.ResControl2Flat(resctrlDF)
         #--------------> 
         self.do  = {
-            'iFile'     : Path(self.iFile.tc.GetValue()),
-            'uFile'     : Path(self.uFile.tc.GetValue()),
-            'ScoreVal'  : float(self.scoreVal.tc.GetValue()),
-            'RawI'      : True if self.rawI.cb.GetValue() == config.oIntensities['RawI'] else False,
-            'IndS'      : True if self.sample.cb.GetValue() == config.oSamples['IS'] else False,
-            'NormMethod': self.normMethod.cb.GetValue(),
-            'TranMethod': self.transMethod.cb.GetValue(),
-            'Imputation': self.imputationMethod.cb.GetValue(),
-            'Alpha'     : float(self.alpha.tc.GetValue()),
-            'CorrectP'  : self.correctP.cb.GetValue(),
-            'Cond'      : self.lbDict[1],
-            'RP'        : self.lbDict[2],
-            'ControlT'  : self.lbDict['ControlType'],
-            'oc' : {
+            'iFile'      : Path(self.iFile.tc.GetValue()),
+            'uFile'      : Path(self.uFile.tc.GetValue()),
+            'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
+            'RawI'       : True if self.rawI.cb.GetValue() == config.oIntensities['RawI'] else False,
+            'IndS'       : True if self.sample.cb.GetValue() == config.oSamples['IS'] else False,
+            'NormMethod' : self.normMethod.cb.GetValue(),
+            'TransMethod': self.transMethod.cb.GetValue(),
+            'ImpMethod'  : self.imputationMethod.cb.GetValue(),
+            'Alpha'      : float(self.alpha.tc.GetValue()),
+            'CorrectP'   : self.correctP.cb.GetValue(),
+            'Cond'       : self.lbDict[1],
+            'RP'         : self.lbDict[2],
+            'ControlT'   : self.lbDict['ControlType'],
+            'oc'         : {
                 'DetectedP' : detectedProt,
                 'GeneName'  : geneName,
                 'ScoreCol'  : scoreCol,
@@ -2982,7 +3171,7 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Msg
         msgStep = (
             f'{msgPrefix}'
-            f'Performing data transformation - {self.do["TranMethod"]}'
+            f'Performing data transformation - {self.do["TransMethod"]}'
         )  
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Transformed
@@ -2990,7 +3179,7 @@ class ProtProf(BaseConfModPanel):
             self.dfT = dtsStatistic.DataTransformation(
                 self.dfS, 
                 self.do['df']['ResCtrlFlat'], 
-                method = self.do['TranMethod'],
+                method = self.do['TransMethod'],
                 rep    = np.nan,
             )
         except Exception as e:
@@ -3028,7 +3217,7 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Msg
         msgStep = (
             f'{msgPrefix}'
-            f'Performing data imputation - {self.do["Imputation"]}'
+            f'Performing data imputation - {self.do["ImpMethod"]}'
         )  
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Imputation
@@ -3036,7 +3225,7 @@ class ProtProf(BaseConfModPanel):
             self.dfIm = dtsStatistic.DataImputation(
                 self.dfN, 
                 self.do['df']['ResCtrlFlat'], 
-                method = self.do['Imputation'],
+                method = self.do['ImpMethod'],
             )
         except Exception as e:
             self.msgError   = config.mPDDataImputation
@@ -3336,7 +3525,7 @@ class ProtProf(BaseConfModPanel):
             axis=1, skipna=True).to_numpy()
         #------------------------------> Intensities as log2 Intensities
         dfLogI = self.dfIm.copy() 
-        if self.do['TranMethod'] == 'Log2':
+        if self.do['TransMethod'] == 'Log2':
             pass
         else:
             if colC is not None:

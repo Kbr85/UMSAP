@@ -823,7 +823,8 @@ class UMSAPControl(BaseWindow):
     cFileLabelCheck = ['Data File']
     
     cSectionTab = { # Section name and Tab name correlation
-        config.nuCorrA : config.ntCorrA
+        config.nuCorrA   : config.ntCorrA,
+        config.nmProtProf: config.ntProtProf,
     }
     #endregion --------------------------------------------------> Class setup
 
