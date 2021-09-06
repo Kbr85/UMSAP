@@ -156,11 +156,11 @@ t = {
     nwMain    : "Analysis Setup",
     #------------------------------> Dialogs
     ndCheckUpdateResDialog : "Check for Updates",
+    ndResControlExp : 'Results - Control Experiments',
     #------------------------------> Tabs
     ntStart   : 'Start',
     ntCorrA   : 'CorrA',
     ntProtProf: 'ProtProf',
-    
 }
 #endregion -----------------------------------------------------------> Titles
 
@@ -402,7 +402,7 @@ mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
-sWinRegular = (920, 670)
+sWinRegular = (930, 700)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
 #------------------------------> wx.StatusBar Fields
