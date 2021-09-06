@@ -34,6 +34,8 @@ class ResControl():
 
         Attributes
         ----------
+        cLResControl : str
+            Label for the wx.StaticText. Default to config.lStResultCtrl.
         btnResultsW: wx.Button 
         stResults: wx.StaticText
         tcResults: wx.TextCtrl
@@ -49,19 +51,19 @@ class ResControl():
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent):
         """ """
-        self.cResControlL = config.lStResultCtrl
+        self.cLResControl = config.lStResultCtrl
         #region -----------------------------------------------------> Widgets
         self.tcResults = wx.TextCtrl(
             parent    = parent,
             style     = wx.TE_READONLY,
             value     = "",
-            size      = self.cTcSize,
+            size      = config.sTc,
             validator = dtsValidator.IsNotEmpty(),
         )
 
         self.stResults = wx.StaticText(
             parent = parent,
-            label  = self.cResControlL,
+            label  = self.cLResControl,
             style  = wx.ALIGN_RIGHT
         )
 

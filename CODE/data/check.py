@@ -30,7 +30,7 @@ if config.typeCheck:
 
 #region -------------------------------------------------------------> Methods
 def UniqueColNumbers(
-    value: list[str], sepList: list[str]=[' ', ',' ';'],
+    value: list[str], sepList: list[str]=[' ', ',', ';'],
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Check value contains unique integers.
 
@@ -134,11 +134,11 @@ def UniqueColNumbers(
     except Exception as e:
         raise e
     #endregion -----------------------------------------------> Check Elements
-    
 #---
+
 def TcUniqueColNumbers(
     tcList: list['wx.TextCtrl'], resCtrl: 'wx.TextCtrl', 
-    sepList: list[str]=[' ', ',' ';'],
+    sepList: list[str]=[' ', ',', ';'],
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Checks individual elements in the wx.TextCtrl are unique.
 

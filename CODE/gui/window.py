@@ -20,7 +20,6 @@ from pathlib import Path
 from typing import Optional, Literal
 
 import requests
-from requests.api import get
 import wx
 import wx.adv as adv
 import wx.lib.agw.aui as aui
@@ -1302,7 +1301,7 @@ class ResControlExp(wx.Dialog):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
-        self.conf = pane.ResControlExp(self, iFile, parent)
+        self.conf = tab.ResControlExp(self, iFile, parent)
         #------------------------------> Buttons
         self.sizerBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
         #endregion --------------------------------------------------> Widgets
