@@ -2030,71 +2030,22 @@ class CorrA(BaseConfPanel):
         
         return True
     #---
+    
     #-------------------------------------> Run analysis methods
     def CheckInput(self):
         """Check user input"""
+        #region -------------------------------------------------------> Super
+        if super().CheckInput():
+            pass
+        else:
+            return False
+        #endregion ----------------------------------------------------> Super
         
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdCheck
         #endregion ------------------------------------------------------> Msg
         
-        #region -------------------------------------------> Individual Fields
-        #region -------------------------------------------> Output File
-        msgStep = msgPrefix + self.cLuFile
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.uFile.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mFileBad.format(b[1], self.cLuFile), b[2]
-            )
-            return False
-        #endregion ----------------------------------------> Output File
-        
-        #region -------------------------------------------> Input File 
-        msgStep = msgPrefix + self.cLiFile
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.iFile.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mFileBad.format(b[1], self.cLiFile), b[2]
-            )
-            return False
-        #endregion ----------------------------------------> Input File 
-        
-        #region -------------------------------------------> Transformation 
-        msgStep = msgPrefix + self.cLTransMethod
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.transMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLTransMethod)
-            return False
-        #endregion ----------------------------------------> Transformation 
-        
-        #region -------------------------------------------> Normalization
-        msgStep = msgPrefix + self.cLNormMethod
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.normMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLNormMethod)
-            return False
-        #endregion ----------------------------------------> Normalization
-        
-        #region -------------------------------------------> Imputation
-        msgStep = msgPrefix + self.cLImputation
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.imputationMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLImputation)
-            return False
-        #endregion ----------------------------------------> Imputation
-        
+        #region -------------------------------------------> Individual Fields        
         #region -------------------------------------------> Correlation
         msgStep = msgPrefix + self.cLCorr
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
@@ -2191,26 +2142,6 @@ class CorrA(BaseConfPanel):
             pass
         #endregion ----------------------------------------------------> Print
     
-        return True
-    #---
-
-    def ReadInputFiles(self):
-        """Read input file and check data"""
-        #region ---------------------------------------------------------> Msg
-        msgPrefix = config.lPdReadFile
-        #endregion ------------------------------------------------------> Msg
-
-        #region ---------------------------------------------------> Data file
-        msgStep = msgPrefix + f"{self.cLiFile}"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        try:
-            self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
-        except dtsException.FileIOError as e:
-            self.msgError = str(e)
-            self.tException = e
-            return False
-        #endregion ------------------------------------------------> Data file
-
         return True
     #---
 
@@ -2375,6 +2306,7 @@ class CorrA(BaseConfPanel):
         self.dfR        = None
         self.date       = None # date for corr file
         self.oFolder    = None # folder for output
+        self.iFileObj   = None # input file object
         self.corrP      = None # path to the corr file that will be created
         self.deltaT     = None
         #------------------------------> 
