@@ -162,7 +162,7 @@ class PlotMenu(wx.Menu, MenuMethods):
         Attributes
         ----------
         plotDate : list[wx.MenuItems]
-            List of available dates menu items
+            List of available dates menu items.
     """
     #region -----------------------------------------------------> Class setup
     
@@ -480,7 +480,35 @@ class CorrAPlotToolMenu(PlotMenu):
 
 
 #region -----------------------------------------------------------> Mix menus
+class ProtProfToolMenu(wx.Menu, MenuMethods):
+    """ """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
 
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuDate: list[str]):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.plotDate = []
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        #------------------------------> Add Dates
+        self.AddDateItems(menuDate)
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion --------------------------------------------------------> Mix menus
 
 
@@ -525,6 +553,7 @@ class ToolMenuBar(MainMenuBar):
         config.nwMain        : None,
         config.nwUMSAPControl: FileControlToolMenu,
         config.nwCorrAPlot   : CorrAPlotToolMenu,
+        config.nwProtProf    : ProtProfToolMenu,
     }
     #endregion --------------------------------------------------> Class Setup
     

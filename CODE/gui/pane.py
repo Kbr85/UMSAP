@@ -1687,6 +1687,89 @@ class ResControlExpConfBase(wx.Panel):
 
 
 #region -------------------------------------------------------------> Classes
+#------------------------------> Panes
+class ListCtrlSearchPlot(wx.Panel):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    name = config.npListCtrlSearchPlot
+    cTitle = 'Protein list'
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: wx.Window, colLabel: Optional[list[str]]=None, 
+        colSize: Optional[list[int]]=None, data: list[list]=[],
+        style = wx.LC_REPORT,
+        ) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, name=self.name)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> 
+        self.lcs = dtsWidget.ListCtrlSearch(
+            self, 
+            listT    = 2,
+            colLabel = colLabel,
+            colSize  = colSize,
+            canCut   = False,
+            canPaste = False,
+            style    = style,
+            data     = data,
+        )
+        #------------------------------> Fill List
+        # if data is not None:
+        #     self.lcs.lc.AddList(data)
+        # else:
+        #     pass
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.SetSizer(self.lcs.Sizer)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
 #------------------------------> Utils
 class CorrA(BaseConfPanel):
     """Creates the configuration tab for Correlation Analysis
@@ -3160,6 +3243,8 @@ class ProtProf(BaseConfModPanel):
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Exclude
         self.dfS = self.dfEx.loc[self.dfEx.iloc[:,2] >= self.do['ScoreVal']]
+        #------------------------------> Sort
+        self.dfS.sort_values(by = list(self.dfS.columns[0:2]), inplace=True)
         #------------------------------> Reset index
         self.dfS.reset_index(drop=True, inplace=True)
         

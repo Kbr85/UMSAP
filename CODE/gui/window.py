@@ -771,6 +771,158 @@ class CorrAPlot(BaseWindowPlot):
 #---
 
 
+class ProtProfPlot(BaseWindow):
+    """Plot results in the Proteome Profiling section of an UMSAP file.
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    #------------------------------> To id the window
+    name = config.nwProtProf
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nmProtProf
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: 'UMSAPControl') -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle  = f"{parent.cTitle} - {self.cSection}"
+        self.obj     = parent.obj
+        self.data    = self.obj.confData[self.cSection]
+        self.date    = list(self.data.keys())
+        #------------------------------> Configuration
+        self.cLCol = ['#', 'Gene', 'Protein']
+        self.cSCol = [50, 100, 200]
+        
+        super().__init__(parent, menuDate=self.date)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------>  Plot
+        self.a = wx.Panel(self, size=(100, 100))
+        #------------------------------> Text details
+        self.text = wx.TextCtrl(
+            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
+        #------------------------------> wx.ListCtrl
+        #--------------> Protein list that will not change for this analysis.
+        data = self.data[self.date[0]]['DF'].iloc[:,0:2]
+        data.insert(0, 'kbr', range(0,data.shape[0]))
+        data = data.astype(str)
+        data = data.values.tolist()
+        #--------------> Build and fill wx.ListCtrl
+        self.lc = pane.ListCtrlSearchPlot(
+            self, 
+            colLabel = self.cLCol,
+            colSize  = self.cSCol,
+            data     = data,
+            style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
+        )
+        #endregion --------------------------------------------------> Widgets
+        
+        #region -------------------------------------------------> Aui control
+        #------------------------------> AUI control
+        self._mgr = aui.AuiManager()
+        #------------------------------> AUI which frame to use
+        self._mgr.SetManagedWindow(self)
+        #------------------------------> Add Configuration panel
+        self._mgr.AddPane( 
+            self.a, 
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    'Center'
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+
+        self._mgr.AddPane( 
+            self.text, 
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    'Profiling details'
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        
+        self._mgr.AddPane( 
+            self.lc, 
+            aui.AuiPaneInfo(
+                ).Left(
+                ).Layer(
+                    1    
+                ).Caption(
+                    self.lc.cTitle
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ----------------------------------------------> Aui control
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
 class UMSAPControl(BaseWindow):
     """Control for an umsap file. 
 
@@ -817,7 +969,8 @@ class UMSAPControl(BaseWindow):
     cSizeWindow = (400, 700)
     
     cPlotMethod = { # Methods to create plot windows
-        config.nuCorrA : CorrAPlot
+        config.nuCorrA   : CorrAPlot,
+        config.nmProtProf: ProtProfPlot,
     }
     
     cFileLabelCheck = ['Data File']
