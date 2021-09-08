@@ -162,6 +162,9 @@ class PlotMenu(wx.Menu, MenuMethods):
             
         Attributes
         ----------
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in window 
+            class.
         plotDate : list[wx.MenuItems]
             List of available dates menu items.
     """
@@ -173,13 +176,15 @@ class PlotMenu(wx.Menu, MenuMethods):
     def __init__(self, menuData: dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__()
+        self.menuData = menuData
         self.plotDate = []
+        #------------------------------> 
+        super().__init__()
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
         #------------------------------> Add Dates
-        self.AddDateItems(menuData['menudate'])
+        self.AddDateItems(self.menuData['menudate'])
         #------------------------------> Other items
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
@@ -489,18 +494,26 @@ class VolcanoPlot(wx.Menu):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self):
+    def __init__(self, crp: dict, iDate: str):
         """ """
         #region -----------------------------------------------> Initial Setup
+        self.crp = crp
+        #------------------------------> Menu items for cond & relevant points
+        self.cond, self.rp = self.SetCondRPMenuItems(iDate)
+        #------------------------------> Cond - RP separator
+        self.sep = None
+        #------------------------------> 
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.cond = self.Append(-1, 'Conditions')
+        self.AddCondRPMenuItems2Menus()
         self.AppendSeparator()
-        self.rp = self.Append(-1, 'Relevant Points')
+        self.zScore = self.Append(-1, 'Z score')
         self.AppendSeparator()
-        self.pCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_RADIO)
+        self.pCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
+        self.saveI = self.Append(-1, 'Save Plot Image')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
@@ -510,7 +523,93 @@ class VolcanoPlot(wx.Menu):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def SetCondRPMenuItems(
+        self, tDate: str
+        ) -> tuple[list[wx.MenuItem], list[wx.MenuItem]]:
+        """Set the menu items for conditions and relevant points as defined for 
+            the current analysis.
     
+            Parameters
+            ----------
+            tDate : str
+    
+            Returns
+            -------
+            tuple:
+                First element is the condition menu items and second relevant 
+                point menu items.
+        """
+        #region -------------------------------------------------> Empty lists
+        cond = []
+        rp = []
+        #endregion ----------------------------------------------> Empty lists
+        
+        #region ------------------------------------------------> Add elements
+        #------------------------------> Conditions
+        for c in self.crp[tDate]['C']:
+            cond.append(wx.MenuItem(None, -1, text=c, kind=wx.ITEM_RADIO))
+        #------------------------------> Relevant Points
+        for t in self.crp[tDate]['RP']:
+            rp.append(wx.MenuItem(None, -1, text=t, kind=wx.ITEM_RADIO))
+        #endregion ---------------------------------------------> Add elements
+        
+        return (cond, rp)
+    #---
+    
+    def AddCondRPMenuItems2Menus(self) -> bool:
+        """Add the menu items in self.cond and self.rp to the menu"""
+        #region ---------------------------------------------------> Add items
+        #------------------------------> Conditions
+        for k,c in enumerate(self.cond):
+            self.Insert(k,c)
+        #------------------------------> Separator
+        self.sep = wx.MenuItem(None)
+        self.Insert(k+1, self.sep)
+        #------------------------------> Relevant Points
+        for j,t in enumerate(self.rp, k+2):
+            self.Insert(j, t)
+        #endregion ------------------------------------------------> Add items
+        
+        return True
+    #---
+    
+    def UpdateCondRP(self, tDate) -> bool:
+        """Update the conditions and relevant points when date changes.
+    
+            Parameters
+            ----------
+            tDate : str
+                Selected date
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Date changes in ProtProfToolMenu
+        """
+        #region ---------------------------------------------> Delete Elements
+        #------------------------------> Conditions
+        for c in self.cond:
+            self.Delete(c)
+        #------------------------------> Separators
+        self.Delete(self.sep)
+        self.sep = None
+        #------------------------------> RP
+        for rp in self.rp:
+            self.Delete(rp)
+        #endregion ------------------------------------------> Delete Elements
+        
+        #region -----------------------------------> Create & Add New Elements
+        #------------------------------> 
+        self.cond, self.rp = self.SetCondRPMenuItems(tDate)
+        #------------------------------> 
+        self.AddCondRPMenuItems2Menus()
+        #endregion --------------------------------> Create & Add New Elements
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -530,7 +629,8 @@ class FCEvolution(wx.Menu):
 
         #region --------------------------------------------------> Menu Items
         self.showAll = self.Append(-1, 'Show All')
-        self.saveI = self.Append(-1, 'Save Image')
+        self.AppendSeparator()
+        self.saveI = self.Append(-1, 'Save Plot Image')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
@@ -582,19 +682,24 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuDate: list[str]):
+    def __init__(self, menuData: dict):
         """ """
         #region -----------------------------------------------> Initial Setup
+        self.menuData = menuData
         self.plotDate = []
+        
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
         #------------------------------> Add Dates
-        self.AddDateItems(menuDate)
+        self.AddDateItems(self.menuData['menudate'])
         self.AppendSeparator()
         #------------------------------> Volcano Plot
-        self.AppendSubMenu(VolcanoPlot(), 'Volcano Plot')
+        self.volcano =  VolcanoPlot(
+                self.menuData['crp'], self.plotDate[0].GetItemLabelText()
+        )
+        self.AppendSubMenu(self.volcano, 'Volcano Plot',)
         self.AppendSeparator()
         #------------------------------> Relevant Points
         self.AppendSubMenu(FCEvolution(), 'FC Evolution')
@@ -604,6 +709,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.AppendSeparator()
         #------------------------------> Export Data
         self.expD = self.Append(-1, 'Export Data')
+        self.AppendSeparator()
         #------------------------------> Reset
         self.reset = self.Append(-1, 'Reset View')
         #endregion -----------------------------------------------> Menu Items
@@ -615,7 +721,28 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def OnPlotDate(self, event: wx.CommandEvent) -> Literal[True]:
+        """Plot a date of a section in an UMSAP file.
     
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+        
+        """
+        #region --------------------------------------------------------> Date
+        tDate = self.GetLabelText(event.GetId())
+        #endregion -----------------------------------------------------> Date
+        
+        #region -----------------------------------------> Update Volcano menu
+        self.volcano.UpdateCondRP(tDate)
+        #endregion --------------------------------------> Update Volcano menu
+        
+        
+        # win = self.GetWindow()
+        # win.Draw(self.GetLabelText(event.GetId()))
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 #endregion --------------------------------------------------------> Mix menus

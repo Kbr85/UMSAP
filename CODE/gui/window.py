@@ -820,12 +820,12 @@ class ProtProfPlot(BaseWindow):
         self.cTitle  = f"{parent.cTitle} - {self.cSection}"
         self.obj     = parent.obj
         self.data    = self.obj.confData[self.cSection]
-        self.date    = list(self.data.keys())
+        self.date, menuData = self.SetDateMenuDate()
         #------------------------------> Configuration
         self.cLCol = ['#', 'Gene', 'Protein']
-        self.cSCol = [50, 100, 200]
+        self.cSCol = [45, 70, 100]
         
-        super().__init__(parent, menuData=self.date)
+        super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -929,7 +929,46 @@ class ProtProfPlot(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    
+    def SetDateMenuDate(self) -> tuple[list, dict]:
+        """Set the self.date list and the menuData dict needed to build the Tool
+            menu.
+
+            Returns
+            -------
+            dict:
+            {
+                'menudate' : [List of dates],
+                'crp' : {
+                    'date1' : {
+                        'C' : [List of conditions],
+                        'RP': [List of relevant points],
+                    }
+                    .......
+                    'dateN'
+                }
+            }                    
+        """
+        #region ---------------------------------------------------> Fill dict
+        #------------------------------> Variables
+        date = []
+        menuData = {
+            'crp' : {},
+        }
+        #------------------------------> Fill 
+        for k in self.data.keys():
+            #------------------------------> 
+            date.append(k)
+            #------------------------------> 
+            menuData['crp'][k] = {
+                'C' : self.obj.data[self.cSection][k]['CI']['Cond'],
+                'RP': self.obj.data[self.cSection][k]['CI']['RP']
+            }
+        #------------------------------> 
+        menuData['menudate'] = date
+        #endregion ------------------------------------------------> Fill dict
+        
+        return (date, menuData)
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
