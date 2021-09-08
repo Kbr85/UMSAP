@@ -113,8 +113,9 @@ class BaseWindow(wx.Frame):
         ----------
         parent : wx.Window or None
             Parent of the window
-        menuDate : list of str or None
-            Date entries for menu of plotting windows e.g. 20210220-104527
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
 
         Attributes
         ----------
@@ -142,7 +143,7 @@ class BaseWindow(wx.Frame):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, parent: Optional[wx.Window]=None, 
-        menuDate: Optional[list[str]]=None,
+        menuData: Optional[dict]=None,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -164,7 +165,7 @@ class BaseWindow(wx.Frame):
         #endregion --------------------------------------------------> Widgets
 
         #region --------------------------------------------------------> Menu
-        self.menubar = menu.ToolMenuBar(self.name, menuDate)
+        self.menubar = menu.ToolMenuBar(self.name, menuData)
         self.SetMenuBar(self.menubar)		
         #endregion -----------------------------------------------------> Menu
         
@@ -227,9 +228,9 @@ class BaseWindowPlot(BaseWindow):
         ----------
         parent : 'UMSAPControl'
             Parent of the window.
-        menuDate : list of str or None
-            Date entries for menu of plotting windows.
-            e.g. ['20210220-104527', ....]
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
             
         Attributes
         ----------
@@ -250,11 +251,11 @@ class BaseWindowPlot(BaseWindow):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, parent: Optional[wx.Window]=None, 
-        menuDate: Optional[list[str]]=None
+        menuData: Optional[dict]=None
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__(parent=parent, menuDate=menuDate)
+        super().__init__(parent=parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -495,7 +496,9 @@ class MainWindow(BaseWindow):
 
 
 class CorrAPlot(BaseWindowPlot):
-    """Creates the window showing the results of a correlation analysis
+    """Creates the window showing the results of a correlation analysis.
+    
+        See Notes below for more details.
 
         Parameters
         ----------
@@ -523,6 +526,13 @@ class CorrAPlot(BaseWindowPlot):
             object here, modify the configure step or add a Get method.
         plot : dtsWidget.MatPlotPanel
             Main plot of the window
+            
+        Notes
+        -----
+        The structure of menuData is:
+        {
+            'menudate' : [list of dates in the section],
+        }
     """
     #region -----------------------------------------------------> Class setup
     #------------------------------> To id the window
@@ -554,7 +564,7 @@ class CorrAPlot(BaseWindowPlot):
             c3 = config.color[self.cSection]['CMAP']['c3'],
         )
 
-        super().__init__(parent, self.date)
+        super().__init__(parent, {'menudate' : self.date})
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -815,7 +825,7 @@ class ProtProfPlot(BaseWindow):
         self.cLCol = ['#', 'Gene', 'Protein']
         self.cSCol = [50, 100, 200]
         
-        super().__init__(parent, menuDate=self.date)
+        super().__init__(parent, menuData=self.date)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu

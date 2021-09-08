@@ -156,8 +156,9 @@ class PlotMenu(wx.Menu, MenuMethods):
     
         Parameters
         ----------
-        menuDate : list of str
-            List of available dates for the menu
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in window 
+            class.
             
         Attributes
         ----------
@@ -169,7 +170,7 @@ class PlotMenu(wx.Menu, MenuMethods):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuDate: list[str]) -> None:
+    def __init__(self, menuData: dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
@@ -178,7 +179,7 @@ class PlotMenu(wx.Menu, MenuMethods):
 
         #region --------------------------------------------------> Menu Items
         #------------------------------> Add Dates
-        self.AddDateItems(menuDate)
+        self.AddDateItems(menuData['menudate'])
         #------------------------------> Other items
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
@@ -386,18 +387,19 @@ class CorrAPlotToolMenu(PlotMenu):
     
         Parameters
         ----------
-        menuDate : list of str
-            Available dates to plot e.g. 20210304-053517
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in window
+            class.
     """
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuDate: list[str]) -> None:
+    def __init__(self, menuData: dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__(menuDate)
+        super().__init__(menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
@@ -512,6 +514,7 @@ class VolcanoPlot(wx.Menu):
     #endregion ------------------------------------------------> Class methods
 #---
 
+
 class FCEvolution(wx.Menu):
     """Menu for a log2FC evolution along relevant points """
     #region -----------------------------------------------------> Class setup
@@ -540,6 +543,7 @@ class FCEvolution(wx.Menu):
     
     #endregion ------------------------------------------------> Class methods
 #---
+
 
 class FiltersProtProf(wx.Menu):
     """Menu for the ProtProfPlot Filters """
@@ -649,8 +653,9 @@ class ToolMenuBar(MainMenuBar):
         name : str
             Unique name of the window/tab for which the Tool menu will be 
             created
-        menuDate : list of str or None
-            Available dates to plot e.g. 20210304-053517. Default is None
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in the
+            window class.
     """
 
     #region -----------------------------------------------------> Class Setup
@@ -663,7 +668,7 @@ class ToolMenuBar(MainMenuBar):
     #endregion --------------------------------------------------> Class Setup
     
     #region --------------------------------------------------- Instance Setup
-    def __init__(self, name: str, menuDate: Optional[list[str]]=None) -> None:
+    def __init__(self, name: str, menuData: Optional[dict]=None) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
@@ -671,7 +676,7 @@ class ToolMenuBar(MainMenuBar):
         
         #region -----------------------------------------> Menu items & Append
         if self.toolClass[name] is not None:
-            self.Tool  = self.toolClass[name](menuDate)
+            self.Tool  = self.toolClass[name](menuData)
             self.Insert(config.toolsMenuIdx, self.Tool, 'Tools')
         else:
             pass
