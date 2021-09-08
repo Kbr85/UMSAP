@@ -147,6 +147,28 @@ class MenuMethods():
         win.OnDupWin()
         return True
     #---
+    
+    def GetCheckedRadiodItem(self, lMenuItem: list[wx.MenuItem]) -> str:
+        """Get the checked item in a list of radio menu items.
+    
+            Parameters
+            ----------
+            lMenuItem: list of wx.MenuItems
+                Items are expected to be radio items from the same group.
+    
+            Returns
+            -------
+            str
+                Label of the checked item
+        """
+        #region -----------------------------------------------------> Checked
+        for k in lMenuItem:
+            if k.IsChecked():
+                return k.GetItemLabelText()
+            else:
+                pass
+        #endregion --------------------------------------------------> Checked    
+    #---
     #endregion ------------------------------------------------> Class Methods
 #---
 
@@ -483,11 +505,9 @@ class CorrAPlotToolMenu(PlotMenu):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
-#endregion -------------------------------------------------> Individual menus
 
 
-#region -----------------------------------------------------------> Mix menus
-class VolcanoPlot(wx.Menu):
+class VolcanoPlot(wx.Menu, MenuMethods):
     """Menu for a Volcano Plot """
     #region -----------------------------------------------------> Class setup
     
@@ -497,13 +517,14 @@ class VolcanoPlot(wx.Menu):
     def __init__(self, crp: dict, iDate: str):
         """ """
         #region -----------------------------------------------> Initial Setup
+        self.date = iDate
         self.crp = crp
-        #------------------------------> Menu items for cond & relevant points
-        self.cond, self.rp = self.SetCondRPMenuItems(iDate)
-        #------------------------------> Cond - RP separator
+        #------------------------------> Cond - RP separator. To remove/create.
         self.sep = None
         #------------------------------> 
         super().__init__()
+        #------------------------------> Menu items for cond & relevant points
+        self.cond, self.rp = self.SetCondRPMenuItems(iDate)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
@@ -547,10 +568,20 @@ class VolcanoPlot(wx.Menu):
         #region ------------------------------------------------> Add elements
         #------------------------------> Conditions
         for c in self.crp[tDate]['C']:
-            cond.append(wx.MenuItem(None, -1, text=c, kind=wx.ITEM_RADIO))
+            #------------------------------> 
+            i = wx.MenuItem(None, -1, text=c, kind=wx.ITEM_RADIO)
+            #------------------------------> 
+            cond.append(i)
+            #------------------------------> 
+            self.Bind(wx.EVT_MENU, self.OnPlotCondRP, source=i)
         #------------------------------> Relevant Points
         for t in self.crp[tDate]['RP']:
-            rp.append(wx.MenuItem(None, -1, text=t, kind=wx.ITEM_RADIO))
+            #------------------------------> 
+            i = wx.MenuItem(None, -1, text=t, kind=wx.ITEM_RADIO)
+            #------------------------------> 
+            rp.append(i)
+            #------------------------------> 
+            self.Bind(wx.EVT_MENU, self.OnPlotCondRP, source=i)
         #endregion ---------------------------------------------> Add elements
         
         return (cond, rp)
@@ -602,11 +633,42 @@ class VolcanoPlot(wx.Menu):
         #endregion ------------------------------------------> Delete Elements
         
         #region -----------------------------------> Create & Add New Elements
+        self.date = tDate
         #------------------------------> 
         self.cond, self.rp = self.SetCondRPMenuItems(tDate)
         #------------------------------> 
         self.AddCondRPMenuItems2Menus()
         #endregion --------------------------------> Create & Add New Elements
+        
+        return True
+    #---
+    
+    def OnPlotCondRP(self, event:wx.Event) -> bool:
+        """Update volcano plot.
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #---
+        #region ----------------------------------------------------> Get Data
+        cond = self.GetCheckedRadiodItem(self.cond)
+        rp   = self.GetCheckedRadiodItem(self.rp)
+        #endregion -------------------------------------------------> Get Data
+        
+        #region --------------------------------------------------------> Draw
+        win = self.GetWindow()
+        win.Draw(self.date, cond, rp)
+        #endregion -----------------------------------------------------> Draw
         
         return True
     #---
@@ -675,6 +737,10 @@ class FiltersProtProf(wx.Menu):
 #---
 
 
+#endregion -------------------------------------------------> Individual menus
+
+
+#region -----------------------------------------------------------> Mix menus
 class ProtProfToolMenu(wx.Menu, MenuMethods):
     """ """
     #region -----------------------------------------------------> Class setup
@@ -728,7 +794,6 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
             ----------
             event : wx.Event
                 Information about the event
-        
         """
         #region --------------------------------------------------------> Date
         tDate = self.GetLabelText(event.GetId())
@@ -738,9 +803,15 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.volcano.UpdateCondRP(tDate)
         #endregion --------------------------------------> Update Volcano menu
         
+        #region --------------------------------------------------------> Draw
+        win = self.GetWindow()
+        win.Draw(
+            tDate, 
+            self.volcano.cond[0].GetItemLabelText(),
+            self.volcano.rp[0].GetItemLabelText(),
+        )
+        #endregion -----------------------------------------------------> Draw
         
-        # win = self.GetWindow()
-        # win.Draw(self.GetLabelText(event.GetId()))
         return True
     #---
     #endregion ------------------------------------------------> Class methods

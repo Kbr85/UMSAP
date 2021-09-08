@@ -969,6 +969,25 @@ class ProtProfPlot(BaseWindow):
         
         return (date, menuData)
     #---
+    
+    def Draw(self, tDate: str, cond: str, rp:str) -> bool:
+        """Volcano plot for the given data, condition and relevant point.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        print(tDate, cond, rp)
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
