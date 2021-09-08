@@ -407,6 +407,7 @@ mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 sWinRegular = (930, 700)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
+sWinModPlot = (1100, 625)
 #------------------------------> wx.StatusBar Fields
 sSbarFieldSizeI = sbFieldSize
 #------------------------------> wx.ListCtrl

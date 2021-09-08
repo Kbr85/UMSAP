@@ -125,7 +125,7 @@ class BaseWindow(wx.Frame):
             Unique name of the window. Default is config.nDefName.
         cTitle : str
             Title for the window. Default is config.tdW.
-        cSizeWindow : wx.Size
+        cSWindow : wx.Size
             Size of the window. Default is config.sWinRegular
         #------------------------------> Widgets
         statusbar : wx.StatusBar
@@ -148,14 +148,14 @@ class BaseWindow(wx.Frame):
         #region -----------------------------------------------> Initial Setup
         self.parent = parent
         #------------------------------> Def values if not given in child class
-        self.cSizeWindow = getattr(self, 'cSizeWindow', config.sWinRegular)
+        self.cSWindow = getattr(self, 'cSWindow', config.sWinRegular)
         self.cTitle = getattr(
             self, 'cTitle', config.t.get(self.name, config.tdW)
         )
         self.name = getattr(self, 'name', config.nDefName)
         #------------------------------> 
         super().__init__(
-            parent, size=self.cSizeWindow, title=self.cTitle, name=self.name,
+            parent, size=self.cSWindow, title=self.cTitle, name=self.name,
         )
         #endregion --------------------------------------------> Initial Setup
         
@@ -233,7 +233,7 @@ class BaseWindowPlot(BaseWindow):
             
         Attributes
         ----------
-        cSizeWindow : wx.Size
+        cSWindow : wx.Size
             Size of the window.
             
         Notes
@@ -244,7 +244,7 @@ class BaseWindowPlot(BaseWindow):
         Override as needed.
     """
     #region -----------------------------------------------------> Class setup
-    cSizeWindow = config.sWinPlot
+    cSWindow = config.sWinPlot
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -796,6 +796,7 @@ class ProtProfPlot(BaseWindow):
     #------------------------------> To id the section in the umsap file 
     # shown in the window
     cSection = config.nmProtProf
+    cSWindow = config.sWinModPlot
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -823,7 +824,7 @@ class ProtProfPlot(BaseWindow):
 
         #region -----------------------------------------------------> Widgets
         #------------------------------>  Plot
-        self.a = wx.Panel(self, size=(100, 100))
+        self.plots = dtsWindow.NPlots(self, ['Vol', 'FC'], 2)
         #------------------------------> Text details
         self.text = wx.TextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
@@ -850,11 +851,11 @@ class ProtProfPlot(BaseWindow):
         self._mgr.SetManagedWindow(self)
         #------------------------------> Add Configuration panel
         self._mgr.AddPane( 
-            self.a, 
+            self.plots, 
             aui.AuiPaneInfo(
                 ).Center(
                 ).Caption(
-                    'Center'
+                    'Plots'
                 ).Floatable(
                     b=False
                 ).CloseButton(
@@ -892,7 +893,7 @@ class ProtProfPlot(BaseWindow):
                 ).Layer(
                     1    
                 ).Caption(
-                    self.lc.cTitle
+                    'Protein list'
                 ).Floatable(
                     b=False
                 ).CloseButton(
@@ -950,7 +951,7 @@ class UMSAPControl(BaseWindow):
             tree control.
         cSectionTab : dict
             Keys are section names and values the corresponding config.name
-        cSizeWindow : wx.Size
+        cSWindow : wx.Size
             Size of the window.
         cTitle: str
             Title of the window.
@@ -966,7 +967,7 @@ class UMSAPControl(BaseWindow):
     #region -----------------------------------------------------> Class setup
     name = config.nwUMSAPControl
     
-    cSizeWindow = (400, 700)
+    cSWindow = (400, 700)
     
     cPlotMethod = { # Methods to create plot windows
         config.nuCorrA   : CorrAPlot,

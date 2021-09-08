@@ -1709,7 +1709,6 @@ class ListCtrlSearchPlot(wx.Panel):
     """
     #region -----------------------------------------------------> Class setup
     name = config.npListCtrlSearchPlot
-    cTitle = 'Protein list'
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
