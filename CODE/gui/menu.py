@@ -480,6 +480,97 @@ class CorrAPlotToolMenu(PlotMenu):
 
 
 #region -----------------------------------------------------------> Mix menus
+class VolcanoPlot(wx.Menu):
+    """Menu for a Volcano Plot """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.cond = self.Append(-1, 'Conditions')
+        self.AppendSeparator()
+        self.rp = self.Append(-1, 'Relevant Points')
+        self.AppendSeparator()
+        self.pCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_RADIO)
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
+
+class FCEvolution(wx.Menu):
+    """Menu for a log2FC evolution along relevant points """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.showAll = self.Append(-1, 'Show All')
+        self.saveI = self.Append(-1, 'Save Image')
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
+
+class FiltersProtProf(wx.Menu):
+    """Menu for the ProtProfPlot Filters """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.add = self.Append(-1, 'Add')
+        self.remove = self.Append(-1, 'Remove')
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
 class ProtProfToolMenu(wx.Menu, MenuMethods):
     """ """
     #region -----------------------------------------------------> Class setup
@@ -497,6 +588,20 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #region --------------------------------------------------> Menu Items
         #------------------------------> Add Dates
         self.AddDateItems(menuDate)
+        self.AppendSeparator()
+        #------------------------------> Volcano Plot
+        self.AppendSubMenu(VolcanoPlot(), 'Volcano Plot')
+        self.AppendSeparator()
+        #------------------------------> Relevant Points
+        self.AppendSubMenu(FCEvolution(), 'FC Evolution')
+        self.AppendSeparator()
+        #------------------------------> Filter
+        self.AppendSubMenu(FiltersProtProf(), 'Filters')
+        self.AppendSeparator()
+        #------------------------------> Export Data
+        self.expD = self.Append(-1, 'Export Data')
+        #------------------------------> Reset
+        self.reset = self.Append(-1, 'Reset View')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
