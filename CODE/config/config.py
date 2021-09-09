@@ -448,6 +448,9 @@ color = { # Colors for the app
             'c3': [0, 0, 255],
         },
     },
+    nwProtProf : {
+        'Vol' : ['#ff3333', '#d3d3d3', '#3333ff'],
+    }
 }
 #endregion -----------------------------------------------------------> Colors
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS

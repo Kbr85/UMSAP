@@ -19,7 +19,9 @@ import _thread
 from pathlib import Path
 from typing import Optional, Literal
 
+import numpy as np
 import requests
+from scipy import stats
 import wx
 import wx.adv as adv
 import wx.lib.agw.aui as aui
@@ -817,9 +819,11 @@ class ProtProfPlot(BaseWindow):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.cTitle  = f"{parent.cTitle} - {self.cSection}"
-        self.obj     = parent.obj
-        self.data    = self.obj.confData[self.cSection]
+        self.cTitle      = f"{parent.cTitle} - {self.cSection}"
+        self.obj         = parent.obj
+        self.data        = self.obj.confData[self.cSection]
+        self.log10alpha  = None
+        self.zScore      = stats.norm.ppf(0.9)
         self.date, menuData = self.SetDateMenuDate()
         #------------------------------> Configuration
         self.cLCol = ['#', 'Gene', 'Protein']
@@ -833,6 +837,8 @@ class ProtProfPlot(BaseWindow):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
+        #------------------------------> 
+        self.statusbar.SetFieldsCount(2, config.sbPlot)
         #------------------------------>  Plot
         self.plots = dtsWindow.NPlots(self, ['Vol', 'FC'], 2)
         #------------------------------> Text details
@@ -923,6 +929,14 @@ class ProtProfPlot(BaseWindow):
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
+        #------------------------------> 
+        self.Draw(
+            self.date[0], 
+            menuData['crp'][self.date[0]]['C'][0],
+            menuData['crp'][self.date[0]]['RP'][0],
+            newDate=True,
+        )
+        #------------------------------> 
         self.Show()
         #endregion ------------------------------------------> Window position
     #---
@@ -970,7 +984,7 @@ class ProtProfPlot(BaseWindow):
         return (date, menuData)
     #---
     
-    def Draw(self, tDate: str, cond: str, rp:str) -> bool:
+    def Draw(self, tDate: str, cond: str, rp:str, newDate: bool=False) -> bool:
         """Volcano plot for the given data, condition and relevant point.
     
             Parameters
@@ -985,7 +999,52 @@ class ProtProfPlot(BaseWindow):
             -----
             
         """
-        print(tDate, cond, rp)
+        #region --------------------------------------------------> Update GUI
+        if newDate:
+            #------------------------------> Clean & Reload Protein List
+            
+            #------------------------------> Clean FC Evolution plot
+            
+            #------------------------------> Alpha
+            self.log10alpha = -np.log10(
+                float(self.obj.data[self.cSection][tDate]['CI']['Alpha']))
+            #------------------------------> Update StatusBar
+            self.statusbar.SetStatusText(tDate, 1) 
+        else:
+            pass
+        #endregion -----------------------------------------------> Update GUI
+        
+        #region --------------------------------------------------------> Data
+        x = self.data[tDate]['DF'].loc[:,[(cond,rp,'FC')]]
+        y = -np.log10(self.data[tDate]['DF'].loc[:,[(cond,rp,'P')]])
+        zFC = self.data[tDate]['DF'].loc[:,[(cond,rp,'FCz')]].squeeze().tolist()
+        color = dtsMethod.AssignProperty(
+            zFC, config.color[self.name]['Vol'], [-self.zScore, self.zScore])
+        #endregion -----------------------------------------------------> Data
+        
+        #region --------------------------------------------------------> Axes
+        #------------------------------> Clear
+        self.plots.dPlot['Vol'].axes.clear()
+        #------------------------------> 
+        self.plots.dPlot['Vol'].axes.grid(True, linestyle=":")
+        self.plots.dPlot['Vol'].axes.axhline(
+            y=self.log10alpha, color="black", dashes=(5, 2, 1, 2), alpha=0.5)
+        #------------------------------> Labels
+        self.plots.dPlot['Vol'].axes.set_title(f'C: {cond} RP: {rp}')
+        self.plots.dPlot['Vol'].axes.set_xlabel(
+            "log$_{2}$[Fold Change]", fontweight="bold")
+        self.plots.dPlot['Vol'].axes.set_ylabel(
+            "-log$_{10}$[P values]", fontweight="bold")
+        #------------------------------> Plot
+        self.plots.dPlot['Vol'].axes.scatter(
+            x, y, alpha=1, edgecolor='black', linewidth=1, color=color,
+        )
+        #------------------------------> Zoom level
+        self.plots.dPlot['Vol'].ZoomResetSetValues()
+        #------------------------------> Show
+        self.plots.dPlot['Vol'].canvas.draw()
+        #endregion -----------------------------------------------------> Axes
+    
         return True
     #---
     #endregion ------------------------------------------------> Class methods

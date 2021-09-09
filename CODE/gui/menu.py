@@ -809,6 +809,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
             tDate, 
             self.volcano.cond[0].GetItemLabelText(),
             self.volcano.rp[0].GetItemLabelText(),
+            newDate = True,
         )
         #endregion -----------------------------------------------------> Draw
         

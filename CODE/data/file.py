@@ -21,8 +21,10 @@ import pandas as pd
 
 import wx
 
-import dat4s_core.data.file as dtsFF
 import dat4s_core.exception.exception as dtsException
+import dat4s_core.data.method as dtsMethod
+import dat4s_core.data.file as dtsFF
+
 
 import config.config as config
 
@@ -219,7 +221,7 @@ class UMSAPFile():
         for k,v in self.data[self.cSection[config.npProtProf]].items():
             try:
                 #------------------------------> Create data
-                df  = pd.DataFrame(v['R'])
+                df  = pd.DataFrame(dtsMethod.DictStringKey2Tuple(v['R']))
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF': df,
