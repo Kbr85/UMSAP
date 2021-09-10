@@ -538,7 +538,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        
+        self.Bind(wx.EVT_MENU, self.OnZScore, source=self.zScore)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -669,6 +669,25 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         win = self.GetWindow()
         win.Draw(self.date, cond, rp)
         #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def OnZScore(self, event) -> bool:
+        """Change Z score to plot.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnZScore()
         
         return True
     #---

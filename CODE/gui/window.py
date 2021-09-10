@@ -30,6 +30,7 @@ import wx.lib.agw.customtreectrl as wxCT
 import dat4s_core.data.check as dtsCheck
 import dat4s_core.generator.generator as dtsGenerator
 import dat4s_core.data.method as dtsMethod
+import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
 
@@ -824,7 +825,12 @@ class ProtProfPlot(BaseWindow):
         self.data        = self.obj.confData[self.cSection]
         self.log10alpha  = None
         self.zScore      = stats.norm.ppf(0.9)
+        self.zScoreL     = '10%'
+        self.dateC       = None
+        self.condC       = None
+        self.rpC         = None
         self.date, menuData = self.SetDateMenuDate()
+        
         #------------------------------> Configuration
         self.cLCol = ['#', 'Gene', 'Protein']
         self.cSCol = [45, 70, 100]
@@ -999,6 +1005,12 @@ class ProtProfPlot(BaseWindow):
             -----
             
         """
+        #region --------------------------------------------> Update variables
+        self.dateC = tDate
+        self.condC = cond
+        self.rpC   = rp
+        #endregion -----------------------------------------> Update variables
+        
         #region --------------------------------------------------> Update GUI
         if newDate:
             #------------------------------> Clean & Reload Protein List
@@ -1014,6 +1026,10 @@ class ProtProfPlot(BaseWindow):
             pass
         #endregion -----------------------------------------------> Update GUI
         
+        #region --------------------------------------------------------> Axes
+        self.SetAxis(cond, rp)
+        #endregion -----------------------------------------------------> Axes
+        
         #region --------------------------------------------------------> Data
         x = self.data[tDate]['DF'].loc[:,[(cond,rp,'FC')]]
         y = -np.log10(self.data[tDate]['DF'].loc[:,[(cond,rp,'P')]])
@@ -1022,20 +1038,7 @@ class ProtProfPlot(BaseWindow):
             zFC, config.color[self.name]['Vol'], [-self.zScore, self.zScore])
         #endregion -----------------------------------------------------> Data
         
-        #region --------------------------------------------------------> Axes
-        #------------------------------> Clear
-        self.plots.dPlot['Vol'].axes.clear()
-        #------------------------------> 
-        self.plots.dPlot['Vol'].axes.grid(True, linestyle=":")
-        self.plots.dPlot['Vol'].axes.axhline(
-            y=self.log10alpha, color="black", dashes=(5, 2, 1, 2), alpha=0.5)
-        #------------------------------> Labels
-        self.plots.dPlot['Vol'].axes.set_title(f'C: {cond} RP: {rp}')
-        self.plots.dPlot['Vol'].axes.set_xlabel(
-            "log$_{2}$[Fold Change]", fontweight="bold")
-        self.plots.dPlot['Vol'].axes.set_ylabel(
-            "-log$_{10}$[P values]", fontweight="bold")
-        #------------------------------> Plot
+        #region --------------------------------------------------------> Plot
         self.plots.dPlot['Vol'].axes.scatter(
             x, y, alpha=1, edgecolor='black', linewidth=1, color=color,
         )
@@ -1043,8 +1046,87 @@ class ProtProfPlot(BaseWindow):
         self.plots.dPlot['Vol'].ZoomResetSetValues()
         #------------------------------> Show
         self.plots.dPlot['Vol'].canvas.draw()
-        #endregion -----------------------------------------------------> Axes
+        #endregion -----------------------------------------------------> Plot
     
+        return True
+    #---
+    
+    def SetAxis(self, cond, rp) -> bool:
+        """Set the axis in the volcano plot
+        
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+        
+        """
+        #------------------------------> Clear
+        self.plots.dPlot['Vol'].axes.clear()
+        #------------------------------> 
+        self.plots.dPlot['Vol'].axes.grid(True, linestyle=":")
+        self.plots.dPlot['Vol'].axes.axhline(
+            y=self.log10alpha, color="black", dashes=(5, 2, 1, 2), alpha=0.5)
+        #------------------------------> Labels
+        self.plots.dPlot['Vol'].axes.set_title(
+            f'C: {cond} RP: {rp} ' + 'Z$_{score}$: ' + f'{self.zScoreL}')
+        self.plots.dPlot['Vol'].axes.set_xlabel(
+            "log$_{2}$[Fold Change]", fontweight="bold")
+        self.plots.dPlot['Vol'].axes.set_ylabel(
+            "-log$_{10}$[P values]", fontweight="bold")
+        #------------------------------>
+        return True
+    #---
+    
+    def OnZScore(self):
+        """Change Z score to plot
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        dlg = dtsWindow.UserInput1Text(
+            'Z score threshold.',
+            'Z score threshold (%)',
+            'Decimal value between 0 and 100. e.g. 10',
+            self.plots.dPlot['Vol'],
+            dtsValidator.NumberList(
+                numType = 'float',
+                vMin    = 0,
+                vMax    = 100,
+                nN      = 1,
+            )
+        )
+        #endregion -------------------------------------------> Text Entry Dlg
+        
+        #region ------------------------------------------> Get Value and Plot
+        if dlg.ShowModal():
+            #------------------------------> 
+            val = float(dlg.input.tc.GetValue())
+            #------------------------------> 
+            self.zScoreL = f'{val}%'
+            self.zScore = stats.norm.ppf(1.0-(val/100.0))
+            #------------------------------> 
+            self.Draw(self.dateC, self.condC, self.rpC)
+        else:
+            pass
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        dlg.Destroy()
         return True
     #---
     #endregion ------------------------------------------------> Class methods
@@ -1617,7 +1699,7 @@ class ResControlExp(wx.Dialog):
             Returns
             -------
             True
-            """
+        """
         #region ---------------------------------------------------> 
         if self.conf.conf.OnOK():
             self.EndModal(1)
