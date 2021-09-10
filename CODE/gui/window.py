@@ -829,8 +829,8 @@ class ProtProfPlot(BaseWindow):
         self.dateC       = None
         self.condC       = None
         self.rpC         = None
+        self.corrP       = False
         self.date, menuData = self.SetDateMenuDate()
-        
         #------------------------------> Configuration
         self.cLCol = ['#', 'Gene', 'Protein']
         self.cSCol = [45, 70, 100]
@@ -940,6 +940,7 @@ class ProtProfPlot(BaseWindow):
             self.date[0], 
             menuData['crp'][self.date[0]]['C'][0],
             menuData['crp'][self.date[0]]['RP'][0],
+            self.corrP,
             newDate=True,
         )
         #------------------------------> 
@@ -990,7 +991,9 @@ class ProtProfPlot(BaseWindow):
         return (date, menuData)
     #---
     
-    def Draw(self, tDate: str, cond: str, rp:str, newDate: bool=False) -> bool:
+    def Draw(
+        self, tDate: str, cond: str, rp:str, corrP: bool, newDate: bool=False
+        ) -> bool:
         """Volcano plot for the given data, condition and relevant point.
     
             Parameters
@@ -1009,6 +1012,7 @@ class ProtProfPlot(BaseWindow):
         self.dateC = tDate
         self.condC = cond
         self.rpC   = rp
+        self.corrP = corrP
         #endregion -----------------------------------------> Update variables
         
         #region --------------------------------------------------> Update GUI
@@ -1032,7 +1036,12 @@ class ProtProfPlot(BaseWindow):
         
         #region --------------------------------------------------------> Data
         x = self.data[tDate]['DF'].loc[:,[(cond,rp,'FC')]]
-        y = -np.log10(self.data[tDate]['DF'].loc[:,[(cond,rp,'P')]])
+        
+        if self.corrP:
+            y = -np.log10(self.data[tDate]['DF'].loc[:,[(cond,rp,'Pc')]])
+        else:
+            y = -np.log10(self.data[tDate]['DF'].loc[:,[(cond,rp,'P')]])
+            
         zFC = self.data[tDate]['DF'].loc[:,[(cond,rp,'FCz')]].squeeze().tolist()
         color = dtsMethod.AssignProperty(
             zFC, config.color[self.name]['Vol'], [-self.zScore, self.zScore])
@@ -1121,7 +1130,7 @@ class ProtProfPlot(BaseWindow):
             self.zScoreL = f'{val}%'
             self.zScore = stats.norm.ppf(1.0-(val/100.0))
             #------------------------------> 
-            self.Draw(self.dateC, self.condC, self.rpC)
+            self.Draw(self.dateC, self.condC, self.rpC, self.corrP)
         else:
             pass
         #endregion ---------------------------------------> Get Value and Plot

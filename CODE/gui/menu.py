@@ -538,8 +538,9 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZScore,    source=self.zScore)
-        self.Bind(wx.EVT_MENU, self.OnSaveImage, source=self.saveI)
+        self.Bind(wx.EVT_MENU, self.OnZScore,     source=self.zScore)
+        self.Bind(wx.EVT_MENU, self.OnSaveImage,  source=self.saveI)
+        self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=self.pCorr)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -574,7 +575,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
             #------------------------------> 
             cond.append(i)
             #------------------------------> 
-            self.Bind(wx.EVT_MENU, self.OnPlotCondRP, source=i)
+            self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=i)
         #------------------------------> Relevant Points
         for t in self.crp[tDate]['RP']:
             #------------------------------> 
@@ -582,7 +583,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
             #------------------------------> 
             rp.append(i)
             #------------------------------> 
-            self.Bind(wx.EVT_MENU, self.OnPlotCondRP, source=i)
+            self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=i)
         #endregion ---------------------------------------------> Add elements
         
         return (cond, rp)
@@ -644,7 +645,25 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         return True
     #---
     
-    def OnPlotCondRP(self, event:wx.Event) -> bool:
+    def GetData4Draw(self) -> tuple[str, str, str, bool]:
+        """Return the current selected date, cond and rp
+    
+            Returns
+            -------
+            Data needed for the volcano plot
+                [date, cond, rp, bool]
+        """
+        #region ---------------------------------------------------> Varaibles
+        date = self.date
+        cond = self.GetCheckedRadiodItem(self.cond)
+        rp   = self.GetCheckedRadiodItem(self.rp)
+        corrP = self.pCorr.IsChecked()
+        #endregion ------------------------------------------------> Varaibles
+        
+        return (date, cond, rp, corrP)
+    #---
+    
+    def OnUpdatePlot(self, event:wx.Event) -> bool:
         """Update volcano plot.
     
             Parameters
@@ -660,15 +679,9 @@ class VolcanoPlot(wx.Menu, MenuMethods):
             -----
             
         """
-        #---
-        #region ----------------------------------------------------> Get Data
-        cond = self.GetCheckedRadiodItem(self.cond)
-        rp   = self.GetCheckedRadiodItem(self.rp)
-        #endregion -------------------------------------------------> Get Data
-        
         #region --------------------------------------------------------> Draw
         win = self.GetWindow()
-        win.Draw(self.date, cond, rp)
+        win.Draw(*self.GetData4Draw())
         #endregion -----------------------------------------------------> Draw
         
         return True
@@ -711,6 +724,8 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         
         return True
     #---
+    
+    
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -845,9 +860,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #region --------------------------------------------------------> Draw
         win = self.GetWindow()
         win.Draw(
-            tDate, 
-            self.volcano.cond[0].GetItemLabelText(),
-            self.volcano.rp[0].GetItemLabelText(),
+            *self.volcano.GetData4Draw(),
             newDate = True,
         )
         #endregion -----------------------------------------------------> Draw
