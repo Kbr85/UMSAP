@@ -220,6 +220,63 @@ class BaseWindow(wx.Frame):
         #------------------------------> 
         return True
     #---
+    
+    def WinPos(self) -> dict:
+        """Adjust win number and return information about the size of the 
+            window.
+            
+            See Notes below for more details.
+            
+            Return
+            ------
+            dict
+                Information about the size of the window and display and number
+                of windows. See also data.method.GetDisplayInfo
+                
+            Notes
+            -----
+            Final position of the window on the display must be set in child 
+            class.
+        """
+        #region ---------------------------------------------------> Variables
+        info = method.GetDisplayInfo(self)
+        #endregion ------------------------------------------------> Variables
+
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.name] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
+
+        return info
+    #---
+    
+    def OnExportPlotData(self) -> Literal[True]:
+        """ Export data to a csv file """
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p     = Path(dlg.GetPath())
+            tDate = self.statusbar.GetStatusText(1)
+            #------------------------------> Export
+            try:
+                self.obj.ExportPlotData(self.cSection, tDate, p)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.msgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---	
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -316,6 +373,11 @@ class BaseWindowPlot(BaseWindow):
         #endregion --------------------------------------------------> Destroy
         
         return True
+    #---
+    
+    def WinPos(self):
+        """Just return base class method result"""
+        return super().WinPos()
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -602,20 +664,16 @@ class CorrAPlot(BaseWindowPlot):
         """Set the position on the screen and adjust the total number of
             shown windows.
         """
-        #region ---------------------------------------------------> Variables
-        info = method.GetDisplayInfo(self)
-        #endregion ------------------------------------------------> Variables
-                
+        #region --------------------------------------------------------> Super
+        info = super().WinPos()
+        #endregion -----------------------------------------------------> Super
+        
         #region ------------------------------------------------> Set Position
         self.SetPosition(pt=(
             info['D']['w'] - (info['W']['N']*config.deltaWin + info['W']['w']),
             info['D']['yo'] + info['W']['N']*config.deltaWin,
         ))
         #endregion ---------------------------------------------> Set Position
-
-        #region ----------------------------------------------------> Update N
-        config.winNumber[self.name] = info['W']['N'] + 1
-        #endregion -------------------------------------------------> Update N
 
         return True
     #---
@@ -749,37 +807,6 @@ class CorrAPlot(BaseWindowPlot):
         
         return True
     #---
-
-    def OnExportPlotData(self) -> Literal[True]:
-        """ Export data to a csv file """
-        #region --------------------------------------------------> Dlg window
-        dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
-        #endregion -----------------------------------------------> Dlg window
-        
-        #region ---------------------------------------------------> Get Path
-        if dlg.ShowModal() == wx.ID_OK:
-            #------------------------------> Variables
-            p     = Path(dlg.GetPath())
-            tDate = self.statusbar.GetStatusText(1)
-            #------------------------------> Export
-            try:
-                self.obj.ExportPlotData(self.cSection, tDate, p)
-            except Exception as e:
-                dtscore.Notification(
-                    'errorF',
-                    msg        = self.msgExportFailed,
-                    tException = e,
-                    parent     = self,
-                )
-        else:
-            pass
-        #endregion ------------------------------------------------> Get Path
-     
-        dlg.Destroy()
-        
-        return True	
-     #---
-    #---	
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -852,7 +879,6 @@ class ProtProfPlot(BaseWindow):
         self.text = wx.TextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
         #------------------------------> wx.ListCtrl
-        #--------------> Build and fill wx.ListCtrl
         self.lc = pane.ListCtrlSearchPlot(
             self, 
             colLabel = self.cLCol,
@@ -941,6 +967,7 @@ class ProtProfPlot(BaseWindow):
             newDate=True,
         )
         #------------------------------> 
+        self.WinPos()
         self.Show()
         #endregion ------------------------------------------> Window position
     #---
@@ -986,6 +1013,21 @@ class ProtProfPlot(BaseWindow):
         #endregion ------------------------------------------------> Fill dict
         
         return (date, menuData)
+    #---
+    
+    def WinPos(self) -> Literal[True]:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
+        """
+        #region ---------------------------------------------------> Variables
+        info = super().WinPos()
+        #endregion ------------------------------------------------> Variables
+                
+        #region ------------------------------------------------> Set Position
+        
+        #endregion ---------------------------------------------> Set Position
+
+        return True
     #---
     
     def FillListCtrl(self, tDate: str) -> bool:
@@ -1298,6 +1340,31 @@ class ProtProfPlot(BaseWindow):
         #region ------------------------------------------------> Volcano Plot
         self.DrawGreenPoint()
         #endregion ---------------------------------------------> Volcano Plot
+        
+        return True
+    #---
+    
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+        """
+        #region -----------------------------------------------> Update parent
+        self.parent.UnCheckSection(self.cSection, self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.name] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
         
         return True
     #---

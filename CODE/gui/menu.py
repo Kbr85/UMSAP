@@ -724,8 +724,6 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         
         return True
     #---
-    
-    
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -827,15 +825,16 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Filter
         self.AppendSubMenu(FiltersProtProf(), 'Filters')
         self.AppendSeparator()
-        #------------------------------> Export Data
-        self.expD = self.Append(-1, 'Export Data')
+        #------------------------------> Duplicate Window
+        self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
-        #------------------------------> Reset
-        self.reset = self.Append(-1, 'Reset View')
+        #------------------------------> Export Data
+        self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        
+        self.Bind(wx.EVT_MENU, self.OnDupWin, source=self.dupWin)
+        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.saveD)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
