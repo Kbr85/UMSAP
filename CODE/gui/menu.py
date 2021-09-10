@@ -538,7 +538,8 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZScore, source=self.zScore)
+        self.Bind(wx.EVT_MENU, self.OnZScore,    source=self.zScore)
+        self.Bind(wx.EVT_MENU, self.OnSaveImage, source=self.saveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -688,6 +689,25 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         """
         win = self.GetWindow()
         win.OnZScore()
+        
+        return True
+    #---
+    
+    def OnSaveImage(self, event) -> bool:
+        """Save an image of the plot.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnSaveVolcanoImage()
         
         return True
     #---

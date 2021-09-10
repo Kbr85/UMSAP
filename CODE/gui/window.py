@@ -1129,6 +1129,18 @@ class ProtProfPlot(BaseWindow):
         dlg.Destroy()
         return True
     #---
+    
+    def OnSaveVolcanoImage(self) -> bool:
+        """Save an image of the volcano plot.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.plots.dPlot['Vol'].SaveImage(
+            config.elMatPlotSaveI, parent=self.plots.dPlot['Vol']
+        )
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
