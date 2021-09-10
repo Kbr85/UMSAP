@@ -369,9 +369,7 @@ oControlTypeProtProf = {
 
 #region -----------------------------------------------------> DF Column names
 protprofFirstThree = ['Gene', 'Protein', 'Score']
-protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'P', 'Pc', 'FC', 'FCciL', 
-    'FCciU', 'FCz',
-]
+protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'FCciL', 'FCciU', 'FCz']
 #endregion --------------------------------------------------> DF Column names
 
 
@@ -449,7 +447,8 @@ color = { # Colors for the app
         },
     },
     nwProtProf : {
-        'Vol' : ['#ff3333', '#d3d3d3', '#3333ff'],
+        'Vol'   : ['#ff3333', '#d3d3d3', '#3333ff'],
+        'VolSel': '#6ac653',
     }
 }
 #endregion -----------------------------------------------------------> Colors

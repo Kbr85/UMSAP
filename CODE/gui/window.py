@@ -830,6 +830,7 @@ class ProtProfPlot(BaseWindow):
         self.condC       = None
         self.rpC         = None
         self.corrP       = False
+        self.greenP      = None
         self.date, menuData = self.SetDateMenuDate()
         #------------------------------> Configuration
         self.cLCol = ['#', 'Gene', 'Protein']
@@ -851,19 +852,14 @@ class ProtProfPlot(BaseWindow):
         self.text = wx.TextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
         #------------------------------> wx.ListCtrl
-        #--------------> Protein list that will not change for this analysis.
-        data = self.data[self.date[0]]['DF'].iloc[:,0:2]
-        data.insert(0, 'kbr', range(0,data.shape[0]))
-        data = data.astype(str)
-        data = data.values.tolist()
         #--------------> Build and fill wx.ListCtrl
         self.lc = pane.ListCtrlSearchPlot(
             self, 
             colLabel = self.cLCol,
             colSize  = self.cSCol,
-            data     = data,
             style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
         )
+        self.FillListCtrl(self.date[0])
         #endregion --------------------------------------------------> Widgets
         
         #region -------------------------------------------------> Aui control
@@ -931,7 +927,8 @@ class ProtProfPlot(BaseWindow):
         #endregion ----------------------------------------------> Aui control
 
         #region --------------------------------------------------------> Bind
-        
+        self.plots.dPlot['Vol'].canvas.mpl_connect('pick_event', self.OnPick)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -991,6 +988,36 @@ class ProtProfPlot(BaseWindow):
         return (date, menuData)
     #---
     
+    def FillListCtrl(self, tDate: str) -> bool:
+        """Update the protein list for the given analysis.
+    
+            Parameters
+            ----------
+            tDate : str
+                Analysis date.
+    
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Delete old
+        self.lc.lcs.lc.DeleteAllItems()
+        #endregion -----------------------------------------------> Delete old
+        
+        #region ----------------------------------------------------> Get Data
+        data = self.data[tDate]['DF'].iloc[:,0:2]
+        data.insert(0, 'kbr', range(0,data.shape[0]))
+        data = data.astype(str)
+        data = data.values.tolist()
+        #endregion -------------------------------------------------> Get Data
+        
+        #region ------------------------------------------> Set in wx.ListCtrl
+        self.lc.lcs.lc.SetNewData(data)
+        #endregion ---------------------------------------> Set in wx.ListCtrl
+        
+        return True
+    #---
+    
     def Draw(
         self, tDate: str, cond: str, rp:str, corrP: bool, newDate: bool=False
         ) -> bool:
@@ -1018,7 +1045,7 @@ class ProtProfPlot(BaseWindow):
         #region --------------------------------------------------> Update GUI
         if newDate:
             #------------------------------> Clean & Reload Protein List
-            
+            self.FillListCtrl(tDate)
             #------------------------------> Clean FC Evolution plot
             
             #------------------------------> Alpha
@@ -1049,13 +1076,22 @@ class ProtProfPlot(BaseWindow):
         
         #region --------------------------------------------------------> Plot
         self.plots.dPlot['Vol'].axes.scatter(
-            x, y, alpha=1, edgecolor='black', linewidth=1, color=color,
+            x, y, 
+            alpha     = 1,
+            edgecolor = 'black',
+            linewidth = 1,
+            color     = color,
+            picker    = True,
         )
         #------------------------------> Zoom level
         self.plots.dPlot['Vol'].ZoomResetSetValues()
         #------------------------------> Show
         self.plots.dPlot['Vol'].canvas.draw()
         #endregion -----------------------------------------------------> Plot
+        
+        #region -------------------------------------> Update selected protein
+        self.DrawGreenPoint()
+        #endregion ----------------------------------> Update selected protein
     
         return True
     #---
@@ -1089,6 +1125,70 @@ class ProtProfPlot(BaseWindow):
         self.plots.dPlot['Vol'].axes.set_ylabel(
             "-log$_{10}$[P values]", fontweight="bold")
         #------------------------------>
+        return True
+    #---
+    
+    def DrawGreenPoint(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -------------------------------------------------------> Index
+        if (idx := self.lc.lcs.lc.GetFirstSelected()) < 0:
+            #------------------------------> 
+            if self.greenP is None:
+                pass
+            else:
+                self.greenP.remove()
+                self.greenP = None
+            #------------------------------> 
+            return False
+        else:
+            pass
+        #endregion ----------------------------------------------------> Index
+        
+        #region ------------------------------------------------> Volcano Plot
+        #------------------------------> Get new data
+        x = self.data[self.dateC]['DF'].at[
+            self.data[self.dateC]['DF'].index[idx], (self.condC, self.rpC, 'FC')
+        ]
+        if self.corrP:
+            y = -np.log10(
+                self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[idx], (self.condC, self.rpC, 'Pc')
+            ])
+        else:
+            y = -np.log10(
+                self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[idx], (self.condC, self.rpC, 'P')
+            ])
+        #------------------------------> Remove old point
+        if self.greenP is None:
+            pass
+        else:
+            self.greenP.remove()
+        #------------------------------> Add new one
+        self.greenP = self.plots.dPlot['Vol'].axes.scatter(
+            x, y, 
+            alpha     = 1,
+            edgecolor = 'black',
+            linewidth = 1,
+            color     = config.color[self.name]['VolSel'],
+        )
+        #------------------------------> Draw
+        self.plots.dPlot['Vol'].canvas.draw()
+        #endregion ---------------------------------------------> Volcano Plot
+        
         return True
     #---
     
@@ -1149,6 +1249,57 @@ class ProtProfPlot(BaseWindow):
         return self.plots.dPlot['Vol'].SaveImage(
             config.elMatPlotSaveI, parent=self.plots.dPlot['Vol']
         )
+    #---
+    
+    def OnPick(self, event) -> bool:
+        """Process a pick event in the volcano plot.
+    
+            Parameters
+            ----------
+            event: matplotlib pick event
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        ind = event.ind
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Pick
+        if len(ind) == 1:
+            self.lc.lcs.lc.Select(ind[0], on=1)
+            self.lc.lcs.lc.EnsureVisible(ind[0])
+            self.lc.lcs.lc.SetFocus()
+        else:
+            msg = (f'The selected point ')
+        #endregion ------------------------------------------------> Pick
+        
+        return True
+    #---
+    
+    def OnListSelect(self, event) -> bool:
+        """Select an element in the wx.ListCtrl.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------------> Volcano Plot
+        self.DrawGreenPoint()
+        #endregion ---------------------------------------------> Volcano Plot
+        
+        return True
     #---
     #endregion ------------------------------------------------> Class methods
 #---
