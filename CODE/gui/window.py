@@ -1344,6 +1344,24 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
+    def OnZoomResetVol(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.plots.dPlot['Vol'].ZoomResetPlot()
+    #---
+    
     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
         """Close window and uncheck section in UMSAPFile window. Assumes 
             self.parent is an instance of UMSAPControl.

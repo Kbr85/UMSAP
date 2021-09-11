@@ -535,12 +535,15 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         self.pCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
         self.saveI = self.Append(-1, 'Save Plot Image')
+        self.AppendSeparator()
+        self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnZScore,     source=self.zScore)
         self.Bind(wx.EVT_MENU, self.OnSaveImage,  source=self.saveI)
         self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=self.pCorr)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,  source=self.zoomR)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -722,6 +725,28 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         win = self.GetWindow()
         win.OnSaveVolcanoImage()
         
+        return True
+    #---
+    
+    def OnZoomReset(self, event):
+        """Reset plot zoom.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        win = self.GetWindow()
+        win.OnZoomResetVol()
         return True
     #---
     #endregion ------------------------------------------------> Class methods
