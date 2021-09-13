@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Optional, Literal
 
 import numpy as np
+import pandas as pd
 import requests
 from scipy import stats
 import wx
@@ -856,8 +857,14 @@ class ProtProfPlot(BaseWindow):
         self.dateC       = None
         self.condC       = None
         self.rpC         = None
-        self.corrP       = False
         self.greenP      = None
+        self.corrP       = False
+        self.showAll     = True
+        self.CI          = None
+        self.fcYMax      = None
+        self.fcYMin      = None
+        self.fcXLabel    = []
+        self.protLine    = []
         self.date, menuData = self.SetDateMenuDate()
         #------------------------------> Configuration
         self.cLCol = ['#', 'Gene', 'Protein']
@@ -959,12 +966,12 @@ class ProtProfPlot(BaseWindow):
 
         #region ---------------------------------------------> Window position
         #------------------------------> 
-        self.Draw(
+        self.OnDateChange(
             self.date[0], 
             menuData['crp'][self.date[0]]['C'][0],
             menuData['crp'][self.date[0]]['RP'][0],
             self.corrP,
-            newDate=True,
+            self.showAll,
         )
         #------------------------------> 
         self.WinPos()
@@ -1060,10 +1067,8 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def Draw(
-        self, tDate: str, cond: str, rp:str, corrP: bool, newDate: bool=False
-        ) -> bool:
-        """Volcano plot for the given data, condition and relevant point.
+    def GetFCMinMax(self) -> list[list[float]]:
+        """Get the maximum and minimum values of FC for each studied RP 
     
             Parameters
             ----------
@@ -1077,41 +1082,56 @@ class ProtProfPlot(BaseWindow):
             -----
             
         """
-        #region --------------------------------------------> Update variables
-        self.dateC = tDate
-        self.condC = cond
-        self.rpC   = rp
-        self.corrP = corrP
-        #endregion -----------------------------------------> Update variables
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #------------------------------> First point is a control with 0 log2FC
+        ymax = [0.0]
+        ymin = [0.0]
+        #endregion ------------------------------------------------> Variables
         
-        #region --------------------------------------------------> Update GUI
-        if newDate:
-            #------------------------------> Clean & Reload Protein List
-            self.FillListCtrl(tDate)
-            #------------------------------> Clean FC Evolution plot
+        #region ---------------------------------------------------> Fill List
+        for c in self.CI['RP']:
+            #------------------------------> 
+            df = self.data[self.dateC]['DF'].loc[:,idx[:,c,'FC']]
+            #------------------------------> 
+            ymax.append(df.max().max())
+            ymin.append(df.min().min())
+        #endregion ------------------------------------------------> Fill List
+        
+        return [ymax, ymin]
+    #---
+    
+    def VolDraw(self) -> bool:
+        """Create/Update the Volcano plot.
+    
+            Parameters
+            ----------
             
-            #------------------------------> Alpha
-            self.log10alpha = -np.log10(
-                float(self.obj.data[self.cSection][tDate]['CI']['Alpha']))
-            #------------------------------> Update StatusBar
-            self.statusbar.SetStatusText(tDate, 1) 
-        else:
-            pass
-        #endregion -----------------------------------------------> Update GUI
-        
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
         #region --------------------------------------------------------> Axes
-        self.SetAxis(cond, rp)
+        self.VolSetAxis()
         #endregion -----------------------------------------------------> Axes
         
         #region --------------------------------------------------------> Data
-        x = self.data[tDate]['DF'].loc[:,[(cond,rp,'FC')]]
+        x = self.data[self.dateC]['DF'].loc[:,[(self.condC,self.rpC,'FC')]]
         
         if self.corrP:
-            y = -np.log10(self.data[tDate]['DF'].loc[:,[(cond,rp,'Pc')]])
+            y = -np.log10(
+                self.data[self.dateC]['DF'].loc[:,[(self.condC,self.rpC,'Pc')]])
         else:
-            y = -np.log10(self.data[tDate]['DF'].loc[:,[(cond,rp,'P')]])
+            y = -np.log10(
+                self.data[self.dateC]['DF'].loc[:,[(self.condC,self.rpC,'P')]])
             
-        zFC = self.data[tDate]['DF'].loc[:,[(cond,rp,'FCz')]].squeeze().tolist()
+        zFC = self.data[self.dateC]['DF'].loc[:,[(self.condC,self.rpC,'FCz')]]
+        zFC = zFC.squeeze().tolist()
         color = dtsMethod.AssignProperty(
             zFC, config.color[self.name]['Vol'], [-self.zScore, self.zScore])
         #endregion -----------------------------------------------------> Data
@@ -1138,7 +1158,7 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def SetAxis(self, cond, rp) -> bool:
+    def VolSetAxis(self) -> bool:
         """Set the axis in the volcano plot
         
             Parameters
@@ -1161,7 +1181,7 @@ class ProtProfPlot(BaseWindow):
             y=self.log10alpha, color="black", dashes=(5, 2, 1, 2), alpha=0.5)
         #------------------------------> Labels
         self.plots.dPlot['Vol'].axes.set_title(
-            f'C: {cond} RP: {rp} ' + 'Z$_{score}$: ' + f'{self.zScoreL}')
+            f'C: {self.condC} RP: {self.rpC} ' + 'Z$_{score}$: ' + f'{self.zScoreL}')
         self.plots.dPlot['Vol'].axes.set_xlabel(
             "log$_{2}$[Fold Change]", fontweight="bold")
         self.plots.dPlot['Vol'].axes.set_ylabel(
@@ -1234,6 +1254,253 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
+    def FCDraw(self):
+        """Draw Fold Change Evolution plot.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------------> Axis
+        self.FCSetAxis()
+        #endregion -----------------------------------------------------> Axis
+        
+        #region ----------------------------------------------------> Plot All
+        #------------------------------> 
+        if self.showAll:
+            #------------------------------> 
+            color = config.color[self.name]['FCAll']
+            x = list(range(0,len(self.fcYMin)))
+            #------------------------------> 
+            self.plots.dPlot['FC'].axes.plot(self.fcYMax, color=color)
+            self.plots.dPlot['FC'].axes.plot(self.fcYMin, color=color)
+            #------------------------------> 
+            self.plots.dPlot['FC'].axes.fill_between(
+                x, self.fcYMax, self.fcYMin, color=color, alpha=0.2)
+        else:
+            pass
+        #------------------------------> 
+        self.plots.dPlot['FC'].canvas.draw()
+        #endregion -------------------------------------------------> Plot All
+        
+        #region ----------------------------------------------> Plot Prot Line
+        self.DrawProtLine()
+        #endregion -------------------------------------------> Plot Prot Line
+        
+        return True
+    #---
+    
+    def FCSetAxis(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -------------------------------------------------------> Clear
+        self.plots.dPlot['FC'].axes.clear()
+        #endregion ----------------------------------------------------> Clear
+        
+        #region ------------------------------------------------------> Labels
+        self.plots.dPlot['FC'].axes.grid(True, linestyle=":")
+        self.plots.dPlot['FC'].axes.set_xlabel('Relevant Points', fontweight="bold")
+        self.plots.dPlot['FC'].axes.set_ylabel("log$_{2}$[Fold Change]", fontweight="bold")
+        #endregion ---------------------------------------------------> Labels
+
+        #region ---------------------------------------------------> X - Axis
+        self.plots.dPlot['FC'].axes.set_xticks(range(0, len(self.fcXLabel), 1))
+        self.plots.dPlot['FC'].axes.set_xticklabels(self.fcXLabel)
+        #endregion ------------------------------------------------> X - Axis
+        
+        return True
+    #---
+    
+    def DrawProtLine(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -------------------------------------------------------> Index
+        if (idxl := self.lc.lcs.lc.GetFirstSelected()) < 0:
+            #------------------------------> 
+            if not self.protLine:
+                pass
+            else:
+                #------------------------------> 
+                for k in self.protLine:
+                    k.remove()
+                #------------------------------> 
+                self.protLine = []
+            #------------------------------> 
+            return False
+        else:
+            pass
+        #endregion ----------------------------------------------------> Index
+        
+        #region --------------------------------------------> Remove Old Lines
+        #------------------------------> 
+        for k in self.protLine:
+            print(k)
+            k[0].remove()
+        #------------------------------> 
+        self.protLine = []
+        #endregion -----------------------------------------> Remove Old Lines
+        
+        #region -----------------------------------------------------> FC Plot
+        #------------------------------> 
+        idx = pd.IndexSlice
+        #------------------------------> 
+        for c in self.CI['Cond']:
+            #------------------------------> 
+            y = self.data[self.dateC]['DF'].loc[
+                self.data[self.dateC]['DF'].index[[idxl]],idx[c,:,'FC']
+            ]
+            y = [0.0] + y.values.tolist()[0]
+            #------------------------------> 
+            self.protLine.append(self.plots.dPlot['FC'].axes.plot(y))
+        #endregion --------------------------------------------------> FC Plot
+        
+        #region --------------------------------------------------------> Draw
+        self.plots.dPlot['FC'].canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def OnDateChange(
+        self, tDate: str, cond: str, rp:str, corrP: bool, showAll: bool,
+        ) -> bool:
+        """Configure window to update Volcano and FC plots when date changes.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------> Update variables
+        self.dateC   = tDate
+        self.condC   = cond
+        self.rpC     = rp
+        self.corrP   = corrP
+        self.showAll = showAll
+        self.CI      = self.obj.data[self.cSection][self.dateC]['CI']
+        #endregion -----------------------------------------> Update variables
+        
+        #region --------------------------------------------------> Update GUI
+        #------------------------------> Clean & Reload Protein List
+        self.FillListCtrl(self.dateC)
+        #------------------------------> Alpha
+        self.log10alpha = -np.log10(float(self.CI['Alpha']))
+        #------------------------------> Update StatusBar
+        self.statusbar.SetStatusText(tDate, 1) 
+        #endregion -----------------------------------------------> Update GUI
+        
+        #region -------------------------------------------> Update FC x label
+        self.fcXLabel = self.CI['ControlL'] + self.CI['RP']        
+        #endregion ----------------------------------------> Update FC x label
+        
+        #region ---------------------------------------------------> FC minmax
+        self.fcYMax, self.fcYMin = self.GetFCMinMax()
+        #endregion ------------------------------------------------> FC minmax
+        
+        #region ---------------------------------------------------------> Vol
+        self.VolDraw()
+        #endregion ------------------------------------------------------> Vol
+        
+        #region ----------------------------------------------------------> FC
+        self.FCDraw()
+        #endregion -------------------------------------------------------> FC
+        
+        return True
+    #---
+    
+    def OnVolChange(self, cond: str, rp:str, corrP: bool) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------> Update variables
+        self.condC   = cond
+        self.rpC     = rp
+        self.corrP   = corrP
+        #endregion -----------------------------------------> Update variables
+        
+        #region ---------------------------------------------------------> Vol
+        self.VolDraw()
+        #endregion ------------------------------------------------------> Vol
+        
+        return True
+    #---
+    
+    def OnFCChange(self, showAll: bool) -> bool:
+        """Configure window to plot FC Evolution.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        self.showAll = showAll
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------------> Plot
+        self.FCDraw()
+        #endregion -----------------------------------------------------> Plot
+        
+        return True
+    #---
+    
     def OnZScore(self):
         """Change Z score to plot
     
@@ -1272,7 +1539,7 @@ class ProtProfPlot(BaseWindow):
             self.zScoreL = f'{val}%'
             self.zScore = stats.norm.ppf(1.0-(val/100.0))
             #------------------------------> 
-            self.Draw(self.dateC, self.condC, self.rpC, self.corrP)
+            self.VolDraw()
         else:
             pass
         #endregion ---------------------------------------> Get Value and Plot
@@ -1290,6 +1557,18 @@ class ProtProfPlot(BaseWindow):
         """
         return self.plots.dPlot['Vol'].SaveImage(
             config.elMatPlotSaveI, parent=self.plots.dPlot['Vol']
+        )
+    #---
+    
+    def OnSaveFCImage(self) -> bool:
+        """Save an image of the volcano plot.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.plots.dPlot['FC'].SaveImage(
+            config.elMatPlotSaveI, parent=self.plots.dPlot['FC']
         )
     #---
     
@@ -1341,6 +1620,10 @@ class ProtProfPlot(BaseWindow):
         self.DrawGreenPoint()
         #endregion ---------------------------------------------> Volcano Plot
         
+        #region ------------------------------------------------> FC Evolution
+        self.DrawProtLine()
+        #endregion ---------------------------------------------> FC Evolution 
+        
         return True
     #---
     
@@ -1360,6 +1643,24 @@ class ProtProfPlot(BaseWindow):
             
         """
         return self.plots.dPlot['Vol'].ZoomResetPlot()
+    #---
+    
+    def OnZoomResetFC(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.plots.dPlot['FC'].ZoomResetPlot()
     #---
     
     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:

@@ -2493,6 +2493,7 @@ class ProtProf(BaseConfModPanel):
                 "Cond"       : [List of conditions],
                 "RP"         : [List of relevent points],
                 "ControlT"   : "Control type",
+                "ControlL"   : "Control label",
                 "oc": {
                     "DetectedP": "Detected Proteins column. Int",
                     "GeneName" : "Gene name column. Int",
@@ -3134,6 +3135,7 @@ class ProtProf(BaseConfModPanel):
             'Cond'       : self.lbDict[1],
             'RP'         : self.lbDict[2],
             'ControlT'   : self.lbDict['ControlType'],
+            'ControlL'   : self.lbDict['Control'],
             'oc'         : {
                 'DetectedP' : detectedProt,
                 'GeneName'  : geneName,

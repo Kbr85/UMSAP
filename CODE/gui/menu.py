@@ -534,7 +534,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         self.AppendSeparator()
         self.pCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
-        self.saveI = self.Append(-1, 'Save Plot Image')
+        self.saveI = self.Append(-1, 'Save Plot Image\tCtrl+I')
         self.AppendSeparator()
         self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
         #endregion -----------------------------------------------> Menu Items
@@ -648,7 +648,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         return True
     #---
     
-    def GetData4Draw(self) -> tuple[str, str, str, bool]:
+    def GetData4Draw(self) -> tuple[str, str, bool]:
         """Return the current selected date, cond and rp
     
             Returns
@@ -657,13 +657,12 @@ class VolcanoPlot(wx.Menu, MenuMethods):
                 [date, cond, rp, bool]
         """
         #region ---------------------------------------------------> Varaibles
-        date = self.date
         cond = self.GetCheckedRadiodItem(self.cond)
         rp   = self.GetCheckedRadiodItem(self.rp)
         corrP = self.pCorr.IsChecked()
         #endregion ------------------------------------------------> Varaibles
         
-        return (date, cond, rp, corrP)
+        return (cond, rp, corrP)
     #---
     
     def OnUpdatePlot(self, event:wx.Event) -> bool:
@@ -684,7 +683,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         """
         #region --------------------------------------------------------> Draw
         win = self.GetWindow()
-        win.Draw(*self.GetData4Draw())
+        win.OnVolChange(*self.GetData4Draw())
         #endregion -----------------------------------------------------> Draw
         
         return True
@@ -767,19 +766,89 @@ class FCEvolution(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.showAll = self.Append(-1, 'Show All')
+        self.showAll = self.Append(-1, 'Show All', kind=wx.ITEM_CHECK)
+        self.Check(self.showAll.GetId(), True)
         self.AppendSeparator()
-        self.saveI = self.Append(-1, 'Save Plot Image')
+        self.saveI = self.Append(-1, 'Save Plot Image\tAlt+I')
+        self.AppendSeparator()
+        self.zoomR = self.Append(-1, 'Reset Zoom\tAlt+Z')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        
+        self.Bind(wx.EVT_MENU, self.OnShowAll,  source=self.showAll)
+        self.Bind(wx.EVT_MENU, self.OnSaveImage,  source=self.saveI)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,  source=self.zoomR)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def OnShowAll(self, event) -> bool:
+        """Show the interval cover by all FC values in the data.
     
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnFCChange(*self.GetData4Draw())
+        
+        return True
+    #---
+    
+    def OnSaveImage(self, event) -> bool:
+        """Save an image of the plot.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnSaveFCImage()
+        
+        return True
+    #---
+    
+    def OnZoomReset(self, event) -> bool:
+        """Reset the Zoom level of the plot
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnZoomResetFC()
+        
+        return True
+    #---
+    
+    def GetData4Draw(self) -> tuple[bool]:
+        """Get the data needed to draw the FC evolution in window.            
+    
+            Returns
+            -------
+            tuple[bool]
+        """
+        return (self.showAll.IsChecked(),)
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -845,7 +914,8 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.AppendSubMenu(self.volcano, 'Volcano Plot',)
         self.AppendSeparator()
         #------------------------------> Relevant Points
-        self.AppendSubMenu(FCEvolution(), 'FC Evolution')
+        self.fc = FCEvolution()
+        self.AppendSubMenu(self.fc, 'FC Evolution')
         self.AppendSeparator()
         #------------------------------> Filter
         self.AppendSubMenu(FiltersProtProf(), 'Filters')
@@ -883,9 +953,10 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         
         #region --------------------------------------------------------> Draw
         win = self.GetWindow()
-        win.Draw(
+        win.OnDateChange(
+            tDate,
             *self.volcano.GetData4Draw(),
-            newDate = True,
+            *self.fc.GetData4Draw(),
         )
         #endregion -----------------------------------------------------> Draw
         

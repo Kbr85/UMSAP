@@ -449,6 +449,7 @@ color = { # Colors for the app
     nwProtProf : {
         'Vol'   : ['#ff3333', '#d3d3d3', '#3333ff'],
         'VolSel': '#6ac653',
+        'FCAll' : '#d3d3d3',
     }
 }
 #endregion -----------------------------------------------------------> Colors
