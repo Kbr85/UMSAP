@@ -438,6 +438,9 @@ general = { # General options
 #region --------------------------------------------------------------> Colors
 color = { # Colors for the app
     'Zebra' : '#ffe6e6',
+    'Main' : [ # Lighter colors of the fragments and bands 
+		'#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff',
+	],
     nuCorrA : { # Color for plot in Correlation Analysis
         'CMAP' : { # CMAP colors and interval
             'N' : 128,

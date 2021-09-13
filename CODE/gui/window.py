@@ -1354,7 +1354,7 @@ class ProtProfPlot(BaseWindow):
             else:
                 #------------------------------> 
                 for k in self.protLine:
-                    k.remove()
+                    k[0].remove()
                 #------------------------------> 
                 self.protLine = []
             #------------------------------> 
@@ -1366,7 +1366,6 @@ class ProtProfPlot(BaseWindow):
         #region --------------------------------------------> Remove Old Lines
         #------------------------------> 
         for k in self.protLine:
-            print(k)
             k[0].remove()
         #------------------------------> 
         self.protLine = []
@@ -1375,15 +1374,21 @@ class ProtProfPlot(BaseWindow):
         #region -----------------------------------------------------> FC Plot
         #------------------------------> 
         idx = pd.IndexSlice
+        colorN = len(config.color['Main'])
         #------------------------------> 
-        for c in self.CI['Cond']:
-            #------------------------------> 
+        for k,c in enumerate(self.CI['Cond']):
+            #------------------------------> FC values
             y = self.data[self.dateC]['DF'].loc[
                 self.data[self.dateC]['DF'].index[[idxl]],idx[c,:,'FC']
             ]
             y = [0.0] + y.values.tolist()[0]
+            #------------------------------> Colors
+            color = config.color['Main'][k%colorN]
             #------------------------------> 
-            self.protLine.append(self.plots.dPlot['FC'].axes.plot(y))
+            self.protLine.append(
+                self.plots.dPlot['FC'].axes.plot(y, color=color))
+        #------------------------------> Zoom level
+        self.plots.dPlot['FC'].ZoomResetSetValues()
         #endregion --------------------------------------------------> FC Plot
         
         #region --------------------------------------------------------> Draw
