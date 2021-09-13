@@ -19,6 +19,7 @@ import _thread
 from pathlib import Path
 from typing import Optional, Literal
 
+import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 import requests
@@ -1190,7 +1191,7 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def DrawGreenPoint(self):
+    def DrawGreenPoint(self) -> bool:
         """
     
             Parameters
@@ -1254,7 +1255,7 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def FCDraw(self):
+    def FCDraw(self) -> bool:
         """Draw Fold Change Evolution plot.
     
             Parameters
@@ -1298,7 +1299,7 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def FCSetAxis(self):
+    def FCSetAxis(self) -> bool:
         """
     
             Parameters
@@ -1366,15 +1367,17 @@ class ProtProfPlot(BaseWindow):
         #region --------------------------------------------> Remove Old Lines
         #------------------------------> 
         for k in self.protLine:
-            k[0].remove()
+            k.remove()
         #------------------------------> 
         self.protLine = []
+        legend = []
         #endregion -----------------------------------------> Remove Old Lines
         
         #region -----------------------------------------------------> FC Plot
-        #------------------------------> 
+        #------------------------------> Variables
         idx = pd.IndexSlice
         colorN = len(config.color['Main'])
+        x = list(range(0, len(self.CI['RP'])+1))
         #------------------------------> 
         for k,c in enumerate(self.CI['Cond']):
             #------------------------------> FC values
@@ -1382,14 +1385,31 @@ class ProtProfPlot(BaseWindow):
                 self.data[self.dateC]['DF'].index[[idxl]],idx[c,:,'FC']
             ]
             y = [0.0] + y.values.tolist()[0]
+            #------------------------------> Errors
+            yError = self.data[self.dateC]['DF'].loc[
+                self.data[self.dateC]['DF'].index[[idxl]],idx[c,:,'CI']
+            ]
+            yError = [0] + yError.values.tolist()[0]
             #------------------------------> Colors
             color = config.color['Main'][k%colorN]
-            #------------------------------> 
+            #------------------------------> Plot line
             self.protLine.append(
-                self.plots.dPlot['FC'].axes.plot(y, color=color))
+                self.plots.dPlot['FC'].axes.errorbar(
+                    x, y, yerr=yError, color=color, fmt='o-', capsize=5
+            ))
+            #------------------------------> Legend
+            legend.append(mpatches.Patch(color=color, label=c))
         #------------------------------> Zoom level
         self.plots.dPlot['FC'].ZoomResetSetValues()
         #endregion --------------------------------------------------> FC Plot
+        
+        #region -------------------------------------------------------> Title
+        self.plots.dPlot['FC'].axes.set_title(f'Protein {idxl}')
+        #endregion ----------------------------------------------------> Title
+        
+        #region ------------------------------------------------------> Legend
+        self.plots.dPlot['FC'].axes.legend(handles=legend, loc='upper left')
+        #endregion ---------------------------------------------------> Legend
         
         #region --------------------------------------------------------> Draw
         self.plots.dPlot['FC'].canvas.draw()
@@ -1632,7 +1652,7 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def OnZoomResetVol(self):
+    def OnZoomResetVol(self) -> bool:
         """
     
             Parameters
@@ -1650,7 +1670,7 @@ class ProtProfPlot(BaseWindow):
         return self.plots.dPlot['Vol'].ZoomResetPlot()
     #---
     
-    def OnZoomResetFC(self):
+    def OnZoomResetFC(self) -> bool:
         """
     
             Parameters

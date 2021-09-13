@@ -2568,7 +2568,7 @@ class ProtProf(BaseConfModPanel):
         
         Gene Protein Score C1 ..... CN
         Gene Protein Score RP1 ..... RPN
-        Gene Protein Score aveC stdC ave std P Pc FC FCciL FCciU FCz
+        Gene Protein Score aveC stdC ave std P Pc FC CI FCz
         
         where all FC related values are for log2FC
     """
@@ -2872,21 +2872,21 @@ class ProtProf(BaseConfModPanel):
             self.excludeProt.tc.SetValue('171 172 173')
             #------------------------------> 
             #--> One Control per Column, 2 Cond and 2 TP
-            # self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            self.lbDict = {
+                1            : ['C1', 'C2'],
+                2            : ['RP1', 'RP2'],
+                'Control'    : ['TheControl'],
+                'ControlType': 'One Control per Column',
+            }
+            #--> One Control per Column, 1 Cond and 1 TP
+            # self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121')
             # self.lbDict = {
-            #     1            : ['DMSO', 'H2O'],
-            #     2            : ['30min', '1D'],
+            #     1            : ['DMSO'],
+            #     2            : ['30min', '60min'],
             #     'Control'    : ['MyControl'],
             #     'ControlType': 'One Control per Column',
             # }
-            #--> One Control per Column, 1 Cond and 1 TP
-            self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121')
-            self.lbDict = {
-                1            : ['DMSO'],
-                2            : ['30min', '60min'],
-                'Control'    : ['MyControl'],
-                'ControlType': 'One Control per Column',
-            }
         else:
             pass
         #endregion -----------------------------------------------------> Test
@@ -3632,12 +3632,17 @@ class ProtProf(BaseConfModPanel):
         self.dfR.loc[:,(cN, tN, 'FCz')] = (FC - FC.mean()).div(FC.std()).to_numpy()
         #------------------------------> FCci
         if self.do['RawI']:
-            self.dfR.loc[:,(cN, tN, ['FCciL', 'FCciU'])] = dtsStatistic.CI_Mean_Diff_DF(
-                dfLogI, colC, colD, self.do['Alpha'], self.do['IndS'],
+            self.dfR.loc[:,(cN, tN, 'CI')] = dtsStatistic.CI_Mean_Diff_DF(
+                dfLogI, 
+                colC, 
+                colD, 
+                self.do['Alpha'], 
+                self.do['IndS'],
+                fullCI=False,
             ).to_numpy()
         else:
-            self.dfR.loc[:,(cN, tN, ['FCciL', 'FCciU'])] = dtsStatistic.CI_Mean_DF(
-                dfLogI.iloc[:,colD], self.do['Alpha'],
+            self.dfR.loc[:,(cN, tN, 'CI')] = dtsStatistic.CI_Mean_DF(
+                dfLogI.iloc[:,colD], self.do['Alpha'], fullCI=False,
             ).to_numpy()
         #------------------------------> P
         if self.do['RawI']:

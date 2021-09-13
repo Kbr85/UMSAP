@@ -369,7 +369,7 @@ oControlTypeProtProf = {
 
 #region -----------------------------------------------------> DF Column names
 protprofFirstThree = ['Gene', 'Protein', 'Score']
-protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'FCciL', 'FCciU', 'FCz']
+protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
 #endregion --------------------------------------------------> DF Column names
 
 
