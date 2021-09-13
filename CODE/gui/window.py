@@ -1622,7 +1622,18 @@ class ProtProfPlot(BaseWindow):
             self.lc.lcs.lc.EnsureVisible(ind[0])
             self.lc.lcs.lc.SetFocus()
         else:
-            msg = (f'The selected point ')
+            msg = (f'The selected point is an overlap of several proteins.')
+            tException = (
+                f'The number of the proteins included in the selected '
+                f'point are:\n {str(ind)[1:-2]}')
+            dtscore.Notification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                tException = tException,
+                parent     = self.plots.dPlot['Vol'],
+            )
+            return False
         #endregion ------------------------------------------------> Pick
         
         return True
