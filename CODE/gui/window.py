@@ -1290,6 +1290,8 @@ class ProtProfPlot(BaseWindow):
             pass
         #------------------------------> 
         self.plots.dPlot['FC'].canvas.draw()
+        #------------------------------> Zoom level
+        self.plots.dPlot['FC'].ZoomResetSetValues()
         #endregion -------------------------------------------------> Plot All
         
         #region ----------------------------------------------> Plot Prot Line
@@ -1399,8 +1401,6 @@ class ProtProfPlot(BaseWindow):
             ))
             #------------------------------> Legend
             legend.append(mpatches.Patch(color=color, label=c))
-        #------------------------------> Zoom level
-        self.plots.dPlot['FC'].ZoomResetSetValues()
         #endregion --------------------------------------------------> FC Plot
         
         #region -------------------------------------------------------> Title
@@ -1414,6 +1414,10 @@ class ProtProfPlot(BaseWindow):
         #region --------------------------------------------------------> Draw
         self.plots.dPlot['FC'].canvas.draw()
         #endregion -----------------------------------------------------> Draw
+        
+        #region --------------------------------------------------> Zoom level
+        self.plots.dPlot['FC'].ZoomResetSetValues()
+        #endregion -----------------------------------------------> Zoom level
         
         return True
     #---
