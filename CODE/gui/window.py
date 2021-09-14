@@ -1622,9 +1622,13 @@ class ProtProfPlot(BaseWindow):
             self.lc.lcs.lc.EnsureVisible(ind[0])
             self.lc.lcs.lc.SetFocus()
         else:
+            #------------------------------> Disconnect events to avoid zoom in
+            # while interacting with the modal window
+            self.plots.dPlot['Vol'].DisconnectEvent()
+            #------------------------------> 
             msg = (f'The selected point is an overlap of several proteins.')
             tException = (
-                f'The number of the proteins included in the selected '
+                f'The numbers of the proteins included in the selected '
                 f'point are:\n {str(ind)[1:-2]}')
             dtscore.Notification(
                 'warning', 
@@ -1633,6 +1637,8 @@ class ProtProfPlot(BaseWindow):
                 tException = tException,
                 parent     = self.plots.dPlot['Vol'],
             )
+            #------------------------------> Reconnect event
+            self.plots.dPlot['Vol'].ConnectEvent()
             return False
         #endregion ------------------------------------------------> Pick
         

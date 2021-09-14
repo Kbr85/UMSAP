@@ -920,6 +920,10 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Filter
         self.AppendSubMenu(FiltersProtProf(), 'Filters')
         self.AppendSeparator()
+        #------------------------------> Lock scale
+        self.lockScale = self.Append(
+            -1, 'Lock Plot Scale\tCtrl+L', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
         #------------------------------> Duplicate Window
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
