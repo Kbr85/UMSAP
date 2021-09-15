@@ -1584,7 +1584,7 @@ class ProtProfPlot(BaseWindow):
         
         #region ---------------------------------------------------> Get Range
         #------------------------------> X
-        xRange = [0, len(self.CI['RP'])+0.5]
+        xRange = [-0.5, len(self.CI['RP'])+0.5]
         #------------------------------> Y
         #--------------> 
         yMax  = y.max().max()
