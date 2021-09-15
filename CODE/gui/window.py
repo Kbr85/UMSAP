@@ -1080,7 +1080,8 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def GetFCMinMax(self) -> list[list[float]]:
-        """Get the maximum and minimum values of FC for each studied RP 
+        """Get the maximum and minimum values of FC for each studied RP, 
+            excluding the CI.
     
             Parameters
             ----------
@@ -1305,10 +1306,16 @@ class ProtProfPlot(BaseWindow):
                 x, self.fcYMax, self.fcYMin, color=color, alpha=0.2)
         else:
             pass
-        #------------------------------> 
-        self.plots.dPlot['FC'].canvas.draw()
+        #------------------------------> Lock Scale
+        if self.fcXRange and self.fcYRange:
+            self.plots.dPlot['FC'].axes.set_xlim(*self.fcXRange)
+            self.plots.dPlot['FC'].axes.set_ylim(*self.fcYRange)
+        else:
+            pass
         #------------------------------> Zoom level
         self.plots.dPlot['FC'].ZoomResetSetValues()
+        #------------------------------> 
+        self.plots.dPlot['FC'].canvas.draw()
         #endregion -------------------------------------------------> Plot All
         
         #region ----------------------------------------------> Plot Prot Line
@@ -1432,11 +1439,164 @@ class ProtProfPlot(BaseWindow):
         self.plots.dPlot['FC'].canvas.draw()
         #endregion -----------------------------------------------------> Draw
         
-        #region --------------------------------------------------> Zoom level
-        self.plots.dPlot['FC'].ZoomResetSetValues()
-        #endregion -----------------------------------------------> Zoom level
+        return True
+    #---
+    
+    def SetRangeNo(self) -> bool:
+        """Do nothing. Just to make the dict self.setRange work
+    
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+    
+    def SetRangeDate(self):
+        """Set Plot Range to the range in the given date.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Vol Range
+        self.vXRange, self.vYRange = self.GetVolXYRange(self.dateC)
+        #endregion ------------------------------------------------> Vol Range
+        
+        #region ----------------------------------------------------> FC Range
+        self.fcXRange, self.fcYRange = self.GetFCXYRange(self.dateC)
+        #endregion -------------------------------------------------> FC Range
         
         return True
+    #---
+    
+    def SetRangeProject(self):
+        """Set Plot Range to the range in the given project.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        vXLim = 0
+        vYLim = 0
+        fcXMax = 0
+        fcYMin = 0
+        fcYMax = 0 
+        #endregion ------------------------------------------------> Variables
+        
+        #region -------------------------------------------------------> Range
+        #------------------------------> Get larger range in project
+        for date in self.date:
+            #------------------------------> 
+            x,y = self.GetVolXYRange(date)
+            xFC, yFC = self.GetFCXYRange(date)
+            #------------------------------> 
+            vXLim = x[1] if x[1] >= vXLim else vXLim
+            vYLim = y[1] if y[1] >= vYLim else vYLim
+            
+            fcXMax = xFC[1] if xFC[1] >= fcXMax else fcXMax
+            fcYMax = yFC[1] if yFC[1] >= fcYMax else fcYMax
+            fcYMin = yFC[0] if yFC[0] <= fcYMin else fcYMin
+        #------------------------------> Set attributes
+        self.vXRange = [-vXLim, vXLim]
+        self.vYRange = [-0.1, vYLim]
+        
+        self.fcXRange = [0, fcXMax]
+        self.fcYRange = [fcYMin, fcYMax]
+        #endregion ----------------------------------------------------> Range
+        
+        return True
+    #---
+    
+    def GetVolXYRange(self, date: str) -> list[list[float]]:
+        """Get the XY range for the volcano plot for the given date
+    
+            Parameters
+            ----------
+            date : str
+                A valid date from the project
+    
+            Returns
+            -------
+            list of list of floats
+                [xRange, yRange] e.g. [[-0.3, 0.3], [-0.1, 4.5]]
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #------------------------------> 
+        x = self.data[date]['DF'].loc[:, idx[:,:,'FC']]
+        #------------------------------> 
+        if self.corrP:
+            y = self.data[date]['DF'].loc[:, idx[:,:,'Pc']]
+        else:
+            y = self.data[date]['DF'].loc[:, idx[:,:,'P']]
+        
+        y = -np.log10(y)
+        #------------------------------> 
+        xRange = []
+        yRange = []
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Get Range
+        #------------------------------> X
+        xmin = abs(x.min().min())
+        xmax = abs(x.max().max())
+        #-------------->  To make it symetric
+        if xmin >= xmax:
+            lim = xmin
+        else:
+            lim = xmax
+        #--------------> 
+        xRange.append(-lim - 0.3*lim)
+        xRange.append(lim + 0.3*lim)
+        #------------------------------> Y
+        ymax = y.max().max()
+        #--------------> 
+        yRange.append(-0.1)
+        yRange.append(ymax + 0.3*ymax)
+        #endregion ------------------------------------------------> Get Range
+        
+        return [xRange, yRange]
+    #---
+    
+    def GetFCXYRange(self, date: str) -> list[list[float]]:
+        """Get the XY range for the FC plot, including the CI.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #------------------------------> 
+        y = self.data[date]['DF'].loc[:, idx[:,:,'FC']]
+        yCI = self.data[date]['DF'].loc[:, idx[:,:,'CI']]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Get Range
+        #------------------------------> X
+        xRange = [0, len(self.CI['RP'])+0.5]
+        #------------------------------> Y
+        #--------------> 
+        yMax  = y.max().max()
+        yMin  = y.min().min()
+        ciMax = yCI.max().max()
+        #--------------> 
+        yminLim = yMin - ciMax
+        ymaxLim = yMax + ciMax
+        yRange = [yminLim - 0.3*yminLim, ymaxLim + 0.3*ymaxLim]
+        #endregion ------------------------------------------------> Get Range
+
+        return [xRange, yRange]
     #---
     
     def OnDateChange(
@@ -1750,6 +1910,10 @@ class ProtProfPlot(BaseWindow):
         """
         #region -------------------------------------------------> Update Attr
         self.lockScale = mode
+        self.vXRange   = []
+        self.vYRange   = []
+        self.fcXRange  = []
+        self.fcYRange  = []
         #endregion ----------------------------------------------> Update Attr
         
         #region ---------------------------------------------------> Get Range
@@ -1766,83 +1930,18 @@ class ProtProfPlot(BaseWindow):
             self.plots.dPlot['Vol'].canvas.draw()
             #--------------> 
             self.plots.dPlot['Vol'].ZoomResetSetValues()
+            #------------------------------> FC
+            #--------------> 
+            self.plots.dPlot['FC'].axes.set_xlim(*self.fcXRange)
+            self.plots.dPlot['FC'].axes.set_ylim(*self.fcYRange)
+            #--------------> 
+            self.plots.dPlot['FC'].canvas.draw()
+            #--------------> 
+            self.plots.dPlot['FC'].ZoomResetSetValues()
         else:
             pass    
         #endregion ------------------------------------------------> Set Range
         
-        return True
-    #---
-    
-    def SetRangeNo(self) -> bool:
-        """Set Plot Range to empty lists.
-    
-            Returns
-            -------
-            bool
-        """
-        self.vXRange  = []
-        self.vYRange  = []
-        self.fcXRange = []
-        self.fcYRange = []
-        
-        return True
-    #---
-    
-    def SetRangeDate(self):
-        """Set Plot Range to the range in the given date.
-    
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Variables
-        idx = pd.IndexSlice
-        self.vXRange  = []
-        self.vYRange  = []
-        self.fcXRange = []
-        self.fcYRange = []
-        #endregion ------------------------------------------------> Variables
-        
-        #region ---------------------------------------------------> Vol Range
-        #------------------------------> X
-        #--------------> 
-        x = self.data[self.dateC]['DF'].loc[:, idx[:,:,'FC']]
-        #-------------->
-        xmin = abs(x.min().min())
-        xmax = abs(x.max().max())
-        #--------------> To make it symetric
-        if xmin >= xmax:
-            lim = xmin
-        else:
-            lim = xmax
-        #--------------> 
-        self.vXRange.append(-lim - 0.3*lim)
-        self.vXRange.append(lim + 0.3*lim)
-        #------------------------------> Y
-        #--------------> 
-        if self.corrP:
-            y = self.data[self.dateC]['DF'].loc[:, idx[:,:,'Pc']]
-        else:
-            y = self.data[self.dateC]['DF'].loc[:, idx[:,:,'P']]
-        
-        y = -np.log10(y)
-        #--------------> 
-        ymax = y.max().max()
-        #--------------> 
-        self.vYRange.append(-0.1)
-        self.vYRange.append(ymax + 0.3*ymax)
-        #endregion ------------------------------------------------> Vol Range
-        
-        return True
-    #---
-    
-    def SetRangeProject(self):
-        """Set Plot Range to the range in the given project.
-    
-            Returns
-            -------
-            bool
-        """
         return True
     #---
     
