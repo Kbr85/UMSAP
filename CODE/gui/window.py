@@ -898,6 +898,7 @@ class ProtProfPlot(BaseWindow):
         #------------------------------> Text details
         self.text = wx.TextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
+        self.text.SetFont(config.font['SeqAlign'])
         #------------------------------> wx.ListCtrl
         self.lc = pane.ListCtrlSearchPlot(
             self, 
@@ -1443,6 +1444,137 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
+    def SetText(self) -> bool:
+        """Set the text with information about the selected protein.
+    
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Index
+        if (idx := self.lc.lcs.lc.GetFirstSelected()) < 0:
+            #------------------------------> 
+            self.text.Freeze()
+            self.text.SetValue('')
+            self.text.Thaw()
+            #------------------------------> 
+            return False
+        else:
+            pass
+        #endregion ----------------------------------------------------> Index
+        
+        #region ---------------------------------------------------> Add Text
+        #------------------------------> Delete all
+        self.text.Freeze()
+        self.text.SetValue('')
+        #------------------------------> Protein ID
+        number = self.lc.lcs.lc.GetItemText(idx, col=0)
+        gene = self.lc.lcs.lc.GetItemText(idx, col=1)
+        name = self.lc.lcs.lc.GetItemText(idx, col=2)
+        self.text.AppendText(
+            f'--> Selected Protein:\n\n#: {number}, Gene: {gene}, '
+            f'Protein ID: {name}\n\n'
+        )
+        #------------------------------> P and FC values
+        self.text.AppendText('--> P and Log2(FC) values:\n\n')
+        self.text.AppendText(self.GetDF4PFC(idx).to_string(index=False))
+        self.text.AppendText('\n\n')
+        #------------------------------> Ave and st for intensity values
+        self.text.AppendText('--> Intensity values after data preparation:\n\n')
+        self.text.AppendText(self.GetDF4Int(idx).to_string(index=False))
+        #------------------------------> Go back to begining
+        self.text.SetInsertionPoint(0)
+        self.text.Thaw()
+        #endregion ------------------------------------------------> Add Text
+        
+        return True
+    #---
+    
+    def GetDF4PFC(self, pID: int) -> pd.DataFrame:
+        """Get the dataframe to print the P and FC +/- CI values to the text.
+    
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.data[self.dateC]['DF']
+            
+            Returns
+            -------
+            pd.Dataframe
+                     RP1            RPN
+                     FC (CI)   P
+                Cond
+                C1   4.5 (0.3) 0.05 
+                CN
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #endregion ------------------------------------------------> Variables
+        
+        #region ----------------------------------------------------------> DF
+        #------------------------------>  Multiindex
+        a = ['']
+        b = ['Conditions']
+        for rp in self.CI['RP']:
+            a = a + 2 * [rp]
+            b = b + ['FC (CI)', 'P']
+        mInd = pd.MultiIndex.from_arrays([a[:], b[:]])
+        #------------------------------>  Empty DF
+        dfo = pd.DataFrame(columns=mInd, index=range(0,len(self.CI['Cond'])))
+        #------------------------------>  Add Cond
+        dfo.loc[:,idx[:,'Conditions']] = self.CI['Cond']
+        #endregion -------------------------------------------------------> DF
+        
+        #region --------------------------------------------------> Add Values
+        for k,c in enumerate(self.CI['Cond']):
+            for t in self.CI['RP']:
+                #------------------------------> Get Values
+                p = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'P')]
+                fc = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'FC')]
+                ci = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'CI')]
+                #------------------------------> Assign
+                dfo.loc[dfo.index[[k]], idx[t,'P']] = p
+                dfo.loc[dfo.index[[k]], idx[t,'FC (CI)']] = f'{fc} ({ci})'
+        #endregion -----------------------------------------------> Add Values
+        
+        return dfo
+    #---
+    
+    def GetDF4Int(self, pID: int) -> pd.DataFrame:
+        """Get the dataframe to print the ave and std for intensities.
+    
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.data[self.dateC]['DF']
+            
+            Returns
+            -------
+            pd.Dataframe
+                     RP1            RPN
+                     FC (CI)   P
+                Cond
+                C1   4.5 (0.3) 0.05 
+                CN
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #endregion ------------------------------------------------> Variables
+        
+        #region ----------------------------------------------------------> DF
+        dfo = pd.DataFrame({'A': [1,2,3,4,5]})
+        #endregion -------------------------------------------------------> DF
+        
+        #region --------------------------------------------------> Add Values
+        
+        #endregion -----------------------------------------------> Add Values
+        
+        return dfo
+    #---
+    
     def SetRangeNo(self) -> bool:
         """Do nothing. Just to make the dict self.setRange work
     
@@ -1632,7 +1764,9 @@ class ProtProfPlot(BaseWindow):
         #------------------------------> Alpha
         self.log10alpha = -np.log10(float(self.CI['Alpha']))
         #------------------------------> Update StatusBar
-        self.statusbar.SetStatusText(tDate, 1) 
+        self.statusbar.SetStatusText(tDate, 1)
+        #------------------------------> Clean text
+        self.text.SetValue('')
         #endregion -----------------------------------------------> Update GUI
         
         #region -------------------------------------------> Update FC x label
@@ -1853,7 +1987,11 @@ class ProtProfPlot(BaseWindow):
         
         #region ------------------------------------------------> FC Evolution
         self.DrawProtLine()
-        #endregion ---------------------------------------------> FC Evolution 
+        #endregion ---------------------------------------------> FC Evolution
+        
+        #region --------------------------------------------------------> Text
+        self.SetText()
+        #endregion -----------------------------------------------------> Text
         
         return True
     #---
