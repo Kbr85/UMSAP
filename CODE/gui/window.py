@@ -893,7 +893,8 @@ class ProtProfPlot(BaseWindow):
         #------------------------------> 
         self.statusbar.SetFieldsCount(2, config.sbPlot)
         #------------------------------>  Plot
-        self.plots = dtsWindow.NPlots(self, ['Vol', 'FC'], 2)
+        self.plots = dtsWindow.NPlots(
+            self, ['Vol', 'FC'], 2, statusbar=self.statusbar)
         #------------------------------> Text details
         self.text = wx.TextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
