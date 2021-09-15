@@ -883,6 +883,64 @@ class FiltersProtProf(wx.Menu):
 #---
 
 
+class LockPlotScale(wx.Menu):
+    """Lock the plots scale to the selected option"""
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.no      = self.Append(-1, 'No',         kind=wx.ITEM_RADIO)
+        self.date    = self.Append(-1, 'To Date',    kind=wx.ITEM_RADIO)
+        self.project = self.Append(-1, 'To Project', kind=wx.ITEM_RADIO)
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ------------------------------------------------------> nameID
+        self.nameID = { # Associate IDs with Tab names. Avoid manual IDs
+            self.no.GetId()     : 'No',
+            self.date.GetId()   : 'Date',
+            self.project.GetId(): 'Project',
+        }
+        #endregion ---------------------------------------------------> nameID
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnLockScale, source=self.no)
+        self.Bind(wx.EVT_MENU, self.OnLockScale, source=self.date)
+        self.Bind(wx.EVT_MENU, self.OnLockScale, source=self.project)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnLockScale(self, event) -> bool:
+        """Lock or unlock the scale of the plots.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnLockScale(self.nameID[event.GetId()])
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
 #endregion -------------------------------------------------> Individual menus
 
 
@@ -921,8 +979,8 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.AppendSubMenu(FiltersProtProf(), 'Filters')
         self.AppendSeparator()
         #------------------------------> Lock scale
-        self.lockScale = self.Append(
-            -1, 'Lock Plot Scale\tCtrl+L', kind=wx.ITEM_CHECK)
+        self.lockScale = LockPlotScale()
+        self.AppendSubMenu(self.lockScale, 'Lock Plot Scale')
         self.AppendSeparator()
         #------------------------------> Duplicate Window
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')

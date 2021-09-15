@@ -864,13 +864,24 @@ class ProtProfPlot(BaseWindow):
         self.CI          = None
         self.fcYMax      = None
         self.fcYMin      = None
+        self.lockScale   = None
+        self.vXRange     = []
+        self.vYRange     = []
+        self.fcXRange    = []
+        self.fcYRange    = []
         self.fcXLabel    = []
         self.protLine    = []
         self.date, menuData = self.SetDateMenuDate()
         #------------------------------> Configuration
         self.cLCol = ['#', 'Gene', 'Protein']
         self.cSCol = [45, 70, 100]
-        
+        #------------------------------> Methods
+        self.setRange = {
+            'No'     : self.SetRangeNo,
+            'Date'   : self.SetRangeDate,
+            'Project': self.SetRangeProject,
+        }
+        #------------------------------> 
         super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
 
@@ -1146,6 +1157,12 @@ class ProtProfPlot(BaseWindow):
             color     = color,
             picker    = True,
         )
+        #------------------------------> Lock Scale
+        if self.vXRange and self.vYRange:
+            self.plots.dPlot['Vol'].axes.set_xlim(*self.vXRange)
+            self.plots.dPlot['Vol'].axes.set_ylim(*self.vYRange)
+        else:
+            pass
         #------------------------------> Zoom level
         self.plots.dPlot['Vol'].ZoomResetSetValues()
         #------------------------------> Show
@@ -1465,6 +1482,13 @@ class ProtProfPlot(BaseWindow):
         self.fcYMax, self.fcYMin = self.GetFCMinMax()
         #endregion ------------------------------------------------> FC minmax
         
+        #region --------------------------------------------------> Lock Scale
+        if self.lockScale is not None:
+            self.OnLockScale(self.lockScale)
+        else:
+            pass
+        #endregion -----------------------------------------------> Lock Scale
+        
         #region ---------------------------------------------------------> Vol
         self.VolDraw()
         #endregion ------------------------------------------------------> Vol
@@ -1707,6 +1731,119 @@ class ProtProfPlot(BaseWindow):
             
         """
         return self.plots.dPlot['FC'].ZoomResetPlot()
+    #---
+    
+    def OnLockScale(self, mode: str, updatePlot: bool=True) -> bool:
+        """Lock the scale of the volcano and FC plot.
+    
+            Parameters
+            ----------
+            mode : str
+                One of No, Date, Project
+            updatePlot : bool
+                Apply the new axis limit ot the plots (True) or not. 
+                Default is True.
+    
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------> Update Attr
+        self.lockScale = mode
+        #endregion ----------------------------------------------> Update Attr
+        
+        #region ---------------------------------------------------> Get Range
+        self.setRange[mode]()
+        #endregion ------------------------------------------------> Get Range
+        
+        #region ---------------------------------------------------> Set Range
+        if updatePlot:
+            #------------------------------> Vol
+            #--------------> 
+            self.plots.dPlot['Vol'].axes.set_xlim(*self.vXRange)
+            self.plots.dPlot['Vol'].axes.set_ylim(*self.vYRange)
+            #--------------> 
+            self.plots.dPlot['Vol'].canvas.draw()
+            #--------------> 
+            self.plots.dPlot['Vol'].ZoomResetSetValues()
+        else:
+            pass    
+        #endregion ------------------------------------------------> Set Range
+        
+        return True
+    #---
+    
+    def SetRangeNo(self) -> bool:
+        """Set Plot Range to empty lists.
+    
+            Returns
+            -------
+            bool
+        """
+        self.vXRange  = []
+        self.vYRange  = []
+        self.fcXRange = []
+        self.fcYRange = []
+        
+        return True
+    #---
+    
+    def SetRangeDate(self):
+        """Set Plot Range to the range in the given date.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        self.vXRange  = []
+        self.vYRange  = []
+        self.fcXRange = []
+        self.fcYRange = []
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Vol Range
+        #------------------------------> X
+        #--------------> 
+        x = self.data[self.dateC]['DF'].loc[:, idx[:,:,'FC']]
+        #-------------->
+        xmin = abs(x.min().min())
+        xmax = abs(x.max().max())
+        #--------------> To make it symetric
+        if xmin >= xmax:
+            lim = xmin
+        else:
+            lim = xmax
+        #--------------> 
+        self.vXRange.append(-lim - 0.3*lim)
+        self.vXRange.append(lim + 0.3*lim)
+        #------------------------------> Y
+        #--------------> 
+        if self.corrP:
+            y = self.data[self.dateC]['DF'].loc[:, idx[:,:,'Pc']]
+        else:
+            y = self.data[self.dateC]['DF'].loc[:, idx[:,:,'P']]
+        
+        y = -np.log10(y)
+        #--------------> 
+        ymax = y.max().max()
+        #--------------> 
+        self.vYRange.append(-0.1)
+        self.vYRange.append(ymax + 0.3*ymax)
+        #endregion ------------------------------------------------> Vol Range
+        
+        return True
+    #---
+    
+    def SetRangeProject(self):
+        """Set Plot Range to the range in the given project.
+    
+            Returns
+            -------
+            bool
+        """
+        return True
     #---
     
     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
