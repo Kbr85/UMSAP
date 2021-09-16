@@ -35,6 +35,7 @@ import dat4s_core.data.method as dtsMethod
 import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
+from UMSAP import DEVELOPMENT
 
 import config.config as config
 from data.file import UMSAPFile
@@ -881,6 +882,12 @@ class ProtProfPlot(BaseWindow):
             'Date'   : self.SetRangeDate,
             'Project': self.SetRangeProject,
         }
+        self.getDF4TextInt = {
+            config.oControlTypeProtProf['OC']   : self.GetDF4TextInt_OC,
+            config.oControlTypeProtProf['OCC']  : self.GetDF4TextInt_OCC,
+            config.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
+            config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
+        }
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
@@ -1477,11 +1484,14 @@ class ProtProfPlot(BaseWindow):
         )
         #------------------------------> P and FC values
         self.text.AppendText('--> P and Log2(FC) values:\n\n')
-        self.text.AppendText(self.GetDF4PFC(idx).to_string(index=False))
+        self.text.AppendText(self.GetDF4TextPFC(idx).to_string(index=False))
         self.text.AppendText('\n\n')
         #------------------------------> Ave and st for intensity values
         self.text.AppendText('--> Intensity values after data preparation:\n\n')
-        self.text.AppendText(self.GetDF4Int(idx).to_string(index=False))
+        dfList = self.getDF4TextInt[self.CI['ControlT']](idx)
+        for df in dfList:
+            self.text.AppendText(df.to_string(index=False))
+            self.text.AppendText('\n\n')
         #------------------------------> Go back to begining
         self.text.SetInsertionPoint(0)
         self.text.Thaw()
@@ -1490,7 +1500,56 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def GetDF4PFC(self, pID: int) -> pd.DataFrame:
+    def GetDF4Text(
+        self, col: list[str], rp: list[str], cond: list[str],
+        ) -> pd.DataFrame:
+        """Creates the empty dataframe to be used in GetDF4Text functions.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+        """
+        #region ---------------------------------------------------> Variables
+        nCol = len(col)
+        idx = pd.IndexSlice
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------> Multiindex
+        #------------------------------> 
+        a = ['']
+        b = ['Conditions']
+        #------------------------------> 
+        for t in rp:
+            a = a + nCol * [t]
+            b = b + col
+        #------------------------------> 
+        mInd = pd.MultiIndex.from_arrays([a[:], b[:]])
+        #endregion -----------------------------------------------> Multiindex
+        
+        #region ----------------------------------------------------> Empty DF
+        dfo = pd.DataFrame(columns=mInd, index=range(0,len(cond)))
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region ----------------------------------------------------> Add Cond
+        dfo.loc[:,idx[:,'Conditions']] = cond
+        #endregion -------------------------------------------------> Add Cond
+        
+        if config.development:
+            print(dfo)
+        else:
+            pass
+        
+        return dfo
+    #---
+    
+    def GetDF4TextPFC(self, pID: int) -> pd.DataFrame:
         """Get the dataframe to print the P and FC +/- CI values to the text.
     
             Parameters
@@ -1512,17 +1571,7 @@ class ProtProfPlot(BaseWindow):
         #endregion ------------------------------------------------> Variables
         
         #region ----------------------------------------------------------> DF
-        #------------------------------>  Multiindex
-        a = ['']
-        b = ['Conditions']
-        for rp in self.CI['RP']:
-            a = a + 2 * [rp]
-            b = b + ['FC (CI)', 'P']
-        mInd = pd.MultiIndex.from_arrays([a[:], b[:]])
-        #------------------------------>  Empty DF
-        dfo = pd.DataFrame(columns=mInd, index=range(0,len(self.CI['Cond'])))
-        #------------------------------>  Add Cond
-        dfo.loc[:,idx[:,'Conditions']] = self.CI['Cond']
+        dfo = self.GetDF4Text(['FC (CI)', 'P'], self.CI['RP'], self.CI['Cond'])
         #endregion -------------------------------------------------------> DF
         
         #region --------------------------------------------------> Add Values
@@ -1536,15 +1585,18 @@ class ProtProfPlot(BaseWindow):
                 ci = self.data[self.dateC]['DF'].at[
                     self.data[self.dateC]['DF'].index[pID],(c,t,'CI')]
                 #------------------------------> Assign
-                dfo.loc[dfo.index[[k]], idx[t,'P']] = p
-                dfo.loc[dfo.index[[k]], idx[t,'FC (CI)']] = f'{fc} ({ci})'
+                dfo.at[dfo.index[k], (t,'P')] = p
+                dfo.at[dfo.index[k], (t,'FC (CI)')] = f'{fc} ({ci})'
         #endregion -----------------------------------------------> Add Values
         
         return dfo
     #---
     
-    def GetDF4Int(self, pID: int) -> pd.DataFrame:
-        """Get the dataframe to print the ave and std for intensities.
+    def GetDF4TextInt_OC(self, pID: int) -> list[pd.DataFrame]:
+        """Get the dataframe to print the ave and std for intensities for 
+            control type One Control.
+            
+            See Notes below for more details.
     
             Parameters
             ----------
@@ -1553,7 +1605,7 @@ class ProtProfPlot(BaseWindow):
             
             Returns
             -------
-            pd.Dataframe
+            list[pd.Dataframe]
                      RP1            RPN
                      FC (CI)   P
                 Cond
@@ -1565,14 +1617,185 @@ class ProtProfPlot(BaseWindow):
         #endregion ------------------------------------------------> Variables
         
         #region ----------------------------------------------------------> DF
-        dfo = pd.DataFrame({'A': [1,2,3,4,5]})
+        #------------------------------> 
+        aveC = self.data[self.dateC]['DF'].at[
+            self.data[self.dateC]['DF'].index[pID],
+            (self.CI['Cond'][0], self.CI['RP'][0], 'aveC')]
+        stdC = self.data[self.dateC]['DF'].at[
+            self.data[self.dateC]['DF'].index[pID],
+            (self.CI['Cond'][0], self.CI['RP'][0], 'stdC')]
+        #------------------------------> 
+        dfc = pd.DataFrame({
+            'Condition': self.CI['ControlL'],
+            'Ave'      : [aveC],
+            'Std'      : [stdC]
+        })
+        #endregion -------------------------------------------------------> DF
+
+        #region ---------------------------------------------------------> DFO
+        dfo = self.GetDF4TextInt_RatioI(pID)
+        #endregion ------------------------------------------------------> DFO
+        
+        return [dfc] + dfo
+    #---
+    
+    def GetDF4TextInt_OCC(self, pID: int) -> list[pd.DataFrame]:
+        """Get the dataframe to print the ave and std for intensities for 
+            control type One Control per Column.
+            
+            See Notes below for more details.
+    
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.data[self.dateC]['DF']
+            
+            Returns
+            -------
+            list[pd.Dataframe]
+                        RP1      RPN
+                        ave  std
+                Cond
+                Control 4.5 0.05  
+                C1   
+                CN
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #endregion ------------------------------------------------> Variables
+        
+        #region ----------------------------------------------------------> DF
+        dfo = self.GetDF4Text(
+            ['Ave', 'Std'], self.CI['RP'], self.CI['ControlL']+self.CI['Cond'])
         #endregion -------------------------------------------------------> DF
         
         #region --------------------------------------------------> Add Values
-        
+        #------------------------------> Control
+        for c in self.CI['Cond']:
+            for t in self.CI['RP']:
+                #------------------------------> Get Values
+                aveC = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'aveC')]
+                stdC = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'stdC')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[0], (t,'Ave')] = aveC
+                dfo.at[dfo.index[0], (t,'Std')] = stdC
+        #------------------------------> Conditions
+        for k,c in enumerate(self.CI['Cond'], start=1):
+            for t in self.CI['RP']:
+                #------------------------------> Get Values
+                ave = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'ave')]
+                std = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'std')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (t,'Ave')] = ave
+                dfo.at[dfo.index[k], (t,'Std')] = std
         #endregion -----------------------------------------------> Add Values
         
-        return dfo
+        return [dfo]
+    #---
+    
+    def GetDF4TextInt_OCR(self, pID: int) -> list[pd.DataFrame]:
+        """Get the dataframe to print the ave and std for intensities for 
+            control type One Control.
+            
+            See Notes below for more details.
+    
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.data[self.dateC]['DF']
+            
+            Returns
+            -------
+            list[pd.Dataframe]
+                     RP1            RPN
+                     FC (CI)   P
+                Cond
+                C1   4.5 (0.3) 0.05 
+                CN
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #endregion ------------------------------------------------> Variables
+        
+        #region ----------------------------------------------------------> DF
+        dfo = self.GetDF4Text(
+            ['Ave', 'Std'], self.CI['ControlL']+self.CI['RP'], self.CI['Cond'])
+        #endregion -------------------------------------------------------> DF
+        
+        #region --------------------------------------------------> Add Values
+        #------------------------------> Control
+        for k,c in enumerate(self.CI['Cond']):
+            for t in self.CI['RP']:
+                #------------------------------> Get Values
+                aveC = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'aveC')]
+                stdC = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'stdC')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (self.CI['ControlL'],'Ave')] = aveC
+                dfo.at[dfo.index[k], (self.CI['ControlL'],'Std')] = stdC
+        #------------------------------> Conditions
+        for k,c in enumerate(self.CI['Cond']):
+            for t in self.CI['RP']:
+                #------------------------------> Get Values
+                ave = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'ave')]
+                std = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'std')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (t,'Ave')] = ave
+                dfo.at[dfo.index[k], (t,'Std')] = std
+        #endregion -----------------------------------------------> Add Values
+        
+        return [dfo]
+    #---
+    
+    def GetDF4TextInt_RatioI(self, pID: int) -> list[pd.DataFrame]:
+        """Get the dataframe to print the ave and std for intensities for 
+            control type One Control.
+            
+            See Notes below for more details.
+    
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.data[self.dateC]['DF']
+            
+            Returns
+            -------
+            list[pd.Dataframe]
+                     RP1            RPN
+                     FC (CI)   P
+                Cond
+                C1   4.5 (0.3) 0.05 
+                CN
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #endregion ------------------------------------------------> Variables
+        
+        #region ----------------------------------------------------------> DF
+        dfo = self.GetDF4Text(['Ave', 'Std'], self.CI['RP'], self.CI['Cond'])
+        #endregion -------------------------------------------------------> DF
+        
+        #region --------------------------------------------------> Add Values
+        for k,c in enumerate(self.CI['Cond']):
+            for t in self.CI['RP']:
+                #------------------------------> Get Values
+                ave = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'ave')]
+                std = self.data[self.dateC]['DF'].at[
+                    self.data[self.dateC]['DF'].index[pID],(c,t,'std')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (t,'Ave')] = ave
+                dfo.at[dfo.index[k], (t,'Std')] = std
+        #endregion -----------------------------------------------> Add Values
+        
+        return [dfo]
     #---
     
     def SetRangeNo(self) -> bool:

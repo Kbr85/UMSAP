@@ -17,7 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import platform
 from pathlib import Path
-from typing import Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 #endregion ----------------------------------------------------------> Imports
 
@@ -345,7 +345,7 @@ oSamples = {
     'IS'   : 'Independent Samples',
     'PS'   : 'Paired Samples',
 }
-oCorrectP    = {
+oCorrectP = {
     ''                     : '',
     'None'                 : 'None',
     'Bonferroni'           : 'bonferroni',

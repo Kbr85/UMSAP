@@ -2872,21 +2872,37 @@ class ProtProf(BaseConfModPanel):
             self.excludeProt.tc.SetValue('171 172 173')
             #------------------------------> 
             #--> One Control per Column, 2 Cond and 2 TP
-            self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-            self.lbDict = {
-                1            : ['C1', 'C2'],
-                2            : ['RP1', 'RP2'],
-                'Control'    : ['TheControl'],
-                'ControlType': 'One Control per Column',
-            }
-            #--> One Control per Column, 1 Cond and 1 TP
-            # self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121')
+            # self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.lbDict = {
+            #     1            : ['C1', 'C2'],
+            #     2            : ['RP1', 'RP2'],
+            #     'Control'    : ['TheControl'],
+            #     'ControlType': 'One Control per Column',
+            # }
+            #--> One Control per Row, 1 Cond and 2 TP
+            # self.tcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
             # self.lbDict = {
             #     1            : ['DMSO'],
             #     2            : ['30min', '60min'],
             #     'Control'    : ['MyControl'],
-            #     'ControlType': 'One Control per Column',
+            #     'ControlType': 'One Control per Row',
             # }
+            #--> One Control 2 Cond and 2 TP
+            self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            self.lbDict = {
+                1            : ['C1', 'C2'],
+                2            : ['RP1', 'RP2'],
+                'Control'    : ['1Control'],
+                'ControlType': 'One Control',
+            }
+            #--> Ratio 2 Cond and 2 TP
+            self.tcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            self.lbDict = {
+                1            : ['C1', 'C2'],
+                2            : ['RP1', 'RP2'],
+                'Control'    : ['1Control'],
+                'ControlType': 'Ratio of Intensities',
+            }
         else:
             pass
         #endregion -----------------------------------------------------> Test
