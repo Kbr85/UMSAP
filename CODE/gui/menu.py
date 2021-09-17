@@ -867,18 +867,41 @@ class FiltersProtProf(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.add = self.Append(-1, 'Add')
-        self.remove = self.Append(-1, 'Remove')
+        self.zScore = self.Append(-1, 'Z Value')
+        self.AppendSeparator()
+        self.apply = self.Append(-1, 'Apply Filters\tCtrl+A')
+        self.update = self.Append(-1, 'Auto Apply Filters', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
+        self.removeLast = self.Append(-1, 'Remove Last\tCtrl+Shift+Z')
+        self.removeAny = self.Append(-1, 'Remove Filters')
+        self.removeAll = self.Append(-1, 'Remove All\tCtrl+Shift+A')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        
+        self.Bind(wx.EVT_MENU, self.OnZScore, source=self.zScore)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def OnZScore(self, event) -> bool:
+        """Filter results by Z score.
     
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_ZScore()
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 

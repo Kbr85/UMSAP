@@ -854,6 +854,7 @@ class ProtProfPlot(BaseWindow):
         self.cTitle      = f"{parent.cTitle} - {self.cSection}"
         self.obj         = parent.obj
         self.data        = self.obj.confData[self.cSection]
+        self.df          = None
         self.log10alpha  = None
         self.zScore      = stats.norm.ppf(0.9)
         self.zScoreL     = '10%'
@@ -915,7 +916,6 @@ class ProtProfPlot(BaseWindow):
             style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
             tcHint   = f'Search {self.cLProtList}'
         )
-        self.FillListCtrl(self.date[0])
         #endregion --------------------------------------------------> Widgets
         
         #region -------------------------------------------------> Aui control
@@ -1005,6 +1005,28 @@ class ProtProfPlot(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    #------------------------------> Filters
+    def Filter_ZScore(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        zScore = stats.norm.ppf(0.9)
+        
+        
+    #---
+    
+    #------------------------------> 
     def SetDateMenuDate(self) -> tuple[list, dict]:
         """Set the self.date list and the menuData dict needed to build the Tool
             menu.
@@ -2039,6 +2061,7 @@ class ProtProfPlot(BaseWindow):
         self.corrP   = corrP
         self.showAll = showAll
         self.CI      = self.obj.data[self.cSection][self.dateC]['CI']
+        self.df      = self.data[self.dateC]['DF'].copy()
         #endregion -----------------------------------------> Update variables
         
         #region --------------------------------------------------> Update GUI
