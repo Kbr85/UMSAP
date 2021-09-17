@@ -322,7 +322,7 @@ class BaseWindowPlot(BaseWindow):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.statusbar.SetFieldsCount(2, config.sbPlot)
+        self.statusbar.SetFieldsCount(2, config.sbPlot2Fields)
         #endregion --------------------------------------------------> Widgets
         
         #region --------------------------------------------------------> Bind
@@ -875,6 +875,7 @@ class ProtProfPlot(BaseWindow):
         self.fcYRange    = []
         self.fcXLabel    = []
         self.protLine    = []
+        self.filterList  = []
         self.date, menuData = self.SetDateMenuDate()
         #------------------------------> Configuration
         self.cLCol = ['#', 'Gene', 'Protein']
@@ -901,7 +902,7 @@ class ProtProfPlot(BaseWindow):
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> 
-        self.statusbar.SetFieldsCount(2, config.sbPlot)
+        self.statusbar.SetFieldsCount(3, config.sbPlot3Fields)
         #------------------------------>  Plot
         self.plots = dtsWindow.NPlots(
             self, ['Vol', 'FC'], 2, statusbar=self.statusbar)
@@ -1047,28 +1048,33 @@ class ProtProfPlot(BaseWindow):
             'Decimal value between 0 and 100. e.g. < 10.0 or > 20.4',
             self.plots.dPlot['Vol'],
             dtsValidator.Comparison(
-                numType = 'float',
-                vMin    = 0,
-                vMax    = 100,
-            )
+                numType='float', vMin=0, vMax=100, op=['<', '>']
+            ),
         )
         #endregion -------------------------------------------> Text Entry Dlg
         
         #region ------------------------------------------> Get Value and Plot
         if dlg.ShowModal():
             #------------------------------>
-            zVal = dlg.input.tc.GetValue().strip().split()[1]
-            zVal = stats.norm.ppf(1.0-(float(zVal.strip())/100.0))
+            op, val = dlg.input.tc.GetValue().strip().split()
+            zVal = stats.norm.ppf(1.0-(float(val.strip())/100.0))
             #------------------------------> 
             idx = pd.IndexSlice
             col = idx[:,:,'FCz']
-            self.df = self.df[(
-                (self.df.loc[:,col] >= zVal) | (self.df.loc[:,col] <= -zVal)
-            ).any(axis=1)]
+            if op == '<':
+                self.df = self.df[(
+                    (self.df.loc[:,col] >= zVal) | (self.df.loc[:,col] <= -zVal)
+                ).any(axis=1)]
+            else:
+                self.df = self.df[(
+                    (self.df.loc[:,col] <= zVal) | (self.df.loc[:,col] >= -zVal)
+                ).any(axis=1)]
             #------------------------------> 
             self.FillListCtrl()
             self.VolDraw()
             self.FCDraw()
+            #------------------------------> Add to statusbar
+            self.StatusBarFilterText(f'Z {op} {val}')
         else:
             pass
         #endregion ---------------------------------------> Get Value and Plot
@@ -1078,6 +1084,36 @@ class ProtProfPlot(BaseWindow):
     #---
     
     #------------------------------> 
+    def StatusBarFilterText(self, text: str):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------------> Old Text
+        text_now = self.statusbar.GetStatusText(1)
+        #endregion -------------------------------------------------> Old Text
+        
+        #region ----------------------------------------------------> Add Text
+        text_new = f'{text_now} | {text}'
+        #endregion -------------------------------------------------> Add Text
+        
+        #region ------------------------------------------> Add to wx.StatusBar
+        self.statusbar.SetStatusText(text_new, 1)
+        #endregion ---------------------------------------> Add to wx.StatusBar
+        
+        return True
+    #---
+    
     def SetDateMenuDate(self) -> tuple[list, dict]:
         """Set the self.date list and the menuData dict needed to build the Tool
             menu.
@@ -2075,7 +2111,7 @@ class ProtProfPlot(BaseWindow):
         #------------------------------> Alpha
         self.log10alpha = -np.log10(float(self.CI['Alpha']))
         #------------------------------> Update StatusBar
-        self.statusbar.SetStatusText(tDate, 1)
+        self.statusbar.SetStatusText(tDate, 2)
         #------------------------------> Clean text
         self.text.SetValue('')
         #endregion -----------------------------------------------> Update GUI
@@ -2259,11 +2295,13 @@ class ProtProfPlot(BaseWindow):
             #------------------------------> Disconnect events to avoid zoom in
             # while interacting with the modal window
             self.plots.dPlot['Vol'].DisconnectEvent()
+            #------------------------------> sort ind
+            ind = sorted(ind, key=int)
             #------------------------------> 
             msg = (f'The selected point is an overlap of several proteins.')
             tException = (
                 f'The numbers of the proteins included in the selected '
-                f'point are:\n {str(ind)[1:-2]}')
+                f'point are:\n {str(ind)[1:-1]}')
             dtscore.Notification(
                 'warning', 
                 msg        = msg,

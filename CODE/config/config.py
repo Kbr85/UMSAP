@@ -56,7 +56,8 @@ if cOS == 'Darwin':
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
-    sbPlot = [-1, 115]
+    sbPlot2Fields = [-1, 115]
+    sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Cmd'
     #------------------------------> Delta space between consecutive windows
