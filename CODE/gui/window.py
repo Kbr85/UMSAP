@@ -1861,7 +1861,7 @@ class ProtProfPlot(BaseWindow):
         self.vXRange = [-vXLim, vXLim]
         self.vYRange = [-0.1, vYLim]
         
-        self.fcXRange = [0, fcXMax]
+        self.fcXRange = [-0.5, fcXMax]
         self.fcYRange = [fcYMin, fcYMax]
         #endregion ----------------------------------------------------> Range
         
@@ -1952,7 +1952,7 @@ class ProtProfPlot(BaseWindow):
         #--------------> 
         yminLim = yMin - ciMax
         ymaxLim = yMax + ciMax
-        yRange = [yminLim - 0.3*yminLim, ymaxLim + 0.3*ymaxLim]
+        yRange = [yminLim - abs(0.3*yminLim), ymaxLim + abs(0.3*ymaxLim)]
         #endregion ------------------------------------------------> Get Range
 
         return [xRange, yRange]
