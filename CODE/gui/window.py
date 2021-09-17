@@ -840,6 +840,7 @@ class ProtProfPlot(BaseWindow):
     # shown in the window
     cSection = config.nmProtProf
     cSWindow = config.sWinModPlot
+    cLProtList = 'Protein List'
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -912,6 +913,7 @@ class ProtProfPlot(BaseWindow):
             colLabel = self.cLCol,
             colSize  = self.cSCol,
             style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
+            tcHint   = f'Search {self.cLProtList}'
         )
         self.FillListCtrl(self.date[0])
         #endregion --------------------------------------------------> Widgets
@@ -965,7 +967,7 @@ class ProtProfPlot(BaseWindow):
                 ).Layer(
                     1    
                 ).Caption(
-                    'Protein list'
+                    self.cLProtList
                 ).Floatable(
                     b=False
                 ).CloseButton(
@@ -983,6 +985,7 @@ class ProtProfPlot(BaseWindow):
         #region --------------------------------------------------------> Bind
         self.plots.dPlot['Vol'].canvas.mpl_connect('pick_event', self.OnPick)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        self.lc.lcs.search.Bind(wx.EVT_SEARCH, self.OnSearch)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -1953,6 +1956,63 @@ class ProtProfPlot(BaseWindow):
         #endregion ------------------------------------------------> Get Range
 
         return [xRange, yRange]
+    #---
+    
+    def OnSearch(self, event) -> bool:
+        """Search for a given string in the wx.ListCtrl.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            See dtsWidget.MyListCtrl.Search for more details.
+        """
+        #region ---------------------------------------------------> Get index
+        tStr = self.lc.lcs.search.GetValue()
+        iEqual, iSimilar = self.lc.lcs.lc.Search(tStr)
+        #endregion ------------------------------------------------> Get index
+        
+        #region ----------------------------------------------> Show 1 Results
+        if len(iEqual) == 1:
+            #------------------------------> 
+            self.lc.lcs.lc.Select(iEqual[0], on=1)
+            self.lc.lcs.lc.EnsureVisible(iEqual[0])
+            self.lc.lcs.lc.SetFocus()
+            #------------------------------> 
+            return True
+        elif len(iSimilar) == 1:
+            #------------------------------> 
+            self.lc.lcs.lc.Select(iSimilar[0], on=1)
+            self.lc.lcs.lc.EnsureVisible(iSimilar[0])
+            self.lc.lcs.lc.SetFocus()
+            #------------------------------> 
+            return True
+        else:
+            pass
+        #endregion -------------------------------------------> Show 1 Results
+        
+        #region ----------------------------------------------> Show N Results
+        msg = (f'The string, {tStr}, was found in multiple rows.')
+        tException = (
+            f'The row numbers where the string was found are:\n '
+            f'{str(iSimilar)[1:-1]}')
+        dtscore.Notification(
+            'warning', 
+            msg        = msg,
+            setText    = True,
+            tException = tException,
+            parent     = self,
+        )
+        #endregion -------------------------------------------> Show N Results
+        
+        return True
     #---
     
     def OnDateChange(

@@ -1715,7 +1715,7 @@ class ListCtrlSearchPlot(wx.Panel):
     def __init__(
         self, parent: wx.Window, colLabel: Optional[list[str]]=None, 
         colSize: Optional[list[int]]=None, data: list[list]=[],
-        style = wx.LC_REPORT,
+        style = wx.LC_REPORT, tcHint: str = ''
         ) -> None:
         """ """
         #region -------------------------------------------------> Check Input
@@ -1741,6 +1741,7 @@ class ListCtrlSearchPlot(wx.Panel):
             canPaste = False,
             style    = style,
             data     = data,
+            tcHint   = tcHint,
         )
         #------------------------------> Fill List
         # if data is not None:
