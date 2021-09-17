@@ -864,6 +864,7 @@ class ProtProfPlot(BaseWindow):
         self.greenP      = None
         self.corrP       = False
         self.showAll     = True
+        self.autoFilter  = False
         self.CI          = None
         self.fcYMax      = None
         self.fcYMin      = None
@@ -1006,6 +1007,24 @@ class ProtProfPlot(BaseWindow):
 
     #region ---------------------------------------------------> Class methods
     #------------------------------> Filters
+    def ApplyFilters(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return True
+    #---
+    
     def Filter_ZScore(self):
         """
     
@@ -1021,9 +1040,41 @@ class ProtProfPlot(BaseWindow):
             -----
             
         """
-        zScore = stats.norm.ppf(0.9)
+        #region ----------------------------------------------> Text Entry Dlg
+        dlg = dtsWindow.UserInput1Text(
+            'Filter results by Z score value.',
+            'Threshold (%)',
+            'Decimal value between 0 and 100. e.g. < 10.0 or > 20.4',
+            self.plots.dPlot['Vol'],
+            dtsValidator.Comparison(
+                numType = 'float',
+                vMin    = 0,
+                vMax    = 100,
+            )
+        )
+        #endregion -------------------------------------------> Text Entry Dlg
         
+        #region ------------------------------------------> Get Value and Plot
+        if dlg.ShowModal():
+            #------------------------------>
+            zVal = dlg.input.tc.GetValue().strip().split()[1]
+            zVal = stats.norm.ppf(1.0-(float(zVal.strip())/100.0))
+            #------------------------------> 
+            idx = pd.IndexSlice
+            col = idx[:,:,'FCz']
+            self.df = self.df[(
+                (self.df.loc[:,col] >= zVal) | (self.df.loc[:,col] <= -zVal)
+            ).any(axis=1)]
+            #------------------------------> 
+            self.FillListCtrl()
+            self.VolDraw()
+            self.FCDraw()
+        else:
+            pass
+        #endregion ---------------------------------------> Get Value and Plot
         
+        dlg.Destroy()
+        return True
     #---
     
     #------------------------------> 
@@ -1083,25 +1134,24 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def FillListCtrl(self, tDate: str) -> bool:
+    def FillListCtrl(self) -> bool:
         """Update the protein list for the given analysis.
-    
-            Parameters
-            ----------
-            tDate : str
-                Analysis date.
     
             Returns
             -------
             bool
+            
+            Notes
+            -----
+            Entries are read from self.df
         """
         #region --------------------------------------------------> Delete old
         self.lc.lcs.lc.DeleteAllItems()
         #endregion -----------------------------------------------> Delete old
         
         #region ----------------------------------------------------> Get Data
-        data = self.data[tDate]['DF'].iloc[:,0:2]
-        data.insert(0, 'kbr', range(0,data.shape[0]))
+        data = self.df.iloc[:,0:2]
+        data.insert(0, 'kbr', self.df.index.values.tolist())
         data = data.astype(str)
         data = data.values.tolist()
         #endregion -------------------------------------------------> Get Data
@@ -1168,16 +1218,16 @@ class ProtProfPlot(BaseWindow):
         #endregion -----------------------------------------------------> Axes
         
         #region --------------------------------------------------------> Data
-        x = self.data[self.dateC]['DF'].loc[:,[(self.condC,self.rpC,'FC')]]
+        x = self.df.loc[:,[(self.condC,self.rpC,'FC')]]
         
         if self.corrP:
             y = -np.log10(
-                self.data[self.dateC]['DF'].loc[:,[(self.condC,self.rpC,'Pc')]])
+                self.df.loc[:,[(self.condC,self.rpC,'Pc')]])
         else:
             y = -np.log10(
-                self.data[self.dateC]['DF'].loc[:,[(self.condC,self.rpC,'P')]])
+                self.df.loc[:,[(self.condC,self.rpC,'P')]])
             
-        zFC = self.data[self.dateC]['DF'].loc[:,[(self.condC,self.rpC,'FCz')]]
+        zFC = self.df.loc[:,[(self.condC,self.rpC,'FCz')]]
         zFC = zFC.squeeze().tolist()
         color = dtsMethod.AssignProperty(
             zFC, config.color[self.name]['Vol'], [-self.zScore, self.zScore])
@@ -1274,19 +1324,14 @@ class ProtProfPlot(BaseWindow):
         
         #region ------------------------------------------------> Volcano Plot
         #------------------------------> Get new data
-        x = self.data[self.dateC]['DF'].at[
-            self.data[self.dateC]['DF'].index[idx], (self.condC, self.rpC, 'FC')
-        ]
+        x = self.df.at[self.df.index[idx], (self.condC, self.rpC, 'FC')]
+        
         if self.corrP:
             y = -np.log10(
-                self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[idx], (self.condC, self.rpC, 'Pc')
-            ])
+                self.df.at[self.df.index[idx], (self.condC, self.rpC, 'Pc')])
         else:
             y = -np.log10(
-                self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[idx], (self.condC, self.rpC, 'P')
-            ])
+                self.df.at[self.df.index[idx], (self.condC, self.rpC, 'P')])
         #------------------------------> Remove old point
         if self.greenP is None:
             pass
@@ -1441,14 +1486,10 @@ class ProtProfPlot(BaseWindow):
         #------------------------------> 
         for k,c in enumerate(self.CI['Cond']):
             #------------------------------> FC values
-            y = self.data[self.dateC]['DF'].loc[
-                self.data[self.dateC]['DF'].index[[idxl]],idx[c,:,'FC']
-            ]
+            y = self.df.loc[self.df.index[[idxl]],idx[c,:,'FC']]
             y = [0.0] + y.values.tolist()[0]
             #------------------------------> Errors
-            yError = self.data[self.dateC]['DF'].loc[
-                self.data[self.dateC]['DF'].index[[idxl]],idx[c,:,'CI']
-            ]
+            yError = self.df.loc[self.df.index[[idxl]],idx[c,:,'CI']]
             yError = [0] + yError.values.tolist()[0]
             #------------------------------> Colors
             color = config.color['Main'][k%colorN]
@@ -1566,11 +1607,6 @@ class ProtProfPlot(BaseWindow):
         dfo.loc[:,idx[:,'Conditions']] = cond
         #endregion -------------------------------------------------> Add Cond
         
-        if config.development:
-            print(dfo)
-        else:
-            pass
-        
         return dfo
     #---
     
@@ -1580,7 +1616,7 @@ class ProtProfPlot(BaseWindow):
             Parameters
             ----------
             pID : int 
-                To select the protein in self.data[self.dateC]['DF']
+                To select the protein in self.df
             
             Returns
             -------
@@ -1591,10 +1627,6 @@ class ProtProfPlot(BaseWindow):
                 C1   4.5 (0.3) 0.05 
                 CN
         """
-        #region ---------------------------------------------------> Variables
-        idx = pd.IndexSlice
-        #endregion ------------------------------------------------> Variables
-        
         #region ----------------------------------------------------------> DF
         dfo = self.GetDF4Text(['FC (CI)', 'P'], self.CI['RP'], self.CI['Cond'])
         #endregion -------------------------------------------------------> DF
@@ -1603,12 +1635,9 @@ class ProtProfPlot(BaseWindow):
         for k,c in enumerate(self.CI['Cond']):
             for t in self.CI['RP']:
                 #------------------------------> Get Values
-                p = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'P')]
-                fc = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'FC')]
-                ci = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'CI')]
+                p = self.df.at[self.df.index[pID],(c,t,'P')]
+                fc = self.df.at[self.df.index[pID],(c,t,'FC')]
+                ci = self.df.at[self.df.index[pID],(c,t,'CI')]
                 #------------------------------> Assign
                 dfo.at[dfo.index[k], (t,'P')] = p
                 dfo.at[dfo.index[k], (t,'FC (CI)')] = f'{fc} ({ci})'
@@ -1626,7 +1655,7 @@ class ProtProfPlot(BaseWindow):
             Parameters
             ----------
             pID : int 
-                To select the protein in self.data[self.dateC]['DF']
+                To select the protein in self.df
             
             Returns
             -------
@@ -1637,18 +1666,12 @@ class ProtProfPlot(BaseWindow):
                 C1   4.5 (0.3) 0.05 
                 CN
         """
-        #region ---------------------------------------------------> Variables
-        idx = pd.IndexSlice
-        #endregion ------------------------------------------------> Variables
-        
         #region ----------------------------------------------------------> DF
         #------------------------------> 
-        aveC = self.data[self.dateC]['DF'].at[
-            self.data[self.dateC]['DF'].index[pID],
-            (self.CI['Cond'][0], self.CI['RP'][0], 'aveC')]
-        stdC = self.data[self.dateC]['DF'].at[
-            self.data[self.dateC]['DF'].index[pID],
-            (self.CI['Cond'][0], self.CI['RP'][0], 'stdC')]
+        aveC = self.df.at[
+            self.df.index[pID],(self.CI['Cond'][0], self.CI['RP'][0], 'aveC')]
+        stdC = self.df.at[
+            self.df.index[pID], (self.CI['Cond'][0], self.CI['RP'][0], 'stdC')]
         #------------------------------> 
         dfc = pd.DataFrame({
             'Condition': self.CI['ControlL'],
@@ -1673,7 +1696,7 @@ class ProtProfPlot(BaseWindow):
             Parameters
             ----------
             pID : int 
-                To select the protein in self.data[self.dateC]['DF']
+                To select the protein in self.df
             
             Returns
             -------
@@ -1685,10 +1708,6 @@ class ProtProfPlot(BaseWindow):
                 C1   
                 CN
         """
-        #region ---------------------------------------------------> Variables
-        idx = pd.IndexSlice
-        #endregion ------------------------------------------------> Variables
-        
         #region ----------------------------------------------------------> DF
         dfo = self.GetDF4Text(
             ['Ave', 'Std'], self.CI['RP'], self.CI['ControlL']+self.CI['Cond'])
@@ -1699,10 +1718,8 @@ class ProtProfPlot(BaseWindow):
         for c in self.CI['Cond']:
             for t in self.CI['RP']:
                 #------------------------------> Get Values
-                aveC = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'aveC')]
-                stdC = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'stdC')]
+                aveC = self.df.at[self.df.index[pID],(c,t,'aveC')]
+                stdC = self.df.at[self.df.index[pID],(c,t,'stdC')]
                 #------------------------------> Assign
                 dfo.at[dfo.index[0], (t,'Ave')] = aveC
                 dfo.at[dfo.index[0], (t,'Std')] = stdC
@@ -1710,10 +1727,8 @@ class ProtProfPlot(BaseWindow):
         for k,c in enumerate(self.CI['Cond'], start=1):
             for t in self.CI['RP']:
                 #------------------------------> Get Values
-                ave = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'ave')]
-                std = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'std')]
+                ave = self.df.at[self.df.index[pID],(c,t,'ave')]
+                std = self.df.at[self.df.index[pID],(c,t,'std')]
                 #------------------------------> Assign
                 dfo.at[dfo.index[k], (t,'Ave')] = ave
                 dfo.at[dfo.index[k], (t,'Std')] = std
@@ -1731,7 +1746,7 @@ class ProtProfPlot(BaseWindow):
             Parameters
             ----------
             pID : int 
-                To select the protein in self.data[self.dateC]['DF']
+                To select the protein in self.df
             
             Returns
             -------
@@ -1742,10 +1757,6 @@ class ProtProfPlot(BaseWindow):
                 C1   4.5 (0.3) 0.05 
                 CN
         """
-        #region ---------------------------------------------------> Variables
-        idx = pd.IndexSlice
-        #endregion ------------------------------------------------> Variables
-        
         #region ----------------------------------------------------------> DF
         dfo = self.GetDF4Text(
             ['Ave', 'Std'], self.CI['ControlL']+self.CI['RP'], self.CI['Cond'])
@@ -1756,10 +1767,8 @@ class ProtProfPlot(BaseWindow):
         for k,c in enumerate(self.CI['Cond']):
             for t in self.CI['RP']:
                 #------------------------------> Get Values
-                aveC = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'aveC')]
-                stdC = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'stdC')]
+                aveC = self.df.at[self.df.index[pID],(c,t,'aveC')]
+                stdC = self.df.at[self.df.index[pID],(c,t,'stdC')]
                 #------------------------------> Assign
                 dfo.at[dfo.index[k], (self.CI['ControlL'],'Ave')] = aveC
                 dfo.at[dfo.index[k], (self.CI['ControlL'],'Std')] = stdC
@@ -1767,10 +1776,8 @@ class ProtProfPlot(BaseWindow):
         for k,c in enumerate(self.CI['Cond']):
             for t in self.CI['RP']:
                 #------------------------------> Get Values
-                ave = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'ave')]
-                std = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'std')]
+                ave = self.df.at[self.df.index[pID],(c,t,'ave')]
+                std = self.df.at[self.df.index[pID],(c,t,'std')]
                 #------------------------------> Assign
                 dfo.at[dfo.index[k], (t,'Ave')] = ave
                 dfo.at[dfo.index[k], (t,'Std')] = std
@@ -1788,7 +1795,7 @@ class ProtProfPlot(BaseWindow):
             Parameters
             ----------
             pID : int 
-                To select the protein in self.data[self.dateC]['DF']
+                To select the protein in self.df
             
             Returns
             -------
@@ -1799,10 +1806,6 @@ class ProtProfPlot(BaseWindow):
                 C1   4.5 (0.3) 0.05 
                 CN
         """
-        #region ---------------------------------------------------> Variables
-        idx = pd.IndexSlice
-        #endregion ------------------------------------------------> Variables
-        
         #region ----------------------------------------------------------> DF
         dfo = self.GetDF4Text(['Ave', 'Std'], self.CI['RP'], self.CI['Cond'])
         #endregion -------------------------------------------------------> DF
@@ -1811,10 +1814,8 @@ class ProtProfPlot(BaseWindow):
         for k,c in enumerate(self.CI['Cond']):
             for t in self.CI['RP']:
                 #------------------------------> Get Values
-                ave = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'ave')]
-                std = self.data[self.dateC]['DF'].at[
-                    self.data[self.dateC]['DF'].index[pID],(c,t,'std')]
+                ave = self.df.at[self.df.index[pID],(c,t,'ave')]
+                std = self.df.at[self.df.index[pID],(c,t,'std')]
                 #------------------------------> Assign
                 dfo.at[dfo.index[k], (t,'Ave')] = ave
                 dfo.at[dfo.index[k], (t,'Std')] = std
@@ -2065,8 +2066,12 @@ class ProtProfPlot(BaseWindow):
         #endregion -----------------------------------------> Update variables
         
         #region --------------------------------------------------> Update GUI
+        if self.autoFilter:
+            self.ApplyFilters()
+        else:
+            pass
         #------------------------------> Clean & Reload Protein List
-        self.FillListCtrl(self.dateC)
+        self.FillListCtrl()
         #------------------------------> Alpha
         self.log10alpha = -np.log10(float(self.CI['Alpha']))
         #------------------------------> Update StatusBar
@@ -2387,6 +2392,26 @@ class ProtProfPlot(BaseWindow):
             pass    
         #endregion ------------------------------------------------> Set Range
         
+        return True
+    #---
+    
+    def OnAutoFilter(self, mode: bool) -> bool:
+        """Auto apply filter when changing date.
+    
+            Parameters
+            ----------
+            mode : bool
+                Apply filters (True) or not (False).
+    
+            Returns
+            -------
+            bool
+    
+            Raise
+            -----
+            
+        """
+        self.autoFilter = mode
         return True
     #---
     

@@ -902,6 +902,25 @@ class FiltersProtProf(wx.Menu):
         
         return True
     #---
+    
+    def OnAutoFilter(self, event) -> bool:
+        """Filter results by Z score.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnAutoFilter(self.IsChecked(event.GetId()))
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
