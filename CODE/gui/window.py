@@ -1013,7 +1013,7 @@ class ProtProfPlot(BaseWindow):
 
     #region ---------------------------------------------------> Class methods
     #------------------------------> Filters
-    def ApplyFilters(self):
+    def FilterApply(self):
         """
     
             Parameters
@@ -1033,6 +1033,35 @@ class ProtProfPlot(BaseWindow):
             print(k)
             self.filterMethod[k[0]](**k[1])
         #endregion --------------------------------------------> Apply Filters
+        
+        return True
+    #---
+    
+    def FilterRemoveAll(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -------------------------------------------> Update Attributes
+        self.filterList = []
+        self.df = self.data[self.dateC]['DF'].copy()
+        self.statusbar.SetStatusText('', 1)
+        #endregion ----------------------------------------> Update Attributes
+        
+        #region --------------------------------------------------> Update GUI
+        self.OnDateChange(
+            self.dateC, self.condC, self.rpC, self.corrP, self.showAll)
+        #endregion -----------------------------------------------> Update GUI 
         
         return True
     #---
@@ -2201,7 +2230,7 @@ class ProtProfPlot(BaseWindow):
         
         #region --------------------------------------------------> Update GUI
         if self.autoFilter:
-            self.ApplyFilters()
+            self.FilterApply()
         else:
             pass
         #------------------------------> Clean & Reload Protein List

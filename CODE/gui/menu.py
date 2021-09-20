@@ -880,6 +880,8 @@ class FiltersProtProf(wx.Menu):
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnZScore,      source=self.zScore)
         self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.apply)
+        self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.update)
+        self.Bind(wx.EVT_MENU, self.OnRemoveAll,   source=self.removeAll)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -937,7 +939,26 @@ class FiltersProtProf(wx.Menu):
             bool
         """
         win = self.GetWindow()
-        win.ApplyFilters()
+        win.FilterApply()
+        
+        return True
+    #---
+    
+    def OnRemoveAll(self, event) -> bool:
+        """Remove all filters.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.FilterRemoveAll()
         
         return True
     #---
