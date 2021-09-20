@@ -1337,7 +1337,7 @@ class ProtProfPlot(BaseWindow):
             self.plots.dPlot['Vol'].axes.set_xlim(*self.vXRange)
             self.plots.dPlot['Vol'].axes.set_ylim(*self.vYRange)
         else:
-            self.XYRange(x.squeeze(), y.squeeze(), self.plots.dPlot['Vol'].axes)
+            self.VolXYRange(x.squeeze(), y.squeeze())
         #------------------------------> Zoom level
         self.plots.dPlot['Vol'].ZoomResetSetValues()
         #------------------------------> Show
@@ -1480,7 +1480,9 @@ class ProtProfPlot(BaseWindow):
             self.plots.dPlot['FC'].axes.set_xlim(*self.fcXRange)
             self.plots.dPlot['FC'].axes.set_ylim(*self.fcYRange)
         else:
-            pass
+            xRange, yRange = self.GetFCXYRange(self.dateC)
+            self.plots.dPlot['FC'].axes.set_xlim(*xRange)
+            self.plots.dPlot['FC'].axes.set_ylim(*yRange)
         #------------------------------> Zoom level
         self.plots.dPlot['FC'].ZoomResetSetValues()
         #------------------------------> 
@@ -1953,6 +1955,7 @@ class ProtProfPlot(BaseWindow):
         vXLim = 0
         vYMin = 0
         vYMax = 0
+        fcXMin = 0
         fcXMax = 0
         fcYMin = 0
         fcYMax = 0 
@@ -1969,14 +1972,15 @@ class ProtProfPlot(BaseWindow):
             vYMin = y[0] if y[0] <= vYMin else vYMin
             vYMax = y[1] if y[1] >= vYMax else vYMax
             
+            fcXMin = xFC[0] if xFC[0] <= fcXMin else fcXMin
             fcXMax = xFC[1] if xFC[1] >= fcXMax else fcXMax
-            fcYMax = yFC[1] if yFC[1] >= fcYMax else fcYMax
             fcYMin = yFC[0] if yFC[0] <= fcYMin else fcYMin
+            fcYMax = yFC[1] if yFC[1] >= fcYMax else fcYMax
         #------------------------------> Set attributes
         self.vXRange = [-vXLim, vXLim]
         self.vYRange = [vYMin, vYMax]
         
-        self.fcXRange = [-0.5, fcXMax]
+        self.fcXRange = [fcXMin, fcXMax]
         self.fcYRange = [fcYMin, fcYMax]
         #endregion ----------------------------------------------------> Range
         
@@ -2062,7 +2066,10 @@ class ProtProfPlot(BaseWindow):
         
         #region ---------------------------------------------------> Get Range
         #------------------------------> X
-        xRange = [-0.5, len(self.CI['RP'])+0.5]
+        #--------------> 
+        dm = len(self.CI['RP']) * config.general['MatPlotMargin']
+        #--------------> 
+        xRange = [-dm, len(self.CI['RP'])+dm]
         #------------------------------> Y
         #--------------> 
         yMax  = y.max().max()
@@ -2071,13 +2078,16 @@ class ProtProfPlot(BaseWindow):
         #--------------> 
         yminLim = yMin - ciMax
         ymaxLim = yMax + ciMax
-        yRange = [yminLim - abs(0.3*yminLim), ymaxLim + abs(0.3*ymaxLim)]
+        #--------------> 
+        dm = (ymaxLim - yminLim) * config.general['MatPlotMargin']
+        #--------------> 
+        yRange = [yminLim - dm, ymaxLim + dm]
         #endregion ------------------------------------------------> Get Range
 
         return [xRange, yRange]
     #---
     
-    def XYRange(self, x, y, tAxes) -> bool:
+    def VolXYRange(self, x, y) -> bool:
         """
     
             Parameters
@@ -2098,8 +2108,8 @@ class ProtProfPlot(BaseWindow):
         #endregion ------------------------------------------------> Get Range
         
         #region ---------------------------------------------------> Set Range
-        tAxes.set_xlim(*xR)
-        tAxes.set_ylim(*yR)
+        self.plots.dPlot['Vol'].axes.set_xlim(*xR)
+        self.plots.dPlot['Vol'].axes.set_ylim(*yR)
         #endregion ------------------------------------------------> Set Range
         
         return True
