@@ -32,6 +32,7 @@ import wx.lib.agw.customtreectrl as wxCT
 import dat4s_core.data.check as dtsCheck
 import dat4s_core.generator.generator as dtsGenerator
 import dat4s_core.data.method as dtsMethod
+import dat4s_core.data.statistic as dtsStatistic
 import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
@@ -892,6 +893,10 @@ class ProtProfPlot(BaseWindow):
             config.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
             config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
         }
+        
+        self.filterMethod = {
+            'Zscore' : self.Filter_ZScore,
+        }
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
@@ -1023,10 +1028,17 @@ class ProtProfPlot(BaseWindow):
             -----
             
         """
+        #region -----------------------------------------------> Apply Filters
+        for k in self.filterList:
+            print(k)
+            self.filterMethod[k[0]](**k[1])
+        #endregion --------------------------------------------> Apply Filters
+        
         return True
     #---
     
-    def Filter_ZScore(self):
+    def Filter_ZScore(
+        self, gText: Optional[str]=None, updateL: bool=True) -> bool:
         """
     
             Parameters
@@ -1042,44 +1054,86 @@ class ProtProfPlot(BaseWindow):
             
         """
         #region ----------------------------------------------> Text Entry Dlg
-        dlg = dtsWindow.UserInput1Text(
-            'Filter results by Z score value.',
-            'Threshold (%)',
-            'Decimal value between 0 and 100. e.g. < 10.0 or > 20.4',
-            self.plots.dPlot['Vol'],
-            dtsValidator.Comparison(
-                numType='float', vMin=0, vMax=100, op=['<', '>']
-            ),
-        )
+        if gText is None:
+            #------------------------------> 
+            dlg = dtsWindow.UserInput1Text(
+                'Filter results by Z score value.',
+                'Threshold (%)',
+                'Decimal value between 0 and 100. e.g. < 10.0 or > 20.4',
+                self.plots.dPlot['Vol'],
+                dtsValidator.Comparison(
+                    numType='float', vMin=0, vMax=100, op=['<', '>']
+                ),
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------>
+                uText = dlg.input.tc.GetValue()
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return True
+        else:
+            try:
+                #------------------------------> 
+                a, b = dtsCheck.Comparison(
+                    gText, 'int', vMin=0, vMax=100, op=['<', '>'])
+                #------------------------------> 
+                if a:
+                    uText = gText
+                else:
+                    #------------------------------> 
+                    msg = 'It was not possible to apply the Z Score filter.'
+                    tException = b[2]
+                    #------------------------------> 
+                    dtsWindow.NotificationDialog(
+                        'errorU', 
+                        msg        = msg,
+                        tException = tException,
+                        parent     = self,
+                        setText    = True,
+                    )
+                    #------------------------------> 
+                    return False
+            except Exception as e:
+                raise e
         #endregion -------------------------------------------> Text Entry Dlg
         
         #region ------------------------------------------> Get Value and Plot
-        if dlg.ShowModal():
-            #------------------------------>
-            op, val = dlg.input.tc.GetValue().strip().split()
-            zVal = stats.norm.ppf(1.0-(float(val.strip())/100.0))
-            #------------------------------> 
-            idx = pd.IndexSlice
-            col = idx[:,:,'FCz']
-            if op == '<':
-                self.df = self.df[(
-                    (self.df.loc[:,col] >= zVal) | (self.df.loc[:,col] <= -zVal)
-                ).any(axis=1)]
-            else:
-                self.df = self.df[(
-                    (self.df.loc[:,col] <= zVal) | (self.df.loc[:,col] >= -zVal)
-                ).any(axis=1)]
-            #------------------------------> 
-            self.FillListCtrl()
-            self.VolDraw()
-            self.FCDraw()
-            #------------------------------> Add to statusbar
+        op, val = uText.strip().split()
+        zVal = stats.norm.ppf(1.0-(float(val.strip())/100.0))
+        #------------------------------> 
+        idx = pd.IndexSlice
+        col = idx[:,:,'FCz']
+        if op == '<':
+            self.df = self.df[(
+                (self.df.loc[:,col] >= zVal) | (self.df.loc[:,col] <= -zVal)
+            ).any(axis=1)]
+        else:
+            self.df = self.df[(
+                (self.df.loc[:,col] <= zVal) | (self.df.loc[:,col] >= -zVal)
+            ).any(axis=1)]
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #------------------------------> Add to statusbar
+        if updateL:
             self.StatusBarFilterText(f'Z {op} {val}')
         else:
             pass
         #endregion ---------------------------------------> Get Value and Plot
         
-        dlg.Destroy()
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            self.filterList.append(
+                ['Zscore', {'gText': uText, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
+        
         return True
     #---
     
@@ -1278,12 +1332,12 @@ class ProtProfPlot(BaseWindow):
             color     = color,
             picker    = True,
         )
-        #------------------------------> Lock Scale
+        #------------------------------> Lock Scale or Set it manually
         if self.vXRange and self.vYRange:
             self.plots.dPlot['Vol'].axes.set_xlim(*self.vXRange)
             self.plots.dPlot['Vol'].axes.set_ylim(*self.vYRange)
         else:
-            pass
+            self.XYRange(x.squeeze(), y.squeeze(), self.plots.dPlot['Vol'].axes)
         #------------------------------> Zoom level
         self.plots.dPlot['Vol'].ZoomResetSetValues()
         #------------------------------> Show
@@ -1897,7 +1951,8 @@ class ProtProfPlot(BaseWindow):
         """
         #region ---------------------------------------------------> Variables
         vXLim = 0
-        vYLim = 0
+        vYMin = 0
+        vYMax = 0
         fcXMax = 0
         fcYMin = 0
         fcYMax = 0 
@@ -1911,14 +1966,15 @@ class ProtProfPlot(BaseWindow):
             xFC, yFC = self.GetFCXYRange(date)
             #------------------------------> 
             vXLim = x[1] if x[1] >= vXLim else vXLim
-            vYLim = y[1] if y[1] >= vYLim else vYLim
+            vYMin = y[0] if y[0] <= vYMin else vYMin
+            vYMax = y[1] if y[1] >= vYMax else vYMax
             
             fcXMax = xFC[1] if xFC[1] >= fcXMax else fcXMax
             fcYMax = yFC[1] if yFC[1] >= fcYMax else fcYMax
             fcYMin = yFC[0] if yFC[0] <= fcYMin else fcYMin
         #------------------------------> Set attributes
         self.vXRange = [-vXLim, vXLim]
-        self.vYRange = [-0.1, vYLim]
+        self.vYRange = [vYMin, vYMax]
         
         self.fcXRange = [-0.5, fcXMax]
         self.fcYRange = [fcYMin, fcYMax]
@@ -1966,13 +2022,17 @@ class ProtProfPlot(BaseWindow):
         else:
             lim = xmax
         #--------------> 
-        xRange.append(-lim - 0.3*lim)
-        xRange.append(lim + 0.3*lim)
+        dm = 2 * lim * config.general['MatPlotMargin']
+        #--------------> 
+        xRange.append(-lim - dm)
+        xRange.append(lim + dm)
         #------------------------------> Y
         ymax = y.max().max()
         #--------------> 
-        yRange.append(-0.1)
-        yRange.append(ymax + 0.3*ymax)
+        dm = 2 * ymax * config.general['MatPlotMargin']
+        #--------------> 
+        yRange.append(0 - dm)
+        yRange.append(ymax + dm)
         #endregion ------------------------------------------------> Get Range
         
         return [xRange, yRange]
@@ -2015,6 +2075,34 @@ class ProtProfPlot(BaseWindow):
         #endregion ------------------------------------------------> Get Range
 
         return [xRange, yRange]
+    #---
+    
+    def XYRange(self, x, y, tAxes) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Get Range
+        xR = dtsStatistic.DataRange(x, margin= config.general['MatPlotMargin'])
+        yR = dtsStatistic.DataRange(y, margin= config.general['MatPlotMargin'])
+        #endregion ------------------------------------------------> Get Range
+        
+        #region ---------------------------------------------------> Set Range
+        tAxes.set_xlim(*xR)
+        tAxes.set_ylim(*yR)
+        #endregion ------------------------------------------------> Set Range
+        
+        return True
     #---
     
     def OnSearch(self, event) -> bool:

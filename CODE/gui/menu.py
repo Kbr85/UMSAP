@@ -878,7 +878,8 @@ class FiltersProtProf(wx.Menu):
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZScore, source=self.zScore)
+        self.Bind(wx.EVT_MENU, self.OnZScore,      source=self.zScore)
+        self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.apply)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -918,6 +919,25 @@ class FiltersProtProf(wx.Menu):
         """
         win = self.GetWindow()
         win.OnAutoFilter(self.IsChecked(event.GetId()))
+        
+        return True
+    #---
+    
+    def OnApplyFilter(self, event) -> bool:
+        """Apply all filters.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.ApplyFilters()
         
         return True
     #---

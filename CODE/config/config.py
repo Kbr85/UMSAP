@@ -430,8 +430,9 @@ font = {
 
 #region -----------------------------------------------------> General options
 general = { # General options
-    'checkUpdate': True, # True Check, False No check
-    'DPI'        : 100,  # DPI for plot images
+    'checkUpdate'  : True, # True Check, False No check
+    'DPI'          : 100,  # DPI for plot images
+    'MatPlotMargin': 0.025 # Margin for the axes range
 }
 #endregion --------------------------------------------------> General options
 
