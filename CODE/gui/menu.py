@@ -121,6 +121,19 @@ class MenuMethods():
         win.OnExportPlotData()
         return True
     #---
+    
+    def OnExportFilteredData(self, event: wx.CommandEvent) -> Literal[True]:
+        """Export filtered data 
+
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+        """
+        win = self.GetWindow()
+        win.OnExportFilteredData()
+        return True
+    #---
 
     def OnSavePlot(self, event: wx.CommandEvent) -> Literal[True]:
         """Save an image of a plot
@@ -1062,8 +1075,6 @@ class LockPlotScale(wx.Menu):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
-
-
 #endregion -------------------------------------------------> Individual menus
 
 
@@ -1109,12 +1120,14 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
         #------------------------------> Export Data
-        self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
+        self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
+        self.saveFD = self.Append(-1, 'Export Data Filtered\tShift+Ctrl+E')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnDupWin, source=self.dupWin)
-        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.saveD)
+        self.Bind(wx.EVT_MENU, self.OnDupWin,             source=self.dupWin)
+        self.Bind(wx.EVT_MENU, self.OnExportPlotData,     source=self.saveD)
+        self.Bind(wx.EVT_MENU, self.OnExportFilteredData, source=self.saveFD)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup

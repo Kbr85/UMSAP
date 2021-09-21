@@ -30,6 +30,7 @@ import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
 
 import dat4s_core.data.check as dtsCheck
+import dat4s_core.data.file as dtsFF
 import dat4s_core.generator.generator as dtsGenerator
 import dat4s_core.data.method as dtsMethod
 import dat4s_core.data.statistic as dtsStatistic
@@ -135,6 +136,8 @@ class BaseWindow(wx.Frame):
             Title for the window. Default is config.tdW.
         cSWindow : wx.Size
             Size of the window. Default is config.sWinRegular
+        cMsgExportFailed : str
+            Error message.
         #------------------------------> Widgets
         statusbar : wx.StatusBar
             Windows statusbar
@@ -144,7 +147,9 @@ class BaseWindow(wx.Frame):
             Main sizer of the window
     """
     #region -----------------------------------------------------> Class setup
-    
+    cMsgExportFailed = (
+        f"It was not possible to write the data to the selected file."
+    )
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -270,7 +275,40 @@ class BaseWindow(wx.Frame):
             except Exception as e:
                 dtscore.Notification(
                     'errorF',
-                    msg        = self.msgExportFailed,
+                    msg        = self.cMsgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---	
+    
+    def OnExportFilteredData(self) -> Literal[True]:
+        """ Export filtered data to a csv file. 
+        
+            Notes
+            -----
+            Assumes filtered data is in self.df 
+        """
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            #------------------------------> Export
+            try:
+                dtsFF.WriteDF2CSV(p, self.df)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed,
                     tException = e,
                     parent     = self,
                 )
@@ -586,8 +624,6 @@ class CorrAPlot(BaseWindowPlot):
             Data for the Correlation Analysis section.
         date : [parent.obj.confData[Section].keys()]
             List of dates availables for plotting.
-        msgExportFailed : str
-            Error message.
         name : str
             Unique name of the window.
         obj : parent.obj
@@ -609,10 +645,6 @@ class CorrAPlot(BaseWindowPlot):
     #------------------------------> To id the section in the umsap file 
     # shown in the window
     cSection = config.nuCorrA
-    #------------------------------> 
-    msgExportFailed = (
-        f"It was not possible to write the data to the selected file."
-    )
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -1031,7 +1063,6 @@ class ProtProfPlot(BaseWindow):
         """
         #region -----------------------------------------------> Apply Filters
         for k in self.filterList:
-            print(k)
             self.filterMethod[k[0]](**k[1])
         #endregion --------------------------------------------> Apply Filters
         
