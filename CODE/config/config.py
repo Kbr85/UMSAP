@@ -120,6 +120,7 @@ nwProtProf     = 'ProtProfPlot'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
+ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
 ntStart    = 'StartTab'
 ntCorrA    = 'CorrATab'
@@ -158,8 +159,9 @@ t = {
     #------------------------------> Windows
     nwMain    : "Analysis Setup",
     #------------------------------> Dialogs
-    ndCheckUpdateResDialog : "Check for Updates",
-    ndResControlExp : 'Results - Control Experiments',
+    ndCheckUpdateResDialog: "Check for Updates",
+    ndResControlExp       : 'Results - Control Experiments',
+    ndFilterRemoveAny     : 'Remove Filters',
     #------------------------------> Tabs
     ntStart   : 'Start',
     ntCorrA   : 'CorrA',

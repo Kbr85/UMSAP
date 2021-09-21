@@ -869,7 +869,7 @@ class FiltersProtProf(wx.Menu):
         #region --------------------------------------------------> Menu Items
         self.zScore = self.Append(-1, 'Z Value')
         self.AppendSeparator()
-        self.apply = self.Append(-1, 'Apply Filters\tCtrl+A')
+        self.apply = self.Append(-1, 'Apply All\tCtrl+A')
         self.update = self.Append(-1, 'Auto Apply Filters', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
         self.removeLast = self.Append(-1, 'Remove Last\tCtrl+Shift+Z')
@@ -882,6 +882,7 @@ class FiltersProtProf(wx.Menu):
         self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.apply)
         self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.update)
         self.Bind(wx.EVT_MENU, self.OnRemoveLast,  source=self.removeLast)
+        self.Bind(wx.EVT_MENU, self.OnRemoveAny,   source=self.removeAny)
         self.Bind(wx.EVT_MENU, self.OnRemoveAll,   source=self.removeAll)
         #endregion -----------------------------------------------------> Bind
     #---
@@ -965,7 +966,7 @@ class FiltersProtProf(wx.Menu):
     #---
     
     def OnRemoveLast(self, event) -> bool:
-        """Remove last filters.
+        """Remove last filter.
     
             Parameters
             ----------
@@ -979,6 +980,25 @@ class FiltersProtProf(wx.Menu):
         """
         win = self.GetWindow()
         win.FilterRemoveLast()
+        
+        return True
+    #---
+    
+    def OnRemoveAny(self, event) -> bool:
+        """Remove any filter.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.FilterRemoveAny()
         
         return True
     #---

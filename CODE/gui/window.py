@@ -36,15 +36,15 @@ import dat4s_core.data.statistic as dtsStatistic
 import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
-from UMSAP import DEVELOPMENT
 
 import config.config as config
-from data.file import UMSAPFile
 import gui.menu as menu
 import gui.tab as tab
 import gui.dtscore as dtscore
 import gui.method as method
 import gui.pane as pane
+import gui.window as window
+from data.file import UMSAPFile
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -1112,6 +1112,70 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
+    def FilterRemoveAny(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -----------------------------------> Check Something to Delete
+        if not self.filterList:
+            return True
+        else:
+            pass
+        #endregion --------------------------------> Check Something to Delete
+        
+        #region ------------------------------------------------------> Dialog
+        dlg = window.FilterRemoveAny(self.filterList, self.plots.dPlot['Vol'])
+        if dlg.ShowModal():
+            #------------------------------> 
+            lo = dlg.GetChecked()
+            #------------------------------> 
+            dlg.Destroy()
+            #------------------------------> 
+            if lo:
+                pass
+            else:
+                return True
+        else:
+            dlg.Destroy()
+            return True
+        #endregion ---------------------------------------------------> Dialog
+        
+        #region ---------------------------------------------------> Variables
+        text = ''
+        #------------------------------> 
+        for k in reversed(lo):
+            del self.filterList[k]
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------> Update GUI
+        if self.filterList:
+            #------------------------------> 
+            self.df = self.data[self.dateC]['DF'].copy()
+            #------------------------------> 
+            self.FilterApply()
+            #------------------------------> 
+            for k in self.filterList:
+                text = f'{text} | {k[0]} {k[1]["gText"]}'
+            #------------------------------> 
+            self.statusbar.SetStatusText(text, 1)
+        else:
+            self.FilterRemoveAll()
+        #endregion -----------------------------------------------> Update GUI
+        
+        return True
+    #---
+    
     def Filter_ZScore(
         self, gText: Optional[str]=None, updateL: bool=True) -> bool:
         """
@@ -1211,7 +1275,6 @@ class ProtProfPlot(BaseWindow):
         
         return True
     #---
-    
     #------------------------------> 
     def StatusBarFilterText(self, text: str):
         """
@@ -3230,6 +3293,156 @@ class ResControlExp(wx.Dialog):
         #endregion ------------------------------------------------> 
         
         return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class FilterRemoveAny(wx.Dialog):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    name = config.ndFilterRemoveAny
+    #------------------------------> 
+    cSize = (900, 580)
+    #------------------------------> 
+    cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, filterList: list, parent: Optional[wx.Window]=None) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        self.checkB = []
+        
+        super().__init__(
+            parent, 
+            title = config.t[self.name],
+            style = self.cStyle,
+            size  = self.cSize,
+        )
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.st = wx.StaticText(self, label='Select Filters to remove.')
+        #------------------------------> 
+        for k in filterList:
+            self.checkB.append(
+                wx.CheckBox(self, label=f'{k[0]} {k[1]["gText"]}')
+            )
+        #------------------------------> Buttons
+        self.sizerBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
+        #endregion --------------------------------------------------> Widgets
+
+        #region -------------------------------------------------------> Sizer
+        #------------------------------> 
+        self.Sizer = wx.BoxSizer(wx.VERTICAL)
+        #------------------------------> 
+        self.Sizer.Add(self.st, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        for k in self.checkB:
+            self.Sizer.Add(k, 0 , wx.ALIGN_LEFT|wx.ALL, 5)
+        self.Sizer.Add(self.sizerBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------> 
+        self.SetSizer(self.Sizer)
+        self.Fit()
+        #endregion ----------------------------------------------------> Sizer
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
+        self.Bind(wx.EVT_BUTTON, self.OnCancel, id=wx.ID_CANCEL)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
+        """Validate user information and close the window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        self.EndModal(1)
+        self.Close()
+    
+        return True
+    #---
+    
+    def OnCancel(self, event: wx.CommandEvent) -> Literal[True]:
+        """The macOs implementation has a bug here that does not discriminate
+            between the Cancel and Ok button and always return self.EndModal(1).
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        self.EndModal(0)
+        self.Close()
+        return True
+    #---
+    
+    def GetChecked(self) -> list[int]:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables  
+        lo = []
+        #endregion ------------------------------------------------> Variables  
+        
+        #region -------------------------------------------------> Get Checked
+        for k,cb in enumerate(self.checkB):
+            lo.append(k) if cb.IsChecked() else None
+        #endregion ----------------------------------------------> Get Checked
+        
+        return lo
     #---
     #endregion ------------------------------------------------> Class methods
 #---
