@@ -881,6 +881,7 @@ class FiltersProtProf(wx.Menu):
         self.Bind(wx.EVT_MENU, self.OnZScore,      source=self.zScore)
         self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.apply)
         self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.update)
+        self.Bind(wx.EVT_MENU, self.OnRemoveLast,  source=self.removeLast)
         self.Bind(wx.EVT_MENU, self.OnRemoveAll,   source=self.removeAll)
         #endregion -----------------------------------------------------> Bind
     #---
@@ -959,6 +960,25 @@ class FiltersProtProf(wx.Menu):
         """
         win = self.GetWindow()
         win.FilterRemoveAll()
+        
+        return True
+    #---
+    
+    def OnRemoveLast(self, event) -> bool:
+        """Remove last filters.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.FilterRemoveLast()
         
         return True
     #---

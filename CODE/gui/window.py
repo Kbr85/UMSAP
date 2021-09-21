@@ -853,6 +853,7 @@ class ProtProfPlot(BaseWindow):
 
         #region -----------------------------------------------> Initial Setup
         self.cTitle      = f"{parent.cTitle} - {self.cSection}"
+        self.cLFZscore   = 'Z Score'
         self.obj         = parent.obj
         self.data        = self.obj.confData[self.cSection]
         self.df          = None
@@ -895,7 +896,7 @@ class ProtProfPlot(BaseWindow):
         }
         
         self.filterMethod = {
-            'Zscore' : self.Filter_ZScore,
+            self.cLFZscore : self.Filter_ZScore,
         }
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
@@ -1066,6 +1067,51 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
+    def FilterRemoveLast(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -----------------------------------> Check Something to Delete
+        if not self.filterList:
+            return True
+        else:
+            pass
+        #endregion --------------------------------> Check Something to Delete
+        
+        #region -------------------------------------------> Update Attributes
+        #------------------------------> 
+        del self.filterList[-1]
+        self.df = self.data[self.dateC]['DF'].copy()
+        #------------------------------> 
+        text = self.statusbar.GetStatusText(1)
+        text = text.split("|")[0:-1]
+        text = [x.strip() for x in text if x.strip() != '']
+        if text:
+            text = f' | {" | ".join(text)}'
+        else:
+            text = ''
+        self.statusbar.SetStatusText(text, 1)
+        #endregion ----------------------------------------> Update Attributes
+        
+        #region --------------------------------------------------> Update GUI
+        self.OnDateChange(
+            self.dateC, self.condC, self.rpC, self.corrP, self.showAll)
+        #endregion -----------------------------------------------> Update GUI 
+        
+        return True
+    #---
+    
     def Filter_ZScore(
         self, gText: Optional[str]=None, updateL: bool=True) -> bool:
         """
@@ -1149,7 +1195,7 @@ class ProtProfPlot(BaseWindow):
         self.FCDraw()
         #------------------------------> Add to statusbar
         if updateL:
-            self.StatusBarFilterText(f'Z {op} {val}')
+            self.StatusBarFilterText(f'{self.cLFZscore} {op} {val}')
         else:
             pass
         #endregion ---------------------------------------> Get Value and Plot
@@ -1157,7 +1203,7 @@ class ProtProfPlot(BaseWindow):
         #region ------------------------------------------> Update Filter List
         if updateL:
             self.filterList.append(
-                ['Zscore', {'gText': uText, 'updateL': False}]
+                [self.cLFZscore, {'gText': uText, 'updateL': False}]
             )
         else:
             pass
