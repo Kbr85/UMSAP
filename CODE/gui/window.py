@@ -881,6 +881,7 @@ class ProtProfPlot(BaseWindow):
     cLFMonUp   = 'Monotonic (Increasing)'
     cLFMonDown = 'Monotonic (Decreasing)'
     cLFMonBoth = 'Monotonic (Both)'
+    cLFDiv     = 'Divergent'
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -1574,6 +1575,57 @@ class ProtProfPlot(BaseWindow):
             #------------------------------> 
             self.filterList.append(
                 [self.cLFMonMode[mode], {'mode':mode, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
+        
+        return True
+    #---
+    
+    def Filter_Divergent(self, updateL: bool=True) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------------------> DF
+        idx = pd.IndexSlice
+        df = self.df.loc[:,idx[:,:,'FC']]
+        df.insert(0, ('C', 'C', 'FC'), 0)
+        #endregion -------------------------------------------------------> DF
+        
+        #region ------------------------------------------> Get Value and Plot
+        self.df = self.df[df.apply(
+            lambda x: all(
+                [
+                    any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]),
+                    any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']])
+                ]
+            ), axis=1
+        )]
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{self.cLFDiv}')
+            #------------------------------> 
+            self.filterList.append(
+                [self.cLFdiv, {'updateL': False}]
             )
         else:
             pass

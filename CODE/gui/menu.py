@@ -911,6 +911,7 @@ class FiltersProtProf(wx.Menu):
         self.Bind(wx.EVT_MENU, self.OnMonotonicity,source=self.monUp)
         self.Bind(wx.EVT_MENU, self.OnMonotonicity,source=self.monDown)
         self.Bind(wx.EVT_MENU, self.OnMonotonicity,source=self.monBoth)
+        self.Bind(wx.EVT_MENU, self.OnDivergent,   source=self.div)
         self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.apply)
         self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.update)
         self.Bind(wx.EVT_MENU, self.OnRemoveLast,  source=self.removeLast)
@@ -993,6 +994,25 @@ class FiltersProtProf(wx.Menu):
         """
         win = self.GetWindow()
         win.Filter_Monotonicity(self.nameID[event.GetId()])
+        
+        return True
+    #---
+    
+    def OnDivergent(self, event) -> bool:
+        """Filter results by divergent.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_Divergent()
         
         return True
     #---
