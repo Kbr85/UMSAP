@@ -880,7 +880,13 @@ class FiltersProtProf(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.zScore = self.Append(-1, 'Z Value')
+        self.zScore  = self.Append(-1, 'Z Score')
+        self.log2FC  = self.Append(-1, 'Log2(FC)')
+        self.pValue  = self.Append(-1, 'P Value')
+        self.monUp   = self.Append(-1, 'Monotonically Increasing')
+        self.monDown = self.Append(-1, 'Monotonically Decreasing')
+        self.monBoth = self.Append(-1, 'Monotonically Both')
+        self.div     = self.Append(-1, 'Divergent')
         self.AppendSeparator()
         self.apply = self.Append(-1, 'Apply All\tCtrl+A')
         self.update = self.Append(-1, 'Auto Apply Filters', kind=wx.ITEM_CHECK)
@@ -892,6 +898,8 @@ class FiltersProtProf(wx.Menu):
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnZScore,      source=self.zScore)
+        self.Bind(wx.EVT_MENU, self.OnLog2FC,      source=self.log2FC)
+        self.Bind(wx.EVT_MENU, self.OnPValue,      source=self.pValue)
         self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.apply)
         self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.update)
         self.Bind(wx.EVT_MENU, self.OnRemoveLast,  source=self.removeLast)
@@ -917,6 +925,44 @@ class FiltersProtProf(wx.Menu):
         """
         win = self.GetWindow()
         win.Filter_ZScore()
+        
+        return True
+    #---
+    
+    def OnLog2FC(self, event) -> bool:
+        """Filter results by log2FC value.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_Log2FC()
+        
+        return True
+    #---
+    
+    def OnPValue(self, event) -> bool:
+        """Filter results by P value.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_PValue()
         
         return True
     #---

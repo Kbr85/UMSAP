@@ -871,9 +871,11 @@ class ProtProfPlot(BaseWindow):
     name = config.nwProtProf
     #------------------------------> To id the section in the umsap file 
     # shown in the window
-    cSection = config.nmProtProf
-    cSWindow = config.sWinModPlot
+    cSection   = config.nmProtProf
+    cSWindow   = config.sWinModPlot
     cLProtList = 'Protein List'
+    cLFZscore  = 'Z Score'
+    cLFLog2FC  = 'Log2FC'
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -885,7 +887,6 @@ class ProtProfPlot(BaseWindow):
 
         #region -----------------------------------------------> Initial Setup
         self.cTitle      = f"{parent.cTitle} - {self.cSection}"
-        self.cLFZscore   = 'Z Score'
         self.obj         = parent.obj
         self.data        = self.obj.confData[self.cSection]
         self.df          = None
@@ -929,14 +930,11 @@ class ProtProfPlot(BaseWindow):
         
         self.filterMethod = {
             self.cLFZscore : self.Filter_ZScore,
+            self.cLFLog2FC : self.Filter_Log2FC,
         }
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------------> Menu
-        
-        #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> 
@@ -1227,7 +1225,7 @@ class ProtProfPlot(BaseWindow):
         if gText is None:
             #------------------------------> 
             dlg = dtsWindow.UserInput1Text(
-                'Filter results by Z score value.',
+                'Filter results by Z score.',
                 'Threshold (%)',
                 'Decimal value between 0 and 100. e.g. < 10.0 or > 20.4',
                 self.plots.dPlot['Vol'],
@@ -1299,6 +1297,202 @@ class ProtProfPlot(BaseWindow):
         if updateL:
             self.filterList.append(
                 [self.cLFZscore, {'gText': uText, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
+        
+        return True
+    #---
+    
+    def Filter_Log2FC(
+        self, gText: Optional[str]=None, updateL: bool=True) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        if gText is None:
+            #------------------------------> 
+            dlg = dtsWindow.UserInput1Text(
+                'Filter results by Log2(FC) value.',
+                'Threshold',
+                'Absolute log2(FC) value. e.g. < 2.3 or > 3.5',
+                self.plots.dPlot['Vol'],
+                dtsValidator.Comparison(numType='float', op=['<', '>']),
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------>
+                uText = dlg.input.tc.GetValue()
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return True
+        else:
+            try:
+                #------------------------------> 
+                a, b = dtsCheck.Comparison(
+                    gText, numType='float', op=['<', '>'])
+                #------------------------------> 
+                if a:
+                    uText = gText
+                else:
+                    #------------------------------> 
+                    msg = 'It was not possible to apply the Log2FC filter.'
+                    tException = b[2]
+                    #------------------------------> 
+                    dtsWindow.NotificationDialog(
+                        'errorU', 
+                        msg        = msg,
+                        tException = tException,
+                        parent     = self,
+                        setText    = True,
+                    )
+                    #------------------------------> 
+                    return False
+            except Exception as e:
+                raise e
+        #endregion -------------------------------------------> Text Entry Dlg
+        
+        #region ------------------------------------------> Get Value and Plot
+        op, val = uText.strip().split()
+        val = float(val)
+        #------------------------------> 
+        idx = pd.IndexSlice
+        col = idx[:,:,'FC']
+        if op == '<':
+            self.df = self.df[(
+                (self.df.loc[:,col] <= val) & (self.df.loc[:,col] >= -val)
+            ).any(axis=1)]
+        else:
+            self.df = self.df[(
+                (self.df.loc[:,col] >= val) | (self.df.loc[:,col] <= -val)
+            ).any(axis=1)]
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #------------------------------> Add to statusbar
+        if updateL:
+            self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
+        else:
+            pass
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            self.filterList.append(
+                [self.cLFLog2FC, {'gText': uText, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
+        
+        return True
+    #---
+    
+    def Filter_PValue(
+        self, gText: Optional[str]=None, updateL: bool=True) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        if gText is None:
+            #------------------------------> 
+            dlg = dtsWindow.UserInput1Text(
+                'Filter results by P value.',
+                'Threshold',
+                'Absolute -log10P value. e.g. < 2.3 or > 3.5',
+                self.plots.dPlot['Vol'],
+                dtsValidator.Comparison(numType='float', op=['<', '>']),
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------>
+                uText = dlg.input.tc.GetValue()
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return True
+        else:
+            try:
+                #------------------------------> 
+                a, b = dtsCheck.Comparison(
+                    gText, numType='float', op=['<', '>'])
+                #------------------------------> 
+                if a:
+                    uText = gText
+                else:
+                    #------------------------------> 
+                    msg = 'It was not possible to apply the Log2FC filter.'
+                    tException = b[2]
+                    #------------------------------> 
+                    dtsWindow.NotificationDialog(
+                        'errorU', 
+                        msg        = msg,
+                        tException = tException,
+                        parent     = self,
+                        setText    = True,
+                    )
+                    #------------------------------> 
+                    return False
+            except Exception as e:
+                raise e
+        #endregion -------------------------------------------> Text Entry Dlg
+        
+        #region ------------------------------------------> Get Value and Plot
+        op, val = uText.strip().split()
+        val = float(val)
+        #------------------------------> 
+        idx = pd.IndexSlice
+        col = idx[:,:,'FC']
+        if op == '<':
+            self.df = self.df[(
+                (self.df.loc[:,col] <= val) & (self.df.loc[:,col] >= -val)
+            ).any(axis=1)]
+        else:
+            self.df = self.df[(
+                (self.df.loc[:,col] >= val) | (self.df.loc[:,col] <= -val)
+            ).any(axis=1)]
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #------------------------------> Add to statusbar
+        if updateL:
+            self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
+        else:
+            pass
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            self.filterList.append(
+                [self.cLFLog2FC, {'gText': uText, 'updateL': False}]
             )
         else:
             pass
@@ -2272,8 +2466,16 @@ class ProtProfPlot(BaseWindow):
             
         """
         #region ---------------------------------------------------> Get Range
-        xR = dtsStatistic.DataRange(x, margin= config.general['MatPlotMargin'])
-        yR = dtsStatistic.DataRange(y, margin= config.general['MatPlotMargin'])
+        try:
+            xR = dtsStatistic.DataRange(
+                x, margin= config.general['MatPlotMargin'])
+            yR = dtsStatistic.DataRange(
+                y, margin= config.general['MatPlotMargin'])
+        except Exception:
+            xR = dtsStatistic.DataRange(
+                [-1, 1], margin= config.general['MatPlotMargin'])
+            yR = dtsStatistic.DataRange(
+                [-1, 1], margin= config.general['MatPlotMargin'])
         #endregion ------------------------------------------------> Get Range
         
         #region ---------------------------------------------------> Set Range
