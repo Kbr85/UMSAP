@@ -1555,7 +1555,12 @@ class ProtProfPlot(BaseWindow):
                 lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]), axis=1
             )]
         else:
-            pass
+            self.df = self.df[df.apply(
+                lambda x: any(
+                        [x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']] +
+                        [x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]
+                ), axis=1
+            )]
         #------------------------------> 
         self.FillListCtrl()
         self.VolDraw()
