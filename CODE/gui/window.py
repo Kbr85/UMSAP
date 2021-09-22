@@ -22,6 +22,7 @@ from typing import Optional, Literal
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
+from pandas.core.algorithms import isin
 import requests
 from scipy import stats
 import wx
@@ -876,6 +877,8 @@ class ProtProfPlot(BaseWindow):
     cLProtList = 'Protein List'
     cLFZscore  = 'Z Score'
     cLFLog2FC  = 'Log2FC'
+    cLFPValAbs = 'P(abs)'
+    cLFPValLog = 'P(p)'
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -931,6 +934,8 @@ class ProtProfPlot(BaseWindow):
         self.filterMethod = {
             self.cLFZscore : self.Filter_ZScore,
             self.cLFLog2FC : self.Filter_Log2FC,
+            self.cLFPValAbs: self.Filter_PValue,
+            self.cLFPValLog: self.Filter_PValue,
         }
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
@@ -1329,7 +1334,7 @@ class ProtProfPlot(BaseWindow):
                 'Threshold',
                 'Absolute log2(FC) value. e.g. < 2.3 or > 3.5',
                 self.plots.dPlot['Vol'],
-                dtsValidator.Comparison(numType='float', op=['<', '>']),
+                dtsValidator.Comparison(numType='float', op=['<', '>'], vMin=0),
             )
             #------------------------------> 
             if dlg.ShowModal():
@@ -1344,7 +1349,7 @@ class ProtProfPlot(BaseWindow):
             try:
                 #------------------------------> 
                 a, b = dtsCheck.Comparison(
-                    gText, numType='float', op=['<', '>'])
+                    gText, numType='float', op=['<', '>'], vMin=0)
                 #------------------------------> 
                 if a:
                     uText = gText
@@ -1404,7 +1409,9 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def Filter_PValue(
-        self, gText: Optional[str]=None, updateL: bool=True) -> bool:
+        self, gText: Optional[str]=None, absB: Optional[bool]=None, 
+        updateL: bool=True,
+        ) -> bool:
         """
     
             Parameters
@@ -1422,17 +1429,18 @@ class ProtProfPlot(BaseWindow):
         #region ----------------------------------------------> Text Entry Dlg
         if gText is None:
             #------------------------------> 
-            dlg = dtsWindow.UserInput1Text(
+            dlg = window.FilterPValue(
                 'Filter results by P value.',
                 'Threshold',
-                'Absolute -log10P value. e.g. < 2.3 or > 3.5',
+                'Absolute or -log10(P) value. e.g. < 0.01 or > 1',
                 self.plots.dPlot['Vol'],
-                dtsValidator.Comparison(numType='float', op=['<', '>']),
+                dtsValidator.Comparison(numType='float', op=['<', '>'], vMin=0),
             )
             #------------------------------> 
             if dlg.ShowModal():
                 #------------------------------>
                 uText = dlg.input.tc.GetValue()
+                absB  = dlg.cbAbs.IsChecked()
                 #------------------------------> 
                 dlg.Destroy()
             else:
@@ -1442,13 +1450,13 @@ class ProtProfPlot(BaseWindow):
             try:
                 #------------------------------> 
                 a, b = dtsCheck.Comparison(
-                    gText, numType='float', op=['<', '>'])
+                    gText, numType='float', op=['<', '>'], vMin=0)
                 #------------------------------> 
                 if a:
                     uText = gText
                 else:
                     #------------------------------> 
-                    msg = 'It was not possible to apply the Log2FC filter.'
+                    msg = 'It was not possible to apply the P value filter.'
                     tException = b[2]
                     #------------------------------> 
                     dtsWindow.NotificationDialog(
@@ -1467,36 +1475,42 @@ class ProtProfPlot(BaseWindow):
         #region ------------------------------------------> Get Value and Plot
         op, val = uText.strip().split()
         val = float(val)
-        #------------------------------> 
+        #------------------------------> Apply to regular or corrected P values
         idx = pd.IndexSlice
-        col = idx[:,:,'FC']
-        if op == '<':
-            self.df = self.df[(
-                (self.df.loc[:,col] <= val) & (self.df.loc[:,col] >= -val)
-            ).any(axis=1)]
+        if self.corrP:
+            col = idx[:,:,'Pc']
         else:
-            self.df = self.df[(
-                (self.df.loc[:,col] >= val) | (self.df.loc[:,col] <= -val)
-            ).any(axis=1)]
+            col = idx[:,:,'P']
+        #------------------------------> Given value is abs or -log10 P value
+        df = self.df.copy()
+        if absB:
+            pass
+        else:
+            df.loc[:,col] = -np.log10(df.loc[:,col])
+        #------------------------------> 
+        if op == '<':
+            self.df = self.df[(df.loc[:,col] <= val).any(axis=1)]
+        else:
+            self.df = self.df[(df.loc[:,col] >= val).any(axis=1)]
         #------------------------------> 
         self.FillListCtrl()
         self.VolDraw()
         self.FCDraw()
-        #------------------------------> Add to statusbar
-        if updateL:
-            self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
-        else:
-            pass
         #endregion ---------------------------------------> Get Value and Plot
         
-        #region ------------------------------------------> Update Filter List
+        #region ------------------------------> Update Filter List & StatusBar
         if updateL:
+            #------------------------------> 
+            label = self.cLFPValAbs if absB else self.cLFPValLog
+            #------------------------------> 
+            self.StatusBarFilterText(f'{label} {op} {val}')
+            #------------------------------> 
             self.filterList.append(
-                [self.cLFLog2FC, {'gText': uText, 'updateL': False}]
+                [label, {'gText': uText, 'absB': absB, 'updateL': False}]
             )
         else:
             pass
-        #endregion ---------------------------------------> Update Filter List
+        #endregion ---------------------------> Update Filter List & StatusBar
         
         return True
     #---
@@ -1671,17 +1685,21 @@ class ProtProfPlot(BaseWindow):
         #endregion -----------------------------------------------------> Axes
         
         #region --------------------------------------------------------> Data
+        #------------------------------> 
         x = self.df.loc[:,[(self.condC,self.rpC,'FC')]]
-        
+        #------------------------------> 
         if self.corrP:
             y = -np.log10(
                 self.df.loc[:,[(self.condC,self.rpC,'Pc')]])
         else:
             y = -np.log10(
                 self.df.loc[:,[(self.condC,self.rpC,'P')]])
-            
+        #------------------------------> 
         zFC = self.df.loc[:,[(self.condC,self.rpC,'FCz')]]
         zFC = zFC.squeeze().tolist()
+        #-------------->  One item series squeeze to float
+        zFC = zFC if type(zFC) == list else [zFC]
+        #------------------------------> 
         color = dtsMethod.AssignProperty(
             zFC, config.color[self.name]['Vol'], [-self.zScore, self.zScore])
         #endregion -----------------------------------------------------> Data
@@ -2465,17 +2483,24 @@ class ProtProfPlot(BaseWindow):
             -----
             
         """
+        #region -------------------------------------------------> Check input
+        if isinstance(x, pd.Series):
+            if x.empty:
+                x = [-1, 1]
+                y = [-1, 1]
+            elif x.shape[0] == 1:
+                x = [-x.iloc[0], x.iloc[0]]
+                y = [-y.iloc[0], y.iloc[0]]    
+            else:
+                pass
+        else:
+            x = [-x, x]
+            y = [-y, y]
+        #endregion ----------------------------------------------> Check input
+        
         #region ---------------------------------------------------> Get Range
-        try:
-            xR = dtsStatistic.DataRange(
-                x, margin= config.general['MatPlotMargin'])
-            yR = dtsStatistic.DataRange(
-                y, margin= config.general['MatPlotMargin'])
-        except Exception:
-            xR = dtsStatistic.DataRange(
-                [-1, 1], margin= config.general['MatPlotMargin'])
-            yR = dtsStatistic.DataRange(
-                [-1, 1], margin= config.general['MatPlotMargin'])
+        xR = dtsStatistic.DataRange(x, margin= config.general['MatPlotMargin'])
+        yR = dtsStatistic.DataRange(y, margin= config.general['MatPlotMargin'])
         #endregion ------------------------------------------------> Get Range
         
         #region ---------------------------------------------------> Set Range
@@ -3676,6 +3701,146 @@ class FilterRemoveAny(wx.Dialog):
         #endregion ----------------------------------------------> Get Checked
         
         return lo
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class FilterPValue(dtsWindow.UserInput1Text):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, title: str, label: str, hint: str, parent: wx.Window=None,
+        validator: wx.Validator=wx.DefaultValidator, size: wx.Size=(420, 170),
+        ) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(title=title, label=label, hint=hint, parent=parent,
+            validator=validator, size=size
+        )
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.cbAbs = wx.CheckBox(self, label='Absolute P Value')
+        self.cbLog = wx.CheckBox(self, label='-Log10(P) Value')
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> 
+        self.checkSizer = wx.BoxSizer(orient=wx.HORIZONTAL)
+        self.checkSizer.Add(self.cbAbs, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.checkSizer.Add(self.cbLog, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------> 
+        self.Sizer.Detach(self.sizerBtn)
+        #------------------------------> 
+        self.Sizer.Add(self.checkSizer, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.Sizer.Add(self.sizerBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.input.tc.Bind(wx.EVT_TEXT, self.OnTextChange)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnTextChange(self, event):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -------------------------------------------------------> Check
+        if self.input.tc.GetValidator().Validate()[0]:
+            #------------------------------> Get val
+            val = float(self.input.tc.GetValue().strip().split(' ')[1])
+            #------------------------------> 
+            if val > 1:
+                self.cbAbs.SetValue(False)
+                self.cbLog.SetValue(True)
+            else:
+                pass
+        else:
+            pass    
+        #endregion ----------------------------------------------------> Check
+        
+        return True
+    #---
+    
+    def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
+        """Validate user information and close the window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        #region ----------------------------------------------------> Validate
+        #------------------------------> Operand and Value
+        tca = self.input.tc.GetValidator().Validate()[0]
+        #------------------------------> CheckBox
+        absB = self.cbAbs.IsChecked()
+        logB = self.cbLog.IsChecked()
+        if absB and logB:
+            tcb = False
+        elif absB or logB:
+            tcb = True
+        else:
+            tcb = False
+        #------------------------------> All
+        if tca and tcb:
+            self.EndModal(1)
+            self.Close()
+        else:
+            self.input.tc.SetValue('')
+        #endregion -------------------------------------------------> Validate
+        
+        return True
     #---
     #endregion ------------------------------------------------> Class methods
 #---
