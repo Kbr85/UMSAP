@@ -22,7 +22,6 @@ from typing import Optional, Literal
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
-from pandas.core.algorithms import isin
 import requests
 from scipy import stats
 import wx
@@ -879,6 +878,9 @@ class ProtProfPlot(BaseWindow):
     cLFLog2FC  = 'Log2FC'
     cLFPValAbs = 'P(abs)'
     cLFPValLog = 'P(p)'
+    cLFMonUp   = 'Monotonic (Increasing)'
+    cLFMonDown = 'Monotonic (Decreasing)'
+    cLFMonBoth = 'Monotonic (Both)'
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -924,6 +926,7 @@ class ProtProfPlot(BaseWindow):
             'Date'   : self.SetRangeDate,
             'Project': self.SetRangeProject,
         }
+        
         self.getDF4TextInt = {
             config.oControlTypeProtProf['OC']   : self.GetDF4TextInt_OC,
             config.oControlTypeProtProf['OCC']  : self.GetDF4TextInt_OCC,
@@ -931,11 +934,20 @@ class ProtProfPlot(BaseWindow):
             config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
         }
         
+        self.cLFMonMode = {
+            1 : self.cLFMonUp,
+            2 : self.cLFMonDown,
+            3 : self.cLFMonBoth,
+        }
+        
         self.filterMethod = {
             self.cLFZscore : self.Filter_ZScore,
             self.cLFLog2FC : self.Filter_Log2FC,
             self.cLFPValAbs: self.Filter_PValue,
             self.cLFPValLog: self.Filter_PValue,
+            self.cLFMonUp  : self.Filter_Monotonicity,
+            self.cLFMonDown: self.Filter_Monotonicity,
+            self.cLFMonBoth: self.Filter_Monotonicity,
         }
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
@@ -1291,15 +1303,13 @@ class ProtProfPlot(BaseWindow):
         self.FillListCtrl()
         self.VolDraw()
         self.FCDraw()
-        #------------------------------> Add to statusbar
-        if updateL:
-            self.StatusBarFilterText(f'{self.cLFZscore} {op} {val}')
-        else:
-            pass
         #endregion ---------------------------------------> Get Value and Plot
         
         #region ------------------------------------------> Update Filter List
         if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{self.cLFZscore} {op} {val}')
+            #------------------------------> 
             self.filterList.append(
                 [self.cLFZscore, {'gText': uText, 'updateL': False}]
             )
@@ -1389,15 +1399,13 @@ class ProtProfPlot(BaseWindow):
         self.FillListCtrl()
         self.VolDraw()
         self.FCDraw()
-        #------------------------------> Add to statusbar
-        if updateL:
-            self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
-        else:
-            pass
         #endregion ---------------------------------------> Get Value and Plot
         
         #region ------------------------------------------> Update Filter List
         if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
+            #------------------------------> 
             self.filterList.append(
                 [self.cLFLog2FC, {'gText': uText, 'updateL': False}]
             )
@@ -1511,6 +1519,60 @@ class ProtProfPlot(BaseWindow):
         else:
             pass
         #endregion ---------------------------> Update Filter List & StatusBar
+        
+        return True
+    #---
+    
+    def Filter_Monotonicity(
+        self, mode: Optional[int]=None, updateL: bool=True) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------------------> DF
+        idx = pd.IndexSlice
+        df = self.df.loc[:,idx[:,:,'FC']]
+        df.insert(0, ('C', 'C', 'FC'), 0)
+        #endregion -------------------------------------------------------> DF
+        
+        #region ------------------------------------------> Get Value and Plot
+        if mode == 1:
+            self.df = self.df[df.apply(
+                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]), axis=1
+            )]
+        elif mode == 2:
+            self.df = self.df[df.apply(
+                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]), axis=1
+            )]
+        else:
+            pass
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{self.cLFMonMode[mode]}')
+            #------------------------------> 
+            self.filterList.append(
+                [self.cLFMonMode[mode], {'mode':mode, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
         
         return True
     #---
@@ -2011,7 +2073,7 @@ class ProtProfPlot(BaseWindow):
         
         #region ---------------------------------------------------> Add Text
         #------------------------------> Delete all
-        self.text.Freeze()
+        self.Freeze()
         self.text.SetValue('')
         #------------------------------> Protein ID
         number = self.lc.lcs.lc.GetItemText(idx, col=0)
@@ -2033,7 +2095,7 @@ class ProtProfPlot(BaseWindow):
             self.text.AppendText('\n\n')
         #------------------------------> Go back to begining
         self.text.SetInsertionPoint(0)
-        self.text.Thaw()
+        self.Thaw()
         #endregion ------------------------------------------------> Add Text
         
         return True

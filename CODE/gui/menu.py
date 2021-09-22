@@ -895,11 +895,22 @@ class FiltersProtProf(wx.Menu):
         self.removeAny = self.Append(-1, 'Remove Filters')
         self.removeAll = self.Append(-1, 'Remove All\tCtrl+Shift+A')
         #endregion -----------------------------------------------> Menu Items
-
+        
+        #region -------------------------------------------------------> Names
+        self.nameID = { # Associate IDs with Tab names. Avoid manual IDs
+            self.monUp.GetId()  : 1,
+            self.monDown.GetId(): 2,
+            self.monBoth.GetId(): 3,
+        }
+        #endregion ----------------------------------------------------> Names
+        
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnZScore,      source=self.zScore)
         self.Bind(wx.EVT_MENU, self.OnLog2FC,      source=self.log2FC)
         self.Bind(wx.EVT_MENU, self.OnPValue,      source=self.pValue)
+        self.Bind(wx.EVT_MENU, self.OnMonotonicity,source=self.monUp)
+        self.Bind(wx.EVT_MENU, self.OnMonotonicity,source=self.monDown)
+        self.Bind(wx.EVT_MENU, self.OnMonotonicity,source=self.monBoth)
         self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.apply)
         self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.update)
         self.Bind(wx.EVT_MENU, self.OnRemoveLast,  source=self.removeLast)
@@ -963,6 +974,25 @@ class FiltersProtProf(wx.Menu):
         """
         win = self.GetWindow()
         win.Filter_PValue()
+        
+        return True
+    #---
+    
+    def OnMonotonicity(self, event) -> bool:
+        """Filter results by monotonicity.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_Monotonicity(self.nameID[event.GetId()])
         
         return True
     #---
