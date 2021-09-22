@@ -1625,7 +1625,7 @@ class ProtProfPlot(BaseWindow):
             self.StatusBarFilterText(f'{self.cLFDiv}')
             #------------------------------> 
             self.filterList.append(
-                [self.cLFdiv, {'updateL': False}]
+                [self.cLFDiv, {'updateL': False}]
             )
         else:
             pass
@@ -1745,6 +1745,11 @@ class ProtProfPlot(BaseWindow):
         #region ------------------------------------------> Set in wx.ListCtrl
         self.lc.lcs.lc.SetNewData(data)
         #endregion ---------------------------------------> Set in wx.ListCtrl
+        
+        #region ---------------------------------------> Update Protein Number
+        self._mgr.GetPane(self.lc).Caption(f'{self.cLProtList} ({len(data)})')
+        self._mgr.Update()
+        #endregion ------------------------------------> Update Protein Number
         
         return True
     #---
