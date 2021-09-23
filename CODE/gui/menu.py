@@ -49,8 +49,7 @@ class MenuMethods():
         #endregion ----------------------------------------------> Check MainW
         
         #region --------------------------------------------------> Create Tab
-        # self.nameID will be defined in child class
-        config.winMain.CreateTab(self.nameID[event.GetId()]) # type: ignore
+        config.winMain.CreateTab(self.nameID[event.GetId()])
         #endregion -----------------------------------------------> Create Tab
         
         return True
@@ -65,7 +64,7 @@ class MenuMethods():
             event : wx.CommandEvent
                 Information about the event
         """
-        win = self.GetWindow() # type: ignore GetWindow() is a wx.Menu method.
+        win = self.GetWindow()
         win.plot.ZoomResetPlot()
         return True
     #---
@@ -82,19 +81,15 @@ class MenuMethods():
         #region ---------------------------------------------------> Add items
         for k in menuDate:
             #------------------------------> Add item
-            # AppendRadioItem() is a wx.Menu method.
-            i = self.AppendRadioItem(-1, k) # type: ignore 
+            i = self.AppendRadioItem(-1, k)
             #------------------------------> Add to plotDate
-            # plotDate will be defined in child class
-            self.plotDate.append(i) # type: ignore 
+            self.plotDate.append(i)
             #------------------------------> Bind
-            # Bind is a wx method defined for wx.Menu in child class
-            self.Bind(wx.EVT_MENU, self.OnPlotDate, source=i) # type: ignore 
+            self.Bind(wx.EVT_MENU, self.OnPlotDate, source=i)
         #endregion ------------------------------------------------> Add items
         
         #region -----------------------------------------------> Add Separator
-        # AppendSeparator() is a wx.Menu method
-        self.AppendSeparator() # type: ignore 
+        self.AppendSeparator()
         #endregion --------------------------------------------> Add Separator
         
         return True
@@ -109,9 +104,8 @@ class MenuMethods():
                 Information about the event
         
         """
-        win = self.GetWindow() # type: ignore GetWindow() is a wx.Menu method.
-        # GetLabelText is a wx.Menu method
-        win.Draw(self.GetLabelText(event.GetId())) # type: ignore
+        win = self.GetWindow() 
+        win.Draw(self.GetLabelText(event.GetId()))
         return True
     #---
 
@@ -123,7 +117,7 @@ class MenuMethods():
             event : wx.Event
                 Information about the event
         """
-        win = self.GetWindow() # type: ignore GetWindow() is a wx.Menu method.
+        win = self.GetWindow()
         win.OnExportPlotData()
         return True
     #---
@@ -136,7 +130,7 @@ class MenuMethods():
             event : wx.Event
                 Information about the event
         """
-        win = self.GetWindow() # type: ignore GetWindow() is a wx.Menu method.
+        win = self.GetWindow() 
         win.OnExportFilteredData()
         return True
     #---
@@ -149,7 +143,7 @@ class MenuMethods():
             event : wx.Event
                 Information about the event
         """
-        win = self.GetWindow() # type: ignore GetWindow() is a wx.Menu method.
+        win = self.GetWindow() 
         win.OnSavePlot()
         return True
     #---
@@ -162,14 +156,12 @@ class MenuMethods():
             event : wx.Event
                 Information about the event
         """
-        win = self.GetWindow() # type: ignore GetWindow() is a wx.Menu method.
+        win = self.GetWindow() 
         win.OnDupWin()
         return True
     #---
     
-    def GetCheckedRadiodItem(
-        self, lMenuItem: list[wx.MenuItem]
-        ) -> str: # type: ignore One of the RadioItem will be checked.
+    def GetCheckedRadiodItem(self, lMenuItem: list[wx.MenuItem]) -> str:
         """Get the checked item in a list of radio menu items.
     
             Parameters
@@ -655,9 +647,9 @@ class VolcanoPlot(wx.Menu, MenuMethods):
             self.Insert(k,c)
         #------------------------------> Separator
         self.sep = wx.MenuItem(None)
-        self.Insert(k+1, self.sep) # type: ignore k is not unbound
+        self.Insert(k+1, self.sep)
         #------------------------------> Relevant Points
-        for j,t in enumerate(self.rp, k+2): # type: ignore k is not unbound
+        for j,t in enumerate(self.rp, k+2):
             self.Insert(j, t)
         #endregion ------------------------------------------------> Add items
         

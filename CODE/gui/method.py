@@ -177,7 +177,7 @@ def GetDisplayInfo(win: wx.Frame) -> dict[str, dict[str, int]]:
     #endregion -------------------------------------------------> Display info
     
     #region -----------------------------------------------------> Window info
-    nw = config.winNumber.get(win.name, 0) # type: ignore
+    nw = config.winNumber.get(win.name, 0)
     ww, hw = win.GetSize()
     #endregion --------------------------------------------------> Window info
     
