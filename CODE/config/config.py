@@ -78,7 +78,7 @@ elif cOS == 'Windows':
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
     deltaWin = 20
-elif cOS == 'Linux':
+else:
     #------------------------------> Root & Resources Folder
     root = cwd.parent
     res = root / 'Resources'

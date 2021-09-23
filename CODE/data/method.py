@@ -16,13 +16,15 @@
 
 #region -------------------------------------------------------------> Imports
 import itertools
+from typing import Literal
 
 import dat4s_core.data.method as dtsMethod
 #endregion ----------------------------------------------------------> Imports
 
 #region -------------------------------------------------------------> Methods
 def ResControl2ListNumber(
-    val: str, sep: list[str]=[' ', ',', ';'], numType: str='int',
+    val: str, sep: list[str]=[' ', ',', ';'], 
+    numType: Literal['int', 'float']='int',
     ) -> list[list[list[int]]]:
     """Return a list.
     
