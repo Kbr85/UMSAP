@@ -21,8 +21,10 @@ import pandas as pd
 
 import wx
 
-import dat4s_core.data.file as dtsFF
 import dat4s_core.exception.exception as dtsException
+import dat4s_core.data.method as dtsMethod
+import dat4s_core.data.file as dtsFF
+
 
 import config.config as config
 
@@ -98,7 +100,8 @@ class UMSAPFile():
     name = 'UMSAPFile'
     
     cSection = {# Name of the sections in the umsap file
-        'CorrA' : config.nuCorrA,
+        config.npCorrA   : config.nuCorrA,
+        config.npProtProf: config.nmProtProf,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -110,7 +113,8 @@ class UMSAPFile():
 
         self.cConfigure = {# Configure methods. Keys are the section names as
                            # read from the file
-            self.cSection['CorrA'] : self.ConfigureDataCorrA,
+            self.cSection[config.npCorrA]    : self.ConfigureDataCorrA,
+            self.cSection[config.npProtProf]: self.ConfigureDataProtProf,
         }
         #------------------------------> See Notes about the structure of dict
         self.confData = {}
@@ -183,7 +187,7 @@ class UMSAPFile():
         #------------------------------> Empty start
         plotData = {}
         #------------------------------> Fill
-        for k,v in self.data[self.cSection['CorrA']].items():
+        for k,v in self.data[self.cSection[config.npCorrA]].items():
             try:
                 #------------------------------> Create data
                 df  = pd.DataFrame(v['R'], dtype='float64')
@@ -202,7 +206,32 @@ class UMSAPFile():
         #endregion ----------------------------------------------> Plot & Menu
         
         #region -------------------------------------------> Add/Reset section 
-        self.confData[self.cSection['CorrA']] = plotData
+        self.confData[self.cSection[config.npCorrA]] = plotData
+        #endregion ----------------------------------------> Add/Reset section 
+        
+        return True
+    #---
+    
+    def ConfigureDataProtProf(self) -> Literal[True]:
+        """Configure a Proteome Profiling section"""
+        #region -------------------------------------------------> Plot & Menu
+        #------------------------------> Empty start
+        plotData = {}
+        #------------------------------> Fill
+        for k,v in self.data[self.cSection[config.npProtProf]].items():
+            try:
+                #------------------------------> Create data
+                df  = pd.DataFrame(dtsMethod.DictStringKey2Tuple(v['R']))
+                #------------------------------> Add to dict if no error
+                plotData[k] = {
+                    'DF': df,
+                }
+            except Exception:
+                pass
+        #endregion ----------------------------------------------> Plot & Menu
+        
+        #region -------------------------------------------> Add/Reset section 
+        self.confData[self.cSection[config.npProtProf]] = plotData
         #endregion ----------------------------------------> Add/Reset section 
         
         return True
@@ -382,6 +411,8 @@ class UMSAPFile():
         except KeyError as e:
             raise e
     #---
+    #endregion --------------------------------------------------> Get Methods
+
     #region -----------------------------------------------------> Export data
     def ExportPlotData(self, tSection: str, tDate: str, fileP: 'Path'
                       ) -> Literal[True]:
@@ -404,8 +435,6 @@ class UMSAPFile():
         return True
     #---
     #endregion --------------------------------------------------> Export data
-    
-    #endregion --------------------------------------------------> Get Methods
 #---
 #endregion ----------------------------------------------------------> Classes
 
