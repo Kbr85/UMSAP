@@ -49,7 +49,8 @@ class MenuMethods():
         #endregion ----------------------------------------------> Check MainW
         
         #region --------------------------------------------------> Create Tab
-        config.winMain.CreateTab(self.nameID[event.GetId()])		
+        # self.nameID will be defined in child class
+        config.winMain.CreateTab(self.nameID[event.GetId()]) # type: ignore
         #endregion -----------------------------------------------> Create Tab
         
         return True
@@ -64,7 +65,7 @@ class MenuMethods():
             event : wx.CommandEvent
                 Information about the event
         """
-        win = self.GetWindow()
+        win = self.GetWindow() # type: ignore GetWindow() is a wx.Menu method.
         win.plot.ZoomResetPlot()
         return True
     #---
@@ -81,15 +82,19 @@ class MenuMethods():
         #region ---------------------------------------------------> Add items
         for k in menuDate:
             #------------------------------> Add item
-            i = self.AppendRadioItem(-1, k)
+            # AppendRadioItem() is a wx.Menu method.
+            i = self.AppendRadioItem(-1, k) # type: ignore 
             #------------------------------> Add to plotDate
-            self.plotDate.append(i)
+            # plotDate will be defined in child class
+            self.plotDate.append(i) # type: ignore 
             #------------------------------> Bind
-            self.Bind(wx.EVT_MENU, self.OnPlotDate, source=i)
+            # Bind is a wx method defined for wx.Menu in child class
+            self.Bind(wx.EVT_MENU, self.OnPlotDate, source=i) # type: ignore 
         #endregion ------------------------------------------------> Add items
         
         #region -----------------------------------------------> Add Separator
-        self.AppendSeparator()
+        # AppendSeparator() is a wx.Menu method
+        self.AppendSeparator() # type: ignore 
         #endregion --------------------------------------------> Add Separator
         
         return True
@@ -104,8 +109,9 @@ class MenuMethods():
                 Information about the event
         
         """
-        win = self.GetWindow()
-        win.Draw(self.GetLabelText(event.GetId()))
+        win = self.GetWindow() # type: ignore GetWindow() is a wx.Menu method.
+        # GetLabelText is a wx.Menu method
+        win.Draw(self.GetLabelText(event.GetId())) # type: ignore
         return True
     #---
 
@@ -117,7 +123,7 @@ class MenuMethods():
             event : wx.Event
                 Information about the event
         """
-        win = self.GetWindow()
+        win = self.GetWindow() # type: ignore GetWindow() is a wx.Menu method.
         win.OnExportPlotData()
         return True
     #---
@@ -130,7 +136,7 @@ class MenuMethods():
             event : wx.Event
                 Information about the event
         """
-        win = self.GetWindow()
+        win = self.GetWindow() # type: ignore GetWindow() is a wx.Menu method.
         win.OnExportFilteredData()
         return True
     #---
@@ -143,7 +149,7 @@ class MenuMethods():
             event : wx.Event
                 Information about the event
         """
-        win = self.GetWindow()
+        win = self.GetWindow() # type: ignore GetWindow() is a wx.Menu method.
         win.OnSavePlot()
         return True
     #---
@@ -156,12 +162,14 @@ class MenuMethods():
             event : wx.Event
                 Information about the event
         """
-        win = self.GetWindow()
+        win = self.GetWindow() # type: ignore GetWindow() is a wx.Menu method.
         win.OnDupWin()
         return True
     #---
     
-    def GetCheckedRadiodItem(self, lMenuItem: list[wx.MenuItem]) -> str:
+    def GetCheckedRadiodItem(
+        self, lMenuItem: list[wx.MenuItem]
+        ) -> str: # type: ignore One of the RadioItem will be checked.
         """Get the checked item in a list of radio menu items.
     
             Parameters
@@ -521,7 +529,42 @@ class CorrAPlotToolMenu(PlotMenu):
 
 
 class VolcanoPlot(wx.Menu, MenuMethods):
-    """Menu for a Volcano Plot """
+    """Menu for a Volcano Plot.
+
+        See Notes below for more details.
+    
+        Parameters
+        ----------
+        crp: dict
+            Available conditions and relevant point for the analysis. 
+            See Notes for structure of the dict.
+        iDate : str
+            Initially selected date
+            
+        Attributes
+        ----------
+        cond : list of wx.MenuItems
+            Available conditions as wx.MenuItems for the current date.
+        crp : dict
+            Available conditions and relevant point for the analysis. 
+            See Notes for structure of the dict.
+        rp : list of wx.MenuItems
+            Available relevant points as wx.MenuItems for the current date.
+        sep : wx.MenuItem
+            Separator between conditions and relevant points.
+            
+        Notes
+        -----
+        crp has the following structure
+            {
+                    'date1' : {
+                        'C' : [List of conditions as str],
+                        'RP': [List of relevant points as str],
+                    }
+                    .......
+                    'dateN' : {}
+            }
+    """
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup
@@ -530,7 +573,6 @@ class VolcanoPlot(wx.Menu, MenuMethods):
     def __init__(self, crp: dict, iDate: str):
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.date = iDate
         self.crp = crp
         #------------------------------> Cond - RP separator. To remove/create.
         self.sep = None
@@ -566,7 +608,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         self, tDate: str
         ) -> tuple[list[wx.MenuItem], list[wx.MenuItem]]:
         """Set the menu items for conditions and relevant points as defined for 
-            the current analysis.
+            the current analysis date.
     
             Parameters
             ----------
@@ -613,9 +655,9 @@ class VolcanoPlot(wx.Menu, MenuMethods):
             self.Insert(k,c)
         #------------------------------> Separator
         self.sep = wx.MenuItem(None)
-        self.Insert(k+1, self.sep)
+        self.Insert(k+1, self.sep) # type: ignore k is not unbound
         #------------------------------> Relevant Points
-        for j,t in enumerate(self.rp, k+2):
+        for j,t in enumerate(self.rp, k+2): # type: ignore k is not unbound
             self.Insert(j, t)
         #endregion ------------------------------------------------> Add items
         
@@ -651,7 +693,6 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         #endregion ------------------------------------------> Delete Elements
         
         #region -----------------------------------> Create & Add New Elements
-        self.date = tDate
         #------------------------------> 
         self.cond, self.rp = self.SetCondRPMenuItems(tDate)
         #------------------------------> 
@@ -662,7 +703,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
     #---
     
     def GetData4Draw(self) -> tuple[str, str, bool]:
-        """Return the current selected date, cond and rp
+        """Return the current selected cond, rp and corrP.
     
             Returns
             -------
@@ -688,11 +729,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region --------------------------------------------------------> Draw
         win = self.GetWindow()
@@ -740,7 +777,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         return True
     #---
     
-    def OnZoomReset(self, event):
+    def OnZoomReset(self, event) -> bool:
         """Reset plot zoom.
     
             Parameters
@@ -751,11 +788,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         win = self.GetWindow()
         win.OnZoomResetVol()
@@ -772,7 +805,7 @@ class FCEvolution(wx.Menu):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self):
+    def __init__(self) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
@@ -854,11 +887,12 @@ class FCEvolution(wx.Menu):
     #---
     
     def GetData4Draw(self) -> tuple[bool]:
-        """Get the data needed to draw the FC evolution in window.            
+        """Get the data needed to draw the FC evolution in window.          
     
             Returns
             -------
             tuple[bool]
+                Return tuple to match similar data from VolcanoPlot
         """
         return (self.showAll.IsChecked(),)
     #---
@@ -867,13 +901,20 @@ class FCEvolution(wx.Menu):
 
 
 class FiltersProtProf(wx.Menu):
-    """Menu for the ProtProfPlot Filters """
+    """Menu for the ProtProfPlot Filters 
+    
+        Attributes
+        ----------
+        nameID : dict
+            To map menu items to the monotonicity filter. Keys are 
+            MenuItems.GetId() and values int. 
+    """
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self):
+    def __init__(self) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
@@ -898,9 +939,9 @@ class FiltersProtProf(wx.Menu):
         
         #region -------------------------------------------------------> Names
         self.nameID = { # Associate IDs with Tab names. Avoid manual IDs
-            self.monUp.GetId()  : 1,
-            self.monDown.GetId(): 2,
-            self.monBoth.GetId(): 3,
+            self.monUp.GetId()  : 'Up',
+            self.monDown.GetId(): 'Down',
+            self.monBoth.GetId(): 'Both',
         }
         #endregion ----------------------------------------------------> Names
         
@@ -1116,7 +1157,14 @@ class FiltersProtProf(wx.Menu):
 
 
 class LockPlotScale(wx.Menu):
-    """Lock the plots scale to the selected option"""
+    """Lock the plots scale to the selected option
+    
+        Parameters
+        ----------
+        nameID : dict
+            To map menu items to the Lock type. Keys are MenuItems.GetId() and 
+            values a str. 
+    """
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup
@@ -1176,7 +1224,37 @@ class LockPlotScale(wx.Menu):
 
 #region -----------------------------------------------------------> Mix menus
 class ProtProfToolMenu(wx.Menu, MenuMethods):
-    """ """
+    """Tool menu for the Proteome Profiling Plot window.
+    
+        See Notes below for more details.
+        
+        Parameters
+        ----------
+        menuData: dict
+            Data needed to build the menu. See Notes below.
+        
+        Attributes
+        ----------
+        menuData: dict
+            Data needed to build the menu. See Notes below.
+        plotdate : list of wx.MenuItems
+            Available dates in the analysis.
+        
+        Notes
+        -----
+        menuData has the following structure:
+            {
+                'menudate' : [List of dates as str],
+                'crp' : {
+                    'date1' : {
+                        'C' : [List of conditions as str],
+                        'RP': [List of relevant points as str],
+                    }
+                    .......
+                    'dateN'
+                }
+            }    
+    """
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup

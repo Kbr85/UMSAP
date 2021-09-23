@@ -936,9 +936,9 @@ class ProtProfPlot(BaseWindow):
         }
         
         self.cLFMonMode = {
-            1 : self.cLFMonUp,
-            2 : self.cLFMonDown,
-            3 : self.cLFMonBoth,
+            'Up'  : self.cLFMonUp,
+            'Down': self.cLFMonDown,
+            'Both': self.cLFMonBoth,
         }
         
         self.filterMethod = {
@@ -1547,11 +1547,11 @@ class ProtProfPlot(BaseWindow):
         #endregion -------------------------------------------------------> DF
         
         #region ------------------------------------------> Get Value and Plot
-        if mode == 1:
+        if mode == 'Up':
             self.df = self.df[df.apply(
                 lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]), axis=1
             )]
-        elif mode == 2:
+        elif mode == 'Down':
             self.df = self.df[df.apply(
                 lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]), axis=1
             )]
