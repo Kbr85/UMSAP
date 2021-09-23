@@ -17,7 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import platform
 from pathlib import Path
-from typing import Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 #endregion ----------------------------------------------------------> Imports
 
@@ -56,7 +56,8 @@ if cOS == 'Darwin':
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
-    sbPlot = [-1, 115]
+    sbPlot2Fields = [-1, 115]
+    sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Cmd'
     #------------------------------> Delta space between consecutive windows
@@ -115,14 +116,17 @@ nDefName = 'Default name'
 nwMain         = 'MainW'
 nwUMSAPControl = 'UMSAPControl'
 nwCorrAPlot    = 'CorrAPlot'
+nwProtProf     = 'ProtProfPlot'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
+ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
 ntStart    = 'StartTab'
 ntCorrA    = 'CorrATab'
 ntProtProf = 'ProtProfTab'
 #------------------------------> Individual Panes
+npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
 npProtProf              = 'ProtProfPane'
 npResControlExp         = 'ResControlExpPane'
@@ -155,12 +159,13 @@ t = {
     #------------------------------> Windows
     nwMain    : "Analysis Setup",
     #------------------------------> Dialogs
-    ndCheckUpdateResDialog : "Check for Updates",
+    ndCheckUpdateResDialog: "Check for Updates",
+    ndResControlExp       : 'Results - Control Experiments',
+    ndFilterRemoveAny     : 'Remove Filters',
     #------------------------------> Tabs
     ntStart   : 'Start',
     ntCorrA   : 'CorrA',
     ntProtProf: 'ProtProf',
-    
 }
 #endregion -----------------------------------------------------------> Titles
 
@@ -196,8 +201,8 @@ fnScore     = "{}-Score-Filtered-Data.txt"
 fnTrans     = "{}-Transformed-Data.txt"
 fnNorm      = "{}-Normalized-Data.txt"
 fnImp       = "{}-Imputed-Data.txt"
-fnDataSteps = 'Data-Steps'
-fnDataInit  = 'Data-Files'
+fnDataSteps = 'Steps_Data_Files'
+fnDataInit  = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
 
 
@@ -226,6 +231,7 @@ lBtnUFile    = 'UMSAP File'
 lLCtrlColNameI = ['#', 'Name']
 #------------------------------> wx.StaticBox
 lSbFile         = 'Files && Folders'
+lSbData         = 'Data preparation'
 lSbValue        = 'User-defined values'
 lSbColumn       = 'Column numbers'
 lStProtProfCond = 'Conditions'
@@ -242,9 +248,9 @@ lStColExtract   = 'Columns to Extract'
 lStResultCtrl   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
-lCbTransMethod = 'Data Transformation'
-lCbNormMethod  = 'Data Normalization'
-lCbImputation  = 'Data Imputation'
+lCbTransMethod = 'Transformation'
+lCbNormMethod  = 'Normalization'
+lCbImputation  = 'Imputation'
 lCbCorrMethod  = 'Correlation Method'
 #------------------------------> Progress Dialog
 lPdCheck    = 'Checking user input: '
@@ -308,14 +314,17 @@ ttLCtrlPasteMod = (
 #region -------------------------------------------------------------> Options
 oTransMethod = {
     'Empty': '',
+    'None' : 'None',
     'Log2' : 'Log2',
 }
 oNormMethod = {
     'Empty' : '',
+    'None'  : 'None',
     'Median': 'Median',
 }
 oImputation = {
     'Empty': '',
+    'None' : 'None',
     'ND'   : 'Normal Distribution',
 }
 oCorrMethod = {
@@ -339,7 +348,7 @@ oSamples = {
     'IS'   : 'Independent Samples',
     'PS'   : 'Paired Samples',
 }
-oCorrectP    = {
+oCorrectP = {
     ''                     : '',
     'None'                 : 'None',
     'Bonferroni'           : 'bonferroni',
@@ -363,9 +372,7 @@ oControlTypeProtProf = {
 
 #region -----------------------------------------------------> DF Column names
 protprofFirstThree = ['Gene', 'Protein', 'Score']
-protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'P', 'Pc', 'FC', 'FCciL', 
-    'FCciU', 'FCz',
-]
+protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
 #endregion --------------------------------------------------> DF Column names
 
 
@@ -398,9 +405,10 @@ mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
-sWinRegular = (920, 670)
+sWinRegular = (930, 700)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
+sWinModPlot = (1100, 625)
 #------------------------------> wx.StatusBar Fields
 sSbarFieldSizeI = sbFieldSize
 #------------------------------> wx.ListCtrl
@@ -424,8 +432,9 @@ font = {
 
 #region -----------------------------------------------------> General options
 general = { # General options
-    'checkUpdate': True, # True Check, False No check
-    'DPI'        : 100,  # DPI for plot images
+    'checkUpdate'  : True, # True Check, False No check
+    'DPI'          : 100,  # DPI for plot images
+    'MatPlotMargin': 0.025 # Margin for the axes range
 }
 #endregion --------------------------------------------------> General options
 
@@ -433,6 +442,9 @@ general = { # General options
 #region --------------------------------------------------------------> Colors
 color = { # Colors for the app
     'Zebra' : '#ffe6e6',
+    'Main' : [ # Lighter colors of the fragments and bands 
+		'#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff',
+	],
     nuCorrA : { # Color for plot in Correlation Analysis
         'CMAP' : { # CMAP colors and interval
             'N' : 128,
@@ -441,6 +453,11 @@ color = { # Colors for the app
             'c3': [0, 0, 255],
         },
     },
+    nwProtProf : {
+        'Vol'   : ['#ff3333', '#d3d3d3', '#3333ff'],
+        'VolSel': '#6ac653',
+        'FCAll' : '#d3d3d3',
+    }
 }
 #endregion -----------------------------------------------------------> Colors
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS

@@ -19,26 +19,33 @@ import _thread
 from pathlib import Path
 from typing import Optional, Literal
 
+import matplotlib.patches as mpatches
+import numpy as np
+import pandas as pd
 import requests
-from requests.api import get
+from scipy import stats
 import wx
 import wx.adv as adv
 import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
 
 import dat4s_core.data.check as dtsCheck
+import dat4s_core.data.file as dtsFF
 import dat4s_core.generator.generator as dtsGenerator
 import dat4s_core.data.method as dtsMethod
+import dat4s_core.data.statistic as dtsStatistic
+import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
-from data.file import UMSAPFile
 import gui.menu as menu
 import gui.tab as tab
 import gui.dtscore as dtscore
 import gui.method as method
 import gui.pane as pane
+import gui.window as window
+from data.file import UMSAPFile
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -114,8 +121,9 @@ class BaseWindow(wx.Frame):
         ----------
         parent : wx.Window or None
             Parent of the window
-        menuDate : list of str or None
-            Date entries for menu of plotting windows e.g. 20210220-104527
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
 
         Attributes
         ----------
@@ -126,8 +134,10 @@ class BaseWindow(wx.Frame):
             Unique name of the window. Default is config.nDefName.
         cTitle : str
             Title for the window. Default is config.tdW.
-        cSizeWindow : wx.Size
+        cSWindow : wx.Size
             Size of the window. Default is config.sWinRegular
+        cMsgExportFailed : str
+            Error message.
         #------------------------------> Widgets
         statusbar : wx.StatusBar
             Windows statusbar
@@ -137,26 +147,28 @@ class BaseWindow(wx.Frame):
             Main sizer of the window
     """
     #region -----------------------------------------------------> Class setup
-    
+    cMsgExportFailed = (
+        f"It was not possible to write the data to the selected file."
+    )
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, parent: Optional[wx.Window]=None, 
-        menuDate: Optional[list[str]]=None,
+        menuData: Optional[dict]=None,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.parent = parent
         #------------------------------> Def values if not given in child class
-        self.cSizeWindow = getattr(self, 'cSizeWindow', config.sWinRegular)
+        self.cSWindow = getattr(self, 'cSWindow', config.sWinRegular)
         self.cTitle = getattr(
             self, 'cTitle', config.t.get(self.name, config.tdW)
         )
         self.name = getattr(self, 'name', config.nDefName)
         #------------------------------> 
         super().__init__(
-            parent, size=self.cSizeWindow, title=self.cTitle, name=self.name,
+            parent, size=self.cSWindow, title=self.cTitle, name=self.name,
         )
         #endregion --------------------------------------------> Initial Setup
         
@@ -165,7 +177,7 @@ class BaseWindow(wx.Frame):
         #endregion --------------------------------------------------> Widgets
 
         #region --------------------------------------------------------> Menu
-        self.menubar = menu.ToolMenuBar(self.name, menuDate)
+        self.menubar = menu.ToolMenuBar(self.name, menuData)
         self.SetMenuBar(self.menubar)		
         #endregion -----------------------------------------------------> Menu
         
@@ -217,6 +229,96 @@ class BaseWindow(wx.Frame):
         #------------------------------> 
         return True
     #---
+    
+    def WinPos(self) -> dict:
+        """Adjust win number and return information about the size of the 
+            window.
+            
+            See Notes below for more details.
+            
+            Return
+            ------
+            dict
+                Information about the size of the window and display and number
+                of windows. See also data.method.GetDisplayInfo
+                
+            Notes
+            -----
+            Final position of the window on the display must be set in child 
+            class.
+        """
+        #region ---------------------------------------------------> Variables
+        info = method.GetDisplayInfo(self)
+        #endregion ------------------------------------------------> Variables
+
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.name] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
+
+        return info
+    #---
+    
+    def OnExportPlotData(self) -> Literal[True]:
+        """ Export data to a csv file """
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p     = Path(dlg.GetPath())
+            tDate = self.statusbar.GetStatusText(1)
+            #------------------------------> Export
+            try:
+                self.obj.ExportPlotData(self.cSection, tDate, p)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---	
+    
+    def OnExportFilteredData(self) -> Literal[True]:
+        """ Export filtered data to a csv file. 
+        
+            Notes
+            -----
+            Assumes filtered data is in self.df 
+        """
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            #------------------------------> Export
+            try:
+                dtsFF.WriteDF2CSV(p, self.df)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---	
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -228,13 +330,13 @@ class BaseWindowPlot(BaseWindow):
         ----------
         parent : 'UMSAPControl'
             Parent of the window.
-        menuDate : list of str or None
-            Date entries for menu of plotting windows.
-            e.g. ['20210220-104527', ....]
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
             
         Attributes
         ----------
-        cSizeWindow : wx.Size
+        cSWindow : wx.Size
             Size of the window.
             
         Notes
@@ -245,21 +347,21 @@ class BaseWindowPlot(BaseWindow):
         Override as needed.
     """
     #region -----------------------------------------------------> Class setup
-    cSizeWindow = config.sWinPlot
+    cSWindow = config.sWinPlot
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, parent: Optional[wx.Window]=None, 
-        menuDate: Optional[list[str]]=None
+        menuData: Optional[dict]=None
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__(parent=parent, menuDate=menuDate)
+        super().__init__(parent=parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.statusbar.SetFieldsCount(2, config.sbPlot)
+        self.statusbar.SetFieldsCount(2, config.sbPlot2Fields)
         #endregion --------------------------------------------------> Widgets
         
         #region --------------------------------------------------------> Bind
@@ -313,6 +415,11 @@ class BaseWindowPlot(BaseWindow):
         #endregion --------------------------------------------------> Destroy
         
         return True
+    #---
+    
+    def WinPos(self):
+        """Just return base class method result"""
+        return super().WinPos()
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -496,7 +603,9 @@ class MainWindow(BaseWindow):
 
 
 class CorrAPlot(BaseWindowPlot):
-    """Creates the window showing the results of a correlation analysis
+    """Creates the window showing the results of a correlation analysis.
+    
+        See Notes below for more details.
 
         Parameters
         ----------
@@ -515,8 +624,6 @@ class CorrAPlot(BaseWindowPlot):
             Data for the Correlation Analysis section.
         date : [parent.obj.confData[Section].keys()]
             List of dates availables for plotting.
-        msgExportFailed : str
-            Error message.
         name : str
             Unique name of the window.
         obj : parent.obj
@@ -524,17 +631,20 @@ class CorrAPlot(BaseWindowPlot):
             object here, modify the configure step or add a Get method.
         plot : dtsWidget.MatPlotPanel
             Main plot of the window
+            
+        Notes
+        -----
+        The structure of menuData is:
+        {
+            'menudate' : [list of dates in the section],
+        }
     """
     #region -----------------------------------------------------> Class setup
     #------------------------------> To id the window
-    name = config.nuCorrA
+    name = config.nwCorrAPlot
     #------------------------------> To id the section in the umsap file 
     # shown in the window
     cSection = config.nuCorrA
-    #------------------------------> 
-    msgExportFailed = (
-        f"It was not possible to write the data to the selected file."
-    )
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -555,7 +665,7 @@ class CorrAPlot(BaseWindowPlot):
             c3 = config.color[self.cSection]['CMAP']['c3'],
         )
 
-        super().__init__(parent, self.date)
+        super().__init__(parent, {'menudate' : self.date})
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -590,20 +700,16 @@ class CorrAPlot(BaseWindowPlot):
         """Set the position on the screen and adjust the total number of
             shown windows.
         """
-        #region ---------------------------------------------------> Variables
-        info = method.GetDisplayInfo(self)
-        #endregion ------------------------------------------------> Variables
-                
+        #region --------------------------------------------------------> Super
+        info = super().WinPos()
+        #endregion -----------------------------------------------------> Super
+        
         #region ------------------------------------------------> Set Position
         self.SetPosition(pt=(
             info['D']['w'] - (info['W']['N']*config.deltaWin + info['W']['w']),
             info['D']['yo'] + info['W']['N']*config.deltaWin,
         ))
         #endregion ---------------------------------------------> Set Position
-
-        #region ----------------------------------------------------> Update N
-        config.winNumber[self.name] = info['W']['N'] + 1
-        #endregion -------------------------------------------------> Update N
 
         return True
     #---
@@ -737,37 +843,2258 @@ class CorrAPlot(BaseWindowPlot):
         
         return True
     #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
-    def OnExportPlotData(self) -> Literal[True]:
-        """ Export data to a csv file """
-        #region --------------------------------------------------> Dlg window
-        dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
-        #endregion -----------------------------------------------> Dlg window
+
+class ProtProfPlot(BaseWindow):
+    """Plot results in the Proteome Profiling section of an UMSAP file.
+
+        Parameters
+        ----------
         
-        #region ---------------------------------------------------> Get Path
-        if dlg.ShowModal() == wx.ID_OK:
-            #------------------------------> Variables
-            p     = Path(dlg.GetPath())
-            tDate = self.statusbar.GetStatusText(1)
-            #------------------------------> Export
-            try:
-                self.obj.ExportPlotData(self.cSection, tDate, p)
-            except Exception as e:
-                dtscore.Notification(
-                    'errorF',
-                    msg        = self.msgExportFailed,
-                    tException = e,
-                    parent     = self,
-                )
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    #------------------------------> To id the window
+    name = config.nwProtProf
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection   = config.nmProtProf
+    cSWindow   = config.sWinModPlot
+    cLProtList = 'Protein List'
+    cLFZscore  = 'Z Score'
+    cLFLog2FC  = 'Log2FC'
+    cLFPValAbs = 'P(abs)'
+    cLFPValLog = 'P(p)'
+    cLFMonUp   = 'Monotonic (Increasing)'
+    cLFMonDown = 'Monotonic (Decreasing)'
+    cLFMonBoth = 'Monotonic (Both)'
+    cLFDiv     = 'Divergent'
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: 'UMSAPControl') -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle      = f"{parent.cTitle} - {self.cSection}"
+        self.obj         = parent.obj
+        self.data        = self.obj.confData[self.cSection]
+        self.df          = None
+        self.log10alpha  = None
+        self.zScore      = stats.norm.ppf(0.9)
+        self.zScoreL     = '10%'
+        self.dateC       = None
+        self.condC       = None
+        self.rpC         = None
+        self.greenP      = None
+        self.corrP       = False
+        self.showAll     = True
+        self.autoFilter  = False
+        self.CI          = None
+        self.fcYMax      = None
+        self.fcYMin      = None
+        self.lockScale   = None
+        self.vXRange     = []
+        self.vYRange     = []
+        self.fcXRange    = []
+        self.fcYRange    = []
+        self.fcXLabel    = []
+        self.protLine    = []
+        self.filterList  = []
+        self.date, menuData = self.SetDateMenuDate()
+        #------------------------------> Configuration
+        self.cLCol = ['#', 'Gene', 'Protein']
+        self.cSCol = [45, 70, 100]
+        #------------------------------> Methods
+        self.setRange = {
+            'No'     : self.SetRangeNo,
+            'Date'   : self.SetRangeDate,
+            'Project': self.SetRangeProject,
+        }
+        
+        self.getDF4TextInt = {
+            config.oControlTypeProtProf['OC']   : self.GetDF4TextInt_OC,
+            config.oControlTypeProtProf['OCC']  : self.GetDF4TextInt_OCC,
+            config.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
+            config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
+        }
+        
+        self.cLFMonMode = {
+            1 : self.cLFMonUp,
+            2 : self.cLFMonDown,
+            3 : self.cLFMonBoth,
+        }
+        
+        self.filterMethod = {
+            self.cLFZscore : self.Filter_ZScore,
+            self.cLFLog2FC : self.Filter_Log2FC,
+            self.cLFPValAbs: self.Filter_PValue,
+            self.cLFPValLog: self.Filter_PValue,
+            self.cLFMonUp  : self.Filter_Monotonicity,
+            self.cLFMonDown: self.Filter_Monotonicity,
+            self.cLFMonBoth: self.Filter_Monotonicity,
+        }
+        #------------------------------> 
+        super().__init__(parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> 
+        self.statusbar.SetFieldsCount(3, config.sbPlot3Fields)
+        #------------------------------>  Plot
+        self.plots = dtsWindow.NPlots(
+            self, ['Vol', 'FC'], 2, statusbar=self.statusbar)
+        #------------------------------> Text details
+        self.text = wx.TextCtrl(
+            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
+        self.text.SetFont(config.font['SeqAlign'])
+        #------------------------------> wx.ListCtrl
+        self.lc = pane.ListCtrlSearchPlot(
+            self, 
+            colLabel = self.cLCol,
+            colSize  = self.cSCol,
+            style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
+            tcHint   = f'Search {self.cLProtList}'
+        )
+        #endregion --------------------------------------------------> Widgets
+        
+        #region -------------------------------------------------> Aui control
+        #------------------------------> AUI control
+        self._mgr = aui.AuiManager()
+        #------------------------------> AUI which frame to use
+        self._mgr.SetManagedWindow(self)
+        #------------------------------> Add Configuration panel
+        self._mgr.AddPane( 
+            self.plots, 
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    'Plots'
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+
+        self._mgr.AddPane( 
+            self.text, 
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    'Profiling details'
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        
+        self._mgr.AddPane( 
+            self.lc, 
+            aui.AuiPaneInfo(
+                ).Left(
+                ).Layer(
+                    1    
+                ).Caption(
+                    self.cLProtList
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ----------------------------------------------> Aui control
+
+        #region --------------------------------------------------------> Bind
+        self.plots.dPlot['Vol'].canvas.mpl_connect('pick_event', self.OnPick)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        self.lc.lcs.search.Bind(wx.EVT_SEARCH, self.OnSearch)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        #------------------------------> 
+        self.OnDateChange(
+            self.date[0], 
+            menuData['crp'][self.date[0]]['C'][0],
+            menuData['crp'][self.date[0]]['RP'][0],
+            self.corrP,
+            self.showAll,
+        )
+        #------------------------------> 
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    #------------------------------> Filters
+    def FilterApply(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -----------------------------------------------> Apply Filters
+        for k in self.filterList:
+            self.filterMethod[k[0]](**k[1])
+        #endregion --------------------------------------------> Apply Filters
+        
+        return True
+    #---
+    
+    def FilterRemoveAll(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -------------------------------------------> Update Attributes
+        self.filterList = []
+        self.df = self.data[self.dateC]['DF'].copy()
+        self.statusbar.SetStatusText('', 1)
+        #endregion ----------------------------------------> Update Attributes
+        
+        #region --------------------------------------------------> Update GUI
+        self.OnDateChange(
+            self.dateC, self.condC, self.rpC, self.corrP, self.showAll)
+        #endregion -----------------------------------------------> Update GUI 
+        
+        return True
+    #---
+    
+    def FilterRemoveLast(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -----------------------------------> Check Something to Delete
+        if not self.filterList:
+            return True
         else:
             pass
-        #endregion ------------------------------------------------> Get Path
-     
-        dlg.Destroy()
+        #endregion --------------------------------> Check Something to Delete
         
-        return True	
-     #---
-    #---	
+        #region -------------------------------------------> Update Attributes
+        #------------------------------> 
+        del self.filterList[-1]
+        self.df = self.data[self.dateC]['DF'].copy()
+        #------------------------------> 
+        text = self.statusbar.GetStatusText(1)
+        text = text.split("|")[0:-1]
+        text = [x.strip() for x in text if x.strip() != '']
+        if text:
+            text = f' | {" | ".join(text)}'
+        else:
+            text = ''
+        self.statusbar.SetStatusText(text, 1)
+        #endregion ----------------------------------------> Update Attributes
+        
+        #region --------------------------------------------------> Update GUI
+        self.OnDateChange(
+            self.dateC, self.condC, self.rpC, self.corrP, self.showAll)
+        #endregion -----------------------------------------------> Update GUI 
+        
+        return True
+    #---
+    
+    def FilterRemoveAny(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -----------------------------------> Check Something to Delete
+        if not self.filterList:
+            return True
+        else:
+            pass
+        #endregion --------------------------------> Check Something to Delete
+        
+        #region ------------------------------------------------------> Dialog
+        dlg = window.FilterRemoveAny(self.filterList, self.plots.dPlot['Vol'])
+        if dlg.ShowModal():
+            #------------------------------> 
+            lo = dlg.GetChecked()
+            #------------------------------> 
+            dlg.Destroy()
+            #------------------------------> 
+            if lo:
+                pass
+            else:
+                return True
+        else:
+            dlg.Destroy()
+            return True
+        #endregion ---------------------------------------------------> Dialog
+        
+        #region ---------------------------------------------------> Variables
+        text = ''
+        #------------------------------> 
+        for k in reversed(lo):
+            del self.filterList[k]
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------> Update GUI
+        if self.filterList:
+            #------------------------------> 
+            self.df = self.data[self.dateC]['DF'].copy()
+            #------------------------------> 
+            self.FilterApply()
+            #------------------------------> 
+            for k in self.filterList:
+                text = f'{text} | {k[0]} {k[1]["gText"]}'
+            #------------------------------> 
+            self.statusbar.SetStatusText(text, 1)
+        else:
+            self.FilterRemoveAll()
+        #endregion -----------------------------------------------> Update GUI
+        
+        return True
+    #---
+    
+    def Filter_ZScore(
+        self, gText: Optional[str]=None, updateL: bool=True) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        if gText is None:
+            #------------------------------> 
+            dlg = dtsWindow.UserInput1Text(
+                'Filter results by Z score.',
+                'Threshold (%)',
+                'Decimal value between 0 and 100. e.g. < 10.0 or > 20.4',
+                self.plots.dPlot['Vol'],
+                dtsValidator.Comparison(
+                    numType='float', vMin=0, vMax=100, op=['<', '>']
+                ),
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------>
+                uText = dlg.input.tc.GetValue()
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return True
+        else:
+            try:
+                #------------------------------> 
+                a, b = dtsCheck.Comparison(
+                    gText, 'int', vMin=0, vMax=100, op=['<', '>'])
+                #------------------------------> 
+                if a:
+                    uText = gText
+                else:
+                    #------------------------------> 
+                    msg = 'It was not possible to apply the Z Score filter.'
+                    tException = b[2]
+                    #------------------------------> 
+                    dtsWindow.NotificationDialog(
+                        'errorU', 
+                        msg        = msg,
+                        tException = tException,
+                        parent     = self,
+                        setText    = True,
+                    )
+                    #------------------------------> 
+                    return False
+            except Exception as e:
+                raise e
+        #endregion -------------------------------------------> Text Entry Dlg
+        
+        #region ------------------------------------------> Get Value and Plot
+        op, val = uText.strip().split()
+        zVal = stats.norm.ppf(1.0-(float(val.strip())/100.0))
+        #------------------------------> 
+        idx = pd.IndexSlice
+        col = idx[:,:,'FCz']
+        if op == '<':
+            self.df = self.df[(
+                (self.df.loc[:,col] >= zVal) | (self.df.loc[:,col] <= -zVal)
+            ).any(axis=1)]
+        else:
+            self.df = self.df[(
+                (self.df.loc[:,col] <= zVal) | (self.df.loc[:,col] >= -zVal)
+            ).any(axis=1)]
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{self.cLFZscore} {op} {val}')
+            #------------------------------> 
+            self.filterList.append(
+                [self.cLFZscore, {'gText': uText, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
+        
+        return True
+    #---
+    
+    def Filter_Log2FC(
+        self, gText: Optional[str]=None, updateL: bool=True) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        if gText is None:
+            #------------------------------> 
+            dlg = dtsWindow.UserInput1Text(
+                'Filter results by Log2(FC) value.',
+                'Threshold',
+                'Absolute log2(FC) value. e.g. < 2.3 or > 3.5',
+                self.plots.dPlot['Vol'],
+                dtsValidator.Comparison(numType='float', op=['<', '>'], vMin=0),
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------>
+                uText = dlg.input.tc.GetValue()
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return True
+        else:
+            try:
+                #------------------------------> 
+                a, b = dtsCheck.Comparison(
+                    gText, numType='float', op=['<', '>'], vMin=0)
+                #------------------------------> 
+                if a:
+                    uText = gText
+                else:
+                    #------------------------------> 
+                    msg = 'It was not possible to apply the Log2FC filter.'
+                    tException = b[2]
+                    #------------------------------> 
+                    dtsWindow.NotificationDialog(
+                        'errorU', 
+                        msg        = msg,
+                        tException = tException,
+                        parent     = self,
+                        setText    = True,
+                    )
+                    #------------------------------> 
+                    return False
+            except Exception as e:
+                raise e
+        #endregion -------------------------------------------> Text Entry Dlg
+        
+        #region ------------------------------------------> Get Value and Plot
+        op, val = uText.strip().split()
+        val = float(val)
+        #------------------------------> 
+        idx = pd.IndexSlice
+        col = idx[:,:,'FC']
+        if op == '<':
+            self.df = self.df[(
+                (self.df.loc[:,col] <= val) & (self.df.loc[:,col] >= -val)
+            ).any(axis=1)]
+        else:
+            self.df = self.df[(
+                (self.df.loc[:,col] >= val) | (self.df.loc[:,col] <= -val)
+            ).any(axis=1)]
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
+            #------------------------------> 
+            self.filterList.append(
+                [self.cLFLog2FC, {'gText': uText, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
+        
+        return True
+    #---
+    
+    def Filter_PValue(
+        self, gText: Optional[str]=None, absB: Optional[bool]=None, 
+        updateL: bool=True,
+        ) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        if gText is None:
+            #------------------------------> 
+            dlg = window.FilterPValue(
+                'Filter results by P value.',
+                'Threshold',
+                'Absolute or -log10(P) value. e.g. < 0.01 or > 1',
+                self.plots.dPlot['Vol'],
+                dtsValidator.Comparison(numType='float', op=['<', '>'], vMin=0),
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------>
+                uText = dlg.input.tc.GetValue()
+                absB  = dlg.cbAbs.IsChecked()
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return True
+        else:
+            try:
+                #------------------------------> 
+                a, b = dtsCheck.Comparison(
+                    gText, numType='float', op=['<', '>'], vMin=0)
+                #------------------------------> 
+                if a:
+                    uText = gText
+                else:
+                    #------------------------------> 
+                    msg = 'It was not possible to apply the P value filter.'
+                    tException = b[2]
+                    #------------------------------> 
+                    dtsWindow.NotificationDialog(
+                        'errorU', 
+                        msg        = msg,
+                        tException = tException,
+                        parent     = self,
+                        setText    = True,
+                    )
+                    #------------------------------> 
+                    return False
+            except Exception as e:
+                raise e
+        #endregion -------------------------------------------> Text Entry Dlg
+        
+        #region ------------------------------------------> Get Value and Plot
+        op, val = uText.strip().split()
+        val = float(val)
+        #------------------------------> Apply to regular or corrected P values
+        idx = pd.IndexSlice
+        if self.corrP:
+            col = idx[:,:,'Pc']
+        else:
+            col = idx[:,:,'P']
+        #------------------------------> Given value is abs or -log10 P value
+        df = self.df.copy()
+        if absB:
+            pass
+        else:
+            df.loc[:,col] = -np.log10(df.loc[:,col])
+        #------------------------------> 
+        if op == '<':
+            self.df = self.df[(df.loc[:,col] <= val).any(axis=1)]
+        else:
+            self.df = self.df[(df.loc[:,col] >= val).any(axis=1)]
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        #region ------------------------------> Update Filter List & StatusBar
+        if updateL:
+            #------------------------------> 
+            label = self.cLFPValAbs if absB else self.cLFPValLog
+            #------------------------------> 
+            self.StatusBarFilterText(f'{label} {op} {val}')
+            #------------------------------> 
+            self.filterList.append(
+                [label, {'gText': uText, 'absB': absB, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------> Update Filter List & StatusBar
+        
+        return True
+    #---
+    
+    def Filter_Monotonicity(
+        self, mode: Optional[int]=None, updateL: bool=True) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------------------> DF
+        idx = pd.IndexSlice
+        df = self.df.loc[:,idx[:,:,'FC']]
+        df.insert(0, ('C', 'C', 'FC'), 0)
+        #endregion -------------------------------------------------------> DF
+        
+        #region ------------------------------------------> Get Value and Plot
+        if mode == 1:
+            self.df = self.df[df.apply(
+                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]), axis=1
+            )]
+        elif mode == 2:
+            self.df = self.df[df.apply(
+                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]), axis=1
+            )]
+        else:
+            self.df = self.df[df.apply(
+                lambda x: any(
+                        [x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']] +
+                        [x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]
+                ), axis=1
+            )]
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{self.cLFMonMode[mode]}')
+            #------------------------------> 
+            self.filterList.append(
+                [self.cLFMonMode[mode], {'mode':mode, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
+        
+        return True
+    #---
+    
+    def Filter_Divergent(self, updateL: bool=True) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------------------> DF
+        idx = pd.IndexSlice
+        df = self.df.loc[:,idx[:,:,'FC']]
+        df.insert(0, ('C', 'C', 'FC'), 0)
+        #endregion -------------------------------------------------------> DF
+        
+        #region ------------------------------------------> Get Value and Plot
+        self.df = self.df[df.apply(
+            lambda x: all(
+                [
+                    any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]),
+                    any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']])
+                ]
+            ), axis=1
+        )]
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{self.cLFDiv}')
+            #------------------------------> 
+            self.filterList.append(
+                [self.cLFDiv, {'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
+        
+        return True
+    #---
+    #------------------------------> 
+    def StatusBarFilterText(self, text: str):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------------> Old Text
+        text_now = self.statusbar.GetStatusText(1)
+        #endregion -------------------------------------------------> Old Text
+        
+        #region ----------------------------------------------------> Add Text
+        text_new = f'{text_now} | {text}'
+        #endregion -------------------------------------------------> Add Text
+        
+        #region ------------------------------------------> Add to wx.StatusBar
+        self.statusbar.SetStatusText(text_new, 1)
+        #endregion ---------------------------------------> Add to wx.StatusBar
+        
+        return True
+    #---
+    
+    def SetDateMenuDate(self) -> tuple[list, dict]:
+        """Set the self.date list and the menuData dict needed to build the Tool
+            menu.
+
+            Returns
+            -------
+            dict:
+            {
+                'menudate' : [List of dates],
+                'crp' : {
+                    'date1' : {
+                        'C' : [List of conditions],
+                        'RP': [List of relevant points],
+                    }
+                    .......
+                    'dateN'
+                }
+            }                    
+        """
+        #region ---------------------------------------------------> Fill dict
+        #------------------------------> Variables
+        date = []
+        menuData = {
+            'crp' : {},
+        }
+        #------------------------------> Fill 
+        for k in self.data.keys():
+            #------------------------------> 
+            date.append(k)
+            #------------------------------> 
+            menuData['crp'][k] = {
+                'C' : self.obj.data[self.cSection][k]['CI']['Cond'],
+                'RP': self.obj.data[self.cSection][k]['CI']['RP']
+            }
+        #------------------------------> 
+        menuData['menudate'] = date
+        #endregion ------------------------------------------------> Fill dict
+        
+        return (date, menuData)
+    #---
+    
+    def WinPos(self) -> Literal[True]:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
+        """
+        #region ---------------------------------------------------> Variables
+        info = super().WinPos()
+        #endregion ------------------------------------------------> Variables
+                
+        #region ------------------------------------------------> Set Position
+        
+        #endregion ---------------------------------------------> Set Position
+
+        return True
+    #---
+    
+    def FillListCtrl(self) -> bool:
+        """Update the protein list for the given analysis.
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Entries are read from self.df
+        """
+        #region --------------------------------------------------> Delete old
+        self.lc.lcs.lc.DeleteAllItems()
+        #endregion -----------------------------------------------> Delete old
+        
+        #region ----------------------------------------------------> Get Data
+        data = self.df.iloc[:,0:2]
+        data.insert(0, 'kbr', self.df.index.values.tolist())
+        data = data.astype(str)
+        data = data.values.tolist()
+        #endregion -------------------------------------------------> Get Data
+        
+        #region ------------------------------------------> Set in wx.ListCtrl
+        self.lc.lcs.lc.SetNewData(data)
+        #endregion ---------------------------------------> Set in wx.ListCtrl
+        
+        #region ---------------------------------------> Update Protein Number
+        self._mgr.GetPane(self.lc).Caption(f'{self.cLProtList} ({len(data)})')
+        self._mgr.Update()
+        #endregion ------------------------------------> Update Protein Number
+        
+        return True
+    #---
+    
+    def GetFCMinMax(self) -> list[list[float]]:
+        """Get the maximum and minimum values of FC for each studied RP, 
+            excluding the CI.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #------------------------------> First point is a control with 0 log2FC
+        ymax = [0.0]
+        ymin = [0.0]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Fill List
+        for c in self.CI['RP']:
+            #------------------------------> 
+            df = self.data[self.dateC]['DF'].loc[:,idx[:,c,'FC']]
+            #------------------------------> 
+            ymax.append(df.max().max())
+            ymin.append(df.min().min())
+        #endregion ------------------------------------------------> Fill List
+        
+        return [ymax, ymin]
+    #---
+    
+    def VolDraw(self) -> bool:
+        """Create/Update the Volcano plot.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------------> Axes
+        self.VolSetAxis()
+        #endregion -----------------------------------------------------> Axes
+        
+        #region --------------------------------------------------------> Data
+        #------------------------------> 
+        x = self.df.loc[:,[(self.condC,self.rpC,'FC')]]
+        #------------------------------> 
+        if self.corrP:
+            y = -np.log10(
+                self.df.loc[:,[(self.condC,self.rpC,'Pc')]])
+        else:
+            y = -np.log10(
+                self.df.loc[:,[(self.condC,self.rpC,'P')]])
+        #------------------------------> 
+        zFC = self.df.loc[:,[(self.condC,self.rpC,'FCz')]]
+        zFC = zFC.squeeze().tolist()
+        #-------------->  One item series squeeze to float
+        zFC = zFC if type(zFC) == list else [zFC]
+        #------------------------------> 
+        color = dtsMethod.AssignProperty(
+            zFC, config.color[self.name]['Vol'], [-self.zScore, self.zScore])
+        #endregion -----------------------------------------------------> Data
+        
+        #region --------------------------------------------------------> Plot
+        self.plots.dPlot['Vol'].axes.scatter(
+            x, y, 
+            alpha     = 1,
+            edgecolor = 'black',
+            linewidth = 1,
+            color     = color,
+            picker    = True,
+        )
+        #------------------------------> Lock Scale or Set it manually
+        if self.vXRange and self.vYRange:
+            self.plots.dPlot['Vol'].axes.set_xlim(*self.vXRange)
+            self.plots.dPlot['Vol'].axes.set_ylim(*self.vYRange)
+        else:
+            self.VolXYRange(x.squeeze(), y.squeeze())
+        #------------------------------> Zoom level
+        self.plots.dPlot['Vol'].ZoomResetSetValues()
+        #------------------------------> Show
+        self.plots.dPlot['Vol'].canvas.draw()
+        #endregion -----------------------------------------------------> Plot
+        
+        #region -------------------------------------> Update selected protein
+        self.DrawGreenPoint()
+        #endregion ----------------------------------> Update selected protein
+    
+        return True
+    #---
+    
+    def VolSetAxis(self) -> bool:
+        """Set the axis in the volcano plot
+        
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+        
+        """
+        #------------------------------> Clear
+        self.plots.dPlot['Vol'].axes.clear()
+        #------------------------------> 
+        self.plots.dPlot['Vol'].axes.grid(True, linestyle=":")
+        self.plots.dPlot['Vol'].axes.axhline(
+            y=self.log10alpha, color="black", dashes=(5, 2, 1, 2), alpha=0.5)
+        #------------------------------> Labels
+        self.plots.dPlot['Vol'].axes.set_title(
+            f'C: {self.condC} RP: {self.rpC} ' + 'Z$_{score}$: ' + f'{self.zScoreL}')
+        self.plots.dPlot['Vol'].axes.set_xlabel(
+            "log$_{2}$[Fold Change]", fontweight="bold")
+        self.plots.dPlot['Vol'].axes.set_ylabel(
+            "-log$_{10}$[P values]", fontweight="bold")
+        #------------------------------>
+        return True
+    #---
+    
+    def DrawGreenPoint(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -------------------------------------------------------> Index
+        if (idx := self.lc.lcs.lc.GetFirstSelected()) < 0:
+            #------------------------------> 
+            if self.greenP is None:
+                pass
+            else:
+                self.greenP.remove()
+                self.greenP = None
+            #------------------------------> 
+            return False
+        else:
+            pass
+        #endregion ----------------------------------------------------> Index
+        
+        #region ------------------------------------------------> Volcano Plot
+        #------------------------------> Get new data
+        x = self.df.at[self.df.index[idx], (self.condC, self.rpC, 'FC')]
+        
+        if self.corrP:
+            y = -np.log10(
+                self.df.at[self.df.index[idx], (self.condC, self.rpC, 'Pc')])
+        else:
+            y = -np.log10(
+                self.df.at[self.df.index[idx], (self.condC, self.rpC, 'P')])
+        #------------------------------> Remove old point
+        if self.greenP is None:
+            pass
+        else:
+            self.greenP.remove()
+        #------------------------------> Add new one
+        self.greenP = self.plots.dPlot['Vol'].axes.scatter(
+            x, y, 
+            alpha     = 1,
+            edgecolor = 'black',
+            linewidth = 1,
+            color     = config.color[self.name]['VolSel'],
+        )
+        #------------------------------> Draw
+        self.plots.dPlot['Vol'].canvas.draw()
+        #endregion ---------------------------------------------> Volcano Plot
+        
+        return True
+    #---
+    
+    def FCDraw(self) -> bool:
+        """Draw Fold Change Evolution plot.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------------> Axis
+        self.FCSetAxis()
+        #endregion -----------------------------------------------------> Axis
+        
+        #region ----------------------------------------------------> Plot All
+        #------------------------------> 
+        if self.showAll:
+            #------------------------------> 
+            color = config.color[self.name]['FCAll']
+            x = list(range(0,len(self.fcYMin)))
+            #------------------------------> 
+            self.plots.dPlot['FC'].axes.plot(self.fcYMax, color=color)
+            self.plots.dPlot['FC'].axes.plot(self.fcYMin, color=color)
+            #------------------------------> 
+            self.plots.dPlot['FC'].axes.fill_between(
+                x, self.fcYMax, self.fcYMin, color=color, alpha=0.2)
+        else:
+            pass
+        #------------------------------> Lock Scale
+        if self.fcXRange and self.fcYRange:
+            self.plots.dPlot['FC'].axes.set_xlim(*self.fcXRange)
+            self.plots.dPlot['FC'].axes.set_ylim(*self.fcYRange)
+        else:
+            xRange, yRange = self.GetFCXYRange(self.dateC)
+            self.plots.dPlot['FC'].axes.set_xlim(*xRange)
+            self.plots.dPlot['FC'].axes.set_ylim(*yRange)
+        #------------------------------> Zoom level
+        self.plots.dPlot['FC'].ZoomResetSetValues()
+        #------------------------------> 
+        self.plots.dPlot['FC'].canvas.draw()
+        #endregion -------------------------------------------------> Plot All
+        
+        #region ----------------------------------------------> Plot Prot Line
+        self.DrawProtLine()
+        #endregion -------------------------------------------> Plot Prot Line
+        
+        return True
+    #---
+    
+    def FCSetAxis(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -------------------------------------------------------> Clear
+        self.plots.dPlot['FC'].axes.clear()
+        #endregion ----------------------------------------------------> Clear
+        
+        #region ------------------------------------------------------> Labels
+        self.plots.dPlot['FC'].axes.grid(True, linestyle=":")
+        self.plots.dPlot['FC'].axes.set_xlabel('Relevant Points', fontweight="bold")
+        self.plots.dPlot['FC'].axes.set_ylabel("log$_{2}$[Fold Change]", fontweight="bold")
+        #endregion ---------------------------------------------------> Labels
+
+        #region ---------------------------------------------------> X - Axis
+        self.plots.dPlot['FC'].axes.set_xticks(range(0, len(self.fcXLabel), 1))
+        self.plots.dPlot['FC'].axes.set_xticklabels(self.fcXLabel)
+        #endregion ------------------------------------------------> X - Axis
+        
+        return True
+    #---
+    
+    def DrawProtLine(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -------------------------------------------------------> Index
+        if (idxl := self.lc.lcs.lc.GetFirstSelected()) < 0:
+            #------------------------------> 
+            if not self.protLine:
+                pass
+            else:
+                #------------------------------> 
+                for k in self.protLine:
+                    k[0].remove()
+                #------------------------------> 
+                self.protLine = []
+            #------------------------------> 
+            return False
+        else:
+            pass
+        #endregion ----------------------------------------------------> Index
+        
+        #region --------------------------------------------> Remove Old Lines
+        #------------------------------> 
+        for k in self.protLine:
+            k.remove()
+        #------------------------------> 
+        self.protLine = []
+        legend = []
+        #endregion -----------------------------------------> Remove Old Lines
+        
+        #region -----------------------------------------------------> FC Plot
+        #------------------------------> Variables
+        idx = pd.IndexSlice
+        colorN = len(config.color['Main'])
+        x = list(range(0, len(self.CI['RP'])+1))
+        #------------------------------> 
+        for k,c in enumerate(self.CI['Cond']):
+            #------------------------------> FC values
+            y = self.df.loc[self.df.index[[idxl]],idx[c,:,'FC']]
+            y = [0.0] + y.values.tolist()[0]
+            #------------------------------> Errors
+            yError = self.df.loc[self.df.index[[idxl]],idx[c,:,'CI']]
+            yError = [0] + yError.values.tolist()[0]
+            #------------------------------> Colors
+            color = config.color['Main'][k%colorN]
+            #------------------------------> Plot line
+            self.protLine.append(
+                self.plots.dPlot['FC'].axes.errorbar(
+                    x, y, yerr=yError, color=color, fmt='o-', capsize=5
+            ))
+            #------------------------------> Legend
+            legend.append(mpatches.Patch(color=color, label=c))
+        #endregion --------------------------------------------------> FC Plot
+        
+        #region -------------------------------------------------------> Title
+        self.plots.dPlot['FC'].axes.set_title(f'Protein {idxl}')
+        #endregion ----------------------------------------------------> Title
+        
+        #region ------------------------------------------------------> Legend
+        self.plots.dPlot['FC'].axes.legend(handles=legend, loc='upper left')
+        #endregion ---------------------------------------------------> Legend
+        
+        #region --------------------------------------------------------> Draw
+        self.plots.dPlot['FC'].canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def SetText(self) -> bool:
+        """Set the text with information about the selected protein.
+    
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Index
+        if (idx := self.lc.lcs.lc.GetFirstSelected()) < 0:
+            #------------------------------> 
+            self.text.Freeze()
+            self.text.SetValue('')
+            self.text.Thaw()
+            #------------------------------> 
+            return False
+        else:
+            pass
+        #endregion ----------------------------------------------------> Index
+        
+        #region ---------------------------------------------------> Add Text
+        #------------------------------> Delete all
+        self.Freeze()
+        self.text.SetValue('')
+        #------------------------------> Protein ID
+        number = self.lc.lcs.lc.GetItemText(idx, col=0)
+        gene = self.lc.lcs.lc.GetItemText(idx, col=1)
+        name = self.lc.lcs.lc.GetItemText(idx, col=2)
+        self.text.AppendText(
+            f'--> Selected Protein:\n\n#: {number}, Gene: {gene}, '
+            f'Protein ID: {name}\n\n'
+        )
+        #------------------------------> P and FC values
+        self.text.AppendText('--> P and Log2(FC) values:\n\n')
+        self.text.AppendText(self.GetDF4TextPFC(idx).to_string(index=False))
+        self.text.AppendText('\n\n')
+        #------------------------------> Ave and st for intensity values
+        self.text.AppendText('--> Intensity values after data preparation:\n\n')
+        dfList = self.getDF4TextInt[self.CI['ControlT']](idx)
+        for df in dfList:
+            self.text.AppendText(df.to_string(index=False))
+            self.text.AppendText('\n\n')
+        #------------------------------> Go back to begining
+        self.text.SetInsertionPoint(0)
+        self.Thaw()
+        #endregion ------------------------------------------------> Add Text
+        
+        return True
+    #---
+    
+    def GetDF4Text(
+        self, col: list[str], rp: list[str], cond: list[str],
+        ) -> pd.DataFrame:
+        """Creates the empty dataframe to be used in GetDF4Text functions.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+        """
+        #region ---------------------------------------------------> Variables
+        nCol = len(col)
+        idx = pd.IndexSlice
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------> Multiindex
+        #------------------------------> 
+        a = ['']
+        b = ['Conditions']
+        #------------------------------> 
+        for t in rp:
+            a = a + nCol * [t]
+            b = b + col
+        #------------------------------> 
+        mInd = pd.MultiIndex.from_arrays([a[:], b[:]])
+        #endregion -----------------------------------------------> Multiindex
+        
+        #region ----------------------------------------------------> Empty DF
+        dfo = pd.DataFrame(columns=mInd, index=range(0,len(cond)))
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region ----------------------------------------------------> Add Cond
+        dfo.loc[:,idx[:,'Conditions']] = cond
+        #endregion -------------------------------------------------> Add Cond
+        
+        return dfo
+    #---
+    
+    def GetDF4TextPFC(self, pID: int) -> pd.DataFrame:
+        """Get the dataframe to print the P and FC +/- CI values to the text.
+    
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.df
+            
+            Returns
+            -------
+            pd.Dataframe
+                     RP1            RPN
+                     FC (CI)   P
+                Cond
+                C1   4.5 (0.3) 0.05 
+                CN
+        """
+        #region ----------------------------------------------------------> DF
+        dfo = self.GetDF4Text(['FC (CI)', 'P'], self.CI['RP'], self.CI['Cond'])
+        #endregion -------------------------------------------------------> DF
+        
+        #region --------------------------------------------------> Add Values
+        for k,c in enumerate(self.CI['Cond']):
+            for t in self.CI['RP']:
+                #------------------------------> Get Values
+                p = self.df.at[self.df.index[pID],(c,t,'P')]
+                fc = self.df.at[self.df.index[pID],(c,t,'FC')]
+                ci = self.df.at[self.df.index[pID],(c,t,'CI')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (t,'P')] = p
+                dfo.at[dfo.index[k], (t,'FC (CI)')] = f'{fc} ({ci})'
+        #endregion -----------------------------------------------> Add Values
+        
+        return dfo
+    #---
+    
+    def GetDF4TextInt_OC(self, pID: int) -> list[pd.DataFrame]:
+        """Get the dataframe to print the ave and std for intensities for 
+            control type One Control.
+            
+            See Notes below for more details.
+    
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.df
+            
+            Returns
+            -------
+            list[pd.Dataframe]
+                     RP1            RPN
+                     FC (CI)   P
+                Cond
+                C1   4.5 (0.3) 0.05 
+                CN
+        """
+        #region ----------------------------------------------------------> DF
+        #------------------------------> 
+        aveC = self.df.at[
+            self.df.index[pID],(self.CI['Cond'][0], self.CI['RP'][0], 'aveC')]
+        stdC = self.df.at[
+            self.df.index[pID], (self.CI['Cond'][0], self.CI['RP'][0], 'stdC')]
+        #------------------------------> 
+        dfc = pd.DataFrame({
+            'Condition': self.CI['ControlL'],
+            'Ave'      : [aveC],
+            'Std'      : [stdC]
+        })
+        #endregion -------------------------------------------------------> DF
+
+        #region ---------------------------------------------------------> DFO
+        dfo = self.GetDF4TextInt_RatioI(pID)
+        #endregion ------------------------------------------------------> DFO
+        
+        return [dfc] + dfo
+    #---
+    
+    def GetDF4TextInt_OCC(self, pID: int) -> list[pd.DataFrame]:
+        """Get the dataframe to print the ave and std for intensities for 
+            control type One Control per Column.
+            
+            See Notes below for more details.
+    
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.df
+            
+            Returns
+            -------
+            list[pd.Dataframe]
+                        RP1      RPN
+                        ave  std
+                Cond
+                Control 4.5 0.05  
+                C1   
+                CN
+        """
+        #region ----------------------------------------------------------> DF
+        dfo = self.GetDF4Text(
+            ['Ave', 'Std'], self.CI['RP'], self.CI['ControlL']+self.CI['Cond'])
+        #endregion -------------------------------------------------------> DF
+        
+        #region --------------------------------------------------> Add Values
+        #------------------------------> Control
+        for c in self.CI['Cond']:
+            for t in self.CI['RP']:
+                #------------------------------> Get Values
+                aveC = self.df.at[self.df.index[pID],(c,t,'aveC')]
+                stdC = self.df.at[self.df.index[pID],(c,t,'stdC')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[0], (t,'Ave')] = aveC
+                dfo.at[dfo.index[0], (t,'Std')] = stdC
+        #------------------------------> Conditions
+        for k,c in enumerate(self.CI['Cond'], start=1):
+            for t in self.CI['RP']:
+                #------------------------------> Get Values
+                ave = self.df.at[self.df.index[pID],(c,t,'ave')]
+                std = self.df.at[self.df.index[pID],(c,t,'std')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (t,'Ave')] = ave
+                dfo.at[dfo.index[k], (t,'Std')] = std
+        #endregion -----------------------------------------------> Add Values
+        
+        return [dfo]
+    #---
+    
+    def GetDF4TextInt_OCR(self, pID: int) -> list[pd.DataFrame]:
+        """Get the dataframe to print the ave and std for intensities for 
+            control type One Control.
+            
+            See Notes below for more details.
+    
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.df
+            
+            Returns
+            -------
+            list[pd.Dataframe]
+                     RP1            RPN
+                     FC (CI)   P
+                Cond
+                C1   4.5 (0.3) 0.05 
+                CN
+        """
+        #region ----------------------------------------------------------> DF
+        dfo = self.GetDF4Text(
+            ['Ave', 'Std'], self.CI['ControlL']+self.CI['RP'], self.CI['Cond'])
+        #endregion -------------------------------------------------------> DF
+        
+        #region --------------------------------------------------> Add Values
+        #------------------------------> Control
+        for k,c in enumerate(self.CI['Cond']):
+            for t in self.CI['RP']:
+                #------------------------------> Get Values
+                aveC = self.df.at[self.df.index[pID],(c,t,'aveC')]
+                stdC = self.df.at[self.df.index[pID],(c,t,'stdC')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (self.CI['ControlL'],'Ave')] = aveC
+                dfo.at[dfo.index[k], (self.CI['ControlL'],'Std')] = stdC
+        #------------------------------> Conditions
+        for k,c in enumerate(self.CI['Cond']):
+            for t in self.CI['RP']:
+                #------------------------------> Get Values
+                ave = self.df.at[self.df.index[pID],(c,t,'ave')]
+                std = self.df.at[self.df.index[pID],(c,t,'std')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (t,'Ave')] = ave
+                dfo.at[dfo.index[k], (t,'Std')] = std
+        #endregion -----------------------------------------------> Add Values
+        
+        return [dfo]
+    #---
+    
+    def GetDF4TextInt_RatioI(self, pID: int) -> list[pd.DataFrame]:
+        """Get the dataframe to print the ave and std for intensities for 
+            control type One Control.
+            
+            See Notes below for more details.
+    
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.df
+            
+            Returns
+            -------
+            list[pd.Dataframe]
+                     RP1            RPN
+                     FC (CI)   P
+                Cond
+                C1   4.5 (0.3) 0.05 
+                CN
+        """
+        #region ----------------------------------------------------------> DF
+        dfo = self.GetDF4Text(['Ave', 'Std'], self.CI['RP'], self.CI['Cond'])
+        #endregion -------------------------------------------------------> DF
+        
+        #region --------------------------------------------------> Add Values
+        for k,c in enumerate(self.CI['Cond']):
+            for t in self.CI['RP']:
+                #------------------------------> Get Values
+                ave = self.df.at[self.df.index[pID],(c,t,'ave')]
+                std = self.df.at[self.df.index[pID],(c,t,'std')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (t,'Ave')] = ave
+                dfo.at[dfo.index[k], (t,'Std')] = std
+        #endregion -----------------------------------------------> Add Values
+        
+        return [dfo]
+    #---
+    
+    def SetRangeNo(self) -> bool:
+        """Do nothing. Just to make the dict self.setRange work
+    
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+    
+    def SetRangeDate(self):
+        """Set Plot Range to the range in the given date.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Vol Range
+        self.vXRange, self.vYRange = self.GetVolXYRange(self.dateC)
+        #endregion ------------------------------------------------> Vol Range
+        
+        #region ----------------------------------------------------> FC Range
+        self.fcXRange, self.fcYRange = self.GetFCXYRange(self.dateC)
+        #endregion -------------------------------------------------> FC Range
+        
+        return True
+    #---
+    
+    def SetRangeProject(self):
+        """Set Plot Range to the range in the given project.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        vXLim = 0
+        vYMin = 0
+        vYMax = 0
+        fcXMin = 0
+        fcXMax = 0
+        fcYMin = 0
+        fcYMax = 0 
+        #endregion ------------------------------------------------> Variables
+        
+        #region -------------------------------------------------------> Range
+        #------------------------------> Get larger range in project
+        for date in self.date:
+            #------------------------------> 
+            x,y = self.GetVolXYRange(date)
+            xFC, yFC = self.GetFCXYRange(date)
+            #------------------------------> 
+            vXLim = x[1] if x[1] >= vXLim else vXLim
+            vYMin = y[0] if y[0] <= vYMin else vYMin
+            vYMax = y[1] if y[1] >= vYMax else vYMax
+            
+            fcXMin = xFC[0] if xFC[0] <= fcXMin else fcXMin
+            fcXMax = xFC[1] if xFC[1] >= fcXMax else fcXMax
+            fcYMin = yFC[0] if yFC[0] <= fcYMin else fcYMin
+            fcYMax = yFC[1] if yFC[1] >= fcYMax else fcYMax
+        #------------------------------> Set attributes
+        self.vXRange = [-vXLim, vXLim]
+        self.vYRange = [vYMin, vYMax]
+        
+        self.fcXRange = [fcXMin, fcXMax]
+        self.fcYRange = [fcYMin, fcYMax]
+        #endregion ----------------------------------------------------> Range
+        
+        return True
+    #---
+    
+    def GetVolXYRange(self, date: str) -> list[list[float]]:
+        """Get the XY range for the volcano plot for the given date
+    
+            Parameters
+            ----------
+            date : str
+                A valid date from the project
+    
+            Returns
+            -------
+            list of list of floats
+                [xRange, yRange] e.g. [[-0.3, 0.3], [-0.1, 4.5]]
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #------------------------------> 
+        x = self.data[date]['DF'].loc[:, idx[:,:,'FC']]
+        #------------------------------> 
+        if self.corrP:
+            y = self.data[date]['DF'].loc[:, idx[:,:,'Pc']]
+        else:
+            y = self.data[date]['DF'].loc[:, idx[:,:,'P']]
+        
+        y = -np.log10(y)
+        #------------------------------> 
+        xRange = []
+        yRange = []
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Get Range
+        #------------------------------> X
+        xmin = abs(x.min().min())
+        xmax = abs(x.max().max())
+        #-------------->  To make it symetric
+        if xmin >= xmax:
+            lim = xmin
+        else:
+            lim = xmax
+        #--------------> 
+        dm = 2 * lim * config.general['MatPlotMargin']
+        #--------------> 
+        xRange.append(-lim - dm)
+        xRange.append(lim + dm)
+        #------------------------------> Y
+        ymax = y.max().max()
+        #--------------> 
+        dm = 2 * ymax * config.general['MatPlotMargin']
+        #--------------> 
+        yRange.append(0 - dm)
+        yRange.append(ymax + dm)
+        #endregion ------------------------------------------------> Get Range
+        
+        return [xRange, yRange]
+    #---
+    
+    def GetFCXYRange(self, date: str) -> list[list[float]]:
+        """Get the XY range for the FC plot, including the CI.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #------------------------------> 
+        y = self.data[date]['DF'].loc[:, idx[:,:,'FC']]
+        yCI = self.data[date]['DF'].loc[:, idx[:,:,'CI']]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Get Range
+        #------------------------------> X
+        #--------------> 
+        dm = len(self.CI['RP']) * config.general['MatPlotMargin']
+        #--------------> 
+        xRange = [-dm, len(self.CI['RP'])+dm]
+        #------------------------------> Y
+        #--------------> 
+        yMax  = y.max().max()
+        yMin  = y.min().min()
+        ciMax = yCI.max().max()
+        #--------------> 
+        yminLim = yMin - ciMax
+        ymaxLim = yMax + ciMax
+        #--------------> 
+        dm = (ymaxLim - yminLim) * config.general['MatPlotMargin']
+        #--------------> 
+        yRange = [yminLim - dm, ymaxLim + dm]
+        #endregion ------------------------------------------------> Get Range
+
+        return [xRange, yRange]
+    #---
+    
+    def VolXYRange(self, x, y) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -------------------------------------------------> Check input
+        if isinstance(x, pd.Series):
+            if x.empty:
+                x = [-1, 1]
+                y = [-1, 1]
+            elif x.shape[0] == 1:
+                x = [-x.iloc[0], x.iloc[0]]
+                y = [-y.iloc[0], y.iloc[0]]    
+            else:
+                pass
+        else:
+            x = [-x, x]
+            y = [-y, y]
+        #endregion ----------------------------------------------> Check input
+        
+        #region ---------------------------------------------------> Get Range
+        xR = dtsStatistic.DataRange(x, margin= config.general['MatPlotMargin'])
+        yR = dtsStatistic.DataRange(y, margin= config.general['MatPlotMargin'])
+        #endregion ------------------------------------------------> Get Range
+        
+        #region ---------------------------------------------------> Set Range
+        self.plots.dPlot['Vol'].axes.set_xlim(*xR)
+        self.plots.dPlot['Vol'].axes.set_ylim(*yR)
+        #endregion ------------------------------------------------> Set Range
+        
+        return True
+    #---
+    
+    def OnSearch(self, event) -> bool:
+        """Search for a given string in the wx.ListCtrl.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            See dtsWidget.MyListCtrl.Search for more details.
+        """
+        #region ---------------------------------------------------> Get index
+        tStr = self.lc.lcs.search.GetValue()
+        iEqual, iSimilar = self.lc.lcs.lc.Search(tStr)
+        #endregion ------------------------------------------------> Get index
+        
+        #region ----------------------------------------------> Show 1 Results
+        if len(iEqual) == 1:
+            #------------------------------> 
+            self.lc.lcs.lc.Select(iEqual[0], on=1)
+            self.lc.lcs.lc.EnsureVisible(iEqual[0])
+            self.lc.lcs.lc.SetFocus()
+            #------------------------------> 
+            return True
+        elif len(iSimilar) == 1:
+            #------------------------------> 
+            self.lc.lcs.lc.Select(iSimilar[0], on=1)
+            self.lc.lcs.lc.EnsureVisible(iSimilar[0])
+            self.lc.lcs.lc.SetFocus()
+            #------------------------------> 
+            return True
+        else:
+            pass
+        #endregion -------------------------------------------> Show 1 Results
+        
+        #region ----------------------------------------------> Show N Results
+        msg = (f'The string, {tStr}, was found in multiple rows.')
+        tException = (
+            f'The row numbers where the string was found are:\n '
+            f'{str(iSimilar)[1:-1]}')
+        dtscore.Notification(
+            'warning', 
+            msg        = msg,
+            setText    = True,
+            tException = tException,
+            parent     = self,
+        )
+        #endregion -------------------------------------------> Show N Results
+        
+        return True
+    #---
+    
+    def OnDateChange(
+        self, tDate: str, cond: str, rp:str, corrP: bool, showAll: bool,
+        ) -> bool:
+        """Configure window to update Volcano and FC plots when date changes.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------> Update variables
+        self.dateC   = tDate
+        self.condC   = cond
+        self.rpC     = rp
+        self.corrP   = corrP
+        self.showAll = showAll
+        self.CI      = self.obj.data[self.cSection][self.dateC]['CI']
+        self.df      = self.data[self.dateC]['DF'].copy()
+        #endregion -----------------------------------------> Update variables
+        
+        #region --------------------------------------------------> Update GUI
+        if self.autoFilter:
+            self.FilterApply()
+        else:
+            pass
+        #------------------------------> Clean & Reload Protein List
+        self.FillListCtrl()
+        #------------------------------> Alpha
+        self.log10alpha = -np.log10(float(self.CI['Alpha']))
+        #------------------------------> Update StatusBar
+        self.statusbar.SetStatusText(tDate, 2)
+        #------------------------------> Clean text
+        self.text.SetValue('')
+        #endregion -----------------------------------------------> Update GUI
+        
+        #region -------------------------------------------> Update FC x label
+        self.fcXLabel = self.CI['ControlL'] + self.CI['RP']        
+        #endregion ----------------------------------------> Update FC x label
+        
+        #region ---------------------------------------------------> FC minmax
+        self.fcYMax, self.fcYMin = self.GetFCMinMax()
+        #endregion ------------------------------------------------> FC minmax
+        
+        #region --------------------------------------------------> Lock Scale
+        if self.lockScale is not None:
+            self.OnLockScale(self.lockScale)
+        else:
+            pass
+        #endregion -----------------------------------------------> Lock Scale
+        
+        #region ---------------------------------------------------------> Vol
+        self.VolDraw()
+        #endregion ------------------------------------------------------> Vol
+        
+        #region ----------------------------------------------------------> FC
+        self.FCDraw()
+        #endregion -------------------------------------------------------> FC
+        
+        return True
+    #---
+    
+    def OnVolChange(self, cond: str, rp:str, corrP: bool) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------> Update variables
+        self.condC   = cond
+        self.rpC     = rp
+        self.corrP   = corrP
+        #endregion -----------------------------------------> Update variables
+        
+        #region ---------------------------------------------------------> Vol
+        self.VolDraw()
+        #endregion ------------------------------------------------------> Vol
+        
+        return True
+    #---
+    
+    def OnFCChange(self, showAll: bool) -> bool:
+        """Configure window to plot FC Evolution.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        self.showAll = showAll
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------------> Plot
+        self.FCDraw()
+        #endregion -----------------------------------------------------> Plot
+        
+        return True
+    #---
+    
+    def OnZScore(self):
+        """Change Z score to plot
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        dlg = dtsWindow.UserInput1Text(
+            'Z score threshold.',
+            'Z score threshold (%)',
+            'Decimal value between 0 and 100. e.g. 10',
+            self.plots.dPlot['Vol'],
+            dtsValidator.NumberList(
+                numType = 'float',
+                vMin    = 0,
+                vMax    = 100,
+                nN      = 1,
+            )
+        )
+        #endregion -------------------------------------------> Text Entry Dlg
+        
+        #region ------------------------------------------> Get Value and Plot
+        if dlg.ShowModal():
+            #------------------------------> 
+            val = float(dlg.input.tc.GetValue())
+            #------------------------------> 
+            self.zScoreL = f'{val}%'
+            self.zScore = stats.norm.ppf(1.0-(val/100.0))
+            #------------------------------> 
+            self.VolDraw()
+        else:
+            pass
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        dlg.Destroy()
+        return True
+    #---
+    
+    def OnSaveVolcanoImage(self) -> bool:
+        """Save an image of the volcano plot.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.plots.dPlot['Vol'].SaveImage(
+            config.elMatPlotSaveI, parent=self.plots.dPlot['Vol']
+        )
+    #---
+    
+    def OnSaveFCImage(self) -> bool:
+        """Save an image of the volcano plot.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.plots.dPlot['FC'].SaveImage(
+            config.elMatPlotSaveI, parent=self.plots.dPlot['FC']
+        )
+    #---
+    
+    def OnPick(self, event) -> bool:
+        """Process a pick event in the volcano plot.
+    
+            Parameters
+            ----------
+            event: matplotlib pick event
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        ind = event.ind
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Pick
+        if len(ind) == 1:
+            self.lc.lcs.lc.Select(ind[0], on=1)
+            self.lc.lcs.lc.EnsureVisible(ind[0])
+            self.lc.lcs.lc.SetFocus()
+        else:
+            #------------------------------> Disconnect events to avoid zoom in
+            # while interacting with the modal window
+            self.plots.dPlot['Vol'].DisconnectEvent()
+            #------------------------------> sort ind
+            ind = sorted(ind, key=int)
+            #------------------------------> 
+            msg = (f'The selected point is an overlap of several proteins.')
+            tException = (
+                f'The numbers of the proteins included in the selected '
+                f'point are:\n {str(ind)[1:-1]}')
+            dtscore.Notification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                tException = tException,
+                parent     = self.plots.dPlot['Vol'],
+            )
+            #------------------------------> Reconnect event
+            self.plots.dPlot['Vol'].ConnectEvent()
+            return False
+        #endregion ------------------------------------------------> Pick
+        
+        return True
+    #---
+    
+    def OnListSelect(self, event) -> bool:
+        """Select an element in the wx.ListCtrl.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------------> Volcano Plot
+        self.DrawGreenPoint()
+        #endregion ---------------------------------------------> Volcano Plot
+        
+        #region ------------------------------------------------> FC Evolution
+        self.DrawProtLine()
+        #endregion ---------------------------------------------> FC Evolution
+        
+        #region --------------------------------------------------------> Text
+        self.SetText()
+        #endregion -----------------------------------------------------> Text
+        
+        return True
+    #---
+    
+    def OnZoomResetVol(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.plots.dPlot['Vol'].ZoomResetPlot()
+    #---
+    
+    def OnZoomResetFC(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.plots.dPlot['FC'].ZoomResetPlot()
+    #---
+    
+    def OnLockScale(self, mode: str, updatePlot: bool=True) -> bool:
+        """Lock the scale of the volcano and FC plot.
+    
+            Parameters
+            ----------
+            mode : str
+                One of No, Date, Project
+            updatePlot : bool
+                Apply the new axis limit ot the plots (True) or not. 
+                Default is True.
+    
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------> Update Attr
+        self.lockScale = mode
+        self.vXRange   = []
+        self.vYRange   = []
+        self.fcXRange  = []
+        self.fcYRange  = []
+        #endregion ----------------------------------------------> Update Attr
+        
+        #region ---------------------------------------------------> Get Range
+        self.setRange[mode]()
+        #endregion ------------------------------------------------> Get Range
+        
+        #region ---------------------------------------------------> Set Range
+        if updatePlot:
+            #------------------------------> Vol
+            #--------------> 
+            self.plots.dPlot['Vol'].axes.set_xlim(*self.vXRange)
+            self.plots.dPlot['Vol'].axes.set_ylim(*self.vYRange)
+            #--------------> 
+            self.plots.dPlot['Vol'].canvas.draw()
+            #--------------> 
+            self.plots.dPlot['Vol'].ZoomResetSetValues()
+            #------------------------------> FC
+            #--------------> 
+            self.plots.dPlot['FC'].axes.set_xlim(*self.fcXRange)
+            self.plots.dPlot['FC'].axes.set_ylim(*self.fcYRange)
+            #--------------> 
+            self.plots.dPlot['FC'].canvas.draw()
+            #--------------> 
+            self.plots.dPlot['FC'].ZoomResetSetValues()
+        else:
+            pass    
+        #endregion ------------------------------------------------> Set Range
+        
+        return True
+    #---
+    
+    def OnAutoFilter(self, mode: bool) -> bool:
+        """Auto apply filter when changing date.
+    
+            Parameters
+            ----------
+            mode : bool
+                Apply filters (True) or not (False).
+    
+            Returns
+            -------
+            bool
+    
+            Raise
+            -----
+            
+        """
+        self.autoFilter = mode
+        return True
+    #---
+    
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+        """
+        #region -----------------------------------------------> Update parent
+        self.parent.UnCheckSection(self.cSection, self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.name] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -799,7 +3126,7 @@ class UMSAPControl(BaseWindow):
             tree control.
         cSectionTab : dict
             Keys are section names and values the corresponding config.name
-        cSizeWindow : wx.Size
+        cSWindow : wx.Size
             Size of the window.
         cTitle: str
             Title of the window.
@@ -813,18 +3140,20 @@ class UMSAPControl(BaseWindow):
             Tree control to show the content of the umsap file.
     """
     #region -----------------------------------------------------> Class setup
-    name = 'UMSAPF'
+    name = config.nwUMSAPControl
     
-    cSizeWindow = (400, 700)
+    cSWindow = (400, 700)
     
     cPlotMethod = { # Methods to create plot windows
-        config.nuCorrA : CorrAPlot
+        config.nuCorrA   : CorrAPlot,
+        config.nmProtProf: ProtProfPlot,
     }
     
     cFileLabelCheck = ['Data File']
     
     cSectionTab = { # Section name and Tab name correlation
-        config.nuCorrA : config.ntCorrA
+        config.nuCorrA   : config.ntCorrA,
+        config.nmProtProf: config.ntProtProf,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -1302,7 +3631,7 @@ class ResControlExp(wx.Dialog):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
-        self.conf = pane.ResControlExp(self, iFile, parent)
+        self.conf = tab.ResControlExp(self, iFile, parent)
         #------------------------------> Buttons
         self.sizerBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
         #endregion --------------------------------------------------> Widgets
@@ -1336,7 +3665,7 @@ class ResControlExp(wx.Dialog):
             Returns
             -------
             True
-            """
+        """
         #region ---------------------------------------------------> 
         if self.conf.conf.OnOK():
             self.EndModal(1)
@@ -1344,6 +3673,296 @@ class ResControlExp(wx.Dialog):
         else:
             pass
         #endregion ------------------------------------------------> 
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class FilterRemoveAny(wx.Dialog):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    name = config.ndFilterRemoveAny
+    #------------------------------> 
+    cSize = (900, 580)
+    #------------------------------> 
+    cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, filterList: list, parent: Optional[wx.Window]=None) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        self.checkB = []
+        
+        super().__init__(
+            parent, 
+            title = config.t[self.name],
+            style = self.cStyle,
+            size  = self.cSize,
+        )
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.st = wx.StaticText(self, label='Select Filters to remove.')
+        #------------------------------> 
+        for k in filterList:
+            self.checkB.append(
+                wx.CheckBox(self, label=f'{k[0]} {k[1]["gText"]}')
+            )
+        #------------------------------> Buttons
+        self.sizerBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
+        #endregion --------------------------------------------------> Widgets
+
+        #region -------------------------------------------------------> Sizer
+        #------------------------------> 
+        self.Sizer = wx.BoxSizer(wx.VERTICAL)
+        #------------------------------> 
+        self.Sizer.Add(self.st, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        for k in self.checkB:
+            self.Sizer.Add(k, 0 , wx.ALIGN_LEFT|wx.ALL, 5)
+        self.Sizer.Add(self.sizerBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------> 
+        self.SetSizer(self.Sizer)
+        self.Fit()
+        #endregion ----------------------------------------------------> Sizer
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
+        self.Bind(wx.EVT_BUTTON, self.OnCancel, id=wx.ID_CANCEL)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
+        """Validate user information and close the window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        self.EndModal(1)
+        self.Close()
+    
+        return True
+    #---
+    
+    def OnCancel(self, event: wx.CommandEvent) -> Literal[True]:
+        """The macOs implementation has a bug here that does not discriminate
+            between the Cancel and Ok button and always return self.EndModal(1).
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        self.EndModal(0)
+        self.Close()
+        return True
+    #---
+    
+    def GetChecked(self) -> list[int]:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables  
+        lo = []
+        #endregion ------------------------------------------------> Variables  
+        
+        #region -------------------------------------------------> Get Checked
+        for k,cb in enumerate(self.checkB):
+            lo.append(k) if cb.IsChecked() else None
+        #endregion ----------------------------------------------> Get Checked
+        
+        return lo
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class FilterPValue(dtsWindow.UserInput1Text):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, title: str, label: str, hint: str, parent: wx.Window=None,
+        validator: wx.Validator=wx.DefaultValidator, size: wx.Size=(420, 170),
+        ) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(title=title, label=label, hint=hint, parent=parent,
+            validator=validator, size=size
+        )
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.cbAbs = wx.CheckBox(self, label='Absolute P Value')
+        self.cbLog = wx.CheckBox(self, label='-Log10(P) Value')
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> 
+        self.checkSizer = wx.BoxSizer(orient=wx.HORIZONTAL)
+        self.checkSizer.Add(self.cbAbs, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.checkSizer.Add(self.cbLog, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------> 
+        self.Sizer.Detach(self.sizerBtn)
+        #------------------------------> 
+        self.Sizer.Add(self.checkSizer, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.Sizer.Add(self.sizerBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.input.tc.Bind(wx.EVT_TEXT, self.OnTextChange)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnTextChange(self, event):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -------------------------------------------------------> Check
+        if self.input.tc.GetValidator().Validate()[0]:
+            #------------------------------> Get val
+            val = float(self.input.tc.GetValue().strip().split(' ')[1])
+            #------------------------------> 
+            if val > 1:
+                self.cbAbs.SetValue(False)
+                self.cbLog.SetValue(True)
+            else:
+                pass
+        else:
+            pass    
+        #endregion ----------------------------------------------------> Check
+        
+        return True
+    #---
+    
+    def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
+        """Validate user information and close the window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        #region ----------------------------------------------------> Validate
+        #------------------------------> Operand and Value
+        tca = self.input.tc.GetValidator().Validate()[0]
+        #------------------------------> CheckBox
+        absB = self.cbAbs.IsChecked()
+        logB = self.cbLog.IsChecked()
+        if absB and logB:
+            tcb = False
+        elif absB or logB:
+            tcb = True
+        else:
+            tcb = False
+        #------------------------------> All
+        if tca and tcb:
+            self.EndModal(1)
+            self.Close()
+        else:
+            self.input.tc.SetValue('')
+        #endregion -------------------------------------------------> Validate
         
         return True
     #---

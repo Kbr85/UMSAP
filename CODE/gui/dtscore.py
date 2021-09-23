@@ -57,10 +57,11 @@ class Notification(dtsWindow.NotificationDialog):
     """This avoids to type the title and the image of the window every time """
     def __init__(self, mode: str, msg: Optional[str]=None, 
         tException: Optional[Exception]=None, parent: Optional[wx.Window]=None, 
-        img: Path=config.fImgIcon, button: int=1,) -> None:
+        img: Path=config.fImgIcon, button: int=1, setText=False) -> None:
         """ """
         super().__init__(mode, msg=msg, tException=tException, parent=parent,
-            button=button, img=img, title='UMSAP - Notification')
+            button=button, img=img, title='UMSAP - Notification', 
+            setText=setText)
     #---
 #---
 
