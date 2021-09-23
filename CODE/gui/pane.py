@@ -223,13 +223,13 @@ class BaseConfPanel(
         #region -----------------------------------------------> Initial Setup
         self.parent = parent
         #------------------------------> Labels
-        self.cLRunBtn      = getattr(self, 'RunBtnL', config.lBtnRun)
-        self.cLuFile       = getattr(self, 'cuFileL', config.lBtnUFile)
-        self.cLiFile       = getattr(self, 'ciFileL', config.lBtnDataFile)
-        self.cLFileBox     = getattr(self, 'cFileBoxL', config.lSbFile)
+        self.cLRunBtn      = getattr(self, 'cLRunBtn', config.lBtnRun)
+        self.cLuFile       = getattr(self, 'cLuFile', config.lBtnUFile)
+        self.cLiFile       = getattr(self, 'cLiFile', config.lBtnDataFile)
+        self.cLFileBox     = getattr(self, 'cLFileBox', config.lSbFile)
         self.cLDataBox     = getattr(self, 'cLDataBox', config.lSbData)
-        self.cLValueBox    = getattr(self, 'cValueBoxL', config.lSbValue)
-        self.cLColumnBox   = getattr(self, 'cColumnBoxL', config.lSbColumn)
+        self.cLValueBox    = getattr(self, 'cLValueBox', config.lSbValue)
+        self.cLColumnBox   = getattr(self, 'cLColumnBox', config.lSbColumn)
         self.cLNormMethod  = getattr(self, 'cLNormMethod', config.lCbNormMethod)
         self.cLTransMethod = getattr(
             self, 'cLTransMethod', config.lCbTransMethod)
@@ -243,14 +243,14 @@ class BaseConfPanel(
             self, 'cOImputation', list(config.oImputation.values()),
         )
         #------------------------------> Hints
-        self.cHuFile = getattr(self, 'cuFileH', config.hTcUFile)
-        self.cHiFile = getattr(self, 'ciFileH', config.hTcDataFile)
+        self.cHuFile = getattr(self, 'cHuFile', config.hTcUFile)
+        self.cHiFile = getattr(self, 'cHiFile', config.hTcDataFile)
         #------------------------------> Tooltips
-        self.cTTuFile       = getattr(self, 'cuFileTT', config.ttBtnUFile)
-        self.cTTiFile       = getattr(self, 'ciFileTT', config.ttBtnDataFile)
-        self.cTTHelp        = getattr(self, 'cHelpTT', config.ttBtnHelpDef)
-        self.cTTClearAll    = getattr(self, 'cClearAllTT', config.ttBtnClearAll)
-        self.cTTRun         = getattr(self, 'cRunTT', config.ttBtnRun)
+        self.cTTuFile       = getattr(self, 'cTTuFile', config.ttBtnUFile)
+        self.cTTiFile       = getattr(self, 'cTTiFile', config.ttBtnDataFile)
+        self.cTTHelp        = getattr(self, 'cTTHelp', config.ttBtnHelpDef)
+        self.cTTClearAll    = getattr(self, 'cTTClearAll', config.ttBtnClearAll)
+        self.cTTRun         = getattr(self, 'cTTRun', config.ttBtnRun)
         self.cTTNormMethod  = getattr(self, 'cTTNormMethod', config.ttStNorm)
         self.cTTTransMethod = getattr(self, 'cTTTransMethod', config.ttStTrans)
         self.cTTImputation  = getattr(
@@ -1689,23 +1689,28 @@ class ResControlExpConfBase(wx.Panel):
 #region -------------------------------------------------------------> Classes
 #------------------------------> Panes
 class ListCtrlSearchPlot(wx.Panel):
-    """
+    """Creates a panel with a wx.ListCtrl and below it a wx.SearchCtrl.
 
         Parameters
         ----------
-        
+        parent: wx.Window
+            Parent of the panel
+        colLabel : list of str or None
+            Name of the columns in the wx.ListCtrl. Default is None
+        colSize : list of int or None
+            Size of the columns in the wx.ListCtlr. Default is None
+        data : list of list
+            Data for the wx.ListCtrl when in virtual mode. Default is []. 
+        style : wx.Style
+            Style of the wx.ListCtrl. Default is wx.LC_REPORT.
+        tcHint : str
+            Hint for the wx.SearchCtrl. Default is ''.
 
         Attributes
         ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        name : str
+            Name of the panel. Default is config.npListCtrlSearchPlot.
+        lcs : dtsWidget.ListCtrlSearch
     """
     #region -----------------------------------------------------> Class setup
     name = config.npListCtrlSearchPlot
@@ -1743,11 +1748,6 @@ class ListCtrlSearchPlot(wx.Panel):
             data     = data,
             tcHint   = tcHint,
         )
-        #------------------------------> Fill List
-        # if data is not None:
-        #     self.lcs.lc.AddList(data)
-        # else:
-        #     pass
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
