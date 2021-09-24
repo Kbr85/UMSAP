@@ -960,20 +960,46 @@ class ProtProfPlot(BaseWindow):
     name = config.nwProtProf
     #------------------------------> To id the section in the umsap file 
     # shown in the window
-    cSection   = config.nmProtProf
-    cSWindow   = config.sWinModPlot
-    cLProtList = 'Protein List'
-    cLFZscore  = 'Z Score'
-    cLFLog2FC  = 'Log2FC'
-    cLFPValAbs = 'P(abs)'
-    cLFPValLog = 'P(p)'
-    cLFFCUp    = 'FC Increases'
-    cLFFCDown  = 'FC Decreases'
-    cLFFCBoth  = 'FC Inc/Dec'
-    cLFFCNo    = 'FC No Change'
-    cLFDiv     = 'FC Diverge'
-    cLCol      = ['#', 'Gene', 'Protein']
-    cSCol      = [45, 70, 100]
+    cSection      = config.nmProtProf
+    cSWindow      = config.sWinModPlot
+    cLProtList    = 'Protein List'
+    cLFZscore     = 'Z Score'
+    cLFLog2FC     = 'Log2FC'
+    cLFPValAbs    = 'P(abs)'
+    cLFPValLog    = 'P(p)'
+    cLFFCUp       = 'FC Up'
+    cLFFCUpL      = 'FC Above 0'
+    cLFFCUpAbs    = 'FC Up Abs'
+    cLFFCUpAbsL   = 'FC Increases Strictly'
+    cLFFCUpMon    = 'FC Up Mon'
+    cLFFCUpMonL   = 'FC Increases Monotonically'
+    cLFFCDown     = 'FC Down'
+    cLFFCDownL    = 'FC Below 0'
+    cLFFCDownAbs  = 'FC Down Abs'
+    cLFFCDownAbsL = 'FC Decreases Strictly'
+    cLFFCDownMon  = 'FC Down Mon'
+    cLFFCDownMonL = 'FC Decreases Monotonically'
+    cLFFCBoth     = 'FC Up/Down'
+    cLFFCBothL    = 'FC Above/Below 0'
+    cLFFCBothAbs  = 'FC Up/Down Abs'
+    cLFFCBothAbsL = 'FC Increases/Decreases Strictly'
+    cLFFCBothMon  = 'FC Up/Down Mon'
+    cLFFCBothMonL = 'FC Increases/Decreases Monotonically'
+    cLFFCDict = {
+        cLFFCUp      : cLFFCUpL,
+        cLFFCDown    : cLFFCDownL,
+        cLFFCBoth    : cLFFCBothL,
+        cLFFCUpAbs   : cLFFCUpAbsL,
+        cLFFCDownAbs : cLFFCDownAbsL,
+        cLFFCBothAbs : cLFFCBothAbsL,
+        cLFFCUpMon   : cLFFCUpMonL,
+        cLFFCDownMon : cLFFCDownMonL,
+        cLFFCBothMon : cLFFCBothMonL,
+    }
+    cLFFCNo       = 'FC No Change'
+    cLFDiv        = 'FC Diverge'
+    cLCol         = ['#', 'Gene', 'Protein']
+    cSCol         = [45, 70, 100]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -1032,12 +1058,21 @@ class ProtProfPlot(BaseWindow):
         }
         
         self.filterMethod = {
-            self.cLFZscore : self.Filter_ZScore,
-            self.cLFLog2FC : self.Filter_Log2FC,
-            self.cLFPValAbs: self.Filter_PValue,
-            self.cLFPValLog: self.Filter_PValue,
-            self.cLFFCNo   : self.Filter_FCNoChange,
-            self.cLFDiv    : self.Filter_Divergent,
+            self.cLFZscore   : self.Filter_ZScore,
+            self.cLFLog2FC   : self.Filter_Log2FC,
+            self.cLFPValAbs  : self.Filter_PValue,
+            self.cLFPValLog  : self.Filter_PValue,
+            self.cLFFCUp     : self.Filter_FCChange,
+            self.cLFFCDown   : self.Filter_FCChange,
+            self.cLFFCBoth   : self.Filter_FCChange,
+            self.cLFFCUpAbs  : self.Filter_FCChange,
+            self.cLFFCDownAbs: self.Filter_FCChange,
+            self.cLFFCBothAbs: self.Filter_FCChange,
+            self.cLFFCUpMon  : self.Filter_FCChange,
+            self.cLFFCDownMon: self.Filter_FCChange,
+            self.cLFFCBothMon: self.Filter_FCChange,
+            self.cLFFCNo     : self.Filter_FCNoChange,
+            self.cLFDiv      : self.Filter_Divergent,
         }
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
@@ -1629,7 +1664,9 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def Filter_FCChange(self):
+    def Filter_FCChange(
+        self, choice: Optional[str]=None, updateL: bool=True,
+        ) -> bool:
         """
     
             Parameters
@@ -1644,71 +1681,113 @@ class ProtProfPlot(BaseWindow):
             -----
             
         """
+        #region ---------------------------------------------------> Get Value
+        if choice is None:
+            #------------------------------> 
+            dlg = dtsWindow.MultipleCheckBox(
+                'Filter results by FC evolution.', 
+                self.cLFFCDict, 
+                3, 
+                parent=self.plots.dPlot['FC'],
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------> 
+                choice = dlg.GetChoice()[0]
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return False
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Value
+        print(choice)
+        #region ----------------------------------------------------------> DF
+        #------------------------------> 
+        idx = pd.IndexSlice
+        df = self.df.loc[:,idx[:,:,'FC']]
+        #------------------------------> 
+        if choice == self.cLFFCUp:
+            self.df = self.df[df.apply(
+                lambda x: any([(x.loc[idx[y,:,'FC']] > 0).all() for y in self.CI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCUpAbs:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.df = self.df[df.apply(
+                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.CI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCUpMon:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.df = self.df[df.apply(
+                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCDown:
+            self.df = self.df[df.apply(
+                lambda x: any([(x.loc[idx[y,:,'FC']] < 0).all() for y in self.CI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCDownAbs:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.df = self.df[df.apply(
+                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.CI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCDownMon:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.df = self.df[df.apply(
+                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCBoth:
+            self.df = self.df[df.apply(
+                lambda x: any(
+                    [(x.loc[idx[y:,:'FC']] > 0).all() for y in self.CI['Cond']] + 
+                    [(x.loc[idx[y:,:'FC']] < 0).all() for y in self.CI['Cond']]
+                ), 
+                axis=1,
+            )]
+        elif choice == self.cLFFCBothAbs:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.df = self.df[df.apply(
+                lambda x: any(
+                    [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.CI['Cond']] + 
+                    [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.CI['Cond']]
+                ), 
+                axis=1,
+            )]
+        elif choice == self.cLFFCBothMon:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.df = self.df[df.apply(
+                lambda x: any(
+                    [x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']] +
+                    [x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']] 
+                ), 
+                axis=1,
+            )]
+        else:
+            print('Exiting False')
+            return False
+        #endregion -------------------------------------------------------> DF
+        print(self.df.shape)
+        #region --------------------------------------------------> Update GUI
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #------------------------------> 
+        if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{choice}')
+            #------------------------------> 
+            self.filterList.append(
+                [choice, {'choice':choice, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion -----------------------------------------------> Update GUI
+        print(updateL)
+            
         return True
     #---
-    
-    # def Filter_FCChange(
-    #     self, mode: Optional[str]=None, updateL: bool=True) -> bool:
-    #     """Filter results by FC behavior.
-    
-    #         Parameters
-    #         ----------
-    #         mode : str
-    #             Up, Down, Both or No
-    #         updateL : bool
-    #             Update filterList and StatusBar (True) or not (False)
-    
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region ----------------------------------------------------------> DF
-    #     idx = pd.IndexSlice
-    #     df = self.df.loc[:,idx[:,:,'FC']]
-    #     df.insert(0, ('C', 'C', 'FC'), 0)
-    #     #endregion -------------------------------------------------------> DF
         
-    #     #region ------------------------------------------> Get Value and Plot
-    #     if mode == 'Up':
-    #         self.df = self.df[df.apply(
-    #             lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.CI['Cond']]), axis=1
-    #         )]
-    #     elif mode == 'Down':
-    #         self.df = self.df[df.apply(
-    #             lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.CI['Cond']]), axis=1
-    #         )]
-    #     elif mode == 'Both':
-    #         self.df = self.df[df.apply(
-    #             lambda x: any(
-    #                     [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.CI['Cond']] +
-    #                     [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.CI['Cond']]
-    #             ), axis=1
-    #         )]
-    #     else: 
-    #         self.df = self.df[df.apply(
-    #             lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) == 0) for y in self.CI['Cond']]), axis=1
-    #         )]
-    #     #------------------------------> 
-    #     self.FillListCtrl()
-    #     self.VolDraw()
-    #     self.FCDraw()
-    #     #endregion ---------------------------------------> Get Value and Plot
-        
-    #     #region ------------------------------------------> Update Filter List
-    #     if updateL:
-    #         #------------------------------> 
-    #         self.StatusBarFilterText(f'{self.cLFFCMode[mode]}')
-    #         #------------------------------> 
-    #         self.filterList.append(
-    #             [self.cLFFCMode[mode], {'mode':mode, 'updateL': False}]
-    #         )
-    #     else:
-    #         pass
-    #     #endregion ---------------------------------------> Update Filter List
-        
-    #     return True
-    # #---
-    
     def Filter_Divergent(self, updateL: bool=True) -> bool:
         """Filter results based on the simultaneous presence of a increasing and 
             decreasing FC behavior in the conditions.
@@ -1728,14 +1807,6 @@ class ProtProfPlot(BaseWindow):
         #endregion -------------------------------------------------------> DF
         
         #region ------------------------------------------> Get Value and Plot
-        # self.df = self.df[df.apply(
-        #     lambda x: all(
-        #         [
-        #             any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]),
-        #             any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']])
-        #         ]
-        #     ), axis=1
-        # )]
         self.df = self.df[df.apply(self.Filter_Divergent_Helper, axis=1)]
         #------------------------------> 
         self.FillListCtrl()
