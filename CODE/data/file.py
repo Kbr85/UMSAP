@@ -37,7 +37,7 @@ if config.typeCheck:
 
 #region -------------------------------------------------------------> Classes
 class UMSAPFile():
-    """Read and analyse an umsap file.
+    """Read and analyse an UMSAP file.
 
         Parameters
         ----------
@@ -69,9 +69,6 @@ class UMSAPFile():
             - When fileP cannot be read.
         ExecutionError
             - When a requested section is not found in the file (GetSectionData)
-
-        Methods
-        -------
 
         Notes
         -----
@@ -296,7 +293,7 @@ class UMSAPFile():
             ExecutionError
                 - When the section is not found in the file
         """
-        if (data := self.data.get(tSection, '')) != '':
+        if (data := self.data.get(tSection, {})):
             return data
         else:
             msg = (

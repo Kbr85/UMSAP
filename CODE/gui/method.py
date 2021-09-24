@@ -45,19 +45,23 @@ def LoadUMSAPFile(fileP: Optional[Path]=None, win: Optional[wx.Window]=None,
             Default is None.
         shownSection : list of str
             List with the name of all checked sections in File Control window.
+            
+        Return
+        ------
+        bool
     """   
     #region --------------------------------------------> Get file from Dialog
     if fileP is None:
         try:
             #------------------------------> Get File
-            fileP = dtsMenu.GetFilePath('openO', config.elUMSAP)
+            filePdlg = dtsMenu.GetFilePath('openO', ext=config.elUMSAP)
             #------------------------------> Set Path
-            if fileP is None:
+            if filePdlg is None:
                 #------------------------------> No file selected
                 return False
             else:
                 #------------------------------> Set Path
-                fileP = Path(fileP[0])
+                tFileP = Path(filePdlg[0])
         except Exception as e:      
             dtscore.Notification(
                 'errorF', 
@@ -67,37 +71,37 @@ def LoadUMSAPFile(fileP: Optional[Path]=None, win: Optional[wx.Window]=None,
             )
             return False
     else:
-        pass
+        tFileP = fileP
     #endregion -----------------------------------------> Get file from Dialog
     
     #region ----------------------------> Raise window if file is already open
     if shownSection is None:
         #------------------------------> Check file is opened & Raise it
-        if config.winUMSAP.get(fileP, '') != '':
-            config.winUMSAP[fileP].UpdateFileContent()
+        if config.winUMSAP.get(tFileP, '') != '':
+            config.winUMSAP[tFileP].UpdateFileContent()
             return True
         else:
             pass		
     else:
         #------------------------------> Check file is opened & Close window
-        if config.winUMSAP.get(fileP, '') != '':
-            config.winUMSAP[fileP].Close()
+        if config.winUMSAP.get(tFileP, '') != '':
+            config.winUMSAP[tFileP].Close()
         else:
             pass
     #endregion -------------------------> Raise window if file is already open
 
     #region ---------------------------------------------> Progress Dialog
-    dlg = dtscore.ProgressDialog(None, f"Analysing file {fileP.name}", 100)
+    dlg = dtscore.ProgressDialog(None, f"Analysing file {tFileP.name}", 100)
     #endregion ------------------------------------------> Progress Dialog
 
     #region -----------------------------------------------> Configure obj
     #------------------------------> UMSAPFile obj is placed in config.obj
-    _thread.start_new_thread(_LoadUMSAPFile, (fileP, dlg))
+    _thread.start_new_thread(_LoadUMSAPFile, (tFileP, dlg))
     #endregion --------------------------------------------> Configure obj
 
     #region --------------------------------------------------> Show modal
     if dlg.ShowModal() == 1:
-        config.winUMSAP[fileP] = window.UMSAPControl(
+        config.winUMSAP[tFileP] = window.UMSAPControl(
             config.obj, 
             shownSection = shownSection,
         )
@@ -162,8 +166,8 @@ def GetDisplayInfo(win: wx.Frame) -> dict[str, dict[str, int]]:
         -------
         dict
             {
-                'D' : {'xo':X, 'yo':Y, 'w':W, 'h':h},
-                'W' : {'N': N, 'w':W, 'h', H}
+                'D' : {'xo':X, 'yo':Y, 'w':W, 'h':h}, Info about display
+                'W' : {'N': N, 'w':W, 'h', H},        Info about win
             }
     """
     

@@ -852,19 +852,105 @@ class ProtProfPlot(BaseWindow):
 
         Parameters
         ----------
-        
+        parent : UMSAPControl
 
         Attributes
         ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        name: str
+            Name of the window. Default is config.nwProtProf.
+        autoFilter : bool
+            Apply defined filters (True) when changing date or not (False).
+            Default is False. 
+        CI : dict
+            CI dict for the current date.
+        condC : str
+            Condiction currently selected.
+        corrP : bool
+            Use corrected P values (True) or not (False). Default is False. 
+        data : dict
+            Dict with the configured data for this section from UMSAPFile.
+        date : list of str
+            List of available dates in the section.
+        dateC : str
+            Currently seclected date.
+        df : pd.DataFrame
+            DF with the data currently display in the window.
+        fcXLabel : list of str
+            List of labels for the x axis in the FC plot.
+        fcXRange : list of float
+            Min and Max value for the x axis in the FC plot.
+        fcYMax : list of float
+            Max log2FC value on all conditions for the relevant points.
+        fcYMin : list of float
+            Min log2FC value on all conditions for the relevant points.
+        fcYRange : list of float
+            Min and Max value for the y axis in the FC Plot including the CI.
+        filterList : list
+            List of applied filters. e.g. [['StatusBarText', {kwargs}], ...]
+        filterMethod : dict
+            Keys are the StatusBar text and values the methods to apply the
+            filter.
+        getDF4TextInt : dict
+            Keys are the type of Control and values methods to create the df
+            with the intensities shown in the text region.
+        greenP : matplotlib object
+            Reference to the green dot shown in the Volcano plot after selecting
+            a protein in the wx.ListCtrl.
+        lockScale : str
+            Lock plot scale to No, Date or Project.
+        log10alpha : float
+            -log10(alpha) value to plot in the Volcano plot.
+        obj : UMSAPFile
+            Refernece to the UMSAPFile object.
+        protLine : matplotlib object
+            Protein line drawn in the FC plot after selecting a protein in the
+            wx.ListCtrl.
+        rpC : str
+            Currently selected relevant point.
+        setRange : dict
+            Keys are the lockScale values and values methods to set the range.
+        showAll : bool
+            Show (True) fcYMax and fcYMin in the FC plot or not (False).
+            Default is True.
+        vXRange : list of float
+            Min and Max values for the x axis in the Vol plot.
+        vYRange : list of float
+            Min and Max values for the y axis in the Vol plot.
+        zScore : float
+            Z score as absolut value.
+        zScoreL : str
+            Z score value as percent.
+        #------------------------------> Configuration
+        cLCol : list of str
+            Label for the columns in the wx.ListCtrl
+        cLFDiv : str
+            StatusBar text for filter Divergent.
+        cLFLog2Fc : str
+            StatusBar text for filter Log2FC.
+        cLFMonBoth : str
+            StatusBar text for filter Monotonicity Increasing.
+        cLFMonDown : str
+            StatusBar text for filter Monotonicity Decreasing.
+        cLFMonBoth : str
+            StatusBar text for filter Monotonicity Both.
+        cLFMonMode : dict
+            Keys are 'Up', 'Down' and 'Both' and values are the StatusBar Text.
+        cLFPValAbs : str
+            StatusBar Text for filter P values when absolute values are used.
+        cLFPValLog : str
+            StatusBar Text for filter P values when -log10 values are used.
+        cLFZscore : str
+            StatusBar text for filter Z Score.
+        cLProtList : str
+            Title for the pane showing the wx.ListCtrl and wx.SearchCtrl.
+        cSCol : list of int
+            Size of the columns in the wx.ListCtrl.
+        cSection : str
+            Section name. Default is config.nmProtProf.
+        cSWindow : wx.Size
+            Window size. Default is config.sWinModPlot
+        cTitle : str
+            Title of the window.
     """
     #region -----------------------------------------------------> Class setup
     #------------------------------> To id the window
@@ -882,6 +968,8 @@ class ProtProfPlot(BaseWindow):
     cLFMonDown = 'Monotonic (Decreasing)'
     cLFMonBoth = 'Monotonic (Both)'
     cLFDiv     = 'Divergent'
+    cLCol = ['#', 'Gene', 'Protein']
+    cSCol = [45, 70, 100]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -918,9 +1006,6 @@ class ProtProfPlot(BaseWindow):
         self.protLine    = []
         self.filterList  = []
         self.date, menuData = self.SetDateMenuDate()
-        #------------------------------> Configuration
-        self.cLCol = ['#', 'Gene', 'Protein']
-        self.cSCol = [45, 70, 100]
         #------------------------------> Methods
         self.setRange = {
             'No'     : self.SetRangeNo,
@@ -936,9 +1021,9 @@ class ProtProfPlot(BaseWindow):
         }
         
         self.cLFMonMode = {
-            1 : self.cLFMonUp,
-            2 : self.cLFMonDown,
-            3 : self.cLFMonBoth,
+            'Up'  : self.cLFMonUp,
+            'Down': self.cLFMonDown,
+            'Both': self.cLFMonBoth,
         }
         
         self.filterMethod = {
@@ -1062,20 +1147,12 @@ class ProtProfPlot(BaseWindow):
 
     #region ---------------------------------------------------> Class methods
     #------------------------------> Filters
-    def FilterApply(self):
-        """
-    
-            Parameters
-            ----------
-            
+    def FilterApply(self) -> bool:
+        """Apply all filter to the current date.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region -----------------------------------------------> Apply Filters
         for k in self.filterList:
@@ -1085,20 +1162,12 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def FilterRemoveAll(self):
-        """
-    
-            Parameters
-            ----------
-            
+    def FilterRemoveAll(self) -> bool:
+        """Remove all filter.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region -------------------------------------------> Update Attributes
         self.filterList = []
@@ -1114,20 +1183,12 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def FilterRemoveLast(self):
-        """
-    
-            Parameters
-            ----------
-            
+    def FilterRemoveLast(self) -> bool:
+        """Remove last applied filter.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region -----------------------------------> Check Something to Delete
         if not self.filterList:
@@ -1159,20 +1220,12 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def FilterRemoveAny(self):
-        """
-    
-            Parameters
-            ----------
-            
+    def FilterRemoveAny(self) -> bool:
+        """Remove selected filters.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region -----------------------------------> Check Something to Delete
         if not self.filterList:
@@ -1224,20 +1277,20 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def Filter_ZScore(
-        self, gText: Optional[str]=None, updateL: bool=True) -> bool:
-        """
+        self, gText: Optional[str]=None, updateL: bool=True
+        ) -> bool:
+        """Filter results by Z score.
     
             Parameters
             ----------
-            
+            gText : str
+                Z score threshold and operand, e.g. < 10 or > 3.4
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ----------------------------------------------> Text Entry Dlg
         if gText is None:
@@ -1323,19 +1376,18 @@ class ProtProfPlot(BaseWindow):
     
     def Filter_Log2FC(
         self, gText: Optional[str]=None, updateL: bool=True) -> bool:
-        """
+        """Filter results by log2FC.
     
             Parameters
             ----------
-            
+            gText : str
+                FC threshold and operand, e.g. < 10 or > 3.4
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ----------------------------------------------> Text Entry Dlg
         if gText is None:
@@ -1421,19 +1473,20 @@ class ProtProfPlot(BaseWindow):
         self, gText: Optional[str]=None, absB: Optional[bool]=None, 
         updateL: bool=True,
         ) -> bool:
-        """
+        """Filter results by P value.
     
             Parameters
             ----------
-            
+            gText : str
+                P value threshold and operand, e.g. < 10 or > 3.4
+            absB : bool
+                Use absolute values (True) or -log10 values (False)
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ----------------------------------------------> Text Entry Dlg
         if gText is None:
@@ -1526,19 +1579,18 @@ class ProtProfPlot(BaseWindow):
     
     def Filter_Monotonicity(
         self, mode: Optional[int]=None, updateL: bool=True) -> bool:
-        """
+        """Filter results by monotonicity.
     
             Parameters
             ----------
-            
+            mode : str
+                Up, Down or Both
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ----------------------------------------------------------> DF
         idx = pd.IndexSlice
@@ -1547,11 +1599,11 @@ class ProtProfPlot(BaseWindow):
         #endregion -------------------------------------------------------> DF
         
         #region ------------------------------------------> Get Value and Plot
-        if mode == 1:
+        if mode == 'Up':
             self.df = self.df[df.apply(
                 lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]), axis=1
             )]
-        elif mode == 2:
+        elif mode == 'Down':
             self.df = self.df[df.apply(
                 lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]), axis=1
             )]
@@ -1584,19 +1636,17 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def Filter_Divergent(self, updateL: bool=True) -> bool:
-        """
+        """Filter results based on the simultaneous presence of a monotonically
+            increasing and decreasing conditions.
     
             Parameters
             ----------
-            
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ----------------------------------------------------------> DF
         idx = pd.IndexSlice
@@ -1634,20 +1684,17 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     #------------------------------> 
-    def StatusBarFilterText(self, text: str):
-        """
+    def StatusBarFilterText(self, text: str) -> bool:
+        """Update the StatusBar text
     
             Parameters
             ----------
-            
+            text : str
+                New text to add.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ----------------------------------------------------> Old Text
         text_now = self.statusbar.GetStatusText(1)
@@ -1670,18 +1717,20 @@ class ProtProfPlot(BaseWindow):
 
             Returns
             -------
-            dict:
-            {
-                'menudate' : [List of dates],
-                'crp' : {
-                    'date1' : {
-                        'C' : [List of conditions],
-                        'RP': [List of relevant points],
+            tuple of list and dict
+            The list is a list of str with the dates in the analysis.
+            The dict has the following structure:
+                {
+                    'menudate' : [List of dates],
+                    'crp' : {
+                        'date1' : {
+                            'C' : [List of conditions],
+                            'RP': [List of relevant points],
+                        }
+                        .......
+                        'dateN'
                     }
-                    .......
-                    'dateN'
-                }
-            }                    
+                }                    
         """
         #region ---------------------------------------------------> Fill dict
         #------------------------------> Variables
@@ -1758,17 +1807,10 @@ class ProtProfPlot(BaseWindow):
         """Get the maximum and minimum values of FC for each studied RP, 
             excluding the CI.
     
-            Parameters
-            ----------
-            
-    
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            list of list of float
+                First list is the list with the maximum values.
         """
         #region ---------------------------------------------------> Variables
         idx = pd.IndexSlice
@@ -1792,17 +1834,9 @@ class ProtProfPlot(BaseWindow):
     def VolDraw(self) -> bool:
         """Create/Update the Volcano plot.
     
-            Parameters
-            ----------
-            
-    
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region --------------------------------------------------------> Axes
         self.VolSetAxis()
@@ -1857,19 +1891,11 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def VolSetAxis(self) -> bool:
-        """Set the axis in the volcano plot
+        """Set the axis in the volcano plot.
         
-            Parameters
-            ----------
-            
-    
             Returns
             -------
-            
-    
-            Raise
-            -----
-        
+            bool
         """
         #------------------------------> Clear
         self.plots.dPlot['Vol'].axes.clear()
@@ -1889,19 +1915,12 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def DrawGreenPoint(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
+        """Draw the green dot in the Volcano plot after selecting a protein in
+            the wx.ListCtrl.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region -------------------------------------------------------> Index
         if (idx := self.lc.lcs.lc.GetFirstSelected()) < 0:
@@ -1950,17 +1969,9 @@ class ProtProfPlot(BaseWindow):
     def FCDraw(self) -> bool:
         """Draw Fold Change Evolution plot.
     
-            Parameters
-            ----------
-            
-    
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region --------------------------------------------------------> Axis
         self.FCSetAxis()
@@ -2002,19 +2013,11 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def FCSetAxis(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
+        """Set the axis in the FC plot.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region -------------------------------------------------------> Clear
         self.plots.dPlot['FC'].axes.clear()
@@ -2035,19 +2038,12 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def DrawProtLine(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
+        """Draw the protein line in the FC plot after selecting a protein in the
+            wx.ListCtrl.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region -------------------------------------------------------> Index
         if (idxl := self.lc.lcs.lc.GetFirstSelected()) < 0:
@@ -2170,14 +2166,16 @@ class ProtProfPlot(BaseWindow):
     
             Parameters
             ----------
-            
+            col : list of str
+                Name of the columns in the df.
+            rp : list of str
+                List of relevant points.
+            cond : list of str
+                List of conditions.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
+            pd.DataFrame
         """
         #region ---------------------------------------------------> Variables
         nCol = len(col)
@@ -2422,7 +2420,7 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def SetRangeNo(self) -> bool:
-        """Do nothing. Just to make the dict self.setRange work
+        """Do nothing. Just to make the dict self.setRange work.
     
             Returns
             -------
@@ -2552,15 +2550,13 @@ class ProtProfPlot(BaseWindow):
     
             Parameters
             ----------
-            
+            date : str
+                The selected date.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            list of list of floats
+                [xRange, yRange] e.g. [[-0.3, 3.3], [-0.1, 4.5]]
         """
         #region ---------------------------------------------------> Variables
         idx = pd.IndexSlice
@@ -2593,19 +2589,18 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def VolXYRange(self, x, y) -> bool:
-        """
+        """Get the XY range for the volcano plot based on the x,y values.
     
             Parameters
             ----------
-            
+            x : pd.Series or list
+                Values for x.
+            y : pd.Series or list
+                Values for y.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region -------------------------------------------------> Check input
         if isinstance(x, pd.Series):
@@ -2635,7 +2630,7 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def OnSearch(self, event) -> bool:
+    def OnSearch(self, event: wx.Event) -> bool:
         """Search for a given string in the wx.ListCtrl.
     
             Parameters
@@ -2699,15 +2694,20 @@ class ProtProfPlot(BaseWindow):
     
             Parameters
             ----------
-            
+            tDate : str
+                Selected date.
+            cond : str
+                Selected condition
+            rp : str
+                Selected relevant point
+            corrP : bool
+                Use corrected P values (True) or not (False)
+            showAll : bool
+                Show FC rnge of values or not.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region --------------------------------------------> Update variables
         self.dateC   = tDate
@@ -2761,19 +2761,20 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def OnVolChange(self, cond: str, rp:str, corrP: bool) -> bool:
-        """
+        """Update the Volcano plot.
     
             Parameters
             ----------
-            
+            cond : str
+                Selected condition
+            rp : str
+                Selected relevant point
+            corrP : bool
+                Use corrected P values (True) or not (False)
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region --------------------------------------------> Update variables
         self.condC   = cond
@@ -2793,15 +2794,12 @@ class ProtProfPlot(BaseWindow):
     
             Parameters
             ----------
-            
+            showAll : bool
+                Show FC range of values or not.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> Variables
         self.showAll = showAll
@@ -2814,20 +2812,12 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def OnZScore(self):
-        """Change Z score to plot
-    
-            Parameters
-            ----------
-            
+    def OnZScore(self) -> bool:
+        """Change Z score to plot.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ----------------------------------------------> Text Entry Dlg
         dlg = dtsWindow.UserInput1Text(
@@ -2894,11 +2884,7 @@ class ProtProfPlot(BaseWindow):
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> Variables
         ind = event.ind
@@ -2964,37 +2950,21 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def OnZoomResetVol(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
+        """Reset the zoom level in the Volcano plot.
+        
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         return self.plots.dPlot['Vol'].ZoomResetPlot()
     #---
     
     def OnZoomResetFC(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
+        """Reset the zoom level in the FC plot.
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         return self.plots.dPlot['FC'].ZoomResetPlot()
     #---
@@ -3681,23 +3651,28 @@ class ResControlExp(wx.Dialog):
 
 
 class FilterRemoveAny(wx.Dialog):
-    """
+    """Dialog to select Filters to remove in ProtProfPlot
 
         Parameters
         ----------
-        
+        filterList : list
+            List of already applied filter, e.g.:
+            [['Text', {kwargs} ], ...]
+        parent : wx.Window
+            Parent of the window.
 
         Attributes
         ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        name : str
+            Name of the window. Default is config.ndFilterRemoveAny.
+        #------------------------------> Configuration
+        cSize : wx.Size
+            Size of the wx.Dialog
+        cStyle : wx.Style
+            Style of the wx.Dialog.
+        #------------------------------> Widgets
+        checkB : list of wx.CheckBox
+            Checkboxes with the applied filters.
     """
     #region -----------------------------------------------------> Class setup
     name = config.ndFilterRemoveAny
@@ -3801,19 +3776,12 @@ class FilterRemoveAny(wx.Dialog):
     #---
     
     def GetChecked(self) -> list[int]:
-        """
-    
-            Parameters
-            ----------
-            
+        """Get the number of the checked wx.CheckBox
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            list of int
+                The index in self.checkB of the checked wx.CheckBox
         """
         #region ---------------------------------------------------> Variables  
         lo = []
@@ -3831,23 +3799,22 @@ class FilterRemoveAny(wx.Dialog):
 
 
 class FilterPValue(dtsWindow.UserInput1Text):
-    """
+    """Dialog to filter values by P value.
 
         Parameters
         ----------
-        
-
-        Attributes
-        ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        title : str
+            Title of the wx.Dialog
+        label : str
+            Label for the wx.StaticText
+        hint : str
+            Hint for the wx.TextCtrl.
+        parent : wx.Window
+            Parent of the wx.Dialog
+        validator : wx.Validator
+            Validator for the wx.TextCtrl
+        size : wx.Size
+            Size of the wx.Dialog. Default is (420, 170) 
     """
     #region -----------------------------------------------------> Class setup
     
@@ -3897,8 +3864,8 @@ class FilterPValue(dtsWindow.UserInput1Text):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnTextChange(self, event):
-        """
+    def OnTextChange(self, event) -> bool:
+        """Select -log10P if the given value is > 1.
     
             Parameters
             ----------
@@ -3908,11 +3875,7 @@ class FilterPValue(dtsWindow.UserInput1Text):
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region -------------------------------------------------------> Check
         if self.input.tc.GetValidator().Validate()[0]:

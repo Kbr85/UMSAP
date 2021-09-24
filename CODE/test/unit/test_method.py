@@ -22,9 +22,8 @@ import data.method as dmethod
 
 #region ---------------------------------------------------------> Class Setup
 class Test_ResControl2ListNumber(unittest.TestCase):
-
+    """Test for data.method.ResControl2ListNumber"""
     #region -----------------------------------------------------> Valid Input
-
     #endregion --------------------------------------------------> Valid Input
 
     #region -------------------------------------------------> Expected Output
@@ -51,9 +50,8 @@ class Test_ResControl2ListNumber(unittest.TestCase):
 #---
 
 class Test_ResControl2Flat(unittest.TestCase):
-
+    """Test for data.method.ResControl2Flat"""
     #region -----------------------------------------------------> Valid Input
-
     #endregion --------------------------------------------------> Valid Input
 
     #region -------------------------------------------------> Expected Output
@@ -79,9 +77,8 @@ class Test_ResControl2Flat(unittest.TestCase):
 #---
 
 class Test_ResControl2DF(unittest.TestCase):
-
+    """Test for data.method.ResControl2DF"""
     #region -----------------------------------------------------> Valid Input
-
     #endregion --------------------------------------------------> Valid Input
 
     #region -------------------------------------------------> Expected Output

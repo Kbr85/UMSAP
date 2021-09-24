@@ -19,6 +19,8 @@ import platform
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    import data.file as file
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -35,6 +37,8 @@ dictVersion = { # dict for directly write into output files
 
 cOS = platform.system() # Current operating system
 cwd = Path(__file__)
+
+obj: 'file.UMSAPFile' # To load UMSAP file
 
 typeCheck = TYPE_CHECKING
 #endregion -----------------------------------------------> General parameters
@@ -78,7 +82,7 @@ elif cOS == 'Windows':
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
     deltaWin = 20
-elif cOS == 'Linux':
+else:
     #------------------------------> Root & Resources Folder
     root = cwd.parent
     res = root / 'Resources'
