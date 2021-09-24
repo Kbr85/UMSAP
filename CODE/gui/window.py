@@ -1770,8 +1770,17 @@ class ProtProfPlot(BaseWindow):
         #endregion ------------------------------------------------> Variables
                 
         #region ------------------------------------------------> Set Position
-        
+        x = info['D']['xo'] + info['W']['N']*config.deltaWin
+        y = (
+            ((info['D']['h']/2) - (info['W']['h']/2)) 
+            + info['W']['N']*config.deltaWin
+        )
+        self.SetPosition(pt=(x,y))
         #endregion ---------------------------------------------> Set Position
+
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.name] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
 
         return True
     #---
