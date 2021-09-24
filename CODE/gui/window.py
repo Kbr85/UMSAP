@@ -1034,6 +1034,7 @@ class ProtProfPlot(BaseWindow):
             self.cLFMonUp  : self.Filter_Monotonicity,
             self.cLFMonDown: self.Filter_Monotonicity,
             self.cLFMonBoth: self.Filter_Monotonicity,
+            self.cLFDiv    : self.Filter_Divergent,
         }
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
@@ -1266,7 +1267,13 @@ class ProtProfPlot(BaseWindow):
             self.FilterApply()
             #------------------------------> 
             for k in self.filterList:
-                text = f'{text} | {k[0]} {k[1]["gText"]}'
+                #------------------------------> 
+                gText = k[1].get("gText", "")
+                #------------------------------> 
+                if gText:
+                    text = f'{text} | {k[0]} {gText}'
+                else:
+                    text = f'{text} | {k[0]}'
             #------------------------------> 
             self.statusbar.SetStatusText(text, 1)
         else:
@@ -3705,9 +3712,8 @@ class FilterRemoveAny(wx.Dialog):
         self.st = wx.StaticText(self, label='Select Filters to remove.')
         #------------------------------> 
         for k in filterList:
-            self.checkB.append(
-                wx.CheckBox(self, label=f'{k[0]} {k[1]["gText"]}')
-            )
+            self.checkB.append(wx.CheckBox(
+                self, label=f'{k[0]} {k[1].get("gText", "")}'))
         #------------------------------> Buttons
         self.sizerBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
         #endregion --------------------------------------------------> Widgets
