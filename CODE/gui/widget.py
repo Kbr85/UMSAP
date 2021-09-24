@@ -43,13 +43,14 @@ class ResControl():
         Notes
         -----
         Several configuration options are taken from parent.
+        Used as parent class.
     """
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent):
+    def __init__(self, parent: wx.Window):
         """ """
         self.cLResControl = config.lStResultCtrl
         #region -----------------------------------------------------> Widgets
