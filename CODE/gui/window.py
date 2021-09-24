@@ -1667,19 +1667,18 @@ class ProtProfPlot(BaseWindow):
     def Filter_FCChange(
         self, choice: Optional[str]=None, updateL: bool=True,
         ) -> bool:
-        """
+        """Filter results based on FC change
     
             Parameters
             ----------
-            
+            choice : str
+                One of the keys in self.cLFFCDict
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> Get Value
         if choice is None:
@@ -1702,7 +1701,7 @@ class ProtProfPlot(BaseWindow):
         else:
             pass
         #endregion ------------------------------------------------> Get Value
-        print(choice)
+        
         #region ----------------------------------------------------------> DF
         #------------------------------> 
         idx = pd.IndexSlice
@@ -1763,10 +1762,9 @@ class ProtProfPlot(BaseWindow):
                 axis=1,
             )]
         else:
-            print('Exiting False')
             return False
         #endregion -------------------------------------------------------> DF
-        print(self.df.shape)
+    
         #region --------------------------------------------------> Update GUI
         #------------------------------> 
         self.FillListCtrl()
@@ -1783,7 +1781,6 @@ class ProtProfPlot(BaseWindow):
         else:
             pass
         #endregion -----------------------------------------------> Update GUI
-        print(updateL)
             
         return True
     #---
