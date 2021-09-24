@@ -913,14 +913,12 @@ class FiltersProtProf(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.zScore  = self.Append(-1, 'Z Score')
-        self.log2FC  = self.Append(-1, 'Log2(FC)')
-        self.pValue  = self.Append(-1, 'P Value')
-        self.fcUp    = self.Append(-1, 'FC Increases')
-        self.fcDown  = self.Append(-1, 'FC Decreases')
-        self.fcBoth  = self.Append(-1, 'FC Inc/Dec')
-        self.fcNo    = self.Append(-1, 'FC No Change')
-        self.div     = self.Append(-1, 'FC Diverge')
+        self.zScore   = self.Append(-1, 'Z Score')
+        self.log2FC   = self.Append(-1, 'Log2(FC)')
+        self.pValue   = self.Append(-1, 'P Value')
+        self.fcChange = self.Append(-1, 'FC Change')
+        self.fcNo     = self.Append(-1, 'FC No Change')
+        self.div      = self.Append(-1, 'FC Diverge')
         self.AppendSeparator()
         self.apply = self.Append(-1, 'Apply All\tCtrl+A')
         self.update = self.Append(-1, 'Auto Apply Filters', kind=wx.ITEM_CHECK)
@@ -930,23 +928,12 @@ class FiltersProtProf(wx.Menu):
         self.removeAll = self.Append(-1, 'Remove All\tCtrl+Shift+A')
         #endregion -----------------------------------------------> Menu Items
         
-        #region -------------------------------------------------------> Names
-        self.nameID = { # Associate IDs with Tab names. Avoid manual IDs
-            self.fcUp.GetId()  : 'Up',
-            self.fcDown.GetId(): 'Down',
-            self.fcBoth.GetId(): 'Both',
-            self.fcNo.GetId()  : 'No',
-        }
-        #endregion ----------------------------------------------------> Names
-        
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnZScore,      source=self.zScore)
         self.Bind(wx.EVT_MENU, self.OnLog2FC,      source=self.log2FC)
         self.Bind(wx.EVT_MENU, self.OnPValue,      source=self.pValue)
-        self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.fcUp)
-        self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.fcDown)
-        self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.fcBoth)
-        self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.fcNo)
+        self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.fcChange)
+        self.Bind(wx.EVT_MENU, self.OnFCNoChange,  source=self.fcNo)
         self.Bind(wx.EVT_MENU, self.OnDivergent,   source=self.div)
         self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.apply)
         self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.update)
@@ -1015,6 +1002,25 @@ class FiltersProtProf(wx.Menu):
         return True
     #---
     
+    def OnFCNoChange(self, event) -> bool:
+        """Filter results by No FC change.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_FCNoChange()
+        
+        return True
+    #---
+    
     def OnFCChange(self, event) -> bool:
         """Filter results by FC change.
     
@@ -1029,7 +1035,7 @@ class FiltersProtProf(wx.Menu):
             bool
         """
         win = self.GetWindow()
-        win.Filter_FCChange(self.nameID[event.GetId()])
+        win.Filter_FCChange()
         
         return True
     #---

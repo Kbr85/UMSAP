@@ -1036,10 +1036,7 @@ class ProtProfPlot(BaseWindow):
             self.cLFLog2FC : self.Filter_Log2FC,
             self.cLFPValAbs: self.Filter_PValue,
             self.cLFPValLog: self.Filter_PValue,
-            self.cLFFCUp   : self.Filter_FCChange,
-            self.cLFFCDown : self.Filter_FCChange,
-            self.cLFFCBoth : self.Filter_FCChange,
-            self.cLFFCNo   : self.Filter_FCChange,
+            self.cLFFCNo   : self.Filter_FCNoChange,
             self.cLFDiv    : self.Filter_Divergent,
         }
         #------------------------------> 
@@ -1590,14 +1587,11 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def Filter_FCChange(
-        self, mode: Optional[str]=None, updateL: bool=True) -> bool:
-        """Filter results by FC behavior.
+    def Filter_FCNoChange(self, updateL: bool=True) -> bool:
+        """Filter results by No FC change.
     
             Parameters
             ----------
-            mode : str
-                Up, Down, Both or No
             updateL : bool
                 Update filterList and StatusBar (True) or not (False)
     
@@ -1608,29 +1602,12 @@ class ProtProfPlot(BaseWindow):
         #region ----------------------------------------------------------> DF
         idx = pd.IndexSlice
         df = self.df.loc[:,idx[:,:,'FC']]
-        df.insert(0, ('C', 'C', 'FC'), 0)
         #endregion -------------------------------------------------------> DF
         
         #region ------------------------------------------> Get Value and Plot
-        if mode == 'Up':
-            self.df = self.df[df.apply(
-                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.CI['Cond']]), axis=1
-            )]
-        elif mode == 'Down':
-            self.df = self.df[df.apply(
-                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.CI['Cond']]), axis=1
-            )]
-        elif mode == 'Both':
-            self.df = self.df[df.apply(
-                lambda x: any(
-                        [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.CI['Cond']] +
-                        [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.CI['Cond']]
-                ), axis=1
-            )]
-        else: 
-            self.df = self.df[df.apply(
-                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) == 0) for y in self.CI['Cond']]), axis=1
-            )]
+        self.df = self.df[df.apply(
+            lambda x: any([(x.loc[idx[y,:,'FC']] == 0).all() for y in self.CI['Cond']]), axis=1
+        )]
         #------------------------------> 
         self.FillListCtrl()
         self.VolDraw()
@@ -1640,10 +1617,10 @@ class ProtProfPlot(BaseWindow):
         #region ------------------------------------------> Update Filter List
         if updateL:
             #------------------------------> 
-            self.StatusBarFilterText(f'{self.cLFFCMode[mode]}')
+            self.StatusBarFilterText(f'{self.cLFFCNo}')
             #------------------------------> 
             self.filterList.append(
-                [self.cLFFCMode[mode], {'mode':mode, 'updateL': False}]
+                [self.cLFFCNo, {'updateL': False}]
             )
         else:
             pass
@@ -1651,6 +1628,86 @@ class ProtProfPlot(BaseWindow):
         
         return True
     #---
+    
+    def Filter_FCChange(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return True
+    #---
+    
+    # def Filter_FCChange(
+    #     self, mode: Optional[str]=None, updateL: bool=True) -> bool:
+    #     """Filter results by FC behavior.
+    
+    #         Parameters
+    #         ----------
+    #         mode : str
+    #             Up, Down, Both or No
+    #         updateL : bool
+    #             Update filterList and StatusBar (True) or not (False)
+    
+    #         Returns
+    #         -------
+    #         bool
+    #     """
+    #     #region ----------------------------------------------------------> DF
+    #     idx = pd.IndexSlice
+    #     df = self.df.loc[:,idx[:,:,'FC']]
+    #     df.insert(0, ('C', 'C', 'FC'), 0)
+    #     #endregion -------------------------------------------------------> DF
+        
+    #     #region ------------------------------------------> Get Value and Plot
+    #     if mode == 'Up':
+    #         self.df = self.df[df.apply(
+    #             lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.CI['Cond']]), axis=1
+    #         )]
+    #     elif mode == 'Down':
+    #         self.df = self.df[df.apply(
+    #             lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.CI['Cond']]), axis=1
+    #         )]
+    #     elif mode == 'Both':
+    #         self.df = self.df[df.apply(
+    #             lambda x: any(
+    #                     [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.CI['Cond']] +
+    #                     [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.CI['Cond']]
+    #             ), axis=1
+    #         )]
+    #     else: 
+    #         self.df = self.df[df.apply(
+    #             lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) == 0) for y in self.CI['Cond']]), axis=1
+    #         )]
+    #     #------------------------------> 
+    #     self.FillListCtrl()
+    #     self.VolDraw()
+    #     self.FCDraw()
+    #     #endregion ---------------------------------------> Get Value and Plot
+        
+    #     #region ------------------------------------------> Update Filter List
+    #     if updateL:
+    #         #------------------------------> 
+    #         self.StatusBarFilterText(f'{self.cLFFCMode[mode]}')
+    #         #------------------------------> 
+    #         self.filterList.append(
+    #             [self.cLFFCMode[mode], {'mode':mode, 'updateL': False}]
+    #         )
+    #     else:
+    #         pass
+    #     #endregion ---------------------------------------> Update Filter List
+        
+    #     return True
+    # #---
     
     def Filter_Divergent(self, updateL: bool=True) -> bool:
         """Filter results based on the simultaneous presence of a increasing and 
