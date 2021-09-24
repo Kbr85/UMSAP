@@ -927,14 +927,17 @@ class ProtProfPlot(BaseWindow):
             StatusBar text for filter Divergent.
         cLFLog2Fc : str
             StatusBar text for filter Log2FC.
-        cLFMonBoth : str
-            StatusBar text for filter Monotonicity Increasing.
-        cLFMonDown : str
-            StatusBar text for filter Monotonicity Decreasing.
-        cLFMonBoth : str
-            StatusBar text for filter Monotonicity Both.
-        cLFMonMode : dict
-            Keys are 'Up', 'Down' and 'Both' and values are the StatusBar Text.
+        cLFFCUp : str
+            StatusBar text for filter FC Increasing.
+        cLFFCDown : str
+            StatusBar text for filter FC Decreasing.
+        cLFFCBoth : str
+            StatusBar text for filter FC Both.
+        cLFFCNo : str
+            StatusBar text for filter FC No.
+        cLFFCMode : dict
+            Keys are 'Up', 'Down', 'Both' or 'No' and values are the StatusBar 
+            Text.
         cLFPValAbs : str
             StatusBar Text for filter P values when absolute values are used.
         cLFPValLog : str
@@ -964,12 +967,13 @@ class ProtProfPlot(BaseWindow):
     cLFLog2FC  = 'Log2FC'
     cLFPValAbs = 'P(abs)'
     cLFPValLog = 'P(p)'
-    cLFMonUp   = 'Monotonic (Increasing)'
-    cLFMonDown = 'Monotonic (Decreasing)'
-    cLFMonBoth = 'Monotonic (Both)'
-    cLFDiv     = 'Divergent'
-    cLCol = ['#', 'Gene', 'Protein']
-    cSCol = [45, 70, 100]
+    cLFFCUp    = 'FC Increases'
+    cLFFCDown  = 'FC Decreases'
+    cLFFCBoth  = 'FC Inc/Dec'
+    cLFFCNo    = 'FC No Change'
+    cLFDiv     = 'FC Diverge'
+    cLCol      = ['#', 'Gene', 'Protein']
+    cSCol      = [45, 70, 100]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -1020,10 +1024,11 @@ class ProtProfPlot(BaseWindow):
             config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
         }
         
-        self.cLFMonMode = {
-            'Up'  : self.cLFMonUp,
-            'Down': self.cLFMonDown,
-            'Both': self.cLFMonBoth,
+        self.cLFFCMode = {
+            'Up'  : self.cLFFCUp,
+            'Down': self.cLFFCDown,
+            'Both': self.cLFFCBoth,
+            'No'  : self.cLFFCNo,
         }
         
         self.filterMethod = {
@@ -1031,9 +1036,10 @@ class ProtProfPlot(BaseWindow):
             self.cLFLog2FC : self.Filter_Log2FC,
             self.cLFPValAbs: self.Filter_PValue,
             self.cLFPValLog: self.Filter_PValue,
-            self.cLFMonUp  : self.Filter_Monotonicity,
-            self.cLFMonDown: self.Filter_Monotonicity,
-            self.cLFMonBoth: self.Filter_Monotonicity,
+            self.cLFFCUp   : self.Filter_FCChange,
+            self.cLFFCDown : self.Filter_FCChange,
+            self.cLFFCBoth : self.Filter_FCChange,
+            self.cLFFCNo   : self.Filter_FCChange,
             self.cLFDiv    : self.Filter_Divergent,
         }
         #------------------------------> 
@@ -1584,14 +1590,14 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def Filter_Monotonicity(
-        self, mode: Optional[int]=None, updateL: bool=True) -> bool:
-        """Filter results by monotonicity.
+    def Filter_FCChange(
+        self, mode: Optional[str]=None, updateL: bool=True) -> bool:
+        """Filter results by FC behavior.
     
             Parameters
             ----------
             mode : str
-                Up, Down or Both
+                Up, Down, Both or No
             updateL : bool
                 Update filterList and StatusBar (True) or not (False)
     
@@ -1608,18 +1614,22 @@ class ProtProfPlot(BaseWindow):
         #region ------------------------------------------> Get Value and Plot
         if mode == 'Up':
             self.df = self.df[df.apply(
-                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]), axis=1
+                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.CI['Cond']]), axis=1
             )]
         elif mode == 'Down':
             self.df = self.df[df.apply(
-                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]), axis=1
+                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.CI['Cond']]), axis=1
             )]
-        else:
+        elif mode == 'Both':
             self.df = self.df[df.apply(
                 lambda x: any(
-                        [x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']] +
-                        [x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]
+                        [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.CI['Cond']] +
+                        [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.CI['Cond']]
                 ), axis=1
+            )]
+        else: 
+            self.df = self.df[df.apply(
+                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) == 0) for y in self.CI['Cond']]), axis=1
             )]
         #------------------------------> 
         self.FillListCtrl()
@@ -1630,10 +1640,10 @@ class ProtProfPlot(BaseWindow):
         #region ------------------------------------------> Update Filter List
         if updateL:
             #------------------------------> 
-            self.StatusBarFilterText(f'{self.cLFMonMode[mode]}')
+            self.StatusBarFilterText(f'{self.cLFFCMode[mode]}')
             #------------------------------> 
             self.filterList.append(
-                [self.cLFMonMode[mode], {'mode':mode, 'updateL': False}]
+                [self.cLFFCMode[mode], {'mode':mode, 'updateL': False}]
             )
         else:
             pass
@@ -1643,8 +1653,8 @@ class ProtProfPlot(BaseWindow):
     #---
     
     def Filter_Divergent(self, updateL: bool=True) -> bool:
-        """Filter results based on the simultaneous presence of a monotonically
-            increasing and decreasing conditions.
+        """Filter results based on the simultaneous presence of a increasing and 
+            decreasing FC behavior in the conditions.
     
             Parameters
             ----------
@@ -1658,18 +1668,18 @@ class ProtProfPlot(BaseWindow):
         #region ----------------------------------------------------------> DF
         idx = pd.IndexSlice
         df = self.df.loc[:,idx[:,:,'FC']]
-        df.insert(0, ('C', 'C', 'FC'), 0)
         #endregion -------------------------------------------------------> DF
         
         #region ------------------------------------------> Get Value and Plot
-        self.df = self.df[df.apply(
-            lambda x: all(
-                [
-                    any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]),
-                    any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']])
-                ]
-            ), axis=1
-        )]
+        # self.df = self.df[df.apply(
+        #     lambda x: all(
+        #         [
+        #             any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]),
+        #             any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']])
+        #         ]
+        #     ), axis=1
+        # )]
+        self.df = self.df[df.apply(self.Filter_Divergent_Helper, axis=1)]
         #------------------------------> 
         self.FillListCtrl()
         self.VolDraw()
@@ -1689,6 +1699,44 @@ class ProtProfPlot(BaseWindow):
         #endregion ---------------------------------------> Update Filter List
         
         return True
+    #---
+    
+    def Filter_Divergent_Helper(self, x: pd.Series) -> bool:
+        """Determine whether x shows divergent behavior
+    
+            Parameters
+            ----------
+            x : pd.Series
+                Row in self.df
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        res = []
+        #endregion ------------------------------------------------> Variables
+        
+        #region -----------------------------------------------------> Compare
+        for y in self.CI['Cond']:
+            if (x.loc[idx[y,:,'FC']] > 0).all():
+                res.append(True)
+            elif (x.loc[idx[y,:,'FC']] == 0).all():
+                res.append(None)
+            elif (x.loc[idx[y,:,'FC']] < 0).all():    
+                res.append(False)
+            else:
+                pass
+        #endregion --------------------------------------------------> Compare
+        
+        #region ---------------------------------------------------------> Set 
+        resS = set(res)
+        if resS and len(resS) > 1:
+            return True
+        else:
+            return False
+        #endregion ------------------------------------------------------> Set 
     #---
     #------------------------------> 
     def StatusBarFilterText(self, text: str) -> bool:

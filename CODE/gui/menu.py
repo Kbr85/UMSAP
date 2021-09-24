@@ -916,10 +916,11 @@ class FiltersProtProf(wx.Menu):
         self.zScore  = self.Append(-1, 'Z Score')
         self.log2FC  = self.Append(-1, 'Log2(FC)')
         self.pValue  = self.Append(-1, 'P Value')
-        self.monUp   = self.Append(-1, 'Monotonically Increasing')
-        self.monDown = self.Append(-1, 'Monotonically Decreasing')
-        self.monBoth = self.Append(-1, 'Monotonically Both')
-        self.div     = self.Append(-1, 'Divergent')
+        self.fcUp    = self.Append(-1, 'FC Increases')
+        self.fcDown  = self.Append(-1, 'FC Decreases')
+        self.fcBoth  = self.Append(-1, 'FC Inc/Dec')
+        self.fcNo    = self.Append(-1, 'FC No Change')
+        self.div     = self.Append(-1, 'FC Diverge')
         self.AppendSeparator()
         self.apply = self.Append(-1, 'Apply All\tCtrl+A')
         self.update = self.Append(-1, 'Auto Apply Filters', kind=wx.ITEM_CHECK)
@@ -931,9 +932,10 @@ class FiltersProtProf(wx.Menu):
         
         #region -------------------------------------------------------> Names
         self.nameID = { # Associate IDs with Tab names. Avoid manual IDs
-            self.monUp.GetId()  : 'Up',
-            self.monDown.GetId(): 'Down',
-            self.monBoth.GetId(): 'Both',
+            self.fcUp.GetId()  : 'Up',
+            self.fcDown.GetId(): 'Down',
+            self.fcBoth.GetId(): 'Both',
+            self.fcNo.GetId()  : 'No',
         }
         #endregion ----------------------------------------------------> Names
         
@@ -941,9 +943,10 @@ class FiltersProtProf(wx.Menu):
         self.Bind(wx.EVT_MENU, self.OnZScore,      source=self.zScore)
         self.Bind(wx.EVT_MENU, self.OnLog2FC,      source=self.log2FC)
         self.Bind(wx.EVT_MENU, self.OnPValue,      source=self.pValue)
-        self.Bind(wx.EVT_MENU, self.OnMonotonicity,source=self.monUp)
-        self.Bind(wx.EVT_MENU, self.OnMonotonicity,source=self.monDown)
-        self.Bind(wx.EVT_MENU, self.OnMonotonicity,source=self.monBoth)
+        self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.fcUp)
+        self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.fcDown)
+        self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.fcBoth)
+        self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.fcNo)
         self.Bind(wx.EVT_MENU, self.OnDivergent,   source=self.div)
         self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.apply)
         self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.update)
@@ -1012,8 +1015,8 @@ class FiltersProtProf(wx.Menu):
         return True
     #---
     
-    def OnMonotonicity(self, event) -> bool:
-        """Filter results by monotonicity.
+    def OnFCChange(self, event) -> bool:
+        """Filter results by FC change.
     
             Parameters
             ----------
@@ -1026,7 +1029,7 @@ class FiltersProtProf(wx.Menu):
             bool
         """
         win = self.GetWindow()
-        win.Filter_Monotonicity(self.nameID[event.GetId()])
+        win.Filter_FCChange(self.nameID[event.GetId()])
         
         return True
     #---
