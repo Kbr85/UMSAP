@@ -198,13 +198,13 @@ pImages = res / 'IMAGES' # Images folder
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 #------------------------------> Names
-fnInitial   = "{}-Initial-Data.txt"
-fnFloat     = "{}-Floated-Data.txt"
-fnExclude   = "{}-After-Excluding-Data.txt"
-fnScore     = "{}-Score-Filtered-Data.txt"
-fnTrans     = "{}-Transformed-Data.txt"
-fnNorm      = "{}-Normalized-Data.txt"
-fnImp       = "{}-Imputed-Data.txt"
+fnInitial   = "{}-Initial-Data-{}.txt"
+fnFloat     = "{}-Floated-Data-{}.txt"
+fnExclude   = "{}-After-Excluding-Data-{}.txt"
+fnScore     = "{}-Score-Filtered-Data-{}.txt"
+fnTrans     = "{}-Transformed-Data-{}.txt"
+fnNorm      = "{}-Normalized-Data-{}.txt"
+fnImp       = "{}-Imputed-Data-{}.txt"
 fnDataSteps = 'Steps_Data_Files'
 fnDataInit  = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
@@ -252,6 +252,8 @@ lStColExtract   = 'Columns to Extract'
 lStResultCtrl   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
+lCbCeroTreat   = 'Treat 0s as missing values'
+lCbCeroTreatD  = '0s Missing'
 lCbTransMethod = 'Transformation'
 lCbNormMethod  = 'Normalization'
 lCbImputation  = 'Imputation'
@@ -409,7 +411,7 @@ mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
-sWinRegular = (930, 700)
+sWinRegular = (930, 730)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
 sWinModPlot = (1100, 625)

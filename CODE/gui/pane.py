@@ -25,6 +25,7 @@ import numpy as np
 from statsmodels.stats.multitest import multipletests
 
 import wx
+from wx.core import ALIGN_CENTER
 import wx.lib.scrolledpanel as scrolled
 
 import dat4s_core.data.file as dtsFF
@@ -76,6 +77,10 @@ class BaseConfPanel(
             Hint for the main input wx.TextCtrl. Default is config.hTcDataFile.
         cHuFile : str
             Hint for the umpsap file wx.TextCtrl. Default is config.hTcUFile.
+        cLCeroTreat : str
+            Label for the wx.CheckBox for the 0 values in data file.
+        cLCeroTreatD : str
+            Label for the 0 values boolean in d dict
         cLColumnBox : str
             Label for the wx.StaticBox in section Columns.
             Default is config.lSbColumn.
@@ -138,7 +143,12 @@ class BaseConfPanel(
             Keys in do whose values will be turned into a str. Default to
             ['iFile', 'uFile].
         d : dict
-            Dict with user input. See keys in Child class.
+            Dict with user input. 
+            The following key-value pairs are expected.
+            'oc' : {
+                'Column' : [list of int],
+            }
+            See Child class for other key - value pairs.
         date : str or None
             Date for the new section in the umsap file.
         dFile : Path
@@ -162,7 +172,14 @@ class BaseConfPanel(
         dlg : dtscore.ProgressDialog
             Progress dialog.
         do : dict
-            Dict with processed user input. See keys in Child class.
+            Dict with processed user input. 
+            The following key-value pairs are expected.
+            'Cero' : bool,
+            'df' : {
+                'ColumnF' : [list of int],
+                'ExcludeP': [list of int],
+            }
+            See Child class for other key - value pairs.
         msgError : Str or None
             Error message to show when analysis fails
         NCol : int
@@ -230,6 +247,8 @@ class BaseConfPanel(
         self.cLDataBox     = getattr(self, 'cLDataBox', config.lSbData)
         self.cLValueBox    = getattr(self, 'cLValueBox', config.lSbValue)
         self.cLColumnBox   = getattr(self, 'cLColumnBox', config.lSbColumn)
+        self.cLCeroTreat   = getattr(self, 'cLCeroTreat', config.lCbCeroTreat)
+        self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD', config.lCbCeroTreatD)
         self.cLNormMethod  = getattr(self, 'cLNormMethod', config.lCbNormMethod)
         self.cLTransMethod = getattr(
             self, 'cLTransMethod', config.lCbTransMethod)
@@ -344,6 +363,8 @@ class BaseConfPanel(
         )
         self.iFile.btn.SetToolTip(self.cTTiFile)
         
+        self.ceroB = wx.CheckBox(self.sbData, label=self.cLCeroTreat)
+        
         self.normMethod = dtsWidget.StaticTextComboBox(
             self.sbData, 
             label     = self.cLNormMethod,
@@ -410,38 +431,45 @@ class BaseConfPanel(
             border = 5
         )
         self.sizersbDataWid.Add(
-            self.transMethod.st,
+            self.ceroB,
             pos    = (0,1),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 5,
+            span   = (0, 6),
+        )
+        self.sizersbDataWid.Add(
+            self.transMethod.st,
+            pos    = (1,1),
             flag   = wx.ALL|wx.ALIGN_CENTER,
             border = 5,
         )
         self.sizersbDataWid.Add(
             self.transMethod.cb,
-            pos    = (0,2),
+            pos    = (1,2),
             flag   = wx.ALL|wx.EXPAND,
             border = 5,
         )
         self.sizersbDataWid.Add(
             self.normMethod.st,
-            pos    = (0,3),
+            pos    = (1,3),
             flag   = wx.ALL|wx.ALIGN_CENTER,
             border = 5,
         )
         self.sizersbDataWid.Add(
             self.normMethod.cb,
-            pos    = (0,4),
+            pos    = (1,4),
             flag   = wx.ALL|wx.EXPAND,
             border = 5,
         )
         self.sizersbDataWid.Add(
             self.imputationMethod.st,
-            pos    = (0,5),
+            pos    = (1,5),
             flag   = wx.ALL|wx.ALIGN_CENTER,
             border = 5,
         )
         self.sizersbDataWid.Add(
             self.imputationMethod.cb,
-            pos    = (0,6),
+            pos    = (1,6),
             flag   = wx.ALL|wx.EXPAND,
             border = 5,
         )
@@ -853,6 +881,135 @@ class BaseConfPanel(
             return False
         #endregion ------------------------------------------------> Data file
 
+        return True
+    #---
+    
+    def RA_0_Float(
+        self
+        ) -> tuple[bool, Optional[pd.DataFrame], Optional[pd.DataFrame]]:
+        """Convert or not 0s to NA and then all values to float.
+        
+            See Notes below for more details
+        
+            Returns
+            -------
+            tuple
+                (bool, pd.DataFrame or None, pd.DataFrame or None)
+                
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - iFileObj, instance of dtsFF.CSVFile
+            - do, dict with at least the following key -values pairs:
+                'oc' : {
+                    'Column' : [List of int],
+                },
+                'df' : {
+                    'ColumnF' : [List of int],
+                }
+        """
+        #region -----------------------------------------------------> Set dfI
+        dfI = self.iFileObj.df.iloc[:,self.do['oc']['Column']]
+        #endregion --------------------------------------------------> Set dfI
+        
+        #region -----------------------------------------------------> Set dfF
+        try:
+            if self.do['Cero']:
+                #------------------------------> Replace 0 and ''
+                dfF = dtsMethod.DFReplace(
+                    dfI, [0, ''], np.nan, sel=self.do['df']['ColumnF'],
+                )
+            else:
+                #------------------------------> Replace only ''
+                dfF = dtsMethod.DFReplace(
+                    dfI, [''], np.nan, sel=self.do['df']['ColumnF'],
+                )
+            #------------------------------> Float
+            self.dfF = dfF.iloc[:,self.do['df']['ColumnF']].astype('float')
+        except Exception as e:
+            self.msgError  = config.mPDDataTypeCol.format(
+                self.cLiFile,
+                ", ".join(map(str, self.do['df']['ColumnF'])),
+            )
+            self.tException = e
+            return (False, None, None)
+        #endregion --------------------------------------------------> Set dfF
+        
+        return (True, dfI, dfF)
+    #---
+    
+    def RA_Exclude(self) -> bool:
+        """Exclude rows from self.dfF based on the content of 
+            self.do['df']['ExcludeP'].
+            
+            See Notes below for more details
+    
+            Returns
+            -------
+            bool      
+            
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - do, dict with at least the following key - values pairs:
+                'df' : {
+                    'ExcludeP' : [List of int],
+                }
+            - dfF : pd.DataFrame with correct data types in each column.
+        """
+        #region -----------------------------------------------------> Exclude
+        if self.do['df']['ExcludeP']:
+            a = self.dfF.iloc[:,self.do['df']['ExcludeP']].notna()
+            a = a.loc[(a==True).any(axis=1)]
+            idx = a.index
+            self.dfEx = self.dfF.drop(index=idx)
+        else:
+            self.dfEx = self.dfF.copy()
+        #endregion --------------------------------------------------> Exclude
+        
+        return True
+    #---
+    
+    def RA_Transformation(self) -> bool:
+        """Apply selected data transformation.
+        
+            See Notes below for more information.
+    
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - do, dict with at least the following key - values pairs:
+                'Cero' : bool, How to treat 0 values,
+                'TransMethod': str, Transformation method name,
+                'df' : {
+                    'ResCtrlFlat' : [List of int],
+                },   
+        """
+        #region -----------------------------------------------------> Set rep
+        if self.do['Cero']:
+            rep = 0
+        else:
+            rep = np.nan
+        #endregion --------------------------------------------------> Set rep
+        
+        #region ---------------------------------------------------> Transform
+        try:
+            self.dfT = dtsStatistic.DataTransformation(
+                self.dfS, 
+                self.do['df']['ResCtrlFlat'], 
+                method = self.do['TransMethod'],
+                rep    = rep,
+            )
+        except Exception as e:
+            self.msgError   = config.mPDDataTran
+            self.tException = e
+            return False 
+        #endregion ------------------------------------------------> Transform
+        
         return True
     #---
     
@@ -2263,6 +2420,7 @@ class CorrA(BaseConfPanel):
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
         self.dfI = self.iFileObj.df.iloc[:,self.do['Column']]
+        #------------------------------> 
         try:
             #------------------------------> Replace 0 and ''
             self.dfS = dtsMethod.DFReplace(
@@ -2486,6 +2644,7 @@ class ProtProf(BaseConfModPanel):
                 "ScoreVal"   : "Score value threshold",
                 "RawI"       : "Raw intensity or not. Boolean",
                 "IndS"       : "Independent sampels or not. Boolean,
+                "Cero"       : Boolean, how to treat cero values,
                 "TransMethod": "Transformation method",
                 "NormMethod" : "Normalization method",
                 "ImpMethod"  : "Imputation method",
@@ -2596,7 +2755,7 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Base attributes and setup
         super().__init__(parent)
         #------------------------------> Needed to Run
-        self.cMainData  = '{}-ProteomeProfiling-Data.txt'
+        self.cMainData  = '{}-ProteomeProfiling-Data-{}.txt'
         #------------------------------> Labels
         self.cLCorrectP    = 'P Correction'
         self.cLGeneName    = 'Gene Names'
@@ -2933,6 +3092,7 @@ class ProtProf(BaseConfModPanel):
             self.uFile.tc.SetValue(dataI['CI']['uFile'])
             self.iFile.tc.SetValue(dataI['I'][self.cLiFile])
             #------------------------------> Data Preparation
+            self.ceroB.SetValue(dataI['I'][self.cLCeroTreatD])
             self.transMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.normMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.imputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
@@ -3082,6 +3242,8 @@ class ProtProf(BaseConfModPanel):
                 self.iFile.tc.GetValue()),
             self.EqualLenLabel(self.cLuFile) : (
                 self.uFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.ceroB.IsChecked()),
             self.EqualLenLabel(self.cLScoreVal) : (
                 self.scoreVal.tc.GetValue()),
             self.EqualLenLabel(self.cLSample) : (
@@ -3144,6 +3306,7 @@ class ProtProf(BaseConfModPanel):
             'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
             'RawI'       : True if self.rawI.cb.GetValue() == config.oIntensities['RawI'] else False,
             'IndS'       : True if self.sample.cb.GetValue() == config.oSamples['IS'] else False,
+            'Cero'       : self.ceroB.IsChecked(),
             'NormMethod' : self.normMethod.cb.GetValue(),
             'TransMethod': self.transMethod.cb.GetValue(),
             'ImpMethod'  : self.imputationMethod.cb.GetValue(),
@@ -3216,21 +3379,10 @@ class ProtProf(BaseConfModPanel):
         msgStep = msgPrefix + "Data type"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
-        self.dfI = self.iFileObj.df.iloc[:,self.do['oc']['Column']]
-        #------------------------------> 
-        try:
-            self.dfF = dtsMethod.DFReplace(
-                self.dfI, [0, ''], np.nan, sel=self.do['df']['ColumnF'],
-            )
-            self.dfF.iloc[:,self.do['df']['ColumnF']] = (
-                self.dfF.iloc[:,self.do['df']['ColumnF']].astype('float')
-            )
-        except Exception as e:
-            self.msgError  = config.mPDDataTypeCol.format(
-                self.cLiFile,
-                ", ".join(map(str, self.do['oc']['Column'])),
-            )
-            self.tException = e
+        a, self.dfI, self.dfF = self.RA_0_Float()
+        if a:
+            pass
+        else:
             return False
         
         if config.development:
@@ -3243,13 +3395,7 @@ class ProtProf(BaseConfModPanel):
         msgStep = msgPrefix + 'Excluding proteins by Exclude Proteins values'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Exclude
-        if self.do['df']['ExcludeP']:
-            a = self.dfF.iloc[:,self.do['df']['ExcludeP']].notna()
-            a = a.loc[(a==True).any(axis=1)]
-            idx = a.index
-            self.dfEx = self.dfF.drop(index=idx)
-        else:
-            self.dfEx = self.dfF.copy()
+        self.RA_Exclude()
             
         if config.development:
             print('self.dfEx.shape: ', self.dfEx.shape)
@@ -3278,18 +3424,11 @@ class ProtProf(BaseConfModPanel):
         )  
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Transformed
-        try:
-            self.dfT = dtsStatistic.DataTransformation(
-                self.dfS, 
-                self.do['df']['ResCtrlFlat'], 
-                method = self.do['TransMethod'],
-                rep    = np.nan,
-            )
-        except Exception as e:
-            self.msgError   = config.mPDDataTran
-            self.tException = e
-            return False                
-        
+        if self.RA_Transformation():
+            pass
+        else:
+            return False
+                       
         if config.development:
             print('self.dfT.shape: ', self.dfT.shape)
         #endregion -------------------------------------------> Transformation
@@ -3397,14 +3536,14 @@ class ProtProf(BaseConfModPanel):
         """Write output """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01'): self.dfI,
-            config.fnFloat.format('02')  : self.dfF,
-            config.fnExclude.format('03'): self.dfEx,
-            config.fnScore.format('04')  : self.dfS,
-            config.fnTrans.format('05')  : self.dfT,
-            config.fnNorm.format('06')   : self.dfN,
-            config.fnImp.format('07')    : self.dfIm,
-            self.cMainData.format('08')  : self.dfR,
+            config.fnInitial.format('01', self.date): self.dfI,
+            config.fnFloat.format('02', self.date)  : self.dfF,
+            config.fnExclude.format('03', self.date): self.dfEx,
+            config.fnScore.format('04', self.date)  : self.dfS,
+            config.fnTrans.format('05', self.date)  : self.dfT,
+            config.fnNorm.format('06', self.date)   : self.dfN,
+            config.fnImp.format('07', self.date)    : self.dfIm,
+            self.cMainData.format('08', self.date)  : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
 
