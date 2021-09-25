@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Literal
 
 import wx
 
@@ -55,12 +55,17 @@ def StrSetMessage(start, end, link='\n\nFurther details:\n'):
 #region -------------------------------------------------------------> Classes
 class Notification(dtsWindow.NotificationDialog):
     """This avoids to type the title and the image of the window every time """
-    def __init__(self, mode: str, msg: Optional[str]=None, 
-        tException: Optional[Exception]=None, parent: Optional[wx.Window]=None, 
-        img: Path=config.fImgIcon, button: int=1,) -> None:
+    def __init__(
+        self, 
+        mode: Literal['errorF', 'errorU', 'warning', 'success', 'question'], 
+        msg: Optional[str]=None, tException: Optional[Exception]=None, 
+        parent: Optional[wx.Window]=None, img: Path=config.fImgIcon, 
+        button: int=1, setText=False
+        ) -> None:
         """ """
         super().__init__(mode, msg=msg, tException=tException, parent=parent,
-            button=button, img=img, title='UMSAP - Notification')
+            button=button, img=img, title='UMSAP - Notification', 
+            setText=setText)
     #---
 #---
 
