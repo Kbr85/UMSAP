@@ -198,13 +198,13 @@ pImages = res / 'IMAGES' # Images folder
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 #------------------------------> Names
-fnInitial   = "{}-Initial-Data.txt"
-fnFloat     = "{}-Floated-Data.txt"
-fnExclude   = "{}-After-Excluding-Data.txt"
-fnScore     = "{}-Score-Filtered-Data.txt"
-fnTrans     = "{}-Transformed-Data.txt"
-fnNorm      = "{}-Normalized-Data.txt"
-fnImp       = "{}-Imputed-Data.txt"
+fnInitial   = "{}-Initial-Data-{}.txt"
+fnFloat     = "{}-Floated-Data-{}.txt"
+fnExclude   = "{}-After-Excluding-Data-{}.txt"
+fnScore     = "{}-Score-Filtered-Data-{}.txt"
+fnTrans     = "{}-Transformed-Data-{}.txt"
+fnNorm      = "{}-Normalized-Data-{}.txt"
+fnImp       = "{}-Imputed-Data-{}.txt"
 fnDataSteps = 'Steps_Data_Files'
 fnDataInit  = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files

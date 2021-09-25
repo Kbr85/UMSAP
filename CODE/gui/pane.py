@@ -981,7 +981,13 @@ class BaseConfPanel(
     
             Notes
             -----
-            
+            Assumes child class has the following attributes:
+            - do, dict with at least the following key - values pairs:
+                'Cero' : bool, How to treat 0 values,
+                'TransMethod': str, Transformation method name,
+                'df' : {
+                    'ResCtrlFlat' : [List of int],
+                },   
         """
         #region -----------------------------------------------------> Set rep
         if self.do['Cero']:
@@ -2748,7 +2754,7 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Base attributes and setup
         super().__init__(parent)
         #------------------------------> Needed to Run
-        self.cMainData  = '{}-ProteomeProfiling-Data.txt'
+        self.cMainData  = '{}-ProteomeProfiling-Data-{}.txt'
         #------------------------------> Labels
         self.cLCorrectP    = 'P Correction'
         self.cLGeneName    = 'Gene Names'
@@ -3529,14 +3535,14 @@ class ProtProf(BaseConfModPanel):
         """Write output """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01'): self.dfI,
-            config.fnFloat.format('02')  : self.dfF,
-            config.fnExclude.format('03'): self.dfEx,
-            config.fnScore.format('04')  : self.dfS,
-            config.fnTrans.format('05')  : self.dfT,
-            config.fnNorm.format('06')   : self.dfN,
-            config.fnImp.format('07')    : self.dfIm,
-            self.cMainData.format('08')  : self.dfR,
+            config.fnInitial.format('01', self.date): self.dfI,
+            config.fnFloat.format('02', self.date)  : self.dfF,
+            config.fnExclude.format('03', self.date): self.dfEx,
+            config.fnScore.format('04', self.date)  : self.dfS,
+            config.fnTrans.format('05', self.date)  : self.dfT,
+            config.fnNorm.format('06', self.date)   : self.dfN,
+            config.fnImp.format('07', self.date)    : self.dfIm,
+            self.cMainData.format('08', self.date)  : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
 
