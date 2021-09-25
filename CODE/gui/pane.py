@@ -2644,6 +2644,7 @@ class ProtProf(BaseConfModPanel):
                 "ScoreVal"   : "Score value threshold",
                 "RawI"       : "Raw intensity or not. Boolean",
                 "IndS"       : "Independent sampels or not. Boolean,
+                "Cero"       : Boolean, how to treat cero values,
                 "TransMethod": "Transformation method",
                 "NormMethod" : "Normalization method",
                 "ImpMethod"  : "Imputation method",
