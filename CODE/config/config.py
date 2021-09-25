@@ -253,6 +253,7 @@ lStResultCtrl   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
 lCbCeroTreat   = 'Treat 0s as missing values'
+lCbCeroTreatD  = '0s Missing'
 lCbTransMethod = 'Transformation'
 lCbNormMethod  = 'Normalization'
 lCbImputation  = 'Imputation'
