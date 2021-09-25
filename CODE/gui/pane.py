@@ -25,6 +25,7 @@ import numpy as np
 from statsmodels.stats.multitest import multipletests
 
 import wx
+from wx.core import ALIGN_CENTER
 import wx.lib.scrolledpanel as scrolled
 
 import dat4s_core.data.file as dtsFF
@@ -230,6 +231,7 @@ class BaseConfPanel(
         self.cLDataBox     = getattr(self, 'cLDataBox', config.lSbData)
         self.cLValueBox    = getattr(self, 'cLValueBox', config.lSbValue)
         self.cLColumnBox   = getattr(self, 'cLColumnBox', config.lSbColumn)
+        self.cLCeroTreat   = getattr(self, 'cLCeroTreat', config.lCbCeroTreat)
         self.cLNormMethod  = getattr(self, 'cLNormMethod', config.lCbNormMethod)
         self.cLTransMethod = getattr(
             self, 'cLTransMethod', config.lCbTransMethod)
@@ -344,6 +346,8 @@ class BaseConfPanel(
         )
         self.iFile.btn.SetToolTip(self.cTTiFile)
         
+        self.ceroB = wx.CheckBox(self.sbData, label=self.cLCeroTreat)
+        
         self.normMethod = dtsWidget.StaticTextComboBox(
             self.sbData, 
             label     = self.cLNormMethod,
@@ -410,38 +414,45 @@ class BaseConfPanel(
             border = 5
         )
         self.sizersbDataWid.Add(
-            self.transMethod.st,
+            self.ceroB,
             pos    = (0,1),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 5,
+            span   = (0, 6),
+        )
+        self.sizersbDataWid.Add(
+            self.transMethod.st,
+            pos    = (1,1),
             flag   = wx.ALL|wx.ALIGN_CENTER,
             border = 5,
         )
         self.sizersbDataWid.Add(
             self.transMethod.cb,
-            pos    = (0,2),
+            pos    = (1,2),
             flag   = wx.ALL|wx.EXPAND,
             border = 5,
         )
         self.sizersbDataWid.Add(
             self.normMethod.st,
-            pos    = (0,3),
+            pos    = (1,3),
             flag   = wx.ALL|wx.ALIGN_CENTER,
             border = 5,
         )
         self.sizersbDataWid.Add(
             self.normMethod.cb,
-            pos    = (0,4),
+            pos    = (1,4),
             flag   = wx.ALL|wx.EXPAND,
             border = 5,
         )
         self.sizersbDataWid.Add(
             self.imputationMethod.st,
-            pos    = (0,5),
+            pos    = (1,5),
             flag   = wx.ALL|wx.ALIGN_CENTER,
             border = 5,
         )
         self.sizersbDataWid.Add(
             self.imputationMethod.cb,
-            pos    = (0,6),
+            pos    = (1,6),
             flag   = wx.ALL|wx.EXPAND,
             border = 5,
         )

@@ -252,6 +252,7 @@ lStColExtract   = 'Columns to Extract'
 lStResultCtrl   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
+lCbCeroTreat   = 'Treat 0s as missing values'
 lCbTransMethod = 'Transformation'
 lCbNormMethod  = 'Normalization'
 lCbImputation  = 'Imputation'
@@ -409,7 +410,7 @@ mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
-sWinRegular = (930, 700)
+sWinRegular = (930, 730)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
 sWinModPlot = (1100, 625)
