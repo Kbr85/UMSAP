@@ -928,16 +928,45 @@ class ProtProfPlot(BaseWindow):
         cLFLog2Fc : str
             StatusBar text for filter Log2FC.
         cLFFCUp : str
-            StatusBar text for filter FC Increasing.
+            Id for the FC Change Above 0 filter.     
+        cLFFCUpL : str
+            StatusBar text for filter FC Change Above 0.
+        cLFFCUpAbs : str
+            Id for the FC Change Absolutely Increasing filter.       
+        cLFFCUpAbsL : str
+            StatusBar text for filter FC Change Absolutely Increasing filter. 
+        cLFFCUpMon : str
+            Id for the FC Change Monotonically Increasing filter.       
+        cLFFCUpMonL  : str
+            StatusBar text for filter FC Change Monotonically Increasingly.
         cLFFCDown : str
-            StatusBar text for filter FC Decreasing.
+            Id for the FC Change Below 0 filter.        
+        cLFFCDownL : str
+            StatusBar text for filter FC Change Below 0.  
+        cLFFCDownAbs : str
+            Id for the FC Change Absolutely Decreasing filter.     
+        cLFFCDownAbsL : str
+            StatusBar text for filter FC Change Decreasing Absolutely.
+        cLFFCDownMon : str
+            Id for the FC Change Decreasing Monotonically filter.     
+        cLFFCDownMonL : str
+            StatusBar text for filter FC Change Decreasing Monotonically.
         cLFFCBoth : str
-            StatusBar text for filter FC Both.
+            Id for the FC Change Up/Down filter.        
+        cLFFCBothL : str
+            StatusBar text for filter FC Change Up/Down  
+        cLFFCBothAbs : str
+            Id for the FC Change Absolutely Up/Down filter.     
+        cLFFCBothAbsL : str
+            StatusBar text for filter FC Change Absolutely Up/Down
+        cLFFCBothMon : str
+            Id for the FC Change Monotonically Up/Down filter.     
+        cLFFCBothMonL : str
+            StatusBar text for filter FC Change Monotonically Up/Down
+        cLFFCDict : dict
+            Keys are cLFFCUp like and values are cLFFCUpL like
         cLFFCNo : str
             StatusBar text for filter FC No.
-        cLFFCMode : dict
-            Keys are 'Up', 'Down', 'Both' or 'No' and values are the StatusBar 
-            Text.
         cLFPValAbs : str
             StatusBar Text for filter P values when absolute values are used.
         cLFPValLog : str
