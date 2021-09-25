@@ -2501,7 +2501,7 @@ class CorrA(BaseConfPanel):
             config.fnFloat.format('02', self.date)  : self.dfS,
             config.fnTrans.format('03', self.date)  : self.dfT,
             config.fnNorm.format('04', self.date)   : self.dfN,
-            config.fnImp.format('05', self.date)    : self.dfI,
+            config.fnImp.format('05', self.date)    : self.dfIm,
             self.cMainData.format('06', self.date)  : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
