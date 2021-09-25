@@ -364,6 +364,7 @@ class BaseConfPanel(
         self.iFile.btn.SetToolTip(self.cTTiFile)
         
         self.ceroB = wx.CheckBox(self.sbData, label=self.cLCeroTreat)
+        self.ceroB.SetValue(True)
         
         self.normMethod = dtsWidget.StaticTextComboBox(
             self.sbData, 
@@ -991,9 +992,9 @@ class BaseConfPanel(
         """
         #region -----------------------------------------------------> Set rep
         if self.do['Cero']:
-            rep = 0
-        else:
             rep = np.nan
+        else:
+            rep = 0
         #endregion --------------------------------------------------> Set rep
         
         #region ---------------------------------------------------> Transform
@@ -1977,6 +1978,7 @@ class CorrA(BaseConfPanel):
             {
                 'uFile'      : 'umsap file path',
                 'iFile'      : 'data file path',
+                "Cero"       : Boolean, how to treat cero values,
                 'TransMethod': 'transformation method',
                 'NormMethod' : 'normalization method',
                 'ImpMethod'  : 'imputation method',
@@ -2060,7 +2062,7 @@ class CorrA(BaseConfPanel):
         #------------------------------> Setup attributes in base class 
         super().__init__(parent)
         #------------------------------> Needed to Run
-        self.cMainData  = '{}-CorrelationCoefficients-Data.txt'
+        self.cMainData  = '{}-CorrelationCoefficients-Data-{}.txt'
         #------------------------------> Label
         self.cLCorr      = config.lCbCorrMethod
         self.cLiListCtrl = config.lStColIFile.format(self.cLiFile)
@@ -2259,6 +2261,7 @@ class CorrA(BaseConfPanel):
             self.uFile.tc.SetValue(dataI['CI']['uFile'])
             self.iFile.tc.SetValue(dataI['I']['Data File'])
             #------------------------------> 
+            self.ceroB.SetValue(dataI['I'][self.cLCeroTreatD])
             self.transMethod.cb.SetValue(dataI['CI']['TransMethod'])
             self.normMethod.cb.SetValue(dataI['CI']['NormMethod'])
             self.imputationMethod.cb.SetValue(dataI['CI']['ImpMethod'])
@@ -2267,7 +2270,7 @@ class CorrA(BaseConfPanel):
             if Path(self.iFile.tc.GetValue()).exists:
                 #------------------------------> Add columns with the same order
                 l = []
-                for k in dataI['CI']['Column']:
+                for k in dataI['CI']['oc']['Column']:
                     if len(l) == 0:
                         #------------------------------> 
                         l.append(k)
@@ -2348,6 +2351,7 @@ class CorrA(BaseConfPanel):
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         
         col = [int(x) for x in self.lbO.GetColContent(0)]
+        colF = [x for x in range(0, len(col))]
         
         #------------------------------> As given
         self.d = {
@@ -2355,6 +2359,8 @@ class CorrA(BaseConfPanel):
                 self.iFile.tc.GetValue()),
             self.EqualLenLabel(self.cLuFile) : (
                 self.uFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.ceroB.IsChecked()),
             self.EqualLenLabel(self.cLTransMethod) : (
                 self.transMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLNormMethod) : (
@@ -2372,13 +2378,17 @@ class CorrA(BaseConfPanel):
         self.do = {
             'uFile'      : Path(self.uFile.tc.GetValue()),
             'iFile'      : Path(self.iFile.tc.GetValue()),
+            'Cero'       : self.ceroB.IsChecked(),
             'TransMethod': self.transMethod.cb.GetValue(),
             'NormMethod' : self.normMethod.cb.GetValue(),
             'ImpMethod'  : self.imputationMethod.cb.GetValue(),
             'CorrMethod' : self.corrMethod.cb.GetValue(),
-            'Column'     : col,
+            'oc'         : {
+                'Column'     : col,
+            },
             'df'         : {
-                'Column' : [x for x in range(0, len(col))]
+                'ColumnF' : colF,
+                'ResCtrlFlat' : colF,
             }
         }
         #------------------------------> File base name
@@ -2419,21 +2429,10 @@ class CorrA(BaseConfPanel):
         msgStep = msgPrefix + f"{self.cLiFile}, data type"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
-        self.dfI = self.iFileObj.df.iloc[:,self.do['Column']]
-        #------------------------------> 
-        try:
-            #------------------------------> Replace 0 and ''
-            self.dfS = dtsMethod.DFReplace(
-                self.dfI, [0, ''], np.nan, sel=self.do['df']['Column'],
-            )
-            #------------------------------> Float
-            self.dfS = self.dfS.astype('float')
-        except Exception as e:
-            self.msgError  = config.mPDDataTypeCol.format(
-                self.cLiFile,
-                ", ".join(map(str, self.do['df']['Column'])),
-            )
-            self.tException = e
+        a, self.dfI, self.dfS = self.RA_0_Float()
+        if a:
+            pass
+        else:
             return False
         #endregion ---------------------------------------------------> Column
         
@@ -2442,13 +2441,9 @@ class CorrA(BaseConfPanel):
         msgStep = msgPrefix + f"Data transformation"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
-        try:
-            self.dfT = dtsStatistic.DataTransformation(
-                self.dfS, sel=None, method=self.do['TransMethod'], rep=np.nan,
-            )
-        except Exception as e:
-            self.msgError = str(e)
-            self.tException = e
+        if self.RA_Transformation():
+            pass
+        else:
             return False
         #endregion ------------------------------------------> Transaformation
         
@@ -2502,12 +2497,12 @@ class CorrA(BaseConfPanel):
         """Write output. Override as needed """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01'): self.dfI,
-            config.fnFloat.format('02')  : self.dfS,
-            config.fnTrans.format('03')  : self.dfT,
-            config.fnNorm.format('04')   : self.dfN,
-            config.fnImp.format('05')    : self.dfI,
-            self.cMainData.format('06')  : self.dfR,
+            config.fnInitial.format('01', self.date): self.dfI,
+            config.fnFloat.format('02', self.date)  : self.dfS,
+            config.fnTrans.format('03', self.date)  : self.dfT,
+            config.fnNorm.format('04', self.date)   : self.dfN,
+            config.fnImp.format('05', self.date)    : self.dfI,
+            self.cMainData.format('06', self.date)  : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
         
