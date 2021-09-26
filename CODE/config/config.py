@@ -457,6 +457,7 @@ color = { # Colors for the app
             'c1': [255, 0, 0],
             'c2': [255, 255, 255],
             'c3': [0, 0, 255],
+            'NA': '#90EE90',
         },
     },
     nwProtProf : {
