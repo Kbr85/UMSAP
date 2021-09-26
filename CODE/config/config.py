@@ -243,6 +243,7 @@ lStProtProfRP   = 'Relevant Points'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'  
 #------------------------------> wx.Statictext
+lStId           = 'Analysis ID'
 lStAlpha        = 'Significance level'
 lStColIFile     = "Columns in the {}"
 lStScoreVal     = 'Score Value'
@@ -275,6 +276,7 @@ lPdEllapsed = 'Ellapsed time: '
 hTcDataFile = f"Path to the {lBtnDataFile}"
 hTcOutFile  = f"Path tot the {lBtnOutFile}"
 hTcUFile    = f"Path tot the {lBtnUFile}"
+hTcId       = 'e.g. HIV inhibitor'
 #endregion ------------------------------------------------------------> Hints
 
 
@@ -288,6 +290,7 @@ ttBtnHelp     = "Read tutorial at {}."
 ttBtnClearAll = f"Clear all user input."
 ttBtnRun      = f"Start the analysis."
 #------------------------------> wx.StaticText
+ttStId = 'Short text to id the analysis. Do not include the date.'
 ttStTrans = f"Select the {lCbTransMethod} method."
 ttStNorm = f"Select the {lCbNormMethod} method."
 ttStImputation = f"Select the {lCbImputation} method."
@@ -411,7 +414,7 @@ mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
-sWinRegular = (930, 730)
+sWinRegular = (930, 770)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
 sWinModPlot = (1100, 625)
@@ -457,6 +460,7 @@ color = { # Colors for the app
             'c1': [255, 0, 0],
             'c2': [255, 255, 255],
             'c3': [0, 0, 255],
+            'NA': '#90EE90',
         },
     },
     nwProtProf : {

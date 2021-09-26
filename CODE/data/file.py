@@ -188,7 +188,7 @@ class UMSAPFile():
             try:
                 #------------------------------> Create data
                 df  = pd.DataFrame(v['R'], dtype='float64')
-                if (numCol := len(v['CI']['Column'])) == df.shape[0]:
+                if (numCol := len(v['CI']['oc']['Column'])) == df.shape[0]:
                     pass
                 else:
                     continue
@@ -196,7 +196,7 @@ class UMSAPFile():
                 plotData[k] = {
                     'DF'        : df,
                     'NumCol'    : numCol,
-                    'NumColList': v['CI']['Column'],
+                    'NumColList': v['CI']['oc']['Column'],
                 }
             except Exception:
                 pass

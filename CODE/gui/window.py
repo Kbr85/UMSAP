@@ -318,6 +318,25 @@ class BaseWindow(wx.Frame):
      
         dlg.Destroy()
         return True	
+    #---
+    
+    def OnCheckDataPrep(self, tDate: str) -> bool:
+        """Launch the Check Data Preparation Window.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            bool
+    
+            Raise
+            -----
+            
+        """
+        print(self.cSection, tDate)
+        return True
     #---	
     #endregion ------------------------------------------------> Class methods
 #---
@@ -659,10 +678,11 @@ class CorrAPlot(BaseWindowPlot):
         self.data    = self.obj.confData[self.cSection]
         self.date    = [x for x in self.data.keys()]
         self.cmap    = dtsMethod.MatplotLibCmap(
-            N  = config.color[self.cSection]['CMAP']['N'],
-            c1 = config.color[self.cSection]['CMAP']['c1'],
-            c2 = config.color[self.cSection]['CMAP']['c2'],
-            c3 = config.color[self.cSection]['CMAP']['c3'],
+            N   = config.color[self.cSection]['CMAP']['N'],
+            c1  = config.color[self.cSection]['CMAP']['c1'],
+            c2  = config.color[self.cSection]['CMAP']['c2'],
+            c3  = config.color[self.cSection]['CMAP']['c3'],
+            bad = config.color[self.cSection]['CMAP']['NA'],
         )
 
         super().__init__(parent, {'menudate' : self.date})

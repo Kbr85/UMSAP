@@ -77,6 +77,8 @@ class BaseConfPanel(
             Hint for the main input wx.TextCtrl. Default is config.hTcDataFile.
         cHuFile : str
             Hint for the umpsap file wx.TextCtrl. Default is config.hTcUFile.
+        cHId : str
+            Hint for the ID
         cLCeroTreat : str
             Label for the wx.CheckBox for the 0 values in data file.
         cLCeroTreatD : str
@@ -93,6 +95,8 @@ class BaseConfPanel(
         cLiFile : str
             Label for the main input data wx.Button. 
             Default is config.lBtnDataFile.
+        cLId : str
+            Label for the ID.
         cLRunBtn : str
             Label for the run wx.Button. Default is config.lBtnRun.
         cLuFile : str
@@ -122,6 +126,8 @@ class BaseConfPanel(
             Tooltip for the Help button. Default is config.ttBtnHelpDef.
         cTTiFile : str
             Tooltip for the input file button. Default is config.ttTcDataFile.
+        cTTId : str
+            Tooltip for the ID.
         cTTRun : str
             Tooltip for the run button. Default is config.ttBtnRun.
         cTTuFile : str
@@ -243,6 +249,7 @@ class BaseConfPanel(
         self.cLRunBtn      = getattr(self, 'cLRunBtn', config.lBtnRun)
         self.cLuFile       = getattr(self, 'cLuFile', config.lBtnUFile)
         self.cLiFile       = getattr(self, 'cLiFile', config.lBtnDataFile)
+        self.cLId          = getattr(self, 'cLId', config.lStId)
         self.cLFileBox     = getattr(self, 'cLFileBox', config.lSbFile)
         self.cLDataBox     = getattr(self, 'cLDataBox', config.lSbData)
         self.cLValueBox    = getattr(self, 'cLValueBox', config.lSbValue)
@@ -264,9 +271,11 @@ class BaseConfPanel(
         #------------------------------> Hints
         self.cHuFile = getattr(self, 'cHuFile', config.hTcUFile)
         self.cHiFile = getattr(self, 'cHiFile', config.hTcDataFile)
+        self.cHId    = getattr(self, 'cHId', config.hTcId)
         #------------------------------> Tooltips
         self.cTTuFile       = getattr(self, 'cTTuFile', config.ttBtnUFile)
         self.cTTiFile       = getattr(self, 'cTTiFile', config.ttBtnDataFile)
+        self.cTTId          = getattr(self, 'cTTId', config.ttStId)
         self.cTTHelp        = getattr(self, 'cTTHelp', config.ttBtnHelpDef)
         self.cTTClearAll    = getattr(self, 'cTTClearAll', config.ttBtnClearAll)
         self.cTTRun         = getattr(self, 'cTTRun', config.ttBtnRun)
@@ -363,7 +372,14 @@ class BaseConfPanel(
         )
         self.iFile.btn.SetToolTip(self.cTTiFile)
         
+        self.id = dtsWidget.StaticTextCtrl(
+            self.sbFile,
+            stLabel = self.cLId,
+            tcHint  = self.cHId,
+        )
+        
         self.ceroB = wx.CheckBox(self.sbData, label=self.cLCeroTreat)
+        self.ceroB.SetValue(True)
         
         self.normMethod = dtsWidget.StaticTextComboBox(
             self.sbData, 
@@ -391,6 +407,7 @@ class BaseConfPanel(
         self.btnHelp.SetToolTip(self.cTTHelp)
         self.btnClearAll.SetToolTip(self.cTTClearAll)
         self.btnRun.SetToolTip(self.cTTRun)
+        self.id.st.SetToolTip(self.cTTId)
         self.normMethod.st.SetToolTip(self.cTTNormMethod)
         self.transMethod.st.SetToolTip(self.cTTTransMethod)
         self.imputationMethod.st.SetToolTip(self.cTTImputation)
@@ -418,6 +435,18 @@ class BaseConfPanel(
         self.sizersbFileWid.Add(
             self.iFile.tc,
             pos    = (1,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.id.st,
+            pos    = (2,0),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.id.tc,
+            pos    = (2,1),
             flag   = wx.EXPAND|wx.ALL,
             border = 5
         )
@@ -737,7 +766,7 @@ class BaseConfPanel(
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Create output dict
         dateDict = {
-            self.date : {
+            f'{self.date} - {self.do["ID"]}' : {
                 'V' : config.dictVersion,
                 'I' : self.d,
                 'CI': dtsMethod.DictVal2Str(self.do, self.changeKey, new=True),
@@ -991,9 +1020,9 @@ class BaseConfPanel(
         """
         #region -----------------------------------------------------> Set rep
         if self.do['Cero']:
-            rep = 0
-        else:
             rep = np.nan
+        else:
+            rep = 0
         #endregion --------------------------------------------------> Set rep
         
         #region ---------------------------------------------------> Transform
@@ -1977,6 +2006,8 @@ class CorrA(BaseConfPanel):
             {
                 'uFile'      : 'umsap file path',
                 'iFile'      : 'data file path',
+                'ID'         : 'Analysis ID',
+                "Cero"       : 'Boolean, how to treat cero values',
                 'TransMethod': 'transformation method',
                 'NormMethod' : 'normalization method',
                 'ImpMethod'  : 'imputation method',
@@ -2060,7 +2091,7 @@ class CorrA(BaseConfPanel):
         #------------------------------> Setup attributes in base class 
         super().__init__(parent)
         #------------------------------> Needed to Run
-        self.cMainData  = '{}-CorrelationCoefficients-Data.txt'
+        self.cMainData  = '{}-CorrelationCoefficients-Data-{}.txt'
         #------------------------------> Label
         self.cLCorr      = config.lCbCorrMethod
         self.cLiListCtrl = config.lStColIFile.format(self.cLiFile)
@@ -2213,6 +2244,7 @@ class CorrA(BaseConfPanel):
                 self.iFile.tc.SetValue(str(Path(f'C:/Users/{user}/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt')))
             else:
                 pass
+            self.id.tc.SetValue("Beta Version Dev")
             self.transMethod.cb.SetValue("Log2")
             self.normMethod.cb.SetValue("Median")
             self.imputationMethod.cb.SetValue("Normal Distribution")
@@ -2258,7 +2290,9 @@ class CorrA(BaseConfPanel):
             #------------------------------> 
             self.uFile.tc.SetValue(dataI['CI']['uFile'])
             self.iFile.tc.SetValue(dataI['I']['Data File'])
+            self.id.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> 
+            self.ceroB.SetValue(dataI['I'][self.cLCeroTreatD])
             self.transMethod.cb.SetValue(dataI['CI']['TransMethod'])
             self.normMethod.cb.SetValue(dataI['CI']['NormMethod'])
             self.imputationMethod.cb.SetValue(dataI['CI']['ImpMethod'])
@@ -2267,7 +2301,7 @@ class CorrA(BaseConfPanel):
             if Path(self.iFile.tc.GetValue()).exists:
                 #------------------------------> Add columns with the same order
                 l = []
-                for k in dataI['CI']['Column']:
+                for k in dataI['CI']['oc']['Column']:
                     if len(l) == 0:
                         #------------------------------> 
                         l.append(k)
@@ -2348,6 +2382,7 @@ class CorrA(BaseConfPanel):
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         
         col = [int(x) for x in self.lbO.GetColContent(0)]
+        colF = [x for x in range(0, len(col))]
         
         #------------------------------> As given
         self.d = {
@@ -2355,6 +2390,10 @@ class CorrA(BaseConfPanel):
                 self.iFile.tc.GetValue()),
             self.EqualLenLabel(self.cLuFile) : (
                 self.uFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLId) : (
+                self.id.tc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.ceroB.IsChecked()),
             self.EqualLenLabel(self.cLTransMethod) : (
                 self.transMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLNormMethod) : (
@@ -2372,13 +2411,18 @@ class CorrA(BaseConfPanel):
         self.do = {
             'uFile'      : Path(self.uFile.tc.GetValue()),
             'iFile'      : Path(self.iFile.tc.GetValue()),
+            'ID'         : self.id.tc.GetValue(),
+            'Cero'       : self.ceroB.IsChecked(),
             'TransMethod': self.transMethod.cb.GetValue(),
             'NormMethod' : self.normMethod.cb.GetValue(),
             'ImpMethod'  : self.imputationMethod.cb.GetValue(),
             'CorrMethod' : self.corrMethod.cb.GetValue(),
-            'Column'     : col,
+            'oc'         : {
+                'Column'     : col,
+            },
             'df'         : {
-                'Column' : [x for x in range(0, len(col))]
+                'ColumnF' : colF,
+                'ResCtrlFlat' : colF,
             }
         }
         #------------------------------> File base name
@@ -2419,38 +2463,23 @@ class CorrA(BaseConfPanel):
         msgStep = msgPrefix + f"{self.cLiFile}, data type"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
-        self.dfI = self.iFileObj.df.iloc[:,self.do['Column']]
-        #------------------------------> 
-        try:
-            #------------------------------> Replace 0 and ''
-            self.dfS = dtsMethod.DFReplace(
-                self.dfI, [0, ''], np.nan, sel=self.do['df']['Column'],
-            )
-            #------------------------------> Float
-            self.dfS = self.dfS.astype('float')
-        except Exception as e:
-            self.msgError  = config.mPDDataTypeCol.format(
-                self.cLiFile,
-                ", ".join(map(str, self.do['df']['Column'])),
-            )
-            self.tException = e
+        a, self.dfI, self.dfS = self.RA_0_Float()
+        if a:
+            pass
+        else:
             return False
         #endregion ---------------------------------------------------> Column
         
-        #region ---------------------------------------------> Transaformation
+        #region ----------------------------------------------> Transformation
         #------------------------------> Msg
         msgStep = msgPrefix + f"Data transformation"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
-        try:
-            self.dfT = dtsStatistic.DataTransformation(
-                self.dfS, sel=None, method=self.do['TransMethod'], rep=np.nan,
-            )
-        except Exception as e:
-            self.msgError = str(e)
-            self.tException = e
+        if self.RA_Transformation():
+            pass
+        else:
             return False
-        #endregion ------------------------------------------> Transaformation
+        #endregion -------------------------------------------> Transformation
         
         #region -----------------------------------------------> Normalization
         #------------------------------> Msg
@@ -2502,12 +2531,12 @@ class CorrA(BaseConfPanel):
         """Write output. Override as needed """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01'): self.dfI,
-            config.fnFloat.format('02')  : self.dfS,
-            config.fnTrans.format('03')  : self.dfT,
-            config.fnNorm.format('04')   : self.dfN,
-            config.fnImp.format('05')    : self.dfI,
-            self.cMainData.format('06')  : self.dfR,
+            config.fnInitial.format('01', self.date): self.dfI,
+            config.fnFloat.format('02', self.date)  : self.dfS,
+            config.fnTrans.format('03', self.date)  : self.dfT,
+            config.fnNorm.format('04', self.date)   : self.dfN,
+            config.fnImp.format('05', self.date)    : self.dfIm,
+            self.cMainData.format('06', self.date)  : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
         
@@ -2641,6 +2670,7 @@ class ProtProf(BaseConfModPanel):
             {
                 "iFile"      : "Path to input data file",
                 "uFile"      : "Path to umsap file.",
+                'ID'         : 'Analysis ID',
                 "ScoreVal"   : "Score value threshold",
                 "RawI"       : "Raw intensity or not. Boolean",
                 "IndS"       : "Independent sampels or not. Boolean,
@@ -3018,6 +3048,7 @@ class ProtProf(BaseConfModPanel):
             else:
                 pass
             self.scoreVal.tc.SetValue('320')
+            self.id.tc.SetValue('Beta Test Dev')
             self.transMethod.cb.SetValue('Log2')
             self.normMethod.cb.SetValue('Median')
             self.imputationMethod.cb.SetValue('Normal Distribution')
@@ -3091,6 +3122,7 @@ class ProtProf(BaseConfModPanel):
             #------------------------------> Files
             self.uFile.tc.SetValue(dataI['CI']['uFile'])
             self.iFile.tc.SetValue(dataI['I'][self.cLiFile])
+            self.id.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
             self.ceroB.SetValue(dataI['I'][self.cLCeroTreatD])
             self.transMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
@@ -3242,6 +3274,8 @@ class ProtProf(BaseConfModPanel):
                 self.iFile.tc.GetValue()),
             self.EqualLenLabel(self.cLuFile) : (
                 self.uFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLId) : (
+                self.id.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
                 self.ceroB.IsChecked()),
             self.EqualLenLabel(self.cLScoreVal) : (
@@ -3303,6 +3337,7 @@ class ProtProf(BaseConfModPanel):
         self.do  = {
             'iFile'      : Path(self.iFile.tc.GetValue()),
             'uFile'      : Path(self.uFile.tc.GetValue()),
+            'ID'         : self.id.tc.GetValue(),
             'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
             'RawI'       : True if self.rawI.cb.GetValue() == config.oIntensities['RawI'] else False,
             'IndS'       : True if self.sample.cb.GetValue() == config.oSamples['IS'] else False,
