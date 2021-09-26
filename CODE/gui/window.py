@@ -442,6 +442,144 @@ class BaseWindowPlot(BaseWindow):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
+
+
+class BaseWindowNPlotLT(BaseWindow):
+    """Base class to create a window like ProtProfPlot
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent, menuData=None):
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> 
+        self.statusbar.SetFieldsCount(3, config.sbPlot3Fields)
+        #------------------------------>  Plot
+        self.plots = dtsWindow.NPlots(
+            self, ['Vol', 'FC'], 2, statusbar=self.statusbar)
+        #------------------------------> Text details
+        self.text = wx.TextCtrl(
+            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
+        self.text.SetFont(config.font['SeqAlign'])
+        #------------------------------> wx.ListCtrl
+        self.lc = pane.ListCtrlSearchPlot(
+            self, 
+            colLabel = self.cLCol,
+            colSize  = self.cSCol,
+            style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
+            tcHint   = f'Search {self.cLProtList}'
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ---------------------------------------------------------> AUI
+        #------------------------------> AUI control
+        self._mgr = aui.AuiManager()
+        #------------------------------> AUI which frame to use
+        self._mgr.SetManagedWindow(self)
+        #------------------------------> Add Configuration panel
+        self._mgr.AddPane( 
+            self.plots, 
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    'Plots'
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+
+        self._mgr.AddPane( 
+            self.text, 
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    'Profiling details'
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        
+        self._mgr.AddPane( 
+            self.lc, 
+            aui.AuiPaneInfo(
+                ).Left(
+                ).Layer(
+                    1    
+                ).Caption(
+                    self.cLProtList
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ------------------------------------------------------> AUI
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion -----------------------------------------------------> Base Classes
 
 
@@ -867,7 +1005,7 @@ class CorrAPlot(BaseWindowPlot):
 #---
 
 
-class ProtProfPlot(BaseWindow):
+class ProtProfPlot(BaseWindowNPlotLT):
     """Plot results in the Proteome Profiling section of an UMSAP file.
 
         Parameters
@@ -1128,87 +1266,11 @@ class ProtProfPlot(BaseWindow):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        #------------------------------> 
-        self.statusbar.SetFieldsCount(3, config.sbPlot3Fields)
-        #------------------------------>  Plot
-        self.plots = dtsWindow.NPlots(
-            self, ['Vol', 'FC'], 2, statusbar=self.statusbar)
-        #------------------------------> Text details
-        self.text = wx.TextCtrl(
-            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
-        self.text.SetFont(config.font['SeqAlign'])
-        #------------------------------> wx.ListCtrl
-        self.lc = pane.ListCtrlSearchPlot(
-            self, 
-            colLabel = self.cLCol,
-            colSize  = self.cSCol,
-            style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
-            tcHint   = f'Search {self.cLProtList}'
-        )
+        
         #endregion --------------------------------------------------> Widgets
         
         #region -------------------------------------------------> Aui control
-        #------------------------------> AUI control
-        self._mgr = aui.AuiManager()
-        #------------------------------> AUI which frame to use
-        self._mgr.SetManagedWindow(self)
-        #------------------------------> Add Configuration panel
-        self._mgr.AddPane( 
-            self.plots, 
-            aui.AuiPaneInfo(
-                ).Center(
-                ).Caption(
-                    'Plots'
-                ).Floatable(
-                    b=False
-                ).CloseButton(
-                    visible=False
-                ).Movable(
-                    b=False
-                ).PaneBorder(
-                    visible=True,
-            ),
-        )
-
-        self._mgr.AddPane( 
-            self.text, 
-            aui.AuiPaneInfo(
-                ).Bottom(
-                ).Layer(
-                    0
-                ).Caption(
-                    'Profiling details'
-                ).Floatable(
-                    b=False
-                ).CloseButton(
-                    visible=False
-                ).Movable(
-                    b=False
-                ).PaneBorder(
-                    visible=True,
-            ),
-        )
         
-        self._mgr.AddPane( 
-            self.lc, 
-            aui.AuiPaneInfo(
-                ).Left(
-                ).Layer(
-                    1    
-                ).Caption(
-                    self.cLProtList
-                ).Floatable(
-                    b=False
-                ).CloseButton(
-                    visible=False
-                ).Movable(
-                    b=False
-                ).PaneBorder(
-                    visible=True,
-            ),
-        )
-        #------------------------------> 
-        self._mgr.Update()
         #endregion ----------------------------------------------> Aui control
 
         #region --------------------------------------------------------> Bind
