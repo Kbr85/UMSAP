@@ -2436,7 +2436,7 @@ class CorrA(BaseConfPanel):
             return False
         #endregion ---------------------------------------------------> Column
         
-        #region ---------------------------------------------> Transaformation
+        #region ----------------------------------------------> Transformation
         #------------------------------> Msg
         msgStep = msgPrefix + f"Data transformation"
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
@@ -2445,7 +2445,7 @@ class CorrA(BaseConfPanel):
             pass
         else:
             return False
-        #endregion ------------------------------------------> Transaformation
+        #endregion -------------------------------------------> Transformation
         
         #region -----------------------------------------------> Normalization
         #------------------------------> Msg

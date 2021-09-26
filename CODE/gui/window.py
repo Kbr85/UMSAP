@@ -318,6 +318,25 @@ class BaseWindow(wx.Frame):
      
         dlg.Destroy()
         return True	
+    #---
+    
+    def OnCheckDataPrep(self, tDate: str) -> bool:
+        """Launch the Check Data Preparation Window.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            bool
+    
+            Raise
+            -----
+            
+        """
+        print(self.cSection, tDate)
+        return True
     #---	
     #endregion ------------------------------------------------> Class methods
 #---

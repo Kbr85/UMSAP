@@ -161,6 +161,24 @@ class MenuMethods():
         return True
     #---
     
+    def OnCheckDataPrep(self, event: wx.CommandEvent) -> Literal[True]:
+        """Launch the Check Data Preparation window.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        win = self.GetWindow() 
+        win.OnCheckDataPrep(self.GetCheckedRadiodItem(self.plotDate))
+        return True
+    #---
+    
     def GetCheckedRadiodItem(self, lMenuItem: list[wx.MenuItem]) -> str:
         """Get the checked item in a list of radio menu items.
     
@@ -226,6 +244,8 @@ class PlotMenu(wx.Menu, MenuMethods):
         self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
         self.saveI = self.Append(-1, 'Save Image\tCtrl+I')
         self.AppendSeparator()
+        self.checkDP = self.Append(-1, 'Data Preparation')
+        self.AppendSeparator()
         self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
         #endregion -----------------------------------------------> Menu Items
 
@@ -234,6 +254,7 @@ class PlotMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.zoomR)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.saveD)
         self.Bind(wx.EVT_MENU, self.OnSavePlot,       source=self.saveI)
+        self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.checkDP)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
