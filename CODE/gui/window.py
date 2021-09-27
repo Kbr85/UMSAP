@@ -335,7 +335,6 @@ class BaseWindow(wx.Frame):
             -----
             
         """
-        print(self.cSection, tDate)
         CheckDataPrep(f'{self.cSection} - {tDate}', self.data[tDate]['DP'])
         return True
     #---	
@@ -3448,6 +3447,10 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #region -----------------------------------------------> Initial Setup
         self.cTitle = title
         self.dpDF = dpDF
+        
+        # if config.development:
+        #     for k,v in self.dpDF.items():
+        #         print(f'{k}:\n{v.head()}')
         #------------------------------> 
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
@@ -3470,13 +3473,41 @@ class CheckDataPrep(BaseWindowNPlotLT):
 
         #region ---------------------------------------------> Window position
         self.FillListCtrl()
-        
+        self.lc.lcs.lc.Select(0)
+        self.lc.lcs.lc.EnsureVisible(0)
+        self.lc.lcs.lc.SetFocus()
+        #------------------------------> 
+        self.WinPos()
         self.Show()
         #endregion ------------------------------------------> Window position
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def WinPos(self) -> Literal[True]:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
+        """
+        #region ---------------------------------------------------> Variables
+        info = super().WinPos()
+        #endregion ------------------------------------------------> Variables
+                
+        #region ------------------------------------------------> Set Position
+        # x = info['D']['xo'] + info['W']['N']*config.deltaWin
+        # y = (
+        #     ((info['D']['h']/2) - (info['W']['h']/2)) 
+        #     + info['W']['N']*config.deltaWin
+        # )
+        # self.SetPosition(pt=(x,y))
+        #endregion ---------------------------------------------> Set Position
+
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.name] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
+
+        return True
+    #---
+    
     def FillListCtrl(self) -> bool:
         """Update the protein list for the given analysis.
     
@@ -3504,6 +3535,201 @@ class CheckDataPrep(BaseWindowNPlotLT):
         self._mgr.GetPane(self.lc).Caption(f'{self.cTList} ({len(data)})')
         self._mgr.Update()
         #endregion ------------------------------------> Update Protein Number
+        
+        return True
+    #---
+    
+    def PlotdfS(self, col:int) -> bool:
+        """Plot the histograms for dfS
+    
+            Parameters
+            ----------
+            col : int
+                Column to plot
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        #------------------------------> 
+        x = self.dpDF['dfS'].iloc[:,col]
+        x = x[np.isfinite(x)]        
+        #------------------------------> 
+        nBin = dtsStatistic.HistBin(x)[0]
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------------> Plot
+        #------------------------------> 
+        self.plots.dPlot['Init'].axes.clear()
+        #------------------------------> 
+        a = self.plots.dPlot['Init'].axes.hist(x, bins=nBin, density=True)
+        #------------------------------> 
+        self.plots.dPlot['Init'].axes.set_xlim(*dtsStatistic.DataRange(
+            a[1], margin=config.general['MatPlotMargin']))
+        self.plots.dPlot['Init'].ZoomResetSetValues()
+        #------------------------------> 
+        self.plots.dPlot['Init'].canvas.draw()
+        #endregion -----------------------------------------------------> Plot
+        
+        return True
+    #---
+    
+    def PlotdfT(self, col:int) -> bool:
+        """Plot the histograms for dfT
+    
+            Parameters
+            ----------
+            col : int
+                Column to plot
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        #------------------------------> 
+        x = self.dpDF['dfT'].iloc[:,col]
+        x = x[np.isfinite(x)]        
+        #------------------------------> 
+        nBin = dtsStatistic.HistBin(x)[0]
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------------> Draw
+        #------------------------------> 
+        self.plots.dPlot['Transf'].axes.clear()
+        #------------------------------> 
+        a = self.plots.dPlot['Transf'].axes.hist(x, bins=nBin, density=True)
+        #------------------------------> 
+        xRange = dtsStatistic.DataRange(
+            a[1], margin=config.general['MatPlotMargin'])
+        self.plots.dPlot['Transf'].axes.set_xlim(*xRange)
+        self.plots.dPlot['Transf'].axes.set_ylim(*dtsStatistic.DataRange(
+            a[0], margin=config.general['MatPlotMargin']))
+        self.plots.dPlot['Transf'].ZoomResetSetValues()
+        #------------------------------> 
+        gausX = np.linspace(xRange[0], xRange[1], 300)
+        gausY = stats.gaussian_kde(x)
+        self.plots.dPlot['Transf'].axes.plot(gausX, gausY.pdf(gausX))
+        #------------------------------> 
+        self.plots.dPlot['Transf'].canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def PlotdfN(self, col:int) -> bool:
+        """Plot the histograms for dfN
+    
+            Parameters
+            ----------
+            col : int
+                Column to plot
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        #------------------------------> 
+        x = self.dpDF['dfN'].iloc[:,col]
+        x = x[np.isfinite(x)]        
+        #------------------------------> 
+        nBin = dtsStatistic.HistBin(x)[0]
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------------> Draw
+        #------------------------------> 
+        self.plots.dPlot['Norm'].axes.clear()
+        #------------------------------> 
+        a = self.plots.dPlot['Norm'].axes.hist(x, bins=nBin, density=True)
+        #------------------------------> 
+        self.plots.dPlot['Norm'].axes.set_xlim(*dtsStatistic.DataRange(
+            a[1], margin=config.general['MatPlotMargin']))
+        self.plots.dPlot['Norm'].axes.set_ylim(*dtsStatistic.DataRange(
+            a[0], margin=config.general['MatPlotMargin']))
+        self.plots.dPlot['Norm'].ZoomResetSetValues()
+        #------------------------------> 
+        self.plots.dPlot['Norm'].canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def PlotdfIm(self, col:int) -> bool:
+        """Plot the histograms for dfIm
+    
+            Parameters
+            ----------
+            col : int
+                Column to plot
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        #------------------------------> 
+        x = self.dpDF['dfIm'].iloc[:,col]
+        x = x[np.isfinite(x)]        
+        #------------------------------> 
+        nBin = dtsStatistic.HistBin(x)[0]
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------------> Draw
+        #------------------------------> 
+        self.plots.dPlot['Imp'].axes.clear()
+        #------------------------------> 
+        a = self.plots.dPlot['Imp'].axes.hist(x, bins=nBin, density=True)
+        #------------------------------> 
+        self.plots.dPlot['Imp'].axes.set_xlim(*dtsStatistic.DataRange(
+            a[1], margin=config.general['MatPlotMargin']))
+        self.plots.dPlot['Imp'].axes.set_ylim(*dtsStatistic.DataRange(
+            a[0], margin=config.general['MatPlotMargin']))
+        self.plots.dPlot['Imp'].ZoomResetSetValues()
+        #------------------------------> 
+        self.plots.dPlot['Imp'].canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+
+    def OnListSelect(self, event: wx.CommandEvent) -> bool:
+        """Plot data for the selected column
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ------------------------------------------------> Get Selected
+        idx = self.lc.lcs.lc.GetFirstSelected()
+        #endregion ---------------------------------------------> Get Selected
+        
+        #region ---------------------------------------------------------> dfS
+        self.PlotdfS(idx)
+        #endregion ------------------------------------------------------> dfS
+        
+        #region ---------------------------------------------------------> dfT
+        self.PlotdfT(idx)
+        #endregion ------------------------------------------------------> dfT
+        
+        #region ---------------------------------------------------------> dfN
+        self.PlotdfN(idx)
+        #endregion ------------------------------------------------------> dfN
+        
+        #region --------------------------------------------------------> dfIm
+        self.PlotdfIm(idx)
+        #endregion -----------------------------------------------------> dfIm
         
         return True
     #---

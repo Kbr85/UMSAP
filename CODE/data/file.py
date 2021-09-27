@@ -223,6 +223,7 @@ class UMSAPFile():
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF': df,
+                    'DP': {j: pd.DataFrame(w) for j,w in v['DP'].items()},
                 }
             except Exception:
                 pass

@@ -1318,12 +1318,16 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Export Data
         self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
         self.saveFD = self.Append(-1, 'Export Data Filtered\tShift+Ctrl+E')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.dataPrep = self.Append(-1, 'Data Preparation')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnDupWin,             source=self.dupWin)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData,     source=self.saveD)
         self.Bind(wx.EVT_MENU, self.OnExportFilteredData, source=self.saveFD)
+        self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,      source=self.dataPrep)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
