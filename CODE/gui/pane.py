@@ -1117,8 +1117,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         Methods
         -------
         CheckInput:
-            Check the user input in the widgets created in super().__ini__ and 
-            in __init__()
+            Check the user input in the widgets created here. in 
+            super().__init__ and in __init__()
     """
     #region -----------------------------------------------------> Class setup
     

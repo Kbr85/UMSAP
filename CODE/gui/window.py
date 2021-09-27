@@ -449,45 +449,47 @@ class BaseWindowNPlotLT(BaseWindow):
 
         Parameters
         ----------
-        
+        parent : wx.Window or None
+            Parent of the window. Default is None.
+        menuData : dict or None
+            Data to build the Tool menu of the window. Default is None.
+            See Child class for more details.
 
-        Attributes
-        ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
+        Notes
+        -----
+        Child class is expected to define:
+        - cLNPlots : list of str
+            To id the plots in the window.
+        - cNPlotsCol : int
+            Number of columns in the wx.FLexGrid to distribute the plots.
+        - cLCol : list of str
+            Column names in the wx.ListCtrl
+        - cSCol : list of int
+            Size of the columns in the wx.ListCtrl
+        - cHSearch : str
+            Hint for the wx.SearchCtrl. The hint will start with 'Search ', 
+            independently of the value of cHSearch
+        - cTText : str
+            Title for the text pane
+        - cTList : str
+            Title for the wx.ListCtrl pane
         
     """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, menuData=None):
+    def __init__(
+        self, parent: Optional[wx.Window]=None, menuData: Optional[dict]=None,
+        ) -> None:
         """ """
-        #region -------------------------------------------------> Check Input
-        
-        #endregion ----------------------------------------------> Check Input
-
         #region -----------------------------------------------> Initial Setup
         super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------------> Menu
-        
-        #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> 
         self.statusbar.SetFieldsCount(3, config.sbPlot3Fields)
         #------------------------------>  Plot
         self.plots = dtsWindow.NPlots(
-            self, ['Vol', 'FC'], 2, statusbar=self.statusbar)
+            self, self.cLNPlots, self.cNPlotsCol, statusbar=self.statusbar)
         #------------------------------> Text details
         self.text = wx.TextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
@@ -498,7 +500,7 @@ class BaseWindowNPlotLT(BaseWindow):
             colLabel = self.cLCol,
             colSize  = self.cSCol,
             style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
-            tcHint   = f'Search {self.cLProtList}'
+            tcHint   = f'Search {self.cHSearch}'
         )
         #endregion --------------------------------------------------> Widgets
 
@@ -532,7 +534,7 @@ class BaseWindowNPlotLT(BaseWindow):
                 ).Layer(
                     0
                 ).Caption(
-                    'Profiling details'
+                    self.cTText
                 ).Floatable(
                     b=False
                 ).CloseButton(
@@ -551,7 +553,7 @@ class BaseWindowNPlotLT(BaseWindow):
                 ).Layer(
                     1    
                 ).Caption(
-                    self.cLProtList
+                    self.cTList
                 ).Floatable(
                     b=False
                 ).CloseButton(
@@ -1131,8 +1133,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
             StatusBar Text for filter P values when -log10 values are used.
         cLFZscore : str
             StatusBar text for filter Z Score.
-        cLProtList : str
-            Title for the pane showing the wx.ListCtrl and wx.SearchCtrl.
         cSCol : list of int
             Size of the columns in the wx.ListCtrl.
         cSection : str
@@ -1141,6 +1141,16 @@ class ProtProfPlot(BaseWindowNPlotLT):
             Window size. Default is config.sWinModPlot
         cTitle : str
             Title of the window.
+        cTList : str
+            Title for the pane showing the wx.ListCtrl and wx.SearchCtrl.
+        cTText : str
+            Title for the text pane.
+        cHSearch : str
+            text for the hint in wx.SearchCtrl
+        cNPlotsCol : int
+            Number of columns in the wx.FlexGrid to distribute the plots.
+        cLNPlots : list of str
+            IDs of the plots.
     """
     #region -----------------------------------------------------> Class setup
     #------------------------------> To id the window
@@ -1148,8 +1158,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
     #------------------------------> To id the section in the umsap file 
     # shown in the window
     cSection      = config.nmProtProf
-    cSWindow      = config.sWinModPlot
-    cLProtList    = 'Protein List'
+    #------------------------------> Labels
     cLFZscore     = 'Z Score'
     cLFLog2FC     = 'Log2FC'
     cLFPValAbs    = 'P(abs)'
@@ -1186,7 +1195,18 @@ class ProtProfPlot(BaseWindowNPlotLT):
     cLFFCNo       = 'FC No Change'
     cLFDiv        = 'FC Diverge'
     cLCol         = ['#', 'Gene', 'Protein']
+    #--------------> Id of the plots
+    cLNPlots      = ['Vol', 'FC']
+    #------------------------------> Title
+    cTList        = 'Protein List'
+    cTText        = 'Profiling details'
+    #------------------------------> Sizes
+    cSWindow      = config.sWinModPlot
     cSCol         = [45, 70, 100]
+    #------------------------------> Hints
+    cHSearch      = 'Protein List'
+    #------------------------------> Other
+    cNPlotsCol    = 2
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -1262,7 +1282,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.cLFDiv      : self.Filter_Divergent,
         }
         #------------------------------> 
-        super().__init__(parent, menuData=menuData)
+        super().__init__(parent, menuData=menuData, )
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -2096,7 +2116,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ---------------------------------------> Set in wx.ListCtrl
         
         #region ---------------------------------------> Update Protein Number
-        self._mgr.GetPane(self.lc).Caption(f'{self.cLProtList} ({len(data)})')
+        self._mgr.GetPane(self.lc).Caption(f'{self.cTList} ({len(data)})')
         self._mgr.Update()
         #endregion ------------------------------------> Update Protein Number
         
