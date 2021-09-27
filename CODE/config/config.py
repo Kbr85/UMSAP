@@ -117,10 +117,11 @@ winUMSAP = {}
 #------------------------------> Default name
 nDefName = 'Default name'
 #------------------------------> Windows
-nwMain         = 'MainW'
-nwUMSAPControl = 'UMSAPControl'
-nwCorrAPlot    = 'CorrAPlot'
-nwProtProf     = 'ProtProfPlot'
+nwMain          = 'MainW'
+nwUMSAPControl  = 'UMSAPControl'
+nwCorrAPlot     = 'CorrAPlot'
+nwProtProf      = 'ProtProfPlot'
+nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'

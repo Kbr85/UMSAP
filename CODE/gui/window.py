@@ -336,6 +336,7 @@ class BaseWindow(wx.Frame):
             
         """
         print(self.cSection, tDate)
+        CheckDataPrep(f'{self.cSection} - {tDate}', self.data[tDate]['DP'])
         return True
     #---	
     #endregion ------------------------------------------------> Class methods
@@ -569,7 +570,8 @@ class BaseWindowNPlotLT(BaseWindow):
         #endregion ------------------------------------------------------> AUI
 
         #region --------------------------------------------------------> Bind
-        
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        self.Bind(wx.EVT_SEARCH, self.OnSearch)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -579,7 +581,78 @@ class BaseWindowNPlotLT(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def OnSearch(self, event: wx.Event) -> bool:
+        """Search for a given string in the wx.ListCtrl.
     
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            See dtsWidget.MyListCtrl.Search for more details.
+        """
+        #region ---------------------------------------------------> Get index
+        tStr = self.lc.lcs.search.GetValue()
+        iEqual, iSimilar = self.lc.lcs.lc.Search(tStr)
+        #endregion ------------------------------------------------> Get index
+        
+        #region ----------------------------------------------> Show 1 Results
+        if len(iEqual) == 1:
+            #------------------------------> 
+            self.lc.lcs.lc.Select(iEqual[0], on=1)
+            self.lc.lcs.lc.EnsureVisible(iEqual[0])
+            self.lc.lcs.lc.SetFocus()
+            #------------------------------> 
+            return True
+        elif len(iSimilar) == 1:
+            #------------------------------> 
+            self.lc.lcs.lc.Select(iSimilar[0], on=1)
+            self.lc.lcs.lc.EnsureVisible(iSimilar[0])
+            self.lc.lcs.lc.SetFocus()
+            #------------------------------> 
+            return True
+        else:
+            pass
+        #endregion -------------------------------------------> Show 1 Results
+        
+        #region ----------------------------------------------> Show N Results
+        msg = (f'The string, {tStr}, was found in multiple rows.')
+        tException = (
+            f'The row numbers where the string was found are:\n '
+            f'{str(iSimilar)[1:-1]}')
+        dtscore.Notification(
+            'warning', 
+            msg        = msg,
+            setText    = True,
+            tException = tException,
+            parent     = self,
+        )
+        #endregion -------------------------------------------> Show N Results
+        
+        return True
+    #---
+    
+    def OnListSelect(self, event: wx.CommandEvent) -> bool:
+        """What to do after selecting a row in hte wx.ListCtrl. 
+            Override as needed
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+    
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 #endregion -----------------------------------------------------> Base Classes
@@ -1295,8 +1368,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
 
         #region --------------------------------------------------------> Bind
         self.plots.dPlot['Vol'].canvas.mpl_connect('pick_event', self.OnPick)
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
-        self.lc.lcs.search.Bind(wx.EVT_SEARCH, self.OnSearch)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -2950,63 +3021,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return True
     #---
     
-    def OnSearch(self, event: wx.Event) -> bool:
-        """Search for a given string in the wx.ListCtrl.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-            Returns
-            -------
-            bool
-    
-            Notes
-            -----
-            See dtsWidget.MyListCtrl.Search for more details.
-        """
-        #region ---------------------------------------------------> Get index
-        tStr = self.lc.lcs.search.GetValue()
-        iEqual, iSimilar = self.lc.lcs.lc.Search(tStr)
-        #endregion ------------------------------------------------> Get index
-        
-        #region ----------------------------------------------> Show 1 Results
-        if len(iEqual) == 1:
-            #------------------------------> 
-            self.lc.lcs.lc.Select(iEqual[0], on=1)
-            self.lc.lcs.lc.EnsureVisible(iEqual[0])
-            self.lc.lcs.lc.SetFocus()
-            #------------------------------> 
-            return True
-        elif len(iSimilar) == 1:
-            #------------------------------> 
-            self.lc.lcs.lc.Select(iSimilar[0], on=1)
-            self.lc.lcs.lc.EnsureVisible(iSimilar[0])
-            self.lc.lcs.lc.SetFocus()
-            #------------------------------> 
-            return True
-        else:
-            pass
-        #endregion -------------------------------------------> Show 1 Results
-        
-        #region ----------------------------------------------> Show N Results
-        msg = (f'The string, {tStr}, was found in multiple rows.')
-        tException = (
-            f'The row numbers where the string was found are:\n '
-            f'{str(iSimilar)[1:-1]}')
-        dtscore.Notification(
-            'warning', 
-            msg        = msg,
-            setText    = True,
-            tException = tException,
-            parent     = self,
-        )
-        #endregion -------------------------------------------> Show N Results
-        
-        return True
-    #---
-    
     def OnDateChange(
         self, tDate: str, cond: str, rp:str, corrP: bool, showAll: bool,
         ) -> bool:
@@ -3382,6 +3396,114 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #region -----------------------------------------------------> Destroy
         self.Destroy()
         #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class CheckDataPrep(BaseWindowNPlotLT):
+    """window to check the data preparation steps
+
+        Parameters
+        ----------
+        title : str
+            Title of the window
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    name = config.nwCheckDataPrep
+    #------------------------------> Label
+    cLNPlots = ['Init', 'Transf', 'Norm', 'Imp']
+    cLCol = ['#', 'Name']
+    cTList = 'Column names'
+    cTText = 'Statistic information'
+    #------------------------------> Size
+    cSCol = [45, 100]
+    #------------------------------> Hint
+    cHSearch = 'Colum names'
+    #------------------------------> Other
+    cNPlotsCol = 2
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, title, dpDF):
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle = title
+        self.dpDF = dpDF
+        #------------------------------> 
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.FillListCtrl()
+        
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def FillListCtrl(self) -> bool:
+        """Update the protein list for the given analysis.
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Entries are read from self.df
+        """
+        #region --------------------------------------------------> Delete old
+        self.lc.lcs.lc.DeleteAllItems()
+        #endregion -----------------------------------------------> Delete old
+        
+        #region ----------------------------------------------------> Get Data
+        data = [[str(k), n] for k,n in enumerate(self.dpDF['dfS'].columns.values.tolist())]
+        #endregion -------------------------------------------------> Get Data
+        
+        #region ------------------------------------------> Set in wx.ListCtrl
+        self.lc.lcs.lc.SetNewData(data)
+        #endregion ---------------------------------------> Set in wx.ListCtrl
+        
+        #region ---------------------------------------> Update Protein Number
+        self._mgr.GetPane(self.lc).Caption(f'{self.cTList} ({len(data)})')
+        self._mgr.Update()
+        #endregion ------------------------------------> Update Protein Number
         
         return True
     #---

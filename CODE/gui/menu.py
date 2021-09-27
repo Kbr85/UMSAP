@@ -1400,10 +1400,11 @@ class ToolMenuBar(MainMenuBar):
 
     #region -----------------------------------------------------> Class Setup
     toolClass = { # Key are window name
-        config.nwMain        : None,
-        config.nwUMSAPControl: FileControlToolMenu,
-        config.nwCorrAPlot   : CorrAPlotToolMenu,
-        config.nwProtProf    : ProtProfToolMenu,
+        config.nwMain         : None,
+        config.nwUMSAPControl : FileControlToolMenu,
+        config.nwCorrAPlot    : CorrAPlotToolMenu,
+        config.nwProtProf     : ProtProfToolMenu,
+        config.nwCheckDataPrep: None,
     }
     #endregion --------------------------------------------------> Class Setup
     
