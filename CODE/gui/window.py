@@ -3473,9 +3473,6 @@ class CheckDataPrep(BaseWindowNPlotLT):
 
         #region ---------------------------------------------> Window position
         self.FillListCtrl()
-        self.lc.lcs.lc.Select(0)
-        self.lc.lcs.lc.EnsureVisible(0)
-        self.lc.lcs.lc.SetFocus()
         #------------------------------> 
         self.WinPos()
         self.Show()
@@ -3716,7 +3713,20 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion ---------------------------------------------> Get Selected
         
         #region ---------------------------------------------------------> dfS
-        self.PlotdfS(idx)
+        try:
+            self.PlotdfS(idx)
+        except Exception as e:
+            #------------------------------> 
+            msg = (
+                f'It was not possible to build the histograms for the selected '
+                f'columns.')
+            dtscore.Notification('errorU', msg=msg, tException=e, parent=self)
+            #------------------------------> 
+            for p in self.cLNPlots:
+                self.plots.dPlot[p].axes.clear()
+                self.plots.dPlot[p].canvas.draw()
+            #------------------------------> 
+            return False
         #endregion ------------------------------------------------------> dfS
         
         #region ---------------------------------------------------------> dfT
