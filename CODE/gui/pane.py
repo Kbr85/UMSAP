@@ -157,6 +157,8 @@ class BaseConfPanel(
             See Child class for other key - value pairs.
         date : str or None
             Date for the new section in the umsap file.
+        dateID : str or None
+            Date + Analysis ID
         dFile : Path
             Full path to copy the given input file if not in Data-Files.
         dfI : pd.DataFrame
@@ -324,6 +326,7 @@ class BaseConfPanel(
         self.dfR  = None # Results values
         #--------------> date for umsap file
         self.date = None
+        self.dateID = None
         #--------------> folder for output
         self.oFolder = None
         #--------------> input file for directing repeating analysis from
@@ -671,7 +674,7 @@ class BaseConfPanel(
         
         #region ------------------------------------------------> Add new data
         if outData.get(self.cSection, False):
-                outData[self.cSection][self.date] = dateDict[self.date]
+                outData[self.cSection][self.dateID] = dateDict[self.dateID]
         else:
             outData[self.cSection] = dateDict
         #endregion ---------------------------------------------> Add new data
@@ -766,7 +769,7 @@ class BaseConfPanel(
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> Create output dict
         dateDict = {
-            f'{self.date} - {self.do["ID"]}' : {
+            self.dateID : {
                 'V' : config.dictVersion,
                 'I' : self.d,
                 'CI': dtsMethod.DictVal2Str(self.do, self.changeKey, new=True),
@@ -2429,6 +2432,8 @@ class CorrA(BaseConfPanel):
         self.oFolder = self.do['uFile'].parent
         #------------------------------> Date
         self.date = dtsMethod.StrNow()
+        #------------------------------> DateID
+        self.dateID = f'{self.date} - {self.do["ID"]}'
         #endregion ----------------------------------------------------> Input
         
         #region -------------------------------------------------------> Print
@@ -2584,6 +2589,7 @@ class CorrA(BaseConfPanel):
         self.dfIm       = None
         self.dfR        = None
         self.date       = None # date for corr file
+        self.dateID     = None
         self.oFolder    = None # folder for output
         self.iFileObj   = None # input file object
         self.corrP      = None # path to the corr file that will be created
@@ -3378,6 +3384,8 @@ class ProtProf(BaseConfModPanel):
         self.oFolder = self.do['uFile'].parent
         #------------------------------> Date
         self.date = dtsMethod.StrNow()
+        #------------------------------> DateID
+        self.dateID = f'{self.date} - {self.do["ID"]}'
         #endregion ----------------------------------------------------> Input
 
         #region -------------------------------------------------> Print d, do
@@ -3616,6 +3624,7 @@ class ProtProf(BaseConfModPanel):
         self.dfIm       = None
         self.dfR        = None
         self.date       = None # date for corr file
+        self.dateID     = None
         self.oFolder    = None # folder for output
         self.iFileObj   = None
         self.deltaT     = None
