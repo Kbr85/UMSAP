@@ -3640,12 +3640,17 @@ class CheckDataPrep(BaseWindowNPlotLT):
         self.plots.dPlot['Norm'].axes.clear()
         #------------------------------> 
         a = self.plots.dPlot['Norm'].axes.hist(x, bins=nBin, density=True)
-        #------------------------------> 
-        self.plots.dPlot['Norm'].axes.set_xlim(*dtsStatistic.DataRange(
-            a[1], margin=config.general['MatPlotMargin']))
+        #------------------------------>
+        xRange = dtsStatistic.DataRange(
+            a[1], margin=config.general['MatPlotMargin'])
+        self.plots.dPlot['Norm'].axes.set_xlim(*xRange)
         self.plots.dPlot['Norm'].axes.set_ylim(*dtsStatistic.DataRange(
             a[0], margin=config.general['MatPlotMargin']))
         self.plots.dPlot['Norm'].ZoomResetSetValues()
+        #------------------------------> 
+        gausX = np.linspace(xRange[0], xRange[1], 300)
+        gausY = stats.gaussian_kde(x)
+        self.plots.dPlot['Norm'].axes.plot(gausX, gausY.pdf(gausX))
         #------------------------------> 
         self.plots.dPlot['Norm'].canvas.draw()
         #endregion -----------------------------------------------------> Draw
@@ -3679,11 +3684,24 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> 
         a = self.plots.dPlot['Imp'].axes.hist(x, bins=nBin, density=True)
         #------------------------------> 
-        self.plots.dPlot['Imp'].axes.set_xlim(*dtsStatistic.DataRange(
-            a[1], margin=config.general['MatPlotMargin']))
+        xRange = dtsStatistic.DataRange(
+            a[1], margin=config.general['MatPlotMargin'])
+        self.plots.dPlot['Imp'].axes.set_xlim(*xRange)
         self.plots.dPlot['Imp'].axes.set_ylim(*dtsStatistic.DataRange(
             a[0], margin=config.general['MatPlotMargin']))
         self.plots.dPlot['Imp'].ZoomResetSetValues()
+        #------------------------------> 
+        gausX = np.linspace(xRange[0], xRange[1], 300)
+        gausY = stats.gaussian_kde(x)
+        self.plots.dPlot['Imp'].axes.plot(gausX, gausY.pdf(gausX))
+        #------------------------------> 
+        idx = list(map(int, self.dpDF['dfS'][self.dpDF['dfS'].iloc[:,col].isnull()].index.tolist()))
+        y = self.dpDF['dfIm'].iloc[idx,col]
+        if not y.empty:
+            yBin = dtsStatistic.HistBin(y)[0]
+            self.plots.dPlot['Imp'].axes.hist(y, bins=yBin, density=False)
+        else:
+            pass
         #------------------------------> 
         self.plots.dPlot['Imp'].canvas.draw()
         #endregion -----------------------------------------------------> Draw
