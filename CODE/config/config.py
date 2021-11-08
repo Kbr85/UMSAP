@@ -128,6 +128,7 @@ ndResControlExp        = 'ResControlExp'
 ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
 ntStart    = 'StartTab'
+ntDataPrep = "DataPrepTab"
 ntCorrA    = 'CorrATab'
 ntProtProf = 'ProtProfTab'
 #------------------------------> Individual Panes
@@ -147,10 +148,9 @@ nmLimProt  = 'Limited Proteolysis'
 nmTarProt  = 'Targeted Proteolysis'
 nmProtProf = 'Proteome Profiling'
 #------------------------------> Utilities
-nuDataT = 'Data Transformation'
-nuCorrA = 'Correlation Analysis'
-nuDataN = 'Data Normalization'
-nuReadF = 'Read UMSAP File'
+nuDataPrep = "Data Preparation"
+nuCorrA    = 'Correlation Analysis'
+nuReadF    = 'Read UMSAP File'
 #endregion ------------------------------------------------------------> Names
 
 
@@ -169,6 +169,7 @@ t = {
     ndFilterRemoveAny     : 'Remove Filters',
     #------------------------------> Tabs
     ntStart   : 'Start',
+    ntDataPrep: 'DataPrep',
     ntCorrA   : 'CorrA',
     ntProtProf: 'ProtProf',
 }

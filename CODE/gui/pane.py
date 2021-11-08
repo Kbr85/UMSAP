@@ -2607,6 +2607,66 @@ class CorrA(BaseConfPanel):
 #---
 
 
+class DataPrep(wx.Panel):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: wx.Window, dataI: Optional[dict]):
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
 #------------------------------> Modules
 class ProtProf(BaseConfModPanel):
     """Creates the Proteome Profiling configuration tab.

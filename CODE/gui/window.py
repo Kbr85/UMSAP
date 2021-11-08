@@ -681,6 +681,7 @@ class MainWindow(BaseWindow):
     tabMethods = { # Keys are the unique names of the tabs
         config.ntStart   : tab.Start,
         config.ntCorrA   : tab.BaseConfTab,
+        config.ntDataPrep: tab.BaseConfListTab,
         config.ntProtProf: tab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup
