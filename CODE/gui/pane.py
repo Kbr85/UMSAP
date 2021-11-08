@@ -774,10 +774,10 @@ class BaseConfPanel(
                 'I' : self.d,
                 'CI': dtsMethod.DictVal2Str(self.do, self.changeKey, new=True),
                 'DP': {
-                    'dfS' : self.dfS.to_dict(),
-                    'dfT' : self.dfT.to_dict(),
-                    'dfN' : self.dfN.to_dict(),
-                    'dfIm': self.dfIm.to_dict(),
+                    config.ltDPKeys[0] : self.dfS.to_dict(),
+                    config.ltDPKeys[1] : self.dfT.to_dict(),
+                    config.ltDPKeys[2] : self.dfN.to_dict(),
+                    config.ltDPKeys[3] : self.dfIm.to_dict(),
                 },
                 'R' : dtsMethod.DictTuplesKey2StringKey(self.dfR.to_dict()),
             }
@@ -3647,17 +3647,17 @@ class ProtProf(BaseConfModPanel):
         """
         #region -------------------------------------------------------> Index
         #------------------------------> First Three Columns
-        aL = config.protprofFirstThree
-        bL = config.protprofFirstThree
-        cL = config.protprofFirstThree
+        aL = config.dfcolProtprofFirstThree
+        bL = config.dfcolProtprofFirstThree
+        cL = config.dfcolProtprofFirstThree
         #------------------------------> Columns per Point
-        n = len(config.protprofCLevel)
+        n = len(config.dfcolProtprofCLevel)
         #------------------------------> Other columns
         for c in self.do['Cond']:
             for t in self.do['RP']:
                 aL = aL + n*[c]
                 bL = bL + n*[t]
-                cL = cL + config.protprofCLevel
+                cL = cL + config.dfcolProtprofCLevel
         idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
         #endregion ----------------------------------------------------> Index
         
@@ -3875,8 +3875,8 @@ class ProtProf(BaseConfModPanel):
         else:
             pass
         #------------------------------> Round to .XX
-        self.dfR.loc[:,(cN,tN,config.protprofCLevel)] = (
-            self.dfR.loc[:,(cN,tN,config.protprofCLevel)].round(2)
+        self.dfR.loc[:,(cN,tN,config.dfcolProtprofCLevel)] = (
+            self.dfR.loc[:,(cN,tN,config.dfcolProtprofCLevel)].round(2)
         )
         
         return True

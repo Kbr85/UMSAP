@@ -381,9 +381,15 @@ oControlTypeProtProf = {
 
 
 #region -----------------------------------------------------> DF Column names
-protprofFirstThree = ['Gene', 'Protein', 'Score']
-protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
+dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
+dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
+dfcolDataCheck = ['Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
 #endregion --------------------------------------------------> DF Column names
+
+
+#region -----------------------------------------------------> Important Lists
+
+#endregion --------------------------------------------------> Important Lists
 
 
 #region ------------------------------------------------------------> Messages

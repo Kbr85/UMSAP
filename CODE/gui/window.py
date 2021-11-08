@@ -3427,12 +3427,15 @@ class CheckDataPrep(BaseWindowNPlotLT):
     #------------------------------> Label
     cLNPlots = ['Init', 'Transf', 'Norm', 'Imp']
     cLCol = ['#', 'Name']
+    cLdfCol = config.dfcolDataCheck
     cTList = 'Column names'
     cTText = 'Statistic information'
     #------------------------------> Size
     cSCol = [45, 100]
     #------------------------------> Hint
     cHSearch = 'Colum names'
+    #------------------------------> Lists
+    ltDFData = ['Filtered', 'Transformed', 'Normalized', 'Imputed']
     #------------------------------> Other
     cNPlotsCol = 2
     #endregion --------------------------------------------------> Class setup
@@ -3559,6 +3562,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #region --------------------------------------------------------> Plot
         #------------------------------> 
         self.plots.dPlot['Init'].axes.clear()
+        #------------------------------> title
+        self.plots.dPlot['Init'].axes.set_title("Filtered")
         #------------------------------> 
         a = self.plots.dPlot['Init'].axes.hist(x, bins=nBin, density=True)
         #------------------------------> 
@@ -3595,6 +3600,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #region --------------------------------------------------------> Draw
         #------------------------------> 
         self.plots.dPlot['Transf'].axes.clear()
+        #------------------------------> title
+        self.plots.dPlot['Transf'].axes.set_title("Transformed")
         #------------------------------> 
         a = self.plots.dPlot['Transf'].axes.hist(x, bins=nBin, density=True)
         #------------------------------> 
@@ -3638,6 +3645,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #region --------------------------------------------------------> Draw
         #------------------------------> 
         self.plots.dPlot['Norm'].axes.clear()
+        #------------------------------> title
+        self.plots.dPlot['Norm'].axes.set_title("Normalized")
         #------------------------------> 
         a = self.plots.dPlot['Norm'].axes.hist(x, bins=nBin, density=True)
         #------------------------------>
@@ -3681,6 +3690,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #region --------------------------------------------------------> Draw
         #------------------------------> 
         self.plots.dPlot['Imp'].axes.clear()
+        #------------------------------> title
+        self.plots.dPlot['Imp'].axes.set_title("Imputed")
         #------------------------------> 
         a = self.plots.dPlot['Imp'].axes.hist(x, bins=nBin, density=True)
         #------------------------------> 
@@ -3705,6 +3716,56 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> 
         self.plots.dPlot['Imp'].canvas.draw()
         #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def SetText(self, col: int) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(columns=self.cLdfCol)
+        df['Data'] = self.ltDFData
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region --------------------------------------------> Calculate values
+        for r,k in enumerate(self.dpDF):
+            #------------------------------> N
+            df.iat[r,1] = self.dpDF[k].shape[0]
+            #------------------------------> NA
+            df.iat[r,2] = self.dpDF[k].iloc[:,col].isnull().sum()
+            #------------------------------> Mean
+            df.iat[r,3] = self.dpDF[k].iloc[:,col].mean()
+            #------------------------------> Median
+            df.iat[r,4] = self.dpDF[k].iloc[:,col].median()
+            # #------------------------------> SD
+            df.iat[r,5] = self.dpDF[k].iloc[:,col].std()
+            # #------------------------------> Kurtosis
+            df.iat[r,6] = self.dpDF[k].iloc[:,col].kurt()
+            # #------------------------------> Skewness
+            df.iat[r,7] = self.dpDF[k].iloc[:,col].skew()
+        #endregion -----------------------------------------> Calculate values
+        
+        #region ---------------------------------------------> Remove Old Text
+        self.text.Clear()
+        #endregion ------------------------------------------> Remove Old Text
+        
+        #region ------------------------------------------------> Add New Text
+        self.text.AppendText(df.to_string(index=False))
+        self.text.SetInsertionPoint(0)
+        #endregion ---------------------------------------------> Add New Text
         
         return True
     #---
@@ -3758,6 +3819,11 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #region --------------------------------------------------------> dfIm
         self.PlotdfIm(idx)
         #endregion -----------------------------------------------------> dfIm
+        
+        #region --------------------------------------------------------> Text
+        self.SetText(idx)
+        #endregion -----------------------------------------------------> Text
+        
         
         return True
     #---
