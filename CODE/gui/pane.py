@@ -2667,6 +2667,8 @@ class DataPrep(wx.Panel):
     
     #endregion ------------------------------------------------> Class methods
 #---
+
+
 #------------------------------> Modules
 class ProtProf(BaseConfModPanel):
     """Creates the Proteome Profiling configuration tab.

@@ -3410,11 +3410,46 @@ class CheckDataPrep(BaseWindowNPlotLT):
         ----------
         title : str
             Title of the window
+        dpDF : dict[pd.DataFrame]
+            The dictionary has the following structure:
+            {
+                "dfS" : pd.DataFrame, Data after excluding and filter by Score
+                "dfT" : pd.DataFrame, Data after transformation
+                "dfN" : pd.DataFrame, Data after normalization
+                "dfIm": pd.DataFrame, Data after Imputation
+            }
 
         Attributes
         ----------
+        name : str
+            Name of the window
+        dpDF : dict[pd.DataFrame]
+            See dpDF in Parameters
+        #------------------------------> Configuration
+        cLCol : list[str]
+            Name for the columns if the wx.ListCtrl
+        cLdfCol : list[str]
+            Name for the columns in the df with the statistic description of the
+            data
+        cLDFData : list[str]
+            Name of the rows in the Data column of the df written to the 
+            wx.TextCtrl.
+        cLNPlots: list[str]
+            To id the plots in the window
+        cNPlotsCol: int
+            Number of columns in the array containing the plots
+        cTitle : str
+            Title of the window
+        cTList : str
+            Title for the wx.ListCtrl pane
+        cTText : str
+            Title for the wx.TextCtrl pane
+        cHSearch : str
+            Hint of the wx.SearchCtrl
+        #------------------------------> Size
+        cSCol : list[int]
+            Size of the columns in the wx.ListCtrl
         
-
         Raises
         ------
         
@@ -3427,7 +3462,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
     name = config.nwCheckDataPrep
     #------------------------------> Label
     cLNPlots = ['Init', 'Transf', 'Norm', 'Imp']
-    cLCol = ['#', 'Name']
+    cLDFData = ['Filtered', 'Transformed', 'Normalized', 'Imputed']
+    cLCol = config.lLCtrlColNameI
     cLdfCol = config.dfcolDataCheck
     cTList = 'Column names'
     cTText = 'Statistic information'
@@ -3435,14 +3471,12 @@ class CheckDataPrep(BaseWindowNPlotLT):
     cSCol = [45, 100]
     #------------------------------> Hint
     cHSearch = 'Colum names'
-    #------------------------------> Lists
-    ltDFData = ['Filtered', 'Transformed', 'Normalized', 'Imputed']
     #------------------------------> Other
     cNPlotsCol = 2
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, title, dpDF):
+    def __init__(self, title: str, dpDF: dict[str,pd.DataFrame]):
         """ """
         #region -------------------------------------------------> Check Input
         
@@ -3451,10 +3485,6 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #region -----------------------------------------------> Initial Setup
         self.cTitle = title
         self.dpDF = dpDF
-        
-        # if config.development:
-        #     for k,v in self.dpDF.items():
-        #         print(f'{k}:\n{v.head()}')
         #------------------------------> 
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
@@ -3510,7 +3540,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
     #---
     
     def FillListCtrl(self) -> bool:
-        """Update the protein list for the given analysis.
+        """Update the column names for the given analysis.
     
             Returns
             -------
@@ -3518,7 +3548,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
             
             Notes
             -----
-            Entries are read from self.df
+            Entries are read from self.ddDF['dfS']
         """
         #region --------------------------------------------------> Delete old
         self.lc.lcs.lc.DeleteAllItems()
@@ -3532,10 +3562,10 @@ class CheckDataPrep(BaseWindowNPlotLT):
         self.lc.lcs.lc.SetNewData(data)
         #endregion ---------------------------------------> Set in wx.ListCtrl
         
-        #region ---------------------------------------> Update Protein Number
+        #region ----------------------------------------> Update Column Number
         self._mgr.GetPane(self.lc).Caption(f'{self.cTList} ({len(data)})')
         self._mgr.Update()
-        #endregion ------------------------------------> Update Protein Number
+        #endregion -------------------------------------> Update Column Number
         
         return True
     #---
@@ -3722,23 +3752,21 @@ class CheckDataPrep(BaseWindowNPlotLT):
     #---
     
     def SetText(self, col: int) -> bool:
-        """
+        """Set the text with the descriptive statistics about the data prepara
+            tion steps.
     
             Parameters
             ----------
-            
+            col : int
+                Column to plot
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ----------------------------------------------------> Empty DF
         df = pd.DataFrame(columns=self.cLdfCol)
-        df['Data'] = self.ltDFData
+        df['Data'] = self.cLDFData
         #endregion -------------------------------------------------> Empty DF
         
         #region --------------------------------------------> Calculate values
@@ -3782,11 +3810,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ------------------------------------------------> Get Selected
         idx = self.lc.lcs.lc.GetFirstSelected()
@@ -3824,7 +3848,6 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #region --------------------------------------------------------> Text
         self.SetText(idx)
         #endregion -----------------------------------------------------> Text
-        
         
         return True
     #---
