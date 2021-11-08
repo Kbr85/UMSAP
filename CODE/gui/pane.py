@@ -25,7 +25,6 @@ import numpy as np
 from statsmodels.stats.multitest import multipletests
 
 import wx
-from wx.core import ALIGN_CENTER
 import wx.lib.scrolledpanel as scrolled
 
 import dat4s_core.data.file as dtsFF
@@ -120,6 +119,8 @@ class BaseConfPanel(
             Choice for normalization method. Default is config.oNormMethod.
         cOTrans : list of str
             Choice for transformation method. Default is config.oTransMethod.
+        cSTc : wx.Size
+            Size for the wx.TextCtrl in the panel
         cTTClearAll : str
             Tooltip for the Clear All button. Default is config.ttBtnClearAll.
         cTTHelp : str
@@ -262,6 +263,8 @@ class BaseConfPanel(
         self.cLTransMethod = getattr(
             self, 'cLTransMethod', config.lCbTransMethod)
         self.cLImputation = getattr(self, 'cLImputation', config.lCbImputation)
+        #------------------------------> Size
+        self.cSTc = getattr(self, 'cSTc', config.sTc)
         #------------------------------> Choices
         self.cONorm = getattr(self, 'cONorm', list(config.oNormMethod.values()))
         self.cOTrans = getattr(
@@ -1086,8 +1089,6 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             Score column. Default is config.lStScoreCol.
         cLScoreVal : str
             Score value label. Default is config.lStScoreVal.
-        cSTc : wx.Size
-            Size for the wx.TextCtrl in the panel
         cTTAlpha : str
             Tooltip for alpha level. Default is config.ttStAlpha.
         cTTColExtract : str
@@ -1143,8 +1144,6 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         )
         self.cLScoreCol = getattr(self, 'cLScoreCol', config.lStScoreCol)
         self.cLColExtract = getattr(self, 'cLColExtract', config.lStColExtract)
-        #------------------------------> Size
-        self.cSTc = getattr(self, 'cSTc', config.sTc)
         #------------------------------> Tooltips
         self.cTTAlpha = getattr(self, 'cTTAlpha', config.ttStAlpha)
         self.cTTScoreVal = getattr(self, 'cTTScoreVal', config.ttStScoreVal)
@@ -2607,8 +2606,8 @@ class CorrA(BaseConfPanel):
 #---
 
 
-class DataPrep(wx.Panel):
-    """
+class DataPrep(BaseConfPanel):
+    """Data Preparation utility.
 
         Parameters
         ----------
@@ -2627,7 +2626,7 @@ class DataPrep(wx.Panel):
         
     """
     #region -----------------------------------------------------> Class setup
-    
+    name = config.npDataPrep
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -2638,6 +2637,23 @@ class DataPrep(wx.Panel):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
+        #------------------------------> Needed by BaseConfPanel
+        self.cURL         = config.urlDataPrep
+        self.cSection     = config.nuDataPrep
+        self.cLLenLongest = 13 # ????
+        self.cTitlePD     = f"Running {config.nuDataPrep} Analysis"
+        self.cGaugePD     = 30 # ????
+        #------------------------------> Optional configuration
+        self.cTTHelp = config.ttBtnHelp.format(config.urlProtProf)
+        #------------------------------> Label
+        self.cLScoreVal = getattr(self, 'cLScoreVal', config.lStScoreVal)
+        self.cLScoreCol = getattr(self, 'cLScoreCol', config.lStScoreCol)
+        self.cLExcludeRow = 'Exclude Rows'
+        #------------------------------> Tooltips
+        self.cTTScoreVal = getattr(self, 'cTTScoreVal', config.ttStScoreVal)
+        self.cTTScore = getattr(self, 'cTTScore', config.ttStScore)
+        self.cTTExcludeRow = config.ttStExcludeRow
+        #------------------------------> Parent class
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
 
@@ -2646,11 +2662,116 @@ class DataPrep(wx.Panel):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
+        self.scoreVal = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLScoreVal,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+            )
+        )
         
+        self.score = dtsWidget.StaticTextCtrl(
+            self.sbColumn,
+            stLabel   = self.cLScoreCol,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'int',
+                nN      = 1,
+                vMin    = 0,
+            )
+        )
+        
+        self.excludeProt = dtsWidget.StaticTextCtrl(
+            self.sbColumn,
+            stLabel   = self.cLExcludeRow,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'int',
+                sep     = ' ',
+                vMin    = 0,
+                opt     = True,
+            )
+        )
         #endregion --------------------------------------------------> Widgets
+        
+        #region -----------------------------------------------------> Tooltip
+        self.scoreVal.st.SetToolTip(self.cTTScoreVal)
+        self.score.st.SetToolTip(self.cTTScore)
+        self.excludeProt.st.SetToolTip(self.cTTExcludeRow)
+        #endregion --------------------------------------------------> Tooltip
 
         #region ------------------------------------------------------> Sizers
-        
+        #------------------------------> Sizer Values
+        self.sizersbValueWid.Add(
+            1, 1,
+            pos    = (0,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.scoreVal.st,
+            pos    = (0,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.scoreVal.tc,
+            pos    = (0,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            1, 1,
+            pos    = (0,3),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.AddGrowableCol(0, 1)
+        self.sizersbValueWid.AddGrowableCol(2, 1)
+        self.sizersbValueWid.AddGrowableCol(3, 1)
+        #------------------------------> Sizer Columns
+        self.sizersbColumnWid.Add(
+            1, 1,
+            pos    = (0,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.score.st,
+            pos    = (0,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.score.tc,
+            pos    = (0,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.excludeProt.st,
+            pos    = (0,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.excludeProt.tc,
+            pos    = (0,4),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            1, 1,
+            pos    = (0,5),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.AddGrowableCol(0,1)
+        self.sizersbColumnWid.AddGrowableCol(2,1)
+        self.sizersbColumnWid.AddGrowableCol(4,2)
+        self.sizersbColumnWid.AddGrowableCol(5,1)
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind

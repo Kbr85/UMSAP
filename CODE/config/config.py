@@ -134,6 +134,7 @@ ntProtProf = 'ProtProfTab'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
+npDataPrep              = "Data Preparation"
 npProtProf              = 'ProtProfPane'
 npResControlExp         = 'ResControlExpPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
@@ -219,6 +220,7 @@ urlUpdate   = f"{urlHome}/page/release-notes"
 urlTutorial = f"{urlHome}/tutorial/2-1-0"
 urlCorrA    = f"{urlTutorial}/correlation-analysis"
 urlProtProf = f"{urlTutorial}/proteome-profiling"
+urlDataPrep = f"{urlTutorial}/data-preparation"
 
 #endregion --------------------------------------------------------------- URL
 
@@ -308,6 +310,8 @@ ttStColExtract = "Set the column numbers to extract from {}.\ne.g. 1-4 7 8"
 ttStGenName = "Set the column number containing the gene names.\ne.g. 3"
 ttStExcludeProt = (
     "Set the column number containing the protein to exclude.\ne.g. 8 10-12")
+ttStExcludeRow = (
+    "Set the column number containing the rows to exclude.\ne.g. 8 10-12")
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
