@@ -3902,6 +3902,7 @@ class UMSAPControl(BaseWindow):
     
     cPlotMethod = { # Methods to create plot windows
         config.nuCorrA   : CorrAPlot,
+        config.nuDataPrep: CheckDataPrep,
         config.nmProtProf: ProtProfPlot,
     }
     
@@ -3909,6 +3910,7 @@ class UMSAPControl(BaseWindow):
     
     cSectionTab = { # Section name and Tab name correlation
         config.nuCorrA   : config.ntCorrA,
+        config.nuDataPrep: config.ntDataPrep,
         config.nmProtProf: config.ntProtProf,
     }
     #endregion --------------------------------------------------> Class setup
