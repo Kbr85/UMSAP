@@ -2880,6 +2880,7 @@ class DataPrep(BaseConfPanel):
             #------------------------------> Columns
             self.score.tc.SetValue(dataI['I'][self.cLScoreCol])
             self.excludeRow.tc.SetValue(dataI['I'][self.cLExcludeRow])
+            self.colAnalysis.tc.SetValue(dataI['I'][self.cLColAnalysis])
         else:
             pass
         #endregion ----------------------------------------------> Fill Fields
@@ -3245,8 +3246,6 @@ class DataPrep(BaseConfPanel):
         self.dFile = None # Data File copied to Data-Initial
         #endregion ----------------------------------------------------> Reset
     #---
-    
-
     #endregion ------------------------------------------------> Class methods
 #---
 
