@@ -2617,10 +2617,76 @@ class DataPrep(BaseConfPanel):
 
         Parameters
         ----------
-        
+        parent: wx.Widget
+            Parent of the pane
+        dataI : dict or None
+            Initial data provided by the user in a previous analysis.
+            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
 
         Attributes
         ----------
+        name : str
+            Name of the pane. Default to config.npProtProf.
+        #------------------------------> Configuration
+        cLColAnalysis : str
+            Label for the Columns to Consider
+        cLExcludeRow : str
+            Label for the Exclude Row field
+        cLLenLongest : int
+            Length of the longest label in the panel.
+        cLScoreCol : str
+            Label for the Score Column field.
+        cLScoreVal : str
+            Label for the Score Value field.
+        cTTColAnalysis : str
+            Tooltip for the Columns to Consider field.
+        cTTExcludeRow: str
+            Tooltip for the Exclude Row field.
+        cTTHelp: str
+            Tooltip for the Help button.
+        cTTScore : str
+            Tooltip for the Score column field.
+        cTTScoreVal: str
+            Tooltip for the Score value field.
+        cURL : str
+            URL for the online help.
+        #------------------------------> Configuration to Run the Analysis
+        cGaugePD : int
+            Number of steps for the Progress Dialog.
+        cSection : str
+            Name of the section. Default to config.nmProtProf.
+        cTitlePD : str
+            Name of the Progress Dialog window.
+        do: dict 
+        {
+            'iFile'      : Path(self.iFile.tc.GetValue()),
+            'uFile'      : Path(self.uFile.tc.GetValue()),
+            'ID'         : self.id.tc.GetValue(),
+            'Cero'       : self.ceroB.IsChecked(),
+            'NormMethod' : self.normMethod.cb.GetValue(),
+            'TransMethod': self.transMethod.cb.GetValue(),
+            'ImpMethod'  : self.imputationMethod.cb.GetValue(),
+            'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
+            'oc'         : {
+                'ScoreCol'   : scoreCol,
+                'ExcludeP'   : excludeRow,
+                'ColAnalysis': colAnalysis,
+                'Column'     : [scoreCol] + excludeRow + colAnalysis,
+            },
+            'df' : {
+                'ScoreCol'   : 0,
+                'ExcludeP'   : [x for x in range(1, len(excludeRow)+1)],
+                'ResCtrlFlat': resCtrlFlat,
+                'ColumnF'    : [0]+resCtrlFlat,
+            },
+        }
+        d : dict
+            Similar to do but with the user given data. Keys are labels in the 
+            panel.
+        date : str
+            Date-Time when starting an analysis.
+        dateID : str
+            Date - User given ID
         
 
         Raises
@@ -2630,6 +2696,42 @@ class DataPrep(BaseConfPanel):
         Methods
         -------
         
+        Notes
+        -----
+        Running the analysis results in the creation of:
+        
+        - Parent Folder/
+            - Input_Data_Files/
+            - Steps_Data_Files/20210324-165609_Data Preparation/
+            - output-file.umsap
+        
+        The Input_Data_Files folder contains the original data files. These are 
+        needed for data visualization, running analysis again with different 
+        parameters, etc.
+        The Steps_Data_Files/Date-Section folder contains regular csv files with 
+        the step by step data.
+    
+        The Data Preparation section in output-file.umsap conteins the 
+        information about the calculations, e.g
+
+        {
+            'Data Preparation : {
+                '20210324-165609': {
+                    'V' : config.dictVersion,
+                    'I' : self.d,
+                    'CI': self.do,
+                    'DP': {
+                        'dfS' : pd.DataFrame with initial data as float and
+                                after discarding values by score.
+                        'dfT' : pd.DataFrame with transformed data.
+                        'dfN' : pd.DataFrame with normalized data.
+                        'dfIm': pd.DataFrame with imputed data.
+                    }
+                }
+            }
+        }
+        
+        There is no R entry in this case.
     """
     #region -----------------------------------------------------> Class setup
     name = config.npDataPrep
@@ -2644,7 +2746,7 @@ class DataPrep(BaseConfPanel):
 
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Optional configuration
-        self.cTTHelp = config.ttBtnHelp.format(config.urlProtProf)
+        self.cTTHelp = config.ttBtnHelp.format(config.urlDataPrep)
         #------------------------------> Label
         self.cLScoreVal = getattr(self, 'cLScoreVal', config.lStScoreVal)
         self.cLScoreCol = getattr(self, 'cLScoreCol', config.lStScoreCol)
@@ -2662,8 +2764,6 @@ class DataPrep(BaseConfPanel):
         self.cLLenLongest = len(self.cLColAnalysis)
         self.cTitlePD     = f"Running {config.nuDataPrep} Analysis"
         self.cGaugePD     = 30 # ????
-        #------------------------------> Needed to Run
-        self.cMainData  = '{}-DataPreparation-Data-{}.txt'
         #------------------------------> Parent class
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
@@ -3301,7 +3401,6 @@ class ProtProf(BaseConfModPanel):
             Tooltip for the intensity field.
         cTTSample : str
             Tooltip for the sample field.
-        
         #------------------------------> To Run Analysis
         cColCtrlData : dict
             Keys are control type and values methods to get the Ctrl and 

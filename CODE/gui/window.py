@@ -3409,7 +3409,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
 
 
 class CheckDataPrep(BaseWindowNPlotLT):
-    """window to check the data preparation steps
+    """Window to check the data preparation steps
 
         Parameters
         ----------
@@ -3429,10 +3429,26 @@ class CheckDataPrep(BaseWindowNPlotLT):
 
         Attributes
         ----------
+        parent: wx.Window
+            Parent of the window
         name : str
             Name of the window
         dpDF : dict[pd.DataFrame]
             See dpDF in Parameters
+        data : dict
+            Dict with the configured data for this section from UMSAPFile.
+        date : list of str
+            List of available dates in the section.
+        fileName : dict
+            Name of the files needed to export the data
+        fromUMSAPFile : bool
+            The window is invoked from an UMSAP File window (True) or not (False)
+        imgName : dict
+            Name of the files needed to export the images of the plots.
+        obj : UMSAPFile
+            Refernece to the UMSAPFile object.
+        oDate : str
+            Date selected. Needed to export the data and images.
         #------------------------------> Configuration
         cLCol : list[str]
             Name for the columns if the wx.ListCtrl
@@ -3446,6 +3462,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
             To id the plots in the window
         cNPlotsCol: int
             Number of columns in the array containing the plots
+        cSection : str
+            Section name in the UMSAP File
         cTitle : str
             Title of the window
         cTList : str
@@ -3947,11 +3965,12 @@ class CheckDataPrep(BaseWindowNPlotLT):
     
             Parameters
             ----------
-            
+            date : str or None
+                Given date to plot.
     
             Returns
             -------
-            
+            bool
     
             Raise
             -----
