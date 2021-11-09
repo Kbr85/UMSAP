@@ -541,6 +541,64 @@ class CorrAPlotToolMenu(PlotMenu):
 #---
 
 
+class DataPrepToolMenu(wx.Menu, MenuMethods):
+    """Tool menu for the Data Preparation Plot window.
+    
+        See Notes below for more details.
+        
+        Parameters
+        ----------
+        menuData: dict
+            Data needed to build the menu. See Notes below.
+        
+        Attributes
+        ----------
+        menuData: dict
+            Data needed to build the menu. See Notes below.
+        plotdate : list of wx.MenuItems
+            Available dates in the analysis.
+        
+        Notes
+        -----
+        menuData has the following structure:
+            {
+                'menudate' : [List of dates as str],
+            }    
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData: Optional[dict]=None):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.menuData = menuData
+        self.plotDate = []
+        
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        #------------------------------> Add Dates
+        if menuData is not None:
+            self.AddDateItems(self.menuData['menudate'])
+            self.AppendSeparator()
+        else:
+            pass
+        #------------------------------> Duplicate Window
+        self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        #------------------------------> Export Data
+        self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
+        self.saveI = self.Append(-1, 'Save Image\tCtrl+I')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
 class VolcanoPlot(wx.Menu, MenuMethods):
     """Menu for a Volcano Plot.
 
@@ -1407,8 +1465,9 @@ class ToolMenuBar(MainMenuBar):
         config.nwMain         : None,
         config.nwUMSAPControl : FileControlToolMenu,
         config.nwCorrAPlot    : CorrAPlotToolMenu,
+        config.nwCheckDataPrep: DataPrepToolMenu,
         config.nwProtProf     : ProtProfToolMenu,
-        config.nwCheckDataPrep: None,
+        
     }
     #endregion --------------------------------------------------> Class Setup
     

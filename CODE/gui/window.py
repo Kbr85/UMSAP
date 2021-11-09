@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
+from types import MethodDescriptorType
 from typing import Optional, Literal
 
 import matplotlib.patches as mpatches
@@ -3500,8 +3501,10 @@ class CheckDataPrep(BaseWindowNPlotLT):
         self.cTitle = title
         self.dpDF   = dpDF
         self.SetWindow()
+        #--------------> menuData here because it is not needed to save it
+        menuData = None if self.date is None else {'menudate': self.date}
         #------------------------------> 
-        super().__init__(parent=self.parent)
+        super().__init__(parent=self.parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -3521,7 +3524,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
-        self.FillListCtrl()
+        date = None if self.date is None else self.date[0]
+        self.Draw(date)
         #------------------------------> 
         self.WinPos()
         self.Show()
@@ -3551,8 +3555,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
             self.obj    = self.parent.obj
             self.data   = self.obj.confData[self.cSection]
             self.date   = [k for k in self.data.keys()]
-            self.dpDF   = self.data[self.date[0]]['DP']
         else:
+            self.date = None
             self.fromUMSAPFile = False
         #------------------------------> 
         return True
@@ -3920,6 +3924,38 @@ class CheckDataPrep(BaseWindowNPlotLT):
         self.SetText(idx)
         #endregion -----------------------------------------------------> Text
         
+        return True
+    #---
+    
+    def Draw(self, date: Optional[str]=None):
+        """Update window when a new date is selected.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #------------------------------> Set the dataFrame
+        if date is not None:
+            self.dpDF = self.data[date]['DP']
+        else:
+            pass
+        #------------------------------> Fill
+        self.FillListCtrl()
+        #------------------------------> Clean Plots
+        for k in self.plots.dPlot.keys():
+            self.plots.dPlot[k].axes.clear()
+            self.plots.dPlot[k].canvas.draw()
+        #------------------------------> Clean Text
+        self.text.Clear()
+        #------------------------------> 
         return True
     #---
     #endregion ------------------------------------------------> Class methods
