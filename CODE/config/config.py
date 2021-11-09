@@ -117,21 +117,24 @@ winUMSAP = {}
 #------------------------------> Default name
 nDefName = 'Default name'
 #------------------------------> Windows
-nwMain         = 'MainW'
-nwUMSAPControl = 'UMSAPControl'
-nwCorrAPlot    = 'CorrAPlot'
-nwProtProf     = 'ProtProfPlot'
+nwMain          = 'MainW'
+nwUMSAPControl  = 'UMSAPControl'
+nwCorrAPlot     = 'CorrAPlot'
+nwProtProf      = 'ProtProfPlot'
+nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
 ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
 ntStart    = 'StartTab'
+ntDataPrep = "DataPrepTab"
 ntCorrA    = 'CorrATab'
 ntProtProf = 'ProtProfTab'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
+npDataPrep              = "Data Preparation"
 npProtProf              = 'ProtProfPane'
 npResControlExp         = 'ResControlExpPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
@@ -146,10 +149,9 @@ nmLimProt  = 'Limited Proteolysis'
 nmTarProt  = 'Targeted Proteolysis'
 nmProtProf = 'Proteome Profiling'
 #------------------------------> Utilities
-nuDataT = 'Data Transformation'
-nuCorrA = 'Correlation Analysis'
-nuDataN = 'Data Normalization'
-nuReadF = 'Read UMSAP File'
+nuDataPrep = "Data Preparation"
+nuCorrA    = 'Correlation Analysis'
+nuReadF    = 'Read UMSAP File'
 #endregion ------------------------------------------------------------> Names
 
 
@@ -168,6 +170,7 @@ t = {
     ndFilterRemoveAny     : 'Remove Filters',
     #------------------------------> Tabs
     ntStart   : 'Start',
+    ntDataPrep: 'DataPrep',
     ntCorrA   : 'CorrA',
     ntProtProf: 'ProtProf',
 }
@@ -198,13 +201,13 @@ pImages = res / 'IMAGES' # Images folder
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 #------------------------------> Names
-fnInitial   = "{}-Initial-Data.txt"
-fnFloat     = "{}-Floated-Data.txt"
-fnExclude   = "{}-After-Excluding-Data.txt"
-fnScore     = "{}-Score-Filtered-Data.txt"
-fnTrans     = "{}-Transformed-Data.txt"
-fnNorm      = "{}-Normalized-Data.txt"
-fnImp       = "{}-Imputed-Data.txt"
+fnInitial   = "{}-Initial-Data-{}.txt"
+fnFloat     = "{}-Floated-Data-{}.txt"
+fnExclude   = "{}-After-Excluding-Data-{}.txt"
+fnScore     = "{}-Score-Filtered-Data-{}.txt"
+fnTrans     = "{}-Transformed-Data-{}.txt"
+fnNorm      = "{}-Normalized-Data-{}.txt"
+fnImp       = "{}-Imputed-Data-{}.txt"
 fnDataSteps = 'Steps_Data_Files'
 fnDataInit  = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
@@ -217,6 +220,7 @@ urlUpdate   = f"{urlHome}/page/release-notes"
 urlTutorial = f"{urlHome}/tutorial/2-1-0"
 urlCorrA    = f"{urlTutorial}/correlation-analysis"
 urlProtProf = f"{urlTutorial}/proteome-profiling"
+urlDataPrep = f"{urlTutorial}/data-preparation"
 
 #endregion --------------------------------------------------------------- URL
 
@@ -243,6 +247,7 @@ lStProtProfRP   = 'Relevant Points'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'  
 #------------------------------> wx.Statictext
+lStId           = 'Analysis ID'
 lStAlpha        = 'Significance level'
 lStColIFile     = "Columns in the {}"
 lStScoreVal     = 'Score Value'
@@ -252,6 +257,8 @@ lStColExtract   = 'Columns to Extract'
 lStResultCtrl   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
+lCbCeroTreat   = 'Treat 0s as missing values'
+lCbCeroTreatD  = '0s Missing'
 lCbTransMethod = 'Transformation'
 lCbNormMethod  = 'Normalization'
 lCbImputation  = 'Imputation'
@@ -273,6 +280,7 @@ lPdEllapsed = 'Ellapsed time: '
 hTcDataFile = f"Path to the {lBtnDataFile}"
 hTcOutFile  = f"Path tot the {lBtnOutFile}"
 hTcUFile    = f"Path tot the {lBtnUFile}"
+hTcId       = 'e.g. HIV inhibitor'
 #endregion ------------------------------------------------------------> Hints
 
 
@@ -286,6 +294,7 @@ ttBtnHelp     = "Read tutorial at {}."
 ttBtnClearAll = f"Clear all user input."
 ttBtnRun      = f"Start the analysis."
 #------------------------------> wx.StaticText
+ttStId = 'Short text to id the analysis. Do not include the date.'
 ttStTrans = f"Select the {lCbTransMethod} method."
 ttStNorm = f"Select the {lCbNormMethod} method."
 ttStImputation = f"Select the {lCbImputation} method."
@@ -301,6 +310,8 @@ ttStColExtract = "Set the column numbers to extract from {}.\ne.g. 1-4 7 8"
 ttStGenName = "Set the column number containing the gene names.\ne.g. 3"
 ttStExcludeProt = (
     "Set the column number containing the protein to exclude.\ne.g. 8 10-12")
+ttStExcludeRow = (
+    "Set the column number containing the rows to exclude.\ne.g. 8 10-12")
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -375,9 +386,15 @@ oControlTypeProtProf = {
 
 
 #region -----------------------------------------------------> DF Column names
-protprofFirstThree = ['Gene', 'Protein', 'Score']
-protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
+dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
+dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
+dfcolDataCheck = ['Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
 #endregion --------------------------------------------------> DF Column names
+
+
+#region -----------------------------------------------------> Important Lists
+ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
+#endregion --------------------------------------------------> Important Lists
 
 
 #region ------------------------------------------------------------> Messages
@@ -409,7 +426,7 @@ mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
-sWinRegular = (930, 700)
+sWinRegular = (930, 770)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
 sWinModPlot = (1100, 625)
@@ -455,6 +472,7 @@ color = { # Colors for the app
             'c1': [255, 0, 0],
             'c2': [255, 255, 255],
             'c3': [0, 0, 255],
+            'NA': '#90EE90',
         },
     },
     nwProtProf : {

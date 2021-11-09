@@ -65,7 +65,8 @@ class MenuMethods():
                 Information about the event
         """
         win = self.GetWindow()
-        win.plot.ZoomResetPlot()
+        # win.plot.ZoomResetPlot()
+        win.OnZoomReset()
         return True
     #---
 
@@ -161,6 +162,24 @@ class MenuMethods():
         return True
     #---
     
+    def OnCheckDataPrep(self, event: wx.CommandEvent) -> Literal[True]:
+        """Launch the Check Data Preparation window.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        win = self.GetWindow() 
+        win.OnCheckDataPrep(self.GetCheckedRadiodItem(self.plotDate))
+        return True
+    #---
+    
     def GetCheckedRadiodItem(self, lMenuItem: list[wx.MenuItem]) -> str:
         """Get the checked item in a list of radio menu items.
     
@@ -226,6 +245,8 @@ class PlotMenu(wx.Menu, MenuMethods):
         self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
         self.saveI = self.Append(-1, 'Save Image\tCtrl+I')
         self.AppendSeparator()
+        self.checkDP = self.Append(-1, 'Data Preparation')
+        self.AppendSeparator()
         self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
         #endregion -----------------------------------------------> Menu Items
 
@@ -234,6 +255,7 @@ class PlotMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.zoomR)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.saveD)
         self.Bind(wx.EVT_MENU, self.OnSavePlot,       source=self.saveI)
+        self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.checkDP)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -517,6 +539,73 @@ class CorrAPlotToolMenu(PlotMenu):
         return True
     #---
     #endregion ------------------------------------------------> Class methods
+#---
+
+
+class DataPrepToolMenu(wx.Menu, MenuMethods):
+    """Tool menu for the Data Preparation Plot window.
+    
+        See Notes below for more details.
+        
+        Parameters
+        ----------
+        menuData: dict
+            Data needed to build the menu. See Notes below.
+        
+        Attributes
+        ----------
+        menuData: dict
+            Data needed to build the menu. See Notes below.
+        plotdate : list of wx.MenuItems
+            Available dates in the analysis.
+        
+        Notes
+        -----
+        menuData has the following structure:
+            {
+                'menudate' : [List of dates as str],
+            }    
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData: Optional[dict]=None):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.menuData = menuData
+        self.plotDate = []
+        
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        #------------------------------> Add Dates
+        if menuData is not None:
+            self.AddDateItems(self.menuData['menudate'])
+            self.AppendSeparator()
+        else:
+            pass
+        #------------------------------> Duplicate Window
+        self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        #------------------------------> Export Data
+        self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
+        self.saveI = self.Append(-1, 'Save Image\tShift+I')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        #endregion -----------------------------------------------> Menu Items
+    
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnDupWin,             source=self.dupWin)
+        self.Bind(wx.EVT_MENU, self.OnExportPlotData,     source=self.saveD)
+        self.Bind(wx.EVT_MENU, self.OnSavePlot,           source=self.saveI)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,          source=self.zoomR)
+        #endregion -----------------------------------------------------> Bind    
+    #---
+    #endregion -----------------------------------------------> Instance setup
 #---
 
 
@@ -913,13 +1002,12 @@ class FiltersProtProf(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.zScore  = self.Append(-1, 'Z Score')
-        self.log2FC  = self.Append(-1, 'Log2(FC)')
-        self.pValue  = self.Append(-1, 'P Value')
-        self.monUp   = self.Append(-1, 'Monotonically Increasing')
-        self.monDown = self.Append(-1, 'Monotonically Decreasing')
-        self.monBoth = self.Append(-1, 'Monotonically Both')
-        self.div     = self.Append(-1, 'Divergent')
+        self.zScore   = self.Append(-1, 'Z Score')
+        self.log2FC   = self.Append(-1, 'Log2(FC)')
+        self.pValue   = self.Append(-1, 'P Value')
+        self.fcChange = self.Append(-1, 'FC Change')
+        self.fcNo     = self.Append(-1, 'FC No Change')
+        self.div      = self.Append(-1, 'FC Diverge')
         self.AppendSeparator()
         self.apply = self.Append(-1, 'Apply All\tCtrl+A')
         self.update = self.Append(-1, 'Auto Apply Filters', kind=wx.ITEM_CHECK)
@@ -929,21 +1017,12 @@ class FiltersProtProf(wx.Menu):
         self.removeAll = self.Append(-1, 'Remove All\tCtrl+Shift+A')
         #endregion -----------------------------------------------> Menu Items
         
-        #region -------------------------------------------------------> Names
-        self.nameID = { # Associate IDs with Tab names. Avoid manual IDs
-            self.monUp.GetId()  : 'Up',
-            self.monDown.GetId(): 'Down',
-            self.monBoth.GetId(): 'Both',
-        }
-        #endregion ----------------------------------------------------> Names
-        
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnZScore,      source=self.zScore)
         self.Bind(wx.EVT_MENU, self.OnLog2FC,      source=self.log2FC)
         self.Bind(wx.EVT_MENU, self.OnPValue,      source=self.pValue)
-        self.Bind(wx.EVT_MENU, self.OnMonotonicity,source=self.monUp)
-        self.Bind(wx.EVT_MENU, self.OnMonotonicity,source=self.monDown)
-        self.Bind(wx.EVT_MENU, self.OnMonotonicity,source=self.monBoth)
+        self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.fcChange)
+        self.Bind(wx.EVT_MENU, self.OnFCNoChange,  source=self.fcNo)
         self.Bind(wx.EVT_MENU, self.OnDivergent,   source=self.div)
         self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.apply)
         self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.update)
@@ -1012,8 +1091,8 @@ class FiltersProtProf(wx.Menu):
         return True
     #---
     
-    def OnMonotonicity(self, event) -> bool:
-        """Filter results by monotonicity.
+    def OnFCNoChange(self, event) -> bool:
+        """Filter results by No FC change.
     
             Parameters
             ----------
@@ -1026,7 +1105,26 @@ class FiltersProtProf(wx.Menu):
             bool
         """
         win = self.GetWindow()
-        win.Filter_Monotonicity(self.nameID[event.GetId()])
+        win.Filter_FCNoChange()
+        
+        return True
+    #---
+    
+    def OnFCChange(self, event) -> bool:
+        """Filter results by FC change.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_FCChange()
         
         return True
     #---
@@ -1288,12 +1386,16 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Export Data
         self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
         self.saveFD = self.Append(-1, 'Export Data Filtered\tShift+Ctrl+E')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.dataPrep = self.Append(-1, 'Data Preparation')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnDupWin,             source=self.dupWin)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData,     source=self.saveD)
         self.Bind(wx.EVT_MENU, self.OnExportFilteredData, source=self.saveFD)
+        self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,      source=self.dataPrep)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1370,10 +1472,12 @@ class ToolMenuBar(MainMenuBar):
 
     #region -----------------------------------------------------> Class Setup
     toolClass = { # Key are window name
-        config.nwMain        : None,
-        config.nwUMSAPControl: FileControlToolMenu,
-        config.nwCorrAPlot   : CorrAPlotToolMenu,
-        config.nwProtProf    : ProtProfToolMenu,
+        config.nwMain         : None,
+        config.nwUMSAPControl : FileControlToolMenu,
+        config.nwCorrAPlot    : CorrAPlotToolMenu,
+        config.nwCheckDataPrep: DataPrepToolMenu,
+        config.nwProtProf     : ProtProfToolMenu,
+        
     }
     #endregion --------------------------------------------------> Class Setup
     

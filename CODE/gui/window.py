@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
+from types import MethodDescriptorType
 from typing import Optional, Literal
 
 import matplotlib.patches as mpatches
@@ -318,6 +319,29 @@ class BaseWindow(wx.Frame):
      
         dlg.Destroy()
         return True	
+    #---
+    
+    def OnCheckDataPrep(self, tDate: str) -> bool:
+        """Launch the Check Data Preparation Window.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            bool
+    
+            Raise
+            -----
+            
+        """
+        CheckDataPrep(
+            self,
+            f'{self.cSection} - {tDate}', 
+            self.data[tDate]['DP']
+        )
+        return True
     #---	
     #endregion ------------------------------------------------> Class methods
 #---
@@ -423,6 +447,218 @@ class BaseWindowPlot(BaseWindow):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
+
+
+class BaseWindowNPlotLT(BaseWindow):
+    """Base class to create a window like ProtProfPlot
+
+        Parameters
+        ----------
+        parent : wx.Window or None
+            Parent of the window. Default is None.
+        menuData : dict or None
+            Data to build the Tool menu of the window. Default is None.
+            See Child class for more details.
+
+        Notes
+        -----
+        Child class is expected to define:
+        - cLNPlots : list of str
+            To id the plots in the window.
+        - cNPlotsCol : int
+            Number of columns in the wx.FLexGrid to distribute the plots.
+        - cLCol : list of str
+            Column names in the wx.ListCtrl
+        - cSCol : list of int
+            Size of the columns in the wx.ListCtrl
+        - cHSearch : str
+            Hint for the wx.SearchCtrl. The hint will start with 'Search ', 
+            independently of the value of cHSearch
+        - cTText : str
+            Title for the text pane
+        - cTList : str
+            Title for the wx.ListCtrl pane
+        
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, menuData: Optional[dict]=None,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> 
+        self.statusbar.SetFieldsCount(3, config.sbPlot3Fields)
+        #------------------------------>  Plot
+        self.plots = dtsWindow.NPlots(
+            self, self.cLNPlots, self.cNPlotsCol, statusbar=self.statusbar)
+        #------------------------------> Text details
+        self.text = wx.TextCtrl(
+            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
+        self.text.SetFont(config.font['SeqAlign'])
+        #------------------------------> wx.ListCtrl
+        self.lc = pane.ListCtrlSearchPlot(
+            self, 
+            colLabel = self.cLCol,
+            colSize  = self.cSCol,
+            style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
+            tcHint   = f'Search {self.cHSearch}'
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ---------------------------------------------------------> AUI
+        #------------------------------> AUI control
+        self._mgr = aui.AuiManager()
+        #------------------------------> AUI which frame to use
+        self._mgr.SetManagedWindow(self)
+        #------------------------------> Add Configuration panel
+        self._mgr.AddPane( 
+            self.plots, 
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    'Plots'
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+
+        self._mgr.AddPane( 
+            self.text, 
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    self.cTText
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        
+        self._mgr.AddPane( 
+            self.lc, 
+            aui.AuiPaneInfo(
+                ).Left(
+                ).Layer(
+                    1    
+                ).Caption(
+                    self.cTList
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ------------------------------------------------------> AUI
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        self.Bind(wx.EVT_SEARCH, self.OnSearch)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnSearch(self, event: wx.Event) -> bool:
+        """Search for a given string in the wx.ListCtrl.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            See dtsWidget.MyListCtrl.Search for more details.
+        """
+        #region ---------------------------------------------------> Get index
+        tStr = self.lc.lcs.search.GetValue()
+        iEqual, iSimilar = self.lc.lcs.lc.Search(tStr)
+        #endregion ------------------------------------------------> Get index
+        
+        #region ----------------------------------------------> Show 1 Results
+        if len(iEqual) == 1:
+            #------------------------------> 
+            self.lc.lcs.lc.Select(iEqual[0], on=1)
+            self.lc.lcs.lc.EnsureVisible(iEqual[0])
+            self.lc.lcs.lc.SetFocus()
+            #------------------------------> 
+            return True
+        elif len(iSimilar) == 1:
+            #------------------------------> 
+            self.lc.lcs.lc.Select(iSimilar[0], on=1)
+            self.lc.lcs.lc.EnsureVisible(iSimilar[0])
+            self.lc.lcs.lc.SetFocus()
+            #------------------------------> 
+            return True
+        else:
+            pass
+        #endregion -------------------------------------------> Show 1 Results
+        
+        #region ----------------------------------------------> Show N Results
+        msg = (f'The string, {tStr}, was found in multiple rows.')
+        tException = (
+            f'The row numbers where the string was found are:\n '
+            f'{str(iSimilar)[1:-1]}')
+        dtscore.Notification(
+            'warning', 
+            msg        = msg,
+            setText    = True,
+            tException = tException,
+            parent     = self,
+        )
+        #endregion -------------------------------------------> Show N Results
+        
+        return True
+    #---
+    
+    def OnListSelect(self, event: wx.CommandEvent) -> bool:
+        """What to do after selecting a row in hte wx.ListCtrl. 
+            Override as needed
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+    
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion -----------------------------------------------------> Base Classes
 
 
@@ -450,6 +686,7 @@ class MainWindow(BaseWindow):
     tabMethods = { # Keys are the unique names of the tabs
         config.ntStart   : tab.Start,
         config.ntCorrA   : tab.BaseConfTab,
+        config.ntDataPrep: tab.BaseConfListTab,
         config.ntProtProf: tab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup
@@ -659,10 +896,11 @@ class CorrAPlot(BaseWindowPlot):
         self.data    = self.obj.confData[self.cSection]
         self.date    = [x for x in self.data.keys()]
         self.cmap    = dtsMethod.MatplotLibCmap(
-            N  = config.color[self.cSection]['CMAP']['N'],
-            c1 = config.color[self.cSection]['CMAP']['c1'],
-            c2 = config.color[self.cSection]['CMAP']['c2'],
-            c3 = config.color[self.cSection]['CMAP']['c3'],
+            N   = config.color[self.cSection]['CMAP']['N'],
+            c1  = config.color[self.cSection]['CMAP']['c1'],
+            c2  = config.color[self.cSection]['CMAP']['c2'],
+            c3  = config.color[self.cSection]['CMAP']['c3'],
+            bad = config.color[self.cSection]['CMAP']['NA'],
         )
 
         super().__init__(parent, {'menudate' : self.date})
@@ -847,7 +1085,7 @@ class CorrAPlot(BaseWindowPlot):
 #---
 
 
-class ProtProfPlot(BaseWindow):
+class ProtProfPlot(BaseWindowNPlotLT):
     """Plot results in the Proteome Profiling section of an UMSAP file.
 
         Parameters
@@ -927,22 +1165,52 @@ class ProtProfPlot(BaseWindow):
             StatusBar text for filter Divergent.
         cLFLog2Fc : str
             StatusBar text for filter Log2FC.
-        cLFMonBoth : str
-            StatusBar text for filter Monotonicity Increasing.
-        cLFMonDown : str
-            StatusBar text for filter Monotonicity Decreasing.
-        cLFMonBoth : str
-            StatusBar text for filter Monotonicity Both.
-        cLFMonMode : dict
-            Keys are 'Up', 'Down' and 'Both' and values are the StatusBar Text.
+        cLFFCUp : str
+            Id for the FC Change Above 0 filter.     
+        cLFFCUpL : str
+            StatusBar text for filter FC Change Above 0.
+        cLFFCUpAbs : str
+            Id for the FC Change Absolutely Increasing filter.       
+        cLFFCUpAbsL : str
+            StatusBar text for filter FC Change Absolutely Increasing filter. 
+        cLFFCUpMon : str
+            Id for the FC Change Monotonically Increasing filter.       
+        cLFFCUpMonL  : str
+            StatusBar text for filter FC Change Monotonically Increasingly.
+        cLFFCDown : str
+            Id for the FC Change Below 0 filter.        
+        cLFFCDownL : str
+            StatusBar text for filter FC Change Below 0.  
+        cLFFCDownAbs : str
+            Id for the FC Change Absolutely Decreasing filter.     
+        cLFFCDownAbsL : str
+            StatusBar text for filter FC Change Decreasing Absolutely.
+        cLFFCDownMon : str
+            Id for the FC Change Decreasing Monotonically filter.     
+        cLFFCDownMonL : str
+            StatusBar text for filter FC Change Decreasing Monotonically.
+        cLFFCBoth : str
+            Id for the FC Change Up/Down filter.        
+        cLFFCBothL : str
+            StatusBar text for filter FC Change Up/Down  
+        cLFFCBothAbs : str
+            Id for the FC Change Absolutely Up/Down filter.     
+        cLFFCBothAbsL : str
+            StatusBar text for filter FC Change Absolutely Up/Down
+        cLFFCBothMon : str
+            Id for the FC Change Monotonically Up/Down filter.     
+        cLFFCBothMonL : str
+            StatusBar text for filter FC Change Monotonically Up/Down
+        cLFFCDict : dict
+            Keys are cLFFCUp like and values are cLFFCUpL like
+        cLFFCNo : str
+            StatusBar text for filter FC No.
         cLFPValAbs : str
             StatusBar Text for filter P values when absolute values are used.
         cLFPValLog : str
             StatusBar Text for filter P values when -log10 values are used.
         cLFZscore : str
             StatusBar text for filter Z Score.
-        cLProtList : str
-            Title for the pane showing the wx.ListCtrl and wx.SearchCtrl.
         cSCol : list of int
             Size of the columns in the wx.ListCtrl.
         cSection : str
@@ -951,25 +1219,72 @@ class ProtProfPlot(BaseWindow):
             Window size. Default is config.sWinModPlot
         cTitle : str
             Title of the window.
+        cTList : str
+            Title for the pane showing the wx.ListCtrl and wx.SearchCtrl.
+        cTText : str
+            Title for the text pane.
+        cHSearch : str
+            text for the hint in wx.SearchCtrl
+        cNPlotsCol : int
+            Number of columns in the wx.FlexGrid to distribute the plots.
+        cLNPlots : list of str
+            IDs of the plots.
     """
     #region -----------------------------------------------------> Class setup
     #------------------------------> To id the window
     name = config.nwProtProf
     #------------------------------> To id the section in the umsap file 
     # shown in the window
-    cSection   = config.nmProtProf
-    cSWindow   = config.sWinModPlot
-    cLProtList = 'Protein List'
-    cLFZscore  = 'Z Score'
-    cLFLog2FC  = 'Log2FC'
-    cLFPValAbs = 'P(abs)'
-    cLFPValLog = 'P(p)'
-    cLFMonUp   = 'Monotonic (Increasing)'
-    cLFMonDown = 'Monotonic (Decreasing)'
-    cLFMonBoth = 'Monotonic (Both)'
-    cLFDiv     = 'Divergent'
-    cLCol = ['#', 'Gene', 'Protein']
-    cSCol = [45, 70, 100]
+    cSection      = config.nmProtProf
+    #------------------------------> Labels
+    cLFZscore     = 'Z Score'
+    cLFLog2FC     = 'Log2FC'
+    cLFPValAbs    = 'P(abs)'
+    cLFPValLog    = 'P(p)'
+    cLFFCUp       = 'FC Up'
+    cLFFCUpL      = 'FC Above 0'
+    cLFFCUpAbs    = 'FC Up Abs'
+    cLFFCUpAbsL   = 'FC Increases Strictly'
+    cLFFCUpMon    = 'FC Up Mon'
+    cLFFCUpMonL   = 'FC Increases Monotonically'
+    cLFFCDown     = 'FC Down'
+    cLFFCDownL    = 'FC Below 0'
+    cLFFCDownAbs  = 'FC Down Abs'
+    cLFFCDownAbsL = 'FC Decreases Strictly'
+    cLFFCDownMon  = 'FC Down Mon'
+    cLFFCDownMonL = 'FC Decreases Monotonically'
+    cLFFCBoth     = 'FC Up/Down'
+    cLFFCBothL    = 'FC Above/Below 0'
+    cLFFCBothAbs  = 'FC Up/Down Abs'
+    cLFFCBothAbsL = 'FC Increases/Decreases Strictly'
+    cLFFCBothMon  = 'FC Up/Down Mon'
+    cLFFCBothMonL = 'FC Increases/Decreases Monotonically'
+    cLFFCDict = {
+        cLFFCUp      : cLFFCUpL,
+        cLFFCDown    : cLFFCDownL,
+        cLFFCBoth    : cLFFCBothL,
+        cLFFCUpAbs   : cLFFCUpAbsL,
+        cLFFCDownAbs : cLFFCDownAbsL,
+        cLFFCBothAbs : cLFFCBothAbsL,
+        cLFFCUpMon   : cLFFCUpMonL,
+        cLFFCDownMon : cLFFCDownMonL,
+        cLFFCBothMon : cLFFCBothMonL,
+    }
+    cLFFCNo       = 'FC No Change'
+    cLFDiv        = 'FC Diverge'
+    cLCol         = ['#', 'Gene', 'Protein']
+    #--------------> Id of the plots
+    cLNPlots      = ['Vol', 'FC']
+    #------------------------------> Title
+    cTList        = 'Protein List'
+    cTText        = 'Profiling details'
+    #------------------------------> Sizes
+    cSWindow      = config.sWinModPlot
+    cSCol         = [45, 70, 100]
+    #------------------------------> Hints
+    cHSearch      = 'Protein List'
+    #------------------------------> Other
+    cNPlotsCol    = 2
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -1020,113 +1335,44 @@ class ProtProfPlot(BaseWindow):
             config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
         }
         
-        self.cLFMonMode = {
-            'Up'  : self.cLFMonUp,
-            'Down': self.cLFMonDown,
-            'Both': self.cLFMonBoth,
+        self.cLFFCMode = {
+            'Up'  : self.cLFFCUp,
+            'Down': self.cLFFCDown,
+            'Both': self.cLFFCBoth,
+            'No'  : self.cLFFCNo,
         }
         
         self.filterMethod = {
-            self.cLFZscore : self.Filter_ZScore,
-            self.cLFLog2FC : self.Filter_Log2FC,
-            self.cLFPValAbs: self.Filter_PValue,
-            self.cLFPValLog: self.Filter_PValue,
-            self.cLFMonUp  : self.Filter_Monotonicity,
-            self.cLFMonDown: self.Filter_Monotonicity,
-            self.cLFMonBoth: self.Filter_Monotonicity,
+            self.cLFZscore   : self.Filter_ZScore,
+            self.cLFLog2FC   : self.Filter_Log2FC,
+            self.cLFPValAbs  : self.Filter_PValue,
+            self.cLFPValLog  : self.Filter_PValue,
+            self.cLFFCUp     : self.Filter_FCChange,
+            self.cLFFCDown   : self.Filter_FCChange,
+            self.cLFFCBoth   : self.Filter_FCChange,
+            self.cLFFCUpAbs  : self.Filter_FCChange,
+            self.cLFFCDownAbs: self.Filter_FCChange,
+            self.cLFFCBothAbs: self.Filter_FCChange,
+            self.cLFFCUpMon  : self.Filter_FCChange,
+            self.cLFFCDownMon: self.Filter_FCChange,
+            self.cLFFCBothMon: self.Filter_FCChange,
+            self.cLFFCNo     : self.Filter_FCNoChange,
+            self.cLFDiv      : self.Filter_Divergent,
         }
         #------------------------------> 
-        super().__init__(parent, menuData=menuData)
+        super().__init__(parent, menuData=menuData, )
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        #------------------------------> 
-        self.statusbar.SetFieldsCount(3, config.sbPlot3Fields)
-        #------------------------------>  Plot
-        self.plots = dtsWindow.NPlots(
-            self, ['Vol', 'FC'], 2, statusbar=self.statusbar)
-        #------------------------------> Text details
-        self.text = wx.TextCtrl(
-            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
-        self.text.SetFont(config.font['SeqAlign'])
-        #------------------------------> wx.ListCtrl
-        self.lc = pane.ListCtrlSearchPlot(
-            self, 
-            colLabel = self.cLCol,
-            colSize  = self.cSCol,
-            style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
-            tcHint   = f'Search {self.cLProtList}'
-        )
+        
         #endregion --------------------------------------------------> Widgets
         
         #region -------------------------------------------------> Aui control
-        #------------------------------> AUI control
-        self._mgr = aui.AuiManager()
-        #------------------------------> AUI which frame to use
-        self._mgr.SetManagedWindow(self)
-        #------------------------------> Add Configuration panel
-        self._mgr.AddPane( 
-            self.plots, 
-            aui.AuiPaneInfo(
-                ).Center(
-                ).Caption(
-                    'Plots'
-                ).Floatable(
-                    b=False
-                ).CloseButton(
-                    visible=False
-                ).Movable(
-                    b=False
-                ).PaneBorder(
-                    visible=True,
-            ),
-        )
-
-        self._mgr.AddPane( 
-            self.text, 
-            aui.AuiPaneInfo(
-                ).Bottom(
-                ).Layer(
-                    0
-                ).Caption(
-                    'Profiling details'
-                ).Floatable(
-                    b=False
-                ).CloseButton(
-                    visible=False
-                ).Movable(
-                    b=False
-                ).PaneBorder(
-                    visible=True,
-            ),
-        )
         
-        self._mgr.AddPane( 
-            self.lc, 
-            aui.AuiPaneInfo(
-                ).Left(
-                ).Layer(
-                    1    
-                ).Caption(
-                    self.cLProtList
-                ).Floatable(
-                    b=False
-                ).CloseButton(
-                    visible=False
-                ).Movable(
-                    b=False
-                ).PaneBorder(
-                    visible=True,
-            ),
-        )
-        #------------------------------> 
-        self._mgr.Update()
         #endregion ----------------------------------------------> Aui control
 
         #region --------------------------------------------------------> Bind
         self.plots.dPlot['Vol'].canvas.mpl_connect('pick_event', self.OnPick)
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
-        self.lc.lcs.search.Bind(wx.EVT_SEARCH, self.OnSearch)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -1266,7 +1512,13 @@ class ProtProfPlot(BaseWindow):
             self.FilterApply()
             #------------------------------> 
             for k in self.filterList:
-                text = f'{text} | {k[0]} {k[1]["gText"]}'
+                #------------------------------> 
+                gText = k[1].get("gText", "")
+                #------------------------------> 
+                if gText:
+                    text = f'{text} | {k[0]} {gText}'
+                else:
+                    text = f'{text} | {k[0]}'
             #------------------------------> 
             self.statusbar.SetStatusText(text, 1)
         else:
@@ -1577,14 +1829,11 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def Filter_Monotonicity(
-        self, mode: Optional[int]=None, updateL: bool=True) -> bool:
-        """Filter results by monotonicity.
+    def Filter_FCNoChange(self, updateL: bool=True) -> bool:
+        """Filter results by No FC change.
     
             Parameters
             ----------
-            mode : str
-                Up, Down or Both
             updateL : bool
                 Update filterList and StatusBar (True) or not (False)
     
@@ -1595,25 +1844,12 @@ class ProtProfPlot(BaseWindow):
         #region ----------------------------------------------------------> DF
         idx = pd.IndexSlice
         df = self.df.loc[:,idx[:,:,'FC']]
-        df.insert(0, ('C', 'C', 'FC'), 0)
         #endregion -------------------------------------------------------> DF
         
         #region ------------------------------------------> Get Value and Plot
-        if mode == 'Up':
-            self.df = self.df[df.apply(
-                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]), axis=1
-            )]
-        elif mode == 'Down':
-            self.df = self.df[df.apply(
-                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]), axis=1
-            )]
-        else:
-            self.df = self.df[df.apply(
-                lambda x: any(
-                        [x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']] +
-                        [x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]
-                ), axis=1
-            )]
+        self.df = self.df[df.apply(
+            lambda x: any([(x.loc[idx[y,:,'FC']] == 0).all() for y in self.CI['Cond']]), axis=1
+        )]
         #------------------------------> 
         self.FillListCtrl()
         self.VolDraw()
@@ -1623,10 +1859,10 @@ class ProtProfPlot(BaseWindow):
         #region ------------------------------------------> Update Filter List
         if updateL:
             #------------------------------> 
-            self.StatusBarFilterText(f'{self.cLFMonMode[mode]}')
+            self.StatusBarFilterText(f'{self.cLFFCNo}')
             #------------------------------> 
             self.filterList.append(
-                [self.cLFMonMode[mode], {'mode':mode, 'updateL': False}]
+                [self.cLFFCNo, {'updateL': False}]
             )
         else:
             pass
@@ -1635,9 +1871,130 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
+    def Filter_FCChange(
+        self, choice: Optional[str]=None, updateL: bool=True,
+        ) -> bool:
+        """Filter results based on FC change
+    
+            Parameters
+            ----------
+            choice : str
+                One of the keys in self.cLFFCDict
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Get Value
+        if choice is None:
+            #------------------------------> 
+            dlg = dtsWindow.MultipleCheckBox(
+                'Filter results by FC evolution.', 
+                self.cLFFCDict, 
+                3, 
+                parent=self.plots.dPlot['FC'],
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------> 
+                choice = dlg.GetChoice()[0]
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return False
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Value
+        
+        #region ----------------------------------------------------------> DF
+        #------------------------------> 
+        idx = pd.IndexSlice
+        df = self.df.loc[:,idx[:,:,'FC']]
+        #------------------------------> 
+        if choice == self.cLFFCUp:
+            self.df = self.df[df.apply(
+                lambda x: any([(x.loc[idx[y,:,'FC']] > 0).all() for y in self.CI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCUpAbs:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.df = self.df[df.apply(
+                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.CI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCUpMon:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.df = self.df[df.apply(
+                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCDown:
+            self.df = self.df[df.apply(
+                lambda x: any([(x.loc[idx[y,:,'FC']] < 0).all() for y in self.CI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCDownAbs:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.df = self.df[df.apply(
+                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.CI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCDownMon:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.df = self.df[df.apply(
+                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCBoth:
+            self.df = self.df[df.apply(
+                lambda x: any(
+                    [(x.loc[idx[y:,:'FC']] > 0).all() for y in self.CI['Cond']] + 
+                    [(x.loc[idx[y:,:'FC']] < 0).all() for y in self.CI['Cond']]
+                ), 
+                axis=1,
+            )]
+        elif choice == self.cLFFCBothAbs:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.df = self.df[df.apply(
+                lambda x: any(
+                    [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.CI['Cond']] + 
+                    [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.CI['Cond']]
+                ), 
+                axis=1,
+            )]
+        elif choice == self.cLFFCBothMon:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.df = self.df[df.apply(
+                lambda x: any(
+                    [x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']] +
+                    [x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']] 
+                ), 
+                axis=1,
+            )]
+        else:
+            return False
+        #endregion -------------------------------------------------------> DF
+    
+        #region --------------------------------------------------> Update GUI
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #------------------------------> 
+        if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{choice}')
+            #------------------------------> 
+            self.filterList.append(
+                [choice, {'choice':choice, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion -----------------------------------------------> Update GUI
+            
+        return True
+    #---
+        
     def Filter_Divergent(self, updateL: bool=True) -> bool:
-        """Filter results based on the simultaneous presence of a monotonically
-            increasing and decreasing conditions.
+        """Filter results based on the simultaneous presence of a increasing and 
+            decreasing FC behavior in the conditions.
     
             Parameters
             ----------
@@ -1651,18 +2008,10 @@ class ProtProfPlot(BaseWindow):
         #region ----------------------------------------------------------> DF
         idx = pd.IndexSlice
         df = self.df.loc[:,idx[:,:,'FC']]
-        df.insert(0, ('C', 'C', 'FC'), 0)
         #endregion -------------------------------------------------------> DF
         
         #region ------------------------------------------> Get Value and Plot
-        self.df = self.df[df.apply(
-            lambda x: all(
-                [
-                    any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.CI['Cond']]),
-                    any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.CI['Cond']])
-                ]
-            ), axis=1
-        )]
+        self.df = self.df[df.apply(self.Filter_Divergent_Helper, axis=1)]
         #------------------------------> 
         self.FillListCtrl()
         self.VolDraw()
@@ -1682,6 +2031,44 @@ class ProtProfPlot(BaseWindow):
         #endregion ---------------------------------------> Update Filter List
         
         return True
+    #---
+    
+    def Filter_Divergent_Helper(self, x: pd.Series) -> bool:
+        """Determine whether x shows divergent behavior
+    
+            Parameters
+            ----------
+            x : pd.Series
+                Row in self.df
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        res = []
+        #endregion ------------------------------------------------> Variables
+        
+        #region -----------------------------------------------------> Compare
+        for y in self.CI['Cond']:
+            if (x.loc[idx[y,:,'FC']] > 0).all():
+                res.append(True)
+            elif (x.loc[idx[y,:,'FC']] == 0).all():
+                res.append(None)
+            elif (x.loc[idx[y,:,'FC']] < 0).all():    
+                res.append(False)
+            else:
+                pass
+        #endregion --------------------------------------------------> Compare
+        
+        #region ---------------------------------------------------------> Set 
+        resS = set(res)
+        if resS and len(resS) > 1:
+            return True
+        else:
+            return False
+        #endregion ------------------------------------------------------> Set 
     #---
     #------------------------------> 
     def StatusBarFilterText(self, text: str) -> bool:
@@ -1763,8 +2150,17 @@ class ProtProfPlot(BaseWindow):
         #endregion ------------------------------------------------> Variables
                 
         #region ------------------------------------------------> Set Position
-        
+        x = info['D']['xo'] + info['W']['N']*config.deltaWin
+        y = (
+            ((info['D']['h']/2) - (info['W']['h']/2)) 
+            + info['W']['N']*config.deltaWin
+        )
+        self.SetPosition(pt=(x,y))
         #endregion ---------------------------------------------> Set Position
+
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.name] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
 
         return True
     #---
@@ -1796,7 +2192,7 @@ class ProtProfPlot(BaseWindow):
         #endregion ---------------------------------------> Set in wx.ListCtrl
         
         #region ---------------------------------------> Update Protein Number
-        self._mgr.GetPane(self.lc).Caption(f'{self.cLProtList} ({len(data)})')
+        self._mgr.GetPane(self.lc).Caption(f'{self.cTList} ({len(data)})')
         self._mgr.Update()
         #endregion ------------------------------------> Update Protein Number
         
@@ -2630,63 +3026,6 @@ class ProtProfPlot(BaseWindow):
         return True
     #---
     
-    def OnSearch(self, event: wx.Event) -> bool:
-        """Search for a given string in the wx.ListCtrl.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-            Returns
-            -------
-            bool
-    
-            Notes
-            -----
-            See dtsWidget.MyListCtrl.Search for more details.
-        """
-        #region ---------------------------------------------------> Get index
-        tStr = self.lc.lcs.search.GetValue()
-        iEqual, iSimilar = self.lc.lcs.lc.Search(tStr)
-        #endregion ------------------------------------------------> Get index
-        
-        #region ----------------------------------------------> Show 1 Results
-        if len(iEqual) == 1:
-            #------------------------------> 
-            self.lc.lcs.lc.Select(iEqual[0], on=1)
-            self.lc.lcs.lc.EnsureVisible(iEqual[0])
-            self.lc.lcs.lc.SetFocus()
-            #------------------------------> 
-            return True
-        elif len(iSimilar) == 1:
-            #------------------------------> 
-            self.lc.lcs.lc.Select(iSimilar[0], on=1)
-            self.lc.lcs.lc.EnsureVisible(iSimilar[0])
-            self.lc.lcs.lc.SetFocus()
-            #------------------------------> 
-            return True
-        else:
-            pass
-        #endregion -------------------------------------------> Show 1 Results
-        
-        #region ----------------------------------------------> Show N Results
-        msg = (f'The string, {tStr}, was found in multiple rows.')
-        tException = (
-            f'The row numbers where the string was found are:\n '
-            f'{str(iSimilar)[1:-1]}')
-        dtscore.Notification(
-            'warning', 
-            msg        = msg,
-            setText    = True,
-            tException = tException,
-            parent     = self,
-        )
-        #endregion -------------------------------------------> Show N Results
-        
-        return True
-    #---
-    
     def OnDateChange(
         self, tDate: str, cond: str, rp:str, corrP: bool, showAll: bool,
         ) -> bool:
@@ -3069,6 +3408,687 @@ class ProtProfPlot(BaseWindow):
 #---
 
 
+class CheckDataPrep(BaseWindowNPlotLT):
+    """Window to check the data preparation steps
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the window
+        title : str or None
+            Title of the window. Default is None
+        dpDF : dict[pd.DataFrame] or None
+            The dictionary has the following structure:
+            {
+                "dfS" : pd.DataFrame, Data after excluding and filter by Score
+                "dfT" : pd.DataFrame, Data after transformation
+                "dfN" : pd.DataFrame, Data after normalization
+                "dfIm": pd.DataFrame, Data after Imputation
+            }
+            Default is None
+
+        Attributes
+        ----------
+        parent: wx.Window
+            Parent of the window
+        name : str
+            Name of the window
+        dpDF : dict[pd.DataFrame]
+            See dpDF in Parameters
+        data : dict
+            Dict with the configured data for this section from UMSAPFile.
+        date : list of str
+            List of available dates in the section.
+        fileName : dict
+            Name of the files needed to export the data
+        fromUMSAPFile : bool
+            The window is invoked from an UMSAP File window (True) or not (False)
+        imgName : dict
+            Name of the files needed to export the images of the plots.
+        obj : UMSAPFile
+            Refernece to the UMSAPFile object.
+        oDate : str
+            Date selected. Needed to export the data and images.
+        #------------------------------> Configuration
+        cLCol : list[str]
+            Name for the columns if the wx.ListCtrl
+        cLdfCol : list[str]
+            Name for the columns in the df with the statistic description of the
+            data
+        cLDFData : list[str]
+            Name of the rows in the Data column of the df written to the 
+            wx.TextCtrl.
+        cLNPlots: list[str]
+            To id the plots in the window
+        cNPlotsCol: int
+            Number of columns in the array containing the plots
+        cSection : str
+            Section name in the UMSAP File
+        cTitle : str
+            Title of the window
+        cTList : str
+            Title for the wx.ListCtrl pane
+        cTText : str
+            Title for the wx.TextCtrl pane
+        cHSearch : str
+            Hint of the wx.SearchCtrl
+        #------------------------------> Size
+        cSCol : list[int]
+            Size of the columns in the wx.ListCtrl
+        
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    name = config.nwCheckDataPrep
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nuDataPrep
+    #------------------------------> Label
+    cLNPlots = ['Init', 'Transf', 'Norm', 'Imp']
+    cLDFData = ['Filtered', 'Transformed', 'Normalized', 'Imputed']
+    cLCol = config.lLCtrlColNameI
+    cLdfCol = config.dfcolDataCheck
+    cTList = 'Column names'
+    cTText = 'Statistic information'
+    #------------------------------> Size
+    cSCol = [45, 100]
+    #------------------------------> Hint
+    cHSearch = 'Colum names'
+    #------------------------------> Other
+    cNPlotsCol = 2
+    fileName = {
+        config.ltDPKeys[0] : '{}-01-Filtered.{}',
+        config.ltDPKeys[1] : '{}-02-Transformed.{}',
+        config.ltDPKeys[2] : '{}-03-Normalized.{}',
+        config.ltDPKeys[3] : '{}-04-Imputed.{}',
+    }
+    imgName = {
+        cLNPlots[0] : '{}-01-Filtered-{}.{}',
+        cLNPlots[1] : '{}-02-Transformed-{}.{}',
+        cLNPlots[2] : '{}-03-Normalized-{}.{}',
+        cLNPlots[3] : '{}-04-Imputed-{}.{}',
+    }
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: wx.Window, title: Optional[str]=None, 
+        dpDF: Optional[dict[str,pd.DataFrame]]=None,
+        ) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        self.parent = parent
+        self.cTitle = title
+        self.dpDF   = dpDF
+        self.SetWindow()
+        #--------------> menuData here because it is not needed to save it
+        menuData = None if self.date is None else {'menudate': self.date}
+        #------------------------------> 
+        super().__init__(parent=self.parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        date = None if self.date is None else self.date[0]
+        self.Draw(date)
+        #------------------------------> 
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetWindow(self) -> bool:
+        """Configure the window. 
+        
+            See Notes below
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            If self.cTitle is None the window is invoked from the main Data 
+            Preparation section of a UMSAP File window
+        """
+        #------------------------------> Set Variables 
+        if self.cTitle is None:
+            self.fromUMSAPFile = True 
+            self.cTitle = f"{self.parent.cTitle} - {self.cSection}"
+            self.obj    = self.parent.obj
+            self.data   = self.obj.confData[self.cSection]
+            self.date   = [k for k in self.data.keys()]
+            self.oDate = self.date[0]
+        else:
+            self.fromUMSAPFile = False
+            self.date = None
+            self.oDate = self.parent.dateC
+        #------------------------------> 
+        return True
+    #---
+    
+    def WinPos(self) -> Literal[True]:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
+        """
+        #region ---------------------------------------------------> Variables
+        info = super().WinPos()
+        #endregion ------------------------------------------------> Variables
+                
+        #region ------------------------------------------------> Set Position
+        # x = info['D']['xo'] + info['W']['N']*config.deltaWin
+        # y = (
+        #     ((info['D']['h']/2) - (info['W']['h']/2)) 
+        #     + info['W']['N']*config.deltaWin
+        # )
+        # self.SetPosition(pt=(x,y))
+        #endregion ---------------------------------------------> Set Position
+
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.name] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
+
+        return True
+    #---
+    
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+        """
+        #region -----------------------------------------------> Update parent
+        if self.fromUMSAPFile:
+            self.parent.UnCheckSection(self.cSection, self)		
+        else:
+            pass
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.name] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    
+    def FillListCtrl(self) -> bool:
+        """Update the column names for the given analysis.
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Entries are read from self.ddDF['dfS']
+        """
+        #region --------------------------------------------------> Delete old
+        self.lc.lcs.lc.DeleteAllItems()
+        #endregion -----------------------------------------------> Delete old
+        
+        #region ----------------------------------------------------> Get Data
+        data = [[str(k), n] for k,n in enumerate(self.dpDF['dfS'].columns.values.tolist())]
+        #endregion -------------------------------------------------> Get Data
+        
+        #region ------------------------------------------> Set in wx.ListCtrl
+        self.lc.lcs.lc.SetNewData(data)
+        #endregion ---------------------------------------> Set in wx.ListCtrl
+        
+        #region ----------------------------------------> Update Column Number
+        self._mgr.GetPane(self.lc).Caption(f'{self.cTList} ({len(data)})')
+        self._mgr.Update()
+        #endregion -------------------------------------> Update Column Number
+        
+        return True
+    #---
+    
+    def PlotdfS(self, col:int) -> bool:
+        """Plot the histograms for dfS
+    
+            Parameters
+            ----------
+            col : int
+                Column to plot
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        #------------------------------> 
+        x = self.dpDF['dfS'].iloc[:,col]
+        x = x[np.isfinite(x)]        
+        #------------------------------> 
+        nBin = dtsStatistic.HistBin(x)[0]
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------------> Plot
+        #------------------------------> 
+        self.plots.dPlot['Init'].axes.clear()
+        #------------------------------> title
+        self.plots.dPlot['Init'].axes.set_title("Filtered")
+        #------------------------------> 
+        a = self.plots.dPlot['Init'].axes.hist(x, bins=nBin, density=True)
+        #------------------------------> 
+        self.plots.dPlot['Init'].axes.set_xlim(*dtsStatistic.DataRange(
+            a[1], margin=config.general['MatPlotMargin']))
+        self.plots.dPlot['Init'].ZoomResetSetValues()
+        #------------------------------> 
+        self.plots.dPlot['Init'].canvas.draw()
+        #endregion -----------------------------------------------------> Plot
+        
+        return True
+    #---
+    
+    def PlotdfT(self, col:int) -> bool:
+        """Plot the histograms for dfT
+    
+            Parameters
+            ----------
+            col : int
+                Column to plot
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        #------------------------------> 
+        x = self.dpDF['dfT'].iloc[:,col]
+        x = x[np.isfinite(x)]        
+        #------------------------------> 
+        nBin = dtsStatistic.HistBin(x)[0]
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------------> Draw
+        #------------------------------> 
+        self.plots.dPlot['Transf'].axes.clear()
+        #------------------------------> title
+        self.plots.dPlot['Transf'].axes.set_title("Transformed")
+        #------------------------------> 
+        a = self.plots.dPlot['Transf'].axes.hist(x, bins=nBin, density=True)
+        #------------------------------> 
+        xRange = dtsStatistic.DataRange(
+            a[1], margin=config.general['MatPlotMargin'])
+        self.plots.dPlot['Transf'].axes.set_xlim(*xRange)
+        self.plots.dPlot['Transf'].axes.set_ylim(*dtsStatistic.DataRange(
+            a[0], margin=config.general['MatPlotMargin']))
+        self.plots.dPlot['Transf'].ZoomResetSetValues()
+        #------------------------------> 
+        gausX = np.linspace(xRange[0], xRange[1], 300)
+        gausY = stats.gaussian_kde(x)
+        self.plots.dPlot['Transf'].axes.plot(gausX, gausY.pdf(gausX))
+        #------------------------------> 
+        self.plots.dPlot['Transf'].canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def PlotdfN(self, col:int) -> bool:
+        """Plot the histograms for dfN
+    
+            Parameters
+            ----------
+            col : int
+                Column to plot
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        #------------------------------> 
+        x = self.dpDF['dfN'].iloc[:,col]
+        x = x[np.isfinite(x)]        
+        #------------------------------> 
+        nBin = dtsStatistic.HistBin(x)[0]
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------------> Draw
+        #------------------------------> 
+        self.plots.dPlot['Norm'].axes.clear()
+        #------------------------------> title
+        self.plots.dPlot['Norm'].axes.set_title("Normalized")
+        #------------------------------> 
+        a = self.plots.dPlot['Norm'].axes.hist(x, bins=nBin, density=True)
+        #------------------------------>
+        xRange = dtsStatistic.DataRange(
+            a[1], margin=config.general['MatPlotMargin'])
+        self.plots.dPlot['Norm'].axes.set_xlim(*xRange)
+        self.plots.dPlot['Norm'].axes.set_ylim(*dtsStatistic.DataRange(
+            a[0], margin=config.general['MatPlotMargin']))
+        self.plots.dPlot['Norm'].ZoomResetSetValues()
+        #------------------------------> 
+        gausX = np.linspace(xRange[0], xRange[1], 300)
+        gausY = stats.gaussian_kde(x)
+        self.plots.dPlot['Norm'].axes.plot(gausX, gausY.pdf(gausX))
+        #------------------------------> 
+        self.plots.dPlot['Norm'].canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def PlotdfIm(self, col:int) -> bool:
+        """Plot the histograms for dfIm
+    
+            Parameters
+            ----------
+            col : int
+                Column to plot
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        #------------------------------> 
+        x = self.dpDF['dfIm'].iloc[:,col]
+        x = x[np.isfinite(x)]        
+        #------------------------------> 
+        nBin = dtsStatistic.HistBin(x)[0]
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------------> Draw
+        #------------------------------> 
+        self.plots.dPlot['Imp'].axes.clear()
+        #------------------------------> title
+        self.plots.dPlot['Imp'].axes.set_title("Imputed")
+        #------------------------------> 
+        a = self.plots.dPlot['Imp'].axes.hist(x, bins=nBin, density=True)
+        #------------------------------> 
+        xRange = dtsStatistic.DataRange(
+            a[1], margin=config.general['MatPlotMargin'])
+        self.plots.dPlot['Imp'].axes.set_xlim(*xRange)
+        self.plots.dPlot['Imp'].axes.set_ylim(*dtsStatistic.DataRange(
+            a[0], margin=config.general['MatPlotMargin']))
+        self.plots.dPlot['Imp'].ZoomResetSetValues()
+        #------------------------------> 
+        gausX = np.linspace(xRange[0], xRange[1], 300)
+        gausY = stats.gaussian_kde(x)
+        self.plots.dPlot['Imp'].axes.plot(gausX, gausY.pdf(gausX))
+        #------------------------------> 
+        idx = list(map(int, self.dpDF['dfS'][self.dpDF['dfS'].iloc[:,col].isnull()].index.tolist()))
+        y = self.dpDF['dfIm'].iloc[idx,col]
+        if not y.empty:
+            yBin = dtsStatistic.HistBin(y)[0]
+            self.plots.dPlot['Imp'].axes.hist(y, bins=yBin, density=False)
+        else:
+            pass
+        #------------------------------> 
+        self.plots.dPlot['Imp'].canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def SetText(self, col: int) -> bool:
+        """Set the text with the descriptive statistics about the data prepara
+            tion steps.
+    
+            Parameters
+            ----------
+            col : int
+                Column to plot
+    
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(columns=self.cLdfCol)
+        df['Data'] = self.cLDFData
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region --------------------------------------------> Calculate values
+        for r,k in enumerate(self.dpDF):
+            #------------------------------> N
+            df.iat[r,1] = self.dpDF[k].shape[0]
+            #------------------------------> NA
+            df.iat[r,2] = self.dpDF[k].iloc[:,col].isnull().sum()
+            #------------------------------> Mean
+            df.iat[r,3] = self.dpDF[k].iloc[:,col].mean()
+            #------------------------------> Median
+            df.iat[r,4] = self.dpDF[k].iloc[:,col].median()
+            # #------------------------------> SD
+            df.iat[r,5] = self.dpDF[k].iloc[:,col].std()
+            # #------------------------------> Kurtosis
+            df.iat[r,6] = self.dpDF[k].iloc[:,col].kurt()
+            # #------------------------------> Skewness
+            df.iat[r,7] = self.dpDF[k].iloc[:,col].skew()
+        #endregion -----------------------------------------> Calculate values
+        
+        #region ---------------------------------------------> Remove Old Text
+        self.text.Clear()
+        #endregion ------------------------------------------> Remove Old Text
+        
+        #region ------------------------------------------------> Add New Text
+        self.text.AppendText(df.to_string(index=False))
+        self.text.SetInsertionPoint(0)
+        #endregion ---------------------------------------------> Add New Text
+        
+        return True
+    #---
+
+    def OnListSelect(self, event: wx.CommandEvent) -> bool:
+        """Plot data for the selected column
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------------> Get Selected
+        idx = self.lc.lcs.lc.GetFirstSelected()
+        #endregion ---------------------------------------------> Get Selected
+        
+        #region ---------------------------------------------------------> dfS
+        try:
+            self.PlotdfS(idx)
+        except Exception as e:
+            #------------------------------> 
+            msg = (
+                f'It was not possible to build the histograms for the selected '
+                f'columns.')
+            dtscore.Notification('errorU', msg=msg, tException=e, parent=self)
+            #------------------------------> 
+            for p in self.cLNPlots:
+                self.plots.dPlot[p].axes.clear()
+                self.plots.dPlot[p].canvas.draw()
+            #------------------------------> 
+            return False
+        #endregion ------------------------------------------------------> dfS
+        
+        #region ---------------------------------------------------------> dfT
+        self.PlotdfT(idx)
+        #endregion ------------------------------------------------------> dfT
+        
+        #region ---------------------------------------------------------> dfN
+        self.PlotdfN(idx)
+        #endregion ------------------------------------------------------> dfN
+        
+        #region --------------------------------------------------------> dfIm
+        self.PlotdfIm(idx)
+        #endregion -----------------------------------------------------> dfIm
+        
+        #region --------------------------------------------------------> Text
+        self.SetText(idx)
+        #endregion -----------------------------------------------------> Text
+        
+        return True
+    #---
+    
+    def Draw(self, date: Optional[str]=None):
+        """Update window when a new date is selected.
+    
+            Parameters
+            ----------
+            date : str or None
+                Given date to plot.
+    
+            Returns
+            -------
+            bool
+    
+            Raise
+            -----
+            
+        """
+        #------------------------------> Set the dataFrame
+        if date is not None:
+            self.dpDF = self.data[date]['DP']
+            self.oDate = date
+        else:
+            pass
+        #------------------------------> Fill
+        self.FillListCtrl()
+        #------------------------------> Clean Plots
+        for k in self.plots.dPlot.keys():
+            self.plots.dPlot[k].axes.clear()
+            self.plots.dPlot[k].canvas.draw()
+        #------------------------------> Clean Text
+        self.text.Clear()
+        #------------------------------> 
+        return True
+    #---
+    
+    def OnDupWin(self) -> Literal[True]:
+        """Duplicate window.
+    
+            Returns
+            -------
+            True
+        """
+        #------------------------------> 
+        if self.fromUMSAPFile:
+            super().OnDupWin()
+        else:
+            CheckDataPrep(self.parent, title=self.cTitle, dpDF=self.dpDF)
+        #------------------------------> 
+        return True
+    #---
+    
+    def OnExportPlotData(self) -> Literal[True]:
+        """ Export data to a csv file """
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.DirSelectDialog(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            #------------------------------> Export
+            try:
+                for k, v in self.dpDF.items():
+                    #------------------------------> file path
+                    fPath = p / self.fileName[k].format(self.oDate, 'txt')
+                    #------------------------------> Write
+                    dtsFF.WriteDF2CSV(fPath, v)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---	
+    
+    def OnSavePlot(self) -> Literal[True]:
+        """ Export all plots to a pdf image"""
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.DirSelectDialog(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            col = self.lc.lcs.lc.GetFirstSelected()
+            #------------------------------> Export
+            try:
+                for k, v in self.plots.dPlot.items():
+                    #------------------------------> file path
+                    fPath = p / self.imgName[k].format(self.oDate, col, 'pdf')
+                    #------------------------------> Write
+                    v.figure.savefig(fPath)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---
+    
+    def OnZoomReset(self) -> Literal[True]:
+        """Reset the zoom of all plots"""
+        
+        #region --------------------------------------------------> Reset Zoom
+        for k, v in self.plots.dPlot.items():
+            v.ZoomResetPlot()
+        #endregion -----------------------------------------------> Reset Zoom
+    
+        return True	
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
 class UMSAPControl(BaseWindow):
     """Control for an umsap file. 
 
@@ -3116,6 +4136,7 @@ class UMSAPControl(BaseWindow):
     
     cPlotMethod = { # Methods to create plot windows
         config.nuCorrA   : CorrAPlot,
+        config.nuDataPrep: CheckDataPrep,
         config.nmProtProf: ProtProfPlot,
     }
     
@@ -3123,6 +4144,7 @@ class UMSAPControl(BaseWindow):
     
     cSectionTab = { # Section name and Tab name correlation
         config.nuCorrA   : config.ntCorrA,
+        config.nuDataPrep: config.ntDataPrep,
         config.nmProtProf: config.ntProtProf,
     }
     #endregion --------------------------------------------------> Class setup
@@ -3705,9 +4727,8 @@ class FilterRemoveAny(wx.Dialog):
         self.st = wx.StaticText(self, label='Select Filters to remove.')
         #------------------------------> 
         for k in filterList:
-            self.checkB.append(
-                wx.CheckBox(self, label=f'{k[0]} {k[1]["gText"]}')
-            )
+            self.checkB.append(wx.CheckBox(
+                self, label=f'{k[0]} {k[1].get("gText", "")}'))
         #------------------------------> Buttons
         self.sizerBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
         #endregion --------------------------------------------------> Widgets
