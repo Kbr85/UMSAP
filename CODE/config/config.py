@@ -393,7 +393,7 @@ dfcolDataCheck = ['Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewn
 
 
 #region -----------------------------------------------------> Important Lists
-
+ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
 #endregion --------------------------------------------------> Important Lists
 
 
