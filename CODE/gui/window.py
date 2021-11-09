@@ -335,7 +335,11 @@ class BaseWindow(wx.Frame):
             -----
             
         """
-        CheckDataPrep(f'{self.cSection} - {tDate}', self.data[tDate]['DP'])
+        CheckDataPrep(
+            self,
+            f'{self.cSection} - {tDate}', 
+            self.data[tDate]['DP']
+        )
         return True
     #---	
     #endregion ------------------------------------------------> Class methods
@@ -3408,9 +3412,11 @@ class CheckDataPrep(BaseWindowNPlotLT):
 
         Parameters
         ----------
-        title : str
-            Title of the window
-        dpDF : dict[pd.DataFrame]
+        parent: wx.Window
+            Parent of the window
+        title : str or None
+            Title of the window. Default is None
+        dpDF : dict[pd.DataFrame] or None
             The dictionary has the following structure:
             {
                 "dfS" : pd.DataFrame, Data after excluding and filter by Score
@@ -3418,6 +3424,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
                 "dfN" : pd.DataFrame, Data after normalization
                 "dfIm": pd.DataFrame, Data after Imputation
             }
+            Default is None
 
         Attributes
         ----------
@@ -3460,6 +3467,9 @@ class CheckDataPrep(BaseWindowNPlotLT):
     """
     #region -----------------------------------------------------> Class setup
     name = config.nwCheckDataPrep
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nuDataPrep
     #------------------------------> Label
     cLNPlots = ['Init', 'Transf', 'Norm', 'Imp']
     cLDFData = ['Filtered', 'Transformed', 'Normalized', 'Imputed']
@@ -3476,17 +3486,22 @@ class CheckDataPrep(BaseWindowNPlotLT):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, title: str, dpDF: dict[str,pd.DataFrame]):
+    def __init__(
+        self, parent: wx.Window, title: Optional[str]=None, 
+        dpDF: Optional[dict[str,pd.DataFrame]]=None,
+        ) -> None:
         """ """
         #region -------------------------------------------------> Check Input
         
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
+        self.parent = parent
         self.cTitle = title
-        self.dpDF = dpDF
+        self.dpDF   = dpDF
+        self.SetWindow()
         #------------------------------> 
-        super().__init__()
+        super().__init__(parent=self.parent)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -3515,6 +3530,34 @@ class CheckDataPrep(BaseWindowNPlotLT):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def SetWindow(self) -> bool:
+        """Configure the window. 
+        
+            See Notes below
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            If self.cTitle is None the window is invoked from the main Data 
+            Preparation section of a UMSAP File window
+        """
+        #------------------------------> Set Variables 
+        if self.cTitle is None:
+            self.fromUMSAPFile = True 
+            self.cTitle = f"{self.parent.cTitle} - {self.cSection}"
+            self.obj    = self.parent.obj
+            self.data   = self.obj.confData[self.cSection]
+            self.date   = [k for k in self.data.keys()]
+            self.dpDF   = self.data[self.date[0]]['DP']
+        else:
+            self.fromUMSAPFile = False
+        #------------------------------> 
+        return True
+    #---
+    
     def WinPos(self) -> Literal[True]:
         """Set the position on the screen and adjust the total number of
             shown windows.
@@ -3536,6 +3579,34 @@ class CheckDataPrep(BaseWindowNPlotLT):
         config.winNumber[self.name] = info['W']['N'] + 1
         #endregion -------------------------------------------------> Update N
 
+        return True
+    #---
+    
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+        """
+        #region -----------------------------------------------> Update parent
+        if self.fromUMSAPFile:
+            self.parent.UnCheckSection(self.cSection, self)		
+        else:
+            pass
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.name] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
         return True
     #---
     
