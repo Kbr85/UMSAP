@@ -782,9 +782,15 @@ class BaseConfPanel(
                     config.ltDPKeys[2] : self.dfN.to_dict(),
                     config.ltDPKeys[3] : self.dfIm.to_dict(),
                 },
-                'R' : dtsMethod.DictTuplesKey2StringKey(self.dfR.to_dict()),
             }
         }
+        #-------------->  DataPrep Util does not have dfR
+        if self.dfR is not None:
+            dateDict[self.dateID]['R'] = dtsMethod.DictTuplesKey2StringKey(
+                self.dfR.to_dict()
+            )
+        else:
+            pass
         #------------------------------> Append or not
         try:
             outData = self.SetOutputDict(dateDict)
@@ -2656,6 +2662,8 @@ class DataPrep(BaseConfPanel):
         self.cLLenLongest = len(self.cLColAnalysis)
         self.cTitlePD     = f"Running {config.nuDataPrep} Analysis"
         self.cGaugePD     = 30 # ????
+        #------------------------------> Needed to Run
+        self.cMainData  = '{}-DataPreparation-Data-{}.txt'
         #------------------------------> Parent class
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
@@ -2832,7 +2840,7 @@ class DataPrep(BaseConfPanel):
             self.imputationMethod.cb.SetValue('Normal Distribution')  
             self.score.tc.SetValue('39')     
             self.excludeRow.tc.SetValue('171 172 173')
-            self.colAnalysis.tc.SetValue('130-162')
+            self.colAnalysis.tc.SetValue('130-135')
         else:
             pass
         #endregion -----------------------------------------------------> Test
@@ -3012,6 +3020,7 @@ class DataPrep(BaseConfPanel):
         colAnalysis = dtsMethod.Str2ListNumber(
             self.colAnalysis.tc.GetValue(), sep=' ',
         )
+        resCtrlFlat = [x for x in range(1+len(excludeRow), 1+len(excludeRow)+len(colAnalysis))]
         #--------------> 
         self.do  = {
             'iFile'      : Path(self.iFile.tc.GetValue()),
@@ -3024,14 +3033,15 @@ class DataPrep(BaseConfPanel):
             'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
             'oc'         : {
                 'ScoreCol'   : scoreCol,
-                'ExcludeR'   : excludeRow,
+                'ExcludeP'   : excludeRow,
                 'ColAnalysis': colAnalysis,
                 'Column'     : [scoreCol] + excludeRow + colAnalysis,
             },
             'df' : {
                 'ScoreCol'   : 0,
-                'ExcludeR'   : [x for x in range(1, len(excludeRow)+1)],
-                'ColAnalysis': [x for x in range(1+len(excludeRow), 1+len(excludeRow)+len(colAnalysis))]
+                'ExcludeP'   : [x for x in range(1, len(excludeRow)+1)],
+                'ResCtrlFlat': resCtrlFlat,
+                'ColumnF'    : [0]+resCtrlFlat,
             },
         }
         #------------------------------> File base name
@@ -3065,6 +3075,134 @@ class DataPrep(BaseConfPanel):
         return True
     #---
     
+    def RunAnalysis(self):
+        """Perform data preparation"""
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdRun
+        #endregion ------------------------------------------------------> Msg
+        
+        #region -------------------------------------------------------> Float
+        #------------------------------> 
+        msgStep = msgPrefix + "Data type"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        a, self.dfI, self.dfF = self.RA_0_Float()
+        if a:
+            pass
+        else:
+            return False
+        
+        if config.development:
+            print("self.dfI.shape: ", self.dfI.shape)
+            print("self.dfF.shape: ", self.dfF.shape)
+        #endregion ----------------------------------------------------> Float
+        
+        #region ---------------------------------------------> Exclude Protein
+        #------------------------------> Msg
+        msgStep = msgPrefix + 'Excluding rows by Exclude Row values'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Exclude
+        self.RA_Exclude()
+            
+        if config.development:
+            print('self.dfEx.shape: ', self.dfEx.shape)
+        #endregion ------------------------------------------> Exclude Protein
+        
+        #region -------------------------------------------------------> Score
+        #------------------------------> Msg
+        msgStep = msgPrefix + 'Excluding proteins by Score value'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Exclude
+        self.dfS = self.dfEx.loc[self.dfEx.iloc[:,0] >= self.do['ScoreVal']]
+        #------------------------------> Reset index
+        self.dfS.reset_index(drop=True, inplace=True)
+        
+        if config.development:
+            print('self.dfS.shape: ', self.dfS.shape)
+        #endregion ----------------------------------------------------> Score
+        
+        #region ----------------------------------------------> Transformation
+        #------------------------------> Msg
+        msgStep = (
+            f'{msgPrefix}'
+            f'Performing data transformation - {self.do["TransMethod"]}'
+        )  
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Transformed
+        if self.RA_Transformation():
+            pass
+        else:
+            return False
+                       
+        if config.development:
+            print('self.dfT.shape: ', self.dfT.shape)
+        #endregion -------------------------------------------> Transformation
+        
+        #region -----------------------------------------------> Normalization
+        #------------------------------> Msg
+        msgStep = (
+            f'{msgPrefix}'
+            f'Performing data normalization - {self.do["NormMethod"]}'
+        )  
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Normalization
+        try:
+            self.dfN = dtsStatistic.DataNormalization(
+                self.dfT, 
+                self.do['df']['ResCtrlFlat'], 
+                method = self.do['NormMethod'],
+            )
+        except Exception as e:
+            self.msgError   = config.mPDDataNorm
+            self.tException = e
+        
+        if config.development:
+            print('self.dfN.shape: ', self.dfN.shape)
+        #endregion --------------------------------------------> Normalization
+
+        #region --------------------------------------------------> Imputation
+        #------------------------------> Msg
+        msgStep = (
+            f'{msgPrefix}'
+            f'Performing data imputation - {self.do["ImpMethod"]}'
+        )  
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> Imputation
+        try:
+            self.dfIm = dtsStatistic.DataImputation(
+                self.dfN, 
+                self.do['df']['ResCtrlFlat'], 
+                method = self.do['ImpMethod'],
+            )
+        except Exception as e:
+            self.msgError   = config.mPDDataImputation
+            self.tException = e
+        
+        if config.development:
+            print('self.dfIm.shape: ', self.dfIm.shape)
+            print(self.dfIm.head())
+        #endregion -----------------------------------------------> Imputation
+        
+        return True
+    #---
+    
+    def WriteOutput(self) -> bool:
+        """Write output """
+        #region --------------------------------------------------> Data Steps
+        stepDict = {
+            config.fnInitial.format('01', self.date): self.dfI,
+            config.fnFloat.format('02', self.date)  : self.dfF,
+            config.fnExclude.format('03', self.date): self.dfEx,
+            config.fnScore.format('04', self.date)  : self.dfS,
+            config.fnTrans.format('05', self.date)  : self.dfT,
+            config.fnNorm.format('06', self.date)   : self.dfN,
+            config.fnImp.format('07', self.date)    : self.dfIm,
+        }
+        #endregion -----------------------------------------------> Data Steps
+
+        return self.WriteOutputData(stepDict)
+    #---
+    
     def RunEnd(self):
         """Restart GUI and needed variables"""
         #region ---------------------------------------> Dlg progress dialogue
@@ -3083,7 +3221,22 @@ class DataPrep(BaseConfPanel):
         #endregion ------------------------------------> Dlg progress dialogue
 
         #region -------------------------------------------------------> Reset
-        
+        self.msgError   = None # Error msg to show in self.RunEnd
+        self.tException = None # Exception
+        self.d          = {} # Dict with the user input as given
+        self.do         = {} # Dict with the processed user input
+        self.dfI        = None # pd.DataFrame for initial, normalized and
+        self.dfF        = None
+        self.dfEx       = None
+        self.dfS        = None
+        self.dfT        = None
+        self.dfN        = None
+        self.dfIm       = None
+        self.date       = None # date for corr file
+        self.dateID     = None
+        self.oFolder    = None # folder for output
+        self.iFileObj   = None
+        self.deltaT     = None
         
         if self.dFile is not None:
             self.iFile.tc.SetValue(str(self.dFile))
