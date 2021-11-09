@@ -65,7 +65,8 @@ class MenuMethods():
                 Information about the event
         """
         win = self.GetWindow()
-        win.plot.ZoomResetPlot()
+        # win.plot.ZoomResetPlot()
+        win.OnZoomReset()
         return True
     #---
 
@@ -591,13 +592,22 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         self.AppendSeparator()
         #------------------------------> Export Data
         self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
-        self.saveI = self.Append(-1, 'Save Image\tCtrl+I')
+        self.saveI = self.Append(-1, 'Save Image\tShift+I')
         self.AppendSeparator()
         #------------------------------> 
-        self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        #endregion -----------------------------------------------> Menu Items
+    
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnDupWin,             source=self.dupWin)
+        self.Bind(wx.EVT_MENU, self.OnExportPlotData,     source=self.saveD)
+        self.Bind(wx.EVT_MENU, self.OnSavePlot,           source=self.saveI)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,          source=self.zoomR)
+        #endregion -----------------------------------------------------> Bind    
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
+
 
 class VolcanoPlot(wx.Menu, MenuMethods):
     """Menu for a Volcano Plot.

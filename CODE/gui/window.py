@@ -3484,6 +3484,19 @@ class CheckDataPrep(BaseWindowNPlotLT):
     cHSearch = 'Colum names'
     #------------------------------> Other
     cNPlotsCol = 2
+    fileName = {
+        config.ltDPKeys[0] : '{}-01-Filtered.{}',
+        config.ltDPKeys[1] : '{}-02-Transformed.{}',
+        config.ltDPKeys[2] : '{}-03-Normalized.{}',
+        config.ltDPKeys[3] : '{}-04-Imputed.{}',
+    }
+    imgName = {
+        cLNPlots[0] : '{}-01-Filtered-{}.{}',
+        cLNPlots[1] : '{}-02-Transformed-{}.{}',
+        cLNPlots[2] : '{}-03-Normalized-{}.{}',
+        cLNPlots[3] : '{}-04-Imputed-{}.{}',
+    }
+    
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -3555,9 +3568,11 @@ class CheckDataPrep(BaseWindowNPlotLT):
             self.obj    = self.parent.obj
             self.data   = self.obj.confData[self.cSection]
             self.date   = [k for k in self.data.keys()]
+            self.oDate = self.date[0]
         else:
-            self.date = None
             self.fromUMSAPFile = False
+            self.date = None
+            self.oDate = self.parent.dateC
         #------------------------------> 
         return True
     #---
@@ -3945,6 +3960,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> Set the dataFrame
         if date is not None:
             self.dpDF = self.data[date]['DP']
+            self.oDate = date
         else:
             pass
         #------------------------------> Fill
@@ -3957,6 +3973,98 @@ class CheckDataPrep(BaseWindowNPlotLT):
         self.text.Clear()
         #------------------------------> 
         return True
+    #---
+    
+    def OnDupWin(self) -> Literal[True]:
+        """Duplicate window.
+    
+            Returns
+            -------
+            True
+        """
+        #------------------------------> 
+        if self.fromUMSAPFile:
+            super().OnDupWin()
+        else:
+            CheckDataPrep(self.parent, title=self.cTitle, dpDF=self.dpDF)
+        #------------------------------> 
+        return True
+    #---
+    
+    def OnExportPlotData(self) -> Literal[True]:
+        """ Export data to a csv file """
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.DirSelectDialog(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            #------------------------------> Export
+            try:
+                for k, v in self.dpDF.items():
+                    #------------------------------> file path
+                    fPath = p / self.fileName[k].format(self.oDate, 'txt')
+                    #------------------------------> Write
+                    dtsFF.WriteDF2CSV(fPath, v)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---	
+    
+    def OnSavePlot(self) -> Literal[True]:
+        """ Export all plots to a pdf image"""
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.DirSelectDialog(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            col = self.lc.lcs.lc.GetFirstSelected()
+            #------------------------------> Export
+            try:
+                for k, v in self.plots.dPlot.items():
+                    #------------------------------> file path
+                    fPath = p / self.imgName[k].format(self.oDate, col, 'pdf')
+                    #------------------------------> Write
+                    v.figure.savefig(fPath)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---
+    
+    def OnZoomReset(self) -> Literal[True]:
+        """Reset the zoom of all plots"""
+        
+        #region --------------------------------------------------> Reset Zoom
+        for k, v in self.plots.dPlot.items():
+            v.ZoomResetPlot()
+        #endregion -----------------------------------------------> Reset Zoom
+    
+        return True	
     #---
     #endregion ------------------------------------------------> Class methods
 #---
