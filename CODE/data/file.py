@@ -98,6 +98,7 @@ class UMSAPFile():
     
     cSection = {# Name of the sections in the umsap file
         config.npCorrA   : config.nuCorrA,
+        config.npDataPrep: config.nuDataPrep,
         config.npProtProf: config.nmProtProf,
     }
     #endregion --------------------------------------------------> Class setup
@@ -110,7 +111,8 @@ class UMSAPFile():
 
         self.cConfigure = {# Configure methods. Keys are the section names as
                            # read from the file
-            self.cSection[config.npCorrA]    : self.ConfigureDataCorrA,
+            self.cSection[config.npCorrA]   : self.ConfigureDataCorrA,
+            self.cSection[config.npDataPrep]: self.ConfigureDataCheckDataPrep,
             self.cSection[config.npProtProf]: self.ConfigureDataProtProf,
         }
         #------------------------------> See Notes about the structure of dict
@@ -194,8 +196,9 @@ class UMSAPFile():
                     continue
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
-                    'DF'        : df,
-                    'NumCol'    : numCol,
+                    'DF'     : df,
+                    'DP'     : {j:pd.DataFrame(w) for j,w in v['DP'].items()},
+                    'NumCol' : numCol,
                     'NumColList': v['CI']['oc']['Column'],
                 }
             except Exception:
@@ -204,6 +207,29 @@ class UMSAPFile():
         
         #region -------------------------------------------> Add/Reset section 
         self.confData[self.cSection[config.npCorrA]] = plotData
+        #endregion ----------------------------------------> Add/Reset section 
+        
+        return True
+    #---
+    
+    def ConfigureDataCheckDataPrep(self) -> Literal[True]:
+        """Configure a Data Preparation Check section	"""
+        #region -------------------------------------------------> Plot & Menu
+        #------------------------------> Empty start
+        plotData = {}
+        #------------------------------> Fill
+        for k,v in self.data[self.cSection[config.npDataPrep]].items():
+            try:
+                #------------------------------> Add to dict
+                plotData[k] = {
+                    'DP' : {j:pd.DataFrame(w) for j,w in v['DP'].items()},
+                }
+            except Exception:
+                pass
+        #endregion ----------------------------------------------> Plot & Menu
+        
+        #region -------------------------------------------> Add/Reset section 
+        self.confData[self.cSection[config.npDataPrep]] = plotData
         #endregion ----------------------------------------> Add/Reset section 
         
         return True
@@ -222,6 +248,7 @@ class UMSAPFile():
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF': df,
+                    'DP': {j: pd.DataFrame(w) for j,w in v['DP'].items()},
                 }
             except Exception:
                 pass

@@ -117,21 +117,24 @@ winUMSAP = {}
 #------------------------------> Default name
 nDefName = 'Default name'
 #------------------------------> Windows
-nwMain         = 'MainW'
-nwUMSAPControl = 'UMSAPControl'
-nwCorrAPlot    = 'CorrAPlot'
-nwProtProf     = 'ProtProfPlot'
+nwMain          = 'MainW'
+nwUMSAPControl  = 'UMSAPControl'
+nwCorrAPlot     = 'CorrAPlot'
+nwProtProf      = 'ProtProfPlot'
+nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
 ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
 ntStart    = 'StartTab'
+ntDataPrep = "DataPrepTab"
 ntCorrA    = 'CorrATab'
 ntProtProf = 'ProtProfTab'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
+npDataPrep              = "Data Preparation"
 npProtProf              = 'ProtProfPane'
 npResControlExp         = 'ResControlExpPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
@@ -146,10 +149,9 @@ nmLimProt  = 'Limited Proteolysis'
 nmTarProt  = 'Targeted Proteolysis'
 nmProtProf = 'Proteome Profiling'
 #------------------------------> Utilities
-nuDataT = 'Data Transformation'
-nuCorrA = 'Correlation Analysis'
-nuDataN = 'Data Normalization'
-nuReadF = 'Read UMSAP File'
+nuDataPrep = "Data Preparation"
+nuCorrA    = 'Correlation Analysis'
+nuReadF    = 'Read UMSAP File'
 #endregion ------------------------------------------------------------> Names
 
 
@@ -168,6 +170,7 @@ t = {
     ndFilterRemoveAny     : 'Remove Filters',
     #------------------------------> Tabs
     ntStart   : 'Start',
+    ntDataPrep: 'DataPrep',
     ntCorrA   : 'CorrA',
     ntProtProf: 'ProtProf',
 }
@@ -217,6 +220,7 @@ urlUpdate   = f"{urlHome}/page/release-notes"
 urlTutorial = f"{urlHome}/tutorial/2-1-0"
 urlCorrA    = f"{urlTutorial}/correlation-analysis"
 urlProtProf = f"{urlTutorial}/proteome-profiling"
+urlDataPrep = f"{urlTutorial}/data-preparation"
 
 #endregion --------------------------------------------------------------- URL
 
@@ -306,6 +310,8 @@ ttStColExtract = "Set the column numbers to extract from {}.\ne.g. 1-4 7 8"
 ttStGenName = "Set the column number containing the gene names.\ne.g. 3"
 ttStExcludeProt = (
     "Set the column number containing the protein to exclude.\ne.g. 8 10-12")
+ttStExcludeRow = (
+    "Set the column number containing the rows to exclude.\ne.g. 8 10-12")
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -380,9 +386,15 @@ oControlTypeProtProf = {
 
 
 #region -----------------------------------------------------> DF Column names
-protprofFirstThree = ['Gene', 'Protein', 'Score']
-protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
+dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
+dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
+dfcolDataCheck = ['Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
 #endregion --------------------------------------------------> DF Column names
+
+
+#region -----------------------------------------------------> Important Lists
+ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
+#endregion --------------------------------------------------> Important Lists
 
 
 #region ------------------------------------------------------------> Messages
