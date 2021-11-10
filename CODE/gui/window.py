@@ -17,7 +17,6 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
-from types import MethodDescriptorType
 from typing import Optional, Literal
 
 import matplotlib.patches as mpatches
@@ -342,6 +341,61 @@ class BaseWindow(wx.Frame):
             self.data[tDate]['DP']
         )
         return True
+    #---
+    
+    def OnZoomResetOne(self) -> bool:
+        """Reset the zoom of the plot.
+        
+            See Notes below for more information
+    
+            Returns
+            -------
+            True
+            
+            Notes
+            -----
+            It is assumed the plot is in self.plot (dtsWidget.MatPlotPanel)
+        """
+        #------------------------------> Try reset
+        try:
+            self.plot.ZoomResetPlot()
+        except Exception as e:
+            #------------------------------> 
+            msg = 'It was not possible to reset the zoom level of the plot.'
+            dtsWindow.NotificationDialog(
+                'errorU', msg=msg, tException=e, parent=self)
+            #------------------------------> 
+            return False
+        #------------------------------> 
+        return True
+    #---
+    
+    def OnZoomResetMany(self) -> bool:
+        """Reset all the plots in the window.
+        
+            See Notes for more details
+    
+            Notes
+            -----
+            It is assumed plots are in a dict self.plot.dPlot in which
+            keys are string and values are instances of dtsWidget.MatPlotPanel
+        """
+        #region --------------------------------------------------> Reset Zoom
+        try:
+            for v in self.plots.dPlot.values():
+                v.ZoomResetPlot()
+        except Exception as e:
+            #------------------------------> 
+            msg = (
+                'It was not possible to reset the zoom level of one of the '
+                'plots.')
+            dtsWindow.NotificationDialog(
+                'errorU', msg=msg, tException=e, parent=self)
+            #------------------------------> 
+            return False
+        #endregion -----------------------------------------------> Reset Zoom
+    
+        return True	
     #---	
     #endregion ------------------------------------------------> Class methods
 #---
@@ -1080,6 +1134,16 @@ class CorrAPlot(BaseWindowPlot):
         #endregion -------------------------------------------> Statusbar Text
         
         return True
+    #---
+    
+    def OnZoomReset(self) -> bool:
+        """Reset the zoon of the plot comming from the menu item.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.OnZoomResetOne()
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -3308,6 +3372,16 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return self.plots.dPlot['FC'].ZoomResetPlot()
     #---
     
+    def OnZoomReset(self) -> bool:
+        """Reset the zoom level of all plots in the window.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.OnZoomResetMany()
+    #---
+    
     def OnLockScale(self, mode: str, updatePlot: bool=True) -> bool:
         """Lock the scale of the volcano and FC plot.
     
@@ -4077,13 +4151,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
     
     def OnZoomReset(self) -> Literal[True]:
         """Reset the zoom of all plots"""
-        
-        #region --------------------------------------------------> Reset Zoom
-        for k, v in self.plots.dPlot.items():
-            v.ZoomResetPlot()
-        #endregion -----------------------------------------------> Reset Zoom
-    
-        return True	
+        return self.OnZoomResetMany()
     #---
     #endregion ------------------------------------------------> Class methods
 #---

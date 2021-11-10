@@ -65,7 +65,6 @@ class MenuMethods():
                 Information about the event
         """
         win = self.GetWindow()
-        # win.plot.ZoomResetPlot()
         win.OnZoomReset()
         return True
     #---
@@ -247,7 +246,7 @@ class PlotMenu(wx.Menu, MenuMethods):
         self.AppendSeparator()
         self.checkDP = self.Append(-1, 'Data Preparation')
         self.AppendSeparator()
-        self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
@@ -1389,6 +1388,9 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.AppendSeparator()
         #------------------------------> 
         self.dataPrep = self.Append(-1, 'Data Preparation')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
@@ -1396,6 +1398,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnExportPlotData,     source=self.saveD)
         self.Bind(wx.EVT_MENU, self.OnExportFilteredData, source=self.saveFD)
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,      source=self.dataPrep)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,          source=self.zoomR)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
