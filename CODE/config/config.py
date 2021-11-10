@@ -309,9 +309,11 @@ ttStScore = f"Set the column number containing the Score values.\ne.g. 4"
 ttStColExtract = "Set the column numbers to extract from {}.\ne.g. 1-4 7 8"
 ttStGenName = "Set the column number containing the gene names.\ne.g. 3"
 ttStExcludeProt = (
-    "Set the column number containing the protein to exclude.\ne.g. 8 10-12")
+    "Set the column number containing the data used to exclude proteins."
+    "\ne.g. 8 10-12")
 ttStExcludeRow = (
-    "Set the column number containing the rows to exclude.\ne.g. 8 10-12")
+    "Set the column numbers containing the data used to exclude rows."
+    "\ne.g. 8 10-12")
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "

@@ -17,7 +17,6 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
-from types import MethodDescriptorType
 from typing import Optional, Literal
 
 import matplotlib.patches as mpatches
@@ -342,7 +341,83 @@ class BaseWindow(wx.Frame):
             self.data[tDate]['DP']
         )
         return True
+    #---
+    
+    def OnZoomResetOne(self) -> bool:
+        """Reset the zoom of the plot.
+        
+            See Notes below for more information
+    
+            Returns
+            -------
+            True
+            
+            Notes
+            -----
+            It is assumed the plot is in self.plot (dtsWidget.MatPlotPanel)
+        """
+        #------------------------------> Try reset
+        try:
+            self.plot.ZoomResetPlot()
+        except Exception as e:
+            #------------------------------> 
+            msg = 'It was not possible to reset the zoom level of the plot.'
+            dtsWindow.NotificationDialog(
+                'errorU', msg=msg, tException=e, parent=self)
+            #------------------------------> 
+            return False
+        #------------------------------> 
+        return True
+    #---
+    
+    def OnZoomResetMany(self) -> bool:
+        """Reset all the plots in the window.
+        
+            See Notes for more details
+    
+            Notes
+            -----
+            It is assumed plots are in a dict self.plot.dPlot in which
+            keys are string and values are instances of dtsWidget.MatPlotPanel
+        """
+        #region --------------------------------------------------> Reset Zoom
+        try:
+            for v in self.plots.dPlot.values():
+                v.ZoomResetPlot()
+        except Exception as e:
+            #------------------------------> 
+            msg = (
+                'It was not possible to reset the zoom level of one of the '
+                'plots.')
+            dtsWindow.NotificationDialog(
+                'errorU', msg=msg, tException=e, parent=self)
+            #------------------------------> 
+            return False
+        #endregion -----------------------------------------------> Reset Zoom
+    
+        return True	
     #---	
+    
+    def OnSavePlotOne(self) -> bool:
+        """Save an image of the plot. Override as needed. 
+        
+            Notes
+            -----
+            Assumes window has a plot attribute (dtsWidget.MatPlotPanel).
+        """
+        try:
+            #------------------------------> 
+            self.plot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
+            #------------------------------> 
+            return True
+        except Exception as e:
+            #------------------------------> 
+            dtscore.Notification(
+                'errorF', msg=str(e), tException=e, parent=self,
+            )
+            #------------------------------> 
+            return False
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -385,8 +460,21 @@ class BaseWindowPlot(BaseWindow):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
+        self.plot = dtsWidget.MatPlotPanel(
+            self, 
+            statusbar    = self.statusbar,
+            statusMethod = self.UpdateStatusBar,
+            dpi          = config.general['DPI'],
+        )
+
         self.statusbar.SetFieldsCount(2, config.sbPlot2Fields)
         #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.Sizer.Add(self.plot, 1, wx.EXPAND|wx.ALL, 5)
+
+        self.SetSizer(self.Sizer)
+        #endregion ---------------------------------------------------> Sizers
         
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -395,27 +483,6 @@ class BaseWindowPlot(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnSavePlot(self) -> bool:
-        """Save an image of the plot. Override as needed. 
-        
-            Notes
-            -----
-            Assumes window has a plot attribute as in dtsWidget.MatPlotPanel.
-        """
-        try:
-            #------------------------------> 
-            self.plot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
-            #------------------------------> 
-            return True
-        except Exception as e:
-            #------------------------------> 
-            dtscore.Notification(
-                'errorF', msg=str(e), tException=e, parent=self,
-            )
-            #------------------------------> 
-            return False
-    #---
-
     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
         """Close window and uncheck section in UMSAPFile window. Assumes 
             self.parent is an instance of UMSAPControl.
@@ -444,6 +511,16 @@ class BaseWindowPlot(BaseWindow):
     def WinPos(self):
         """Just return base class method result"""
         return super().WinPos()
+    #---
+    
+    def OnSavePlot(self) -> bool:
+        """Save an image of the plot.
+        
+            Returns
+            -------
+            bool
+        """
+        return self.OnSavePlotOne()
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -895,6 +972,7 @@ class CorrAPlot(BaseWindowPlot):
         self.obj     = parent.obj
         self.data    = self.obj.confData[self.cSection]
         self.date    = [x for x in self.data.keys()]
+        self.dateC   = self.date[0]
         self.cmap    = dtsMethod.MatplotLibCmap(
             N   = config.color[self.cSection]['CMAP']['N'],
             c1  = config.color[self.cSection]['CMAP']['c1'],
@@ -907,18 +985,11 @@ class CorrAPlot(BaseWindowPlot):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.plot = dtsWidget.MatPlotPanel(
-            self, 
-            statusbar    = self.statusbar,
-            statusMethod = self.UpdateStatusBar,
-            dpi          = config.general['DPI'],
-        )
+        
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
-        self.Sizer.Add(self.plot, 1, wx.EXPAND|wx.ALL, 5)
 
-        self.SetSizer(self.Sizer)
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
@@ -926,7 +997,7 @@ class CorrAPlot(BaseWindowPlot):
         #endregion -----------------------------------------------------> Bind
 
         #region ----------------------------------------------------> Position
-        self.Draw(self.date[0], 'Name')
+        self.Draw(self.dateC, 'Name')
         self.WinPos()
         self.Show()
         #endregion -------------------------------------------------> Position
@@ -962,6 +1033,10 @@ class CorrAPlot(BaseWindowPlot):
             col: One of Name or Number
                 Set the information to display in the axis
         """
+        #region -------------------------------------------------> Update date
+        self.dateC = tDate
+        #endregion ----------------------------------------------> Update date
+        
         #region --------------------------------------------------------> Plot
         self.plot.axes.pcolormesh(
             self.data[tDate]['DF'], 
@@ -1080,6 +1155,16 @@ class CorrAPlot(BaseWindowPlot):
         #endregion -------------------------------------------> Statusbar Text
         
         return True
+    #---
+    
+    def OnZoomReset(self) -> bool:
+        """Reset the zoon of the plot comming from the menu item.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.OnZoomResetOne()
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -1285,6 +1370,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
     cHSearch      = 'Protein List'
     #------------------------------> Other
     cNPlotsCol    = 2
+    imgName = {
+        'Vol': '{}-Vol.pdf',
+        'FC' : '{}-Evol.pdf',
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -3214,6 +3303,38 @@ class ProtProfPlot(BaseWindowNPlotLT):
         )
     #---
     
+    def OnSavePlot(self) -> Literal[True]:
+        """ Export all plots to a pdf image"""
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.DirSelectDialog(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            #------------------------------> Export
+            try:
+                for k, v in self.plots.dPlot.items():
+                    #------------------------------> file path
+                    fPath = p / self.imgName[k].format(self.dateC)
+                    #------------------------------> Write
+                    v.figure.savefig(fPath)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---
+    
     def OnPick(self, event) -> bool:
         """Process a pick event in the volcano plot.
     
@@ -3306,6 +3427,16 @@ class ProtProfPlot(BaseWindowNPlotLT):
             bool
         """
         return self.plots.dPlot['FC'].ZoomResetPlot()
+    #---
+    
+    def OnZoomReset(self) -> bool:
+        """Reset the zoom level of all plots in the window.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.OnZoomResetMany()
     #---
     
     def OnLockScale(self, mode: str, updatePlot: bool=True) -> bool:
@@ -3447,7 +3578,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
             Name of the files needed to export the images of the plots.
         obj : UMSAPFile
             Refernece to the UMSAPFile object.
-        oDate : str
+        dateC : str
             Date selected. Needed to export the data and images.
         #------------------------------> Configuration
         cLCol : list[str]
@@ -3586,11 +3717,11 @@ class CheckDataPrep(BaseWindowNPlotLT):
             self.obj    = self.parent.obj
             self.data   = self.obj.confData[self.cSection]
             self.date   = [k for k in self.data.keys()]
-            self.oDate = self.date[0]
+            self.dateC = self.date[0]
         else:
             self.fromUMSAPFile = False
             self.date = None
-            self.oDate = self.parent.dateC
+            self.dateC = self.parent.dateC
         #------------------------------> 
         return True
     #---
@@ -3979,7 +4110,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> Set the dataFrame
         if date is not None:
             self.dpDF = self.data[date]['DP']
-            self.oDate = date
+            self.dateC = date
         else:
             pass
         #------------------------------> Fill
@@ -4040,7 +4171,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
      
         dlg.Destroy()
         return True	
-    #---	
+    #---
     
     def OnSavePlot(self) -> Literal[True]:
         """ Export all plots to a pdf image"""
@@ -4057,7 +4188,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
             try:
                 for k, v in self.plots.dPlot.items():
                     #------------------------------> file path
-                    fPath = p / self.imgName[k].format(self.oDate, col, 'pdf')
+                    fPath = p / self.imgName[k].format(self.dateC, col, 'pdf')
                     #------------------------------> Write
                     v.figure.savefig(fPath)
             except Exception as e:
@@ -4077,13 +4208,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
     
     def OnZoomReset(self) -> Literal[True]:
         """Reset the zoom of all plots"""
-        
-        #region --------------------------------------------------> Reset Zoom
-        for k, v in self.plots.dPlot.items():
-            v.ZoomResetPlot()
-        #endregion -----------------------------------------------> Reset Zoom
-    
-        return True	
+        return self.OnZoomResetMany()
     #---
     #endregion ------------------------------------------------> Class methods
 #---
