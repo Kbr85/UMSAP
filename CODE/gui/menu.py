@@ -242,7 +242,7 @@ class PlotMenu(wx.Menu, MenuMethods):
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
         self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
-        self.saveI = self.Append(-1, 'Save Image\tCtrl+I')
+        self.saveI = self.Append(-1, 'Export Image\tShift+I')
         self.AppendSeparator()
         self.checkDP = self.Append(-1, 'Data Preparation')
         self.AppendSeparator()
@@ -590,8 +590,8 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
         #------------------------------> Export Data
-        self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
-        self.saveI = self.Append(-1, 'Save Image\tShift+I')
+        self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
+        self.saveI = self.Append(-1, 'Export Image\tShift+I')
         self.AppendSeparator()
         #------------------------------> 
         self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
@@ -669,7 +669,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         self.AppendSeparator()
         self.pCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
-        self.saveI = self.Append(-1, 'Save Plot Image\tCtrl+I')
+        self.saveI = self.Append(-1, 'Export Image\tCtrl+I')
         self.AppendSeparator()
         self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
         #endregion -----------------------------------------------> Menu Items
@@ -895,7 +895,7 @@ class FCEvolution(wx.Menu):
         self.showAll = self.Append(-1, 'Show All', kind=wx.ITEM_CHECK)
         self.Check(self.showAll.GetId(), True)
         self.AppendSeparator()
-        self.saveI = self.Append(-1, 'Save Plot Image\tAlt+I')
+        self.saveI = self.Append(-1, 'Export Image\tAlt+I')
         self.AppendSeparator()
         self.zoomR = self.Append(-1, 'Reset Zoom\tAlt+Z')
         #endregion -----------------------------------------------> Menu Items
@@ -1385,6 +1385,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Export Data
         self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
         self.saveFD = self.Append(-1, 'Export Data Filtered\tShift+Ctrl+E')
+        self.saveI  = self.Append(-1, 'Export Image\tShift+I')
         self.AppendSeparator()
         #------------------------------> 
         self.dataPrep = self.Append(-1, 'Data Preparation')
@@ -1399,6 +1400,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnExportFilteredData, source=self.saveFD)
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,      source=self.dataPrep)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,          source=self.zoomR)
+        self.Bind(wx.EVT_MENU, self.OnSavePlot,           source=self.saveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
