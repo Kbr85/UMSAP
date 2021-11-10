@@ -972,6 +972,7 @@ class CorrAPlot(BaseWindowPlot):
         self.obj     = parent.obj
         self.data    = self.obj.confData[self.cSection]
         self.date    = [x for x in self.data.keys()]
+        self.dateC   = self.date[0]
         self.cmap    = dtsMethod.MatplotLibCmap(
             N   = config.color[self.cSection]['CMAP']['N'],
             c1  = config.color[self.cSection]['CMAP']['c1'],
@@ -996,7 +997,7 @@ class CorrAPlot(BaseWindowPlot):
         #endregion -----------------------------------------------------> Bind
 
         #region ----------------------------------------------------> Position
-        self.Draw(self.date[0], 'Name')
+        self.Draw(self.dateC, 'Name')
         self.WinPos()
         self.Show()
         #endregion -------------------------------------------------> Position
@@ -1032,6 +1033,10 @@ class CorrAPlot(BaseWindowPlot):
             col: One of Name or Number
                 Set the information to display in the axis
         """
+        #region -------------------------------------------------> Update date
+        self.dateC = tDate
+        #endregion ----------------------------------------------> Update date
+        
         #region --------------------------------------------------------> Plot
         self.plot.axes.pcolormesh(
             self.data[tDate]['DF'], 
@@ -3328,7 +3333,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
      
         dlg.Destroy()
         return True	
-    #---
     #---
     
     def OnPick(self, event) -> bool:
