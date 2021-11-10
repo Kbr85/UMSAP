@@ -764,6 +764,7 @@ class MainWindow(BaseWindow):
         config.ntStart   : tab.Start,
         config.ntCorrA   : tab.BaseConfTab,
         config.ntDataPrep: tab.BaseConfListTab,
+        config.ntLimProt : tab.BaseConfListTab,
         config.ntProtProf: tab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup

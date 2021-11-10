@@ -130,11 +130,13 @@ ndFilterRemoveAny      = 'Remove Filters'
 ntStart    = 'StartTab'
 ntDataPrep = "DataPrepTab"
 ntCorrA    = 'CorrATab'
+ntLimProt  = 'LimProtTab'
 ntProtProf = 'ProtProfTab'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
-npDataPrep              = "Data Preparation"
+npDataPrep              = "DataPrepPane"
+npLimProt               = "LimProtPane"
 npProtProf              = 'ProtProfPane'
 npResControlExp         = 'ResControlExpPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
@@ -172,6 +174,7 @@ t = {
     ntStart   : 'Start',
     ntDataPrep: 'DataPrep',
     ntCorrA   : 'CorrA',
+    ntLimProt : 'LimProt',
     ntProtProf: 'ProtProf',
 }
 #endregion -----------------------------------------------------------> Titles
@@ -219,6 +222,7 @@ urlHome     = 'https://www.umsap.nl'
 urlUpdate   = f"{urlHome}/page/release-notes"
 urlTutorial = f"{urlHome}/tutorial/2-1-0"
 urlCorrA    = f"{urlTutorial}/correlation-analysis"
+urlLimProt  = f"{urlTutorial}/limited-proteolysis"
 urlProtProf = f"{urlTutorial}/proteome-profiling"
 urlDataPrep = f"{urlTutorial}/data-preparation"
 

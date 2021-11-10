@@ -4627,6 +4627,73 @@ class ProtProf(BaseConfModPanel):
 #---
 
 
+class LimProt(BaseConfModPanel):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    name = config.npLimProt
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent, dataI: Optional[dict]):
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Needed by BaseConfPanel
+        self.cURL         = config.urlLimProt
+        self.cSection     = config.nmLimProt
+        self.cLLenLongest = len(config.lStResultCtrl)
+        self.cTitlePD     = f"Running {config.nmLimProt} Analysis"
+        self.cGaugePD     = 30
+        #------------------------------> 
+        super().__init__(parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
 #------------------------------> Panes for Type Results - Control Epxeriments
 class ProtProfResControlExp(ResControlExpConfBase):
     """Creates the configuration panel for the Results - Control Experiments
