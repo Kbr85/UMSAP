@@ -1111,6 +1111,8 @@ class BaseConfPanel(
 
 class BaseConfModPanel(BaseConfPanel, widget.ResControl):
     """Base configuration for a panel of a module.
+    
+        See Notes below for more details.
 
         Parameters
         ----------
@@ -1166,6 +1168,10 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         CheckInput:
             Check the user input in the widgets created here. in 
             super().__init__ and in __init__()
+            
+        Notes
+        -----
+        Base class for all configuration panels of a module.
     """
     #region -----------------------------------------------------> Class setup
     
@@ -1385,6 +1391,214 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
+
+
+class BaseConfModPanel2(BaseConfModPanel):
+    """Base class for the LimProt and TarProt configuration panel.
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: wx.Window, rightDelete: bool=True) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Label
+        self.cLSeqRecFile = getattr(self, 'cLSeqRecFile', config.lStSeqRecFile)
+        self.cLSeqNatFile = getattr(self, 'cLSeqNatFile', config.lStSeqNatFile)
+        self.cLSeqLength = getattr(self, 'cLSeqLength', config.lStSeqLength)
+        self.cLTargetProt = getattr(self, 'cLtargetProt', config.lStTargetProt)
+        self.cLSeqCol = getattr(self, 'cLSeqCol', config.lStSeqCol)
+        #------------------------------> 
+        super().__init__(parent, rightDelete=rightDelete)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Files
+        self.seqRec = dtsWidget.ButtonTextCtrl(
+            self.sbFile,
+            btnLabel  = self.cLSeqRecFile,
+            validator = dtsValidator.IsNotEmpty(),
+        )
+        self.seqNat = dtsWidget.ButtonTextCtrl(
+            self.sbFile,
+            btnLabel  = self.cLSeqNatFile,
+            validator = dtsValidator.IsNotEmpty(),
+        )
+        #------------------------------> Values
+        self.targetProt = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLTargetProt,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.IsNotEmpty()
+        )
+        self.seqLength = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLSeqLength,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'int',
+                nN      = 1,
+                vMin    = 0,
+            )
+        )
+        #------------------------------> Columns
+        self.seqCol = dtsWidget.StaticTextCtrl(
+            self.sbColumn,
+            stLabel   = self.cLSeqCol,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'int',
+                nN      = 1,
+                vMin    = 0,
+            )
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Sizer Files
+        #--------------> 
+        self.sizersbFileWid.Detach(self.id.st)
+        self.sizersbFileWid.Detach(self.id.tc)
+        #--------------> 
+        self.sizersbFileWid.Add(
+            self.seqRec.btn,
+            pos    = (2,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.seqRec.tc,
+            pos    = (2,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.seqNat.btn,
+            pos    = (3,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.seqNat.tc,
+            pos    = (3,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.id.st,
+            pos    = (4,0),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.id.tc,
+            pos    = (4,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        #------------------------------> Sizer Columns
+        self.sizersbColumnWid.Add(
+            self.seqCol.st,
+            pos    = (0,0),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.seqCol.tc,
+            pos    = (0,1),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.detectedProt.st,
+            pos    = (0,2),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.detectedProt.tc,
+            pos    = (0,3),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.score.st,
+            pos    = (0,4),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.score.tc,
+            pos    = (0,5),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.colExtract.st,
+            pos    = (1,0),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.colExtract.tc,
+            pos    = (1,1),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+            span   = (0, 5),
+        )
+        self.sizersbColumnWid.Add(
+            self.sizerRes,
+            pos    = (2,0),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
+            border = 0,
+            span   = (0,6),
+        )
+        self.sizersbColumnWid.AddGrowableCol(1,1)
+        self.sizersbColumnWid.AddGrowableCol(3,1)
+        self.sizersbColumnWid.AddGrowableCol(5,1)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
+
 
 
 class ResControlExpConfBase(wx.Panel):
@@ -4627,7 +4841,7 @@ class ProtProf(BaseConfModPanel):
 #---
 
 
-class LimProt(BaseConfModPanel):
+class LimProt(BaseConfModPanel2):
     """
 
         Parameters
@@ -4658,6 +4872,11 @@ class LimProt(BaseConfModPanel):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
+        #------------------------------> Configuration
+        self.cLBeta       = "β value"
+        self.cLGamma      = "γ value"
+        self.cLTheta      = "Θ value"
+        self.cLThetaMax   = "Θmax value"
         #------------------------------> Needed by BaseConfPanel
         self.cURL         = config.urlLimProt
         self.cSection     = config.nmLimProt
@@ -4673,11 +4892,169 @@ class LimProt(BaseConfModPanel):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
+        #------------------------------> Values
+        self.beta = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLBeta,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+                vMin    = 0,
+                vMax    = 1,
+            )
+        )
+        self.gamma = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLGamma,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+                vMin    = 0,
+                vMax    = 1,
+            )
+        )
+        self.theta = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLTheta,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+                vMin    = 0,
+            )
+        )
+        self.thetaMax = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLThetaMax,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+                vMin    = 0,
+            )
+        )
         
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
-        
+        #------------------------------> Sizer Values
+        self.sizersbValueWid.Add(
+            1, 1,
+            pos    = (0,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+            span   = (2, 0),
+        )
+        self.sizersbValueWid.Add(
+            self.targetProt.st,
+            pos    = (0,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.targetProt.tc,
+            pos    = (0,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.scoreVal.st,
+            pos    = (1,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.scoreVal.tc,
+            pos    = (1,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.seqLength.st,
+            pos    = (2,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.seqLength.tc,
+            pos    = (2,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.alpha.st,
+            pos    = (3,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.alpha.tc,
+            pos    = (3,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.beta.st,
+            pos    = (0,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.beta.tc,
+            pos    = (0,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.gamma.st,
+            pos    = (1,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.gamma.tc,
+            pos    = (1,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.theta.st,
+            pos    = (2,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.theta.tc,
+            pos    = (2,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.thetaMax.st,
+            pos    = (3,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.thetaMax.tc,
+            pos    = (3,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            1, 1,
+            pos    = (0,5),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+            span   = (2, 0),
+        )
+        self.sizersbValueWid.AddGrowableCol(0, 1)
+        self.sizersbValueWid.AddGrowableCol(2, 1)
+        self.sizersbValueWid.AddGrowableCol(4, 1)
+        self.sizersbValueWid.AddGrowableCol(5, 1)
+
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind

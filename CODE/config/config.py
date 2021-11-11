@@ -251,11 +251,16 @@ lStProtProfRP   = 'Relevant Points'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'  
 #------------------------------> wx.Statictext
+lStSeqRecFile   = 'Sequence (rec)'
+lStSeqNatFile   = 'Sequence (nat)'
 lStId           = 'Analysis ID'
-lStAlpha        = 'Significance level'
+lStAlpha        = 'Significance Level'
 lStColIFile     = "Columns in the {}"
 lStScoreVal     = 'Score Value'
+lStSeqLength    = 'Sequence Length'
+lStTargetProt   = "Target Protein"
 lStDetectedProt = 'Detected Proteins'
+lStSeqCol       = 'Sequences'
 lStScoreCol     = 'Score'
 lStColExtract   = 'Columns to Extract'
 lStResultCtrl   = 'Results - Control experiments'
