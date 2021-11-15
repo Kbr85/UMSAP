@@ -343,7 +343,11 @@ class BaseConfPanel(
         scrolled.ScrolledPanel.__init__(self, parent, name=self.name)
 
         dtsWidget.ButtonOnlineHelpClearAllRun.__init__(
-            self, self, self.cURL, labelR = self.cLRunBtn,
+            self, self, self.cURL, 
+            labelR   = self.cLRunBtn,
+            tooltipR = self.cTTRun,
+            tooltipH = self.cTTHelp,
+            tooltipC = self.cTTClearAll,
         )
 
         dtsWidget.StaticBoxes.__init__(self, self, 
@@ -358,6 +362,7 @@ class BaseConfPanel(
         #region -----------------------------------------------------> Widgets
         self.uFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
             btnLabel   = self.cLuFile,
+            btnTooltip = self.cTTuFile,
             tcHint     = self.cHuFile,
             mode       = self.cMuFile,
             ext        = config.elUMSAP,
@@ -365,10 +370,10 @@ class BaseConfPanel(
             validator  = self.cVuFile,
             ownCopyCut = True,
         )
-        self.uFile.btn.SetToolTip(self.cTTuFile)
         
         self.iFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
             btnLabel   = self.cLiFile,
+            btnTooltip = self.cTTiFile,
             tcHint     = self.cHiFile,
             ext        = self.cEiFile,
             mode       = self.cMiFile,
@@ -376,12 +381,12 @@ class BaseConfPanel(
             validator  = self.cViFile,
             ownCopyCut = True,
         )
-        self.iFile.btn.SetToolTip(self.cTTiFile)
         
         self.id = dtsWidget.StaticTextCtrl(
             self.sbFile,
-            stLabel = self.cLId,
-            tcHint  = self.cHId,
+            stLabel   = self.cLId,
+            stTooltip = self.cTTId,
+            tcHint    = self.cHId,
         )
         
         self.ceroB = wx.CheckBox(self.sbData, label=self.cLCeroTreat)
@@ -391,6 +396,7 @@ class BaseConfPanel(
             self.sbData, 
             label     = self.cLNormMethod,
             choices   = self.cONorm,
+            tooltip   = self.cTTNormMethod,
             validator = dtsValidator.IsNotEmpty(),
         )
         
@@ -398,6 +404,7 @@ class BaseConfPanel(
             self.sbData, 
             label     = self.cLTransMethod,
             choices   = self.cOTrans,
+            tooltip   = self.cTTTransMethod,
             validator = dtsValidator.IsNotEmpty(),
         )
         
@@ -405,18 +412,13 @@ class BaseConfPanel(
             self.sbData, 
             label     = self.cLImputation,
             choices   = self.cOImputation,
+            tooltip   = self.cTTImputation,
             validator = dtsValidator.IsNotEmpty(),
         )
         #endregion --------------------------------------------------> Widgets
         
         #region -----------------------------------------------------> Tooltip
-        self.btnHelp.SetToolTip(self.cTTHelp)
-        self.btnClearAll.SetToolTip(self.cTTClearAll)
-        self.btnRun.SetToolTip(self.cTTRun)
-        self.id.st.SetToolTip(self.cTTId)
-        self.normMethod.st.SetToolTip(self.cTTNormMethod)
-        self.transMethod.st.SetToolTip(self.cTTTransMethod)
-        self.imputationMethod.st.SetToolTip(self.cTTImputation)
+        
         #endregion --------------------------------------------------> Tooltip
         
         #region ------------------------------------------------------> Sizers
@@ -1219,6 +1221,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.alpha = dtsWidget.StaticTextCtrl(
             self.sbValue,
             stLabel   = self.cLAlpha,
+            stTooltip = self.cTTAlpha,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'float',
@@ -1231,6 +1234,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.scoreVal = dtsWidget.StaticTextCtrl(
             self.sbValue,
             stLabel   = self.cLScoreVal,
+            stTooltip = self.cTTScoreVal,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'float',
@@ -1241,6 +1245,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.detectedProt = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLDetectedProt,
+            stTooltip = self.cTTDetectedProt,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -1252,6 +1257,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.score = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLScoreCol,
+            stTooltip = self.cTTScore,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -1263,6 +1269,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.colExtract = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLColExtract,
+            stTooltip = self.cTTColExtract,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -1275,11 +1282,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         #endregion --------------------------------------------------> Widgets
 
         #region -----------------------------------------------------> Tooltip
-        self.alpha.st.SetToolTip(self.cTTAlpha)
-        self.scoreVal.st.SetToolTip(self.cTTScoreVal)
-        self.detectedProt.st.SetToolTip(self.cTTDetectedProt)
-        self.score.st.SetToolTip(self.cTTScore)
-        self.colExtract.st.SetToolTip(self.cTTColExtract)
+        
         #endregion --------------------------------------------------> Tooltip
         
         #region ------------------------------------------------------> Sizers
@@ -3006,6 +3009,7 @@ class DataPrep(BaseConfPanel):
         self.scoreVal = dtsWidget.StaticTextCtrl(
             self.sbValue,
             stLabel   = self.cLScoreVal,
+            stTooltip = self.cTTScoreVal,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'float',
@@ -3016,6 +3020,7 @@ class DataPrep(BaseConfPanel):
         self.score = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLScoreCol,
+            stTooltip = self.cTTScore,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -3027,6 +3032,7 @@ class DataPrep(BaseConfPanel):
         self.excludeRow = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLExcludeRow,
+            stTooltip = self.cTTExcludeRow,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -3039,6 +3045,7 @@ class DataPrep(BaseConfPanel):
         self.colAnalysis = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLColAnalysis,
+            stTooltip = self.cTTColAnalysis,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -3050,10 +3057,7 @@ class DataPrep(BaseConfPanel):
         #endregion --------------------------------------------------> Widgets
         
         #region -----------------------------------------------------> Tooltip
-        self.scoreVal.st.SetToolTip(self.cTTScoreVal)
-        self.score.st.SetToolTip(self.cTTScore)
-        self.excludeRow.st.SetToolTip(self.cTTExcludeRow)
-        self.colAnalysis.st.SetToolTip(self.cTTColAnalysis)
+        
         #endregion --------------------------------------------------> Tooltip
 
         #region ------------------------------------------------------> Sizers
@@ -3802,28 +3806,32 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Values
         self.correctP = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            self.cLCorrectP,
-            self.cOCorrectP,
+            label     = self.cLCorrectP,
+            choices   = self.cOCorrectP,
+            tooltip   = self.cTTCorrectP,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.sample = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            self.cLSample,
-            self.cOSample,
+            label     = self.cLSample,
+            choices   = self.cOSample,
+            tooltip   = self.cTTGeneName,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.rawI = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            self.cLRawI,
-            self.cORawI,
+            label     = self.cLRawI,
+            choices   = self.cORawI,
+            tooltip   = self.cTTExcludeProt,
             validator = dtsValidator.IsNotEmpty(),
         )
         #------------------------------> Columns
         self.geneName = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLGeneName,
+            stTooltip = self.cTTSample,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -3834,6 +3842,7 @@ class ProtProf(BaseConfModPanel):
         self.excludeProt = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLExcludeProt,
+            stTooltip = self.cTTRawI,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -3845,11 +3854,7 @@ class ProtProf(BaseConfModPanel):
         #endregion --------------------------------------------------> Widgets
 
         #region -----------------------------------------------------> Tooltip
-        self.correctP.st.SetToolTip(self.cTTCorrectP)
-        self.geneName.st.SetToolTip(self.cTTGeneName)
-        self.excludeProt.st.SetToolTip(self.cTTExcludeProt)
-        self.sample.st.SetToolTip(self.cTTSample)
-        self.rawI.st.SetToolTip(self.cTTRawI)
+        
         #endregion --------------------------------------------------> Tooltip
         
         #region ------------------------------------------------------> Sizers
