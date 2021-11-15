@@ -442,7 +442,7 @@ mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
-sWinRegular = (930, 770)
+sWinRegular = (990, 775)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
 sWinModPlot = (1100, 625)

@@ -49,7 +49,7 @@ if config.typeCheck:
 
 #region --------------------------------------------------------> Base Classes
 class BaseConfPanel(
-    wx.Panel,
+    scrolled.ScrolledPanel,
     dtsWidget.StaticBoxes, 
     dtsWidget.ButtonOnlineHelpClearAllRun
     ):
@@ -340,7 +340,7 @@ class BaseConfPanel(
         #------------------------------> 
         self.changeKey = getattr(self, 'changeKey', ['iFile', 'uFile'])
         #------------------------------> Parent init
-        wx.Panel.__init__(self, parent, name=self.name)
+        scrolled.ScrolledPanel.__init__(self, parent, name=self.name)
 
         dtsWidget.ButtonOnlineHelpClearAllRun.__init__(
             self, self, self.cURL, labelR = self.cLRunBtn,
@@ -2462,6 +2462,7 @@ class CorrA(BaseConfPanel):
         #------------------------------> Main Sizer
         self.SetSizer(self.Sizer)
         self.Sizer.Fit(self)
+        self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
@@ -4005,6 +4006,7 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Main Sizer
         self.SetSizer(self.Sizer)
         self.Sizer.Fit(self)
+        self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
@@ -5069,7 +5071,10 @@ class LimProt(BaseConfModPanel2):
         self.sizersbValueWid.AddGrowableCol(2, 1)
         self.sizersbValueWid.AddGrowableCol(4, 1)
         self.sizersbValueWid.AddGrowableCol(5, 1)
-
+        #------------------------------> Main Sizer
+        self.SetSizer(self.Sizer)
+        self.Sizer.Fit(self)
+        self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
