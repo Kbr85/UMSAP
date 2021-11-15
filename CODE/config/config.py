@@ -183,6 +183,10 @@ t = {
 #region ----------------------------------------------------------- Extensions
 #------------------------------> For wx.Dialogs
 elData         = 'txt files (*.txt)|*.txt'
+elSeq          = (
+    "Text files (*.txt)|*.txt|"
+    "Fasta files (*.fasta)|*.fasta"
+)
 elUMSAP        = 'UMSAP files (*.umsap)|*.umsap'
 elMatPlotSaveI = (
     "Portable Document File (*.pdf)|*.pdf|"
@@ -193,6 +197,7 @@ elMatPlotSaveI = (
 
 #------------------------------> File extensions. First item is default
 esData  = ['.txt']
+esSeq   = ['.txt', '.fasta']
 esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
 

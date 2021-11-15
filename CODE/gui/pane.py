@@ -1430,6 +1430,10 @@ class BaseConfModPanel2(BaseConfModPanel):
         self.cLSeqLength = getattr(self, 'cLSeqLength', config.lStSeqLength)
         self.cLTargetProt = getattr(self, 'cLtargetProt', config.lStTargetProt)
         self.cLSeqCol = getattr(self, 'cLSeqCol', config.lStSeqCol)
+        #------------------------------> Mode
+        self.cMseqFile = getattr(self, 'cMseqFile', 'openO')
+        #------------------------------> Extensions
+        self.cEseqFile = getattr(self, 'cEseqFile', config.elSeq)
         #------------------------------> 
         super().__init__(parent, rightDelete=rightDelete)
         #endregion --------------------------------------------> Initial Setup
@@ -1440,15 +1444,26 @@ class BaseConfModPanel2(BaseConfModPanel):
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> Files
-        self.seqRec = dtsWidget.ButtonTextCtrl(
+        self.seqRec = dtsWidget.ButtonTextCtrlFF(
             self.sbFile,
-            btnLabel  = self.cLSeqRecFile,
-            validator = dtsValidator.IsNotEmpty(),
+            btnLabel   = self.cLSeqRecFile,
+            # tcHint     = 
+            mode       = self.cMseqFile,
+            ext        = self.cEseqFile,
+            tcStyle    = wx.TE_READONLY,
+            validator  = dtsValidator.InputFF(fof='file', ext=config.esSeq),
+            ownCopyCut = True,
         )
-        self.seqNat = dtsWidget.ButtonTextCtrl(
+        self.seqNat = dtsWidget.ButtonTextCtrlFF(
             self.sbFile,
-            btnLabel  = self.cLSeqNatFile,
-            validator = dtsValidator.IsNotEmpty(),
+            btnLabel   = self.cLSeqNatFile,
+            # tcHint     = 
+            mode       = self.cMseqFile,
+            ext        = self.cEseqFile,
+            tcStyle    = wx.TE_READONLY,
+            validator  = dtsValidator.InputFF(
+                fof='file', ext=config.esSeq, opt=True),
+            ownCopyCut = True,
         )
         #------------------------------> Values
         self.targetProt = dtsWidget.StaticTextCtrl(
