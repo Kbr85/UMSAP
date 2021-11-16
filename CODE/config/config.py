@@ -331,6 +331,7 @@ ttStExcludeProt = (
 ttStExcludeRow = (
     "Set the column numbers containing the data used to exclude rows."
     "\ne.g. 8 10-12")
+ttStControl = "Name or ID of the control experiment.\ne.g. MyControl."
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
