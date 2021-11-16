@@ -1721,13 +1721,17 @@ class ResControlExpConfBase(wx.Panel):
         self.NColF     = NColF - 1
         #------------------------------> Label
         self.cLSetup = getattr(self, 'cLSetup', 'Setup Fields')
+        self.cLControlN = getattr(self, 'cLControlN', 'Control Name')
         #------------------------------> Hint
+        self.cHControlN = getattr(self, 'cHControlN', 'MyControl')
         self.cHTotalField = getattr(self, 'cHTotalField', '#')
         #------------------------------> Size
         self.cSSWLabel    = getattr(self, 'cSSWLabel', (670,135))
         self.cSSWMatrix   = getattr(self, 'cSSWMatrix', (670,670))
         self.cSTotalField = getattr(self, 'cSTotalField', (35,22))
         self.cSLabel      = getattr(self, 'cSLabel', (60,22))
+        #------------------------------> Tooltip
+        self.cTTControlN = getattr(self, 'cTTControlN', config.ttStControlN)     
         #------------------------------> Validator
         self.cVColNumList = dtsValidator.NumberList(
             sep=' ', opt=True, vMin=0, vMax=self.NColF 
@@ -1767,6 +1771,13 @@ class ResControlExpConfBase(wx.Panel):
                 )
             a.SetHint(self.cHTotalField)
             self.tcLabel.append(a)
+        #------------------------------> Control name
+        self.controlN = dtsWidget.StaticTextCtrl(
+            self.swLabel,
+            stLabel   = self.cLControlN,
+            stTooltip = self.cTTControlN,
+            tcHint    = self.cHControlN,
+        )
         #------------------------------> wx.Button
         self.btnCreate = wx.Button(self, label=self.cLSetup)
         #endregion --------------------------------------------------> Widgets
@@ -2077,7 +2088,7 @@ class ResControlExpConfBase(wx.Panel):
                 for j, t in enumerate(v):
                     self.tcDict[k][j].SetValue(t)
             elif k == 'Control':
-                self.tcControl.SetValue(v[0])
+                self.controlN.tc.SetValue(v[0])
             else:
                 pass
         #endregion -----------------------------------------------> Add Labels
@@ -2089,7 +2100,7 @@ class ResControlExpConfBase(wx.Panel):
             self.cbControl.SetValue(cT)
             #------------------------------> 
             if cT == config.oControlTypeProtProf['Ratio']:
-                self.tcControl.SetEditable(False)
+                self.controlN.tc.SetEditable(False)
             else:
                 pass
         else:
@@ -5190,6 +5201,8 @@ class ProtProfResControlExp(ResControlExpConfBase):
             config.oControlTypeProtProf['OCR']  : self.AddWidget_OCR,
             config.oControlTypeProtProf['Ratio']: self.AddWidget_Ratio,
         }
+        #------------------------------> Label
+        self.cLControlN = config.lStCtrlName
         #------------------------------> Tooltips
         self.cTTTotalField = [
             f'Set the number of {self.cStLabel[1]}.',
@@ -5224,17 +5237,6 @@ class ProtProfResControlExp(ResControlExpConfBase):
             self.swLabel, 
             label = config.lStCtrlType
         )
-        self.stControlN = wx.StaticText(
-            self.swLabel, 
-            label = config.lStCtrlName
-        )
-        #------------------------------> Text
-        self.tcControl = wx.TextCtrl(
-            self.swLabel, 
-            size  = (125, 22),
-            value = 'Control',
-        )
-        self.tcControl.SetHint('Name')
         #------------------------------> wx.ComboBox
         self.cbControl = wx.ComboBox(
             self.swLabel, 
@@ -5249,7 +5251,6 @@ class ProtProfResControlExp(ResControlExpConfBase):
             'Set the Type and Name of the control experiment.'
         )
         self.stControlT.SetToolTip('Set the Type of the control experiment.')
-        self.stControlN.SetToolTip('Set the Name of the control experiment.')
         #endregion --------------------------------------------------> Tooltip
         
 
@@ -5275,13 +5276,13 @@ class ProtProfResControlExp(ResControlExpConfBase):
             5,
         )
         self.sizerSWLabelControl.Add(
-            self.stControlN, 
+            self.controlN.st, 
             0, 
             wx.ALIGN_CENTER_VERTICAL|wx.ALL, 
             5,
         )
         self.sizerSWLabelControl.Add(
-            self.tcControl, 
+            self.controlN.tc, 
             1, 
             wx.EXPAND|wx.ALL,
             5,
@@ -5330,10 +5331,10 @@ class ProtProfResControlExp(ResControlExpConfBase):
         
         #region ------------------------------------------------------> Action
         if control == config.oControlTypeProtProf['Ratio']:
-            self.tcControl.SetValue('None')
-            self.tcControl.SetEditable(False)
+            self.controlN.tc.SetValue('None')
+            self.controlN.tc.SetEditable(False)
         else:
-            self.tcControl.SetEditable(True)
+            self.controlN.tc.SetEditable(True)
         #endregion ---------------------------------------------------> Action
         
         return True
@@ -5423,7 +5424,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         self.lbDict['Control'] = [
             wx.StaticText(
                 self.swMatrix,
-                label = self.tcControl.GetValue(),
+                label = self.controlN.tc.GetValue(),
             )
         ]
         if control == config.oControlTypeProtProf['Ratio']:
@@ -5782,16 +5783,11 @@ class LimProtResControlExp(ResControlExpConfBase):
             1 : 'L',
             2 : 'B',
         }
-        #------------------------------> Labels
-        self.cLControl = 'Control Experiment'
         #------------------------------> Tooltips
         self.cTTTotalField = [
             f'Set the number of {self.cStLabel[1]}.',
             f'Set the number of {self.cStLabel[2]}.',
-        ]
-        self.cTTControl = config.ttStControl
-        #------------------------------> Hints
-        self.cHControl = 'MyControl'
+        ]  
         #------------------------------> Error messages
         self.mNoBL = (
             f"Both {self.cStLabel[1][:-1]} and {self.cStLabel[2][:-1]} must be "
@@ -5806,22 +5802,17 @@ class LimProtResControlExp(ResControlExpConfBase):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
-        self.control = dtsWidget.StaticTextCtrl(
-            self.swLabel,
-            stLabel   = self.cLControl,
-            stTooltip = self.cTTControl,
-            tcHint    = self.cHControl,
-        )
+        
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
         #------------------------------> 
         self.sizerSWLabelControl = wx.BoxSizer(wx.HORIZONTAL)    
         self.sizerSWLabelControl.Add(
-            self.control.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5,
+            self.controlN.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5,
         )
         self.sizerSWLabelControl.Add(
-            self.control.tc, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5,
+            self.controlN.tc, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5,
         )
         #------------------------------> 
         self.sizerSWLabelMain.Add(
@@ -5839,6 +5830,10 @@ class LimProtResControlExp(ResControlExpConfBase):
         #region ---------------------------------------------> Window position
         
         #endregion ------------------------------------------> Window position
+        
+        #region -----------------------------------------------> Initial State
+        self.SetInitialState()
+        #endregion --------------------------------------------> Initial State
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -5874,6 +5869,11 @@ class LimProtResControlExp(ResControlExpConfBase):
                 'errorF', msg=self.mNoBL, parent=self,
             )
             return False
+        #------------------------------> Control
+        if self.controlN.tc.GetValue().strip() == '':
+            self.controlN.tc.SetValue(self.cHControlN)
+        else:
+            pass
         #endregion ----------------------------------------------> Check Input
         
         #region ---------------------------------------------------> Variables
@@ -5912,7 +5912,7 @@ class LimProtResControlExp(ResControlExpConfBase):
         self.lbDict['Control'] = [
             wx.StaticText(
                 self.swMatrix,
-                label = self.control.tc.GetValue(),
+                label = self.controlN.tc.GetValue(),
             )
         ]
         #endregion -----------------------------> Create/Destroy wx.StaticText
