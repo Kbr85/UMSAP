@@ -1618,7 +1618,6 @@ class BaseConfModPanel2(BaseConfModPanel):
 #---
 
 
-
 class ResControlExpConfBase(wx.Panel):
     """Parent class for the configuration panel in the dialog Results - Control
         Experiments
@@ -5089,6 +5088,37 @@ class LimProt(BaseConfModPanel2):
         #region ---------------------------------------------> Window position
         
         #endregion ------------------------------------------> Window position
+        
+        #region --------------------------------------------------------> Test
+        if config.development:
+            import getpass
+            user = getpass.getuser()
+            if config.cOS == "Darwin":
+                self.uFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                self.iFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
+                self.seqRec.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-rec.txt")
+                self.seqNat.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-nat.txt")
+            else:
+                pass
+            self.id.tc.SetValue('Beta Test Dev')
+            self.transMethod.cb.SetValue('Log2')
+            self.normMethod.cb.SetValue('Median')
+            self.imputationMethod.cb.SetValue('Normal Distribution')
+            self.targetProt.tc.SetValue('Mis18alpha')
+            self.scoreVal.tc.SetValue('10')
+            self.seqLength.tc.SetValue('100')
+            self.alpha.tc.SetValue('0.05')
+            self.beta.tc.SetValue('0.05')
+            self.gamma.tc.SetValue('0.8')
+            self.theta.tc.SetValue('')
+            self.thetaMax.tc.SetValue('8')
+            self.seqCol.tc.SetValue('0')
+            self.detectedProt.tc.SetValue('34')
+            self.score.tc.SetValue('42')
+            
+        else:
+            pass
+        #endregion -----------------------------------------------------> Test
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -5096,6 +5126,8 @@ class LimProt(BaseConfModPanel2):
     
     #endregion ------------------------------------------------> Class methods
 #---
+
+
 #------------------------------> Panes for Type Results - Control Epxeriments
 class ProtProfResControlExp(ResControlExpConfBase):
     """Creates the configuration panel for the Results - Control Experiments
@@ -5709,6 +5741,82 @@ class ProtProfResControlExp(ResControlExpConfBase):
         
         return True
     #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class LimProtResControlExp(ResControlExpConfBase):
+    """Creates the configuration panel for the Results - Control Experiments
+        dialog when called from the LimProt Tab.
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent, topParent, NColF):
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Needed by ResControlExpConfBase
+        self.cN = 2
+        self.cStLabel = { # Keys runs in range(1, N+1)
+            1 : f"{config.lStLimProtLane}:",
+            2 : f"{config.lStLimProtBand}:",
+        }
+        self.cLabelText = { # Keys runs in range(1, N+1)
+            1 : 'L',
+            2 : 'B',
+        }
+        
+        
+        #------------------------------> 
+        super().__init__(parent, self.name, topParent, NColF)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
     #endregion ------------------------------------------------> Class methods
 #---
 #endregion ----------------------------------------------------------> Classes

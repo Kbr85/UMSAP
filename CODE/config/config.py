@@ -140,6 +140,7 @@ npLimProt               = "LimProtPane"
 npProtProf              = 'ProtProfPane'
 npResControlExp         = 'ResControlExpPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
+npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 #------------------------------> Menu
 nMenModule  = 'ModuleMenu'
 nMenUtility = 'UtilityMenu'
@@ -253,6 +254,8 @@ lSbValue        = 'User-defined values'
 lSbColumn       = 'Column numbers'
 lStProtProfCond = 'Conditions'
 lStProtProfRP   = 'Relevant Points'
+lStLimProtLane  = 'Lanes'
+lStLimProtBand  = 'Bands' 
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'  
 #------------------------------> wx.Statictext

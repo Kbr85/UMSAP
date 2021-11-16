@@ -233,7 +233,8 @@ class ResControlExp(wx.Panel):
     name = 'ResControlExpPane'
 
     widget = {
-        'ProtProfPane' : pane.ProtProfResControlExp,
+        config.npProtProf : pane.ProtProfResControlExp,
+        config.npLimProt  : pane.LimProtResControlExp,
     }
     #endregion --------------------------------------------------> Class setup
 
