@@ -1647,6 +1647,10 @@ class ResControlExpConfBase(wx.Panel):
         cHTotalField : str
             Hint for the total number of required labels. It must be set in the
             child class. Default is '#'.
+        cHControlN : str
+            Hint for the wx.TextCtrl with the name of the control experiment.
+        cLControlN: str
+            Label for the wx.StaticText with the name of the control experiment.
         cLSetup : str
             Label for the wx.Button in top region. Default is 'Setup Fields'.
         cSSWLabel : wx.Size
