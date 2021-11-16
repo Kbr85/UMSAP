@@ -1673,6 +1673,17 @@ class ResControlExpConfBase(wx.Panel):
             given column numbers. 
         tcLabel : list of wx.TextCtrl
             To give the number of user defined labels. e.g. 2 Conditions.
+        #------------------------------> Attributes that must be set on child
+        cN : int
+            Number of labels excluding control labels.
+        cHTotalField : str
+            Hint for the total number of required labels.
+        cTTTotalField : str
+            Tooltip for the labels in the top region
+        cStLabel : dict
+            Keys are 1 to cN and values the text of the labels. e.g. Condition.
+        cLabelText : dict
+            Keys are 1 to cN and values the prefix for the label values. e.g. C  
         
         Notes
         -----
@@ -1688,17 +1699,6 @@ class ResControlExpConfBase(wx.Panel):
             The name of the experiments is shown with lbDict that is populated 
             from tcDict
             The column numbers are stored in tcDictF.
-        #------------------------------> Attributes that must be set on child
-        cN : int
-            Number of labels excluding control labels.
-        cHTotalField : str
-            Hint for the total number of required labels.
-        cTTTotalField : str
-            Tooltip for the labels in the top region
-        cStLabel : dict
-            Keys are 1 to cN and values the text of the labels. e.g. Condition.
-        cLabelText : dict
-            Keys are 1 to cN and values the prefix for the label values. e.g. C  
         
         See OnOk method for information about how the column numbers are
         exported to the parent panel.
@@ -5747,12 +5747,28 @@ class LimProtResControlExp(ResControlExpConfBase):
 
         Parameters
         ----------
-        
+        parent : wx.Widget
+            Parent of the panel
+        topParent : wx.Widget
+            Top parent window
+        NColF : int
+            Total number of columns present in the Data File
 
         Attributes
         ----------
-        
-
+        cLabelText : dict
+            Keys are 1 to cN and values the prefix for the label values. e.g. C  
+        cN : int
+            Number of labels excluding control labels.
+        cStLabel : dict
+            Keys are 1 to cN and values the text of the labels. e.g. Condition.
+        cTTTotalField : str
+            Tooltip for the labels in the top region
+        mNoBL : str
+            Error message when the number of bands and/or lanes is not given.
+        name : str
+            Name of the panel
+    
         Raises
         ------
         
