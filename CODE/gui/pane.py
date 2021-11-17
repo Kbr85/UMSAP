@@ -5016,7 +5016,18 @@ class LimProt(BaseConfModPanel2):
         #endregion ----------------------------------------> Individual Fields
         
         #region ------------------------------------------------> Mixed Fields
-        
+        #region ---------------------------------------> Unique Column Numbers
+        msgStep = msgPrefix + 'Unique Column Numbers'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        l = [self.seqCol.tc, self.detectedProt.tc, self.score.tc, 
+            self.tcResults]
+        #------------------------------> 
+        if self.UniqueColumnNumber(l):
+            pass
+        else:
+            return False
+        #endregion ------------------------------------> Unique Column Numbers
         #endregion ---------------------------------------------> Mixed Fields
         
         return False
