@@ -271,7 +271,6 @@ lStTargetProt   = "Target Protein"
 lStDetectedProt = 'Detected Proteins'
 lStSeqCol       = 'Sequences'
 lStScoreCol     = 'Score'
-lStColExtract   = 'Columns to Extract'
 lStResultCtrl   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
@@ -324,7 +323,6 @@ ttStMedianCorr = "Select whether to apply a median correction."
 ttStDetectedProtL = (
     f"Set the column number containing the detected proteins.\ne.g. 7")
 ttStScore = f"Set the column number containing the Score values.\ne.g. 4"
-ttStColExtract = "Set the column numbers to extract from {}.\ne.g. 1-4 7 8"
 ttStGenName = "Set the column number containing the gene names.\ne.g. 3"
 ttStExcludeProt = (
     "Set the column number containing the data used to exclude proteins."
@@ -445,8 +443,7 @@ mNumROne = "Only one number can be accepted in {}."
 mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
 mListNumN0L = (
     "Only a list of unique non-negative integers can be accepted in {}.")
-mColNumbers = f"Values in section {lSbColumn} must be unique"+"{}"
-mColNumbersNoColExtract = f", excluding {lStColExtract}."
+mColNumbers = f"Values in section {lSbColumn} must be unique."
 mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 #endregion ----------------------------------------------------------> Other 
 

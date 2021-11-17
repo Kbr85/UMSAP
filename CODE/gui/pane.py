@@ -846,7 +846,7 @@ class BaseConfPanel(
         if a:
             pass
         else:
-            msg = config.mColNumbers.format(config.mColNumbersNoColExtract)
+            msg = config.mColNumbers.format(config.mColNumbers)
             self.msgError = dtscore.StrSetMessage(msg, b[2])
             return False
         #endregion ----------------------------------------------------> Check
@@ -1106,8 +1106,6 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         #------------------------------> Configuration
         cLAlpha : str
             Label for the alpha level. Default is config.lStAlpha.
-        cLColExtract : str
-            Label for Columns to Exctract. Default is config.lStColExtract.
         cLDetectedProt : str
             Label for Detected Proteins. Default is config.lStDetectedProt.
         cLScoreCol : str
@@ -1172,7 +1170,6 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             self, 'cLDetectedProt', config.lStDetectedProt,
         )
         self.cLScoreCol = getattr(self, 'cLScoreCol', config.lStScoreCol)
-        self.cLColExtract = getattr(self, 'cLColExtract', config.lStColExtract)
         #------------------------------> Tooltips
         self.cTTAlpha = getattr(self, 'cTTAlpha', config.ttStAlpha)
         self.cTTScoreVal = getattr(self, 'cTTScoreVal', config.ttStScoreVal)
@@ -1184,11 +1181,6 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
 
         widget.ResControl.__init__(self, self.sbColumn)
-        
-        #------------------------------> Here because it needs iFile
-        self.cTTColExtract = getattr(
-            self, 'cTTColExtract', config.ttStColExtract.format(self.cLiFile),
-        )
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -1241,20 +1233,6 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
                 numType = 'int',
                 nN      = 1,
                 vMin    = 0,
-            )
-        )
-
-        self.colExtract = dtsWidget.StaticTextCtrl(
-            self.sbColumn,
-            stLabel   = self.cLColExtract,
-            stTooltip = self.cTTColExtract,
-            tcSize    = self.cSTc,
-            validator = dtsValidator.NumberList(
-                numType = 'int',
-                vMin    = 0,
-                sep     = ' ',
-                unique  = False,
-                opt     = True,
             )
         )
         #endregion --------------------------------------------------> Widgets
@@ -1466,21 +1444,8 @@ class BaseConfModPanel2(BaseConfModPanel):
             border = 5,
         )
         self.sizersbColumnWid.Add(
-            self.colExtract.st,
-            pos    = (1,0),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbColumnWid.Add(
-            self.colExtract.tc,
-            pos    = (1,1),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-            border = 5,
-            span   = (0, 5),
-        )
-        self.sizersbColumnWid.Add(
             self.sizerRes,
-            pos    = (2,0),
+            pos    = (1,0),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
             border = 0,
             span   = (0,6),
@@ -3881,21 +3846,8 @@ class ProtProf(BaseConfModPanel):
             span   = (0, 5),
         )
         self.sizersbColumnWid.Add(
-            self.colExtract.st,
-            pos    = (2,0),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbColumnWid.Add(
-            self.colExtract.tc,
-            pos    = (2,1),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-            border = 5,
-            span   = (0, 5),
-        )
-        self.sizersbColumnWid.Add(
             self.sizerRes,
-            pos    = (3,0),
+            pos    = (2,0),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
             border = 0,
             span   = (0,6),
@@ -3937,8 +3889,7 @@ class ProtProf(BaseConfModPanel):
             self.correctP.cb.SetValue('Benjamini - Hochberg')
             self.detectedProt.tc.SetValue('0')
             self.geneName.tc.SetValue('6')   
-            self.score.tc.SetValue('39')     
-            self.colExtract.tc.SetValue('0 1 2 3 4-10')
+            self.score.tc.SetValue('39')
             self.excludeProt.tc.SetValue('171 172 173')
             #------------------------------> 
             #--> One Control per Column, 2 Cond and 2 TP
@@ -4018,7 +3969,6 @@ class ProtProf(BaseConfModPanel):
             self.geneName.tc.SetValue(dataI['I'][self.cLGeneName])
             self.score.tc.SetValue(dataI['I'][self.cLScoreCol])
             self.excludeProt.tc.SetValue(dataI['I'][self.cLExcludeProt])
-            self.colExtract.tc.SetValue(dataI['I'][self.cLColExtract])
             self.tcResults.SetValue(dataI['I'][self.cLResControl])
             self.lbDict[1] = dataI['I'][config.lStProtProfCond]
             self.lbDict[2] = dataI['I'][config.lStProtProfRP]
@@ -4130,8 +4080,6 @@ class ProtProf(BaseConfModPanel):
                 self.score.tc.GetValue()),
             self.EqualLenLabel(self.cLExcludeProt) : (
                 self.excludeProt.tc.GetValue()),
-            self.EqualLenLabel(self.cLColExtract) : (
-                self.colExtract.tc.GetValue()),
             self.EqualLenLabel(config.lStProtProfCond) : (
                 self.lbDict[1]),
             self.EqualLenLabel(config.lStProtProfRP) : (
@@ -4153,9 +4101,6 @@ class ProtProf(BaseConfModPanel):
         scoreCol     = int(self.score.tc.GetValue())
         excludeProt  = dtsMethod.Str2ListNumber(
             self.excludeProt.tc.GetValue(), sep=' ',
-        )
-        colExtract = dtsMethod.Str2ListNumber(
-            self.colExtract.tc.GetValue(), sep=' ',
         )
         resctrl       = dmethod.ResControl2ListNumber(self.tcResults.GetValue())
         resctrlFlat   = dmethod.ResControl2Flat(resctrl)
@@ -4184,7 +4129,6 @@ class ProtProf(BaseConfModPanel):
                 'GeneName'  : geneName,
                 'ScoreCol'  : scoreCol,
                 'ExcludeP'  : excludeProt,
-                'ColExtract': colExtract,
                 'ResCtrl'   : resctrl,
                 'Column'    : (
                     [geneName, detectedProt, scoreCol] 
