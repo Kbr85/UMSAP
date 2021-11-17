@@ -25,6 +25,7 @@ import numpy as np
 from statsmodels.stats.multitest import multipletests
 
 import wx
+from wx.core import Region
 import wx.lib.scrolledpanel as scrolled
 
 import dat4s_core.data.file as dtsFF
@@ -1613,7 +1614,83 @@ class BaseConfModPanel2(BaseConfModPanel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    
+    def CheckInput(self):
+        """Check user input"""
+        #region -------------------------------------------------------> Super
+        if super().CheckInput():
+            pass
+        else:
+            return False
+        #endregion ----------------------------------------------------> Super
+        
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdCheck
+        #endregion ------------------------------------------------------> Msg
+        
+        #region -------------------------------------------> Individual Fields
+        #region -----------------------------------------------------> Seq Rec
+        msgStep = msgPrefix + self.cLSeqRecFile
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.seqRec.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = dtscore.StrSetMessage(
+                config.mFileBad.format(b[1], self.cLSeqRecFile), b[2],
+            )
+            return False
+        #endregion --------------------------------------------------> Seq Rec
+        
+        #region -----------------------------------------------------> Seq Rec
+        msgStep = msgPrefix + self.cLSeqNatFile
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.seqNat.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = dtscore.StrSetMessage(
+                config.mFileBad.format(b[1], self.cLSeqNatFile), b[2],
+            )
+            return False
+        #endregion --------------------------------------------------> Seq Rec
+        
+        #region ----------------------------------------------> Target Protein
+        msgStep = msgPrefix + self.cLTargetProt
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.targetProt.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = dtscore.StrSetMessage(
+                config.mNotEmpty.format(self.cLTargetProt), b[2]    
+            )
+            return False
+        #endregion -------------------------------------------> Target Protein
+        
+        #region --------------------------------------------------> Seq Length
+        msgStep = msgPrefix + self.cLSeqLength
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        a, b = self.seqLength.tc.GetValidator().Validate()
+        if a:
+            pass
+        else:
+            self.msgError = dtscore.StrSetMessage(
+                config.mNumZPlusOne.format(self.cLSeqLength), b[2]    
+            )
+            return False
+        #endregion -----------------------------------------------> Seq Length
+        
+        #region -----------------------------------------------------> Seq Col
+        
+        #endregion --------------------------------------------------> Seq Col
+        #endregion ----------------------------------------> Individual Fields
+        
+        #region ------------------------------------------------> Mixed Fields
+        
+        #endregion ---------------------------------------------> Mixed Fields
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -5134,7 +5211,12 @@ class LimProt(BaseConfModPanel2):
             self.seqCol.tc.SetValue('0')
             self.detectedProt.tc.SetValue('34')
             self.score.tc.SetValue('42')
-            
+            self.tcResults.SetValue('69-71; 81-83, 78-80, 75-77, 72-74, NA; NA, NA, NA, 66-68, NA; 63-65, 105-107, 102-104, 99-101, NA; 93-95, 90-92, 87-89, 84-86, 60-62')
+            self.lbDict = {
+                1        : ['Lane1', 'Lane2', 'Lane3', 'Lane4', 'Lane5'],
+                2        : ['Band1', 'Band2', 'Band3', 'Band4'],
+                'Control': ['Ctrl'],
+            }
         else:
             pass
         #endregion -----------------------------------------------------> Test
@@ -5142,7 +5224,65 @@ class LimProt(BaseConfModPanel2):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def CheckInput(self):
+        """Check user input"""
+        #region -------------------------------------------------------> Super
+        if super().CheckInput():
+            pass
+        else:
+            return False
+        #endregion ----------------------------------------------------> Super
+        
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdCheck
+        #endregion ------------------------------------------------------> Msg
+        
+        #region -------------------------------------------> Individual Fields
+
+        #endregion ----------------------------------------> Individual Fields
+        
+        #region ------------------------------------------------> Mixed Fields
+        
+        #endregion ---------------------------------------------> Mixed Fields
+        
+        return True
+    #---
     
+    def RunEnd(self):
+        """Restart GUI and needed variables"""
+        #region ---------------------------------------> Dlg progress dialogue
+        if self.msgError is None:
+            #--> 
+            self.dlg.SuccessMessage(
+                config.lPdDone,
+                eTime=f"{config.lPdEllapsed}  {self.deltaT}",
+            )
+        else:
+            self.dlg.ErrorMessage(
+                config.lPdError, 
+                error      = self.msgError,
+                tException = self.tException
+            )
+        #endregion ------------------------------------> Dlg progress dialogue
+
+        #region -------------------------------------------------------> Reset
+        self.msgError   = None # Error msg to show in self.RunEnd
+        self.tException = None # Exception
+        self.d          = {} # Dict with the user input as given
+        self.do         = {} # Dict with the processed user input
+        self.date       = None # date for corr file
+        self.dateID     = None
+        self.oFolder    = None # folder for output
+        self.iFileObj   = None
+        self.deltaT     = None
+        
+        if self.dFile is not None:
+            self.iFile.tc.SetValue(str(self.dFile))
+        else:
+            pass
+        self.dFile = None # Data File copied to Data-Initial
+        #endregion ----------------------------------------------------> Reset
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
