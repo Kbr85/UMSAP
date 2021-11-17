@@ -25,7 +25,6 @@ import numpy as np
 from statsmodels.stats.multitest import multipletests
 
 import wx
-from wx.core import Region
 import wx.lib.scrolledpanel as scrolled
 
 import dat4s_core.data.file as dtsFF
@@ -239,6 +238,9 @@ class BaseConfPanel(
         cGaugePD : int 
             Number of steps for the wx.Gauge in the Progress Dialog shown when 
             running analysis
+        checkUserInput : dict
+            Dict to check individual fields in the user input in the correct 
+            order. See CheckInput method for more details.
     """
     #region -----------------------------------------------------> Class setup
     
@@ -389,7 +391,7 @@ class BaseConfPanel(
             stTooltip = self.cTTId,
             tcHint    = self.cHId,
         )
-        
+
         self.ceroB = wx.CheckBox(self.sbData, label=self.cLCeroTreat)
         self.ceroB.SetValue(True)
         
@@ -879,66 +881,41 @@ class BaseConfPanel(
     #---
     
     def CheckInput(self) -> bool:
-        """Check user input"""
+        """Check individual fields in the user input.
+        
+            Notes
+            -----
+            The child class must define a checkUserInput dict with the correct
+            order for the checking process.
+            
+            checkUserInput = {
+                'Field label' : [Widget, BaseErrorMessage]
+            }
+            
+            BaseErrorMessage must a string with two placeholder for the 
+            error value and Field label in that order. For example:
+            'File: {bad_path_placeholder}\n cannot be used as 
+                                                    {Field_label_placeholder}'
+        """
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdCheck
         #endregion ------------------------------------------------------> Msg
         
-        #region --------------------------------------------------> UMSAP File
-        msgStep = msgPrefix + self.cLuFile
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.uFile.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mFileBad.format(b[1], self.cLuFile), b[2],
-            )
-            return False
-        #endregion -----------------------------------------------> UMSAP File
-        
-        #region --------------------------------------------------> Input File
-        msgStep = msgPrefix + self.cLiFile
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.iFile.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mFileBad.format(b[1], self.cLiFile), b[2],
-            )
-            return False
-        #endregion -----------------------------------------------> Input File
-        
-        #region ----------------------------------------------> Transformation
-        msgStep = msgPrefix + self.cLTransMethod
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.transMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLTransMethod)
-            return False
-        #endregion -------------------------------------------> Transformation
-        
-        #region -----------------------------------------------> Normalization
-        msgStep = msgPrefix + self.cLNormMethod
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.normMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLNormMethod)
-            return False
-        #endregion --------------------------------------------> Normalization
-        
-        #region --------------------------------------------------> Imputation
-        msgStep = msgPrefix + self.cLImputation
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.imputationMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLImputation)
-            return False
-        #endregion -----------------------------------------------> Imputation
+        #region -------------------------------------------------------> Check
+        for k,v in self.checkUserInput.items():
+            #------------------------------> 
+            msgStep = msgPrefix + k
+            wx.CallAfter(self.dlg.UpdateStG, msgStep)
+            #------------------------------> 
+            a, b = v[0].GetValidator().Validate()
+            if a:
+                pass
+            else:
+                self.msgError = dtscore.StrSetMessage(
+                    v[1].format(b[1], k), b[2],
+                )
+                return False
+        #endregion ----------------------------------------------------> Check
         
         return True
     #---
@@ -1301,98 +1278,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def CheckInput(self) -> bool:
-        """Check user input"""
-        #region -------------------------------------------------------> Super
-        if super().CheckInput():
-            pass
-        else:
-            return False
-        #endregion ----------------------------------------------------> Super
-        
-        #region ---------------------------------------------------------> Msg
-        msgPrefix = config.lPdCheck
-        #endregion ------------------------------------------------------> Msg
-        
-        #region -------------------------------------------------> Score Value
-        msgStep = msgPrefix + self.cLScoreVal
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.scoreVal.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mNumROne.format(self.cLScoreVal), b[2],
-            )
-            return False
-        #endregion ----------------------------------------------> Score Value
-        
-        #region -------------------------------------------------------> Alpha
-        msgStep = msgPrefix + self.cLAlpha
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.alpha.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = config.mAlphaRange.format(self.cLAlpha)
-            return False
-        #endregion ----------------------------------------------------> Alpha
-        
-        #region -------------------------------------------> Detected Proteins
-        msgStep = msgPrefix + self.cLDetectedProt
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.detectedProt.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLDetectedProt, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion ----------------------------------------> Detected Proteins
-        
-        #region ------------------------------------------------> Score Column
-        msgStep = msgPrefix + self.cLScoreCol
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.score.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLScoreCol, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion ---------------------------------------------> Score Column
-        
-        #region ------------------------------------------> Columns to Extract
-        msgStep = msgPrefix + self.cLColExtract
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.colExtract.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLColExtract, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion ---------------------------------------> Columns to Extract
-        
-        #region -----------------------------------------------> Res - Control
-        msgStep = msgPrefix + self.cLResControl
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.tcResults.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLResControl)
-            return False
-        #endregion --------------------------------------------> Res - Control
-        
-        return True
-    #---
+    
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -1483,7 +1369,8 @@ class BaseConfModPanel2(BaseConfModPanel):
             validator = dtsValidator.NumberList(
                 numType = 'int',
                 nN      = 1,
-                vMin    = 0,
+                vMin    = 1,
+                opt     = True,
             )
         )
         #------------------------------> Columns
@@ -1614,83 +1501,7 @@ class BaseConfModPanel2(BaseConfModPanel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def CheckInput(self):
-        """Check user input"""
-        #region -------------------------------------------------------> Super
-        if super().CheckInput():
-            pass
-        else:
-            return False
-        #endregion ----------------------------------------------------> Super
-        
-        #region ---------------------------------------------------------> Msg
-        msgPrefix = config.lPdCheck
-        #endregion ------------------------------------------------------> Msg
-        
-        #region -------------------------------------------> Individual Fields
-        #region -----------------------------------------------------> Seq Rec
-        msgStep = msgPrefix + self.cLSeqRecFile
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.seqRec.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mFileBad.format(b[1], self.cLSeqRecFile), b[2],
-            )
-            return False
-        #endregion --------------------------------------------------> Seq Rec
-        
-        #region -----------------------------------------------------> Seq Rec
-        msgStep = msgPrefix + self.cLSeqNatFile
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.seqNat.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mFileBad.format(b[1], self.cLSeqNatFile), b[2],
-            )
-            return False
-        #endregion --------------------------------------------------> Seq Rec
-        
-        #region ----------------------------------------------> Target Protein
-        msgStep = msgPrefix + self.cLTargetProt
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.targetProt.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mNotEmpty.format(self.cLTargetProt), b[2]    
-            )
-            return False
-        #endregion -------------------------------------------> Target Protein
-        
-        #region --------------------------------------------------> Seq Length
-        msgStep = msgPrefix + self.cLSeqLength
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.seqLength.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mNumZPlusOne.format(self.cLSeqLength), b[2]    
-            )
-            return False
-        #endregion -----------------------------------------------> Seq Length
-        
-        #region -----------------------------------------------------> Seq Col
-        
-        #endregion --------------------------------------------------> Seq Col
-        #endregion ----------------------------------------> Individual Fields
-        
-        #region ------------------------------------------------> Mixed Fields
-        
-        #endregion ---------------------------------------------> Mixed Fields
-        
-        return True
-    #---
+    
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -2086,10 +1897,7 @@ class ResControlExpConfBase(wx.Panel):
                 if a:
                     pass
                 else:
-                    msg = f"{config.mListNumN0L}\n{config.mFileColNum}".format(
-                            'the text fields', 
-                            self.topParent.ciFileL,
-                        )
+                    msg = config.mResCtrlWin.format(b[1])
                     e = dtsException.ExecutionError(b[2])
                     dtscore.Notification(
                         'errorF', msg=msg, parent=self, tException=e,
@@ -2331,6 +2139,9 @@ class CorrA(BaseConfPanel):
             Default is config.ttBtnHelp.format(config.urlCorrA).
         cURL : str
             URL for the Help button.
+        checkUserInput : dict
+            To check the user input in the right order. 
+            See pane.BaseConfPanel.CheckInput for a description of the dict.
         #------------------------------> For Analysis
         cLLenLongest : int
             Length of the longest label. 
@@ -2478,7 +2289,18 @@ class CorrA(BaseConfPanel):
             dir = wx.RIGHT,
         )
         #endregion --------------------------------------------------> Widgets
-
+        
+        #region ----------------------------------------------> checkUserInput
+        self.checkUserInput = {
+            self.cLuFile      : [self.uFile.tc, config.mFileBad],
+            self.cLiFile      : [self.iFile.tc, config.mFileBad],
+            self.cLTransMethod: [self.transMethod.cb, config.mOptionBad],
+            self.cLNormMethod : [self.normMethod.cb, config.mOptionBad],
+            self.cLImputation : [self.imputationMethod.cb, config.mOptionBad],
+            self.cLCorr       : [self.corrMethod.cb, config.mOptionBad],
+        }        
+        #endregion -------------------------------------------> checkUserInput
+    
         #region -----------------------------------------------------> Tooltip
         self.stListI.SetToolTip(config.ttLCtrlCopyNoMod)
         self.stListO.SetToolTip(config.ttLCtrlPasteMod)
@@ -2679,17 +2501,7 @@ class CorrA(BaseConfPanel):
         msgPrefix = config.lPdCheck
         #endregion ------------------------------------------------------> Msg
         
-        #region -------------------------------------------> Individual Fields        
-        #region -------------------------------------------> Correlation
-        msgStep = msgPrefix + self.cLCorr
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.corrMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLCorr)
-            return False
-        #endregion ----------------------------------------> Correlation
-        
+        #region -------------------------------------------> Individual Fields                
         #region -------------------------------------------> ListCtrl
         msgStep = msgPrefix + self.cLoListCtrl
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
@@ -2978,6 +2790,9 @@ class DataPrep(BaseConfPanel):
             Tooltip for the Score value field.
         cURL : str
             URL for the online help.
+        checkUserInput : dict
+            To check the user input in the right order. 
+            See pane.BaseConfPanel.CheckInput for a description of the dict.
         #------------------------------> Configuration to Run the Analysis
         cGaugePD : int
             Number of steps for the Progress Dialog.
@@ -3146,10 +2961,23 @@ class DataPrep(BaseConfPanel):
                 numType = 'int',
                 sep     = ' ',
                 vMin    = 0,
-                opt     = True,
             )
         )
         #endregion --------------------------------------------------> Widgets
+        
+        #region ----------------------------------------------> checkUserInput
+        self.checkUserInput = {
+            self.cLuFile      : [self.uFile.tc, config.mFileBad],
+            self.cLiFile      : [self.iFile.tc, config.mFileBad],
+            self.cLTransMethod: [self.transMethod.cb, config.mOptionBad],
+            self.cLNormMethod : [self.normMethod.cb, config.mOptionBad],
+            self.cLImputation : [self.imputationMethod.cb, config.mOptionBad],
+            self.cLScoreVal   : [self.scoreVal.tc, config.mOneRealNum],
+            self.cLScoreCol   : [self.score.tc, config.mOneZPlusNum],
+            self.cLExcludeRow : [self.excludeRow.tc, config.mNZPlusNum],
+            self.cLColAnalysis: [self.colAnalysis.tc, config.mNZPlusNum],
+        }        
+        #endregion -------------------------------------------> checkUserInput
         
         #region -----------------------------------------------------> Tooltip
         
@@ -3332,66 +3160,15 @@ class DataPrep(BaseConfPanel):
         #endregion ------------------------------------------------------> Msg
         
         #region -------------------------------------------> Individual Fields
-        #region -------------------------------------------------> Score Value
-        msgStep = msgPrefix + self.cLScoreVal
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.scoreVal.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mNumROne.format(self.cLScoreVal), b[2],
-            )
-            return False
-        #endregion ----------------------------------------------> Score Value
         
-        #region ------------------------------------------------> Score Column
-        msgStep = msgPrefix + self.cLScoreCol
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.score.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLScoreCol, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion ---------------------------------------------> Score Column
-        
-        #region -------------------------------------------------> Exclude Row
-        msgStep = msgPrefix + self.cLExcludeRow
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.excludeRow.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLExcludeRow, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion ----------------------------------------------> Exclude Row
-        
-        #region --------------------------------------------> Columns Analysis
-        msgStep = msgPrefix + self.cLColAnalysis
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.colAnalysis.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mListNumN0L}\n{config.mFileColNum}".format(
-                self.cLExcludeRow, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion -----------------------------------------> Columns Analysis
         #endregion ----------------------------------------> Individual Fields
         
         #region ------------------------------------------------> Mixed Fields
         #region ---------------------------------------> Unique Column Numbers
+        msgStep = msgPrefix + 'Unique Column Numbers'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
-        l = [self.score.tc, self.excludeRow.tc]
+        l = [self.score.tc, self.excludeRow.tc, self.colAnalysis.tc]
         #------------------------------>
         if self.UniqueColumnNumber(l):
             pass
@@ -3731,6 +3508,9 @@ class ProtProf(BaseConfModPanel):
         cTTSample : str
             Tooltip for the sample field.
         #------------------------------> To Run Analysis
+        checkUserInput : dict
+            To check the user input in the right order. 
+            See pane.BaseConfPanel.CheckInput for a description of the dict.
         cColCtrlData : dict
             Keys are control type and values methods to get the Ctrl and 
             Data columns for the given condition and relevant point.
@@ -3947,6 +3727,26 @@ class ProtProf(BaseConfModPanel):
             )
         )
         #endregion --------------------------------------------------> Widgets
+
+        #region ----------------------------------------------> checkUserInput
+        self.checkUserInput = {
+            self.cLuFile       : [self.uFile.tc, config.mFileBad],
+            self.cLiFile       : [self.iFile.tc, config.mFileBad],
+            self.cLTransMethod : [self.transMethod.cb, config.mOptionBad],
+            self.cLNormMethod  : [self.normMethod.cb, config.mOptionBad],
+            self.cLImputation  : [self.imputationMethod.cb, config.mOptionBad],
+            self.cLScoreVal    : [self.scoreVal.tc, config.mOneRealNum],
+            self.cLSample      : [self.sample.cb, config.mOptionBad],
+            self.cLRawI        : [self.rawI.cb, config.mOptionBad],
+            self.cLAlpha       : [self.alpha.tc, config.mOne01Num],
+            self.cLCorrectP    : [self.correctP.cb, config.mOptionBad],
+            self.cLDetectedProt: [self.detectedProt.tc, config.mOneZPlusNum],
+            self.cLGeneName    : [self.geneName.tc, config.mOneZPlusNum],
+            self.cLScoreCol    : [self.score.tc, config.mOneZPlusNum],
+            self.cLExcludeProt : [self.excludeProt.tc, config.mNZPlusNum],
+            self.cLResControl  : [self.tcResults, config.mResCtrl]
+        }        
+        #endregion -------------------------------------------> checkUserInput
 
         #region -----------------------------------------------------> Tooltip
         
@@ -4246,67 +4046,14 @@ class ProtProf(BaseConfModPanel):
         #endregion ------------------------------------------------------> Msg
         
         #region -------------------------------------------> Individual Fields
-        #region ------------------------------------------------------> Sample
-        msgStep = msgPrefix + self.cLSample
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.sample.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLSample)
-            return False
-        #endregion ---------------------------------------------------> Sample
         
-        #region ---------------------------------------------------> Intensity
-        msgStep = msgPrefix + self.cLRawI
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.rawI.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLRawI)
-            return False
-        #endregion ------------------------------------------------> Intensity
-        
-        #region ------------------------------------------------> P Correction
-        msgStep = msgPrefix + self.cLCorrectP
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.correctP.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLCorrectP)
-            return False
-        #endregion ---------------------------------------------> P Correction
-        
-        #region --------------------------------------------------> Gene Names
-        msgStep = msgPrefix + self.cLGeneName
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.geneName.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLGeneName, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion -----------------------------------------------> Gene Names
-        
-        #region --------------------------------------------> Exclude Proteins
-        msgStep = msgPrefix + self.cLExcludeProt
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.excludeProt.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLExcludeProt, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion -----------------------------------------> Exclude Proteins
         #endregion ----------------------------------------> Individual Fields
         
         #region ------------------------------------------------> Mixed Fields
         #region --------------------------------> Raw or Ration of Intensities
+        msgStep = msgPrefix + 'Intensity Options'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
         a = self.rawI.cb.GetValue()
         b = self.lbDict['ControlType']
         if a == b == config.oIntensities['RatioI']:
@@ -4323,6 +4070,8 @@ class ProtProf(BaseConfModPanel):
         #endregion -----------------------------> Raw or Ration of Intensities
         
         #region ---------------------------------------> Unique Column Numbers
+        msgStep = msgPrefix + 'Unique Column Numbers'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
         l = [self.detectedProt.tc, self.geneName.tc, self.score.tc, 
             self.excludeProt.tc, self.tcResults]
@@ -4334,7 +4083,7 @@ class ProtProf(BaseConfModPanel):
         #endregion ------------------------------------> Unique Column Numbers
         #endregion ---------------------------------------------> Mixed Fields
         
-        return True
+        return False
     #---
     
     def PrepareRun(self):
@@ -5040,6 +4789,7 @@ class LimProt(BaseConfModPanel2):
                 numType = 'float',
                 nN      = 1,
                 vMin    = 0,
+                opt     = True,
             )
         )
         self.thetaMax = dtsWidget.StaticTextCtrl(
@@ -5054,6 +4804,30 @@ class LimProt(BaseConfModPanel2):
         )
         
         #endregion --------------------------------------------------> Widgets
+        
+        #region ----------------------------------------------> checkUserInput
+        self.checkUserInput = {
+            self.cLuFile       : [self.uFile.tc, config.mFileBad],
+            self.cLiFile       : [self.iFile.tc, config.mFileBad],
+            self.cLSeqRecFile  : [self.seqRec.tc, config.mFileBad],
+            self.cLSeqNatFile  : [self.seqNat.tc, config.mFileBad],
+            self.cLTransMethod : [self.transMethod.cb, config.mOptionBad],
+            self.cLNormMethod  : [self.normMethod.cb, config.mOptionBad],
+            self.cLImputation  : [self.imputationMethod.cb, config.mOptionBad],
+            self.cLTargetProt  : [self.targetProt.tc, config.mValueBad],
+            self.cLScoreVal    : [self.scoreVal.tc, config.mOneRealNum],
+            self.cLSeqLength   : [self.seqLength.tc, config.mOneZPlusNum],
+            self.cLAlpha       : [self.alpha.tc, config.mOne01Num],
+            self.cLBeta        : [self.beta.tc, config.mOne01Num],
+            self.cLGamma       : [self.gamma.tc, config.mOne01Num],
+            self.cLTheta       : [self.theta.tc, config.mOneZPlusNum],
+            self.cLThetaMax    : [self.thetaMax.tc, config.mOneZPlusNum],
+            self.cLSeqCol      : [self.seqCol.tc, config.mOneZPlusNum],
+            self.cLDetectedProt: [self.detectedProt.tc, config.mOneZPlusNum],
+            self.cLScoreCol    : [self.score.tc, config.mOneZPlusNum],
+            self.cLResControl  : [self.tcResults, config.mResCtrl]
+        }        
+        #endregion -------------------------------------------> checkUserInput
 
         #region ------------------------------------------------------> Sizers
         #------------------------------> Sizer Values
@@ -5245,7 +5019,7 @@ class LimProt(BaseConfModPanel2):
         
         #endregion ---------------------------------------------> Mixed Fields
         
-        return True
+        return False
     #---
     
     def RunEnd(self):

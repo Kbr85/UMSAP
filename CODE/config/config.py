@@ -241,10 +241,11 @@ lnPaneConf = 'Configuration Options'
 lnListPane = 'Data File Content'
 lnPDCorrA  = 'Calculating Correlation Coefficients'
 #------------------------------> wx.Button
-lBtnRun      = 'Start Analysis'
-lBtnDataFile = 'Data File'
-lBtnOutFile  = 'Output File'
-lBtnUFile    = 'UMSAP File'
+lBtnRun         = 'Start Analysis'
+lBtnDataFile    = 'Data File'
+lBtnOutFile     = 'Output File'
+lBtnUFile       = 'UMSAP File'
+lBtnTypeResCtrl = 'Type Values'
 #------------------------------> wx.ListCtrl
 lLCtrlColNameI = ['#', 'Name']
 #------------------------------> wx.StaticBox
@@ -418,9 +419,9 @@ ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
 
 
 #region ------------------------------------------------------------> Messages
+#region -------------------------------------------------------------> Other 
 #------------------------------> Files 
 mFileSelector = f"It was not possible to show the file selecting dialog."
-mFileBad = "File: '{}'\ncannot be used as {}."
 mFileRead = 'An error occured when reading file:\n{}'
 mFileColNum = (
     "In addition, the values cannot be bigger than the total number of columns "
@@ -434,6 +435,12 @@ mPDDataTran       = 'Data Transformation failed.'
 mPDDataNorm       = 'Data Normalization failed.'
 mPDDataImputation = 'Data Imputation failed.'
 #------------------------------> User values
+mOneRNumText = "Only one real number can be accepted here."
+mOneZPlusNumText = "Only a non-negative integer can be accepted here."
+mOneZNumText = "Only one positive integer can be accepted here."
+mOne01NumText = "Only one number between 0 and 1 can be accepted here"
+mNZPlusNumText = (
+    "Only a list of unique non-negative integers can be accepted here.")
 mNumROne = "Only one number can be accepted in {}."
 mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
 mListNumN0L = (
@@ -441,6 +448,21 @@ mListNumN0L = (
 mColNumbers = f"Values in section {lSbColumn} must be unique"+"{}"
 mColNumbersNoColExtract = f", excluding {lStColExtract}."
 mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
+#endregion ----------------------------------------------------------> Other 
+
+#region ----------------------------------------------------> For CheckInput
+mFileBad = "File: '{}'\ncannot be used as {}."
+mOptionBad = "Option '{}' cannot be accepted in {}."
+mValueBad = "Value '{}' cannot be accepted in {}.\n"
+mOneRealNum = f"{mValueBad}{mOneRNumText}"
+mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
+mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
+mOne01Num = f"{mValueBad}{mOne01NumText}"
+mResCtrl = (
+    f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
+    f"correct input.")
+mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
+#endregion -------------------------------------------------> For CheckInput
 #endregion ---------------------------------------------------------> Messages
 
 
