@@ -942,7 +942,7 @@ class BaseConfPanel(
         return True
     #---
     
-    def RA_0_Float(
+    def DatPrep_0_Float(
         self
         ) -> tuple[bool, Optional[pd.DataFrame], Optional[pd.DataFrame]]:
         """Convert or not 0s to NA and then all values to float.
@@ -996,7 +996,7 @@ class BaseConfPanel(
         return (True, dfI, dfF)
     #---
     
-    def RA_Exclude(self) -> bool:
+    def DatPrep_Exclude(self) -> bool:
         """Exclude rows from self.dfF based on the content of 
             self.do['df']['ExcludeP'].
             
@@ -1028,7 +1028,7 @@ class BaseConfPanel(
         return True
     #---
     
-    def RA_Transformation(self) -> bool:
+    def DatPrep_Transformation(self) -> bool:
         """Apply selected data transformation.
         
             See Notes below for more information.
@@ -1069,6 +1069,51 @@ class BaseConfPanel(
         #endregion ------------------------------------------------> Transform
         
         return True
+    #---
+    
+    def DatPrep_Normalization(self, ):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        
+    #---
+    
+    def DataPreparation(self) -> bool:
+        """Perform the data preparation step.
+        
+            See Notes below for more details.
+    
+            Returns
+            -------
+            bool
+    
+            Raise
+            -----
+            
+            Notes
+            -----
+        """
+        #region ---------------------------------------------------> Variables
+        tStep = [
+            self.DatPrep_0_Float, 
+            self.DatPrep_Exclude, 
+            self.DatPrep_Transformation,
+            
+            ]
+        #endregion ------------------------------------------------> Variables
+        
+        for m in 
     #---
     
     def LoadResults(self):
@@ -1923,6 +1968,7 @@ class ResControlExpConfBase(wx.Panel):
         #endregion ----------------------------------------------> Check input
 
         #region --------------------------------------------------> Add Labels
+        #------------------------------> Check the labels
         if config.development:
             for k,v in self.topParent.lbDict.items():
                 print(str(k)+': '+str(v))
@@ -4929,7 +4975,7 @@ class LimProt(BaseConfModPanel2):
             self.seqCol.tc.SetValue('0')
             self.detectedProt.tc.SetValue('34')
             self.score.tc.SetValue('42')
-            self.tcResults.SetValue('69-71; 81-83, 78-80, 75-77, 72-74, NA; NA, NA, NA, 66-68, NA; 63-65, 105-107, 102-104, 99-101, NA; 93-95, 90-92, 87-89, 84-86, 60-62')
+            self.tcResults.SetValue('69-71; 81-83, 78-80, 75-77, 72-74, ; , , , 66-68, ; 63-65, 105-107, 102-104, 99-101, ; 93-95, 90-92, 87-89, 84-86, 60-62')
             self.lbDict = {
                 1        : ['Lane1', 'Lane2', 'Lane3', 'Lane4', 'Lane5'],
                 2        : ['Band1', 'Band2', 'Band3', 'Band4'],
@@ -4974,7 +5020,218 @@ class LimProt(BaseConfModPanel2):
         #endregion ------------------------------------> Unique Column Numbers
         #endregion ---------------------------------------------> Mixed Fields
         
+        return True
+    #---
+    
+    def PrepareRun(self):
+        """Set variable and prepare data for analysis."""
+        
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdPrepare
+        #endregion ------------------------------------------------------> Msg
+
+        #region -------------------------------------------------------> Input
+        msgStep = msgPrefix + 'User input, reading'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> As given
+        self.d = {
+            self.EqualLenLabel(self.cLiFile) : (
+                self.iFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLuFile) : (
+                self.uFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLSeqRecFile) : (
+                self.seqRec.tc.GetValue()),
+            self.EqualLenLabel(self.cLSeqNatFile) : (
+                self.seqNat.tc.GetValue()),
+            self.EqualLenLabel(self.cLId) : (
+                self.id.tc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.ceroB.IsChecked()),
+            self.EqualLenLabel(self.cLTransMethod) : (
+                self.transMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLNormMethod) : (
+                self.normMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLImputation) : (
+                self.imputationMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLTargetProt) : (
+                self.targetProt.tc.GetValue()),
+            self.EqualLenLabel(self.cLScoreVal) : (
+                self.scoreVal.tc.GetValue()),
+            self.EqualLenLabel(self.cLSeqLength) : (
+                self.seqLength.tc.GetValue()),
+            self.EqualLenLabel(self.cLAlpha) : (
+                self.alpha.tc.GetValue()),
+            self.EqualLenLabel(self.cLBeta) : (
+                self.beta.tc.GetValue()),
+            self.EqualLenLabel(self.cLGamma) : (
+                self.gamma.tc.GetValue()),
+            self.EqualLenLabel(self.cLTheta) : (
+                self.theta.tc.GetValue()),
+            self.EqualLenLabel(self.cLThetaMax) : (
+                self.thetaMax.tc.GetValue()),
+            self.EqualLenLabel(self.cLSeqCol) : (
+                self.seqCol.tc.GetValue()),
+            self.EqualLenLabel(self.cLDetectedProt) : (
+                self.detectedProt.tc.GetValue()),
+            self.EqualLenLabel(self.cLScoreCol) : (
+                self.score.tc.GetValue()),
+            self.EqualLenLabel(self.cLResControl): (
+                self.tcResults.GetValue()),
+            self.EqualLenLabel(config.lStLimProtLane) : (
+                self.lbDict[1]),
+            self.EqualLenLabel(config.lStLimProtBand) : (
+                self.lbDict[2]),
+            self.EqualLenLabel(f"Control {config.lStCtrlName}") : (
+                self.lbDict['Control']),
+        }
+        #------------------------------> Dict with all values
+        #--------------> Step
+        msgStep = msgPrefix + 'User input, processing'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #--------------> SeqNat
+        seqNatVal = self.seqNat.tc.GetValue()
+        seqNat = Path(seqNatVal) if seqNatVal != '' else None
+        #--------------> SeqLength
+        seqLengthVal = self.seqLength.tc.GetValue()
+        seqLength = float(seqLengthVal) if seqLengthVal != '' else None
+        #--------------> Theta
+        thetaVal = self.theta.tc.GetValue()
+        theta = float(thetaVal) if thetaVal != '' else None
+        #--------------> Columns
+        seqCol       = int(self.seqCol.tc.GetValue())
+        detectedProt = int(self.detectedProt.tc.GetValue())
+        scoreCol     = int(self.score.tc.GetValue())
+        resctrl       = dmethod.ResControl2ListNumber(self.tcResults.GetValue())
+        resctrlFlat   = dmethod.ResControl2Flat(resctrl)
+        resctrlDF     = dmethod.ResControl2DF(resctrl, 3)
+        resctrlDFFlat = dmethod.ResControl2Flat(resctrlDF)
+        #--------------> 
+        self.do  = {
+            'iFile'      : Path(self.iFile.tc.GetValue()),
+            'uFile'      : Path(self.uFile.tc.GetValue()),
+            'seqRec'     : Path(self.seqRec.tc.GetValue()),
+            'seqNat'     : seqNatVal,
+            'ID'         : self.id.tc.GetValue(),
+            'Cero'       : self.ceroB.IsChecked(),
+            'TransMethod': self.transMethod.cb.GetValue(),
+            'NormMethod' : self.normMethod.cb.GetValue(),
+            'ImpMethod'  : self.imputationMethod.cb.GetValue(),
+            'TargetProt' : self.targetProt.tc.GetValue(),
+            'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
+            'SeqLength'  : seqLength,
+            'Alpha'      : float(self.alpha.tc.GetValue()),
+            'Beta'       : float(self.beta.tc.GetValue()),
+            'Gamma'      : float(self.gamma.tc.GetValue()),
+            'Theta'      : theta,
+            'ThetaMax'   : self.thetaMax.tc.GetValue(),
+            'Lane'       : self.lbDict[1],
+            'Band'       : self.lbDict[2],
+            'ControlL'   : self.lbDict['Control'],
+            'oc'         : {
+                'SeqCol'    : seqCol,
+                'DetectedP' : detectedProt,
+                'ScoreCol'  : scoreCol,
+                'ResCtrl'   : resctrl,
+                'Column'    : (
+                    [seqCol, detectedProt, scoreCol] + resctrlFlat),
+            },
+            'df' : {
+                'SeqCol'     : 0,
+                'DetectedP'  : 1,
+                'ScoreCol'   : 2,
+                'ResCtrl'    : resctrlDF,
+                'ResCtrlFlat': resctrlDFFlat,
+                'ColumnF'    : [2] + resctrlDFFlat,
+            },
+        }
+        #------------------------------> File base name
+        self.oFolder = self.do['uFile'].parent
+        #------------------------------> Date
+        self.date = dtsMethod.StrNow()
+        #------------------------------> DateID
+        self.dateID = f'{self.date} - {self.do["ID"]}'
+        #endregion ----------------------------------------------------> Input
+
+        #region -------------------------------------------------> Print d, do
+        if config.development:
+            print('')
+            print('self.d:')
+            for k,v in self.d.items():
+                print(str(k)+': '+str(v))
+            print('')
+            print('self.do')
+            for k,v in self.do.items():
+                if k in ['oc', 'df']:
+                    print(k)
+                    for j,w in self.do[k].items():
+                        print(f'\t{j}: {w}')
+                else:
+                    print(str(k)+': '+str(v))
+            print('')
+        else:
+            pass
+        #endregion ----------------------------------------------> Print d, do
+        
         return False
+    #---
+    
+    def RunAnalysis(self):
+        """ Perform the equivalence tests """
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdRun
+        #endregion ------------------------------------------------------> Msg
+        
+        #region ------------------------------------------------------> Column
+        msgStep = msgPrefix + f"{self.cLiFile}, data type"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        a, self.dfI, self.dfF = self.RA_0_Float()
+        if a:
+            pass
+        else:
+            return False
+        #endregion ---------------------------------------------------> Column
+        
+        #region ----------------------------------------------> Transformation
+        #------------------------------> Msg
+        msgStep = msgPrefix + f"Data transformation"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        if self.RA_Transformation():
+            pass
+        else:
+            return False
+        #endregion -------------------------------------------> Transformation
+        
+        #region -----------------------------------------------> Normalization
+        #------------------------------> Msg
+        msgStep = msgPrefix + f"Data normalization"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.dfN = dtsStatistic.DataNormalization(
+                self.dfT, sel=None, method=self.do['NormMethod'],
+            )
+        except Exception as e:
+            self.msgError = str(e)
+            self.tException = e
+            return False
+        #endregion --------------------------------------------> Normalization
+        
+        #region --------------------------------------------------> Imputation
+        #------------------------------> Msg
+        msgStep = msgPrefix + f"Data imputation"
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.dfIm = dtsStatistic.DataImputation(
+                self.dfN, sel=None, method=self.do['ImpMethod'],
+            )
+        except Exception as e:
+            self.msgError = str(e)
+            self.tException = e
+            return False
+        #endregion -----------------------------------------------> Imputation
     #---
     
     def RunEnd(self):
