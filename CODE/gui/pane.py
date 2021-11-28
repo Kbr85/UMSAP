@@ -156,6 +156,9 @@ class BaseConfPanel(
                 'Column' : [list of int],
             }
             See Child class for other key - value pairs.
+        dataPrep: dict
+            Keys are the messages for the Progress Dialog, values are the 
+            methods to run the Data Preparation steps. See self.DataPreparation.
         date : str or None
             Date for the new section in the umsap file.
         dateID : str or None
@@ -307,6 +310,15 @@ class BaseConfPanel(
             'cViFile',
             dtsValidator.InputFF(fof='file', ext=config.esData),
         )
+        #------------------------------> To handle Data Preparation Steps
+        self.dataPrep = { # Keys are the messaging for the Progress Dialog
+            "Setting Data Types"       : self.DatPrep_0_Float,
+            "Filter Data: Exclude Rows": self.DatPrep_Exclude,
+            "Filter Data: Score Value" : self.DatPrep_Score,
+            "Data Transformation"      : self.DatPrep_Transformation,
+            "Data Normalization"       : self.DatPrep_Normalization,
+            "Data Imputation"          : self.DatPrep_Imputation,
+        }
         #------------------------------> This is needed to handle Data File 
         # content load to the wx.ListCtrl in Tabs with multiple panels
         #--------------> Default wx.ListCtrl to load data file content
@@ -1215,18 +1227,14 @@ class BaseConfPanel(
                 self.DatPrep_Imputation,
         """
         #region ---------------------------------------------------> Variables
-        tStep = [
-            self.DatPrep_0_Float, 
-            self.DatPrep_Exclude, 
-            self.DatPrep_Score,
-            self.DatPrep_Transformation,
-            self.DatPrep_Normalization,
-            self.DatPrep_Imputation,
-            ]
+        msgPrefix = config.lPdRun
         #endregion ------------------------------------------------> Variables
         
         #region ----------------------------------------> Run Data Preparation
-        for m in tStep:
+        for k, m in self.dataPrep.items():
+            #------------------------------> 
+            wx.CallAfter(self.dlg.UpdateStG, f'{msgPrefix} {k}')
+            #------------------------------> 
             if m():
                 pass
             else:
