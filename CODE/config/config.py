@@ -427,6 +427,11 @@ mFileColNum = (
 #------------------------------> Not empty
 mNotEmpty = "Please select a value for {}."
 #------------------------------> Pandas
+mPDGetInitCol = ("It was not possible to extract the selected columns {} from "
+    "the selected {}:.\n{}")
+mPDDataExclude = 'Data Exclusion failed.\nColumns used for data exclusion: {}.'
+mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
+    'filtering by Score value: {}.')
 mPDDataType       = 'Unexpected data type.'
 mPDDataTypeCol    = 'The {} contains unexpected data type in columns {}.'
 mPDDataTran       = 'Data Transformation failed.'

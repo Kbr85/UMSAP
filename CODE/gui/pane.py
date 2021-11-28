@@ -942,63 +942,67 @@ class BaseConfPanel(
         return True
     #---
     
-    def DatPrep_0_Float(
-        self
-        ) -> tuple[bool, Optional[pd.DataFrame], Optional[pd.DataFrame]]:
+    def DatPrep_0_Float(self) -> bool:
         """Convert or not 0s to NA and then all values to float.
         
             See Notes below for more details
         
             Returns
             -------
-            tuple
-                (bool, pd.DataFrame or None, pd.DataFrame or None)
+            bool
                 
             Notes
             -----
             Assumes child class has the following attributes:
-            - iFileObj, instance of dtsFF.CSVFile
-            - do, dict with at least the following key -values pairs:
+            - iFileObj: instance of dtsFF.CSVFile
+            - do: dict with at least the following key -values pairs:
                 'oc' : {
                     'Column' : [List of int],
                 },
                 'df' : {
+                    'ColumnR' : [List of int],
                     'ColumnF' : [List of int],
                 }
         """
         #region -----------------------------------------------------> Set dfI
-        dfI = self.iFileObj.df.iloc[:,self.do['oc']['Column']]
+        try:
+            self.dfI = self.iFileObj.df.iloc[:,self.do['oc']['Column']]
+        except Exception as e:
+            self.msgError = config.mPDGetInitCol.format(
+                self.do['oc']['Column'], self.cLiFile, self.do['iFile'])
+            self.tException = e
+            return False
         #endregion --------------------------------------------------> Set dfI
         
         #region -----------------------------------------------------> Set dfF
         try:
             if self.do['Cero']:
                 #------------------------------> Replace 0 and ''
-                dfF = dtsMethod.DFReplace(
-                    dfI, [0, ''], np.nan, sel=self.do['df']['ColumnF'],
+                self.dfF = dtsMethod.DFReplace(
+                    self.dfI, [0, ''], np.nan, sel=self.do['df']['ColumnR'],
                 )
             else:
                 #------------------------------> Replace only ''
-                dfF = dtsMethod.DFReplace(
-                    dfI, [''], np.nan, sel=self.do['df']['ColumnF'],
+                self.dfF = dtsMethod.DFReplace(
+                    self.dfI, [''], np.nan, sel=self.do['df']['ColumnR'],
                 )
             #------------------------------> Float
-            self.dfF = dfF.iloc[:,self.do['df']['ColumnF']].astype('float')
+            self.dfF.iloc[:,self.do['df']['ColumnF']] = self.dfF.iloc[:,self.do['df']['ColumnF']].astype('float')
         except Exception as e:
             self.msgError  = config.mPDDataTypeCol.format(
                 self.cLiFile,
                 ", ".join(map(str, self.do['df']['ColumnF'])),
             )
             self.tException = e
-            return (False, None, None)
+            return False
         #endregion --------------------------------------------------> Set dfF
         
-        return (True, dfI, dfF)
+        return True
     #---
     
     def DatPrep_Exclude(self) -> bool:
         """Exclude rows from self.dfF based on the content of 
-            self.do['df']['ExcludeP'].
+            self.do['df']['ExcludeR'].
             
             See Notes below for more details
     
@@ -1009,21 +1013,68 @@ class BaseConfPanel(
             Notes
             -----
             Assumes child class has the following attributes:
-            - do, dict with at least the following key - values pairs:
+            - do: dict with at least the following key - values pairs:
                 'df' : {
-                    'ExcludeP' : [List of int],
+                    'ExcludeR' : [List of int],
                 }
-            - dfF : pd.DataFrame with correct data types in each column.
+            - dfF: pd.DataFrame with correct data types in each column.
+            
+            Rows with at least one value different to NA in 
+            self.do['df']['ExcludeR'] are discarded
         """
         #region -----------------------------------------------------> Exclude
-        if self.do['df']['ExcludeP']:
-            a = self.dfF.iloc[:,self.do['df']['ExcludeP']].notna()
-            a = a.loc[(a==True).any(axis=1)]
-            idx = a.index
-            self.dfEx = self.dfF.drop(index=idx)
-        else:
-            self.dfEx = self.dfF.copy()
+        try:
+            if self.do['df'].get('ExcludeR', None) is not None:
+                self.dfEx = dtsMethod.DFExclude(
+                    self.dfF, self.do['df']['ExcludeR'])
+            else:
+                self.dfEx = self.dfF.copy()
+        except Exception as e:
+            self.msgError = config.mPDDataExclude.format(
+                self.do['df']['ExcludeR'])
+            self.tException = e
+            return False
         #endregion --------------------------------------------------> Exclude
+        
+        return True
+    #---
+    
+    def DatPrep_Score(self) -> bool:
+        """Filter rows in self.dfEx by Score values.
+        
+            See Notes below for more details
+        
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            Assumes child class has the following attributes
+            - do: dict with at least the following key - values pairs:
+                'ScoreVal' : float
+                'df' : {
+                    'ScoreCol' : int
+                }
+            - dfEx: pd.DataFrame with correct data types in each column
+        """
+        #region ------------------------------------------------------> Filter
+        try:
+            if self.do['df'].get('ScoreCol', None) is not None:
+                self.dfS = dtsMethod.DFFilterByCol(
+                    self.dfEx, 
+                    self.do['df']['ScoreCol'], 
+                    self.do['ScoreVal'], 
+                    'ge'
+                )
+            else:
+                self.dfS = self.dfEx.copy()
+        except Exception as e:
+            self.msgError = config.mPDDataScore.format(
+                self.do['df']['ScoreCol'])
+            self.tException = e
+            return False
+        #endregion ---------------------------------------------------> Filter
         
         return True
     #---
@@ -1071,22 +1122,74 @@ class BaseConfPanel(
         return True
     #---
     
-    def DatPrep_Normalization(self, ):
-        """
-    
-            Parameters
-            ----------
-            
+    def DatPrep_Normalization(self) -> bool:
+        """Perform a data normalization.
+        
+            See Notes below for more details
     
             Returns
             -------
-            
+            bool
     
-            Raise
+            Notes
             -----
-            
+            Assumes child class has the following attributes:
+            - do, dict with at least the following key - values pairs:
+                'NormMethod' : str Normalization method selected
+                df : dict
+                    {
+                        'ResCtrlFlat' : list[int]
+                    }
         """
+        #region -----------------------------------------------> Normalization
+        try:
+            self.dfN = dtsStatistic.DataNormalization(
+                self.dfT, 
+                self.do['df']['ResCtrlFlat'], 
+                method = self.do['NormMethod'],
+            )
+        except Exception as e:
+            self.msgError   = config.mPDDataNorm
+            self.tException = e
+            return False
+        #endregion --------------------------------------------> Normalization
         
+        return True
+    #---
+    
+    def DatPrep_Imputation(self) -> bool:
+        """Perform a data imputation.
+        
+            See Notes below for more details.
+    
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - do, dict with at least the following key - values pairs:
+                'ImpMethod' : str Imputation method selected
+                df : dict
+                    {
+                        'ResCtrlFlat' : list[int]
+                    }
+        """
+        #region --------------------------------------------------> Imputation
+        try:
+            self.dfIm = dtsStatistic.DataImputation(
+                self.dfN, 
+                self.do['df']['ResCtrlFlat'], 
+                method = self.do['ImpMethod'],
+            )
+        except Exception as e:
+            self.msgError   = config.mPDDataImputation
+            self.tException = e
+            return False
+        #endregion -----------------------------------------------> Imputation
+        
+        return True
     #---
     
     def DataPreparation(self) -> bool:
@@ -1103,17 +1206,50 @@ class BaseConfPanel(
             
             Notes
             -----
+            See the Notes for the individual methods:
+                self.DatPrep_0_Float, 
+                self.DatPrep_Exclude, 
+                self.DatPrep_Score,
+                self.DatPrep_Transformation,
+                self.DatPrep_Normalization,
+                self.DatPrep_Imputation,
         """
         #region ---------------------------------------------------> Variables
         tStep = [
             self.DatPrep_0_Float, 
             self.DatPrep_Exclude, 
+            self.DatPrep_Score,
             self.DatPrep_Transformation,
-            
+            self.DatPrep_Normalization,
+            self.DatPrep_Imputation,
             ]
         #endregion ------------------------------------------------> Variables
         
-        for m in 
+        #region ----------------------------------------> Run Data Preparation
+        for m in tStep:
+            if m():
+                pass
+            else:
+                return False
+        #endregion -------------------------------------> Run Data Preparation
+        
+        #region -------------------------------------------------------> Print
+        if config.development:
+            dfL = [
+                self.dfI, self.dfF, self.dfEx, self.dfS, self.dfT, self.dfN,
+                self.dfIm
+            ]
+            dfN = ['dfI', 'dfF', 'dfEx', 'dfS', 'dfT', 'dfN', 'dfIm']
+            for i, df in enumerate(dfL):
+                if df is not None:
+                    print(f'{dfN[i]}: {df.shape}')
+                else:
+                    print(f'{dfN[i]}: None')
+        else:
+            pass
+        #endregion ----------------------------------------------------> Print
+        
+        return True
     #---
     
     def LoadResults(self):
@@ -5141,6 +5277,7 @@ class LimProt(BaseConfModPanel2):
                 'ScoreCol'   : 2,
                 'ResCtrl'    : resctrlDF,
                 'ResCtrlFlat': resctrlDFFlat,
+                'ColumnR'    : resctrlDFFlat,
                 'ColumnF'    : [2] + resctrlDFFlat,
             },
         }
@@ -5172,7 +5309,7 @@ class LimProt(BaseConfModPanel2):
             pass
         #endregion ----------------------------------------------> Print d, do
         
-        return False
+        return True
     #---
     
     def RunAnalysis(self):
@@ -5181,57 +5318,14 @@ class LimProt(BaseConfModPanel2):
         msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
         
-        #region ------------------------------------------------------> Column
-        msgStep = msgPrefix + f"{self.cLiFile}, data type"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        a, self.dfI, self.dfF = self.RA_0_Float()
-        if a:
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
             pass
         else:
             return False
-        #endregion ---------------------------------------------------> Column
+        #endregion -----------------------------------------> Data Preparation
         
-        #region ----------------------------------------------> Transformation
-        #------------------------------> Msg
-        msgStep = msgPrefix + f"Data transformation"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        if self.RA_Transformation():
-            pass
-        else:
-            return False
-        #endregion -------------------------------------------> Transformation
-        
-        #region -----------------------------------------------> Normalization
-        #------------------------------> Msg
-        msgStep = msgPrefix + f"Data normalization"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        try:
-            self.dfN = dtsStatistic.DataNormalization(
-                self.dfT, sel=None, method=self.do['NormMethod'],
-            )
-        except Exception as e:
-            self.msgError = str(e)
-            self.tException = e
-            return False
-        #endregion --------------------------------------------> Normalization
-        
-        #region --------------------------------------------------> Imputation
-        #------------------------------> Msg
-        msgStep = msgPrefix + f"Data imputation"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        try:
-            self.dfIm = dtsStatistic.DataImputation(
-                self.dfN, sel=None, method=self.do['ImpMethod'],
-            )
-        except Exception as e:
-            self.msgError = str(e)
-            self.tException = e
-            return False
-        #endregion -----------------------------------------------> Imputation
+        return False
     #---
     
     def RunEnd(self):
