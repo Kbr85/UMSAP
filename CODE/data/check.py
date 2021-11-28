@@ -137,8 +137,7 @@ def UniqueColNumbers(
 #---
 
 def TcUniqueColNumbers(
-    tcList: list['wx.TextCtrl'], resCtrl: 'wx.TextCtrl', 
-    sepList: list[str]=[' ', ',', ';'],
+    tcList: list['wx.TextCtrl'], sepList: list[str]=[' ', ',', ';'],
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Checks individual elements in the wx.TextCtrl are unique.
 
@@ -147,12 +146,6 @@ def TcUniqueColNumbers(
         tcList : list of wx.TextCtrl
             List of wx.TextCtrl. Individual elements in each wx.TextCtrl value 
             are separated by sepList[0]. e.g. '1 2 3' if sepList[0] is ' '.
-        resCtrl: wx.TextCtrl  
-            wx.TextCtrl with the Result - Control value. The value is expected 
-            to be organized in rows with sepList[0] separating individual 
-            elements, sepList[1] separating intrarow elements and sepList[3] 
-            separating rows. e.g. '1 2 3, 4-10; ....' requires sepList to be
-            [' ', ',', ';']
         sepList: list of str
             Separator used in tcList and resCtrl. Individual elements in tcList
             are separated by sepList[0] while elements in resCtrl are separated 
@@ -183,7 +176,7 @@ def TcUniqueColNumbers(
     if isinstance(tcList, (list, tuple)):
         pass
     else:
-        msg = f'tcList must be a list od wx.TextCtrl.'
+        msg = f'tcList must be a list of wx.TextCtrl.'
         raise dtsException.InputError(msg)
     #endregion --------------------------------------------------> Check input
     
@@ -199,12 +192,6 @@ def TcUniqueColNumbers(
         except Exception:
             msg = 'tcList must contain a list of wx.TextCtrl.'
             raise dtsException.InputError(msg)
-    #------------------------------> resCtrl
-    try:
-        values.append(resCtrl.GetValue())
-    except Exception:
-        msg = 'resCtrl must be an instance of wx.TextCtrl.' 
-        raise dtsException.InputError(msg)
     #endregion ----------------------------------------------------> Form list
     
     #region ----------------------------------------------------------> Return

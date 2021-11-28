@@ -68,6 +68,8 @@ class BaseConfTab(wx.Panel):
     #region -----------------------------------------------------> Class setup
     cConfPanel = {
         config.ntCorrA   : pane.CorrA,
+        config.ntDataPrep: pane.DataPrep,
+        config.ntLimProt : pane.LimProt,
         config.ntProtProf: pane.ProtProf,
     }
     #endregion --------------------------------------------------> Class setup
@@ -231,7 +233,8 @@ class ResControlExp(wx.Panel):
     name = 'ResControlExpPane'
 
     widget = {
-        'ProtProfPane' : pane.ProtProfResControlExp,
+        config.npProtProf : pane.ProtProfResControlExp,
+        config.npLimProt  : pane.LimProtResControlExp,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -344,6 +347,8 @@ class Start(wx.Panel):
             Parent of the tab. 
         name : str
             Name of the tab. Unique name for the application
+        btnDataPrep : wx.Button
+            Launch the Data Preparation utility.
         btnCorrA : wx.Button
             Launch the Correlation Analysis utility.
         btnLimProt : wx.Button
@@ -362,10 +367,11 @@ class Start(wx.Panel):
     #region -----------------------------------------------------> Class setup
     name = config.ntStart
     #------------------------------> Tooltips
-    cBtnCorrATT = f"Start the utility {config.nuCorrA}"
-    cBtnLimProtTT = f"Start the module {config.nmLimProt}"
-    cBtnTarProtTT = f"Start the module {config.nmTarProt}"
-    cBtnProtProfTT = f"Start the module {config.nmProtProf}"
+    cTTBtnDataPrep = f"Start the utility {config.nuDataPrep}"
+    cTTBtnCorrA    = f"Start the utility {config.nuCorrA}"
+    cTTBtnLimProt  = f"Start the module {config.nmLimProt}"
+    cTTBtnTarProt  = f"Start the module {config.nmTarProt}"
+    cTTBtnProtProf = f"Start the module {config.nmProtProf}"
     #------------------------------> Files
     cImg = config.fImgStart
     #endregion --------------------------------------------------> Class setup
@@ -388,16 +394,18 @@ class Start(wx.Panel):
         #---
         #--> Buttons
         self.btnCorrA    = wx.Button(self, label=config.nuCorrA)
+        self.btnDataPrep = wx.Button(self, label=config.nuDataPrep)
         self.btnLimProt  = wx.Button(self, label=config.nmLimProt)
         self.btnProtProf = wx.Button(self, label=config.nmProtProf)
         self.btnTarProt  = wx.Button(self, label=config.nmTarProt)
         #endregion --------------------------------------------------> Widgets
 
         #region ----------------------------------------------------> Tooltips
-        self.btnCorrA.SetToolTip(self.cBtnCorrATT)
-        self.btnLimProt.SetToolTip(self.cBtnLimProtTT)
-        self.btnProtProf.SetToolTip(self.cBtnProtProfTT)
-        self.btnTarProt.SetToolTip(self.cBtnTarProtTT)
+        self.btnDataPrep.SetToolTip(self.cTTBtnDataPrep)
+        self.btnCorrA.SetToolTip(self.cTTBtnCorrA)
+        self.btnLimProt.SetToolTip(self.cTTBtnLimProt)
+        self.btnProtProf.SetToolTip(self.cTTBtnProtProf)
+        self.btnTarProt.SetToolTip(self.cTTBtnTarProt)
         #endregion -------------------------------------------------> Tooltips
         
         #region ------------------------------------------------------> Sizers
@@ -408,6 +416,9 @@ class Start(wx.Panel):
         #--> Add widgets
         self.SizerBtn.Add(
             self.btnCorrA, 0, wx.EXPAND|wx.ALL, 5
+        )
+        self.SizerBtn.Add(
+            self.btnDataPrep, 0, wx.EXPAND|wx.ALL, 5
         )
         self.SizerBtn.Add(
             self.btnLimProt, 0, wx.EXPAND|wx.ALL, 5
@@ -443,9 +454,17 @@ class Start(wx.Panel):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
+        self.btnDataPrep.Bind(
+            wx.EVT_BUTTON, 
+            lambda event: config.winMain.CreateTab(config.ntDataPrep)
+        )
         self.btnCorrA.Bind(
             wx.EVT_BUTTON, 
             lambda event: config.winMain.CreateTab(config.ntCorrA)
+        )
+        self.btnLimProt.Bind(
+            wx.EVT_BUTTON, 
+            lambda event: config.winMain.CreateTab(config.ntLimProt)
         )
         self.btnProtProf.Bind(
             wx.EVT_BUTTON, 
