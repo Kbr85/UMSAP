@@ -117,24 +117,30 @@ winUMSAP = {}
 #------------------------------> Default name
 nDefName = 'Default name'
 #------------------------------> Windows
-nwMain         = 'MainW'
-nwUMSAPControl = 'UMSAPControl'
-nwCorrAPlot    = 'CorrAPlot'
-nwProtProf     = 'ProtProfPlot'
+nwMain          = 'MainW'
+nwUMSAPControl  = 'UMSAPControl'
+nwCorrAPlot     = 'CorrAPlot'
+nwProtProf      = 'ProtProfPlot'
+nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
 ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
 ntStart    = 'StartTab'
+ntDataPrep = "DataPrepTab"
 ntCorrA    = 'CorrATab'
+ntLimProt  = 'LimProtTab'
 ntProtProf = 'ProtProfTab'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
+npDataPrep              = "DataPrepPane"
+npLimProt               = "LimProtPane"
 npProtProf              = 'ProtProfPane'
 npResControlExp         = 'ResControlExpPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
+npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 #------------------------------> Menu
 nMenModule  = 'ModuleMenu'
 nMenUtility = 'UtilityMenu'
@@ -146,10 +152,9 @@ nmLimProt  = 'Limited Proteolysis'
 nmTarProt  = 'Targeted Proteolysis'
 nmProtProf = 'Proteome Profiling'
 #------------------------------> Utilities
-nuDataT = 'Data Transformation'
-nuCorrA = 'Correlation Analysis'
-nuDataN = 'Data Normalization'
-nuReadF = 'Read UMSAP File'
+nuDataPrep = "Data Preparation"
+nuCorrA    = 'Correlation Analysis'
+nuReadF    = 'Read UMSAP File'
 #endregion ------------------------------------------------------------> Names
 
 
@@ -168,7 +173,9 @@ t = {
     ndFilterRemoveAny     : 'Remove Filters',
     #------------------------------> Tabs
     ntStart   : 'Start',
+    ntDataPrep: 'DataPrep',
     ntCorrA   : 'CorrA',
+    ntLimProt : 'LimProt',
     ntProtProf: 'ProtProf',
 }
 #endregion -----------------------------------------------------------> Titles
@@ -177,6 +184,10 @@ t = {
 #region ----------------------------------------------------------- Extensions
 #------------------------------> For wx.Dialogs
 elData         = 'txt files (*.txt)|*.txt'
+elSeq          = (
+    "Text files (*.txt)|*.txt|"
+    "Fasta files (*.fasta)|*.fasta"
+)
 elUMSAP        = 'UMSAP files (*.umsap)|*.umsap'
 elMatPlotSaveI = (
     "Portable Document File (*.pdf)|*.pdf|"
@@ -187,6 +198,7 @@ elMatPlotSaveI = (
 
 #------------------------------> File extensions. First item is default
 esData  = ['.txt']
+esSeq   = ['.txt', '.fasta']
 esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
 
@@ -216,7 +228,9 @@ urlHome     = 'https://www.umsap.nl'
 urlUpdate   = f"{urlHome}/page/release-notes"
 urlTutorial = f"{urlHome}/tutorial/2-1-0"
 urlCorrA    = f"{urlTutorial}/correlation-analysis"
+urlLimProt  = f"{urlTutorial}/limited-proteolysis"
 urlProtProf = f"{urlTutorial}/proteome-profiling"
+urlDataPrep = f"{urlTutorial}/data-preparation"
 
 #endregion --------------------------------------------------------------- URL
 
@@ -227,10 +241,11 @@ lnPaneConf = 'Configuration Options'
 lnListPane = 'Data File Content'
 lnPDCorrA  = 'Calculating Correlation Coefficients'
 #------------------------------> wx.Button
-lBtnRun      = 'Start Analysis'
-lBtnDataFile = 'Data File'
-lBtnOutFile  = 'Output File'
-lBtnUFile    = 'UMSAP File'
+lBtnRun         = 'Start Analysis'
+lBtnDataFile    = 'Data File'
+lBtnOutFile     = 'Output File'
+lBtnUFile       = 'UMSAP File'
+lBtnTypeResCtrl = 'Type Values'
 #------------------------------> wx.ListCtrl
 lLCtrlColNameI = ['#', 'Name']
 #------------------------------> wx.StaticBox
@@ -240,15 +255,22 @@ lSbValue        = 'User-defined values'
 lSbColumn       = 'Column numbers'
 lStProtProfCond = 'Conditions'
 lStProtProfRP   = 'Relevant Points'
+lStLimProtLane  = 'Lanes'
+lStLimProtBand  = 'Bands' 
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'  
 #------------------------------> wx.Statictext
-lStAlpha        = 'Significance level'
+lStSeqRecFile   = 'Sequence (rec)'
+lStSeqNatFile   = 'Sequence (nat)'
+lStId           = 'Analysis ID'
+lStAlpha        = 'Significance Level'
 lStColIFile     = "Columns in the {}"
 lStScoreVal     = 'Score Value'
+lStSeqLength    = 'Sequence Length'
+lStTargetProt   = "Target Protein"
 lStDetectedProt = 'Detected Proteins'
+lStSeqCol       = 'Sequences'
 lStScoreCol     = 'Score'
-lStColExtract   = 'Columns to Extract'
 lStResultCtrl   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
@@ -275,6 +297,7 @@ lPdEllapsed = 'Ellapsed time: '
 hTcDataFile = f"Path to the {lBtnDataFile}"
 hTcOutFile  = f"Path tot the {lBtnOutFile}"
 hTcUFile    = f"Path tot the {lBtnUFile}"
+hTcId       = 'e.g. HIV inhibitor'
 #endregion ------------------------------------------------------------> Hints
 
 
@@ -288,6 +311,7 @@ ttBtnHelp     = "Read tutorial at {}."
 ttBtnClearAll = f"Clear all user input."
 ttBtnRun      = f"Start the analysis."
 #------------------------------> wx.StaticText
+ttStId = 'Short text to id the analysis. Do not include the date.'
 ttStTrans = f"Select the {lCbTransMethod} method."
 ttStNorm = f"Select the {lCbNormMethod} method."
 ttStImputation = f"Select the {lCbImputation} method."
@@ -299,10 +323,14 @@ ttStMedianCorr = "Select whether to apply a median correction."
 ttStDetectedProtL = (
     f"Set the column number containing the detected proteins.\ne.g. 7")
 ttStScore = f"Set the column number containing the Score values.\ne.g. 4"
-ttStColExtract = "Set the column numbers to extract from {}.\ne.g. 1-4 7 8"
 ttStGenName = "Set the column number containing the gene names.\ne.g. 3"
 ttStExcludeProt = (
-    "Set the column number containing the protein to exclude.\ne.g. 8 10-12")
+    "Set the column number containing the data used to exclude proteins."
+    "\ne.g. 8 10-12")
+ttStExcludeRow = (
+    "Set the column numbers containing the data used to exclude rows."
+    "\ne.g. 8 10-12")
+ttStControlN = "Name or ID of the control experiment.\ne.g. MyControl."
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -377,15 +405,21 @@ oControlTypeProtProf = {
 
 
 #region -----------------------------------------------------> DF Column names
-protprofFirstThree = ['Gene', 'Protein', 'Score']
-protprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
+dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
+dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
+dfcolDataCheck = ['Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
 #endregion --------------------------------------------------> DF Column names
 
 
+#region -----------------------------------------------------> Important Lists
+ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
+#endregion --------------------------------------------------> Important Lists
+
+
 #region ------------------------------------------------------------> Messages
+#region -------------------------------------------------------------> Other 
 #------------------------------> Files 
 mFileSelector = f"It was not possible to show the file selecting dialog."
-mFileBad = "File: '{}'\ncannot be used as {}."
 mFileRead = 'An error occured when reading file:\n{}'
 mFileColNum = (
     "In addition, the values cannot be bigger than the total number of columns "
@@ -393,25 +427,50 @@ mFileColNum = (
 #------------------------------> Not empty
 mNotEmpty = "Please select a value for {}."
 #------------------------------> Pandas
+mPDGetInitCol = ("It was not possible to extract the selected columns {} from "
+    "the selected {}:.\n{}")
+mPDDataExclude = 'Data Exclusion failed.\nColumns used for data exclusion: {}.'
+mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
+    'filtering by Score value: {}.')
 mPDDataType       = 'Unexpected data type.'
 mPDDataTypeCol    = 'The {} contains unexpected data type in columns {}.'
 mPDDataTran       = 'Data Transformation failed.'
 mPDDataNorm       = 'Data Normalization failed.'
 mPDDataImputation = 'Data Imputation failed.'
 #------------------------------> User values
+mOneRNumText = "Only one real number can be accepted here."
+mOneZPlusNumText = "Only a non-negative integer can be accepted here."
+mOneZNumText = "Only one positive integer can be accepted here."
+mOne01NumText = "Only one number between 0 and 1 can be accepted here"
+mNZPlusNumText = (
+    "Only a list of unique non-negative integers can be accepted here.")
 mNumROne = "Only one number can be accepted in {}."
 mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
 mListNumN0L = (
     "Only a list of unique non-negative integers can be accepted in {}.")
-mColNumbers = f"Values in section {lSbColumn} must be unique"+"{}"
-mColNumbersNoColExtract = f", excluding {lStColExtract}."
+mColNumbers = f"Values in section {lSbColumn} must be unique."
 mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
+#endregion ----------------------------------------------------------> Other 
+
+#region ----------------------------------------------------> For CheckInput
+mFileBad = "File: '{}'\ncannot be used as {}."
+mOptionBad = "Option '{}' cannot be accepted in {}."
+mValueBad = "Value '{}' cannot be accepted in {}.\n"
+mOneRealNum = f"{mValueBad}{mOneRNumText}"
+mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
+mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
+mOne01Num = f"{mValueBad}{mOne01NumText}"
+mResCtrl = (
+    f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
+    f"correct input.")
+mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
+#endregion -------------------------------------------------> For CheckInput
 #endregion ---------------------------------------------------------> Messages
 
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
-sWinRegular = (930, 730)
+sWinRegular = (990, 775)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
 sWinModPlot = (1100, 625)
@@ -457,6 +516,7 @@ color = { # Colors for the app
             'c1': [255, 0, 0],
             'c2': [255, 255, 255],
             'c3': [0, 0, 255],
+            'NA': '#90EE90',
         },
     },
     nwProtProf : {
