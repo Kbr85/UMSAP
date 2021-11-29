@@ -2386,7 +2386,7 @@ class CorrA(BaseConfPanel):
         self.cSection     = config.nuCorrA
         self.cLLenLongest = len(config.lCbCorrMethod)
         self.cTitlePD     = config.lnPDCorrA
-        self.cGaugePD     = 17
+        self.cGaugePD     = 23
         #------------------------------> Optional configuration
         self.cTTHelp = config.ttBtnHelp.format(config.urlCorrA)
         #------------------------------> Setup attributes in base class 
@@ -2724,8 +2724,9 @@ class CorrA(BaseConfPanel):
                 'Column'     : col,
             },
             'df'         : {
-                'ColumnF' : colF,
-                'ResCtrlFlat' : colF,
+                'ColumnR'    : colF,
+                'ColumnF'    : colF,
+                'ResCtrlFlat': colF,
             }
         }
         #------------------------------> File base name
@@ -2764,57 +2765,12 @@ class CorrA(BaseConfPanel):
         msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
         
-        #region ------------------------------------------------------> Column
-        msgStep = msgPrefix + f"{self.cLiFile}, data type"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        a, self.dfI, self.dfS = self.RA_0_Float()
-        if a:
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
             pass
         else:
             return False
-        #endregion ---------------------------------------------------> Column
-        
-        #region ----------------------------------------------> Transformation
-        #------------------------------> Msg
-        msgStep = msgPrefix + f"Data transformation"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        if self.RA_Transformation():
-            pass
-        else:
-            return False
-        #endregion -------------------------------------------> Transformation
-        
-        #region -----------------------------------------------> Normalization
-        #------------------------------> Msg
-        msgStep = msgPrefix + f"Data normalization"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        try:
-            self.dfN = dtsStatistic.DataNormalization(
-                self.dfT, sel=None, method=self.do['NormMethod'],
-            )
-        except Exception as e:
-            self.msgError = str(e)
-            self.tException = e
-            return False
-        #endregion --------------------------------------------> Normalization
-        
-        #region --------------------------------------------------> Imputation
-        #------------------------------> Msg
-        msgStep = msgPrefix + f"Data imputation"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        try:
-            self.dfIm = dtsStatistic.DataImputation(
-                self.dfN, sel=None, method=self.do['ImpMethod'],
-            )
-        except Exception as e:
-            self.msgError = str(e)
-            self.tException = e
-            return False
-        #endregion -----------------------------------------------> Imputation
+        #endregion -----------------------------------------> Data Preparation
 
         #region ------------------------------------> Correlation coefficients
         #------------------------------> Msg
