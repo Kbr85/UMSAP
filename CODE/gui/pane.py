@@ -2386,7 +2386,7 @@ class CorrA(BaseConfPanel):
         self.cSection     = config.nuCorrA
         self.cLLenLongest = len(config.lCbCorrMethod)
         self.cTitlePD     = config.lnPDCorrA
-        self.cGaugePD     = 17
+        self.cGaugePD     = 23
         #------------------------------> Optional configuration
         self.cTTHelp = config.ttBtnHelp.format(config.urlCorrA)
         #------------------------------> Setup attributes in base class 
@@ -2724,8 +2724,9 @@ class CorrA(BaseConfPanel):
                 'Column'     : col,
             },
             'df'         : {
-                'ColumnF' : colF,
-                'ResCtrlFlat' : colF,
+                'ColumnR'    : colF,
+                'ColumnF'    : colF,
+                'ResCtrlFlat': colF,
             }
         }
         #------------------------------> File base name
@@ -2764,57 +2765,12 @@ class CorrA(BaseConfPanel):
         msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
         
-        #region ------------------------------------------------------> Column
-        msgStep = msgPrefix + f"{self.cLiFile}, data type"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        a, self.dfI, self.dfS = self.RA_0_Float()
-        if a:
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
             pass
         else:
             return False
-        #endregion ---------------------------------------------------> Column
-        
-        #region ----------------------------------------------> Transformation
-        #------------------------------> Msg
-        msgStep = msgPrefix + f"Data transformation"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        if self.RA_Transformation():
-            pass
-        else:
-            return False
-        #endregion -------------------------------------------> Transformation
-        
-        #region -----------------------------------------------> Normalization
-        #------------------------------> Msg
-        msgStep = msgPrefix + f"Data normalization"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        try:
-            self.dfN = dtsStatistic.DataNormalization(
-                self.dfT, sel=None, method=self.do['NormMethod'],
-            )
-        except Exception as e:
-            self.msgError = str(e)
-            self.tException = e
-            return False
-        #endregion --------------------------------------------> Normalization
-        
-        #region --------------------------------------------------> Imputation
-        #------------------------------> Msg
-        msgStep = msgPrefix + f"Data imputation"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        try:
-            self.dfIm = dtsStatistic.DataImputation(
-                self.dfN, sel=None, method=self.do['ImpMethod'],
-            )
-        except Exception as e:
-            self.msgError = str(e)
-            self.tException = e
-            return False
-        #endregion -----------------------------------------------> Imputation
+        #endregion -----------------------------------------> Data Preparation
 
         #region ------------------------------------> Correlation coefficients
         #------------------------------> Msg
@@ -3061,7 +3017,7 @@ class DataPrep(BaseConfPanel):
         self.cSection     = config.nuDataPrep
         self.cLLenLongest = len(self.cLColAnalysis)
         self.cTitlePD     = f"Running {config.nuDataPrep} Analysis"
-        self.cGaugePD     = 30 # ????
+        self.cGaugePD     = 26
         #------------------------------> Parent class
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
@@ -3403,6 +3359,7 @@ class DataPrep(BaseConfPanel):
                 'ScoreCol'   : 0,
                 'ExcludeP'   : [x for x in range(1, len(excludeRow)+1)],
                 'ResCtrlFlat': resCtrlFlat,
+                'ColumnR'    : resCtrlFlat,
                 'ColumnF'    : [0]+resCtrlFlat,
             },
         }
@@ -3439,111 +3396,12 @@ class DataPrep(BaseConfPanel):
     
     def RunAnalysis(self):
         """Perform data preparation"""
-        #region ---------------------------------------------------------> Msg
-        msgPrefix = config.lPdRun
-        #endregion ------------------------------------------------------> Msg
-        
-        #region -------------------------------------------------------> Float
-        #------------------------------> 
-        msgStep = msgPrefix + "Data type"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        a, self.dfI, self.dfF = self.RA_0_Float()
-        if a:
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
             pass
         else:
             return False
-        
-        if config.development:
-            print("self.dfI.shape: ", self.dfI.shape)
-            print("self.dfF.shape: ", self.dfF.shape)
-        #endregion ----------------------------------------------------> Float
-        
-        #region ---------------------------------------------> Exclude Protein
-        #------------------------------> Msg
-        msgStep = msgPrefix + 'Excluding rows by Exclude Row values'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Exclude
-        self.RA_Exclude()
-            
-        if config.development:
-            print('self.dfEx.shape: ', self.dfEx.shape)
-        #endregion ------------------------------------------> Exclude Protein
-        
-        #region -------------------------------------------------------> Score
-        #------------------------------> Msg
-        msgStep = msgPrefix + 'Excluding proteins by Score value'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Exclude
-        self.dfS = self.dfEx.loc[self.dfEx.iloc[:,0] >= self.do['ScoreVal']]
-        #------------------------------> Reset index
-        self.dfS.reset_index(drop=True, inplace=True)
-        
-        if config.development:
-            print('self.dfS.shape: ', self.dfS.shape)
-        #endregion ----------------------------------------------------> Score
-        
-        #region ----------------------------------------------> Transformation
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data transformation - {self.do["TransMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Transformed
-        if self.RA_Transformation():
-            pass
-        else:
-            return False
-                       
-        if config.development:
-            print('self.dfT.shape: ', self.dfT.shape)
-        #endregion -------------------------------------------> Transformation
-        
-        #region -----------------------------------------------> Normalization
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data normalization - {self.do["NormMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Normalization
-        try:
-            self.dfN = dtsStatistic.DataNormalization(
-                self.dfT, 
-                self.do['df']['ResCtrlFlat'], 
-                method = self.do['NormMethod'],
-            )
-        except Exception as e:
-            self.msgError   = config.mPDDataNorm
-            self.tException = e
-        
-        if config.development:
-            print('self.dfN.shape: ', self.dfN.shape)
-        #endregion --------------------------------------------> Normalization
-
-        #region --------------------------------------------------> Imputation
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data imputation - {self.do["ImpMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Imputation
-        try:
-            self.dfIm = dtsStatistic.DataImputation(
-                self.dfN, 
-                self.do['df']['ResCtrlFlat'], 
-                method = self.do['ImpMethod'],
-            )
-        except Exception as e:
-            self.msgError   = config.mPDDataImputation
-            self.tException = e
-        
-        if config.development:
-            print('self.dfIm.shape: ', self.dfIm.shape)
-            print(self.dfIm.head())
-        #endregion -----------------------------------------------> Imputation
+        #endregion -----------------------------------------> Data Preparation
         
         return True
     #---
@@ -3791,7 +3649,7 @@ class ProtProf(BaseConfModPanel):
         self.cSection     = config.nmProtProf
         self.cLLenLongest = len(config.lStResultCtrl)
         self.cTitlePD     = f"Running {config.nmProtProf} Analysis"
-        self.cGaugePD     = 30
+        self.cGaugePD     = 35
         #------------------------------> Optional configuration
         self.cTTHelp = config.ttBtnHelp.format(config.urlProtProf)
         #------------------------------> Base attributes and setup
@@ -4091,29 +3949,29 @@ class ProtProf(BaseConfModPanel):
             #     'ControlType': 'One Control per Column',
             # }
             #--> One Control per Row, 1 Cond and 2 TP
-            # self.tcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
-            # self.lbDict = {
-            #     1            : ['DMSO'],
-            #     2            : ['30min', '60min'],
-            #     'Control'    : ['MyControl'],
-            #     'ControlType': 'One Control per Row',
-            # }
+            self.tcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
+            self.lbDict = {
+                1            : ['DMSO'],
+                2            : ['30min', '60min'],
+                'Control'    : ['MyControl'],
+                'ControlType': 'One Control per Row',
+            }
             #--> One Control 2 Cond and 2 TP
-            self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-            self.lbDict = {
-                1            : ['C1', 'C2'],
-                2            : ['RP1', 'RP2'],
-                'Control'    : ['1Control'],
-                'ControlType': 'One Control',
-            }
+            # self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.lbDict = {
+            #     1            : ['C1', 'C2'],
+            #     2            : ['RP1', 'RP2'],
+            #     'Control'    : ['1Control'],
+            #     'ControlType': 'One Control',
+            # }
             #--> Ratio 2 Cond and 2 TP
-            self.tcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
-            self.lbDict = {
-                1            : ['C1', 'C2'],
-                2            : ['RP1', 'RP2'],
-                'Control'    : ['1Control'],
-                'ControlType': 'Ratio of Intensities',
-            }
+            # self.tcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.lbDict = {
+            #     1            : ['C1', 'C2'],
+            #     2            : ['RP1', 'RP2'],
+            #     'Control'    : ['1Control'],
+            #     'ControlType': 'Ratio of Intensities',
+            # }
         else:
             pass
         #endregion -----------------------------------------------------> Test
@@ -4223,7 +4081,7 @@ class ProtProf(BaseConfModPanel):
         #endregion ------------------------------------> Unique Column Numbers
         #endregion ---------------------------------------------> Mixed Fields
         
-        return False
+        return True
     #---
     
     def PrepareRun(self):
@@ -4333,6 +4191,7 @@ class ProtProf(BaseConfModPanel):
                 'ExcludeP'   : [2+x for x in range(1, len(excludeProt)+1)],
                 'ResCtrl'    : resctrlDF,
                 'ResCtrlFlat': resctrlDFFlat,
+                'ColumnR'    : resctrlDFFlat,
                 'ColumnF'    : [2] + resctrlDFFlat,
             },
         }
@@ -4373,109 +4232,18 @@ class ProtProf(BaseConfModPanel):
         msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
         
-        #region -------------------------------------------------------> Float
-        #------------------------------> 
-        msgStep = msgPrefix + "Data type"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        a, self.dfI, self.dfF = self.RA_0_Float()
-        if a:
+         #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
             pass
         else:
             return False
+        #endregion -----------------------------------------> Data Preparation
         
-        if config.development:
-            print("self.dfI.shape: ", self.dfI.shape)
-            print("self.dfF.shape: ", self.dfF.shape)
-        #endregion ----------------------------------------------------> Float
-        
-        #region ---------------------------------------------> Exclude Protein
-        #------------------------------> Msg
-        msgStep = msgPrefix + 'Excluding proteins by Exclude Proteins values'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Exclude
-        self.RA_Exclude()
-            
-        if config.development:
-            print('self.dfEx.shape: ', self.dfEx.shape)
-        #endregion ------------------------------------------> Exclude Protein
-        
-        #region -------------------------------------------------------> Score
-        #------------------------------> Msg
-        msgStep = msgPrefix + 'Excluding proteins by Score value'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Exclude
-        self.dfS = self.dfEx.loc[self.dfEx.iloc[:,2] >= self.do['ScoreVal']]
-        #------------------------------> Sort
-        self.dfS.sort_values(by = list(self.dfS.columns[0:2]), inplace=True)
-        #------------------------------> Reset index
-        self.dfS.reset_index(drop=True, inplace=True)
-        
-        if config.development:
-            print('self.dfS.shape: ', self.dfS.shape)
-        #endregion ----------------------------------------------------> Score
-        
-        #region ----------------------------------------------> Transformation
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data transformation - {self.do["TransMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Transformed
-        if self.RA_Transformation():
-            pass
-        else:
-            return False
-                       
-        if config.development:
-            print('self.dfT.shape: ', self.dfT.shape)
-        #endregion -------------------------------------------> Transformation
-        
-        #region -----------------------------------------------> Normalization
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data normalization - {self.do["NormMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Normalization
-        try:
-            self.dfN = dtsStatistic.DataNormalization(
-                self.dfT, 
-                self.do['df']['ResCtrlFlat'], 
-                method = self.do['NormMethod'],
-            )
-        except Exception as e:
-            self.msgError   = config.mPDDataNorm
-            self.tException = e
-        
-        if config.development:
-            print('self.dfN.shape: ', self.dfN.shape)
-        #endregion --------------------------------------------> Normalization
-
-        #region --------------------------------------------------> Imputation
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data imputation - {self.do["ImpMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Imputation
-        try:
-            self.dfIm = dtsStatistic.DataImputation(
-                self.dfN, 
-                self.do['df']['ResCtrlFlat'], 
-                method = self.do['ImpMethod'],
-            )
-        except Exception as e:
-            self.msgError   = config.mPDDataImputation
-            self.tException = e
-        
-        if config.development:
-            print('self.dfIm.shape: ', self.dfIm.shape)
-            print(self.dfIm.head())
-        #endregion -----------------------------------------------> Imputation
+        #region --------------------------------------------------------> Sort
+        self.dfIm.sort_values(
+            by=list(self.dfIm.columns[0:2]), inplace=True, ignore_index=True,
+        )
+        #endregion -----------------------------------------------------> Sort
         
         #region ----------------------------------------------------> Empty DF
         #------------------------------> Msg
@@ -4500,7 +4268,7 @@ class ProtProf(BaseConfModPanel):
             f'Calculating output data'
         )  
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
+        #------------------------------> Calculate data
         for c, cN in enumerate(self.do['Cond']):
             for t, tN in enumerate(self.do['RP']):
                 #------------------------------> Message
