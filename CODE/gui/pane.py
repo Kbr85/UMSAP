@@ -1113,6 +1113,9 @@ class BaseConfPanel(
                     'ScoreCol' : int
                 }
             - dfEx: pd.DataFrame with correct data types in each column
+            
+            This is last filter applied. That is why the check for empty df is
+            done here. 
         """
         #region ------------------------------------------------------> Filter
         try:
@@ -1133,16 +1136,14 @@ class BaseConfPanel(
         #endregion ---------------------------------------------------> Filter
         
         #region -----------------------> Check some Rows are left for Analysis
-        if self.dfS.shape[0] == 0:
+        if self.dfS.empty:
             self.msgError = ('No data left for analysis after all filters '
                 '(Score, Target Protein, etc) were applied.')
             return False
         else:
             pass
         #endregion --------------------> Check some Rows are left for Analysis
-        
-        
-        
+
         return True
     #---
     
