@@ -169,6 +169,8 @@ class BaseConfPanel(
             DataFrame for the initial values.
         dfF : pd.DataFrame
             DataFrame as float values and 0 and '' as np.nan
+        dfTP : pd.DataFrame
+            DataFrame filtered by Target Protein
         dfE : DataFrame
             Exclude some entries by some parameters
         dfS : DataFrame
@@ -312,12 +314,13 @@ class BaseConfPanel(
         )
         #------------------------------> To handle Data Preparation Steps
         self.dataPrep = { # Keys are the messaging for the Progress Dialog
-            "Setting Data Types"       : self.DatPrep_0_Float,
-            "Filter Data: Exclude Rows": self.DatPrep_Exclude,
-            "Filter Data: Score Value" : self.DatPrep_Score,
-            "Data Transformation"      : self.DatPrep_Transformation,
-            "Data Normalization"       : self.DatPrep_Normalization,
-            "Data Imputation"          : self.DatPrep_Imputation,
+            "Setting Data Types"         : self.DatPrep_0_Float,
+            "Filter Data: Target Protein": self.DatPrep_TargetProt,
+            "Filter Data: Exclude Rows"  : self.DatPrep_Exclude,
+            "Filter Data: Score Value"   : self.DatPrep_Score,
+            "Data Transformation"        : self.DatPrep_Transformation,
+            "Data Normalization"         : self.DatPrep_Normalization,
+            "Data Imputation"            : self.DatPrep_Imputation,
         }
         #------------------------------> This is needed to handle Data File 
         # content load to the wx.ListCtrl in Tabs with multiple panels
@@ -336,6 +339,7 @@ class BaseConfPanel(
         #--------------> pd.DataFrames for:
         self.dfI  = None # Initial and
         self.dfF  = None # Data as float and 0 and '' values as np.nan
+        self.dfTP = None # Select Target Protein
         self.dfE  = None # Exclude entries by some parameter
         self.dfS  = None # Exclude entries by Score value
         self.dfT  = None # Transformed values
@@ -1012,6 +1016,46 @@ class BaseConfPanel(
         return True
     #---
     
+    def DatPrep_TargetProt(self) -> bool:
+        """Filter data based on the value of Target Protein.
+        
+            See Notes below for more details
+    
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - do: dict with at least the following key - values pairs:
+                'TargetProt' : str name of the Protein to select in the data
+                'df' : {
+                    'TargetProtCol' : int,
+                }
+        """
+        #region -------------------------------------------------> Get Protein
+        try:
+            if self.do['df'].get('TargetProtCol', None) is not None:
+                self.dfTP = dtsMethod.DFFilterByColS(
+                    self.dfF, 
+                    self.do['df']['TargetProtCol'],
+                    self.do['TargetProt'], 
+                    'e',
+                )
+            else:
+                self.dfTP = self.dfF.copy()
+        except Exception as e:
+            self.msgError = config.mPDDataTargetProt.format(
+                self.do['TargetProt'], self.do['df']['TargetProtCol']
+            )
+            self.tException = e
+            return False
+        #endregion ----------------------------------------------> Get Protein
+        
+        return True
+    #---
+    
     def DatPrep_Exclude(self) -> bool:
         """Exclude rows from self.dfF based on the content of 
             self.do['df']['ExcludeR'].
@@ -1038,9 +1082,9 @@ class BaseConfPanel(
         try:
             if self.do['df'].get('ExcludeR', None) is not None:
                 self.dfEx = dtsMethod.DFExclude(
-                    self.dfF, self.do['df']['ExcludeR'])
+                    self.dfTP, self.do['df']['ExcludeR'])
             else:
-                self.dfEx = self.dfF.copy()
+                self.dfEx = self.dfTP.copy()
         except Exception as e:
             self.msgError = config.mPDDataExclude.format(
                 self.do['df']['ExcludeR'])
@@ -1073,7 +1117,7 @@ class BaseConfPanel(
         #region ------------------------------------------------------> Filter
         try:
             if self.do['df'].get('ScoreCol', None) is not None:
-                self.dfS = dtsMethod.DFFilterByCol(
+                self.dfS = dtsMethod.DFFilterByColN(
                     self.dfEx, 
                     self.do['df']['ScoreCol'], 
                     self.do['ScoreVal'], 
@@ -1204,18 +1248,20 @@ class BaseConfPanel(
         return True
     #---
     
-    def DataPreparation(self) -> bool:
+    def DataPreparation(self, resetIndex=True) -> bool:
         """Perform the data preparation step.
         
             See Notes below for more details.
+            
+            Parameters
+            ----------
+            resetIndex: bool
+                If True reset the index of self.dfImp
     
             Returns
             -------
             bool
     
-            Raise
-            -----
-            
             Notes
             -----
             See the Notes for the individual methods:
@@ -1241,13 +1287,20 @@ class BaseConfPanel(
                 return False
         #endregion -------------------------------------> Run Data Preparation
         
+        #region -------------------------------------------------> Reset index
+        if resetIndex:
+            self.dfIm.reset_index(drop=True, inplace=True)
+        else:
+            pass
+        #endregion ----------------------------------------------> Reset index
+        
         #region -------------------------------------------------------> Print
         if config.development:
             dfL = [
-                self.dfI, self.dfF, self.dfEx, self.dfS, self.dfT, self.dfN,
-                self.dfIm
+                self.dfI, self.dfF, self.dfTP, self.dfEx, self.dfS, self.dfT, 
+                self.dfN, self.dfIm
             ]
-            dfN = ['dfI', 'dfF', 'dfEx', 'dfS', 'dfT', 'dfN', 'dfIm']
+            dfN = ['dfI', 'dfF', 'dfTP', 'dfEx', 'dfS', 'dfT', 'dfN', 'dfIm']
             for i, df in enumerate(dfL):
                 if df is not None:
                     print(f'{dfN[i]}: {df.shape}')
@@ -2386,7 +2439,7 @@ class CorrA(BaseConfPanel):
         self.cSection     = config.nuCorrA
         self.cLLenLongest = len(config.lCbCorrMethod)
         self.cTitlePD     = config.lnPDCorrA
-        self.cGaugePD     = 23
+        self.cGaugePD     = 24
         #------------------------------> Optional configuration
         self.cTTHelp = config.ttBtnHelp.format(config.urlCorrA)
         #------------------------------> Setup attributes in base class 
@@ -2835,10 +2888,13 @@ class CorrA(BaseConfPanel):
 
         #region -------------------------------------------------------> Reset
         self.msgError   = None # Error msg to show in self.RunEnd
-        self.tException = None
+        self.tException = None # Exception
         self.d          = {} # Dict with the user input as given
         self.do         = {} # Dict with the processed user input
-        self.dfI        = None # pd.DataFrames
+        self.dfI        = None # pd.DataFrame for initial, normalized and
+        self.dfF        = None
+        self.dfTP       = None
+        self.dfEx       = None
         self.dfS        = None
         self.dfT        = None
         self.dfN        = None
@@ -2847,15 +2903,13 @@ class CorrA(BaseConfPanel):
         self.date       = None # date for corr file
         self.dateID     = None
         self.oFolder    = None # folder for output
-        self.iFileObj   = None # input file object
-        self.corrP      = None # path to the corr file that will be created
+        self.iFileObj   = None
         self.deltaT     = None
-        #------------------------------> 
+        
         if self.dFile is not None:
             self.iFile.tc.SetValue(str(self.dFile))
         else:
             pass
-        #------------------------------> 
         self.dFile = None # Data File copied to Data-Initial
         #endregion ----------------------------------------------------> Reset
     #---
@@ -3017,7 +3071,7 @@ class DataPrep(BaseConfPanel):
         self.cSection     = config.nuDataPrep
         self.cLLenLongest = len(self.cLColAnalysis)
         self.cTitlePD     = f"Running {config.nuDataPrep} Analysis"
-        self.cGaugePD     = 26
+        self.cGaugePD     = 27
         #------------------------------> Parent class
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
@@ -3447,11 +3501,13 @@ class DataPrep(BaseConfPanel):
         self.do         = {} # Dict with the processed user input
         self.dfI        = None # pd.DataFrame for initial, normalized and
         self.dfF        = None
+        self.dfTP       = None
         self.dfEx       = None
         self.dfS        = None
         self.dfT        = None
         self.dfN        = None
         self.dfIm       = None
+        self.dfR        = None
         self.date       = None # date for corr file
         self.dateID     = None
         self.oFolder    = None # folder for output
@@ -3649,7 +3705,7 @@ class ProtProf(BaseConfModPanel):
         self.cSection     = config.nmProtProf
         self.cLLenLongest = len(config.lStResultCtrl)
         self.cTitlePD     = f"Running {config.nmProtProf} Analysis"
-        self.cGaugePD     = 35
+        self.cGaugePD     = 36
         #------------------------------> Optional configuration
         self.cTTHelp = config.ttBtnHelp.format(config.urlProtProf)
         #------------------------------> Base attributes and setup
@@ -4341,6 +4397,7 @@ class ProtProf(BaseConfModPanel):
         self.do         = {} # Dict with the processed user input
         self.dfI        = None # pd.DataFrame for initial, normalized and
         self.dfF        = None
+        self.dfTP       = None
         self.dfEx       = None
         self.dfS        = None
         self.dfT        = None
@@ -4382,6 +4439,7 @@ class ProtProf(BaseConfModPanel):
                 aL = aL + n*[c]
                 bL = bL + n*[t]
                 cL = cL + config.dfcolProtprofCLevel
+        #------------------------------> 
         idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
         #endregion ----------------------------------------------------> Index
         
@@ -5040,21 +5098,21 @@ class LimProt(BaseConfModPanel2):
             'Band'       : self.lbDict[2],
             'ControlL'   : self.lbDict['Control'],
             'oc'         : {
-                'SeqCol'    : seqCol,
-                'DetectedP' : detectedProt,
-                'ScoreCol'  : scoreCol,
-                'ResCtrl'   : resctrl,
-                'Column'    : (
+                'SeqCol'       : seqCol,
+                'TargetProtCol': detectedProt,
+                'ScoreCol'     : scoreCol,
+                'ResCtrl'      : resctrl,
+                'Column'       : (
                     [seqCol, detectedProt, scoreCol] + resctrlFlat),
             },
             'df' : {
-                'SeqCol'     : 0,
-                'DetectedP'  : 1,
-                'ScoreCol'   : 2,
-                'ResCtrl'    : resctrlDF,
-                'ResCtrlFlat': resctrlDFFlat,
-                'ColumnR'    : resctrlDFFlat,
-                'ColumnF'    : [2] + resctrlDFFlat,
+                'SeqCol'       : 0,
+                'TargetProtCol': 1,
+                'ScoreCol'     : 2,
+                'ResCtrl'      : resctrlDF,
+                'ResCtrlFlat'  : resctrlDFFlat,
+                'ColumnR'      : resctrlDFFlat,
+                'ColumnF'      : [2] + resctrlDFFlat,
             },
         }
         #------------------------------> File base name
@@ -5101,7 +5159,71 @@ class LimProt(BaseConfModPanel2):
             return False
         #endregion -----------------------------------------> Data Preparation
         
+        #region ----------------------------------------------------> Empty DF
+        #------------------------------> Msg
+        msgStep = (
+            f'{msgPrefix}'
+            f'Calculating output data - Creating empty dataframe'
+        )  
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        self.dfR = self.EmptyDFR()
+        
+        
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region ---------------------------------------------------> Calculate
+        
+        #endregion ------------------------------------------------> Calculate
+        
+        #region --------------------------------------------------------> Sort
+        
+        #endregion -----------------------------------------------------> Sort
+        
+        if config.development:
+            print('self.dfR.shape: ', self.dfR.shape)
+            print(self.dfR)
+            print('')
+        
         return False
+    #---
+    
+    def EmptyDFR(self) -> 'pd.DataFrame':
+        """Creates the empty df for the results
+        
+            Returns
+            -------
+            pd.DataFrame
+        """
+        #region -------------------------------------------------------> Index
+        #------------------------------> 
+        aL = config.dfcolLimProtFirstPart
+        bL = config.dfcolLimProtFirstPart
+        cL = config.dfcolLimProtFirstPart
+        #------------------------------> 
+        n = len(config.dfcolLimProtCLevel)
+        #------------------------------> 
+        for b in self.do['Band']:
+            for l in self.do['Lane']:
+                aL = aL + n*[b]
+                bL = bL + n*[l]
+                cL = cL + config.dfcolLimProtCLevel
+        #------------------------------> 
+        idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
+        #endregion ----------------------------------------------------> Index
+        
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(
+            np.nan, columns=idx, index=range(self.dfIm.shape[0]),
+        )
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region -------------------------------------------------> Seq & Score
+        df[(aL[0], bL[0], cL[0])] = self.dfIm.iloc[:,0]
+        df[(aL[1], bL[1], cL[1])] = self.dfIm.iloc[:,2]
+        #endregion ----------------------------------------------> Seq & Score
+        
+        return df
     #---
     
     def RunEnd(self):
@@ -5126,6 +5248,15 @@ class LimProt(BaseConfModPanel2):
         self.tException = None # Exception
         self.d          = {} # Dict with the user input as given
         self.do         = {} # Dict with the processed user input
+        self.dfI        = None # pd.DataFrame for initial, normalized and
+        self.dfF        = None
+        self.dfTP       = None
+        self.dfEx       = None
+        self.dfS        = None
+        self.dfT        = None
+        self.dfN        = None
+        self.dfIm       = None
+        self.dfR        = None
         self.date       = None # date for corr file
         self.dateID     = None
         self.oFolder    = None # folder for output

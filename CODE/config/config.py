@@ -407,7 +407,11 @@ oControlTypeProtProf = {
 #region -----------------------------------------------------> DF Column names
 dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
 dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
-dfcolDataCheck = ['Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
+dfcolDataCheck = [
+    'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
+dfcolLimProtFirstPart = [
+    'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
+dfcolLimProtCLevel = ['ttest', 'delta', 'tost']
 #endregion --------------------------------------------------> DF Column names
 
 
@@ -429,6 +433,8 @@ mNotEmpty = "Please select a value for {}."
 #------------------------------> Pandas
 mPDGetInitCol = ("It was not possible to extract the selected columns {} from "
     "the selected {}:.\n{}")
+mPDDataTargetProt = ('Selection of Target Protein failed.\nTarget Protein: {} '
+'Detected Proteins column: {}.')
 mPDDataExclude = 'Data Exclusion failed.\nColumns used for data exclusion: {}.'
 mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
     'filtering by Score value: {}.')
