@@ -3017,7 +3017,7 @@ class DataPrep(BaseConfPanel):
         self.cSection     = config.nuDataPrep
         self.cLLenLongest = len(self.cLColAnalysis)
         self.cTitlePD     = f"Running {config.nuDataPrep} Analysis"
-        self.cGaugePD     = 30 # ????
+        self.cGaugePD     = 26
         #------------------------------> Parent class
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
@@ -3359,6 +3359,7 @@ class DataPrep(BaseConfPanel):
                 'ScoreCol'   : 0,
                 'ExcludeP'   : [x for x in range(1, len(excludeRow)+1)],
                 'ResCtrlFlat': resCtrlFlat,
+                'ColumnR'    : resCtrlFlat,
                 'ColumnF'    : [0]+resCtrlFlat,
             },
         }
@@ -3395,111 +3396,12 @@ class DataPrep(BaseConfPanel):
     
     def RunAnalysis(self):
         """Perform data preparation"""
-        #region ---------------------------------------------------------> Msg
-        msgPrefix = config.lPdRun
-        #endregion ------------------------------------------------------> Msg
-        
-        #region -------------------------------------------------------> Float
-        #------------------------------> 
-        msgStep = msgPrefix + "Data type"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        a, self.dfI, self.dfF = self.RA_0_Float()
-        if a:
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
             pass
         else:
             return False
-        
-        if config.development:
-            print("self.dfI.shape: ", self.dfI.shape)
-            print("self.dfF.shape: ", self.dfF.shape)
-        #endregion ----------------------------------------------------> Float
-        
-        #region ---------------------------------------------> Exclude Protein
-        #------------------------------> Msg
-        msgStep = msgPrefix + 'Excluding rows by Exclude Row values'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Exclude
-        self.RA_Exclude()
-            
-        if config.development:
-            print('self.dfEx.shape: ', self.dfEx.shape)
-        #endregion ------------------------------------------> Exclude Protein
-        
-        #region -------------------------------------------------------> Score
-        #------------------------------> Msg
-        msgStep = msgPrefix + 'Excluding proteins by Score value'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Exclude
-        self.dfS = self.dfEx.loc[self.dfEx.iloc[:,0] >= self.do['ScoreVal']]
-        #------------------------------> Reset index
-        self.dfS.reset_index(drop=True, inplace=True)
-        
-        if config.development:
-            print('self.dfS.shape: ', self.dfS.shape)
-        #endregion ----------------------------------------------------> Score
-        
-        #region ----------------------------------------------> Transformation
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data transformation - {self.do["TransMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Transformed
-        if self.RA_Transformation():
-            pass
-        else:
-            return False
-                       
-        if config.development:
-            print('self.dfT.shape: ', self.dfT.shape)
-        #endregion -------------------------------------------> Transformation
-        
-        #region -----------------------------------------------> Normalization
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data normalization - {self.do["NormMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Normalization
-        try:
-            self.dfN = dtsStatistic.DataNormalization(
-                self.dfT, 
-                self.do['df']['ResCtrlFlat'], 
-                method = self.do['NormMethod'],
-            )
-        except Exception as e:
-            self.msgError   = config.mPDDataNorm
-            self.tException = e
-        
-        if config.development:
-            print('self.dfN.shape: ', self.dfN.shape)
-        #endregion --------------------------------------------> Normalization
-
-        #region --------------------------------------------------> Imputation
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data imputation - {self.do["ImpMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Imputation
-        try:
-            self.dfIm = dtsStatistic.DataImputation(
-                self.dfN, 
-                self.do['df']['ResCtrlFlat'], 
-                method = self.do['ImpMethod'],
-            )
-        except Exception as e:
-            self.msgError   = config.mPDDataImputation
-            self.tException = e
-        
-        if config.development:
-            print('self.dfIm.shape: ', self.dfIm.shape)
-            print(self.dfIm.head())
-        #endregion -----------------------------------------------> Imputation
+        #endregion -----------------------------------------> Data Preparation
         
         return True
     #---
