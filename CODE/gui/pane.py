@@ -1132,6 +1132,17 @@ class BaseConfPanel(
             return False
         #endregion ---------------------------------------------------> Filter
         
+        #region -----------------------> Check some Rows are left for Analysis
+        if self.dfS.shape[0] == 0:
+            self.msgError = ('No data left for analysis after all filters '
+                '(Score, Target Protein, etc) were applied.')
+            return False
+        else:
+            pass
+        #endregion --------------------> Check some Rows are left for Analysis
+        
+        
+        
         return True
     #---
     
@@ -4708,7 +4719,7 @@ class LimProt(BaseConfModPanel2):
         self.cSection     = config.nmLimProt
         self.cLLenLongest = len(config.lStResultCtrl)
         self.cTitlePD     = f"Running {config.nmLimProt} Analysis"
-        self.cGaugePD     = 30
+        self.cGaugePD     = 50
         #------------------------------> 
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
