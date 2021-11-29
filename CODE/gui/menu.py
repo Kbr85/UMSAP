@@ -65,7 +65,6 @@ class MenuMethods():
                 Information about the event
         """
         win = self.GetWindow()
-        # win.plot.ZoomResetPlot()
         win.OnZoomReset()
         return True
     #---
@@ -243,11 +242,11 @@ class PlotMenu(wx.Menu, MenuMethods):
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
         self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
-        self.saveI = self.Append(-1, 'Save Image\tCtrl+I')
+        self.saveI = self.Append(-1, 'Export Image\tShift+I')
         self.AppendSeparator()
         self.checkDP = self.Append(-1, 'Data Preparation')
         self.AppendSeparator()
-        self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
@@ -336,8 +335,9 @@ class Utility(wx.Menu, MenuMethods):
     name = 'UtilityMenu'
     
     cName = {
-        'CorrA' : config.nuCorrA,
-        'ReadF' : config.nuReadF,
+        'CorrA'   : config.nuCorrA,
+        'DataPrep': config.nuDataPrep,
+        'ReadF'   : config.nuReadF,
     }
     #endregion --------------------------------------------------> Class setup
     
@@ -350,19 +350,22 @@ class Utility(wx.Menu, MenuMethods):
 
         #region --------------------------------------------------> Menu items
         self.corrA   = self.Append(-1, self.cName['CorrA'])
+        self.dataPrep = self.Append(-1, self.cName['DataPrep'])
         self.AppendSeparator()
         self.readFile = self.Append(-1, self.cName['ReadF']+'\tCtrl+R')
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
         self.nameID = { # Associate IDs with Tab names. Avoid manual IDs
-            self.corrA.GetId() : 'CorrATab',
+            self.corrA.GetId   (): config.ntCorrA,
+            self.dataPrep.GetId(): config.ntDataPrep,
         }
         #endregion ----------------------------------------------------> Names
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.readFile)
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.corrA)
+        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.dataPrep)
         #endregion -----------------------------------------------------> Bind
     #endregion -----------------------------------------------> Instance Setup
 
@@ -591,8 +594,8 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
         #------------------------------> Export Data
-        self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
-        self.saveI = self.Append(-1, 'Save Image\tShift+I')
+        self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
+        self.saveI = self.Append(-1, 'Export Image\tShift+I')
         self.AppendSeparator()
         #------------------------------> 
         self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
@@ -670,7 +673,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         self.AppendSeparator()
         self.pCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
-        self.saveI = self.Append(-1, 'Save Plot Image\tCtrl+I')
+        self.saveI = self.Append(-1, 'Export Image\tCtrl+I')
         self.AppendSeparator()
         self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
         #endregion -----------------------------------------------> Menu Items
@@ -896,7 +899,7 @@ class FCEvolution(wx.Menu):
         self.showAll = self.Append(-1, 'Show All', kind=wx.ITEM_CHECK)
         self.Check(self.showAll.GetId(), True)
         self.AppendSeparator()
-        self.saveI = self.Append(-1, 'Save Plot Image\tAlt+I')
+        self.saveI = self.Append(-1, 'Export Image\tAlt+I')
         self.AppendSeparator()
         self.zoomR = self.Append(-1, 'Reset Zoom\tAlt+Z')
         #endregion -----------------------------------------------> Menu Items
@@ -1386,9 +1389,13 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Export Data
         self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
         self.saveFD = self.Append(-1, 'Export Data Filtered\tShift+Ctrl+E')
+        self.saveI  = self.Append(-1, 'Export Image\tShift+I')
         self.AppendSeparator()
         #------------------------------> 
         self.dataPrep = self.Append(-1, 'Data Preparation')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
@@ -1396,6 +1403,8 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnExportPlotData,     source=self.saveD)
         self.Bind(wx.EVT_MENU, self.OnExportFilteredData, source=self.saveFD)
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,      source=self.dataPrep)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,          source=self.zoomR)
+        self.Bind(wx.EVT_MENU, self.OnSavePlot,           source=self.saveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup

@@ -124,7 +124,14 @@ class UMSAPFile():
 
         #region -------------------------------------------------> Check Input
         try:
-            self.data = dtsFF.ReadJSON(fileP)
+            #------------------------------> Read File
+            data = dtsFF.ReadJSON(fileP)
+            #------------------------------> Sort Keys
+            dataKey = sorted([x for x in data.keys()])
+            #------------------------------> 
+            self.data = {}
+            for k in dataKey:
+                self.data[k] = data[k]
         except Exception:
             raise dtsException.InputError(config.mFileRead.format(self.fileP))
         #endregion ----------------------------------------------> Check Input
