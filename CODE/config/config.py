@@ -422,6 +422,8 @@ ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
 
 #region ------------------------------------------------------------> Messages
 #region -------------------------------------------------------------> Other 
+#------------------------------> Unexpected Error
+mUnexpectedError = 'An uexpected error was encountered.'
 #------------------------------> Files 
 mFileSelector = f"It was not possible to show the file selecting dialog."
 mFileRead = 'An error occured when reading file:\n{}'
@@ -456,6 +458,9 @@ mListNumN0L = (
     "Only a list of unique non-negative integers can be accepted in {}.")
 mColNumbers = f"Values in section {lSbColumn} must be unique."
 mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
+#------------------------------> Sequences related errors
+mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
+    "protein.")
 #endregion ----------------------------------------------------------> Other 
 
 #region ----------------------------------------------------> For CheckInput
