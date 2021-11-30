@@ -973,13 +973,13 @@ class BaseConfPanel(
         #endregion ------------------------------------------------> Data file
         
         #region ------------------------------------------------> Seq Rec File
-        if self.do.get('seqRec', None) is not None:
+        if self.do.get('seqFile', None) is not None:
             #------------------------------> 
-            msgStep = msgPrefix + f"{self.cLSeqRecFile}, reading"
+            msgStep = msgPrefix + f"{self.cLSeqFile}, reading"
             wx.CallAfter(self.dlg.UpdateStG, msgStep)
             #------------------------------> 
             try:
-                self.seqRecFile = dtsFF.FastaFile(self.do['seqRec'])
+                self.seqFileObj = dtsFF.FastaFile(self.do['seqFile'])
             except Exception as e:
                 self.msgError = ('It was not possible to read the Fasta file '
                     'with the recombinant sequence.')
@@ -989,34 +989,10 @@ class BaseConfPanel(
             pass
         #endregion ---------------------------------------------> Seq Rec File
         
-        #region ------------------------------------------------> Seq Nat File
-        if self.do.get('seqNat', -1) != -1:
-            #------------------------------> 
-            msgStep = msgPrefix + f"{self.cLSeqNatFile}, reading"
-            wx.CallAfter(self.dlg.UpdateStG, msgStep)
-            #------------------------------> 
-            try:
-                if self.do['seqNat'] is not None:
-                    self.seqNatFile = dtsFF.FastaFile(self.do['seqNat'])
-                else:
-                    self.seqNatFile = None
-            except Exception as e:
-                self.msgError = ('It was not possible to read the Fasta file '
-                    'with the native sequence.')
-                self.tException = e
-                return False
-        else:
-            pass
-        #endregion ---------------------------------------------> Seq Nat File
-        
         #region ---------------------------------------------------> Print Dev
-        if config.development and self.do.get('seqRec', None) is not None:
-            print("Rec Seq: ", self.seqRecFile.seq)
-            if self.seqNatFile is not None:
-                print("Nat Seq: ", self.seqNatFile.seq)  
-            else:
-                print("Nat Seq: ", self.seqNatFile)
-            print('')
+        if config.development:
+            print("Rec Seq: ", self.seqFileObj.seqRec)
+            print("Nat Seq: ", self.seqFileObj.seqNat)
         else:
             pass
         #endregion ------------------------------------------------> Print Dev
@@ -1390,113 +1366,7 @@ class BaseConfPanel(
         
         return True
     #---
-    
-    def NCResNumbers(self) -> bool:
-        """Find the residue numbers for the peptides in the sequence of the 
-            Recombinant and Native protein.
-            
-            See Notes below for more details
-    
-            Returns
-            -------
-            bool
-    
-            Raise
-            -----
-            
-            Notes
-            -----
-            Assumes child class has the following attributes:
-            - seqRecFile: dtsFF.FastaFile
-                Object with the sequence of the Recombinant protein
-            - seqNatFile: dtsFF.FastaFile or None
-                Object with the sequence of the Native protein
-            - do: dict with at least the following key - values pairs
-                {
-                    'df' : {
-                        'SeqCol' : int,
-                    },
-                    'dfo' : {
-                        'NC' : list[int],
-                        'NCF': list[int],
-                    },
-                }
-        """
-        #region ---------------------------------------------------------> Msg
-        msgPrefix = config.lPdRun
-        #endregion ------------------------------------------------------> Msg
         
-        #region -----------------------------------------------------> Rec Seq
-        #------------------------------> 
-        msgStep = (f'{msgPrefix} Calculating output data - N & C terminal '
-            f'residue numbers I')
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        try:
-            self.dfR.iloc[:,self.do['dfo']['NC']] = self.dfR.iloc[
-                :,[self.do['df']['SeqCol'], 1]].apply(
-                    self.NCTerm, 
-                    axis        = 1,
-                    raw         = True,
-                    result_type = 'expand',
-                    args        = (self.seqRecFile, 'Recombinant'),
-                )
-        except dtsException.ExecutionError:
-            return False
-        except Exception as e:
-            self.msgError = config.mUnexpectedError
-            self.tException = e
-            return False
-        #endregion --------------------------------------------------> Rec Seq
-        
-        #region -----------------------------------------------------> Nat Seq
-        #------------------------------> 
-        msgStep = (f'{msgPrefix} Calculating output data - N & C terminal '
-            f'residue numbers II')
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        #endregion --------------------------------------------------> Nat Seq
-        
-        return True
-    #---
-    
-    def NCTerm(
-        self, row: list[str], seqObj: 'dtsFF.FastaFile', seqType: str
-        ) -> tuple[int, int]:
-        """Get the N and C terminal residue numbers for a given peptide.
-    
-            Parameters
-            ----------
-            row: list[str]
-                List with two elements. The Sequence is in index 0.
-            seqObj : dtsFF.FastaFile
-                Object with the protein sequence and the method to search the 
-                peptide sequence.
-            seqType : str
-                For the error message.
-    
-            Returns
-            -------
-            (Nterm, Cterm)
-    
-            Raise
-            -----
-            ExecutionError:
-                - When the peptide was not found in the sequence of the protein.
-        """
-        #region ---------------------------------------------------> Find pept
-        nc = seqObj.FindSeq(row[0])
-        #endregion ------------------------------------------------> Find pept
-        
-        #region ----------------------------------------------------> Check ok
-        if nc[0] != -1:
-            return nc
-        else:
-            self.msgError = config.mSeqPeptNotFound.format(row[0], seqType)
-            raise dtsException.ExecutionError(self.msgError)
-        #endregion -------------------------------------------------> Check ok
-    #---
-    
     def LoadResults(self):
         """Load output file"""
         #region ---------------------------------------------------------> Msg
@@ -1719,8 +1589,7 @@ class BaseConfModPanel2(BaseConfModPanel):
 
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Label
-        self.cLSeqRecFile = getattr(self, 'cLSeqRecFile', config.lStSeqRecFile)
-        self.cLSeqNatFile = getattr(self, 'cLSeqNatFile', config.lStSeqNatFile)
+        self.cLSeqFile = getattr(self, 'cLSeqFile', config.lStSeqFile)
         self.cLSeqLength = getattr(self, 'cLSeqLength', config.lStSeqLength)
         self.cLTargetProt = getattr(self, 'cLtargetProt', config.lStTargetProt)
         self.cLSeqCol = getattr(self, 'cLSeqCol', config.lStSeqCol)
@@ -1738,25 +1607,14 @@ class BaseConfModPanel2(BaseConfModPanel):
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> Files
-        self.seqRec = dtsWidget.ButtonTextCtrlFF(
+        self.seqFile = dtsWidget.ButtonTextCtrlFF(
             self.sbFile,
-            btnLabel   = self.cLSeqRecFile,
+            btnLabel   = self.cLSeqFile,
             # tcHint     = 
             mode       = self.cMseqFile,
             ext        = self.cEseqFile,
             tcStyle    = wx.TE_READONLY,
             validator  = dtsValidator.InputFF(fof='file', ext=config.esSeq),
-            ownCopyCut = True,
-        )
-        self.seqNat = dtsWidget.ButtonTextCtrlFF(
-            self.sbFile,
-            btnLabel   = self.cLSeqNatFile,
-            # tcHint     = 
-            mode       = self.cMseqFile,
-            ext        = self.cEseqFile,
-            tcStyle    = wx.TE_READONLY,
-            validator  = dtsValidator.InputFF(
-                fof='file', ext=config.esSeq, opt=True),
             ownCopyCut = True,
         )
         #------------------------------> Values
@@ -1797,38 +1655,26 @@ class BaseConfModPanel2(BaseConfModPanel):
         self.sizersbFileWid.Detach(self.id.tc)
         #--------------> 
         self.sizersbFileWid.Add(
-            self.seqRec.btn,
+            self.seqFile.btn,
             pos    = (2,0),
             flag   = wx.EXPAND|wx.ALL,
             border = 5
         )
         self.sizersbFileWid.Add(
-            self.seqRec.tc,
+            self.seqFile.tc,
             pos    = (2,1),
             flag   = wx.EXPAND|wx.ALL,
             border = 5
         )
         self.sizersbFileWid.Add(
-            self.seqNat.btn,
-            pos    = (3,0),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5
-        )
-        self.sizersbFileWid.Add(
-            self.seqNat.tc,
-            pos    = (3,1),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5
-        )
-        self.sizersbFileWid.Add(
             self.id.st,
-            pos    = (4,0),
+            pos    = (3,0),
             flag   = wx.ALIGN_CENTER|wx.ALL,
             border = 5
         )
         self.sizersbFileWid.Add(
             self.id.tc,
-            pos    = (4,1),
+            pos    = (3,1),
             flag   = wx.EXPAND|wx.ALL,
             border = 5
         )
@@ -1892,7 +1738,109 @@ class BaseConfModPanel2(BaseConfModPanel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def NCResNumbers(self) -> bool:
+        """Find the residue numbers for the peptides in the sequence of the 
+            Recombinant and Native protein.
+            
+            See Notes below for more details
     
+            Returns
+            -------
+            bool
+    
+            Raise
+            -----
+            
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - seqFileObj: dtsFF.FastaFile
+                Object with the sequence of the Recombinant and Native protein
+            - do: dict with at least the following key - values pairs
+                {
+                    'df' : {
+                        'SeqCol' : int,
+                    },
+                    'dfo' : {
+                        'NC' : list[int],
+                        'NCF': list[int],
+                    },
+                }
+        """
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdRun
+        #endregion ------------------------------------------------------> Msg
+        
+        #region -----------------------------------------------------> Rec Seq
+        #------------------------------> 
+        msgStep = (f'{msgPrefix} Calculating output data - N & C terminal '
+            f'residue numbers I')
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.dfR.iloc[:,self.do['dfo']['NC']] = self.dfR.iloc[
+                :,[self.do['df']['SeqCol'], 1]].apply(
+                    self.NCTerm, 
+                    axis        = 1,
+                    raw         = True,
+                    result_type = 'expand',
+                    args        = (self.seqFileObj, 'Recombinant'),
+                )
+        except dtsException.ExecutionError:
+            return False
+        except Exception as e:
+            self.msgError = config.mUnexpectedError
+            self.tException = e
+            return False
+        #endregion --------------------------------------------------> Rec Seq
+        
+        #region -----------------------------------------------------> Nat Seq
+        #------------------------------> 
+        msgStep = (f'{msgPrefix} Calculating output data - N & C terminal '
+            f'residue numbers II')
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        #endregion --------------------------------------------------> Nat Seq
+        
+        return True
+    #---
+    
+    def NCTerm(
+        self, row: list[str], seqObj: 'dtsFF.FastaFile', seqType: str
+        ) -> tuple[int, int]:
+        """Get the N and C terminal residue numbers for a given peptide.
+    
+            Parameters
+            ----------
+            row: list[str]
+                List with two elements. The Sequence is in index 0.
+            seqObj : dtsFF.FastaFile
+                Object with the protein sequence and the method to search the 
+                peptide sequence.
+            seqType : str
+                For the error message.
+    
+            Returns
+            -------
+            (Nterm, Cterm)
+    
+            Raise
+            -----
+            ExecutionError:
+                - When the peptide was not found in the sequence of the protein.
+        """
+        #region ---------------------------------------------------> Find pept
+        nc = seqObj.FindSeq(row[0])
+        #endregion ------------------------------------------------> Find pept
+        
+        #region ----------------------------------------------------> Check ok
+        if nc[0] != -1:
+            return nc
+        else:
+            self.msgError = config.mSeqPeptNotFound.format(row[0], seqType)
+            raise dtsException.ExecutionError(self.msgError)
+        #endregion -------------------------------------------------> Check ok
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -4956,8 +4904,7 @@ class LimProt(BaseConfModPanel2):
         self.checkUserInput = {
             self.cLuFile       : [self.uFile.tc, config.mFileBad],
             self.cLiFile       : [self.iFile.tc, config.mFileBad],
-            self.cLSeqRecFile  : [self.seqRec.tc, config.mFileBad],
-            self.cLSeqNatFile  : [self.seqNat.tc, config.mFileBad],
+            self.cLSeqFile     : [self.seqFile.tc, config.mFileBad],
             self.cLTransMethod : [self.transMethod.cb, config.mOptionBad],
             self.cLNormMethod  : [self.normMethod.cb, config.mOptionBad],
             self.cLImputation  : [self.imputationMethod.cb, config.mOptionBad],
@@ -5113,8 +5060,7 @@ class LimProt(BaseConfModPanel2):
             if config.cOS == "Darwin":
                 self.uFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
                 self.iFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
-                self.seqRec.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-rec.txt")
-                self.seqNat.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-nat.txt")
+                self.seqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
             else:
                 pass
             self.id.tc.SetValue('Beta Test Dev')
@@ -5196,10 +5142,8 @@ class LimProt(BaseConfModPanel2):
                 self.iFile.tc.GetValue()),
             self.EqualLenLabel(self.cLuFile) : (
                 self.uFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLSeqRecFile) : (
-                self.seqRec.tc.GetValue()),
-            self.EqualLenLabel(self.cLSeqNatFile) : (
-                self.seqNat.tc.GetValue()),
+            self.EqualLenLabel(self.cLSeqFile) : (
+                self.seqFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
                 self.id.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
@@ -5248,9 +5192,6 @@ class LimProt(BaseConfModPanel2):
         #--------------> Step
         msgStep = msgPrefix + 'User input, processing'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #--------------> SeqNat
-        seqNatVal = self.seqNat.tc.GetValue()
-        seqNat = Path(seqNatVal) if seqNatVal != '' else None
         #--------------> SeqLength
         seqLengthVal = self.seqLength.tc.GetValue()
         seqLength = float(seqLengthVal) if seqLengthVal != '' else None
@@ -5269,8 +5210,7 @@ class LimProt(BaseConfModPanel2):
         self.do  = {
             'iFile'      : Path(self.iFile.tc.GetValue()),
             'uFile'      : Path(self.uFile.tc.GetValue()),
-            'seqRec'     : Path(self.seqRec.tc.GetValue()),
-            'seqNat'     : seqNat,
+            'seqFile'    : Path(self.seqFile.tc.GetValue()),
             'ID'         : self.id.tc.GetValue(),
             'Cero'       : self.ceroB.IsChecked(),
             'TransMethod': self.transMethod.cb.GetValue(),

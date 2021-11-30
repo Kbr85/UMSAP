@@ -242,9 +242,9 @@ lnListPane = 'Data File Content'
 lnPDCorrA  = 'Calculating Correlation Coefficients'
 #------------------------------> wx.Button
 lBtnRun         = 'Start Analysis'
-lBtnDataFile    = 'Data File'
+lBtnDataFile    = 'Data'
 lBtnOutFile     = 'Output File'
-lBtnUFile       = 'UMSAP File'
+lBtnUFile       = 'UMSAP'
 lBtnTypeResCtrl = 'Type Values'
 #------------------------------> wx.ListCtrl
 lLCtrlColNameI = ['#', 'Name']
@@ -260,8 +260,7 @@ lStLimProtBand  = 'Bands'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'  
 #------------------------------> wx.Statictext
-lStSeqRecFile   = 'Sequence (rec)'
-lStSeqNatFile   = 'Sequence (nat)'
+lStSeqFile      = 'Sequences'
 lStId           = 'Analysis ID'
 lStAlpha        = 'Significance Level'
 lStColIFile     = "Columns in the {}"
