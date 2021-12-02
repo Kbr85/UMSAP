@@ -210,15 +210,16 @@ pImages = res / 'IMAGES' # Images folder
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 #------------------------------> Names
-fnInitial   = "{}-Initial-Data-{}.txt"
-fnFloat     = "{}-Floated-Data-{}.txt"
-fnExclude   = "{}-After-Excluding-Data-{}.txt"
-fnScore     = "{}-Score-Filtered-Data-{}.txt"
-fnTrans     = "{}-Transformed-Data-{}.txt"
-fnNorm      = "{}-Normalized-Data-{}.txt"
-fnImp       = "{}-Imputed-Data-{}.txt"
-fnDataSteps = 'Steps_Data_Files'
-fnDataInit  = 'Input_Data_Files'
+fnInitial    = "{}-Initial-Data-{}.txt"
+fnFloat      = "{}-Floated-Data-{}.txt"
+fnTargetProt = "{}-Target-Protein-Data-{}.txt"
+fnExclude    = "{}-After-Excluding-Data-{}.txt"
+fnScore      = "{}-Score-Filtered-Data-{}.txt"
+fnTrans      = "{}-Transformed-Data-{}.txt"
+fnNorm       = "{}-Normalized-Data-{}.txt"
+fnImp        = "{}-Imputed-Data-{}.txt"
+fnDataSteps  = 'Steps_Data_Files'
+fnDataInit   = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
 
 
@@ -409,8 +410,8 @@ dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
 dfcolDataCheck = [
     'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
 dfcolLimProtFirstPart = [
-    'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
-dfcolLimProtCLevel = ['ttest', 'delta', 'tost']
+    'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
+dfcolLimProtCLevel = ['Ptost']
 #endregion --------------------------------------------------> DF Column names
 
 

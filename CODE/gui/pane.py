@@ -354,8 +354,9 @@ class BaseConfPanel(
         #--------------> input file for directing repeating analysis from
         # file copied to oFolder
         self.dFile   = None
-        #--------------> Obj for the input data file
-        self.iFileObj = None
+        #--------------> Obj for files
+        self.iFileObj   = None
+        self.seqFileObj = None
         #------------------------------> 
         self.changeKey = getattr(self, 'changeKey', ['iFile', 'uFile'])
         #------------------------------> Parent init
@@ -1320,6 +1321,7 @@ class BaseConfPanel(
             -----
             See the Notes for the individual methods:
                 self.DatPrep_0_Float, 
+                self.DatPrep_TargetProt,
                 self.DatPrep_Exclude, 
                 self.DatPrep_Score,
                 self.DatPrep_Transformation,
@@ -1350,11 +1352,14 @@ class BaseConfPanel(
         
         #region -------------------------------------------------------> Print
         if config.development:
+            #------------------------------> 
             dfL = [
                 self.dfI, self.dfF, self.dfTP, self.dfEx, self.dfS, self.dfT, 
                 self.dfN, self.dfIm
             ]
             dfN = ['dfI', 'dfF', 'dfTP', 'dfEx', 'dfS', 'dfT', 'dfN', 'dfIm']
+            #------------------------------> 
+            print('')
             for i, df in enumerate(dfL):
                 if df is not None:
                     print(f'{dfN[i]}: {df.shape}')
@@ -1738,12 +1743,17 @@ class BaseConfModPanel2(BaseConfModPanel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def NCResNumbers(self) -> bool:
+    def NCResNumbers(self, seqNat: bool=True) -> bool:
         """Find the residue numbers for the peptides in the sequence of the 
             Recombinant and Native protein.
             
             See Notes below for more details
-    
+            
+            Parameters
+            ----------
+            seqNat: bool
+                Calculate N and C residue numbers also for the Native protein
+                
             Returns
             -------
             bool
@@ -1800,6 +1810,19 @@ class BaseConfModPanel2(BaseConfModPanel):
             f'residue numbers II')
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
+        if seqNat and self.seqFileObj.seqNat is not None:
+            #------------------------------> 
+            delta = self.seqFileObj.GetSelfDelta()
+            #------------------------------> 
+            a = self.dfR.iloc[:,self.do['dfo']['NC']] + delta
+            self.dfR.iloc[:,self.do['dfo']['NCF']] = a
+            #------------------------------> 
+            m = self.dfR.iloc[:,self.do['dfo']['NCF']] > 0
+            a = self.dfR.iloc[:,self.do['dfo']['NCF']].where(m, np.nan)
+            a = a.astype('Int16')
+            self.dfR.iloc[:,self.do['dfo']['NCF']] = a
+        else:
+            pass
         #endregion --------------------------------------------------> Nat Seq
         
         return True
@@ -4842,9 +4865,6 @@ class LimProt(BaseConfModPanel2):
         self.cTitlePD     = f"Running {config.nmLimProt} Analysis"
         self.cGaugePD     = 50
         #------------------------------> 
-        self.seqRecFile = None
-        self.seqNatFile = None
-        #------------------------------> 
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
 
@@ -5223,7 +5243,7 @@ class LimProt(BaseConfModPanel2):
             'Beta'       : float(self.beta.tc.GetValue()),
             'Gamma'      : float(self.gamma.tc.GetValue()),
             'Theta'      : theta,
-            'ThetaMax'   : self.thetaMax.tc.GetValue(),
+            'ThetaMax'   : float(self.thetaMax.tc.GetValue()),
             'Lane'       : self.lbDict[1],
             'Band'       : self.lbDict[2],
             'ControlL'   : self.lbDict['Control'],
@@ -5246,7 +5266,7 @@ class LimProt(BaseConfModPanel2):
             },
             'dfo' : { # Column numbers in the output dataframe
                 'NC' : [2,3], # N and C Term Res Numbers in the Rec Seq
-                'NCF': [3,4], # N and C Term Res Numbers in the Nat Seq
+                'NCF': [4,5], # N and C Term Res Numbers in the Nat Seq
             }
         }
         #------------------------------> File base name
@@ -5295,24 +5315,64 @@ class LimProt(BaseConfModPanel2):
         
         #region ----------------------------------------------------> Empty DF
         #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Calculating output data - Creating empty dataframe'
-        )  
+        msgStep = f'{msgPrefix} Creating empty dataframe'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
         self.dfR = self.EmptyDFR()
         #endregion -------------------------------------------------> Empty DF
         
         #region ------------------------------------------------> N, C Res Num
-        if self.NCResNumbers():
+        if self.NCResNumbers(seqNat=False):
             pass
         else:
             return False
         #endregion ---------------------------------------------> N, C Res Num
         
-        #region ---------------------------------------------------> Calculate
+        #region -------------------------------------------------------> Delta
+        #------------------------------> Msg
+        msgStep = f'{msgPrefix} Delta values'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        colC = self.do['df']['ResCtrl'][0][0]
+        #------------------------------> 
+        if self.do['Theta'] is not None:
+            delta = self.do['Theta']
+        else:
+            delta = dtsStatistic.tost_delta(
+                self.dfIm.iloc[:,colC], 
+                self.do['Alpha'],
+                self.do['Beta'],
+                self.do['Gamma'], 
+                deltaMax=self.do['ThetaMax'],
+            )
+        #------------------------------>         
+        self.dfR[('Delta', 'Delta', 'Delta')] = delta
+        #endregion ----------------------------------------------------> Delta
         
+        #region ---------------------------------------------------> Calculate
+        for b, bN in enumerate(self.do['Band']):
+            for l, lN in enumerate(self.do['Lane']):
+                #------------------------------> Message
+                msgStep = (
+                    f'{msgPrefix}'
+                    f'Gel spot {bN} - {lN}'
+                )  
+                wx.CallAfter(self.dlg.UpdateSt, msgStep)
+                #------------------------------> Control & Data Column
+                colD = self.do['df']['ResCtrl'][b+1][l]
+                #------------------------------> Calculate data
+                if colD:
+                    try:
+                        self.CalcOutData(bN, lN, colC, colD)
+                    except Exception as e:
+                        self.msgError = (
+                            f'Calculation of the Limited Proteolysis data for '
+                            f'point {bN} - {lN} failed.'
+                        )
+                        self.tException = e
+                        return False
+                else:
+                    pass
         #endregion ------------------------------------------------> Calculate
         
         #region --------------------------------------------------------> Sort
@@ -5325,7 +5385,25 @@ class LimProt(BaseConfModPanel2):
             print(self.dfR)
             print('')
         
-        return False
+        return True
+    #---
+    
+    def WriteOutput(self) -> bool:
+        """Write output """
+        #region --------------------------------------------------> Data Steps
+        stepDict = {
+            config.fnInitial.format('01', self.date)    : self.dfI,
+            config.fnFloat.format('02', self.date)      : self.dfF,
+            config.fnTargetProt.format('03', self.date) : self.dfTP,
+            config.fnScore.format('04', self.date)      : self.dfS,
+            config.fnTrans.format('05', self.date)      : self.dfT,
+            config.fnNorm.format('06', self.date)       : self.dfN,
+            config.fnImp.format('07', self.date)        : self.dfIm,
+            # self.cMainData.format('08', self.date)  : self.dfR,
+        }
+        #endregion -----------------------------------------------> Data Steps
+
+        return self.WriteOutputData(stepDict)
     #---
     
     def EmptyDFR(self) -> 'pd.DataFrame':
@@ -5366,6 +5444,30 @@ class LimProt(BaseConfModPanel2):
         return df
     #---
     
+    def CalcOutData(
+        self, bN: str,  lN: str, colC: list[int], colD: list[int],
+        ) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------> Delta and TOST
+        
+        #endregion -------------------------------------------> Delta and TOST
+        
+        return True
+    #---
+    
     def RunEnd(self):
         """Restart GUI and needed variables"""
         #region ---------------------------------------> Dlg progress dialogue
@@ -5401,10 +5503,8 @@ class LimProt(BaseConfModPanel2):
         self.dateID     = None
         self.oFolder    = None # folder for output
         self.iFileObj   = None
+        self.seqFileObj = None
         self.deltaT     = None
-        
-        self.seqRecFile = None
-        self.seqNatFile = None
         
         if self.dFile is not None:
             self.iFile.tc.SetValue(str(self.dFile))
