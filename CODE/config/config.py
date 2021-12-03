@@ -331,6 +331,9 @@ ttStExcludeRow = (
     "Set the column numbers containing the data used to exclude rows."
     "\ne.g. 8 10-12")
 ttStControlN = "Name or ID of the control experiment.\ne.g. MyControl."
+ttStSample = (f"Specify if samples are independent or paired.\n"
+    f"For example, samples are paired when the same Petri dish is "
+    f"used for the control and experiment.")
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -378,10 +381,12 @@ oIntensities = {
     'RatioI': 'Ratio of Intensities',
 }
 oSamples = {
-    'Empty': '',
-    'IS'   : 'Independent Samples',
-    'PS'   : 'Paired Samples',
+    '': '',
+    'Independent Samples': 'i',
+    'Paired Samples': 'p',
 }
+
+
 oCorrectP = {
     ''                     : '',
     'None'                 : 'None',
@@ -401,6 +406,8 @@ oControlTypeProtProf = {
     'OCR'  : 'One Control per Row',
     'Ratio': oIntensities['RatioI'],
 }
+
+
 #endregion ----------------------------------------------------------> Options
 
 

@@ -3874,17 +3874,14 @@ class ProtProf(BaseConfModPanel):
         self.cLSample      = 'Samples'
         self.cLRawI        = 'Intensities'
         #------------------------------> Choices
-        self.cOSample   = list(config.oSamples.values())
+        self.cOSample   = list(config.oSamples.keys())
         self.cORawI     = list(config.oIntensities.values())
         self.cOCorrectP = list(config.oCorrectP.keys())
         #------------------------------> Tooltips
         self.cTTCorrectP    = config.ttStPCorrection
         self.cTTGeneName    = config.ttStGenName
         self.cTTExcludeProt = config.ttStExcludeProt
-        self.cTTSample      = (
-            f"Specify if samples are independent or paired.\n"
-            f"For example, samples are paired when the same Petri dish is "
-            f"used for the control and experiment.")
+        self.cTTSample      = config.ttStSample 
         self.cTTRawI = (
             f"Specify if intensities are raw intensity values or are already "
             f"expressed as a ratio (SILAC, TMT/iTRAQ).")
@@ -3915,7 +3912,7 @@ class ProtProf(BaseConfModPanel):
             self.sbValue,
             label     = self.cLSample,
             choices   = self.cOSample,
-            tooltip   = self.cTTGeneName,
+            tooltip   = self.cTTSample,
             validator = dtsValidator.IsNotEmpty(),
         )
         
@@ -3930,7 +3927,7 @@ class ProtProf(BaseConfModPanel):
         self.geneName = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLGeneName,
-            stTooltip = self.cTTSample,
+            stTooltip = self.cTTGeneName,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -4854,10 +4851,15 @@ class LimProt(BaseConfModPanel2):
 
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Configuration
-        self.cLBeta       = "β value"
-        self.cLGamma      = "γ value"
-        self.cLTheta      = "Θ value"
-        self.cLThetaMax   = "Θmax value"
+        self.cLBeta     = "β value"
+        self.cLGamma    = "γ value"
+        self.cLTheta    = "Θ value"
+        self.cLThetaMax = "Θmax value"
+        self.cLSample   = 'Samples'
+        #------------------------------> Choices
+        self.cOSample = list(config.oSamples.keys())
+        #------------------------------> Tooltips
+        self.cTTSample = config.ttStSample
         #------------------------------> Needed by BaseConfPanel
         self.cURL         = config.urlLimProt
         self.cSection     = config.nmLimProt
@@ -4917,7 +4919,13 @@ class LimProt(BaseConfModPanel2):
                 vMin    = 0,
             )
         )
-        
+        self.sample = dtsWidget.StaticTextComboBox(
+            self.sbValue,
+            label     = self.cLSample,
+            choices   = self.cOSample,
+            tooltip   = self.cTTSample,
+            validator = dtsValidator.IsNotEmpty(),
+        )
         #endregion --------------------------------------------------> Widgets
         
         #region ----------------------------------------------> checkUserInput
@@ -4931,6 +4939,7 @@ class LimProt(BaseConfModPanel2):
             self.cLTargetProt  : [self.targetProt.tc, config.mValueBad],
             self.cLScoreVal    : [self.scoreVal.tc, config.mOneRealNum],
             self.cLSeqLength   : [self.seqLength.tc, config.mOneZPlusNum],
+            self.cLSample      : [self.sample.cb, config.mOptionBad],
             self.cLAlpha       : [self.alpha.tc, config.mOne01Num],
             self.cLBeta        : [self.beta.tc, config.mOne01Num],
             self.cLGamma       : [self.gamma.tc, config.mOne01Num],
@@ -5049,12 +5058,25 @@ class LimProt(BaseConfModPanel2):
             border = 5,
         )
         self.sizersbValueWid.Add(
+            self.sample.st,
+            pos    = (4,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.sample.cb,
+            pos    = (4,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
             1, 1,
             pos    = (0,5),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
             span   = (2, 0),
         )
+        
         self.sizersbValueWid.AddGrowableCol(0, 1)
         self.sizersbValueWid.AddGrowableCol(2, 1)
         self.sizersbValueWid.AddGrowableCol(4, 1)
@@ -5095,6 +5117,7 @@ class LimProt(BaseConfModPanel2):
             self.gamma.tc.SetValue('0.8')
             self.theta.tc.SetValue('')
             self.thetaMax.tc.SetValue('8')
+            self.sample.cb.SetValue('Independent Samples')
             self.seqCol.tc.SetValue('0')
             self.detectedProt.tc.SetValue('34')
             self.score.tc.SetValue('42')
@@ -5180,6 +5203,8 @@ class LimProt(BaseConfModPanel2):
                 self.scoreVal.tc.GetValue()),
             self.EqualLenLabel(self.cLSeqLength) : (
                 self.seqLength.tc.GetValue()),
+            self.EqualLenLabel(self.cLSample) : (
+                self.sample.cb.GetValue()),
             self.EqualLenLabel(self.cLAlpha) : (
                 self.alpha.tc.GetValue()),
             self.EqualLenLabel(self.cLBeta) : (
@@ -5239,6 +5264,7 @@ class LimProt(BaseConfModPanel2):
             'TargetProt' : self.targetProt.tc.GetValue(),
             'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
             'SeqLength'  : seqLength,
+            'Sample'     : config.oSamples[self.sample.cb.GetValue()],
             'Alpha'      : float(self.alpha.tc.GetValue()),
             'Beta'       : float(self.beta.tc.GetValue()),
             'Gamma'      : float(self.gamma.tc.GetValue()),
@@ -5462,7 +5488,11 @@ class LimProt(BaseConfModPanel2):
             
         """
         #region ----------------------------------------------> Delta and TOST
-        
+        a = dtsStatistic.tost(
+            self.dfIm, colC, colD, sample=self.do['Sample'], 
+            delta=self.dfR[('Delta', 'Delta', 'Delta')], alpha=self.do['Alpha'],
+        ) 
+        self.dfR[(bN, lN, 'Ptost')] = a['P'].to_numpy()
         #endregion -------------------------------------------> Delta and TOST
         
         return True
