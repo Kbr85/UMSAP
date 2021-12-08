@@ -736,6 +736,199 @@ class BaseWindowNPlotLT(BaseWindow):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
+
+
+class BaseWindowProteolysis(BaseWindow):
+    """Base class to create a window like Limited Proteolysis
+
+        Parameters
+        ----------
+        
+
+        Notes
+        -----
+        
+        
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, menuData: Optional[dict]=None,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.panel = wx.Panel(self)
+        #------------------------------>  Plot
+        # self.plots = dtsWindow.NPlots(
+        #     self, self.cLNPlots, self.cNPlotsCol, statusbar=self.statusbar)
+        #------------------------------> Text details
+        self.text = wx.TextCtrl(
+            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
+        self.text.SetFont(config.font['SeqAlign'])
+        #------------------------------> wx.ListCtrl
+        self.lc = pane.ListCtrlSearchPlot(
+            self, 
+            colLabel = self.cLCol,
+            colSize  = self.cSCol,
+            style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
+            tcHint   = f'Search {self.cHSearch}'
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ---------------------------------------------------------> AUI
+        #------------------------------> AUI control
+        self._mgr = aui.AuiManager()
+        #------------------------------> AUI which frame to use
+        self._mgr.SetManagedWindow(self)
+        #------------------------------> Add Configuration panel
+        self._mgr.AddPane( 
+            self.panel, 
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    'Fragments'
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+
+        self._mgr.AddPane( 
+            self.text, 
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    'self.cTText'
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        
+        self._mgr.AddPane( 
+            self.lc, 
+            aui.AuiPaneInfo(
+                ).Left(
+                ).Layer(
+                    1    
+                ).Caption(
+                    'self.cTList'
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ------------------------------------------------------> AUI
+
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        # self.Bind(wx.EVT_SEARCH, self.OnSearch)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    # def OnSearch(self, event: wx.Event) -> bool:
+    #     """Search for a given string in the wx.ListCtrl.
+    
+    #         Parameters
+    #         ----------
+    #         event:wx.Event
+    #             Information about the event
+            
+    #         Returns
+    #         -------
+    #         bool
+    
+    #         Notes
+    #         -----
+    #         See dtsWidget.MyListCtrl.Search for more details.
+    #     """
+    #     #region ---------------------------------------------------> Get index
+    #     tStr = self.lc.lcs.search.GetValue()
+    #     iEqual, iSimilar = self.lc.lcs.lc.Search(tStr)
+    #     #endregion ------------------------------------------------> Get index
+        
+    #     #region ----------------------------------------------> Show 1 Results
+    #     if len(iEqual) == 1:
+    #         #------------------------------> 
+    #         self.lc.lcs.lc.Select(iEqual[0], on=1)
+    #         self.lc.lcs.lc.EnsureVisible(iEqual[0])
+    #         self.lc.lcs.lc.SetFocus()
+    #         #------------------------------> 
+    #         return True
+    #     elif len(iSimilar) == 1:
+    #         #------------------------------> 
+    #         self.lc.lcs.lc.Select(iSimilar[0], on=1)
+    #         self.lc.lcs.lc.EnsureVisible(iSimilar[0])
+    #         self.lc.lcs.lc.SetFocus()
+    #         #------------------------------> 
+    #         return True
+    #     else:
+    #         pass
+    #     #endregion -------------------------------------------> Show 1 Results
+        
+    #     #region ----------------------------------------------> Show N Results
+    #     msg = (f'The string, {tStr}, was found in multiple rows.')
+    #     tException = (
+    #         f'The row numbers where the string was found are:\n '
+    #         f'{str(iSimilar)[1:-1]}')
+    #     dtscore.Notification(
+    #         'warning', 
+    #         msg        = msg,
+    #         setText    = True,
+    #         tException = tException,
+    #         parent     = self,
+    #     )
+    #     #endregion -------------------------------------------> Show N Results
+        
+    #     return True
+    # #---
+    
+    # def OnListSelect(self, event: wx.CommandEvent) -> bool:
+    #     """What to do after selecting a row in hte wx.ListCtrl. 
+    #         Override as needed
+    
+    #         Parameters
+    #         ----------
+    #         event : wx.Event
+    #             Information about the event
+    
+    #         Returns
+    #         -------
+    #         bool
+    #     """
+    #     return True
+    # #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
 #endregion -----------------------------------------------------> Base Classes
 
 
@@ -3540,6 +3733,76 @@ class ProtProfPlot(BaseWindowNPlotLT):
 #---
 
 
+class LimProtPlot(BaseWindowProteolysis):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    name = config.nwLimProt
+    #------------------------------> Labels
+    cLCol = ['#', 'Peptides']
+    #------------------------------> Sizes
+    cSCol = [45, 100]
+    #------------------------------> Hints
+    cHSearch = 'Protein List'
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: 'UMSAPControl') -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        menuData = None
+        
+        super().__init__(parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
 class CheckDataPrep(BaseWindowNPlotLT):
     """Window to check the data preparation steps
 
@@ -4264,6 +4527,7 @@ class UMSAPControl(BaseWindow):
         config.nuCorrA   : CorrAPlot,
         config.nuDataPrep: CheckDataPrep,
         config.nmProtProf: ProtProfPlot,
+        config.nmLimProt : LimProtPlot, 
     }
     
     cFileLabelCheck = ['Data File']

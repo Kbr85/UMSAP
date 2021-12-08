@@ -1486,7 +1486,7 @@ class ToolMenuBar(MainMenuBar):
         config.nwCorrAPlot    : CorrAPlotToolMenu,
         config.nwCheckDataPrep: DataPrepToolMenu,
         config.nwProtProf     : ProtProfToolMenu,
-        
+        config.nwLimProt      : None,
     }
     #endregion --------------------------------------------------> Class Setup
     
