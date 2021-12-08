@@ -756,14 +756,25 @@ class BaseWindowProteolysis(BaseWindow):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
+        #------------------------------> Labels
+        self.cLPaneMain = getattr(self, 'cLPaneMain', 'Protein Fragments')
+        self.cLPaneText = getattr(self, 'cLPaneText', 'Selection Details')
+        self.cLPaneList = getattr(self, 'cLPaneList', 'Peptide List')
+        self.cLPanePlot = getattr(self, 'cLPanePlot', 'Gel Representation')
+        self.cLCol      = getattr(self, 'cLCol', ['#', 'Peptides'])
+        #------------------------------> Sizes
+        self.cSCol = getattr(self, 'cSCol', [45, 100])
+        #------------------------------> Hints
+        self.cHSearch = getattr(self, 'cHSearch', self.cLPaneList)
+        
         super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.panel = wx.Panel(self)
+        self.panel = wx.Panel(self, size=(100,100))
+        self.panel.SetBackgroundColour('WHITE')
         #------------------------------>  Plot
-        # self.plots = dtsWindow.NPlots(
-        #     self, self.cLNPlots, self.cNPlotsCol, statusbar=self.statusbar)
+        self.plot = dtsWidget.MatPlotPanel(self, statusbar=self.statusbar)
         #------------------------------> Text details
         self.text = wx.TextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
@@ -776,6 +787,8 @@ class BaseWindowProteolysis(BaseWindow):
             style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
             tcHint   = f'Search {self.cHSearch}'
         )
+        #------------------------------> 
+        self.statusbar.SetFieldsCount(2, config.sbPlot2Fields)
         #endregion --------------------------------------------------> Widgets
 
         #region ---------------------------------------------------------> AUI
@@ -789,7 +802,26 @@ class BaseWindowProteolysis(BaseWindow):
             aui.AuiPaneInfo(
                 ).Center(
                 ).Caption(
-                    'Fragments'
+                    self.cLPaneMain
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        
+        self._mgr.AddPane( 
+            self.plot, 
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    self.cLPanePlot
                 ).Floatable(
                     b=False
                 ).CloseButton(
@@ -808,7 +840,7 @@ class BaseWindowProteolysis(BaseWindow):
                 ).Layer(
                     0
                 ).Caption(
-                    'self.cTText'
+                    self.cLPaneText
                 ).Floatable(
                     b=False
                 ).CloseButton(
@@ -827,7 +859,7 @@ class BaseWindowProteolysis(BaseWindow):
                 ).Layer(
                     1    
                 ).Caption(
-                    'self.cTList'
+                    self.cLPaneList
                 ).Floatable(
                     b=False
                 ).CloseButton(
@@ -843,8 +875,7 @@ class BaseWindowProteolysis(BaseWindow):
         #endregion ------------------------------------------------------> AUI
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
-        # self.Bind(wx.EVT_SEARCH, self.OnSearch)
+        
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -854,78 +885,7 @@ class BaseWindowProteolysis(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    # def OnSearch(self, event: wx.Event) -> bool:
-    #     """Search for a given string in the wx.ListCtrl.
     
-    #         Parameters
-    #         ----------
-    #         event:wx.Event
-    #             Information about the event
-            
-    #         Returns
-    #         -------
-    #         bool
-    
-    #         Notes
-    #         -----
-    #         See dtsWidget.MyListCtrl.Search for more details.
-    #     """
-    #     #region ---------------------------------------------------> Get index
-    #     tStr = self.lc.lcs.search.GetValue()
-    #     iEqual, iSimilar = self.lc.lcs.lc.Search(tStr)
-    #     #endregion ------------------------------------------------> Get index
-        
-    #     #region ----------------------------------------------> Show 1 Results
-    #     if len(iEqual) == 1:
-    #         #------------------------------> 
-    #         self.lc.lcs.lc.Select(iEqual[0], on=1)
-    #         self.lc.lcs.lc.EnsureVisible(iEqual[0])
-    #         self.lc.lcs.lc.SetFocus()
-    #         #------------------------------> 
-    #         return True
-    #     elif len(iSimilar) == 1:
-    #         #------------------------------> 
-    #         self.lc.lcs.lc.Select(iSimilar[0], on=1)
-    #         self.lc.lcs.lc.EnsureVisible(iSimilar[0])
-    #         self.lc.lcs.lc.SetFocus()
-    #         #------------------------------> 
-    #         return True
-    #     else:
-    #         pass
-    #     #endregion -------------------------------------------> Show 1 Results
-        
-    #     #region ----------------------------------------------> Show N Results
-    #     msg = (f'The string, {tStr}, was found in multiple rows.')
-    #     tException = (
-    #         f'The row numbers where the string was found are:\n '
-    #         f'{str(iSimilar)[1:-1]}')
-    #     dtscore.Notification(
-    #         'warning', 
-    #         msg        = msg,
-    #         setText    = True,
-    #         tException = tException,
-    #         parent     = self,
-    #     )
-    #     #endregion -------------------------------------------> Show N Results
-        
-    #     return True
-    # #---
-    
-    # def OnListSelect(self, event: wx.CommandEvent) -> bool:
-    #     """What to do after selecting a row in hte wx.ListCtrl. 
-    #         Override as needed
-    
-    #         Parameters
-    #         ----------
-    #         event : wx.Event
-    #             Information about the event
-    
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     return True
-    # #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -3754,12 +3714,9 @@ class LimProtPlot(BaseWindowProteolysis):
     """
     #region -----------------------------------------------------> Class setup
     name = config.nwLimProt
-    #------------------------------> Labels
-    cLCol = ['#', 'Peptides']
-    #------------------------------> Sizes
-    cSCol = [45, 100]
-    #------------------------------> Hints
-    cHSearch = 'Protein List'
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection      = config.nmLimProt
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -3770,7 +3727,11 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        menuData = None
+        self.cTitle      = f"{parent.cTitle} - {self.cSection}"
+        self.obj         = parent.obj
+        self.data        = self.obj.confData[self.cSection]
+        self.dateC       = None
+        self.date, menuData = self.SetDateMenuDate()
         
         super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
@@ -3792,13 +3753,105 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
+        self.OnDateChange(self.date[0])
+        #------------------------------> 
         self.Show()
         #endregion ------------------------------------------> Window position
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def SetDateMenuDate(self) -> tuple[list, dict]:
+        """Set the self.date list and the menuData dict needed to build the Tool
+            menu.
+
+            Returns
+            -------
+            tuple of list and dict
+            The list is a list of str with the dates in the analysis.
+            The dict has the following structure:
+                {
+                    'menudate' : [List of dates],
+                }                    
+        """
+        #region ---------------------------------------------------> Fill dict
+        #------------------------------> Variables
+        date = []
+        menuData = {}
+        #------------------------------> Fill 
+        for k in self.data.keys():
+            #------------------------------> 
+            date.append(k)
+            #------------------------------> 
+        #------------------------------> 
+        menuData['menudate'] = date
+        #endregion ------------------------------------------------> Fill dict
+        
+        return (date, menuData)
+    #---
     
+    def OnDateChange(self, date):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        self.dateC = date
+        self.df    = self.data[self.dateC]['DF'].copy()
+        #endregion ------------------------------------------------> Variables
+        
+        #region -------------------------------------------------> wx.ListCtrl
+        self.FillListCtrl()
+        #endregion ----------------------------------------------> wx.ListCtrl
+        
+        #region ---------------------------------------------------> StatusBar
+        self.statusbar.SetStatusText(self.dateC, 1)
+        #endregion ------------------------------------------------> StatusBar
+    #---
+
+    def FillListCtrl(self) -> bool:
+        """Update the protein list for the given analysis.
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Entries are read from self.df
+        """
+        #region --------------------------------------------------> Delete old
+        self.lc.lcs.lc.DeleteAllItems()
+        #endregion -----------------------------------------------> Delete old
+        
+        #region ----------------------------------------------------> Get Data
+        data = self.df.iloc[:,0:2]
+        data.insert(0, 'kbr', self.df.index.values.tolist())
+        data = data.astype(str)
+        data = data.iloc[:,0:2].values.tolist()
+        #endregion -------------------------------------------------> Get Data
+        
+        #region ------------------------------------------> Set in wx.ListCtrl
+        self.lc.lcs.lc.SetNewData(data)
+        #endregion ---------------------------------------> Set in wx.ListCtrl
+        
+        #region ---------------------------------------> Update Protein Number
+        self._mgr.GetPane(self.lc).Caption(f'{self.cLPaneList} ({len(data)})')
+        self._mgr.Update()
+        #endregion ------------------------------------> Update Protein Number
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 

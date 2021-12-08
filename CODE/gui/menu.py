@@ -1312,6 +1312,70 @@ class LockPlotScale(wx.Menu):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
+
+
+class LimProtToolMenu(wx.Menu, MenuMethods):
+    """ """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData: dict):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.menuData = menuData
+        self.plotDate = []
+        
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        #------------------------------> Add Dates
+        self.AddDateItems(self.menuData['menudate'])
+        self.AppendSeparator()
+        #------------------------------> Duplicate Window
+        self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        #------------------------------> Export Data
+        self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
+        self.saveFD = self.Append(-1, 'Export Data Filtered\tShift+Ctrl+E')
+        self.saveI  = self.Append(-1, 'Export Image\tShift+I')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.dataPrep = self.Append(-1, 'Data Preparation')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnPlotDate(self, event: wx.CommandEvent) -> Literal[True]:
+        """Plot a date of a section in an UMSAP file.
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+        """
+        #region --------------------------------------------------------> Date
+        tDate = self.GetLabelText(event.GetId())
+        #endregion -----------------------------------------------------> Date
+
+        #region --------------------------------------------------------> Draw
+        win = self.GetWindow()
+        win.OnDateChange(tDate)
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion -------------------------------------------------> Individual menus
 
 
@@ -1486,7 +1550,7 @@ class ToolMenuBar(MainMenuBar):
         config.nwCorrAPlot    : CorrAPlotToolMenu,
         config.nwCheckDataPrep: DataPrepToolMenu,
         config.nwProtProf     : ProtProfToolMenu,
-        config.nwLimProt      : None,
+        config.nwLimProt      : LimProtToolMenu,
     }
     #endregion --------------------------------------------------> Class Setup
     
