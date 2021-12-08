@@ -277,13 +277,20 @@ class UMSAPFile():
         plotData = {}
         #------------------------------> Fill
         for k,v in self.data[self.cSection[config.npLimProt]].items():
+            
             try:
                 #------------------------------> Create data
                 df  = pd.DataFrame(dtsMethod.DictStringKey2Tuple(v['R']))
+                #------------------------------> Plot Info
+                PI = {
+                    'Bands': v['CI']['Band'],
+                    'Lanes': v['CI']['Lane'],
+                }
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF': df,
                     'DP': {j: pd.DataFrame(w) for j,w in v['DP'].items()},
+                    'PI': PI,
                 }
             except Exception:
                 pass

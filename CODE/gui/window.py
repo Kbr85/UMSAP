@@ -734,6 +734,31 @@ class BaseWindowNPlotLT(BaseWindow):
         """
         return True
     #---
+    
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+        """
+        #region -----------------------------------------------> Update parent
+        self.parent.UnCheckSection(self.cSection, self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.name] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -885,7 +910,30 @@ class BaseWindowProteolysis(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
     
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+        """
+        #region -----------------------------------------------> Update parent
+        self.parent.UnCheckSection(self.cSection, self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.name] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -3664,31 +3712,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.autoFilter = mode
         return True
     #---
-    
-    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
-        """Close window and uncheck section in UMSAPFile window. Assumes 
-            self.parent is an instance of UMSAPControl.
-            Override as needed.
-    
-            Parameters
-            ----------
-            event: wx.CloseEvent
-                Information about the event
-        """
-        #region -----------------------------------------------> Update parent
-        self.parent.UnCheckSection(self.cSection, self)		
-        #endregion --------------------------------------------> Update parent
-        
-        #region ------------------------------------> Reduce number of windows
-        config.winNumber[self.name] -= 1
-        #endregion ---------------------------------> Reduce number of windows
-        
-        #region -----------------------------------------------------> Destroy
-        self.Destroy()
-        #endregion --------------------------------------------------> Destroy
-        
-        return True
-    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -3731,6 +3754,8 @@ class LimProtPlot(BaseWindowProteolysis):
         self.obj         = parent.obj
         self.data        = self.obj.confData[self.cSection]
         self.dateC       = None
+        self.bands       = None
+        self.lanes       = None
         self.date, menuData = self.SetDateMenuDate()
         
         super().__init__(parent, menuData=menuData)
@@ -3755,6 +3780,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------> Window position
         self.OnDateChange(self.date[0])
         #------------------------------> 
+        self.WinPos()
         self.Show()
         #endregion ------------------------------------------> Window position
     #---
@@ -3790,6 +3816,30 @@ class LimProtPlot(BaseWindowProteolysis):
         return (date, menuData)
     #---
     
+    def WinPos(self) -> Literal[True]:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
+        """
+        # #region ---------------------------------------------------> Variables
+        info = super().WinPos()
+        # #endregion ------------------------------------------------> Variables
+                
+        # #region ------------------------------------------------> Set Position
+        # x = info['D']['xo'] + info['W']['N']*config.deltaWin
+        # y = (
+        #     ((info['D']['h']/2) - (info['W']['h']/2)) 
+        #     + info['W']['N']*config.deltaWin
+        # )
+        # self.SetPosition(pt=(x,y))
+        # #endregion ---------------------------------------------> Set Position
+
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.name] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
+
+        return True
+    #---
+    
     def OnDateChange(self, date):
         """
     
@@ -3808,15 +3858,45 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> Variables
         self.dateC = date
         self.df    = self.data[self.dateC]['DF'].copy()
+        self.bands = self.data[self.dateC]['PI']['Bands']
+        self.lanes = self.data[self.dateC]['PI']['Lanes']
         #endregion ------------------------------------------------> Variables
         
         #region -------------------------------------------------> wx.ListCtrl
         self.FillListCtrl()
         #endregion ----------------------------------------------> wx.ListCtrl
         
+        #region ----------------------------------------------------> Gel Plot
+        self.DrawGel()
+        #endregion -------------------------------------------------> Gel Plot
+        
         #region ---------------------------------------------------> StatusBar
         self.statusbar.SetStatusText(self.dateC, 1)
         #endregion ------------------------------------------------> StatusBar
+    #---
+    
+    def DrawGel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.plot.axes.clear()
+        self.plot.axes.set_xticks(range(1, len(self.lanes)+1))
+        self.plot.axes.set_xticklabels(self.lanes)
+        self.plot.axes.set_yticks(range(1, len(self.bands)+1))
+        self.plot.axes.set_yticklabels(self.bands)
+        
+        self.plot.canvas.draw()
     #---
 
     def FillListCtrl(self) -> bool:
