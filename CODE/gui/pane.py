@@ -991,7 +991,7 @@ class BaseConfPanel(
         #endregion ---------------------------------------------> Seq Rec File
         
         #region ---------------------------------------------------> Print Dev
-        if config.development:
+        if config.development and self.seqFileObj is not None:
             print("Rec Seq: ", self.seqFileObj.seqRec)
             print("Nat Seq: ", self.seqFileObj.seqNat)
         else:
@@ -4369,7 +4369,7 @@ class ProtProf(BaseConfModPanel):
             'ID'         : self.id.tc.GetValue(),
             'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
             'RawI'       : True if self.rawI.cb.GetValue() == config.oIntensities['RawI'] else False,
-            'IndS'       : True if self.sample.cb.GetValue() == config.oSamples['IS'] else False,
+            'IndS'       : True if self.sample.cb.GetValue() == config.oSamples['Independent Samples'] else False,
             'Cero'       : self.ceroB.IsChecked(),
             'NormMethod' : self.normMethod.cb.GetValue(),
             'TransMethod': self.transMethod.cb.GetValue(),
@@ -4866,6 +4866,9 @@ class LimProt(BaseConfModPanel2):
         self.cLLenLongest = len(config.lStResultCtrl)
         self.cTitlePD     = f"Running {config.nmLimProt} Analysis"
         self.cGaugePD     = 50
+        #------------------------------> Needed to Run
+        self.cMainData    = '{}-LimitedProteolysis-Data-{}.txt'
+        self.changeKey = ['iFile', 'uFile', 'seqFile']
         #------------------------------> 
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
@@ -5425,7 +5428,7 @@ class LimProt(BaseConfModPanel2):
             config.fnTrans.format('05', self.date)      : self.dfT,
             config.fnNorm.format('06', self.date)       : self.dfN,
             config.fnImp.format('07', self.date)        : self.dfIm,
-            # self.cMainData.format('08', self.date)  : self.dfR,
+            self.cMainData.format('08', self.date)      : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
 
