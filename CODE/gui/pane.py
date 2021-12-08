@@ -4873,10 +4873,6 @@ class LimProt(BaseConfModPanel2):
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
 
-        #region --------------------------------------------------------> Menu
-        
-        #endregion -----------------------------------------------------> Menu
-
         #region -----------------------------------------------------> Widgets
         #------------------------------> Values
         self.beta = dtsWidget.StaticTextCtrl(
@@ -5133,10 +5129,64 @@ class LimProt(BaseConfModPanel2):
         else:
             pass
         #endregion -----------------------------------------------------> Test
+        
+        #region -------------------------------------------------------> DataI
+        self.SetInitialData(dataI)
+        #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def SetInitialData(self, dataI: Optional[dict]=None) -> Literal[True]:
+        """Set initial data
+    
+            Parameters
+            ----------
+            dataI : dict or None
+                Data to fill all fields and repeat an analysis. See Notes.
+    
+            Returns
+            -------
+            True
+        """
+        #region -------------------------------------------------> Fill Fields
+        if dataI is not None:
+            #------------------------------> Files
+            self.uFile.tc.SetValue(dataI['CI']['uFile'])
+            self.iFile.tc.SetValue(dataI['I'][self.cLiFile])
+            self.seqFile.tc.SetValue(dataI['I'][f'{self.cLSeqFile} File'])
+            self.id.tc.SetValue(dataI['CI']['ID'])
+            # #------------------------------> Data Preparation
+            self.ceroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.transMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
+            self.normMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
+            self.imputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
+            # #------------------------------> Values
+            self.targetProt.tc.SetValue(dataI['I'][self.cLTargetProt])
+            self.scoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
+            self.seqLength.tc.SetValue(dataI['I'][self.cLSeqLength])
+            self.alpha.tc.SetValue(dataI['I'][self.cLAlpha])
+            self.sample.cb.SetValue(dataI['I'][self.cLSample])
+            self.beta.tc.SetValue(dataI['I'][self.cLBeta])
+            self.gamma.tc.SetValue(dataI['I'][self.cLGamma])
+            self.theta.tc.SetValue(dataI['I'][self.cLTheta])
+            self.thetaMax.tc.SetValue(dataI['I'][self.cLThetaMax])
+            # #------------------------------> Columns
+            self.seqCol.tc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
+            self.detectedProt.tc.SetValue(dataI['I'][self.cLDetectedProt])
+            self.score.tc.SetValue(dataI['I'][self.cLScoreCol])
+            self.tcResults.SetValue(dataI['I'][self.cLResControl])
+            self.lbDict[1] = dataI['I'][config.lStLimProtLane]
+            self.lbDict[2] = dataI['I'][config.lStLimProtBand]
+            self.lbDict['Control'] = dataI['I'][f"Control {config.lStCtrlName}"]
+        else:
+            pass
+        #endregion ----------------------------------------------> Fill Fields
+        
+        return True
+    #---
+    
+    #------------------------------> Run Methods
     def CheckInput(self):
         """Check user input"""
         #region -------------------------------------------------------> Super
@@ -5188,7 +5238,7 @@ class LimProt(BaseConfModPanel2):
                 self.iFile.tc.GetValue()),
             self.EqualLenLabel(self.cLuFile) : (
                 self.uFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLSeqFile) : (
+            self.EqualLenLabel(f'{self.cLSeqFile} File') : (
                 self.seqFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
                 self.id.tc.GetValue()),
@@ -5218,7 +5268,7 @@ class LimProt(BaseConfModPanel2):
                 self.theta.tc.GetValue()),
             self.EqualLenLabel(self.cLThetaMax) : (
                 self.thetaMax.tc.GetValue()),
-            self.EqualLenLabel(self.cLSeqCol) : (
+            self.EqualLenLabel(f'{self.cLSeqCol} Column') : (
                 self.seqCol.tc.GetValue()),
             self.EqualLenLabel(self.cLDetectedProt) : (
                 self.detectedProt.tc.GetValue()),

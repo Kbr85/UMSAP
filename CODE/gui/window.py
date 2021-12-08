@@ -4272,6 +4272,7 @@ class UMSAPControl(BaseWindow):
         config.nuCorrA   : config.ntCorrA,
         config.nuDataPrep: config.ntDataPrep,
         config.nmProtProf: config.ntProtProf,
+        config.nmLimProt : config.ntLimProt,
     }
     #endregion --------------------------------------------------> Class setup
 

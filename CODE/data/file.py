@@ -100,6 +100,7 @@ class UMSAPFile():
         config.npCorrA   : config.nuCorrA,
         config.npDataPrep: config.nuDataPrep,
         config.npProtProf: config.nmProtProf,
+        config.npLimProt : config.nmLimProt,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -114,6 +115,7 @@ class UMSAPFile():
             self.cSection[config.npCorrA]   : self.ConfigureDataCorrA,
             self.cSection[config.npDataPrep]: self.ConfigureDataCheckDataPrep,
             self.cSection[config.npProtProf]: self.ConfigureDataProtProf,
+            self.cSection[config.npLimProt] : self.ConfigureDataLimProt,
         }
         #------------------------------> See Notes about the structure of dict
         self.confData = {}
@@ -263,6 +265,32 @@ class UMSAPFile():
         
         #region -------------------------------------------> Add/Reset section 
         self.confData[self.cSection[config.npProtProf]] = plotData
+        #endregion ----------------------------------------> Add/Reset section 
+        
+        return True
+    #---
+    
+    def ConfigureDataLimProt(self) -> Literal[True]:
+        """Configure a Limited Proteolysis section"""
+        #region -------------------------------------------------> Plot & Menu
+        #------------------------------> Empty start
+        plotData = {}
+        #------------------------------> Fill
+        for k,v in self.data[self.cSection[config.npLimProt]].items():
+            try:
+                #------------------------------> Create data
+                df  = pd.DataFrame(dtsMethod.DictStringKey2Tuple(v['R']))
+                #------------------------------> Add to dict if no error
+                plotData[k] = {
+                    'DF': df,
+                    'DP': {j: pd.DataFrame(w) for j,w in v['DP'].items()},
+                }
+            except Exception:
+                pass
+        #endregion ----------------------------------------------> Plot & Menu
+        
+        #region -------------------------------------------> Add/Reset section 
+        self.confData[self.cSection[config.npLimProt]] = plotData
         #endregion ----------------------------------------> Add/Reset section 
         
         return True
