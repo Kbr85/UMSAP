@@ -5455,7 +5455,8 @@ class LimProt(BaseConfModPanel2):
         #endregion ------------------------------------------------> Calculate
         
         #region --------------------------------------------------------> Sort
-        
+        self.dfR = self.dfR.sort_values(
+            by=[('Nterm', 'Nterm', 'Nterm'),('Cterm', 'Cterm', 'Cterm')])
         #endregion -----------------------------------------------------> Sort
         
         if config.development:

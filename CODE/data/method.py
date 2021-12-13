@@ -21,6 +21,7 @@ from typing import Literal
 import dat4s_core.data.method as dtsMethod
 #endregion ----------------------------------------------------------> Imports
 
+
 #region -------------------------------------------------------------> Methods
 def ResControl2ListNumber(
     val: str, sep: list[str]=[' ', ',', ';'], 
@@ -152,5 +153,94 @@ def ResControl2DF(
     #endregion -----------------------------------------------> Adjust col idx
     
     return outL
+#---
+
+
+def Fragments(df, val, comp):
+    """
+
+        Parameters
+        ----------
+        
+
+        Returns
+        -------
+        
+
+        Raise
+        -----
+        
+    """
+    #region -----------------------------------------------------------> dictO
+    dictO = {}
+    #endregion --------------------------------------------------------> dictO
+   
+    #region ---------------------------------------------------> 
+    for c in range(5, df.shape[1]):
+        colK = str(df.columns.values[c])
+        #------------------------------> Prepare dictO
+        dictO[colK] = {}
+        dictO[colK]['Coord'] = []
+        dictO[colK]['Seq'] = []
+        dictO[colK]['Np'] = []
+        dictO[colK]['Nc'] = []
+        #------------------------------> Filter df
+        dfE = dtsMethod.DFFilterByColN(df, c, val, comp)
+        #------------------------------> 
+        n = None
+        c = None
+        seq = None
+        np = None
+        ncL = []
+        nctL = []
+        #------------------------------>    
+        for r in range(0, dfE.shape[0]):
+            if n is None:
+                seq = dfE.iat[r,0]
+                np = 1
+                n = dfE.iat[r,1]
+                c = dfE.iat[r,2]
+                ncL.append(n-1)
+                ncL.append(c)
+                nctL.append(n-1)
+                nctL.append(c)
+            else:
+                nc = dfE.iat[r,1]
+                cc = dfE.iat[r,2]
+                seqc = dfE.iat[r,0]
+                if nc <= c:
+                    seq = f'{seq}\n{(nc-n)*" "}{seqc}'
+                    np = np + 1
+                    if cc > c:
+                        c = cc
+                    else:
+                        pass
+                    ncL.append(nc-1)
+                    ncL.append(cc)
+                    nctL.append(nc-1)
+                    nctL.append(cc)
+                else:
+                    dictO[colK]['Coord'].append((n,c))
+                    dictO[colK]['Seq'].append(seq)
+                    dictO[colK]['Np'].append(np)
+                    dictO[colK]['Nc'].append(len(list(set(ncL))))
+                    n = nc
+                    c = cc
+                    seq = seqc
+                    np = 1
+                    nc = []
+                    ncL.append(n-1)
+                    ncL.append(c)
+                    nctL.append(n-1)
+                    nctL.append(c)
+        #------------------------------> Catch the last line           
+        dictO[colK]['Coord'].append((n,c))
+        dictO[colK]['Seq'].append(seq)
+        dictO[colK]['Np'].append(np)
+        dictO[colK]['Nc'].append(len(list(set(ncL))))
+        dictO[colK]['Nct'] = len(list(set(nctL)))        
+    #endregion ------------------------------------------------> 
+
+    return dictO
 #---
 #endregion ----------------------------------------------------------> Methods

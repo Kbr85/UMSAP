@@ -39,6 +39,7 @@ import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
+import data.method as dmethod
 import gui.menu as menu
 import gui.tab as tab
 import gui.dtscore as dtscore
@@ -3758,6 +3759,7 @@ class LimProtPlot(BaseWindowProteolysis):
         self.dateC       = None
         self.bands       = None
         self.lanes       = None
+        self.fragments   = None
         self.spotSelLine = None
         self.blSelRect   = None
         self.date, menuData = self.SetDateMenuDate()
@@ -3861,10 +3863,10 @@ class LimProtPlot(BaseWindowProteolysis):
             
         """
         #region ---------------------------------------------------> Variables
-        self.dateC = date
-        self.df    = self.data[self.dateC]['DF'].copy()
-        self.bands = self.data[self.dateC]['PI']['Bands']
-        self.lanes = self.data[self.dateC]['PI']['Lanes']
+        self.dateC  = date
+        self.df     = self.data[self.dateC]['DF'].copy()
+        self.bands  = self.data[self.dateC]['PI']['Bands']
+        self.lanes  = self.data[self.dateC]['PI']['Lanes']
         #endregion ------------------------------------------------> Variables
         
         #region -------------------------------------------------> wx.ListCtrl
@@ -3875,9 +3877,40 @@ class LimProtPlot(BaseWindowProteolysis):
         self.DrawGel()
         #endregion -------------------------------------------------> Gel Plot
         
+        #region ---------------------------------------------------> Fragments
+        self.fragments = dmethod.Fragments(
+            self.df.iloc[:,self.GetColIdx()], 0.05, 'lt')
+        
+        for k,v in self.fragments.items():
+            print(k)
+            for j,w in v.items():
+                print(str(j)+': '+str(w))
+        #endregion ------------------------------------------------> Fragments
+
         #region ---------------------------------------------------> StatusBar
         self.statusbar.SetStatusText(self.dateC, 1)
         #endregion ------------------------------------------------> StatusBar
+    #---
+    
+    def GetColIdx(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        listO = [0,2,3,4,5]
+        for x in range(7, self.df.shape[1]):
+            listO.append(x)
+        return listO
     #---
     
     def DrawGel(self):
