@@ -542,7 +542,13 @@ color = { # Colors for the app
         'Vol'   : ['#ff3333', '#d3d3d3', '#3333ff'],
         'VolSel': '#6ac653',
         'FCAll' : '#d3d3d3',
-    }
+    },
+    nwLimProt : {
+        'Spot' : [
+            '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
+            '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
+        ],
+    },
 }
 #endregion -----------------------------------------------------------> Colors
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS

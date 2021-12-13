@@ -3753,6 +3753,7 @@ class LimProtPlot(BaseWindowProteolysis):
         self.cTitle      = f"{parent.cTitle} - {self.cSection}"
         self.obj         = parent.obj
         self.data        = self.obj.confData[self.cSection]
+        self.selBands    = True
         self.dateC       = None
         self.bands       = None
         self.lanes       = None
@@ -3890,15 +3891,100 @@ class LimProtPlot(BaseWindowProteolysis):
             -----
             
         """
-        self.plot.axes.clear()
-        self.plot.axes.set_xticks(range(1, len(self.lanes)+1))
-        self.plot.axes.set_xticklabels(self.lanes)
-        self.plot.axes.set_yticks(range(1, len(self.bands)+1))
-        self.plot.axes.set_yticklabels(self.bands)
-        
-        self.plot.canvas.draw()
-    #---
+        #region --------------------------------------------------------> Axis
+        self.SetGelAxis()
+        #endregion -----------------------------------------------------> Axis
 
+        #region ---------------------------------------------------> Draw Rect
+        for nb,b in enumerate(self.bands, start=1):
+            for nl,l in enumerate(self.lanes, start=1):
+                self.plot.axes.add_patch(mpatches.Rectangle(
+                    ((nl-0.4),(nb-0.4)), 
+                    0.8, 
+                    0.8, 
+                    edgecolor='black',
+                    facecolor=self.SetGelSpotColor(nb-1,nl-1),
+                ))
+            
+        #endregion ------------------------------------------------> Draw Rect
+       
+        
+        #region --------------------------------------------------------> Draw
+        self.plot.canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+       
+        return True
+    #---
+    
+    def SetGelAxis(self):
+        """
+  
+          Parameters
+          ----------
+          event:wx.Event
+              Information about the event
+          
+  
+          Returns
+          -------
+          
+  
+          Raise
+          -----
+          
+        """
+        #region ----------------------------------------------------> Variables
+        nLanes = len(self.lanes)
+        nBands = len(self.bands)
+        #endregion -------------------------------------------------> Variables
+       
+        #region ---------------------------------------------------> 
+        self.plot.axes.clear()
+        self.plot.axes.set_xticks(range(1, nLanes+1))
+        self.plot.axes.set_xticklabels(self.lanes)
+        self.plot.axes.set_yticks(range(1, nBands+1))
+        self.plot.axes.set_yticklabels(self.bands)
+        #------------------------------> 
+        self.plot.axes.set_xlim(0.5, nLanes+0.5)
+        self.plot.axes.set_ylim(0.5, nBands+0.5)
+        #endregion ------------------------------------------------> 
+        
+        return True 
+    #---
+    
+    def SetGelSpotColor(self, nb, nl):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables  
+        b = self.bands[nb]
+        l = self.lanes[nl]
+        c = self.df.loc[:,(b,l,'Ptost')].isna().all()
+        nc = len(config.color[self.name]['Spot'])
+        #endregion ------------------------------------------------> Variables  
+
+        #region -------------------------------------------------------> Color
+        if c:
+            return 'white'
+        else:
+            if self.selBands:
+                return config.color[self.name]['Spot'][nb%nc]
+            else:
+                return config.color[self.name]['Spot'][nl%nc]
+        #endregion ----------------------------------------------------> Color
+    #---
+    
     def FillListCtrl(self) -> bool:
         """Update the protein list for the given analysis.
     
