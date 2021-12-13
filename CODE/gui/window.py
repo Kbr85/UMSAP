@@ -3902,6 +3902,12 @@ class LimProtPlot(BaseWindowProteolysis):
             self.spotSelLine = None
         else:
             pass
+        
+        if self.blSelRect is not None:
+            self.blSelRect.remove()
+            self.blSelRect = None
+        else:
+            pass
         #endregion ------------------------------------> Remove Old Selections
        
         #region --------------------------------------------------------> Axis
@@ -3961,11 +3967,20 @@ class LimProtPlot(BaseWindowProteolysis):
         self.plot.axes.set_xticklabels(self.lanes)
         self.plot.axes.set_yticks(range(1, nBands+1))
         self.plot.axes.set_yticklabels(self.bands)
+        self.plot.axes.tick_params(length=0)
         #------------------------------> 
         self.plot.axes.set_xlim(0.5, nLanes+0.5)
         self.plot.axes.set_ylim(0.5, nBands+0.5)
         #endregion ------------------------------------------------> 
         
+        #region ------------------------------------------------> Remove Frame
+        self.plot.axes.spines['top'].set_visible(False)
+        self.plot.axes.spines['right'].set_visible(False)
+        self.plot.axes.spines['bottom'].set_visible(False)
+        self.plot.axes.spines['left'].set_visible(False)
+        
+        #endregion ---------------------------------------------> Remove Frame
+    
         return True 
     #---
     
@@ -4107,7 +4122,11 @@ class LimProtPlot(BaseWindowProteolysis):
         
         self.plot.canvas.draw()
         #endregion --------------------------------------------> Draw New Rect
+        
+        #region ----------------------------------------------> Draw Fragments
 
+        #endregion -------------------------------------------> Draw Fragments
+    
         return True
     #---
     
