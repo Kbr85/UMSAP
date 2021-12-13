@@ -3753,10 +3753,12 @@ class LimProtPlot(BaseWindowProteolysis):
         self.cTitle      = f"{parent.cTitle} - {self.cSection}"
         self.obj         = parent.obj
         self.data        = self.obj.confData[self.cSection]
+        self.pickedFired = False # To avoid selecting band/lane and spot
         self.selBands    = True
         self.dateC       = None
         self.bands       = None
         self.lanes       = None
+        self.spotSelLine = None
         self.date, menuData = self.SetDateMenuDate()
         
         super().__init__(parent, menuData=menuData)
@@ -3775,7 +3777,8 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        
+        self.plot.canvas.mpl_connect('pick_event', self.OnPick)
+        self.plot.canvas.mpl_connect('button_press_event', self.OnPressMouse)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -3902,13 +3905,17 @@ class LimProtPlot(BaseWindowProteolysis):
                     ((nl-0.4),(nb-0.4)), 
                     0.8, 
                     0.8, 
-                    edgecolor='black',
-                    facecolor=self.SetGelSpotColor(nb-1,nl-1),
+                    edgecolor = 'black',
+                    facecolor = self.SetGelSpotColor(nb-1,nl-1),
+                    picker    = True,
                 ))
             
         #endregion ------------------------------------------------> Draw Rect
        
-        
+        #region --------------------------------------------------> Zoom Reset
+        self.plot.ZoomResetSetValues()
+        #endregion -----------------------------------------------> Zoom Reset
+       
         #region --------------------------------------------------------> Draw
         self.plot.canvas.draw()
         #endregion -----------------------------------------------------> Draw
@@ -3983,6 +3990,88 @@ class LimProtPlot(BaseWindowProteolysis):
             else:
                 return config.color[self.name]['Spot'][nl%nc]
         #endregion ----------------------------------------------------> Color
+    #---
+    
+    def OnPick(self, event):
+        """
+    
+            Parameters
+            ----------
+            event: matplotlib pick event
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        self.pickedFired = True
+        x, y = event.artist.xy
+        x = round(x)
+        y = round(y)
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------> Remove Old Line
+        if self.spotSelLine is not None:
+            self.spotSelLine[0].remove()
+        else:
+            pass
+        #endregion ------------------------------------------> Remove Old Line
+        
+        #region -----------------------------------------------> Draw New Line
+        self.spotSelLine = self.plot.axes.plot(
+            [x-0.3, x+0.3], [y,y], color='black', linewidth=4)
+        #------------------------------> 
+        self.plot.canvas.draw()
+        #endregion --------------------------------------------> Draw New Line
+       
+        return True
+    #---
+    
+    def OnPressMouse(self, event):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region -------------------> Respond only to left click and not picked
+        if self.pickedFired:
+            self.pickedFired = False
+            return False
+        else:
+            pass
+        
+        if not event.inaxes:
+            if not event.button == 1:
+                return False
+            else:
+                pass
+        else:
+            pass
+        #endregion -------------------------------> Respond only to left click
+
+        #region ----------------------------------------------------> Vaiables
+        x = round(event.xdata)
+        y = round(event.ydata)
+        
+        print(x,y)
+        #endregion -------------------------------------------------> Vaiables
+       
+        return True
     #---
     
     def FillListCtrl(self) -> bool:
