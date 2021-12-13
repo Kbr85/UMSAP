@@ -3759,6 +3759,7 @@ class LimProtPlot(BaseWindowProteolysis):
         self.bands       = None
         self.lanes       = None
         self.spotSelLine = None
+        self.blSelRect   = None
         self.date, menuData = self.SetDateMenuDate()
         
         super().__init__(parent, menuData=menuData)
@@ -3894,6 +3895,15 @@ class LimProtPlot(BaseWindowProteolysis):
             -----
             
         """
+        #region ---------------------------------------> Remove Old Selections
+        #------------------------------> Select Gel Spot 
+        if self.spotSelLine is not None:
+            self.spotSelLine[0].remove()
+            self.spotSelLine = None
+        else:
+            pass
+        #endregion ------------------------------------> Remove Old Selections
+       
         #region --------------------------------------------------------> Axis
         self.SetGelAxis()
         #endregion -----------------------------------------------------> Axis
@@ -4055,22 +4065,49 @@ class LimProtPlot(BaseWindowProteolysis):
         else:
             pass
         
-        if not event.inaxes:
-            if not event.button == 1:
-                return False
-            else:
+        if event.inaxes:
+            if event.button == 1:
                 pass
+            else:
+                return False
         else:
-            pass
+            return False
         #endregion -------------------------------> Respond only to left click
 
-        #region ----------------------------------------------------> Vaiables
+        #region ---------------------------------------------------> Variables
         x = round(event.xdata)
         y = round(event.ydata)
         
-        print(x,y)
-        #endregion -------------------------------------------------> Vaiables
-       
+        if self.selBands:
+            xy = (0.55, y-0.45)
+            w = len(self.lanes) - 0.1
+            h = 0.9
+        else:
+            xy = (x-0.45, 0.55)
+            w = 0.9
+            h = len(self.bands) - 0.1
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------> Remove Old Rect
+        if self.blSelRect is not None:
+            self.blSelRect.remove()
+        else:
+            pass
+        #endregion ------------------------------------------> Remove Old Rect
+        
+        #region -----------------------------------------------> Draw New Rect
+        self.blSelRect = mpatches.Rectangle(
+            xy, w, h,
+            linewidth = 3,
+            edgecolor = 'red',
+            fill      = False,
+        )
+
+        self.plot.axes.add_patch(self.blSelRect)
+        
+        self.plot.canvas.draw()
+        #endregion --------------------------------------------> Draw New Rect
+
         return True
     #---
     
