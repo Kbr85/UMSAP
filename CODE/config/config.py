@@ -529,6 +529,8 @@ color = { # Colors for the app
     'Main' : [ # Lighter colors of the fragments and bands 
 		'#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff',
 	],
+    'RecProt' : 'gray',
+    'NatProt' : '#c94c4c',
     nuCorrA : { # Color for plot in Correlation Analysis
         'CMAP' : { # CMAP colors and interval
             'N' : 128,

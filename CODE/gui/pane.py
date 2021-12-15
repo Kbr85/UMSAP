@@ -5379,6 +5379,41 @@ class LimProt(BaseConfModPanel2):
         return True
     #---
     
+    def ReadInputFiles(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Super
+        if super().ReadInputFiles():
+            pass
+        else:
+            return False
+        #endregion ------------------------------------------------> Super
+
+        #region ---------------------------------------------------> 
+        try:
+            ProtLoc = self.seqFileObj.GetNatProtLoc()
+        except Exception:
+            ProtLoc = (None, None)
+        
+        self.do['ProtLength'] = self.seqFileObj.seqLengthRec
+        self.do['ProtLoc'] = ProtLoc
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
     def RunAnalysis(self):
         """ Perform the equivalence tests """
         #region ---------------------------------------------------------> Msg

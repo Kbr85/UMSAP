@@ -283,8 +283,11 @@ class UMSAPFile():
                 df  = pd.DataFrame(dtsMethod.DictStringKey2Tuple(v['R']))
                 #------------------------------> Plot Info
                 PI = {
-                    'Bands': v['CI']['Band'],
-                    'Lanes': v['CI']['Lane'],
+                    'Bands'     : v['CI']['Band'],
+                    'Lanes'     : v['CI']['Lane'],
+                    'Alpha'     : v['CI']['Alpha'],
+                    'ProtLength': v['CI']['ProtLength'],
+                    'ProtLoc'   : v['CI']['ProtLoc'],
                 }
                 #------------------------------> Add to dict if no error
                 plotData[k] = {

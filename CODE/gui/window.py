@@ -797,8 +797,7 @@ class BaseWindowProteolysis(BaseWindow):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.panel = wx.Panel(self, size=(100,100))
-        self.panel.SetBackgroundColour('WHITE')
+        self.plotM = dtsWidget.MatPlotPanel(self, statusbar=self.statusbar)
         #------------------------------>  Plot
         self.plot = dtsWidget.MatPlotPanel(self, statusbar=self.statusbar)
         #------------------------------> Text details
@@ -824,7 +823,7 @@ class BaseWindowProteolysis(BaseWindow):
         self._mgr.SetManagedWindow(self)
         #------------------------------> Add Configuration panel
         self._mgr.AddPane( 
-            self.panel, 
+            self.plotM, 
             aui.AuiPaneInfo(
                 ).Center(
                 ).Caption(
@@ -3751,17 +3750,21 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.cTitle      = f"{parent.cTitle} - {self.cSection}"
-        self.obj         = parent.obj
-        self.data        = self.obj.confData[self.cSection]
-        self.pickedFired = False # To avoid selecting band/lane and spot
-        self.selBands    = True
-        self.dateC       = None
-        self.bands       = None
-        self.lanes       = None
-        self.fragments   = None
-        self.spotSelLine = None
-        self.blSelRect   = None
+        self.cTitle       = f"{parent.cTitle} - {self.cSection}"
+        self.obj          = parent.obj
+        self.data         = self.obj.confData[self.cSection]
+        self.dateC        = None
+        self.bands        = None
+        self.lanes        = None
+        self.fragments    = None
+        self.selBands     = True
+        self.spotSelLine  = None
+        self.blSelRect    = None
+        self.blSelected   = None
+        self.spotSelected = None
+        self.alpha        = None
+        self.protLoc      = None
+        self.protLength   = None
         self.date, menuData = self.SetDateMenuDate()
         
         super().__init__(parent, menuData=menuData)
@@ -3863,10 +3866,13 @@ class LimProtPlot(BaseWindowProteolysis):
             
         """
         #region ---------------------------------------------------> Variables
-        self.dateC  = date
-        self.df     = self.data[self.dateC]['DF'].copy()
-        self.bands  = self.data[self.dateC]['PI']['Bands']
-        self.lanes  = self.data[self.dateC]['PI']['Lanes']
+        self.dateC      = date
+        self.df         = self.data[self.dateC]['DF'].copy()
+        self.bands      = self.data[self.dateC]['PI']['Bands']
+        self.lanes      = self.data[self.dateC]['PI']['Lanes']
+        self.alpha      = self.data[self.dateC]['PI']['Alpha']
+        self.protLoc    = self.data[self.dateC]['PI']['ProtLoc']
+        self.protLength = self.data[self.dateC]['PI']['ProtLength']
         #endregion ------------------------------------------------> Variables
         
         #region -------------------------------------------------> wx.ListCtrl
@@ -3879,12 +3885,9 @@ class LimProtPlot(BaseWindowProteolysis):
         
         #region ---------------------------------------------------> Fragments
         self.fragments = dmethod.Fragments(
-            self.df.iloc[:,self.GetColIdx()], 0.05, 'lt')
+            self.df.iloc[:,self.GetColIdx()], self.alpha, 'lt')
         
-        for k,v in self.fragments.items():
-            print(k)
-            for j,w in v.items():
-                print(str(j)+': '+str(w))
+        self.SetEmptyFragmentAxis()
         #endregion ------------------------------------------------> Fragments
 
         #region ---------------------------------------------------> StatusBar
@@ -4011,7 +4014,6 @@ class LimProtPlot(BaseWindowProteolysis):
         self.plot.axes.spines['right'].set_visible(False)
         self.plot.axes.spines['bottom'].set_visible(False)
         self.plot.axes.spines['left'].set_visible(False)
-        
         #endregion ---------------------------------------------> Remove Frame
     
         return True 
@@ -4044,9 +4046,9 @@ class LimProtPlot(BaseWindowProteolysis):
             return 'white'
         else:
             if self.selBands:
-                return config.color[self.name]['Spot'][nb%nc]
-            else:
                 return config.color[self.name]['Spot'][nl%nc]
+            else:
+                return config.color[self.name]['Spot'][nb%nc]
         #endregion ----------------------------------------------------> Color
     #---
     
@@ -4066,7 +4068,6 @@ class LimProtPlot(BaseWindowProteolysis):
             
         """
         #region ---------------------------------------------------> Variables
-        self.pickedFired = True
         x, y = event.artist.xy
         x = round(x)
         y = round(y)
@@ -4106,26 +4107,38 @@ class LimProtPlot(BaseWindowProteolysis):
             -----
 
         """
-        #region -------------------> Respond only to left click and not picked
-        if self.pickedFired:
-            self.pickedFired = False
-            return False
-        else:
-            pass
-        
-        if event.inaxes:
-            if event.button == 1:
-                pass
-            else:
-                return False
-        else:
-            return False
-        #endregion -------------------------------> Respond only to left click
-
         #region ---------------------------------------------------> Variables
         x = round(event.xdata)
         y = round(event.ydata)
+        #endregion ------------------------------------------------> Variables
         
+        #region -----------------------------------------------> Draw New Rect
+        self.DrawBLRect(x,y)
+        #endregion --------------------------------------------> Draw New Rect
+        
+        #region ----------------------------------------------> Draw Fragments
+        self.DrawFragments(x,y)
+        #endregion -------------------------------------------> Draw Fragments
+    
+        return True
+    #---
+    
+    def DrawBLRect(self, x, y):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
         if self.selBands:
             xy = (0.55, y-0.45)
             w = len(self.lanes) - 0.1
@@ -4156,10 +4169,230 @@ class LimProtPlot(BaseWindowProteolysis):
         self.plot.canvas.draw()
         #endregion --------------------------------------------> Draw New Rect
         
-        #region ----------------------------------------------> Draw Fragments
-
-        #endregion -------------------------------------------> Draw Fragments
+        return True
+    #---
     
+    def DrawFragments(self, x, y):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        b = self.bands[y-1]
+        l = self.lanes[x-1]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ----------------------------------------------------> Set Axis
+        self.SetFragmentAxis()
+        #endregion -------------------------------------------------> Set Axis
+        
+        #region ---------------------------------------------------> Keys
+        tKeys = []
+        #------------------------------> 
+        if self.selBands:
+            for tL in self.lanes:
+                tKeys.append(f"{(b, tL, 'Ptost')}")
+        else:
+            for tB in self.bands:
+                tKeys.append(f"({tB, l, 'Ptost'})")
+        #endregion ------------------------------------------------> Keys
+        
+        #region ---------------------------------------------------> Fragments
+        nc = len(config.color[self.name]['Spot'])
+        #------------------------------> 
+        for k,v in enumerate(tKeys, start=1):
+            for f in self.fragments[v]['Coord']:
+                if f[0] is not None:
+                    self.plotM.axes.add_patch(mpatches.Rectangle(
+                        (f[0], k-0.2), 
+                        (f[1]-f[0]), 
+                        0.4,
+                        picker    = True,
+                        facecolor = config.color[self.name]['Spot'][(k-1)%nc],
+                        edgecolor = 'black',
+                    ))
+                else:
+                    pass
+        #endregion ------------------------------------------------> Fragments
+        
+        #region -----------------------------------------------------> Protein
+        self.DrawProtein(k+1)
+        #endregion --------------------------------------------------> Protein
+       
+        #region --------------------------------------------------------> Draw
+        self.plotM.ZoomResetSetValues()
+        
+        self.plotM.canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def DrawProtein(self, y):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> Variables
+        recProt = []
+        natProt = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        if self.protLoc[0] is not None:
+            #------------------------------> 
+            natProt.append(self.protLoc)
+            a, b = self.protLoc
+            #------------------------------> 
+            if a == 1 and b == self.protLength:
+                pass
+            elif a == 1 and b < self.protLength:
+                recProt.append((b, self.protLength))
+            elif a > 1 and b == self.protLength:
+                recProt.append((1, a))
+            else:
+                recProt.append((1, a))
+                recProt.append((b, self.protLength))
+        else:
+            recProt.append((1, self.protLength))
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Draw Rect
+        for r in natProt:
+            self.plotM.axes.add_patch(mpatches.Rectangle(
+                (r[0], y-0.2),
+                r[1] - r[0],
+                0.4,
+                edgecolor = 'black',
+                facecolor = config.color['NatProt'],
+            ))
+        
+        for r in recProt:
+            self.plotM.axes.add_patch(mpatches.Rectangle(
+                (r[0], y-0.2),
+                r[1] - r[0],
+                0.4,
+                edgecolor = 'black',
+                facecolor = config.color['RecProt'],
+            ))
+        #endregion ------------------------------------------------> Draw Rect
+       
+        
+        return True
+    #---
+    
+    def SetFragmentAxis(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.plotM.axes.clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        #------------------------------>
+        if self.protLoc[0] is not None:
+            xtick = [1] + list(self.protLoc) + [self.protLength]
+        else:
+            xtick = [1] + [self.protLength]
+        self.plotM.axes.set_xticks(xtick)
+        self.plotM.axes.set_xticklabels(xtick)
+        #------------------------------> 
+        if self.selBands:
+            #------------------------------> 
+            self.plotM.axes.set_yticks(range(1, len(self.lanes)+2))
+            self.plotM.axes.set_yticklabels(self.lanes+['Protein'])            
+            self.plotM.axes.set_ylim(0.5, len(self.lanes)+1.5)
+            #------------------------------> 
+            ymax = len(self.lanes)+0.8
+        else:
+            #------------------------------> 
+            self.plotM.axes.set_yticks(range(1, len(self.bands)+2))
+            self.plotM.axes.set_yticklabels(self.bands+['Protein'])   
+            self.plotM.axes.set_ylim(0.5, len(self.bands)+0.5)
+            #------------------------------> 
+            ymax = len(self.bands)+0.8
+        #------------------------------> 
+        self.plotM.axes.tick_params(length=0)
+        #------------------------------> 
+        self.plotM.axes.set_xlim(0, self.protLength+1)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.plotM.axes.vlines(
+            xtick, 0, ymax, linestyles='dashed', linewidth=0.5, color='black')
+        #endregion ------------------------------------------------> 
+       
+        #region ------------------------------------------------> Remove Frame
+        self.plotM.axes.spines['top'].set_visible(False)
+        self.plotM.axes.spines['right'].set_visible(False)
+        self.plotM.axes.spines['bottom'].set_visible(False)
+        self.plotM.axes.spines['left'].set_visible(False)
+        #endregion ---------------------------------------------> Remove Frame
+        
+        return True
+    #---
+    
+    def SetEmptyFragmentAxis(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.plotM.axes.clear()
+        self.plotM.axes.set_xticks([])
+        self.plotM.axes.set_yticks([])
+        self.plotM.axes.tick_params(length=0)
+        self.plotM.axes.spines['top'].set_visible(False)
+        self.plotM.axes.spines['right'].set_visible(False)
+        self.plotM.axes.spines['bottom'].set_visible(False)
+        self.plotM.axes.spines['left'].set_visible(False)
+        self.plotM.canvas.draw()
+        #endregion ------------------------------------------------> 
+        
         return True
     #---
     
