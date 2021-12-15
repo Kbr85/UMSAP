@@ -4136,6 +4136,13 @@ class LimProtPlot(BaseWindowProteolysis):
             -----
 
         """
+        #region ---------------------------------------------------> In axis
+        if event.inaxes:
+            pass
+        else:
+            return False
+        #endregion ------------------------------------------------> In axis
+
         #region ---------------------------------------------------> Variables
         x = round(event.xdata)
         y = round(event.ydata)
