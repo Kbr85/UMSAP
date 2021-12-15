@@ -3783,7 +3783,8 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        self.plot.canvas.mpl_connect('pick_event', self.OnPick)
+        self.plot.canvas.mpl_connect('pick_event', self.OnPickGel)
+        self.plotM.canvas.mpl_connect('pick_event', self.OnPickFragment)
         self.plot.canvas.mpl_connect('button_press_event', self.OnPressMouse)
         #endregion -----------------------------------------------------> Bind
 
@@ -4052,7 +4053,35 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ----------------------------------------------------> Color
     #---
     
-    def OnPick(self, event):
+    def OnPickFragment(self, event):
+        """
+    
+            Parameters
+            ----------
+            event: matplotlib pick event
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        x, y = event.artist.xy
+        x = round(x)
+        y = round(y)
+        
+        art = event.artist
+        # print(dir(art))
+        label = art.get_label()
+        #endregion ------------------------------------------------> Variables
+        
+        return True
+    #---
+    
+    def OnPickGel(self, event):
         """
     
             Parameters
@@ -4159,7 +4188,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #region -----------------------------------------------> Draw New Rect
         self.blSelRect = mpatches.Rectangle(
             xy, w, h,
-            linewidth = 3,
+            linewidth = 1.5,
             edgecolor = 'red',
             fill      = False,
         )
@@ -4211,18 +4240,16 @@ class LimProtPlot(BaseWindowProteolysis):
         nc = len(config.color[self.name]['Spot'])
         #------------------------------> 
         for k,v in enumerate(tKeys, start=1):
-            for f in self.fragments[v]['Coord']:
-                if f[0] is not None:
-                    self.plotM.axes.add_patch(mpatches.Rectangle(
-                        (f[0], k-0.2), 
-                        (f[1]-f[0]), 
-                        0.4,
-                        picker    = True,
-                        facecolor = config.color[self.name]['Spot'][(k-1)%nc],
-                        edgecolor = 'black',
-                    ))
-                else:
-                    pass
+            for j,f in enumerate(self.fragments[v]['Coord']):
+                self.plotM.axes.add_patch(mpatches.Rectangle(
+                    (f[0], k-0.2), 
+                    (f[1]-f[0]), 
+                    0.4,
+                    picker    = True,
+                    facecolor = config.color[self.name]['Spot'][(k-1)%nc],
+                    edgecolor = 'black',
+                    label     = f'{k}.{j}',
+                ))
         #endregion ------------------------------------------------> Fragments
         
         #region -----------------------------------------------------> Protein

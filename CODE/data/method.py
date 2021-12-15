@@ -233,12 +233,15 @@ def Fragments(df, val, comp):
                     ncL.append(c)
                     nctL.append(n-1)
                     nctL.append(c)
-        #------------------------------> Catch the last line           
-        dictO[colK]['Coord'].append((n,c))
-        dictO[colK]['Seq'].append(seq)
-        dictO[colK]['Np'].append(np)
-        dictO[colK]['Nc'].append(len(list(set(ncL))))
-        dictO[colK]['Nct'] = len(list(set(nctL)))        
+        #------------------------------> Catch the last line
+        if n is not None:        
+            dictO[colK]['Coord'].append((n,c))
+            dictO[colK]['Seq'].append(seq)
+            dictO[colK]['Np'].append(np)
+            dictO[colK]['Nc'].append(len(list(set(ncL))))
+            dictO[colK]['Nct'] = len(list(set(nctL)))        
+        else:
+            pass
     #endregion ------------------------------------------------> 
 
     return dictO
