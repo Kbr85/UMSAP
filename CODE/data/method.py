@@ -156,7 +156,7 @@ def ResControl2DF(
 #---
 
 
-def Fragments(df, val, comp):
+def Fragments(df, val, comp, protLoc):
     """
 
         Parameters
@@ -183,16 +183,21 @@ def Fragments(df, val, comp):
         dictO[colK]['Coord'] = []
         dictO[colK]['Seq']   = []
         dictO[colK]['Np']    = []
+        dictO[colK]['NpNat'] = []
         dictO[colK]['Nc']    = []
+        dictO[colK]['NcNat'] = []
         #------------------------------> Filter df
         dfE = dtsMethod.DFFilterByColN(df, c, val, comp)
         #------------------------------> 
-        n    = None
-        c    = None
-        seq  = None
-        np   = None
-        ncL  = []
-        nctL = []
+        n       = None
+        c       = None
+        seq     = None
+        np      = None
+        npNat   = None
+        ncL     = []
+        ncLNat  = []
+        nctL    = []
+        nctLNat = []
         #------------------------------>    
         for r in range(0, dfE.shape[0]):
             if n is None:
@@ -200,6 +205,20 @@ def Fragments(df, val, comp):
                 np = 1
                 n = dfE.iat[r,1]
                 c = dfE.iat[r,2]
+                if n >= protLoc[0] and c <= protLoc[1]:
+                    npNat = 1
+                else:
+                    npNat = 0
+                if n >= protLoc[0]:
+                    ncLNat.append(n-1)
+                    nctLNat.append(n-1)
+                else:
+                    pass
+                if c <= protLoc[1]:
+                    ncLNat.append(c)
+                    nctLNat.append(c)
+                else:
+                    pass
                 ncL.append(n-1)
                 ncL.append(c)
                 nctL.append(n-1)
@@ -215,6 +234,20 @@ def Fragments(df, val, comp):
                         c = cc
                     else:
                         pass
+                    if nc >= protLoc[0] and cc <= protLoc[1]:
+                        npNat = npNat + 1
+                    else:
+                        pass
+                    if nc >= protLoc[0]:
+                        ncLNat.append(nc-1)
+                        nctLNat.append(nc-1)
+                    else:
+                        pass
+                    if cc <= protLoc[1]:
+                        ncLNat.append(cc)
+                        nctLNat.append(cc)
+                    else:
+                        pass
                     ncL.append(nc-1)
                     ncL.append(cc)
                     nctL.append(nc-1)
@@ -223,12 +256,29 @@ def Fragments(df, val, comp):
                     dictO[colK]['Coord'].append((n,c))
                     dictO[colK]['Seq'].append(seq)
                     dictO[colK]['Np'].append(np)
+                    dictO[colK]['NpNat'].append(npNat)
                     dictO[colK]['Nc'].append(len(list(set(ncL))))
+                    dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
                     n = nc
                     c = cc
                     seq = seqc
                     np = 1
-                    nc = []
+                    if n >= protLoc[0] and c <= protLoc[1]:
+                        npNat = 1
+                    else:
+                        npNat = 0
+                    ncLNat = []
+                    if n >= protLoc[0]:
+                        ncLNat.append(n-1)
+                        nctLNat.append(n-1)
+                    else:
+                        pass
+                    if c <= protLoc[1]:
+                        ncLNat.append(c)
+                        nctLNat.append(c)
+                    else:
+                        pass
+                    ncL    = []
                     ncL.append(n-1)
                     ncL.append(c)
                     nctL.append(n-1)
@@ -238,8 +288,11 @@ def Fragments(df, val, comp):
             dictO[colK]['Coord'].append((n,c))
             dictO[colK]['Seq'].append(seq)
             dictO[colK]['Np'].append(np)
+            dictO[colK]['NpNat'].append(npNat)
             dictO[colK]['Nc'].append(len(list(set(ncL))))
+            dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
             dictO[colK]['Nct'] = len(list(set(nctL)))        
+            dictO[colK]['NctNat'] = len(list(set(nctLNat)))        
         else:
             pass
     #endregion ------------------------------------------------> 

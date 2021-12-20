@@ -3894,7 +3894,11 @@ class LimProtPlot(BaseWindowProteolysis):
         
         #region ---------------------------------------------------> Fragments
         self.fragments = dmethod.Fragments(
-            self.df.iloc[:,self.GetColIdx()], self.alpha, 'lt')
+            self.df.iloc[:,self.GetColIdx()], 
+            self.alpha,
+            'lt', 
+            self.protLoc,
+        )
         
         self.SetEmptyFragmentAxis()
         #endregion ------------------------------------------------> Fragments
@@ -3970,7 +3974,6 @@ class LimProtPlot(BaseWindowProteolysis):
                     facecolor = self.SetGelSpotColor(nb-1,nl-1),
                     picker    = True,
                 ))
-            
         #endregion ------------------------------------------------> Draw Rect
        
         #region --------------------------------------------------> Zoom Reset
@@ -4105,6 +4108,11 @@ class LimProtPlot(BaseWindowProteolysis):
         #------------------------------> 
         self.plotM.canvas.draw()
         #endregion ----------------------------------------> Highlight Fragment
+        
+        #region ---------------------------------------------------> Print
+        self.PrintFragmentText(tKey, fragC)
+        #endregion ------------------------------------------------> Print
+
 
         return True
     #---
@@ -4685,6 +4693,56 @@ class LimProtPlot(BaseWindowProteolysis):
         self.text.SetInsertionPoint(0)
         #endregion ------------------------------------------------> 
 
+        return True
+    #---
+    
+    def PrintFragmentText(self, tKey, fragC):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Info
+        n, c = self.fragments[tKey]["Coord"][fragC[2]]
+        
+        if n >= self.protLoc[0] and n <= self.protLoc[1]:
+            nnat = n + self.protDelta
+        else:
+            nnat = 'NA'
+        if c >= self.protLoc[0] and c <= self.protLoc[1]:
+            cnat = c + self.protDelta
+        else:
+            cnat = 'NA'
+        resNum = f'Nterm {n}({nnat}) - Cterm {c}({cnat})'
+        
+        np = f'{self.fragments[tKey]["Np"][fragC[2]]} ({self.fragments[tKey]["NpNat"][fragC[2]]})'
+        clsite = f'{self.fragments[tKey]["Nc"][fragC[2]]} ({self.fragments[tKey]["NcNat"][fragC[2]]})'
+        #endregion ------------------------------------------------> Info
+
+        #region ---------------------------------------------------> 
+        self.text.Clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.text.AppendText(
+            f'Details for {self.lanes[fragC[1]]} - {self.bands[fragC[0]]} - Fragment {fragC[2]+1}\n\n')
+        self.text.AppendText(f'Residue Numbers: {resNum}\n')
+        self.text.AppendText(f'Sequences: {np}\n')
+        self.text.AppendText(f'Cleavage Sites: {clsite}\n\n')
+        self.text.AppendText(f'Sequences in the fragment:\n\n')
+        self.text.AppendText(f'{self.fragments[tKey]["Seq"][fragC[2]]}')
+        self.text.SetInsertionPoint(0)
+        #endregion ------------------------------------------------> 
+        
         return True
     #---
     
