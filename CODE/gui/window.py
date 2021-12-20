@@ -3763,6 +3763,8 @@ class LimProtPlot(BaseWindowProteolysis):
         self.alpha         = None
         self.protLoc       = None
         self.protLength    = None
+        self.protDelta     = None
+        self.protTarget    = None
         self.gelSpotPicked = False
         self.bandC         = None
         self.laneC         = None
@@ -3878,6 +3880,7 @@ class LimProtPlot(BaseWindowProteolysis):
         self.protLoc    = self.data[self.dateC]['PI']['ProtLoc']
         self.protLength = self.data[self.dateC]['PI']['ProtLength']
         self.protDelta  = self.data[self.dateC]['PI']['ProtDelta']
+        self.protTarget = self.data[self.dateC]['PI']['Prot']
         #endregion ------------------------------------------------> Variables
         
         #region -------------------------------------------------> wx.ListCtrl
@@ -4100,15 +4103,19 @@ class LimProtPlot(BaseWindowProteolysis):
             -----
             
         """
-        #region -------------------------------------------------> Flag picked
-        self.gelSpotPicked = True
-        #endregion ----------------------------------------------> Flag picked
-
         #region ---------------------------------------------------> Variables
         x, y = event.artist.xy
         x = round(x)
         y = round(y)
         #endregion ------------------------------------------------> Variables
+        
+        #region -------------------------------------------------> Flag picked
+        self.gelSpotPicked = True
+        #endregion ----------------------------------------------> Flag picked
+        
+        #region -----------------------------------------------> Spot Selected
+        self.spotC = (x,y)
+        #endregion --------------------------------------------> Spot Selected
         
         #region ---------------------------------------------> Remove Old Line
         if self.spotSelLine is not None:
@@ -4160,6 +4167,17 @@ class LimProtPlot(BaseWindowProteolysis):
         y = round(event.ydata)
         #endregion ------------------------------------------------> Variables
         
+        #region ---------------------------------------------> Remove Old Line
+        if self.gelSpotPicked:
+            pass
+        else:
+            if self.spotSelLine is not None:
+                self.spotSelLine[0].remove()
+                self.spotSelLine = None
+            else:
+                pass
+        #endregion ------------------------------------------> Remove Old Line
+        
         #region -----------------------------------------------> Draw New Rect
         self.DrawBLRect(x,y)
         #endregion --------------------------------------------> Draw New Rect
@@ -4172,6 +4190,7 @@ class LimProtPlot(BaseWindowProteolysis):
         if self.gelSpotPicked:
             self.gelSpotPicked = False
         else:
+            self.spotC = None
             self.PrintBLText(x-1,y-1)
         #endregion ------------------------------------------------> 
     
@@ -4410,11 +4429,55 @@ class LimProtPlot(BaseWindowProteolysis):
             -----
 
         """
+        #region ---------------------------------------------------> 
+        tKey = f'{(self.bands[y], self.lanes[x], "Ptost")}'
+        #------------------------------> 
+        fragments = len(self.fragments[tKey]['Coord'])
+        if fragments == 0:
+            self.text.Clear()
+            self.text.AppendText(
+                f'Details for {self.lanes[x]} - {self.bands[y]}\n\n')
+            self.text.AppendText(
+                f'There were no peptides from {self.protTarget} detected here.')
+            return True
+        else:
+            pass
+        #------------------------------> 
+        fp = (
+            f'{sum(self.fragments[tKey]["Np"])} (' + 
+            f'{self.fragments[tKey]["Np"]}'[1:-1] + ')'
+        )
+        #------------------------------> 
+        if self.protDelta is not None:
+            ncONat = []
+            for a,b in self.fragments[tKey]['Coord']:
+                aX = a+self.protDelta
+                bX = b+self.protDelta
+                aO = aX if aX >= self.protLoc[0] and aX <= self.protLoc[1] else 'NA'
+                bO = bX if bX >= self.protLoc[0] and bX <= self.protLoc[1] else 'NA'
+                ncONat.append((aX,bX))
+        else:
+            ncONat = 'NA' 
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
         self.text.Clear()
-        
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
         self.text.AppendText(
-            f'Information for {self.lanes[x]} - {self.bands[y]}\n\n')
+            f'Details for {self.lanes[x]} - {self.bands[y]}\n\n')
+        self.text.AppendText(f'--> Fragments: {fragments}\n\n')
+        self.text.AppendText(f'--> Number of FP: {fp}\n\n')
+        self.text.AppendText(f'--> Detected Protein Regions:\n\n')
+        self.text.AppendText(f'Recombinant Protein:\n')
+        self.text.AppendText(f'{self.fragments[tKey]["Coord"]}'[1:-1]+'\n\n')
+        self.text.AppendText(f'Native Protein:\n')
+        self.text.AppendText(f'{ncONat}'[1:-1])
         
+        self.text.SetInsertionPoint(0)
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     

@@ -289,6 +289,7 @@ class UMSAPFile():
                     'ProtLength': v['CI']['ProtLength'],
                     'ProtLoc'   : v['CI']['ProtLoc'],
                     'ProtDelta' : v['CI']['ProtDelta'],
+                    'Prot'      : v['CI']['TargetProt'],
                 }
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
