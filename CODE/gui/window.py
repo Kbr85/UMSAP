@@ -3760,6 +3760,7 @@ class LimProtPlot(BaseWindowProteolysis):
         self.selBands      = True
         self.spotSelLine   = None
         self.blSelRect     = None
+        self.fragSel       = None
         self.alpha         = None
         self.protLoc       = None
         self.protLength    = None
@@ -4076,15 +4077,35 @@ class LimProtPlot(BaseWindowProteolysis):
             
         """
         #region ---------------------------------------------------> Variables
+        art = event.artist
+        fragC = list(map(int, art.get_label().split('.')))
+        #------------------------------> 
+        if self.fragC != fragC:
+            self.fragC = fragC
+        else:
+            return True
+        #------------------------------> 
         x, y = event.artist.xy
         x = round(x)
         y = round(y)
-        
-        art = event.artist
-        # print(dir(art))
-        label = art.get_label()
+        #------------------------------> 
+        tKey = f'{(self.bands[fragC[0]], self.lanes[fragC[1]], "Ptost")}'
+        #------------------------------> 
+        x1, x2 = self.fragments[tKey]['Coord'][fragC[2]]
         #endregion ------------------------------------------------> Variables
         
+        #region -------------------------------------------> Highlight Fragment
+        if self.fragSel is not None:
+            self.fragSel[0].remove()
+        else:
+            pass
+        #------------------------------> 
+        self.fragSel = self.plotM.axes.plot(
+            [x1+2, x2-2], [y,y], color='black', linewidth=4)
+        #------------------------------> 
+        self.plotM.canvas.draw()
+        #endregion ----------------------------------------> Highlight Fragment
+
         return True
     #---
     
@@ -4178,6 +4199,15 @@ class LimProtPlot(BaseWindowProteolysis):
                 pass
         #endregion ------------------------------------------> Remove Old Line
         
+        #region -----------------------------------------------> Redraw or Not
+        if self.selBands and self.bandC != y-1:
+            pass
+        elif not self.selBands and self.laneC != x-1:
+            pass
+        else:
+            return True
+        #endregion --------------------------------------------> Redraw or Not
+
         #region -----------------------------------------------> Draw New Rect
         self.DrawBLRect(x,y)
         #endregion --------------------------------------------> Draw New Rect
@@ -4194,6 +4224,187 @@ class LimProtPlot(BaseWindowProteolysis):
             self.PrintBLText(x-1,y-1)
         #endregion ------------------------------------------------> 
     
+        return True
+    #---
+    
+    def DrawBLRect(self, x, y):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        if self.selBands:
+            xy = (0.55, y-0.45)
+            w = len(self.lanes) - 0.1
+            h = 0.9
+        else:
+            xy = (x-0.45, 0.55)
+            w = 0.9
+            h = len(self.bands) - 0.1
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------> Remove Old Rect
+        if self.blSelRect is not None:
+            self.blSelRect.remove()
+        else:
+            pass
+        #endregion ------------------------------------------> Remove Old Rect
+        
+        #region -----------------------------------------------> Draw New Rect
+        self.blSelRect = mpatches.Rectangle(
+            xy, w, h,
+            linewidth = 1.5,
+            edgecolor = 'red',
+            fill      = False,
+        )
+
+        self.plot.axes.add_patch(self.blSelRect)
+        
+        self.plot.canvas.draw()
+        #endregion --------------------------------------------> Draw New Rect
+        
+        return True
+    #---
+    
+    def DrawFragments(self, x, y):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        b = self.bands[y-1]
+        l = self.lanes[x-1]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ----------------------------------------------------> Set Axis
+        self.SetFragmentAxis()
+        #endregion -------------------------------------------------> Set Axis
+        
+        #region ---------------------------------------------------> Keys
+        tKeys = []
+        tLabel = []
+        #------------------------------> 
+        if self.selBands:
+            for k,tL in enumerate(self.lanes):
+                tKeys.append(f"{(b, tL, 'Ptost')}")
+                tLabel.append(f'{y-1}.{k}')
+        else:
+            for k,tB in enumerate(self.bands):
+                tKeys.append(f"{(tB, l, 'Ptost')}")
+                tLabel.append(f'{k}.{x-1}')
+        #endregion ------------------------------------------------> Keys
+        
+        #region ---------------------------------------------------> Fragments
+        nc = len(config.color[self.name]['Spot'])
+        #------------------------------> 
+        for k,v in enumerate(tKeys, start=1):
+            for j,f in enumerate(self.fragments[v]['Coord']):
+                self.plotM.axes.add_patch(mpatches.Rectangle(
+                    (f[0], k-0.2), 
+                    (f[1]-f[0]), 
+                    0.4,
+                    picker    = True,
+                    facecolor = config.color[self.name]['Spot'][(k-1)%nc],
+                    edgecolor = 'black',
+                    label     = f'{tLabel[k-1]}.{j}',
+                ))
+        #endregion ------------------------------------------------> Fragments
+        
+        #region -----------------------------------------------------> Protein
+        self.DrawProtein(k+1)
+        #endregion --------------------------------------------------> Protein
+       
+        #region --------------------------------------------------------> Draw
+        self.plotM.ZoomResetSetValues()
+        
+        self.plotM.canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def DrawProtein(self, y):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> Variables
+        recProt = []
+        natProt = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        if self.protLoc[0] is not None:
+            #------------------------------> 
+            natProt.append(self.protLoc)
+            a, b = self.protLoc
+            #------------------------------> 
+            if a == 1 and b == self.protLength:
+                pass
+            elif a == 1 and b < self.protLength:
+                recProt.append((b, self.protLength))
+            elif a > 1 and b == self.protLength:
+                recProt.append((1, a))
+            else:
+                recProt.append((1, a))
+                recProt.append((b, self.protLength))
+        else:
+            recProt.append((1, self.protLength))
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Draw Rect
+        for r in natProt:
+            self.plotM.axes.add_patch(mpatches.Rectangle(
+                (r[0], y-0.2),
+                r[1] - r[0],
+                0.4,
+                edgecolor = 'black',
+                facecolor = config.color['NatProt'],
+            ))
+        
+        for r in recProt:
+            self.plotM.axes.add_patch(mpatches.Rectangle(
+                (r[0], y-0.2),
+                r[1] - r[0],
+                0.4,
+                edgecolor = 'black',
+                facecolor = config.color['RecProt'],
+            ))
+        #endregion ------------------------------------------------> Draw Rect
+       
+        
         return True
     #---
     
@@ -4319,10 +4530,8 @@ class LimProtPlot(BaseWindowProteolysis):
         #------------------------------> 
         self.laneC = None
         #------------------------------> 
-        if self.bandC is None:
-            pass
-        elif self.bandC != band:
-            pass
+        if self.bandC != band:
+            self.bandC = band
         else:
             return True
         #endregion --------------------------------------> Check Prev Selected
@@ -4375,10 +4584,8 @@ class LimProtPlot(BaseWindowProteolysis):
         #region -----------------------------------------> Check Prev Selected
         self.bandC = None
         #------------------------------> 
-        if self.laneC is None:
-            pass
-        elif self.laneC != lane:
-            pass
+        if self.laneC != lane:
+            self.laneC = lane
         else:
             return True
         #endregion --------------------------------------> Check Prev Selected
@@ -4478,184 +4685,6 @@ class LimProtPlot(BaseWindowProteolysis):
         self.text.SetInsertionPoint(0)
         #endregion ------------------------------------------------> 
 
-        return True
-    #---
-    
-    def DrawBLRect(self, x, y):
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        #region ---------------------------------------------------> Variables
-        if self.selBands:
-            xy = (0.55, y-0.45)
-            w = len(self.lanes) - 0.1
-            h = 0.9
-        else:
-            xy = (x-0.45, 0.55)
-            w = 0.9
-            h = len(self.bands) - 0.1
-        #endregion ------------------------------------------------> Variables
-        
-        #region ---------------------------------------------> Remove Old Rect
-        if self.blSelRect is not None:
-            self.blSelRect.remove()
-        else:
-            pass
-        #endregion ------------------------------------------> Remove Old Rect
-        
-        #region -----------------------------------------------> Draw New Rect
-        self.blSelRect = mpatches.Rectangle(
-            xy, w, h,
-            linewidth = 1.5,
-            edgecolor = 'red',
-            fill      = False,
-        )
-
-        self.plot.axes.add_patch(self.blSelRect)
-        
-        self.plot.canvas.draw()
-        #endregion --------------------------------------------> Draw New Rect
-        
-        return True
-    #---
-    
-    def DrawFragments(self, x, y):
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        #region ---------------------------------------------------> Variables
-        b = self.bands[y-1]
-        l = self.lanes[x-1]
-        #endregion ------------------------------------------------> Variables
-        
-        #region ----------------------------------------------------> Set Axis
-        self.SetFragmentAxis()
-        #endregion -------------------------------------------------> Set Axis
-        
-        #region ---------------------------------------------------> Keys
-        tKeys = []
-        #------------------------------> 
-        if self.selBands:
-            for tL in self.lanes:
-                tKeys.append(f"{(b, tL, 'Ptost')}")
-        else:
-            for tB in self.bands:
-                tKeys.append(f"{(tB, l, 'Ptost')}")
-        #endregion ------------------------------------------------> Keys
-        
-        #region ---------------------------------------------------> Fragments
-        nc = len(config.color[self.name]['Spot'])
-        #------------------------------> 
-        for k,v in enumerate(tKeys, start=1):
-            for j,f in enumerate(self.fragments[v]['Coord']):
-                self.plotM.axes.add_patch(mpatches.Rectangle(
-                    (f[0], k-0.2), 
-                    (f[1]-f[0]), 
-                    0.4,
-                    picker    = True,
-                    facecolor = config.color[self.name]['Spot'][(k-1)%nc],
-                    edgecolor = 'black',
-                    label     = f'{k}.{j}',
-                ))
-        #endregion ------------------------------------------------> Fragments
-        
-        #region -----------------------------------------------------> Protein
-        self.DrawProtein(k+1)
-        #endregion --------------------------------------------------> Protein
-       
-        #region --------------------------------------------------------> Draw
-        self.plotM.ZoomResetSetValues()
-        
-        self.plotM.canvas.draw()
-        #endregion -----------------------------------------------------> Draw
-        
-        return True
-    #---
-    
-    def DrawProtein(self, y):
-        """
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-
-    
-            Raise
-            -----
-
-        """
-        #region ---------------------------------------------------> Variables
-        recProt = []
-        natProt = []
-        #endregion ------------------------------------------------> Variables
-
-        #region ---------------------------------------------------> 
-        if self.protLoc[0] is not None:
-            #------------------------------> 
-            natProt.append(self.protLoc)
-            a, b = self.protLoc
-            #------------------------------> 
-            if a == 1 and b == self.protLength:
-                pass
-            elif a == 1 and b < self.protLength:
-                recProt.append((b, self.protLength))
-            elif a > 1 and b == self.protLength:
-                recProt.append((1, a))
-            else:
-                recProt.append((1, a))
-                recProt.append((b, self.protLength))
-        else:
-            recProt.append((1, self.protLength))
-        #endregion ------------------------------------------------> 
-
-        #region ---------------------------------------------------> Draw Rect
-        for r in natProt:
-            self.plotM.axes.add_patch(mpatches.Rectangle(
-                (r[0], y-0.2),
-                r[1] - r[0],
-                0.4,
-                edgecolor = 'black',
-                facecolor = config.color['NatProt'],
-            ))
-        
-        for r in recProt:
-            self.plotM.axes.add_patch(mpatches.Rectangle(
-                (r[0], y-0.2),
-                r[1] - r[0],
-                0.4,
-                edgecolor = 'black',
-                facecolor = config.color['RecProt'],
-            ))
-        #endregion ------------------------------------------------> Draw Rect
-       
-        
         return True
     #---
     
