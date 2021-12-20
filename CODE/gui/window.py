@@ -4200,6 +4200,87 @@ class LimProtPlot(BaseWindowProteolysis):
             return self.PrintLText(x)
     #---
     
+    def PrintLBGetInfo(self, tKeys):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        dictO = {}
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        lanesWithFP = []
+        fragments = []
+        fP = []
+        ncL = []
+        ncO = []
+        #------------------------------> 
+        for tKey in tKeys:
+            #--------------> 
+            x = f'{tKey}'
+            nF = len(self.fragments[x]['Coord'])
+            #--------------> 
+            if nF:
+                if self.selBands:
+                    lanesWithFP.append(tKey[1])
+                else:
+                    lanesWithFP.append(tKey[0])
+                fragments.append(nF)
+                fP.append(sum(self.fragments[x]['Np']))
+            else:
+                pass
+            #------------------------------> 
+            ncL = ncL + self.fragments[x]['Coord']
+        #------------------------------> 
+        dictO['LanesWithFP'] = f'{len(lanesWithFP)} {lanesWithFP}'
+        dictO['Fragments'] = f'{len(fragments)} {fragments}'
+        dictO['FP'] = f'{sum(fP)} {fP}'
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        ncL.sort()
+        n,c = ncL[0]
+        for nc,cc in ncL[1:]:
+            if nc <= c:
+                if cc <= c:
+                    pass
+                else:
+                    c = cc
+            else:
+                ncO.append((n,c))
+                n = nc
+                c = cc
+        ncO.append((n,c))
+        #------------------------------> 
+        if self.protDelta is not None:
+            ncONat = []
+            for a,b in ncO:
+                aX = a+self.protDelta
+                bX = b+self.protDelta
+                aO = aX if aX >= self.protLoc[0] and aX <= self.protLoc[1] else 'NA'
+                bO = bX if bX >= self.protLoc[0] and bX <= self.protLoc[1] else 'NA'
+                ncONat.append((aX,bX))
+        else:
+            ncONat = 'NA' 
+        #------------------------------>     
+        dictO['NCO'] = ncO
+        dictO['NCONat'] = ncONat
+        #endregion ------------------------------------------------> 
+
+        return dictO
+    #---
+    
     def PrintBText(self, band):
         """
     
@@ -4228,57 +4309,10 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion --------------------------------------> Check Prev Selected
         
         #region --------------------------------------------------> Get Values
-        #------------------------------> 
-        totalLanes = len(self.lanes)
-        #------------------------------> 
-        lanesWithFP = []
-        fragments = []
-        fP = []
-        ncL = []
-        ncO = []
-        #------------------------------> 
-        for x in self.lanes:
-            #------------------------------> 
-            tKey = f"{(self.bands[band], x, 'Ptost')}"
-            #------------------------------>
-            nF = len(self.fragments[tKey]['Coord'])
-            if nF:
-                lanesWithFP.append(x)
-                fragments.append(nF)
-                fP.append(sum(self.fragments[tKey]['Np']))
-            else:
-                pass
-            #------------------------------> 
-            ncL = ncL + self.fragments[tKey]['Coord']
-        #------------------------------> 
-        lanesWithFP = f'{len(lanesWithFP)} {lanesWithFP}'
-        fragments = f'{len(fragments)} {fragments}'
-        fP = f'{sum(fP)} {fP}'
-        #------------------------------> 
-        ncL.sort()
-        n,c = ncL[0]
-        for nc,cc in ncL[1:]:
-            if nc <= c:
-                if cc <= c:
-                    pass
-                else:
-                    c = cc
-            else:
-                ncO.append((n,c))
-                n = nc
-                c = cc
-        ncO.append((n,c))
-        #------------------------------> 
-        if self.protDelta is not None:
-            ncONat = []
-            for a,b in ncO:
-                aX = a+self.protDelta
-                bX = b+self.protDelta
-                aO = aX if aX >= self.protLoc[0] and aX <= self.protLoc[1] else 'NA'
-                bO = bX if bX >= self.protLoc[0] and bX <= self.protLoc[1] else 'NA'
-                ncONat.append((aX,bX))
-        else:
-            ncONat = 'NA'            
+        #------------------------------> Keys
+        tKeys = [(self.bands[band], x, 'Ptost') for x in self.lanes]
+        #------------------------------> Info
+        infoDict = self.PrintLBGetInfo(tKeys)           
         #endregion -----------------------------------------------> Get Values
         
         #region -------------------------------------------------------> Clear
@@ -4288,15 +4322,15 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ----------------------------------------------------> New Text
         self.text.AppendText(f'Details for {self.bands[band]}\n\n')
         self.text.AppendText(f'--> Analyzed Lanes\n\n')
-        self.text.AppendText(f'Total Lanes  : {totalLanes}\n')
-        self.text.AppendText(f'Lanes with FP: {lanesWithFP}\n')
-        self.text.AppendText(f'Fragments    : {fragments}\n')
-        self.text.AppendText(f'Number of FP : {fP}\n\n')
+        self.text.AppendText(f'Total Lanes  : {len(self.lanes)}\n')
+        self.text.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
+        self.text.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
+        self.text.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
         self.text.AppendText(f'--> Detected Protein Regions:\n\n')
         self.text.AppendText(f'Recombinant Sequence:\n')
-        self.text.AppendText(f'{ncO}\n\n')
+        self.text.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
         self.text.AppendText(f'Native Sequence:\n')
-        self.text.AppendText(f'{ncONat}')
+        self.text.AppendText(f'{infoDict["NCONat"]}'[1:-1])
         
         self.text.SetInsertionPoint(0)
         #endregion -------------------------------------------------> New Text
@@ -4319,6 +4353,7 @@ class LimProtPlot(BaseWindowProteolysis):
             -----
             
         """
+        #region -----------------------------------------> Check Prev Selected
         self.bandC = None
         #------------------------------> 
         if self.laneC is None:
@@ -4329,14 +4364,36 @@ class LimProtPlot(BaseWindowProteolysis):
             return True
         #endregion --------------------------------------> Check Prev Selected
         
+        #region --------------------------------------------------> Get Values
+        #------------------------------> Keys
+        tKeys = [(x, self.lanes[lane], 'Ptost') for x in self.bands]
+        #------------------------------> Info
+        infoDict = self.PrintLBGetInfo(tKeys)           
+        #endregion -----------------------------------------------> Get Values
+        
         #region -------------------------------------------------------> Clear
         self.text.Clear()
         #endregion ----------------------------------------------------> Clear
         
+        #region ----------------------------------------------------> New Text
+        self.text.AppendText(f'Details for {self.lanes[lane]}\n\n')
+        self.text.AppendText(f'--> Analyzed Lanes\n\n')
+        self.text.AppendText(f'Total Lanes  : {len(self.bands)}\n')
+        self.text.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
+        self.text.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
+        self.text.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
+        self.text.AppendText(f'--> Detected Protein Regions:\n\n')
+        self.text.AppendText(f'Recombinant Sequence:\n')
+        self.text.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
+        self.text.AppendText(f'Native Sequence:\n')
+        self.text.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        
+        self.text.SetInsertionPoint(0)
+        #endregion -------------------------------------------------> New Text
+        
         return True
     #---
-    
-    
+      
     def PrintGelSpotText(self, x, y):
         """
     
@@ -4442,7 +4499,7 @@ class LimProtPlot(BaseWindowProteolysis):
                 tKeys.append(f"{(b, tL, 'Ptost')}")
         else:
             for tB in self.bands:
-                tKeys.append(f"({tB, l, 'Ptost'})")
+                tKeys.append(f"{(tB, l, 'Ptost')}")
         #endregion ------------------------------------------------> Keys
         
         #region ---------------------------------------------------> Fragments
@@ -4578,7 +4635,7 @@ class LimProtPlot(BaseWindowProteolysis):
             #------------------------------> 
             self.plotM.axes.set_yticks(range(1, len(self.bands)+2))
             self.plotM.axes.set_yticklabels(self.bands+['Protein'])   
-            self.plotM.axes.set_ylim(0.5, len(self.bands)+0.5)
+            self.plotM.axes.set_ylim(0.5, len(self.bands)+1.5)
             #------------------------------> 
             ymax = len(self.bands)+0.8
         #------------------------------> 
@@ -4663,6 +4720,26 @@ class LimProtPlot(BaseWindowProteolysis):
         self._mgr.Update()
         #endregion ------------------------------------> Update Protein Number
         
+        return True
+    #---
+    
+    def OnLaneBand(self, state) -> bool:
+        """
+    
+            Parameters
+            ----------
+    
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        self.selBands = not state
         return True
     #---
     #endregion ------------------------------------------------> Class methods

@@ -1334,12 +1334,15 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Add Dates
         self.AddDateItems(self.menuData['menudate'])
         self.AppendSeparator()
+        #------------------------------> 
+        self.bandLane = self.Append(
+            -1, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
         #------------------------------> Duplicate Window
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
         #------------------------------> Export Data
         self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
-        self.saveFD = self.Append(-1, 'Export Data Filtered\tShift+Ctrl+E')
         self.saveI  = self.Append(-1, 'Export Image\tShift+I')
         self.AppendSeparator()
         #------------------------------> 
@@ -1350,6 +1353,7 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnLaneBand, source=self.bandLane)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1371,6 +1375,29 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         win = self.GetWindow()
         win.OnDateChange(tDate)
         #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def OnLaneBand(self, event):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        win = self.GetWindow()
+        win.OnLaneBand(self.bandLane.IsChecked())
         
         return True
     #---
