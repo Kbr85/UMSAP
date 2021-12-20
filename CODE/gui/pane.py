@@ -5410,7 +5410,16 @@ class LimProt(BaseConfModPanel2):
         self.do['ProtLength'] = self.seqFileObj.seqLengthRec
         self.do['ProtLoc'] = ProtLoc
         #endregion ------------------------------------------------> 
-
+        
+        #region ---------------------------------------------------> 
+        try:
+            ProtDelta = self.seqFileObj.GetSelfDelta()
+        except Exception:
+            ProtDelta = (None, None)
+        
+        self.do['ProtDelta'] = ProtDelta
+        #endregion ------------------------------------------------> 
+        
         return True
     #---
     

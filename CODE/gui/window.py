@@ -3750,21 +3750,24 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.cTitle       = f"{parent.cTitle} - {self.cSection}"
-        self.obj          = parent.obj
-        self.data         = self.obj.confData[self.cSection]
-        self.dateC        = None
-        self.bands        = None
-        self.lanes        = None
-        self.fragments    = None
-        self.selBands     = True
-        self.spotSelLine  = None
-        self.blSelRect    = None
-        self.blSelected   = None
-        self.spotSelected = None
-        self.alpha        = None
-        self.protLoc      = None
-        self.protLength   = None
+        self.cTitle        = f"{parent.cTitle} - {self.cSection}"
+        self.obj           = parent.obj
+        self.data          = self.obj.confData[self.cSection]
+        self.dateC         = None
+        self.bands         = None
+        self.lanes         = None
+        self.fragments     = None
+        self.selBands      = True
+        self.spotSelLine   = None
+        self.blSelRect     = None
+        self.alpha         = None
+        self.protLoc       = None
+        self.protLength    = None
+        self.gelSpotPicked = False
+        self.bandC         = None
+        self.laneC         = None
+        self.spotC         = None
+        self.fragC         = None
         self.date, menuData = self.SetDateMenuDate()
         
         super().__init__(parent, menuData=menuData)
@@ -3874,6 +3877,7 @@ class LimProtPlot(BaseWindowProteolysis):
         self.alpha      = self.data[self.dateC]['PI']['Alpha']
         self.protLoc    = self.data[self.dateC]['PI']['ProtLoc']
         self.protLength = self.data[self.dateC]['PI']['ProtLength']
+        self.protDelta  = self.data[self.dateC]['PI']['ProtDelta']
         #endregion ------------------------------------------------> Variables
         
         #region -------------------------------------------------> wx.ListCtrl
@@ -4096,6 +4100,10 @@ class LimProtPlot(BaseWindowProteolysis):
             -----
             
         """
+        #region -------------------------------------------------> Flag picked
+        self.gelSpotPicked = True
+        #endregion ----------------------------------------------> Flag picked
+
         #region ---------------------------------------------------> Variables
         x, y = event.artist.xy
         x = round(x)
@@ -4115,7 +4123,11 @@ class LimProtPlot(BaseWindowProteolysis):
         #------------------------------> 
         self.plot.canvas.draw()
         #endregion --------------------------------------------> Draw New Line
-       
+        
+        #region --------------------------------------------------------> Info
+        self.PrintGelSpotText(x-1,y-1)
+        #endregion -----------------------------------------------------> Info
+
         return True
     #---
     
@@ -4155,7 +4167,197 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ----------------------------------------------> Draw Fragments
         self.DrawFragments(x,y)
         #endregion -------------------------------------------> Draw Fragments
+
+        #region ---------------------------------------------------> 
+        if self.gelSpotPicked:
+            self.gelSpotPicked = False
+        else:
+            self.PrintBLText(x-1,y-1)
+        #endregion ------------------------------------------------> 
     
+        return True
+    #---
+    
+    def PrintBLText(self, x, y):
+        """
+    
+            Parameters
+            ----------
+            
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        if self.selBands:
+            return self.PrintBText(y)
+        else:
+            return self.PrintLText(x)
+    #---
+    
+    def PrintBText(self, band):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region -----------------------------------------> Check Prev Selected
+        #------------------------------> 
+        self.laneC = None
+        #------------------------------> 
+        if self.bandC is None:
+            pass
+        elif self.bandC != band:
+            pass
+        else:
+            return True
+        #endregion --------------------------------------> Check Prev Selected
+        
+        #region --------------------------------------------------> Get Values
+        #------------------------------> 
+        totalLanes = len(self.lanes)
+        #------------------------------> 
+        lanesWithFP = []
+        fragments = []
+        fP = []
+        ncL = []
+        ncO = []
+        #------------------------------> 
+        for x in self.lanes:
+            #------------------------------> 
+            tKey = f"{(self.bands[band], x, 'Ptost')}"
+            #------------------------------>
+            nF = len(self.fragments[tKey]['Coord'])
+            if nF:
+                lanesWithFP.append(x)
+                fragments.append(nF)
+                fP.append(sum(self.fragments[tKey]['Np']))
+            else:
+                pass
+            #------------------------------> 
+            ncL = ncL + self.fragments[tKey]['Coord']
+        #------------------------------> 
+        lanesWithFP = f'{len(lanesWithFP)} {lanesWithFP}'
+        fragments = f'{len(fragments)} {fragments}'
+        fP = f'{sum(fP)} {fP}'
+        #------------------------------> 
+        ncL.sort()
+        n,c = ncL[0]
+        for nc,cc in ncL[1:]:
+            if nc <= c:
+                if cc <= c:
+                    pass
+                else:
+                    c = cc
+            else:
+                ncO.append((n,c))
+                n = nc
+                c = cc
+        ncO.append((n,c))
+        #------------------------------> 
+        if self.protDelta is not None:
+            ncONat = []
+            for a,b in ncO:
+                aX = a+self.protDelta
+                bX = b+self.protDelta
+                aO = aX if aX >= self.protLoc[0] and aX <= self.protLoc[1] else 'NA'
+                bO = bX if bX >= self.protLoc[0] and bX <= self.protLoc[1] else 'NA'
+                ncONat.append((aX,bX))
+        else:
+            ncONat = 'NA'            
+        #endregion -----------------------------------------------> Get Values
+        
+        #region -------------------------------------------------------> Clear
+        self.text.Clear()
+        #endregion ----------------------------------------------------> Clear
+        
+        #region ----------------------------------------------------> New Text
+        self.text.AppendText(f'Details for {self.bands[band]}\n\n')
+        self.text.AppendText(f'--> Analyzed Lanes\n\n')
+        self.text.AppendText(f'Total Lanes  : {totalLanes}\n')
+        self.text.AppendText(f'Lanes with FP: {lanesWithFP}\n')
+        self.text.AppendText(f'Fragments    : {fragments}\n')
+        self.text.AppendText(f'Number of FP : {fP}\n\n')
+        self.text.AppendText(f'--> Detected Protein Regions:\n\n')
+        self.text.AppendText(f'Recombinant Sequence:\n')
+        self.text.AppendText(f'{ncO}\n\n')
+        self.text.AppendText(f'Native Sequence:\n')
+        self.text.AppendText(f'{ncONat}')
+        
+        self.text.SetInsertionPoint(0)
+        #endregion -------------------------------------------------> New Text
+        
+        return True
+    #---
+    
+    def PrintLText(self, lane):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.bandC = None
+        #------------------------------> 
+        if self.laneC is None:
+            pass
+        elif self.laneC != lane:
+            pass
+        else:
+            return True
+        #endregion --------------------------------------> Check Prev Selected
+        
+        #region -------------------------------------------------------> Clear
+        self.text.Clear()
+        #endregion ----------------------------------------------------> Clear
+        
+        return True
+    #---
+    
+    
+    def PrintGelSpotText(self, x, y):
+        """
+    
+            Parameters
+            ----------
+            
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        self.text.Clear()
+        
+        self.text.AppendText(
+            f'Information for {self.lanes[x]} - {self.bands[y]}\n\n')
+        
         return True
     #---
     

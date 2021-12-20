@@ -181,17 +181,17 @@ def Fragments(df, val, comp):
         #------------------------------> Prepare dictO
         dictO[colK] = {}
         dictO[colK]['Coord'] = []
-        dictO[colK]['Seq'] = []
-        dictO[colK]['Np'] = []
-        dictO[colK]['Nc'] = []
+        dictO[colK]['Seq']   = []
+        dictO[colK]['Np']    = []
+        dictO[colK]['Nc']    = []
         #------------------------------> Filter df
         dfE = dtsMethod.DFFilterByColN(df, c, val, comp)
         #------------------------------> 
-        n = None
-        c = None
-        seq = None
-        np = None
-        ncL = []
+        n    = None
+        c    = None
+        seq  = None
+        np   = None
+        ncL  = []
         nctL = []
         #------------------------------>    
         for r in range(0, dfE.shape[0]):
