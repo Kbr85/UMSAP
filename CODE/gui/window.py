@@ -3884,6 +3884,10 @@ class LimProtPlot(BaseWindowProteolysis):
         self.protLength = self.data[self.dateC]['PI']['ProtLength']
         self.protDelta  = self.data[self.dateC]['PI']['ProtDelta']
         self.protTarget = self.data[self.dateC]['PI']['Prot']
+        self.rects      = []
+        self.blSelC     = [None, None]
+        self.gelSelC    = [None, None]
+        self.fragSelC   = [None, None, None]
         #endregion ------------------------------------------------> Variables
         
         #region -------------------------------------------------> wx.ListCtrl
