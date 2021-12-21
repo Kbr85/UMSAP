@@ -4114,6 +4114,17 @@ class LimProtPlot(BaseWindowProteolysis):
         #region -------------------------------------------------------> Print
         self.PrintFragmentText(tKey, fragC)
         #endregion ----------------------------------------------------> Print
+        
+        #region -------------------------------------------> Remove Sel in Gel
+        if self.spotSelLine is not None:
+            self.spotSelLine[0].remove()
+            self.spotSelLine = None
+            self.plot.canvas.draw()
+            self.gelSelC = [None, None]
+        else:
+            pass
+        #endregion ----------------------------------------> Remove Sel in Gel
+
 
         return True
     #---
@@ -4168,7 +4179,17 @@ class LimProtPlot(BaseWindowProteolysis):
         #region --------------------------------------------------------> Info
         self.PrintGelSpotText(x-1,y-1)
         #endregion -----------------------------------------------------> Info
-
+        
+        #region ----------------------------------------> Remove Sel from Frag
+        if self.fragSelLine is not None:
+            self.fragSelLine[0].remove()
+            self.fragSelLine = None
+            self.plotM.canvas.draw()
+            self.fragSelC = [None, None, None]
+        else:
+            pass
+        #endregion -------------------------------------> Remove Sel from Frag
+        
         return True
     #---
     
@@ -4216,11 +4237,20 @@ class LimProtPlot(BaseWindowProteolysis):
                 if self.spotSelLine is not None:
                     self.spotSelLine[0].remove()
                     self.spotSelLine = None
+                    self.gelSelC = [None, None]
                     self.plot.canvas.draw()
                 else:
                     pass
                 #------------------------------> 
                 self.PrintBLText(x-1,y-1)
+            #------------------------------> 
+            if self.fragSelLine is not None:
+                self.fragSelLine[0].remove()
+                self.fragSelLine = None
+                self.plotM.canvas.draw()
+                self.fragSelC = [None, None, None]
+            else:
+                pass
             #------------------------------> 
             return True
         #endregion --------------------------------------------> Redraw or Not
@@ -4237,6 +4267,15 @@ class LimProtPlot(BaseWindowProteolysis):
         if self.gelSpotPicked:
             self.gelSpotPicked = False
         else:
+            #------------------------------> 
+            if self.spotSelLine is not None:
+                self.spotSelLine[0].remove()
+                self.spotSelLine = None
+                self.gelSelC = [None, None]
+                self.plot.canvas.draw()
+            else:
+                pass
+            #------------------------------> 
             self.PrintBLText(x-1,y-1)
         #endregion ------------------------------------------------> 
     
@@ -4819,9 +4858,11 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> 
         if self.fragSelLine is not None:
             self.fragSelLine[0].remove()
-            self.fragSelLine = None
         else:
             pass
+        
+        self.fragSelLine = None
+        self.fragSelC    = [None, None, None]
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 
