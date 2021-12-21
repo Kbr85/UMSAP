@@ -3757,6 +3757,7 @@ class LimProtPlot(BaseWindowProteolysis):
         self.bands         = None
         self.lanes         = None
         self.fragments     = None
+        self.rects         = []
         self.selBands      = True
         self.blSelRect     = None
         self.spotSelLine   = None
@@ -3765,6 +3766,7 @@ class LimProtPlot(BaseWindowProteolysis):
         self.gelSelC       = [None, None]
         self.fragSelC      = [None, None, None]
         self.gelSpotPicked = False
+        self.updateColors  = False
         self.alpha         = None
         self.protLoc       = None
         self.protLength    = None
@@ -3968,7 +3970,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> Draw Rect
         for nb,b in enumerate(self.bands, start=1):
             for nl,l in enumerate(self.lanes, start=1):
-                self.plot.axes.add_patch(mpatches.Rectangle(
+                self.rects.append(mpatches.Rectangle(
                     ((nl-0.4),(nb-0.4)), 
                     0.8, 
                     0.8, 
@@ -3976,6 +3978,7 @@ class LimProtPlot(BaseWindowProteolysis):
                     facecolor = self.SetGelSpotColor(nb-1,nl-1),
                     picker    = True,
                 ))
+                self.plot.axes.add_patch(self.rects[-1])
         #endregion ------------------------------------------------> Draw Rect
        
         #region --------------------------------------------------> Zoom Reset
@@ -4190,6 +4193,14 @@ class LimProtPlot(BaseWindowProteolysis):
             pass
         #endregion -------------------------------------> Remove Sel from Frag
         
+        #region ---------------------------------------------------> 
+        if self.updateColors:
+            self.UpdateGelColor()
+            self.updateColors = False
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     
@@ -4251,6 +4262,12 @@ class LimProtPlot(BaseWindowProteolysis):
                 self.fragSelC = [None, None, None]
             else:
                 pass
+            #------------------------------>
+            if self.updateColors:
+                self.UpdateGelColor()
+                self.updateColors = False
+            else:
+                pass
             #------------------------------> 
             return True
         #endregion --------------------------------------------> Redraw or Not
@@ -4278,7 +4295,15 @@ class LimProtPlot(BaseWindowProteolysis):
             #------------------------------> 
             self.PrintBLText(x-1,y-1)
         #endregion ------------------------------------------------> 
-    
+        
+        #region ---------------------------------------------------> 
+        if self.updateColors:
+            self.UpdateGelColor()
+            self.updateColors = False
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     
@@ -4931,7 +4956,35 @@ class LimProtPlot(BaseWindowProteolysis):
 
         """
         self.selBands = not state
+        self.updateColors = True
+        
         return True
+    #---
+    
+    def UpdateGelColor(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #------------------------------> 
+        j = 0
+        #------------------------------> 
+        for nb,b in enumerate(self.bands):
+            for nl,l in enumerate(self.lanes):
+                self.rects[j].set_facecolor(self.SetGelSpotColor(nb,nl))
+                j = j + 1
+        #------------------------------> 
+        self.plot.canvas.draw()
     #---
     #endregion ------------------------------------------------> Class methods
 #---
