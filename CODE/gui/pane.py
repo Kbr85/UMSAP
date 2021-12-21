@@ -5500,7 +5500,9 @@ class LimProt(BaseConfModPanel2):
         
         #region --------------------------------------------------------> Sort
         self.dfR = self.dfR.sort_values(
-            by=[('Nterm', 'Nterm', 'Nterm'),('Cterm', 'Cterm', 'Cterm')])
+            by=[('Nterm', 'Nterm', 'Nterm'),('Cterm', 'Cterm', 'Cterm')]
+        )
+        self.dfR = self.dfR.reset_index(drop=True)
         #endregion -----------------------------------------------------> Sort
         
         if config.development:
