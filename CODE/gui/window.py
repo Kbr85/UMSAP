@@ -3758,19 +3758,19 @@ class LimProtPlot(BaseWindowProteolysis):
         self.lanes         = None
         self.fragments     = None
         self.selBands      = True
-        self.spotSelLine   = None
         self.blSelRect     = None
-        self.fragSel       = None
+        self.spotSelLine   = None
+        self.fragSelLine   = None
+        self.blSelC        = [None, None]
+        self.gelSelC       = [None, None]
+        self.fragSelC      = [None, None, None]
+        self.gelSpotPicked = False
         self.alpha         = None
         self.protLoc       = None
         self.protLength    = None
         self.protDelta     = None
         self.protTarget    = None
-        self.gelSpotPicked = False
-        self.bandC         = None
-        self.laneC         = None
-        self.spotC         = None
-        self.fragC         = None
+        
         self.date, menuData = self.SetDateMenuDate()
         
         super().__init__(parent, menuData=menuData)
@@ -3957,6 +3957,8 @@ class LimProtPlot(BaseWindowProteolysis):
             self.blSelRect = None
         else:
             pass
+        
+        self.selC = []
         #endregion ------------------------------------> Remove Old Selections
        
         #region --------------------------------------------------------> Axis
@@ -4083,8 +4085,8 @@ class LimProtPlot(BaseWindowProteolysis):
         art = event.artist
         fragC = list(map(int, art.get_label().split('.')))
         #------------------------------> 
-        if self.fragC != fragC:
-            self.fragC = fragC
+        if self.fragSelC != fragC:
+            self.fragSelC = fragC
         else:
             return True
         #------------------------------> 
@@ -4097,22 +4099,21 @@ class LimProtPlot(BaseWindowProteolysis):
         x1, x2 = self.fragments[tKey]['Coord'][fragC[2]]
         #endregion ------------------------------------------------> Variables
         
-        #region -------------------------------------------> Highlight Fragment
-        if self.fragSel is not None:
-            self.fragSel[0].remove()
+        #region ------------------------------------------> Highlight Fragment
+        if self.fragSelLine is not None:
+            self.fragSelLine[0].remove()
         else:
             pass
         #------------------------------> 
-        self.fragSel = self.plotM.axes.plot(
+        self.fragSelLine = self.plotM.axes.plot(
             [x1+2, x2-2], [y,y], color='black', linewidth=4)
         #------------------------------> 
         self.plotM.canvas.draw()
-        #endregion ----------------------------------------> Highlight Fragment
+        #endregion ---------------------------------------> Highlight Fragment
         
-        #region ---------------------------------------------------> Print
+        #region -------------------------------------------------------> Print
         self.PrintFragmentText(tKey, fragC)
-        #endregion ------------------------------------------------> Print
-
+        #endregion ----------------------------------------------------> Print
 
         return True
     #---
@@ -4143,7 +4144,11 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ----------------------------------------------> Flag picked
         
         #region -----------------------------------------------> Spot Selected
-        self.spotC = (x,y)
+        spotC = [y-1, x-1]
+        if self.gelSelC != spotC:
+            self.gelSelC = spotC
+        else:
+            return True
         #endregion --------------------------------------------> Spot Selected
         
         #region ---------------------------------------------> Remove Old Line
@@ -4196,23 +4201,27 @@ class LimProtPlot(BaseWindowProteolysis):
         y = round(event.ydata)
         #endregion ------------------------------------------------> Variables
         
-        #region ---------------------------------------------> Remove Old Line
-        if self.gelSpotPicked:
-            pass
-        else:
-            if self.spotSelLine is not None:
-                self.spotSelLine[0].remove()
-                self.spotSelLine = None
-            else:
-                pass
-        #endregion ------------------------------------------> Remove Old Line
-        
         #region -----------------------------------------------> Redraw or Not
-        if self.selBands and self.bandC != y-1:
-            pass
-        elif not self.selBands and self.laneC != x-1:
-            pass
+        blSel = [y-1, x-1]
+        if self.selBands and self.blSelC[0] != blSel[0]:
+            self.blSelC = [blSel[0], None]
+        elif not self.selBands and self.blSelC[1] != blSel[1]:
+            self.blSelC = [None, blSel[1]]
         else:
+            #------------------------------> 
+            if self.gelSpotPicked:
+                self.gelSpotPicked = False
+            else:
+                #------------------------------> 
+                if self.spotSelLine is not None:
+                    self.spotSelLine[0].remove()
+                    self.spotSelLine = None
+                    self.plot.canvas.draw()
+                else:
+                    pass
+                #------------------------------> 
+                self.PrintBLText(x-1,y-1)
+            #------------------------------> 
             return True
         #endregion --------------------------------------------> Redraw or Not
 
@@ -4228,7 +4237,6 @@ class LimProtPlot(BaseWindowProteolysis):
         if self.gelSpotPicked:
             self.gelSpotPicked = False
         else:
-            self.spotC = None
             self.PrintBLText(x-1,y-1)
         #endregion ------------------------------------------------> 
     
@@ -4481,9 +4489,12 @@ class LimProtPlot(BaseWindowProteolysis):
             #------------------------------> 
             ncL = ncL + self.fragments[x]['Coord']
         #------------------------------> 
-        dictO['LanesWithFP'] = f'{len(lanesWithFP)} {lanesWithFP}'
-        dictO['Fragments'] = f'{len(fragments)} {fragments}'
-        dictO['FP'] = f'{sum(fP)} {fP}'
+        dictO['LanesWithFP'] = (
+            f'{len(lanesWithFP)} (' + f'{lanesWithFP}'[1:-1] + f')')
+        dictO['Fragments'] = (
+            f'{len(fragments)} (' + f'{fragments}'[1:-1] + f')')
+        dictO['FP'] = (
+            f'{sum(fP)} (' +f'{fP}'[1:-1] + f')')
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 
@@ -4534,16 +4545,6 @@ class LimProtPlot(BaseWindowProteolysis):
             -----
             
         """
-        #region -----------------------------------------> Check Prev Selected
-        #------------------------------> 
-        self.laneC = None
-        #------------------------------> 
-        if self.bandC != band:
-            self.bandC = band
-        else:
-            return True
-        #endregion --------------------------------------> Check Prev Selected
-        
         #region --------------------------------------------------> Get Values
         #------------------------------> Keys
         tKeys = [(self.bands[band], x, 'Ptost') for x in self.lanes]
@@ -4589,15 +4590,6 @@ class LimProtPlot(BaseWindowProteolysis):
             -----
             
         """
-        #region -----------------------------------------> Check Prev Selected
-        self.bandC = None
-        #------------------------------> 
-        if self.laneC != lane:
-            self.laneC = lane
-        else:
-            return True
-        #endregion --------------------------------------> Check Prev Selected
-        
         #region --------------------------------------------------> Get Values
         #------------------------------> Keys
         tKeys = [(x, self.lanes[lane], 'Ptost') for x in self.bands]
@@ -4824,6 +4816,14 @@ class LimProtPlot(BaseWindowProteolysis):
             -----
             
         """
+        #region ---------------------------------------------------> 
+        if self.fragSelLine is not None:
+            self.fragSelLine[0].remove()
+            self.fragSelLine = None
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
         #region ---------------------------------------------------> 
         self.plotM.axes.clear()
         self.plotM.axes.set_xticks([])
