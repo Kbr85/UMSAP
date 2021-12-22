@@ -26,6 +26,7 @@ import requests
 from scipy import stats
 import wx
 import wx.adv as adv
+from wx.core import EVT_LIST_END_LABEL_EDIT
 import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
 
@@ -900,7 +901,7 @@ class BaseWindowProteolysis(BaseWindow):
         #endregion ------------------------------------------------------> AUI
 
         #region --------------------------------------------------------> Bind
-        
+        self.lc.lcs.lc.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -932,6 +933,26 @@ class BaseWindowProteolysis(BaseWindow):
         self.Destroy()
         #endregion --------------------------------------------------> Destroy
         
+        return True
+    #---
+    
+    def OnListSelect(self, event):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
         return True
     #---
     #endregion ------------------------------------------------> Class methods
@@ -3739,7 +3760,7 @@ class LimProtPlot(BaseWindowProteolysis):
     name = config.nwLimProt
     #------------------------------> To id the section in the umsap file 
     # shown in the window
-    cSection      = config.nmLimProt
+    cSection = config.nmLimProt
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -3757,7 +3778,8 @@ class LimProtPlot(BaseWindowProteolysis):
         self.bands         = None
         self.lanes         = None
         self.fragments     = None
-        self.rects         = []
+        self.rectsGel      = []
+        self.rectsFrag     = []
         self.selBands      = True
         self.blSelRect     = None
         self.spotSelLine   = None
@@ -3767,11 +3789,13 @@ class LimProtPlot(BaseWindowProteolysis):
         self.fragSelC      = [None, None, None]
         self.gelSpotPicked = False
         self.updateColors  = False
+        self.gelLineWidth  = 0.5
         self.alpha         = None
         self.protLoc       = None
         self.protLength    = None
         self.protDelta     = None
         self.protTarget    = None
+        self.peptide       = None
         
         self.date, menuData = self.SetDateMenuDate()
         
@@ -3884,10 +3908,12 @@ class LimProtPlot(BaseWindowProteolysis):
         self.protLength = self.data[self.dateC]['PI']['ProtLength']
         self.protDelta  = self.data[self.dateC]['PI']['ProtDelta']
         self.protTarget = self.data[self.dateC]['PI']['Prot']
-        self.rects      = []
+        self.rectsGel   = []
+        self.rectsFrag  = []
         self.blSelC     = [None, None]
         self.gelSelC    = [None, None]
         self.fragSelC   = [None, None, None]
+        self.peptide    = None
         #endregion ------------------------------------------------> Variables
         
         #region -------------------------------------------------> wx.ListCtrl
@@ -3974,15 +4000,16 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> Draw Rect
         for nb,b in enumerate(self.bands, start=1):
             for nl,l in enumerate(self.lanes, start=1):
-                self.rects.append(mpatches.Rectangle(
+                self.rectsGel.append(mpatches.Rectangle(
                     ((nl-0.4),(nb-0.4)), 
                     0.8, 
                     0.8, 
                     edgecolor = 'black',
+                    linewidth = self.gelLineWidth,
                     facecolor = self.SetGelSpotColor(nb-1,nl-1),
                     picker    = True,
                 ))
-                self.plot.axes.add_patch(self.rects[-1])
+                self.plot.axes.add_patch(self.rectsGel[-1])
         #endregion ------------------------------------------------> Draw Rect
        
         #region --------------------------------------------------> Zoom Reset
@@ -4376,6 +4403,7 @@ class LimProtPlot(BaseWindowProteolysis):
             
         """
         #region ---------------------------------------------------> Variables
+        self.rectsFrag  = []
         b = self.bands[y-1]
         l = self.lanes[x-1]
         #endregion ------------------------------------------------> Variables
@@ -4403,15 +4431,17 @@ class LimProtPlot(BaseWindowProteolysis):
         #------------------------------> 
         for k,v in enumerate(tKeys, start=1):
             for j,f in enumerate(self.fragments[v]['Coord']):
-                self.plotM.axes.add_patch(mpatches.Rectangle(
+                self.rectsFrag.append(mpatches.Rectangle(
                     (f[0], k-0.2), 
                     (f[1]-f[0]), 
                     0.4,
                     picker    = True,
+                    linewidth = self.gelLineWidth,
                     facecolor = config.color[self.name]['Spot'][(k-1)%nc],
                     edgecolor = 'black',
                     label     = f'{tLabel[k-1]}.{j}',
                 ))
+                self.plotM.axes.add_patch(self.rectsFrag[-1])
         #endregion ------------------------------------------------> Fragments
         
         #region -----------------------------------------------------> Protein
@@ -4424,6 +4454,13 @@ class LimProtPlot(BaseWindowProteolysis):
         self.plotM.canvas.draw()
         #endregion -----------------------------------------------------> Draw
         
+        #region ---------------------------------------------------> 
+        if self.peptide is not None:
+            self.ShowPeptideLoc()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     
@@ -4925,8 +4962,10 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion -----------------------------------------------> Delete old
         
         #region ----------------------------------------------------> Get Data
-        data = self.df.iloc[:,0:2]
-        data.insert(0, 'kbr', self.df.index.values.tolist())
+        col = [self.df.columns.get_loc(c) for c in self.df.loc[:,pd.IndexSlice[:,:,'Ptost']].columns.values]
+        data = dtsMethod.DFFilterByColN(self.df, col, self.alpha, 'lt')
+        data = data.iloc[:,0:2].reset_index(drop=True)
+        data.insert(0, 'kbr', data.index.values.tolist())
         data = data.astype(str)
         data = data.iloc[:,0:2].values.tolist()
         #endregion -------------------------------------------------> Get Data
@@ -4940,6 +4979,105 @@ class LimProtPlot(BaseWindowProteolysis):
         self._mgr.Update()
         #endregion ------------------------------------> Update Protein Number
         
+        return True
+    #---
+    
+    def OnListSelect(self, event):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> 
+        self.peptide = self.lc.lcs.lc.GetItemText(
+            self.lc.lcs.lc.GetFirstSelected(), col=1)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.ShowPeptideLoc()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def ShowPeptideLoc(self):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> 
+        for k in self.rectsGel:
+            k.set_linewidth(self.gelLineWidth)
+        
+        for k in self.rectsFrag:
+            k.set_linewidth(self.gelLineWidth)
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------->
+        j = 0 
+        for b in self.bands:
+            for l in self.lanes:
+                for p in self.fragments[f'{(b,l, "Ptost")}']['SeqL']:
+                    if self.peptide in p:
+                        self.rectsGel[j].set_linewidth(2.0)
+                        break
+                    else:
+                        pass
+                j = j + 1
+        #endregion ------------------------------------------------> 
+        
+        #region --------------------------------------------------->
+        if self.blSelC != [None, None]:
+            #------------------------------> 
+            fKeys = []
+            #------------------------------> 
+            if self.selBands:
+                for l in self.lanes:
+                    fKeys.append(f'{(self.bands[self.blSelC[0]], l, "Ptost")}')
+            else:
+                for b in self.bands:
+                    fKeys.append(f'{(b, self.lanes[self.blSelC[1]], "Ptost")}')
+            #------------------------------> 
+            j = 0
+            for k in fKeys:
+                for p in self.fragments[k]['SeqL']:
+                    if self.peptide in p:
+                        self.rectsFrag[j].set_linewidth(2.0)
+                    else:
+                        pass
+                    j = j + 1
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.plot.canvas.draw()
+        self.plotM.canvas.draw()
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     
@@ -4985,7 +5123,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #------------------------------> 
         for nb,b in enumerate(self.bands):
             for nl,l in enumerate(self.lanes):
-                self.rects[j].set_facecolor(self.SetGelSpotColor(nb,nl))
+                self.rectsGel[j].set_facecolor(self.SetGelSpotColor(nb,nl))
                 j = j + 1
         #------------------------------> 
         self.plot.canvas.draw()

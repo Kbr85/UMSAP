@@ -1338,6 +1338,12 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         self.bandLane = self.Append(
             -1, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
+        #------------------------------> 
+        self.showAll = self.Append(-1, 'Show All')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.noPept = self.Append(-1, 'No Peptide')
+        self.AppendSeparator()
         #------------------------------> Duplicate Window
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()

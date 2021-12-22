@@ -1165,7 +1165,7 @@ class BaseConfPanel(
             if self.do['df'].get('ScoreCol', None) is not None:
                 self.dfS = dtsMethod.DFFilterByColN(
                     self.dfEx, 
-                    self.do['df']['ScoreCol'], 
+                    [self.do['df']['ScoreCol']], 
                     self.do['ScoreVal'], 
                     'ge'
                 )

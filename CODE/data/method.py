@@ -182,16 +182,18 @@ def Fragments(df, val, comp, protLoc):
         dictO[colK] = {}
         dictO[colK]['Coord'] = []
         dictO[colK]['Seq']   = []
+        dictO[colK]['SeqL']  = []
         dictO[colK]['Np']    = []
         dictO[colK]['NpNat'] = []
         dictO[colK]['Nc']    = []
         dictO[colK]['NcNat'] = []
         #------------------------------> Filter df
-        dfE = dtsMethod.DFFilterByColN(df, c, val, comp)
+        dfE = dtsMethod.DFFilterByColN(df, [c], val, comp)
         #------------------------------> 
         n       = None
         c       = None
         seq     = None
+        seqL    = []
         np      = None
         npNat   = None
         ncL     = []
@@ -202,6 +204,7 @@ def Fragments(df, val, comp, protLoc):
         for r in range(0, dfE.shape[0]):
             if n is None:
                 seq = dfE.iat[r,0]
+                seqL.append(seq)
                 np = 1
                 n = dfE.iat[r,1]
                 c = dfE.iat[r,2]
@@ -229,6 +232,7 @@ def Fragments(df, val, comp, protLoc):
                 seqc = dfE.iat[r,0]
                 if nc <= c:
                     seq = f'{seq}\n{(nc-n)*" "}{seqc}'
+                    seqL.append(seqc)
                     np = np + 1
                     if cc > c:
                         c = cc
@@ -255,6 +259,7 @@ def Fragments(df, val, comp, protLoc):
                 else:
                     dictO[colK]['Coord'].append((n,c))
                     dictO[colK]['Seq'].append(seq)
+                    dictO[colK]['SeqL'].append(seqL)
                     dictO[colK]['Np'].append(np)
                     dictO[colK]['NpNat'].append(npNat)
                     dictO[colK]['Nc'].append(len(list(set(ncL))))
@@ -262,6 +267,7 @@ def Fragments(df, val, comp, protLoc):
                     n = nc
                     c = cc
                     seq = seqc
+                    seqL = [seqc]
                     np = 1
                     if n >= protLoc[0] and c <= protLoc[1]:
                         npNat = 1
@@ -287,6 +293,7 @@ def Fragments(df, val, comp, protLoc):
         if n is not None:        
             dictO[colK]['Coord'].append((n,c))
             dictO[colK]['Seq'].append(seq)
+            dictO[colK]['SeqL'].append(seqL)
             dictO[colK]['Np'].append(np)
             dictO[colK]['NpNat'].append(npNat)
             dictO[colK]['Nc'].append(len(list(set(ncL))))
@@ -295,6 +302,7 @@ def Fragments(df, val, comp, protLoc):
             dictO[colK]['NctNat'] = len(list(set(nctLNat)))        
         else:
             pass
+        #------------------------------> All detected peptides as a list
     #endregion ------------------------------------------------> 
 
     return dictO
