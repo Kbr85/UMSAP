@@ -1314,96 +1314,174 @@ class LockPlotScale(wx.Menu):
 #---
 
 
-class LimProtToolMenu(wx.Menu, MenuMethods):
-    """ """
+class ClearSelLimProt(wx.Menu):
+    """Clear the selection in a LimProtRes Window
+    
+        
+    """
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData: dict):
+    def __init__(self):
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.menuData = menuData
-        self.plotDate = []
-        
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        #------------------------------> Add Dates
-        self.AddDateItems(self.menuData['menudate'])
-        self.AppendSeparator()
-        #------------------------------> 
-        self.bandLane = self.Append(
-            -1, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
-        self.AppendSeparator()
-        #------------------------------> 
-        self.showAll = self.Append(-1, 'Show All')
-        self.AppendSeparator()
-        #------------------------------> 
-        self.noPept = self.Append(-1, 'No Peptide')
-        self.AppendSeparator()
-        #------------------------------> Duplicate Window
-        self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
-        self.AppendSeparator()
-        #------------------------------> Export Data
-        self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
-        self.saveI  = self.Append(-1, 'Export Image\tShift+I')
-        self.AppendSeparator()
-        #------------------------------> 
-        self.dataPrep = self.Append(-1, 'Data Preparation')
-        self.AppendSeparator()
-        #------------------------------> 
-        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        self.noPept = self.Append(-1, 'Peptide')
+        self.noFrag = self.Append(-1, 'Fragment')
+        self.noGel = self.Append(-1,  'Gel Spot')
+        self.noBL = self.Append(-1,   'Band/Lane')
+        self.noSel = self.Append(-1,  'All')
         #endregion -----------------------------------------------> Menu Items
-
+        
+        #region ------------------------------------------------------> nameID
+        self.nameID = { # Associate IDs with Tab names. Avoid manual IDs
+            self.noPept.GetId() : 'Peptide',
+            self.noFrag.GetId() : 'Fragment',
+            self.noGel.GetId()  : 'Gel',
+            self.noBL.GetId()   : 'BandLane',
+            self.noSel.GetId()  : 'All',
+        }
+        #endregion ---------------------------------------------------> nameID
+        
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnLaneBand, source=self.bandLane)
+        self.Bind(wx.EVT_MENU, self.OnClearSel, source=self.noPept)
+        self.Bind(wx.EVT_MENU, self.OnClearSel, source=self.noFrag)
+        self.Bind(wx.EVT_MENU, self.OnClearSel, source=self.noGel)
+        self.Bind(wx.EVT_MENU, self.OnClearSel, source=self.noBL)
+        self.Bind(wx.EVT_MENU, self.OnClearSel, source=self.noSel)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnPlotDate(self, event: wx.CommandEvent) -> Literal[True]:
-        """Plot a date of a section in an UMSAP file.
+    def OnClearSel(self, event) -> bool:
+        """Clear the selection in a LimProt Res Window
     
             Parameters
             ----------
-            event : wx.Event
+            event:wx.Event
                 Information about the event
+            
+    
+            Returns
+            -------
+            bool
         """
-        #region --------------------------------------------------------> Date
-        tDate = self.GetLabelText(event.GetId())
-        #endregion -----------------------------------------------------> Date
-
-        #region --------------------------------------------------------> Draw
         win = self.GetWindow()
-        win.OnDateChange(tDate)
-        #endregion -----------------------------------------------------> Draw
+        win.OnClearSel(self.nameID[event.GetId()])
         
         return True
     #---
-    
-    def OnLaneBand(self, event):
-        """
+    #endregion ------------------------------------------------> Class methods
+#---
 
+
+class FragmentLimProt(wx.Menu):
+    """Menu for the Fragments in a LimProtRes Window
+    
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.saveFI = self.Append(-1, 'Save Image\tCtrl+I')
+        self.zoomFR = self.Append(-1, 'Reset Fragment Zoom\tCtrl+Z')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.zoomFR)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnZoomReset(self, event):
+        """
+    
             Parameters
             ----------
             event:wx.Event
                 Information about the event
 
-
+    
             Returns
             -------
 
-
+    
             Raise
             -----
 
         """
         win = self.GetWindow()
-        win.OnLaneBand(self.bandLane.IsChecked())
+        win.OnZoomResetFragment()
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class GelLimProt(wx.Menu):
+    """Menu for the Gel in a LimProtRes Window
+    
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.saveGI = self.Append(-1, 'Save Image\tAlt+I')
+        self.zoomGR = self.Append(-1, 'Reset Zoom\tAlt+Z')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.zoomGR)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnZoomReset(self, event):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        win = self.GetWindow()
+        win.OnZoomResetGel()
         
         return True
     #---
@@ -1486,7 +1564,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Export Data
         self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
         self.saveFD = self.Append(-1, 'Export Data Filtered\tShift+Ctrl+E')
-        self.saveI  = self.Append(-1, 'Export Image\tShift+I')
+        self.saveI  = self.Append(-1, 'Export Images\tShift+I')
         self.AppendSeparator()
         #------------------------------> 
         self.dataPrep = self.Append(-1, 'Data Preparation')
@@ -1531,6 +1609,136 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
             *self.fc.GetData4Draw(),
         )
         #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class LimProtToolMenu(wx.Menu, MenuMethods):
+    """ """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData: dict):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.menuData = menuData
+        self.plotDate = []
+        
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        #------------------------------> Add Dates
+        self.AddDateItems(self.menuData['menudate'])
+        self.AppendSeparator()
+        #------------------------------> 
+        self.bandLane = self.Append(
+            -1, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()    
+        #------------------------------> 
+        self.showAll = self.Append(-1, 'Show All')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.fragmentMenu = FragmentLimProt()
+        self.AppendSubMenu(self.fragmentMenu, 'Fragments')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.gelMenu = GelLimProt()
+        self.AppendSubMenu(self.gelMenu, 'Gel')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.clearMenu = ClearSelLimProt()
+        self.AppendSubMenu(self.clearMenu, 'Clear Selection')
+        self.AppendSeparator()
+        #------------------------------> Duplicate Window
+        self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        #------------------------------> Export Data
+        self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
+        self.saveI  = self.Append(-1, 'Export Images\tShift+I')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.dataPrep = self.Append(-1, 'Data Preparation')
+        self.AppendSeparator()
+        #------------------------------>
+        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnLaneBand, source=self.bandLane)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.zoomR)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnPlotDate(self, event: wx.CommandEvent) -> Literal[True]:
+        """Plot a date of a section in an UMSAP file.
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+        """
+        #region --------------------------------------------------------> Date
+        tDate = self.GetLabelText(event.GetId())
+        #endregion -----------------------------------------------------> Date
+
+        #region --------------------------------------------------------> Draw
+        win = self.GetWindow()
+        win.OnDateChange(tDate)
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def OnLaneBand(self, event):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        win = self.GetWindow()
+        win.OnLaneBand(self.bandLane.IsChecked())
+        
+        return True
+    #---
+    
+    def OnZoomReset(self, event):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        win = self.GetWindow()
+        win.OnZoomReset()
         
         return True
     #---

@@ -5128,6 +5128,64 @@ class LimProtPlot(BaseWindowProteolysis):
         #------------------------------> 
         self.plot.canvas.draw()
     #---
+    
+    def OnZoomReset(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.OnZoomResetFragment()
+        self.OnZoomResetGel()
+        
+        return True
+    #---
+    
+    def OnZoomResetFragment(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.plotM.ZoomResetPlot()
+    #---
+    
+    def OnZoomResetGel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.plot.ZoomResetPlot()
+    #---
+    
     #endregion ------------------------------------------------> Class methods
 #---
 
