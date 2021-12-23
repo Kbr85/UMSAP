@@ -1404,6 +1404,7 @@ class FragmentLimProt(wx.Menu):
         
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.zoomFR)
+        self.Bind(wx.EVT_MENU, self.OnImage, source=self.saveFI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1428,6 +1429,29 @@ class FragmentLimProt(wx.Menu):
         """
         win = self.GetWindow()
         win.OnZoomResetFragment()
+        
+        return True
+    #---
+    
+    def OnImage(self, event):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        win = self.GetWindow()
+        win.OnImageFragment()
         
         return True
     #---
@@ -1458,6 +1482,7 @@ class GelLimProt(wx.Menu):
         
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.zoomGR)
+        self.Bind(wx.EVT_MENU, self.OnImage,     source=self.saveGI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1482,6 +1507,29 @@ class GelLimProt(wx.Menu):
         """
         win = self.GetWindow()
         win.OnZoomResetGel()
+        
+        return True
+    #---
+    
+    def OnImage(self, event):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        win = self.GetWindow()
+        win.OnImageGel()
         
         return True
     #---
@@ -1670,8 +1718,9 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnLaneBand, source=self.bandLane)
+        self.Bind(wx.EVT_MENU, self.OnLaneBand,  source=self.bandLane)
         self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.zoomR)
+        self.Bind(wx.EVT_MENU, self.OnImageAll, source=self.saveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1739,6 +1788,29 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         """
         win = self.GetWindow()
         win.OnZoomReset()
+        
+        return True
+    #---
+
+    def OnImageAll(self, event):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        win = self.GetWindow()
+        win.OnImageAll()
         
         return True
     #---

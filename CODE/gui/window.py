@@ -1672,7 +1672,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.cLFDiv      : self.Filter_Divergent,
         }
         #------------------------------> 
-        super().__init__(parent, menuData=menuData, )
+        super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -5186,6 +5186,67 @@ class LimProtPlot(BaseWindowProteolysis):
         return self.plot.ZoomResetPlot()
     #---
     
+    def OnImageFragment(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.plotM.SaveImage(ext=config.elMatPlotSaveI, parent=self)
+    #---
+    
+    def OnImageGel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.plot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
+    #---
+    
+    def OnImageAll(self) -> Literal[True]:
+        """ Export all plots to a pdf image"""
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.DirSelectDialog(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            #------------------------------> Export
+            if self.selBands:
+                fName = p / f'{self.dateC}-{self.bands[self.blSelC[0]]}-fragments.pdf'
+            else:
+                fName = p / f'{self.dateC}-{self.lanes[self.blSelC[1]]}-fragments.pdf'
+            self.plotM.figure.savefig(fName)
+            fName = p / f'{self.dateC}-gel.pdf'
+            self.plot.figure.savefig(fName)
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
