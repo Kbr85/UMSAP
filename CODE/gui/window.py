@@ -5247,6 +5247,215 @@ class LimProtPlot(BaseWindowProteolysis):
         dlg.Destroy()
         return True	
     #---
+    
+    def OnClearPept(self, plot=True):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if (rID := self.lc.lcs.lc.GetFirstSelected()):
+            self.lc.lcs.lc.Select(rID, on=0)
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for r in self.rectsFrag:
+            r.set_linewidth(self.gelLineWidth)
+        
+        
+        for r in self.rectsGel:
+            r.set_linewidth(self.gelLineWidth)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        if plot:
+            self.plotM.canvas.draw()
+            self.plot.canvas.draw()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.peptide = None
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearFrag(self, plot=True):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if self.fragSelLine is not None:
+            self.fragSelLine[0].remove()
+            self.fragSelLine = None
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if plot:
+            self.plotM.canvas.draw()
+            if self.fragSelC != [None, None, None]:
+                self.text.Clear()
+                #------------------------------> 
+                if self.selBands:
+                    self.PrintBText(self.blSelC[0])
+                else:
+                    self.PrintLText(self.blSelC[1])
+            else:
+                pass
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.fragSelC = [None, None, None]
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearGel(self, plot=True):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if self.spotSelLine is not None:
+            self.spotSelLine[0].remove()
+            self.spotSelLine = None
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if plot:
+            self.plot.canvas.draw()
+            if self.gelSelC != [None, None]:
+                self.text.Clear()
+                #------------------------------> 
+                if self.selBands:
+                    self.PrintBText(self.blSelC[0])
+                else:
+                    self.PrintLText(self.blSelC[1])
+            else:
+                pass
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.gelSelC = [None, None]
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearBL(self, plot=True):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.SetEmptyFragmentAxis()
+        self.OnClearGel(plot=False)
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if self.blSelRect is not None:
+            self.blSelRect.remove()
+            self.blSelRect = None
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if plot:
+            self.plot.canvas.draw()
+            self.text.Clear()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.blSelC = [None, None]
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearAll(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.OnClearPept(plot=False)
+        self.OnClearFrag(plot=False)
+        self.OnClearGel(plot=False)
+        self.OnClearBL(plot=False)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.plotM.canvas.draw()
+        self.plot.canvas.draw()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.text.Clear()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 

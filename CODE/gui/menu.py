@@ -1338,28 +1338,18 @@ class ClearSelLimProt(wx.Menu):
         self.noSel = self.Append(-1,  'All')
         #endregion -----------------------------------------------> Menu Items
         
-        #region ------------------------------------------------------> nameID
-        self.nameID = { # Associate IDs with Tab names. Avoid manual IDs
-            self.noPept.GetId() : 'Peptide',
-            self.noFrag.GetId() : 'Fragment',
-            self.noGel.GetId()  : 'Gel',
-            self.noBL.GetId()   : 'BandLane',
-            self.noSel.GetId()  : 'All',
-        }
-        #endregion ---------------------------------------------------> nameID
-        
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnClearSel, source=self.noPept)
-        self.Bind(wx.EVT_MENU, self.OnClearSel, source=self.noFrag)
-        self.Bind(wx.EVT_MENU, self.OnClearSel, source=self.noGel)
-        self.Bind(wx.EVT_MENU, self.OnClearSel, source=self.noBL)
-        self.Bind(wx.EVT_MENU, self.OnClearSel, source=self.noSel)
+        self.Bind(wx.EVT_MENU, self.OnClearPept, source=self.noPept)
+        self.Bind(wx.EVT_MENU, self.OnClearFrag, source=self.noFrag)
+        self.Bind(wx.EVT_MENU, self.OnClearGel, source=self.noGel)
+        self.Bind(wx.EVT_MENU, self.OnClearBL, source=self.noBL)
+        self.Bind(wx.EVT_MENU, self.OnClearAll, source=self.noSel)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnClearSel(self, event) -> bool:
+    def OnClearPept(self, event) -> bool:
         """Clear the selection in a LimProt Res Window
     
             Parameters
@@ -1373,7 +1363,83 @@ class ClearSelLimProt(wx.Menu):
             bool
         """
         win = self.GetWindow()
-        win.OnClearSel(self.nameID[event.GetId()])
+        win.OnClearPept()
+        
+        return True
+    #---
+    
+    def OnClearFrag(self, event) -> bool:
+        """Clear the selection in a LimProt Res Window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnClearFrag()
+        
+        return True
+    #---
+    
+    def OnClearGel(self, event) -> bool:
+        """Clear the selection in a LimProt Res Window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnClearGel()
+        
+        return True
+    #---
+    
+    def OnClearBL(self, event) -> bool:
+        """Clear the selection in a LimProt Res Window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnClearBL()
+        
+        return True
+    #---
+    
+    def OnClearAll(self, event) -> bool:
+        """Clear the selection in a LimProt Res Window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnClearAll()
         
         return True
     #---
