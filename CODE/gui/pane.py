@@ -169,6 +169,8 @@ class BaseConfPanel(
             DataFrame for the initial values.
         dfF : pd.DataFrame
             DataFrame as float values and 0 and '' as np.nan
+        dfTP : pd.DataFrame
+            DataFrame filtered by Target Protein
         dfE : DataFrame
             Exclude some entries by some parameters
         dfS : DataFrame
@@ -312,12 +314,13 @@ class BaseConfPanel(
         )
         #------------------------------> To handle Data Preparation Steps
         self.dataPrep = { # Keys are the messaging for the Progress Dialog
-            "Setting Data Types"       : self.DatPrep_0_Float,
-            "Filter Data: Exclude Rows": self.DatPrep_Exclude,
-            "Filter Data: Score Value" : self.DatPrep_Score,
-            "Data Transformation"      : self.DatPrep_Transformation,
-            "Data Normalization"       : self.DatPrep_Normalization,
-            "Data Imputation"          : self.DatPrep_Imputation,
+            "Setting Data Types"         : self.DatPrep_0_Float,
+            "Filter Data: Target Protein": self.DatPrep_TargetProt,
+            "Filter Data: Exclude Rows"  : self.DatPrep_Exclude,
+            "Filter Data: Score Value"   : self.DatPrep_Score,
+            "Data Transformation"        : self.DatPrep_Transformation,
+            "Data Normalization"         : self.DatPrep_Normalization,
+            "Data Imputation"            : self.DatPrep_Imputation,
         }
         #------------------------------> This is needed to handle Data File 
         # content load to the wx.ListCtrl in Tabs with multiple panels
@@ -336,6 +339,7 @@ class BaseConfPanel(
         #--------------> pd.DataFrames for:
         self.dfI  = None # Initial and
         self.dfF  = None # Data as float and 0 and '' values as np.nan
+        self.dfTP = None # Select Target Protein
         self.dfE  = None # Exclude entries by some parameter
         self.dfS  = None # Exclude entries by Score value
         self.dfT  = None # Transformed values
@@ -350,8 +354,9 @@ class BaseConfPanel(
         #--------------> input file for directing repeating analysis from
         # file copied to oFolder
         self.dFile   = None
-        #--------------> Obj for the input data file
-        self.iFileObj = None
+        #--------------> Obj for files
+        self.iFileObj   = None
+        self.seqFileObj = None
         #------------------------------> 
         self.changeKey = getattr(self, 'changeKey', ['iFile', 'uFile'])
         #------------------------------> Parent init
@@ -932,8 +937,25 @@ class BaseConfPanel(
         return True
     #---
     
-    def ReadInputFiles(self):
-        """Read input file and check data"""
+    def ReadInputFiles(self) -> bool:
+        """Read input file and check data
+        
+            See Notes below for more details.
+        
+            Return
+            ------
+            bool
+            
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - do: dict with at least the following key - values:
+                {
+                    'seqRec': Path,
+                    'seqNat': Path or None,
+                }
+        
+        """
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdReadFile
         #endregion ------------------------------------------------------> Msg
@@ -950,7 +972,32 @@ class BaseConfPanel(
             self.tException = e
             return False
         #endregion ------------------------------------------------> Data file
-
+        
+        #region ------------------------------------------------> Seq Rec File
+        if self.do.get('seqFile', None) is not None:
+            #------------------------------> 
+            msgStep = msgPrefix + f"{self.cLSeqFile}, reading"
+            wx.CallAfter(self.dlg.UpdateStG, msgStep)
+            #------------------------------> 
+            try:
+                self.seqFileObj = dtsFF.FastaFile(self.do['seqFile'])
+            except Exception as e:
+                self.msgError = ('It was not possible to read the Fasta file '
+                    'with the recombinant sequence.')
+                self.tException = e
+                return False
+        else:
+            pass
+        #endregion ---------------------------------------------> Seq Rec File
+        
+        #region ---------------------------------------------------> Print Dev
+        if config.development and self.seqFileObj is not None:
+            print("Rec Seq: ", self.seqFileObj.seqRec)
+            print("Nat Seq: ", self.seqFileObj.seqNat)
+        else:
+            pass
+        #endregion ------------------------------------------------> Print Dev
+        
         return True
     #---
     
@@ -1012,6 +1059,46 @@ class BaseConfPanel(
         return True
     #---
     
+    def DatPrep_TargetProt(self) -> bool:
+        """Filter data based on the value of Target Protein.
+        
+            See Notes below for more details
+    
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - do: dict with at least the following key - values pairs:
+                'TargetProt' : str name of the Protein to select in the data
+                'df' : {
+                    'TargetProtCol' : int,
+                }
+        """
+        #region -------------------------------------------------> Get Protein
+        try:
+            if self.do['df'].get('TargetProtCol', None) is not None:
+                self.dfTP = dtsMethod.DFFilterByColS(
+                    self.dfF, 
+                    self.do['df']['TargetProtCol'],
+                    self.do['TargetProt'], 
+                    'e',
+                )
+            else:
+                self.dfTP = self.dfF.copy()
+        except Exception as e:
+            self.msgError = config.mPDDataTargetProt.format(
+                self.do['TargetProt'], self.do['df']['TargetProtCol']
+            )
+            self.tException = e
+            return False
+        #endregion ----------------------------------------------> Get Protein
+        
+        return True
+    #---
+    
     def DatPrep_Exclude(self) -> bool:
         """Exclude rows from self.dfF based on the content of 
             self.do['df']['ExcludeR'].
@@ -1038,9 +1125,9 @@ class BaseConfPanel(
         try:
             if self.do['df'].get('ExcludeR', None) is not None:
                 self.dfEx = dtsMethod.DFExclude(
-                    self.dfF, self.do['df']['ExcludeR'])
+                    self.dfTP, self.do['df']['ExcludeR'])
             else:
-                self.dfEx = self.dfF.copy()
+                self.dfEx = self.dfTP.copy()
         except Exception as e:
             self.msgError = config.mPDDataExclude.format(
                 self.do['df']['ExcludeR'])
@@ -1069,13 +1156,16 @@ class BaseConfPanel(
                     'ScoreCol' : int
                 }
             - dfEx: pd.DataFrame with correct data types in each column
+            
+            This is last filter applied. That is why the check for empty df is
+            done here. 
         """
         #region ------------------------------------------------------> Filter
         try:
             if self.do['df'].get('ScoreCol', None) is not None:
-                self.dfS = dtsMethod.DFFilterByCol(
+                self.dfS = dtsMethod.DFFilterByColN(
                     self.dfEx, 
-                    self.do['df']['ScoreCol'], 
+                    [self.do['df']['ScoreCol']], 
                     self.do['ScoreVal'], 
                     'ge'
                 )
@@ -1088,6 +1178,15 @@ class BaseConfPanel(
             return False
         #endregion ---------------------------------------------------> Filter
         
+        #region -----------------------> Check some Rows are left for Analysis
+        if self.dfS.empty:
+            self.msgError = ('No data left for analysis after all filters '
+                '(Score, Target Protein, etc) were applied.')
+            return False
+        else:
+            pass
+        #endregion --------------------> Check some Rows are left for Analysis
+
         return True
     #---
     
@@ -1204,22 +1303,25 @@ class BaseConfPanel(
         return True
     #---
     
-    def DataPreparation(self) -> bool:
+    def DataPreparation(self, resetIndex=True) -> bool:
         """Perform the data preparation step.
         
             See Notes below for more details.
+            
+            Parameters
+            ----------
+            resetIndex: bool
+                If True reset the index of self.dfImp
     
             Returns
             -------
             bool
     
-            Raise
-            -----
-            
             Notes
             -----
             See the Notes for the individual methods:
                 self.DatPrep_0_Float, 
+                self.DatPrep_TargetProt,
                 self.DatPrep_Exclude, 
                 self.DatPrep_Score,
                 self.DatPrep_Transformation,
@@ -1241,13 +1343,23 @@ class BaseConfPanel(
                 return False
         #endregion -------------------------------------> Run Data Preparation
         
+        #region -------------------------------------------------> Reset index
+        if resetIndex:
+            self.dfIm.reset_index(drop=True, inplace=True)
+        else:
+            pass
+        #endregion ----------------------------------------------> Reset index
+        
         #region -------------------------------------------------------> Print
         if config.development:
+            #------------------------------> 
             dfL = [
-                self.dfI, self.dfF, self.dfEx, self.dfS, self.dfT, self.dfN,
-                self.dfIm
+                self.dfI, self.dfF, self.dfTP, self.dfEx, self.dfS, self.dfT, 
+                self.dfN, self.dfIm
             ]
-            dfN = ['dfI', 'dfF', 'dfEx', 'dfS', 'dfT', 'dfN', 'dfIm']
+            dfN = ['dfI', 'dfF', 'dfTP', 'dfEx', 'dfS', 'dfT', 'dfN', 'dfIm']
+            #------------------------------> 
+            print('')
             for i, df in enumerate(dfL):
                 if df is not None:
                     print(f'{dfN[i]}: {df.shape}')
@@ -1259,7 +1371,7 @@ class BaseConfPanel(
         
         return True
     #---
-    
+        
     def LoadResults(self):
         """Load output file"""
         #region ---------------------------------------------------------> Msg
@@ -1482,8 +1594,7 @@ class BaseConfModPanel2(BaseConfModPanel):
 
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Label
-        self.cLSeqRecFile = getattr(self, 'cLSeqRecFile', config.lStSeqRecFile)
-        self.cLSeqNatFile = getattr(self, 'cLSeqNatFile', config.lStSeqNatFile)
+        self.cLSeqFile = getattr(self, 'cLSeqFile', config.lStSeqFile)
         self.cLSeqLength = getattr(self, 'cLSeqLength', config.lStSeqLength)
         self.cLTargetProt = getattr(self, 'cLtargetProt', config.lStTargetProt)
         self.cLSeqCol = getattr(self, 'cLSeqCol', config.lStSeqCol)
@@ -1501,25 +1612,14 @@ class BaseConfModPanel2(BaseConfModPanel):
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> Files
-        self.seqRec = dtsWidget.ButtonTextCtrlFF(
+        self.seqFile = dtsWidget.ButtonTextCtrlFF(
             self.sbFile,
-            btnLabel   = self.cLSeqRecFile,
+            btnLabel   = self.cLSeqFile,
             # tcHint     = 
             mode       = self.cMseqFile,
             ext        = self.cEseqFile,
             tcStyle    = wx.TE_READONLY,
             validator  = dtsValidator.InputFF(fof='file', ext=config.esSeq),
-            ownCopyCut = True,
-        )
-        self.seqNat = dtsWidget.ButtonTextCtrlFF(
-            self.sbFile,
-            btnLabel   = self.cLSeqNatFile,
-            # tcHint     = 
-            mode       = self.cMseqFile,
-            ext        = self.cEseqFile,
-            tcStyle    = wx.TE_READONLY,
-            validator  = dtsValidator.InputFF(
-                fof='file', ext=config.esSeq, opt=True),
             ownCopyCut = True,
         )
         #------------------------------> Values
@@ -1560,38 +1660,26 @@ class BaseConfModPanel2(BaseConfModPanel):
         self.sizersbFileWid.Detach(self.id.tc)
         #--------------> 
         self.sizersbFileWid.Add(
-            self.seqRec.btn,
+            self.seqFile.btn,
             pos    = (2,0),
             flag   = wx.EXPAND|wx.ALL,
             border = 5
         )
         self.sizersbFileWid.Add(
-            self.seqRec.tc,
+            self.seqFile.tc,
             pos    = (2,1),
             flag   = wx.EXPAND|wx.ALL,
             border = 5
         )
         self.sizersbFileWid.Add(
-            self.seqNat.btn,
-            pos    = (3,0),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5
-        )
-        self.sizersbFileWid.Add(
-            self.seqNat.tc,
-            pos    = (3,1),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5
-        )
-        self.sizersbFileWid.Add(
             self.id.st,
-            pos    = (4,0),
+            pos    = (3,0),
             flag   = wx.ALIGN_CENTER|wx.ALL,
             border = 5
         )
         self.sizersbFileWid.Add(
             self.id.tc,
-            pos    = (4,1),
+            pos    = (3,1),
             flag   = wx.EXPAND|wx.ALL,
             border = 5
         )
@@ -1655,7 +1743,127 @@ class BaseConfModPanel2(BaseConfModPanel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def NCResNumbers(self, seqNat: bool=True) -> bool:
+        """Find the residue numbers for the peptides in the sequence of the 
+            Recombinant and Native protein.
+            
+            See Notes below for more details
+            
+            Parameters
+            ----------
+            seqNat: bool
+                Calculate N and C residue numbers also for the Native protein
+                
+            Returns
+            -------
+            bool
     
+            Raise
+            -----
+            
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - seqFileObj: dtsFF.FastaFile
+                Object with the sequence of the Recombinant and Native protein
+            - do: dict with at least the following key - values pairs
+                {
+                    'df' : {
+                        'SeqCol' : int,
+                    },
+                    'dfo' : {
+                        'NC' : list[int],
+                        'NCF': list[int],
+                    },
+                }
+        """
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdRun
+        #endregion ------------------------------------------------------> Msg
+        
+        #region -----------------------------------------------------> Rec Seq
+        #------------------------------> 
+        msgStep = (f'{msgPrefix} Calculating output data - N & C terminal '
+            f'residue numbers I')
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.dfR.iloc[:,self.do['dfo']['NC']] = self.dfR.iloc[
+                :,[self.do['df']['SeqCol'], 1]].apply(
+                    self.NCTerm, 
+                    axis        = 1,
+                    raw         = True,
+                    result_type = 'expand',
+                    args        = (self.seqFileObj, 'Recombinant'),
+                )
+        except dtsException.ExecutionError:
+            return False
+        except Exception as e:
+            self.msgError = config.mUnexpectedError
+            self.tException = e
+            return False
+        #endregion --------------------------------------------------> Rec Seq
+        
+        #region -----------------------------------------------------> Nat Seq
+        #------------------------------> 
+        msgStep = (f'{msgPrefix} Calculating output data - N & C terminal '
+            f'residue numbers II')
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        if seqNat and self.seqFileObj.seqNat is not None:
+            #------------------------------> 
+            delta = self.seqFileObj.GetSelfDelta()
+            #------------------------------> 
+            a = self.dfR.iloc[:,self.do['dfo']['NC']] + delta
+            self.dfR.iloc[:,self.do['dfo']['NCF']] = a
+            #------------------------------> 
+            m = self.dfR.iloc[:,self.do['dfo']['NCF']] > 0
+            a = self.dfR.iloc[:,self.do['dfo']['NCF']].where(m, np.nan)
+            a = a.astype('Int16')
+            self.dfR.iloc[:,self.do['dfo']['NCF']] = a
+        else:
+            pass
+        #endregion --------------------------------------------------> Nat Seq
+        
+        return True
+    #---
+    
+    def NCTerm(
+        self, row: list[str], seqObj: 'dtsFF.FastaFile', seqType: str
+        ) -> tuple[int, int]:
+        """Get the N and C terminal residue numbers for a given peptide.
+    
+            Parameters
+            ----------
+            row: list[str]
+                List with two elements. The Sequence is in index 0.
+            seqObj : dtsFF.FastaFile
+                Object with the protein sequence and the method to search the 
+                peptide sequence.
+            seqType : str
+                For the error message.
+    
+            Returns
+            -------
+            (Nterm, Cterm)
+    
+            Raise
+            -----
+            ExecutionError:
+                - When the peptide was not found in the sequence of the protein.
+        """
+        #region ---------------------------------------------------> Find pept
+        nc = seqObj.FindSeq(row[0])
+        #endregion ------------------------------------------------> Find pept
+        
+        #region ----------------------------------------------------> Check ok
+        if nc[0] != -1:
+            return nc
+        else:
+            self.msgError = config.mSeqPeptNotFound.format(row[0], seqType)
+            raise dtsException.ExecutionError(self.msgError)
+        #endregion -------------------------------------------------> Check ok
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -2386,7 +2594,7 @@ class CorrA(BaseConfPanel):
         self.cSection     = config.nuCorrA
         self.cLLenLongest = len(config.lCbCorrMethod)
         self.cTitlePD     = config.lnPDCorrA
-        self.cGaugePD     = 23
+        self.cGaugePD     = 24
         #------------------------------> Optional configuration
         self.cTTHelp = config.ttBtnHelp.format(config.urlCorrA)
         #------------------------------> Setup attributes in base class 
@@ -2835,10 +3043,13 @@ class CorrA(BaseConfPanel):
 
         #region -------------------------------------------------------> Reset
         self.msgError   = None # Error msg to show in self.RunEnd
-        self.tException = None
+        self.tException = None # Exception
         self.d          = {} # Dict with the user input as given
         self.do         = {} # Dict with the processed user input
-        self.dfI        = None # pd.DataFrames
+        self.dfI        = None # pd.DataFrame for initial, normalized and
+        self.dfF        = None
+        self.dfTP       = None
+        self.dfEx       = None
         self.dfS        = None
         self.dfT        = None
         self.dfN        = None
@@ -2847,15 +3058,13 @@ class CorrA(BaseConfPanel):
         self.date       = None # date for corr file
         self.dateID     = None
         self.oFolder    = None # folder for output
-        self.iFileObj   = None # input file object
-        self.corrP      = None # path to the corr file that will be created
+        self.iFileObj   = None
         self.deltaT     = None
-        #------------------------------> 
+        
         if self.dFile is not None:
             self.iFile.tc.SetValue(str(self.dFile))
         else:
             pass
-        #------------------------------> 
         self.dFile = None # Data File copied to Data-Initial
         #endregion ----------------------------------------------------> Reset
     #---
@@ -3017,7 +3226,7 @@ class DataPrep(BaseConfPanel):
         self.cSection     = config.nuDataPrep
         self.cLLenLongest = len(self.cLColAnalysis)
         self.cTitlePD     = f"Running {config.nuDataPrep} Analysis"
-        self.cGaugePD     = 26
+        self.cGaugePD     = 27
         #------------------------------> Parent class
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
@@ -3447,11 +3656,13 @@ class DataPrep(BaseConfPanel):
         self.do         = {} # Dict with the processed user input
         self.dfI        = None # pd.DataFrame for initial, normalized and
         self.dfF        = None
+        self.dfTP       = None
         self.dfEx       = None
         self.dfS        = None
         self.dfT        = None
         self.dfN        = None
         self.dfIm       = None
+        self.dfR        = None
         self.date       = None # date for corr file
         self.dateID     = None
         self.oFolder    = None # folder for output
@@ -3649,7 +3860,7 @@ class ProtProf(BaseConfModPanel):
         self.cSection     = config.nmProtProf
         self.cLLenLongest = len(config.lStResultCtrl)
         self.cTitlePD     = f"Running {config.nmProtProf} Analysis"
-        self.cGaugePD     = 35
+        self.cGaugePD     = 36
         #------------------------------> Optional configuration
         self.cTTHelp = config.ttBtnHelp.format(config.urlProtProf)
         #------------------------------> Base attributes and setup
@@ -3663,17 +3874,14 @@ class ProtProf(BaseConfModPanel):
         self.cLSample      = 'Samples'
         self.cLRawI        = 'Intensities'
         #------------------------------> Choices
-        self.cOSample   = list(config.oSamples.values())
+        self.cOSample   = list(config.oSamples.keys())
         self.cORawI     = list(config.oIntensities.values())
         self.cOCorrectP = list(config.oCorrectP.keys())
         #------------------------------> Tooltips
         self.cTTCorrectP    = config.ttStPCorrection
         self.cTTGeneName    = config.ttStGenName
         self.cTTExcludeProt = config.ttStExcludeProt
-        self.cTTSample      = (
-            f"Specify if samples are independent or paired.\n"
-            f"For example, samples are paired when the same Petri dish is "
-            f"used for the control and experiment.")
+        self.cTTSample      = config.ttStSample 
         self.cTTRawI = (
             f"Specify if intensities are raw intensity values or are already "
             f"expressed as a ratio (SILAC, TMT/iTRAQ).")
@@ -3704,7 +3912,7 @@ class ProtProf(BaseConfModPanel):
             self.sbValue,
             label     = self.cLSample,
             choices   = self.cOSample,
-            tooltip   = self.cTTGeneName,
+            tooltip   = self.cTTSample,
             validator = dtsValidator.IsNotEmpty(),
         )
         
@@ -3719,7 +3927,7 @@ class ProtProf(BaseConfModPanel):
         self.geneName = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLGeneName,
-            stTooltip = self.cTTSample,
+            stTooltip = self.cTTGeneName,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -4161,7 +4369,7 @@ class ProtProf(BaseConfModPanel):
             'ID'         : self.id.tc.GetValue(),
             'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
             'RawI'       : True if self.rawI.cb.GetValue() == config.oIntensities['RawI'] else False,
-            'IndS'       : True if self.sample.cb.GetValue() == config.oSamples['IS'] else False,
+            'IndS'       : True if self.sample.cb.GetValue() == config.oSamples['Independent Samples'] else False,
             'Cero'       : self.ceroB.IsChecked(),
             'NormMethod' : self.normMethod.cb.GetValue(),
             'TransMethod': self.transMethod.cb.GetValue(),
@@ -4341,6 +4549,7 @@ class ProtProf(BaseConfModPanel):
         self.do         = {} # Dict with the processed user input
         self.dfI        = None # pd.DataFrame for initial, normalized and
         self.dfF        = None
+        self.dfTP       = None
         self.dfEx       = None
         self.dfS        = None
         self.dfT        = None
@@ -4382,6 +4591,7 @@ class ProtProf(BaseConfModPanel):
                 aL = aL + n*[c]
                 bL = bL + n*[t]
                 cL = cL + config.dfcolProtprofCLevel
+        #------------------------------> 
         idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
         #endregion ----------------------------------------------------> Index
         
@@ -4641,23 +4851,27 @@ class LimProt(BaseConfModPanel2):
 
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Configuration
-        self.cLBeta       = "β value"
-        self.cLGamma      = "γ value"
-        self.cLTheta      = "Θ value"
-        self.cLThetaMax   = "Θmax value"
+        self.cLBeta     = "β value"
+        self.cLGamma    = "γ value"
+        self.cLTheta    = "Θ value"
+        self.cLThetaMax = "Θmax value"
+        self.cLSample   = 'Samples'
+        #------------------------------> Choices
+        self.cOSample = list(config.oSamples.keys())
+        #------------------------------> Tooltips
+        self.cTTSample = config.ttStSample
         #------------------------------> Needed by BaseConfPanel
         self.cURL         = config.urlLimProt
         self.cSection     = config.nmLimProt
         self.cLLenLongest = len(config.lStResultCtrl)
         self.cTitlePD     = f"Running {config.nmLimProt} Analysis"
-        self.cGaugePD     = 30
+        self.cGaugePD     = 50
+        #------------------------------> Needed to Run
+        self.cMainData    = '{}-LimitedProteolysis-Data-{}.txt'
+        self.changeKey = ['iFile', 'uFile', 'seqFile']
         #------------------------------> 
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------------> Menu
-        
-        #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> Values
@@ -4704,21 +4918,27 @@ class LimProt(BaseConfModPanel2):
                 vMin    = 0,
             )
         )
-        
+        self.sample = dtsWidget.StaticTextComboBox(
+            self.sbValue,
+            label     = self.cLSample,
+            choices   = self.cOSample,
+            tooltip   = self.cTTSample,
+            validator = dtsValidator.IsNotEmpty(),
+        )
         #endregion --------------------------------------------------> Widgets
         
         #region ----------------------------------------------> checkUserInput
         self.checkUserInput = {
             self.cLuFile       : [self.uFile.tc, config.mFileBad],
             self.cLiFile       : [self.iFile.tc, config.mFileBad],
-            self.cLSeqRecFile  : [self.seqRec.tc, config.mFileBad],
-            self.cLSeqNatFile  : [self.seqNat.tc, config.mFileBad],
+            self.cLSeqFile     : [self.seqFile.tc, config.mFileBad],
             self.cLTransMethod : [self.transMethod.cb, config.mOptionBad],
             self.cLNormMethod  : [self.normMethod.cb, config.mOptionBad],
             self.cLImputation  : [self.imputationMethod.cb, config.mOptionBad],
             self.cLTargetProt  : [self.targetProt.tc, config.mValueBad],
             self.cLScoreVal    : [self.scoreVal.tc, config.mOneRealNum],
             self.cLSeqLength   : [self.seqLength.tc, config.mOneZPlusNum],
+            self.cLSample      : [self.sample.cb, config.mOptionBad],
             self.cLAlpha       : [self.alpha.tc, config.mOne01Num],
             self.cLBeta        : [self.beta.tc, config.mOne01Num],
             self.cLGamma       : [self.gamma.tc, config.mOne01Num],
@@ -4837,12 +5057,25 @@ class LimProt(BaseConfModPanel2):
             border = 5,
         )
         self.sizersbValueWid.Add(
+            self.sample.st,
+            pos    = (4,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.sample.cb,
+            pos    = (4,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
             1, 1,
             pos    = (0,5),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
             span   = (2, 0),
         )
+        
         self.sizersbValueWid.AddGrowableCol(0, 1)
         self.sizersbValueWid.AddGrowableCol(2, 1)
         self.sizersbValueWid.AddGrowableCol(4, 1)
@@ -4868,8 +5101,7 @@ class LimProt(BaseConfModPanel2):
             if config.cOS == "Darwin":
                 self.uFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
                 self.iFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
-                self.seqRec.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-rec.txt")
-                self.seqNat.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-nat.txt")
+                self.seqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
             else:
                 pass
             self.id.tc.SetValue('Beta Test Dev')
@@ -4884,6 +5116,7 @@ class LimProt(BaseConfModPanel2):
             self.gamma.tc.SetValue('0.8')
             self.theta.tc.SetValue('')
             self.thetaMax.tc.SetValue('8')
+            self.sample.cb.SetValue('Independent Samples')
             self.seqCol.tc.SetValue('0')
             self.detectedProt.tc.SetValue('34')
             self.score.tc.SetValue('42')
@@ -4896,10 +5129,64 @@ class LimProt(BaseConfModPanel2):
         else:
             pass
         #endregion -----------------------------------------------------> Test
+        
+        #region -------------------------------------------------------> DataI
+        self.SetInitialData(dataI)
+        #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def SetInitialData(self, dataI: Optional[dict]=None) -> Literal[True]:
+        """Set initial data
+    
+            Parameters
+            ----------
+            dataI : dict or None
+                Data to fill all fields and repeat an analysis. See Notes.
+    
+            Returns
+            -------
+            True
+        """
+        #region -------------------------------------------------> Fill Fields
+        if dataI is not None:
+            #------------------------------> Files
+            self.uFile.tc.SetValue(dataI['CI']['uFile'])
+            self.iFile.tc.SetValue(dataI['I'][self.cLiFile])
+            self.seqFile.tc.SetValue(dataI['I'][f'{self.cLSeqFile} File'])
+            self.id.tc.SetValue(dataI['CI']['ID'])
+            # #------------------------------> Data Preparation
+            self.ceroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.transMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
+            self.normMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
+            self.imputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
+            # #------------------------------> Values
+            self.targetProt.tc.SetValue(dataI['I'][self.cLTargetProt])
+            self.scoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
+            self.seqLength.tc.SetValue(dataI['I'][self.cLSeqLength])
+            self.alpha.tc.SetValue(dataI['I'][self.cLAlpha])
+            self.sample.cb.SetValue(dataI['I'][self.cLSample])
+            self.beta.tc.SetValue(dataI['I'][self.cLBeta])
+            self.gamma.tc.SetValue(dataI['I'][self.cLGamma])
+            self.theta.tc.SetValue(dataI['I'][self.cLTheta])
+            self.thetaMax.tc.SetValue(dataI['I'][self.cLThetaMax])
+            # #------------------------------> Columns
+            self.seqCol.tc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
+            self.detectedProt.tc.SetValue(dataI['I'][self.cLDetectedProt])
+            self.score.tc.SetValue(dataI['I'][self.cLScoreCol])
+            self.tcResults.SetValue(dataI['I'][self.cLResControl])
+            self.lbDict[1] = dataI['I'][config.lStLimProtLane]
+            self.lbDict[2] = dataI['I'][config.lStLimProtBand]
+            self.lbDict['Control'] = dataI['I'][f"Control {config.lStCtrlName}"]
+        else:
+            pass
+        #endregion ----------------------------------------------> Fill Fields
+        
+        return True
+    #---
+    
+    #------------------------------> Run Methods
     def CheckInput(self):
         """Check user input"""
         #region -------------------------------------------------------> Super
@@ -4942,7 +5229,7 @@ class LimProt(BaseConfModPanel2):
         msgPrefix = config.lPdPrepare
         #endregion ------------------------------------------------------> Msg
 
-        #region -------------------------------------------------------> Input
+        #region -----------------------------------------------------------> d
         msgStep = msgPrefix + 'User input, reading'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> As given
@@ -4951,10 +5238,8 @@ class LimProt(BaseConfModPanel2):
                 self.iFile.tc.GetValue()),
             self.EqualLenLabel(self.cLuFile) : (
                 self.uFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLSeqRecFile) : (
-                self.seqRec.tc.GetValue()),
-            self.EqualLenLabel(self.cLSeqNatFile) : (
-                self.seqNat.tc.GetValue()),
+            self.EqualLenLabel(f'{self.cLSeqFile} File') : (
+                self.seqFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
                 self.id.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
@@ -4971,6 +5256,8 @@ class LimProt(BaseConfModPanel2):
                 self.scoreVal.tc.GetValue()),
             self.EqualLenLabel(self.cLSeqLength) : (
                 self.seqLength.tc.GetValue()),
+            self.EqualLenLabel(self.cLSample) : (
+                self.sample.cb.GetValue()),
             self.EqualLenLabel(self.cLAlpha) : (
                 self.alpha.tc.GetValue()),
             self.EqualLenLabel(self.cLBeta) : (
@@ -4981,7 +5268,7 @@ class LimProt(BaseConfModPanel2):
                 self.theta.tc.GetValue()),
             self.EqualLenLabel(self.cLThetaMax) : (
                 self.thetaMax.tc.GetValue()),
-            self.EqualLenLabel(self.cLSeqCol) : (
+            self.EqualLenLabel(f'{self.cLSeqCol} Column') : (
                 self.seqCol.tc.GetValue()),
             self.EqualLenLabel(self.cLDetectedProt) : (
                 self.detectedProt.tc.GetValue()),
@@ -4996,13 +5283,13 @@ class LimProt(BaseConfModPanel2):
             self.EqualLenLabel(f"Control {config.lStCtrlName}") : (
                 self.lbDict['Control']),
         }
+        #endregion --------------------------------------------------------> d
+        
+        #region ----------------------------------------------------------> do
         #------------------------------> Dict with all values
         #--------------> Step
         msgStep = msgPrefix + 'User input, processing'
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #--------------> SeqNat
-        seqNatVal = self.seqNat.tc.GetValue()
-        seqNat = Path(seqNatVal) if seqNatVal != '' else None
         #--------------> SeqLength
         seqLengthVal = self.seqLength.tc.GetValue()
         seqLength = float(seqLengthVal) if seqLengthVal != '' else None
@@ -5021,8 +5308,7 @@ class LimProt(BaseConfModPanel2):
         self.do  = {
             'iFile'      : Path(self.iFile.tc.GetValue()),
             'uFile'      : Path(self.uFile.tc.GetValue()),
-            'seqRec'     : Path(self.seqRec.tc.GetValue()),
-            'seqNat'     : seqNatVal,
+            'seqFile'    : Path(self.seqFile.tc.GetValue()),
             'ID'         : self.id.tc.GetValue(),
             'Cero'       : self.ceroB.IsChecked(),
             'TransMethod': self.transMethod.cb.GetValue(),
@@ -5031,31 +5317,36 @@ class LimProt(BaseConfModPanel2):
             'TargetProt' : self.targetProt.tc.GetValue(),
             'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
             'SeqLength'  : seqLength,
+            'Sample'     : config.oSamples[self.sample.cb.GetValue()],
             'Alpha'      : float(self.alpha.tc.GetValue()),
             'Beta'       : float(self.beta.tc.GetValue()),
             'Gamma'      : float(self.gamma.tc.GetValue()),
             'Theta'      : theta,
-            'ThetaMax'   : self.thetaMax.tc.GetValue(),
+            'ThetaMax'   : float(self.thetaMax.tc.GetValue()),
             'Lane'       : self.lbDict[1],
             'Band'       : self.lbDict[2],
             'ControlL'   : self.lbDict['Control'],
-            'oc'         : {
-                'SeqCol'    : seqCol,
-                'DetectedP' : detectedProt,
-                'ScoreCol'  : scoreCol,
-                'ResCtrl'   : resctrl,
-                'Column'    : (
+            'oc'         : { # Column numbers in the initial dataframe
+                'SeqCol'       : seqCol,
+                'TargetProtCol': detectedProt,
+                'ScoreCol'     : scoreCol,
+                'ResCtrl'      : resctrl,
+                'Column'       : (
                     [seqCol, detectedProt, scoreCol] + resctrlFlat),
             },
-            'df' : {
-                'SeqCol'     : 0,
-                'DetectedP'  : 1,
-                'ScoreCol'   : 2,
-                'ResCtrl'    : resctrlDF,
-                'ResCtrlFlat': resctrlDFFlat,
-                'ColumnR'    : resctrlDFFlat,
-                'ColumnF'    : [2] + resctrlDFFlat,
+            'df' : { # Column numbers in the selected data dataframe
+                'SeqCol'       : 0,
+                'TargetProtCol': 1,
+                'ScoreCol'     : 2,
+                'ResCtrl'      : resctrlDF,
+                'ResCtrlFlat'  : resctrlDFFlat,
+                'ColumnR'      : resctrlDFFlat,
+                'ColumnF'      : [2] + resctrlDFFlat,
             },
+            'dfo' : { # Column numbers in the output dataframe
+                'NC' : [2,3], # N and C Term Res Numbers in the Rec Seq
+                'NCF': [4,5], # N and C Term Res Numbers in the Nat Seq
+            }
         }
         #------------------------------> File base name
         self.oFolder = self.do['uFile'].parent
@@ -5063,7 +5354,7 @@ class LimProt(BaseConfModPanel2):
         self.date = dtsMethod.StrNow()
         #------------------------------> DateID
         self.dateID = f'{self.date} - {self.do["ID"]}'
-        #endregion ----------------------------------------------------> Input
+        #endregion -------------------------------------------------------> do
 
         #region -------------------------------------------------> Print d, do
         if config.development:
@@ -5074,7 +5365,7 @@ class LimProt(BaseConfModPanel2):
             print('')
             print('self.do')
             for k,v in self.do.items():
-                if k in ['oc', 'df']:
+                if k in ['oc', 'df', 'dfo']:
                     print(k)
                     for j,w in self.do[k].items():
                         print(f'\t{j}: {w}')
@@ -5084,6 +5375,50 @@ class LimProt(BaseConfModPanel2):
         else:
             pass
         #endregion ----------------------------------------------> Print d, do
+        
+        return True
+    #---
+    
+    def ReadInputFiles(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Super
+        if super().ReadInputFiles():
+            pass
+        else:
+            return False
+        #endregion ------------------------------------------------> Super
+
+        #region ---------------------------------------------------> 
+        try:
+            ProtLoc = self.seqFileObj.GetNatProtLoc()
+        except Exception:
+            ProtLoc = (None, None)
+        
+        self.do['ProtLength'] = self.seqFileObj.seqLengthRec
+        self.do['ProtLoc'] = ProtLoc
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        try:
+            ProtDelta = self.seqFileObj.GetSelfDelta()
+        except Exception:
+            ProtDelta = (None, None)
+        
+        self.do['ProtDelta'] = ProtDelta
+        #endregion ------------------------------------------------> 
         
         return True
     #---
@@ -5101,7 +5436,166 @@ class LimProt(BaseConfModPanel2):
             return False
         #endregion -----------------------------------------> Data Preparation
         
-        return False
+        #region ----------------------------------------------------> Empty DF
+        #------------------------------> Msg
+        msgStep = f'{msgPrefix} Creating empty dataframe'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        self.dfR = self.EmptyDFR()
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region ------------------------------------------------> N, C Res Num
+        if self.NCResNumbers(seqNat=False):
+            pass
+        else:
+            return False
+        #endregion ---------------------------------------------> N, C Res Num
+        
+        #region -------------------------------------------------------> Delta
+        #------------------------------> Msg
+        msgStep = f'{msgPrefix} Delta values'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        colC = self.do['df']['ResCtrl'][0][0]
+        #------------------------------> 
+        if self.do['Theta'] is not None:
+            delta = self.do['Theta']
+        else:
+            delta = dtsStatistic.tost_delta(
+                self.dfIm.iloc[:,colC], 
+                self.do['Alpha'],
+                self.do['Beta'],
+                self.do['Gamma'], 
+                deltaMax=self.do['ThetaMax'],
+            )
+        #------------------------------>         
+        self.dfR[('Delta', 'Delta', 'Delta')] = delta
+        #endregion ----------------------------------------------------> Delta
+        
+        #region ---------------------------------------------------> Calculate
+        for b, bN in enumerate(self.do['Band']):
+            for l, lN in enumerate(self.do['Lane']):
+                #------------------------------> Message
+                msgStep = (
+                    f'{msgPrefix}'
+                    f'Gel spot {bN} - {lN}'
+                )  
+                wx.CallAfter(self.dlg.UpdateSt, msgStep)
+                #------------------------------> Control & Data Column
+                colD = self.do['df']['ResCtrl'][b+1][l]
+                #------------------------------> Calculate data
+                if colD:
+                    try:
+                        self.CalcOutData(bN, lN, colC, colD)
+                    except Exception as e:
+                        self.msgError = (
+                            f'Calculation of the Limited Proteolysis data for '
+                            f'point {bN} - {lN} failed.'
+                        )
+                        self.tException = e
+                        return False
+                else:
+                    pass
+        #endregion ------------------------------------------------> Calculate
+        
+        #region --------------------------------------------------------> Sort
+        self.dfR = self.dfR.sort_values(
+            by=[('Nterm', 'Nterm', 'Nterm'),('Cterm', 'Cterm', 'Cterm')]
+        )
+        self.dfR = self.dfR.reset_index(drop=True)
+        #endregion -----------------------------------------------------> Sort
+        
+        if config.development:
+            print('self.dfR.shape: ', self.dfR.shape)
+            print('')
+            print(self.dfR)
+            print('')
+        
+        return True
+    #---
+    
+    def WriteOutput(self) -> bool:
+        """Write output """
+        #region --------------------------------------------------> Data Steps
+        stepDict = {
+            config.fnInitial.format('01', self.date)    : self.dfI,
+            config.fnFloat.format('02', self.date)      : self.dfF,
+            config.fnTargetProt.format('03', self.date) : self.dfTP,
+            config.fnScore.format('04', self.date)      : self.dfS,
+            config.fnTrans.format('05', self.date)      : self.dfT,
+            config.fnNorm.format('06', self.date)       : self.dfN,
+            config.fnImp.format('07', self.date)        : self.dfIm,
+            self.cMainData.format('08', self.date)      : self.dfR,
+        }
+        #endregion -----------------------------------------------> Data Steps
+        
+        return self.WriteOutputData(stepDict)
+    #---
+    
+    def EmptyDFR(self) -> 'pd.DataFrame':
+        """Creates the empty df for the results
+        
+            Returns
+            -------
+            pd.DataFrame
+        """
+        #region -------------------------------------------------------> Index
+        #------------------------------> 
+        aL = config.dfcolLimProtFirstPart
+        bL = config.dfcolLimProtFirstPart
+        cL = config.dfcolLimProtFirstPart
+        #------------------------------> 
+        n = len(config.dfcolLimProtCLevel)
+        #------------------------------> 
+        for b in self.do['Band']:
+            for l in self.do['Lane']:
+                aL = aL + n*[b]
+                bL = bL + n*[l]
+                cL = cL + config.dfcolLimProtCLevel
+        #------------------------------> 
+        idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
+        #endregion ----------------------------------------------------> Index
+        
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(
+            np.nan, columns=idx, index=range(self.dfIm.shape[0]),
+        )
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region -------------------------------------------------> Seq & Score
+        df[(aL[0], bL[0], cL[0])] = self.dfIm.iloc[:,0]
+        df[(aL[1], bL[1], cL[1])] = self.dfIm.iloc[:,2]
+        #endregion ----------------------------------------------> Seq & Score
+        
+        return df
+    #---
+    
+    def CalcOutData(
+        self, bN: str,  lN: str, colC: list[int], colD: list[int],
+        ) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------> Delta and TOST
+        a = dtsStatistic.tost(
+            self.dfIm, colC, colD, sample=self.do['Sample'], 
+            delta=self.dfR[('Delta', 'Delta', 'Delta')], alpha=self.do['Alpha'],
+        ) 
+        self.dfR[(bN, lN, 'Ptost')] = a['P'].to_numpy()
+        #endregion -------------------------------------------> Delta and TOST
+        
+        return True
     #---
     
     def RunEnd(self):
@@ -5126,10 +5620,20 @@ class LimProt(BaseConfModPanel2):
         self.tException = None # Exception
         self.d          = {} # Dict with the user input as given
         self.do         = {} # Dict with the processed user input
+        self.dfI        = None # pd.DataFrame for initial, normalized and
+        self.dfF        = None
+        self.dfTP       = None
+        self.dfEx       = None
+        self.dfS        = None
+        self.dfT        = None
+        self.dfN        = None
+        self.dfIm       = None
+        self.dfR        = None
         self.date       = None # date for corr file
         self.dateID     = None
         self.oFolder    = None # folder for output
         self.iFileObj   = None
+        self.seqFileObj = None
         self.deltaT     = None
         
         if self.dFile is not None:

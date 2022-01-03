@@ -121,6 +121,7 @@ nwMain          = 'MainW'
 nwUMSAPControl  = 'UMSAPControl'
 nwCorrAPlot     = 'CorrAPlot'
 nwProtProf      = 'ProtProfPlot'
+nwLimProt       = 'LimProtPlot'
 nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
@@ -210,15 +211,16 @@ pImages = res / 'IMAGES' # Images folder
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 #------------------------------> Names
-fnInitial   = "{}-Initial-Data-{}.txt"
-fnFloat     = "{}-Floated-Data-{}.txt"
-fnExclude   = "{}-After-Excluding-Data-{}.txt"
-fnScore     = "{}-Score-Filtered-Data-{}.txt"
-fnTrans     = "{}-Transformed-Data-{}.txt"
-fnNorm      = "{}-Normalized-Data-{}.txt"
-fnImp       = "{}-Imputed-Data-{}.txt"
-fnDataSteps = 'Steps_Data_Files'
-fnDataInit  = 'Input_Data_Files'
+fnInitial    = "{}-Initial-Data-{}.txt"
+fnFloat      = "{}-Floated-Data-{}.txt"
+fnTargetProt = "{}-Target-Protein-Data-{}.txt"
+fnExclude    = "{}-After-Excluding-Data-{}.txt"
+fnScore      = "{}-Score-Filtered-Data-{}.txt"
+fnTrans      = "{}-Transformed-Data-{}.txt"
+fnNorm       = "{}-Normalized-Data-{}.txt"
+fnImp        = "{}-Imputed-Data-{}.txt"
+fnDataSteps  = 'Steps_Data_Files'
+fnDataInit   = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
 
 
@@ -242,9 +244,9 @@ lnListPane = 'Data File Content'
 lnPDCorrA  = 'Calculating Correlation Coefficients'
 #------------------------------> wx.Button
 lBtnRun         = 'Start Analysis'
-lBtnDataFile    = 'Data File'
+lBtnDataFile    = 'Data'
 lBtnOutFile     = 'Output File'
-lBtnUFile       = 'UMSAP File'
+lBtnUFile       = 'UMSAP'
 lBtnTypeResCtrl = 'Type Values'
 #------------------------------> wx.ListCtrl
 lLCtrlColNameI = ['#', 'Name']
@@ -260,8 +262,7 @@ lStLimProtBand  = 'Bands'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'  
 #------------------------------> wx.Statictext
-lStSeqRecFile   = 'Sequence (rec)'
-lStSeqNatFile   = 'Sequence (nat)'
+lStSeqFile      = 'Sequences'
 lStId           = 'Analysis ID'
 lStAlpha        = 'Significance Level'
 lStColIFile     = "Columns in the {}"
@@ -331,6 +332,9 @@ ttStExcludeRow = (
     "Set the column numbers containing the data used to exclude rows."
     "\ne.g. 8 10-12")
 ttStControlN = "Name or ID of the control experiment.\ne.g. MyControl."
+ttStSample = (f"Specify if samples are independent or paired.\n"
+    f"For example, samples are paired when the same Petri dish is "
+    f"used for the control and experiment.")
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -378,10 +382,12 @@ oIntensities = {
     'RatioI': 'Ratio of Intensities',
 }
 oSamples = {
-    'Empty': '',
-    'IS'   : 'Independent Samples',
-    'PS'   : 'Paired Samples',
+    '': '',
+    'Independent Samples': 'i',
+    'Paired Samples': 'p',
 }
+
+
 oCorrectP = {
     ''                     : '',
     'None'                 : 'None',
@@ -401,13 +407,19 @@ oControlTypeProtProf = {
     'OCR'  : 'One Control per Row',
     'Ratio': oIntensities['RatioI'],
 }
+
+
 #endregion ----------------------------------------------------------> Options
 
 
 #region -----------------------------------------------------> DF Column names
 dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
 dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
-dfcolDataCheck = ['Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
+dfcolDataCheck = [
+    'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
+dfcolLimProtFirstPart = [
+    'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
+dfcolLimProtCLevel = ['Ptost']
 #endregion --------------------------------------------------> DF Column names
 
 
@@ -418,6 +430,8 @@ ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
 
 #region ------------------------------------------------------------> Messages
 #region -------------------------------------------------------------> Other 
+#------------------------------> Unexpected Error
+mUnexpectedError = 'An uexpected error was encountered.'
 #------------------------------> Files 
 mFileSelector = f"It was not possible to show the file selecting dialog."
 mFileRead = 'An error occured when reading file:\n{}'
@@ -429,6 +443,8 @@ mNotEmpty = "Please select a value for {}."
 #------------------------------> Pandas
 mPDGetInitCol = ("It was not possible to extract the selected columns {} from "
     "the selected {}:.\n{}")
+mPDDataTargetProt = ('Selection of Target Protein failed.\nTarget Protein: {} '
+'Detected Proteins column: {}.')
 mPDDataExclude = 'Data Exclusion failed.\nColumns used for data exclusion: {}.'
 mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
     'filtering by Score value: {}.')
@@ -450,6 +466,9 @@ mListNumN0L = (
     "Only a list of unique non-negative integers can be accepted in {}.")
 mColNumbers = f"Values in section {lSbColumn} must be unique."
 mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
+#------------------------------> Sequences related errors
+mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
+    "protein.")
 #endregion ----------------------------------------------------------> Other 
 
 #region ----------------------------------------------------> For CheckInput
@@ -510,6 +529,8 @@ color = { # Colors for the app
     'Main' : [ # Lighter colors of the fragments and bands 
 		'#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff',
 	],
+    'RecProt' : 'gray',
+    'NatProt' : '#c94c4c',
     nuCorrA : { # Color for plot in Correlation Analysis
         'CMAP' : { # CMAP colors and interval
             'N' : 128,
@@ -523,7 +544,13 @@ color = { # Colors for the app
         'Vol'   : ['#ff3333', '#d3d3d3', '#3333ff'],
         'VolSel': '#6ac653',
         'FCAll' : '#d3d3d3',
-    }
+    },
+    nwLimProt : {
+        'Spot' : [
+            '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
+            '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
+        ],
+    },
 }
 #endregion -----------------------------------------------------------> Colors
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS

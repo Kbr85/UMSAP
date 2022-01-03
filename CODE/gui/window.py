@@ -26,6 +26,7 @@ import requests
 from scipy import stats
 import wx
 import wx.adv as adv
+from wx.core import EVT_LIST_END_LABEL_EDIT
 import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
 
@@ -39,6 +40,7 @@ import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
+import data.method as dmethod
 import gui.menu as menu
 import gui.tab as tab
 import gui.dtscore as dtscore
@@ -259,7 +261,13 @@ class BaseWindow(wx.Frame):
     #---
     
     def OnExportPlotData(self) -> Literal[True]:
-        """ Export data to a csv file """
+        """ Export data to a csv file 
+        
+            Notes
+            -----
+            It requires child class to define self.dateC to catch the current
+            date being plotted.
+        """
         #region --------------------------------------------------> Dlg window
         dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
         #endregion -----------------------------------------------> Dlg window
@@ -268,10 +276,9 @@ class BaseWindow(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
             p     = Path(dlg.GetPath())
-            tDate = self.statusbar.GetStatusText(1)
             #------------------------------> Export
             try:
-                self.obj.ExportPlotData(self.cSection, tDate, p)
+                self.obj.ExportPlotData(self.cSection, self.dateC, p)
             except Exception as e:
                 dtscore.Notification(
                     'errorF',
@@ -734,8 +741,228 @@ class BaseWindowNPlotLT(BaseWindow):
         """
         return True
     #---
+    
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+        """
+        #region -----------------------------------------------> Update parent
+        self.parent.UnCheckSection(self.cSection, self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.name] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
+
+
+class BaseWindowProteolysis(BaseWindow):
+    """Base class to create a window like Limited Proteolysis
+
+        Parameters
+        ----------
+        
+
+        Notes
+        -----
+        
+        
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, menuData: Optional[dict]=None,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Labels
+        self.cLPaneMain = getattr(self, 'cLPaneMain', 'Protein Fragments')
+        self.cLPaneText = getattr(self, 'cLPaneText', 'Selection Details')
+        self.cLPaneList = getattr(self, 'cLPaneList', 'Peptide List')
+        self.cLPanePlot = getattr(self, 'cLPanePlot', 'Gel Representation')
+        self.cLCol      = getattr(self, 'cLCol', ['#', 'Peptides'])
+        #------------------------------> Sizes
+        self.cSCol = getattr(self, 'cSCol', [45, 100])
+        #------------------------------> Hints
+        self.cHSearch = getattr(self, 'cHSearch', self.cLPaneList)
+        
+        super().__init__(parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.plotM = dtsWidget.MatPlotPanel(self, statusbar=self.statusbar)
+        #------------------------------>  Plot
+        self.plot = dtsWidget.MatPlotPanel(self, statusbar=self.statusbar)
+        #------------------------------> Text details
+        self.text = wx.TextCtrl(
+            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
+        self.text.SetFont(config.font['SeqAlign'])
+        #------------------------------> wx.ListCtrl
+        self.lc = pane.ListCtrlSearchPlot(
+            self, 
+            colLabel = self.cLCol,
+            colSize  = self.cSCol,
+            style    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
+            tcHint   = f'Search {self.cHSearch}'
+        )
+        #------------------------------> 
+        self.statusbar.SetFieldsCount(2, config.sbPlot2Fields)
+        #endregion --------------------------------------------------> Widgets
+
+        #region ---------------------------------------------------------> AUI
+        #------------------------------> AUI control
+        self._mgr = aui.AuiManager()
+        #------------------------------> AUI which frame to use
+        self._mgr.SetManagedWindow(self)
+        #------------------------------> Add Configuration panel
+        self._mgr.AddPane( 
+            self.plotM, 
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    self.cLPaneMain
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        
+        self._mgr.AddPane( 
+            self.plot, 
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    self.cLPanePlot
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+
+        self._mgr.AddPane( 
+            self.text, 
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    self.cLPaneText
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        
+        self._mgr.AddPane( 
+            self.lc, 
+            aui.AuiPaneInfo(
+                ).Left(
+                ).Layer(
+                    1    
+                ).Caption(
+                    self.cLPaneList
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ------------------------------------------------------> AUI
+
+        #region --------------------------------------------------------> Bind
+        self.lc.lcs.lc.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+        """
+        #region -----------------------------------------------> Update parent
+        self.parent.UnCheckSection(self.cSection, self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.name] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    
+    def OnListSelect(self, event):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
 #endregion -----------------------------------------------------> Base Classes
 
 
@@ -1450,7 +1677,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.cLFDiv      : self.Filter_Divergent,
         }
         #------------------------------> 
-        super().__init__(parent, menuData=menuData, )
+        super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -3511,28 +3738,1833 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.autoFilter = mode
         return True
     #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class LimProtPlot(BaseWindowProteolysis):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    name = config.nwLimProt
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nmLimProt
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: 'UMSAPControl') -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle        = f"{parent.cTitle} - {self.cSection}"
+        self.obj           = parent.obj
+        self.data          = self.obj.confData[self.cSection]
+        self.dateC         = None
+        self.bands         = None
+        self.lanes         = None
+        self.fragments     = None
+        self.rectsGel      = []
+        self.rectsFrag     = []
+        self.selBands      = True
+        self.blSelRect     = None
+        self.spotSelLine   = None
+        self.fragSelLine   = None
+        self.blSelC        = [None, None]
+        self.gelSelC       = [None, None]
+        self.fragSelC      = [None, None, None]
+        self.gelSpotPicked = False
+        self.updateColors  = False
+        self.gelLineWidth  = 0.5
+        self.alpha         = None
+        self.protLoc       = None
+        self.protLength    = None
+        self.protDelta     = None
+        self.protTarget    = None
+        self.peptide       = None
+        
+        self.date, menuData = self.SetDateMenuDate()
+        
+        super().__init__(parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.plot.canvas.mpl_connect('pick_event', self.OnPickGel)
+        self.plotM.canvas.mpl_connect('pick_event', self.OnPickFragment)
+        self.plot.canvas.mpl_connect('button_press_event', self.OnPressMouse)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.OnDateChange(self.date[0])
+        #------------------------------> 
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetDateMenuDate(self) -> tuple[list, dict]:
+        """Set the self.date list and the menuData dict needed to build the Tool
+            menu.
+
+            Returns
+            -------
+            tuple of list and dict
+            The list is a list of str with the dates in the analysis.
+            The dict has the following structure:
+                {
+                    'menudate' : [List of dates],
+                }                    
+        """
+        #region ---------------------------------------------------> Fill dict
+        #------------------------------> Variables
+        date = []
+        menuData = {}
+        #------------------------------> Fill 
+        for k in self.data.keys():
+            #------------------------------> 
+            date.append(k)
+            #------------------------------> 
+        #------------------------------> 
+        menuData['menudate'] = date
+        #endregion ------------------------------------------------> Fill dict
+        
+        return (date, menuData)
+    #---
     
-    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
-        """Close window and uncheck section in UMSAPFile window. Assumes 
-            self.parent is an instance of UMSAPControl.
-            Override as needed.
+    def WinPos(self) -> Literal[True]:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
+        """
+        # #region ---------------------------------------------------> Variables
+        info = super().WinPos()
+        # #endregion ------------------------------------------------> Variables
+                
+        # #region ------------------------------------------------> Set Position
+        # x = info['D']['xo'] + info['W']['N']*config.deltaWin
+        # y = (
+        #     ((info['D']['h']/2) - (info['W']['h']/2)) 
+        #     + info['W']['N']*config.deltaWin
+        # )
+        # self.SetPosition(pt=(x,y))
+        # #endregion ---------------------------------------------> Set Position
+
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.name] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
+
+        return True
+    #---
+    
+    def OnDateChange(self, date):
+        """
     
             Parameters
             ----------
-            event: wx.CloseEvent
-                Information about the event
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
         """
-        #region -----------------------------------------------> Update parent
-        self.parent.UnCheckSection(self.cSection, self)		
-        #endregion --------------------------------------------> Update parent
+        #region ---------------------------------------------------> Variables
+        self.dateC      = date
+        self.df         = self.data[self.dateC]['DF'].copy()
+        self.bands      = self.data[self.dateC]['PI']['Bands']
+        self.lanes      = self.data[self.dateC]['PI']['Lanes']
+        self.alpha      = self.data[self.dateC]['PI']['Alpha']
+        self.protLoc    = self.data[self.dateC]['PI']['ProtLoc']
+        self.protLength = self.data[self.dateC]['PI']['ProtLength']
+        self.protDelta  = self.data[self.dateC]['PI']['ProtDelta']
+        self.protTarget = self.data[self.dateC]['PI']['Prot']
+        self.rectsGel   = []
+        self.rectsFrag  = []
+        self.blSelC     = [None, None]
+        self.gelSelC    = [None, None]
+        self.fragSelC   = [None, None, None]
+        self.peptide    = None
+        #endregion ------------------------------------------------> Variables
         
-        #region ------------------------------------> Reduce number of windows
-        config.winNumber[self.name] -= 1
-        #endregion ---------------------------------> Reduce number of windows
+        #region ---------------------------------------------------> 
+        self.text.Clear()
+        #endregion ------------------------------------------------> 
         
-        #region -----------------------------------------------------> Destroy
-        self.Destroy()
-        #endregion --------------------------------------------------> Destroy
+        #region -------------------------------------------------> wx.ListCtrl
+        self.FillListCtrl()
+        #endregion ----------------------------------------------> wx.ListCtrl
+        
+        #region ----------------------------------------------------> Gel Plot
+        self.DrawGel()
+        #endregion -------------------------------------------------> Gel Plot
+        
+        #region ---------------------------------------------------> Fragments
+        self.fragments = dmethod.Fragments(
+            self.df.iloc[:,self.GetColIdx()], 
+            self.alpha,
+            'lt', 
+            self.protLoc,
+        )
+        
+        self.SetEmptyFragmentAxis()
+        #endregion ------------------------------------------------> Fragments
+
+        #region ---------------------------------------------------> StatusBar
+        self.statusbar.SetStatusText(self.dateC, 1)
+        #endregion ------------------------------------------------> StatusBar
+    #---
+    
+    def GetColIdx(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        listO = [0,2,3,4,5]
+        for x in range(7, self.df.shape[1]):
+            listO.append(x)
+        return listO
+    #---
+    
+    def DrawGel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------> Remove Old Selections
+        #------------------------------> Select Gel Spot 
+        if self.spotSelLine is not None:
+            self.spotSelLine[0].remove()
+            self.spotSelLine = None
+        else:
+            pass
+        
+        if self.blSelRect is not None:
+            self.blSelRect.remove()
+            self.blSelRect = None
+        else:
+            pass
+        
+        self.selC = []
+        #endregion ------------------------------------> Remove Old Selections
+       
+        #region --------------------------------------------------------> Axis
+        self.SetGelAxis()
+        #endregion -----------------------------------------------------> Axis
+
+        #region ---------------------------------------------------> Draw Rect
+        for nb,b in enumerate(self.bands, start=1):
+            for nl,l in enumerate(self.lanes, start=1):
+                self.rectsGel.append(mpatches.Rectangle(
+                    ((nl-0.4),(nb-0.4)), 
+                    0.8, 
+                    0.8, 
+                    edgecolor = 'black',
+                    linewidth = self.gelLineWidth,
+                    facecolor = self.SetGelSpotColor(nb-1,nl-1),
+                    picker    = True,
+                ))
+                self.plot.axes.add_patch(self.rectsGel[-1])
+        #endregion ------------------------------------------------> Draw Rect
+       
+        #region --------------------------------------------------> Zoom Reset
+        self.plot.ZoomResetSetValues()
+        #endregion -----------------------------------------------> Zoom Reset
+       
+        #region --------------------------------------------------------> Draw
+        self.plot.canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+       
+        return True
+    #---
+    
+    def SetGelAxis(self):
+        """
+  
+          Parameters
+          ----------
+          event:wx.Event
+              Information about the event
+          
+  
+          Returns
+          -------
+          
+  
+          Raise
+          -----
+          
+        """
+        #region ----------------------------------------------------> Variables
+        nLanes = len(self.lanes)
+        nBands = len(self.bands)
+        #endregion -------------------------------------------------> Variables
+       
+        #region ---------------------------------------------------> 
+        self.plot.axes.clear()
+        self.plot.axes.set_xticks(range(1, nLanes+1))
+        self.plot.axes.set_xticklabels(self.lanes)
+        self.plot.axes.set_yticks(range(1, nBands+1))
+        self.plot.axes.set_yticklabels(self.bands)
+        self.plot.axes.tick_params(length=0)
+        #------------------------------> 
+        self.plot.axes.set_xlim(0.5, nLanes+0.5)
+        self.plot.axes.set_ylim(0.5, nBands+0.5)
+        #endregion ------------------------------------------------> 
+        
+        #region ------------------------------------------------> Remove Frame
+        self.plot.axes.spines['top'].set_visible(False)
+        self.plot.axes.spines['right'].set_visible(False)
+        self.plot.axes.spines['bottom'].set_visible(False)
+        self.plot.axes.spines['left'].set_visible(False)
+        #endregion ---------------------------------------------> Remove Frame
+    
+        return True 
+    #---
+    
+    def SetGelSpotColor(self, nb, nl, showAll=False):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables  
+        b = self.bands[nb]
+        l = self.lanes[nl]
+        c = self.df.loc[:,(b,l,'Ptost')].isna().all()
+        nc = len(config.color[self.name]['Spot'])
+        #endregion ------------------------------------------------> Variables  
+
+        #region -------------------------------------------------------> Color
+        if c:
+            return 'white'
+        elif showAll:
+            if self.selBands:
+                return config.color[self.name]['Spot'][nb%nc]
+            else:
+                return config.color[self.name]['Spot'][nl%nc]
+        else:
+            if self.selBands:
+                return config.color[self.name]['Spot'][nl%nc]
+            else:
+                return config.color[self.name]['Spot'][nb%nc]
+        #endregion ----------------------------------------------------> Color
+    #---
+    
+    def OnPickFragment(self, event):
+        """
+    
+            Parameters
+            ----------
+            event: matplotlib pick event
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        art = event.artist
+        fragC = list(map(int, art.get_label().split('.')))
+        #------------------------------> 
+        if self.fragSelC != fragC:
+            self.fragSelC = fragC
+        else:
+            return True
+        #------------------------------> 
+        x, y = event.artist.xy
+        x = round(x)
+        y = round(y)
+        #------------------------------> 
+        tKey = f'{(self.bands[fragC[0]], self.lanes[fragC[1]], "Ptost")}'
+        #------------------------------> 
+        x1, x2 = self.fragments[tKey]['Coord'][fragC[2]]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ------------------------------------------> Highlight Fragment
+        if self.fragSelLine is not None:
+            self.fragSelLine[0].remove()
+        else:
+            pass
+        #------------------------------> 
+        self.fragSelLine = self.plotM.axes.plot(
+            [x1+2, x2-2], [y,y], color='black', linewidth=4)
+        #------------------------------> 
+        self.plotM.canvas.draw()
+        #endregion ---------------------------------------> Highlight Fragment
+        
+        #region -------------------------------------------------------> Print
+        self.PrintFragmentText(tKey, fragC)
+        #endregion ----------------------------------------------------> Print
+        
+        #region -------------------------------------------> Remove Sel in Gel
+        if self.spotSelLine is not None:
+            self.spotSelLine[0].remove()
+            self.spotSelLine = None
+            self.plot.canvas.draw()
+            self.gelSelC = [None, None]
+        else:
+            pass
+        #endregion ----------------------------------------> Remove Sel in Gel
+
+
+        return True
+    #---
+    
+    def OnPickGel(self, event):
+        """
+    
+            Parameters
+            ----------
+            event: matplotlib pick event
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        x, y = event.artist.xy
+        x = round(x)
+        y = round(y)
+        #endregion ------------------------------------------------> Variables
+        
+        #region -------------------------------------------------> Flag picked
+        self.gelSpotPicked = True
+        #endregion ----------------------------------------------> Flag picked
+        
+        #region -----------------------------------------------> Spot Selected
+        spotC = [y-1, x-1]
+        if self.gelSelC != spotC:
+            self.gelSelC = spotC
+        else:
+            return True
+        #endregion --------------------------------------------> Spot Selected
+        
+        #region ---------------------------------------------> Remove Old Line
+        if self.spotSelLine is not None:
+            self.spotSelLine[0].remove()
+        else:
+            pass
+        #endregion ------------------------------------------> Remove Old Line
+        
+        #region -----------------------------------------------> Draw New Line
+        self.spotSelLine = self.plot.axes.plot(
+            [x-0.3, x+0.3], [y,y], color='black', linewidth=4)
+        #------------------------------> 
+        self.plot.canvas.draw()
+        #endregion --------------------------------------------> Draw New Line
+        
+        #region --------------------------------------------------------> Info
+        self.PrintGelSpotText(x-1,y-1)
+        #endregion -----------------------------------------------------> Info
+        
+        #region ----------------------------------------> Remove Sel from Frag
+        if self.fragSelLine is not None:
+            self.fragSelLine[0].remove()
+            self.fragSelLine = None
+            self.plotM.canvas.draw()
+            self.fragSelC = [None, None, None]
+        else:
+            pass
+        #endregion -------------------------------------> Remove Sel from Frag
+        
+        #region ---------------------------------------------------> 
+        if self.updateColors:
+            self.UpdateGelColor()
+            self.updateColors = False
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnPressMouse(self, event):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> In axis
+        if event.inaxes:
+            pass
+        else:
+            return False
+        #endregion ------------------------------------------------> In axis
+
+        #region ---------------------------------------------------> Variables
+        x = round(event.xdata)
+        y = round(event.ydata)
+        #endregion ------------------------------------------------> Variables
+        
+        #region -----------------------------------------------> Redraw or Not
+        blSel = [y-1, x-1]
+        if self.selBands and self.blSelC[0] != blSel[0]:
+            self.blSelC = [blSel[0], None]
+        elif not self.selBands and self.blSelC[1] != blSel[1]:
+            self.blSelC = [None, blSel[1]]
+        else:
+            #------------------------------> 
+            if self.gelSpotPicked:
+                self.gelSpotPicked = False
+            else:
+                #------------------------------> 
+                if self.spotSelLine is not None:
+                    self.spotSelLine[0].remove()
+                    self.spotSelLine = None
+                    self.gelSelC = [None, None]
+                    self.plot.canvas.draw()
+                else:
+                    pass
+                #------------------------------> 
+                self.PrintBLText(x-1,y-1)
+            #------------------------------> 
+            if self.fragSelLine is not None:
+                self.fragSelLine[0].remove()
+                self.fragSelLine = None
+                self.plotM.canvas.draw()
+                self.fragSelC = [None, None, None]
+            else:
+                pass
+            #------------------------------>
+            if self.updateColors:
+                self.UpdateGelColor()
+                self.updateColors = False
+            else:
+                pass
+            #------------------------------> 
+            return True
+        #endregion --------------------------------------------> Redraw or Not
+
+        #region -----------------------------------------------> Draw New Rect
+        self.DrawBLRect(x,y)
+        #endregion --------------------------------------------> Draw New Rect
+        
+        #region ----------------------------------------------> Draw Fragments
+        self.DrawFragments(x,y)
+        #endregion -------------------------------------------> Draw Fragments
+
+        #region ---------------------------------------------------> 
+        if self.gelSpotPicked:
+            self.gelSpotPicked = False
+        else:
+            #------------------------------> 
+            if self.spotSelLine is not None:
+                self.spotSelLine[0].remove()
+                self.spotSelLine = None
+                self.gelSelC = [None, None]
+                self.plot.canvas.draw()
+            else:
+                pass
+            #------------------------------> 
+            self.PrintBLText(x-1,y-1)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        if self.updateColors:
+            self.UpdateGelColor()
+            self.updateColors = False
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def DrawBLRect(self, x, y):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.UpdateGelColor()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Variables
+        if self.selBands:
+            xy = (0.55, y-0.45)
+            w = len(self.lanes) - 0.1
+            h = 0.9
+        else:
+            xy = (x-0.45, 0.55)
+            w = 0.9
+            h = len(self.bands) - 0.1
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------> Remove Old Rect
+        if self.blSelRect is not None:
+            self.blSelRect.remove()
+        else:
+            pass
+        #endregion ------------------------------------------> Remove Old Rect
+        
+        #region -----------------------------------------------> Draw New Rect
+        self.blSelRect = mpatches.Rectangle(
+            xy, w, h,
+            linewidth = 1.5,
+            edgecolor = 'red',
+            fill      = False,
+        )
+
+        self.plot.axes.add_patch(self.blSelRect)
+        
+        self.plot.canvas.draw()
+        #endregion --------------------------------------------> Draw New Rect
+        
+        return True
+    #---
+    
+    def DrawFragments(self, x, y):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        b = self.bands[y-1]
+        l = self.lanes[x-1]
+        tKeys  = []
+        tLabel = []
+        self.rectsFrag = []
+        #endregion ------------------------------------------------> Variables
+        
+        #region ----------------------------------------------------> Set Axis
+        self.SetFragmentAxis()
+        #endregion -------------------------------------------------> Set Axis
+        
+        #region ---------------------------------------------------> Keys
+        if self.selBands:
+            for k,tL in enumerate(self.lanes):
+                tKeys.append(f"{(b, tL, 'Ptost')}")
+                tLabel.append(f'{y-1}.{k}')
+        else:
+            for k,tB in enumerate(self.bands):
+                tKeys.append(f"{(tB, l, 'Ptost')}")
+                tLabel.append(f'{k}.{x-1}')
+        #endregion ------------------------------------------------> Keys
+        
+        #region ---------------------------------------------------> Fragments
+        nc = len(config.color[self.name]['Spot'])
+        #------------------------------> 
+        for k,v in enumerate(tKeys, start=1):
+            for j,f in enumerate(self.fragments[v]['Coord']):
+                self.rectsFrag.append(mpatches.Rectangle(
+                    (f[0], k-0.2), 
+                    (f[1]-f[0]), 
+                    0.4,
+                    picker    = True,
+                    linewidth = self.gelLineWidth,
+                    facecolor = config.color[self.name]['Spot'][(k-1)%nc],
+                    edgecolor = 'black',
+                    label     = f'{tLabel[k-1]}.{j}',
+                ))
+                self.plotM.axes.add_patch(self.rectsFrag[-1])
+        #endregion ------------------------------------------------> Fragments
+        
+        #region -----------------------------------------------------> Protein
+        self.DrawProtein(k+1)
+        #endregion --------------------------------------------------> Protein
+       
+        #region --------------------------------------------------------> Draw
+        self.plotM.ZoomResetSetValues()
+        
+        self.plotM.canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+        
+        #region ---------------------------------------------------> 
+        if self.peptide is not None:
+            self.ShowPeptideLoc()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def DrawProtein(self, y):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> Variables
+        recProt = []
+        natProt = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        if self.protLoc[0] is not None:
+            #------------------------------> 
+            natProt.append(self.protLoc)
+            a, b = self.protLoc
+            #------------------------------> 
+            if a == 1 and b == self.protLength:
+                pass
+            elif a == 1 and b < self.protLength:
+                recProt.append((b, self.protLength))
+            elif a > 1 and b == self.protLength:
+                recProt.append((1, a))
+            else:
+                recProt.append((1, a))
+                recProt.append((b, self.protLength))
+        else:
+            recProt.append((1, self.protLength))
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Draw Rect
+        for r in natProt:
+            self.plotM.axes.add_patch(mpatches.Rectangle(
+                (r[0], y-0.2),
+                r[1] - r[0],
+                0.4,
+                edgecolor = 'black',
+                facecolor = config.color['NatProt'],
+            ))
+        
+        for r in recProt:
+            self.plotM.axes.add_patch(mpatches.Rectangle(
+                (r[0], y-0.2),
+                r[1] - r[0],
+                0.4,
+                edgecolor = 'black',
+                facecolor = config.color['RecProt'],
+            ))
+        #endregion ------------------------------------------------> Draw Rect
+       
+        
+        return True
+    #---
+    
+    def PrintBLText(self, x, y):
+        """
+    
+            Parameters
+            ----------
+            
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        if self.selBands:
+            return self.PrintBText(y)
+        else:
+            return self.PrintLText(x)
+    #---
+    
+    def PrintLBGetInfo(self, tKeys):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        dictO = {}
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        lanesWithFP = []
+        fragments = []
+        fP = []
+        ncL = []
+        ncO = []
+        #------------------------------> 
+        for tKey in tKeys:
+            #--------------> 
+            x = f'{tKey}'
+            nF = len(self.fragments[x]['Coord'])
+            #--------------> 
+            if nF:
+                if self.selBands:
+                    lanesWithFP.append(tKey[1])
+                else:
+                    lanesWithFP.append(tKey[0])
+                fragments.append(nF)
+                fP.append(sum(self.fragments[x]['Np']))
+            else:
+                pass
+            #------------------------------> 
+            ncL = ncL + self.fragments[x]['Coord']
+        #------------------------------> 
+        dictO['LanesWithFP'] = (
+            f'{len(lanesWithFP)} (' + f'{lanesWithFP}'[1:-1] + f')')
+        dictO['Fragments'] = (
+            f'{len(fragments)} (' + f'{fragments}'[1:-1] + f')')
+        dictO['FP'] = (
+            f'{sum(fP)} (' +f'{fP}'[1:-1] + f')')
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        ncL.sort()
+        n,c = ncL[0]
+        for nc,cc in ncL[1:]:
+            if nc <= c:
+                if cc <= c:
+                    pass
+                else:
+                    c = cc
+            else:
+                ncO.append((n,c))
+                n = nc
+                c = cc
+        ncO.append((n,c))
+        #------------------------------> 
+        if self.protDelta is not None:
+            ncONat = []
+            for a,b in ncO:
+                aX = a+self.protDelta
+                bX = b+self.protDelta
+                aO = aX if aX >= self.protLoc[0] and aX <= self.protLoc[1] else 'NA'
+                bO = bX if bX >= self.protLoc[0] and bX <= self.protLoc[1] else 'NA'
+                ncONat.append((aX,bX))
+        else:
+            ncONat = 'NA' 
+        #------------------------------>     
+        dictO['NCO'] = ncO
+        dictO['NCONat'] = ncONat
+        #endregion ------------------------------------------------> 
+
+        return dictO
+    #---
+    
+    def PrintBText(self, band):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------> Get Values
+        #------------------------------> Keys
+        tKeys = [(self.bands[band], x, 'Ptost') for x in self.lanes]
+        #------------------------------> Info
+        infoDict = self.PrintLBGetInfo(tKeys)           
+        #endregion -----------------------------------------------> Get Values
+        
+        #region -------------------------------------------------------> Clear
+        self.text.Clear()
+        #endregion ----------------------------------------------------> Clear
+        
+        #region ----------------------------------------------------> New Text
+        self.text.AppendText(f'Details for {self.bands[band]}\n\n')
+        self.text.AppendText(f'--> Analyzed Lanes\n\n')
+        self.text.AppendText(f'Total Lanes  : {len(self.lanes)}\n')
+        self.text.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
+        self.text.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
+        self.text.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
+        self.text.AppendText(f'--> Detected Protein Regions:\n\n')
+        self.text.AppendText(f'Recombinant Sequence:\n')
+        self.text.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
+        self.text.AppendText(f'Native Sequence:\n')
+        self.text.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        
+        self.text.SetInsertionPoint(0)
+        #endregion -------------------------------------------------> New Text
+        
+        return True
+    #---
+    
+    def PrintLText(self, lane):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------> Get Values
+        #------------------------------> Keys
+        tKeys = [(x, self.lanes[lane], 'Ptost') for x in self.bands]
+        #------------------------------> Info
+        infoDict = self.PrintLBGetInfo(tKeys)           
+        #endregion -----------------------------------------------> Get Values
+        
+        #region -------------------------------------------------------> Clear
+        self.text.Clear()
+        #endregion ----------------------------------------------------> Clear
+        
+        #region ----------------------------------------------------> New Text
+        self.text.AppendText(f'Details for {self.lanes[lane]}\n\n')
+        self.text.AppendText(f'--> Analyzed Lanes\n\n')
+        self.text.AppendText(f'Total Lanes  : {len(self.bands)}\n')
+        self.text.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
+        self.text.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
+        self.text.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
+        self.text.AppendText(f'--> Detected Protein Regions:\n\n')
+        self.text.AppendText(f'Recombinant Sequence:\n')
+        self.text.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
+        self.text.AppendText(f'Native Sequence:\n')
+        self.text.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        
+        self.text.SetInsertionPoint(0)
+        #endregion -------------------------------------------------> New Text
+        
+        return True
+    #---
+      
+    def PrintGelSpotText(self, x, y):
+        """
+    
+            Parameters
+            ----------
+            
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> 
+        tKey = f'{(self.bands[y], self.lanes[x], "Ptost")}'
+        #------------------------------> 
+        fragments = len(self.fragments[tKey]['Coord'])
+        if fragments == 0:
+            self.text.Clear()
+            self.text.AppendText(
+                f'Details for {self.lanes[x]} - {self.bands[y]}\n\n')
+            self.text.AppendText(
+                f'There were no peptides from {self.protTarget} detected here.')
+            return True
+        else:
+            pass
+        #------------------------------> 
+        fp = (
+            f'{sum(self.fragments[tKey]["Np"])} (' + 
+            f'{self.fragments[tKey]["Np"]}'[1:-1] + ')'
+        )
+        #------------------------------> 
+        if self.protDelta is not None:
+            ncONat = []
+            for a,b in self.fragments[tKey]['Coord']:
+                aX = a+self.protDelta
+                bX = b+self.protDelta
+                aO = aX if aX >= self.protLoc[0] and aX <= self.protLoc[1] else 'NA'
+                bO = bX if bX >= self.protLoc[0] and bX <= self.protLoc[1] else 'NA'
+                ncONat.append((aX,bX))
+        else:
+            ncONat = 'NA' 
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.text.Clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.text.AppendText(
+            f'Details for {self.lanes[x]} - {self.bands[y]}\n\n')
+        self.text.AppendText(f'--> Fragments: {fragments}\n\n')
+        self.text.AppendText(f'--> Number of FP: {fp}\n\n')
+        self.text.AppendText(f'--> Detected Protein Regions:\n\n')
+        self.text.AppendText(f'Recombinant Protein:\n')
+        self.text.AppendText(f'{self.fragments[tKey]["Coord"]}'[1:-1]+'\n\n')
+        self.text.AppendText(f'Native Protein:\n')
+        self.text.AppendText(f'{ncONat}'[1:-1])
+        
+        self.text.SetInsertionPoint(0)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def PrintFragmentText(self, tKey, fragC):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Info
+        n, c = self.fragments[tKey]["Coord"][fragC[2]]
+        
+        if n >= self.protLoc[0] and n <= self.protLoc[1]:
+            nnat = n + self.protDelta
+        else:
+            nnat = 'NA'
+        if c >= self.protLoc[0] and c <= self.protLoc[1]:
+            cnat = c + self.protDelta
+        else:
+            cnat = 'NA'
+        resNum = f'Nterm {n}({nnat}) - Cterm {c}({cnat})'
+        
+        np = f'{self.fragments[tKey]["Np"][fragC[2]]} ({self.fragments[tKey]["NpNat"][fragC[2]]})'
+        clsite = f'{self.fragments[tKey]["Nc"][fragC[2]]} ({self.fragments[tKey]["NcNat"][fragC[2]]})'
+        #endregion ------------------------------------------------> Info
+
+        #region ---------------------------------------------------> 
+        self.text.Clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.text.AppendText(
+            f'Details for {self.lanes[fragC[1]]} - {self.bands[fragC[0]]} - Fragment {fragC[2]+1}\n\n')
+        self.text.AppendText(f'Residue Numbers: {resNum}\n')
+        self.text.AppendText(f'Sequences: {np}\n')
+        self.text.AppendText(f'Cleavage Sites: {clsite}\n\n')
+        self.text.AppendText(f'Sequences in the fragment:\n\n')
+        self.text.AppendText(f'{self.fragments[tKey]["Seq"][fragC[2]]}')
+        self.text.SetInsertionPoint(0)
+        #endregion ------------------------------------------------> 
+        
+        return True
+    #---
+    
+    def SetFragmentAxis(self, showAll=False):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.plotM.axes.clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        #------------------------------>
+        if self.protLoc[0] is not None:
+            xtick = [1] + list(self.protLoc) + [self.protLength]
+        else:
+            xtick = [1] + [self.protLength]
+        self.plotM.axes.set_xticks(xtick)
+        self.plotM.axes.set_xticklabels(xtick)
+        #------------------------------> 
+        if showAll:
+            self.plotM.axes.set_yticks(range(1, len(showAll)+2))
+            self.plotM.axes.set_yticklabels(showAll+['Protein'])
+            self.plotM.axes.set_ylim(0.5, len(showAll)+1.5)
+            #------------------------------> 
+            ymax = len(showAll)+0.8
+        else:
+            if self.selBands:
+                #------------------------------> 
+                self.plotM.axes.set_yticks(range(1, len(self.lanes)+2))
+                self.plotM.axes.set_yticklabels(self.lanes+['Protein'])            
+                self.plotM.axes.set_ylim(0.5, len(self.lanes)+1.5)
+                #------------------------------> 
+                ymax = len(self.lanes)+0.8
+            else:
+                #------------------------------> 
+                self.plotM.axes.set_yticks(range(1, len(self.bands)+2))
+                self.plotM.axes.set_yticklabels(self.bands+['Protein'])   
+                self.plotM.axes.set_ylim(0.5, len(self.bands)+1.5)
+                #------------------------------> 
+                ymax = len(self.bands)+0.8
+        #------------------------------> 
+        self.plotM.axes.tick_params(length=0)
+        #------------------------------> 
+        self.plotM.axes.set_xlim(0, self.protLength+1)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.plotM.axes.vlines(
+            xtick, 0, ymax, linestyles='dashed', linewidth=0.5, color='black')
+        #endregion ------------------------------------------------> 
+       
+        #region ------------------------------------------------> Remove Frame
+        self.plotM.axes.spines['top'].set_visible(False)
+        self.plotM.axes.spines['right'].set_visible(False)
+        self.plotM.axes.spines['bottom'].set_visible(False)
+        self.plotM.axes.spines['left'].set_visible(False)
+        #endregion ---------------------------------------------> Remove Frame
+        
+        return True
+    #---
+    
+    def SetEmptyFragmentAxis(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if self.fragSelLine is not None:
+            self.fragSelLine[0].remove()
+        else:
+            pass
+        
+        self.fragSelLine = None
+        self.fragSelC    = [None, None, None]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.plotM.axes.clear()
+        self.plotM.axes.set_xticks([])
+        self.plotM.axes.set_yticks([])
+        self.plotM.axes.tick_params(length=0)
+        self.plotM.axes.spines['top'].set_visible(False)
+        self.plotM.axes.spines['right'].set_visible(False)
+        self.plotM.axes.spines['bottom'].set_visible(False)
+        self.plotM.axes.spines['left'].set_visible(False)
+        self.plotM.canvas.draw()
+        #endregion ------------------------------------------------> 
+        
+        return True
+    #---
+    
+    def FillListCtrl(self) -> bool:
+        """Update the protein list for the given analysis.
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Entries are read from self.df
+        """
+        #region --------------------------------------------------> Delete old
+        self.lc.lcs.lc.DeleteAllItems()
+        #endregion -----------------------------------------------> Delete old
+        
+        #region ----------------------------------------------------> Get Data
+        col = [self.df.columns.get_loc(c) for c in self.df.loc[:,pd.IndexSlice[:,:,'Ptost']].columns.values]
+        data = dtsMethod.DFFilterByColN(self.df, col, self.alpha, 'lt')
+        data = data.iloc[:,0:2].reset_index(drop=True)
+        data.insert(0, 'kbr', data.index.values.tolist())
+        data = data.astype(str)
+        data = data.iloc[:,0:2].values.tolist()
+        #endregion -------------------------------------------------> Get Data
+        
+        #region ------------------------------------------> Set in wx.ListCtrl
+        self.lc.lcs.lc.SetNewData(data)
+        #endregion ---------------------------------------> Set in wx.ListCtrl
+        
+        #region ---------------------------------------> Update Protein Number
+        self._mgr.GetPane(self.lc).Caption(f'{self.cLPaneList} ({len(data)})')
+        self._mgr.Update()
+        #endregion ------------------------------------> Update Protein Number
+        
+        return True
+    #---
+    
+    def OnListSelect(self, event):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> 
+        self.peptide = self.lc.lcs.lc.GetItemText(
+            self.lc.lcs.lc.GetFirstSelected(), col=1)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.ShowPeptideLoc()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def ShowPeptideLoc(self):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> 
+        for k in self.rectsGel:
+            k.set_linewidth(self.gelLineWidth)
+        
+        for k in self.rectsFrag:
+            k.set_linewidth(self.gelLineWidth)
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------->
+        j = 0 
+        for b in self.bands:
+            for l in self.lanes:
+                for p in self.fragments[f'{(b,l, "Ptost")}']['SeqL']:
+                    if self.peptide in p:
+                        self.rectsGel[j].set_linewidth(2.0)
+                        break
+                    else:
+                        pass
+                j = j + 1
+        #endregion ------------------------------------------------> 
+        
+        #region --------------------------------------------------->
+        if self.blSelC != [None, None]:
+            #------------------------------> 
+            fKeys = []
+            #------------------------------> 
+            if self.selBands:
+                for l in self.lanes:
+                    fKeys.append(f'{(self.bands[self.blSelC[0]], l, "Ptost")}')
+            else:
+                for b in self.bands:
+                    fKeys.append(f'{(b, self.lanes[self.blSelC[1]], "Ptost")}')
+            #------------------------------> 
+            j = 0
+            for k in fKeys:
+                for p in self.fragments[k]['SeqL']:
+                    if self.peptide in p:
+                        self.rectsFrag[j].set_linewidth(2.0)
+                    else:
+                        pass
+                    j = j + 1
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.plot.canvas.draw()
+        self.plotM.canvas.draw()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnLaneBand(self, state) -> bool:
+        """
+    
+            Parameters
+            ----------
+    
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        self.selBands = not state
+        self.updateColors = True
+        
+        return True
+    #---
+    
+    def UpdateGelColor(self, showAll=False):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #------------------------------> 
+        j = 0
+        #------------------------------> 
+        for nb,b in enumerate(self.bands):
+            for nl,l in enumerate(self.lanes):
+                self.rectsGel[j].set_facecolor(
+                    self.SetGelSpotColor(nb,nl, showAll=showAll)
+                )
+                j = j + 1
+        #------------------------------> 
+        self.plot.canvas.draw()
+    #---
+    
+    def OnZoomReset(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.OnZoomResetFragment()
+        self.OnZoomResetGel()
+        
+        return True
+    #---
+    
+    def OnZoomResetFragment(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.plotM.ZoomResetPlot()
+    #---
+    
+    def OnZoomResetGel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.plot.ZoomResetPlot()
+    #---
+    
+    def OnImageFragment(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.plotM.SaveImage(ext=config.elMatPlotSaveI, parent=self)
+    #---
+    
+    def OnImageGel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.plot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
+    #---
+    
+    def OnImageAll(self) -> Literal[True]:
+        """ Export all plots to a pdf image"""
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.DirSelectDialog(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            #------------------------------> Export
+            if self.selBands:
+                fName = p / f'{self.dateC}-{self.bands[self.blSelC[0]]}-fragments.pdf'
+            else:
+                fName = p / f'{self.dateC}-{self.lanes[self.blSelC[1]]}-fragments.pdf'
+            self.plotM.figure.savefig(fName)
+            fName = p / f'{self.dateC}-gel.pdf'
+            self.plot.figure.savefig(fName)
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---
+    
+    def OnClearPept(self, plot=True):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if (rID := self.lc.lcs.lc.GetFirstSelected()):
+            self.lc.lcs.lc.Select(rID, on=0)
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for r in self.rectsFrag:
+            r.set_linewidth(self.gelLineWidth)
+        
+        
+        for r in self.rectsGel:
+            r.set_linewidth(self.gelLineWidth)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        if plot:
+            self.plotM.canvas.draw()
+            self.plot.canvas.draw()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.peptide = None
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearFrag(self, plot=True):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if self.fragSelLine is not None:
+            self.fragSelLine[0].remove()
+            self.fragSelLine = None
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if plot:
+            self.plotM.canvas.draw()
+            if self.fragSelC != [None, None, None]:
+                self.text.Clear()
+                #------------------------------> 
+                if self.selBands:
+                    self.PrintBText(self.blSelC[0])
+                else:
+                    self.PrintLText(self.blSelC[1])
+            else:
+                pass
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.fragSelC = [None, None, None]
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearGel(self, plot=True):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if self.spotSelLine is not None:
+            self.spotSelLine[0].remove()
+            self.spotSelLine = None
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if plot:
+            self.plot.canvas.draw()
+            if self.gelSelC != [None, None]:
+                self.text.Clear()
+                #------------------------------> 
+                if self.selBands:
+                    self.PrintBText(self.blSelC[0])
+                else:
+                    self.PrintLText(self.blSelC[1])
+            else:
+                pass
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.gelSelC = [None, None]
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearBL(self, plot=True):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.SetEmptyFragmentAxis()
+        self.OnClearGel(plot=False)
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if self.blSelRect is not None:
+            self.blSelRect.remove()
+            self.blSelRect = None
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if plot:
+            self.plot.canvas.draw()
+            self.text.Clear()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.blSelC = [None, None]
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearAll(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.OnClearPept(plot=False)
+        self.OnClearFrag(plot=False)
+        self.OnClearGel(plot=False)
+        self.OnClearBL(plot=False)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.plotM.canvas.draw()
+        self.plot.canvas.draw()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.text.Clear()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnShowAll(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.OnClearAll()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.UpdateGelColor(showAll=True)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.blSelRect = mpatches.Rectangle(
+            (0.55, 0.55), len(self.lanes)-0.1, len(self.bands)-0.1,
+            linewidth = 1.5,
+            edgecolor = 'red',
+            fill      = False,
+        )
+        #------------------------------> 
+        self.plot.axes.add_patch(self.blSelRect)
+        #------------------------------> 
+        self.plot.canvas.draw()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        #------------------------------> 
+        tKeys   = []
+        tLabel  = []
+        tColor  = []
+        tYLabel = []
+        self.rectsFrag = []
+        #------------------------------> 
+        if self.selBands:
+            for bk, b in enumerate(self.bands):
+                for lk, l in enumerate(self.lanes):
+                    tKeys.append(f"{(b, l, 'Ptost')}")
+                    tYLabel.append(f"{b}-{l}")
+                    tColor.append(bk)
+                    tLabel.append(f'{bk}.{lk}')
+        else:
+            for lk, l in enumerate(self.lanes):
+                for bk, b in enumerate(self.bands):
+                    tKeys.append(f"{(b, l, 'Ptost')}")
+                    tYLabel.append(f"{l}-{b}")
+                    tColor.append(lk)
+                    tLabel.append(f'{bk}.{lk}')
+        #------------------------------> 
+        self.SetFragmentAxis(showAll=tYLabel)
+        #------------------------------> 
+        nc = len(config.color[self.name]['Spot'])
+        #------------------------------> 
+        for k,v in enumerate(tKeys, start=1):
+            for j,f in enumerate(self.fragments[v]['Coord']):
+                self.rectsFrag.append(mpatches.Rectangle(
+                    (f[0], k-0.2), 
+                    (f[1]-f[0]), 
+                    0.4,
+                    picker    = True,
+                    linewidth = self.gelLineWidth,
+                    facecolor = config.color[self.name]['Spot'][(tColor[k-1])%nc],
+                    edgecolor = 'black',
+                    label     = f'{tLabel[k-1]}.{j}',
+                ))
+                self.plotM.axes.add_patch(self.rectsFrag[-1])
+        #------------------------------> 
+        self.DrawProtein(k+1)
+        #------------------------------> 
+        self.plotM.ZoomResetSetValues()
+        self.plotM.canvas.draw()
+        #endregion ------------------------------------------------> 
         
         return True
     #---
@@ -4264,6 +6296,7 @@ class UMSAPControl(BaseWindow):
         config.nuCorrA   : CorrAPlot,
         config.nuDataPrep: CheckDataPrep,
         config.nmProtProf: ProtProfPlot,
+        config.nmLimProt : LimProtPlot, 
     }
     
     cFileLabelCheck = ['Data File']
@@ -4272,6 +6305,7 @@ class UMSAPControl(BaseWindow):
         config.nuCorrA   : config.ntCorrA,
         config.nuDataPrep: config.ntDataPrep,
         config.nmProtProf: config.ntProtProf,
+        config.nmLimProt : config.ntLimProt,
     }
     #endregion --------------------------------------------------> Class setup
 
