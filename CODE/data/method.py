@@ -16,9 +16,14 @@
 
 #region -------------------------------------------------------------> Imports
 import itertools
-from typing import Literal
+from typing import Literal, Union
 
 import dat4s_core.data.method as dtsMethod
+
+import config.config as config
+
+if config.typeCheck:
+    import pandas as pd
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -27,14 +32,14 @@ def ResControl2ListNumber(
     val: str, sep: list[str]=[' ', ',', ';'], 
     numType: Literal['int', 'float']='int',
     ) -> list[list[list[int]]]:
-    """Return a list.
+    """Return a list from a Result - Control string.
     
         Parameters
         ----------
         val : str
             String with the numbers. e.g. '0-4 6, 7 8 9; 10 13-15, ""; ...'
         sep : list of str
-            Separators used in the string
+            Separators used in the string e.g. [' ', ',', ';']
         numType: str
             To convert to numbers
 
@@ -156,21 +161,42 @@ def ResControl2DF(
 #---
 
 
-def Fragments(df, val, comp, protLoc):
-    """
+def Fragments(
+    df: 'pd.DataFrame', val: float, comp: Literal['lt', 'le', 'e', 'ge', 'gt'], 
+    protLoc: Union[list[int], list[None]],
+    ) -> dict:
+    """Creates the dict holding the fragments identified in the analysis
 
         Parameters
         ----------
-        
+        df: pd.DataFrame with the data from the analysis. The columns in df are
+            expected to be:
+            Seq Nrec Crec Nnat Cnat Exp1 Exp2 ...... ExpN
+        val : float
+            Threshold value to filter df and identify relevant peptides
+        comp : str
+            One of 'lt', 'le', 'e', 'ge', 'gt'
+        protLoc : list[int] or list[None]
+            Native protein location in the recombinant sequence
 
         Returns
         -------
-        
-
-        Raise
-        -----
-        
+        dict:
+            {
+                'Exp1' : {
+                    'Coord': [(x1, x2),...., (xN, xM)],
+                    'Seq'  : [Aligned Seq1, ...., Aligned SeqN],
+                    'SeqL  : [Flat List with Seqs1, ...., Flat List with SeqsN],
+                    'Np'   : [Number of peptides1, ...., NpN],
+                    'NpNat : [Number of native peptides1, ...., NpNatN],
+                    'Nc'   : [Number of cleavages1, ...., NcN],
+                    'NcNat': [Number of native cleavages1, ....., NcNatN],
+                },
+                'ExpN' : {},
+            }
+        All list inside each column have the same length
     """
+    # No Test
     #region -----------------------------------------------------------> dictO
     dictO = {}
     #endregion --------------------------------------------------------> dictO
