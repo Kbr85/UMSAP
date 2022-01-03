@@ -49,7 +49,7 @@ if config.typeCheck:
 
 #region --------------------------------------------------------> Base Classes
 class BaseConfPanel(
-    wx.Panel,
+    scrolled.ScrolledPanel,
     dtsWidget.StaticBoxes, 
     dtsWidget.ButtonOnlineHelpClearAllRun
     ):
@@ -156,6 +156,9 @@ class BaseConfPanel(
                 'Column' : [list of int],
             }
             See Child class for other key - value pairs.
+        dataPrep: dict
+            Keys are the messages for the Progress Dialog, values are the 
+            methods to run the Data Preparation steps. See self.DataPreparation.
         date : str or None
             Date for the new section in the umsap file.
         dateID : str or None
@@ -166,6 +169,8 @@ class BaseConfPanel(
             DataFrame for the initial values.
         dfF : pd.DataFrame
             DataFrame as float values and 0 and '' as np.nan
+        dfTP : pd.DataFrame
+            DataFrame filtered by Target Protein
         dfE : DataFrame
             Exclude some entries by some parameters
         dfS : DataFrame
@@ -238,6 +243,9 @@ class BaseConfPanel(
         cGaugePD : int 
             Number of steps for the wx.Gauge in the Progress Dialog shown when 
             running analysis
+        checkUserInput : dict
+            Dict to check individual fields in the user input in the correct 
+            order. See CheckInput method for more details.
     """
     #region -----------------------------------------------------> Class setup
     
@@ -304,6 +312,16 @@ class BaseConfPanel(
             'cViFile',
             dtsValidator.InputFF(fof='file', ext=config.esData),
         )
+        #------------------------------> To handle Data Preparation Steps
+        self.dataPrep = { # Keys are the messaging for the Progress Dialog
+            "Setting Data Types"         : self.DatPrep_0_Float,
+            "Filter Data: Target Protein": self.DatPrep_TargetProt,
+            "Filter Data: Exclude Rows"  : self.DatPrep_Exclude,
+            "Filter Data: Score Value"   : self.DatPrep_Score,
+            "Data Transformation"        : self.DatPrep_Transformation,
+            "Data Normalization"         : self.DatPrep_Normalization,
+            "Data Imputation"            : self.DatPrep_Imputation,
+        }
         #------------------------------> This is needed to handle Data File 
         # content load to the wx.ListCtrl in Tabs with multiple panels
         #--------------> Default wx.ListCtrl to load data file content
@@ -321,6 +339,7 @@ class BaseConfPanel(
         #--------------> pd.DataFrames for:
         self.dfI  = None # Initial and
         self.dfF  = None # Data as float and 0 and '' values as np.nan
+        self.dfTP = None # Select Target Protein
         self.dfE  = None # Exclude entries by some parameter
         self.dfS  = None # Exclude entries by Score value
         self.dfT  = None # Transformed values
@@ -335,15 +354,20 @@ class BaseConfPanel(
         #--------------> input file for directing repeating analysis from
         # file copied to oFolder
         self.dFile   = None
-        #--------------> Obj for the input data file
-        self.iFileObj = None
+        #--------------> Obj for files
+        self.iFileObj   = None
+        self.seqFileObj = None
         #------------------------------> 
         self.changeKey = getattr(self, 'changeKey', ['iFile', 'uFile'])
         #------------------------------> Parent init
-        wx.Panel.__init__(self, parent, name=self.name)
+        scrolled.ScrolledPanel.__init__(self, parent, name=self.name)
 
         dtsWidget.ButtonOnlineHelpClearAllRun.__init__(
-            self, self, self.cURL, labelR = self.cLRunBtn,
+            self, self, self.cURL, 
+            labelR   = self.cLRunBtn,
+            tooltipR = self.cTTRun,
+            tooltipH = self.cTTHelp,
+            tooltipC = self.cTTClearAll,
         )
 
         dtsWidget.StaticBoxes.__init__(self, self, 
@@ -358,6 +382,7 @@ class BaseConfPanel(
         #region -----------------------------------------------------> Widgets
         self.uFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
             btnLabel   = self.cLuFile,
+            btnTooltip = self.cTTuFile,
             tcHint     = self.cHuFile,
             mode       = self.cMuFile,
             ext        = config.elUMSAP,
@@ -365,10 +390,10 @@ class BaseConfPanel(
             validator  = self.cVuFile,
             ownCopyCut = True,
         )
-        self.uFile.btn.SetToolTip(self.cTTuFile)
         
         self.iFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
             btnLabel   = self.cLiFile,
+            btnTooltip = self.cTTiFile,
             tcHint     = self.cHiFile,
             ext        = self.cEiFile,
             mode       = self.cMiFile,
@@ -376,14 +401,14 @@ class BaseConfPanel(
             validator  = self.cViFile,
             ownCopyCut = True,
         )
-        self.iFile.btn.SetToolTip(self.cTTiFile)
         
         self.id = dtsWidget.StaticTextCtrl(
             self.sbFile,
-            stLabel = self.cLId,
-            tcHint  = self.cHId,
+            stLabel   = self.cLId,
+            stTooltip = self.cTTId,
+            tcHint    = self.cHId,
         )
-        
+
         self.ceroB = wx.CheckBox(self.sbData, label=self.cLCeroTreat)
         self.ceroB.SetValue(True)
         
@@ -391,6 +416,7 @@ class BaseConfPanel(
             self.sbData, 
             label     = self.cLNormMethod,
             choices   = self.cONorm,
+            tooltip   = self.cTTNormMethod,
             validator = dtsValidator.IsNotEmpty(),
         )
         
@@ -398,6 +424,7 @@ class BaseConfPanel(
             self.sbData, 
             label     = self.cLTransMethod,
             choices   = self.cOTrans,
+            tooltip   = self.cTTTransMethod,
             validator = dtsValidator.IsNotEmpty(),
         )
         
@@ -405,18 +432,13 @@ class BaseConfPanel(
             self.sbData, 
             label     = self.cLImputation,
             choices   = self.cOImputation,
+            tooltip   = self.cTTImputation,
             validator = dtsValidator.IsNotEmpty(),
         )
         #endregion --------------------------------------------------> Widgets
         
         #region -----------------------------------------------------> Tooltip
-        self.btnHelp.SetToolTip(self.cTTHelp)
-        self.btnClearAll.SetToolTip(self.cTTClearAll)
-        self.btnRun.SetToolTip(self.cTTRun)
-        self.id.st.SetToolTip(self.cTTId)
-        self.normMethod.st.SetToolTip(self.cTTNormMethod)
-        self.transMethod.st.SetToolTip(self.cTTTransMethod)
-        self.imputationMethod.st.SetToolTip(self.cTTImputation)
+        
         #endregion --------------------------------------------------> Tooltip
         
         #region ------------------------------------------------------> Sizers
@@ -841,7 +863,7 @@ class BaseConfPanel(
         if a:
             pass
         else:
-            msg = config.mColNumbers.format(config.mColNumbersNoColExtract)
+            msg = config.mColNumbers.format(config.mColNumbers)
             self.msgError = dtscore.StrSetMessage(msg, b[2])
             return False
         #endregion ----------------------------------------------------> Check
@@ -876,72 +898,64 @@ class BaseConfPanel(
     #---
     
     def CheckInput(self) -> bool:
-        """Check user input"""
+        """Check individual fields in the user input.
+        
+            Notes
+            -----
+            The child class must define a checkUserInput dict with the correct
+            order for the checking process.
+            
+            checkUserInput = {
+                'Field label' : [Widget, BaseErrorMessage]
+            }
+            
+            BaseErrorMessage must a string with two placeholder for the 
+            error value and Field label in that order. For example:
+            'File: {bad_path_placeholder}\n cannot be used as 
+                                                    {Field_label_placeholder}'
+        """
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdCheck
         #endregion ------------------------------------------------------> Msg
         
-        #region --------------------------------------------------> UMSAP File
-        msgStep = msgPrefix + self.cLuFile
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.uFile.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mFileBad.format(b[1], self.cLuFile), b[2],
-            )
-            return False
-        #endregion -----------------------------------------------> UMSAP File
-        
-        #region --------------------------------------------------> Input File
-        msgStep = msgPrefix + self.cLiFile
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.iFile.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mFileBad.format(b[1], self.cLiFile), b[2],
-            )
-            return False
-        #endregion -----------------------------------------------> Input File
-        
-        #region ----------------------------------------------> Transformation
-        msgStep = msgPrefix + self.cLTransMethod
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.transMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLTransMethod)
-            return False
-        #endregion -------------------------------------------> Transformation
-        
-        #region -----------------------------------------------> Normalization
-        msgStep = msgPrefix + self.cLNormMethod
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.normMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLNormMethod)
-            return False
-        #endregion --------------------------------------------> Normalization
-        
-        #region --------------------------------------------------> Imputation
-        msgStep = msgPrefix + self.cLImputation
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.imputationMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLImputation)
-            return False
-        #endregion -----------------------------------------------> Imputation
+        #region -------------------------------------------------------> Check
+        for k,v in self.checkUserInput.items():
+            #------------------------------> 
+            msgStep = msgPrefix + k
+            wx.CallAfter(self.dlg.UpdateStG, msgStep)
+            #------------------------------> 
+            a, b = v[0].GetValidator().Validate()
+            if a:
+                pass
+            else:
+                self.msgError = dtscore.StrSetMessage(
+                    v[1].format(b[1], k), b[2],
+                )
+                return False
+        #endregion ----------------------------------------------------> Check
         
         return True
     #---
     
-    def ReadInputFiles(self):
-        """Read input file and check data"""
+    def ReadInputFiles(self) -> bool:
+        """Read input file and check data
+        
+            See Notes below for more details.
+        
+            Return
+            ------
+            bool
+            
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - do: dict with at least the following key - values:
+                {
+                    'seqRec': Path,
+                    'seqNat': Path or None,
+                }
+        
+        """
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdReadFile
         #endregion ------------------------------------------------------> Msg
@@ -958,67 +972,136 @@ class BaseConfPanel(
             self.tException = e
             return False
         #endregion ------------------------------------------------> Data file
-
+        
+        #region ------------------------------------------------> Seq Rec File
+        if self.do.get('seqFile', None) is not None:
+            #------------------------------> 
+            msgStep = msgPrefix + f"{self.cLSeqFile}, reading"
+            wx.CallAfter(self.dlg.UpdateStG, msgStep)
+            #------------------------------> 
+            try:
+                self.seqFileObj = dtsFF.FastaFile(self.do['seqFile'])
+            except Exception as e:
+                self.msgError = ('It was not possible to read the Fasta file '
+                    'with the recombinant sequence.')
+                self.tException = e
+                return False
+        else:
+            pass
+        #endregion ---------------------------------------------> Seq Rec File
+        
+        #region ---------------------------------------------------> Print Dev
+        if config.development and self.seqFileObj is not None:
+            print("Rec Seq: ", self.seqFileObj.seqRec)
+            print("Nat Seq: ", self.seqFileObj.seqNat)
+        else:
+            pass
+        #endregion ------------------------------------------------> Print Dev
+        
         return True
     #---
     
-    def RA_0_Float(
-        self
-        ) -> tuple[bool, Optional[pd.DataFrame], Optional[pd.DataFrame]]:
+    def DatPrep_0_Float(self) -> bool:
         """Convert or not 0s to NA and then all values to float.
         
             See Notes below for more details
         
             Returns
             -------
-            tuple
-                (bool, pd.DataFrame or None, pd.DataFrame or None)
+            bool
                 
             Notes
             -----
             Assumes child class has the following attributes:
-            - iFileObj, instance of dtsFF.CSVFile
-            - do, dict with at least the following key -values pairs:
+            - iFileObj: instance of dtsFF.CSVFile
+            - do: dict with at least the following key -values pairs:
                 'oc' : {
                     'Column' : [List of int],
                 },
                 'df' : {
+                    'ColumnR' : [List of int],
                     'ColumnF' : [List of int],
                 }
         """
         #region -----------------------------------------------------> Set dfI
-        dfI = self.iFileObj.df.iloc[:,self.do['oc']['Column']]
+        try:
+            self.dfI = self.iFileObj.df.iloc[:,self.do['oc']['Column']]
+        except Exception as e:
+            self.msgError = config.mPDGetInitCol.format(
+                self.do['oc']['Column'], self.cLiFile, self.do['iFile'])
+            self.tException = e
+            return False
         #endregion --------------------------------------------------> Set dfI
         
         #region -----------------------------------------------------> Set dfF
         try:
             if self.do['Cero']:
                 #------------------------------> Replace 0 and ''
-                dfF = dtsMethod.DFReplace(
-                    dfI, [0, ''], np.nan, sel=self.do['df']['ColumnF'],
+                self.dfF = dtsMethod.DFReplace(
+                    self.dfI, [0, ''], np.nan, sel=self.do['df']['ColumnR'],
                 )
             else:
                 #------------------------------> Replace only ''
-                dfF = dtsMethod.DFReplace(
-                    dfI, [''], np.nan, sel=self.do['df']['ColumnF'],
+                self.dfF = dtsMethod.DFReplace(
+                    self.dfI, [''], np.nan, sel=self.do['df']['ColumnR'],
                 )
             #------------------------------> Float
-            self.dfF = dfF.iloc[:,self.do['df']['ColumnF']].astype('float')
+            self.dfF.iloc[:,self.do['df']['ColumnF']] = self.dfF.iloc[:,self.do['df']['ColumnF']].astype('float')
         except Exception as e:
             self.msgError  = config.mPDDataTypeCol.format(
                 self.cLiFile,
                 ", ".join(map(str, self.do['df']['ColumnF'])),
             )
             self.tException = e
-            return (False, None, None)
+            return False
         #endregion --------------------------------------------------> Set dfF
         
-        return (True, dfI, dfF)
+        return True
     #---
     
-    def RA_Exclude(self) -> bool:
+    def DatPrep_TargetProt(self) -> bool:
+        """Filter data based on the value of Target Protein.
+        
+            See Notes below for more details
+    
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - do: dict with at least the following key - values pairs:
+                'TargetProt' : str name of the Protein to select in the data
+                'df' : {
+                    'TargetProtCol' : int,
+                }
+        """
+        #region -------------------------------------------------> Get Protein
+        try:
+            if self.do['df'].get('TargetProtCol', None) is not None:
+                self.dfTP = dtsMethod.DFFilterByColS(
+                    self.dfF, 
+                    self.do['df']['TargetProtCol'],
+                    self.do['TargetProt'], 
+                    'e',
+                )
+            else:
+                self.dfTP = self.dfF.copy()
+        except Exception as e:
+            self.msgError = config.mPDDataTargetProt.format(
+                self.do['TargetProt'], self.do['df']['TargetProtCol']
+            )
+            self.tException = e
+            return False
+        #endregion ----------------------------------------------> Get Protein
+        
+        return True
+    #---
+    
+    def DatPrep_Exclude(self) -> bool:
         """Exclude rows from self.dfF based on the content of 
-            self.do['df']['ExcludeP'].
+            self.do['df']['ExcludeR'].
             
             See Notes below for more details
     
@@ -1029,26 +1112,85 @@ class BaseConfPanel(
             Notes
             -----
             Assumes child class has the following attributes:
-            - do, dict with at least the following key - values pairs:
+            - do: dict with at least the following key - values pairs:
                 'df' : {
-                    'ExcludeP' : [List of int],
+                    'ExcludeR' : [List of int],
                 }
-            - dfF : pd.DataFrame with correct data types in each column.
+            - dfF: pd.DataFrame with correct data types in each column.
+            
+            Rows with at least one value different to NA in 
+            self.do['df']['ExcludeR'] are discarded
         """
         #region -----------------------------------------------------> Exclude
-        if self.do['df']['ExcludeP']:
-            a = self.dfF.iloc[:,self.do['df']['ExcludeP']].notna()
-            a = a.loc[(a==True).any(axis=1)]
-            idx = a.index
-            self.dfEx = self.dfF.drop(index=idx)
-        else:
-            self.dfEx = self.dfF.copy()
+        try:
+            if self.do['df'].get('ExcludeR', None) is not None:
+                self.dfEx = dtsMethod.DFExclude(
+                    self.dfTP, self.do['df']['ExcludeR'])
+            else:
+                self.dfEx = self.dfTP.copy()
+        except Exception as e:
+            self.msgError = config.mPDDataExclude.format(
+                self.do['df']['ExcludeR'])
+            self.tException = e
+            return False
         #endregion --------------------------------------------------> Exclude
         
         return True
     #---
     
-    def RA_Transformation(self) -> bool:
+    def DatPrep_Score(self) -> bool:
+        """Filter rows in self.dfEx by Score values.
+        
+            See Notes below for more details
+        
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            Assumes child class has the following attributes
+            - do: dict with at least the following key - values pairs:
+                'ScoreVal' : float
+                'df' : {
+                    'ScoreCol' : int
+                }
+            - dfEx: pd.DataFrame with correct data types in each column
+            
+            This is last filter applied. That is why the check for empty df is
+            done here. 
+        """
+        #region ------------------------------------------------------> Filter
+        try:
+            if self.do['df'].get('ScoreCol', None) is not None:
+                self.dfS = dtsMethod.DFFilterByColN(
+                    self.dfEx, 
+                    [self.do['df']['ScoreCol']], 
+                    self.do['ScoreVal'], 
+                    'ge'
+                )
+            else:
+                self.dfS = self.dfEx.copy()
+        except Exception as e:
+            self.msgError = config.mPDDataScore.format(
+                self.do['df']['ScoreCol'])
+            self.tException = e
+            return False
+        #endregion ---------------------------------------------------> Filter
+        
+        #region -----------------------> Check some Rows are left for Analysis
+        if self.dfS.empty:
+            self.msgError = ('No data left for analysis after all filters '
+                '(Score, Target Protein, etc) were applied.')
+            return False
+        else:
+            pass
+        #endregion --------------------> Check some Rows are left for Analysis
+
+        return True
+    #---
+    
+    def DatPrep_Transformation(self) -> bool:
         """Apply selected data transformation.
         
             See Notes below for more information.
@@ -1091,6 +1233,145 @@ class BaseConfPanel(
         return True
     #---
     
+    def DatPrep_Normalization(self) -> bool:
+        """Perform a data normalization.
+        
+            See Notes below for more details
+    
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - do, dict with at least the following key - values pairs:
+                'NormMethod' : str Normalization method selected
+                df : dict
+                    {
+                        'ResCtrlFlat' : list[int]
+                    }
+        """
+        #region -----------------------------------------------> Normalization
+        try:
+            self.dfN = dtsStatistic.DataNormalization(
+                self.dfT, 
+                self.do['df']['ResCtrlFlat'], 
+                method = self.do['NormMethod'],
+            )
+        except Exception as e:
+            self.msgError   = config.mPDDataNorm
+            self.tException = e
+            return False
+        #endregion --------------------------------------------> Normalization
+        
+        return True
+    #---
+    
+    def DatPrep_Imputation(self) -> bool:
+        """Perform a data imputation.
+        
+            See Notes below for more details.
+    
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - do, dict with at least the following key - values pairs:
+                'ImpMethod' : str Imputation method selected
+                df : dict
+                    {
+                        'ResCtrlFlat' : list[int]
+                    }
+        """
+        #region --------------------------------------------------> Imputation
+        try:
+            self.dfIm = dtsStatistic.DataImputation(
+                self.dfN, 
+                self.do['df']['ResCtrlFlat'], 
+                method = self.do['ImpMethod'],
+            )
+        except Exception as e:
+            self.msgError   = config.mPDDataImputation
+            self.tException = e
+            return False
+        #endregion -----------------------------------------------> Imputation
+        
+        return True
+    #---
+    
+    def DataPreparation(self, resetIndex=True) -> bool:
+        """Perform the data preparation step.
+        
+            See Notes below for more details.
+            
+            Parameters
+            ----------
+            resetIndex: bool
+                If True reset the index of self.dfImp
+    
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            See the Notes for the individual methods:
+                self.DatPrep_0_Float, 
+                self.DatPrep_TargetProt,
+                self.DatPrep_Exclude, 
+                self.DatPrep_Score,
+                self.DatPrep_Transformation,
+                self.DatPrep_Normalization,
+                self.DatPrep_Imputation,
+        """
+        #region ---------------------------------------------------> Variables
+        msgPrefix = config.lPdRun
+        #endregion ------------------------------------------------> Variables
+        
+        #region ----------------------------------------> Run Data Preparation
+        for k, m in self.dataPrep.items():
+            #------------------------------> 
+            wx.CallAfter(self.dlg.UpdateStG, f'{msgPrefix} {k}')
+            #------------------------------> 
+            if m():
+                pass
+            else:
+                return False
+        #endregion -------------------------------------> Run Data Preparation
+        
+        #region -------------------------------------------------> Reset index
+        if resetIndex:
+            self.dfIm.reset_index(drop=True, inplace=True)
+        else:
+            pass
+        #endregion ----------------------------------------------> Reset index
+        
+        #region -------------------------------------------------------> Print
+        if config.development:
+            #------------------------------> 
+            dfL = [
+                self.dfI, self.dfF, self.dfTP, self.dfEx, self.dfS, self.dfT, 
+                self.dfN, self.dfIm
+            ]
+            dfN = ['dfI', 'dfF', 'dfTP', 'dfEx', 'dfS', 'dfT', 'dfN', 'dfIm']
+            #------------------------------> 
+            print('')
+            for i, df in enumerate(dfL):
+                if df is not None:
+                    print(f'{dfN[i]}: {df.shape}')
+                else:
+                    print(f'{dfN[i]}: None')
+        else:
+            pass
+        #endregion ----------------------------------------------------> Print
+        
+        return True
+    #---
+        
     def LoadResults(self):
         """Load output file"""
         #region ---------------------------------------------------------> Msg
@@ -1111,6 +1392,8 @@ class BaseConfPanel(
 
 class BaseConfModPanel(BaseConfPanel, widget.ResControl):
     """Base configuration for a panel of a module.
+    
+        See Notes below for more details.
 
         Parameters
         ----------
@@ -1124,8 +1407,6 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         #------------------------------> Configuration
         cLAlpha : str
             Label for the alpha level. Default is config.lStAlpha.
-        cLColExtract : str
-            Label for Columns to Exctract. Default is config.lStColExtract.
         cLDetectedProt : str
             Label for Detected Proteins. Default is config.lStDetectedProt.
         cLScoreCol : str
@@ -1166,6 +1447,10 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         CheckInput:
             Check the user input in the widgets created here. in 
             super().__init__ and in __init__()
+            
+        Notes
+        -----
+        Base class for all configuration panels of a module.
     """
     #region -----------------------------------------------------> Class setup
     
@@ -1186,7 +1471,6 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             self, 'cLDetectedProt', config.lStDetectedProt,
         )
         self.cLScoreCol = getattr(self, 'cLScoreCol', config.lStScoreCol)
-        self.cLColExtract = getattr(self, 'cLColExtract', config.lStColExtract)
         #------------------------------> Tooltips
         self.cTTAlpha = getattr(self, 'cTTAlpha', config.ttStAlpha)
         self.cTTScoreVal = getattr(self, 'cTTScoreVal', config.ttStScoreVal)
@@ -1198,11 +1482,6 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
 
         widget.ResControl.__init__(self, self.sbColumn)
-        
-        #------------------------------> Here because it needs iFile
-        self.cTTColExtract = getattr(
-            self, 'cTTColExtract', config.ttStColExtract.format(self.cLiFile),
-        )
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -1213,6 +1492,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.alpha = dtsWidget.StaticTextCtrl(
             self.sbValue,
             stLabel   = self.cLAlpha,
+            stTooltip = self.cTTAlpha,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'float',
@@ -1225,6 +1505,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.scoreVal = dtsWidget.StaticTextCtrl(
             self.sbValue,
             stLabel   = self.cLScoreVal,
+            stTooltip = self.cTTScoreVal,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'float',
@@ -1235,6 +1516,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.detectedProt = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLDetectedProt,
+            stTooltip = self.cTTDetectedProt,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -1246,6 +1528,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         self.score = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLScoreCol,
+            stTooltip = self.cTTScore,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -1253,27 +1536,10 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
                 vMin    = 0,
             )
         )
-
-        self.colExtract = dtsWidget.StaticTextCtrl(
-            self.sbColumn,
-            stLabel   = self.cLColExtract,
-            tcSize    = self.cSTc,
-            validator = dtsValidator.NumberList(
-                numType = 'int',
-                vMin    = 0,
-                sep     = ' ',
-                unique  = False,
-                opt     = True,
-            )
-        )
         #endregion --------------------------------------------------> Widgets
 
         #region -----------------------------------------------------> Tooltip
-        self.alpha.st.SetToolTip(self.cTTAlpha)
-        self.scoreVal.st.SetToolTip(self.cTTScoreVal)
-        self.detectedProt.st.SetToolTip(self.cTTDetectedProt)
-        self.score.st.SetToolTip(self.cTTScore)
-        self.colExtract.st.SetToolTip(self.cTTColExtract)
+        
         #endregion --------------------------------------------------> Tooltip
         
         #region ------------------------------------------------------> Sizers
@@ -1291,97 +1557,312 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def CheckInput(self) -> bool:
-        """Check user input"""
-        #region -------------------------------------------------------> Super
-        if super().CheckInput():
-            pass
-        else:
-            return False
-        #endregion ----------------------------------------------------> Super
+    
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class BaseConfModPanel2(BaseConfModPanel):
+    """Base class for the LimProt and TarProt configuration panel.
+
+        Parameters
+        ----------
         
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: wx.Window, rightDelete: bool=True) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Label
+        self.cLSeqFile = getattr(self, 'cLSeqFile', config.lStSeqFile)
+        self.cLSeqLength = getattr(self, 'cLSeqLength', config.lStSeqLength)
+        self.cLTargetProt = getattr(self, 'cLtargetProt', config.lStTargetProt)
+        self.cLSeqCol = getattr(self, 'cLSeqCol', config.lStSeqCol)
+        #------------------------------> Mode
+        self.cMseqFile = getattr(self, 'cMseqFile', 'openO')
+        #------------------------------> Extensions
+        self.cEseqFile = getattr(self, 'cEseqFile', config.elSeq)
+        #------------------------------> 
+        super().__init__(parent, rightDelete=rightDelete)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Files
+        self.seqFile = dtsWidget.ButtonTextCtrlFF(
+            self.sbFile,
+            btnLabel   = self.cLSeqFile,
+            # tcHint     = 
+            mode       = self.cMseqFile,
+            ext        = self.cEseqFile,
+            tcStyle    = wx.TE_READONLY,
+            validator  = dtsValidator.InputFF(fof='file', ext=config.esSeq),
+            ownCopyCut = True,
+        )
+        #------------------------------> Values
+        self.targetProt = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLTargetProt,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.IsNotEmpty()
+        )
+        self.seqLength = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLSeqLength,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'int',
+                nN      = 1,
+                vMin    = 1,
+                opt     = True,
+            )
+        )
+        #------------------------------> Columns
+        self.seqCol = dtsWidget.StaticTextCtrl(
+            self.sbColumn,
+            stLabel   = self.cLSeqCol,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'int',
+                nN      = 1,
+                vMin    = 0,
+            )
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Sizer Files
+        #--------------> 
+        self.sizersbFileWid.Detach(self.id.st)
+        self.sizersbFileWid.Detach(self.id.tc)
+        #--------------> 
+        self.sizersbFileWid.Add(
+            self.seqFile.btn,
+            pos    = (2,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.seqFile.tc,
+            pos    = (2,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.id.st,
+            pos    = (3,0),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.id.tc,
+            pos    = (3,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        #------------------------------> Sizer Columns
+        self.sizersbColumnWid.Add(
+            self.seqCol.st,
+            pos    = (0,0),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.seqCol.tc,
+            pos    = (0,1),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.detectedProt.st,
+            pos    = (0,2),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.detectedProt.tc,
+            pos    = (0,3),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.score.st,
+            pos    = (0,4),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.score.tc,
+            pos    = (0,5),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.sizerRes,
+            pos    = (1,0),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
+            border = 0,
+            span   = (0,6),
+        )
+        self.sizersbColumnWid.AddGrowableCol(1,1)
+        self.sizersbColumnWid.AddGrowableCol(3,1)
+        self.sizersbColumnWid.AddGrowableCol(5,1)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def NCResNumbers(self, seqNat: bool=True) -> bool:
+        """Find the residue numbers for the peptides in the sequence of the 
+            Recombinant and Native protein.
+            
+            See Notes below for more details
+            
+            Parameters
+            ----------
+            seqNat: bool
+                Calculate N and C residue numbers also for the Native protein
+                
+            Returns
+            -------
+            bool
+    
+            Raise
+            -----
+            
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - seqFileObj: dtsFF.FastaFile
+                Object with the sequence of the Recombinant and Native protein
+            - do: dict with at least the following key - values pairs
+                {
+                    'df' : {
+                        'SeqCol' : int,
+                    },
+                    'dfo' : {
+                        'NC' : list[int],
+                        'NCF': list[int],
+                    },
+                }
+        """
         #region ---------------------------------------------------------> Msg
-        msgPrefix = config.lPdCheck
+        msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
         
-        #region -------------------------------------------------> Score Value
-        msgStep = msgPrefix + self.cLScoreVal
+        #region -----------------------------------------------------> Rec Seq
+        #------------------------------> 
+        msgStep = (f'{msgPrefix} Calculating output data - N & C terminal '
+            f'residue numbers I')
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.scoreVal.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mNumROne.format(self.cLScoreVal), b[2],
-            )
+        #------------------------------> 
+        try:
+            self.dfR.iloc[:,self.do['dfo']['NC']] = self.dfR.iloc[
+                :,[self.do['df']['SeqCol'], 1]].apply(
+                    self.NCTerm, 
+                    axis        = 1,
+                    raw         = True,
+                    result_type = 'expand',
+                    args        = (self.seqFileObj, 'Recombinant'),
+                )
+        except dtsException.ExecutionError:
             return False
-        #endregion ----------------------------------------------> Score Value
+        except Exception as e:
+            self.msgError = config.mUnexpectedError
+            self.tException = e
+            return False
+        #endregion --------------------------------------------------> Rec Seq
         
-        #region -------------------------------------------------------> Alpha
-        msgStep = msgPrefix + self.cLAlpha
+        #region -----------------------------------------------------> Nat Seq
+        #------------------------------> 
+        msgStep = (f'{msgPrefix} Calculating output data - N & C terminal '
+            f'residue numbers II')
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.alpha.tc.GetValidator().Validate()
-        if a:
-            pass
+        #------------------------------> 
+        if seqNat and self.seqFileObj.seqNat is not None:
+            #------------------------------> 
+            delta = self.seqFileObj.GetSelfDelta()
+            #------------------------------> 
+            a = self.dfR.iloc[:,self.do['dfo']['NC']] + delta
+            self.dfR.iloc[:,self.do['dfo']['NCF']] = a
+            #------------------------------> 
+            m = self.dfR.iloc[:,self.do['dfo']['NCF']] > 0
+            a = self.dfR.iloc[:,self.do['dfo']['NCF']].where(m, np.nan)
+            a = a.astype('Int16')
+            self.dfR.iloc[:,self.do['dfo']['NCF']] = a
         else:
-            self.msgError = config.mAlphaRange.format(self.cLAlpha)
-            return False
-        #endregion ----------------------------------------------------> Alpha
-        
-        #region -------------------------------------------> Detected Proteins
-        msgStep = msgPrefix + self.cLDetectedProt
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.detectedProt.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
             pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLDetectedProt, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion ----------------------------------------> Detected Proteins
-        
-        #region ------------------------------------------------> Score Column
-        msgStep = msgPrefix + self.cLScoreCol
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.score.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLScoreCol, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion ---------------------------------------------> Score Column
-        
-        #region ------------------------------------------> Columns to Extract
-        msgStep = msgPrefix + self.cLColExtract
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.colExtract.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLColExtract, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion ---------------------------------------> Columns to Extract
-        
-        #region -----------------------------------------------> Res - Control
-        msgStep = msgPrefix + self.cLResControl
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.tcResults.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLResControl)
-            return False
-        #endregion --------------------------------------------> Res - Control
+        #endregion --------------------------------------------------> Nat Seq
         
         return True
+    #---
+    
+    def NCTerm(
+        self, row: list[str], seqObj: 'dtsFF.FastaFile', seqType: str
+        ) -> tuple[int, int]:
+        """Get the N and C terminal residue numbers for a given peptide.
+    
+            Parameters
+            ----------
+            row: list[str]
+                List with two elements. The Sequence is in index 0.
+            seqObj : dtsFF.FastaFile
+                Object with the protein sequence and the method to search the 
+                peptide sequence.
+            seqType : str
+                For the error message.
+    
+            Returns
+            -------
+            (Nterm, Cterm)
+    
+            Raise
+            -----
+            ExecutionError:
+                - When the peptide was not found in the sequence of the protein.
+        """
+        #region ---------------------------------------------------> Find pept
+        nc = seqObj.FindSeq(row[0])
+        #endregion ------------------------------------------------> Find pept
+        
+        #region ----------------------------------------------------> Check ok
+        if nc[0] != -1:
+            return nc
+        else:
+            self.msgError = config.mSeqPeptNotFound.format(row[0], seqType)
+            raise dtsException.ExecutionError(self.msgError)
+        #endregion -------------------------------------------------> Check ok
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -1416,6 +1897,10 @@ class ResControlExpConfBase(wx.Panel):
         cHTotalField : str
             Hint for the total number of required labels. It must be set in the
             child class. Default is '#'.
+        cHControlN : str
+            Hint for the wx.TextCtrl with the name of the control experiment.
+        cLControlN: str
+            Label for the wx.StaticText with the name of the control experiment.
         cLSetup : str
             Label for the wx.Button in top region. Default is 'Setup Fields'.
         cSSWLabel : wx.Size
@@ -1442,6 +1927,17 @@ class ResControlExpConfBase(wx.Panel):
             given column numbers. 
         tcLabel : list of wx.TextCtrl
             To give the number of user defined labels. e.g. 2 Conditions.
+        #------------------------------> Attributes that must be set on child
+        cN : int
+            Number of labels excluding control labels.
+        cHTotalField : str
+            Hint for the total number of required labels.
+        cTTTotalField : str
+            Tooltip for the labels in the top region
+        cStLabel : dict
+            Keys are 1 to cN and values the text of the labels. e.g. Condition.
+        cLabelText : dict
+            Keys are 1 to cN and values the prefix for the label values. e.g. C  
         
         Notes
         -----
@@ -1457,17 +1953,6 @@ class ResControlExpConfBase(wx.Panel):
             The name of the experiments is shown with lbDict that is populated 
             from tcDict
             The column numbers are stored in tcDictF.
-        #------------------------------> Attributes that must be set on child
-        cN : int
-            Number of labels excluding control labels.
-        cHTotalField : str
-            Hint for the total number of required labels.
-        cTTTotalField : str
-            Tooltip for the labels in the top region
-        cStLabel : dict
-            Keys are 1 to cN and values the text of the labels. e.g. Condition.
-        cLabelText : dict
-            Keys are 1 to cN and values the prefix for the label values. e.g. C  
         
         See OnOk method for information about how the column numbers are
         exported to the parent panel.
@@ -1490,13 +1975,21 @@ class ResControlExpConfBase(wx.Panel):
         self.NColF     = NColF - 1
         #------------------------------> Label
         self.cLSetup = getattr(self, 'cLSetup', 'Setup Fields')
+        self.cLControlN = getattr(self, 'cLControlN', 'Control Name')
         #------------------------------> Hint
+        self.cHControlN = getattr(self, 'cHControlN', 'MyControl')
         self.cHTotalField = getattr(self, 'cHTotalField', '#')
         #------------------------------> Size
         self.cSSWLabel    = getattr(self, 'cSSWLabel', (670,135))
         self.cSSWMatrix   = getattr(self, 'cSSWMatrix', (670,670))
         self.cSTotalField = getattr(self, 'cSTotalField', (35,22))
         self.cSLabel      = getattr(self, 'cSLabel', (60,22))
+        #------------------------------> Tooltip
+        self.cTTControlN = getattr(self, 'cTTControlN', config.ttStControlN)     
+        #------------------------------> Validator
+        self.cVColNumList = dtsValidator.NumberList(
+            sep=' ', opt=True, vMin=0, vMax=self.NColF 
+        )
         #------------------------------> super()
         super().__init__(parent, name=name)
         #endregion --------------------------------------------> Initial Setup
@@ -1532,6 +2025,13 @@ class ResControlExpConfBase(wx.Panel):
                 )
             a.SetHint(self.cHTotalField)
             self.tcLabel.append(a)
+        #------------------------------> Control name
+        self.controlN = dtsWidget.StaticTextCtrl(
+            self.swLabel,
+            stLabel   = self.cLControlN,
+            stTooltip = self.cTTControlN,
+            tcHint    = self.cHControlN,
+        )
         #------------------------------> wx.Button
         self.btnCreate = wx.Button(self, label=self.cLSetup)
         #endregion --------------------------------------------------> Widgets
@@ -1759,10 +2259,7 @@ class ResControlExpConfBase(wx.Panel):
                 if a:
                     pass
                 else:
-                    msg = f"{config.mListNumN0L}\n{config.mFileColNum}".format(
-                            'the text fields', 
-                            self.topParent.ciFileL,
-                        )
+                    msg = config.mResCtrlWin.format(b[1])
                     e = dtsException.ExecutionError(b[2])
                     dtscore.Notification(
                         'errorF', msg=msg, parent=self, tException=e,
@@ -1823,6 +2320,7 @@ class ResControlExpConfBase(wx.Panel):
         #endregion ----------------------------------------------> Check input
 
         #region --------------------------------------------------> Add Labels
+        #------------------------------> Check the labels
         if config.development:
             for k,v in self.topParent.lbDict.items():
                 print(str(k)+': '+str(v))
@@ -1842,7 +2340,7 @@ class ResControlExpConfBase(wx.Panel):
                 for j, t in enumerate(v):
                     self.tcDict[k][j].SetValue(t)
             elif k == 'Control':
-                self.tcControl.SetValue(v[0])
+                self.controlN.tc.SetValue(v[0])
             else:
                 pass
         #endregion -----------------------------------------------> Add Labels
@@ -1854,7 +2352,7 @@ class ResControlExpConfBase(wx.Panel):
             self.cbControl.SetValue(cT)
             #------------------------------> 
             if cT == config.oControlTypeProtProf['Ratio']:
-                self.tcControl.SetEditable(False)
+                self.controlN.tc.SetEditable(False)
             else:
                 pass
         else:
@@ -2004,6 +2502,9 @@ class CorrA(BaseConfPanel):
             Default is config.ttBtnHelp.format(config.urlCorrA).
         cURL : str
             URL for the Help button.
+        checkUserInput : dict
+            To check the user input in the right order. 
+            See pane.BaseConfPanel.CheckInput for a description of the dict.
         #------------------------------> For Analysis
         cLLenLongest : int
             Length of the longest label. 
@@ -2093,7 +2594,7 @@ class CorrA(BaseConfPanel):
         self.cSection     = config.nuCorrA
         self.cLLenLongest = len(config.lCbCorrMethod)
         self.cTitlePD     = config.lnPDCorrA
-        self.cGaugePD     = 17
+        self.cGaugePD     = 24
         #------------------------------> Optional configuration
         self.cTTHelp = config.ttBtnHelp.format(config.urlCorrA)
         #------------------------------> Setup attributes in base class 
@@ -2151,7 +2652,18 @@ class CorrA(BaseConfPanel):
             dir = wx.RIGHT,
         )
         #endregion --------------------------------------------------> Widgets
-
+        
+        #region ----------------------------------------------> checkUserInput
+        self.checkUserInput = {
+            self.cLuFile      : [self.uFile.tc, config.mFileBad],
+            self.cLiFile      : [self.iFile.tc, config.mFileBad],
+            self.cLTransMethod: [self.transMethod.cb, config.mOptionBad],
+            self.cLNormMethod : [self.normMethod.cb, config.mOptionBad],
+            self.cLImputation : [self.imputationMethod.cb, config.mOptionBad],
+            self.cLCorr       : [self.corrMethod.cb, config.mOptionBad],
+        }        
+        #endregion -------------------------------------------> checkUserInput
+    
         #region -----------------------------------------------------> Tooltip
         self.stListI.SetToolTip(config.ttLCtrlCopyNoMod)
         self.stListO.SetToolTip(config.ttLCtrlPasteMod)
@@ -2233,6 +2745,7 @@ class CorrA(BaseConfPanel):
         #------------------------------> Main Sizer
         self.SetSizer(self.Sizer)
         self.Sizer.Fit(self)
+        self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
@@ -2351,17 +2864,7 @@ class CorrA(BaseConfPanel):
         msgPrefix = config.lPdCheck
         #endregion ------------------------------------------------------> Msg
         
-        #region -------------------------------------------> Individual Fields        
-        #region -------------------------------------------> Correlation
-        msgStep = msgPrefix + self.cLCorr
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.corrMethod.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLCorr)
-            return False
-        #endregion ----------------------------------------> Correlation
-        
+        #region -------------------------------------------> Individual Fields                
         #region -------------------------------------------> ListCtrl
         msgStep = msgPrefix + self.cLoListCtrl
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
@@ -2429,8 +2932,9 @@ class CorrA(BaseConfPanel):
                 'Column'     : col,
             },
             'df'         : {
-                'ColumnF' : colF,
-                'ResCtrlFlat' : colF,
+                'ColumnR'    : colF,
+                'ColumnF'    : colF,
+                'ResCtrlFlat': colF,
             }
         }
         #------------------------------> File base name
@@ -2469,57 +2973,12 @@ class CorrA(BaseConfPanel):
         msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
         
-        #region ------------------------------------------------------> Column
-        msgStep = msgPrefix + f"{self.cLiFile}, data type"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        a, self.dfI, self.dfS = self.RA_0_Float()
-        if a:
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
             pass
         else:
             return False
-        #endregion ---------------------------------------------------> Column
-        
-        #region ----------------------------------------------> Transformation
-        #------------------------------> Msg
-        msgStep = msgPrefix + f"Data transformation"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        if self.RA_Transformation():
-            pass
-        else:
-            return False
-        #endregion -------------------------------------------> Transformation
-        
-        #region -----------------------------------------------> Normalization
-        #------------------------------> Msg
-        msgStep = msgPrefix + f"Data normalization"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        try:
-            self.dfN = dtsStatistic.DataNormalization(
-                self.dfT, sel=None, method=self.do['NormMethod'],
-            )
-        except Exception as e:
-            self.msgError = str(e)
-            self.tException = e
-            return False
-        #endregion --------------------------------------------> Normalization
-        
-        #region --------------------------------------------------> Imputation
-        #------------------------------> Msg
-        msgStep = msgPrefix + f"Data imputation"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        try:
-            self.dfIm = dtsStatistic.DataImputation(
-                self.dfN, sel=None, method=self.do['ImpMethod'],
-            )
-        except Exception as e:
-            self.msgError = str(e)
-            self.tException = e
-            return False
-        #endregion -----------------------------------------------> Imputation
+        #endregion -----------------------------------------> Data Preparation
 
         #region ------------------------------------> Correlation coefficients
         #------------------------------> Msg
@@ -2584,10 +3043,13 @@ class CorrA(BaseConfPanel):
 
         #region -------------------------------------------------------> Reset
         self.msgError   = None # Error msg to show in self.RunEnd
-        self.tException = None
+        self.tException = None # Exception
         self.d          = {} # Dict with the user input as given
         self.do         = {} # Dict with the processed user input
-        self.dfI        = None # pd.DataFrames
+        self.dfI        = None # pd.DataFrame for initial, normalized and
+        self.dfF        = None
+        self.dfTP       = None
+        self.dfEx       = None
         self.dfS        = None
         self.dfT        = None
         self.dfN        = None
@@ -2596,15 +3058,13 @@ class CorrA(BaseConfPanel):
         self.date       = None # date for corr file
         self.dateID     = None
         self.oFolder    = None # folder for output
-        self.iFileObj   = None # input file object
-        self.corrP      = None # path to the corr file that will be created
+        self.iFileObj   = None
         self.deltaT     = None
-        #------------------------------> 
+        
         if self.dFile is not None:
             self.iFile.tc.SetValue(str(self.dFile))
         else:
             pass
-        #------------------------------> 
         self.dFile = None # Data File copied to Data-Initial
         #endregion ----------------------------------------------------> Reset
     #---
@@ -2650,6 +3110,9 @@ class DataPrep(BaseConfPanel):
             Tooltip for the Score value field.
         cURL : str
             URL for the online help.
+        checkUserInput : dict
+            To check the user input in the right order. 
+            See pane.BaseConfPanel.CheckInput for a description of the dict.
         #------------------------------> Configuration to Run the Analysis
         cGaugePD : int
             Number of steps for the Progress Dialog.
@@ -2763,7 +3226,7 @@ class DataPrep(BaseConfPanel):
         self.cSection     = config.nuDataPrep
         self.cLLenLongest = len(self.cLColAnalysis)
         self.cTitlePD     = f"Running {config.nuDataPrep} Analysis"
-        self.cGaugePD     = 30 # ????
+        self.cGaugePD     = 27
         #------------------------------> Parent class
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
@@ -2776,6 +3239,7 @@ class DataPrep(BaseConfPanel):
         self.scoreVal = dtsWidget.StaticTextCtrl(
             self.sbValue,
             stLabel   = self.cLScoreVal,
+            stTooltip = self.cTTScoreVal,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'float',
@@ -2786,6 +3250,7 @@ class DataPrep(BaseConfPanel):
         self.score = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLScoreCol,
+            stTooltip = self.cTTScore,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -2797,6 +3262,7 @@ class DataPrep(BaseConfPanel):
         self.excludeRow = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLExcludeRow,
+            stTooltip = self.cTTExcludeRow,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -2809,21 +3275,32 @@ class DataPrep(BaseConfPanel):
         self.colAnalysis = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLColAnalysis,
+            stTooltip = self.cTTColAnalysis,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
                 sep     = ' ',
                 vMin    = 0,
-                opt     = True,
             )
         )
         #endregion --------------------------------------------------> Widgets
         
+        #region ----------------------------------------------> checkUserInput
+        self.checkUserInput = {
+            self.cLuFile      : [self.uFile.tc, config.mFileBad],
+            self.cLiFile      : [self.iFile.tc, config.mFileBad],
+            self.cLTransMethod: [self.transMethod.cb, config.mOptionBad],
+            self.cLNormMethod : [self.normMethod.cb, config.mOptionBad],
+            self.cLImputation : [self.imputationMethod.cb, config.mOptionBad],
+            self.cLScoreVal   : [self.scoreVal.tc, config.mOneRealNum],
+            self.cLScoreCol   : [self.score.tc, config.mOneZPlusNum],
+            self.cLExcludeRow : [self.excludeRow.tc, config.mNZPlusNum],
+            self.cLColAnalysis: [self.colAnalysis.tc, config.mNZPlusNum],
+        }        
+        #endregion -------------------------------------------> checkUserInput
+        
         #region -----------------------------------------------------> Tooltip
-        self.scoreVal.st.SetToolTip(self.cTTScoreVal)
-        self.score.st.SetToolTip(self.cTTScore)
-        self.excludeRow.st.SetToolTip(self.cTTExcludeRow)
-        self.colAnalysis.st.SetToolTip(self.cTTColAnalysis)
+        
         #endregion --------------------------------------------------> Tooltip
 
         #region ------------------------------------------------------> Sizers
@@ -3003,66 +3480,15 @@ class DataPrep(BaseConfPanel):
         #endregion ------------------------------------------------------> Msg
         
         #region -------------------------------------------> Individual Fields
-        #region -------------------------------------------------> Score Value
-        msgStep = msgPrefix + self.cLScoreVal
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.scoreVal.tc.GetValidator().Validate()
-        if a:
-            pass
-        else:
-            self.msgError = dtscore.StrSetMessage(
-                config.mNumROne.format(self.cLScoreVal), b[2],
-            )
-            return False
-        #endregion ----------------------------------------------> Score Value
         
-        #region ------------------------------------------------> Score Column
-        msgStep = msgPrefix + self.cLScoreCol
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.score.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLScoreCol, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion ---------------------------------------------> Score Column
-        
-        #region -------------------------------------------------> Exclude Row
-        msgStep = msgPrefix + self.cLExcludeRow
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.excludeRow.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLExcludeRow, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion ----------------------------------------------> Exclude Row
-        
-        #region --------------------------------------------> Columns Analysis
-        msgStep = msgPrefix + self.cLColAnalysis
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.colAnalysis.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mListNumN0L}\n{config.mFileColNum}".format(
-                self.cLExcludeRow, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion -----------------------------------------> Columns Analysis
         #endregion ----------------------------------------> Individual Fields
         
         #region ------------------------------------------------> Mixed Fields
         #region ---------------------------------------> Unique Column Numbers
+        msgStep = msgPrefix + 'Unique Column Numbers'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
-        l = [self.score.tc, self.excludeRow.tc]
+        l = [self.score.tc, self.excludeRow.tc, self.colAnalysis.tc]
         #------------------------------>
         if self.UniqueColumnNumber(l):
             pass
@@ -3142,6 +3568,7 @@ class DataPrep(BaseConfPanel):
                 'ScoreCol'   : 0,
                 'ExcludeP'   : [x for x in range(1, len(excludeRow)+1)],
                 'ResCtrlFlat': resCtrlFlat,
+                'ColumnR'    : resCtrlFlat,
                 'ColumnF'    : [0]+resCtrlFlat,
             },
         }
@@ -3178,111 +3605,12 @@ class DataPrep(BaseConfPanel):
     
     def RunAnalysis(self):
         """Perform data preparation"""
-        #region ---------------------------------------------------------> Msg
-        msgPrefix = config.lPdRun
-        #endregion ------------------------------------------------------> Msg
-        
-        #region -------------------------------------------------------> Float
-        #------------------------------> 
-        msgStep = msgPrefix + "Data type"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        a, self.dfI, self.dfF = self.RA_0_Float()
-        if a:
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
             pass
         else:
             return False
-        
-        if config.development:
-            print("self.dfI.shape: ", self.dfI.shape)
-            print("self.dfF.shape: ", self.dfF.shape)
-        #endregion ----------------------------------------------------> Float
-        
-        #region ---------------------------------------------> Exclude Protein
-        #------------------------------> Msg
-        msgStep = msgPrefix + 'Excluding rows by Exclude Row values'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Exclude
-        self.RA_Exclude()
-            
-        if config.development:
-            print('self.dfEx.shape: ', self.dfEx.shape)
-        #endregion ------------------------------------------> Exclude Protein
-        
-        #region -------------------------------------------------------> Score
-        #------------------------------> Msg
-        msgStep = msgPrefix + 'Excluding proteins by Score value'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Exclude
-        self.dfS = self.dfEx.loc[self.dfEx.iloc[:,0] >= self.do['ScoreVal']]
-        #------------------------------> Reset index
-        self.dfS.reset_index(drop=True, inplace=True)
-        
-        if config.development:
-            print('self.dfS.shape: ', self.dfS.shape)
-        #endregion ----------------------------------------------------> Score
-        
-        #region ----------------------------------------------> Transformation
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data transformation - {self.do["TransMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Transformed
-        if self.RA_Transformation():
-            pass
-        else:
-            return False
-                       
-        if config.development:
-            print('self.dfT.shape: ', self.dfT.shape)
-        #endregion -------------------------------------------> Transformation
-        
-        #region -----------------------------------------------> Normalization
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data normalization - {self.do["NormMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Normalization
-        try:
-            self.dfN = dtsStatistic.DataNormalization(
-                self.dfT, 
-                self.do['df']['ResCtrlFlat'], 
-                method = self.do['NormMethod'],
-            )
-        except Exception as e:
-            self.msgError   = config.mPDDataNorm
-            self.tException = e
-        
-        if config.development:
-            print('self.dfN.shape: ', self.dfN.shape)
-        #endregion --------------------------------------------> Normalization
-
-        #region --------------------------------------------------> Imputation
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data imputation - {self.do["ImpMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Imputation
-        try:
-            self.dfIm = dtsStatistic.DataImputation(
-                self.dfN, 
-                self.do['df']['ResCtrlFlat'], 
-                method = self.do['ImpMethod'],
-            )
-        except Exception as e:
-            self.msgError   = config.mPDDataImputation
-            self.tException = e
-        
-        if config.development:
-            print('self.dfIm.shape: ', self.dfIm.shape)
-            print(self.dfIm.head())
-        #endregion -----------------------------------------------> Imputation
+        #endregion -----------------------------------------> Data Preparation
         
         return True
     #---
@@ -3328,11 +3656,13 @@ class DataPrep(BaseConfPanel):
         self.do         = {} # Dict with the processed user input
         self.dfI        = None # pd.DataFrame for initial, normalized and
         self.dfF        = None
+        self.dfTP       = None
         self.dfEx       = None
         self.dfS        = None
         self.dfT        = None
         self.dfN        = None
         self.dfIm       = None
+        self.dfR        = None
         self.date       = None # date for corr file
         self.dateID     = None
         self.oFolder    = None # folder for output
@@ -3402,6 +3732,9 @@ class ProtProf(BaseConfModPanel):
         cTTSample : str
             Tooltip for the sample field.
         #------------------------------> To Run Analysis
+        checkUserInput : dict
+            To check the user input in the right order. 
+            See pane.BaseConfPanel.CheckInput for a description of the dict.
         cColCtrlData : dict
             Keys are control type and values methods to get the Ctrl and 
             Data columns for the given condition and relevant point.
@@ -3527,7 +3860,7 @@ class ProtProf(BaseConfModPanel):
         self.cSection     = config.nmProtProf
         self.cLLenLongest = len(config.lStResultCtrl)
         self.cTitlePD     = f"Running {config.nmProtProf} Analysis"
-        self.cGaugePD     = 30
+        self.cGaugePD     = 36
         #------------------------------> Optional configuration
         self.cTTHelp = config.ttBtnHelp.format(config.urlProtProf)
         #------------------------------> Base attributes and setup
@@ -3541,17 +3874,14 @@ class ProtProf(BaseConfModPanel):
         self.cLSample      = 'Samples'
         self.cLRawI        = 'Intensities'
         #------------------------------> Choices
-        self.cOSample   = list(config.oSamples.values())
+        self.cOSample   = list(config.oSamples.keys())
         self.cORawI     = list(config.oIntensities.values())
         self.cOCorrectP = list(config.oCorrectP.keys())
         #------------------------------> Tooltips
         self.cTTCorrectP    = config.ttStPCorrection
         self.cTTGeneName    = config.ttStGenName
         self.cTTExcludeProt = config.ttStExcludeProt
-        self.cTTSample      = (
-            f"Specify if samples are independent or paired.\n"
-            f"For example, samples are paired when the same Petri dish is "
-            f"used for the control and experiment.")
+        self.cTTSample      = config.ttStSample 
         self.cTTRawI = (
             f"Specify if intensities are raw intensity values or are already "
             f"expressed as a ratio (SILAC, TMT/iTRAQ).")
@@ -3572,28 +3902,32 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Values
         self.correctP = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            self.cLCorrectP,
-            self.cOCorrectP,
+            label     = self.cLCorrectP,
+            choices   = self.cOCorrectP,
+            tooltip   = self.cTTCorrectP,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.sample = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            self.cLSample,
-            self.cOSample,
+            label     = self.cLSample,
+            choices   = self.cOSample,
+            tooltip   = self.cTTSample,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.rawI = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            self.cLRawI,
-            self.cORawI,
+            label     = self.cLRawI,
+            choices   = self.cORawI,
+            tooltip   = self.cTTExcludeProt,
             validator = dtsValidator.IsNotEmpty(),
         )
         #------------------------------> Columns
         self.geneName = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLGeneName,
+            stTooltip = self.cTTGeneName,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -3604,6 +3938,7 @@ class ProtProf(BaseConfModPanel):
         self.excludeProt = dtsWidget.StaticTextCtrl(
             self.sbColumn,
             stLabel   = self.cLExcludeProt,
+            stTooltip = self.cTTRawI,
             tcSize    = self.cSTc,
             validator = dtsValidator.NumberList(
                 numType = 'int',
@@ -3614,12 +3949,28 @@ class ProtProf(BaseConfModPanel):
         )
         #endregion --------------------------------------------------> Widgets
 
+        #region ----------------------------------------------> checkUserInput
+        self.checkUserInput = {
+            self.cLuFile       : [self.uFile.tc, config.mFileBad],
+            self.cLiFile       : [self.iFile.tc, config.mFileBad],
+            self.cLTransMethod : [self.transMethod.cb, config.mOptionBad],
+            self.cLNormMethod  : [self.normMethod.cb, config.mOptionBad],
+            self.cLImputation  : [self.imputationMethod.cb, config.mOptionBad],
+            self.cLScoreVal    : [self.scoreVal.tc, config.mOneRealNum],
+            self.cLSample      : [self.sample.cb, config.mOptionBad],
+            self.cLRawI        : [self.rawI.cb, config.mOptionBad],
+            self.cLAlpha       : [self.alpha.tc, config.mOne01Num],
+            self.cLCorrectP    : [self.correctP.cb, config.mOptionBad],
+            self.cLDetectedProt: [self.detectedProt.tc, config.mOneZPlusNum],
+            self.cLGeneName    : [self.geneName.tc, config.mOneZPlusNum],
+            self.cLScoreCol    : [self.score.tc, config.mOneZPlusNum],
+            self.cLExcludeProt : [self.excludeProt.tc, config.mNZPlusNum],
+            self.cLResControl  : [self.tcResults, config.mResCtrl]
+        }        
+        #endregion -------------------------------------------> checkUserInput
+
         #region -----------------------------------------------------> Tooltip
-        self.correctP.st.SetToolTip(self.cTTCorrectP)
-        self.geneName.st.SetToolTip(self.cTTGeneName)
-        self.excludeProt.st.SetToolTip(self.cTTExcludeProt)
-        self.sample.st.SetToolTip(self.cTTSample)
-        self.rawI.st.SetToolTip(self.cTTRawI)
+        
         #endregion --------------------------------------------------> Tooltip
         
         #region ------------------------------------------------------> Sizers
@@ -3751,21 +4102,8 @@ class ProtProf(BaseConfModPanel):
             span   = (0, 5),
         )
         self.sizersbColumnWid.Add(
-            self.colExtract.st,
-            pos    = (2,0),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbColumnWid.Add(
-            self.colExtract.tc,
-            pos    = (2,1),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-            border = 5,
-            span   = (0, 5),
-        )
-        self.sizersbColumnWid.Add(
             self.sizerRes,
-            pos    = (3,0),
+            pos    = (2,0),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
             border = 0,
             span   = (0,6),
@@ -3776,6 +4114,7 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Main Sizer
         self.SetSizer(self.Sizer)
         self.Sizer.Fit(self)
+        self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
@@ -3806,8 +4145,7 @@ class ProtProf(BaseConfModPanel):
             self.correctP.cb.SetValue('Benjamini - Hochberg')
             self.detectedProt.tc.SetValue('0')
             self.geneName.tc.SetValue('6')   
-            self.score.tc.SetValue('39')     
-            self.colExtract.tc.SetValue('0 1 2 3 4-10')
+            self.score.tc.SetValue('39')
             self.excludeProt.tc.SetValue('171 172 173')
             #------------------------------> 
             #--> One Control per Column, 2 Cond and 2 TP
@@ -3819,29 +4157,29 @@ class ProtProf(BaseConfModPanel):
             #     'ControlType': 'One Control per Column',
             # }
             #--> One Control per Row, 1 Cond and 2 TP
-            # self.tcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
-            # self.lbDict = {
-            #     1            : ['DMSO'],
-            #     2            : ['30min', '60min'],
-            #     'Control'    : ['MyControl'],
-            #     'ControlType': 'One Control per Row',
-            # }
+            self.tcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
+            self.lbDict = {
+                1            : ['DMSO'],
+                2            : ['30min', '60min'],
+                'Control'    : ['MyControl'],
+                'ControlType': 'One Control per Row',
+            }
             #--> One Control 2 Cond and 2 TP
-            self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-            self.lbDict = {
-                1            : ['C1', 'C2'],
-                2            : ['RP1', 'RP2'],
-                'Control'    : ['1Control'],
-                'ControlType': 'One Control',
-            }
+            # self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.lbDict = {
+            #     1            : ['C1', 'C2'],
+            #     2            : ['RP1', 'RP2'],
+            #     'Control'    : ['1Control'],
+            #     'ControlType': 'One Control',
+            # }
             #--> Ratio 2 Cond and 2 TP
-            self.tcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
-            self.lbDict = {
-                1            : ['C1', 'C2'],
-                2            : ['RP1', 'RP2'],
-                'Control'    : ['1Control'],
-                'ControlType': 'Ratio of Intensities',
-            }
+            # self.tcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.lbDict = {
+            #     1            : ['C1', 'C2'],
+            #     2            : ['RP1', 'RP2'],
+            #     'Control'    : ['1Control'],
+            #     'ControlType': 'Ratio of Intensities',
+            # }
         else:
             pass
         #endregion -----------------------------------------------------> Test
@@ -3887,7 +4225,6 @@ class ProtProf(BaseConfModPanel):
             self.geneName.tc.SetValue(dataI['I'][self.cLGeneName])
             self.score.tc.SetValue(dataI['I'][self.cLScoreCol])
             self.excludeProt.tc.SetValue(dataI['I'][self.cLExcludeProt])
-            self.colExtract.tc.SetValue(dataI['I'][self.cLColExtract])
             self.tcResults.SetValue(dataI['I'][self.cLResControl])
             self.lbDict[1] = dataI['I'][config.lStProtProfCond]
             self.lbDict[2] = dataI['I'][config.lStProtProfRP]
@@ -3915,67 +4252,14 @@ class ProtProf(BaseConfModPanel):
         #endregion ------------------------------------------------------> Msg
         
         #region -------------------------------------------> Individual Fields
-        #region ------------------------------------------------------> Sample
-        msgStep = msgPrefix + self.cLSample
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.sample.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLSample)
-            return False
-        #endregion ---------------------------------------------------> Sample
         
-        #region ---------------------------------------------------> Intensity
-        msgStep = msgPrefix + self.cLRawI
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.rawI.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLRawI)
-            return False
-        #endregion ------------------------------------------------> Intensity
-        
-        #region ------------------------------------------------> P Correction
-        msgStep = msgPrefix + self.cLCorrectP
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        if self.correctP.cb.GetValidator().Validate()[0]:
-            pass
-        else:
-            self.msgError = config.mNotEmpty.format(self.cLCorrectP)
-            return False
-        #endregion ---------------------------------------------> P Correction
-        
-        #region --------------------------------------------------> Gene Names
-        msgStep = msgPrefix + self.cLGeneName
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.geneName.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLGeneName, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion -----------------------------------------------> Gene Names
-        
-        #region --------------------------------------------> Exclude Proteins
-        msgStep = msgPrefix + self.cLExcludeProt
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        a, b = self.excludeProt.tc.GetValidator().Validate(vMax=self.NCol)
-        if a:
-            pass
-        else:
-            msg = f"{config.mNumZPlusOne}\n{config.mFileColNum}".format(
-                self.cLExcludeProt, self.cLiFile,
-            )
-            self.msgError = dtscore.StrSetMessage(msg, b[2])
-            return False
-        #endregion -----------------------------------------> Exclude Proteins
         #endregion ----------------------------------------> Individual Fields
         
         #region ------------------------------------------------> Mixed Fields
         #region --------------------------------> Raw or Ration of Intensities
+        msgStep = msgPrefix + 'Intensity Options'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
         a = self.rawI.cb.GetValue()
         b = self.lbDict['ControlType']
         if a == b == config.oIntensities['RatioI']:
@@ -3992,6 +4276,8 @@ class ProtProf(BaseConfModPanel):
         #endregion -----------------------------> Raw or Ration of Intensities
         
         #region ---------------------------------------> Unique Column Numbers
+        msgStep = msgPrefix + 'Unique Column Numbers'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
         #------------------------------> 
         l = [self.detectedProt.tc, self.geneName.tc, self.score.tc, 
             self.excludeProt.tc, self.tcResults]
@@ -4050,8 +4336,6 @@ class ProtProf(BaseConfModPanel):
                 self.score.tc.GetValue()),
             self.EqualLenLabel(self.cLExcludeProt) : (
                 self.excludeProt.tc.GetValue()),
-            self.EqualLenLabel(self.cLColExtract) : (
-                self.colExtract.tc.GetValue()),
             self.EqualLenLabel(config.lStProtProfCond) : (
                 self.lbDict[1]),
             self.EqualLenLabel(config.lStProtProfRP) : (
@@ -4074,9 +4358,6 @@ class ProtProf(BaseConfModPanel):
         excludeProt  = dtsMethod.Str2ListNumber(
             self.excludeProt.tc.GetValue(), sep=' ',
         )
-        colExtract = dtsMethod.Str2ListNumber(
-            self.colExtract.tc.GetValue(), sep=' ',
-        )
         resctrl       = dmethod.ResControl2ListNumber(self.tcResults.GetValue())
         resctrlFlat   = dmethod.ResControl2Flat(resctrl)
         resctrlDF     = dmethod.ResControl2DF(resctrl, 2+len(excludeProt)+1)
@@ -4088,7 +4369,7 @@ class ProtProf(BaseConfModPanel):
             'ID'         : self.id.tc.GetValue(),
             'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
             'RawI'       : True if self.rawI.cb.GetValue() == config.oIntensities['RawI'] else False,
-            'IndS'       : True if self.sample.cb.GetValue() == config.oSamples['IS'] else False,
+            'IndS'       : True if self.sample.cb.GetValue() == config.oSamples['Independent Samples'] else False,
             'Cero'       : self.ceroB.IsChecked(),
             'NormMethod' : self.normMethod.cb.GetValue(),
             'TransMethod': self.transMethod.cb.GetValue(),
@@ -4104,7 +4385,6 @@ class ProtProf(BaseConfModPanel):
                 'GeneName'  : geneName,
                 'ScoreCol'  : scoreCol,
                 'ExcludeP'  : excludeProt,
-                'ColExtract': colExtract,
                 'ResCtrl'   : resctrl,
                 'Column'    : (
                     [geneName, detectedProt, scoreCol] 
@@ -4119,6 +4399,7 @@ class ProtProf(BaseConfModPanel):
                 'ExcludeP'   : [2+x for x in range(1, len(excludeProt)+1)],
                 'ResCtrl'    : resctrlDF,
                 'ResCtrlFlat': resctrlDFFlat,
+                'ColumnR'    : resctrlDFFlat,
                 'ColumnF'    : [2] + resctrlDFFlat,
             },
         }
@@ -4159,109 +4440,18 @@ class ProtProf(BaseConfModPanel):
         msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
         
-        #region -------------------------------------------------------> Float
-        #------------------------------> 
-        msgStep = msgPrefix + "Data type"
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
-        a, self.dfI, self.dfF = self.RA_0_Float()
-        if a:
+         #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
             pass
         else:
             return False
+        #endregion -----------------------------------------> Data Preparation
         
-        if config.development:
-            print("self.dfI.shape: ", self.dfI.shape)
-            print("self.dfF.shape: ", self.dfF.shape)
-        #endregion ----------------------------------------------------> Float
-        
-        #region ---------------------------------------------> Exclude Protein
-        #------------------------------> Msg
-        msgStep = msgPrefix + 'Excluding proteins by Exclude Proteins values'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Exclude
-        self.RA_Exclude()
-            
-        if config.development:
-            print('self.dfEx.shape: ', self.dfEx.shape)
-        #endregion ------------------------------------------> Exclude Protein
-        
-        #region -------------------------------------------------------> Score
-        #------------------------------> Msg
-        msgStep = msgPrefix + 'Excluding proteins by Score value'
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Exclude
-        self.dfS = self.dfEx.loc[self.dfEx.iloc[:,2] >= self.do['ScoreVal']]
-        #------------------------------> Sort
-        self.dfS.sort_values(by = list(self.dfS.columns[0:2]), inplace=True)
-        #------------------------------> Reset index
-        self.dfS.reset_index(drop=True, inplace=True)
-        
-        if config.development:
-            print('self.dfS.shape: ', self.dfS.shape)
-        #endregion ----------------------------------------------------> Score
-        
-        #region ----------------------------------------------> Transformation
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data transformation - {self.do["TransMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Transformed
-        if self.RA_Transformation():
-            pass
-        else:
-            return False
-                       
-        if config.development:
-            print('self.dfT.shape: ', self.dfT.shape)
-        #endregion -------------------------------------------> Transformation
-        
-        #region -----------------------------------------------> Normalization
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data normalization - {self.do["NormMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Normalization
-        try:
-            self.dfN = dtsStatistic.DataNormalization(
-                self.dfT, 
-                self.do['df']['ResCtrlFlat'], 
-                method = self.do['NormMethod'],
-            )
-        except Exception as e:
-            self.msgError   = config.mPDDataNorm
-            self.tException = e
-        
-        if config.development:
-            print('self.dfN.shape: ', self.dfN.shape)
-        #endregion --------------------------------------------> Normalization
-
-        #region --------------------------------------------------> Imputation
-        #------------------------------> Msg
-        msgStep = (
-            f'{msgPrefix}'
-            f'Performing data imputation - {self.do["ImpMethod"]}'
-        )  
-        wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> Imputation
-        try:
-            self.dfIm = dtsStatistic.DataImputation(
-                self.dfN, 
-                self.do['df']['ResCtrlFlat'], 
-                method = self.do['ImpMethod'],
-            )
-        except Exception as e:
-            self.msgError   = config.mPDDataImputation
-            self.tException = e
-        
-        if config.development:
-            print('self.dfIm.shape: ', self.dfIm.shape)
-            print(self.dfIm.head())
-        #endregion -----------------------------------------------> Imputation
+        #region --------------------------------------------------------> Sort
+        self.dfIm.sort_values(
+            by=list(self.dfIm.columns[0:2]), inplace=True, ignore_index=True,
+        )
+        #endregion -----------------------------------------------------> Sort
         
         #region ----------------------------------------------------> Empty DF
         #------------------------------> Msg
@@ -4286,7 +4476,7 @@ class ProtProf(BaseConfModPanel):
             f'Calculating output data'
         )  
         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        #------------------------------> 
+        #------------------------------> Calculate data
         for c, cN in enumerate(self.do['Cond']):
             for t, tN in enumerate(self.do['RP']):
                 #------------------------------> Message
@@ -4359,6 +4549,7 @@ class ProtProf(BaseConfModPanel):
         self.do         = {} # Dict with the processed user input
         self.dfI        = None # pd.DataFrame for initial, normalized and
         self.dfF        = None
+        self.dfTP       = None
         self.dfEx       = None
         self.dfS        = None
         self.dfT        = None
@@ -4400,6 +4591,7 @@ class ProtProf(BaseConfModPanel):
                 aL = aL + n*[c]
                 bL = bL + n*[t]
                 cL = cL + config.dfcolProtprofCLevel
+        #------------------------------> 
         idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
         #endregion ----------------------------------------------------> Index
         
@@ -4627,6 +4819,834 @@ class ProtProf(BaseConfModPanel):
 #---
 
 
+class LimProt(BaseConfModPanel2):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    name = config.npLimProt
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent, dataI: Optional[dict]):
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Configuration
+        self.cLBeta     = "β value"
+        self.cLGamma    = "γ value"
+        self.cLTheta    = "Θ value"
+        self.cLThetaMax = "Θmax value"
+        self.cLSample   = 'Samples'
+        #------------------------------> Choices
+        self.cOSample = list(config.oSamples.keys())
+        #------------------------------> Tooltips
+        self.cTTSample = config.ttStSample
+        #------------------------------> Needed by BaseConfPanel
+        self.cURL         = config.urlLimProt
+        self.cSection     = config.nmLimProt
+        self.cLLenLongest = len(config.lStResultCtrl)
+        self.cTitlePD     = f"Running {config.nmLimProt} Analysis"
+        self.cGaugePD     = 50
+        #------------------------------> Needed to Run
+        self.cMainData    = '{}-LimitedProteolysis-Data-{}.txt'
+        self.changeKey = ['iFile', 'uFile', 'seqFile']
+        #------------------------------> 
+        super().__init__(parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Values
+        self.beta = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLBeta,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+                vMin    = 0,
+                vMax    = 1,
+            )
+        )
+        self.gamma = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLGamma,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+                vMin    = 0,
+                vMax    = 1,
+            )
+        )
+        self.theta = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLTheta,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+                vMin    = 0,
+                opt     = True,
+            )
+        )
+        self.thetaMax = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLThetaMax,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+                vMin    = 0,
+            )
+        )
+        self.sample = dtsWidget.StaticTextComboBox(
+            self.sbValue,
+            label     = self.cLSample,
+            choices   = self.cOSample,
+            tooltip   = self.cTTSample,
+            validator = dtsValidator.IsNotEmpty(),
+        )
+        #endregion --------------------------------------------------> Widgets
+        
+        #region ----------------------------------------------> checkUserInput
+        self.checkUserInput = {
+            self.cLuFile       : [self.uFile.tc, config.mFileBad],
+            self.cLiFile       : [self.iFile.tc, config.mFileBad],
+            self.cLSeqFile     : [self.seqFile.tc, config.mFileBad],
+            self.cLTransMethod : [self.transMethod.cb, config.mOptionBad],
+            self.cLNormMethod  : [self.normMethod.cb, config.mOptionBad],
+            self.cLImputation  : [self.imputationMethod.cb, config.mOptionBad],
+            self.cLTargetProt  : [self.targetProt.tc, config.mValueBad],
+            self.cLScoreVal    : [self.scoreVal.tc, config.mOneRealNum],
+            self.cLSeqLength   : [self.seqLength.tc, config.mOneZPlusNum],
+            self.cLSample      : [self.sample.cb, config.mOptionBad],
+            self.cLAlpha       : [self.alpha.tc, config.mOne01Num],
+            self.cLBeta        : [self.beta.tc, config.mOne01Num],
+            self.cLGamma       : [self.gamma.tc, config.mOne01Num],
+            self.cLTheta       : [self.theta.tc, config.mOneZPlusNum],
+            self.cLThetaMax    : [self.thetaMax.tc, config.mOneZPlusNum],
+            self.cLSeqCol      : [self.seqCol.tc, config.mOneZPlusNum],
+            self.cLDetectedProt: [self.detectedProt.tc, config.mOneZPlusNum],
+            self.cLScoreCol    : [self.score.tc, config.mOneZPlusNum],
+            self.cLResControl  : [self.tcResults, config.mResCtrl]
+        }        
+        #endregion -------------------------------------------> checkUserInput
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Sizer Values
+        self.sizersbValueWid.Add(
+            1, 1,
+            pos    = (0,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+            span   = (2, 0),
+        )
+        self.sizersbValueWid.Add(
+            self.targetProt.st,
+            pos    = (0,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.targetProt.tc,
+            pos    = (0,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.scoreVal.st,
+            pos    = (1,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.scoreVal.tc,
+            pos    = (1,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.seqLength.st,
+            pos    = (2,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.seqLength.tc,
+            pos    = (2,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.alpha.st,
+            pos    = (3,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.alpha.tc,
+            pos    = (3,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.beta.st,
+            pos    = (0,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.beta.tc,
+            pos    = (0,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.gamma.st,
+            pos    = (1,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.gamma.tc,
+            pos    = (1,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.theta.st,
+            pos    = (2,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.theta.tc,
+            pos    = (2,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.thetaMax.st,
+            pos    = (3,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.thetaMax.tc,
+            pos    = (3,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.sample.st,
+            pos    = (4,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.sample.cb,
+            pos    = (4,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            1, 1,
+            pos    = (0,5),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+            span   = (2, 0),
+        )
+        
+        self.sizersbValueWid.AddGrowableCol(0, 1)
+        self.sizersbValueWid.AddGrowableCol(2, 1)
+        self.sizersbValueWid.AddGrowableCol(4, 1)
+        self.sizersbValueWid.AddGrowableCol(5, 1)
+        #------------------------------> Main Sizer
+        self.SetSizer(self.Sizer)
+        self.Sizer.Fit(self)
+        self.SetupScrolling()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+        
+        #region --------------------------------------------------------> Test
+        if config.development:
+            import getpass
+            user = getpass.getuser()
+            if config.cOS == "Darwin":
+                self.uFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                self.iFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
+                self.seqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
+            else:
+                pass
+            self.id.tc.SetValue('Beta Test Dev')
+            self.transMethod.cb.SetValue('Log2')
+            self.normMethod.cb.SetValue('Median')
+            self.imputationMethod.cb.SetValue('Normal Distribution')
+            self.targetProt.tc.SetValue('Mis18alpha')
+            self.scoreVal.tc.SetValue('10')
+            self.seqLength.tc.SetValue('100')
+            self.alpha.tc.SetValue('0.05')
+            self.beta.tc.SetValue('0.05')
+            self.gamma.tc.SetValue('0.8')
+            self.theta.tc.SetValue('')
+            self.thetaMax.tc.SetValue('8')
+            self.sample.cb.SetValue('Independent Samples')
+            self.seqCol.tc.SetValue('0')
+            self.detectedProt.tc.SetValue('34')
+            self.score.tc.SetValue('42')
+            self.tcResults.SetValue('69-71; 81-83, 78-80, 75-77, 72-74, ; , , , 66-68, ; 63-65, 105-107, 102-104, 99-101, ; 93-95, 90-92, 87-89, 84-86, 60-62')
+            self.lbDict = {
+                1        : ['Lane1', 'Lane2', 'Lane3', 'Lane4', 'Lane5'],
+                2        : ['Band1', 'Band2', 'Band3', 'Band4'],
+                'Control': ['Ctrl'],
+            }
+        else:
+            pass
+        #endregion -----------------------------------------------------> Test
+        
+        #region -------------------------------------------------------> DataI
+        self.SetInitialData(dataI)
+        #endregion ----------------------------------------------------> DataI
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetInitialData(self, dataI: Optional[dict]=None) -> Literal[True]:
+        """Set initial data
+    
+            Parameters
+            ----------
+            dataI : dict or None
+                Data to fill all fields and repeat an analysis. See Notes.
+    
+            Returns
+            -------
+            True
+        """
+        #region -------------------------------------------------> Fill Fields
+        if dataI is not None:
+            #------------------------------> Files
+            self.uFile.tc.SetValue(dataI['CI']['uFile'])
+            self.iFile.tc.SetValue(dataI['I'][self.cLiFile])
+            self.seqFile.tc.SetValue(dataI['I'][f'{self.cLSeqFile} File'])
+            self.id.tc.SetValue(dataI['CI']['ID'])
+            # #------------------------------> Data Preparation
+            self.ceroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.transMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
+            self.normMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
+            self.imputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
+            # #------------------------------> Values
+            self.targetProt.tc.SetValue(dataI['I'][self.cLTargetProt])
+            self.scoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
+            self.seqLength.tc.SetValue(dataI['I'][self.cLSeqLength])
+            self.alpha.tc.SetValue(dataI['I'][self.cLAlpha])
+            self.sample.cb.SetValue(dataI['I'][self.cLSample])
+            self.beta.tc.SetValue(dataI['I'][self.cLBeta])
+            self.gamma.tc.SetValue(dataI['I'][self.cLGamma])
+            self.theta.tc.SetValue(dataI['I'][self.cLTheta])
+            self.thetaMax.tc.SetValue(dataI['I'][self.cLThetaMax])
+            # #------------------------------> Columns
+            self.seqCol.tc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
+            self.detectedProt.tc.SetValue(dataI['I'][self.cLDetectedProt])
+            self.score.tc.SetValue(dataI['I'][self.cLScoreCol])
+            self.tcResults.SetValue(dataI['I'][self.cLResControl])
+            self.lbDict[1] = dataI['I'][config.lStLimProtLane]
+            self.lbDict[2] = dataI['I'][config.lStLimProtBand]
+            self.lbDict['Control'] = dataI['I'][f"Control {config.lStCtrlName}"]
+        else:
+            pass
+        #endregion ----------------------------------------------> Fill Fields
+        
+        return True
+    #---
+    
+    #------------------------------> Run Methods
+    def CheckInput(self):
+        """Check user input"""
+        #region -------------------------------------------------------> Super
+        if super().CheckInput():
+            pass
+        else:
+            return False
+        #endregion ----------------------------------------------------> Super
+        
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdCheck
+        #endregion ------------------------------------------------------> Msg
+        
+        #region -------------------------------------------> Individual Fields
+
+        #endregion ----------------------------------------> Individual Fields
+        
+        #region ------------------------------------------------> Mixed Fields
+        #region ---------------------------------------> Unique Column Numbers
+        msgStep = msgPrefix + 'Unique Column Numbers'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        l = [self.seqCol.tc, self.detectedProt.tc, self.score.tc, 
+            self.tcResults]
+        #------------------------------> 
+        if self.UniqueColumnNumber(l):
+            pass
+        else:
+            return False
+        #endregion ------------------------------------> Unique Column Numbers
+        #endregion ---------------------------------------------> Mixed Fields
+        
+        return True
+    #---
+    
+    def PrepareRun(self):
+        """Set variable and prepare data for analysis."""
+        
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdPrepare
+        #endregion ------------------------------------------------------> Msg
+
+        #region -----------------------------------------------------------> d
+        msgStep = msgPrefix + 'User input, reading'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> As given
+        self.d = {
+            self.EqualLenLabel(self.cLiFile) : (
+                self.iFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLuFile) : (
+                self.uFile.tc.GetValue()),
+            self.EqualLenLabel(f'{self.cLSeqFile} File') : (
+                self.seqFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLId) : (
+                self.id.tc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.ceroB.IsChecked()),
+            self.EqualLenLabel(self.cLTransMethod) : (
+                self.transMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLNormMethod) : (
+                self.normMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLImputation) : (
+                self.imputationMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLTargetProt) : (
+                self.targetProt.tc.GetValue()),
+            self.EqualLenLabel(self.cLScoreVal) : (
+                self.scoreVal.tc.GetValue()),
+            self.EqualLenLabel(self.cLSeqLength) : (
+                self.seqLength.tc.GetValue()),
+            self.EqualLenLabel(self.cLSample) : (
+                self.sample.cb.GetValue()),
+            self.EqualLenLabel(self.cLAlpha) : (
+                self.alpha.tc.GetValue()),
+            self.EqualLenLabel(self.cLBeta) : (
+                self.beta.tc.GetValue()),
+            self.EqualLenLabel(self.cLGamma) : (
+                self.gamma.tc.GetValue()),
+            self.EqualLenLabel(self.cLTheta) : (
+                self.theta.tc.GetValue()),
+            self.EqualLenLabel(self.cLThetaMax) : (
+                self.thetaMax.tc.GetValue()),
+            self.EqualLenLabel(f'{self.cLSeqCol} Column') : (
+                self.seqCol.tc.GetValue()),
+            self.EqualLenLabel(self.cLDetectedProt) : (
+                self.detectedProt.tc.GetValue()),
+            self.EqualLenLabel(self.cLScoreCol) : (
+                self.score.tc.GetValue()),
+            self.EqualLenLabel(self.cLResControl): (
+                self.tcResults.GetValue()),
+            self.EqualLenLabel(config.lStLimProtLane) : (
+                self.lbDict[1]),
+            self.EqualLenLabel(config.lStLimProtBand) : (
+                self.lbDict[2]),
+            self.EqualLenLabel(f"Control {config.lStCtrlName}") : (
+                self.lbDict['Control']),
+        }
+        #endregion --------------------------------------------------------> d
+        
+        #region ----------------------------------------------------------> do
+        #------------------------------> Dict with all values
+        #--------------> Step
+        msgStep = msgPrefix + 'User input, processing'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #--------------> SeqLength
+        seqLengthVal = self.seqLength.tc.GetValue()
+        seqLength = float(seqLengthVal) if seqLengthVal != '' else None
+        #--------------> Theta
+        thetaVal = self.theta.tc.GetValue()
+        theta = float(thetaVal) if thetaVal != '' else None
+        #--------------> Columns
+        seqCol       = int(self.seqCol.tc.GetValue())
+        detectedProt = int(self.detectedProt.tc.GetValue())
+        scoreCol     = int(self.score.tc.GetValue())
+        resctrl       = dmethod.ResControl2ListNumber(self.tcResults.GetValue())
+        resctrlFlat   = dmethod.ResControl2Flat(resctrl)
+        resctrlDF     = dmethod.ResControl2DF(resctrl, 3)
+        resctrlDFFlat = dmethod.ResControl2Flat(resctrlDF)
+        #--------------> 
+        self.do  = {
+            'iFile'      : Path(self.iFile.tc.GetValue()),
+            'uFile'      : Path(self.uFile.tc.GetValue()),
+            'seqFile'    : Path(self.seqFile.tc.GetValue()),
+            'ID'         : self.id.tc.GetValue(),
+            'Cero'       : self.ceroB.IsChecked(),
+            'TransMethod': self.transMethod.cb.GetValue(),
+            'NormMethod' : self.normMethod.cb.GetValue(),
+            'ImpMethod'  : self.imputationMethod.cb.GetValue(),
+            'TargetProt' : self.targetProt.tc.GetValue(),
+            'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
+            'SeqLength'  : seqLength,
+            'Sample'     : config.oSamples[self.sample.cb.GetValue()],
+            'Alpha'      : float(self.alpha.tc.GetValue()),
+            'Beta'       : float(self.beta.tc.GetValue()),
+            'Gamma'      : float(self.gamma.tc.GetValue()),
+            'Theta'      : theta,
+            'ThetaMax'   : float(self.thetaMax.tc.GetValue()),
+            'Lane'       : self.lbDict[1],
+            'Band'       : self.lbDict[2],
+            'ControlL'   : self.lbDict['Control'],
+            'oc'         : { # Column numbers in the initial dataframe
+                'SeqCol'       : seqCol,
+                'TargetProtCol': detectedProt,
+                'ScoreCol'     : scoreCol,
+                'ResCtrl'      : resctrl,
+                'Column'       : (
+                    [seqCol, detectedProt, scoreCol] + resctrlFlat),
+            },
+            'df' : { # Column numbers in the selected data dataframe
+                'SeqCol'       : 0,
+                'TargetProtCol': 1,
+                'ScoreCol'     : 2,
+                'ResCtrl'      : resctrlDF,
+                'ResCtrlFlat'  : resctrlDFFlat,
+                'ColumnR'      : resctrlDFFlat,
+                'ColumnF'      : [2] + resctrlDFFlat,
+            },
+            'dfo' : { # Column numbers in the output dataframe
+                'NC' : [2,3], # N and C Term Res Numbers in the Rec Seq
+                'NCF': [4,5], # N and C Term Res Numbers in the Nat Seq
+            }
+        }
+        #------------------------------> File base name
+        self.oFolder = self.do['uFile'].parent
+        #------------------------------> Date
+        self.date = dtsMethod.StrNow()
+        #------------------------------> DateID
+        self.dateID = f'{self.date} - {self.do["ID"]}'
+        #endregion -------------------------------------------------------> do
+
+        #region -------------------------------------------------> Print d, do
+        if config.development:
+            print('')
+            print('self.d:')
+            for k,v in self.d.items():
+                print(str(k)+': '+str(v))
+            print('')
+            print('self.do')
+            for k,v in self.do.items():
+                if k in ['oc', 'df', 'dfo']:
+                    print(k)
+                    for j,w in self.do[k].items():
+                        print(f'\t{j}: {w}')
+                else:
+                    print(str(k)+': '+str(v))
+            print('')
+        else:
+            pass
+        #endregion ----------------------------------------------> Print d, do
+        
+        return True
+    #---
+    
+    def ReadInputFiles(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Super
+        if super().ReadInputFiles():
+            pass
+        else:
+            return False
+        #endregion ------------------------------------------------> Super
+
+        #region ---------------------------------------------------> 
+        try:
+            ProtLoc = self.seqFileObj.GetNatProtLoc()
+        except Exception:
+            ProtLoc = (None, None)
+        
+        self.do['ProtLength'] = self.seqFileObj.seqLengthRec
+        self.do['ProtLoc'] = ProtLoc
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        try:
+            ProtDelta = self.seqFileObj.GetSelfDelta()
+        except Exception:
+            ProtDelta = (None, None)
+        
+        self.do['ProtDelta'] = ProtDelta
+        #endregion ------------------------------------------------> 
+        
+        return True
+    #---
+    
+    def RunAnalysis(self):
+        """ Perform the equivalence tests """
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdRun
+        #endregion ------------------------------------------------------> Msg
+        
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
+            pass
+        else:
+            return False
+        #endregion -----------------------------------------> Data Preparation
+        
+        #region ----------------------------------------------------> Empty DF
+        #------------------------------> Msg
+        msgStep = f'{msgPrefix} Creating empty dataframe'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        self.dfR = self.EmptyDFR()
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region ------------------------------------------------> N, C Res Num
+        if self.NCResNumbers(seqNat=False):
+            pass
+        else:
+            return False
+        #endregion ---------------------------------------------> N, C Res Num
+        
+        #region -------------------------------------------------------> Delta
+        #------------------------------> Msg
+        msgStep = f'{msgPrefix} Delta values'
+        wx.CallAfter(self.dlg.UpdateStG, msgStep)
+        #------------------------------> 
+        colC = self.do['df']['ResCtrl'][0][0]
+        #------------------------------> 
+        if self.do['Theta'] is not None:
+            delta = self.do['Theta']
+        else:
+            delta = dtsStatistic.tost_delta(
+                self.dfIm.iloc[:,colC], 
+                self.do['Alpha'],
+                self.do['Beta'],
+                self.do['Gamma'], 
+                deltaMax=self.do['ThetaMax'],
+            )
+        #------------------------------>         
+        self.dfR[('Delta', 'Delta', 'Delta')] = delta
+        #endregion ----------------------------------------------------> Delta
+        
+        #region ---------------------------------------------------> Calculate
+        for b, bN in enumerate(self.do['Band']):
+            for l, lN in enumerate(self.do['Lane']):
+                #------------------------------> Message
+                msgStep = (
+                    f'{msgPrefix}'
+                    f'Gel spot {bN} - {lN}'
+                )  
+                wx.CallAfter(self.dlg.UpdateSt, msgStep)
+                #------------------------------> Control & Data Column
+                colD = self.do['df']['ResCtrl'][b+1][l]
+                #------------------------------> Calculate data
+                if colD:
+                    try:
+                        self.CalcOutData(bN, lN, colC, colD)
+                    except Exception as e:
+                        self.msgError = (
+                            f'Calculation of the Limited Proteolysis data for '
+                            f'point {bN} - {lN} failed.'
+                        )
+                        self.tException = e
+                        return False
+                else:
+                    pass
+        #endregion ------------------------------------------------> Calculate
+        
+        #region --------------------------------------------------------> Sort
+        self.dfR = self.dfR.sort_values(
+            by=[('Nterm', 'Nterm', 'Nterm'),('Cterm', 'Cterm', 'Cterm')]
+        )
+        self.dfR = self.dfR.reset_index(drop=True)
+        #endregion -----------------------------------------------------> Sort
+        
+        if config.development:
+            print('self.dfR.shape: ', self.dfR.shape)
+            print('')
+            print(self.dfR)
+            print('')
+        
+        return True
+    #---
+    
+    def WriteOutput(self) -> bool:
+        """Write output """
+        #region --------------------------------------------------> Data Steps
+        stepDict = {
+            config.fnInitial.format('01', self.date)    : self.dfI,
+            config.fnFloat.format('02', self.date)      : self.dfF,
+            config.fnTargetProt.format('03', self.date) : self.dfTP,
+            config.fnScore.format('04', self.date)      : self.dfS,
+            config.fnTrans.format('05', self.date)      : self.dfT,
+            config.fnNorm.format('06', self.date)       : self.dfN,
+            config.fnImp.format('07', self.date)        : self.dfIm,
+            self.cMainData.format('08', self.date)      : self.dfR,
+        }
+        #endregion -----------------------------------------------> Data Steps
+        
+        return self.WriteOutputData(stepDict)
+    #---
+    
+    def EmptyDFR(self) -> 'pd.DataFrame':
+        """Creates the empty df for the results
+        
+            Returns
+            -------
+            pd.DataFrame
+        """
+        #region -------------------------------------------------------> Index
+        #------------------------------> 
+        aL = config.dfcolLimProtFirstPart
+        bL = config.dfcolLimProtFirstPart
+        cL = config.dfcolLimProtFirstPart
+        #------------------------------> 
+        n = len(config.dfcolLimProtCLevel)
+        #------------------------------> 
+        for b in self.do['Band']:
+            for l in self.do['Lane']:
+                aL = aL + n*[b]
+                bL = bL + n*[l]
+                cL = cL + config.dfcolLimProtCLevel
+        #------------------------------> 
+        idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
+        #endregion ----------------------------------------------------> Index
+        
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(
+            np.nan, columns=idx, index=range(self.dfIm.shape[0]),
+        )
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region -------------------------------------------------> Seq & Score
+        df[(aL[0], bL[0], cL[0])] = self.dfIm.iloc[:,0]
+        df[(aL[1], bL[1], cL[1])] = self.dfIm.iloc[:,2]
+        #endregion ----------------------------------------------> Seq & Score
+        
+        return df
+    #---
+    
+    def CalcOutData(
+        self, bN: str,  lN: str, colC: list[int], colD: list[int],
+        ) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ----------------------------------------------> Delta and TOST
+        a = dtsStatistic.tost(
+            self.dfIm, colC, colD, sample=self.do['Sample'], 
+            delta=self.dfR[('Delta', 'Delta', 'Delta')], alpha=self.do['Alpha'],
+        ) 
+        self.dfR[(bN, lN, 'Ptost')] = a['P'].to_numpy()
+        #endregion -------------------------------------------> Delta and TOST
+        
+        return True
+    #---
+    
+    def RunEnd(self):
+        """Restart GUI and needed variables"""
+        #region ---------------------------------------> Dlg progress dialogue
+        if self.msgError is None:
+            #--> 
+            self.dlg.SuccessMessage(
+                config.lPdDone,
+                eTime=f"{config.lPdEllapsed}  {self.deltaT}",
+            )
+        else:
+            self.dlg.ErrorMessage(
+                config.lPdError, 
+                error      = self.msgError,
+                tException = self.tException
+            )
+        #endregion ------------------------------------> Dlg progress dialogue
+
+        #region -------------------------------------------------------> Reset
+        self.msgError   = None # Error msg to show in self.RunEnd
+        self.tException = None # Exception
+        self.d          = {} # Dict with the user input as given
+        self.do         = {} # Dict with the processed user input
+        self.dfI        = None # pd.DataFrame for initial, normalized and
+        self.dfF        = None
+        self.dfTP       = None
+        self.dfEx       = None
+        self.dfS        = None
+        self.dfT        = None
+        self.dfN        = None
+        self.dfIm       = None
+        self.dfR        = None
+        self.date       = None # date for corr file
+        self.dateID     = None
+        self.oFolder    = None # folder for output
+        self.iFileObj   = None
+        self.seqFileObj = None
+        self.deltaT     = None
+        
+        if self.dFile is not None:
+            self.iFile.tc.SetValue(str(self.dFile))
+        else:
+            pass
+        self.dFile = None # Data File copied to Data-Initial
+        #endregion ----------------------------------------------------> Reset
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
 #------------------------------> Panes for Type Results - Control Epxeriments
 class ProtProfResControlExp(ResControlExpConfBase):
     """Creates the configuration panel for the Results - Control Experiments
@@ -4685,6 +5705,8 @@ class ProtProfResControlExp(ResControlExpConfBase):
             config.oControlTypeProtProf['OCR']  : self.AddWidget_OCR,
             config.oControlTypeProtProf['Ratio']: self.AddWidget_Ratio,
         }
+        #------------------------------> Label
+        self.cLControlN = config.lStCtrlName
         #------------------------------> Tooltips
         self.cTTTotalField = [
             f'Set the number of {self.cStLabel[1]}.',
@@ -4694,7 +5716,8 @@ class ProtProfResControlExp(ResControlExpConfBase):
         self.controlVal = ''
         #------------------------------> Error messages
         self.mNoCondRP = (
-            f"Both {self.cStLabel[1]} and {self.cStLabel[2]} must be defined."
+            f"Both {self.cStLabel[1][:-1]} and {self.cStLabel[2][:-1]} must be "
+            f"defined."
         )
         self.mNoControl = (f"The Control Type must defined.")
         #------------------------------> Super init
@@ -4718,17 +5741,6 @@ class ProtProfResControlExp(ResControlExpConfBase):
             self.swLabel, 
             label = config.lStCtrlType
         )
-        self.stControlN = wx.StaticText(
-            self.swLabel, 
-            label = config.lStCtrlName
-        )
-        #------------------------------> Text
-        self.tcControl = wx.TextCtrl(
-            self.swLabel, 
-            size  = (125, 22),
-            value = 'Control',
-        )
-        self.tcControl.SetHint('Name')
         #------------------------------> wx.ComboBox
         self.cbControl = wx.ComboBox(
             self.swLabel, 
@@ -4743,13 +5755,12 @@ class ProtProfResControlExp(ResControlExpConfBase):
             'Set the Type and Name of the control experiment.'
         )
         self.stControlT.SetToolTip('Set the Type of the control experiment.')
-        self.stControlN.SetToolTip('Set the Name of the control experiment.')
         #endregion --------------------------------------------------> Tooltip
         
 
         #region ------------------------------------------------------> Sizers
+        #------------------------------> 
         self.sizerSWLabelControl = wx.BoxSizer(wx.HORIZONTAL)
-            
         self.sizerSWLabelControl.Add(
             self.stControl, 
             0, 
@@ -4769,18 +5780,18 @@ class ProtProfResControlExp(ResControlExpConfBase):
             5,
         )
         self.sizerSWLabelControl.Add(
-            self.stControlN, 
+            self.controlN.st, 
             0, 
             wx.ALIGN_CENTER_VERTICAL|wx.ALL, 
             5,
         )
         self.sizerSWLabelControl.Add(
-            self.tcControl, 
+            self.controlN.tc, 
             1, 
             wx.EXPAND|wx.ALL,
             5,
         )
-        
+        #------------------------------> 
         self.sizerSWLabelMain.Add(
             self.sizerSWLabelControl, 
             0, 
@@ -4824,10 +5835,10 @@ class ProtProfResControlExp(ResControlExpConfBase):
         
         #region ------------------------------------------------------> Action
         if control == config.oControlTypeProtProf['Ratio']:
-            self.tcControl.SetValue('None')
-            self.tcControl.SetEditable(False)
+            self.controlN.tc.SetValue('None')
+            self.controlN.tc.SetEditable(False)
         else:
-            self.tcControl.SetEditable(True)
+            self.controlN.tc.SetEditable(True)
         #endregion ---------------------------------------------------> Action
         
         return True
@@ -4917,7 +5928,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         self.lbDict['Control'] = [
             wx.StaticText(
                 self.swMatrix,
-                label = self.tcControl.GetValue(),
+                label = self.controlN.tc.GetValue(),
             )
         ]
         if control == config.oControlTypeProtProf['Ratio']:
@@ -4946,12 +5957,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
                         wx.TextCtrl(
                             self.swMatrix,
                             size      = self.cSLabel,
-                            validator = dtsValidator.NumberList(
-                                sep = ' ',
-                                opt  = True,
-                                vMin = 0,
-                                vMax = self.NColF,
-                            )
+                            validator = self.cVColNumList,
                         )
                     )
                     #--------------> Assign & Continue to next for step
@@ -4967,12 +5973,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
                         wx.TextCtrl(
                             self.swMatrix,
                             size      = self.cSLabel,
-                            validator = dtsValidator.NumberList(
-                                opt  = True,
-                                sep = ' ',
-                                vMin = 0,
-                                vMax = self.NColF,
-                            )
+                            validator = self.cVColNumList,
                         )
                     )
                 #-------------->  Add to dict
@@ -5237,6 +6238,319 @@ class ProtProfResControlExp(ResControlExpConfBase):
                     5
                 )
         #endregion -----------------------------------------------> Other rows
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class LimProtResControlExp(ResControlExpConfBase):
+    """Creates the configuration panel for the Results - Control Experiments
+        dialog when called from the LimProt Tab.
+
+        Parameters
+        ----------
+        parent : wx.Widget
+            Parent of the panel
+        topParent : wx.Widget
+            Top parent window
+        NColF : int
+            Total number of columns present in the Data File
+
+        Attributes
+        ----------
+        cLabelText : dict
+            Keys are 1 to cN and values the prefix for the label values. e.g. C  
+        cN : int
+            Number of labels excluding control labels.
+        cStLabel : dict
+            Keys are 1 to cN and values the text of the labels. e.g. Condition.
+        cTTTotalField : str
+            Tooltip for the labels in the top region
+        mNoBL : str
+            Error message when the number of bands and/or lanes is not given.
+        name : str
+            Name of the panel
+    
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    name = config.npResControlExpLimProt
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent, topParent, NColF):
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Needed by ResControlExpConfBase
+        self.cN = 2
+        self.cStLabel = { # Keys runs in range(1, N+1)
+            1 : f"{config.lStLimProtLane}:",
+            2 : f"{config.lStLimProtBand}:",
+        }
+        self.cLabelText = { # Keys runs in range(1, N+1)
+            1 : 'L',
+            2 : 'B',
+        }
+        #------------------------------> Tooltips
+        self.cTTTotalField = [
+            f'Set the number of {self.cStLabel[1]}.',
+            f'Set the number of {self.cStLabel[2]}.',
+        ]  
+        #------------------------------> Error messages
+        self.mNoBL = (
+            f"Both {self.cStLabel[1][:-1]} and {self.cStLabel[2][:-1]} must be "
+            f"defined."
+        )
+        #------------------------------> 
+        super().__init__(parent, self.name, topParent, NColF)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> 
+        self.sizerSWLabelControl = wx.BoxSizer(wx.HORIZONTAL)    
+        self.sizerSWLabelControl.Add(
+            self.controlN.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5,
+        )
+        self.sizerSWLabelControl.Add(
+            self.controlN.tc, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5,
+        )
+        #------------------------------> 
+        self.sizerSWLabelMain.Add(
+            self.sizerSWLabelControl, 
+            0, 
+            wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM, 
+            5,
+        )
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+        
+        #region -----------------------------------------------> Initial State
+        self.SetInitialState()
+        #endregion --------------------------------------------> Initial State
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnCreate(self, event: wx.CommandEvent) -> bool:
+        """Create the fields in the white panel. Override as needed.
+        
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event.
+                
+            Return
+            ------
+            bool
+        """
+        #region -------------------------------------------------> Check Input
+        n = []
+        #------------------------------> 
+        for k in range(1, self.cN+1):
+            n.append(len(self.tcDict[k]))
+        #------------------------------> 
+        if all(n):
+            #------------------------------> Set default value if empty
+            for k in range(1, self.cN+1):
+                for j, tc in enumerate(self.tcDict[k], 1):
+                    if tc.GetValue().strip() == '':
+                        tc.SetValue(f'{self.cLabelText[k]}{j}')
+                    else:
+                        pass
+        else:
+            dtscore.Notification(
+                'errorF', msg=self.mNoBL, parent=self,
+            )
+            return False
+        #------------------------------> Control
+        if self.controlN.tc.GetValue().strip() == '':
+            self.controlN.tc.SetValue(self.cHControlN)
+        else:
+            pass
+        #endregion ----------------------------------------------> Check Input
+        
+        #region ---------------------------------------------------> Variables
+        Nl = n[0]
+        NCol = n[0]+1
+        Nb = n[1]
+        NRow = n[1]+2
+        #endregion ------------------------------------------------> Variables
+        
+        #region -------------------------------------------> Remove from sizer
+        self.sizerSWMatrix.Clear(delete_windows=False)
+        #endregion ----------------------------------------> Remove from sizer
+        
+        #region --------------------------------> Create/Destroy wx.StaticText
+        #------------------------------> Destroy
+        for k, v in self.lbDict.items():
+            for j in range(0, len(v)):
+                v[-1].Destroy()
+                v.pop()
+        #------------------------------> Create
+        #--------------> Labels
+        for k, v in self.tcDict.items():
+            #--------------> New row
+            row = []
+            #--------------> Fill row
+            for j in v:
+                row.append(
+                    wx.StaticText(
+                        self.swMatrix,
+                        label = j.GetValue(),
+                    )
+                )
+            #--------------> Assign
+            self.lbDict[k] = row
+        #--------------> Control
+        self.lbDict['Control'] = [
+            wx.StaticText(
+                self.swMatrix,
+                label = self.controlN.tc.GetValue(),
+            )
+        ]
+        #endregion -----------------------------> Create/Destroy wx.StaticText
+        
+        #region ----------------------------------> Create/Destroy wx.TextCtrl
+        #------------------------------> Add/Destroy new/old fields
+        for k in range(1, Nb+2):
+            #------------------------------> 
+            row = self.tcDictF.get(k, [])
+            lrow = len(row)
+            #------------------------------> Control
+            if k == 1:
+                if lrow:
+                    continue
+                else:
+                    #------------------------------> 
+                    row.append(wx.TextCtrl(
+                        self.swMatrix, 
+                        size      = self.cSLabel,
+                        validator = self.cVColNumList,
+                    ))
+                    #------------------------------> 
+                    self.tcDictF[k] = row
+                    #------------------------------> 
+                    continue
+            else:
+                pass
+            #------------------------------> One row for each band
+            if Nl >= lrow:
+                #------------------------------> Create new fields
+                for j in range(lrow, Nl):
+                    #------------------------------> 
+                    row.append(wx.TextCtrl(
+                        self.swMatrix, 
+                        size      = self.cSLabel,
+                        validator = self.cVColNumList,
+                    ))
+                    #------------------------------> 
+                    self.tcDictF[k] = row
+            else:
+                #------------------------------> Destroy old fields
+                for j in range(Nl, lrow):
+                    row[-1].Destroy()
+                    row.pop()
+        #------------------------------> Remove old bands not needed anymore
+        # Get keys because you cannot iterate and delete keys
+        dK = [x for x in self.tcDictF.keys()]
+        #------------------------------> 
+        for k in dK:
+            if k > Nb+1:
+                #------------------------------> 
+                for j in self.tcDictF[k]:
+                    j.Destroy()
+                #------------------------------> 
+                del(self.tcDictF[k])
+            else:
+                pass
+        #endregion -------------------------------> Create/Destroy wx.TextCtrl
+        
+        #region ------------------------------------------------> Setup Sizers
+        #------------------------------> Adjust size
+        self.sizerSWMatrix.SetCols(NCol)
+        self.sizerSWMatrix.SetRows(NRow)
+        #------------------------------> Add widgets
+        #--------------> Control row
+        self.sizerSWMatrix.Add(
+            self.lbDict['Control'][0],
+            0,
+            wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+            5
+        )
+        self.sizerSWMatrix.Add(
+            self.tcDictF[1][0],
+            0,
+            wx.EXPAND|wx.ALL,
+            5
+        )
+        for k in range(2, NCol):
+            self.sizerSWMatrix.AddSpacer(1)
+        #--------------> Lane Labels
+        self.sizerSWMatrix.AddSpacer(1)
+        for l in self.lbDict[1]:
+            self.sizerSWMatrix.Add(
+                l,
+                0,
+                wx.ALIGN_CENTER|wx.ALL,
+                5
+            )
+        #--------------> Bands
+        for r, l in enumerate(self.lbDict[2], 1):
+            #--------------> 
+            self.sizerSWMatrix.Add(
+                l,
+                0,
+                wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+                5
+            )
+            #--------------> 
+            for btc in self.tcDictF[r+1]:
+                self.sizerSWMatrix.Add(
+                    btc,
+                    0,
+                    wx.EXPAND|wx.ALL,
+                    5
+                )
+        #------------------------------> Grow Columns
+        for k in range(1, NCol):
+            if not self.sizerSWMatrix.IsColGrowable(k):
+                self.sizerSWMatrix.AddGrowableCol(k, 1)
+            else:
+                pass
+        #------------------------------> Update sizer
+        self.sizerSWMatrix.Layout()
+        #endregion ---------------------------------------------> Setup Sizers
+        
+        #region --------------------------------------------------> Set scroll
+        self.swMatrix.SetupScrolling()
+        #endregion -----------------------------------------------> Set scroll
         
         return True
     #---

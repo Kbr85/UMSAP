@@ -69,6 +69,7 @@ class BaseConfTab(wx.Panel):
     cConfPanel = {
         config.ntCorrA   : pane.CorrA,
         config.ntDataPrep: pane.DataPrep,
+        config.ntLimProt : pane.LimProt,
         config.ntProtProf: pane.ProtProf,
     }
     #endregion --------------------------------------------------> Class setup
@@ -232,7 +233,8 @@ class ResControlExp(wx.Panel):
     name = 'ResControlExpPane'
 
     widget = {
-        'ProtProfPane' : pane.ProtProfResControlExp,
+        config.npProtProf : pane.ProtProfResControlExp,
+        config.npLimProt  : pane.LimProtResControlExp,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -459,6 +461,10 @@ class Start(wx.Panel):
         self.btnCorrA.Bind(
             wx.EVT_BUTTON, 
             lambda event: config.winMain.CreateTab(config.ntCorrA)
+        )
+        self.btnLimProt.Bind(
+            wx.EVT_BUTTON, 
+            lambda event: config.winMain.CreateTab(config.ntLimProt)
         )
         self.btnProtProf.Bind(
             wx.EVT_BUTTON, 

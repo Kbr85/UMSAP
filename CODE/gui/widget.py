@@ -70,7 +70,7 @@ class ResControl():
 
         self.btnResultsW = wx.Button(
             parent = parent,
-            label  = 'Type Values',
+            label  = config.lBtnTypeResCtrl,
         )
         #endregion --------------------------------------------------> Widgets
 

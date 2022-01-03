@@ -121,6 +121,7 @@ nwMain          = 'MainW'
 nwUMSAPControl  = 'UMSAPControl'
 nwCorrAPlot     = 'CorrAPlot'
 nwProtProf      = 'ProtProfPlot'
+nwLimProt       = 'LimProtPlot'
 nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
@@ -130,14 +131,17 @@ ndFilterRemoveAny      = 'Remove Filters'
 ntStart    = 'StartTab'
 ntDataPrep = "DataPrepTab"
 ntCorrA    = 'CorrATab'
+ntLimProt  = 'LimProtTab'
 ntProtProf = 'ProtProfTab'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
-npDataPrep              = "Data Preparation"
+npDataPrep              = "DataPrepPane"
+npLimProt               = "LimProtPane"
 npProtProf              = 'ProtProfPane'
 npResControlExp         = 'ResControlExpPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
+npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 #------------------------------> Menu
 nMenModule  = 'ModuleMenu'
 nMenUtility = 'UtilityMenu'
@@ -172,6 +176,7 @@ t = {
     ntStart   : 'Start',
     ntDataPrep: 'DataPrep',
     ntCorrA   : 'CorrA',
+    ntLimProt : 'LimProt',
     ntProtProf: 'ProtProf',
 }
 #endregion -----------------------------------------------------------> Titles
@@ -180,6 +185,10 @@ t = {
 #region ----------------------------------------------------------- Extensions
 #------------------------------> For wx.Dialogs
 elData         = 'txt files (*.txt)|*.txt'
+elSeq          = (
+    "Text files (*.txt)|*.txt|"
+    "Fasta files (*.fasta)|*.fasta"
+)
 elUMSAP        = 'UMSAP files (*.umsap)|*.umsap'
 elMatPlotSaveI = (
     "Portable Document File (*.pdf)|*.pdf|"
@@ -190,6 +199,7 @@ elMatPlotSaveI = (
 
 #------------------------------> File extensions. First item is default
 esData  = ['.txt']
+esSeq   = ['.txt', '.fasta']
 esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
 
@@ -201,15 +211,16 @@ pImages = res / 'IMAGES' # Images folder
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 #------------------------------> Names
-fnInitial   = "{}-Initial-Data-{}.txt"
-fnFloat     = "{}-Floated-Data-{}.txt"
-fnExclude   = "{}-After-Excluding-Data-{}.txt"
-fnScore     = "{}-Score-Filtered-Data-{}.txt"
-fnTrans     = "{}-Transformed-Data-{}.txt"
-fnNorm      = "{}-Normalized-Data-{}.txt"
-fnImp       = "{}-Imputed-Data-{}.txt"
-fnDataSteps = 'Steps_Data_Files'
-fnDataInit  = 'Input_Data_Files'
+fnInitial    = "{}-Initial-Data-{}.txt"
+fnFloat      = "{}-Floated-Data-{}.txt"
+fnTargetProt = "{}-Target-Protein-Data-{}.txt"
+fnExclude    = "{}-After-Excluding-Data-{}.txt"
+fnScore      = "{}-Score-Filtered-Data-{}.txt"
+fnTrans      = "{}-Transformed-Data-{}.txt"
+fnNorm       = "{}-Normalized-Data-{}.txt"
+fnImp        = "{}-Imputed-Data-{}.txt"
+fnDataSteps  = 'Steps_Data_Files'
+fnDataInit   = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
 
 
@@ -219,6 +230,7 @@ urlHome     = 'https://www.umsap.nl'
 urlUpdate   = f"{urlHome}/page/release-notes"
 urlTutorial = f"{urlHome}/tutorial/2-1-0"
 urlCorrA    = f"{urlTutorial}/correlation-analysis"
+urlLimProt  = f"{urlTutorial}/limited-proteolysis"
 urlProtProf = f"{urlTutorial}/proteome-profiling"
 urlDataPrep = f"{urlTutorial}/data-preparation"
 
@@ -231,10 +243,11 @@ lnPaneConf = 'Configuration Options'
 lnListPane = 'Data File Content'
 lnPDCorrA  = 'Calculating Correlation Coefficients'
 #------------------------------> wx.Button
-lBtnRun      = 'Start Analysis'
-lBtnDataFile = 'Data File'
-lBtnOutFile  = 'Output File'
-lBtnUFile    = 'UMSAP File'
+lBtnRun         = 'Start Analysis'
+lBtnDataFile    = 'Data'
+lBtnOutFile     = 'Output File'
+lBtnUFile       = 'UMSAP'
+lBtnTypeResCtrl = 'Type Values'
 #------------------------------> wx.ListCtrl
 lLCtrlColNameI = ['#', 'Name']
 #------------------------------> wx.StaticBox
@@ -244,16 +257,21 @@ lSbValue        = 'User-defined values'
 lSbColumn       = 'Column numbers'
 lStProtProfCond = 'Conditions'
 lStProtProfRP   = 'Relevant Points'
+lStLimProtLane  = 'Lanes'
+lStLimProtBand  = 'Bands' 
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'  
 #------------------------------> wx.Statictext
+lStSeqFile      = 'Sequences'
 lStId           = 'Analysis ID'
-lStAlpha        = 'Significance level'
+lStAlpha        = 'Significance Level'
 lStColIFile     = "Columns in the {}"
 lStScoreVal     = 'Score Value'
+lStSeqLength    = 'Sequence Length'
+lStTargetProt   = "Target Protein"
 lStDetectedProt = 'Detected Proteins'
+lStSeqCol       = 'Sequences'
 lStScoreCol     = 'Score'
-lStColExtract   = 'Columns to Extract'
 lStResultCtrl   = 'Results - Control experiments'
 #------------------------------> wx.ComboBox or wx.CheckBox
 lCbFileAppend  = 'Append new data to selected output file'
@@ -306,7 +324,6 @@ ttStMedianCorr = "Select whether to apply a median correction."
 ttStDetectedProtL = (
     f"Set the column number containing the detected proteins.\ne.g. 7")
 ttStScore = f"Set the column number containing the Score values.\ne.g. 4"
-ttStColExtract = "Set the column numbers to extract from {}.\ne.g. 1-4 7 8"
 ttStGenName = "Set the column number containing the gene names.\ne.g. 3"
 ttStExcludeProt = (
     "Set the column number containing the data used to exclude proteins."
@@ -314,6 +331,10 @@ ttStExcludeProt = (
 ttStExcludeRow = (
     "Set the column numbers containing the data used to exclude rows."
     "\ne.g. 8 10-12")
+ttStControlN = "Name or ID of the control experiment.\ne.g. MyControl."
+ttStSample = (f"Specify if samples are independent or paired.\n"
+    f"For example, samples are paired when the same Petri dish is "
+    f"used for the control and experiment.")
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -361,10 +382,12 @@ oIntensities = {
     'RatioI': 'Ratio of Intensities',
 }
 oSamples = {
-    'Empty': '',
-    'IS'   : 'Independent Samples',
-    'PS'   : 'Paired Samples',
+    '': '',
+    'Independent Samples': 'i',
+    'Paired Samples': 'p',
 }
+
+
 oCorrectP = {
     ''                     : '',
     'None'                 : 'None',
@@ -384,13 +407,19 @@ oControlTypeProtProf = {
     'OCR'  : 'One Control per Row',
     'Ratio': oIntensities['RatioI'],
 }
+
+
 #endregion ----------------------------------------------------------> Options
 
 
 #region -----------------------------------------------------> DF Column names
 dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
 dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
-dfcolDataCheck = ['Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
+dfcolDataCheck = [
+    'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
+dfcolLimProtFirstPart = [
+    'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
+dfcolLimProtCLevel = ['Ptost']
 #endregion --------------------------------------------------> DF Column names
 
 
@@ -400,9 +429,11 @@ ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
 
 
 #region ------------------------------------------------------------> Messages
+#region -------------------------------------------------------------> Other 
+#------------------------------> Unexpected Error
+mUnexpectedError = 'An uexpected error was encountered.'
 #------------------------------> Files 
 mFileSelector = f"It was not possible to show the file selecting dialog."
-mFileBad = "File: '{}'\ncannot be used as {}."
 mFileRead = 'An error occured when reading file:\n{}'
 mFileColNum = (
     "In addition, the values cannot be bigger than the total number of columns "
@@ -410,25 +441,55 @@ mFileColNum = (
 #------------------------------> Not empty
 mNotEmpty = "Please select a value for {}."
 #------------------------------> Pandas
+mPDGetInitCol = ("It was not possible to extract the selected columns {} from "
+    "the selected {}:.\n{}")
+mPDDataTargetProt = ('Selection of Target Protein failed.\nTarget Protein: {} '
+'Detected Proteins column: {}.')
+mPDDataExclude = 'Data Exclusion failed.\nColumns used for data exclusion: {}.'
+mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
+    'filtering by Score value: {}.')
 mPDDataType       = 'Unexpected data type.'
 mPDDataTypeCol    = 'The {} contains unexpected data type in columns {}.'
 mPDDataTran       = 'Data Transformation failed.'
 mPDDataNorm       = 'Data Normalization failed.'
 mPDDataImputation = 'Data Imputation failed.'
 #------------------------------> User values
+mOneRNumText = "Only one real number can be accepted here."
+mOneZPlusNumText = "Only a non-negative integer can be accepted here."
+mOneZNumText = "Only one positive integer can be accepted here."
+mOne01NumText = "Only one number between 0 and 1 can be accepted here"
+mNZPlusNumText = (
+    "Only a list of unique non-negative integers can be accepted here.")
 mNumROne = "Only one number can be accepted in {}."
 mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
 mListNumN0L = (
     "Only a list of unique non-negative integers can be accepted in {}.")
-mColNumbers = f"Values in section {lSbColumn} must be unique"+"{}"
-mColNumbersNoColExtract = f", excluding {lStColExtract}."
+mColNumbers = f"Values in section {lSbColumn} must be unique."
 mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
+#------------------------------> Sequences related errors
+mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
+    "protein.")
+#endregion ----------------------------------------------------------> Other 
+
+#region ----------------------------------------------------> For CheckInput
+mFileBad = "File: '{}'\ncannot be used as {}."
+mOptionBad = "Option '{}' cannot be accepted in {}."
+mValueBad = "Value '{}' cannot be accepted in {}.\n"
+mOneRealNum = f"{mValueBad}{mOneRNumText}"
+mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
+mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
+mOne01Num = f"{mValueBad}{mOne01NumText}"
+mResCtrl = (
+    f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
+    f"correct input.")
+mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
+#endregion -------------------------------------------------> For CheckInput
 #endregion ---------------------------------------------------------> Messages
 
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
-sWinRegular = (930, 770)
+sWinRegular = (990, 775)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
 sWinModPlot = (1100, 625)
@@ -468,6 +529,8 @@ color = { # Colors for the app
     'Main' : [ # Lighter colors of the fragments and bands 
 		'#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff',
 	],
+    'RecProt' : 'gray',
+    'NatProt' : '#c94c4c',
     nuCorrA : { # Color for plot in Correlation Analysis
         'CMAP' : { # CMAP colors and interval
             'N' : 128,
@@ -481,7 +544,13 @@ color = { # Colors for the app
         'Vol'   : ['#ff3333', '#d3d3d3', '#3333ff'],
         'VolSel': '#6ac653',
         'FCAll' : '#d3d3d3',
-    }
+    },
+    nwLimProt : {
+        'Spot' : [
+            '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
+            '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
+        ],
+    },
 }
 #endregion -----------------------------------------------------------> Colors
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS
