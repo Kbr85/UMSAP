@@ -47,6 +47,7 @@ class Test_UniqueColNumbers(unittest.TestCase):
         """Test for invalid input"""
         #------------------------------>
         badInput = [
+            (self.a, self.sepListA),
             (self.b, self.sepListC),
             (self.b, self.sepListD),
             (self.e, self.sepListA),   
@@ -67,7 +68,6 @@ class Test_UniqueColNumbers(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (self.a, self.sepListA,  True),
             (self.b, self.sepListA,  True),    
             (self.c, self.sepListA,  True),    
             (self.d, self.sepListA, False), 
@@ -81,6 +81,32 @@ class Test_UniqueColNumbers(unittest.TestCase):
                 #------------------------------>
                 self.assertIs(result, c)
     #---
+    #endregion ----------------------------------------------> Expected Output
+#---
+
+
+class Test_TcUniqueColNumbers(unittest.TestCase):
+    """Test for data.check.TcUniqueColNumbers"""
+    #region -----------------------------------------------------> Valid Input
+    def test_invalid_input(self):
+        """Test for invalid input"""
+        #------------------------------>
+        badInput = [
+            (1, [' ', ',', ';']),
+        ]
+        #------------------------------>
+        for a,b in badInput:
+            with self.subTest(f'tcList={a}, sepList={b}'):
+                self.assertRaises(
+                    dtsException.InputError,
+                    dcheck.TcUniqueColNumbers,
+                    a, sepList=b,
+                )
+    #---
+    #endregion --------------------------------------------------> Valid Input
+
+    #region -------------------------------------------------> Expected Output
+    
     #endregion ----------------------------------------------> Expected Output
 #---
 #endregion ------------------------------------------------------> Class Setup
