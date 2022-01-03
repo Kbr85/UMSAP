@@ -1755,7 +1755,7 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
             -1, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
         self.AppendSeparator()    
         #------------------------------> 
-        self.showAll = self.Append(-1, 'Show All')
+        self.showAll = self.Append(-1, 'Show All\tCtrl+A')
         self.AppendSeparator()
         #------------------------------> 
         self.fragmentMenu = FragmentLimProt()
@@ -1790,6 +1790,7 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.dupWin)
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.dataPrep)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.saveD)
+        self.Bind(wx.EVT_MENU, self.OnShowAll,        source=self.showAll)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1880,6 +1881,29 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         """
         win = self.GetWindow()
         win.OnImageAll()
+        
+        return True
+    #---
+    
+    def OnShowAll(self, event):
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+
+    
+            Raise
+            -----
+
+        """
+        win = self.GetWindow()
+        win.OnShowAll()
         
         return True
     #---

@@ -4072,7 +4072,7 @@ class LimProtPlot(BaseWindowProteolysis):
         return True 
     #---
     
-    def SetGelSpotColor(self, nb, nl):
+    def SetGelSpotColor(self, nb, nl, showAll=False):
         """
     
             Parameters
@@ -4097,6 +4097,11 @@ class LimProtPlot(BaseWindowProteolysis):
         #region -------------------------------------------------------> Color
         if c:
             return 'white'
+        elif showAll:
+            if self.selBands:
+                return config.color[self.name]['Spot'][nb%nc]
+            else:
+                return config.color[self.name]['Spot'][nl%nc]
         else:
             if self.selBands:
                 return config.color[self.name]['Spot'][nl%nc]
@@ -4358,6 +4363,10 @@ class LimProtPlot(BaseWindowProteolysis):
             -----
             
         """
+        #region ---------------------------------------------------> 
+        self.UpdateGelColor()
+        #endregion ------------------------------------------------> 
+
         #region ---------------------------------------------------> Variables
         if self.selBands:
             xy = (0.55, y-0.45)
@@ -4408,9 +4417,11 @@ class LimProtPlot(BaseWindowProteolysis):
             
         """
         #region ---------------------------------------------------> Variables
-        self.rectsFrag  = []
         b = self.bands[y-1]
         l = self.lanes[x-1]
+        tKeys  = []
+        tLabel = []
+        self.rectsFrag = []
         #endregion ------------------------------------------------> Variables
         
         #region ----------------------------------------------------> Set Axis
@@ -4418,9 +4429,6 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion -------------------------------------------------> Set Axis
         
         #region ---------------------------------------------------> Keys
-        tKeys = []
-        tLabel = []
-        #------------------------------> 
         if self.selBands:
             for k,tL in enumerate(self.lanes):
                 tKeys.append(f"{(b, tL, 'Ptost')}")
@@ -4848,7 +4856,7 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def SetFragmentAxis(self):
+    def SetFragmentAxis(self, showAll=False):
         """
     
             Parameters
@@ -4876,20 +4884,27 @@ class LimProtPlot(BaseWindowProteolysis):
         self.plotM.axes.set_xticks(xtick)
         self.plotM.axes.set_xticklabels(xtick)
         #------------------------------> 
-        if self.selBands:
+        if showAll:
+            self.plotM.axes.set_yticks(range(1, len(showAll)+2))
+            self.plotM.axes.set_yticklabels(showAll+['Protein'])
+            self.plotM.axes.set_ylim(0.5, len(showAll)+1.5)
             #------------------------------> 
-            self.plotM.axes.set_yticks(range(1, len(self.lanes)+2))
-            self.plotM.axes.set_yticklabels(self.lanes+['Protein'])            
-            self.plotM.axes.set_ylim(0.5, len(self.lanes)+1.5)
-            #------------------------------> 
-            ymax = len(self.lanes)+0.8
+            ymax = len(showAll)+0.8
         else:
-            #------------------------------> 
-            self.plotM.axes.set_yticks(range(1, len(self.bands)+2))
-            self.plotM.axes.set_yticklabels(self.bands+['Protein'])   
-            self.plotM.axes.set_ylim(0.5, len(self.bands)+1.5)
-            #------------------------------> 
-            ymax = len(self.bands)+0.8
+            if self.selBands:
+                #------------------------------> 
+                self.plotM.axes.set_yticks(range(1, len(self.lanes)+2))
+                self.plotM.axes.set_yticklabels(self.lanes+['Protein'])            
+                self.plotM.axes.set_ylim(0.5, len(self.lanes)+1.5)
+                #------------------------------> 
+                ymax = len(self.lanes)+0.8
+            else:
+                #------------------------------> 
+                self.plotM.axes.set_yticks(range(1, len(self.bands)+2))
+                self.plotM.axes.set_yticklabels(self.bands+['Protein'])   
+                self.plotM.axes.set_ylim(0.5, len(self.bands)+1.5)
+                #------------------------------> 
+                ymax = len(self.bands)+0.8
         #------------------------------> 
         self.plotM.axes.tick_params(length=0)
         #------------------------------> 
@@ -5108,7 +5123,7 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def UpdateGelColor(self):
+    def UpdateGelColor(self, showAll=False):
         """
     
             Parameters
@@ -5128,7 +5143,9 @@ class LimProtPlot(BaseWindowProteolysis):
         #------------------------------> 
         for nb,b in enumerate(self.bands):
             for nl,l in enumerate(self.lanes):
-                self.rectsGel[j].set_facecolor(self.SetGelSpotColor(nb,nl))
+                self.rectsGel[j].set_facecolor(
+                    self.SetGelSpotColor(nb,nl, showAll=showAll)
+                )
                 j = j + 1
         #------------------------------> 
         self.plot.canvas.draw()
@@ -5459,6 +5476,89 @@ class LimProtPlot(BaseWindowProteolysis):
         self.text.Clear()
         #endregion ------------------------------------------------> 
 
+        return True
+    #---
+    
+    def OnShowAll(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.OnClearAll()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.UpdateGelColor(showAll=True)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.blSelRect = mpatches.Rectangle(
+            (0.55, 0.55), len(self.lanes)-0.1, len(self.bands)-0.1,
+            linewidth = 1.5,
+            edgecolor = 'red',
+            fill      = False,
+        )
+        #------------------------------> 
+        self.plot.axes.add_patch(self.blSelRect)
+        #------------------------------> 
+        self.plot.canvas.draw()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        #------------------------------> 
+        tKeys   = []
+        tLabel  = []
+        tYLabel = []
+        self.rectsFrag = []
+        #------------------------------> 
+        if self.selBands:
+            for bk, b in enumerate(self.bands):
+                for lk, l in enumerate(self.lanes):
+                    tKeys.append(f"{(b, l, 'Ptost')}")
+                    tYLabel.append(f"{b}-{l}")
+                    tLabel.append(f'{bk}.{lk}')
+        else:
+            for lk, l in enumerate(self.lanes):
+                for bk, b in enumerate(self.bands):
+                    tKeys.append(f"{(b, l, 'Ptost')}")
+                    tYLabel.append(f"{l}-{b}")
+                    tLabel.append(f'{bk}.{lk}')
+        #------------------------------> 
+        self.SetFragmentAxis(showAll=tYLabel)
+        #------------------------------> 
+        nc = len(config.color[self.name]['Spot'])
+        #------------------------------> 
+        for k,v in enumerate(tKeys, start=1):
+            for j,f in enumerate(self.fragments[v]['Coord']):
+                self.rectsFrag.append(mpatches.Rectangle(
+                    (f[0], k-0.2), 
+                    (f[1]-f[0]), 
+                    0.4,
+                    picker    = True,
+                    linewidth = self.gelLineWidth,
+                    facecolor = config.color[self.name]['Spot'][(k-1)%nc],
+                    edgecolor = 'black',
+                    label     = f'{tLabel[k-1]}.{j}',
+                ))
+                self.plotM.axes.add_patch(self.rectsFrag[-1])
+        #------------------------------> 
+        self.DrawProtein(k+1)
+        #------------------------------> 
+        self.plotM.ZoomResetSetValues()
+        self.plotM.canvas.draw()
+        #endregion ------------------------------------------------> 
+        
         return True
     #---
     #endregion ------------------------------------------------> Class methods
