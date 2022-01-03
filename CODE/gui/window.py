@@ -261,7 +261,13 @@ class BaseWindow(wx.Frame):
     #---
     
     def OnExportPlotData(self) -> Literal[True]:
-        """ Export data to a csv file """
+        """ Export data to a csv file 
+        
+            Notes
+            -----
+            It requires child class to define self.dateC to catch the current
+            date being plotted.
+        """
         #region --------------------------------------------------> Dlg window
         dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
         #endregion -----------------------------------------------> Dlg window
@@ -270,10 +276,9 @@ class BaseWindow(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
             p     = Path(dlg.GetPath())
-            tDate = self.statusbar.GetStatusText(1)
             #------------------------------> Export
             try:
-                self.obj.ExportPlotData(self.cSection, tDate, p)
+                self.obj.ExportPlotData(self.cSection, self.dateC, p)
             except Exception as e:
                 dtscore.Notification(
                     'errorF',

@@ -1784,9 +1784,12 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnLaneBand,  source=self.bandLane)
-        self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.zoomR)
-        self.Bind(wx.EVT_MENU, self.OnImageAll, source=self.saveI)
+        self.Bind(wx.EVT_MENU, self.OnLaneBand,       source=self.bandLane)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.zoomR)
+        self.Bind(wx.EVT_MENU, self.OnImageAll,       source=self.saveI)
+        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.dupWin)
+        self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.dataPrep)
+        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.saveD)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
