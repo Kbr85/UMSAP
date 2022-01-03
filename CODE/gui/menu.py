@@ -673,9 +673,9 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         self.AppendSeparator()
         self.pCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
-        self.saveI = self.Append(-1, 'Export Image\tCtrl+I')
+        self.saveI = self.Append(-1, 'Export Image\tShift+I')
         self.AppendSeparator()
-        self.zoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
@@ -1464,8 +1464,8 @@ class FragmentLimProt(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.saveFI = self.Append(-1, 'Save Image\tCtrl+I')
-        self.zoomFR = self.Append(-1, 'Reset Fragment Zoom\tCtrl+Z')
+        self.saveFI = self.Append(-1, 'Save Image\tShift+I')
+        self.zoomFR = self.Append(-1, 'Reset Fragment Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
         
         #region --------------------------------------------------------> Bind
@@ -1675,16 +1675,16 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Duplicate Window
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
-        #------------------------------> Export Data
-        self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
-        self.saveFD = self.Append(-1, 'Export Data Filtered\tShift+Ctrl+E')
-        self.saveI  = self.Append(-1, 'Export Images\tShift+I')
-        self.AppendSeparator()
         #------------------------------> 
         self.dataPrep = self.Append(-1, 'Data Preparation')
         self.AppendSeparator()
+        #------------------------------> Export Data
+        self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
+        self.saveFD = self.Append(-1, 'Export Data Filtered\tShift+Ctrl+E')
+        self.saveI  = self.Append(-1, 'Export Images\tShift+Alt+I')
+        self.AppendSeparator()
         #------------------------------> 
-        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
@@ -1772,15 +1772,15 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Duplicate Window
         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
-        #------------------------------> Export Data
-        self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
-        self.saveI  = self.Append(-1, 'Export Images\tShift+I')
-        self.AppendSeparator()
         #------------------------------> 
         self.dataPrep = self.Append(-1, 'Data Preparation')
         self.AppendSeparator()
+        #------------------------------> Export Data
+        self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
+        self.saveI  = self.Append(-1, 'Export Images\tShift+Alt+I')
+        self.AppendSeparator()
         #------------------------------>
-        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind

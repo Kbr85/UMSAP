@@ -3921,6 +3921,10 @@ class LimProtPlot(BaseWindowProteolysis):
         self.peptide    = None
         #endregion ------------------------------------------------> Variables
         
+        #region ---------------------------------------------------> 
+        self.text.Clear()
+        #endregion ------------------------------------------------> 
+        
         #region -------------------------------------------------> wx.ListCtrl
         self.FillListCtrl()
         #endregion ----------------------------------------------> wx.ListCtrl
@@ -5519,6 +5523,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #------------------------------> 
         tKeys   = []
         tLabel  = []
+        tColor  = []
         tYLabel = []
         self.rectsFrag = []
         #------------------------------> 
@@ -5527,12 +5532,14 @@ class LimProtPlot(BaseWindowProteolysis):
                 for lk, l in enumerate(self.lanes):
                     tKeys.append(f"{(b, l, 'Ptost')}")
                     tYLabel.append(f"{b}-{l}")
+                    tColor.append(bk)
                     tLabel.append(f'{bk}.{lk}')
         else:
             for lk, l in enumerate(self.lanes):
                 for bk, b in enumerate(self.bands):
                     tKeys.append(f"{(b, l, 'Ptost')}")
                     tYLabel.append(f"{l}-{b}")
+                    tColor.append(lk)
                     tLabel.append(f'{bk}.{lk}')
         #------------------------------> 
         self.SetFragmentAxis(showAll=tYLabel)
@@ -5547,7 +5554,7 @@ class LimProtPlot(BaseWindowProteolysis):
                     0.4,
                     picker    = True,
                     linewidth = self.gelLineWidth,
-                    facecolor = config.color[self.name]['Spot'][(k-1)%nc],
+                    facecolor = config.color[self.name]['Spot'][(tColor[k-1])%nc],
                     edgecolor = 'black',
                     label     = f'{tLabel[k-1]}.{j}',
                 ))
