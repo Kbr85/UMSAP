@@ -34,12 +34,14 @@ class ResControl():
 
         Attributes
         ----------
+        cLResControl : str
+            Label for the wx.StaticText. Needed by Configuration panes.
         btnResultsW: wx.Button 
         stResults: wx.StaticText
         tcResults: wx.TextCtrl
     """
     #region -----------------------------------------------------> Class setup
-
+    cLResControl = config.lStResultCtrl
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup

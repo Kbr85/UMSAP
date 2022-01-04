@@ -11,7 +11,7 @@
 # ------------------------------------------------------------------------------
 
 
-""" Panels of the application"""
+"""Panels of the application"""
 
 
 #region -------------------------------------------------------------> Imports
@@ -20,27 +20,27 @@ import shutil
 from pathlib import Path
 from typing import Optional, Literal
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from statsmodels.stats.multitest import multipletests
 
 import wx
 import wx.lib.scrolledpanel as scrolled
 
+import dat4s_core.data.check as dtsCheck
 import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
+import dat4s_core.data.statistic as dtsStatistic
 import dat4s_core.exception.exception as dtsException
 import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
-import dat4s_core.data.statistic as dtsStatistic
-import dat4s_core.data.check as dtsCheck
 
 import config.config as config
+import data.check as check
+import data.method as dmethod
 import gui.dtscore as dtscore
 import gui.method as gmethod
 import gui.widget as widget
-import data.check as check
-import data.method as dmethod
 
 if config.typeCheck:
     import pandas as pd
@@ -55,8 +55,6 @@ class BaseConfPanel(
     ):
     """Creates the skeleton of a configuration panel. This includes the 
         wx.StaticBox, the bottom Buttons, the statusbar and some widgets.
-        
-        See Notes below for more details.
 
         Parameters
         ----------
@@ -91,24 +89,24 @@ class BaseConfPanel(
         cLFileBox : str
             Label for the wx.StaticBox in section Files & Folders
             Default is config.lSBFile.
+        cLId : str
+            Label for the ID.
         cLiFile : str
             Label for the main input data wx.Button. 
             Default is config.lBtnDataFile.
-        cLId : str
-            Label for the ID.
+        cLImputation : str
+            Label for Imputation method. Default is config.lCbImputation.
+        cLNormMethod : str
+            Data normalization label. Default is config.lCbNormMethod.
         cLRunBtn : str
             Label for the run wx.Button. Default is config.lBtnRun.
+        cLTransMethod : str
+            Data transformation label. Default is config.lCbTransMethod.
         cLuFile : str
             Label for the output wx.Button. Default is config.lBtnOutFile.
         cLValueBox : str
             Label for the wx.StaticBox in section User-defined values
             Default is config.lSBValue.
-        cLImputation : str
-            Label for Imputation method. Default is config.lCbImputation.
-        cLNormMethod : str
-            Data normalization label. Default is config.lCbNormMethod.
-        cLTransMethod : str
-            Data transformation label. Default is config.lCbTransMethod.
         cMiFile : str
             Mode for selecting the main input file. Default is 'openO'.
         cMuFile : str
@@ -125,20 +123,20 @@ class BaseConfPanel(
             Tooltip for the Clear All button. Default is config.ttBtnClearAll.
         cTTHelp : str
             Tooltip for the Help button. Default is config.ttBtnHelpDef.
-        cTTiFile : str
-            Tooltip for the input file button. Default is config.ttTcDataFile.
         cTTId : str
             Tooltip for the ID.
-        cTTRun : str
-            Tooltip for the run button. Default is config.ttBtnRun.
-        cTTuFile : str
-            Tooltip for the umsap file button. Default is config.ttBtnUFile.
+        cTTiFile : str
+            Tooltip for the input file button. Default is config.ttTcDataFile.
         cTTImputation : str
             Tooltip for Imputation method. Default is config.lCbImputation.
         cTTNormMethod : str
             Tooltip for Normalization method. Default is config.lCbNormMethod.
+        cTTRun : str
+            Tooltip for the run button. Default is config.ttBtnRun.
         cTTTransMethod : str
             Tooltip for Transformation method. Default is config.ttStTrans.
+        cTTuFile : str
+            Tooltip for the umsap file button. Default is config.ttBtnUFile.
         cViFile : wx.Validator
             Validator for the main input file. 
             Default is dtsValidator.InputFF(fof='file', ext=config.esData)
@@ -214,17 +212,6 @@ class BaseConfPanel(
             To clear all wx.ListCtrl in the Tab.
         uFile : dtsWidget.ButtonTextCtrlFF
             Attributes: btn, tc.
-        
-        Methods
-        -------
-        CheckInput:
-            Check the user input in the widgets created in __init__
-        ReadInputFiles:
-            Read the input file and create the corresponding file object.
-        LoadResults:
-            Load the created umsap file. This will reload the opened umsap file 
-            if the new information was added to it or load the new umsap file
-            just created.
             
         Notes
         -----
@@ -257,20 +244,20 @@ class BaseConfPanel(
         #region -----------------------------------------------> Initial Setup
         self.parent = parent
         #------------------------------> Labels
-        self.cLRunBtn      = getattr(self, 'cLRunBtn', config.lBtnRun)
-        self.cLuFile       = getattr(self, 'cLuFile', config.lBtnUFile)
-        self.cLiFile       = getattr(self, 'cLiFile', config.lBtnDataFile)
-        self.cLId          = getattr(self, 'cLId', config.lStId)
-        self.cLFileBox     = getattr(self, 'cLFileBox', config.lSbFile)
-        self.cLDataBox     = getattr(self, 'cLDataBox', config.lSbData)
-        self.cLValueBox    = getattr(self, 'cLValueBox', config.lSbValue)
-        self.cLColumnBox   = getattr(self, 'cLColumnBox', config.lSbColumn)
-        self.cLCeroTreat   = getattr(self, 'cLCeroTreat', config.lCbCeroTreat)
+        self.cLId          = getattr(self, 'cLId',         config.lStId)
+        self.cLuFile       = getattr(self, 'cLuFile',      config.lBtnUFile)
+        self.cLiFile       = getattr(self, 'cLiFile',      config.lBtnDataFile)
+        self.cLRunBtn      = getattr(self, 'cLRunBtn',     config.lBtnRun)        
+        self.cLFileBox     = getattr(self, 'cLFileBox',    config.lSbFile)
+        self.cLDataBox     = getattr(self, 'cLDataBox',    config.lSbData)
+        self.cLValueBox    = getattr(self, 'cLValueBox',   config.lSbValue)
+        self.cLColumnBox   = getattr(self, 'cLColumnBox',  config.lSbColumn)
+        self.cLCeroTreat   = getattr(self, 'cLCeroTreat',  config.lCbCeroTreat)
         self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD', config.lCbCeroTreatD)
         self.cLNormMethod  = getattr(self, 'cLNormMethod', config.lCbNormMethod)
+        self.cLImputation  = getattr(self, 'cLImputation', config.lCbImputation)
         self.cLTransMethod = getattr(
             self, 'cLTransMethod', config.lCbTransMethod)
-        self.cLImputation = getattr(self, 'cLImputation', config.lCbImputation)
         #------------------------------> Size
         self.cSTc = getattr(self, 'cSTc', config.sTc)
         #------------------------------> Choices
@@ -282,16 +269,16 @@ class BaseConfPanel(
             self, 'cOImputation', list(config.oImputation.values()),
         )
         #------------------------------> Hints
+        self.cHId    = getattr(self, 'cHId', config.hTcId)
         self.cHuFile = getattr(self, 'cHuFile', config.hTcUFile)
         self.cHiFile = getattr(self, 'cHiFile', config.hTcDataFile)
-        self.cHId    = getattr(self, 'cHId', config.hTcId)
         #------------------------------> Tooltips
-        self.cTTuFile       = getattr(self, 'cTTuFile', config.ttBtnUFile)
-        self.cTTiFile       = getattr(self, 'cTTiFile', config.ttBtnDataFile)
-        self.cTTId          = getattr(self, 'cTTId', config.ttStId)
-        self.cTTHelp        = getattr(self, 'cTTHelp', config.ttBtnHelpDef)
+        self.cTTId          = getattr(self, 'cTTId',       config.ttStId)
+        self.cTTRun         = getattr(self, 'cTTRun',      config.ttBtnRun)
+        self.cTTHelp        = getattr(self, 'cTTHelp',     config.ttBtnHelpDef)
+        self.cTTuFile       = getattr(self, 'cTTuFile',    config.ttBtnUFile)
+        self.cTTiFile       = getattr(self, 'cTTiFile',    config.ttBtnDataFile)
         self.cTTClearAll    = getattr(self, 'cTTClearAll', config.ttBtnClearAll)
-        self.cTTRun         = getattr(self, 'cTTRun', config.ttBtnRun)
         self.cTTNormMethod  = getattr(self, 'cTTNormMethod', config.ttStNorm)
         self.cTTTransMethod = getattr(self, 'cTTTransMethod', config.ttStTrans)
         self.cTTImputation  = getattr(
@@ -557,13 +544,19 @@ class BaseConfPanel(
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    #------------------------------> Event Methods
     def OnUFileChange(self, event: wx.CommandEvent) -> Literal[True]:
-        """Adjust default Path for UMSAP File when an UMSAP file is selected.
+        """Adjust the default initial path to search for input files when an 
+            UMSAP file is selected.
     
             Parameters
             ----------
             event: wx.Event
-                Information about the event		
+                Information about the event
+            
+            Returns
+            -------
+            bool
         """
         #region -------------------------------------------------> Set defPath
         if (fileP := self.uFile.tc.GetValue()) == '':
@@ -596,12 +589,11 @@ class BaseConfPanel(
         if (fileP := self.iFile.tc.GetValue()) == '':
             return self.LCtrlEmpty()
         else:
-            return self.OnIFileEnter('fEvent', fileP)
+            return self.OnIFileEnter(fileP)
     #---
     
-    def OnIFileEnter(self, event: wx.CommandEvent, fileP: Path) -> bool:
-        """Fill the wx.ListCtrl after selecting path to the folder. This is
-            called from within self.iFile
+    def OnIFileEnter(self, fileP: Path) -> bool:
+        """Fill the wx.ListCtrl after selecting path to the input file.
     
             Parameters
             ----------
@@ -683,6 +675,8 @@ class BaseConfPanel(
             -----
             If the output file already exists the new data is added to the
             existing data.
+            It assumes child class defines a self.cSection attributes with the
+            section name of the analysis.
         """
         #region ---------------------------------------------------> Read File
         if self.do['uFile'].exists():
@@ -721,6 +715,11 @@ class BaseConfPanel(
             str
                 Label with added empty strings at the end to match the length of
                 self.cLLenLongest
+            
+            Notes
+            -----
+            It assumes child class defines a self.cLLenLongest with the length
+            of the longest name for the input fields.
         """
         return f"{label}{(self.cLLenLongest - len(label))*' '}" 
     #---
@@ -836,8 +835,6 @@ class BaseConfPanel(
     
     def UniqueColumnNumber(self, l: list[wx.TextCtrl]) -> bool:
         """Check l contains unique numbers. 
-        
-            See Notes below for more details.
     
             Parameters
             ----------
@@ -878,6 +875,10 @@ class BaseConfPanel(
             ---------
             event : wx.Event
                 Event information
+                
+            Returns
+            -------
+            bool
         """
         #region --------------------------------------------------> Dlg window
         self.dlg = dtscore.ProgressDialog(
@@ -900,6 +901,10 @@ class BaseConfPanel(
     def CheckInput(self) -> bool:
         """Check individual fields in the user input.
         
+            Returns
+            -------
+            bool
+        
             Notes
             -----
             The child class must define a checkUserInput dict with the correct
@@ -909,7 +914,7 @@ class BaseConfPanel(
                 'Field label' : [Widget, BaseErrorMessage]
             }
             
-            BaseErrorMessage must a string with two placeholder for the 
+            BaseErrorMessage must be a string with two placeholder for the 
             error value and Field label in that order. For example:
             'File: {bad_path_placeholder}\n cannot be used as 
                                                     {Field_label_placeholder}'
@@ -940,8 +945,6 @@ class BaseConfPanel(
     def ReadInputFiles(self) -> bool:
         """Read input file and check data
         
-            See Notes below for more details.
-        
             Return
             ------
             bool
@@ -951,8 +954,8 @@ class BaseConfPanel(
             Assumes child class has the following attributes:
             - do: dict with at least the following key - values:
                 {
-                    'seqRec': Path,
-                    'seqNat': Path or None,
+                    'iFile' : Path to data file,
+                    'seqFile' : Path to the sequence file or no key - value,
                 }
         
         """
@@ -1001,10 +1004,75 @@ class BaseConfPanel(
         return True
     #---
     
+    def DataPreparation(self, resetIndex=True) -> bool:
+        """Perform the data preparation step.
+            
+            Parameters
+            ----------
+            resetIndex: bool
+                If True reset the index of self.dfImp
+    
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            See the Notes for the individual methods:
+                self.DatPrep_0_Float, 
+                self.DatPrep_TargetProt,
+                self.DatPrep_Exclude, 
+                self.DatPrep_Score,
+                self.DatPrep_Transformation,
+                self.DatPrep_Normalization,
+                self.DatPrep_Imputation,
+        """
+        #region ---------------------------------------------------> Variables
+        msgPrefix = config.lPdRun
+        #endregion ------------------------------------------------> Variables
+        
+        #region ----------------------------------------> Run Data Preparation
+        for k, m in self.dataPrep.items():
+            #------------------------------> 
+            wx.CallAfter(self.dlg.UpdateStG, f'{msgPrefix} {k}')
+            #------------------------------> 
+            if m():
+                pass
+            else:
+                return False
+        #endregion -------------------------------------> Run Data Preparation
+        
+        #region -------------------------------------------------> Reset index
+        if resetIndex:
+            self.dfIm.reset_index(drop=True, inplace=True)
+        else:
+            pass
+        #endregion ----------------------------------------------> Reset index
+        
+        #region -------------------------------------------------------> Print
+        if config.development:
+            #------------------------------> 
+            dfL = [
+                self.dfI, self.dfF, self.dfTP, self.dfEx, self.dfS, self.dfT, 
+                self.dfN, self.dfIm
+            ]
+            dfN = ['dfI', 'dfF', 'dfTP', 'dfEx', 'dfS', 'dfT', 'dfN', 'dfIm']
+            #------------------------------> 
+            print('')
+            for i, df in enumerate(dfL):
+                if df is not None:
+                    print(f'{dfN[i]}: {df.shape}')
+                else:
+                    print(f'{dfN[i]}: None')
+        else:
+            pass
+        #endregion ----------------------------------------------------> Print
+        
+        return True
+    #---
+    
     def DatPrep_0_Float(self) -> bool:
         """Convert or not 0s to NA and then all values to float.
-        
-            See Notes below for more details
         
             Returns
             -------
@@ -1014,7 +1082,7 @@ class BaseConfPanel(
             -----
             Assumes child class has the following attributes:
             - iFileObj: instance of dtsFF.CSVFile
-            - do: dict with at least the following key -values pairs:
+            - do: dict with at least the following key - values pairs:
                 'oc' : {
                     'Column' : [List of int],
                 },
@@ -1102,8 +1170,6 @@ class BaseConfPanel(
     def DatPrep_Exclude(self) -> bool:
         """Exclude rows from self.dfF based on the content of 
             self.do['df']['ExcludeR'].
-            
-            See Notes below for more details
     
             Returns
             -------
@@ -1140,8 +1206,6 @@ class BaseConfPanel(
     
     def DatPrep_Score(self) -> bool:
         """Filter rows in self.dfEx by Score values.
-        
-            See Notes below for more details
         
             Returns
             -------
@@ -1192,8 +1256,6 @@ class BaseConfPanel(
     
     def DatPrep_Transformation(self) -> bool:
         """Apply selected data transformation.
-        
-            See Notes below for more information.
     
             Returns
             -------
@@ -1235,8 +1297,6 @@ class BaseConfPanel(
     
     def DatPrep_Normalization(self) -> bool:
         """Perform a data normalization.
-        
-            See Notes below for more details
     
             Returns
             -------
@@ -1270,8 +1330,6 @@ class BaseConfPanel(
     
     def DatPrep_Imputation(self) -> bool:
         """Perform a data imputation.
-        
-            See Notes below for more details.
     
             Returns
             -------
@@ -1302,75 +1360,6 @@ class BaseConfPanel(
         
         return True
     #---
-    
-    def DataPreparation(self, resetIndex=True) -> bool:
-        """Perform the data preparation step.
-        
-            See Notes below for more details.
-            
-            Parameters
-            ----------
-            resetIndex: bool
-                If True reset the index of self.dfImp
-    
-            Returns
-            -------
-            bool
-    
-            Notes
-            -----
-            See the Notes for the individual methods:
-                self.DatPrep_0_Float, 
-                self.DatPrep_TargetProt,
-                self.DatPrep_Exclude, 
-                self.DatPrep_Score,
-                self.DatPrep_Transformation,
-                self.DatPrep_Normalization,
-                self.DatPrep_Imputation,
-        """
-        #region ---------------------------------------------------> Variables
-        msgPrefix = config.lPdRun
-        #endregion ------------------------------------------------> Variables
-        
-        #region ----------------------------------------> Run Data Preparation
-        for k, m in self.dataPrep.items():
-            #------------------------------> 
-            wx.CallAfter(self.dlg.UpdateStG, f'{msgPrefix} {k}')
-            #------------------------------> 
-            if m():
-                pass
-            else:
-                return False
-        #endregion -------------------------------------> Run Data Preparation
-        
-        #region -------------------------------------------------> Reset index
-        if resetIndex:
-            self.dfIm.reset_index(drop=True, inplace=True)
-        else:
-            pass
-        #endregion ----------------------------------------------> Reset index
-        
-        #region -------------------------------------------------------> Print
-        if config.development:
-            #------------------------------> 
-            dfL = [
-                self.dfI, self.dfF, self.dfTP, self.dfEx, self.dfS, self.dfT, 
-                self.dfN, self.dfIm
-            ]
-            dfN = ['dfI', 'dfF', 'dfTP', 'dfEx', 'dfS', 'dfT', 'dfN', 'dfIm']
-            #------------------------------> 
-            print('')
-            for i, df in enumerate(dfL):
-                if df is not None:
-                    print(f'{dfN[i]}: {df.shape}')
-                else:
-                    print(f'{dfN[i]}: None')
-        else:
-            pass
-        #endregion ----------------------------------------------------> Print
-        
-        return True
-    #---
         
     def LoadResults(self):
         """Load output file"""
@@ -1392,8 +1381,6 @@ class BaseConfPanel(
 
 class BaseConfModPanel(BaseConfPanel, widget.ResControl):
     """Base configuration for a panel of a module.
-    
-        See Notes below for more details.
 
         Parameters
         ----------
@@ -1441,12 +1428,6 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
         transMethod : dtsWidget.StaticTextComboBox
             Attributes: st, cb   
         - See also widget.ResControl
-        
-        Methods
-        -------
-        CheckInput:
-            Check the user input in the widgets created here. in 
-            super().__init__ and in __init__()
             
         Notes
         -----
@@ -1465,20 +1446,18 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Label
+        self.cLAlpha    = getattr(self, 'cLAlpha',    config.lStAlpha)
         self.cLScoreVal = getattr(self, 'cLScoreVal', config.lStScoreVal)
-        self.cLAlpha = getattr(self, 'cLAlpha', config.lStAlpha)
-        self.cLDetectedProt = getattr(
-            self, 'cLDetectedProt', config.lStDetectedProt,
-        )
         self.cLScoreCol = getattr(self, 'cLScoreCol', config.lStScoreCol)
+        self.cLDetectedProt = getattr(
+            self, 'cLDetectedProt', config.lStDetectedProt,)
         #------------------------------> Tooltips
-        self.cTTAlpha = getattr(self, 'cTTAlpha', config.ttStAlpha)
-        self.cTTScoreVal = getattr(self, 'cTTScoreVal', config.ttStScoreVal)
+        self.cTTAlpha        = getattr(self, 'cTTAlpha',    config.ttStAlpha)
+        self.cTTScore        = getattr(self, 'cTTScore',    config.ttStScore)
+        self.cTTScoreVal     = getattr(self, 'cTTScoreVal', config.ttStScoreVal)
         self.cTTDetectedProt = getattr(
-            self, 'cTTDetectedProtL', config.ttStDetectedProtL,
-        )
-        self.cTTScore = getattr(self, 'cTTScore', config.ttStScore)
-        #------------------------------> __init__
+            self, 'cTTDetectedProtL', config.ttStDetectedProtL,)
+        #------------------------------> Parent class init
         BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
 
         widget.ResControl.__init__(self, self.sbColumn)
@@ -1567,19 +1546,28 @@ class BaseConfModPanel2(BaseConfModPanel):
 
         Parameters
         ----------
-        
+        parent : wx Widget
+            Parent of the widgets
+        rightDelete : Boolean
+            Enables clearing wx.StaticBox input with right click
 
         Attributes
         ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        #------------------------------> Configuration
+        cEseqFile: wxPython extension list
+            Extension for sequence files
+        cHSeqFile: str
+            Hint for the Sequences File
+        cLSeqCol: str
+            Label for Sequences in the Columns section
+        cLSeqFile : str
+            Label for the Sequence File
+        cLSeqLength: str
+            Label for the Sequence Length
+        cLTargetProt: str
+            Label for the Target Protein
+        cMseqFile : str
+            Mode to search for the sequence file
     """
     #region -----------------------------------------------------> Class setup
     
@@ -1594,10 +1582,12 @@ class BaseConfModPanel2(BaseConfModPanel):
 
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Label
-        self.cLSeqFile = getattr(self, 'cLSeqFile', config.lStSeqFile)
-        self.cLSeqLength = getattr(self, 'cLSeqLength', config.lStSeqLength)
+        self.cLSeqFile    = getattr(self, 'cLSeqFile', config.lStSeqFile)
+        self.cLSeqLength  = getattr(self, 'cLSeqLength', config.lStSeqLength)
         self.cLTargetProt = getattr(self, 'cLtargetProt', config.lStTargetProt)
-        self.cLSeqCol = getattr(self, 'cLSeqCol', config.lStSeqCol)
+        self.cLSeqCol     = getattr(self, 'cLSeqCol', config.lStSeqCol)
+        #------------------------------> Hint
+        self.cHSeqFile = getattr(self, 'cHSeqFile', config.hTcSeqFile)
         #------------------------------> Mode
         self.cMseqFile = getattr(self, 'cMseqFile', 'openO')
         #------------------------------> Extensions
@@ -1615,7 +1605,7 @@ class BaseConfModPanel2(BaseConfModPanel):
         self.seqFile = dtsWidget.ButtonTextCtrlFF(
             self.sbFile,
             btnLabel   = self.cLSeqFile,
-            # tcHint     = 
+            tcHint     = self.cHSeqFile,
             mode       = self.cMseqFile,
             ext        = self.cEseqFile,
             tcStyle    = wx.TE_READONLY,
@@ -1747,8 +1737,6 @@ class BaseConfModPanel2(BaseConfModPanel):
         """Find the residue numbers for the peptides in the sequence of the 
             Recombinant and Native protein.
             
-            See Notes below for more details
-            
             Parameters
             ----------
             seqNat: bool
@@ -1757,9 +1745,6 @@ class BaseConfModPanel2(BaseConfModPanel):
             Returns
             -------
             bool
-    
-            Raise
-            -----
             
             Notes
             -----
@@ -1870,9 +1855,7 @@ class BaseConfModPanel2(BaseConfModPanel):
 
 class ResControlExpConfBase(wx.Panel):
     """Parent class for the configuration panel in the dialog Results - Control
-        Experiments
-        
-        See Notes below for more details.
+        Experiments.
 
         Parameters
         ----------
@@ -1894,23 +1877,23 @@ class ResControlExpConfBase(wx.Panel):
         pName: str
             Name of the parent window.
         #------------------------------> Configuration
+        cHControlN : str
+            Hint for the wx.TextCtrl with the name of the control experiment.
         cHTotalField : str
             Hint for the total number of required labels. It must be set in the
             child class. Default is '#'.
-        cHControlN : str
-            Hint for the wx.TextCtrl with the name of the control experiment.
         cLControlN: str
             Label for the wx.StaticText with the name of the control experiment.
         cLSetup : str
             Label for the wx.Button in top region. Default is 'Setup Fields'.
+        cSLabel : wx.Size
+            Size for the labels wx.TextCtrl in top region. Default is (35,22).
         cSSWLabel : wx.Size
             Size for the ScrolledPanel with the label. Default is (670,135).
         cSSWMatrix : wx.Size
             Size for the ScrolledPanel with the fields. Default is (670,670).
         cSTotalField : wx.Size
             Size for the total wx.TextCtrl in top region. Default is (35,22).
-        cSLabel : wx.Size
-            Size for the labels wx.TextCtrl in top region. Default is (35,22).
         #------------------------------> To manage window
         lbDict : dict of lists of wx.StaticText for user-given labels
             Keys are 1 to N plus 'Control' and values are the lists.
@@ -1974,16 +1957,16 @@ class ResControlExpConfBase(wx.Panel):
         self.lbDict    = {}
         self.NColF     = NColF - 1
         #------------------------------> Label
-        self.cLSetup = getattr(self, 'cLSetup', 'Setup Fields')
+        self.cLSetup    = getattr(self, 'cLSetup',    'Setup Fields')
         self.cLControlN = getattr(self, 'cLControlN', 'Control Name')
         #------------------------------> Hint
-        self.cHControlN = getattr(self, 'cHControlN', 'MyControl')
+        self.cHControlN   = getattr(self, 'cHControlN',   'MyControl')
         self.cHTotalField = getattr(self, 'cHTotalField', '#')
         #------------------------------> Size
-        self.cSSWLabel    = getattr(self, 'cSSWLabel', (670,135))
-        self.cSSWMatrix   = getattr(self, 'cSSWMatrix', (670,670))
+        self.cSLabel      = getattr(self, 'cSLabel',      (60,22))
+        self.cSSWLabel    = getattr(self, 'cSSWLabel',    (670,135))
+        self.cSSWMatrix   = getattr(self, 'cSSWMatrix',   (670,670))
         self.cSTotalField = getattr(self, 'cSTotalField', (35,22))
-        self.cSLabel      = getattr(self, 'cSLabel', (60,22))
         #------------------------------> Tooltip
         self.cTTControlN = getattr(self, 'cTTControlN', config.ttStControlN)     
         #------------------------------> Validator
@@ -2087,7 +2070,7 @@ class ResControlExpConfBase(wx.Panel):
     #---
 
     def OnLabelNumber(self, event: wx.Event) -> bool:
-        """Creates fields for names when the total wx.TextCtrl loose focus
+        """Creates fields for names when the total wx.TextCtrl looses focus
     
             Parameters
             ----------
@@ -2164,9 +2147,14 @@ class ResControlExpConfBase(wx.Panel):
         return True
     #---
 
-    def Add2SWLabel(self):
+    def Add2SWLabel(self) -> bool:
         """Add the widgets to self.sizerSWLabel. It assumes sizer already has 
-            the right number of columns and rows. """
+            the right number of columns and rows. 
+            
+            Returns
+            -------
+            bool
+        """
         #region ------------------------------------------------------> Remove
         self.sizerSWLabel.Clear(delete_windows=False)
         #endregion ---------------------------------------------------> Remove
@@ -2226,7 +2214,11 @@ class ResControlExpConfBase(wx.Panel):
     #---
     
     def OnOK(self) -> bool:
-        """Validate and set the Results - Control Experiments text 
+        """Validate and set the Results - Control Experiments text.
+        
+            Returns
+            -------
+            bool
         
             Notes
             -----
@@ -2311,6 +2303,10 @@ class ResControlExpConfBase(wx.Panel):
     def SetInitialState(self) -> bool:
         """Set the initial state of the panel. This assumes that the needed
             values in topParent are properly configured.
+            
+            Returns
+            -------
+            bool
         """
         #region -------------------------------------------------> Check input
         if (tcFieldsVal := self.topParent.tcResults.GetValue()) != '':
@@ -2360,7 +2356,7 @@ class ResControlExpConfBase(wx.Panel):
         #endregion ----------------------------------------------> Set Control
         
         #region ---------------------------------------------> Create tcFields
-        self.OnCreate('test')
+        self.OnCreate('fEvent')
         #endregion ------------------------------------------> Create tcFields
         
         #region --------------------------------------------> Add Field Values
@@ -2480,7 +2476,7 @@ class CorrA(BaseConfPanel):
             Unique id of the pane in the app
         #------------------------------> Configuration
         cGaugePD : int
-            Number of steps needed in hte Progress Dialog.
+            Number of steps needed in the Progress Dialog.
         cLCorr : str
             Label for the Correlation Method widget. 
             Default is config.lCbCorrMethod.
@@ -2502,10 +2498,10 @@ class CorrA(BaseConfPanel):
             Default is config.ttBtnHelp.format(config.urlCorrA).
         cURL : str
             URL for the Help button.
+        #------------------------------> For Analysis
         checkUserInput : dict
             To check the user input in the right order. 
             See pane.BaseConfPanel.CheckInput for a description of the dict.
-        #------------------------------> For Analysis
         cLLenLongest : int
             Length of the longest label. 
         cMainData : str
@@ -2521,16 +2517,20 @@ class CorrA(BaseConfPanel):
                 'NormMethod' : 'normalization method',
                 'ImpMethod'  : 'imputation method',
                 'CorrMethod' : 'correlation method',
-                'Column'     : [selected columns as integers],
+                'oc'         : {
+                    'Column' : [selected columns as integers],
+                }
                 'df'         : {
-                  'Column' : [cero based list of selected columns],  
+                    'ColumnR'     : [cero based list of result columns],  
+                    'ColumnF'     : [cero based list of float columns],  
+                    'ResCtrlFlat' : [cero based flat list of result & control],
                 },
             }
         d : dict
             Similar to 'do' but: 
-                - No uFile and no df dict
+                - No oc and df dict
                 - With the values given by the user
-                - Keys as in the GUI of the tab.
+                - Keys as in the GUI of the tab plus empty space.
         
         See parent class for more attributes.
 
@@ -2549,12 +2549,12 @@ class CorrA(BaseConfPanel):
         The Steps_Data_Files/Date-Section folder contains regular csv files with 
         the step by step data.
     
-        The Correlation Analysis section in output-file.umsap conteins the 
+        The Correlation Analysis section in output-file.umsap contains the 
         information about the calculations, e.g
 
         {
             'Correlation-Analysis : {
-                '20210324-165609': {
+                '20210324-165609 - bla': {
                     'V' : config.dictVersion,
                     'I' : self.d,
                     'CI': self.do,
@@ -2655,12 +2655,12 @@ class CorrA(BaseConfPanel):
         
         #region ----------------------------------------------> checkUserInput
         self.checkUserInput = {
-            self.cLuFile      : [self.uFile.tc, config.mFileBad],
-            self.cLiFile      : [self.iFile.tc, config.mFileBad],
-            self.cLTransMethod: [self.transMethod.cb, config.mOptionBad],
-            self.cLNormMethod : [self.normMethod.cb, config.mOptionBad],
+            self.cLuFile      : [self.uFile.tc,            config.mFileBad],
+            self.cLiFile      : [self.iFile.tc,            config.mFileBad],
+            self.cLTransMethod: [self.transMethod.cb,      config.mOptionBad],
+            self.cLNormMethod : [self.normMethod.cb,       config.mOptionBad],
             self.cLImputation : [self.imputationMethod.cb, config.mOptionBad],
-            self.cLCorr       : [self.corrMethod.cb, config.mOptionBad],
+            self.cLCorr       : [self.corrMethod.cb,       config.mOptionBad],
         }        
         #endregion -------------------------------------------> checkUserInput
     
@@ -2788,6 +2788,10 @@ class CorrA(BaseConfPanel):
             ----------
             event : wx.Event
                 Event information
+                
+            Returns
+            -------
+            bool
         """
         self.lbI.OnCopy('')
         self.lbO.OnPaste('')
@@ -2841,7 +2845,7 @@ class CorrA(BaseConfPanel):
                             l = [k]
                 #------------------------------> Last past
                 self.lbI.SelectList(l)
-                self.OnAdd('')    
+                self.OnAdd('fEvent')    
             else:
                 pass
         else:
@@ -3092,8 +3096,6 @@ class DataPrep(BaseConfPanel):
             Label for the Columns to Consider
         cLExcludeRow : str
             Label for the Exclude Row field
-        cLLenLongest : int
-            Length of the longest label in the panel.
         cLScoreCol : str
             Label for the Score Column field.
         cLScoreVal : str
@@ -3110,12 +3112,14 @@ class DataPrep(BaseConfPanel):
             Tooltip for the Score value field.
         cURL : str
             URL for the online help.
+        #------------------------------> Configuration to Run the Analysis
         checkUserInput : dict
             To check the user input in the right order. 
             See pane.BaseConfPanel.CheckInput for a description of the dict.
-        #------------------------------> Configuration to Run the Analysis
         cGaugePD : int
             Number of steps for the Progress Dialog.
+        cLLenLongest : int
+            Length of the longest label in the panel.
         cSection : str
             Name of the section. Default to config.nmProtProf.
         cTitlePD : str
@@ -3150,14 +3154,6 @@ class DataPrep(BaseConfPanel):
             Date-Time when starting an analysis.
         dateID : str
             Date - User given ID
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
         
         Notes
         -----
@@ -3211,14 +3207,14 @@ class DataPrep(BaseConfPanel):
         #------------------------------> Optional configuration
         self.cTTHelp = config.ttBtnHelp.format(config.urlDataPrep)
         #------------------------------> Label
-        self.cLScoreVal = getattr(self, 'cLScoreVal', config.lStScoreVal)
-        self.cLScoreCol = getattr(self, 'cLScoreCol', config.lStScoreCol)
-        self.cLExcludeRow = 'Exclude Rows'
+        self.cLScoreVal    = config.lStScoreVal
+        self.cLScoreCol    = config.lStScoreCol
+        self.cLExcludeRow  = 'Exclude Rows'
         self.cLColAnalysis = 'Columns to Consider'
         #------------------------------> Tooltips
-        self.cTTScoreVal = getattr(self, 'cTTScoreVal', config.ttStScoreVal)
-        self.cTTScore = getattr(self, 'cTTScore', config.ttStScore)
-        self.cTTExcludeRow = config.ttStExcludeRow
+        self.cTTScoreVal    = config.ttStScoreVal
+        self.cTTScore       = config.ttStScore
+        self.cTTExcludeRow  = config.ttStExcludeRow
         self.cTTColAnalysis = (
             "Columns on which to perform the Data Preparation.\ne.g. 8 10-12")
         #------------------------------> Needed by BaseConfPanel
@@ -3287,15 +3283,15 @@ class DataPrep(BaseConfPanel):
         
         #region ----------------------------------------------> checkUserInput
         self.checkUserInput = {
-            self.cLuFile      : [self.uFile.tc, config.mFileBad],
-            self.cLiFile      : [self.iFile.tc, config.mFileBad],
-            self.cLTransMethod: [self.transMethod.cb, config.mOptionBad],
-            self.cLNormMethod : [self.normMethod.cb, config.mOptionBad],
+            self.cLuFile      : [self.uFile.tc,            config.mFileBad],
+            self.cLiFile      : [self.iFile.tc,            config.mFileBad],
+            self.cLTransMethod: [self.transMethod.cb,      config.mOptionBad],
+            self.cLNormMethod : [self.normMethod.cb,       config.mOptionBad],
             self.cLImputation : [self.imputationMethod.cb, config.mOptionBad],
-            self.cLScoreVal   : [self.scoreVal.tc, config.mOneRealNum],
-            self.cLScoreCol   : [self.score.tc, config.mOneZPlusNum],
-            self.cLExcludeRow : [self.excludeRow.tc, config.mNZPlusNum],
-            self.cLColAnalysis: [self.colAnalysis.tc, config.mNZPlusNum],
+            self.cLScoreVal   : [self.scoreVal.tc,         config.mOneRealNum],
+            self.cLScoreCol   : [self.score.tc,            config.mOneZPlusNum],
+            self.cLExcludeRow : [self.excludeRow.tc,       config.mNZPlusNum],
+            self.cLColAnalysis: [self.colAnalysis.tc,      config.mNZPlusNum],
         }        
         #endregion -------------------------------------------> checkUserInput
         
@@ -3466,8 +3462,13 @@ class DataPrep(BaseConfPanel):
     #---
     
     #------------------------------> Run methods
-    def CheckInput(self):
-        """Check user input"""
+    def CheckInput(self) -> bool:
+        """Check user input
+        
+            Returns
+            -------
+            bool
+        """
         #region -------------------------------------------------------> Super
         if super().CheckInput():
             pass
@@ -3500,9 +3501,13 @@ class DataPrep(BaseConfPanel):
         return True
     #---
     
-    def PrepareRun(self):
-        """Set variable and prepare data for analysis."""
+    def PrepareRun(self) -> bool:
+        """Set variable and prepare data for analysis.
         
+            Returns
+            -------
+            bool
+        """
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdPrepare
         #endregion ------------------------------------------------------> Msg
@@ -3603,8 +3608,13 @@ class DataPrep(BaseConfPanel):
         return True
     #---
     
-    def RunAnalysis(self):
-        """Perform data preparation"""
+    def RunAnalysis(self) -> bool:
+        """Perform data preparation
+        
+            Returns
+            -------
+            bool
+        """
         #region --------------------------------------------> Data Preparation
         if self.DataPreparation():
             pass
@@ -3616,7 +3626,12 @@ class DataPrep(BaseConfPanel):
     #---
     
     def WriteOutput(self) -> bool:
-        """Write output """
+        """Write output 
+        
+            Returns
+            -------
+            bool
+        """
         #region --------------------------------------------------> Data Steps
         stepDict = {
             config.fnInitial.format('01', self.date): self.dfI,
@@ -3632,8 +3647,13 @@ class DataPrep(BaseConfPanel):
         return self.WriteOutputData(stepDict)
     #---
     
-    def RunEnd(self):
-        """Restart GUI and needed variables"""
+    def RunEnd(self) -> bool:
+        """Restart GUI and needed variables
+        
+            Returns
+            -------
+            bool
+        """
         #region ---------------------------------------> Dlg progress dialogue
         if self.msgError is None:
             #--> 
@@ -3683,8 +3703,6 @@ class DataPrep(BaseConfPanel):
 #------------------------------> Modules
 class ProtProf(BaseConfModPanel):
     """Creates the Proteome Profiling configuration tab.
-    
-        See Notes below for more details.
 
         Parameters
         ----------
@@ -3707,8 +3725,6 @@ class ProtProf(BaseConfModPanel):
             Label for the Exclude Protein field.
         cLGeneName : str
             Label for the Gene Name field.
-        cLLenLongest : int
-            Length of the longest label in the panel.
         cLRawI : str
             Label for the Intensity field.
         cLSample : str
@@ -3740,6 +3756,8 @@ class ProtProf(BaseConfModPanel):
             Data columns for the given condition and relevant point.
         cGaugePD : int
             Number of steps for the Progress Dialog.
+        cLLenLongest : int
+            Length of the longest label in the panel.
         cMainData : str
             Name of file containing the results in Steps_Data_File.
         cSection : str
@@ -3771,7 +3789,6 @@ class ProtProf(BaseConfModPanel):
                     "ScoreCol" : "Score column. Int",
                     "ExcludeP" : [List of columns to search for proteins to 
                                 exclude. List of int],
-                    "ColExtract": [List of columns to extract],
                     "ResCtrl": [List of columns containing the control and 
                                 experiments column numbers],
                     "Column": [Flat list of all column numbers with the 
@@ -3785,6 +3802,7 @@ class ProtProf(BaseConfModPanel):
                     "ExcludeP" : [list of int],
                     "ResCtrl": [],
                     "ResCtrlFlat": [ResCtrl as a flat list],
+                    "ColumnR : [Columns with the results] 
                     "ColumnF": [Columns that must contain only float numbers]
                 }
             },    
@@ -4238,8 +4256,13 @@ class ProtProf(BaseConfModPanel):
     #---
     
     #------------------------------> Run methods
-    def CheckInput(self):
-        """Check user input"""
+    def CheckInput(self) -> bool:
+        """Check user input
+
+            Returns
+            -------
+            bool
+        """
         #region -------------------------------------------------------> Super
         if super().CheckInput():
             pass
@@ -4292,9 +4315,13 @@ class ProtProf(BaseConfModPanel):
         return True
     #---
     
-    def PrepareRun(self):
-        """Set variable and prepare data for analysis."""
+    def PrepareRun(self) -> bool:
+        """Set variable and prepare data for analysis.
         
+            Returns
+            -------
+            bool
+        """
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdPrepare
         #endregion ------------------------------------------------------> Msg
@@ -4434,8 +4461,13 @@ class ProtProf(BaseConfModPanel):
         return True
     #---
     
-    def RunAnalysis(self):
-        """Calculate proteome profiling data"""
+    def RunAnalysis(self) -> bool:
+        """Calculate proteome profiling data
+        
+            Returns
+            -------
+            bool
+        """
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
@@ -4508,7 +4540,12 @@ class ProtProf(BaseConfModPanel):
     #---
     
     def WriteOutput(self) -> bool:
-        """Write output """
+        """Write output 
+        
+            Returns
+            -------
+            bool
+        """
         #region --------------------------------------------------> Data Steps
         stepDict = {
             config.fnInitial.format('01', self.date): self.dfI,
@@ -4820,23 +4857,156 @@ class ProtProf(BaseConfModPanel):
 
 
 class LimProt(BaseConfModPanel2):
-    """
+    """Configuration Pane for the Limited Proteolysis module.
 
         Parameters
         ----------
-        
+        parent: wx.Widget
+            Parent of the pane
+        dataI : dict or None
+            Initial data provided by the user in a previous analysis.
+            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
 
         Attributes
         ----------
+        name : str
+            Name of the pane. Default to config.npLimProt.
+        cURL : str
+            URL for the online help.
+        #------------------------------> Configuration
+        cLBeta: str
+            Label for the Beta value
+        cLGamma: str
+            Label for the Gamma value
+        cLSample: str
+            Label for the Samples
+        cLTheta: str
+            Label for the Theta value
+        cLThetaMax: str
+            Label for the Theta Max value
+        cOSample: list of str
+            Options for the Samples
+        cTTSample: str
+            Tooltip for the Samples  
+        #------------------------------> To Run Analysis
+        changeKey: list of str
+            Keys in self.do that must be turned to str.
+        checkUserInput : dict
+            To check the user input in the right order. 
+            See pane.BaseConfPanel.CheckInput for a description of the dict.
+        cColCtrlData : dict
+            Keys are control type and values methods to get the Ctrl and 
+            Data columns for the given condition and relevant point.
+        cGaugePD : int
+            Number of steps for the Progress Dialog.
+        cLLenLongest : int
+            Length of the longest label in the panel.
+        cMainData : str
+            Name of file containing the results in Steps_Data_File.
+        cSection : str
+            Name of the section. Default to config.nmLimProt.
+        cTitlePD : str
+            Name of the Progress Dialog window.
+        do: dict
+            Dictionary with checked user input. Keys are:
+            {
+                "iFile"      : "Path to input data file",
+                "uFile"      : "Path to umsap file.",
+                'seqFile'    : "Path to the sequence file",
+                'ID'         : 'Analysis ID',
+                "Cero"       : Boolean, how to treat cero values,
+                "TransMethod": "Transformation method",
+                "NormMethod" : "Normalization method",
+                "ImpMethod"  : "Imputation method",
+                "TargetProt" : 'Target Protein',
+                "ScoreVal"   : "Score value threshold",
+                'SeqLength'  : "Sequence length",
+                'Sample'     : 'Independent or dependent samples',
+                "Alpha"      : "Significance level",
+                "Beta"       : "Beta level',
+                'Gamma'      : "Gamma level",
+                'Theta'      : Theta value or None,
+                'Theta Max'  : Theta maximum,
+                "Lane"       : [List of lanes],
+                "Band"       : [List of bands],
+                "ControlL"   : "Control label",
+                "oc": {
+                    'SeqCol'   : Column of Sequences,
+                    "TargetProtCol" : Column of Proteins,
+                    "ScoreCol" : Score column,
+                    "ResCtrl": [List of columns containing the control and 
+                                experiments column numbers],
+                    "Column": [Flat list of all column numbers with the 
+                              following order: SeqCol, TargetProtCol, 
+                              ScoreColRes & Control]
+                },
+                "df": { Column numbers in the pd.df created from the input file.
+                    "SeqCol" : 0,
+                    "TargetProtCol": 1,
+                    "ScoreCol" : 2,
+                    "ResCtrl": [],
+                    "ResCtrlFlat": [ResCtrl as a flat list],
+                    "ColumnR : [Columns with the results] 
+                    "ColumnF": [Columns that must contain only float numbers]
+                },
+                "dfo" : {
+                    'NC' : [Columns for the N and C residue numbers in the 
+                        output df],
+                    'NCF' : [Columns for the Nnat and Cnat residue numbers in 
+                        the output df],
+                },
+            },    
+        d: dict
+            Dictionary with the user input. Keys are labels in the panel plus:
+            {
+                config.lStLimProtLane           : [list of lanes],
+                config.lStLimProtBand           : [list of bands],
+                f"Control {config.lStCtrlName}" : "Control Name",
+            }
+            
+        See Parent classes for more aatributes.
         
+        Notes
+        -----
+        Running the analysis results in the creation of:
+        
+        - Parent Folder/
+            - Input_Data_Files/
+            - Steps_Data_Files/20220104-214055_Limited Proteolysis/
+            - output-file.umsap
+        
+        The Input_Data_Files folder contains the original data files. These are 
+        needed for data visualization, running analysis again with different 
+        parameters, etc.
+        The Steps_Data_Files/Date-Section folder contains regular csv files with 
+        the step by step data.
+    
+        The Limited Proteolysis section in output-file.umsap conteins the 
+        information about the calculations, e.g
 
-        Raises
-        ------
+        {
+            'Limited Proteolysis : {
+                '20210324-165609': {
+                    'V' : config.dictVersion,
+                    'I' : self.d,
+                    'CI': self.do,
+                    'DP': {
+                        'dfS' : pd.DataFrame with initial data as float and
+                                after discarding values by score.
+                        'dfT' : pd.DataFrame with transformed data.
+                        'dfN' : pd.DataFrame with normalized data.
+                        'dfIm': pd.DataFrame with imputed data.
+                    }
+                    'R' : pd.DataFrame (dict) with the calculation results.
+                }
+            }
+        }
         
-
-        Methods
-        -------
+        The result data frame has the following structure:
         
+        Sequence Score Nterm Cterm NtermF CtermF Delta Band1 ... BandN
+        Sequence Score Nterm Cterm NtermF CtermF Delta Lane1 ... LaneN
+        Sequence Score Nterm Cterm NtermF CtermF Delta Ptost ... Ptost
     """
     #region -----------------------------------------------------> Class setup
     name = config.npLimProt
@@ -4929,25 +5099,25 @@ class LimProt(BaseConfModPanel2):
         
         #region ----------------------------------------------> checkUserInput
         self.checkUserInput = {
-            self.cLuFile       : [self.uFile.tc, config.mFileBad],
-            self.cLiFile       : [self.iFile.tc, config.mFileBad],
-            self.cLSeqFile     : [self.seqFile.tc, config.mFileBad],
-            self.cLTransMethod : [self.transMethod.cb, config.mOptionBad],
-            self.cLNormMethod  : [self.normMethod.cb, config.mOptionBad],
-            self.cLImputation  : [self.imputationMethod.cb, config.mOptionBad],
-            self.cLTargetProt  : [self.targetProt.tc, config.mValueBad],
-            self.cLScoreVal    : [self.scoreVal.tc, config.mOneRealNum],
-            self.cLSeqLength   : [self.seqLength.tc, config.mOneZPlusNum],
-            self.cLSample      : [self.sample.cb, config.mOptionBad],
-            self.cLAlpha       : [self.alpha.tc, config.mOne01Num],
-            self.cLBeta        : [self.beta.tc, config.mOne01Num],
-            self.cLGamma       : [self.gamma.tc, config.mOne01Num],
-            self.cLTheta       : [self.theta.tc, config.mOneZPlusNum],
-            self.cLThetaMax    : [self.thetaMax.tc, config.mOneZPlusNum],
-            self.cLSeqCol      : [self.seqCol.tc, config.mOneZPlusNum],
-            self.cLDetectedProt: [self.detectedProt.tc, config.mOneZPlusNum],
-            self.cLScoreCol    : [self.score.tc, config.mOneZPlusNum],
-            self.cLResControl  : [self.tcResults, config.mResCtrl]
+            self.cLuFile       : [self.uFile.tc,           config.mFileBad],
+            self.cLiFile       : [self.iFile.tc,           config.mFileBad],
+            self.cLSeqFile     : [self.seqFile.tc,         config.mFileBad],
+            self.cLTransMethod : [self.transMethod.cb,     config.mOptionBad],
+            self.cLNormMethod  : [self.normMethod.cb,      config.mOptionBad],
+            self.cLImputation  : [self.imputationMethod.cb,config.mOptionBad],
+            self.cLTargetProt  : [self.targetProt.tc,      config.mValueBad],
+            self.cLScoreVal    : [self.scoreVal.tc,        config.mOneRealNum],
+            self.cLSeqLength   : [self.seqLength.tc,       config.mOneZPlusNum],
+            self.cLSample      : [self.sample.cb,          config.mOptionBad],
+            self.cLAlpha       : [self.alpha.tc,           config.mOne01Num],
+            self.cLBeta        : [self.beta.tc,            config.mOne01Num],
+            self.cLGamma       : [self.gamma.tc,           config.mOne01Num],
+            self.cLTheta       : [self.theta.tc,           config.mOneZPlusNum],
+            self.cLThetaMax    : [self.thetaMax.tc,        config.mOneZPlusNum],
+            self.cLSeqCol      : [self.seqCol.tc,          config.mOneZPlusNum],
+            self.cLDetectedProt: [self.detectedProt.tc,    config.mOneZPlusNum],
+            self.cLScoreCol    : [self.score.tc,           config.mOneZPlusNum],
+            self.cLResControl  : [self.tcResults,          config.mResCtrl]
         }        
         #endregion -------------------------------------------> checkUserInput
 
@@ -5187,8 +5357,13 @@ class LimProt(BaseConfModPanel2):
     #---
     
     #------------------------------> Run Methods
-    def CheckInput(self):
-        """Check user input"""
+    def CheckInput(self) -> bool:
+        """Check user input
+        
+            Returns
+            -------
+            bool
+        """
         #region -------------------------------------------------------> Super
         if super().CheckInput():
             pass
@@ -5222,8 +5397,13 @@ class LimProt(BaseConfModPanel2):
         return True
     #---
     
-    def PrepareRun(self):
-        """Set variable and prepare data for analysis."""
+    def PrepareRun(self) -> bool:
+        """Set variable and prepare data for analysis.
+        
+            Returns
+            -------
+            bool
+        """
         
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdPrepare
@@ -5379,20 +5559,12 @@ class LimProt(BaseConfModPanel2):
         return True
     #---
     
-    def ReadInputFiles(self):
-        """
-    
-            Parameters
-            ----------
-            
-    
+    def ReadInputFiles(self) -> bool:
+        """Read the input files.
+        
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> Super
         if super().ReadInputFiles():
@@ -5423,8 +5595,13 @@ class LimProt(BaseConfModPanel2):
         return True
     #---
     
-    def RunAnalysis(self):
-        """ Perform the equivalence tests """
+    def RunAnalysis(self) -> bool:
+        """ Perform the equivalence tests 
+
+            Returns
+            -------
+            bool
+        """
         #region ---------------------------------------------------------> Msg
         msgPrefix = config.lPdRun
         #endregion ------------------------------------------------------> Msg
@@ -5515,7 +5692,12 @@ class LimProt(BaseConfModPanel2):
     #---
     
     def WriteOutput(self) -> bool:
-        """Write output """
+        """Write output 
+        
+            Returns
+            -------
+            bool
+        """
         #region --------------------------------------------------> Data Steps
         stepDict = {
             config.fnInitial.format('01', self.date)    : self.dfI,
@@ -5573,19 +5755,22 @@ class LimProt(BaseConfModPanel2):
     def CalcOutData(
         self, bN: str,  lN: str, colC: list[int], colD: list[int],
         ) -> bool:
-        """
+        """Performed the tost test
     
             Parameters
             ----------
-            
+            bN: str
+                Band name
+            lN : str
+                Lane name
+            colC : list int
+                Column numbers of the control
+            colD : list int
+                Column numbers of the gel spot
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ----------------------------------------------> Delta and TOST
         a = dtsStatistic.tost(
@@ -5667,14 +5852,6 @@ class ProtProfResControlExp(ResControlExpConfBase):
             Unique name of the panel
         controlVal : str
             Value of Control Type in the previous Create Field event
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
     """
     #region -----------------------------------------------------> Class setup
     name = config.npResControlExpProtProf
@@ -5816,7 +5993,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnControl(self, event) -> Literal[True]:
+    def OnControl(self, event: wx.CommandEvent) -> Literal[True]:
         """Enable/Disable the Control name when selecting control type
     
             Parameters
@@ -5844,7 +6021,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         return True
     #---
     
-    def OnCreate(self, event) -> bool:
+    def OnCreate(self, event: wx.CommandEvent) -> bool:
         """Create the widgets in the white panel
     
             Parameters
@@ -6272,14 +6449,6 @@ class LimProtResControlExp(ResControlExpConfBase):
             Error message when the number of bands and/or lanes is not given.
         name : str
             Name of the panel
-    
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
     """
     #region -----------------------------------------------------> Class setup
     name = config.npResControlExpLimProt

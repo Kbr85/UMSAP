@@ -247,6 +247,7 @@ lBtnRun         = 'Start Analysis'
 lBtnDataFile    = 'Data'
 lBtnOutFile     = 'Output File'
 lBtnUFile       = 'UMSAP'
+lBtnSeqFile     = 'Sequences'
 lBtnTypeResCtrl = 'Type Values'
 #------------------------------> wx.ListCtrl
 lLCtrlColNameI = ['#', 'Name']
@@ -295,9 +296,10 @@ lPdEllapsed = 'Ellapsed time: '
 
 
 #region ---------------------------------------------------------------> Hints
-hTcDataFile = f"Path to the {lBtnDataFile}"
-hTcOutFile  = f"Path tot the {lBtnOutFile}"
-hTcUFile    = f"Path tot the {lBtnUFile}"
+hTcDataFile = f"Path to the {lBtnDataFile} file"
+hTcOutFile  = f"Path to the {lBtnOutFile} file"
+hTcUFile    = f"Path to the {lBtnUFile} file"
+hTcSeqFile  = f"Path to the {lBtnSeqFile} file"
 hTcId       = 'e.g. HIV inhibitor'
 #endregion ------------------------------------------------------------> Hints
 
