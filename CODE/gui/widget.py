@@ -34,25 +34,17 @@ class ResControl():
 
         Attributes
         ----------
-        cLResControl : str
-            Label for the wx.StaticText. Default to config.lStResultCtrl.
         btnResultsW: wx.Button 
         stResults: wx.StaticText
         tcResults: wx.TextCtrl
-        
-        Notes
-        -----
-        Several configuration options are taken from parent.
-        Used as parent class.
     """
     #region -----------------------------------------------------> Class setup
-    
+
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window):
+    def __init__(self, parent: wx.Window) -> None:
         """ """
-        self.cLResControl = config.lStResultCtrl
         #region -----------------------------------------------------> Widgets
         self.tcResults = wx.TextCtrl(
             parent    = parent,
@@ -64,7 +56,7 @@ class ResControl():
 
         self.stResults = wx.StaticText(
             parent = parent,
-            label  = self.cLResControl,
+            label  = config.lStResultCtrl,
             style  = wx.ALIGN_RIGHT
         )
 
@@ -118,6 +110,7 @@ class ResControl():
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    #------------------------------> Event Methods
     def OnResW(self, event):
         """ Open the window to write the results columns. """
         #------------------------------> 
