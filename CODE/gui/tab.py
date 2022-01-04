@@ -23,8 +23,8 @@ import wx.lib.agw.aui as aui
 import dat4s_core.data.method as dtsMethod
 
 import config.config as config
-import gui.pane as pane
 import gui.dtscore as dtscore
+import gui.pane as pane
 
 if config.typeCheck:
     from pathlib import Path
