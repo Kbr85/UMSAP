@@ -434,6 +434,7 @@ mFileRead = 'An error occured when reading file:\n{}'
 mFileColNum = (
     "In addition, the values cannot be bigger than the total number of columns "
     "in the {}.")
+mUMSAPFile = 'Select the UMSAP File'
 #------------------------------> Not empty
 mNotEmpty = "Please select a value for {}."
 #------------------------------> Pandas

@@ -18,8 +18,8 @@
 from typing import Optional, Union
 
 import dat4s_core.data.check as dtsCheck
-import dat4s_core.exception.exception as dtsException
 import dat4s_core.data.method as dtsMethod
+import dat4s_core.exception.exception as dtsException
 
 import config.config as config
 

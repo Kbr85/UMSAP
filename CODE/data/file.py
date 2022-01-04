@@ -20,17 +20,15 @@ from typing import Optional, Literal
 import pandas as pd
 import wx
 
-import dat4s_core.exception.exception as dtsException
-import dat4s_core.data.method as dtsMethod
 import dat4s_core.data.file as dtsFF
+import dat4s_core.data.method as dtsMethod
+import dat4s_core.exception.exception as dtsException
 
 import config.config as config
 
 if config.typeCheck:
-    #------------------------------> 
-    from pathlib import Path
-    #------------------------------> 
     import gui.dtscore as dtscore
+    from pathlib import Path
 #endregion ----------------------------------------------------------> Imports
 
 #region -------------------------------------------------------------> Classes

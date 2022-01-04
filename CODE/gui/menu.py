@@ -20,11 +20,12 @@ from typing import Literal, Optional
 
 import wx
 
-import dat4s_core.gui.wx.window as dtsWindow
+import dat4s_core.gui.wx.method as dtsGwxMethod
 
 import config.config as config
-import gui.window as window
+import gui.dtscore as dtscore
 import gui.method as method
+import gui.window as window
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -428,13 +429,22 @@ class Utility(wx.Menu, MenuMethods):
         #endregion ---------------------------------------------------> Window
         
         #region ---------------------------------------------------> Get fileP
-        with dtsWindow.FileSelectDialog(
-            'openO', config.elUMSAP, parent=win,
-        ) as dlg:
-            if dlg.ShowModal() == wx.ID_OK:
-                fileP = Path(dlg.GetPath())
-            else:
+        try:
+            fileP = dtsGwxMethod.GetFilePath(
+                'openO', ext=config.elUMSAP, parent=win, msg=config.mUMSAPFile
+            )
+            if fileP is None:
                 return False
+            else:
+                fileP = Path(fileP[0])
+        except Exception as e:      
+            dtscore.Notification(
+                'errorF', 
+                msg        = config.mFileSelector,
+                tException = e,
+                parent     = win,
+            )
+            return False
         #endregion ------------------------------------------------> Get fileP
         
         #region ---------------------------------------------------> Load file
