@@ -3804,6 +3804,14 @@ class LimProtPlot(BaseWindowProteolysis):
         
         self.date, menuData = self.SetDateMenuDate()
         
+        self.clearMethod = {
+            'Peptide'  : self.OnClearPept,
+            'Fragment' : self.OnClearFrag,
+            'Gel Spot' : self.OnClearGel,
+            'Band/Lane': self.OnClearBL,
+            'All'      : self.OnClearAll,
+        }
+        
         super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
 
@@ -5272,6 +5280,24 @@ class LimProtPlot(BaseWindowProteolysis):
      
         dlg.Destroy()
         return True	
+    #---
+    
+    def OnClearSelection(self, tType):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.clearMethod[tType]()
     #---
     
     def OnClearPept(self, plot=True):

@@ -133,6 +133,7 @@ ntDataPrep = "DataPrepTab"
 ntCorrA    = 'CorrATab'
 ntLimProt  = 'LimProtTab'
 ntProtProf = 'ProtProfTab'
+ntTarProt  = 'TarProtTab'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'

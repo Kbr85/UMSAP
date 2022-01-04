@@ -29,8 +29,10 @@ import config.config as config
 
 
 #region -------------------------------------------------------------> Methods
-def StrSetMessage(start, end, link='\n\nFurther details:\n'):
-    """Default link for message in Progress Dialog
+def StrSetMessage(
+    start: str, end: str, link: str='\n\nFurther details:\n'
+    )-> str:
+    """Default link for message in Progress Dialog.
 
         Parameters
         ----------

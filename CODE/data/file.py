@@ -135,7 +135,7 @@ class UMSAPFile():
         self, dlg: Optional['dtscore.ProgressDialog']=None,
         ) -> Literal[True]:
         """Prepare data for each section in the file and for the CustomTreeCtrl
-            in the control window. See Notes.
+            in the control window.
     
             Parameters
             ----------
