@@ -24,28 +24,28 @@ import numpy as np
 import pandas as pd
 import requests
 from scipy import stats
+
 import wx
 import wx.adv as adv
-from wx.core import EVT_LIST_END_LABEL_EDIT
 import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
 
 import dat4s_core.data.check as dtsCheck
 import dat4s_core.data.file as dtsFF
-import dat4s_core.generator.generator as dtsGenerator
 import dat4s_core.data.method as dtsMethod
 import dat4s_core.data.statistic as dtsStatistic
+import dat4s_core.generator.generator as dtsGenerator
 import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
 import data.method as dmethod
-import gui.menu as menu
-import gui.tab as tab
 import gui.dtscore as dtscore
+import gui.menu as menu
 import gui.method as method
 import gui.pane as pane
+import gui.tab as tab
 import gui.window as window
 from data.file import UMSAPFile
 #endregion ----------------------------------------------------------> Imports
@@ -156,8 +156,7 @@ class BaseWindow(wx.Frame):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: Optional[wx.Window]=None, 
-        menuData: Optional[dict]=None,
+        self, parent: Optional[wx.Window]=None, menuData: Optional[dict]=None,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -202,6 +201,10 @@ class BaseWindow(wx.Frame):
             ----------
             event: wx.CloseEvent
                 Information about the event
+                
+            Returns
+            -------
+            bool
         """
         #region -------------------------------------------> Reduce win number
         try:
@@ -263,6 +266,10 @@ class BaseWindow(wx.Frame):
     def OnExportPlotData(self) -> Literal[True]:
         """ Export data to a csv file 
         
+            Returns
+            -------
+            bool
+        
             Notes
             -----
             It requires child class to define self.dateC to catch the current
@@ -296,6 +303,10 @@ class BaseWindow(wx.Frame):
     
     def OnExportFilteredData(self) -> Literal[True]:
         """ Export filtered data to a csv file. 
+        
+            Returns
+            -------
+            bool
         
             Notes
             -----
@@ -332,7 +343,8 @@ class BaseWindow(wx.Frame):
     
             Parameters
             ----------
-            
+            tDate: str
+                Date + ID to find the analysis in the umsap file.
     
             Returns
             -------
@@ -343,17 +355,14 @@ class BaseWindow(wx.Frame):
             
         """
         CheckDataPrep(
-            self,
-            f'{self.cSection} - {tDate}', 
-            self.data[tDate]['DP']
+            self,f'{self.cSection} - {tDate}', self.data[tDate]['DP']
         )
+        
         return True
     #---
     
     def OnZoomResetOne(self) -> bool:
         """Reset the zoom of the plot.
-        
-            See Notes below for more information
     
             Returns
             -------
@@ -380,7 +389,9 @@ class BaseWindow(wx.Frame):
     def OnZoomResetMany(self) -> bool:
         """Reset all the plots in the window.
         
-            See Notes for more details
+            Returns
+            -------
+            bool
     
             Notes
             -----
@@ -407,6 +418,10 @@ class BaseWindow(wx.Frame):
     
     def OnSavePlotOne(self) -> bool:
         """Save an image of the plot. Override as needed. 
+        
+            Returns
+            -------
+            bool
         
             Notes
             -----
@@ -499,6 +514,10 @@ class BaseWindowPlot(BaseWindow):
             ----------
             event: wx.CloseEvent
                 Information about the event
+                
+            Returns
+            -------
+            bool
         """
         #region -----------------------------------------------> Update parent
         self.parent.UnCheckSection(self.cSection, self)		
@@ -775,12 +794,28 @@ class BaseWindowProteolysis(BaseWindow):
 
         Parameters
         ----------
+        parent : wx.Window or None
+            Parent of the window. Default is None.
+        menuData : dict or None
+            Data to build the Tool menu of the window. Default is None.
+            See Child class for more details.
         
-
-        Notes
-        -----
-        
-        
+        Attributes
+        ----------
+        cHSearch: str
+            Hint for the wx.SearchCtrl
+        cLCol: str
+            Label for the columns in the wx.ListCtrl
+        cLPaneList: str
+            Label for the pane with the wx.ListCtrl & wx.SearchCtrl
+        cLPaneMain: str
+            Label for the main pane
+        cLPanePlot: str
+            Label for the secondary plot pane
+        cLPaneText: str
+            Label for the Text pane
+        cSCol: tuple(int, int)
+            Size for the columns in hte wx.ListCtrl
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
@@ -941,8 +976,9 @@ class BaseWindowProteolysis(BaseWindow):
         return True
     #---
     
-    def OnListSelect(self, event):
-        """
+    def OnListSelect(self, event: wx.CommandEvent) -> bool:
+        """Method triggered by selecting a row in the wx.ListCtrl. Override as 
+            needed.
     
             Parameters
             ----------
@@ -952,11 +988,7 @@ class BaseWindowProteolysis(BaseWindow):
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         return True
     #---
@@ -1042,13 +1074,17 @@ class MainWindow(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ----------------------------------------------------> Menu methods
-    def OnTabClose(self, event: wx.Event) -> Literal[True]:
+    def OnTabClose(self, event: wx.Event) -> bool:
         """Make sure to show the Start Tab if no other tab exists
         
             Parameters
             ----------
             event : wx.aui.Event
                 Information about the event
+                
+            Returns
+            -------
+            bool
         """
         #------------------------------> Close Tab
         event.Skip()
@@ -1079,7 +1115,7 @@ class MainWindow(BaseWindow):
         return True
     #---
 
-    def CreateTab(self, name: str, dataI: Optional[dict]=None) -> Literal[True]:
+    def CreateTab(self, name: str, dataI: Optional[dict]=None) -> bool:
         """Create a tab.
         
             Parameters
@@ -1088,6 +1124,10 @@ class MainWindow(BaseWindow):
                 One of the values in config.name for tabs
             dataI: dict or None
                 Initial data for the tab
+                
+            Returns
+            -------
+            bool
         """
         #region -----------------------------------------------------> Get tab
         win = self.FindWindowByName(name)
@@ -1125,13 +1165,17 @@ class MainWindow(BaseWindow):
         return True
     #---
 
-    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
+    def OnClose(self, event: wx.CloseEvent) -> bool:
         """Destroy window and set config.winMain to None.
     
             Parameters
             ----------
             event: wx.CloseEvent
                 Information about the event
+                
+            Returns
+            -------
+            bool
         """
         #------------------------------> 
         self.Destroy()
@@ -1233,9 +1277,13 @@ class CorrAPlot(BaseWindowPlot):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def WinPos(self) -> Literal[True]:
+    def WinPos(self) -> bool:
         """Set the position on the screen and adjust the total number of
             shown windows.
+            
+            Returns
+            -------
+            bool
         """
         #region --------------------------------------------------------> Super
         info = super().WinPos()
@@ -1251,15 +1299,19 @@ class CorrAPlot(BaseWindowPlot):
         return True
     #---
 
-    def Draw(self, tDate: str, col: Literal['Name', 'Number']) -> Literal[True]:
+    def Draw(self, tDate: str, col: Literal['Name', 'Number']) -> bool:
         """ Plot data from a given date.
         
             Paramenters
             -----------
             tDate : str
-                A date in the section e.g. 20210129-094504
+                A date in the section e.g. '20210129-094504 - bla'
             col: One of Name or Number
                 Set the information to display in the axis
+                
+            Returns
+            -------
+            bool
         """
         #region -------------------------------------------------> Update date
         self.dateC = tDate
@@ -1293,9 +1345,7 @@ class CorrAPlot(BaseWindowPlot):
         return True
     #---
 
-    def SetAxis(
-        self, tDate: str, col: Literal['Name', 'Number']
-        ) -> Literal[True]:
+    def SetAxis(self, tDate: str, col: Literal['Name', 'Number']) -> bool:
         """ General details of the plot area 
         
             Parameters
@@ -1304,6 +1354,10 @@ class CorrAPlot(BaseWindowPlot):
                 A date in the section e.g. 20210129-094504
             col: One of Name or Number
                 Set the information to display in the axis
+                
+            Returns
+            -------
+            bool
         """
         #region --------------------------------------------------------> Grid
         self.plot.axes.grid(True)		
@@ -1350,13 +1404,17 @@ class CorrAPlot(BaseWindowPlot):
         return True
     #---
 
-    def UpdateStatusBar(self, event) -> Literal[True]:
+    def UpdateStatusBar(self, event) -> bool:
         """Update the statusbar info
     
             Parameters
             ----------
             event: matplotlib event
                 Information about the event
+                
+            Returns
+            -------
+            bool
         """
         #region ---------------------------------------------------> Variables
         tDate = self.statusbar.GetStatusText(1)
@@ -2458,9 +2516,13 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return (date, menuData)
     #---
     
-    def WinPos(self) -> Literal[True]:
+    def WinPos(self) -> bool:
         """Set the position on the screen and adjust the total number of
             shown windows.
+            
+            Returns
+            -------
+            bool
         """
         #region ---------------------------------------------------> Variables
         info = super().WinPos()
@@ -3531,8 +3593,13 @@ class ProtProfPlot(BaseWindowNPlotLT):
         )
     #---
     
-    def OnSavePlot(self) -> Literal[True]:
-        """ Export all plots to a pdf image"""
+    def OnSavePlot(self) -> bool:
+        """ Export all plots to a pdf image
+        
+            Returns
+            -------
+            bool
+        """
         #region --------------------------------------------------> Dlg window
         dlg = dtsWindow.DirSelectDialog(parent=self)
         #endregion -----------------------------------------------> Dlg window
@@ -3803,6 +3870,14 @@ class LimProtPlot(BaseWindowProteolysis):
         self.peptide       = None
         
         self.date, menuData = self.SetDateMenuDate()
+        
+        self.clearMethod = {
+            'Peptide'  : self.OnClearPept,
+            'Fragment' : self.OnClearFrag,
+            'Gel Spot' : self.OnClearGel,
+            'Band/Lane': self.OnClearBL,
+            'All'      : self.OnClearAll,
+        }
         
         super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
@@ -5272,6 +5347,24 @@ class LimProtPlot(BaseWindowProteolysis):
      
         dlg.Destroy()
         return True	
+    #---
+    
+    def OnClearSelection(self, tType):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.clearMethod[tType]()
     #---
     
     def OnClearPept(self, plot=True):

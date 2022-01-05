@@ -33,24 +33,30 @@ class UmsapApp(wx.App):
     """Start the UMSAP app"""
 
     #region ----------------------------------------------> Overridden methods
-    def OnInit(self):
-        """ Initialize the app """
-
-        #region ------------------------------------------------> SplashScreen
+    def OnInit(self) -> bool:
+        """Initialize the app
+        
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
         cOS = platform.system()
-        #--> Set location of splash image
         root = str(Path(__file__).parent.parent)
+        #------------------------------> image_loc
         if cOS == 'Darwin':
             if DEVELOPMENT:
-                image_loc = root + '/Resources/IMAGES/SPLASHSCREEN/splash.png'
+                image_loc = f'{root}/Resources/IMAGES/SPLASHSCREEN/splash.png'
             else:
                 image_loc = (
-                    root +
-                  '/UMSAP.app/Contents/Resources/IMAGES/SPLASHSCREEN/splash.png'
+                    f'{root}'
+                    f'/UMSAP.app/Contents/Resources/IMAGES/SPLASHSCREEN/splash.png'
                 )
         else:
-            image_loc = root + '/Resources/IMAGES/SPLASHSCREEN/splash.png'
-        #--> Launch splash window
+            image_loc = f'{root}/Resources/IMAGES/SPLASHSCREEN/splash.png'
+        #endregion ------------------------------------------------> Variables
+
+        #region ------------------------------------------------> SplashScreen
         SplashWindow(image_loc)
         #endregion ---------------------------------------------> SplashScreen
 
@@ -61,7 +67,7 @@ class UmsapApp(wx.App):
 
 
 class SplashWindow(wx.adv.SplashScreen):
-    """ Create splash screen 
+    """Create the Splash Screen 
     
         Parameters
         ----------
@@ -69,8 +75,8 @@ class SplashWindow(wx.adv.SplashScreen):
             Path to the image to use in the splash window
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, imgPath):
-        """		"""
+    def __init__(self, imgPath: str) -> None:
+        """"""
         #region -----------------------------------------------> Initial setup
         super().__init__(
             wx.Bitmap(imgPath, type=wx.BITMAP_TYPE_PNG), 
@@ -91,7 +97,7 @@ class SplashWindow(wx.adv.SplashScreen):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnClose(self, event):
+    def OnClose(self, event) -> bool:
         """Finish app configuration (parameters that need a running wx.App) & 
             launch main window
 

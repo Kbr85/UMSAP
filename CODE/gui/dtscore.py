@@ -20,17 +20,19 @@ from typing import Optional, Literal
 
 import wx
 
-import dat4s_core.gui.wx.window as dtsWindow
-import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.data.method as dtsMethod
+import dat4s_core.gui.wx.widget as dtsWidget
+import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------------> Methods
-def StrSetMessage(start, end, link='\n\nFurther details:\n'):
-    """Default link for message in Progress Dialog
+def StrSetMessage(
+    start: str, end: str, link: str='\n\nFurther details:\n'
+    )-> str:
+    """Default link for message in Progress Dialog.
 
         Parameters
         ----------

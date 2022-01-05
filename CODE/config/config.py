@@ -11,13 +11,13 @@
 # ------------------------------------------------------------------------------
 
 
-"""Configuration parameters of the app """
+"""Configuration parameters of the app"""
 
 
 #region -------------------------------------------------------------> Imports
 import platform
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     import data.file as file
@@ -29,16 +29,16 @@ if TYPE_CHECKING:
 development = True # Track state, development (True) or production (False)
 
 version     = '2.2.0 (beta)' # String to write in the output files
-software    = 'UMSAP'
+software    = 'UMSAP' # Software short name
 softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
 dictVersion = { # dict for directly write into output files
     'Version': version,
 }
 
 cOS = platform.system() # Current operating system
-cwd = Path(__file__)
+cwd = Path(__file__)    # Config file path
 
-obj: 'file.UMSAPFile' # To load UMSAP file
+obj: Optional['file.UMSAPFile'] = None # To reload UMSAP file
 
 typeCheck = TYPE_CHECKING
 #endregion -----------------------------------------------> General parameters
@@ -52,7 +52,7 @@ if cOS == 'Darwin':
         root = cwd.parent.parent.parent
     else:
         root = cwd.parent.parent
-    res = root / 'Resources'
+    res = root / 'Resources'  # Path to the Resources folder
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
     #------------------------------> Statusbar split size
@@ -133,6 +133,7 @@ ntDataPrep = "DataPrepTab"
 ntCorrA    = 'CorrATab'
 ntLimProt  = 'LimProtTab'
 ntProtProf = 'ProtProfTab'
+ntTarProt  = 'TarProtTab'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
@@ -233,7 +234,6 @@ urlCorrA    = f"{urlTutorial}/correlation-analysis"
 urlLimProt  = f"{urlTutorial}/limited-proteolysis"
 urlProtProf = f"{urlTutorial}/proteome-profiling"
 urlDataPrep = f"{urlTutorial}/data-preparation"
-
 #endregion --------------------------------------------------------------- URL
 
 
@@ -247,6 +247,7 @@ lBtnRun         = 'Start Analysis'
 lBtnDataFile    = 'Data'
 lBtnOutFile     = 'Output File'
 lBtnUFile       = 'UMSAP'
+lBtnSeqFile     = 'Sequences'
 lBtnTypeResCtrl = 'Type Values'
 #------------------------------> wx.ListCtrl
 lLCtrlColNameI = ['#', 'Name']
@@ -295,9 +296,10 @@ lPdEllapsed = 'Ellapsed time: '
 
 
 #region ---------------------------------------------------------------> Hints
-hTcDataFile = f"Path to the {lBtnDataFile}"
-hTcOutFile  = f"Path tot the {lBtnOutFile}"
-hTcUFile    = f"Path tot the {lBtnUFile}"
+hTcDataFile = f"Path to the {lBtnDataFile} file"
+hTcOutFile  = f"Path to the {lBtnOutFile} file"
+hTcUFile    = f"Path to the {lBtnUFile} file"
+hTcSeqFile  = f"Path to the {lBtnSeqFile} file"
 hTcId       = 'e.g. HIV inhibitor'
 #endregion ------------------------------------------------------------> Hints
 
@@ -386,8 +388,6 @@ oSamples = {
     'Independent Samples': 'i',
     'Paired Samples': 'p',
 }
-
-
 oCorrectP = {
     ''                     : '',
     'None'                 : 'None',
@@ -407,8 +407,6 @@ oControlTypeProtProf = {
     'OCR'  : 'One Control per Row',
     'Ratio': oIntensities['RatioI'],
 }
-
-
 #endregion ----------------------------------------------------------> Options
 
 
@@ -438,6 +436,7 @@ mFileRead = 'An error occured when reading file:\n{}'
 mFileColNum = (
     "In addition, the values cannot be bigger than the total number of columns "
     "in the {}.")
+mUMSAPFile = 'Select the UMSAP File'
 #------------------------------> Not empty
 mNotEmpty = "Please select a value for {}."
 #------------------------------> Pandas

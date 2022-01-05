@@ -21,7 +21,7 @@ from typing import Optional
 
 import wx
 
-import dat4s_core.gui.wx.menu as dtsMenu
+import dat4s_core.gui.wx.method as dtsGwxMethod
 
 import config.config as config
 import data.file as file
@@ -30,8 +30,10 @@ import gui.window as window
 #endregion ----------------------------------------------------------> Imports
 
 
-def LoadUMSAPFile(fileP: Optional[Path]=None, win: Optional[wx.Window]=None, 
-    shownSection: Optional[list[str]]=None) -> bool:
+def LoadUMSAPFile(
+    fileP: Optional[Path]=None, win: Optional[wx.Window]=None, 
+    shownSection: Optional[list[str]]=None
+    ) -> bool:
     """Load an UMSAP File either from Read UMSAP File menu, LoadResults
         method in Tab or Update File Content menu.
 
@@ -43,7 +45,7 @@ def LoadUMSAPFile(fileP: Optional[Path]=None, win: Optional[wx.Window]=None,
         win : wx.Window or None
             If called from menu it is used to center the Select file dialog.
             Default is None.
-        shownSection : list of str
+        shownSection : list of str or None
             List with the name of all checked sections in File Control window.
             
         Return
@@ -54,13 +56,13 @@ def LoadUMSAPFile(fileP: Optional[Path]=None, win: Optional[wx.Window]=None,
     if fileP is None:
         try:
             #------------------------------> Get File
-            filePdlg = dtsMenu.GetFilePath('openO', ext=config.elUMSAP)
+            filePdlg = dtsGwxMethod.GetFilePath(
+                'openO', ext=config.elUMSAP, parent=win, msg=config.mUMSAPFile,
+            )
             #------------------------------> Set Path
             if filePdlg is None:
-                #------------------------------> No file selected
                 return False
             else:
-                #------------------------------> Set Path
                 tFileP = Path(filePdlg[0])
         except Exception as e:      
             dtscore.Notification(

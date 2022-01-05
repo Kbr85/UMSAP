@@ -18,21 +18,17 @@
 from typing import Optional, Literal
 
 import pandas as pd
-
 import wx
 
-import dat4s_core.exception.exception as dtsException
-import dat4s_core.data.method as dtsMethod
 import dat4s_core.data.file as dtsFF
-
+import dat4s_core.data.method as dtsMethod
+import dat4s_core.exception.exception as dtsException
 
 import config.config as config
 
 if config.typeCheck:
-    #------------------------------> 
-    from pathlib import Path
-    #------------------------------> 
     import gui.dtscore as dtscore
+    from pathlib import Path
 #endregion ----------------------------------------------------------> Imports
 
 #region -------------------------------------------------------------> Classes
@@ -58,8 +54,6 @@ class UMSAPFile():
         confTree : dict
             Nodes to show in the wx.TreeCtrl of the control window. 
             See Notes for the structure of the dict.
-        cSection : dict
-            Name of the sections in the umsap file
         cConfigure : dict
             Configure methods. Keys are the section names as read from the file
 
@@ -95,13 +89,6 @@ class UMSAPFile():
     """
     #region -----------------------------------------------------> Class setup
     name = 'UMSAPFile'
-    
-    cSection = {# Name of the sections in the umsap file
-        config.npCorrA   : config.nuCorrA,
-        config.npDataPrep: config.nuDataPrep,
-        config.npProtProf: config.nmProtProf,
-        config.npLimProt : config.nmLimProt,
-    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -112,10 +99,10 @@ class UMSAPFile():
 
         self.cConfigure = {# Configure methods. Keys are the section names as
                            # read from the file
-            self.cSection[config.npCorrA]   : self.ConfigureDataCorrA,
-            self.cSection[config.npDataPrep]: self.ConfigureDataCheckDataPrep,
-            self.cSection[config.npProtProf]: self.ConfigureDataProtProf,
-            self.cSection[config.npLimProt] : self.ConfigureDataLimProt,
+            config.nuCorrA   : self.ConfigureDataCorrA,
+            config.nuDataPrep: self.ConfigureDataCheckDataPrep,
+            config.nmProtProf: self.ConfigureDataProtProf,
+            config.nmLimProt : self.ConfigureDataLimProt,
         }
         #------------------------------> See Notes about the structure of dict
         self.confData = {}
@@ -146,7 +133,7 @@ class UMSAPFile():
         self, dlg: Optional['dtscore.ProgressDialog']=None,
         ) -> Literal[True]:
         """Prepare data for each section in the file and for the CustomTreeCtrl
-            in the control window. See Notes.
+            in the control window.
     
             Parameters
             ----------
@@ -190,12 +177,25 @@ class UMSAPFile():
     #---
 
     def ConfigureDataCorrA(self) -> Literal[True]:
-        """Configure a Correlation Analysis section	"""
+        """Configure a Correlation Analysis section	
+        
+            Notes
+            -----
+            The dictionary with the data to plot contains the following 
+            key - value pairs:
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+                'NumCol' : number of columns in 'DF',
+                'NumColList' : List with the colum's names,
+            }
+        """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
         plotData = {}
         #------------------------------> Fill
-        for k,v in self.data[self.cSection[config.npCorrA]].items():
+        for k,v in self.data[config.nuCorrA].items():
             try:
                 #------------------------------> Create data
                 df  = pd.DataFrame(v['R'], dtype='float64')
@@ -215,19 +215,29 @@ class UMSAPFile():
         #endregion ----------------------------------------------> Plot & Menu
         
         #region -------------------------------------------> Add/Reset section 
-        self.confData[self.cSection[config.npCorrA]] = plotData
+        self.confData[config.nuCorrA] = plotData
         #endregion ----------------------------------------> Add/Reset section 
         
         return True
     #---
     
     def ConfigureDataCheckDataPrep(self) -> Literal[True]:
-        """Configure a Data Preparation Check section	"""
+        """Configure a Data Preparation Check section	
+        
+            Notes
+            -----
+            The dictionary with the data to plot contains the following 
+            key - value pairs:
+            {
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
+        """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
         plotData = {}
         #------------------------------> Fill
-        for k,v in self.data[self.cSection[config.npDataPrep]].items():
+        for k,v in self.data[config.nuDataPrep].items():
             try:
                 #------------------------------> Add to dict
                 plotData[k] = {
@@ -238,19 +248,30 @@ class UMSAPFile():
         #endregion ----------------------------------------------> Plot & Menu
         
         #region -------------------------------------------> Add/Reset section 
-        self.confData[self.cSection[config.npDataPrep]] = plotData
+        self.confData[config.nuDataPrep] = plotData
         #endregion ----------------------------------------> Add/Reset section 
         
         return True
     #---
     
     def ConfigureDataProtProf(self) -> Literal[True]:
-        """Configure a Proteome Profiling section"""
+        """Configure a Proteome Profiling section
+        
+            Notes
+            -----
+            The dictionary with the data to plot contains the following 
+            key - value pairs:
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
+        """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
         plotData = {}
         #------------------------------> Fill
-        for k,v in self.data[self.cSection[config.npProtProf]].items():
+        for k,v in self.data[config.nmProtProf].items():
             try:
                 #------------------------------> Create data
                 df  = pd.DataFrame(dtsMethod.DictStringKey2Tuple(v['R']))
@@ -264,20 +285,40 @@ class UMSAPFile():
         #endregion ----------------------------------------------> Plot & Menu
         
         #region -------------------------------------------> Add/Reset section 
-        self.confData[self.cSection[config.npProtProf]] = plotData
+        self.confData[config.nmProtProf] = plotData
         #endregion ----------------------------------------> Add/Reset section 
         
         return True
     #---
     
     def ConfigureDataLimProt(self) -> Literal[True]:
-        """Configure a Limited Proteolysis section"""
+        """Configure a Limited Proteolysis section
+        
+            Notes
+            -----
+            The dictionary with the data to plot contains the following 
+            key - value pairs:
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+                'PI' : { dict with information for the plotting window
+                    'Bands'     : list with the band's names,
+                    'Lanes'     : list with the lane's names,
+                    'Alpha'     : alpha value,
+                    'ProtLength': length of the recombinant protein,
+                    'ProtLoc'   : list with the location of the native protein,
+                    'ProtDelta' : value to calculate native residue numbers as
+                                    resN_Nat = resN_Rec + ProtDelta,
+                    'Prot'      : name of the Target Protein,
+                },
+            }
+        """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
         plotData = {}
         #------------------------------> Fill
-        for k,v in self.data[self.cSection[config.npLimProt]].items():
-            
+        for k,v in self.data[config.nmLimProt].items():
             try:
                 #------------------------------> Create data
                 df  = pd.DataFrame(dtsMethod.DictStringKey2Tuple(v['R']))
@@ -302,7 +343,7 @@ class UMSAPFile():
         #endregion ----------------------------------------------> Plot & Menu
         
         #region -------------------------------------------> Add/Reset section 
-        self.confData[self.cSection[config.npLimProt]] = plotData
+        self.confData[config.nmLimProt] = plotData
         #endregion ----------------------------------------> Add/Reset section 
         
         return True
@@ -385,7 +426,8 @@ class UMSAPFile():
             tSection : str
                 Section name
             tDate : str
-                The date e.g. 20210325-112056
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
     
             Returns
             -------
@@ -405,7 +447,8 @@ class UMSAPFile():
             tSection: str
                 Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                Date of the analysis, e.g. '20210630-143556'
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
     
             Returns
             -------
@@ -430,7 +473,8 @@ class UMSAPFile():
             tSection: str
                 Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                Date of the analysis, e.g. '20210630-143556'
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
     
             Returns
             -------
@@ -455,11 +499,16 @@ class UMSAPFile():
             tSection: str
                 Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                Date of the analysis, e.g. '20210630-143556'
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
     
             Returns
             -------
-            dict
+            dict:
+                {
+                    'I' : user input with stripped keys,
+                    'CI': corrected user input,
+                }
     
             Raise
             -----
@@ -494,7 +543,8 @@ class UMSAPFile():
             tSection : str
                 Section name
             tDate : str
-                The date e.g. 20210325-112056
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
             fileP : Path
                 Path to the file
         """
