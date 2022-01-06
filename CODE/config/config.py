@@ -1,142 +1,142 @@
-# # ------------------------------------------------------------------------------
-# # Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
-# #
-# # Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
-# #
-# # This program is distributed for free in the hope that it will be useful,
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# #
-# # See the accompaning licence for more details.
-# # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
+#
+# Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
+#
+# This program is distributed for free in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the accompaning licence for more details.
+# ------------------------------------------------------------------------------
 
 
-# """Configuration parameters of the app"""
+"""Configuration parameters of the app"""
 
 
-# #region -------------------------------------------------------------> Imports
-# import platform
-# from pathlib import Path
+#region -------------------------------------------------------------> Imports
+import platform
+from pathlib import Path
 # from typing import Optional, TYPE_CHECKING
 
 # if TYPE_CHECKING:
 #     import data.file as file
-# #endregion ----------------------------------------------------------> Imports
+#endregion ----------------------------------------------------------> Imports
 
 
-# #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
-# #region --------------------------------------------------> General parameters
-# development = True # Track state, development (True) or production (False)
+#region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
+#region --------------------------------------------------> General parameters
+development = True # Track state, development (True) or production (False)
 
-# version     = '2.2.0 (beta)' # String to write in the output files
-# software    = 'UMSAP' # Software short name
-# softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
-# dictVersion = { # dict for directly write into output files
-#     'Version': version,
-# }
+version     = '2.2.0 (beta)' # String to write in the output files
+software    = 'UMSAP' # Software short name
+softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
+dictVersion = { # dict for directly write into output files
+    'Version': version,
+}
 
-# cOS = platform.system() # Current operating system
-# cwd = Path(__file__)    # Config file path
+os = platform.system() # Current operating system
+cwd = Path(__file__)    # Config file path
 
 # obj: Optional['file.UMSAPFile'] = None # To reload UMSAP file
 
 # typeCheck = TYPE_CHECKING
-# #endregion -----------------------------------------------> General parameters
+#endregion -----------------------------------------------> General parameters
 
 
-# #region ---------------------------------------- Platform Dependent Parameters
-# # There are some that must be defined in other sections
-# if cOS == 'Darwin':
-#     #------------------------------> Root & Resources Folder
-#     if development:
-#         root = cwd.parent.parent.parent
-#     else:
-#         root = cwd.parent.parent
-#     res = root / 'Resources'  # Path to the Resources folder
-#     #------------------------------> Index of the Tool Menu in the MenuBar
-#     toolsMenuIdx = 2
-#     #------------------------------> Statusbar split size
-#     if development:
-#         sbFieldSize = [-1, 350]
-#     else:
-#         sbFieldSize = [-1, 300]
+#region ---------------------------------------- Platform Dependent Parameters
+# There are some that must be defined in other sections
+if os == 'Darwin':
+    #------------------------------> Root & Resources Folder
+    if development:
+        root = cwd.parent.parent.parent
+    else:
+        root = cwd.parent.parent
+    res = root / 'Resources'  # Path to the Resources folder
+    #------------------------------> Index of the Tool Menu in the MenuBar
+    toolsMenuIdx = 2
+    #------------------------------> Statusbar split size
+    if development:
+        sbFieldSize = [-1, 350]
+    else:
+        sbFieldSize = [-1, 300]
 #     sbPlot2Fields = [-1, 115]
 #     sbPlot3Fields = [90, -1, 115] 
-#     #------------------------------> Key for shortcuts
-#     copyShortCut = 'Cmd'
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Cmd'
 #     #------------------------------> Delta space between consecutive windows
 #     deltaWin = 23
-# elif cOS == 'Windows':
-#     #------------------------------> Root & Resources Folder
-#     root = cwd.parent.parent.parent
-#     res = root / 'Resources'
-#     #------------------------------> Index of the Tool Menu in the MenuBar
-#     toolsMenuIdx = 2
-#     #------------------------------> Statusbar split size
-#     if development:
-#         sbFieldSize = [-1, 325]
-#     else:
-#         sbFieldSize = [-1, 300]
+elif os == 'Windows':
+    #------------------------------> Root & Resources Folder
+    root = cwd.parent.parent.parent
+    res = root / 'Resources'
+    #------------------------------> Index of the Tool Menu in the MenuBar
+    toolsMenuIdx = 2
+    #------------------------------> Statusbar split size
+    if development:
+        sbFieldSize = [-1, 325]
+    else:
+        sbFieldSize = [-1, 300]
 #     sbPlot = [-1, 115]
-#     #------------------------------> Key for shortcuts
-#     copyShortCut = 'Ctrl'
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Ctrl'
 #     #------------------------------> Delta space between consecutive windows
 #     deltaWin = 20
-# else:
-#     #------------------------------> Root & Resources Folder
-#     root = cwd.parent
-#     res = root / 'Resources'
-#     #------------------------------> Index of the Tool Menu in the MenuBar
-#     toolsMenuIdx = 3
-#     #------------------------------> Statusbar split size
-#     if development:
-#         sbFieldSize = [-1, 350]
-#     else:
-#         sbFieldSize = [-1, 300]
+else:
+    #------------------------------> Root & Resources Folder
+    root = cwd.parent
+    res = root / 'Resources'
+    #------------------------------> Index of the Tool Menu in the MenuBar
+    toolsMenuIdx = 3
+    #------------------------------> Statusbar split size
+    if development:
+        sbFieldSize = [-1, 350]
+    else:
+        sbFieldSize = [-1, 300]
 #     sbPlot = [-1, 115]
-#     #------------------------------> Key for shortcuts
-#     copyShortCut = 'Ctrl'
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Ctrl'
 #     #------------------------------> Delta space between consecutive windows
 #     deltaWin = 20
-# #endregion ------------------------------------- Platform Dependent Parameters
+#endregion ------------------------------------- Platform Dependent Parameters
 
 
-# #region -------------------------------------------------------------> Windows
+#region -------------------------------------------------------------> Windows
 # #------------------------------> Reference to main window
-# winMain  = None
-# #------------------------------> Number of windows for screen positioning
-# # Keys: Windows ID - Values: Total number of opened windows, except conf win
-# winNumber = {}
+winMain = None
+#------------------------------> Number of windows for screen positioning
+# Keys: Windows ID - Values: Total number of opened windows, except conf win
+winNumber = {}
 # #------------------------------> Track open umsap files
 # # Keys: UMSAP File path - Values: Reference to control window
 # winUMSAP = {}
-# #endregion ----------------------------------------------------------> Windows
+#endregion ----------------------------------------------------------> Windows
 
 
-# #region ---------------------------------------------------------------> Names
+#region ---------------------------------------------------------------> Names
 # #------------------------------> Default name
-# nDefName = 'Default name'
+nDefName = 'Default name'
 # #------------------------------> Windows
-# nwMain          = 'MainW'
+nwMain          = 'MainW'
 # nwUMSAPControl  = 'UMSAPControl'
 # nwCorrAPlot     = 'CorrAPlot'
 # nwProtProf      = 'ProtProfPlot'
 # nwLimProt       = 'LimProtPlot'
 # nwCheckDataPrep = 'CheckDataPrep'
-# #------------------------------> Dialogs
-# ndCheckUpdateResDialog = 'CheckUpdateResDialog'
+#------------------------------> Dialogs
+ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 # ndResControlExp        = 'ResControlExp'
 # ndFilterRemoveAny      = 'Remove Filters'
 # #------------------------------> Tab for notebook windows
-# ntStart    = 'StartTab'
-# ntDataPrep = "DataPrepTab"
-# ntCorrA    = 'CorrATab'
-# ntLimProt  = 'LimProtTab'
-# ntProtProf = 'ProtProfTab'
-# ntTarProt  = 'TarProtTab'
-# #------------------------------> Individual Panes
+ntStart    = 'StartTab'
+ntDataPrep = "DataPrepTab"
+ntCorrA    = 'CorrATab'
+ntLimProt  = 'LimProtTab'
+ntProtProf = 'ProtProfTab'
+ntTarProt  = 'TarProtTab'
+#------------------------------> Individual Panes
 # npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
-# npCorrA                 = 'CorrAPane'
+npCorrA                 = 'CorrAPane'
 # npDataPrep              = "DataPrepPane"
 # npLimProt               = "LimProtPane"
 # npProtProf              = 'ProtProfPane'
@@ -150,47 +150,47 @@
 # #------------------------------> Files
 # nfUMSAP = 'UMSAPFile'
 # #------------------------------> Modules
-# nmLimProt  = 'Limited Proteolysis'
-# nmTarProt  = 'Targeted Proteolysis'
-# nmProtProf = 'Proteome Profiling'
+nmLimProt  = 'Limited Proteolysis'
+nmTarProt  = 'Targeted Proteolysis'
+nmProtProf = 'Proteome Profiling'
 # #------------------------------> Utilities
-# nuDataPrep = "Data Preparation"
-# nuCorrA    = 'Correlation Analysis'
-# nuReadF    = 'Read UMSAP File'
-# #endregion ------------------------------------------------------------> Names
+nuDataPrep = "Data Preparation"
+nuCorrA    = 'Correlation Analysis'
+nuReadF    = 'Read UMSAP File'
+#endregion ------------------------------------------------------------> Names
 
 
-# #region --------------------------------------------------------------> Titles
+#region --------------------------------------------------------------> Titles
 # #------------------------------> Default names
-# tdW = "Untitled Window"
-# tdT = "Tab"
+tdW = "Untitled Window"
+tdT = "Tab"
 # tdP = 'Pane'
-# #------------------------------> 
-# t = {
-#     #------------------------------> Windows
-#     nwMain    : "Analysis Setup",
-#     #------------------------------> Dialogs
-#     ndCheckUpdateResDialog: "Check for Updates",
+#------------------------------> 
+t = {
+    #------------------------------> Windows
+    nwMain : "Analysis Setup",
+    #------------------------------> Dialogs
+    ndCheckUpdateResDialog: "Check for Updates",
 #     ndResControlExp       : 'Results - Control Experiments',
 #     ndFilterRemoveAny     : 'Remove Filters',
-#     #------------------------------> Tabs
-#     ntStart   : 'Start',
-#     ntDataPrep: 'DataPrep',
-#     ntCorrA   : 'CorrA',
+    #------------------------------> Tabs
+    ntStart   : 'Start',
+    # ntDataPrep: 'DataPrep',
+    ntCorrA   : 'CorrA',
 #     ntLimProt : 'LimProt',
 #     ntProtProf: 'ProtProf',
-# }
-# #endregion -----------------------------------------------------------> Titles
+}
+#endregion -----------------------------------------------------------> Titles
 
 
-# #region ----------------------------------------------------------- Extensions
-# #------------------------------> For wx.Dialogs
-# elData         = 'txt files (*.txt)|*.txt'
+#region ----------------------------------------------------------- Extensions
+#------------------------------> For wx.Dialogs
+elData         = 'txt files (*.txt)|*.txt'
 # elSeq          = (
 #     "Text files (*.txt)|*.txt|"
 #     "Fasta files (*.fasta)|*.fasta"
 # )
-# elUMSAP        = 'UMSAP files (*.umsap)|*.umsap'
+elUMSAP        = 'UMSAP files (*.umsap)|*.umsap'
 # elMatPlotSaveI = (
 #     "Portable Document File (*.pdf)|*.pdf|"
 #     "Portable Network Graphic (*.png)|*.png|"
@@ -199,18 +199,18 @@
 # )
 
 # #------------------------------> File extensions. First item is default
-# esData  = ['.txt']
+esData  = ['.txt']
 # esSeq   = ['.txt', '.fasta']
-# esUMSAP = ['.umsap']
-# #endregion -------------------------------------------------------- Extensions
+esUMSAP = ['.umsap']
+#endregion -------------------------------------------------------- Extensions
 
 
-# #region ------------------------------------------------------> Path and Files
-# #------------------------------> Relevant paths
-# pImages = res / 'IMAGES' # Images folder
-# #------------------------------> Location & names of important files
-# fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
-# fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
+#region ------------------------------------------------------> Path and Files
+#------------------------------> Relevant paths
+pImages = res / 'IMAGES' # Images folder
+#------------------------------> Location & names of important files
+fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
+fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 # #------------------------------> Names
 # fnInitial    = "{}-Initial-Data-{}.txt"
 # fnFloat      = "{}-Floated-Data-{}.txt"
@@ -221,52 +221,59 @@
 # fnNorm       = "{}-Normalized-Data-{}.txt"
 # fnImp        = "{}-Imputed-Data-{}.txt"
 # fnDataSteps  = 'Steps_Data_Files'
-# fnDataInit   = 'Input_Data_Files'
-# #endregion ---------------------------------------------------> Path and Files
+fnDataInit   = 'Input_Data_Files'
+fnMainDataCorrA = '{}-CorrelationCoefficients-Data-{}.txt'
+#endregion ---------------------------------------------------> Path and Files
 
 
-# #region ------------------------------------------------------------------ URL
-# #------------------------------> www.umsap.nl
-# urlHome     = 'https://www.umsap.nl'
-# urlUpdate   = f"{urlHome}/page/release-notes"
-# urlTutorial = f"{urlHome}/tutorial/2-1-0"
-# urlCorrA    = f"{urlTutorial}/correlation-analysis"
+#region ------------------------------------------------------------------ URL
+#------------------------------> www.umsap.nl
+urlHome     = 'https://www.umsap.nl'
+urlUpdate   = f"{urlHome}/page/release-notes"
+urlTutorial = f"{urlHome}/tutorial/2-1-0"
+urlCorrA    = f"{urlTutorial}/correlation-analysis"
 # urlLimProt  = f"{urlTutorial}/limited-proteolysis"
 # urlProtProf = f"{urlTutorial}/proteome-profiling"
 # urlDataPrep = f"{urlTutorial}/data-preparation"
-# #endregion --------------------------------------------------------------- URL
+#endregion --------------------------------------------------------------- URL
 
 
-# #region --------------------------------------------------------------> Labels
-# #------------------------------> Names
-# lnPaneConf = 'Configuration Options'
+#region --------------------------------------------------------------> Labels
+#------------------------------> Names
+lnPaneConf = 'Configuration Options'
 # lnListPane = 'Data File Content'
-# lnPDCorrA  = 'Calculating Correlation Coefficients'
+lnPDCorrA  = 'Calculating Correlation Coefficients'
 # #------------------------------> wx.Button
-# lBtnRun         = 'Start Analysis'
-# lBtnDataFile    = 'Data'
+lBtnRun         = 'Start Analysis'
+lBtnDataFile    = 'Data'
 # lBtnOutFile     = 'Output File'
-# lBtnUFile       = 'UMSAP'
+lBtnUFile       = 'UMSAP'
 # lBtnSeqFile     = 'Sequences'
 # lBtnTypeResCtrl = 'Type Values'
+lBtnAddCol = 'Add columns'
 # #------------------------------> wx.ListCtrl
-# lLCtrlColNameI = ['#', 'Name']
+lLCtrlColNameI = ['#', 'Name']
 # #------------------------------> wx.StaticBox
-# lSbFile         = 'Files && Folders'
-# lSbData         = 'Data preparation'
-# lSbValue        = 'User-defined values'
-# lSbColumn       = 'Column numbers'
+lSbFile         = 'Files && Folders'
+lSbData         = 'Data preparation'
+lSbValue        = 'User-defined values'
+lSbColumn       = 'Column numbers'
 # lStProtProfCond = 'Conditions'
 # lStProtProfRP   = 'Relevant Points'
 # lStLimProtLane  = 'Lanes'
 # lStLimProtBand  = 'Bands' 
 # lStCtrlName     = 'Name'
 # lStCtrlType     = 'Type'  
-# #------------------------------> wx.Statictext
+#------------------------------> adv.HyperlinkCtrl
+lHlcReadRelNotes = 'Read the Release Notes.'
+#------------------------------> wx.Statictext
+lStUpdateCheckLast = 'You are using the latest version of UMSAP.'
+lStUpdateCheckAvail = ('UMSAP {} is already available.\nYou are currently '
+    'using UMSAP {}.')
 # lStSeqFile      = 'Sequences'
-# lStId           = 'Analysis ID'
+lStId           = 'Analysis ID'
 # lStAlpha        = 'Significance Level'
-# lStColIFile     = "Columns in the {}"
+lStColIFile     = "Columns in the {}"
 # lStScoreVal     = 'Score Value'
 # lStSeqLength    = 'Sequence Length'
 # lStTargetProt   = "Target Protein"
@@ -274,52 +281,63 @@
 # lStSeqCol       = 'Sequences'
 # lStScoreCol     = 'Score'
 # lStResultCtrl   = 'Results - Control experiments'
+lStColAnalysis = 'Columns to Analyse'
 # #------------------------------> wx.ComboBox or wx.CheckBox
 # lCbFileAppend  = 'Append new data to selected output file'
-# lCbCeroTreat   = 'Treat 0s as missing values'
-# lCbCeroTreatD  = '0s Missing'
-# lCbTransMethod = 'Transformation'
-# lCbNormMethod  = 'Normalization'
-# lCbImputation  = 'Imputation'
-# lCbCorrMethod  = 'Correlation Method'
-# #------------------------------> Progress Dialog
+lCbCeroTreat   = 'Treat 0s as missing values'
+lCbCeroTreatD  = '0s Missing'
+lCbTransMethod = 'Transformation'
+lCbNormMethod  = 'Normalization'
+lCbImputation  = 'Imputation'
+lCbCorrMethod  = 'Correlation Method'
+#------------------------------> Progress Dialog
 # lPdCheck    = 'Checking user input: '
 # lPdPrepare  = 'Preparing analysis: '
 # lPdReadFile = 'Reading input files: '
-# lPdRun      = 'Running analysis: '
+lPdRun      = 'Running analysis: '
 # lPdWrite    = 'Writing output: '
 # lPdLoad     = 'Loading output file'
 # lPdError    = 'Fatal Error'
 # lPdDone     = 'All Done'
 # lPdEllapsed = 'Ellapsed time: '
-# #endregion -----------------------------------------------------------> Labels
+#endregion -----------------------------------------------------------> Labels
 
 
-# #region ---------------------------------------------------------------> Hints
-# hTcDataFile = f"Path to the {lBtnDataFile} file"
+#region ---------------------------------------------------------------> Hints
+hTcDataFile = f"Path to the {lBtnDataFile} file"
 # hTcOutFile  = f"Path to the {lBtnOutFile} file"
-# hTcUFile    = f"Path to the {lBtnUFile} file"
+hTcUFile    = f"Path to the {lBtnUFile} file"
 # hTcSeqFile  = f"Path to the {lBtnSeqFile} file"
-# hTcId       = 'e.g. HIV inhibitor'
-# #endregion ------------------------------------------------------------> Hints
+hTcId       = 'e.g. HIV inhibitor'
+#endregion ------------------------------------------------------------> Hints
 
 
-# #region ------------------------------------------------------------> Tooltips
-# #------------------------------> wx.Button
-# ttBtnDataFile = f"Select the {lBtnDataFile}."
+#region ------------------------------------------------------------> Tooltips
+#------------------------------> wx.Button
+ttBtnDataPrep = f'Start the utility {nuDataPrep}'
+ttBtnCorrA    = f'Start the utility {nuCorrA}'
+ttBtnLimProt  = f'Start the module {nmLimProt}'
+ttBtnTarProt  = f'Start the module {nmTarProt}'
+ttBtnProtProf = f'Start the module {nmProtProf}'
+ttBtnDataFile = f'Select the {lBtnDataFile}.'
 # ttBtnOutFile  = f"Select the {lBtnOutFile}."
-# ttBtnUFile  = f"Select the {lBtnUFile}."
-# ttBtnHelpDef  = f"Read online tutorial at {urlHome}."
-# ttBtnHelp     = "Read tutorial at {}."
-# ttBtnClearAll = f"Clear all user input."
-# ttBtnRun      = f"Start the analysis."
+ttBtnUFile  = f'Select the {lBtnUFile}.'
+ttBtnHelpDef  = f'Read online tutorial at {urlHome}.'
+ttBtnHelp     = 'Read tutorial at {}.'
+ttBtnClearAll = f'Clear all user input.'
+ttBtnRun      = f'Start the analysis.'
+ttBtnAddCol = (
+    f'Add selected Columns in the Data File to the list of Columns '
+    f'to Analyse. New columns will be added after the last '
+    f'selected element in Columns to analyse. Duplicate columns '
+    f'are discarded.')
 # #------------------------------> wx.StaticText
-# ttStId = 'Short text to id the analysis. Do not include the date.'
-# ttStTrans = f"Select the {lCbTransMethod} method."
-# ttStNorm = f"Select the {lCbNormMethod} method."
-# ttStImputation = f"Select the {lCbImputation} method."
+ttStId = 'Short text to id the analysis. Do not include the date.'
+ttStTrans = f"Select the {lCbTransMethod} method."
+ttStNorm = f"Select the {lCbNormMethod} method."
+ttStImputation = f"Select the {lCbImputation} method."
 # ttStAlpha = "Significance level for the statistical analysis.\ne.g. 0.05"
-# ttStCorr = f"Select the {lCbCorrMethod}."
+ttStCorr = f"Select the {lCbCorrMethod}."
 # ttStScoreVal = f"Set the minimum acceptable Score value.\ne.g. -4"
 # ttStPCorrection = "Select the p correction method."
 # ttStMedianCorr = "Select whether to apply a median correction."
@@ -338,41 +356,41 @@
 #     f"For example, samples are paired when the same Petri dish is "
 #     f"used for the control and experiment.")
 # #------------------------------> wx.ListCtrl
-# ttLCtrlCopyNoMod = (
-#     f"Selected rows can be copied ({copyShortCut}+C) but "
-#     f"the list cannot be modified."
-# )
-# ttLCtrlPasteMod = (
-#     f"New rows can be pasted ({copyShortCut}+V) after the "
-#     f"last selected element and existing ones cut/deleted "
-#     f"({copyShortCut}+X) or copied "
-#     f"({copyShortCut}+C)."    
-# )
-# #endregion ---------------------------------------------------------> Tooltips
+ttLCtrlCopyNoMod = (
+    f"Selected rows can be copied ({copyShortCut}+C) but "
+    f"the list cannot be modified."
+)
+ttLCtrlPasteMod = (
+    f"New rows can be pasted ({copyShortCut}+V) after the "
+    f"last selected element and existing ones cut/deleted "
+    f"({copyShortCut}+X) or copied "
+    f"({copyShortCut}+C)."    
+)
+#endregion ---------------------------------------------------------> Tooltips
 
 
-# #region -------------------------------------------------------------> Options
-# oTransMethod = {
-#     'Empty': '',
-#     'None' : 'None',
-#     'Log2' : 'Log2',
-# }
-# oNormMethod = {
-#     'Empty' : '',
-#     'None'  : 'None',
-#     'Median': 'Median',
-# }
-# oImputation = {
-#     'Empty': '',
-#     'None' : 'None',
-#     'ND'   : 'Normal Distribution',
-# }
-# oCorrMethod = {
-#     'Empty'   : '',
-#     'Pearson' : 'Pearson',
-#     'Kendall' : 'Kendall',
-#     'Spearman': 'Spearman',
-# }
+#region -------------------------------------------------------------> Options
+oTransMethod = {
+    'Empty': '',
+    'None' : 'None',
+    'Log2' : 'Log2',
+}
+oNormMethod = {
+    'Empty' : '',
+    'None'  : 'None',
+    'Median': 'Median',
+}
+oImputation = {
+    'Empty': '',
+    'None' : 'None',
+    'ND'   : 'Normal Distribution',
+}
+oCorrMethod = {
+    'Empty'   : '',
+    'Pearson' : 'Pearson',
+    'Kendall' : 'Kendall',
+    'Spearman': 'Spearman',
+}
 # oYesNo = {
 #     'Empty': '',
 #     'Yes'  : 'Yes',
@@ -407,10 +425,10 @@
 #     'OCR'  : 'One Control per Row',
 #     'Ratio': oIntensities['RatioI'],
 # }
-# #endregion ----------------------------------------------------------> Options
+#endregion ----------------------------------------------------------> Options
 
 
-# #region -----------------------------------------------------> DF Column names
+#region -----------------------------------------------------> DF Column names
 # dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
 # dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
 # dfcolDataCheck = [
@@ -418,19 +436,22 @@
 # dfcolLimProtFirstPart = [
 #     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
 # dfcolLimProtCLevel = ['Ptost']
-# #endregion --------------------------------------------------> DF Column names
+#endregion --------------------------------------------------> DF Column names
 
 
-# #region -----------------------------------------------------> Important Lists
+#region -----------------------------------------------------> Important Lists
 # ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
-# #endregion --------------------------------------------------> Important Lists
+#endregion --------------------------------------------------> Important Lists
 
 
-# #region ------------------------------------------------------------> Messages
-# #region -------------------------------------------------------------> Other 
+#region ------------------------------------------------------------> Messages
+#region -------------------------------------------------------------> Other 
+#------------------------------> Update Check Failed
+mCheckUpdateFailed = 'Check for Updates failed. Please try again later.'
 # #------------------------------> Unexpected Error
 # mUnexpectedError = 'An uexpected error was encountered.'
-# #------------------------------> Files 
+#------------------------------> Files 
+mFileDataExport = 'It was not possible to write the data to the selected file.'
 # mFileSelector = f"It was not possible to show the file selecting dialog."
 # mFileRead = 'An error occured when reading file:\n{}'
 # mFileColNum = (
@@ -439,19 +460,6 @@
 # mUMSAPFile = 'Select the UMSAP File'
 # #------------------------------> Not empty
 # mNotEmpty = "Please select a value for {}."
-# #------------------------------> Pandas
-# mPDGetInitCol = ("It was not possible to extract the selected columns {} from "
-#     "the selected {}:.\n{}")
-# mPDDataTargetProt = ('Selection of Target Protein failed.\nTarget Protein: {} '
-# 'Detected Proteins column: {}.')
-# mPDDataExclude = 'Data Exclusion failed.\nColumns used for data exclusion: {}.'
-# mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
-#     'filtering by Score value: {}.')
-# mPDDataType       = 'Unexpected data type.'
-# mPDDataTypeCol    = 'The {} contains unexpected data type in columns {}.'
-# mPDDataTran       = 'Data Transformation failed.'
-# mPDDataNorm       = 'Data Normalization failed.'
-# mPDDataImputation = 'Data Imputation failed.'
 # #------------------------------> User values
 # mOneRNumText = "Only one real number can be accepted here."
 # mOneZPlusNumText = "Only a non-negative integer can be accepted here."
@@ -468,11 +476,28 @@
 # #------------------------------> Sequences related errors
 # mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
 #     "protein.")
-# #endregion ----------------------------------------------------------> Other 
+#endregion ----------------------------------------------------------> Other
 
-# #region ----------------------------------------------------> For CheckInput
-# mFileBad = "File: '{}'\ncannot be used as {}."
-# mOptionBad = "Option '{}' cannot be accepted in {}."
+#region ------------------------------------------------------------> Pandas
+mPDGetInitCol = ('It was not possible to extract the selected columns {} from '
+    'the selected {}:.\n{}')
+mPDDataTargetProt = ('Selection of Target Protein failed.\nTarget Protein: {} '
+    'Detected Proteins column: {}.')
+mPDDataExclude = 'Data Exclusion failed.\nColumns used for data exclusion: {}.'
+mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
+    'filtering by Score value: {}.')
+# mPDDataType       = 'Unexpected data type.'
+mPDDataTypeCol    = 'The {} contains unexpected data type in columns {}.'
+mPDDataTran       = 'Data Transformation failed.'
+mPDDataNorm       = 'Data Normalization failed.'
+mPDDataImputation = 'Data Imputation failed.'
+#endregion ---------------------------------------------------------> Pandas
+ 
+#region ----------------------------------------------------> For CheckInput
+mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
+    'Protein, etc) were applied.')
+mFileBad = "File: '{}'\ncannot be used as {}."
+mOptionBad = "Option '{}' cannot be accepted in {}."
 # mValueBad = "Value '{}' cannot be accepted in {}.\n"
 # mOneRealNum = f"{mValueBad}{mOneRNumText}"
 # mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
@@ -482,49 +507,47 @@
 #     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
 #     f"correct input.")
 # mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
-# #endregion -------------------------------------------------> For CheckInput
-# #endregion ---------------------------------------------------------> Messages
+#endregion -------------------------------------------------> For CheckInput
+#endregion ---------------------------------------------------------> Messages
 
 
-# #region ---------------------------------------------------------------> Sizes
-# #------------------------------> Full Windows 
-# sWinRegular = (990, 775)
+#region ---------------------------------------------------------------> Sizes
+#------------------------------> Full Windows 
+sWinRegular = (990, 775)
 # #------------------------------> Plot Window
 # sWinPlot = (560, 560)
 # sWinModPlot = (1100, 625)
-# #------------------------------> wx.StatusBar Fields
-# sSbarFieldSizeI = sbFieldSize
-# #------------------------------> wx.ListCtrl
-# sLCtrlColI = [50, 150] # e.g when Col Labels are #, Name
+#------------------------------> wx.StatusBar Fields
+sSbarFieldSizeI = sbFieldSize
+#------------------------------> wx.ListCtrl
+sLCtrlColI = [50, 150] # e.g when Col Labels are #, Name
 # #------------------------------> wx.TextCtrl
-# sTc = (50, 22)
-# #endregion ------------------------------------------------------------> Sizes
-# #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
+sTc = (50, 22)
+#endregion ------------------------------------------------------------> Sizes
+#endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
 
 
-# #region ---------------------------------------------> CONFIGURABLE PARAMETERS
-
-# #------------------------------> These must be dictionaries to save/load from
-# #------------------------------> configuration file
-
-# #region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object
-# font = {
-# }
-# #endregion ---------------> Fonts. Set from UMSAP.py, requires a wx.App object
+#region ---------------------------------------------> CONFIGURABLE PARAMETERS
+#------------------------------> These must be dictionaries to save/load from
+#------------------------------> configuration file
+#region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object
+font = {
+}
+#endregion ---------------> Fonts. Set from UMSAP.py, requires a wx.App object
 
 
-# #region -----------------------------------------------------> General options
-# general = { # General options
-#     'checkUpdate'  : True, # True Check, False No check
+#region -----------------------------------------------------> General options
+general = { # General options
+    'checkUpdate'  : True, # True Check, False No check
 #     'DPI'          : 100,  # DPI for plot images
 #     'MatPlotMargin': 0.025 # Margin for the axes range
-# }
-# #endregion --------------------------------------------------> General options
+}
+#endregion --------------------------------------------------> General options
 
 
-# #region --------------------------------------------------------------> Colors
-# color = { # Colors for the app
-#     'Zebra' : '#ffe6e6',
+#region --------------------------------------------------------------> Colors
+color = { # Colors for the app
+    'Zebra' : '#ffe6e6',
 #     'Main' : [ # Lighter colors of the fragments and bands 
 # 		'#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff',
 # 	],
@@ -550,6 +573,6 @@
 #             '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
 #         ],
 #     },
-# }
-# #endregion -----------------------------------------------------------> Colors
-# #endregion ------------------------------------------> CONFIGURABLE PARAMETERS
+}
+#endregion -----------------------------------------------------------> Colors
+#endregion ------------------------------------------> CONFIGURABLE PARAMETERS

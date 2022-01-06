@@ -1,36 +1,36 @@
-# # ------------------------------------------------------------------------------
-# # Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
-# #
-# # Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
-# #
-# # This program is distributed for free in the hope that it will be useful,
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# #
-# # See the accompaning licence for more details.
-# # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
+#
+# Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
+#
+# This program is distributed for free in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the accompaning licence for more details.
+# ------------------------------------------------------------------------------
 
 
-# """Main windows and dialogs of the App """
+"""Main windows and dialogs of the App """
 
 
-# #region -------------------------------------------------------------> Imports
-# import _thread
+#region -------------------------------------------------------------> Imports
+import _thread
 # from pathlib import Path
-# from typing import Optional, Literal
+from typing import Optional, Literal
 
 # import matplotlib.patches as mpatches
 # import numpy as np
 # import pandas as pd
-# import requests
+import requests
 # from scipy import stats
 
-# import wx
-# import wx.adv as adv
-# import wx.lib.agw.aui as aui
+import wx
+import wx.adv as adv
+import wx.lib.agw.aui as aui
 # import wx.lib.agw.customtreectrl as wxCT
 
-# import dat4s_core.data.check as dtsCheck
+import dat4s_core.data.check as dtsCheck
 # import dat4s_core.data.file as dtsFF
 # import dat4s_core.data.method as dtsMethod
 # import dat4s_core.data.statistic as dtsStatistic
@@ -39,187 +39,176 @@
 # import dat4s_core.gui.wx.widget as dtsWidget
 # import dat4s_core.gui.wx.window as dtsWindow
 
-# import config.config as config
+import config.config as config
 # import data.method as dmethod
-# import gui.dtscore as dtscore
-# import gui.menu as menu
+import gui.dtscore as dtscore
+import gui.menu as menu
 # import gui.method as method
 # import gui.pane as pane
-# import gui.tab as tab
+import gui.tab as tab
 # import gui.window as window
 # from data.file import UMSAPFile
-# #endregion ----------------------------------------------------------> Imports
+#endregion ----------------------------------------------------------> Imports
 
 
-# #region -------------------------------------------------------------> Methods
-# def UpdateCheck(ori: str, win: Optional[wx.Window]=None) -> bool:
-#     """ Check for updates for UMSAP from another thread.
+#region -------------------------------------------------------------> Methods
+def UpdateCheck(
+    ori: Literal['menu', 'main'], win: Optional[wx.Window]=None
+    ) -> bool:
+    """ Check for updates for UMSAP from another thread.
         
-#         Parameters
-#         ----------
-#         ori: str
-#             Origin of the request, 'menu' or 'main'
-#         win : wx widget
-#             To center the result window in this widget
+        Parameters
+        ----------
+        ori: str
+            Origin of the request, 'menu' or 'main'
+        win : wx widget
+            To center the result window in this widget
             
-#         Return
-#         ------
-#         bool
-#     """
-#     #region -------------------------------------------------------> Variables
-#     url = config.urlUpdate
-#     msg = f"Check for Updates failed. Please try again later."
-#     #endregion ----------------------------------------------------> Variables
+        Return
+        ------
+        bool
+    """
+    #region ---------------------------------> Get web page text from Internet
+    try:
+        r = requests.get(config.urlUpdate)
+    except Exception as e:
+        msg = config.mCheckUpdateFailed
+        wx.CallAfter(dtscore.Notification, 'errorU', msg=msg, tException=e)
+        return False
+    #endregion ------------------------------> Get web page text from Internet
     
-#     #region ---------------------------------> Get web page text from Internet
-#     try:
-#         r = requests.get(url)
-#     except Exception as e:
-#         wx.CallAfter(dtscore.Notification, 'errorU', msg=msg, tException=e)
-#         return False
-#     #endregion ------------------------------> Get web page text from Internet
+    #region --------------------------------------------> Get Internet version
+    if r.status_code == requests.codes.ok:
+        #------------------------------> 
+        text = r.text.split('\n')
+        #------------------------------>
+        versionI = ''
+        for i in text:
+            if '<h1>UMSAP' in i:
+                versionI = i
+                break
+            else:
+                pass
+        #------------------------------> 
+        versionI = versionI.split('UMSAP')[1].split('</h1>')[0]
+        versionI = versionI.strip()
+    else:
+        msg = config.mCheckUpdateFailed
+        wx.CallAfter(dtscore.Notification, 'errorU', msg=msg)
+        return False
+    #endregion -----------------------------------------> Get Internet version
+
+    #region -----------------------------------------------> Compare & message
+    #------------------------------> Compare
+    updateAvail = dtsCheck.VersionCompare(versionI, config.version)[0]
+    #------------------------------> Message
+    if updateAvail:
+        wx.CallAfter(CheckUpdateResult, cParent=win, cCheckRes=versionI)
+    elif not updateAvail and ori == 'menu':
+        wx.CallAfter(CheckUpdateResult, cParent=win, cCheckRes=None)
+    else:
+        pass
+    #endregion --------------------------------------------> Compare & message
     
-#     #region --------------------------------------------> Get Internet version
-#     if r.status_code == requests.codes.ok:
-#         #------------------------------> 
-#         text = r.text.split('\n')
-#         #------------------------------> 
-#         for i in text:
-#             if '<h1>UMSAP' in i:
-#                 versionI = i
-#                 break
-#             else:
-#                 pass
-#         #------------------------------> 
-#         versionI = versionI.split('UMSAP')[1].split('</h1>')[0]
-#         versionI = versionI.strip()
-#     else:
-#         wx.CallAfter(dtscore.Notification, 'errorU', msg=msg)
-#         return False
-#     #endregion -----------------------------------------> Get Internet version
+    return True
+#---
+#endregion ----------------------------------------------------------> Methods
 
-#     #region -----------------------------------------------> Compare & message
-#     #--> Compare
-#     updateAvail = dtsCheck.VersionCompare(versionI, config.version)[0]
-#     #--> Message
-#     if updateAvail:
-#         wx.CallAfter(CheckUpdateResult, parent=win, checkRes=versionI)
-#     elif not updateAvail and ori == 'menu':
-#         wx.CallAfter(CheckUpdateResult, parent=win, checkRes=None)
-#     else:
-#         pass
-#     #endregion --------------------------------------------> Compare & message
+
+#region --------------------------------------------------------> Base Classes
+class BaseWindow(wx.Frame):
+    """Base window for UMSAP.
+
+        Parameters
+        ----------
+        cParent : wx.Window or None
+            Parent of the window
+        cMenuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
+
+        Attributes
+        ----------
+        cName : str
+            Unique name of the window. Default is config.nDefName.
+        cParent : wx.Window or None
+            Parent of the window
+        cSWindow : wx.Size
+            Size of the window. Default is config.sWinRegular
+        cTitle : str
+            Title for the window. Default is config.tdW.
+    """
+    #region -----------------------------------------------------> Class setup
     
-#     return True
-# #---
-# #endregion ----------------------------------------------------------> Methods
+    #endregion --------------------------------------------------> Class setup
 
-
-# #region --------------------------------------------------------> Base Classes
-# class BaseWindow(wx.Frame):
-#     """Base window for UMSAP.
-
-#         Parameters
-#         ----------
-#         parent : wx.Window or None
-#             Parent of the window
-#         menuData : dict
-#             Data to build the Tool menu of the window. See structure in child 
-#             class.
-
-#         Attributes
-#         ----------
-#         parent : wx.Window or None
-#             Parent of the window
-#         #------------------------------> Configuration
-#         name : str
-#             Unique name of the window. Default is config.nDefName.
-#         cTitle : str
-#             Title for the window. Default is config.tdW.
-#         cSWindow : wx.Size
-#             Size of the window. Default is config.sWinRegular
-#         cMsgExportFailed : str
-#             Error message.
-#         #------------------------------> Widgets
-#         statusbar : wx.StatusBar
-#             Windows statusbar
-#         menubar : menu.ToolMenuBar
-#             Menubar for the window with a Tool menu if applicable.
-#         Sizer : wx.BoxSizer
-#             Main sizer of the window
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cMsgExportFailed = (
-#         f"It was not possible to write the data to the selected file."
-#     )
-#     #endregion --------------------------------------------------> Class setup
-
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, parent: Optional[wx.Window]=None, menuData: Optional[dict]=None,
-#         ) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.parent = parent
-#         #------------------------------> Def values if not given in child class
-#         self.cSWindow = getattr(self, 'cSWindow', config.sWinRegular)
-#         self.cTitle = getattr(
-#             self, 'cTitle', config.t.get(self.name, config.tdW)
-#         )
-#         self.name = getattr(self, 'name', config.nDefName)
-#         #------------------------------> 
-#         super().__init__(
-#             parent, size=self.cSWindow, title=self.cTitle, name=self.name,
-#         )
-#         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: Optional[wx.Window]=None, cMenuData: Optional[dict]=None,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cParent = cParent
+        #------------------------------> Def values if not given in child class
+        self.cName    = getattr(self, 'cName', config.nDefName)
+        self.cSWindow = getattr(self, 'cSWindow', config.sWinRegular)
+        self.cTitle = getattr(
+            self, 'cTitle', config.t.get(self.cName, config.tdW))
+        #------------------------------> 
+        super().__init__(
+            cParent, size=self.cSWindow, title=self.cTitle, name=self.cName,
+        )
+        #endregion --------------------------------------------> Initial Setup
         
-#         #region -----------------------------------------------------> Widgets
-#         self.statusbar = self.CreateStatusBar()
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.wStatBar = self.CreateStatusBar()
+        #endregion --------------------------------------------------> Widgets
 
-#         #region --------------------------------------------------------> Menu
-#         self.menubar = menu.ToolMenuBar(self.name, menuData)
-#         self.SetMenuBar(self.menubar)		
-#         #endregion -----------------------------------------------------> Menu
+        #region --------------------------------------------------------> Menu
+        self.mBar = menu.ToolMenuBar(self.cName, cMenuData)
+        self.SetMenuBar(self.mBar)		
+        #endregion -----------------------------------------------------> Menu
         
-#         #region ------------------------------------------------------> Sizers
-#         self.Sizer = wx.BoxSizer(wx.VERTICAL)
-#         self.SetSizer(self.Sizer)
-#         #endregion ---------------------------------------------------> Sizers
+        #region ------------------------------------------------------> Sizers
+        self.sSizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.sSizer)
+        #endregion ---------------------------------------------------> Sizers
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_CLOSE, self.OnClose)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
-#     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
-#         """Destroy window. Override as needed.
+    #------------------------------> Class methods
+    #region ---------------------------------------------------> Event Methods
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Destroy window. Override as needed.
     
-#             Parameters
-#             ----------
-#             event: wx.CloseEvent
-#                 Information about the event
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
                 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------> Reduce win number
-#         try:
-#             config.winNumber[self.name] -= 1
-#         except Exception:
-#             pass
-#         #endregion ----------------------------------------> Reduce win number
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------> Reduce win number
+        try:
+            config.winNumber[self.cName] -= 1
+        except Exception:
+            pass
+        #endregion ----------------------------------------> Reduce win number
         
-#         #region -----------------------------------------------------> Destroy
-#         self.Destroy()
-#         #endregion --------------------------------------------------> Destroy
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
         
-#         return True
-#     #---
-    
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
 #     def OnDupWin(self) -> Literal[True]:
 #         """Duplicate window. Used by Result windows. Override as needed.
     
@@ -440,8 +429,7 @@
 #             #------------------------------> 
 #             return False
 #     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+#---
 
 
 # class BaseWindowPlot(BaseWindow):
@@ -995,197 +983,196 @@
 #     #endregion ------------------------------------------------> Class methods
 # #---
 
-# #endregion -----------------------------------------------------> Base Classes
+#endregion -----------------------------------------------------> Base Classes
 
 
-# #region -------------------------------------------------------------> Classes
-# class MainWindow(BaseWindow):
-#     """Creates the main window of the App.
+#region -------------------------------------------------------------> Classes
+class MainWindow(BaseWindow):
+    """Creates the main window of the App.
     
-#         Parameters
-#         ----------
-#         parent : wx widget or None
-#             Parent of the main window.
+        Parameters
+        ----------
+        cParent : wx widget or None
+            Parent of the main window.
         
-#         Attributes
-#         ----------
-#         name : str
-#             Name to id the window
-#         tabMethods: dict
-#             Methods to create the tabs.
-#         notebook : wx.lib.agw.aui.auibook.AuiNotebook
-#             Notebook associated with the window
-#     """
-#     #region -----------------------------------------------------> Class Setup
-#     name = config.nwMain
+        Attributes
+        ----------
+        cName : str
+            Name to id the window
+        dTab: dict
+            Methods to create the tabs.
+        wNotebook : wx.lib.agw.aui.auibook.AuiNotebook
+            Notebook associated with the window
+    """
+    #region -----------------------------------------------------> Class Setup
+    cName = config.nwMain
     
-#     tabMethods = { # Keys are the unique names of the tabs
-#         config.ntStart   : tab.Start,
-#         config.ntCorrA   : tab.BaseConfTab,
-#         config.ntDataPrep: tab.BaseConfListTab,
-#         config.ntLimProt : tab.BaseConfListTab,
-#         config.ntProtProf: tab.BaseConfListTab,
-#     }
-#     #endregion --------------------------------------------------> Class Setup
+    dTab = { # Keys are the unique names of the tabs
+        config.ntStart   : tab.Start,
+        config.ntCorrA   : tab.BaseConfTab,
+        # config.ntDataPrep: tab.BaseConfListTab,
+        # config.ntLimProt : tab.BaseConfListTab,
+        # config.ntProtProf: tab.BaseConfListTab,
+    }
+    #endregion --------------------------------------------------> Class Setup
     
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, parent: Optional[wx.Window]=None) -> None:
-#         """"""
-#         #region -----------------------------------------------> Initial setup
-#         super().__init__(parent=parent)
-#         #endregion --------------------------------------------> Initial setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cParent: Optional[wx.Window]=None) -> None:
+        """"""
+        #region -----------------------------------------------> Initial setup
+        super().__init__(cParent=cParent)
+        #endregion --------------------------------------------> Initial setup
 
-#         #region -----------------------------------------------------> Widgets
-#         #------------------------------> StatusBar fields
-#         self.statusbar.SetFieldsCount(2, config.sSbarFieldSizeI)
-#         self.statusbar.SetStatusText(f"{config.softwareF} {config.version}", 1)
-#         #------------------------------> Notebook
-#         self.notebook = aui.auibook.AuiNotebook(
-#             self,
-#             agwStyle=aui.AUI_NB_TOP|aui.AUI_NB_CLOSE_ON_ALL_TABS|aui.AUI_NB_TAB_MOVE,
-#         )
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> StatusBar fields
+        self.wStatBar.SetFieldsCount(2, config.sSbarFieldSizeI)
+        self.wStatBar.SetStatusText(f"{config.softwareF} {config.version}", 1)
+        #------------------------------> Notebook
+        self.wNotebook = aui.auibook.AuiNotebook(
+            self,
+            agwStyle=aui.AUI_NB_TOP|aui.AUI_NB_CLOSE_ON_ALL_TABS|aui.AUI_NB_TAB_MOVE,
+        )
+        #endregion --------------------------------------------------> Widgets
 
-#         #region ------------------------------------------------------> Sizers
-#         self.Sizer.Add(self.notebook, 1, wx.EXPAND|wx.ALL, 5)
-#         #endregion ---------------------------------------------------> Sizers
+        #region ------------------------------------------------------> Sizers
+        self.sSizer.Add(self.wNotebook, 1, wx.EXPAND|wx.ALL, 5)
+        #endregion ---------------------------------------------------> Sizers
 
-#         #region --------------------------------------------> Create Start Tab
-#         self.CreateTab(config.ntStart)
-#         self.notebook.SetCloseButton(0, False)
-#         #endregion -----------------------------------------> Create Start Tab
+        #region --------------------------------------------> Create Start Tab
+        self.OnCreateTab(config.ntStart)
+        self.wNotebook.SetCloseButton(0, False)
+        #endregion -----------------------------------------> Create Start Tab
 
-#         #region ---------------------------------------------> Position & Show
-#         self.Center()
-#         self.Show()
-#         #endregion ------------------------------------------> Position & Show
+        #region ---------------------------------------------> Position & Show
+        self.Center()
+        self.Show()
+        #endregion ------------------------------------------> Position & Show
 
-#         #region	------------------------------------------------------> Update
-#         if config.general["checkUpdate"]:
-#             _thread.start_new_thread(UpdateCheck, ("main", self))
-#         else:
-#             pass
-#         #endregion	--------------------------------------------------> Update
+        #region	------------------------------------------------------> Update
+        if config.general["checkUpdate"]:
+            _thread.start_new_thread(UpdateCheck, ("main", self))
+        else:
+            pass
+        #endregion	--------------------------------------------------> Update
 
-#         #region --------------------------------------------------------> Bind
-#         self.notebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------------> Bind
+        self.wNotebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ----------------------------------------------------> Menu methods
-#     def OnTabClose(self, event: wx.Event) -> bool:
-#         """Make sure to show the Start Tab if no other tab exists
+    #region ---------------------------------------------------> Event methods
+    def OnTabClose(self, event: wx.Event) -> bool:
+        """Make sure to show the Start Tab if no other tab exists
         
-#             Parameters
-#             ----------
-#             event : wx.aui.Event
-#                 Information about the event
+            Parameters
+            ----------
+            event : wx.aui.Event
+                Information about the event
                 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #------------------------------> Close Tab
-#         event.Skip()
-#         #------------------------------> Number of tabs
-#         pageC = self.notebook.GetPageCount() - 1
-#         #------------------------------> Update tabs & close buttons
-#         if pageC == 1:
-#             #------------------------------> Remove close button from Start tab
-#             if (win := self.FindWindowByName(config.ntStart)) is not None:
-#                 self.notebook.SetCloseButton(
-#                     self.notebook.GetPageIndex(win), 
-#                     False,
-#                 )
-#             else:
-#                 pass
-#         elif pageC == 0:
-#             #------------------------------> Show Start Tab with close button
-#             self.CreateTab(config.ntStart)
-#             self.notebook.SetCloseButton(
-#                 self.notebook.GetPageIndex(
-#                     self.FindWindowByName(config.ntStart)
-#                 ), 
-#                 False,
-#             )
-#         else:
-#             pass
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> Close Tab
+        event.Skip()
+        #------------------------------> Number of tabs
+        pageC = self.wNotebook.GetPageCount() - 1
+        #------------------------------> Update tabs & close buttons
+        if pageC == 1:
+            #------------------------------> Remove close button from Start tab
+            if (win := self.FindWindowByName(config.ntStart)) is not None:
+                self.wNotebook.SetCloseButton(
+                    self.wNotebook.GetPageIndex(win), 
+                    False,
+                )
+            else:
+                pass
+        elif pageC == 0:
+            #------------------------------> Show Start Tab with close button
+            self.OnCreateTab(config.ntStart)
+            self.wNotebook.SetCloseButton(
+                self.wNotebook.GetPageIndex(
+                    self.FindWindowByName(config.ntStart)), 
+                False,
+            )
+        else:
+            pass
         
-#         return True
-#     #---
+        return True
+    #---
 
-#     def CreateTab(self, name: str, dataI: Optional[dict]=None) -> bool:
-#         """Create a tab.
+    def OnCreateTab(self, rName: str, rDataI: Optional[dict]=None) -> bool:
+        """Create a tab.
         
-#             Parameters
-#             ----------
-#             name : str
-#                 One of the values in config.name for tabs
-#             dataI: dict or None
-#                 Initial data for the tab
+            Parameters
+            ----------
+            rName : str
+                One of the values in config.name for tabs
+            rDataI: dict or None
+                Initial data for the tab
                 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -----------------------------------------------------> Get tab
-#         win = self.FindWindowByName(name)
-#         #endregion --------------------------------------------------> Get tab
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------------> Get tab
+        rWin = self.FindWindowByName(rName)
+        #endregion --------------------------------------------------> Get tab
         
-#         #region ------------------------------------------> Find/Create & Show
-#         if win is None:
-#             #------------------------------> Create tab
-#             self.notebook.AddPage(
-#                 self.tabMethods[name](self.notebook, name, dataI),
-#                 config.t.get(name, config.tdT),
-#                 select = True,
-#             )
-#         else:
-#             #------------------------------> Focus
-#             self.notebook.SetSelection(self.notebook.GetPageIndex(win))
-#             #------------------------------> Initial Data
-#             win.conf.SetInitialData(dataI)
-#         #endregion ---------------------------------------> Find/Create & Show
+        #region ------------------------------------------> Find/Create & Show
+        if rWin is None:
+            #------------------------------> Create tab
+            self.wNotebook.AddPage(
+                self.dTab[rName](self.wNotebook, rName, rDataI),
+                config.t.get(rName, config.tdT),
+                select = True,
+            )
+        else:
+            #------------------------------> Focus
+            self.wNotebook.SetSelection(self.wNotebook.GetPageIndex(rWin))
+            #------------------------------> Initial Data
+            rWin.conf.SetInitialData(rDataI)
+        #endregion ---------------------------------------> Find/Create & Show
 
-#         #region ---------------------------------------------------> Start Tab
-#         if self.notebook.GetPageCount() > 1:
-#             winS = self.FindWindowByName(config.ntStart)
-#             if winS is not None:
-#                 self.notebook.SetCloseButton(
-#                     self.notebook.GetPageIndex(winS), 
-#                     True,
-#                 )
-#             else:
-#                 pass
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Start Tab
+        #region ---------------------------------------------------> Start Tab
+        if self.wNotebook.GetPageCount() > 1:
+            rWinS = self.FindWindowByName(config.ntStart)
+            if rWinS is not None:
+                self.wNotebook.SetCloseButton(
+                    self.wNotebook.GetPageIndex(rWinS), 
+                    True,
+                )
+            else:
+                pass
+        else:
+            pass
+        #endregion ------------------------------------------------> Start Tab
         
-#         return True
-#     #---
+        return True
+    #---
 
-#     def OnClose(self, event: wx.CloseEvent) -> bool:
-#         """Destroy window and set config.winMain to None.
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Destroy window and set config.winMain to None.
     
-#             Parameters
-#             ----------
-#             event: wx.CloseEvent
-#                 Information about the event
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
                 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #------------------------------> 
-#         self.Destroy()
-#         #------------------------------> 
-#         config.winMain = None
-#         #------------------------------> 
-#         return True
-#     #---
-#     #endregion -------------------------------------------------> Menu methods
-# #---
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        self.Destroy()
+        #------------------------------> 
+        config.winMain = None
+        #------------------------------> 
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+#---
 
 
 # class CorrAPlot(BaseWindowPlot):
@@ -6685,134 +6672,121 @@
 #     #---
 #     #endregion ------------------------------------------------> Class methods
 # #---
-# #endregion ----------------------------------------------------------> Classes
+#endregion ----------------------------------------------------------> Classes
 
 
-# #region -----------------------------------------------------------> wx.Dialog
-# class CheckUpdateResult(wx.Dialog):
-#     """Show a dialog with the result of the check for update operation.
+#region -----------------------------------------------------------> wx.Dialog
+class CheckUpdateResult(wx.Dialog):
+    """Show a dialog with the result of the check for update operation.
     
-#         Parameters
-#         ----------
-#         parent : wx widget or None
-#             To center the dialog in parent. Default None
-#         checkRes : str or None
-#             Internet lastest version. Default None
+        Parameters
+        ----------
+        cParent : wx widget or None
+            To center the dialog in parent. Default None
+        cCheckRes : str or None
+            Internet lastest version. Default None
 
-#         Attributes
-#         ----------
-#         name : str
-#             Unique window id
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     name = config.ndCheckUpdateResDialog
-#     #------------------------------> Style
-#     cStyle = wx.CAPTION|wx.CLOSE_BOX
-#     #------------------------------> Label
-#     clLatest = "You are using the latest version of UMSAP."
-#     clLink   = 'Read the Release Notes.'
-#     #endregion --------------------------------------------------> Class setup
+        Attributes
+        ----------
+        cName : str
+            Unique window id
+        cStyle: wx Style spec
+            Style of the dialog
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = config.ndCheckUpdateResDialog
+    #------------------------------> Style
+    cStyle = wx.CAPTION|wx.CLOSE_BOX
+    #endregion --------------------------------------------------> Class setup
     
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, parent: Optional[wx.Window]=None, checkRes: Optional[str]=None,
-#         ) -> None:
-#         """"""
-#         #region -----------------------------------------------> Initial setup
-#         super().__init__(parent, title=config.t[self.name], style=self.cStyle)
-#         #endregion --------------------------------------------> Initial setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: Optional[wx.Window]=None, cCheckRes: Optional[str]=None,
+        ) -> None:
+        """"""
+        #region -----------------------------------------------> Initial setup
+        super().__init__(cParent, title=config.t[self.cName], style=self.cStyle)
+        #endregion --------------------------------------------> Initial setup
 
-#         #region -----------------------------------------------------> Widgets
-#         #------------------------------> Msg
-#         if checkRes is None:
-#             msg = self.clLatest
-#         else:
-#             msg = (
-#                 f"UMSAP {checkRes} is already available.\n"
-#                 f"You are currently using UMSAP {config.version}."
-#             )
-#         self.stMsg = wx.StaticText(
-#             self, 
-#             label = msg,
-#             style = wx.ALIGN_LEFT,
-#         )
-#         #------------------------------> Link	
-#         if checkRes is not None:
-#             self.stLink = adv.HyperlinkCtrl(
-#                 self,
-#                 label = self.clLink,
-#                 url   = config.urlUpdate,
-#             )
-#         else:
-#             pass
-#         #------------------------------> Img
-#         self.img = wx.StaticBitmap(
-#             self,
-#             bitmap = wx.Bitmap(str(config.fImgIcon), wx.BITMAP_TYPE_PNG),
-#         )
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Msg
+        if cCheckRes is None:
+            msg = config.lStUpdateCheckLast
+        else:
+            msg = config.lStUpdateCheckAvail.format(cCheckRes, config.version)
+        self.wStMsg = wx.StaticText(self, label=msg, style=wx.ALIGN_LEFT)
+        #------------------------------> Link	
+        if cCheckRes is not None:
+            self.wStLink = adv.HyperlinkCtrl(
+                self, label=config.lHlcReadRelNotes, url=config.urlUpdate)
+        else:
+            pass
+        #------------------------------> Img
+        self.wImg = wx.StaticBitmap(
+            self, bitmap=wx.Bitmap(str(config.fImgIcon), wx.BITMAP_TYPE_PNG))
+        #endregion --------------------------------------------------> Widgets
 
-#         #region ------------------------------------------------------> Sizers
-#         #------------------------------> Button Sizers
-#         self.btnSizer = self.CreateStdDialogButtonSizer(wx.OK)
-#         #------------------------------> TextSizer
-#         self.tSizer = wx.BoxSizer(wx.VERTICAL)
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Button Sizers
+        self.sBtn = self.CreateStdDialogButtonSizer(wx.OK)
+        #------------------------------> TextSizer
+        self.sText = wx.BoxSizer(wx.VERTICAL)
         
-#         self.tSizer.Add(self.stMsg, 0, wx.ALIGN_LEFT|wx.ALL, 10)
-#         if checkRes is not None:
-#             self.tSizer.Add(self.stLink, 0, wx.ALIGN_CENTER|wx.ALL, 10)
-#         else:
-#             pass
-#         #------------------------------> Image Sizer
-#         self.imgSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.sText.Add(self.wStMsg, 0, wx.ALIGN_LEFT|wx.ALL, 10)
+        if cCheckRes is not None:
+            self.sText.Add(self.wStLink, 0, wx.ALIGN_CENTER|wx.ALL, 10)
+        else:
+            pass
+        #------------------------------> Image Sizer
+        self.sImg = wx.BoxSizer(wx.HORIZONTAL)
         
-#         self.imgSizer.Add(self.img, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-#         self.imgSizer.Add(self.tSizer, 0, wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
-#         #------------------------------> Main Sizer
-#         self.Sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sImg.Add(self.wImg, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.sImg.Add(
+            self.sText, 0, wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
+        #------------------------------> Main Sizer
+        self.sSizer = wx.BoxSizer(wx.VERTICAL)
         
-#         self.Sizer.Add(self.imgSizer, 0, wx.ALIGN_CENTER|wx.TOP|wx.LEFT|wx.RIGHT, 25)
-#         self.Sizer.Add(self.btnSizer, 0, wx.ALIGN_RIGHT|wx.RIGHT|wx.BOTTOM, 10)
+        self.sSizer.Add(
+            self.sImg, 0, wx.ALIGN_CENTER|wx.TOP|wx.LEFT|wx.RIGHT, 25)
+        self.sSizer.Add(
+            self.sBtn, 0, wx.ALIGN_RIGHT|wx.RIGHT|wx.BOTTOM, 10)
         
-#         self.SetSizer(self.Sizer)
-#         self.Sizer.Fit(self)
-#         #endregion ---------------------------------------------------> Sizers
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        #endregion ---------------------------------------------------> Sizers
 
-#         #region --------------------------------------------------------> Bind
-#         if checkRes is not None:
-#             self.stLink.Bind(adv.EVT_HYPERLINK, self.OnLink)
-#         else:
-#             pass
-#         #endregion -----------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
+        if cCheckRes is not None:
+            self.wStLink.Bind(adv.EVT_HYPERLINK, self.OnLink)
+        else:
+            pass
+        #endregion -----------------------------------------------------> Bind
 
-#         #region ---------------------------------------------> Position & Show
-#         if parent is None:
-#             self.CenterOnScreen()
-#         else:
-#             self.CentreOnParent()
-#         self.ShowModal()
-#         self.Destroy()
-#         #endregion ------------------------------------------> Position & Show
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region ---------------------------------------------> Position & Show
+        self.CentreOnParent()
+        self.ShowModal()
+        self.Destroy()
+        #endregion ------------------------------------------> Position & Show
+    #---
+    #endregion -----------------------------------------------> Instance setup
     
-#     #region ---------------------------------------------------> Class Methods
-#     def OnLink(self, event) -> Literal[True]:
-#         """Process the link event.
+    #region ---------------------------------------------------> Class Methods
+    def OnLink(self, event: wx.Event) -> Literal[True]:
+        """Process the link event.
         
-#             Parameters
-#             ----------
-#             event : wx.adv.Event
-#                 Information about the event
-#         """
-#         #------------------------------> 
-#         event.Skip()
-#         self.EndModal(1)
-#         self.Destroy()
-#         #------------------------------> 
-#         return True
-#     #endregion ------------------------------------------------> Class Methods
-# #---
+            Parameters
+            ----------
+            event : wx.adv.HyperlinkEvent
+                Information about the event
+        """
+        #------------------------------> 
+        event.Skip()
+        self.EndModal(1)
+        self.Destroy()
+        #------------------------------> 
+        return True
+    #endregion ------------------------------------------------> Class Methods
+#---
 
 
 # class ResControlExp(wx.Dialog):
@@ -7205,7 +7179,7 @@
 #     #---
 #     #endregion ------------------------------------------------> Class methods
 # #---
-# #endregion --------------------------------------------------------> wx.Dialog
+#endregion --------------------------------------------------------> wx.Dialog
 
 
 
