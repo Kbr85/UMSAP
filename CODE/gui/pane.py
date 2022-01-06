@@ -383,6 +383,7 @@ class BaseConfPanel(
 
         self.wCeroB = wx.CheckBox(self.sbData, label=self.cLCeroTreat)
         self.wCeroB.SetValue(True)
+        self.wCeroB.SetToolTip(config.ttStCeroTreatment)
         
         self.wNormMethod = dtsWidget.StaticTextComboBox(
             self.sbData, 

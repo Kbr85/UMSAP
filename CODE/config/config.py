@@ -332,12 +332,16 @@ ttBtnAddCol = (
     f'selected element in Columns to analyse. Duplicate columns '
     f'are discarded.')
 # #------------------------------> wx.StaticText
-ttStId = 'Short text to id the analysis. Do not include the date.'
-ttStTrans = f"Select the {lCbTransMethod} method."
-ttStNorm = f"Select the {lCbNormMethod} method."
-ttStImputation = f"Select the {lCbImputation} method."
-# ttStAlpha = "Significance level for the statistical analysis.\ne.g. 0.05"
-ttStCorr = f"Select the {lCbCorrMethod}."
+ttStId = ('Short text to id the analysis. Do not include the date of the '
+    'analysis.')
+ttStCeroTreatment = (f'Cero values in the {lBtnDataFile} File will be treated '
+    f'as missing values when this option is selected or as real values when '
+    f'the option is not selected.')
+ttStTrans = f'Select the Data {lCbTransMethod} method.'
+ttStNorm = f'Select the Data {lCbNormMethod} method.'
+ttStImputation = f'Select the Data {lCbImputation} method.'
+# ttStAlpha = 'Significance level for the statistical analysis.\ne.g. 0.05'
+ttStCorr = f'Select the {lCbCorrMethod}.'
 # ttStScoreVal = f"Set the minimum acceptable Score value.\ne.g. -4"
 # ttStPCorrection = "Select the p correction method."
 # ttStMedianCorr = "Select whether to apply a median correction."
