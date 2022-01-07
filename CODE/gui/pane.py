@@ -15,8 +15,8 @@
 
 
 #region -------------------------------------------------------------> Imports
-# import _thread 
-# import shutil
+import _thread 
+import shutil
 from pathlib import Path
 from typing import Optional, Union
 
@@ -28,10 +28,10 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 # import dat4s_core.data.check as dtsCheck
-# import dat4s_core.data.file as dtsFF
+import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
 import dat4s_core.data.statistic as dtsStatistic
-# import dat4s_core.exception.exception as dtsException
+import dat4s_core.exception.exception as dtsException
 import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 
@@ -197,7 +197,7 @@ class BaseConfPanel(
         rNCol: int
             Number of columns in the main input file - 1. Set when the file is
             read.
-        rOutFolder: Path or None
+        rOFolder: Path or None
             Folder to contain the output. Set based on the umsap file path.
         rSeqFileObj: dtsFF.FastaFile
             Object to work with the sequences of the proteins 
@@ -322,7 +322,7 @@ class BaseConfPanel(
         self.rDate = None
         self.rDateID = None
         #--------------> folder for output
-        self.rOutFolder = None
+        self.rOFolder = None
         #--------------> input file for directing repeating analysis from
         # file copied to oFolder
         self.rDFile   = None
@@ -643,6 +643,161 @@ class BaseConfPanel(
     #endregion ------------------------------------------------> Other Methods
     
     #region ----------------------------------------------------> Run Analysis
+    def OnRun(self, event: wx.CommandEvent) -> bool:
+        """ Start analysis of the module/utility
+
+            Parameter
+            ---------
+            event : wx.Event
+                Event information
+                
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Dlg window
+        self.rDlg = dtscore.ProgressDialog(
+            config.winMain, self.cTitlePD, self.cGaugePD)
+        #endregion -----------------------------------------------> Dlg window
+
+        #region ------------------------------------------------------> Thread
+        _thread.start_new_thread(self.Run, ('test',))
+        #endregion ---------------------------------------------------> Thread
+
+        #region ----------------------------------------> Show progress dialog
+        self.rDlg.ShowModal()
+        self.rDlg.Destroy()
+        #endregion -------------------------------------> Show progress dialog
+
+        return True
+    #---
+    
+    def CheckInput(self) -> bool:
+        """Check individual fields in the user input.
+        
+            Returns
+            -------
+            bool
+        
+            Notes
+            -----
+            The child class must define a rCheckUserInput dict with the correct
+            order for the checking process.
+            
+            rCheckUserInput = {
+                'Field label' : [Widget, BaseErrorMessage]
+            }
+            
+            BaseErrorMessage must be a string with two placeholder for the 
+            error value and Field label in that order. For example:
+            'File: {bad_path_placeholder}\n cannot be used as 
+                                                    {Field_label_placeholder}'
+        """
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdCheck
+        #endregion ------------------------------------------------------> Msg
+        
+        #region -------------------------------------------------------> Check
+        for k,v in self.rCheckUserInput.items():
+            #------------------------------> 
+            msgStep = msgPrefix + k
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------> 
+            a, b = v[0].GetValidator().Validate()
+            if a:
+                pass
+            else:
+                self.rMsgError = dtscore.StrSetMessage(
+                    v[1].format(b[1], k), b[2])
+                return False
+        #endregion ----------------------------------------------------> Check
+        
+        return True
+    #---
+    
+    def EqualLenLabel(self, label: str) -> str:
+        """Add empty space to the end of label to match the length of
+            self.rLLenLongest
+    
+            Parameters
+            ----------
+            label : str
+                Original label
+    
+            Returns
+            -------
+            str
+                Label with added empty strings at the end to match the length of
+                self.rLLenLongest
+            
+            Notes
+            -----
+            It assumes child class defines a self.rLLenLongest with the length
+            of the longest name for the input fields.
+        """
+        return f"{label}{(self.rLLenLongest - len(label))*' '}" 
+    #---
+    
+    def ReadInputFiles(self) -> bool:
+        """Read input file and check data
+        
+            Return
+            ------
+            bool
+            
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - rDO: dict with at least the following key - values:
+                {
+                    'iFile' : Path to data file,
+                    'seqFile' : Path to the sequence file or no key - value,
+                }
+        """
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdReadFile
+        #endregion ------------------------------------------------------> Msg
+
+        #region ---------------------------------------------------> Data file
+        #------------------------------> 
+        msgStep = msgPrefix + f"{self.cLiFile}, reading"
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.rIFileObj = dtsFF.CSVFile(self.rDO['iFile'])
+        except dtsException.FileIOError as e:
+            self.rMsgError = config.mFileRead.format(self.rDO['iFile'])
+            self.rException = e
+            return False
+        #endregion ------------------------------------------------> Data file
+        
+        #region ------------------------------------------------> Seq Rec File
+        if self.rDO.get('seqFile', None) is not None:
+            #------------------------------> 
+            msgStep = msgPrefix + f"{self.cLSeqFile}, reading"
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------> 
+            try:
+                self.rSeqFileObj = dtsFF.FastaFile(self.rDO['seqFile'])
+            except Exception as e:
+                self.msgError = config.mFileRead.format(self.rDO['seqFile'])
+                self.tException = e
+                return False
+        else:
+            pass
+        #endregion ---------------------------------------------> Seq Rec File
+        
+        #region ---------------------------------------------------> Print Dev
+        if config.development and self.rSeqFileObj is not None:
+            print("Rec Seq: ", self.rSeqFileObj.seqRec)
+            print("Nat Seq: ", self.rSeqFileObj.seqNat)
+        else:
+            pass
+        #endregion ------------------------------------------------> Print Dev
+        
+        return True
+    #---
+    
     def DataPreparation(self, resetIndex=True) -> bool:
         """Perform the data preparation step.
             
@@ -993,192 +1148,232 @@ class BaseConfPanel(
         
         return True
     #---
+    
+    def SetOutputDict(self, dateDict) -> dict:
+        """Creates the output dictionary to be written to the output file 
+        
+            Parameters
+            ----------
+            dateDict : dict
+                dateDict = {
+                    date : {
+                        'V' : config.dictVersion,
+                        'I' : self.d,
+                        'CI': dtsMethod.DictVal2Str(
+                            self.do, self.changeKey, new=True,
+                        ),
+                        'R' : Results,
+                    }
+                }
+            
+            Return
+            ------
+            dict
+                Output data as a dict
+                
+            Notes
+            -----
+            If the output file already exists the new data is added to the
+            existing data in the corresponding section.
+            It assumes child class defines a self.cSection attributes with the
+            section name of the analysis.
+        """
+        #region ---------------------------------------------------> Read File
+        if self.rDO['uFile'].exists():
+            try:
+                outData = dtsFF.ReadJSON(self.rDO['uFile'])
+            except Exception as e:
+                msg = config.mFileRead.format(self.rDO['uFile'])
+                raise dtsException.ExecutionError(msg)
+        else:
+            outData = {}
+        #endregion ------------------------------------------------> Read File
+        
+        #region ------------------------------------------------> Add new data
+        if outData.get(self.cSection, False):
+                outData[self.cSection][self.rDateID] = dateDict[self.rDateID]
+        else:
+            outData[self.cSection] = dateDict
+        #endregion ---------------------------------------------> Add new data
+
+        return outData
+    #---
+
+    def WriteOutputData(self, stepDict: dict) -> bool:
+        """Write output. 
+        
+            Parameters
+            ----------
+            stepDict : dict
+                Dict with the data to write the step by step data files
+                Keys are file names and values pd.DataFrame with the values
+                
+            Return
+            ------
+            bool
+        """
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdWrite
+        #endregion ------------------------------------------------------> Msg
+        
+        #region -----------------------------------------------> Create folder
+        #------------------------------> 
+        msgStep = msgPrefix + 'Creating needed folders, Data-Steps folder'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        dataFolder = f"{self.rDate}_{self.cSection}"
+        dataFolder = self.rOFolder / config.fnDataSteps / dataFolder
+        dataFolder.mkdir(parents=True, exist_ok=True)
+        #------------------------------> 
+        msgStep = msgPrefix + 'Creating needed folders, Data-Initial folder'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        dataInit = self.rOFolder / config.fnDataInit
+        dataInit.mkdir(parents=True, exist_ok=True)
+        #endregion --------------------------------------------> Create folder
+        
+        #region ------------------------------------------------> Data Initial
+        msgStep = msgPrefix + 'Data files, Data file'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        piFolder = self.rDO['iFile'].parent
+        puFolder = self.rDO['uFile'].parent / config.fnDataInit
+        #------------------------------>
+        if not piFolder == puFolder:
+            #------------------------------> 
+            name = (
+                f"{self.rDate}-{self.rDO['iFile'].stem}{self.rDO['iFile'].suffix}")
+            self.rDFile = puFolder/name
+            #------------------------------> 
+            shutil.copy(self.rDO['iFile'], self.rDFile)
+            #------------------------------> 
+            self.rDI[self.EqualLenLabel(self.cLiFile)] = str(self.rDFile)
+        else:
+            self.rDFile = None
+        #endregion ---------------------------------------------> Data Initial
+        
+        #region --------------------------------------------------> Data Steps
+        msgStep = msgPrefix + 'Data files, Step by Step Data files'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        try:
+            dtsFF.WriteDFs2CSV(dataFolder, stepDict)
+        except Exception as e:
+            self.rMsgError = config.mFiledataSteps
+            self.rException = e
+            return False
+        #endregion -----------------------------------------------> Data Steps
+        
+        #region --------------------------------------------------> UMSAP File
+        msgStep = msgPrefix + 'Main file'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> Create output dict
+        dateDict = {
+            self.rDateID : {
+                'V' : config.dictVersion,
+                'I' : self.rDI,
+                'CI': dtsMethod.DictVal2Str(self.rDO, self.rChangeKey, new=True),
+                'DP': {
+                    config.ltDPKeys[0] : self.dfS.to_dict(),
+                    config.ltDPKeys[1] : self.dfT.to_dict(),
+                    config.ltDPKeys[2] : self.dfN.to_dict(),
+                    config.ltDPKeys[3] : self.dfIm.to_dict(),
+                },
+            }
+        }
+        #-------------->  DataPrep Util does not have dfR
+        if self.dfR is not None:
+            dateDict[self.rDateID]['R'] = dtsMethod.DictTuplesKey2StringKey(
+                self.dfR.to_dict()
+            )
+        else:
+            pass
+        #------------------------------> Append or not
+        try:
+            outData = self.SetOutputDict(dateDict)
+        except Exception as e:
+            self.rMsgError = config.mFileUMSAPDict
+            self.rException = e
+            return False
+        #------------------------------> Write
+        try:
+            dtsFF.WriteJSON(self.rDO['uFile'], outData)
+        except Exception as e:
+            self.rMsgError = config.mFileUMSAP
+            self.rException = e
+            return False
+        #endregion -----------------------------------------------> UMSAP File
+
+        return True
+    #---
+    
+    def LoadResults(self) -> bool:
+        """Load output file
+        
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdLoad
+        #endregion ------------------------------------------------------> Msg
+
+        #region --------------------------------------------------------> Load
+        wx.CallAfter(self.rDlg.UpdateStG, msgPrefix)
+        
+        # wx.CallAfter(gmethod.LoadUMSAPFile, fileP=self.do['uFile'])
+        #endregion -----------------------------------------------------> Load
+
+        return True
+    #---
+    
+    def RunEnd(self) -> bool:
+        """Restart GUI and needed variables
+        
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------> Dlg progress dialogue
+        if self.rMsgError is None:
+            #--> 
+            self.rDlg.SuccessMessage(
+                config.lPdDone, eTime=f"{config.lPdEllapsed} {self.deltaT}")
+        else:
+            self.rDlg.ErrorMessage(
+                config.lPdError,error=self.rMsgError,tException=self.rException)
+        #endregion ------------------------------------> Dlg progress dialogue
+
+        #region -------------------------------------------------------> Reset
+        self.rMsgError  = None # Error msg to show in self.RunEnd
+        self.rException = None # Exception
+        self.rDI        = {} # Dict with the user input as given
+        self.rDO        = {} # Dict with the processed user input
+        self.dfI        = pd.DataFrame() # pd.DataFrame for initial, normalized 
+        self.dfF        = pd.DataFrame() # etc
+        self.dfTP       = pd.DataFrame()
+        self.dfE        = pd.DataFrame()
+        self.dfS        = pd.DataFrame()
+        self.dfT        = pd.DataFrame()
+        self.dfN        = pd.DataFrame()
+        self.dfIm       = pd.DataFrame()
+        self.dfR        = pd.DataFrame()
+        self.rDate      = None # date for corr file
+        self.rDateID    = None
+        self.rOFolder = None # folder for output
+        self.rIFileObj  = None
+        self.deltaT     = None # Defined in DAT4S 
+        
+        if self.rDFile is not None:
+            self.wIFile.tc.SetValue(str(self.rDFile))
+        else:
+            pass
+        self.rDFile = None # Data File copied to Data-Initial
+        #endregion ----------------------------------------------------> Reset
+        
+        return True
+    #---
     #endregion -------------------------------------------------> Run Analysis
 
 
-#     def SetOutputDict(self, dateDict) -> dict:
-#         """Creates the output dictionary to be written to the output file 
-        
-#             Parameters
-#             ----------
-#             dateDict : dict
-#                 dateDict = {
-#                     date : {
-#                         'V' : config.dictVersion,
-#                         'I' : self.d,
-#                         'CI': dtsMethod.DictVal2Str(
-#                             self.do, self.changeKey, new=True,
-#                         ),
-#                         'R' : Results,
-#                     }
-#                 }
-            
-#             Return
-#             ------
-#             dict
-#                 Output data as a dict
-                
-#             Notes
-#             -----
-#             If the output file already exists the new data is added to the
-#             existing data.
-#             It assumes child class defines a self.cSection attributes with the
-#             section name of the analysis.
-#         """
-#         #region ---------------------------------------------------> Read File
-#         if self.do['uFile'].exists():
-#             try:
-#                 outData = dtsFF.ReadJSON(self.do['uFile'])
-#             except Exception as e:
-#                 msg = (
-#                     "It was not possible to read the existing UMSAP file:\n"
-#                     f'{self.do["uFile"]}')
-#                 raise dtsException.ExecutionError(msg)
-#         else:
-#             outData = {}
-#         #endregion ------------------------------------------------> Read File
-        
-#         #region ------------------------------------------------> Add new data
-#         if outData.get(self.cSection, False):
-#                 outData[self.cSection][self.dateID] = dateDict[self.dateID]
-#         else:
-#             outData[self.cSection] = dateDict
-#         #endregion ---------------------------------------------> Add new data
 
-#         return outData
-#     #---
-
-#     def EqualLenLabel(self, label: str) -> str:
-#         """Add empty space to the end of label to match the length of
-#             self.cLLenLongest
-    
-#             Parameters
-#             ----------
-#             label : str
-#                 Original label
-    
-#             Returns
-#             -------
-#             str
-#                 Label with added empty strings at the end to match the length of
-#                 self.cLLenLongest
-            
-#             Notes
-#             -----
-#             It assumes child class defines a self.cLLenLongest with the length
-#             of the longest name for the input fields.
-#         """
-#         return f"{label}{(self.cLLenLongest - len(label))*' '}" 
-#     #---
-    
-#     def WriteOutputData(self, stepDict: dict) -> bool:
-#         """Write output. 
-        
-#             Parameters
-#             ----------
-#             stepDict : dict
-#                 Dict with the data to write the step by step data files
-#                 Keys are file names and values pd.DataFrame with the values
-                
-#             Return
-#             ------
-#             bool
-#         """
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.lPdWrite
-#         #endregion ------------------------------------------------------> Msg
-        
-#         #region -----------------------------------------------> Create folder
-#         #------------------------------> 
-#         msgStep = msgPrefix + 'Creating needed folders, Data-Steps folder'
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         dataFolder = f"{self.date}_{self.cSection}"
-#         dataFolder = self.oFolder / config.fnDataSteps / dataFolder
-#         dataFolder.mkdir(parents=True, exist_ok=True)
-#         #------------------------------> 
-#         msgStep = msgPrefix + 'Creating needed folders, Data-Initial folder'
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         dataInit = self.oFolder / config.fnDataInit
-#         dataInit.mkdir(parents=True, exist_ok=True)
-#         #endregion --------------------------------------------> Create folder
-        
-#         #region ------------------------------------------------> Data Initial
-#         msgStep = msgPrefix + 'Data files, Data file'
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         #------------------------------> 
-#         piFolder = self.do['iFile'].parent
-#         puFolder = self.do['uFile'].parent / config.fnDataInit
-#         #------------------------------>
-#         if not piFolder == puFolder:
-#             #------------------------------> 
-#             name = (
-#                 f"{self.date}-{self.do['iFile'].stem}{self.do['iFile'].suffix}")
-#             self.dFile = puFolder/name
-#             #------------------------------> 
-#             shutil.copy(self.do['iFile'], self.dFile)
-#             #------------------------------> 
-#             self.d[self.EqualLenLabel(self.cLiFile)] = str(self.dFile)
-#         else:
-#             self.dFile = None
-#         #endregion ---------------------------------------------> Data Initial
-        
-#         #region --------------------------------------------------> Data Steps
-#         msgStep = msgPrefix + 'Data files, Step by Step Data files'
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         try:
-#             dtsFF.WriteDFs2CSV(dataFolder, stepDict)
-#         except Exception as e:
-#             self.msgError = (
-#                 "It was not possible to create the files with the data for the "
-#                 "intermediate steps of the analysis.")
-#             self.tException = e
-#             return False
-#         #endregion -----------------------------------------------> Data Steps
-        
-#         #region --------------------------------------------------> UMSAP File
-#         msgStep = msgPrefix + 'Main file'
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         #------------------------------> Create output dict
-#         dateDict = {
-#             self.dateID : {
-#                 'V' : config.dictVersion,
-#                 'I' : self.d,
-#                 'CI': dtsMethod.DictVal2Str(self.do, self.changeKey, new=True),
-#                 'DP': {
-#                     config.ltDPKeys[0] : self.dfS.to_dict(),
-#                     config.ltDPKeys[1] : self.dfT.to_dict(),
-#                     config.ltDPKeys[2] : self.dfN.to_dict(),
-#                     config.ltDPKeys[3] : self.dfIm.to_dict(),
-#                 },
-#             }
-#         }
-#         #-------------->  DataPrep Util does not have dfR
-#         if self.dfR is not None:
-#             dateDict[self.dateID]['R'] = dtsMethod.DictTuplesKey2StringKey(
-#                 self.dfR.to_dict()
-#             )
-#         else:
-#             pass
-#         #------------------------------> Append or not
-#         try:
-#             outData = self.SetOutputDict(dateDict)
-#         except Exception as e:
-#             self.msgError = ("It was not possible ")
-#             self.tException = e
-#             return False
-#         #------------------------------> Write
-#         try:
-#             dtsFF.WriteJSON(self.do['uFile'], outData)
-#         except Exception as e:
-#             self.msgError = (
-#                 "It was not possible to write the results of the analysis to "
-#                 "the selected UMSAP file.")
-#             self.tException = e
-#             return False
-#         #endregion -----------------------------------------------> UMSAP File
-
-#         return True
-#     #---
     
 #     def UniqueColumnNumber(self, l: list[wx.TextCtrl]) -> bool:
 #         """Check l contains unique numbers. 
@@ -1215,159 +1410,13 @@ class BaseConfPanel(
 #         return True
 #     #---
     
-#     def OnRun(self, event: wx.CommandEvent) -> Literal[True]:
-#         """ Start analysis of the module/utility
 
-#             Parameter
-#             ---------
-#             event : wx.Event
-#                 Event information
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------> Dlg window
-#         self.dlg = dtscore.ProgressDialog(
-#             config.winMain, self.cTitlePD, self.cGaugePD,
-#         )
-#         #endregion -----------------------------------------------> Dlg window
-
-#         #region ------------------------------------------------------> Thread
-#         _thread.start_new_thread(self.Run, ('test',))
-#         #endregion ---------------------------------------------------> Thread
-
-#         #region ----------------------------------------> Show progress dialog
-#         self.dlg.ShowModal()
-#         self.dlg.Destroy()
-#         #endregion -------------------------------------> Show progress dialog
-
-#         return True
-#     #---
     
-#     def CheckInput(self) -> bool:
-#         """Check individual fields in the user input.
-        
-#             Returns
-#             -------
-#             bool
-        
-#             Notes
-#             -----
-#             The child class must define a checkUserInput dict with the correct
-#             order for the checking process.
-            
-#             checkUserInput = {
-#                 'Field label' : [Widget, BaseErrorMessage]
-#             }
-            
-#             BaseErrorMessage must be a string with two placeholder for the 
-#             error value and Field label in that order. For example:
-#             'File: {bad_path_placeholder}\n cannot be used as 
-#                                                     {Field_label_placeholder}'
-#         """
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.lPdCheck
-#         #endregion ------------------------------------------------------> Msg
-        
-#         #region -------------------------------------------------------> Check
-#         for k,v in self.checkUserInput.items():
-#             #------------------------------> 
-#             msgStep = msgPrefix + k
-#             wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#             #------------------------------> 
-#             a, b = v[0].GetValidator().Validate()
-#             if a:
-#                 pass
-#             else:
-#                 self.msgError = dtscore.StrSetMessage(
-#                     v[1].format(b[1], k), b[2],
-#                 )
-#                 return False
-#         #endregion ----------------------------------------------------> Check
-        
-#         return True
-#     #---
-    
-#     def ReadInputFiles(self) -> bool:
-#         """Read input file and check data
-        
-#             Return
-#             ------
-#             bool
-            
-#             Notes
-#             -----
-#             Assumes child class has the following attributes:
-#             - do: dict with at least the following key - values:
-#                 {
-#                     'iFile' : Path to data file,
-#                     'seqFile' : Path to the sequence file or no key - value,
-#                 }
-        
-#         """
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.lPdReadFile
-#         #endregion ------------------------------------------------------> Msg
 
-#         #region ---------------------------------------------------> Data file
-#         #------------------------------> 
-#         msgStep = msgPrefix + f"{self.cLiFile}, reading"
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         #------------------------------> 
-#         try:
-#             self.iFileObj = dtsFF.CSVFile(self.do['iFile'])
-#         except dtsException.FileIOError as e:
-#             self.msgError = str(e)
-#             self.tException = e
-#             return False
-#         #endregion ------------------------------------------------> Data file
-        
-#         #region ------------------------------------------------> Seq Rec File
-#         if self.do.get('seqFile', None) is not None:
-#             #------------------------------> 
-#             msgStep = msgPrefix + f"{self.cLSeqFile}, reading"
-#             wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#             #------------------------------> 
-#             try:
-#                 self.seqFileObj = dtsFF.FastaFile(self.do['seqFile'])
-#             except Exception as e:
-#                 self.msgError = ('It was not possible to read the Fasta file '
-#                     'with the recombinant sequence.')
-#                 self.tException = e
-#                 return False
-#         else:
-#             pass
-#         #endregion ---------------------------------------------> Seq Rec File
-        
-#         #region ---------------------------------------------------> Print Dev
-#         if config.development and self.seqFileObj is not None:
-#             print("Rec Seq: ", self.seqFileObj.seqRec)
-#             print("Nat Seq: ", self.seqFileObj.seqNat)
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Print Dev
-        
-#         return True
-#     #---
     
 
         
-#     def LoadResults(self):
-#         """Load output file"""
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.lPdLoad
-#         #endregion ------------------------------------------------------> Msg
 
-#         #region --------------------------------------------------------> Load
-#         wx.CallAfter(self.dlg.UpdateStG, msgPrefix)
-        
-#         wx.CallAfter(gmethod.LoadUMSAPFile, fileP=self.do['uFile'])
-#         #endregion -----------------------------------------------------> Load
-
-#         return True
-#     #---
-#---
 
 
 # class BaseConfModPanel(BaseConfPanel, widget.ResControl):
@@ -2455,17 +2504,14 @@ class CorrA(BaseConfPanel):
     
         Parameters
         ----------
-        parent : wx Widget
+        cParent : wx Widget
             Parent of the widgets
-        dataI : dict or None
+        cDataI : dict or None
             Initial data provided by the user in a previous analysis.
             This contains both I and CI dicts e.g. {'I': I, 'CI': CI}
 
         Attributes
         ----------
-        name : str
-            Unique id of the pane in the app
-        #------------------------------> Configuration
         cGaugePD : int
             Number of steps needed in the Progress Dialog.
         cLCorr : str
@@ -2476,6 +2522,8 @@ class CorrA(BaseConfPanel):
             input file. Default is config.lStColIFile.format(self.cLiFile).
         cLoListCtrl : str
             Label for the wx.ListCtrl showing the selected column.
+        cName : str
+            Unique id of the pane in the app
         cOCorrMethod : list of str
             Options for the Correlation Methods. Default is config.oCorrMethod.
         cSection : str
@@ -2488,16 +2536,25 @@ class CorrA(BaseConfPanel):
             Tooltip for the Help button. 
             Default is config.ttBtnHelp.format(config.urlCorrA).
         cURL : str
-            URL for the Help button.
-        #------------------------------> For Analysis
-        checkUserInput : dict
+            URL for the Help button.    
+        rCheckUserInput : dict
             To check the user input in the right order. 
             See pane.BaseConfPanel.CheckInput for a description of the dict.
-        cLLenLongest : int
-            Length of the longest label. 
-        cMainData : str
+        rLCTrlL: list of wx.ListCtrl
+            List of wx.ListCtrl to support showing two wx.ListCtrl.
+        rLLenLongest : int
+            Length of the longest label.     
+        rMainData : str
             Name of the file with the correlation coefficient values.
-        do : dict
+        rMsgError: str
+            Error method to show to the user.
+            
+        See parent class for more attributes.
+        
+        Notes
+        -----
+        The structures of self.rDO and self.rDI are:
+        rDO : dict
             Dict with the processed user input
             {
                 'uFile'      : 'umsap file path',
@@ -2517,16 +2574,12 @@ class CorrA(BaseConfPanel):
                     'ResCtrlFlat' : [cero based flat list of result & control],
                 },
             }
-        d : dict
+        rDI : dict
             Similar to 'do' but: 
                 - No oc and df dict
                 - With the values given by the user
                 - Keys as in the GUI of the tab plus empty space.
-        
-        See parent class for more attributes.
 
-        Notes
-        -----
         Running the analysis results in the creation of:
         
         - Parent Folder/
@@ -2641,7 +2694,7 @@ class CorrA(BaseConfPanel):
         #endregion --------------------------------------------------> Widgets
         
         #region ----------------------------------------------> checkUserInput
-        self.checkUserInput = {
+        self.rCheckUserInput = {
             self.cLuFile      : [self.wUFile.tc,            config.mFileBad],
             self.cLiFile      : [self.wIFile.tc,            config.mFileBad],
             self.cLTransMethod: [self.wTransMethod.cb,      config.mOptionBad],
@@ -2839,236 +2892,189 @@ class CorrA(BaseConfPanel):
     #---
     #endregion -----------------------------------------------> Manage Methods
 
+    #region ---------------------------------------------------> Run Analysis
+    def CheckInput(self) -> bool:
+        """Check user input
+        
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Super
+        if super().CheckInput():
+            pass
+        else:
+            return False
+        #endregion ----------------------------------------------------> Super
+        
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdCheck
+        #endregion ------------------------------------------------------> Msg
+        
+        #region -------------------------------------------> Individual Fields                
+        #region -------------------------------------------> ListCtrl
+        msgStep = msgPrefix + self.cLoListCtrl
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        if self.wLCtrlO.GetItemCount() > 1:
+            pass
+        else:
+            self.rMsgError = config.mRowsInLCtrl.format(self.cLoListCtrl)
+            return False
+        #endregion ----------------------------------------> ListCtrl
+        #endregion ----------------------------------------> Individual Fields
 
-   
-   
-   
+        return True
+    #---
 
-#     #region ---------------------------------------------------> Class Methods
+    def PrepareRun(self) -> bool:
+        """Set variable and prepare data for analysis.
+        
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdPrepare
+        #endregion ------------------------------------------------------> Msg
 
+        #region -------------------------------------------------------> Input
+        msgStep = msgPrefix + 'User input, reading'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        
+        col = [int(x) for x in self.wLCtrlO.GetColContent(0)]
+        colF = [x for x in range(0, len(col))]
+        
+        #------------------------------> As given
+        self.rDI = {
+            self.EqualLenLabel(self.cLiFile) : (
+                self.wIFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLuFile) : (
+                self.wUFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLId) : (
+                self.wId.tc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.wCeroB.IsChecked()),
+            self.EqualLenLabel(self.cLTransMethod) : (
+                self.wTransMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLNormMethod) : (
+                self.wNormMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLImputation) : (
+                self.wImputationMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLCorr) : (
+                self.wCorrMethod.cb.GetValue()),
+            self.EqualLenLabel('Selected Columns') : col,
+        }
 
-
+        msgStep = msgPrefix + 'User input, processing'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> Dict with all values
+        self.rDO = {
+            'uFile'      : Path(self.wUFile.tc.GetValue()),
+            'iFile'      : Path(self.wIFile.tc.GetValue()),
+            'ID'         : self.wId.tc.GetValue(),
+            'Cero'       : self.wCeroB.IsChecked(),
+            'TransMethod': self.wTransMethod.cb.GetValue(),
+            'NormMethod' : self.wNormMethod.cb.GetValue(),
+            'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
+            'CorrMethod' : self.wCorrMethod.cb.GetValue(),
+            'oc'         : {
+                'Column'     : col,
+            },
+            'df'         : {
+                'ColumnR'    : colF,
+                'ColumnF'    : colF,
+                'ResCtrlFlat': colF,
+            }
+        }
+        #------------------------------> File base name
+        self.rOFolder = self.rDO['uFile'].parent
+        #------------------------------> Date
+        self.rDate = dtsMethod.StrNow()
+        #------------------------------> DateID
+        self.rDateID = f'{self.rDate} - {self.rDO["ID"]}'
+        #endregion ----------------------------------------------------> Input
+        
+        #region -------------------------------------------------------> Print
+        if config.development:
+            print('d:')
+            for k,v in self.rDI.items():
+                print(str(k)+': '+str(v))
+            print('')  
+            print('do:')
+            for k,v in self.rDO.items():
+                if k not in ['df', 'oc', 'dfo']:
+                    print(str(k)+': '+str(v))
+                else:
+                    print(k)
+                    for j,w in v.items():
+                        print(f'\t{j}: {w}')
+            print('')    
+        else:
+            pass
+        #endregion ----------------------------------------------------> Print
     
-#     #-------------------------------------> Run analysis methods
-#     def CheckInput(self):
-#         """Check user input"""
-#         #region -------------------------------------------------------> Super
-#         if super().CheckInput():
-#             pass
-#         else:
-#             return False
-#         #endregion ----------------------------------------------------> Super
+        return True
+    #---
+
+    def RunAnalysis(self):
+        """Calculate coefficients"""
+        #region ---------------------------------------------------------> Msg
+        msgPrefix = config.lPdRun
+        #endregion ------------------------------------------------------> Msg
         
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.lPdCheck
-#         #endregion ------------------------------------------------------> Msg
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
+            pass
+        else:
+            return False
+        #endregion -----------------------------------------> Data Preparation
+
+        #region ------------------------------------> Correlation coefficients
+        #------------------------------> Msg
+        msgStep = msgPrefix + f"Correlation coefficients calculation"
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.dfR = self.dfIm.corr(method=self.rDO['CorrMethod'].lower())
+        except Exception as e:
+            self.rMsgError = str(e)
+            self.rException = e
+            return False
+        #endregion ---------------------------------> Correlation coefficients
+
+        return True
+    #---
+
+    def WriteOutput(self):
+        """Write output. Override as needed """
+        #region --------------------------------------------------> Data Steps
+        stepDict = {
+            config.fnInitial.format('01', self.rDate): self.dfI,
+            config.fnFloat.format('02', self.rDate)  : self.dfS,
+            config.fnTrans.format('03', self.rDate)  : self.dfT,
+            config.fnNorm.format('04', self.rDate)   : self.dfN,
+            config.fnImp.format('05', self.rDate)    : self.dfIm,
+            self.rMainData.format('06', self.rDate)  : self.dfR,
+        }
+        #endregion -----------------------------------------------> Data Steps
         
-#         #region -------------------------------------------> Individual Fields                
-#         #region -------------------------------------------> ListCtrl
-#         msgStep = msgPrefix + self.cLoListCtrl
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         if self.lbO.GetItemCount() > 1:
-#             pass
-#         else:
-#             self.msgError = (
-#                 f"There must be at least two items in {self.cLoListCtrl}."
-#             )
-#             return False
-#         #endregion ----------------------------------------> ListCtrl
-#         #endregion ----------------------------------------> Individual Fields
+        #region ---------------------------------------------------> Print
+        if config.development:
+            print("DataFrames: Initial")
+            print(self.dfI.head())
+            print(self.dfI.shape)
+            print("")
+            print("DataFrames: CC")
+            print(self.dfR.head())
+            print(self.dfR.shape)
+        else:
+            pass
+        #endregion ------------------------------------------------> Print
 
-#         return True
-#     #---
-
-#     def PrepareRun(self):
-#         """Set variable and prepare data for analysis."""
-        
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.lPdPrepare
-#         #endregion ------------------------------------------------------> Msg
-
-#         #region -------------------------------------------------------> Input
-#         msgStep = msgPrefix + 'User input, reading'
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-        
-#         col = [int(x) for x in self.lbO.GetColContent(0)]
-#         colF = [x for x in range(0, len(col))]
-        
-#         #------------------------------> As given
-#         self.d = {
-#             self.EqualLenLabel(self.cLiFile) : (
-#                 self.iFile.tc.GetValue()),
-#             self.EqualLenLabel(self.cLuFile) : (
-#                 self.uFile.tc.GetValue()),
-#             self.EqualLenLabel(self.cLId) : (
-#                 self.id.tc.GetValue()),
-#             self.EqualLenLabel(self.cLCeroTreatD) : (
-#                 self.ceroB.IsChecked()),
-#             self.EqualLenLabel(self.cLTransMethod) : (
-#                 self.transMethod.cb.GetValue()),
-#             self.EqualLenLabel(self.cLNormMethod) : (
-#                 self.normMethod.cb.GetValue()),
-#             self.EqualLenLabel(self.cLImputation) : (
-#                 self.imputationMethod.cb.GetValue()),
-#             self.EqualLenLabel(self.cLCorr) : (
-#                 self.corrMethod.cb.GetValue()),
-#             self.EqualLenLabel('Selected Columns') : col,
-#         }
-
-#         msgStep = msgPrefix + 'User input, processing'
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         #------------------------------> Dict with all values
-#         self.do = {
-#             'uFile'      : Path(self.uFile.tc.GetValue()),
-#             'iFile'      : Path(self.iFile.tc.GetValue()),
-#             'ID'         : self.id.tc.GetValue(),
-#             'Cero'       : self.ceroB.IsChecked(),
-#             'TransMethod': self.transMethod.cb.GetValue(),
-#             'NormMethod' : self.normMethod.cb.GetValue(),
-#             'ImpMethod'  : self.imputationMethod.cb.GetValue(),
-#             'CorrMethod' : self.corrMethod.cb.GetValue(),
-#             'oc'         : {
-#                 'Column'     : col,
-#             },
-#             'df'         : {
-#                 'ColumnR'    : colF,
-#                 'ColumnF'    : colF,
-#                 'ResCtrlFlat': colF,
-#             }
-#         }
-#         #------------------------------> File base name
-#         self.oFolder = self.do['uFile'].parent
-#         #------------------------------> Date
-#         self.date = dtsMethod.StrNow()
-#         #------------------------------> DateID
-#         self.dateID = f'{self.date} - {self.do["ID"]}'
-#         #endregion ----------------------------------------------------> Input
-        
-#         #region -------------------------------------------------------> Print
-#         if config.development:
-#             print('d:')
-#             for k,v in self.d.items():
-#                 print(str(k)+': '+str(v))
-#             print('')  
-#             print('do:')
-#             for k,v in self.do.items():
-#                 if k != 'df':
-#                     print(str(k)+': '+str(v))
-#                 else:
-#                     print('df')
-#                     for j,w in v.items():
-#                         print(f'\t{j}: {w}')
-#             print('')    
-#         else:
-#             pass
-#         #endregion ----------------------------------------------------> Print
-    
-#         return True
-#     #---
-
-#     def RunAnalysis(self):
-#         """Calculate coefficients"""
-#         #region ---------------------------------------------------------> Msg
-#         msgPrefix = config.lPdRun
-#         #endregion ------------------------------------------------------> Msg
-        
-#         #region --------------------------------------------> Data Preparation
-#         if self.DataPreparation():
-#             pass
-#         else:
-#             return False
-#         #endregion -----------------------------------------> Data Preparation
-
-#         #region ------------------------------------> Correlation coefficients
-#         #------------------------------> Msg
-#         msgStep = msgPrefix + f"Correlation coefficients calculation"
-#         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-#         #------------------------------> 
-#         try:
-#             self.dfR = self.dfIm.corr(method=self.do['CorrMethod'].lower())
-#         except Exception as e:
-#             self.msgError = str(e)
-#             self.tException = e
-#             return False
-#         #endregion ---------------------------------> Correlation coefficients
-
-#         return True
-#     #---
-
-#     def WriteOutput(self):
-#         """Write output. Override as needed """
-#         #region --------------------------------------------------> Data Steps
-#         stepDict = {
-#             config.fnInitial.format('01', self.date): self.dfI,
-#             config.fnFloat.format('02', self.date)  : self.dfS,
-#             config.fnTrans.format('03', self.date)  : self.dfT,
-#             config.fnNorm.format('04', self.date)   : self.dfN,
-#             config.fnImp.format('05', self.date)    : self.dfIm,
-#             self.cMainData.format('06', self.date)  : self.dfR,
-#         }
-#         #endregion -----------------------------------------------> Data Steps
-        
-#         #region ---------------------------------------------------> Print
-#         if config.development:
-#             print("DataFrames: Initial")
-#             print(self.dfI.head())
-#             print(self.dfI.shape)
-#             print("")
-#             print("DataFrames: CC")
-#             print(self.dfR.head())
-#             print(self.dfR.shape)
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Print
-
-#         return self.WriteOutputData(stepDict)
-#     #---
-
-#     def RunEnd(self):
-#         """Restart GUI and needed variables"""
-#         #region ---------------------------------------> Dlg progress dialogue
-#         if self.msgError is None:
-#             #--> 
-#             self.dlg.SuccessMessage(
-#                 config.lPdDone, eTime=f"{config.lPdEllapsed} {self.deltaT}",
-#             )
-#         else:
-#             self.dlg.ErrorMessage(
-#                 config.lPdError,  
-#                 error      = self.msgError,
-#                 tException = self.tException
-#             )
-#         #endregion ------------------------------------> Dlg progress dialogue
-
-#         #region -------------------------------------------------------> Reset
-#         self.msgError   = None # Error msg to show in self.RunEnd
-#         self.tException = None # Exception
-#         self.d          = {} # Dict with the user input as given
-#         self.do         = {} # Dict with the processed user input
-#         self.dfI        = None # pd.DataFrame for initial, normalized and
-#         self.dfF        = None
-#         self.dfTP       = None
-#         self.dfEx       = None
-#         self.dfS        = None
-#         self.dfT        = None
-#         self.dfN        = None
-#         self.dfIm       = None
-#         self.dfR        = None
-#         self.date       = None # date for corr file
-#         self.dateID     = None
-#         self.oFolder    = None # folder for output
-#         self.iFileObj   = None
-#         self.deltaT     = None
-        
-#         if self.dFile is not None:
-#             self.iFile.tc.SetValue(str(self.dFile))
-#         else:
-#             pass
-#         self.dFile = None # Data File copied to Data-Initial
-#         #endregion ----------------------------------------------------> Reset
-#     #---
-#     #endregion ------------------------------------------------> Class Methods
-# #---
+        return self.WriteOutputData(stepDict)
+    #---
+    #endregion ------------------------------------------------> Run Analysis
+#---
 
 
 # class DataPrep(BaseConfPanel):

@@ -211,16 +211,16 @@ pImages = res / 'IMAGES' # Images folder
 #------------------------------> Location & names of important files
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
-# #------------------------------> Names
-# fnInitial    = "{}-Initial-Data-{}.txt"
-# fnFloat      = "{}-Floated-Data-{}.txt"
+#------------------------------> Names
+fnInitial    = "{}-Initial-Data-{}.txt"
+fnFloat      = "{}-Floated-Data-{}.txt"
 # fnTargetProt = "{}-Target-Protein-Data-{}.txt"
 # fnExclude    = "{}-After-Excluding-Data-{}.txt"
 # fnScore      = "{}-Score-Filtered-Data-{}.txt"
-# fnTrans      = "{}-Transformed-Data-{}.txt"
-# fnNorm       = "{}-Normalized-Data-{}.txt"
-# fnImp        = "{}-Imputed-Data-{}.txt"
-# fnDataSteps  = 'Steps_Data_Files'
+fnTrans      = "{}-Transformed-Data-{}.txt"
+fnNorm       = "{}-Normalized-Data-{}.txt"
+fnImp        = "{}-Imputed-Data-{}.txt"
+fnDataSteps  = 'Steps_Data_Files'
 fnDataInit   = 'Input_Data_Files'
 fnMainDataCorrA = '{}-CorrelationCoefficients-Data-{}.txt'
 #endregion ---------------------------------------------------> Path and Files
@@ -291,15 +291,15 @@ lCbNormMethod  = 'Normalization'
 lCbImputation  = 'Imputation'
 lCbCorrMethod  = 'Correlation Method'
 #------------------------------> Progress Dialog
-# lPdCheck    = 'Checking user input: '
-# lPdPrepare  = 'Preparing analysis: '
-# lPdReadFile = 'Reading input files: '
+lPdCheck    = 'Checking user input: '
+lPdPrepare  = 'Preparing analysis: '
+lPdReadFile = 'Reading input files: '
 lPdRun      = 'Running analysis: '
-# lPdWrite    = 'Writing output: '
-# lPdLoad     = 'Loading output file'
-# lPdError    = 'Fatal Error'
-# lPdDone     = 'All Done'
-# lPdEllapsed = 'Ellapsed time: '
+lPdWrite    = 'Writing output: '
+lPdLoad     = 'Loading output file'
+lPdError    = 'Fatal Error'
+lPdDone     = 'All Done'
+lPdEllapsed = 'Ellapsed time: '
 #endregion -----------------------------------------------------------> Labels
 
 
@@ -444,7 +444,7 @@ oCorrMethod = {
 
 
 #region -----------------------------------------------------> Important Lists
-# ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
+ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
 #endregion --------------------------------------------------> Important Lists
 
 
@@ -454,14 +454,6 @@ oCorrMethod = {
 mCheckUpdateFailed = 'Check for Updates failed. Please try again later.'
 # #------------------------------> Unexpected Error
 # mUnexpectedError = 'An uexpected error was encountered.'
-#------------------------------> Files 
-mFileDataExport = 'It was not possible to write the data to the selected file.'
-# mFileSelector = f"It was not possible to show the file selecting dialog."
-# mFileRead = 'An error occured when reading file:\n{}'
-# mFileColNum = (
-#     "In addition, the values cannot be bigger than the total number of columns "
-#     "in the {}.")
-# mUMSAPFile = 'Select the UMSAP File'
 # #------------------------------> Not empty
 # mNotEmpty = "Please select a value for {}."
 # #------------------------------> User values
@@ -482,6 +474,22 @@ mFileDataExport = 'It was not possible to write the data to the selected file.'
 #     "protein.")
 #endregion ----------------------------------------------------------> Other
 
+#region ---------------------------------------------------------------> Files
+mFileUMSAPDict = ('It was not possible to create the dictionary with the '
+    'UMSAP data.')
+mFileUMSAP = ('It was not possible to write the results of the analysis to '
+    'the selected UMSAP file.')
+mFiledataSteps = ('It was not possible to create the files with the data for '
+    'the intermediate steps of the analysis.')
+mFileDataExport = 'It was not possible to write the data to the selected file.'
+# mFileSelector = f"It was not possible to show the file selecting dialog."
+mFileRead = 'An error occured when reading file:\n{}'
+# mFileColNum = (
+#     "In addition, the values cannot be bigger than the total number of columns "
+#     "in the {}.")
+# mUMSAPFile = 'Select the UMSAP File'
+#endregion ------------------------------------------------------------> Files
+
 #region ------------------------------------------------------------> Pandas
 mPDGetInitCol = ('It was not possible to extract the selected columns {} from '
     'the selected {}:.\n{}')
@@ -498,6 +506,7 @@ mPDDataImputation = 'Data Imputation failed.'
 #endregion ---------------------------------------------------------> Pandas
  
 #region ----------------------------------------------------> For CheckInput
+mRowsInLCtrl = 'There must be at least two items in {}.'
 mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
     'Protein, etc) were applied.')
 mFileBad = "File: '{}'\ncannot be used as {}."
