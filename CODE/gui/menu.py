@@ -406,7 +406,7 @@ class Utility(wx.Menu, MenuMethods):
         #region --------------------------------------------------------> Bind
         # self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.readFile)
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miCorrA)
-        # self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.dataPrep)
+        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miDataPrep)
         #endregion -----------------------------------------------------> Bind
     #endregion -----------------------------------------------> Instance Setup
 

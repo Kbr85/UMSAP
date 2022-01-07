@@ -23,7 +23,7 @@ import wx.lib.agw.aui as aui
 # import dat4s_core.data.method as dtsMethod
 
 import config.config as config
-# import gui.dtscore as dtscore
+import gui.dtscore as dtscore
 import gui.pane as pane
 
 # if config.typeCheck:
@@ -67,7 +67,7 @@ class BaseConfTab(wx.Panel):
     #region -----------------------------------------------------> Class setup
     dConfPanel = {
         config.ntCorrA   : pane.CorrA,
-        # config.ntDataPrep: pane.DataPrep,
+        config.ntDataPrep: pane.DataPrep,
         # config.ntLimProt : pane.LimProt,
         # config.ntProtProf: pane.ProtProf,
     }
@@ -124,83 +124,82 @@ class BaseConfTab(wx.Panel):
 #---
 
 
-# class BaseConfListTab(BaseConfTab):
-#     """Base class for a Tab containing a configuration panel and a right list
-#         panel. 
+class BaseConfListTab(BaseConfTab):
+    """Base class for a Tab containing a configuration panel and a right list
+        panel. 
 
-#         Parameters
-#         ----------
-#         parent : wx.Window
-#             Parent of the tab 
-#         name : str or None
-#             Unique name of the tab.
-#         dataI : dict or None
-#             Initial data provided by the user to performed a previous analysis
+        Parameters
+        ----------
+        cParent : wx.Window
+            Parent of the tab 
+        cName : str or None
+            Unique name of the tab.
+        cDataI : dict or None
+            Initial data provided by the user to performed a previous analysis
 
-#         Attributes
-#         ----------
-#         cLCColLabel : list of str
-#             Labels for the columns in the wx.ListCtrl.
-#             Default is config.lLCtrlColNameI.
-#         cLCColSize : list of int
-#             Size of the columns in the wx.ListCtrl. It should match cLCColLabel
-#             Default is config.sLCtrlColI.
-#         cLCPaneTitle : str
-#             Title of the pane containing the wx.ListCtrl.
-#             Default is config.lnListPane.
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     #endregion --------------------------------------------------> Class setup
+        Attributes
+        ----------
+        cLCColLabel : list of str
+            Labels for the columns in the wx.ListCtrl.
+            Default is config.lLCtrlColNameI.
+        cLCColSize : list of int
+            Size of the columns in the wx.ListCtrl. It should match cLCColLabel
+            Default is config.sLCtrlColI.
+        cLCPaneTitle : str
+            Title of the pane containing the wx.ListCtrl.
+            Default is config.lnListPane.
+    """
+    #region -----------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, parent: wx.Window, name: Optional[str]=None,
-#         dataI : Optional[dict]=None) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cLCColLabel = getattr(self, 'cLCColLabel', config.lLCtrlColNameI)
-#         self.cLCColSize = getattr(self, 'cLCColSize', config.sLCtrlColI)
-#         self.cLCPaneTitle = getattr(self, 'cLCPaneTitle', config.lnListPane)
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: wx.Window, cName: Optional[str]=None,
+        cDataI : Optional[dict]=None) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cLCColLabel  = getattr(self, 'cLCColLabel',  config.lLCtrlColNameI)
+        self.cLCColSize   = getattr(self, 'cLCColSize',   config.sLCtrlColI)
+        self.cLCPaneTitle = getattr(self, 'cLCPaneTitle', config.lnListPane)
         
-#         super().__init__(parent, name=name, dataI=dataI)
-#         #endregion --------------------------------------------> Initial Setup
+        super().__init__(cParent, cName=cName, cDataI=cDataI)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region -----------------------------------------------------> Widgets
-#         self.lc = dtscore.ListZebraMaxWidth(
-#             self, colLabel=self.cLCColLabel, colSize=self.cLCColSize,
-#         )
-#         #----------------------------> Pointer to lc to load data file content
-#         self.conf.lbI = self.lc
-#         self.conf.lbL = [self.lc]
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.wLCtrl = dtscore.ListZebraMaxWidth(
+            self, colLabel=self.cLCColLabel, colSize=self.cLCColSize)
+        #----------------------------> Pointer to lc to load data file content
+        self.wConf.wLCtrlI = self.wLCtrl
+        self.wConf.rLCtrlL = [self.wLCtrl]
+        #endregion --------------------------------------------------> Widgets
         
-#         #region -------------------------------------------------> Aui control
-#         self._mgr.AddPane(
-#             self.lc, 
-#             aui.AuiPaneInfo(
-#                 ).Right(
-#                 ).Caption(
-#                     self.cLCPaneTitle
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-#         #------------------------------> 
-#         self._mgr.Update()
-#         #endregion ----------------------------------------------> Aui control
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region -------------------------------------------------> Aui control
+        self._mgr.AddPane(
+            self.wLCtrl, 
+            aui.AuiPaneInfo(
+                ).Right(
+                ).Caption(
+                    self.cLCPaneTitle
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ----------------------------------------------> Aui control
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Class methods
     
-#     #endregion ------------------------------------------------> Class methods
-# #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # class ResControlExp(wx.Panel):
@@ -419,10 +418,10 @@ class Start(wx.Panel):
             wx.EVT_BUTTON, 
             lambda event: config.winMain.OnCreateTab(config.ntCorrA)
         )
-        # self.wBtnDataPrep.Bind(
-        #     wx.EVT_BUTTON, 
-        #     lambda event: config.winMain.OnCreateTab(config.ntDataPrep)
-        # )
+        self.wBtnDataPrep.Bind(
+            wx.EVT_BUTTON, 
+            lambda event: config.winMain.OnCreateTab(config.ntDataPrep)
+        )
 #         self.btnLimProt.Bind(
 #             wx.EVT_BUTTON, 
 #             lambda event: config.winMain.CreateTab(config.ntLimProt)

@@ -17,10 +17,10 @@
 #region -------------------------------------------------------------> Imports
 import platform
 from pathlib import Path
-# from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-# if TYPE_CHECKING:
-#     import data.file as file
+if TYPE_CHECKING:
+    import data.file as file
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -40,7 +40,7 @@ cwd = Path(__file__)    # Config file path
 
 # obj: Optional['file.UMSAPFile'] = None # To reload UMSAP file
 
-# typeCheck = TYPE_CHECKING
+typeCheck = TYPE_CHECKING
 #endregion -----------------------------------------------> General parameters
 
 
@@ -137,7 +137,7 @@ ntTarProt  = 'TarProtTab'
 #------------------------------> Individual Panes
 # npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
-# npDataPrep              = "DataPrepPane"
+npDataPrep              = "DataPrepPane"
 # npLimProt               = "LimProtPane"
 # npProtProf              = 'ProtProfPane'
 # npResControlExp         = 'ResControlExpPane'
@@ -175,7 +175,7 @@ t = {
 #     ndFilterRemoveAny     : 'Remove Filters',
     #------------------------------> Tabs
     ntStart   : 'Start',
-    # ntDataPrep: 'DataPrep',
+    ntDataPrep: 'DataPrep',
     ntCorrA   : 'CorrA',
 #     ntLimProt : 'LimProt',
 #     ntProtProf: 'ProtProf',
@@ -215,8 +215,8 @@ fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 fnInitial    = "{}-Initial-Data-{}.txt"
 fnFloat      = "{}-Floated-Data-{}.txt"
 # fnTargetProt = "{}-Target-Protein-Data-{}.txt"
-# fnExclude    = "{}-After-Excluding-Data-{}.txt"
-# fnScore      = "{}-Score-Filtered-Data-{}.txt"
+fnExclude    = "{}-After-Excluding-Data-{}.txt"
+fnScore      = "{}-Score-Filtered-Data-{}.txt"
 fnTrans      = "{}-Transformed-Data-{}.txt"
 fnNorm       = "{}-Normalized-Data-{}.txt"
 fnImp        = "{}-Imputed-Data-{}.txt"
@@ -234,14 +234,14 @@ urlTutorial = f"{urlHome}/tutorial/2-1-0"
 urlCorrA    = f"{urlTutorial}/correlation-analysis"
 # urlLimProt  = f"{urlTutorial}/limited-proteolysis"
 # urlProtProf = f"{urlTutorial}/proteome-profiling"
-# urlDataPrep = f"{urlTutorial}/data-preparation"
+urlDataPrep = f"{urlTutorial}/data-preparation"
 #endregion --------------------------------------------------------------- URL
 
 
 #region --------------------------------------------------------------> Labels
 #------------------------------> Names
 lnPaneConf = 'Configuration Options'
-# lnListPane = 'Data File Content'
+lnListPane = 'Data File Content'
 lnPDCorrA  = 'Calculating Correlation Coefficients'
 # #------------------------------> wx.Button
 lBtnRun         = 'Start Analysis'
@@ -274,14 +274,16 @@ lStUpdateCheckAvail = ('UMSAP {} is already available.\nYou are currently '
 lStId           = 'Analysis ID'
 # lStAlpha        = 'Significance Level'
 lStColIFile     = "Columns in the {}"
-# lStScoreVal     = 'Score Value'
+lStScoreVal     = 'Score Value'
 # lStSeqLength    = 'Sequence Length'
 # lStTargetProt   = "Target Protein"
 # lStDetectedProt = 'Detected Proteins'
 # lStSeqCol       = 'Sequences'
-# lStScoreCol     = 'Score'
+lStScoreCol     = 'Score'
 # lStResultCtrl   = 'Results - Control experiments'
 lStColAnalysis = 'Columns to Analyse'
+lStExcludeRow = 'Exclude Rows'
+lStColAnalysis = 'Columns to Consider'
 # #------------------------------> wx.ComboBox or wx.CheckBox
 # lCbFileAppend  = 'Append new data to selected output file'
 lCbCeroTreat   = 'Treat 0s as missing values'
@@ -342,23 +344,25 @@ ttStNorm = f'Select the Data {lCbNormMethod} method.'
 ttStImputation = f'Select the Data {lCbImputation} method.'
 # ttStAlpha = 'Significance level for the statistical analysis.\ne.g. 0.05'
 ttStCorr = f'Select the {lCbCorrMethod}.'
-# ttStScoreVal = f"Set the minimum acceptable Score value.\ne.g. -4"
+ttStScoreVal = f'Set the minimum acceptable Score value.\ne.g. -4'
 # ttStPCorrection = "Select the p correction method."
 # ttStMedianCorr = "Select whether to apply a median correction."
 # ttStDetectedProtL = (
 #     f"Set the column number containing the detected proteins.\ne.g. 7")
-# ttStScore = f"Set the column number containing the Score values.\ne.g. 4"
+ttStScore = 'Set the column number containing the Score values.\ne.g. 4'
 # ttStGenName = "Set the column number containing the gene names.\ne.g. 3"
 # ttStExcludeProt = (
 #     "Set the column number containing the data used to exclude proteins."
 #     "\ne.g. 8 10-12")
-# ttStExcludeRow = (
-#     "Set the column numbers containing the data used to exclude rows."
-#     "\ne.g. 8 10-12")
+ttStExcludeRow = (
+    'Set the column numbers containing the data used to exclude rows.'
+    '\ne.g. 8 10-12')
 # ttStControlN = "Name or ID of the control experiment.\ne.g. MyControl."
 # ttStSample = (f"Specify if samples are independent or paired.\n"
 #     f"For example, samples are paired when the same Petri dish is "
 #     f"used for the control and experiment.")
+ttStColAnalysis = ('Columns on which to perform the Data Preparation.\ne.g. '
+    '8 10-12')
 # #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -456,23 +460,25 @@ mCheckUpdateFailed = 'Check for Updates failed. Please try again later.'
 # mUnexpectedError = 'An uexpected error was encountered.'
 # #------------------------------> Not empty
 # mNotEmpty = "Please select a value for {}."
-# #------------------------------> User values
-# mOneRNumText = "Only one real number can be accepted here."
-# mOneZPlusNumText = "Only a non-negative integer can be accepted here."
-# mOneZNumText = "Only one positive integer can be accepted here."
-# mOne01NumText = "Only one number between 0 and 1 can be accepted here"
-# mNZPlusNumText = (
-#     "Only a list of unique non-negative integers can be accepted here.")
-# mNumROne = "Only one number can be accepted in {}."
-# mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
-# mListNumN0L = (
-#     "Only a list of unique non-negative integers can be accepted in {}.")
-# mColNumbers = f"Values in section {lSbColumn} must be unique."
-# mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 # #------------------------------> Sequences related errors
 # mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
 #     "protein.")
 #endregion ----------------------------------------------------------> Other
+
+#region ------------------------------------------------------------> Values
+mOneRNumText = "Only one real number can be accepted here."
+mOneZPlusNumText = "Only a non-negative integer can be accepted here."
+# mOneZNumText = "Only one positive integer can be accepted here."
+# mOne01NumText = "Only one number between 0 and 1 can be accepted here"
+mNZPlusNumText = (
+    "Only a list of unique non-negative integers can be accepted here.")
+# mNumROne = "Only one number can be accepted in {}."
+# mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
+# mListNumN0L = (
+#     "Only a list of unique non-negative integers can be accepted in {}.")
+mColNumbers = f'Values in section {lSbColumn} must be unique.'
+# mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
+#endregion ---------------------------------------------------------> Values
 
 #region ---------------------------------------------------------------> Files
 mFileUMSAPDict = ('It was not possible to create the dictionary with the '
@@ -511,10 +517,10 @@ mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
     'Protein, etc) were applied.')
 mFileBad = "File: '{}'\ncannot be used as {}."
 mOptionBad = "Option '{}' cannot be accepted in {}."
-# mValueBad = "Value '{}' cannot be accepted in {}.\n"
-# mOneRealNum = f"{mValueBad}{mOneRNumText}"
-# mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
-# mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
+mValueBad = "Value '{}' cannot be accepted in {}.\n"
+mOneRealNum = f"{mValueBad}{mOneRNumText}"
+mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
+mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
 # mOne01Num = f"{mValueBad}{mOne01NumText}"
 # mResCtrl = (
 #     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "

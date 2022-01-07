@@ -1010,7 +1010,7 @@ class MainWindow(BaseWindow):
     dTab = { # Keys are the unique names of the tabs
         config.ntStart   : tab.Start,
         config.ntCorrA   : tab.BaseConfTab,
-        # config.ntDataPrep: tab.BaseConfListTab,
+        config.ntDataPrep: tab.BaseConfListTab,
         # config.ntLimProt : tab.BaseConfListTab,
         # config.ntProtProf: tab.BaseConfListTab,
     }
