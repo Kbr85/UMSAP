@@ -1478,12 +1478,9 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             stLabel   = self.cLAlpha,
             stTooltip = self.cTTAlpha,
             tcSize    = self.cSTc,
+            tcHint    = 'e.g. 0.05',
             validator = dtsValidator.NumberList(
-                numType = 'float',
-                nN      = 1,
-                vMin    = 0,
-                vMax    = 1,
-            )
+                numType='float', nN=1, vMin=0, vMax=1),
         )
 
         self.wScoreVal = dtsWidget.StaticTextCtrl(
@@ -1491,10 +1488,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             stLabel   = self.cLScoreVal,
             stTooltip = self.cTTScoreVal,
             tcSize    = self.cSTc,
-            validator = dtsValidator.NumberList(
-                numType = 'float',
-                nN      = 1,
-            )
+            tcHint    = 'e.g. 320',
+            validator = dtsValidator.NumberList(numType='float', nN=1),
         )
 
         self.wDetectedProt = dtsWidget.StaticTextCtrl(
@@ -1502,11 +1497,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             stLabel   = self.cLDetectedProt,
             stTooltip = self.cTTDetectedProt,
             tcSize    = self.cSTc,
-            validator = dtsValidator.NumberList(
-                numType = 'int',
-                nN      = 1,
-                vMin    = 0,
-            )
+            tcHint    = 'e.g. 0',
+            validator = dtsValidator.NumberList(numType='int', nN=1, vMin=0),
         )
 
         self.wScore = dtsWidget.StaticTextCtrl(
@@ -1514,11 +1506,8 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
             stLabel   = self.cLScoreCol,
             stTooltip = self.cTTScore,
             tcSize    = self.cSTc,
-            validator = dtsValidator.NumberList(
-                numType = 'int',
-                nN      = 1,
-                vMin    = 0,
-            )
+            tcHint    = 'e.g. 39',
+            validator = dtsValidator.NumberList(numType='int', nN=1, vMin=0),
         )
         #endregion --------------------------------------------------> Widgets
 
@@ -2479,24 +2468,12 @@ class CorrA(BaseConfPanel):
         ----------
         cGaugePD : int
             Number of steps needed in the Progress Dialog.
-        cLCorr : str
-            Label for the Correlation Method widget. 
-            Default is config.lCbCorrMethod.
-        cLiListCtrl : str
-            Label for the wx.ListCtrl showing the column names in the in the 
-            input file. Default is config.lStColIFile.format(self.cLiFile).
-        cLoListCtrl : str
-            Label for the wx.ListCtrl showing the selected column.
         cName : str
-            Unique id of the pane in the app
-        cOCorrMethod : list of str
-            Options for the Correlation Methods. Default is config.oCorrMethod.
+            Unique id of the pane in the app.
         cSection : str
             Section for the output file in the UMSAP file.
         cTitlePD : str
             Title for the progress dialog. Default is config.lnPDCorrA.
-        cTTCorr : str
-            Tooltip for the Correlation Method. Default is config.ttStTrans.
         cTTHelp : str 
             Tooltip for the Help button. 
             Default is config.ttBtnHelp.format(config.urlCorrA).
@@ -2610,33 +2587,21 @@ class CorrA(BaseConfPanel):
         super().__init__(cParent)
         #------------------------------> Needed to Run
         self.rMainData = config.fnMainDataCorrA
-        #------------------------------> Label
-        self.cLCorr      = config.lCbCorrMethod
-        self.cLiListCtrl = config.lStColIFile.format(self.cLiFile)
-        self.cLoListCtrl = config.lStColAnalysis
-        #------------------------------> Options
-        self.cOCorrMethod = list(config.oCorrMethod.values())
-        #------------------------------> Tooltips
-        self.cTTCorr = config.ttStCorr
         #endregion --------------------------------------------> Initial setup
         
         #region -----------------------------------------------------> Widgets
         #------------------------------> dtsWidget.StaticTextComboBox
         self.wCorrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
-            label     = self.cLCorr,
-            choices   = self.cOCorrMethod,
+            label     = config.lCbCorrMethod,
+            choices   = list(config.oCorrMethod.values()),
             validator = dtsValidator.IsNotEmpty(),
         )
-        self.wCorrMethod.st.SetToolTip(self.cTTCorr)
+        self.wCorrMethod.st.SetToolTip(config.ttStCorr)
         #------------------------------> wx.StaticText
         self.wStListI = wx.StaticText(
-            self.sbColumn, 
-            label = self.cLiListCtrl,
-        )
+            self.sbColumn, label=config.lStColIFile.format(self.cLiFile))
         self.wStListO = wx.StaticText(
-            self.sbColumn, 
-            label = self.cLoListCtrl,
-        )
+            self.sbColumn, label=config.lStColAnalysis)
         #------------------------------> dtscore.ListZebra
         self.wLCtrlI = dtscore.ListZebra(self.sbColumn, 
             colLabel        = config.lLCtrlColNameI,
@@ -2665,7 +2630,7 @@ class CorrA(BaseConfPanel):
             self.cLTransMethod: [self.wTransMethod.cb,      config.mOptionBad],
             self.cLNormMethod : [self.wNormMethod.cb,       config.mOptionBad],
             self.cLImputation : [self.wImputationMethod.cb, config.mOptionBad],
-            self.cLCorr       : [self.wCorrMethod.cb,       config.mOptionBad],
+            config.lCbCorrMethod : [self.wCorrMethod.cb,    config.mOptionBad],
         }        
         #endregion -------------------------------------------> checkUserInput
     
@@ -2878,12 +2843,12 @@ class CorrA(BaseConfPanel):
         
         #region -------------------------------------------> Individual Fields                
         #region -------------------------------------------> ListCtrl
-        msgStep = msgPrefix + self.cLoListCtrl
+        msgStep = msgPrefix + config.lStColAnalysis
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         if self.wLCtrlO.GetItemCount() > 1:
             pass
         else:
-            self.rMsgError = config.mRowsInLCtrl.format(self.cLoListCtrl)
+            self.rMsgError = config.mRowsInLCtrl.format(config.lStColAnalysis)
             return False
         #endregion ----------------------------------------> ListCtrl
         #endregion ----------------------------------------> Individual Fields
@@ -2925,7 +2890,7 @@ class CorrA(BaseConfPanel):
                 self.wNormMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLImputation) : (
                 self.wImputationMethod.cb.GetValue()),
-            self.EqualLenLabel(self.cLCorr) : (
+            self.EqualLenLabel(config.lCbCorrMethod) : (
                 self.wCorrMethod.cb.GetValue()),
             self.EqualLenLabel('Selected Columns') : col,
         }
@@ -3057,39 +3022,19 @@ class DataPrep(BaseConfPanel):
         ----------
         cGaugePD : int
             Number of steps for the Progress Dialog.
-        cLColAnalysis : str
-            Label for the Columns to Consider
-        cLExcludeRow : str
-            Label for the Exclude Row field
-        cLScoreCol : str
-            Label for the Score Column field.
-        cLScoreVal : str
-            Label for the Score Value field.
         cName : str
             Name of the pane. Default to config.npProtProf.
         cSection : str
             Name of the section. Default to config.nmProtProf.
         cTitlePD : str
             Name of the Progress Dialog window.
-        cTTColAnalysis : str
-            Tooltip for the Columns to Consider field.
-        cTTExcludeRow: str
-            Tooltip for the Exclude Row field.
         cTTHelp: str
             Tooltip for the Help button.
-        cTTScore : str
-            Tooltip for the Score column field.
-        cTTScoreVal: str
-            Tooltip for the Score value field.
         cURL : str
             URL for the online help.
         rCheckUserInput : dict
             To check the user input in the right order. 
             See pane.BaseConfPanel.CheckInput for a description of the dict.
-        rDate: str
-            Analysis date
-        rDateID: str
-            Analysis data + Analysis ID
         rDI: dict
             Similar to do but with the user given data. Keys are labels in the 
             panel.
@@ -3119,8 +3064,6 @@ class DataPrep(BaseConfPanel):
         }        
         rLLenLongest: int
             Length of the longest label in the panel.
-        rOFolder: str or Path
-            Path to the output folder.
         
         Notes
         -----
@@ -3174,22 +3117,12 @@ class DataPrep(BaseConfPanel):
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Optional configuration
         self.cTTHelp = config.ttBtnHelp.format(config.urlDataPrep)
-        #------------------------------> Label
-        self.cLScoreVal    = config.lStScoreVal
-        self.cLScoreCol    = config.lStScoreCol
-        self.cLExcludeRow  = config.lStExcludeRow
-        self.cLColAnalysis = config.lStColAnalysis
-        #------------------------------> Tooltips
-        self.cTTScoreVal    = config.ttStScoreVal
-        self.cTTScore       = config.ttStScore
-        self.cTTExcludeRow  = config.ttStExcludeRow
-        self.cTTColAnalysis = config.ttStColAnalysis
         #------------------------------> Needed by BaseConfPanel
         self.cURL         = config.urlDataPrep
         self.cSection     = config.nuDataPrep
         self.cTitlePD     = f"Running {config.nuDataPrep} Analysis"
         self.cGaugePD     = 27
-        self.rLLenLongest = len(self.cLColAnalysis)
+        self.rLLenLongest = len(config.lStColAnalysis)
         #------------------------------> Parent class
         super().__init__(cParent)
         #endregion --------------------------------------------> Initial Setup
@@ -3201,54 +3134,39 @@ class DataPrep(BaseConfPanel):
         #region -----------------------------------------------------> Widgets
         self.wScoreVal = dtsWidget.StaticTextCtrl(
             self.sbValue,
-            stLabel   = self.cLScoreVal,
-            stTooltip = self.cTTScoreVal,
+            stLabel   = config.lStScoreVal,
+            stTooltip = config.ttStScoreVal,
             tcSize    = self.cSTc,
             tcHint    = 'e.g. 320',
-            validator = dtsValidator.NumberList(
-                numType = 'float',
-                nN      = 1,
-            )
+            validator = dtsValidator.NumberList(numType='float', nN=1),
         )
         
         self.wScore = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.cLScoreCol,
-            stTooltip = self.cTTScore,
+            stLabel   = config.lStScoreCol,
+            stTooltip = config.ttStScore,
             tcSize    = self.cSTc,
             tcHint    = 'e.g. 39',
-            validator = dtsValidator.NumberList(
-                numType = 'int',
-                nN      = 1,
-                vMin    = 0,
-            )
+            validator = dtsValidator.NumberList(numType='int', nN=1, vMin=0),
         )
         
         self.wExcludeRow = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.cLExcludeRow,
-            stTooltip = self.cTTExcludeRow,
+            stLabel   = config.lStExcludeRow,
+            stTooltip = config.ttStExcludeRow,
             tcSize    = self.cSTc,
             tcHint    = 'e.g. 171 172 173',
             validator = dtsValidator.NumberList(
-                numType = 'int',
-                sep     = ' ',
-                vMin    = 0,
-                opt     = True,
-            )
+                numType='int', sep=' ', vMin=0, opt=True),
         )
         
         self.wColAnalysis = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.cLColAnalysis,
-            stTooltip = self.cTTColAnalysis,
+            stLabel   = config.lStColAnalysis,
+            stTooltip = config.ttStColAnalysis,
             tcSize    = self.cSTc,
             tcHint    = 'e.g. 130-135',
-            validator = dtsValidator.NumberList(
-                numType = 'int',
-                sep     = ' ',
-                vMin    = 0,
-            )
+            validator = dtsValidator.NumberList(numType='int', sep=' ', vMin=0),
         )
         #endregion --------------------------------------------------> Widgets
         
@@ -3259,10 +3177,10 @@ class DataPrep(BaseConfPanel):
             self.cLTransMethod: [self.wTransMethod.cb,      config.mOptionBad],
             self.cLNormMethod : [self.wNormMethod.cb,       config.mOptionBad],
             self.cLImputation : [self.wImputationMethod.cb, config.mOptionBad],
-            self.cLScoreVal   : [self.wScoreVal.tc,         config.mOneRealNum],
-            self.cLScoreCol   : [self.wScore.tc,            config.mOneZPlusNum],
-            self.cLExcludeRow : [self.wExcludeRow.tc,       config.mNZPlusNum],
-            self.cLColAnalysis: [self.wColAnalysis.tc,      config.mNZPlusNum],
+            config.lStScoreVal: [self.wScoreVal.tc,         config.mOneRealNum],
+            config.lStScoreCol: [self.wScore.tc,            config.mOneZPlusNum],
+            config.lStExcludeRow: [self.wExcludeRow.tc,     config.mNZPlusNum],
+            config.lStColAnalysis:[self.wColAnalysis.tc,    config.mNZPlusNum],
         }        
         #endregion -------------------------------------------> checkUserInput
         
@@ -3425,11 +3343,11 @@ class DataPrep(BaseConfPanel):
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
             #------------------------------> Values
-            self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
+            self.wScoreVal.tc.SetValue(dataI['I'][config.lStScoreVal])
             #------------------------------> Columns
-            self.wScore.tc.SetValue(dataI['I'][self.cLScoreCol])
-            self.wExcludeRow.tc.SetValue(dataI['I'][self.cLExcludeRow])
-            self.wColAnalysis.tc.SetValue(dataI['I'][self.cLColAnalysis])
+            self.wScore.tc.SetValue(dataI['I'][config.lStScoreCol])
+            self.wExcludeRow.tc.SetValue(dataI['I'][config.lStExcludeRow])
+            self.wColAnalysis.tc.SetValue(dataI['I'][config.lStColAnalysis])
         else:
             pass
         #endregion ----------------------------------------------> Fill Fields
@@ -3508,13 +3426,13 @@ class DataPrep(BaseConfPanel):
                 self.wNormMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLImputation) : (
                 self.wImputationMethod.cb.GetValue()),
-            self.EqualLenLabel(self.cLScoreVal) : (
+            self.EqualLenLabel(config.lStScoreVal) : (
                 self.wScoreVal.tc.GetValue()),
-            self.EqualLenLabel(self.cLScoreCol) : (
+            self.EqualLenLabel(config.lStScoreCol) : (
                 self.wScore.tc.GetValue()),
-            self.EqualLenLabel(self.cLExcludeRow) : (
+            self.EqualLenLabel(config.lStExcludeRow) : (
                 self.wExcludeRow.tc.GetValue()),
-            self.EqualLenLabel(self.cLColAnalysis) : (
+            self.EqualLenLabel(config.lStColAnalysis) : (
                 self.wColAnalysis.tc.GetValue()),
         }
         #------------------------------> Dict with all values
@@ -3811,23 +3729,7 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Base attributes and setup
         super().__init__(cParent)
         #------------------------------> Needed to Run
-        self.rMainData  = '{}-ProteomeProfiling-Data-{}.txt'
-        #------------------------------> Labels
-        self.cLCorrectP    = config.lCbCorrectP
-        self.cLGeneName    = config.lStGeneName
-        self.cLExcludeProt = config.lStExcludeProt
-        self.cLSample      = config.lCbSample
-        self.cLRawI        = config.lCbIntensity
-        #------------------------------> Choices
-        self.cOSample   = list(config.oSamples.keys())
-        self.cORawI     = list(config.oIntensities.values())
-        self.cOCorrectP = list(config.oCorrectP.keys())
-        #------------------------------> Tooltips
-        self.cTTCorrectP    = config.ttStPCorrection
-        self.cTTGeneName    = config.ttStGenName
-        self.cTTExcludeProt = config.ttStExcludeProt
-        self.cTTSample      = config.ttStSample
-        self.cTTRawI        = config.ttStRawI
+        self.rMainData  = config.fnMainDataProtProf
         #------------------------------> Dict with methods
         # self.cColCtrlData = {
         #     config.oControlTypeProtProf['OC']   : self.ColCtrlData_OC,
@@ -3845,50 +3747,45 @@ class ProtProf(BaseConfModPanel):
         #------------------------------> Values
         self.wCorrectP = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            label     = self.cLCorrectP,
-            choices   = self.cOCorrectP,
-            tooltip   = self.cTTCorrectP,
+            label     = config.lCbCorrectP,
+            choices   = list(config.oCorrectP.keys()),
+            tooltip   = config.ttStPCorrection,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.wSample = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            label     = self.cLSample,
-            choices   = self.cOSample,
-            tooltip   = self.cTTSample,
+            label     = config.lCbSample,
+            choices   = list(config.oSamples.keys()),
+            tooltip   = config.ttStSample,
             validator = dtsValidator.IsNotEmpty(),
         )
         
         self.wRawI = dtsWidget.StaticTextComboBox(
             self.sbValue,
-            label     = self.cLRawI,
-            choices   = self.cORawI,
-            tooltip   = self.cTTExcludeProt,
+            label     = config.lCbIntensity,
+            choices   = list(config.oIntensities.values()),
+            tooltip   = config.ttStRawI,
             validator = dtsValidator.IsNotEmpty(),
         )
         #------------------------------> Columns
         self.wGeneName = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.cLGeneName,
-            stTooltip = self.cTTGeneName,
+            stLabel   = config.lStGeneName,
+            stTooltip = config.ttStGenName,
             tcSize    = self.cSTc,
-            validator = dtsValidator.NumberList(
-                numType = 'int',
-                nN      = 1,
-                vMin    = 0,
-            )
+            tcHint    = 'e.g. 6',
+            validator = dtsValidator.NumberList(numType='int', nN=1, vMin=0),
         )
+        
         self.wExcludeProt = dtsWidget.StaticTextCtrl(
             self.sbColumn,
-            stLabel   = self.cLExcludeProt,
-            stTooltip = self.cTTRawI,
+            stLabel   = config.lStExcludeProt,
+            stTooltip = config.ttStExcludeProt,
             tcSize    = self.cSTc,
+            tcHint    = 'e.g. 171-173',
             validator = dtsValidator.NumberList(
-                numType = 'int',
-                sep     = ' ',
-                vMin    = 0,
-                opt     = True,
-            )
+                numType='int', sep=' ', vMin=0, opt=True),
         )
         #endregion --------------------------------------------------> Widgets
 
@@ -3900,14 +3797,14 @@ class ProtProf(BaseConfModPanel):
             self.cLNormMethod  : [self.wNormMethod.cb,      config.mOptionBad],
             self.cLImputation  : [self.wImputationMethod.cb,config.mOptionBad],
             self.cLScoreVal    : [self.wScoreVal.tc,        config.mOneRealNum],
-            self.cLSample      : [self.wSample.cb,          config.mOptionBad],
-            self.cLRawI        : [self.wRawI.cb,            config.mOptionBad],
+            config.lCbSample   : [self.wSample.cb,          config.mOptionBad],
+            config.lCbIntensity: [self.wRawI.cb,            config.mOptionBad],
             self.cLAlpha       : [self.wAlpha.tc,           config.mOne01Num],
-            self.cLCorrectP    : [self.wCorrectP.cb,        config.mOptionBad],
+            config.lCbCorrectP : [self.wCorrectP.cb,        config.mOptionBad],
             self.cLDetectedProt: [self.wDetectedProt.tc,   config.mOneZPlusNum],
-            self.cLGeneName    : [self.wGeneName.tc,       config.mOneZPlusNum],
+            config.lStGeneName : [self.wGeneName.tc,       config.mOneZPlusNum],
             self.cLScoreCol    : [self.wScore.tc,          config.mOneZPlusNum],
-            self.cLExcludeProt : [self.wExcludeProt.tc,    config.mNZPlusNum],
+            config.lStExcludeProt: [self.wExcludeProt.tc,  config.mNZPlusNum],
             self.cLResControl  : [self.wTcResults,         config.mResCtrl]
         }        
         #endregion -------------------------------------------> checkUserInput
@@ -4159,15 +4056,15 @@ class ProtProf(BaseConfModPanel):
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
             #------------------------------> Values
             self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
-            self.wSample.cb.SetValue(dataI['I'][self.cLSample])
-            self.wRawI.cb.SetValue(dataI['I'][self.cLRawI])
+            self.wSample.cb.SetValue(dataI['I'][config.lCbSample])
+            self.wRawI.cb.SetValue(dataI['I'][config.lCbIntensity])
             self.wAlpha.tc.SetValue(dataI['I'][self.cLAlpha])
-            self.wCorrectP.cb.SetValue(dataI['I'][self.cLCorrectP])
+            self.wCorrectP.cb.SetValue(dataI['I'][config.lCbCorrectP])
             #------------------------------> Columns
             self.wDetectedProt.tc.SetValue(dataI['I'][self.cLDetectedProt])
-            self.wGeneName.tc.SetValue(dataI['I'][self.cLGeneName])
+            self.wGeneName.tc.SetValue(dataI['I'][config.lStGeneName])
             self.wScore.tc.SetValue(dataI['I'][self.cLScoreCol])
-            self.wExcludeProt.tc.SetValue(dataI['I'][self.cLExcludeProt])
+            self.wExcludeProt.tc.SetValue(dataI['I'][config.lStExcludeProt])
             self.wTcResults.SetValue(dataI['I'][self.cLResControl])
             self.lbDict[1] = dataI['I'][config.lStProtProfCond]
             self.lbDict[2] = dataI['I'][config.lStProtProfRP]

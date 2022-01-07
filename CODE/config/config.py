@@ -223,6 +223,7 @@ fnImp        = "{}-Imputed-Data-{}.txt"
 fnDataSteps  = 'Steps_Data_Files'
 fnDataInit   = 'Input_Data_Files'
 fnMainDataCorrA = '{}-CorrelationCoefficients-Data-{}.txt'
+fnMainDataProtProf = '{}-ProteomeProfiling-Data-{}.txt'
 #endregion ---------------------------------------------------> Path and Files
 
 
@@ -355,8 +356,8 @@ ttStPCorrection = "Select the p correction method."
 # ttStMedianCorr = "Select whether to apply a median correction."
 ttStDetectedProtL = (
     'Set the column number containing the detected proteins.\ne.g. 7')
-ttStScore = 'Set the column number containing the Score values.\ne.g. 4'
-ttStGenName = "Set the column number containing the gene names.\ne.g. 3"
+ttStScore = f'Set the column number containing the {lStScoreVal}.\ne.g. 4'
+ttStGenName = f'Set the column number containing the {lStGeneName}.\ne.g. 3'
 ttStExcludeProt = (
     "Set the column number containing the data used to exclude proteins."
     "\ne.g. 8 10-12")
