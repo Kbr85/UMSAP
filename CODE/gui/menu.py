@@ -362,7 +362,7 @@ class Module(wx.Menu, MenuMethods):
 
         #region --------------------------------------------------------> Bind
         # self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.limprot)
-        # self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.protprof)
+        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miProtProf)
         # self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.tarprot)
         #endregion -----------------------------------------------------> Bind
     #endregion ------------------------------------------------ Instance Setup

@@ -1012,7 +1012,7 @@ class MainWindow(BaseWindow):
         config.ntCorrA   : tab.BaseConfTab,
         config.ntDataPrep: tab.BaseConfListTab,
         # config.ntLimProt : tab.BaseConfListTab,
-        # config.ntProtProf: tab.BaseConfListTab,
+        config.ntProtProf: tab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup
     
@@ -1132,7 +1132,7 @@ class MainWindow(BaseWindow):
             #------------------------------> Focus
             self.wNotebook.SetSelection(self.wNotebook.GetPageIndex(rWin))
             #------------------------------> Initial Data
-            rWin.conf.SetInitialData(rDataI)
+            rWin.wConf.SetInitialData(rDataI)
         #endregion ---------------------------------------> Find/Create & Show
 
         #region ---------------------------------------------------> Start Tab

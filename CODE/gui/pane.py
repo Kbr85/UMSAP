@@ -40,7 +40,7 @@ import data.check as check
 # import data.method as dmethod
 import gui.dtscore as dtscore
 # import gui.method as gmethod
-# import gui.widget as widget
+import gui.widget as widget
 
 # if config.typeCheck:
 #     import pandas as pd
@@ -1408,175 +1408,142 @@ class BaseConfPanel(
     #endregion -------------------------------------------------> Run Analysis
 #---
     
-
     
+class BaseConfModPanel(BaseConfPanel, widget.ResControl):
+    """Base configuration for a panel of a module.
 
+        Parameters
+        ----------
+        cParent : wx Widget
+            Parent of the widgets
+        cRightDelete : Boolean
+            Enables clearing wx.StaticBox input with right click
+
+        Attributes
+        ----------
+        cLAlpha : str
+            Label for the alpha level. Default is config.lStAlpha.
+        cLDetectedProt : str
+            Label for Detected Proteins. Default is config.lStDetectedProt.
+        cLScoreCol : str
+            Score column. Default is config.lStScoreCol.
+        cLScoreVal : str
+            Score value label. Default is config.lStScoreVal.
+        cTTAlpha : str
+            Tooltip for alpha level. Default is config.ttStAlpha.
+        cTTDetectedProt : str
+            Tooltip for Detected Proteins. Default is config.lStDetectedProt.
+        cTTScore : str
+            Tooltip for Score columns. Default is config.lStScoreCol.
+        cTTScoreVal : str
+            Tooltip for Score value. Default is config.lStScoreVal.
+    """
+    #region -----------------------------------------------------> Class setup
     
+    #endregion --------------------------------------------------> Class setup
 
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cParent: wx.Window, cRightDelete: bool=True) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
         
+        #endregion ----------------------------------------------> Check Input
 
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Label
+        self.cLAlpha    = getattr(self, 'cLAlpha',    config.lStAlpha)
+        self.cLScoreVal = getattr(self, 'cLScoreVal', config.lStScoreVal)
+        self.cLScoreCol = getattr(self, 'cLScoreCol', config.lStScoreCol)
+        self.cLDetectedProt = getattr(
+            self, 'cLDetectedProt', config.lStDetectedProt)
+        #------------------------------> Tooltips
+        self.cTTAlpha        = getattr(self, 'cTTAlpha',    config.ttStAlpha)
+        self.cTTScore        = getattr(self, 'cTTScore',    config.ttStScore)
+        self.cTTScoreVal     = getattr(self, 'cTTScoreVal', config.ttStScoreVal)
+        self.cTTDetectedProt = getattr(
+            self, 'cTTDetectedProtL', config.ttStDetectedProtL)
+        #------------------------------> Parent class init
+        BaseConfPanel.__init__(self, cParent, cRightDelete=cRightDelete)
 
+        widget.ResControl.__init__(self, self.sbColumn)
+        #endregion --------------------------------------------> Initial Setup
 
-# class BaseConfModPanel(BaseConfPanel, widget.ResControl):
-#     """Base configuration for a panel of a module.
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
 
-#         Parameters
-#         ----------
-#         parent : wx Widget
-#             Parent of the widgets
-#         rightDelete : Boolean
-#             Enables clearing wx.StaticBox input with right click
+        #region -----------------------------------------------------> Widgets
+        self.wAlpha = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLAlpha,
+            stTooltip = self.cTTAlpha,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+                vMin    = 0,
+                vMax    = 1,
+            )
+        )
 
-#         Attributes
-#         ----------
-#         #------------------------------> Configuration
-#         cLAlpha : str
-#             Label for the alpha level. Default is config.lStAlpha.
-#         cLDetectedProt : str
-#             Label for Detected Proteins. Default is config.lStDetectedProt.
-#         cLScoreCol : str
-#             Score column. Default is config.lStScoreCol.
-#         cLScoreVal : str
-#             Score value label. Default is config.lStScoreVal.
-#         cTTAlpha : str
-#             Tooltip for alpha level. Default is config.ttStAlpha.
-#         cTTColExtract : str
-#             Tooltip for Columns to Extract. Default is config.lStColExtract.
-#         cTTDetectedProt : str
-#             Tooltip for Detected Proteins. Default is config.lStDetectedProt.
-#         cTTScore : str
-#             Tooltip for Score columns. Default is config.lStScoreCol.
-#         cTTScoreVal : str
-#             Tooltip for Score value. Default is config.lStScoreVal.
-#         #------------------------------> Widgets
-#         alpha : dtsWidget.StaticTextCtrl
-#             Attributes: st, tc
-#         colExtract : dtsWidget.StaticTextCtrl
-#             Attributes: st, tc.   
-#         detectedProt : : dtsWidget.StaticTextCtrl
-#             Attributes: st, tc     
-#         imputationMethos: dtsWidget.StaticTextComboBox
-#             Attributes: st, cb
-#         normMethod : dtsWidget.StaticTextComboBox
-#             Attributes: st, cb
-#         score : : dtsWidget.StaticTextCtrl
-#             Attributes: st, tc
-#         scoreVal : dtsWidget.StaticTextCtrl
-#             Attributes: st, tc
-#         transMethod : dtsWidget.StaticTextComboBox
-#             Attributes: st, cb   
-#         - See also widget.ResControl
-            
-#         Notes
-#         -----
-#         Base class for all configuration panels of a module.
-#     """
-#     #region -----------------------------------------------------> Class setup
+        self.wScoreVal = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLScoreVal,
+            stTooltip = self.cTTScoreVal,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'float',
+                nN      = 1,
+            )
+        )
+
+        self.wDetectedProt = dtsWidget.StaticTextCtrl(
+            self.sbColumn,
+            stLabel   = self.cLDetectedProt,
+            stTooltip = self.cTTDetectedProt,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'int',
+                nN      = 1,
+                vMin    = 0,
+            )
+        )
+
+        self.wScore = dtsWidget.StaticTextCtrl(
+            self.sbColumn,
+            stLabel   = self.cLScoreCol,
+            stTooltip = self.cTTScore,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'int',
+                nN      = 1,
+                vMin    = 0,
+            )
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region -----------------------------------------------------> Tooltip
+        
+        #endregion --------------------------------------------------> Tooltip
+        
+        #region ------------------------------------------------------> Sizers
+        
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
     
-#     #endregion --------------------------------------------------> Class setup
-
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, parent: wx.Window, rightDelete: bool=True) -> None:
-#         """ """
-#         #region -------------------------------------------------> Check Input
-        
-#         #endregion ----------------------------------------------> Check Input
-
-#         #region -----------------------------------------------> Initial Setup
-#         #------------------------------> Label
-#         self.cLAlpha    = getattr(self, 'cLAlpha',    config.lStAlpha)
-#         self.cLScoreVal = getattr(self, 'cLScoreVal', config.lStScoreVal)
-#         self.cLScoreCol = getattr(self, 'cLScoreCol', config.lStScoreCol)
-#         self.cLDetectedProt = getattr(
-#             self, 'cLDetectedProt', config.lStDetectedProt,)
-#         #------------------------------> Tooltips
-#         self.cTTAlpha        = getattr(self, 'cTTAlpha',    config.ttStAlpha)
-#         self.cTTScore        = getattr(self, 'cTTScore',    config.ttStScore)
-#         self.cTTScoreVal     = getattr(self, 'cTTScoreVal', config.ttStScoreVal)
-#         self.cTTDetectedProt = getattr(
-#             self, 'cTTDetectedProtL', config.ttStDetectedProtL,)
-#         #------------------------------> Parent class init
-#         BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
-
-#         widget.ResControl.__init__(self, self.sbColumn)
-#         #endregion --------------------------------------------> Initial Setup
-
-#         #region --------------------------------------------------------> Menu
-        
-#         #endregion -----------------------------------------------------> Menu
-
-#         #region -----------------------------------------------------> Widgets
-#         self.alpha = dtsWidget.StaticTextCtrl(
-#             self.sbValue,
-#             stLabel   = self.cLAlpha,
-#             stTooltip = self.cTTAlpha,
-#             tcSize    = self.cSTc,
-#             validator = dtsValidator.NumberList(
-#                 numType = 'float',
-#                 nN      = 1,
-#                 vMin    = 0,
-#                 vMax    = 1,
-#             )
-#         )
-
-#         self.scoreVal = dtsWidget.StaticTextCtrl(
-#             self.sbValue,
-#             stLabel   = self.cLScoreVal,
-#             stTooltip = self.cTTScoreVal,
-#             tcSize    = self.cSTc,
-#             validator = dtsValidator.NumberList(
-#                 numType = 'float',
-#                 nN      = 1,
-#             )
-#         )
-
-#         self.detectedProt = dtsWidget.StaticTextCtrl(
-#             self.sbColumn,
-#             stLabel   = self.cLDetectedProt,
-#             stTooltip = self.cTTDetectedProt,
-#             tcSize    = self.cSTc,
-#             validator = dtsValidator.NumberList(
-#                 numType = 'int',
-#                 nN      = 1,
-#                 vMin    = 0,
-#             )
-#         )
-
-#         self.score = dtsWidget.StaticTextCtrl(
-#             self.sbColumn,
-#             stLabel   = self.cLScoreCol,
-#             stTooltip = self.cTTScore,
-#             tcSize    = self.cSTc,
-#             validator = dtsValidator.NumberList(
-#                 numType = 'int',
-#                 nN      = 1,
-#                 vMin    = 0,
-#             )
-#         )
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region -----------------------------------------------------> Tooltip
-        
-#         #endregion --------------------------------------------------> Tooltip
-        
-#         #region ------------------------------------------------------> Sizers
-        
-#         #endregion ---------------------------------------------------> Sizers
-
-#         #region --------------------------------------------------------> Bind
-        
-#         #endregion -----------------------------------------------------> Bind
-
-#         #region ---------------------------------------------> Window position
-        
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #region ---------------------------------------------------> Class methods
-    
-#     #endregion ------------------------------------------------> Class methods
-# #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # class BaseConfModPanel2(BaseConfModPanel):
@@ -3660,560 +3627,562 @@ class DataPrep(BaseConfPanel):
 #---
 
 
-# #------------------------------> Modules
-# class ProtProf(BaseConfModPanel):
-#     """Creates the Proteome Profiling configuration tab.
+#------------------------------> Modules
+class ProtProf(BaseConfModPanel):
+    """Creates the Proteome Profiling configuration tab.
 
-#         Parameters
-#         ----------
-#         parent: wx.Widget
-#             Parent of the pane
-#         dataI : dict or None
-#             Initial data provided by the user in a previous analysis.
-#             This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
+        Parameters
+        ----------
+        parent: wx.Widget
+            Parent of the pane
+        dataI : dict or None
+            Initial data provided by the user in a previous analysis.
+            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
 
-#         Attributes
-#         ----------
-#         name : str
-#             Name of the pane. Default to config.npProtProf.
-#         cURL : str
-#             URL for the online help.
-#         #------------------------------> Configuration
-#         cLCorrectP : str
-#             Label for the P correction field.
-#         cLExcludeProt : str
-#             Label for the Exclude Protein field.
-#         cLGeneName : str
-#             Label for the Gene Name field.
-#         cLRawI : str
-#             Label for the Intensity field.
-#         cLSample : str
-#             Label for Sample field.
-#         cOCorrectP : list of str
-#             Options to correct P values.
-#         cORawI : list of str
-#             Options for intensity values
-#         cOSample : list of str
-#             Options for sample relationship.
-#         cTTCorrectP : str
-#             Tooltip for the correction of P values field.
-#         cTTExcludeProt : str
-#             Tooltip for the exclude protein field.
-#         cTTGeneName : str
-#             Tooltip for the Gene name field.
-#         cTTHelp : str
-#             Tooltip for the help button.
-#         cTTRawI : str
-#             Tooltip for the intensity field.
-#         cTTSample : str
-#             Tooltip for the sample field.
-#         #------------------------------> To Run Analysis
-#         checkUserInput : dict
-#             To check the user input in the right order. 
-#             See pane.BaseConfPanel.CheckInput for a description of the dict.
-#         cColCtrlData : dict
-#             Keys are control type and values methods to get the Ctrl and 
-#             Data columns for the given condition and relevant point.
-#         cGaugePD : int
-#             Number of steps for the Progress Dialog.
-#         cLLenLongest : int
-#             Length of the longest label in the panel.
-#         cMainData : str
-#             Name of file containing the results in Steps_Data_File.
-#         cSection : str
-#             Name of the section. Default to config.nmProtProf.
-#         cTitlePD : str
-#             Name of the Progress Dialog window.
-#         do: dict
-#             Dictionary with checked user input. Keys are:
-#             {
-#                 "iFile"      : "Path to input data file",
-#                 "uFile"      : "Path to umsap file.",
-#                 'ID'         : 'Analysis ID',
-#                 "ScoreVal"   : "Score value threshold",
-#                 "RawI"       : "Raw intensity or not. Boolean",
-#                 "IndS"       : "Independent sampels or not. Boolean,
-#                 "Cero"       : Boolean, how to treat cero values,
-#                 "TransMethod": "Transformation method",
-#                 "NormMethod" : "Normalization method",
-#                 "ImpMethod"  : "Imputation method",
-#                 "Alpha"      : "Significance level",
-#                 "CorrectP"   : "Method to correct P values",
-#                 "Cond"       : [List of conditions],
-#                 "RP"         : [List of relevent points],
-#                 "ControlT"   : "Control type",
-#                 "ControlL"   : "Control label",
-#                 "oc": {
-#                     "DetectedP": "Detected Proteins column. Int",
-#                     "GeneName" : "Gene name column. Int",
-#                     "ScoreCol" : "Score column. Int",
-#                     "ExcludeP" : [List of columns to search for proteins to 
-#                                 exclude. List of int],
-#                     "ResCtrl": [List of columns containing the control and 
-#                                 experiments column numbers],
-#                     "Column": [Flat list of all column numbers with the 
-#                               following order: Gene Names, Detected Proteins, 
-#                               Score, Exclude Proteins, Res & Control]
-#                 },
-#                 "df": { Column numbers in the pd.df created from the input file.
-#                     "DetectedP": 0,
-#                     "GeneName" : 1,
-#                     "ScoreCol" : 2,
-#                     "ExcludeP" : [list of int],
-#                     "ResCtrl": [],
-#                     "ResCtrlFlat": [ResCtrl as a flat list],
-#                     "ColumnR : [Columns with the results] 
-#                     "ColumnF": [Columns that must contain only float numbers]
-#                 }
-#             },    
-#         d: dict
-#             Dictionary with the user input. Keys are labels in the panel plus:
-#             {
-#                 config.lStProtProfCond          : [list of conditions],
-#                 config.lStProtProfRP            : [list of relevant points],
-#                 f"Control {config.lStCtrlType}" : "Control Type",
-#                 f"Control {config.lStCtrlName}" : "Control Name",
-#             }
+        Attributes
+        ----------
+        name : str
+            Name of the pane. Default to config.npProtProf.
+        cURL : str
+            URL for the online help.
+        #------------------------------> Configuration
+        cLCorrectP : str
+            Label for the P correction field.
+        cLExcludeProt : str
+            Label for the Exclude Protein field.
+        cLGeneName : str
+            Label for the Gene Name field.
+        cLRawI : str
+            Label for the Intensity field.
+        cLSample : str
+            Label for Sample field.
+        cOCorrectP : list of str
+            Options to correct P values.
+        cORawI : list of str
+            Options for intensity values
+        cOSample : list of str
+            Options for sample relationship.
+        cTTCorrectP : str
+            Tooltip for the correction of P values field.
+        cTTExcludeProt : str
+            Tooltip for the exclude protein field.
+        cTTGeneName : str
+            Tooltip for the Gene name field.
+        cTTHelp : str
+            Tooltip for the help button.
+        cTTRawI : str
+            Tooltip for the intensity field.
+        cTTSample : str
+            Tooltip for the sample field.
+        #------------------------------> To Run Analysis
+        checkUserInput : dict
+            To check the user input in the right order. 
+            See pane.BaseConfPanel.CheckInput for a description of the dict.
+        cColCtrlData : dict
+            Keys are control type and values methods to get the Ctrl and 
+            Data columns for the given condition and relevant point.
+        cGaugePD : int
+            Number of steps for the Progress Dialog.
+        cLLenLongest : int
+            Length of the longest label in the panel.
+        cMainData : str
+            Name of file containing the results in Steps_Data_File.
+        cSection : str
+            Name of the section. Default to config.nmProtProf.
+        cTitlePD : str
+            Name of the Progress Dialog window.
+        do: dict
+            Dictionary with checked user input. Keys are:
+            {
+                "iFile"      : "Path to input data file",
+                "uFile"      : "Path to umsap file.",
+                'ID'         : 'Analysis ID',
+                "ScoreVal"   : "Score value threshold",
+                "RawI"       : "Raw intensity or not. Boolean",
+                "IndS"       : "Independent sampels or not. Boolean,
+                "Cero"       : Boolean, how to treat cero values,
+                "TransMethod": "Transformation method",
+                "NormMethod" : "Normalization method",
+                "ImpMethod"  : "Imputation method",
+                "Alpha"      : "Significance level",
+                "CorrectP"   : "Method to correct P values",
+                "Cond"       : [List of conditions],
+                "RP"         : [List of relevent points],
+                "ControlT"   : "Control type",
+                "ControlL"   : "Control label",
+                "oc": {
+                    "DetectedP": "Detected Proteins column. Int",
+                    "GeneName" : "Gene name column. Int",
+                    "ScoreCol" : "Score column. Int",
+                    "ExcludeP" : [List of columns to search for proteins to 
+                                exclude. List of int],
+                    "ResCtrl": [List of columns containing the control and 
+                                experiments column numbers],
+                    "Column": [Flat list of all column numbers with the 
+                              following order: Gene Names, Detected Proteins, 
+                              Score, Exclude Proteins, Res & Control]
+                },
+                "df": { Column numbers in the pd.df created from the input file.
+                    "DetectedP": 0,
+                    "GeneName" : 1,
+                    "ScoreCol" : 2,
+                    "ExcludeP" : [list of int],
+                    "ResCtrl": [],
+                    "ResCtrlFlat": [ResCtrl as a flat list],
+                    "ColumnR : [Columns with the results] 
+                    "ColumnF": [Columns that must contain only float numbers]
+                }
+            },    
+        d: dict
+            Dictionary with the user input. Keys are labels in the panel plus:
+            {
+                config.lStProtProfCond          : [list of conditions],
+                config.lStProtProfRP            : [list of relevant points],
+                f"Control {config.lStCtrlType}" : "Control Type",
+                f"Control {config.lStCtrlName}" : "Control Name",
+            }
             
-#         See Parent classes for more aatributes.
+        See Parent classes for more aatributes.
         
-#         Notes
-#         -----
-#         Running the analysis results in the creation of:
+        Notes
+        -----
+        Running the analysis results in the creation of:
         
-#         - Parent Folder/
-#             - Input_Data_Files/
-#             - Steps_Data_Files/20210324-165609-Proteome-Profiling/
-#             - output-file.umsap
+        - Parent Folder/
+            - Input_Data_Files/
+            - Steps_Data_Files/20210324-165609-Proteome-Profiling/
+            - output-file.umsap
         
-#         The Input_Data_Files folder contains the original data files. These are 
-#         needed for data visualization, running analysis again with different 
-#         parameters, etc.
-#         The Steps_Data_Files/Date-Section folder contains regular csv files with 
-#         the step by step data.
+        The Input_Data_Files folder contains the original data files. These are 
+        needed for data visualization, running analysis again with different 
+        parameters, etc.
+        The Steps_Data_Files/Date-Section folder contains regular csv files with 
+        the step by step data.
     
-#         The Proteome Profiling section in output-file.umsap conteins the 
-#         information about the calculations, e.g
+        The Proteome Profiling section in output-file.umsap conteins the 
+        information about the calculations, e.g
 
-#         {
-#             'Proteome-Profiling : {
-#                 '20210324-165609': {
-#                     'V' : config.dictVersion,
-#                     'I' : self.d,
-#                     'CI': self.do,
-#                     'DP': {
-#                         'dfS' : pd.DataFrame with initial data as float and
-#                                 after discarding values by score.
-#                         'dfT' : pd.DataFrame with transformed data.
-#                         'dfN' : pd.DataFrame with normalized data.
-#                         'dfIm': pd.DataFrame with imputed data.
-#                     }
-#                     'R' : pd.DataFrame (dict) with the calculation results.
-#                 }
-#             }
-#         }
+        {
+            'Proteome-Profiling : {
+                '20210324-165609': {
+                    'V' : config.dictVersion,
+                    'I' : self.d,
+                    'CI': self.do,
+                    'DP': {
+                        'dfS' : pd.DataFrame with initial data as float and
+                                after discarding values by score.
+                        'dfT' : pd.DataFrame with transformed data.
+                        'dfN' : pd.DataFrame with normalized data.
+                        'dfIm': pd.DataFrame with imputed data.
+                    }
+                    'R' : pd.DataFrame (dict) with the calculation results.
+                }
+            }
+        }
         
-#         The result data frame has the following structure:
+        The result data frame has the following structure:
         
-#         Gene Protein Score C1 ..... CN
-#         Gene Protein Score RP1 ..... RPN
-#         Gene Protein Score aveC stdC ave std P Pc FC CI FCz
+        Gene Protein Score C1 ..... CN
+        Gene Protein Score RP1 ..... RPN
+        Gene Protein Score aveC stdC ave std P Pc FC CI FCz
         
-#         where all FC related values are for log2FC
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     name = config.npProtProf
-#     #endregion --------------------------------------------------> Class setup
+        where all FC related values are for log2FC
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = config.npProtProf
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, parent, dataI: Optional[dict]):
-#         """ """
-#         #region -------------------------------------------------> Check Input
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cParent, cDataI: Optional[dict]):
+        """ """
+        #region -------------------------------------------------> Check Input
         
-#         #endregion ----------------------------------------------> Check Input
+        #endregion ----------------------------------------------> Check Input
 
-#         #region -----------------------------------------------> Initial Setup
-#         #------------------------------> Needed by BaseConfPanel
-#         self.cURL         = config.urlProtProf
-#         self.cSection     = config.nmProtProf
-#         self.cLLenLongest = len(config.lStResultCtrl)
-#         self.cTitlePD     = f"Running {config.nmProtProf} Analysis"
-#         self.cGaugePD     = 36
-#         #------------------------------> Optional configuration
-#         self.cTTHelp = config.ttBtnHelp.format(config.urlProtProf)
-#         #------------------------------> Base attributes and setup
-#         super().__init__(parent)
-#         #------------------------------> Needed to Run
-#         self.cMainData  = '{}-ProteomeProfiling-Data-{}.txt'
-#         #------------------------------> Labels
-#         self.cLCorrectP    = 'P Correction'
-#         self.cLGeneName    = 'Gene Names'
-#         self.cLExcludeProt = 'Exclude Proteins'
-#         self.cLSample      = 'Samples'
-#         self.cLRawI        = 'Intensities'
-#         #------------------------------> Choices
-#         self.cOSample   = list(config.oSamples.keys())
-#         self.cORawI     = list(config.oIntensities.values())
-#         self.cOCorrectP = list(config.oCorrectP.keys())
-#         #------------------------------> Tooltips
-#         self.cTTCorrectP    = config.ttStPCorrection
-#         self.cTTGeneName    = config.ttStGenName
-#         self.cTTExcludeProt = config.ttStExcludeProt
-#         self.cTTSample      = config.ttStSample 
-#         self.cTTRawI = (
-#             f"Specify if intensities are raw intensity values or are already "
-#             f"expressed as a ratio (SILAC, TMT/iTRAQ).")
-#         #------------------------------> Dict with methods
-#         self.cColCtrlData = {
-#             config.oControlTypeProtProf['OC']   : self.ColCtrlData_OC,
-#             config.oControlTypeProtProf['OCC']  : self.ColCtrlData_OCC,
-#             config.oControlTypeProtProf['OCR']  : self.ColCtrlData_OCR,
-#             config.oControlTypeProtProf['Ratio']: self.ColCtrlData_Ratio,
-#         }
-#         #endregion --------------------------------------------> Initial Setup
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Needed by BaseConfPanel
+        self.cURL         = config.urlProtProf
+        self.cSection     = config.nmProtProf
+        self.cTitlePD     = f"Running {config.nmProtProf} Analysis"
+        self.cGaugePD     = 36
+        self.rLLenLongest = len(config.lStResultCtrl)
+        #------------------------------> Optional configuration
+        self.cTTHelp = config.ttBtnHelp.format(config.urlProtProf)
+        #------------------------------> Base attributes and setup
+        super().__init__(cParent)
+        #------------------------------> Needed to Run
+        self.rMainData  = '{}-ProteomeProfiling-Data-{}.txt'
+        #------------------------------> Labels
+        self.cLCorrectP    = config.lCbCorrectP
+        self.cLGeneName    = config.lStGeneName
+        self.cLExcludeProt = config.lStExcludeProt
+        self.cLSample      = config.lCbSample
+        self.cLRawI        = config.lCbIntensity
+        #------------------------------> Choices
+        self.cOSample   = list(config.oSamples.keys())
+        self.cORawI     = list(config.oIntensities.values())
+        self.cOCorrectP = list(config.oCorrectP.keys())
+        #------------------------------> Tooltips
+        self.cTTCorrectP    = config.ttStPCorrection
+        self.cTTGeneName    = config.ttStGenName
+        self.cTTExcludeProt = config.ttStExcludeProt
+        self.cTTSample      = config.ttStSample
+        self.cTTRawI        = config.ttStRawI
+        #------------------------------> Dict with methods
+        # self.cColCtrlData = {
+        #     config.oControlTypeProtProf['OC']   : self.ColCtrlData_OC,
+        #     config.oControlTypeProtProf['OCC']  : self.ColCtrlData_OCC,
+        #     config.oControlTypeProtProf['OCR']  : self.ColCtrlData_OCR,
+        #     config.oControlTypeProtProf['Ratio']: self.ColCtrlData_Ratio,
+        # }
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------------> Menu
+        #region --------------------------------------------------------> Menu
         
-#         #endregion -----------------------------------------------------> Menu
+        #endregion -----------------------------------------------------> Menu
 
-#         #region -----------------------------------------------------> Widgets
-#         #------------------------------> Values
-#         self.correctP = dtsWidget.StaticTextComboBox(
-#             self.sbValue,
-#             label     = self.cLCorrectP,
-#             choices   = self.cOCorrectP,
-#             tooltip   = self.cTTCorrectP,
-#             validator = dtsValidator.IsNotEmpty(),
-#         )
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Values
+        self.wCorrectP = dtsWidget.StaticTextComboBox(
+            self.sbValue,
+            label     = self.cLCorrectP,
+            choices   = self.cOCorrectP,
+            tooltip   = self.cTTCorrectP,
+            validator = dtsValidator.IsNotEmpty(),
+        )
         
-#         self.sample = dtsWidget.StaticTextComboBox(
-#             self.sbValue,
-#             label     = self.cLSample,
-#             choices   = self.cOSample,
-#             tooltip   = self.cTTSample,
-#             validator = dtsValidator.IsNotEmpty(),
-#         )
+        self.wSample = dtsWidget.StaticTextComboBox(
+            self.sbValue,
+            label     = self.cLSample,
+            choices   = self.cOSample,
+            tooltip   = self.cTTSample,
+            validator = dtsValidator.IsNotEmpty(),
+        )
         
-#         self.rawI = dtsWidget.StaticTextComboBox(
-#             self.sbValue,
-#             label     = self.cLRawI,
-#             choices   = self.cORawI,
-#             tooltip   = self.cTTExcludeProt,
-#             validator = dtsValidator.IsNotEmpty(),
-#         )
-#         #------------------------------> Columns
-#         self.geneName = dtsWidget.StaticTextCtrl(
-#             self.sbColumn,
-#             stLabel   = self.cLGeneName,
-#             stTooltip = self.cTTGeneName,
-#             tcSize    = self.cSTc,
-#             validator = dtsValidator.NumberList(
-#                 numType = 'int',
-#                 nN      = 1,
-#                 vMin    = 0,
-#             )
-#         )
-#         self.excludeProt = dtsWidget.StaticTextCtrl(
-#             self.sbColumn,
-#             stLabel   = self.cLExcludeProt,
-#             stTooltip = self.cTTRawI,
-#             tcSize    = self.cSTc,
-#             validator = dtsValidator.NumberList(
-#                 numType = 'int',
-#                 sep     = ' ',
-#                 vMin    = 0,
-#                 opt     = True,
-#             )
-#         )
-#         #endregion --------------------------------------------------> Widgets
+        self.wRawI = dtsWidget.StaticTextComboBox(
+            self.sbValue,
+            label     = self.cLRawI,
+            choices   = self.cORawI,
+            tooltip   = self.cTTExcludeProt,
+            validator = dtsValidator.IsNotEmpty(),
+        )
+        #------------------------------> Columns
+        self.wGeneName = dtsWidget.StaticTextCtrl(
+            self.sbColumn,
+            stLabel   = self.cLGeneName,
+            stTooltip = self.cTTGeneName,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'int',
+                nN      = 1,
+                vMin    = 0,
+            )
+        )
+        self.wExcludeProt = dtsWidget.StaticTextCtrl(
+            self.sbColumn,
+            stLabel   = self.cLExcludeProt,
+            stTooltip = self.cTTRawI,
+            tcSize    = self.cSTc,
+            validator = dtsValidator.NumberList(
+                numType = 'int',
+                sep     = ' ',
+                vMin    = 0,
+                opt     = True,
+            )
+        )
+        #endregion --------------------------------------------------> Widgets
 
-#         #region ----------------------------------------------> checkUserInput
-#         self.checkUserInput = {
-#             self.cLuFile       : [self.uFile.tc, config.mFileBad],
-#             self.cLiFile       : [self.iFile.tc, config.mFileBad],
-#             self.cLTransMethod : [self.transMethod.cb, config.mOptionBad],
-#             self.cLNormMethod  : [self.normMethod.cb, config.mOptionBad],
-#             self.cLImputation  : [self.imputationMethod.cb, config.mOptionBad],
-#             self.cLScoreVal    : [self.scoreVal.tc, config.mOneRealNum],
-#             self.cLSample      : [self.sample.cb, config.mOptionBad],
-#             self.cLRawI        : [self.rawI.cb, config.mOptionBad],
-#             self.cLAlpha       : [self.alpha.tc, config.mOne01Num],
-#             self.cLCorrectP    : [self.correctP.cb, config.mOptionBad],
-#             self.cLDetectedProt: [self.detectedProt.tc, config.mOneZPlusNum],
-#             self.cLGeneName    : [self.geneName.tc, config.mOneZPlusNum],
-#             self.cLScoreCol    : [self.score.tc, config.mOneZPlusNum],
-#             self.cLExcludeProt : [self.excludeProt.tc, config.mNZPlusNum],
-#             self.cLResControl  : [self.tcResults, config.mResCtrl]
-#         }        
-#         #endregion -------------------------------------------> checkUserInput
+        #region ----------------------------------------------> checkUserInput
+        self.checkUserInput = {
+            self.cLuFile       : [self.wUFile.tc,           config.mFileBad],
+            self.cLiFile       : [self.wIFile.tc,           config.mFileBad],
+            self.cLTransMethod : [self.wTransMethod.cb,     config.mOptionBad],
+            self.cLNormMethod  : [self.wNormMethod.cb,      config.mOptionBad],
+            self.cLImputation  : [self.wImputationMethod.cb,config.mOptionBad],
+            self.cLScoreVal    : [self.wScoreVal.tc,        config.mOneRealNum],
+            self.cLSample      : [self.wSample.cb,          config.mOptionBad],
+            self.cLRawI        : [self.wRawI.cb,            config.mOptionBad],
+            self.cLAlpha       : [self.wAlpha.tc,           config.mOne01Num],
+            self.cLCorrectP    : [self.wCorrectP.cb,        config.mOptionBad],
+            self.cLDetectedProt: [self.wDetectedProt.tc,   config.mOneZPlusNum],
+            self.cLGeneName    : [self.wGeneName.tc,       config.mOneZPlusNum],
+            self.cLScoreCol    : [self.wScore.tc,          config.mOneZPlusNum],
+            self.cLExcludeProt : [self.wExcludeProt.tc,    config.mNZPlusNum],
+            self.cLResControl  : [self.wTcResults,         config.mResCtrl]
+        }        
+        #endregion -------------------------------------------> checkUserInput
 
-#         #region -----------------------------------------------------> Tooltip
+        #region -----------------------------------------------------> Tooltip
         
-#         #endregion --------------------------------------------------> Tooltip
+        #endregion --------------------------------------------------> Tooltip
         
-#         #region ------------------------------------------------------> Sizers
-#         #------------------------------> Sizer Values
-#         self.sizersbValueWid.Add(
-#             1, 1,
-#             pos    = (0,0),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#             span   = (2, 0),
-#         )
-#         self.sizersbValueWid.Add(
-#             self.scoreVal.st,
-#             pos    = (0,1),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.scoreVal.tc,
-#             pos    = (0,2),
-#             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.alpha.st,
-#             pos    = (0,3),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.alpha.tc,
-#             pos    = (0,4),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.sample.st,
-#             pos    = (1,1),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.sample.cb,
-#             pos    = (1,2),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.correctP.st,
-#             pos    = (1,3),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.correctP.cb,
-#             pos    = (1,4),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.rawI.st,
-#             pos    = (2,1),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.rawI.cb,
-#             pos    = (2,2),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             1, 1,
-#             pos    = (0,5),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#             span   = (2, 0),
-#         )
-#         self.sizersbValueWid.AddGrowableCol(0, 1)
-#         self.sizersbValueWid.AddGrowableCol(5, 1)
-#         #------------------------------> Sizer Columns
-#         self.sizersbColumnWid.Add(
-#             self.detectedProt.st,
-#             pos    = (0,0),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.detectedProt.tc,
-#             pos    = (0,1),
-#             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.geneName.st,
-#             pos    = (0,2),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.geneName.tc,
-#             pos    = (0,3),
-#             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.score.st,
-#             pos    = (0,4),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.score.tc,
-#             pos    = (0,5),
-#             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.excludeProt.st,
-#             pos    = (1,0),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.excludeProt.tc,
-#             pos    = (1,1),
-#             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-#             border = 5,
-#             span   = (0, 5),
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.sizerRes,
-#             pos    = (2,0),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
-#             border = 0,
-#             span   = (0,6),
-#         )
-#         self.sizersbColumnWid.AddGrowableCol(1,1)
-#         self.sizersbColumnWid.AddGrowableCol(3,1)
-#         self.sizersbColumnWid.AddGrowableCol(5,1)
-#         #------------------------------> Main Sizer
-#         self.SetSizer(self.Sizer)
-#         self.Sizer.Fit(self)
-#         self.SetupScrolling()
-#         #endregion ---------------------------------------------------> Sizers
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Sizer Values
+        self.sizersbValueWid.Add(
+            1, 1,
+            pos    = (0,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+            span   = (2, 0),
+        )
+        self.sizersbValueWid.Add(
+            self.wScoreVal.st,
+            pos    = (0,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wScoreVal.tc,
+            pos    = (0,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wAlpha.st,
+            pos    = (0,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wAlpha.tc,
+            pos    = (0,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wSample.st,
+            pos    = (1,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wSample.cb,
+            pos    = (1,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wCorrectP.st,
+            pos    = (1,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wCorrectP.cb,
+            pos    = (1,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wRawI.st,
+            pos    = (2,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wRawI.cb,
+            pos    = (2,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            1, 1,
+            pos    = (0,5),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+            span   = (2, 0),
+        )
+        self.sizersbValueWid.AddGrowableCol(0, 1)
+        self.sizersbValueWid.AddGrowableCol(5, 1)
+        #------------------------------> Sizer Columns
+        self.sizersbColumnWid.Add(
+            self.wDetectedProt.st,
+            pos    = (0,0),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.wDetectedProt.tc,
+            pos    = (0,1),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.wGeneName.st,
+            pos    = (0,2),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.wGeneName.tc,
+            pos    = (0,3),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.wScore.st,
+            pos    = (0,4),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.wScore.tc,
+            pos    = (0,5),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.wExcludeProt.st,
+            pos    = (1,0),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbColumnWid.Add(
+            self.wExcludeProt.tc,
+            pos    = (1,1),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+            span   = (0, 5),
+        )
+        self.sizersbColumnWid.Add(
+            self.sRes,
+            pos    = (2,0),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
+            border = 0,
+            span   = (0,6),
+        )
+        self.sizersbColumnWid.AddGrowableCol(1,1)
+        self.sizersbColumnWid.AddGrowableCol(3,1)
+        self.sizersbColumnWid.AddGrowableCol(5,1)
+        #------------------------------> Main Sizer
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        self.SetupScrolling()
+        #endregion ---------------------------------------------------> Sizers
 
-#         #region --------------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
         
-#         #endregion -----------------------------------------------------> Bind
+        #endregion -----------------------------------------------------> Bind
 
-#         #region --------------------------------------------------------> Test
-#         if config.development:
-#             import getpass
-#             user = getpass.getuser()
-#             if config.cOS == "Darwin":
-#                 self.uFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-#                 self.iFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt")
-#             elif config.cOS == 'Windows':
-#                 from pathlib import Path
-#                 # self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
-#                 # self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT')))
-#             else:
-#                 pass
-#             self.scoreVal.tc.SetValue('320')
-#             self.id.tc.SetValue('Beta Test Dev')
-#             self.transMethod.cb.SetValue('Log2')
-#             self.normMethod.cb.SetValue('Median')
-#             self.imputationMethod.cb.SetValue('Normal Distribution')
-#             self.alpha.tc.SetValue('0.05')
-#             self.sample.cb.SetValue('Independent Samples')
-#             self.rawI.cb.SetValue('Raw Intensities')
-#             self.correctP.cb.SetValue('Benjamini - Hochberg')
-#             self.detectedProt.tc.SetValue('0')
-#             self.geneName.tc.SetValue('6')   
-#             self.score.tc.SetValue('39')
-#             self.excludeProt.tc.SetValue('171 172 173')
-#             #------------------------------> 
-#             #--> One Control per Column, 2 Cond and 2 TP
-#             # self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-#             # self.lbDict = {
-#             #     1            : ['C1', 'C2'],
-#             #     2            : ['RP1', 'RP2'],
-#             #     'Control'    : ['TheControl'],
-#             #     'ControlType': 'One Control per Column',
-#             # }
-#             #--> One Control per Row, 1 Cond and 2 TP
-#             self.tcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
-#             self.lbDict = {
-#                 1            : ['DMSO'],
-#                 2            : ['30min', '60min'],
-#                 'Control'    : ['MyControl'],
-#                 'ControlType': 'One Control per Row',
-#             }
-#             #--> One Control 2 Cond and 2 TP
-#             # self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-#             # self.lbDict = {
-#             #     1            : ['C1', 'C2'],
-#             #     2            : ['RP1', 'RP2'],
-#             #     'Control'    : ['1Control'],
-#             #     'ControlType': 'One Control',
-#             # }
-#             #--> Ratio 2 Cond and 2 TP
-#             # self.tcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
-#             # self.lbDict = {
-#             #     1            : ['C1', 'C2'],
-#             #     2            : ['RP1', 'RP2'],
-#             #     'Control'    : ['1Control'],
-#             #     'ControlType': 'Ratio of Intensities',
-#             # }
-#         else:
-#             pass
-#         #endregion -----------------------------------------------------> Test
+        #region --------------------------------------------------------> Test
+        if config.development:
+            import getpass
+            user = getpass.getuser()
+            if config.os == "Darwin":
+                self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt")
+            elif config.os == 'Windows':
+                from pathlib import Path
+                # self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
+                # self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT')))
+            else:
+                pass
+            self.wScoreVal.tc.SetValue('320')
+            self.wId.tc.SetValue('Beta Test Dev')
+            self.wTransMethod.cb.SetValue('Log2')
+            self.wNormMethod.cb.SetValue('Median')
+            self.wImputationMethod.cb.SetValue('Normal Distribution')
+            self.wAlpha.tc.SetValue('0.05')
+            self.wSample.cb.SetValue('Independent Samples')
+            self.wRawI.cb.SetValue('Raw Intensities')
+            self.wCorrectP.cb.SetValue('Benjamini - Hochberg')
+            self.wDetectedProt.tc.SetValue('0')
+            self.wGeneName.tc.SetValue('6')   
+            self.wScore.tc.SetValue('39')
+            self.wExcludeProt.tc.SetValue('171 172 173')
+            #------------------------------> 
+            #--> One Control per Column, 2 Cond and 2 TP
+            # self.tcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.lbDict = {
+            #     1            : ['C1', 'C2'],
+            #     2            : ['RP1', 'RP2'],
+            #     'Control'    : ['TheControl'],
+            #     'ControlType': 'One Control per Column',
+            # }
+            #--> One Control per Row, 1 Cond and 2 TP
+            self.wTcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
+            self.lbDict = {
+                1            : ['DMSO'],
+                2            : ['30min', '60min'],
+                'Control'    : ['MyControl'],
+                'ControlType': 'One Control per Row',
+            }
+            #--> One Control 2 Cond and 2 TP
+            # self.tcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.lbDict = {
+            #     1            : ['C1', 'C2'],
+            #     2            : ['RP1', 'RP2'],
+            #     'Control'    : ['1Control'],
+            #     'ControlType': 'One Control',
+            # }
+            #--> Ratio 2 Cond and 2 TP
+            # self.tcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.lbDict = {
+            #     1            : ['C1', 'C2'],
+            #     2            : ['RP1', 'RP2'],
+            #     'Control'    : ['1Control'],
+            #     'ControlType': 'Ratio of Intensities',
+            # }
+        else:
+            pass
+        #endregion -----------------------------------------------------> Test
         
-#         #region -------------------------------------------------------> DataI
-#         self.SetInitialData(dataI)
-#         #endregion ----------------------------------------------------> DataI
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region -------------------------------------------------------> DataI
+        self.SetInitialData(cDataI)
+        #endregion ----------------------------------------------------> DataI
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Manage methods
+    def SetInitialData(self, dataI: Optional[dict]=None) -> bool:
+        """Set initial data
+    
+            Parameters
+            ----------
+            dataI : dict or None
+                Data to fill all fields and repeat an analysis. See Notes.
+    
+            Returns
+            -------
+            True
+        """
+        #region -------------------------------------------------> Fill Fields
+        if dataI is not None:
+            #------------------------------> Files
+            self.wUFile.tc.SetValue(dataI['CI']['uFile'])
+            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
+            self.wId.tc.SetValue(dataI['CI']['ID'])
+            #------------------------------> Data Preparation
+            self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
+            self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
+            self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
+            #------------------------------> Values
+            self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
+            self.wSample.cb.SetValue(dataI['I'][self.cLSample])
+            self.wRawI.cb.SetValue(dataI['I'][self.cLRawI])
+            self.wAlpha.tc.SetValue(dataI['I'][self.cLAlpha])
+            self.wCorrectP.cb.SetValue(dataI['I'][self.cLCorrectP])
+            #------------------------------> Columns
+            self.wDetectedProt.tc.SetValue(dataI['I'][self.cLDetectedProt])
+            self.wGeneName.tc.SetValue(dataI['I'][self.cLGeneName])
+            self.wScore.tc.SetValue(dataI['I'][self.cLScoreCol])
+            self.wExcludeProt.tc.SetValue(dataI['I'][self.cLExcludeProt])
+            self.wTcResults.SetValue(dataI['I'][self.cLResControl])
+            self.lbDict[1] = dataI['I'][config.lStProtProfCond]
+            self.lbDict[2] = dataI['I'][config.lStProtProfRP]
+            self.lbDict['ControlType'] = dataI['I'][f'Control {config.lStCtrlType}']
+            self.lbDict['Control'] = dataI['I'][f"Control {config.lStCtrlName}"]
+        else:
+            pass
+        #endregion ----------------------------------------------> Fill Fields
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Manage methods
 
 #     #region ---------------------------------------------------> Class methods
-#     def SetInitialData(self, dataI: Optional[dict]=None) -> Literal[True]:
-#         """Set initial data
-    
-#             Parameters
-#             ----------
-#             dataI : dict or None
-#                 Data to fill all fields and repeat an analysis. See Notes.
-    
-#             Returns
-#             -------
-#             True
-#         """
-#         #region -------------------------------------------------> Fill Fields
-#         if dataI is not None:
-#             #------------------------------> Files
-#             self.uFile.tc.SetValue(dataI['CI']['uFile'])
-#             self.iFile.tc.SetValue(dataI['I'][self.cLiFile])
-#             self.id.tc.SetValue(dataI['CI']['ID'])
-#             #------------------------------> Data Preparation
-#             self.ceroB.SetValue(dataI['I'][self.cLCeroTreatD])
-#             self.transMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
-#             self.normMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
-#             self.imputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
-#             #------------------------------> Values
-#             self.scoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
-#             self.sample.cb.SetValue(dataI['I'][self.cLSample])
-#             self.rawI.cb.SetValue(dataI['I'][self.cLRawI])
-#             self.alpha.tc.SetValue(dataI['I'][self.cLAlpha])
-#             self.correctP.cb.SetValue(dataI['I'][self.cLCorrectP])
-#             #------------------------------> Columns
-#             self.detectedProt.tc.SetValue(dataI['I'][self.cLDetectedProt])
-#             self.geneName.tc.SetValue(dataI['I'][self.cLGeneName])
-#             self.score.tc.SetValue(dataI['I'][self.cLScoreCol])
-#             self.excludeProt.tc.SetValue(dataI['I'][self.cLExcludeProt])
-#             self.tcResults.SetValue(dataI['I'][self.cLResControl])
-#             self.lbDict[1] = dataI['I'][config.lStProtProfCond]
-#             self.lbDict[2] = dataI['I'][config.lStProtProfRP]
-#             self.lbDict['ControlType'] = dataI['I'][f'Control {config.lStCtrlType}']
-#             self.lbDict['Control'] = dataI['I'][f"Control {config.lStCtrlName}"]
-#         else:
-#             pass
-#         #endregion ----------------------------------------------> Fill Fields
-        
-#         return True
-#     #---
+
     
 #     #------------------------------> Run methods
 #     def CheckInput(self) -> bool:
