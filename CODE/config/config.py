@@ -125,7 +125,7 @@ nwMain          = 'MainW'
 # nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
-# ndResControlExp        = 'ResControlExp'
+ndResControlExp        = 'ResControlExp'
 # ndFilterRemoveAny      = 'Remove Filters'
 # #------------------------------> Tab for notebook windows
 ntStart    = 'StartTab'
@@ -141,7 +141,7 @@ npDataPrep              = "DataPrepPane"
 # npLimProt               = "LimProtPane"
 npProtProf              = 'ProtProfPane'
 # npResControlExp         = 'ResControlExpPane'
-# npResControlExpProtProf = 'ResControlExpPaneProtProf'
+npResControlExpProtProf = 'ResControlExpPaneProtProf'
 # npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 # #------------------------------> Menu
 # nMenModule  = 'ModuleMenu'
@@ -171,7 +171,7 @@ t = {
     nwMain : "Analysis Setup",
     #------------------------------> Dialogs
     ndCheckUpdateResDialog: "Check for Updates",
-#     ndResControlExp       : 'Results - Control Experiments',
+    ndResControlExp       : 'Results - Control Experiments',
 #     ndFilterRemoveAny     : 'Remove Filters',
     #------------------------------> Tabs
     ntStart   : 'Start',
@@ -364,7 +364,7 @@ ttStExcludeProt = (
 ttStExcludeRow = (
     'Set the column numbers containing the data used to exclude rows.'
     '\ne.g. 8 10-12')
-# ttStControlN = "Name or ID of the control experiment.\ne.g. MyControl."
+ttStControlN = "Name or ID of the control experiment.\ne.g. MyControl."
 ttStSample = (f"Specify if samples are independent or paired.\n"
     f"For example, samples are paired when the same Petri dish is "
     f"used for the control and experiment.")
@@ -437,13 +437,13 @@ oCorrectP = {
     'Benjamini - Hochberg' : 'fdr_bh',
     'Benjamini - Yekutieli': 'fdr_by',
 }
-# oControlTypeProtProf = {
-#     'Empty': '',
-#     'OC'   : 'One Control',
-#     'OCC'  : 'One Control per Column',
-#     'OCR'  : 'One Control per Row',
-#     'Ratio': oIntensities['RatioI'],
-# }
+oControlTypeProtProf = {
+    'Empty': '',
+    'OC'   : 'One Control',
+    'OCC'  : 'One Control per Column',
+    'OCR'  : 'One Control per Row',
+    'Ratio': oIntensities['RatioI'],
+}
 #endregion ----------------------------------------------------------> Options
 
 
@@ -523,6 +523,8 @@ mPDDataImputation = 'Data Imputation failed.'
 #endregion ---------------------------------------------------------> Pandas
  
 #region ----------------------------------------------------> For CheckInput
+mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
+mRepeatColNum = 'There are repeated column numbers in the text fields.'
 mRowsInLCtrl = 'There must be at least two items in {}.'
 mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
     'Protein, etc) were applied.')
@@ -536,7 +538,7 @@ mOne01Num = f"{mValueBad}{mOne01NumText}"
 mResCtrl = (
     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
     f"correct input.")
-# mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
+mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
 #endregion -------------------------------------------------> For CheckInput
 #endregion ---------------------------------------------------------> Messages
 
