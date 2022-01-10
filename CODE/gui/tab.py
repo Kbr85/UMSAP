@@ -1,34 +1,31 @@
-# # ------------------------------------------------------------------------------
-# # Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
-# #
-# # Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
-# #
-# # This program is distributed for free in the hope that it will be useful,
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# #
-# # See the accompaning licence for more details.
-# # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
+#
+# Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
+#
+# This program is distributed for free in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the accompaning licence for more details.
+# ------------------------------------------------------------------------------
 
 
-# """ Tabs of the application"""
+""" Tabs of the application"""
 
 
-# #region -------------------------------------------------------------> Imports
-# from typing import Optional
+#region -------------------------------------------------------------> Imports
+from typing import Optional
 
-# import wx
-# import wx.lib.agw.aui as aui
+import wx
+import wx.lib.agw.aui as aui
 
 # import dat4s_core.data.method as dtsMethod
 
-# import config.config as config
+import config.config as config
 # import gui.dtscore as dtscore
 # import gui.pane as pane
-
-# if config.typeCheck:
-#     from pathlib import Path
-# #endregion ----------------------------------------------------------> Imports
+#endregion ----------------------------------------------------------> Imports
 
 
 # #region -------------------------------------------------------------> Methods
@@ -300,102 +297,102 @@
 # #endregion -----------------------------------------------------> Base Classes
 
 
-# #region -------------------------------------------------------------> Classes
-# class Start(wx.Panel):
-#     """Start tab
+#region -------------------------------------------------------------> Classes
+class Start(wx.Panel):
+    """Start tab
     
-#         Parameters
-#         ----------
-#         cParent : wx.Window
-#             Direct parent of the widgets in the tab.
-#         args : extra arguments
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.ntStart
-#     #------------------------------> Files
-#     cImg = config.fImgStart
-#     #endregion --------------------------------------------------> Class setup
+        Parameters
+        ----------
+        cParent : wx.Window
+            Direct parent of the widgets in the tab.
+        args : extra arguments
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = config.ntStart
+    #------------------------------> Files
+    cImg = config.fImgStart
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, cParent: wx.Window, *args, **kwargs) -> None:
-#         """"""
-#         #region -----------------------------------------------> Initial setup
-#         self.cParent = cParent
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cParent: wx.Window, *args, **kwargs) -> None:
+        """"""
+        #region -----------------------------------------------> Initial setup
+        self.cParent = cParent
         
-#         super().__init__(parent=cParent, name=self.cName)
-#         #endregion --------------------------------------------> Initial setup
+        super().__init__(parent=cParent, name=self.cName)
+        #endregion --------------------------------------------> Initial setup
         
-#         #region -----------------------------------------------------> Widgets
-#         #------------------------------>  Images
-#         self.wImg = wx.StaticBitmap(
-#             self,bitmap=wx.Bitmap(str(self.cImg), wx.BITMAP_TYPE_ANY))
-#         #------------------------------> Buttons
-#         self.wBtnCorrA    = wx.Button(self, label=config.nuCorrA)
-#         self.wBtnDataPrep = wx.Button(self, label=config.nuDataPrep)
-#         self.wBtnLimProt  = wx.Button(self, label=config.nmLimProt)
-#         self.wBtnProtProf = wx.Button(self, label=config.nmProtProf)
-#         self.wBtnTarProt  = wx.Button(self, label=config.nmTarProt)
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        #------------------------------>  Images
+        self.wImg = wx.StaticBitmap(
+            self,bitmap=wx.Bitmap(str(self.cImg), wx.BITMAP_TYPE_ANY))
+        #------------------------------> Buttons
+        self.wBtnCorrA    = wx.Button(self, label=config.nuCorrA)
+        self.wBtnDataPrep = wx.Button(self, label=config.nuDataPrep)
+        self.wBtnLimProt  = wx.Button(self, label=config.nmLimProt)
+        self.wBtnProtProf = wx.Button(self, label=config.nmProtProf)
+        self.wBtnTarProt  = wx.Button(self, label=config.nmTarProt)
+        #endregion --------------------------------------------------> Widgets
 
-#         #region ----------------------------------------------------> Tooltips
-#         self.wBtnDataPrep.SetToolTip(f'Start the utility {config.nuDataPrep}')
-#         self.wBtnCorrA.SetToolTip(f'Start the utility {config.nuCorrA}')
-#         self.wBtnLimProt.SetToolTip (f'Start the module {config.nmLimProt}')
-#         self.wBtnProtProf.SetToolTip(f'Start the module {config.nmProtProf}')
-#         self.wBtnTarProt.SetToolTip (f'Start the module {config.nmTarProt}')
-#         #endregion -------------------------------------------------> Tooltips
+        #region ----------------------------------------------------> Tooltips
+        self.wBtnDataPrep.SetToolTip(f'Start the utility {config.nuDataPrep}')
+        self.wBtnCorrA.SetToolTip(f'Start the utility {config.nuCorrA}')
+        self.wBtnLimProt.SetToolTip (f'Start the module {config.nmLimProt}')
+        self.wBtnProtProf.SetToolTip(f'Start the module {config.nmProtProf}')
+        self.wBtnTarProt.SetToolTip (f'Start the module {config.nmTarProt}')
+        #endregion -------------------------------------------------> Tooltips
         
-#         #region ------------------------------------------------------> Sizers
-#         #------------------------------> Sizers
-#         self.sSizer	 = wx.BoxSizer(wx.VERTICAL)
-#         self.sGrid = wx.GridBagSizer(1,1)
-#         self.sBtn  = wx.BoxSizer(wx.VERTICAL)
-#         #------------------------------>  Add widgets
-#         #--------------> Buttons
-#         self.sBtn.Add(self.wBtnCorrA, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sBtn.Add(self.wBtnDataPrep, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sBtn.Add(self.wBtnLimProt, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sBtn.Add(self.wBtnProtProf, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sBtn.Add(self.wBtnTarProt, 0, wx.EXPAND|wx.ALL, 5)
-#         #--------------> GridSizer
-#         self.sGrid.Add(
-#             self.wImg, 
-#             pos	= (0,0),
-#             flag   = wx.EXPAND|wx.RIGHT,
-#             border = 25,
-#         )
-#         self.sGrid.Add(
-#             self.sBtn, 
-#             pos	= (0,1),
-#             flag   = wx.ALIGN_CENTRE_VERTICAL|wx.LEFT,
-#             border = 25,
-#         )
-#         #--------------> Main Sizer
-#         self.sSizer.AddStretchSpacer(1)
-#         self.sSizer.Add(self.sGrid, 0, wx.CENTER|wx.ALL, 5)
-#         self.sSizer.AddStretchSpacer(1)
-#         self.SetSizer(self.sSizer)
-#         self.sSizer.Fit(self)
-#         #endregion ---------------------------------------------------> Sizers
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Sizers
+        self.sSizer	 = wx.BoxSizer(wx.VERTICAL)
+        self.sGrid = wx.GridBagSizer(1,1)
+        self.sBtn  = wx.BoxSizer(wx.VERTICAL)
+        #------------------------------>  Add widgets
+        #--------------> Buttons
+        self.sBtn.Add(self.wBtnCorrA, 0, wx.EXPAND|wx.ALL, 5)
+        self.sBtn.Add(self.wBtnDataPrep, 0, wx.EXPAND|wx.ALL, 5)
+        self.sBtn.Add(self.wBtnLimProt, 0, wx.EXPAND|wx.ALL, 5)
+        self.sBtn.Add(self.wBtnProtProf, 0, wx.EXPAND|wx.ALL, 5)
+        self.sBtn.Add(self.wBtnTarProt, 0, wx.EXPAND|wx.ALL, 5)
+        #--------------> GridSizer
+        self.sGrid.Add(
+            self.wImg, 
+            pos	= (0,0),
+            flag   = wx.EXPAND|wx.RIGHT,
+            border = 25,
+        )
+        self.sGrid.Add(
+            self.sBtn, 
+            pos	= (0,1),
+            flag   = wx.ALIGN_CENTRE_VERTICAL|wx.LEFT,
+            border = 25,
+        )
+        #--------------> Main Sizer
+        self.sSizer.AddStretchSpacer(1)
+        self.sSizer.Add(self.sGrid, 0, wx.CENTER|wx.ALL, 5)
+        self.sSizer.AddStretchSpacer(1)
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        #endregion ---------------------------------------------------> Sizers
 
-#         #region --------------------------------------------------------> Bind
-#         self.wBtnCorrA.Bind(
+        #region --------------------------------------------------------> Bind
+        self.wBtnCorrA.Bind(
+            wx.EVT_BUTTON, 
+            lambda event: config.winMain.OnCreateTab(config.ntCorrA)
+        )
+        self.wBtnDataPrep.Bind(
+            wx.EVT_BUTTON, 
+            lambda event: config.winMain.OnCreateTab(config.ntDataPrep)
+        )
+#         self.btnLimProt.Bind(
 #             wx.EVT_BUTTON, 
-#             lambda event: config.winMain.OnCreateTab(config.ntCorrA)
+#             lambda event: config.winMain.CreateTab(config.ntLimProt)
 #         )
-#         self.wBtnDataPrep.Bind(
-#             wx.EVT_BUTTON, 
-#             lambda event: config.winMain.OnCreateTab(config.ntDataPrep)
-#         )
-# #         self.btnLimProt.Bind(
-# #             wx.EVT_BUTTON, 
-# #             lambda event: config.winMain.CreateTab(config.ntLimProt)
-# #         )
-#         self.wBtnProtProf.Bind(
-#             wx.EVT_BUTTON, 
-#             lambda event: config.winMain.OnCreateTab(config.ntProtProf)
-#         )
-#         #endregion -----------------------------------------------------> Bind
-#     #endregion -----------------------------------------------> Instance setup
-# #---
-# #endregion ----------------------------------------------------------> Classes
+        self.wBtnProtProf.Bind(
+            wx.EVT_BUTTON, 
+            lambda event: config.winMain.OnCreateTab(config.ntProtProf)
+        )
+        #endregion -----------------------------------------------------> Bind
+    #endregion -----------------------------------------------> Instance setup
+#---
+#endregion ----------------------------------------------------------> Classes

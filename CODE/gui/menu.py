@@ -1,37 +1,71 @@
-# # ------------------------------------------------------------------------------
-# # Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
-# #
-# # Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
-# #
-# # This program is distributed for free in the hope that it will be useful,
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# #
-# # See the accompaning licence for more details.
-# # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
+#
+# Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
+#
+# This program is distributed for free in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the accompaning licence for more details.
+# ------------------------------------------------------------------------------
 
 
-# """Menus of the application"""
+"""Menus of the application"""
 
 
-# #region -------------------------------------------------------------> Imports
-# # from pathlib import Path
-# from typing import Optional#, Literal
+#region -------------------------------------------------------------> Imports
+# from pathlib import Path
+from typing import Optional#, Literal
 
-# import wx
+import wx
 
 # # import dat4s_core.gui.wx.method as dtsGwxMethod
 
-# import config.config as config
+import config.config as config
 # # import gui.dtscore as dtscore
 # # import gui.method as method
-# import gui.window as window
-# #endregion ----------------------------------------------------------> Imports
+import gui.window as window
+#endregion ----------------------------------------------------------> Imports
 
 
-# #region --------------------------------------------------------> Base Classes
-# class MenuMethods():
-#     """Base class to hold common methods to the menus"""
+#region --------------------------------------------------------> Base Classes
+class MenuMethods():
+    """Base class to hold common methods to the menus"""
+    
+    #region ---------------------------------------------------> Event Methods
+    def OnCreateTab(self, event:wx.CommandEvent) -> bool:
+        """Creates a new tab in the main window
+        
+            Parameters
+            ----------
+            event : wx.CommandEvent
+                Information about the event
+                
+            Returns
+            -------
+            True
+                
+            Notes
+            -----
+            Assumes child class has a self.nameID dict with event's id as keys
+            and tab's ids as values.
+        """
+        #region -------------------------------------------------> Check MainW
+        if config.winMain is None:
+            config.winMain = window.MainWindow()
+        else:
+            pass
+        #endregion ----------------------------------------------> Check MainW
+        
+        #region --------------------------------------------------> Create Tab
+        config.winMain.OnCreateTab(self.rNameID[event.GetId()])
+        #endregion -----------------------------------------------> Create Tab
+        
+        return True
+    #---    
+    #endregion ------------------------------------------------> Event Methods
+   
 
 #     #region ---------------------------------------------------> Class Methods
 # #     #------------------------------> Event Methods
@@ -53,36 +87,7 @@
 # #         return True
 # #     #---
     
-#     def OnCreateTab(self, event:wx.CommandEvent) -> bool:
-#         """Creates a new tab in the main window
-        
-#             Parameters
-#             ----------
-#             event : wx.CommandEvent
-#                 Information about the event
-                
-#             Returns
-#             -------
-#             True
-                
-#             Notes
-#             -----
-#             Assumes child class has a self.nameID dict with event's id as keys
-#             and tab's ids as values.
-#         """
-#         #region -------------------------------------------------> Check MainW
-#         if config.winMain is None:
-#             config.winMain = window.MainWindow()
-#         else:
-#             pass
-#         #endregion ----------------------------------------------> Check MainW
-        
-#         #region --------------------------------------------------> Create Tab
-#         config.winMain.OnCreateTab(self.rNameID[event.GetId()])
-#         #endregion -----------------------------------------------> Create Tab
-        
-#         return True
-#     #---
+
     
 # #     def OnDupWin(self, event: wx.CommandEvent) -> Literal[True]:
 # #         """Duplicate window for better data comparison
@@ -322,93 +327,93 @@
     
 # #     #endregion ------------------------------------------------> Class methods
 # # #---	
-# #endregion -----------------------------------------------------> Base Classes
+#endregion -----------------------------------------------------> Base Classes
 
 
-# #region ----------------------------------------------------> Individual menus
-# class Module(wx.Menu, MenuMethods):
-#     """Menu with module entries
+#region ----------------------------------------------------> Individual menus
+class Module(wx.Menu, MenuMethods):
+    """Menu with module entries
     
-#         Attributes
-#         ----------
-#         rNameID : dict
-#             Keys are the menu ids and values the tab's unique names. Used by 
-#             OnCreateTab
-#     """
-#     #region -----------------------------------------------------> Class setup
+        Attributes
+        ----------
+        rNameID : dict
+            Keys are the menu ids and values the tab's unique names. Used by 
+            OnCreateTab
+    """
+    #region -----------------------------------------------------> Class setup
 
-#     #endregion --------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
     
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu items
-#         self.miLimProt  = self.Append(-1, f'{config.nmLimProt}\tAlt+Ctrl+L')
-#         self.miProtProf = self.Append(-1, f'{config.nmProtProf}\tAlt+Ctrl+P')
-#         self.miTarProt  = self.Append(-1, f'{config.nmTarProt}\tAlt+Ctrl+T')
-#         #endregion -----------------------------------------------> Menu items
+        #region --------------------------------------------------> Menu items
+        self.miLimProt  = self.Append(-1, f'{config.nmLimProt}\tAlt+Ctrl+L')
+        self.miProtProf = self.Append(-1, f'{config.nmProtProf}\tAlt+Ctrl+P')
+        self.miTarProt  = self.Append(-1, f'{config.nmTarProt}\tAlt+Ctrl+T')
+        #endregion -----------------------------------------------> Menu items
 
-#         #region -------------------------------------------------------> Names
-#         self.rNameID = { # Associate IDs with Tab names. Avoid manual IDs
-#             self.miLimProt.GetId() : config.ntLimProt,
-#             self.miProtProf.GetId(): config.ntProtProf,
-#             self.miTarProt.GetId() : config.ntTarProt,
-#         }
-#         #endregion ----------------------------------------------------> Names
+        #region -------------------------------------------------------> Names
+        self.rNameID = { # Associate IDs with Tab names. Avoid manual IDs
+            self.miLimProt.GetId() : config.ntLimProt,
+            self.miProtProf.GetId(): config.ntProtProf,
+            self.miTarProt.GetId() : config.ntTarProt,
+        }
+        #endregion ----------------------------------------------------> Names
 
-#         #region --------------------------------------------------------> Bind
-#         # self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.limprot)
-#         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miProtProf)
-#         # self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.tarprot)
-#         #endregion -----------------------------------------------------> Bind
-#     #endregion ------------------------------------------------ Instance Setup
-# #---
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.limprot)
+        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miProtProf)
+        # self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.tarprot)
+        #endregion -----------------------------------------------------> Bind
+    #endregion ------------------------------------------------ Instance Setup
+#---
 
 
-# class Utility(wx.Menu, MenuMethods):
-#     """Utilites menu
+class Utility(wx.Menu, MenuMethods):
+    """Utilites menu
     
-#         Attributes
-#         ----------
-#         rNameID : dict
-#             Keys are the menu ids and values the tab's unique names. Used by
-#             OnCreateTab
-#     """
-#     #region -----------------------------------------------------> Class setup
+        Attributes
+        ----------
+        rNameID : dict
+            Keys are the menu ids and values the tab's unique names. Used by
+            OnCreateTab
+    """
+    #region -----------------------------------------------------> Class setup
     
-#     #endregion --------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
     
-#     #region --------------------------------------------------> Instance Setup
-#     def __init__(self) -> None:
-#         """"""
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance Setup
+    def __init__(self) -> None:
+        """"""
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu items
-#         self.miCorrA   = self.Append(-1, config.nuCorrA)
-#         self.miDataPrep = self.Append(-1, config.nuDataPrep)
-#         self.AppendSeparator()
-#         self.miReadFile = self.Append(-1, f'{config.nuReadF}\tCtrl+R')
-#         #endregion -----------------------------------------------> Menu items
+        #region --------------------------------------------------> Menu items
+        self.miCorrA   = self.Append(-1, config.nuCorrA)
+        self.miDataPrep = self.Append(-1, config.nuDataPrep)
+        self.AppendSeparator()
+        self.miReadFile = self.Append(-1, f'{config.nuReadF}\tCtrl+R')
+        #endregion -----------------------------------------------> Menu items
 
-#         #region -------------------------------------------------------> Names
-#         self.rNameID = { # Associate IDs with Tab names. Avoid manual IDs
-#             self.miCorrA.GetId()   : config.ntCorrA,
-#             self.miDataPrep.GetId(): config.ntDataPrep,
-#         }
-#         #endregion ----------------------------------------------------> Names
+        #region -------------------------------------------------------> Names
+        self.rNameID = { # Associate IDs with Tab names. Avoid manual IDs
+            self.miCorrA.GetId()   : config.ntCorrA,
+            self.miDataPrep.GetId(): config.ntDataPrep,
+        }
+        #endregion ----------------------------------------------------> Names
 
-#         #region --------------------------------------------------------> Bind
-#         # self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.readFile)
-#         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miCorrA)
-#         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miDataPrep)
-#         #endregion -----------------------------------------------------> Bind
-#     #endregion -----------------------------------------------> Instance Setup
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.readFile)
+        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miCorrA)
+        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miDataPrep)
+        #endregion -----------------------------------------------------> Bind
+    #endregion -----------------------------------------------> Instance Setup
 
 #     #region ---------------------------------------------------> Class Methods
 #     #------------------------------> Event Methods
@@ -1589,10 +1594,10 @@
 # #     #---
 # #     #endregion ------------------------------------------------> Class methods
 # # #---
-# #endregion -------------------------------------------------> Individual menus
+#endregion -------------------------------------------------> Individual menus
 
 
-# #region -----------------------------------------------------------> Mix menus
+#region -----------------------------------------------------------> Mix menus
 # # class ProtProfToolMenu(wx.Menu, MenuMethods):
 # #     """Tool menu for the Proteome Profiling Plot window.
         
@@ -1905,70 +1910,72 @@
 # #     #---
 # #     #endregion ------------------------------------------------> Class methods
 # # #---
-# #endregion --------------------------------------------------------> Mix menus
+#endregion --------------------------------------------------------> Mix menus
 
 
-# #region -------------------------------------------------------------> Menubar
-# class MainMenuBar(wx.MenuBar):
-#     """ Creates the application menu bar"""
+#region -------------------------------------------------------------> Menubar
+class MainMenuBar(wx.MenuBar):
+    """ Creates the application menu bar"""
     
-#     #region --------------------------------------------------- Instance Setup
-#     def __init__(self) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------- Instance Setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
         
-#         #region --------------------------------------------------> Menu items
-#         self.mModule  = Module()
-#         self.mUtility = Utility()
-#         #endregion -----------------------------------------------> Menu items
+        #region --------------------------------------------------> Menu items
+        self.mModule  = Module()
+        self.mUtility = Utility()
+        #endregion -----------------------------------------------> Menu items
 
-#         #region -------------------------------------------> Append to menubar
-#         self.Append(self.mModule, '&Modules')
-#         self.Append(self.mUtility, '&Utilities')
-#         #endregion ----------------------------------------> Append to menubar
-#     #endregion ------------------------------------------------ Instance Setup
-# #---
+        #region -------------------------------------------> Append to menubar
+        self.Append(self.mModule, '&Modules')
+        self.Append(self.mUtility, '&Utilities')
+        #endregion ----------------------------------------> Append to menubar
+    #endregion ------------------------------------------------ Instance Setup
+#---
 
 
-# class ToolMenuBar(MainMenuBar):
-#     """Menu bar for a window showing the corresponding tool menu
+class ToolMenuBar(MainMenuBar):
+    """Menu bar for a window showing the corresponding tool menu
     
-#         Parameters
-#         ----------
-#         cName : str
-#             Unique name of the window/tab for which the Tool menu will be 
-#             created
-#         cMenuData : dict
-#             Data to build the Tool menu of the window. See structure in the
-#             window or menu class.
-#     """
+        Parameters
+        ----------
+        cName : str
+            Unique name of the window/tab for which the Tool menu will be 
+            created
+        cMenuData : dict
+            Data to build the Tool menu of the window. See structure in the
+            window or menu class.
+        dTool: dict
+            Methods to create the Tool Menu
+    """
 
-#     #region -----------------------------------------------------> Class Setup
-#     dTool = { # Key are window name
-#         # config.nwUMSAPControl : FileControlToolMenu,
-#         # config.nwCorrAPlot    : CorrAPlotToolMenu,
-#         # config.nwCheckDataPrep: DataPrepToolMenu,
-#         # config.nwProtProf     : ProtProfToolMenu,
-#         # config.nwLimProt      : LimProtToolMenu,
-#     }
-#     #endregion --------------------------------------------------> Class Setup
+    #region -----------------------------------------------------> Class Setup
+    dTool = { # Key are window name
+        # config.nwUMSAPControl : FileControlToolMenu,
+        # config.nwCorrAPlot    : CorrAPlotToolMenu,
+        # config.nwCheckDataPrep: DataPrepToolMenu,
+        # config.nwProtProf     : ProtProfToolMenu,
+        # config.nwLimProt      : LimProtToolMenu,
+    }
+    #endregion --------------------------------------------------> Class Setup
     
-#     #region --------------------------------------------------- Instance Setup
-#     def __init__(self, cName: str, cMenuData: Optional[dict]=None) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------- Instance Setup
+    def __init__(self, cName: str, cMenuData: Optional[dict]=None) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
         
-#         #region -----------------------------------------> Menu items & Append
-#         if cName in self.dTool:
-#             self.mTool = self.dTool[cName](cMenuData)
-#             self.Insert(config.toolsMenuIdx, self.mTool, 'Tools')
-#         else:
-#             pass
-#         #endregion --------------------------------------> Menu items & Append
-#     #endregion ------------------------------------------------ Instance Setup
-# #---
-# #endregion ----------------------------------------------------------> Menubar
+        #region -----------------------------------------> Menu items & Append
+        if cName in self.dTool:
+            self.mTool = self.dTool[cName](cMenuData)
+            self.Insert(config.toolsMenuIdx, self.mTool, 'Tools')
+        else:
+            pass
+        #endregion --------------------------------------> Menu items & Append
+    #endregion ------------------------------------------------ Instance Setup
+#---
+#endregion ----------------------------------------------------------> Menubar

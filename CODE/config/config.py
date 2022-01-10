@@ -1,140 +1,134 @@
-# # ------------------------------------------------------------------------------
-# # Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
-# #
-# # Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
-# #
-# # This program is distributed for free in the hope that it will be useful,
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# #
-# # See the accompaning licence for more details.
-# # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
+#
+# Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
+#
+# This program is distributed for free in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the accompaning licence for more details.
+# ------------------------------------------------------------------------------
 
 
-# """Configuration parameters of the app"""
+"""Configuration parameters of the app"""
 
 
-# #region -------------------------------------------------------------> Imports
-# import platform
-# from pathlib import Path
-# from typing import TYPE_CHECKING
-
-# if TYPE_CHECKING:
-#     import data.file as file
-# #endregion ----------------------------------------------------------> Imports
+#region -------------------------------------------------------------> Imports
+import platform
+from pathlib import Path
+#endregion ----------------------------------------------------------> Imports
 
 
-# #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
-# #region --------------------------------------------------> General parameters
-# development = True # Track state, development (True) or production (False)
+#region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
+#region --------------------------------------------------> General parameters
+development = True # Track state, development (True) or production (False)
 
-# version     = '2.2.0 (beta)' # String to write in the output files
-# software    = 'UMSAP' # Software short name
-# softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
-# dictVersion = { # dict for directly write into output files
-#     'Version': version,
-# }
+version     = '1.2.0 (beta)' # String to write in the output files
+software    = 'UMSAP' # Software short name
+softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
+dictVersion = { # dict for directly write into output files
+    'Version': version,
+}
 
-# os = platform.system() # Current operating system
-# cwd = Path(__file__)    # Config file path
+os = platform.system() # Current operating system
+cwd = Path(__file__)    # Config file path
 
 # # obj: Optional['file.UMSAPFile'] = None # To reload UMSAP file
-
-# typeCheck = TYPE_CHECKING
 # #endregion -----------------------------------------------> General parameters
 
 
-# #region ---------------------------------------- Platform Dependent Parameters
-# # There are some that must be defined in other sections
-# if os == 'Darwin':
-#     #------------------------------> Root & Resources Folder
-#     if development:
-#         root = cwd.parent.parent.parent
-#     else:
-#         root = cwd.parent.parent
-#     res = root / 'Resources'  # Path to the Resources folder
-#     #------------------------------> Index of the Tool Menu in the MenuBar
-#     toolsMenuIdx = 2
-#     #------------------------------> Statusbar split size
-#     if development:
-#         sbFieldSize = [-1, 350]
-#     else:
-#         sbFieldSize = [-1, 300]
+#region ---------------------------------------- Platform Dependent Parameters
+# There are some that must be defined in other sections
+if os == 'Darwin':
+    #------------------------------> Root & Resources Folder
+    if development:
+        root = cwd.parent.parent.parent
+    else:
+        root = cwd.parent.parent
+    res = root / 'Resources'  # Path to the Resources folder
+    #------------------------------> Index of the Tool Menu in the MenuBar
+    toolsMenuIdx = 2
+    #------------------------------> Statusbar split size
+    if development:
+        sbFieldSize = [-1, 350]
+    else:
+        sbFieldSize = [-1, 300]
 # #     sbPlot2Fields = [-1, 115]
 # #     sbPlot3Fields = [90, -1, 115] 
-#     #------------------------------> Key for shortcuts
-#     copyShortCut = 'Cmd'
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Cmd'
 # #     #------------------------------> Delta space between consecutive windows
 # #     deltaWin = 23
-# elif os == 'Windows':
-#     #------------------------------> Root & Resources Folder
-#     root = cwd.parent.parent.parent
-#     res = root / 'Resources'
-#     #------------------------------> Index of the Tool Menu in the MenuBar
-#     toolsMenuIdx = 2
-#     #------------------------------> Statusbar split size
-#     if development:
-#         sbFieldSize = [-1, 325]
-#     else:
-#         sbFieldSize = [-1, 300]
+elif os == 'Windows':
+    #------------------------------> Root & Resources Folder
+    root = cwd.parent.parent.parent
+    res = root / 'Resources'
+    #------------------------------> Index of the Tool Menu in the MenuBar
+    toolsMenuIdx = 2
+    #------------------------------> Statusbar split size
+    if development:
+        sbFieldSize = [-1, 325]
+    else:
+        sbFieldSize = [-1, 300]
 # #     sbPlot = [-1, 115]
-#     #------------------------------> Key for shortcuts
-#     copyShortCut = 'Ctrl'
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Ctrl'
 # #     #------------------------------> Delta space between consecutive windows
 # #     deltaWin = 20
-# else:
-#     #------------------------------> Root & Resources Folder
-#     root = cwd.parent
-#     res = root / 'Resources'
-#     #------------------------------> Index of the Tool Menu in the MenuBar
-#     toolsMenuIdx = 3
-#     #------------------------------> Statusbar split size
-#     if development:
-#         sbFieldSize = [-1, 350]
-#     else:
-#         sbFieldSize = [-1, 300]
+else:
+    #------------------------------> Root & Resources Folder
+    root = cwd.parent
+    res = root / 'Resources'
+    #------------------------------> Index of the Tool Menu in the MenuBar
+    toolsMenuIdx = 3
+    #------------------------------> Statusbar split size
+    if development:
+        sbFieldSize = [-1, 350]
+    else:
+        sbFieldSize = [-1, 300]
 # #     sbPlot = [-1, 115]
-#     #------------------------------> Key for shortcuts
-#     copyShortCut = 'Ctrl'
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Ctrl'
 # #     #------------------------------> Delta space between consecutive windows
 # #     deltaWin = 20
-# #endregion ------------------------------------- Platform Dependent Parameters
+#endregion ------------------------------------- Platform Dependent Parameters
 
 
-# #region -------------------------------------------------------------> Windows
-# # #------------------------------> Reference to main window
-# winMain = None
-# #------------------------------> Number of windows for screen positioning
-# # Keys: Windows ID - Values: Total number of opened windows, except conf win
-# winNumber = {}
+#region -------------------------------------------------------------> Windows
+# #------------------------------> Reference to main window
+winMain = None
+#------------------------------> Number of windows for screen positioning
+# Keys: Windows ID - Values: Total number of opened windows, except conf win
+winNumber = {}
 # # #------------------------------> Track open umsap files
 # # # Keys: UMSAP File path - Values: Reference to control window
 # # winUMSAP = {}
-# #endregion ----------------------------------------------------------> Windows
+#endregion ----------------------------------------------------------> Windows
 
 
-# #region ---------------------------------------------------------------> Names
-# # #------------------------------> Default name
-# nDefName = 'Default name'
-# # #------------------------------> Windows
-# nwMain          = 'MainW'
+#region ---------------------------------------------------------------> Names
+#------------------------------> Default name
+nDefName = 'Default name'
+#------------------------------> Windows
+nwMain          = 'MainW'
 # # nwUMSAPControl  = 'UMSAPControl'
 # # nwCorrAPlot     = 'CorrAPlot'
 # # nwProtProf      = 'ProtProfPlot'
 # # nwLimProt       = 'LimProtPlot'
 # # nwCheckDataPrep = 'CheckDataPrep'
-# #------------------------------> Dialogs
-# ndCheckUpdateResDialog = 'CheckUpdateResDialog'
-# ndResControlExp        = 'ResControlExp'
+#------------------------------> Dialogs
+ndCheckUpdateResDialog = 'CheckUpdateResDialog'
+ndResControlExp        = 'ResControlExp'
 # # ndFilterRemoveAny      = 'Remove Filters'
-# # #------------------------------> Tab for notebook windows
-# ntStart    = 'StartTab'
-# ntDataPrep = "DataPrepTab"
-# ntCorrA    = 'CorrATab'
-# ntLimProt  = 'LimProtTab'
-# ntProtProf = 'ProtProfTab'
-# ntTarProt  = 'TarProtTab'
-# #------------------------------> Individual Panes
+#------------------------------> Tab for notebook windows
+ntStart    = 'StartTab'
+ntDataPrep = "DataPrepTab"
+ntCorrA    = 'CorrATab'
+ntLimProt  = 'LimProtTab'
+ntProtProf = 'ProtProfTab'
+ntTarProt  = 'TarProtTab'
+#------------------------------> Individual Panes
 # # npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 # npCorrA                 = 'CorrAPane'
 # npDataPrep              = "DataPrepPane"
@@ -143,47 +137,43 @@
 # # npResControlExp         = 'ResControlExpPane'
 # npResControlExpProtProf = 'ResControlExpPaneProtProf'
 # # npResControlExpLimProt  = 'ResControlExpPaneLimProt'
-# # #------------------------------> Menu
-# # nMenModule  = 'ModuleMenu'
-# # nMenUtility = 'UtilityMenu'
-# # nMenTool    = 'ToolMenu'
 # # #------------------------------> Files
 # # nfUMSAP = 'UMSAPFile'
-# # #------------------------------> Modules
-# nmLimProt  = 'Limited Proteolysis'
-# nmTarProt  = 'Targeted Proteolysis'
-# nmProtProf = 'Proteome Profiling'
-# # #------------------------------> Utilities
-# nuDataPrep = "Data Preparation"
-# nuCorrA    = 'Correlation Analysis'
-# nuReadF    = 'Read UMSAP File'
-# #endregion ------------------------------------------------------------> Names
+#------------------------------> Modules
+nmLimProt  = 'Limited Proteolysis'
+nmTarProt  = 'Targeted Proteolysis'
+nmProtProf = 'Proteome Profiling'
+#------------------------------> Utilities
+nuDataPrep = "Data Preparation"
+nuCorrA    = 'Correlation Analysis'
+nuReadF    = 'Read UMSAP File'
+#endregion ------------------------------------------------------------> Names
 
 
-# #region --------------------------------------------------------------> Titles
+#region --------------------------------------------------------------> Titles
 # # #------------------------------> Default names
-# tdW = "Untitled Window"
-# tdT = "Tab"
+tdW = "Untitled Window"
+tdT = "Tab"
 # tdP = 'Pane'
-# #------------------------------> 
-# t = {
-#     #------------------------------> Windows
-#     nwMain : "Analysis Setup",
-#     #------------------------------> Dialogs
-#     ndCheckUpdateResDialog: "Check for Updates",
-#     ndResControlExp       : 'Results - Control Experiments',
-# #     ndFilterRemoveAny     : 'Remove Filters',
-#     #------------------------------> Tabs
-#     ntStart   : 'Start',
-#     ntDataPrep: 'DataPrep',
-#     ntCorrA   : 'CorrA',
-# #     ntLimProt : 'LimProt',
-#     ntProtProf: 'ProtProf',
-# }
-# #endregion -----------------------------------------------------------> Titles
+#------------------------------> 
+t = {
+    #------------------------------> Windows
+    nwMain : "Analysis Setup",
+    #------------------------------> Dialogs
+    ndCheckUpdateResDialog: "Check for Updates",
+    ndResControlExp       : 'Results - Control Experiments',
+#     ndFilterRemoveAny     : 'Remove Filters',
+    #------------------------------> Tabs
+    ntStart   : 'Start',
+    ntDataPrep: 'DataPrep',
+    ntCorrA   : 'CorrA',
+#     ntLimProt : 'LimProt',
+    ntProtProf: 'ProtProf',
+}
+#endregion -----------------------------------------------------------> Titles
 
 
-# #region ----------------------------------------------------------- Extensions
+#region ----------------------------------------------------------- Extensions
 # #------------------------------> For wx.Dialogs
 # elData         = 'txt files (*.txt)|*.txt'
 # # elSeq          = (
@@ -202,15 +192,15 @@
 # esData  = ['.txt']
 # # esSeq   = ['.txt', '.fasta']
 # esUMSAP = ['.umsap']
-# #endregion -------------------------------------------------------- Extensions
+#endregion -------------------------------------------------------- Extensions
 
 
-# #region ------------------------------------------------------> Path and Files
-# #------------------------------> Relevant paths
-# pImages = res / 'IMAGES' # Images folder
-# #------------------------------> Location & names of important files
-# fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
-# fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
+#region ------------------------------------------------------> Path and Files
+#------------------------------> Relevant paths
+pImages = res / 'IMAGES' # Images folder
+#------------------------------> Location & names of important files
+fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
+fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 # #------------------------------> Names
 # fnInitial    = "{}-Initial-Data-{}.txt"
 # fnFloat      = "{}-Floated-Data-{}.txt"
@@ -224,19 +214,19 @@
 # fnDataInit   = 'Input_Data_Files'
 # fnMainDataCorrA = '{}-CorrelationCoefficients-Data-{}.txt'
 # fnMainDataProtProf = '{}-ProteomeProfiling-Data-{}.txt'
-# #endregion ---------------------------------------------------> Path and Files
+#endregion ---------------------------------------------------> Path and Files
 
 
-# #region ------------------------------------------------------------------ URL
-# #------------------------------> www.umsap.nl
-# urlHome     = 'https://www.umsap.nl'
-# urlUpdate   = f"{urlHome}/page/release-notes"
+#region ------------------------------------------------------------------ URL
+#------------------------------> www.umsap.nl
+urlHome     = 'https://www.umsap.nl'
+urlUpdate   = f"{urlHome}/page/release-notes"
 # urlTutorial = f"{urlHome}/tutorial/2-1-0"
 # urlCorrA    = f"{urlTutorial}/correlation-analysis"
 # # urlLimProt  = f"{urlTutorial}/limited-proteolysis"
 # urlProtProf = f"{urlTutorial}/proteome-profiling"
 # urlDataPrep = f"{urlTutorial}/data-preparation"
-# #endregion --------------------------------------------------------------- URL
+#endregion --------------------------------------------------------------- URL
 
 
 # #region --------------------------------------------------------------> Labels
@@ -434,10 +424,8 @@
 # #endregion --------------------------------------------------> Important Lists
 
 
-# #region ------------------------------------------------------------> Messages
+#region ------------------------------------------------------------> Messages
 # #region -------------------------------------------------------------> Other 
-# #------------------------------> Update Check Failed
-# mCheckUpdateFailed = 'Check for Updates failed. Please try again later.'
 # # #------------------------------> Unexpected Error
 # # mUnexpectedError = 'An uexpected error was encountered.'
 # # #------------------------------> Not empty
@@ -511,46 +499,46 @@
 #     f"correct input.")
 # mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
 # #endregion -------------------------------------------------> For CheckInput
-# #endregion ---------------------------------------------------------> Messages
+#endregion ---------------------------------------------------------> Messages
 
 
-# #region ---------------------------------------------------------------> Sizes
-# #------------------------------> Full Windows 
-# sWinRegular = (990, 775)
+#region ---------------------------------------------------------------> Sizes
+#------------------------------> Full Windows 
+sWinRegular = (990, 775)
 # # #------------------------------> Plot Window
 # # sWinPlot = (560, 560)
 # # sWinModPlot = (1100, 625)
-# #------------------------------> wx.StatusBar Fields
-# sSbarFieldSizeI = sbFieldSize
+#------------------------------> wx.StatusBar Fields
+sSbarFieldSizeI = sbFieldSize
 # #------------------------------> wx.ListCtrl
 # sLCtrlColI = [50, 150] # e.g when Col Labels are #, Name
 # # #------------------------------> wx.TextCtrl
 # sTc = (50, 22)
-# #endregion ------------------------------------------------------------> Sizes
-# #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
+#endregion ------------------------------------------------------------> Sizes
+#endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
 
 
-# #region ---------------------------------------------> CONFIGURABLE PARAMETERS
-# #------------------------------> These must be dictionaries to save/load from
-# #------------------------------> configuration file
-# #region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object
-# font = {
-# }
-# #endregion ---------------> Fonts. Set from UMSAP.py, requires a wx.App object
+#region ---------------------------------------------> CONFIGURABLE PARAMETERS
+#------------------------------> These must be dictionaries to save/load from
+#------------------------------> configuration file
+#region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object
+font = {
+}
+#endregion ---------------> Fonts. Set from UMSAP.py, requires a wx.App object
 
 
-# #region -----------------------------------------------------> General options
-# general = { # General options
-#     'checkUpdate'  : True, # True Check, False No check
+#region -----------------------------------------------------> General options
+general = { # General options
+    'checkUpdate'  : True, # True Check, False No check
 # #     'DPI'          : 100,  # DPI for plot images
 # #     'MatPlotMargin': 0.025 # Margin for the axes range
-# }
-# #endregion --------------------------------------------------> General options
+}
+#endregion --------------------------------------------------> General options
 
 
-# #region --------------------------------------------------------------> Colors
-# color = { # Colors for the app
-#     'Zebra' : '#ffe6e6',
+#region --------------------------------------------------------------> Colors
+color = { # Colors for the app
+    'Zebra' : '#ffe6e6',
 # #     'Main' : [ # Lighter colors of the fragments and bands 
 # # 		'#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff',
 # # 	],
@@ -576,6 +564,6 @@
 # #             '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
 # #         ],
 # #     },
-# }
-# #endregion -----------------------------------------------------------> Colors
-# #endregion ------------------------------------------> CONFIGURABLE PARAMETERS
+}
+#endregion -----------------------------------------------------------> Colors
+#endregion ------------------------------------------> CONFIGURABLE PARAMETERS
