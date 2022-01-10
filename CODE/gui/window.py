@@ -36,8 +36,8 @@ import dat4s_core.data.check as dtsCheck
 # # import dat4s_core.data.statistic as dtsStatistic
 # # import dat4s_core.generator.generator as dtsGenerator
 # # import dat4s_core.gui.wx.validator as dtsValidator
-# # import dat4s_core.gui.wx.widget as dtsWidget
-# import dat4s_core.gui.wx.window as dtsWindow
+# import dat4s_core.gui.wx.widget as dtsWidget
+import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
 # # import data.method as dmethod
@@ -997,7 +997,7 @@ class MainWindow(BaseWindow):
         config.ntCorrA   : tab.BaseConfTab,
         config.ntDataPrep: tab.BaseConfListTab,
         # config.ntLimProt : tab.BaseConfListTab,
-        # config.ntProtProf: tab.BaseConfListTab,
+        config.ntProtProf: tab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup
     
@@ -6768,103 +6768,103 @@ class CheckUpdateResult(wx.Dialog):
 #---
 
 
-# class ResControlExp(wx.Dialog):
-#     """Creates the dialog to type values for Results - Control Experiments
+class ResControlExp(wx.Dialog):
+    """Creates the dialog to type values for Results - Control Experiments
 
-#         Parameters
-#         ----------
-#         cParent : wx.Panel
-#             This is the pane calling the dialog.
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.ndResControlExp
-#     #------------------------------> 
-#     cSize = (900, 580)
-#     #------------------------------> 
-#     cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
-#     #endregion --------------------------------------------------> Class setup
+        Parameters
+        ----------
+        cParent : wx.Panel
+            This is the pane calling the dialog.
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = config.ndResControlExp
+    #------------------------------> 
+    cSize = (900, 580)
+    #------------------------------> 
+    cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, cParent:wx.Window):
-#         """ """
-#         #region -------------------------------------------------> Check Input
-#         if (iFile := cParent.wIFile.tc.GetValue())  == '':
-#             dlg = dtsWindow.FileSelectDialog(
-#                 'openO', config.elData, parent=cParent)
-#             if dlg.ShowModal() == wx.ID_OK:
-#                 iFile = dlg.GetPath()
-#                 cParent.wIFile.tc.SetValue(iFile)
-#                 dlg.Destroy()
-#             else:
-#                 dlg.Destroy()
-#                 raise Exception
-#         else:
-#             pass
-#         #endregion ----------------------------------------------> Check Input
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cParent:wx.Window):
+        """ """
+        #region -------------------------------------------------> Check Input
+        if (iFile := cParent.wIFile.tc.GetValue())  == '':
+            dlg = dtsWindow.FileSelectDialog(
+                'openO', config.elData, parent=cParent)
+            if dlg.ShowModal() == wx.ID_OK:
+                iFile = dlg.GetPath()
+                cParent.wIFile.tc.SetValue(iFile)
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                raise Exception
+        else:
+            pass
+        #endregion ----------------------------------------------> Check Input
 
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(
-#             config.winMain, 
-#             title = config.t[self.cName],
-#             style = self.cStyle,
-#             size  = self.cSize,
-#         )
-#         #endregion --------------------------------------------> Initial Setup
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(
+            config.winMain, 
+            title = config.t[self.cName],
+            style = self.cStyle,
+            size  = self.cSize,
+        )
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------------> Menu
+        #region --------------------------------------------------------> Menu
         
-#         #endregion -----------------------------------------------------> Menu
+        #endregion -----------------------------------------------------> Menu
 
-#         #region -----------------------------------------------------> Widgets
-#         self.wConf = tab.ResControlExp(self, iFile, cParent)
-#         #------------------------------> Buttons
-#         self.sBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.wConf = tab.ResControlExp(self, iFile, cParent)
+        #------------------------------> Buttons
+        self.sBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
+        #endregion --------------------------------------------------> Widgets
 
-#         #region -------------------------------------------------------> Sizer
-#         self.sSizer = wx.BoxSizer(wx.VERTICAL)
-#         self.sSizer.Add(self.wConf, 1, wx.EXPAND|wx.ALL, 5)
-#         self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #region -------------------------------------------------------> Sizer
+        self.sSizer = wx.BoxSizer(wx.VERTICAL)
+        self.sSizer.Add(self.wConf, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
         
-#         self.SetSizer(self.sSizer)
-#         #endregion ----------------------------------------------------> Sizer
+        self.SetSizer(self.sSizer)
+        #endregion ----------------------------------------------------> Sizer
         
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
-#         #endregion -----------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
+        #endregion -----------------------------------------------------> Bind
 
-#         #region ---------------------------------------------> Window position
-#         self.CenterOnParent()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region ---------------------------------------------> Window position
+        self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
-#     def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
-#         """Validate user information and close the window
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
+        """Validate user information and close the window
     
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
             
     
-#             Returns
-#             -------
-#             True
-#         """
-#         #region ---------------------------------------------------> 
-#         if self.wConf.wConf.OnOK():
-#             self.EndModal(1)
-#             self.Close()
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> 
+            Returns
+            -------
+            True
+        """
+        #region ---------------------------------------------------> 
+        if self.wConf.wConf.OnOK():
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
         
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # # class FilterRemoveAny(wx.Dialog):

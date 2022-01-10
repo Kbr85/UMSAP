@@ -133,9 +133,9 @@ ntTarProt  = 'TarProtTab'
 npCorrA                 = 'CorrAPane'
 npDataPrep              = "DataPrepPane"
 # # npLimProt               = "LimProtPane"
-# npProtProf              = 'ProtProfPane'
+npProtProf              = 'ProtProfPane'
 # # npResControlExp         = 'ResControlExpPane'
-# npResControlExpProtProf = 'ResControlExpPaneProtProf'
+npResControlExpProtProf = 'ResControlExpPaneProtProf'
 # # npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 # # #------------------------------> Files
 # # nfUMSAP = 'UMSAPFile'
@@ -211,7 +211,7 @@ fnNorm       = "{}-Normalized-Data-{}.txt"
 fnImp        = "{}-Imputed-Data-{}.txt"
 fnDataSteps  = 'Steps_Data_Files'
 fnDataInit   = 'Input_Data_Files'
-# fnMainDataProtProf = '{}-ProteomeProfiling-Data-{}.txt'
+fnMainDataProtProf = '{}-ProteomeProfiling-Data-{}.txt'
 #endregion ---------------------------------------------------> Path and Files
 
 
@@ -221,24 +221,26 @@ urlHome     = 'https://www.umsap.nl'
 urlUpdate   = f"{urlHome}/page/release-notes"
 urlTutorial = f"{urlHome}/tutorial/2-1-0"
 # # urlLimProt  = f"{urlTutorial}/limited-proteolysis"
-# urlProtProf = f"{urlTutorial}/proteome-profiling"
 #endregion --------------------------------------------------------------- URL
 
 
 #region --------------------------------------------------------------> Labels
-# # #------------------------------> wx.Button
+#------------------------------> Pane Title
+lnPaneConf = 'Configuration Options'
+lnListPane = 'Data File Content'
+#------------------------------> wx.Button
+lBtnTypeResCtrl = 'Type Values'
 # # lBtnOutFile     = 'Output File'
 # # lBtnSeqFile     = 'Sequences'
-# lBtnTypeResCtrl = 'Type Values'
-# # #------------------------------> wx.ListCtrl
-# lLCtrlColNameI = ['#', 'Name']
-# # #------------------------------> wx.StaticBox
-# lStProtProfCond = 'Conditions'
-# lStProtProfRP   = 'Relevant Points'
+#------------------------------> wx.ListCtrl
+lLCtrlColNameI = ['#', 'Name']
+#------------------------------> wx.StaticBox
+lStProtProfCond = 'Conditions'
+lStProtProfRP   = 'Relevant Points'
 # # lStLimProtLane  = 'Lanes'
 # # lStLimProtBand  = 'Bands' 
-# lStCtrlName     = 'Name'
-# lStCtrlType     = 'Type'
+lStCtrlName     = 'Name'
+lStCtrlType     = 'Type'
 #------------------------------> wx.Statictext
 lStColAnalysis = 'Columns for Analysis'
 # # lStSeqFile      = 'Sequences'
@@ -247,16 +249,16 @@ lStScoreVal     = 'Score Value'
 # # lStTargetProt   = "Target Protein"
 # # lStSeqCol       = 'Sequences'
 lStScoreCol     = 'Score'
-# lStResultCtrl   = 'Results - Control experiments'
+lStResultCtrl   = 'Results - Control experiments'
 lStExcludeRow = 'Exclude Rows'
-# lStExcludeProt = 'Exclude Proteins'
+lStExcludeProt = 'Exclude Proteins'
 # lStColAnalysis = 'Columns to Consider'
-# lStGeneName    = 'Gene Names'
-# # #------------------------------> wx.ComboBox or wx.CheckBox
+lStGeneName    = 'Gene Names'
+#------------------------------> wx.ComboBox or wx.CheckBox
 # # lCbFileAppend  = 'Append new data to selected output file'
-# lCbCorrectP    = 'P Correction'
-# lCbSample      = 'Samples'
-# lCbIntensity   = 'Intensities'
+lCbCorrectP    = 'P Correction'
+lCbSample      = 'Samples'
+lCbIntensity   = 'Intensities'
 #endregion -----------------------------------------------------------> Labels
 
 
@@ -271,30 +273,23 @@ lStExcludeRow = 'Exclude Rows'
 # #------------------------------> wx.Button
 # # ttBtnOutFile  = f"Select the {lBtnOutFile}."
 ttBtnHelp = 'Read tutorial at {}.'
-# ttBtnTypeRes = 'Type the column numbers in a helper window.'
-# # #------------------------------> wx.StaticText
-# ttStAlpha = 'Significance level for the statistical analysis.\ne.g. 0.05'
+#------------------------------> wx.StaticText
 ttStScoreVal = f'Set the minimum acceptable Score value.\ne.g. -4'
-# ttStPCorrection = "Select the p correction method."
 # # ttStMedianCorr = "Select whether to apply a median correction."
-# ttStDetectedProtL = (
-#     'Set the column number containing the detected proteins.\ne.g. 7')
 ttStScoreCol = f'Set the column number containing the {lStScoreVal}.\ne.g. 4'
-# ttStGenName = f'Set the column number containing the {lStGeneName}.\ne.g. 3'
-# ttStExcludeProt = (
-#     "Set the column number containing the data used to exclude proteins."
-#     "\ne.g. 8 10-12")
+ttStGenName = f'Set the column number containing the {lStGeneName}.\ne.g. 3'
+ttStExcludeProt = (
+    "Set the column number containing the data used to exclude proteins."
+    "\ne.g. 8 10-12")
 ttStExcludeRow = (
     'Set the column numbers containing the data used to Exclude Rows.'
     '\ne.g. 8 10-12')
-# ttStControlN = "Name or ID of the control experiment.\ne.g. MyControl."
-# ttStSample = (f"Specify if samples are independent or paired.\n"
-#     f"For example, samples are paired when the same Petri dish is "
-#     f"used for the control and experiment.")
-# ttStResult = ('Set the column numbers containing the control and experiment '
-#     'results.')
-# ttStRawI = ('Specify if intensities are raw intensity values or are already '
-#     'expressed as a ratio (SILAC, TMT/iTRAQ).')
+ttStCorrectP = 'Select the p correction method.'
+ttStSample = (f"Specify if samples are independent or paired.\n"
+    f"For example, samples are paired when the same Petri dish is "
+    f"used for the control and experiment.")
+ttStIntensity = ('Specify if intensities are raw intensity values or are '
+    'already expressed as a ratio (SILAC, TMT/iTRAQ).')
 # # #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -336,35 +331,35 @@ oCorrMethod = {
 # #     'Yes'  : 'Yes',
 # #     'No'   : 'No',
 # # }
-# oIntensities = {
-#     'Empty' : '',
-#     'RawI'  : 'Raw Intensities',
-#     'RatioI': 'Ratio of Intensities',
-# }
-# oSamples = {
-#     '': '',
-#     'Independent Samples': 'i',
-#     'Paired Samples': 'p',
-# }
-# oCorrectP = {
-#     ''                     : '',
-#     'None'                 : 'None',
-#     'Bonferroni'           : 'bonferroni',
-#     'Sidak'                : 'sidak',
-#     'Holm - Sidak'         : 'holm-sidak',
-#     'Holm'                 : 'holm',
-#     'Simes-Hochberg'       : 'simes-hochberg',
-#     'Hommel'               : 'hommel',
-#     'Benjamini - Hochberg' : 'fdr_bh',
-#     'Benjamini - Yekutieli': 'fdr_by',
-# }
-# oControlTypeProtProf = {
-#     'Empty': '',
-#     'OC'   : 'One Control',
-#     'OCC'  : 'One Control per Column',
-#     'OCR'  : 'One Control per Row',
-#     'Ratio': oIntensities['RatioI'],
-# }
+oIntensities = {
+    'Empty' : '',
+    'RawI'  : 'Raw Intensities',
+    'RatioI': 'Ratio of Intensities',
+}
+oSamples = {
+    '': '',
+    'Independent Samples': 'i',
+    'Paired Samples': 'p',
+}
+oCorrectP = {
+    ''                     : '',
+    'None'                 : 'None',
+    'Bonferroni'           : 'bonferroni',
+    'Sidak'                : 'sidak',
+    'Holm - Sidak'         : 'holm-sidak',
+    'Holm'                 : 'holm',
+    'Simes-Hochberg'       : 'simes-hochberg',
+    'Hommel'               : 'hommel',
+    'Benjamini - Hochberg' : 'fdr_bh',
+    'Benjamini - Yekutieli': 'fdr_by',
+}
+oControlTypeProtProf = {
+    'Empty': '',
+    'OC'   : 'One Control',
+    'OCC'  : 'One Control per Column',
+    'OCR'  : 'One Control per Row',
+    'Ratio': oIntensities['RatioI'],
+}
 #endregion ----------------------------------------------------------> Options
 
 
@@ -399,7 +394,7 @@ ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
 mOneRNumText = "Only one real number can be accepted here."
 mOneZPlusNumText = "Only a non-negative integer can be accepted here."
 # # mOneZNumText = "Only one positive integer can be accepted here."
-# mOne01NumText = "Only one number between 0 and 1 can be accepted here"
+mOne01NumText = "Only one number between 0 and 1 can be accepted here"
 mNZPlusNumText = (
     "Only a list of unique non-negative integers can be accepted here.")
 # # mNumROne = "Only one number can be accepted in {}."
@@ -435,8 +430,8 @@ mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
  
 #region ----------------------------------------------------> For CheckInput
 mSection = 'Values in section {} must be unique.'
-# mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
-# mRepeatColNum = 'There are repeated column numbers in the text fields.'
+mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
+mRepeatColNum = 'There are repeated column numbers in the text fields.'
 mRowsInLCtrl = 'There must be at least {} items in {}.'
 mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
     'Protein, etc) were applied.')
@@ -446,11 +441,11 @@ mValueBad = "Value '{}' cannot be accepted in {}.\n"
 mOneRealNum = f"{mValueBad}{mOneRNumText}"
 mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
 mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
-# mOne01Num = f"{mValueBad}{mOne01NumText}"
-# mResCtrl = (
-#     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
-#     f"correct input.")
-# mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
+mOne01Num = f"{mValueBad}{mOne01NumText}"
+mResCtrl = (
+    f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
+    f"correct input.")
+mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
 #endregion -------------------------------------------------> For CheckInput
 #endregion ---------------------------------------------------------> Messages
 
@@ -465,6 +460,8 @@ sWinRegular = (990, 775)
 sSbarFieldSizeI = sbFieldSize
 #------------------------------> wx.TextCtrl
 sTc = (50, 22)
+#------------------------------> wx.ListCtrl
+sLCtrlColI = [50, 150]
 #endregion ------------------------------------------------------------> Sizes
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
 
