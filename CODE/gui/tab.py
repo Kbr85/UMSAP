@@ -23,7 +23,7 @@ import wx.lib.agw.aui as aui
 # import dat4s_core.data.method as dtsMethod
 
 import config.config as config
-# import gui.dtscore as dtscore
+import gui.dtscore as dtscore
 import gui.pane as pane
 #endregion ----------------------------------------------------------> Imports
 
@@ -55,7 +55,7 @@ class BaseConfTab(wx.Panel):
     #region -----------------------------------------------------> Class setup
     dConfPanel = {
         config.ntCorrA   : pane.CorrA,
-        # config.ntDataPrep: pane.DataPrep,
+        config.ntDataPrep: pane.DataPrep,
         # config.ntLimProt : pane.LimProt,
         # config.ntProtProf: pane.ProtProf,
     }
@@ -113,71 +113,71 @@ class BaseConfTab(wx.Panel):
 #---
 
 
-# class BaseConfListTab(BaseConfTab):
-#     """Base class for a Tab containing a configuration panel and a right list
-#         panel. 
+class BaseConfListTab(BaseConfTab):
+    """Base class for a Tab containing a configuration panel and a right list
+        panel. 
 
-#         Parameters
-#         ----------
-#         cParent : wx.Window
-#             Parent of the tab
-#         cName: str or None
-#             Unique name of the Tab
-#         cDataI : dict or None
-#             Initial data provided by the user to performed a previous analysis
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     #endregion --------------------------------------------------> Class setup
+        Parameters
+        ----------
+        cParent : wx.Window
+            Parent of the tab
+        cName: str or None
+            Unique name of the Tab
+        cDataI : dict or None
+            Initial data provided by the user to performed a previous analysis
+    """
+    #region -----------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: wx.Window, cName: Optional[str]=None, 
-#         cDataI : Optional[dict]=None
-#         ) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cLCColLabel  = getattr(self, 'cLCColLabel',  config.lLCtrlColNameI)
-#         self.cLCColSize   = getattr(self, 'cLCColSize',   config.sLCtrlColI)
-#         self.cLCPaneTitle = getattr(self, 'cLCPaneTitle', config.lnListPane)
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: wx.Window, cName: Optional[str]=None, 
+        cDataI : Optional[dict]=None
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cLCColLabel  = getattr(self, 'cLCColLabel',  ['#', 'Name'])
+        self.cSColSize    = getattr(self, 'cLCColSize',   [50, 150])
+        self.cLCPaneTitle = getattr(self, 'cLCPaneTitle', 'Data File Content')
         
-#         super().__init__(cParent, cName=cName, cDataI=cDataI)
-#         #endregion --------------------------------------------> Initial Setup
+        super().__init__(cParent, cName=cName, cDataI=cDataI)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region -----------------------------------------------------> Widgets
-#         self.wLCtrl = dtscore.ListZebraMaxWidth(
-#             self, colLabel=self.cLCColLabel, colSize=self.cLCColSize)
-#         #----------------------------> Pointer to lc to load data file content
-#         self.wConf.wLCtrlI = self.wLCtrl
-#         self.wConf.rLCtrlL = [self.wLCtrl]
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.wLCtrl = dtscore.ListZebraMaxWidth(
+            self, colLabel=self.cLCColLabel, colSize=self.cSColSize)
+        #----------------------------> Pointer to lc to load data file content
+        self.wConf.wLCtrlI = self.wLCtrl
+        self.wConf.rLCtrlL = [self.wLCtrl]
+        #endregion --------------------------------------------------> Widgets
         
-#         #region -------------------------------------------------> Aui control
-#         self._mgr.AddPane(
-#             self.wLCtrl, 
-#             aui.AuiPaneInfo(
-#                 ).Right(
-#                 ).Caption(
-#                     self.cLCPaneTitle
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-#         #------------------------------> 
-#         self._mgr.Update()
-#         #endregion ----------------------------------------------> Aui control
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region -------------------------------------------------> Aui control
+        self._mgr.AddPane(
+            self.wLCtrl, 
+            aui.AuiPaneInfo(
+                ).Right(
+                ).Caption(
+                    self.cLCPaneTitle
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ----------------------------------------------> Aui control
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Class methods
     
-#     #endregion ------------------------------------------------> Class methods
-# #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # class ResControlExp(wx.Panel):

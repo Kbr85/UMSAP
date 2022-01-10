@@ -131,7 +131,7 @@ ntTarProt  = 'TarProtTab'
 #------------------------------> Individual Panes
 # # npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
-# npDataPrep              = "DataPrepPane"
+npDataPrep              = "DataPrepPane"
 # # npLimProt               = "LimProtPane"
 # npProtProf              = 'ProtProfPane'
 # # npResControlExp         = 'ResControlExpPane'
@@ -204,8 +204,8 @@ fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 fnInitial    = "{}-Initial-Data-{}.txt"
 fnFloat      = "{}-Floated-Data-{}.txt"
 # # fnTargetProt = "{}-Target-Protein-Data-{}.txt"
-# fnExclude    = "{}-After-Excluding-Data-{}.txt"
-# fnScore      = "{}-Score-Filtered-Data-{}.txt"
+fnExclude    = "{}-After-Excluding-Data-{}.txt"
+fnScore      = "{}-Score-Filtered-Data-{}.txt"
 fnTrans      = "{}-Transformed-Data-{}.txt"
 fnNorm       = "{}-Normalized-Data-{}.txt"
 fnImp        = "{}-Imputed-Data-{}.txt"
@@ -222,13 +222,10 @@ urlUpdate   = f"{urlHome}/page/release-notes"
 urlTutorial = f"{urlHome}/tutorial/2-1-0"
 # # urlLimProt  = f"{urlTutorial}/limited-proteolysis"
 # urlProtProf = f"{urlTutorial}/proteome-profiling"
-# urlDataPrep = f"{urlTutorial}/data-preparation"
 #endregion --------------------------------------------------------------- URL
 
 
 #region --------------------------------------------------------------> Labels
-# #------------------------------> Names
-# lnListPane = 'Data File Content'
 # # #------------------------------> wx.Button
 # # lBtnOutFile     = 'Output File'
 # # lBtnSeqFile     = 'Sequences'
@@ -242,15 +239,16 @@ urlTutorial = f"{urlHome}/tutorial/2-1-0"
 # # lStLimProtBand  = 'Bands' 
 # lStCtrlName     = 'Name'
 # lStCtrlType     = 'Type'
-# #------------------------------> wx.Statictext
+#------------------------------> wx.Statictext
+lStColAnalysis = 'Columns for Analysis'
 # # lStSeqFile      = 'Sequences'
-# lStScoreVal     = 'Score Value'
+lStScoreVal     = 'Score Value'
 # # lStSeqLength    = 'Sequence Length'
 # # lStTargetProt   = "Target Protein"
 # # lStSeqCol       = 'Sequences'
-# lStScoreCol     = 'Score'
+lStScoreCol     = 'Score'
 # lStResultCtrl   = 'Results - Control experiments'
-# lStExcludeRow = 'Exclude Rows'
+lStExcludeRow = 'Exclude Rows'
 # lStExcludeProt = 'Exclude Proteins'
 # lStColAnalysis = 'Columns to Consider'
 # lStGeneName    = 'Gene Names'
@@ -276,25 +274,23 @@ ttBtnHelp = 'Read tutorial at {}.'
 # ttBtnTypeRes = 'Type the column numbers in a helper window.'
 # # #------------------------------> wx.StaticText
 # ttStAlpha = 'Significance level for the statistical analysis.\ne.g. 0.05'
-# ttStScoreVal = f'Set the minimum acceptable Score value.\ne.g. -4'
+ttStScoreVal = f'Set the minimum acceptable Score value.\ne.g. -4'
 # ttStPCorrection = "Select the p correction method."
 # # ttStMedianCorr = "Select whether to apply a median correction."
 # ttStDetectedProtL = (
 #     'Set the column number containing the detected proteins.\ne.g. 7')
-# ttStScore = f'Set the column number containing the {lStScoreVal}.\ne.g. 4'
+ttStScoreCol = f'Set the column number containing the {lStScoreVal}.\ne.g. 4'
 # ttStGenName = f'Set the column number containing the {lStGeneName}.\ne.g. 3'
 # ttStExcludeProt = (
 #     "Set the column number containing the data used to exclude proteins."
 #     "\ne.g. 8 10-12")
-# ttStExcludeRow = (
-#     'Set the column numbers containing the data used to exclude rows.'
-#     '\ne.g. 8 10-12')
+ttStExcludeRow = (
+    'Set the column numbers containing the data used to Exclude Rows.'
+    '\ne.g. 8 10-12')
 # ttStControlN = "Name or ID of the control experiment.\ne.g. MyControl."
 # ttStSample = (f"Specify if samples are independent or paired.\n"
 #     f"For example, samples are paired when the same Petri dish is "
 #     f"used for the control and experiment.")
-# ttStColAnalysis = ('Columns on which to perform the Data Preparation.\ne.g. '
-#     '8 10-12')
 # ttStResult = ('Set the column numbers containing the control and experiment '
 #     'results.')
 # ttStRawI = ('Specify if intensities are raw intensity values or are already '
@@ -400,12 +396,12 @@ ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
 # #endregion ----------------------------------------------------------> Other
 
 # #region ------------------------------------------------------------> Values
-# mOneRNumText = "Only one real number can be accepted here."
-# mOneZPlusNumText = "Only a non-negative integer can be accepted here."
+mOneRNumText = "Only one real number can be accepted here."
+mOneZPlusNumText = "Only a non-negative integer can be accepted here."
 # # mOneZNumText = "Only one positive integer can be accepted here."
 # mOne01NumText = "Only one number between 0 and 1 can be accepted here"
-# mNZPlusNumText = (
-#     "Only a list of unique non-negative integers can be accepted here.")
+mNZPlusNumText = (
+    "Only a list of unique non-negative integers can be accepted here.")
 # # mNumROne = "Only one number can be accepted in {}."
 # # mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
 # # mListNumN0L = (
@@ -446,10 +442,10 @@ mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
     'Protein, etc) were applied.')
 mFileBad = "File: '{}'\ncannot be used as {}."
 mOptionBad = "Option '{}' cannot be accepted in {}."
-# mValueBad = "Value '{}' cannot be accepted in {}.\n"
-# mOneRealNum = f"{mValueBad}{mOneRNumText}"
-# mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
-# mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
+mValueBad = "Value '{}' cannot be accepted in {}.\n"
+mOneRealNum = f"{mValueBad}{mOneRNumText}"
+mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
+mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
 # mOne01Num = f"{mValueBad}{mOne01NumText}"
 # mResCtrl = (
 #     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
