@@ -24,7 +24,7 @@ import wx.lib.agw.aui as aui
 
 import config.config as config
 # import gui.dtscore as dtscore
-# import gui.pane as pane
+import gui.pane as pane
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -33,84 +33,84 @@ import config.config as config
 # #endregion ----------------------------------------------------------> Methods
 
 
-# #region --------------------------------------------------------> Base Classes
-# class BaseConfTab(wx.Panel):
-#     """Base class for a Tab containing only a configuration panel. 
+#region --------------------------------------------------------> Base Classes
+class BaseConfTab(wx.Panel):
+    """Base class for a Tab containing only a configuration panel. 
 
-#         Parameters
-#         ----------
-#         cParent : wx.Window
-#             Parent of the tab
-#         cName: str or None
-#             Name of the Tab
-#         cDataI : dict or None
-#             Initial data provided by the user to performed a previous analysis.
+        Parameters
+        ----------
+        cParent : wx.Window
+            Parent of the tab
+        cName: str or None
+            Name of the Tab
+        cDataI : dict or None
+            Initial data provided by the user to performed a previous analysis.
 
-#         Attributes
-#         ----------
-#         dConfPanel : dict
-#             Classes to create the configuration panel in the Tab. Keys are
-#             config.ntNAMES and values the corresponding method.
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     dConfPanel = {
-#         config.ntCorrA   : pane.CorrA,
-#         config.ntDataPrep: pane.DataPrep,
-#         # config.ntLimProt : pane.LimProt,
-#         config.ntProtProf: pane.ProtProf,
-#     }
-#     #endregion --------------------------------------------------> Class setup
+        Attributes
+        ----------
+        dConfPanel : dict
+            Classes to create the configuration panel in the Tab. Keys are
+            config.ntNAMES and values the corresponding method.
+    """
+    #region -----------------------------------------------------> Class setup
+    dConfPanel = {
+        config.ntCorrA   : pane.CorrA,
+        # config.ntDataPrep: pane.DataPrep,
+        # config.ntLimProt : pane.LimProt,
+        # config.ntProtProf: pane.ProtProf,
+    }
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: wx.Window, cName: Optional[str]=None, 
-#         cDataI: Optional[dict]=None
-#         ) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cParent = cParent
-#         self.cName = cName if cName is not None else config.nDefName
-#         self.clPaneConf = getattr(self, 'clPaneConf', config.lnPaneConf)
-#         #------------------------------> 
-#         super().__init__(cParent, name=self.cName)
-#         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: wx.Window, cName: Optional[str]=None, 
+        cDataI: Optional[dict]=None
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cParent = cParent
+        self.cName = cName if cName is not None else config.nDefName
+        self.clPaneConf = getattr(self, 'clPaneConf', 'Configuration Options')
+        #------------------------------> 
+        super().__init__(cParent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region -----------------------------------------------------> Widgets
-#         self.wConf = self.dConfPanel[self.cName](self, cDataI)
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.wConf = self.dConfPanel[self.cName](self, cDataI)
+        #endregion --------------------------------------------------> Widgets
         
-#         #region -------------------------------------------------> Aui control
-#         #------------------------------> AUI control
-#         self._mgr = aui.AuiManager()
-#         #------------------------------> AUI which frame to use
-#         self._mgr.SetManagedWindow(self)
-#         #------------------------------> Add Configuration panel
-#         self._mgr.AddPane( 
-#             self.wConf, 
-#             aui.AuiPaneInfo(
-#                 ).Center(
-#                 ).Caption(
-#                     self.clPaneConf
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-#         #------------------------------> 
-#         self._mgr.Update()
-#         #endregion ----------------------------------------------> Aui control
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region -------------------------------------------------> Aui control
+        #------------------------------> AUI control
+        self._mgr = aui.AuiManager()
+        #------------------------------> AUI which frame to use
+        self._mgr.SetManagedWindow(self)
+        #------------------------------> Add Configuration panel
+        self._mgr.AddPane( 
+            self.wConf, 
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    self.clPaneConf
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ----------------------------------------------> Aui control
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Class methods
     
-#     #endregion ------------------------------------------------> Class methods
-# #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # class BaseConfListTab(BaseConfTab):
@@ -294,7 +294,7 @@ import config.config as config
     
 #     #endregion ------------------------------------------------> Class methods
 # #---
-# #endregion -----------------------------------------------------> Base Classes
+#endregion -----------------------------------------------------> Base Classes
 
 
 #region -------------------------------------------------------------> Classes
