@@ -4541,25 +4541,19 @@ class LimProt(BaseConfModPanel2):
 
         Attributes
         ----------
-        changeKey: list of str
-            Keys in self.do that must be turned to str.
-        checkUserInput : dict
+        rChangeKey: list of str
+            Keys in self.rDO that must be turned to str.
+        rCheckUserInput : dict
             To check the user input in the right order. 
             See pane.BaseConfPanel.CheckInput for a description of the dict.
-        cColCtrlData : dict
-            Keys are control type and values methods to get the Ctrl and 
-            Data columns for the given condition and relevant point.
-        cGaugePD : int
-            Number of steps for the Progress Dialog.
-        cLLenLongest : int
-            Length of the longest label in the panel.
-        cMainData : str
-            Name of file containing the results in Steps_Data_File.
-        cSection : str
-            Name of the section. Default to config.nmLimProt.
-        cTitlePD : str
-            Name of the Progress Dialog window.
-        do: dict
+        rDI: dict
+            Dictionary with the user input. Keys are labels in the panel plus:
+            {
+                config.lStLimProtLane           : [list of lanes],
+                config.lStLimProtBand           : [list of bands],
+                f"Control {config.lStCtrlName}" : "Control Name",
+            }
+        rDO: dict
             Dictionary with checked user input. Keys are:
             {
                 "iFile"      : "Path to input data file",
@@ -4608,14 +4602,19 @@ class LimProt(BaseConfModPanel2):
                         the output df],
                 },
             },    
-        d: dict
-            Dictionary with the user input. Keys are labels in the panel plus:
+        rLbDict: dict
+            Contains information about the Res - Ctrl e.g.
             {
-                config.lStLimProtLane           : [list of lanes],
-                config.lStLimProtBand           : [list of bands],
-                f"Control {config.lStCtrlName}" : "Control Name",
+                1            : ['L1', 'L2'],
+                2            : ['B1', 'B2'],
+                'Control'    : ['TheControl'],
             }
-            
+        rLLenLongest: int
+            Number of characters in the longest label.
+        rMainData : str
+            Name of the file containing the results of the analysis in the 
+            step folder
+        
         See Parent classes for more aatributes.
         
         Notes
