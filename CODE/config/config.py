@@ -136,7 +136,7 @@ npLimProt               = "LimProtPane"
 npProtProf              = 'ProtProfPane'
 # # npResControlExp         = 'ResControlExpPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
-# # npResControlExpLimProt  = 'ResControlExpPaneLimProt'
+npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 # # #------------------------------> Files
 # # nfUMSAP = 'UMSAPFile'
 #------------------------------> Modules

@@ -5477,6 +5477,27 @@ class ProtProfResControlExp(ResControlExpConfBase):
     cName = config.npResControlExpProtProf
     
     cCtrlType = config.oControlTypeProtProf
+    #------------------------------> Needed by ResControlExpConfBase
+    cN = 2
+    cStLabel = { # Keys runs in range(1, N+1)
+        1 : f"{config.lStProtProfCond}:",
+        2 : f"{config.lStProtProfRP}:",
+    }
+    cLabelText = { # Keys runs in range(1, N+1)
+        1 : 'C',
+        2 : 'RP',
+    }
+    #------------------------------> 
+    cTTTotalField = [
+        f'Set the number of {cStLabel[1][0:-2]}.',
+        f'Set the number of {cStLabel[2][0:-2]}.',
+    ]
+    #------------------------------> 
+    cLCtrlType = config.lStCtrlType
+    #------------------------------> Error messages
+    mNoCondRP = (
+        f'Both {cStLabel[1][:-1]} and {cStLabel[2][:-1]} must be defined.')
+    mNoControl = (f'The Control Type must defined.')
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -5489,38 +5510,14 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        #------------------------------> Needed by ResControlExpConfBase
-        self.cN = 2
-        self.cStLabel = { # Keys runs in range(1, N+1)
-            1 : f"{config.lStProtProfCond}:",
-            2 : f"{config.lStProtProfRP}:",
-        }
-        self.cLabelText = { # Keys runs in range(1, N+1)
-            1 : 'C',
-            2 : 'RP',
-        }
-        #------------------------------> 
         self.dAddWidget = {
             self.cCtrlType['OC']   : self.AddWidget_OC,
             self.cCtrlType['OCC']  : self.AddWidget_OCC,
             self.cCtrlType['OCR']  : self.AddWidget_OCR,
             self.cCtrlType['Ratio']: self.AddWidget_Ratio,
         }
-        #------------------------------> Label
-        self.cLCtrlType = getattr(self, 'cLCtrolType', config.lStCtrlType)
-        #------------------------------> Tooltips
-        self.cTTTotalField = [
-            f'Set the number of {self.cStLabel[1][0:-2]}.',
-            f'Set the number of {self.cStLabel[2][0:-2]}.',
-        ]
         #--------------> Control type from previous call to Setup Fields
         self.rControlVal = ''
-        #------------------------------> Error messages
-        self.mNoCondRP = (
-            f"Both {self.cStLabel[1][:-1]} and {self.cStLabel[2][:-1]} must be "
-            f"defined."
-        )
-        self.mNoControl = (f"The Control Type must defined.")
         #------------------------------> Super init
         super().__init__(cParent, self.cName, cTopParent, cNColF)
         #------------------------------> Choices
@@ -6038,309 +6035,309 @@ class ProtProfResControlExp(ResControlExpConfBase):
 #---
 
 
-# # class LimProtResControlExp(ResControlExpConfBase):
-# #     """Creates the configuration panel for the Results - Control Experiments
-# #         dialog when called from the LimProt Tab.
+class LimProtResControlExp(ResControlExpConfBase):
+    """Creates the configuration panel for the Results - Control Experiments
+        dialog when called from the LimProt Tab.
 
-# #         Parameters
-# #         ----------
-# #         parent : wx.Widget
-# #             Parent of the panel
-# #         topParent : wx.Widget
-# #             Top parent window
-# #         NColF : int
-# #             Total number of columns present in the Data File
+        Parameters
+        ----------
+        parent : wx.Widget
+            Parent of the panel
+        topParent : wx.Widget
+            Top parent window
+        NColF : int
+            Total number of columns present in the Data File
 
-# #         Attributes
-# #         ----------
-# #         cLabelText : dict
-# #             Keys are 1 to cN and values the prefix for the label values. e.g. C  
-# #         cN : int
-# #             Number of labels excluding control labels.
-# #         cStLabel : dict
-# #             Keys are 1 to cN and values the text of the labels. e.g. Condition.
-# #         cTTTotalField : str
-# #             Tooltip for the labels in the top region
-# #         mNoBL : str
-# #             Error message when the number of bands and/or lanes is not given.
-# #         name : str
-# #             Name of the panel
-# #     """
-# #     #region -----------------------------------------------------> Class setup
-# #     name = config.npResControlExpLimProt
-# #     #endregion --------------------------------------------------> Class setup
+        Attributes
+        ----------
+        cLabelText : dict
+            Keys are 1 to cN and values the prefix for the label values. e.g. C  
+        cN : int
+            Number of labels excluding control labels.
+        cStLabel : dict
+            Keys are 1 to cN and values the text of the labels. e.g. Condition.
+        cTTTotalField : str
+            Tooltip for the labels in the top region
+        mNoBL : str
+            Error message when the number of bands and/or lanes is not given.
+        name : str
+            Name of the panel
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = config.npResControlExpLimProt
+    #------------------------------> Needed by ResControlExpConfBase
+    cN = 2
+    cStLabel = { # Keys runs in range(1, N+1)
+        1 : f"{config.lStLimProtLane}:",
+        2 : f"{config.lStLimProtBand}:",
+    }
+    cLabelText = { # Keys runs in range(1, N+1)
+        1 : 'L',
+        2 : 'B',
+    }
+    #------------------------------> Tooltips
+    cTTTotalField = [
+        f'Set the number of {cStLabel[1]}.',
+        f'Set the number of {cStLabel[2]}.',
+    ]  
+    #------------------------------> Error messages
+    mNoBL = (
+        f"Both {cStLabel[1][:-1]} and {cStLabel[2][:-1]} must be "
+        f"defined."
+    )
+    #endregion --------------------------------------------------> Class setup
 
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self, parent, topParent, NColF):
-# #         """ """
-# #         #region -------------------------------------------------> Check Input
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cParent, cTopParent, cNColF):
+        """ """
+        #region -------------------------------------------------> Check Input
         
-# #         #endregion ----------------------------------------------> Check Input
+        #endregion ----------------------------------------------> Check Input
 
-# #         #region -----------------------------------------------> Initial Setup
-# #         #------------------------------> Needed by ResControlExpConfBase
-# #         self.cN = 2
-# #         self.cStLabel = { # Keys runs in range(1, N+1)
-# #             1 : f"{config.lStLimProtLane}:",
-# #             2 : f"{config.lStLimProtBand}:",
-# #         }
-# #         self.cLabelText = { # Keys runs in range(1, N+1)
-# #             1 : 'L',
-# #             2 : 'B',
-# #         }
-# #         #------------------------------> Tooltips
-# #         self.cTTTotalField = [
-# #             f'Set the number of {self.cStLabel[1]}.',
-# #             f'Set the number of {self.cStLabel[2]}.',
-# #         ]  
-# #         #------------------------------> Error messages
-# #         self.mNoBL = (
-# #             f"Both {self.cStLabel[1][:-1]} and {self.cStLabel[2][:-1]} must be "
-# #             f"defined."
-# #         )
-# #         #------------------------------> 
-# #         super().__init__(parent, self.name, topParent, NColF)
-# #         #endregion --------------------------------------------> Initial Setup
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(cParent, self.cName, cTopParent, cNColF)
+        #endregion --------------------------------------------> Initial Setup
 
-# #         #region --------------------------------------------------------> Menu
+        #region --------------------------------------------------------> Menu
         
-# #         #endregion -----------------------------------------------------> Menu
+        #endregion -----------------------------------------------------> Menu
 
-# #         #region -----------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
         
-# #         #endregion --------------------------------------------------> Widgets
+        #endregion --------------------------------------------------> Widgets
 
-# #         #region ------------------------------------------------------> Sizers
-# #         #------------------------------> 
-# #         self.sizerSWLabelControl = wx.BoxSizer(wx.HORIZONTAL)    
-# #         self.sizerSWLabelControl.Add(
-# #             self.controlN.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5,
-# #         )
-# #         self.sizerSWLabelControl.Add(
-# #             self.controlN.tc, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5,
-# #         )
-# #         #------------------------------> 
-# #         self.sizerSWLabelMain.Add(
-# #             self.sizerSWLabelControl, 
-# #             0, 
-# #             wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM, 
-# #             5,
-# #         )
-# #         #endregion ---------------------------------------------------> Sizers
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> 
+        self.sSWLabelControl = wx.FlexGridSizer(1,2,5,5)    
+        self.sSWLabelControl.Add(
+            self.wControlN.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5,
+        )
+        self.sSWLabelControl.Add(
+            self.wControlN.tc, 0, wx.EXPAND|wx.ALL, 5,
+        )
+        self.sSWLabelControl.AddGrowableCol(1,1)
+        #------------------------------> 
+        self.sSWLabelMain.Add(
+            self.sSWLabelControl, 
+            0, 
+            wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM, 
+            5,
+        )
+        #endregion ---------------------------------------------------> Sizers
 
-# #         #region --------------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
         
-# #         #endregion -----------------------------------------------------> Bind
+        #endregion -----------------------------------------------------> Bind
 
-# #         #region ---------------------------------------------> Window position
+        #region ---------------------------------------------> Window position
         
-# #         #endregion ------------------------------------------> Window position
+        #endregion ------------------------------------------> Window position
         
-# #         #region -----------------------------------------------> Initial State
-# #         self.SetInitialState()
-# #         #endregion --------------------------------------------> Initial State
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
+        #region -----------------------------------------------> Initial State
+        self.SetInitialState()
+        #endregion --------------------------------------------> Initial State
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-# #     #region ---------------------------------------------------> Class methods
-# #     def OnCreate(self, event: wx.CommandEvent) -> bool:
-# #         """Create the fields in the white panel. Override as needed.
+    #region ---------------------------------------------------> Class methods
+    def OnCreate(self, event: wx.CommandEvent) -> bool:
+        """Create the fields in the white panel. Override as needed.
         
-# #             Parameters
-# #             ----------
-# #             event : wx.Event
-# #                 Information about the event.
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event.
                 
-# #             Return
-# #             ------
-# #             bool
-# #         """
-# #         #region -------------------------------------------------> Check Input
-# #         n = []
-# #         #------------------------------> 
-# #         for k in range(1, self.cN+1):
-# #             n.append(len(self.tcDict[k]))
-# #         #------------------------------> 
-# #         if all(n):
-# #             #------------------------------> Set default value if empty
-# #             for k in range(1, self.cN+1):
-# #                 for j, tc in enumerate(self.tcDict[k], 1):
-# #                     if tc.GetValue().strip() == '':
-# #                         tc.SetValue(f'{self.cLabelText[k]}{j}')
-# #                     else:
-# #                         pass
-# #         else:
-# #             dtscore.Notification(
-# #                 'errorF', msg=self.mNoBL, parent=self,
-# #             )
-# #             return False
-# #         #------------------------------> Control
-# #         if self.controlN.tc.GetValue().strip() == '':
-# #             self.controlN.tc.SetValue(self.cHControlN)
-# #         else:
-# #             pass
-# #         #endregion ----------------------------------------------> Check Input
+            Return
+            ------
+            bool
+        """
+        #region -------------------------------------------------> Check Input
+        n = []
+        #------------------------------> 
+        for k in range(1, self.cN+1):
+            n.append(len(self.rTcDict[k]))
+        #------------------------------> 
+        if all(n):
+            #------------------------------> Set default value if empty
+            for k in range(1, self.cN+1):
+                for j, tc in enumerate(self.rTcDict[k], 1):
+                    if tc.GetValue().strip() == '':
+                        tc.SetValue(f'{self.cLabelText[k]}{j}')
+                    else:
+                        pass
+        else:
+            dtscore.Notification(
+                'errorF', msg=self.mNoBL, parent=self,
+            )
+            return False
+        #------------------------------> Control
+        if self.wControlN.tc.GetValue().strip() == '':
+            self.wControlN.tc.SetValue(self.cHControlN)
+        else:
+            pass
+        #endregion ----------------------------------------------> Check Input
         
-# #         #region ---------------------------------------------------> Variables
-# #         Nl = n[0]
-# #         NCol = n[0]+1
-# #         Nb = n[1]
-# #         NRow = n[1]+2
-# #         #endregion ------------------------------------------------> Variables
+        #region ---------------------------------------------------> Variables
+        Nl = n[0]
+        NCol = n[0]+1
+        Nb = n[1]
+        NRow = n[1]+2
+        #endregion ------------------------------------------------> Variables
         
-# #         #region -------------------------------------------> Remove from sizer
-# #         self.sizerSWMatrix.Clear(delete_windows=False)
-# #         #endregion ----------------------------------------> Remove from sizer
+        #region -------------------------------------------> Remove from sizer
+        self.sSWMatrix.Clear(delete_windows=False)
+        #endregion ----------------------------------------> Remove from sizer
         
-# #         #region --------------------------------> Create/Destroy wx.StaticText
-# #         #------------------------------> Destroy
-# #         for k, v in self.lbDict.items():
-# #             for j in range(0, len(v)):
-# #                 v[-1].Destroy()
-# #                 v.pop()
-# #         #------------------------------> Create
-# #         #--------------> Labels
-# #         for k, v in self.tcDict.items():
-# #             #--------------> New row
-# #             row = []
-# #             #--------------> Fill row
-# #             for j in v:
-# #                 row.append(
-# #                     wx.StaticText(
-# #                         self.swMatrix,
-# #                         label = j.GetValue(),
-# #                     )
-# #                 )
-# #             #--------------> Assign
-# #             self.lbDict[k] = row
-# #         #--------------> Control
-# #         self.lbDict['Control'] = [
-# #             wx.StaticText(
-# #                 self.swMatrix,
-# #                 label = self.controlN.tc.GetValue(),
-# #             )
-# #         ]
-# #         #endregion -----------------------------> Create/Destroy wx.StaticText
+        #region --------------------------------> Create/Destroy wx.StaticText
+        #------------------------------> Destroy
+        for k, v in self.rLbDict.items():
+            for j in range(0, len(v)):
+                v[-1].Destroy()
+                v.pop()
+        #------------------------------> Create
+        #--------------> Labels
+        for k, v in self.rTcDict.items():
+            #--------------> New row
+            row = []
+            #--------------> Fill row
+            for j in v:
+                row.append(
+                    wx.StaticText(
+                        self.wSwMatrix,
+                        label = j.GetValue(),
+                    )
+                )
+            #--------------> Assign
+            self.rLbDict[k] = row
+        #--------------> Control
+        self.rLbDict['Control'] = [
+            wx.StaticText(
+                self.wSwMatrix,
+                label = self.wControlN.tc.GetValue(),
+            )
+        ]
+        #endregion -----------------------------> Create/Destroy wx.StaticText
         
-# #         #region ----------------------------------> Create/Destroy wx.TextCtrl
-# #         #------------------------------> Add/Destroy new/old fields
-# #         for k in range(1, Nb+2):
-# #             #------------------------------> 
-# #             row = self.tcDictF.get(k, [])
-# #             lrow = len(row)
-# #             #------------------------------> Control
-# #             if k == 1:
-# #                 if lrow:
-# #                     continue
-# #                 else:
-# #                     #------------------------------> 
-# #                     row.append(wx.TextCtrl(
-# #                         self.swMatrix, 
-# #                         size      = self.cSLabel,
-# #                         validator = self.cVColNumList,
-# #                     ))
-# #                     #------------------------------> 
-# #                     self.tcDictF[k] = row
-# #                     #------------------------------> 
-# #                     continue
-# #             else:
-# #                 pass
-# #             #------------------------------> One row for each band
-# #             if Nl >= lrow:
-# #                 #------------------------------> Create new fields
-# #                 for j in range(lrow, Nl):
-# #                     #------------------------------> 
-# #                     row.append(wx.TextCtrl(
-# #                         self.swMatrix, 
-# #                         size      = self.cSLabel,
-# #                         validator = self.cVColNumList,
-# #                     ))
-# #                     #------------------------------> 
-# #                     self.tcDictF[k] = row
-# #             else:
-# #                 #------------------------------> Destroy old fields
-# #                 for j in range(Nl, lrow):
-# #                     row[-1].Destroy()
-# #                     row.pop()
-# #         #------------------------------> Remove old bands not needed anymore
-# #         # Get keys because you cannot iterate and delete keys
-# #         dK = [x for x in self.tcDictF.keys()]
-# #         #------------------------------> 
-# #         for k in dK:
-# #             if k > Nb+1:
-# #                 #------------------------------> 
-# #                 for j in self.tcDictF[k]:
-# #                     j.Destroy()
-# #                 #------------------------------> 
-# #                 del(self.tcDictF[k])
-# #             else:
-# #                 pass
-# #         #endregion -------------------------------> Create/Destroy wx.TextCtrl
+        #region ----------------------------------> Create/Destroy wx.TextCtrl
+        #------------------------------> Add/Destroy new/old fields
+        for k in range(1, Nb+2):
+            #------------------------------> 
+            row = self.rTcDictF.get(k, [])
+            lrow = len(row)
+            #------------------------------> Control
+            if k == 1:
+                if lrow:
+                    continue
+                else:
+                    #------------------------------> 
+                    row.append(wx.TextCtrl(
+                        self.wSwMatrix, 
+                        size      = self.cSLabel,
+                        validator = self.cVColNumList,
+                    ))
+                    #------------------------------> 
+                    self.rTcDictF[k] = row
+                    #------------------------------> 
+                    continue
+            else:
+                pass
+            #------------------------------> One row for each band
+            if Nl >= lrow:
+                #------------------------------> Create new fields
+                for j in range(lrow, Nl):
+                    #------------------------------> 
+                    row.append(wx.TextCtrl(
+                        self.wSwMatrix, 
+                        size      = self.cSLabel,
+                        validator = self.cVColNumList,
+                    ))
+                    #------------------------------> 
+                    self.rTcDictF[k] = row
+            else:
+                #------------------------------> Destroy old fields
+                for j in range(Nl, lrow):
+                    row[-1].Destroy()
+                    row.pop()
+        #------------------------------> Remove old bands not needed anymore
+        # Get keys because you cannot iterate and delete keys
+        dK = [x for x in self.rTcDictF.keys()]
+        #------------------------------> 
+        for k in dK:
+            if k > Nb+1:
+                #------------------------------> 
+                for j in self.rTcDictF[k]:
+                    j.Destroy()
+                #------------------------------> 
+                del(self.rTcDictF[k])
+            else:
+                pass
+        #endregion -------------------------------> Create/Destroy wx.TextCtrl
         
-# #         #region ------------------------------------------------> Setup Sizers
-# #         #------------------------------> Adjust size
-# #         self.sizerSWMatrix.SetCols(NCol)
-# #         self.sizerSWMatrix.SetRows(NRow)
-# #         #------------------------------> Add widgets
-# #         #--------------> Control row
-# #         self.sizerSWMatrix.Add(
-# #             self.lbDict['Control'][0],
-# #             0,
-# #             wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
-# #             5
-# #         )
-# #         self.sizerSWMatrix.Add(
-# #             self.tcDictF[1][0],
-# #             0,
-# #             wx.EXPAND|wx.ALL,
-# #             5
-# #         )
-# #         for k in range(2, NCol):
-# #             self.sizerSWMatrix.AddSpacer(1)
-# #         #--------------> Lane Labels
-# #         self.sizerSWMatrix.AddSpacer(1)
-# #         for l in self.lbDict[1]:
-# #             self.sizerSWMatrix.Add(
-# #                 l,
-# #                 0,
-# #                 wx.ALIGN_CENTER|wx.ALL,
-# #                 5
-# #             )
-# #         #--------------> Bands
-# #         for r, l in enumerate(self.lbDict[2], 1):
-# #             #--------------> 
-# #             self.sizerSWMatrix.Add(
-# #                 l,
-# #                 0,
-# #                 wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
-# #                 5
-# #             )
-# #             #--------------> 
-# #             for btc in self.tcDictF[r+1]:
-# #                 self.sizerSWMatrix.Add(
-# #                     btc,
-# #                     0,
-# #                     wx.EXPAND|wx.ALL,
-# #                     5
-# #                 )
-# #         #------------------------------> Grow Columns
-# #         for k in range(1, NCol):
-# #             if not self.sizerSWMatrix.IsColGrowable(k):
-# #                 self.sizerSWMatrix.AddGrowableCol(k, 1)
-# #             else:
-# #                 pass
-# #         #------------------------------> Update sizer
-# #         self.sizerSWMatrix.Layout()
-# #         #endregion ---------------------------------------------> Setup Sizers
+        #region ------------------------------------------------> Setup Sizers
+        #------------------------------> Adjust size
+        self.sSWMatrix.SetCols(NCol)
+        self.sSWMatrix.SetRows(NRow)
+        #------------------------------> Add widgets
+        #--------------> Control row
+        self.sSWMatrix.Add(
+            self.rLbDict['Control'][0],
+            0,
+            wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+            5
+        )
+        self.sSWMatrix.Add(
+            self.rTcDictF[1][0],
+            0,
+            wx.EXPAND|wx.ALL,
+            5
+        )
+        for k in range(2, NCol):
+            self.sSWMatrix.AddSpacer(1)
+        #--------------> Lane Labels
+        self.sSWMatrix.AddSpacer(1)
+        for l in self.rLbDict[1]:
+            self.sSWMatrix.Add(
+                l,
+                0,
+                wx.ALIGN_CENTER|wx.ALL,
+                5
+            )
+        #--------------> Bands
+        for r, l in enumerate(self.rLbDict[2], 1):
+            #--------------> 
+            self.sSWMatrix.Add(
+                l,
+                0,
+                wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+                5
+            )
+            #--------------> 
+            for btc in self.rTcDictF[r+1]:
+                self.sSWMatrix.Add(
+                    btc,
+                    0,
+                    wx.EXPAND|wx.ALL,
+                    5
+                )
+        #------------------------------> Grow Columns
+        for k in range(1, NCol):
+            if not self.sSWMatrix.IsColGrowable(k):
+                self.sSWMatrix.AddGrowableCol(k, 1)
+            else:
+                pass
+        #------------------------------> Update sizer
+        self.sSWMatrix.Layout()
+        #endregion ---------------------------------------------> Setup Sizers
         
-# #         #region --------------------------------------------------> Set scroll
-# #         self.swMatrix.SetupScrolling()
-# #         #endregion -----------------------------------------------> Set scroll
+        #region --------------------------------------------------> Set scroll
+        self.wSwMatrix.SetupScrolling()
+        #endregion -----------------------------------------------> Set scroll
         
-# #         return True
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion ----------------------------------------------------------> Classes
 
 
