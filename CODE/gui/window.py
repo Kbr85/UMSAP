@@ -996,7 +996,7 @@ class MainWindow(BaseWindow):
         config.ntStart   : tab.Start,
         config.ntCorrA   : tab.BaseConfTab,
         config.ntDataPrep: tab.BaseConfListTab,
-        # config.ntLimProt : tab.BaseConfListTab,
+        config.ntLimProt : tab.BaseConfListTab,
         config.ntProtProf: tab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup
@@ -1046,6 +1046,7 @@ class MainWindow(BaseWindow):
     #---
     #endregion -----------------------------------------------> Instance setup
 
+    #------------------------------> Class Methods
     #region ---------------------------------------------------> Event methods
     def OnTabClose(self, event: wx.Event) -> bool:
         """Make sure to show the Start Tab if no other tab exists
@@ -6749,7 +6750,8 @@ class CheckUpdateResult(wx.Dialog):
     #---
     #endregion -----------------------------------------------> Instance setup
     
-    #region ---------------------------------------------------> Class Methods
+    #------------------------------> Class Methods
+    #region ---------------------------------------------------> Event Methods
     def OnLink(self, event: wx.Event) -> Literal[True]:
         """Process the link event.
         
@@ -6764,7 +6766,7 @@ class CheckUpdateResult(wx.Dialog):
         self.Destroy()
         #------------------------------> 
         return True
-    #endregion ------------------------------------------------> Class Methods
+    #endregion ------------------------------------------------> Event Methods
 #---
 
 
@@ -6839,7 +6841,8 @@ class ResControlExp(wx.Dialog):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+    #------------------------------> Class Methods
+    #region ---------------------------------------------------> Event methods
     def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
         """Validate user information and close the window
     
@@ -6863,7 +6866,7 @@ class ResControlExp(wx.Dialog):
         
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 
 

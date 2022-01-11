@@ -132,7 +132,7 @@ ntTarProt  = 'TarProtTab'
 # # npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
 npDataPrep              = "DataPrepPane"
-# # npLimProt               = "LimProtPane"
+npLimProt               = "LimProtPane"
 npProtProf              = 'ProtProfPane'
 # # npResControlExp         = 'ResControlExpPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
@@ -167,7 +167,7 @@ t = {
     ntStart   : 'Start',
     ntDataPrep: 'DataPrep',
     ntCorrA   : 'CorrA',
-#     ntLimProt : 'LimProt',
+    ntLimProt : 'LimProt',
     ntProtProf: 'ProtProf',
 }
 #endregion -----------------------------------------------------------> Titles
@@ -220,7 +220,7 @@ fnMainDataProtProf = '{}-ProteomeProfiling-Data-{}.txt'
 urlHome     = 'https://www.umsap.nl'
 urlUpdate   = f"{urlHome}/page/release-notes"
 urlTutorial = f"{urlHome}/tutorial/2-1-0"
-# # urlLimProt  = f"{urlTutorial}/limited-proteolysis"
+# # urlLimProt  = 
 #endregion --------------------------------------------------------------- URL
 
 
@@ -230,32 +230,24 @@ lnPaneConf = 'Configuration Options'
 lnListPane = 'Data File Content'
 #------------------------------> wx.Button
 lBtnTypeResCtrl = 'Type Values'
-# # lBtnOutFile     = 'Output File'
-# # lBtnSeqFile     = 'Sequences'
 #------------------------------> wx.ListCtrl
 lLCtrlColNameI = ['#', 'Name']
 #------------------------------> wx.StaticBox
 lStProtProfCond = 'Conditions'
 lStProtProfRP   = 'Relevant Points'
-# # lStLimProtLane  = 'Lanes'
-# # lStLimProtBand  = 'Bands' 
+lStLimProtLane  = 'Lanes'
+lStLimProtBand  = 'Bands' 
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'
 #------------------------------> wx.Statictext
 lStColAnalysis = 'Columns for Analysis'
-# # lStSeqFile      = 'Sequences'
 lStScoreVal     = 'Score Value'
-# # lStSeqLength    = 'Sequence Length'
-# # lStTargetProt   = "Target Protein"
-# # lStSeqCol       = 'Sequences'
 lStScoreCol     = 'Score'
 lStResultCtrl   = 'Results - Control experiments'
 lStExcludeRow = 'Exclude Rows'
 lStExcludeProt = 'Exclude Proteins'
-# lStColAnalysis = 'Columns to Consider'
 lStGeneName    = 'Gene Names'
 #------------------------------> wx.ComboBox or wx.CheckBox
-# # lCbFileAppend  = 'Append new data to selected output file'
 lCbCorrectP    = 'P Correction'
 lCbSample      = 'Samples'
 lCbIntensity   = 'Intensities'
@@ -263,15 +255,12 @@ lCbIntensity   = 'Intensities'
 
 
 #region ---------------------------------------------------------------> Hints
-# # hTcOutFile  = f"Path to the {lBtnOutFile} file"
-# # hTcSeqFile  = f"Path to the {lBtnSeqFile} file"
-# hTcId       = 
+
 #endregion ------------------------------------------------------------> Hints
 
 
 #region ------------------------------------------------------------> Tooltips
-# #------------------------------> wx.Button
-# # ttBtnOutFile  = f"Select the {lBtnOutFile}."
+#------------------------------> wx.Button
 ttBtnHelp = 'Read tutorial at {}.'
 #------------------------------> wx.StaticText
 ttStScoreVal = f'Set the minimum acceptable Score value.\ne.g. -4'

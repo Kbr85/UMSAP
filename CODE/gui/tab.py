@@ -56,7 +56,7 @@ class BaseConfTab(wx.Panel):
     dConfPanel = {
         config.ntCorrA   : pane.CorrA,
         config.ntDataPrep: pane.DataPrep,
-        # config.ntLimProt : pane.LimProt,
+        config.ntLimProt : pane.LimProt,
         config.ntProtProf: pane.ProtProf,
     }
     #endregion --------------------------------------------------> Class setup
@@ -392,10 +392,10 @@ class Start(wx.Panel):
             wx.EVT_BUTTON, 
             lambda event: config.winMain.OnCreateTab(config.ntDataPrep)
         )
-#         self.btnLimProt.Bind(
-#             wx.EVT_BUTTON, 
-#             lambda event: config.winMain.CreateTab(config.ntLimProt)
-#         )
+        self.wBtnLimProt.Bind(
+            wx.EVT_BUTTON, 
+            lambda event: config.winMain.OnCreateTab(config.ntLimProt)
+        )
         self.wBtnProtProf.Bind(
             wx.EVT_BUTTON, 
             lambda event: config.winMain.OnCreateTab(config.ntProtProf)
