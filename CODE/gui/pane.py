@@ -3469,20 +3469,18 @@ class ProtProf(BaseConfModPanel):
         ----------
         dColCtrlData: dict
             Methods to get the Columns for Control Experiments. 
-        rLbDict: dict
-            Contains information about the Res - Ctrl e.g.
+        rCheckUserInput: dict
+            To check user input in the appropiate order. See BaseConfPanel for
+            more information.
+        rDI: dict
+            Dictionary with the user input. Keys are labels in the panel plus:
             {
-                1            : ['C1', 'C2'],
-                2            : ['RP1', 'RP2'],
-                'Control'    : ['TheControl'],
-                'ControlType': 'One Control per Column',
+                config.lStProtProfCond          : [list of conditions],
+                config.lStProtProfRP            : [list of relevant points],
+                f"Control {config.lStCtrlType}" : "Control Type",
+                f"Control {config.lStCtrlName}" : "Control Name",
             }
-        rLLenLongest: int
-            Number of characters in the longest label.
-        rMainData : str
-            Name of the file containing the results of the analysis in the 
-            step folder
-        do: dict
+        rDO: dict
             Dictionary with checked user input. Keys are:
             {
                 "iFile"      : "Path to input data file",
@@ -3524,14 +3522,19 @@ class ProtProf(BaseConfModPanel):
                     "ColumnF": [Columns that must contain only float numbers]
                 }
             },    
-        d: dict
-            Dictionary with the user input. Keys are labels in the panel plus:
+        rLbDict: dict
+            Contains information about the Res - Ctrl e.g.
             {
-                config.lStProtProfCond          : [list of conditions],
-                config.lStProtProfRP            : [list of relevant points],
-                f"Control {config.lStCtrlType}" : "Control Type",
-                f"Control {config.lStCtrlName}" : "Control Name",
+                1            : ['C1', 'C2'],
+                2            : ['RP1', 'RP2'],
+                'Control'    : ['TheControl'],
+                'ControlType': 'One Control per Column',
             }
+        rLLenLongest: int
+            Number of characters in the longest label.
+        rMainData : str
+            Name of the file containing the results of the analysis in the 
+            step folder
             
         See Parent classes for more aatributes.
         
