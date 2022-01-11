@@ -4776,7 +4776,6 @@ class LimProt(BaseConfModPanel2):
             self.cLBeta        :[self.wBeta.tc,            config.mOne01Num],
             self.cLGamma       :[self.wGamma.tc,           config.mOne01Num],
             self.cLTheta       :[self.wTheta.tc,           config.mOneZPlusNum],
-            self.cLThetaMax    :[self.wThetaMax.tc,        config.mOneZPlusNum],
             f'{self.cLSeqCol} column' :[self.wSeqCol.tc,   config.mOneZPlusNum],
             self.cLDetectedProt:[self.wDetectedProt.tc,    config.mOneZPlusNum],
             self.cLScoreCol    :[self.wScore.tc,           config.mOneZPlusNum],
@@ -5041,6 +5040,22 @@ class LimProt(BaseConfModPanel2):
         #endregion ----------------------------------------------------> Super
         
         #region ------------------------------------------------> Mixed Fields
+        #region -------------------------------------------------------> Theta
+        msgStep = self.cLPdCheck + f'{self.cLThetaMax}'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        
+        if self.wTheta.tc.GetValue() == '':
+            a, b = self.wThetaMax.tc.GetValidator().Validate()
+            if a:
+                pass
+            else:
+                self.rMsgError = dtscore.StrSetMessage(
+                    config.mOneZPlusNum.format(b[1], self.cLThetaMax), b[2])
+                return False
+        else:
+            pass
+        #endregion ----------------------------------------------------> Theta
+
         #region ---------------------------------------> Unique Column Numbers
         msgStep = self.cLPdCheck + 'Unique Column Numbers'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
@@ -5132,6 +5147,8 @@ class LimProt(BaseConfModPanel2):
         #--------------> Theta
         thetaVal = self.wTheta.tc.GetValue()
         theta = float(thetaVal) if thetaVal != '' else None
+        thetaMaxVal = self.wThetaMax.tc.GetValue()
+        thetaMax = float(thetaMaxVal) if thetaMaxVal != '' else None
         #--------------> Columns
         seqCol       = int(self.wSeqCol.tc.GetValue())
         detectedProt = int(self.wDetectedProt.tc.GetValue())
@@ -5158,7 +5175,7 @@ class LimProt(BaseConfModPanel2):
             'Beta'       : float(self.wBeta.tc.GetValue()),
             'Gamma'      : float(self.wGamma.tc.GetValue()),
             'Theta'      : theta,
-            'ThetaMax'   : float(self.wThetaMax.tc.GetValue()),
+            'ThetaMax'   : thetaMax,
             'Lane'       : self.rLbDict[1],
             'Band'       : self.rLbDict[2],
             'ControlL'   : self.rLbDict['Control'],
