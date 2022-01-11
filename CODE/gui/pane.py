@@ -282,7 +282,7 @@ class BaseConfPanel(
         self.rIFileObj   = None
         self.rSeqFileObj = None
         #------------------------------> 
-        self.rChangeKey = getattr(self, 'changeKey', ['iFile', 'uFile'])
+        self.rChangeKey = getattr(self, 'rChangeKey', ['iFile', 'uFile'])
         #------------------------------> Parent init
         scrolled.ScrolledPanel.__init__(self, cParent, name=self.cName)
 
@@ -1519,7 +1519,8 @@ class BaseConfModPanel2(BaseConfModPanel):
             self, 'cTTTargetProt', f'Set the name of the {self.cLTargetProt}')
         self.cTTSeqLength = getattr(
             self, 'cTTSeqLength', ('Number of residues per line in the '
-                                   'sequence alignment files.\ne.g. 100'))
+                'sequence alignment files. When left empty the sequence '
+                'alignment files will not be generated.\ne.g. 100'))
         self.cTTSeqCol = getattr(
             self, 'cTTSeqCol', ('Set the column number containing the '
                                 'Sequences.\ne.g. 0'))
@@ -1670,124 +1671,120 @@ class BaseConfModPanel2(BaseConfModPanel):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-# #     #region ---------------------------------------------------> Class methods
-# #     def NCResNumbers(self, seqNat: bool=True) -> bool:
-# #         """Find the residue numbers for the peptides in the sequence of the 
-# #             Recombinant and Native protein.
+    #region ---------------------------------------------------> Class methods
+    def NCResNumbers(self, seqNat: bool=True) -> bool:
+        """Find the residue numbers for the peptides in the sequence of the 
+            Recombinant and Native protein.
             
-# #             Parameters
-# #             ----------
-# #             seqNat: bool
-# #                 Calculate N and C residue numbers also for the Native protein
+            Parameters
+            ----------
+            seqNat: bool
+                Calculate N and C residue numbers also for the Native protein
                 
-# #             Returns
-# #             -------
-# #             bool
+            Returns
+            -------
+            bool
             
-# #             Notes
-# #             -----
-# #             Assumes child class has the following attributes:
-# #             - seqFileObj: dtsFF.FastaFile
-# #                 Object with the sequence of the Recombinant and Native protein
-# #             - do: dict with at least the following key - values pairs
-# #                 {
-# #                     'df' : {
-# #                         'SeqCol' : int,
-# #                     },
-# #                     'dfo' : {
-# #                         'NC' : list[int],
-# #                         'NCF': list[int],
-# #                     },
-# #                 }
-# #         """
-# #         #region ---------------------------------------------------------> Msg
-# #         msgPrefix = config.lPdRun
-# #         #endregion ------------------------------------------------------> Msg
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - seqFileObj: dtsFF.FastaFile
+                Object with the sequence of the Recombinant and Native protein
+            - do: dict with at least the following key - values pairs
+                {
+                    'df' : {
+                        'SeqCol' : int,
+                    },
+                    'dfo' : {
+                        'NC' : list[int],
+                        'NCF': list[int],
+                    },
+                }
+        """
+        #region -----------------------------------------------------> Rec Seq
+        #------------------------------> 
+        msgStep = (f'{self.cLPdRun} Calculating output data - N & C terminal '
+            f'residue numbers I')
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.dfR.iloc[:,self.rDO['dfo']['NC']] = self.dfR.iloc[
+                :,[self.rDO['df']['SeqCol'], 1]].apply(
+                    self.NCTerm, 
+                    axis        = 1,
+                    raw         = True,
+                    result_type = 'expand',
+                    args        = (self.rSeqFileObj, 'Recombinant'),
+                )
+        except dtsException.ExecutionError:
+            return False
+        except Exception as e:
+            self.rMsgError = config.mUnexpectedError
+            self.rExceptionn = e
+            return False
+        #endregion --------------------------------------------------> Rec Seq
         
-# #         #region -----------------------------------------------------> Rec Seq
-# #         #------------------------------> 
-# #         msgStep = (f'{msgPrefix} Calculating output data - N & C terminal '
-# #             f'residue numbers I')
-# #         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-# #         #------------------------------> 
-# #         try:
-# #             self.dfR.iloc[:,self.do['dfo']['NC']] = self.dfR.iloc[
-# #                 :,[self.do['df']['SeqCol'], 1]].apply(
-# #                     self.NCTerm, 
-# #                     axis        = 1,
-# #                     raw         = True,
-# #                     result_type = 'expand',
-# #                     args        = (self.seqFileObj, 'Recombinant'),
-# #                 )
-# #         except dtsException.ExecutionError:
-# #             return False
-# #         except Exception as e:
-# #             self.rMsgError = config.mUnexpectedError
-# #             self.rExceptionn = e
-# #             return False
-# #         #endregion --------------------------------------------------> Rec Seq
+        #region -----------------------------------------------------> Nat Seq
+        #------------------------------> 
+        msgStep = (f'{self.cLPdRun} Calculating output data - N & C terminal '
+            f'residue numbers II')
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        if seqNat and self.rSeqFileObj.seqNat is not None:
+            #------------------------------> 
+            delta = self.rSeqFileObj.GetSelfDelta()
+            #------------------------------> 
+            a = self.dfR.iloc[:,self.rDO['dfo']['NC']] + delta
+            self.dfR.iloc[:,self.rDO['dfo']['NCF']] = a
+            #------------------------------> 
+            m = self.dfR.iloc[:,self.rDO['dfo']['NCF']] > 0
+            a = self.dfR.iloc[:,self.rDO['dfo']['NCF']].where(m, np.nan)
+            a = a.astype('Int16')
+            self.dfR.iloc[:,self.rDO['dfo']['NCF']] = a
+        else:
+            pass
+        #endregion --------------------------------------------------> Nat Seq
         
-# #         #region -----------------------------------------------------> Nat Seq
-# #         #------------------------------> 
-# #         msgStep = (f'{msgPrefix} Calculating output data - N & C terminal '
-# #             f'residue numbers II')
-# #         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-# #         #------------------------------> 
-# #         if seqNat and self.seqFileObj.seqNat is not None:
-# #             #------------------------------> 
-# #             delta = self.seqFileObj.GetSelfDelta()
-# #             #------------------------------> 
-# #             a = self.dfR.iloc[:,self.do['dfo']['NC']] + delta
-# #             self.dfR.iloc[:,self.do['dfo']['NCF']] = a
-# #             #------------------------------> 
-# #             m = self.dfR.iloc[:,self.do['dfo']['NCF']] > 0
-# #             a = self.dfR.iloc[:,self.do['dfo']['NCF']].where(m, np.nan)
-# #             a = a.astype('Int16')
-# #             self.dfR.iloc[:,self.do['dfo']['NCF']] = a
-# #         else:
-# #             pass
-# #         #endregion --------------------------------------------------> Nat Seq
+        return True
+    #---
+    
+    def NCTerm(
+        self, row: list[str], seqObj: 'dtsFF.FastaFile', seqType: str
+        ) -> tuple[int, int]:
+        """Get the N and C terminal residue numbers for a given peptide.
+    
+            Parameters
+            ----------
+            row: list[str]
+                List with two elements. The Sequence is in index 0.
+            seqObj : dtsFF.FastaFile
+                Object with the protein sequence and the method to search the 
+                peptide sequence.
+            seqType : str
+                For the error message.
+    
+            Returns
+            -------
+            (Nterm, Cterm)
+    
+            Raise
+            -----
+            ExecutionError:
+                - When the peptide was not found in the sequence of the protein.
+        """
+        #region ---------------------------------------------------> Find pept
+        nc = seqObj.FindSeq(row[0])
+        #endregion ------------------------------------------------> Find pept
         
-# #         return True
-# #     #---
-    
-# #     def NCTerm(
-# #         self, row: list[str], seqObj: 'dtsFF.FastaFile', seqType: str
-# #         ) -> tuple[int, int]:
-# #         """Get the N and C terminal residue numbers for a given peptide.
-    
-# #             Parameters
-# #             ----------
-# #             row: list[str]
-# #                 List with two elements. The Sequence is in index 0.
-# #             seqObj : dtsFF.FastaFile
-# #                 Object with the protein sequence and the method to search the 
-# #                 peptide sequence.
-# #             seqType : str
-# #                 For the error message.
-    
-# #             Returns
-# #             -------
-# #             (Nterm, Cterm)
-    
-# #             Raise
-# #             -----
-# #             ExecutionError:
-# #                 - When the peptide was not found in the sequence of the protein.
-# #         """
-# #         #region ---------------------------------------------------> Find pept
-# #         nc = seqObj.FindSeq(row[0])
-# #         #endregion ------------------------------------------------> Find pept
-        
-# #         #region ----------------------------------------------------> Check ok
-# #         if nc[0] != -1:
-# #             return nc
-# #         else:
-# #             self.rMsgError = config.mSeqPeptNotFound.format(row[0], seqType)
-# #             raise dtsException.ExecutionError(self.rMsgError)
-# #         #endregion -------------------------------------------------> Check ok
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
+        #region ----------------------------------------------------> Check ok
+        if nc[0] != -1:
+            return nc
+        else:
+            self.rMsgError = config.mSeqPeptNotFound.format(row[0], seqType)
+            raise dtsException.ExecutionError(self.rMsgError)
+        #endregion -------------------------------------------------> Check ok
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 
 
@@ -4666,14 +4663,16 @@ class LimProt(BaseConfModPanel2):
     #region -----------------------------------------------------> Class setup
     cName      = config.npLimProt
     #------------------------------> Label
-    cLBeta     = "β value"
-    cLGamma    = "γ value"
-    cLTheta    = "Θ value"
-    cLThetaMax = "Θmax value"
-    cLSample   = 'Samples'
-    cLLane     = config.lStLimProtLane
-    cLBand     = config.lStLimProtBand
-    cLCtrlName = config.lStCtrlName
+    cLBeta         = "β value"
+    cLGamma        = "γ value"
+    cLTheta        = "Θ value"
+    cLThetaMax     = "Θmax value"
+    cLSample       = 'Samples'
+    cLLane         = config.lStLimProtLane
+    cLBand         = config.lStLimProtBand
+    cLCtrlName     = config.lStCtrlName
+    cLDFFirstThree = config.dfcolLimProtFirstPart
+    cLDFThirdLevel = config.dfcolLimProtCLevel
     #------------------------------> Choices
     cOSample = config.oSamples
     #------------------------------> Hints
@@ -4741,7 +4740,7 @@ class LimProt(BaseConfModPanel2):
             tcSize    = self.cSTc,
             tcHint    = self.cHTheta,
             validator = dtsValidator.NumberList(
-                numType='float', nN=1, vMin=0, opt=True),
+                numType='float', nN=1, vMin=0.01, opt=True),
         )
         self.wThetaMax = dtsWidget.StaticTextCtrl(
             self.sbValue,
@@ -4750,7 +4749,7 @@ class LimProt(BaseConfModPanel2):
             tcSize    = self.cSTc,
             tcHint    = self.cHThetaMax,
             validator = dtsValidator.NumberList(
-                numType='float', nN=1, vMin=0),
+                numType='float', nN=1, vMin=0.01),
         )
         self.wSample = dtsWidget.StaticTextComboBox(
             self.sbValue,
@@ -4762,23 +4761,23 @@ class LimProt(BaseConfModPanel2):
         #endregion --------------------------------------------------> Widgets
         
         #region ----------------------------------------------> checkUserInput
-        self.checkUserInput = {
+        self.rCheckUserInput = {
             self.cLuFile       :[self.wUFile.tc,           config.mFileBad],
             self.cLiFile       :[self.wIFile.tc,           config.mFileBad],
-            self.cLSeqFile     :[self.wSeqFile.tc,         config.mFileBad],
+            f'{self.cLSeqFile} file' :[self.wSeqFile.tc,   config.mFileBad],
             self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad],
             self.cLNormMethod  :[self.wNormMethod.cb,      config.mOptionBad],
             self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad],
             self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad],
             self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum],
             self.cLSeqLength   :[self.wSeqLength.tc,       config.mOneZPlusNum],
-            self.cLSample      :[self.wSample.cb,          config.mOptionBad],
             self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num],
+            self.cLSample      :[self.wSample.cb,          config.mOptionBad],
             self.cLBeta        :[self.wBeta.tc,            config.mOne01Num],
             self.cLGamma       :[self.wGamma.tc,           config.mOne01Num],
             self.cLTheta       :[self.wTheta.tc,           config.mOneZPlusNum],
             self.cLThetaMax    :[self.wThetaMax.tc,        config.mOneZPlusNum],
-            self.cLSeqCol      :[self.wSeqCol.tc,          config.mOneZPlusNum],
+            f'{self.cLSeqCol} column' :[self.wSeqCol.tc,   config.mOneZPlusNum],
             self.cLDetectedProt:[self.wDetectedProt.tc,    config.mOneZPlusNum],
             self.cLScoreCol    :[self.wScore.tc,           config.mOneZPlusNum],
             self.cLResControl  :[self.wTcResults,          config.mResCtrl]
@@ -4970,6 +4969,7 @@ class LimProt(BaseConfModPanel2):
     #---
     #endregion -----------------------------------------------> Instance setup
     
+    #------------------------------> Class Methods
     #region ---------------------------------------------------> Manage Event
     def SetInitialData(self, dataI: Optional[dict]=None) -> bool:
         """Set initial data
@@ -5020,485 +5020,428 @@ class LimProt(BaseConfModPanel2):
         return True
     #---
     #endregion ------------------------------------------------> Manage Event
+    
+    #region ---------------------------------------------------> Event Method
 
+    #endregion ------------------------------------------------> Event Method
+    
+    #region ---------------------------------------------------> Run Method
+    def CheckInput(self) -> bool:
+        """Check user input
+        
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Super
+        if super().CheckInput():
+            pass
+        else:
+            return False
+        #endregion ----------------------------------------------------> Super
+        
+        #region ------------------------------------------------> Mixed Fields
+        #region ---------------------------------------> Unique Column Numbers
+        msgStep = self.cLPdCheck + 'Unique Column Numbers'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        l = [self.wSeqCol.tc, self.wDetectedProt.tc, self.wScore.tc, 
+            self.wTcResults]
+        #------------------------------> 
+        if self.UniqueColumnNumber(l):
+            pass
+        else:
+            return False
+        #endregion ------------------------------------> Unique Column Numbers
+        #endregion ---------------------------------------------> Mixed Fields
+        
+        return True
+    #---
+    
+    def PrepareRun(self) -> bool:
+        """Set variable and prepare data for analysis.
+        
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------------------> d
+        msgStep = self.cLPdPrepare + 'User input, reading'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> As given
+        self.rDI = {
+            self.EqualLenLabel(self.cLiFile) : (
+                self.wIFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLuFile) : (
+                self.wUFile.tc.GetValue()),
+            self.EqualLenLabel(f'{self.cLSeqFile} File') : (
+                self.wSeqFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLId) : (
+                self.wId.tc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.wCeroB.IsChecked()),
+            self.EqualLenLabel(self.cLTransMethod) : (
+                self.wTransMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLNormMethod) : (
+                self.wNormMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLImputation) : (
+                self.wImputationMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLTargetProt) : (
+                self.wTargetProt.tc.GetValue()),
+            self.EqualLenLabel(self.cLScoreVal) : (
+                self.wScoreVal.tc.GetValue()),
+            self.EqualLenLabel(self.cLSeqLength) : (
+                self.wSeqLength.tc.GetValue()),
+            self.EqualLenLabel(self.cLSample) : (
+                self.wSample.cb.GetValue()),
+            self.EqualLenLabel(self.cLAlpha) : (
+                self.wAlpha.tc.GetValue()),
+            self.EqualLenLabel(self.cLBeta) : (
+                self.wBeta.tc.GetValue()),
+            self.EqualLenLabel(self.cLGamma) : (
+                self.wGamma.tc.GetValue()),
+            self.EqualLenLabel(self.cLTheta) : (
+                self.wTheta.tc.GetValue()),
+            self.EqualLenLabel(self.cLThetaMax) : (
+                self.wThetaMax.tc.GetValue()),
+            self.EqualLenLabel(f'{self.cLSeqCol} Column') : (
+                self.wSeqCol.tc.GetValue()),
+            self.EqualLenLabel(self.cLDetectedProt) : (
+                self.wDetectedProt.tc.GetValue()),
+            self.EqualLenLabel(self.cLScoreCol) : (
+                self.wScore.tc.GetValue()),
+            self.EqualLenLabel(self.cLResControl): (
+                self.wTcResults.GetValue()),
+            self.EqualLenLabel(self.cLLane) : (
+                self.rLbDict[1]),
+            self.EqualLenLabel(self.cLBand) : (
+                self.rLbDict[2]),
+            self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
+                self.rLbDict['Control']),
+        }
+        #endregion --------------------------------------------------------> d
+        
+        #region ----------------------------------------------------------> do
+        #------------------------------> Dict with all values
+        #--------------> Step
+        msgStep = self.cLPdPrepare + 'User input, processing'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #--------------> SeqLength
+        seqLengthVal = self.wSeqLength.tc.GetValue()
+        seqLength = float(seqLengthVal) if seqLengthVal != '' else None
+        #--------------> Theta
+        thetaVal = self.wTheta.tc.GetValue()
+        theta = float(thetaVal) if thetaVal != '' else None
+        #--------------> Columns
+        seqCol       = int(self.wSeqCol.tc.GetValue())
+        detectedProt = int(self.wDetectedProt.tc.GetValue())
+        scoreCol     = int(self.wScore.tc.GetValue())
+        resctrl       = dmethod.ResControl2ListNumber(self.wTcResults.GetValue())
+        resctrlFlat   = dmethod.ResControl2Flat(resctrl)
+        resctrlDF     = dmethod.ResControl2DF(resctrl, 3)
+        resctrlDFFlat = dmethod.ResControl2Flat(resctrlDF)
+        #--------------> 
+        self.rDO  = {
+            'iFile'      : Path(self.wIFile.tc.GetValue()),
+            'uFile'      : Path(self.wUFile.tc.GetValue()),
+            'seqFile'    : Path(self.wSeqFile.tc.GetValue()),
+            'ID'         : self.wId.tc.GetValue(),
+            'Cero'       : self.wCeroB.IsChecked(),
+            'TransMethod': self.wTransMethod.cb.GetValue(),
+            'NormMethod' : self.wNormMethod.cb.GetValue(),
+            'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
+            'TargetProt' : self.wTargetProt.tc.GetValue(),
+            'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
+            'SeqLength'  : seqLength,
+            'Sample'     : self.cOSample[self.wSample.cb.GetValue()],
+            'Alpha'      : float(self.wAlpha.tc.GetValue()),
+            'Beta'       : float(self.wBeta.tc.GetValue()),
+            'Gamma'      : float(self.wGamma.tc.GetValue()),
+            'Theta'      : theta,
+            'ThetaMax'   : float(self.wThetaMax.tc.GetValue()),
+            'Lane'       : self.rLbDict[1],
+            'Band'       : self.rLbDict[2],
+            'ControlL'   : self.rLbDict['Control'],
+            'oc'         : { # Column numbers in the initial dataframe
+                'SeqCol'       : seqCol,
+                'TargetProtCol': detectedProt,
+                'ScoreCol'     : scoreCol,
+                'ResCtrl'      : resctrl,
+                'Column'       : (
+                    [seqCol, detectedProt, scoreCol] + resctrlFlat),
+            },
+            'df' : { # Column numbers in the selected data dataframe
+                'SeqCol'       : 0,
+                'TargetProtCol': 1,
+                'ScoreCol'     : 2,
+                'ResCtrl'      : resctrlDF,
+                'ResCtrlFlat'  : resctrlDFFlat,
+                'ColumnR'      : resctrlDFFlat,
+                'ColumnF'      : [2] + resctrlDFFlat,
+            },
+            'dfo' : { # Column numbers in the output dataframe
+                'NC' : [2,3], # N and C Term Res Numbers in the Rec Seq
+                'NCF': [4,5], # N and C Term Res Numbers in the Nat Seq
+            }
+        }
+        #endregion -------------------------------------------------------> do
+        
+        #region ---------------------------------------------------> Super
+        if super().PrepareRun():
+            pass
+        else:
+            self.rMsgError = 'Something went wrong when preparing the analysis.'
+            return False
+        #endregion ------------------------------------------------> Super
 
-# #     #region ---------------------------------------------------> Class methods
+        #region -------------------------------------------------> Print d, do
+        if config.development:
+            print('')
+            print('self.d:')
+            for k,v in self.rDI.items():
+                print(str(k)+': '+str(v))
+            print('')
+            print('self.do')
+            for k,v in self.rDO.items():
+                if k in ['oc', 'df', 'dfo']:
+                    print(k)
+                    for j,w in v.items():
+                        print(f'\t{j}: {w}')
+                else:
+                    print(str(k)+': '+str(v))
+            print('')
+        else:
+            pass
+        #endregion ----------------------------------------------> Print d, do
+        
+        return True
+    #---
+    
+    def ReadInputFiles(self) -> bool:
+        """Read the input files.
+        
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Super
+        if super().ReadInputFiles():
+            pass
+        else:
+            return False
+        #endregion ------------------------------------------------> Super
 
+        #region ---------------------------------------------------> 
+        try:
+            ProtLoc = self.rSeqFileObj.GetNatProtLoc()
+        except Exception:
+            ProtLoc = (None, None)
+        
+        self.rDO['ProtLength'] = self.rSeqFileObj.seqLengthRec
+        self.rDO['ProtLoc'] = ProtLoc
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        try:
+            ProtDelta = self.rSeqFileObj.GetSelfDelta()
+        except Exception:
+            ProtDelta = (None, None)
+        
+        self.rDO['ProtDelta'] = ProtDelta
+        #endregion ------------------------------------------------> 
+        
+        return True
+    #---
     
-# #     #------------------------------> Run Methods
-# #     def CheckInput(self) -> bool:
-# #         """Check user input
-        
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         #region -------------------------------------------------------> Super
-# #         if super().CheckInput():
-# #             pass
-# #         else:
-# #             return False
-# #         #endregion ----------------------------------------------------> Super
-        
-# #         #region ---------------------------------------------------------> Msg
-# #         msgPrefix = config.lPdCheck
-# #         #endregion ------------------------------------------------------> Msg
-        
-# #         #region -------------------------------------------> Individual Fields
+    def RunAnalysis(self) -> bool:
+        """ Perform the equivalence tests 
 
-# #         #endregion ----------------------------------------> Individual Fields
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
+            pass
+        else:
+            return False
+        #endregion -----------------------------------------> Data Preparation
         
-# #         #region ------------------------------------------------> Mixed Fields
-# #         #region ---------------------------------------> Unique Column Numbers
-# #         msgStep = msgPrefix + 'Unique Column Numbers'
-# #         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-# #         #------------------------------> 
-# #         l = [self.seqCol.tc, self.detectedProt.tc, self.score.tc, 
-# #             self.tcResults]
-# #         #------------------------------> 
-# #         if self.UniqueColumnNumber(l):
-# #             pass
-# #         else:
-# #             return False
-# #         #endregion ------------------------------------> Unique Column Numbers
-# #         #endregion ---------------------------------------------> Mixed Fields
+        #region ----------------------------------------------------> Empty DF
+        #------------------------------> Msg
+        msgStep = f'{self.cLPdRun} Creating empty dataframe'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        self.dfR = self.EmptyDFR()
+        #endregion -------------------------------------------------> Empty DF
         
-# #         return True
-# #     #---
+        #region ------------------------------------------------> N, C Res Num
+        if self.NCResNumbers(seqNat=False):
+            pass
+        else:
+            return False
+        #endregion ---------------------------------------------> N, C Res Num
+        
+        #region -------------------------------------------------------> Delta
+        #------------------------------> Msg
+        msgStep = f'{self.cLPdRun} Delta values'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        colC = self.rDO['df']['ResCtrl'][0][0]
+        #------------------------------> 
+        if self.rDO['Theta'] is not None:
+            delta = self.rDO['Theta']
+        else:
+            delta = dtsStatistic.tost_delta(
+                self.dfIm.iloc[:,colC], 
+                self.rDO['Alpha'],
+                self.rDO['Beta'],
+                self.rDO['Gamma'], 
+                deltaMax=self.rDO['ThetaMax'],
+            )
+        #------------------------------>         
+        self.dfR[('Delta', 'Delta', 'Delta')] = delta
+        #endregion ----------------------------------------------------> Delta
+        
+        #region ---------------------------------------------------> Calculate
+        for b, bN in enumerate(self.rDO['Band']):
+            for l, lN in enumerate(self.rDO['Lane']):
+                #------------------------------> Message
+                msgStep = (
+                    f'{self.cLPdRun}'
+                    f'Gel spot {bN} - {lN}'
+                )  
+                wx.CallAfter(self.rDlg.UpdateSt, msgStep)
+                #------------------------------> Control & Data Column
+                colD = self.rDO['df']['ResCtrl'][b+1][l]
+                #------------------------------> Calculate data
+                if colD:
+                    try:
+                        self.CalcOutData(bN, lN, colC, colD)
+                    except Exception as e:
+                        self.rMsgError = (
+                            f'Calculation of the Limited Proteolysis data for '
+                            f'point {bN} - {lN} failed.'
+                        )
+                        self.rExceptionn = e
+                        return False
+                else:
+                    pass
+        #endregion ------------------------------------------------> Calculate
+        
+        #region --------------------------------------------------------> Sort
+        self.dfR = self.dfR.sort_values(
+            by=[('Nterm', 'Nterm', 'Nterm'),('Cterm', 'Cterm', 'Cterm')]
+        )
+        self.dfR = self.dfR.reset_index(drop=True)
+        #endregion -----------------------------------------------------> Sort
+        
+        if config.development:
+            print('self.dfR.shape: ', self.dfR.shape)
+            print('')
+            print(self.dfR)
+            print('')
+        
+        return True
+    #---
     
-# #     def PrepareRun(self) -> bool:
-# #         """Set variable and prepare data for analysis.
+    def WriteOutput(self) -> bool:
+        """Write output 
         
-# #             Returns
-# #             -------
-# #             bool
-# #         """
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Data Steps
+        stepDict = {
+            config.fnInitial.format('01', self.rDate)    : self.dfI,
+            config.fnFloat.format('02', self.rDate)      : self.dfF,
+            config.fnTargetProt.format('03', self.rDate) : self.dfTP,
+            config.fnScore.format('04', self.rDate)      : self.dfS,
+            config.fnTrans.format('05', self.rDate)      : self.dfT,
+            config.fnNorm.format('06', self.rDate)       : self.dfN,
+            config.fnImp.format('07', self.rDate)        : self.dfIm,
+            self.rMainData.format('08', self.rDate)      : self.dfR,
+        }
+        #endregion -----------------------------------------------> Data Steps
         
-# #         #region ---------------------------------------------------------> Msg
-# #         msgPrefix = config.lPdPrepare
-# #         #endregion ------------------------------------------------------> Msg
-
-# #         #region -----------------------------------------------------------> d
-# #         msgStep = msgPrefix + 'User input, reading'
-# #         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-# #         #------------------------------> As given
-# #         self.d = {
-# #             self.EqualLenLabel(self.cLiFile) : (
-# #                 self.iFile.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLuFile) : (
-# #                 self.uFile.tc.GetValue()),
-# #             self.EqualLenLabel(f'{self.cLSeqFile} File') : (
-# #                 self.seqFile.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLId) : (
-# #                 self.id.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLCeroTreatD) : (
-# #                 self.ceroB.IsChecked()),
-# #             self.EqualLenLabel(self.cLTransMethod) : (
-# #                 self.transMethod.cb.GetValue()),
-# #             self.EqualLenLabel(self.cLNormMethod) : (
-# #                 self.normMethod.cb.GetValue()),
-# #             self.EqualLenLabel(self.cLImputation) : (
-# #                 self.imputationMethod.cb.GetValue()),
-# #             self.EqualLenLabel(self.cLTargetProt) : (
-# #                 self.targetProt.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLScoreVal) : (
-# #                 self.scoreVal.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLSeqLength) : (
-# #                 self.seqLength.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLSample) : (
-# #                 self.sample.cb.GetValue()),
-# #             self.EqualLenLabel(self.cLAlpha) : (
-# #                 self.alpha.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLBeta) : (
-# #                 self.beta.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLGamma) : (
-# #                 self.gamma.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLTheta) : (
-# #                 self.theta.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLThetaMax) : (
-# #                 self.thetaMax.tc.GetValue()),
-# #             self.EqualLenLabel(f'{self.cLSeqCol} Column') : (
-# #                 self.seqCol.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLDetectedProt) : (
-# #                 self.detectedProt.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLScoreCol) : (
-# #                 self.score.tc.GetValue()),
-# #             self.EqualLenLabel(self.cLResControl): (
-# #                 self.tcResults.GetValue()),
-# #             self.EqualLenLabel(config.lStLimProtLane) : (
-# #                 self.lbDict[1]),
-# #             self.EqualLenLabel(config.lStLimProtBand) : (
-# #                 self.lbDict[2]),
-# #             self.EqualLenLabel(f"Control {config.lStCtrlName}") : (
-# #                 self.lbDict['Control']),
-# #         }
-# #         #endregion --------------------------------------------------------> d
-        
-# #         #region ----------------------------------------------------------> do
-# #         #------------------------------> Dict with all values
-# #         #--------------> Step
-# #         msgStep = msgPrefix + 'User input, processing'
-# #         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-# #         #--------------> SeqLength
-# #         seqLengthVal = self.seqLength.tc.GetValue()
-# #         seqLength = float(seqLengthVal) if seqLengthVal != '' else None
-# #         #--------------> Theta
-# #         thetaVal = self.theta.tc.GetValue()
-# #         theta = float(thetaVal) if thetaVal != '' else None
-# #         #--------------> Columns
-# #         seqCol       = int(self.seqCol.tc.GetValue())
-# #         detectedProt = int(self.detectedProt.tc.GetValue())
-# #         scoreCol     = int(self.score.tc.GetValue())
-# #         resctrl       = dmethod.ResControl2ListNumber(self.tcResults.GetValue())
-# #         resctrlFlat   = dmethod.ResControl2Flat(resctrl)
-# #         resctrlDF     = dmethod.ResControl2DF(resctrl, 3)
-# #         resctrlDFFlat = dmethod.ResControl2Flat(resctrlDF)
-# #         #--------------> 
-# #         self.do  = {
-# #             'iFile'      : Path(self.iFile.tc.GetValue()),
-# #             'uFile'      : Path(self.uFile.tc.GetValue()),
-# #             'seqFile'    : Path(self.seqFile.tc.GetValue()),
-# #             'ID'         : self.id.tc.GetValue(),
-# #             'Cero'       : self.ceroB.IsChecked(),
-# #             'TransMethod': self.transMethod.cb.GetValue(),
-# #             'NormMethod' : self.normMethod.cb.GetValue(),
-# #             'ImpMethod'  : self.imputationMethod.cb.GetValue(),
-# #             'TargetProt' : self.targetProt.tc.GetValue(),
-# #             'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
-# #             'SeqLength'  : seqLength,
-# #             'Sample'     : config.oSamples[self.sample.cb.GetValue()],
-# #             'Alpha'      : float(self.alpha.tc.GetValue()),
-# #             'Beta'       : float(self.beta.tc.GetValue()),
-# #             'Gamma'      : float(self.gamma.tc.GetValue()),
-# #             'Theta'      : theta,
-# #             'ThetaMax'   : float(self.thetaMax.tc.GetValue()),
-# #             'Lane'       : self.lbDict[1],
-# #             'Band'       : self.lbDict[2],
-# #             'ControlL'   : self.lbDict['Control'],
-# #             'oc'         : { # Column numbers in the initial dataframe
-# #                 'SeqCol'       : seqCol,
-# #                 'TargetProtCol': detectedProt,
-# #                 'ScoreCol'     : scoreCol,
-# #                 'ResCtrl'      : resctrl,
-# #                 'Column'       : (
-# #                     [seqCol, detectedProt, scoreCol] + resctrlFlat),
-# #             },
-# #             'df' : { # Column numbers in the selected data dataframe
-# #                 'SeqCol'       : 0,
-# #                 'TargetProtCol': 1,
-# #                 'ScoreCol'     : 2,
-# #                 'ResCtrl'      : resctrlDF,
-# #                 'ResCtrlFlat'  : resctrlDFFlat,
-# #                 'ColumnR'      : resctrlDFFlat,
-# #                 'ColumnF'      : [2] + resctrlDFFlat,
-# #             },
-# #             'dfo' : { # Column numbers in the output dataframe
-# #                 'NC' : [2,3], # N and C Term Res Numbers in the Rec Seq
-# #                 'NCF': [4,5], # N and C Term Res Numbers in the Nat Seq
-# #             }
-# #         }
-# #         #------------------------------> File base name
-# #         self.oFolder = self.do['uFile'].parent
-# #         #------------------------------> Date
-# #         self.date = dtsMethod.StrNow()
-# #         #------------------------------> DateID
-# #         self.dateID = f'{self.date} - {self.do["ID"]}'
-# #         #endregion -------------------------------------------------------> do
-
-# #         #region -------------------------------------------------> Print d, do
-# #         if config.development:
-# #             print('')
-# #             print('self.d:')
-# #             for k,v in self.d.items():
-# #                 print(str(k)+': '+str(v))
-# #             print('')
-# #             print('self.do')
-# #             for k,v in self.do.items():
-# #                 if k in ['oc', 'df', 'dfo']:
-# #                     print(k)
-# #                     for j,w in self.do[k].items():
-# #                         print(f'\t{j}: {w}')
-# #                 else:
-# #                     print(str(k)+': '+str(v))
-# #             print('')
-# #         else:
-# #             pass
-# #         #endregion ----------------------------------------------> Print d, do
-        
-# #         return True
-# #     #---
+        return self.WriteOutputData(stepDict)
+    #---
     
-# #     def ReadInputFiles(self) -> bool:
-# #         """Read the input files.
+    def EmptyDFR(self) -> 'pd.DataFrame':
+        """Creates the empty df for the results
         
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         #region ---------------------------------------------------> Super
-# #         if super().ReadInputFiles():
-# #             pass
-# #         else:
-# #             return False
-# #         #endregion ------------------------------------------------> Super
-
-# #         #region ---------------------------------------------------> 
-# #         try:
-# #             ProtLoc = self.seqFileObj.GetNatProtLoc()
-# #         except Exception:
-# #             ProtLoc = (None, None)
+            Returns
+            -------
+            pd.DataFrame
+        """
+        #region -------------------------------------------------------> Index
+        #------------------------------> 
+        aL = self.cLDFFirstThree
+        bL = self.cLDFFirstThree
+        cL = self.cLDFFirstThree
+        #------------------------------> 
+        n = len(self.cLDFThirdLevel)
+        #------------------------------> 
+        for b in self.rDO['Band']:
+            for l in self.rDO['Lane']:
+                aL = aL + n*[b]
+                bL = bL + n*[l]
+                cL = cL + self.cLDFThirdLevel
+        #------------------------------> 
+        idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
+        #endregion ----------------------------------------------------> Index
         
-# #         self.do['ProtLength'] = self.seqFileObj.seqLengthRec
-# #         self.do['ProtLoc'] = ProtLoc
-# #         #endregion ------------------------------------------------> 
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(
+            np.nan, columns=idx, index=range(self.dfIm.shape[0]),
+        )
+        #endregion -------------------------------------------------> Empty DF
         
-# #         #region ---------------------------------------------------> 
-# #         try:
-# #             ProtDelta = self.seqFileObj.GetSelfDelta()
-# #         except Exception:
-# #             ProtDelta = (None, None)
+        #region -------------------------------------------------> Seq & Score
+        df[(aL[0], bL[0], cL[0])] = self.dfIm.iloc[:,0]
+        df[(aL[1], bL[1], cL[1])] = self.dfIm.iloc[:,2]
+        #endregion ----------------------------------------------> Seq & Score
         
-# #         self.do['ProtDelta'] = ProtDelta
-# #         #endregion ------------------------------------------------> 
-        
-# #         return True
-# #     #---
+        return df
+    #---
     
-# #     def RunAnalysis(self) -> bool:
-# #         """ Perform the equivalence tests 
-
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         #region ---------------------------------------------------------> Msg
-# #         msgPrefix = config.lPdRun
-# #         #endregion ------------------------------------------------------> Msg
-        
-# #         #region --------------------------------------------> Data Preparation
-# #         if self.DataPreparation():
-# #             pass
-# #         else:
-# #             return False
-# #         #endregion -----------------------------------------> Data Preparation
-        
-# #         #region ----------------------------------------------------> Empty DF
-# #         #------------------------------> Msg
-# #         msgStep = f'{msgPrefix} Creating empty dataframe'
-# #         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-# #         #------------------------------> 
-# #         self.dfR = self.EmptyDFR()
-# #         #endregion -------------------------------------------------> Empty DF
-        
-# #         #region ------------------------------------------------> N, C Res Num
-# #         if self.NCResNumbers(seqNat=False):
-# #             pass
-# #         else:
-# #             return False
-# #         #endregion ---------------------------------------------> N, C Res Num
-        
-# #         #region -------------------------------------------------------> Delta
-# #         #------------------------------> Msg
-# #         msgStep = f'{msgPrefix} Delta values'
-# #         wx.CallAfter(self.dlg.UpdateStG, msgStep)
-# #         #------------------------------> 
-# #         colC = self.do['df']['ResCtrl'][0][0]
-# #         #------------------------------> 
-# #         if self.do['Theta'] is not None:
-# #             delta = self.do['Theta']
-# #         else:
-# #             delta = dtsStatistic.tost_delta(
-# #                 self.dfIm.iloc[:,colC], 
-# #                 self.do['Alpha'],
-# #                 self.do['Beta'],
-# #                 self.do['Gamma'], 
-# #                 deltaMax=self.do['ThetaMax'],
-# #             )
-# #         #------------------------------>         
-# #         self.dfR[('Delta', 'Delta', 'Delta')] = delta
-# #         #endregion ----------------------------------------------------> Delta
-        
-# #         #region ---------------------------------------------------> Calculate
-# #         for b, bN in enumerate(self.do['Band']):
-# #             for l, lN in enumerate(self.do['Lane']):
-# #                 #------------------------------> Message
-# #                 msgStep = (
-# #                     f'{msgPrefix}'
-# #                     f'Gel spot {bN} - {lN}'
-# #                 )  
-# #                 wx.CallAfter(self.dlg.UpdateSt, msgStep)
-# #                 #------------------------------> Control & Data Column
-# #                 colD = self.do['df']['ResCtrl'][b+1][l]
-# #                 #------------------------------> Calculate data
-# #                 if colD:
-# #                     try:
-# #                         self.CalcOutData(bN, lN, colC, colD)
-# #                     except Exception as e:
-# #                         self.rMsgError = (
-# #                             f'Calculation of the Limited Proteolysis data for '
-# #                             f'point {bN} - {lN} failed.'
-# #                         )
-# #                         self.rExceptionn = e
-# #                         return False
-# #                 else:
-# #                     pass
-# #         #endregion ------------------------------------------------> Calculate
-        
-# #         #region --------------------------------------------------------> Sort
-# #         self.dfR = self.dfR.sort_values(
-# #             by=[('Nterm', 'Nterm', 'Nterm'),('Cterm', 'Cterm', 'Cterm')]
-# #         )
-# #         self.dfR = self.dfR.reset_index(drop=True)
-# #         #endregion -----------------------------------------------------> Sort
-        
-# #         if config.development:
-# #             print('self.dfR.shape: ', self.dfR.shape)
-# #             print('')
-# #             print(self.dfR)
-# #             print('')
-        
-# #         return True
-# #     #---
+    def CalcOutData(
+        self, bN: str,  lN: str, colC: list[int], colD: list[int],
+        ) -> bool:
+        """Performed the tost test
     
-# #     def WriteOutput(self) -> bool:
-# #         """Write output 
-        
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         #region --------------------------------------------------> Data Steps
-# #         stepDict = {
-# #             config.fnInitial.format('01', self.date)    : self.dfI,
-# #             config.fnFloat.format('02', self.date)      : self.dfF,
-# #             config.fnTargetProt.format('03', self.date) : self.dfTP,
-# #             config.fnScore.format('04', self.date)      : self.dfS,
-# #             config.fnTrans.format('05', self.date)      : self.dfT,
-# #             config.fnNorm.format('06', self.date)       : self.dfN,
-# #             config.fnImp.format('07', self.date)        : self.dfIm,
-# #             self.cMainData.format('08', self.date)      : self.dfR,
-# #         }
-# #         #endregion -----------------------------------------------> Data Steps
-        
-# #         return self.WriteOutputData(stepDict)
-# #     #---
+            Parameters
+            ----------
+            bN: str
+                Band name
+            lN : str
+                Lane name
+            colC : list int
+                Column numbers of the control
+            colD : list int
+                Column numbers of the gel spot
     
-# #     def EmptyDFR(self) -> 'pd.DataFrame':
-# #         """Creates the empty df for the results
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Delta and TOST
+        a = dtsStatistic.tost(
+            self.dfIm, 
+            colC, 
+            colD, 
+            sample = self.rDO['Sample'],
+            delta  = self.dfR[('Delta', 'Delta', 'Delta')],
+            alpha  = self.rDO['Alpha'],
+        ) 
+        self.dfR[(bN, lN, 'Ptost')] = a['P'].to_numpy()
+        #endregion -------------------------------------------> Delta and TOST
         
-# #             Returns
-# #             -------
-# #             pd.DataFrame
-# #         """
-# #         #region -------------------------------------------------------> Index
-# #         #------------------------------> 
-# #         aL = config.dfcolLimProtFirstPart
-# #         bL = config.dfcolLimProtFirstPart
-# #         cL = config.dfcolLimProtFirstPart
-# #         #------------------------------> 
-# #         n = len(config.dfcolLimProtCLevel)
-# #         #------------------------------> 
-# #         for b in self.do['Band']:
-# #             for l in self.do['Lane']:
-# #                 aL = aL + n*[b]
-# #                 bL = bL + n*[l]
-# #                 cL = cL + config.dfcolLimProtCLevel
-# #         #------------------------------> 
-# #         idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
-# #         #endregion ----------------------------------------------------> Index
-        
-# #         #region ----------------------------------------------------> Empty DF
-# #         df = pd.DataFrame(
-# #             np.nan, columns=idx, index=range(self.dfIm.shape[0]),
-# #         )
-# #         #endregion -------------------------------------------------> Empty DF
-        
-# #         #region -------------------------------------------------> Seq & Score
-# #         df[(aL[0], bL[0], cL[0])] = self.dfIm.iloc[:,0]
-# #         df[(aL[1], bL[1], cL[1])] = self.dfIm.iloc[:,2]
-# #         #endregion ----------------------------------------------> Seq & Score
-        
-# #         return df
-# #     #---
-    
-# #     def CalcOutData(
-# #         self, bN: str,  lN: str, colC: list[int], colD: list[int],
-# #         ) -> bool:
-# #         """Performed the tost test
-    
-# #             Parameters
-# #             ----------
-# #             bN: str
-# #                 Band name
-# #             lN : str
-# #                 Lane name
-# #             colC : list int
-# #                 Column numbers of the control
-# #             colD : list int
-# #                 Column numbers of the gel spot
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         #region ----------------------------------------------> Delta and TOST
-# #         a = dtsStatistic.tost(
-# #             self.dfIm, colC, colD, sample=self.do['Sample'], 
-# #             delta=self.dfR[('Delta', 'Delta', 'Delta')], alpha=self.do['Alpha'],
-# #         ) 
-# #         self.dfR[(bN, lN, 'Ptost')] = a['P'].to_numpy()
-# #         #endregion -------------------------------------------> Delta and TOST
-        
-# #         return True
-# #     #---
-    
-# #     def RunEnd(self):
-# #         """Restart GUI and needed variables"""
-# #         #region ---------------------------------------> Dlg progress dialogue
-# #         if self.rMsgError is None:
-# #             #--> 
-# #             self.dlg.SuccessMessage(
-# #                 config.lPdDone,
-# #                 eTime=f"{config.lPdEllapsed}  {self.deltaT}",
-# #             )
-# #         else:
-# #             self.dlg.ErrorMessage(
-# #                 config.lPdError, 
-# #                 error      = self.rMsgError,
-# #                 tException = self.rExceptionn
-# #             )
-# #         #endregion ------------------------------------> Dlg progress dialogue
-
-# #         #region -------------------------------------------------------> Reset
-# #         self.rMsgError   = None # Error msg to show in self.RunEnd
-# #         self.rExceptionn = None # Exception
-# #         self.d          = {} # Dict with the user input as given
-# #         self.do         = {} # Dict with the processed user input
-# #         self.dfI        = None # pd.DataFrame for initial, normalized and
-# #         self.dfF        = None
-# #         self.dfTP       = None
-# #         self.dfEx       = None
-# #         self.dfS        = None
-# #         self.dfT        = None
-# #         self.dfN        = None
-# #         self.dfIm       = None
-# #         self.dfR        = None
-# #         self.date       = None # date for corr file
-# #         self.dateID     = None
-# #         self.oFolder    = None # folder for output
-# #         self.iFileObj   = None
-# #         self.seqFileObj = None
-# #         self.deltaT     = None
-        
-# #         if self.dFile is not None:
-# #             self.iFile.tc.SetValue(str(self.dFile))
-# #         else:
-# #             pass
-# #         self.dFile = None # Data File copied to Data-Initial
-# #         #endregion ----------------------------------------------------> Reset
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Run Method
+#---
 
 
 #------------------------------> Panes for Type Results - Control Epxeriments

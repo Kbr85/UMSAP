@@ -203,7 +203,7 @@ fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 # #------------------------------> Names
 fnInitial    = "{}-Initial-Data-{}.txt"
 fnFloat      = "{}-Floated-Data-{}.txt"
-# # fnTargetProt = "{}-Target-Protein-Data-{}.txt"
+fnTargetProt = "{}-Target-Protein-Data-{}.txt"
 fnExclude    = "{}-After-Excluding-Data-{}.txt"
 fnScore      = "{}-Score-Filtered-Data-{}.txt"
 fnTrans      = "{}-Transformed-Data-{}.txt"
@@ -357,9 +357,9 @@ dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
 dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
 # # dfcolDataCheck = [
 # #     'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
-# # dfcolLimProtFirstPart = [
-# #     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
-# # dfcolLimProtCLevel = ['Ptost']
+dfcolLimProtFirstPart = [
+    'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
+dfcolLimProtCLevel = ['Ptost']
 #endregion --------------------------------------------------> DF Column names
 
 
@@ -369,14 +369,14 @@ ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
 
 
 #region ------------------------------------------------------------> Messages
-# #region -------------------------------------------------------------> Other 
-# # #------------------------------> Unexpected Error
-# # mUnexpectedError = 'An uexpected error was encountered.'
+#region -------------------------------------------------------------> Other 
+#------------------------------> Unexpected Error
+mUnexpectedError = 'An uexpected error was encountered.'
 # # #------------------------------> Not empty
 # # mNotEmpty = "Please select a value for {}."
-# # #------------------------------> Sequences related errors
-# # mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
-# #     "protein.")
+#------------------------------> Sequences related errors
+mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
+    "protein.")
 # #endregion ----------------------------------------------------------> Other
 
 # #region ------------------------------------------------------------> Values
