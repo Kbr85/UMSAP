@@ -465,54 +465,55 @@ class Utility(wx.Menu, MenuMethods):
 #---
 
 
-# # class FileControlToolMenu(wx.Menu):
-# #     """Tool menu for the UMSAP file control window """
-# #     #region -----------------------------------------------------> Class setup
+class FileControlToolMenu(wx.Menu):
+    """Tool menu for the UMSAP file control window """
+    #region -----------------------------------------------------> Class setup
     
-# #     #endregion --------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
 
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self, *args, **kwargs) -> None:
-# #         """*args and **kwargs are needed to use this menu with ToolMenuBar.
-# #             All of them are ignored here.
-# #         """
-# #         #region -----------------------------------------------> Initial Setup
-# #         super().__init__()
-# #         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, *args, **kwargs) -> None:
+        """*args and **kwargs are needed to use this menu with ToolMenuBar.
+            All of them are ignored here.
+        """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-# #         #region --------------------------------------------------> Menu Items
-# #         self.exportData = self.Append(-1, 'Export Data\tCtrl+E')
-# #         self.AppendSeparator()
-# #         self.updateFile = self.Append(-1, 'Reload File\tCtrl+U')
-# #         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.miExpData = self.Append(-1, 'Export Data\tCtrl+E')
+        self.AppendSeparator()
+        self.miUpdateFile = self.Append(-1, 'Reload File\tCtrl+U')
+        #endregion -----------------------------------------------> Menu Items
 
-# #         #region --------------------------------------------------------> Bind
-# #         self.Bind(wx.EVT_MENU, self.OnUpdateFileContent, source=self.updateFile)
-# #         #endregion -----------------------------------------------------> Bind
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------------> Bind
+        self.Bind(
+            wx.EVT_MENU, self.OnUpdateFileContent, source=self.miUpdateFile)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-# #     #region ---------------------------------------------------> Class methods
-# #     #------------------------------> Event Methods
-# #     def OnUpdateFileContent(self, event: wx.CommandEvent) -> Literal[True]:
-# #         """Update the file content shown in the window
+    #region ---------------------------------------------------> Class methods
+    #------------------------------> Event Methods
+    def OnUpdateFileContent(self, event: wx.CommandEvent) -> bool:
+        """Update the file content shown in the window
     
-# #             Parameters
-# #             ----------
-# #             event: wx.Event
-# #                 Information about the event
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event
             
-# #             Returns
-# #             -------
-# #             True
-# #         """
-# #         win = self.GetWindow()
-# #         win.UpdateFileContent()
+            Returns
+            -------
+            True
+        """
+        win = self.GetWindow()
+        win.UpdateFileContent()
         
-# #         return True
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # # class CorrAPlotToolMenu(PlotMenu):
@@ -1957,7 +1958,7 @@ class ToolMenuBar(MainMenuBar):
 
     #region -----------------------------------------------------> Class Setup
     dTool = { # Key are window name
-        # config.nwUMSAPControl : FileControlToolMenu,
+        config.nwUMSAPControl : FileControlToolMenu,
         # config.nwCorrAPlot    : CorrAPlotToolMenu,
         # config.nwCheckDataPrep: DataPrepToolMenu,
         # config.nwProtProf     : ProtProfToolMenu,

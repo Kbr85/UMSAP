@@ -54,7 +54,7 @@ if os == 'Darwin':
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
-# #     sbPlot2Fields = [-1, 115]
+    sbPlot2Fields = [-1, 115]
 # #     sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Cmd'
@@ -113,7 +113,7 @@ nDefName = 'Default name'
 #------------------------------> Windows
 nwMain          = 'MainW'
 nwUMSAPControl  = 'UMSAPControl'
-# # nwCorrAPlot     = 'CorrAPlot'
+nwCorrAPlot     = 'CorrAPlot'
 # # nwProtProf      = 'ProtProfPlot'
 # # nwLimProt       = 'LimProtPlot'
 # # nwCheckDataPrep = 'CheckDataPrep'
@@ -443,8 +443,8 @@ mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows 
 sWinRegular = (990, 775)
-# # #------------------------------> Plot Window
-# # sWinPlot = (560, 560)
+#------------------------------> Plot Window
+sWinPlot = (560, 560)
 # # sWinModPlot = (1100, 625)
 #------------------------------> wx.StatusBar Fields
 sSbarFieldSizeI = sbFieldSize
@@ -468,7 +468,7 @@ font = {
 #region -----------------------------------------------------> General options
 general = { # General options
     'checkUpdate'  : True, # True Check, False No check
-# #     'DPI'          : 100,  # DPI for plot images
+    'DPI'          : 100,  # DPI for plot images
 # #     'MatPlotMargin': 0.025 # Margin for the axes range
 }
 #endregion --------------------------------------------------> General options
@@ -482,15 +482,15 @@ color = { # Colors for the app
 # # 	],
 # #     'RecProt' : 'gray',
 # #     'NatProt' : '#c94c4c',
-# #     nuCorrA : { # Color for plot in Correlation Analysis
-# #         'CMAP' : { # CMAP colors and interval
-# #             'N' : 128,
-# #             'c1': [255, 0, 0],
-# #             'c2': [255, 255, 255],
-# #             'c3': [0, 0, 255],
-# #             'NA': '#90EE90',
-# #         },
-# #     },
+    nuCorrA : { # Color for plot in Correlation Analysis
+        'CMAP' : { # CMAP colors and interval
+            'N' : 128,
+            'c1': [255, 0, 0],
+            'c2': [255, 255, 255],
+            'c3': [0, 0, 255],
+            'NA': '#90EE90',
+        },
+    },
 # #     nwProtProf : {
 # #         'Vol'   : ['#ff3333', '#d3d3d3', '#3333ff'],
 # #         'VolSel': '#6ac653',

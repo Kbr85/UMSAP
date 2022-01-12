@@ -32,11 +32,11 @@ import wx.lib.agw.customtreectrl as wxCT
 
 import dat4s_core.data.check as dtsCheck
 # # import dat4s_core.data.file as dtsFF
-# # import dat4s_core.data.method as dtsMethod
+import dat4s_core.data.method as dtsMethod
 # # import dat4s_core.data.statistic as dtsStatistic
 import dat4s_core.generator.generator as dtsGenerator
 # # import dat4s_core.gui.wx.validator as dtsValidator
-# import dat4s_core.gui.wx.widget as dtsWidget
+import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
@@ -128,7 +128,7 @@ class BaseWindow(wx.Frame):
             class.
     """
     #region -----------------------------------------------------> Class setup
-    
+    cSDeltaWin = config.deltaWin
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -196,7 +196,87 @@ class BaseWindow(wx.Frame):
         
         return True
     #---
+    
+    def OnSavePlotOne(self) -> bool:
+        """Save an image of the plot. Override as needed. 
+        
+            Returns
+            -------
+            bool
+        
+            Notes
+            -----
+            Assumes window has a wPlot attribute (dtsWidget.MatPlotPanel).
+        """
+        try:
+            #------------------------------> 
+            self.wPlot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
+            #------------------------------> 
+            return True
+        except Exception as e:
+            #------------------------------> 
+            dtscore.Notification(
+                'errorF', msg=str(e), tException=e, parent=self)
+            #------------------------------> 
+            return False
+    #---
+    
+    def OnZoomResetOne(self) -> bool:
+        """Reset the zoom of the plot.
+    
+            Returns
+            -------
+            True
+            
+            Notes
+            -----
+            It is assumed the wPlot is in self.wPlot (dtsWidget.MatPlotPanel)
+        """
+        #------------------------------> Try reset
+        try:
+            self.wPlot.ZoomResetPlot()
+        except Exception as e:
+            #------------------------------> 
+            msg = 'It was not possible to reset the zoom level of the plot.'
+            dtsWindow.NotificationDialog(
+                'errorU', msg=msg, tException=e, parent=self)
+            #------------------------------> 
+            return False
+        #------------------------------> 
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
+    
+    #region ---------------------------------------------------> Manage Methods
+    def WinPos(self) -> dict:
+        """Adjust win number and return information about the size of the 
+            window.
+            
+            See Notes below for more details.
+            
+            Return
+            ------
+            dict
+                Information about the size of the window and display and number
+                of windows. See also data.method.GetDisplayInfo
+                
+            Notes
+            -----
+            Final position of the window on the display must be set in child 
+            class.
+        """
+        #region ---------------------------------------------------> Variables
+        info = method.GetDisplayInfo(self)
+        #endregion ------------------------------------------------> Variables
+
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.cName] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
+
+        return info
+    #---
+    #endregion ------------------------------------------------> Manage Methods
+
 
 #     def OnDupWin(self) -> Literal[True]:
 #         """Duplicate window. Used by Result windows. Override as needed.
@@ -213,33 +293,7 @@ class BaseWindow(wx.Frame):
 #         return True
 #     #---
     
-#     def WinPos(self) -> dict:
-#         """Adjust win number and return information about the size of the 
-#             window.
-            
-#             See Notes below for more details.
-            
-#             Return
-#             ------
-#             dict
-#                 Information about the size of the window and display and number
-#                 of windows. See also data.method.GetDisplayInfo
-                
-#             Notes
-#             -----
-#             Final position of the window on the display must be set in child 
-#             class.
-#         """
-#         #region ---------------------------------------------------> Variables
-#         info = method.GetDisplayInfo(self)
-#         #endregion ------------------------------------------------> Variables
 
-#         #region ----------------------------------------------------> Update N
-#         config.winNumber[self.name] = info['W']['N'] + 1
-#         #endregion -------------------------------------------------> Update N
-
-#         return info
-#     #---
     
 #     def OnExportPlotData(self) -> Literal[True]:
 #         """ Export data to a csv file 
@@ -339,30 +393,7 @@ class BaseWindow(wx.Frame):
 #         return True
 #     #---
     
-#     def OnZoomResetOne(self) -> bool:
-#         """Reset the zoom of the plot.
-    
-#             Returns
-#             -------
-#             True
-            
-#             Notes
-#             -----
-#             It is assumed the plot is in self.plot (dtsWidget.MatPlotPanel)
-#         """
-#         #------------------------------> Try reset
-#         try:
-#             self.plot.ZoomResetPlot()
-#         except Exception as e:
-#             #------------------------------> 
-#             msg = 'It was not possible to reset the zoom level of the plot.'
-#             dtsWindow.NotificationDialog(
-#                 'errorU', msg=msg, tException=e, parent=self)
-#             #------------------------------> 
-#             return False
-#         #------------------------------> 
-#         return True
-#     #---
+
     
 #     def OnZoomResetMany(self) -> bool:
 #         """Reset all the plots in the window.
@@ -393,140 +424,107 @@ class BaseWindow(wx.Frame):
     
 #         return True	
 #     #---	
-    
-#     def OnSavePlotOne(self) -> bool:
-#         """Save an image of the plot. Override as needed. 
-        
-#             Returns
-#             -------
-#             bool
-        
-#             Notes
-#             -----
-#             Assumes window has a plot attribute (dtsWidget.MatPlotPanel).
-#         """
-#         try:
-#             #------------------------------> 
-#             self.plot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
-#             #------------------------------> 
-#             return True
-#         except Exception as e:
-#             #------------------------------> 
-#             dtscore.Notification(
-#                 'errorF', msg=str(e), tException=e, parent=self,
-#             )
-#             #------------------------------> 
-#             return False
-#     #---
 #---
 
 
-# # class BaseWindowPlot(BaseWindow):
-# #     """Base class for windows showing only a plot.
+class BaseWindowPlot(BaseWindow):
+    """Base class for windows showing only a plot.
 
-# #         Parameters
-# #         ----------
-# #         parent : 'UMSAPControl'
-# #             Parent of the window.
-# #         menuData : dict
-# #             Data to build the Tool menu of the window. See structure in child 
-# #             class.
+        Parameters
+        ----------
+        cParent : 'UMSAPControl'
+            Parent of the window.
+        cMenuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
             
-# #         Attributes
-# #         ----------
-# #         cSWindow : wx.Size
-# #             Size of the window.
-            
-# #         Notes
-# #         -----
-# #         - Method OnSavePlot assumes that this window has an attribute
-# #         plot (dtsWidget.MatPlotPanel). Override as needed.
-# #         - Method OnClose assumes the parent is an instance of UMSAPControl. 
-# #         Override as needed.
-# #     """
-# #     #region -----------------------------------------------------> Class setup
-# #     cSWindow = config.sWinPlot
-# #     #endregion --------------------------------------------------> Class setup
-
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(
-# #         self, parent: Optional[wx.Window]=None, 
-# #         menuData: Optional[dict]=None
-# #         ) -> None:
-# #         """ """
-# #         #region -----------------------------------------------> Initial Setup
-# #         super().__init__(parent=parent, menuData=menuData)
-# #         #endregion --------------------------------------------> Initial Setup
-
-# #         #region -----------------------------------------------------> Widgets
-# #         self.plot = dtsWidget.MatPlotPanel(
-# #             self, 
-# #             statusbar    = self.statusbar,
-# #             statusMethod = self.UpdateStatusBar,
-# #             dpi          = config.general['DPI'],
-# #         )
-
-# #         self.statusbar.SetFieldsCount(2, config.sbPlot2Fields)
-# #         #endregion --------------------------------------------------> Widgets
-
-# #         #region ------------------------------------------------------> Sizers
-# #         self.Sizer.Add(self.plot, 1, wx.EXPAND|wx.ALL, 5)
-
-# #         self.SetSizer(self.Sizer)
-# #         #endregion ---------------------------------------------------> Sizers
-        
-# #         #region --------------------------------------------------------> Bind
-# #         self.Bind(wx.EVT_CLOSE, self.OnClose)
-# #         #endregion -----------------------------------------------------> Bind
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
-
-# #     #region ---------------------------------------------------> Class methods
-# #     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
-# #         """Close window and uncheck section in UMSAPFile window. Assumes 
-# #             self.parent is an instance of UMSAPControl.
-# #             Override as needed.
+        Notes
+        -----
+        - Method OnSavePlot assumes that this window has an attribute
+        wPlot (dtsWidget.MatPlotPanel). Override as needed.
+        - Method OnClose assumes the parent is an instance of UMSAPControl. 
+        Override as needed.
+    """
+    #region -----------------------------------------------------> Class setup
     
-# #             Parameters
-# #             ----------
-# #             event: wx.CloseEvent
-# #                 Information about the event
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: Optional[wx.Window]=None, 
+        cMenuData: Optional[dict]=None
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cSWindow = getattr(self, 'cSWindow', config.sWinPlot)
+        #------------------------------> 
+        super().__init__(cParent=cParent, cMenuData=cMenuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wPlot = dtsWidget.MatPlotPanel(
+            self, 
+            statusbar    = self.wStatBar,
+            statusMethod = self.UpdateStatusBar,
+            dpi          = config.general['DPI'],
+        )
+
+        self.wStatBar.SetFieldsCount(2, config.sbPlot2Fields)
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer.Add(self.wPlot, 1, wx.EXPAND|wx.ALL, 5)
+
+        self.SetSizer(self.sSizer)
+        #endregion ---------------------------------------------------> Sizers
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event Methods
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
                 
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         #region -----------------------------------------------> Update parent
-# #         self.parent.UnCheckSection(self.cSection, self)		
-# #         #endregion --------------------------------------------> Update parent
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.cParent.UnCheckSection(self.cSection, self)		
+        #endregion --------------------------------------------> Update parent
         
-# #         #region ------------------------------------> Reduce number of windows
-# #         config.winNumber[self.name] -= 1
-# #         #endregion ---------------------------------> Reduce number of windows
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
         
-# #         #region -----------------------------------------------------> Destroy
-# #         self.Destroy()
-# #         #endregion --------------------------------------------------> Destroy
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
         
-# #         return True
-# #     #---
+        return True
+    #---
     
-# #     def WinPos(self):
-# #         """Just return base class method result"""
-# #         return super().WinPos()
-# #     #---
-    
-# #     def OnSavePlot(self) -> bool:
-# #         """Save an image of the plot.
+    def OnSavePlot(self) -> bool:
+        """Save an image of the plot.
         
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         return self.OnSavePlotOne()
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+            Returns
+            -------
+            bool
+        """
+        return self.OnSavePlotOne()
+    #---
+    #endregion ------------------------------------------------> Event Methods
+#---
 
 
 # # class BaseWindowNPlotLT(BaseWindow):
@@ -1161,272 +1159,268 @@ class MainWindow(BaseWindow):
 #---
 
 
-# # class CorrAPlot(BaseWindowPlot):
-# #     """Creates the window showing the results of a correlation analysis.
+class CorrAPlot(BaseWindowPlot):
+    """Creates the window showing the results of a correlation analysis.
     
-# #         See Notes below for more details.
+        See Notes below for more details.
 
-# #         Parameters
-# #         ----------
-# #         parent : 'UMSAPControl'
-# #             Parent of the window
+        Parameters
+        ----------
+        cParent : 'UMSAPControl'
+            Parent of the window
 
-# #         Attributes
-# #         ----------
-# #         cmap : Matplotlib cmap
-# #             CMAP to use in the plot
-# #         cSection : str
-# #             Section used as source of the data to plot here.
-# #         cTitle : str
-# #             Title of the window.
-# #         data : parent.obj.confData[Section]
-# #             Data for the Correlation Analysis section.
-# #         date : [parent.obj.confData[Section].keys()]
-# #             List of dates availables for plotting.
-# #         name : str
-# #             Unique name of the window.
-# #         obj : parent.obj
-# #             Pointer to the UMSAPFile object in parent. Instead of modifying this
-# #             object here, modify the configure step or add a Get method.
-# #         plot : dtsWidget.MatPlotPanel
-# #             Main plot of the window
+        Attributes
+        ----------
+        rCmap : Matplotlib cmap
+            CMAP to use in the plot
+        rData : parent.obj.confData[Section]
+            Data for the Correlation Analysis section.
+        rDate : [parent.obj.confData[Section].keys()]
+            List of dates availables for plotting.
+        rDateC : one of rDate
+            Current selected date
+        rObj : parent.obj
+            Pointer to the UMSAPFile object in parent. Instead of modifying this
+            object here, modify the configure step or add a Get method.
             
-# #         Notes
-# #         -----
-# #         The structure of menuData is:
-# #         {
-# #             'menudate' : [list of dates in the section],
-# #         }
-# #     """
-# #     #region -----------------------------------------------------> Class setup
-# #     #------------------------------> To id the window
-# #     name = config.nwCorrAPlot
-# #     #------------------------------> To id the section in the umsap file 
-# #     # shown in the window
-# #     cSection = config.nuCorrA
-# #     #endregion --------------------------------------------------> Class setup
+        Notes
+        -----
+        The structure of menuData is:
+        {
+            'menudate' : [list of dates in the section],
+        }
+    """
+    #region -----------------------------------------------------> Class setup
+    #------------------------------> To id the window
+    cName = config.nwCorrAPlot
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nuCorrA
+    #endregion --------------------------------------------------> Class setup
 
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self, parent: 'UMSAPControl') -> None:
-# #         """ """
-# #         #region -------------------------------------------------> Check Input
-# #         #endregion ----------------------------------------------> Check Input
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cParent: 'UMSAPControl') -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        #endregion ----------------------------------------------> Check Input
 
-# #         #region -----------------------------------------------> Initial Setup
-# #         self.cTitle  = f"{parent.cTitle} - {self.cSection}"
-# #         self.obj     = parent.obj
-# #         self.data    = self.obj.confData[self.cSection]
-# #         self.date    = [x for x in self.data.keys()]
-# #         self.dateC   = self.date[0]
-# #         self.cmap    = dtsMethod.MatplotLibCmap(
-# #             N   = config.color[self.cSection]['CMAP']['N'],
-# #             c1  = config.color[self.cSection]['CMAP']['c1'],
-# #             c2  = config.color[self.cSection]['CMAP']['c2'],
-# #             c3  = config.color[self.cSection]['CMAP']['c3'],
-# #             bad = config.color[self.cSection]['CMAP']['NA'],
-# #         )
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle  = f"{cParent.cTitle} - {self.cSection}"
+        self.rObj     = cParent.rObj
+        self.rData    = self.rObj.rConfData[self.cSection]
+        self.rDate    = [x for x in self.rData.keys()]
+        self.rDateC   = self.rDate[0]
+        self.rCmap    = dtsMethod.MatplotLibCmap(
+            N   = config.color[self.cSection]['CMAP']['N'],
+            c1  = config.color[self.cSection]['CMAP']['c1'],
+            c2  = config.color[self.cSection]['CMAP']['c2'],
+            c3  = config.color[self.cSection]['CMAP']['c3'],
+            bad = config.color[self.cSection]['CMAP']['NA'],
+        )
 
-# #         super().__init__(parent, {'menudate' : self.date})
-# #         #endregion --------------------------------------------> Initial Setup
+        super().__init__(cParent, {'menudate' : self.rDate})
+        #endregion --------------------------------------------> Initial Setup
 
-# #         #region -----------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
         
-# #         #endregion --------------------------------------------------> Widgets
+        #endregion --------------------------------------------------> Widgets
 
-# #         #region ------------------------------------------------------> Sizers
+        #region ------------------------------------------------------> Sizers
 
-# #         #endregion ---------------------------------------------------> Sizers
+        #endregion ---------------------------------------------------> Sizers
 
-# #         #region --------------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
         
-# #         #endregion -----------------------------------------------------> Bind
+        #endregion -----------------------------------------------------> Bind
 
-# #         #region ----------------------------------------------------> Position
-# #         self.Draw(self.dateC, 'Name')
-# #         self.WinPos()
-# #         self.Show()
-# #         #endregion -------------------------------------------------> Position
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
+        #region ----------------------------------------------------> Position
+        self.Draw(self.rDateC, 'Name')
+        self.WinPos()
+        self.Show()
+        #endregion -------------------------------------------------> Position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+    
+    #region ----------------------------------------------------> Event Manage
+    def OnZoomReset(self) -> bool:
+        """Reset the zoon of the plot comming from the menu item.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.OnZoomResetOne()
+    #---
+    #endregion -------------------------------------------------> Event Manage
 
-# #     #region ---------------------------------------------------> Class methods
-# #     def WinPos(self) -> bool:
-# #         """Set the position on the screen and adjust the total number of
-# #             shown windows.
+    #region --------------------------------------------------> Manage Methods
+    def WinPos(self) -> bool:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
             
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         #region --------------------------------------------------------> Super
-# #         info = super().WinPos()
-# #         #endregion -----------------------------------------------------> Super
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Super
+        info = super().WinPos()
+        #endregion -----------------------------------------------------> Super
         
-# #         #region ------------------------------------------------> Set Position
-# #         self.SetPosition(pt=(
-# #             info['D']['w'] - (info['W']['N']*config.deltaWin + info['W']['w']),
-# #             info['D']['yo'] + info['W']['N']*config.deltaWin,
-# #         ))
-# #         #endregion ---------------------------------------------> Set Position
+        #region ------------------------------------------------> Set Position
+        self.SetPosition(pt=(
+            info['D']['w'] - (info['W']['N']*self.cSDeltaWin + info['W']['w']),
+            info['D']['yo'] + info['W']['N']*self.cSDeltaWin,
+        ))
+        #endregion ---------------------------------------------> Set Position
 
-# #         return True
-# #     #---
+        return True
+    #---
 
-# #     def Draw(self, tDate: str, col: Literal['Name', 'Number']) -> bool:
-# #         """ Plot data from a given date.
+    def Draw(self, tDate: str, col: Literal['Name', 'Number']) -> bool:
+        """ Plot data from a given date.
         
-# #             Paramenters
-# #             -----------
-# #             tDate : str
-# #                 A date in the section e.g. '20210129-094504 - bla'
-# #             col: One of Name or Number
-# #                 Set the information to display in the axis
+            Paramenters
+            -----------
+            tDate : str
+                A date in the section e.g. '20210129-094504 - bla'
+            col: One of Name or Number
+                Set the information to display in the axis
                 
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         #region -------------------------------------------------> Update date
-# #         self.dateC = tDate
-# #         #endregion ----------------------------------------------> Update date
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------> Update date
+        self.rDateC = tDate
+        #endregion ----------------------------------------------> Update date
         
-# #         #region --------------------------------------------------------> Plot
-# #         self.plot.axes.pcolormesh(
-# #             self.data[tDate]['DF'], 
-# #             cmap        = self.cmap,
-# #             vmin        = -1,
-# #             vmax        = 1,
-# #             antialiased = True,
-# #             edgecolors  = 'k',
-# #             lw          = 0.005,
-# #         )		
-# #         #endregion -----------------------------------------------------> Plot
+        #region --------------------------------------------------------> Plot
+        self.wPlot.axes.pcolormesh(
+            self.rData[tDate]['DF'], 
+            cmap        = self.rCmap,
+            vmin        = -1,
+            vmax        = 1,
+            antialiased = True,
+            edgecolors  = 'k',
+            lw          = 0.005,
+        )		
+        #endregion -----------------------------------------------------> Plot
         
-# #         #region -------------------------------------------------> Axis & Plot
-# #         #------------------------------> Axis properties
-# #         self.SetAxis(tDate, col)
-# #         #------------------------------> Zoom Out level
-# #         self.plot.ZoomResetSetValues()
-# #         #------------------------------> Draw
-# #         self.plot.canvas.draw()
-# #         #endregion ----------------------------------------------> Axis & Plot
+        #region -------------------------------------------------> Axis & Plot
+        #------------------------------> Axis properties
+        self.SetAxis(tDate, col)
+        #------------------------------> Zoom Out level
+        self.wPlot.ZoomResetSetValues()
+        #------------------------------> Draw
+        self.wPlot.canvas.draw()
+        #endregion ----------------------------------------------> Axis & Plot
 
-# #         #region ---------------------------------------------------> Statusbar
-# #         self.statusbar.SetStatusText(tDate, 1)
-# #         #endregion ------------------------------------------------> Statusbar
+        #region ---------------------------------------------------> Statusbar
+        self.wStatBar.SetStatusText(tDate, 1)
+        #endregion ------------------------------------------------> Statusbar
         
-# #         return True
-# #     #---
+        return True
+    #---
 
-# #     def SetAxis(self, tDate: str, col: Literal['Name', 'Number']) -> bool:
-# #         """ General details of the plot area 
+    def SetAxis(self, tDate: str, col: Literal['Name', 'Number']) -> bool:
+        """ General details of the plot area 
         
-# #             Parameters
-# #             ----------
-# #             tDate : str
-# #                 A date in the section e.g. 20210129-094504
-# #             col: One of Name or Number
-# #                 Set the information to display in the axis
+            Parameters
+            ----------
+            tDate : str
+                A date in the section e.g. 20210129-094504
+            col: One of Name or Number
+                Set the information to display in the axis
                 
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         #region --------------------------------------------------------> Grid
-# #         self.plot.axes.grid(True)		
-# #         #endregion -----------------------------------------------------> Grid
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Grid
+        self.wPlot.axes.grid(True)		
+        #endregion -----------------------------------------------------> Grid
         
-# #         #region --------------------------------------------------> Axis range
-# #         self.plot.axes.set_xlim(0, self.data[tDate]['NumCol'])
-# #         self.plot.axes.set_ylim(0, self.data[tDate]['NumCol']) 
-# #         #endregion -----------------------------------------------> Axis range
+        #region --------------------------------------------------> Axis range
+        self.wPlot.axes.set_xlim(0, self.rData[tDate]['NumCol'])
+        self.wPlot.axes.set_ylim(0, self.rData[tDate]['NumCol']) 
+        #endregion -----------------------------------------------> Axis range
         
-# #         #region ---------------------------------------------------> Variables
-# #         xlabel    = []
-# #         xticksloc = []
+        #region ---------------------------------------------------> Variables
+        xlabel    = []
+        xticksloc = []
         
-# #         if (self.data[tDate]['NumCol']) <= 30:
-# #             step = 1
-# #         elif self.data[tDate]['NumCol'] > 30 and self.data[tDate]['NumCol'] <= 60:
-# #             step = 2
-# #         else:
-# #             step = 3		
-# #         #endregion ------------------------------------------------> Variables
+        if (self.rData[tDate]['NumCol']) <= 30:
+            step = 1
+        elif self.rData[tDate]['NumCol'] > 30 and self.rData[tDate]['NumCol'] <= 60:
+            step = 2
+        else:
+            step = 3		
+        #endregion ------------------------------------------------> Variables
         
-# #         #region ---------------------------------------------------> Set ticks
-# #         if col == 'Name':
-# #             for i in range(0, self.data[tDate]['NumCol'], step):
-# #                 xticksloc.append(i + 0.5)		
-# #                 xlabel.append(self.data[tDate]['DF'].columns[i])
-# #         else:
-# #             for i in range(0, self.data[tDate]['NumCol'], step):
-# #                 xticksloc.append(i + 0.5)
-# #                 xlabel.append(self.data[tDate]['NumColList'][i])
+        #region ---------------------------------------------------> Set ticks
+        if col == 'Name':
+            for i in range(0, self.rData[tDate]['NumCol'], step):
+                xticksloc.append(i + 0.5)		
+                xlabel.append(self.rData[tDate]['DF'].columns[i])
+        else:
+            for i in range(0, self.rData[tDate]['NumCol'], step):
+                xticksloc.append(i + 0.5)
+                xlabel.append(self.rData[tDate]['NumColList'][i])
 
-# #         self.plot.axes.set_xticks(xticksloc)
-# #         self.plot.axes.set_xticklabels(xlabel, rotation=90)
+        self.wPlot.axes.set_xticks(xticksloc)
+        self.wPlot.axes.set_xticklabels(xlabel, rotation=90)
 
-# #         self.plot.axes.set_yticks(xticksloc)
-# #         self.plot.axes.set_yticklabels(xlabel)
-# #         #endregion ------------------------------------------------> Set ticks
+        self.wPlot.axes.set_yticks(xticksloc)
+        self.wPlot.axes.set_yticklabels(xlabel)
+        #endregion ------------------------------------------------> Set ticks
         
-# #         #region -----------------------------------------------> Adjust figure
-# #         self.plot.figure.subplots_adjust(bottom=0.13)
-# #         #endregion --------------------------------------------> Adjust figure
+        #region -----------------------------------------------> Adjust figure
+        self.wPlot.figure.subplots_adjust(bottom=0.13)
+        #endregion --------------------------------------------> Adjust figure
 
-# #         return True
-# #     #---
+        return True
+    #---
 
-# #     def UpdateStatusBar(self, event) -> bool:
-# #         """Update the statusbar info
+    def UpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info
     
-# #             Parameters
-# #             ----------
-# #             event: matplotlib event
-# #                 Information about the event
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
                 
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         #region ---------------------------------------------------> Variables
-# #         tDate = self.statusbar.GetStatusText(1)
-# #         #endregion ------------------------------------------------> Variables
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        tDate = self.wStatBar.GetStatusText(1)
+        #endregion ------------------------------------------------> Variables
         
-# #         #region ----------------------------------------------> Statusbar Text
-# #         if event.inaxes:
-# #             try:
-# #                 #------------------------------> Set variables
-# #                 x, y = event.xdata, event.ydata
-# #                 xf = int(x)
-# #                 xs = self.data[tDate]['DF'].columns[xf]
-# #                 yf = int(y)
-# #                 ys = self.data[tDate]['DF'].columns[yf]
-# #                 zf = '{:.2f}'.format(self.data[tDate]['DF'].iat[yf,xf])
-# #                 #------------------------------> Print
-# #                 self.statusbar.SetStatusText(
-# #                     f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
-# #                 )
-# #             except Exception:
-# #                 self.statusbar.SetStatusText('')
-# #         else:
-# #             self.statusbar.SetStatusText('')
-# #         #endregion -------------------------------------------> Statusbar Text
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            try:
+                #------------------------------> Set variables
+                x, y = event.xdata, event.ydata
+                xf = int(x)
+                xs = self.rData[tDate]['DF'].columns[xf]
+                yf = int(y)
+                ys = self.rData[tDate]['DF'].columns[yf]
+                zf = '{:.2f}'.format(self.rData[tDate]['DF'].iat[yf,xf])
+                #------------------------------> Print
+                self.wStatBar.SetStatusText(
+                    f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
+                )
+            except Exception:
+                self.wStatBar.SetStatusText('')
+        else:
+            self.wStatBar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
         
-# #         return True
-# #     #---
-    
-# #     def OnZoomReset(self) -> bool:
-# #         """Reset the zoon of the plot comming from the menu item.
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         return self.OnZoomResetOne()
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+        return True
+    #---
+    #endregion -----------------------------------------------> Manage Methods
+#---
 
 
 # # class ProtProfPlot(BaseWindowNPlotLT):
@@ -6344,12 +6338,11 @@ class UMSAPControl(BaseWindow):
     cName = config.nwUMSAPControl
     #------------------------------> 
     cSWindow = (400, 700)
-    cSDeltaWin = config.deltaWin
     #------------------------------> 
     cFileLabelCheck = ['Data File']
     #------------------------------> 
     dPlotMethod = { # Methods to create plot windows
-        # config.nuCorrA   : CorrAPlot,
+        config.nuCorrA   : CorrAPlot,
         # config.nuDataPrep: CheckDataPrep,
         # config.nmProtProf: ProtProfPlot,
         # config.nmLimProt : LimProtPlot, 
