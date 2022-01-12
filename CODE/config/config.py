@@ -378,6 +378,8 @@ mUnexpectedError = 'An uexpected error was encountered.'
 #------------------------------> Sequences related errors
 mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
     "protein.")
+#------------------------------> Data
+mDataExport = 'Export Data failed.'
 # #endregion ----------------------------------------------------------> Other
 
 # #region ------------------------------------------------------------> Values

@@ -143,6 +143,8 @@ class BaseWindow(wx.Frame):
         self.cSWindow = getattr(self, 'cSWindow', config.sWinRegular)
         self.cTitle = getattr(
             self, 'cTitle', config.t.get(self.cName, config.tdW))
+        self.cMsgExportFailed = getattr(
+            self, 'cMsgExportFailed', config.mDataExport)
         #------------------------------> 
         super().__init__(
             cParent, size=self.cSWindow, title=self.cTitle, name=self.cName,
@@ -245,6 +247,82 @@ class BaseWindow(wx.Frame):
         #------------------------------> 
         return True
     #---
+    
+    def OnCheckDataPrep(self, tDate: str) -> bool:
+        """Launch the Check Data Preparation Window.
+    
+            Parameters
+            ----------
+            tDate: str
+                Date + ID to find the analysis in the umsap file.
+    
+            Returns
+            -------
+            bool
+    
+            Raise
+            -----
+            
+        """
+        # CheckDataPrep(
+        #     self,f'{self.cSection} - {tDate}', self.rData[tDate]['DP']
+        # )
+        
+        return True
+    #---
+
+    def OnDupWin(self) -> Literal[True]:
+        """Duplicate window. Used by Result windows. Override as needed.
+    
+            Returns
+            -------
+            True
+        """
+        #------------------------------> 
+        self.cParent.rWindow[self.cSection].append(
+            self.cParent.dPlotMethod[self.cSection](self.cParent)
+        )
+        #------------------------------> 
+        return True
+    #---
+    
+    def OnExportPlotData(self) -> Literal[True]:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        
+            Notes
+            -----
+            It requires child class to define self.dateC to catch the current
+            date being plotted.
+        """
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p     = Path(dlg.GetPath())
+            #------------------------------> Export
+            try:
+                self.rObj.ExportPlotData(self.cSection, self.rDateC, p)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---	
     #endregion ------------------------------------------------> Event Methods
     
     #region ---------------------------------------------------> Manage Methods
@@ -278,60 +356,11 @@ class BaseWindow(wx.Frame):
     #endregion ------------------------------------------------> Manage Methods
 
 
-#     def OnDupWin(self) -> Literal[True]:
-#         """Duplicate window. Used by Result windows. Override as needed.
-    
-#             Returns
-#             -------
-#             True
-#         """
-#         #------------------------------> 
-#         self.parent.cWindow[self.cSection].append(
-#             self.parent.cPlotMethod[self.cSection](self.parent)
-#         )
-#         #------------------------------> 
-#         return True
-#     #---
+
     
 
     
-#     def OnExportPlotData(self) -> Literal[True]:
-#         """ Export data to a csv file 
-        
-#             Returns
-#             -------
-#             bool
-        
-#             Notes
-#             -----
-#             It requires child class to define self.dateC to catch the current
-#             date being plotted.
-#         """
-#         #region --------------------------------------------------> Dlg window
-#         dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
-#         #endregion -----------------------------------------------> Dlg window
-        
-#         #region ---------------------------------------------------> Get Path
-#         if dlg.ShowModal() == wx.ID_OK:
-#             #------------------------------> Variables
-#             p     = Path(dlg.GetPath())
-#             #------------------------------> Export
-#             try:
-#                 self.obj.ExportPlotData(self.cSection, self.dateC, p)
-#             except Exception as e:
-#                 dtscore.Notification(
-#                     'errorF',
-#                     msg        = self.cMsgExportFailed,
-#                     tException = e,
-#                     parent     = self,
-#                 )
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Get Path
-     
-#         dlg.Destroy()
-#         return True	
-#     #---	
+
     
 #     def OnExportFilteredData(self) -> Literal[True]:
 #         """ Export filtered data to a csv file. 
@@ -370,28 +399,7 @@ class BaseWindow(wx.Frame):
 #         return True	
 #     #---
     
-#     def OnCheckDataPrep(self, tDate: str) -> bool:
-#         """Launch the Check Data Preparation Window.
-    
-#             Parameters
-#             ----------
-#             tDate: str
-#                 Date + ID to find the analysis in the umsap file.
-    
-#             Returns
-#             -------
-#             bool
-    
-#             Raise
-#             -----
-            
-#         """
-#         CheckDataPrep(
-#             self,f'{self.cSection} - {tDate}', self.data[tDate]['DP']
-#         )
-        
-#         return True
-#     #---
+
     
 
     
