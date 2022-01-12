@@ -353,6 +353,28 @@ class BaseWindow(wx.Frame):
 
         return info
     #---
+    
+    def PlotTitle(self) -> bool:
+        """Set the title of a plot window.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Assumes child class has self.cSection and self.rDateC and the parent
+            is an UMSAPControl window
+        """
+        self.SetTitle(
+            f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}")
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Manage Methods
 
 
@@ -476,8 +498,6 @@ class BaseWindowPlot(BaseWindow):
             statusMethod = self.UpdateStatusBar,
             dpi          = config.general['DPI'],
         )
-
-        self.wStatBar.SetFieldsCount(2, config.sbPlot2Fields)
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
@@ -1213,7 +1233,6 @@ class CorrAPlot(BaseWindowPlot):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.cTitle  = f"{cParent.cTitle} - {self.cSection}"
         self.rObj     = cParent.rObj
         self.rData    = self.rObj.rConfData[self.cSection]
         self.rDate    = [x for x in self.rData.keys()]
@@ -1225,7 +1244,10 @@ class CorrAPlot(BaseWindowPlot):
             c3  = config.color[self.cSection]['CMAP']['c3'],
             bad = config.color[self.cSection]['CMAP']['NA'],
         )
-
+        #------------------------------> 
+        self.cParent = cParent
+        self.cTitle  = f"{cParent.cTitle} - {self.cSection} - {self.rDateC}"
+        #------------------------------> 
         super().__init__(cParent, {'menudate' : self.rDate})
         #endregion --------------------------------------------> Initial Setup
 
@@ -1324,7 +1346,7 @@ class CorrAPlot(BaseWindowPlot):
         #endregion ----------------------------------------------> Axis & Plot
 
         #region ---------------------------------------------------> Statusbar
-        self.wStatBar.SetStatusText(tDate, 1)
+        self.PlotTitle()
         #endregion ------------------------------------------------> Statusbar
         
         return True
@@ -1401,20 +1423,16 @@ class CorrAPlot(BaseWindowPlot):
             -------
             bool
         """
-        #region ---------------------------------------------------> Variables
-        tDate = self.wStatBar.GetStatusText(1)
-        #endregion ------------------------------------------------> Variables
-        
         #region ----------------------------------------------> Statusbar Text
         if event.inaxes:
             try:
                 #------------------------------> Set variables
                 x, y = event.xdata, event.ydata
                 xf = int(x)
-                xs = self.rData[tDate]['DF'].columns[xf]
+                xs = self.rData[self.rDateC]['DF'].columns[xf]
                 yf = int(y)
-                ys = self.rData[tDate]['DF'].columns[yf]
-                zf = '{:.2f}'.format(self.rData[tDate]['DF'].iat[yf,xf])
+                ys = self.rData[self.rDateC]['DF'].columns[yf]
+                zf = '{:.2f}'.format(self.rData[self.rDateC]['DF'].iat[yf,xf])
                 #------------------------------> Print
                 self.wStatBar.SetStatusText(
                     f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
