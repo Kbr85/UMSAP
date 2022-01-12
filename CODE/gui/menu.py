@@ -15,16 +15,16 @@
 
 
 #region -------------------------------------------------------------> Imports
-# from pathlib import Path
-from typing import Optional#, Literal
+from pathlib import Path
+from typing import Optional
 
 import wx
 
-# # import dat4s_core.gui.wx.method as dtsGwxMethod
+import dat4s_core.gui.wx.method as dtsGwxMethod
 
 import config.config as config
-# # import gui.dtscore as dtscore
-# # import gui.method as method
+import gui.dtscore as dtscore
+import gui.method as method
 import gui.window as window
 #endregion ----------------------------------------------------------> Imports
 
@@ -409,57 +409,60 @@ class Utility(wx.Menu, MenuMethods):
         #endregion ----------------------------------------------------> Names
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.readFile)
+        self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.miReadFile)
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miCorrA)
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miDataPrep)
         #endregion -----------------------------------------------------> Bind
     #endregion -----------------------------------------------> Instance Setup
 
-#     #region ---------------------------------------------------> Class Methods
-#     #------------------------------> Event Methods
-#     # def OnReadFile(self, event):
-#     #     """Read an UMSAP output file.
+    #region ---------------------------------------------------> Event Methods
+    #------------------------------> Event Methods
+    def OnReadFile(self, event: wx.CommandEvent) -> bool:
+        """Read an UMSAP output file.
     
-#     #         Parameters
-#     #         ----------
-#     #         event : wx.EVENT
-#     #             Information about the event
+            Parameters
+            ----------
+            event : wx.EVENT
+                Information about the event
                 
-#     #         Returns
-#     #         -------
-#     #         True
-#     #     """
-#     #     #region ------------------------------------------------------> Window
-#     #     win = self.GetWindow()        
-#     #     #endregion ---------------------------------------------------> Window
+            Returns
+            -------
+            True
+        """
+        #region ------------------------------------------------------> Window
+        win = self.GetWindow()        
+        #endregion ---------------------------------------------------> Window
         
-#     #     #region ---------------------------------------------------> Get fileP
-#     #     try:
-#     #         fileP = dtsGwxMethod.GetFilePath(
-#     #             'openO', ext=config.elUMSAP, parent=win, msg=config.mUMSAPFile
-#     #         )
-#     #         if fileP is None:
-#     #             return False
-#     #         else:
-#     #             fileP = Path(fileP[0])
-#     #     except Exception as e:      
-#     #         dtscore.Notification(
-#     #             'errorF', 
-#     #             msg        = config.mFileSelector,
-#     #             tException = e,
-#     #             parent     = win,
-#     #         )
-#     #         return False
-#     #     #endregion ------------------------------------------------> Get fileP
+        #region ---------------------------------------------------> Get fileP
+        try:
+            fileP = dtsGwxMethod.GetFilePath(
+                'openO', 
+                ext    = config.elUMSAP,
+                parent = win,
+                msg    = config.mFileSelUMSAP,
+            )
+            if fileP is None:
+                return False
+            else:
+                fileP = Path(fileP[0])
+        except Exception as e:      
+            dtscore.Notification(
+                'errorF', 
+                msg        = config.mFileSelector,
+                tException = e,
+                parent     = win,
+            )
+            return False
+        #endregion ------------------------------------------------> Get fileP
         
-#     #     #region ---------------------------------------------------> Load file
-#     #     method.LoadUMSAPFile(fileP=fileP)
-#     #     #endregion ------------------------------------------------> Load file
+        #region ---------------------------------------------------> Load file
+        method.LoadUMSAPFile(fileP=fileP)
+        #endregion ------------------------------------------------> Load file
         
-#     #     return True
-#     # #---
-#     #endregion ------------------------------------------------> Class Methods
-# #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+#---
 
 
 # # class FileControlToolMenu(wx.Menu):

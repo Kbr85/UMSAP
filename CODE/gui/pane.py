@@ -184,7 +184,7 @@ class BaseConfPanel(
         self.cLPdRun      = getattr(self, 'cLPdRun',     'Running analysis: ')
         self.cLPdWrite    = getattr(self, 'cLPdWrite',   'Writing output: ')
         self.cLPdLoad     = getattr(self, 'cLPdLoad',    'Loading output file')
-        self.cLPdError    = getattr(self, 'cLPdError',   'Fatal Error')
+        self.cLPdError    = getattr(self, 'cLPdError',   config.lPdError)
         self.cLPdDone     = getattr(self, 'cLPdDone',    'All Done')
         self.cLPdEllapsed = getattr(self, 'cLPdEllapsed','Ellapsed time: ')
         #------------------------------> Size
@@ -514,7 +514,7 @@ class BaseConfPanel(
         return True
     #---
     
-    def OnIFileLoad(self, event: wx.CommandEvent) -> bool:
+    def OnIFileLoad(self, event: Union[wx.CommandEvent, str]) -> bool:
         """Clear GUI elements when Data Folder is ''
     
             Parameters
@@ -2711,7 +2711,7 @@ class CorrA(BaseConfPanel):
         if dataI is not None:
             #------------------------------> 
             self.wUFile.tc.SetValue(dataI['CI']['uFile'])
-            self.wIFile.tc.SetValue(dataI['I']['Data File'])
+            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> 
             self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
@@ -3265,6 +3265,8 @@ class DataPrep(BaseConfPanel):
             self.wScore.tc.SetValue(dataI['I'][self.cLScoreCol])
             self.wExcludeRow.tc.SetValue(dataI['I'][self.cLExcludeRow])
             self.wColAnalysis.tc.SetValue(dataI['I'][self.cLColAnalysis])
+            #------------------------------> 
+            self.OnIFileLoad('fEvent')
         else:
             pass
         #endregion ----------------------------------------------> Fill Fields
@@ -3973,6 +3975,8 @@ class ProtProf(BaseConfModPanel):
             self.rLbDict[2] = dataI['I'][self.cLRP]
             self.rLbDict['ControlType'] = dataI['I'][f'Control {self.cLCtrlType}']
             self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
+            #------------------------------> 
+            self.OnIFileLoad('fEvent')
         else:
             pass
         #endregion ----------------------------------------------> Fill Fields
@@ -4988,12 +4992,12 @@ class LimProt(BaseConfModPanel2):
             self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
             self.wSeqFile.tc.SetValue(dataI['I'][f'{self.cLSeqFile} File'])
             self.wId.tc.SetValue(dataI['CI']['ID'])
-            # #------------------------------> Data Preparation
+            #------------------------------> Data Preparation
             self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
-            # #------------------------------> Values
+            #------------------------------> Values
             self.wTargetProt.tc.SetValue(dataI['I'][self.cLTargetProt])
             self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
             self.wSeqLength.tc.SetValue(dataI['I'][self.cLSeqLength])
@@ -5003,7 +5007,7 @@ class LimProt(BaseConfModPanel2):
             self.wGamma.tc.SetValue(dataI['I'][self.cLGamma])
             self.wTheta.tc.SetValue(dataI['I'][self.cLTheta])
             self.wThetaMax.tc.SetValue(dataI['I'][self.cLThetaMax])
-            # #------------------------------> Columns
+            #------------------------------> Columns
             self.wSeqCol.tc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
             self.wDetectedProt.tc.SetValue(dataI['I'][self.cLDetectedProt])
             self.wScore.tc.SetValue(dataI['I'][self.cLScoreCol])
@@ -5011,6 +5015,8 @@ class LimProt(BaseConfModPanel2):
             self.rLbDict[1] = dataI['I'][self.cLLane]
             self.rLbDict[2] = dataI['I'][self.cLBand]
             self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
+            #------------------------------> 
+            self.OnIFileLoad('fEvent')
         else:
             pass
         #endregion ----------------------------------------------> Fill Fields

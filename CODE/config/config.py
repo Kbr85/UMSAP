@@ -34,7 +34,7 @@ dictVersion = { # dict for directly write into output files
 os = platform.system() # Current operating system
 cwd = Path(__file__)    # Config file path
 
-# # obj: Optional['file.UMSAPFile'] = None # To reload UMSAP file
+obj = None # Reference to an instance of file.UMSAPFile to reload its content
 # #endregion -----------------------------------------------> General parameters
 
 
@@ -58,8 +58,8 @@ if os == 'Darwin':
 # #     sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Cmd'
-# #     #------------------------------> Delta space between consecutive windows
-# #     deltaWin = 23
+    #------------------------------> Delta space between consecutive windows
+    deltaWin = 23
 elif os == 'Windows':
     #------------------------------> Root & Resources Folder
     root = cwd.parent.parent.parent
@@ -74,8 +74,8 @@ elif os == 'Windows':
 # #     sbPlot = [-1, 115]
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
-# #     #------------------------------> Delta space between consecutive windows
-# #     deltaWin = 20
+    #------------------------------> Delta space between consecutive windows
+    deltaWin = 20
 else:
     #------------------------------> Root & Resources Folder
     root = cwd.parent
@@ -90,8 +90,8 @@ else:
 # #     sbPlot = [-1, 115]
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
-# #     #------------------------------> Delta space between consecutive windows
-# #     deltaWin = 20
+    #------------------------------> Delta space between consecutive windows
+    deltaWin = 20
 #endregion ------------------------------------- Platform Dependent Parameters
 
 
@@ -101,9 +101,9 @@ winMain = None
 #------------------------------> Number of windows for screen positioning
 # Keys: Windows ID - Values: Total number of opened windows, except conf win
 winNumber = {}
-# # #------------------------------> Track open umsap files
-# # # Keys: UMSAP File path - Values: Reference to control window
-# # winUMSAP = {}
+#------------------------------> Track open umsap files
+# Keys: UMSAP File path - Values: Reference to control window
+winUMSAP = {}
 #endregion ----------------------------------------------------------> Windows
 
 
@@ -112,7 +112,7 @@ winNumber = {}
 nDefName = 'Default name'
 #------------------------------> Windows
 nwMain          = 'MainW'
-# # nwUMSAPControl  = 'UMSAPControl'
+nwUMSAPControl  = 'UMSAPControl'
 # # nwCorrAPlot     = 'CorrAPlot'
 # # nwProtProf      = 'ProtProfPlot'
 # # nwLimProt       = 'LimProtPlot'
@@ -220,7 +220,6 @@ fnMainDataProtProf = '{}-ProteomeProfiling-Data-{}.txt'
 urlHome     = 'https://www.umsap.nl'
 urlUpdate   = f"{urlHome}/page/release-notes"
 urlTutorial = f"{urlHome}/tutorial/2-1-0"
-# # urlLimProt  = 
 #endregion --------------------------------------------------------------- URL
 
 
@@ -251,6 +250,8 @@ lStGeneName    = 'Gene Names'
 lCbCorrectP    = 'P Correction'
 lCbSample      = 'Samples'
 lCbIntensity   = 'Intensities'
+#------------------------------> wx.Dialog
+lPdError = 'Fatal Error'
 #endregion -----------------------------------------------------------> Labels
 
 
@@ -397,12 +398,12 @@ mNZPlusNumText = (
 # mFileUMSAP = ('It was not possible to write the results of the analysis to '
 #     'the selected UMSAP file.')
 # mFileDataExport = 'It was not possible to write the data to the selected file.'
-# # mFileSelector = f"It was not possible to show the file selecting dialog."
+mFileSelector = 'It was not possible to show the file selecting dialog.'
 mFileRead = 'An error occured when reading file:\n{}'
 # # mFileColNum = (
 # #     "In addition, the values cannot be bigger than the total number of columns "
 # #     "in the {}.")
-# # mUMSAPFile = 'Select the UMSAP File'
+mFileSelUMSAP = 'Select the UMSAP File'
 #endregion ------------------------------------------------------------> Files
 
 #region ------------------------------------------------------------> Pandas
