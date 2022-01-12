@@ -40,11 +40,8 @@ import config.config as config
 import data.check as check
 import data.method as dmethod
 import gui.dtscore as dtscore
-# # import gui.method as gmethod
+import gui.method as gmethod
 import gui.widget as widget
-
-# # if config.typeCheck:
-# #     import pandas as pd
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -1310,7 +1307,7 @@ class BaseConfPanel(
         #region --------------------------------------------------------> Load
         wx.CallAfter(self.rDlg.UpdateStG, self.cLPdLoad)
         
-        # wx.CallAfter(gmethod.LoadUMSAPFile, fileP=self.do['uFile'])
+        wx.CallAfter(gmethod.LoadUMSAPFile, fileP=self.rDO['uFile'])
         #endregion -----------------------------------------------------> Load
 
         return True
