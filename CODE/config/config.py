@@ -114,7 +114,7 @@ nDefName = 'Default name'
 nwMain          = 'MainW'
 nwUMSAPControl  = 'UMSAPControl'
 nwCorrAPlot     = 'CorrAPlot'
-# # nwProtProf      = 'ProtProfPlot'
+nwProtProf      = 'ProtProfPlot'
 nwLimProt       = 'LimProtPlot'
 nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
@@ -447,7 +447,7 @@ mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
 sWinRegular = (990, 775)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
-# # sWinModPlot = (1100, 625)
+sWinModPlot = (1100, 625)
 #------------------------------> wx.StatusBar Fields
 sSbarFieldSizeI = sbFieldSize
 #------------------------------> wx.TextCtrl

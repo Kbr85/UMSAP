@@ -181,6 +181,24 @@ class MenuMethods():
         
         return True
     #---
+    
+    def OnExportFilteredData(self, event: wx.CommandEvent) -> bool:
+        """Export filtered data 
+
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+                
+            Returns
+            -------
+            True
+        """
+        win = self.GetWindow() 
+        win.OnExportFilteredData()
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
     
     #region --------------------------------------------------> Manage Methods
@@ -240,26 +258,6 @@ class MenuMethods():
         #endregion --------------------------------------------------> Checked
     #---
     #endregion -----------------------------------------------> Manage Methods
-
-
-# #     def OnExportFilteredData(self, event: wx.CommandEvent) -> Literal[True]:
-# #         """Export filtered data 
-
-# #             Parameters
-# #             ----------
-# #             event : wx.Event
-# #                 Information about the event
-                
-# #             Returns
-# #             -------
-# #             True
-# #         """
-# #         win = self.GetWindow() 
-# #         win.OnExportFilteredData()
-        
-# #         return True
-# #     #---
-    #endregion ------------------------------------------------> Class Methods
 #---
 
 
@@ -692,704 +690,704 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
 #---
 
 
-# # class VolcanoPlot(wx.Menu, MenuMethods):
-# #     """Menu for a Volcano Plot.
+class VolcanoPlot(wx.Menu, MenuMethods):
+    """Menu for a Volcano Plot.
     
-# #         Parameters
-# #         ----------
-# #         crp: dict
-# #             Available conditions and relevant point for the analysis. 
-# #             See Notes for more details.
-# #         iDate : str
-# #             Initially selected date
+        Parameters
+        ----------
+        cCrp: dict
+            Available conditions and relevant point for the analysis. 
+            See Notes for more details.
+        ciDate : str
+            Initially selected date
             
-# #         Attributes
-# #         ----------
-# #         cond : list of wx.MenuItems
-# #             Available conditions as wx.MenuItems for the current date.
-# #         crp : dict
-# #             Available conditions and relevant point for the analysis. 
-# #             See Notes for more details.
-# #         rp : list of wx.MenuItems
-# #             Available relevant points as wx.MenuItems for the current date.
-# #         sep : wx.MenuItem
-# #             Separator between conditions and relevant points.
+        Attributes
+        ----------
+        rCond : list of wx.MenuItems
+            Available conditions as wx.MenuItems for the current date.
+        rCrp : dict
+            Available conditions and relevant point for the analysis. 
+            See Notes for more details.
+        rRp : list of wx.MenuItems
+            Available relevant points as wx.MenuItems for the current date.
+        rSep : wx.MenuItem
+            Separator between conditions and relevant points.
             
-# #         Notes
-# #         -----
-# #         crp has the following structure
-# #             {
-# #                     'date1' : {
-# #                         'C' : [List of conditions as str],
-# #                         'RP': [List of relevant points as str],
-# #                     }
-# #                     .......
-# #                     'dateN' : {}
-# #             }
-# #     """
-# #     #region -----------------------------------------------------> Class setup
+        Notes
+        -----
+        rCrp has the following structure
+            {
+                    'date1' : {
+                        'C' : [List of conditions as str],
+                        'RP': [List of relevant points as str],
+                    }
+                    .......
+                    'dateN' : {}
+            }
+    """
+    #region -----------------------------------------------------> Class setup
     
-# #     #endregion --------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
 
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self, crp: dict, iDate: str) -> None:
-# #         """ """
-# #         #region -----------------------------------------------> Initial Setup
-# #         self.crp = crp
-# #         #------------------------------> Cond - RP separator. To remove/create.
-# #         self.sep = None
-# #         #------------------------------> 
-# #         super().__init__()
-# #         #------------------------------> Menu items for cond & relevant points
-# #         self.cond, self.rp = self.SetCondRPMenuItems(iDate)
-# #         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cCrp: dict, ciDate: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rCrp = cCrp
+        #------------------------------> Cond - RP separator. To remove/create.
+        self.rSep = None
+        #------------------------------> 
+        super().__init__()
+        #------------------------------> Menu items for cond & relevant points
+        self.rCond, self.rRp = self.SetCondRPMenuItems(ciDate)
+        #endregion --------------------------------------------> Initial Setup
 
-# #         #region --------------------------------------------------> Menu Items
-# #         self.AddCondRPMenuItems2Menus()
-# #         self.AppendSeparator()
-# #         self.zScore = self.Append(-1, 'Z score')
-# #         self.AppendSeparator()
-# #         self.pCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
-# #         self.AppendSeparator()
-# #         self.saveI = self.Append(-1, 'Export Image\tShift+I')
-# #         self.AppendSeparator()
-# #         self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
-# #         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.AddCondRPMenuItems2Menus()
+        self.AppendSeparator()
+        self.miZScore = self.Append(-1, 'Z score')
+        self.AppendSeparator()
+        self.miPCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
+        self.miSaveI = self.Append(-1, 'Export Image\tShift+I')
+        self.AppendSeparator()
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        #endregion -----------------------------------------------> Menu Items
 
-# #         #region --------------------------------------------------------> Bind
-# #         self.Bind(wx.EVT_MENU, self.OnZScore,     source=self.zScore)
-# #         self.Bind(wx.EVT_MENU, self.OnSaveImage,  source=self.saveI)
-# #         self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=self.pCorr)
-# #         self.Bind(wx.EVT_MENU, self.OnZoomReset,  source=self.zoomR)
-# #         #endregion -----------------------------------------------------> Bind
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnZScore,     source=self.miZScore)
+        self.Bind(wx.EVT_MENU, self.OnSaveImage,  source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=self.miPCorr)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,  source=self.miZoomR)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-# #     #region ---------------------------------------------------> Class methods
-# #     #------------------------------> Event Methods
-# #     def OnSaveImage(self, event: wx.CommandEvent) -> bool:
-# #         """Save an image of the plot.
+    #region ---------------------------------------------------> Class methods
+    #------------------------------> Event Methods
+    def OnSaveImage(self, event: wx.CommandEvent) -> bool:
+        """Save an image of the plot.
     
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.OnSaveVolcanoImage()
-        
-# #         return True
-# #     #---
-    
-# #     def OnUpdatePlot(self, event: wx.CommandEvent) -> bool:
-# #         """Update volcano plot.
-    
-# #             Parameters
-# #             ----------
-# #             event : wx.Event
-# #                 Information about the event
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         #region --------------------------------------------------------> Draw
-# #         win = self.GetWindow()
-# #         win.OnVolChange(*self.GetData4Draw())
-# #         #endregion -----------------------------------------------------> Draw
-        
-# #         return True
-# #     #---
-    
-# #     def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-# #         """Reset plot zoom.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
             
     
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.OnZoomResetVol()
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnSaveVolcanoImage()
         
-# #         return True
-# #     #---
+        return True
+    #---
     
-# #     def OnZScore(self, event: wx.CommandEvent) -> bool:
-# #         """Change Z score to plot.
+    def OnUpdatePlot(self, event: wx.CommandEvent) -> bool:
+        """Update volcano plot.
     
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+    
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Draw
+        win = self.GetWindow()
+        win.OnVolChange(*self.GetData4Draw())
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
+        """Reset plot zoom.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
             
     
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.OnZScore()
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnZoomResetVol()
         
-# #         return True
-# #     #---
-# #     #------------------------------> Other Methods
-# #     def AddCondRPMenuItems2Menus(self) -> bool:
-# #         """Add the menu items in self.cond and self.rp to the menu
-        
-# #             Returns
-# #             -------
-# #             True
-# #         """
-# #         #region ---------------------------------------------------> Add items
-# #         #------------------------------> Conditions
-# #         for k,c in enumerate(self.cond):
-# #             self.Insert(k,c)
-# #         #------------------------------> Separator
-# #         self.sep = wx.MenuItem(None)
-# #         self.Insert(k+1, self.sep)
-# #         #------------------------------> Relevant Points
-# #         for j,t in enumerate(self.rp, k+2):
-# #             self.Insert(j, t)
-# #         #endregion ------------------------------------------------> Add items
-        
-# #         return True
-# #     #---
+        return True
+    #---
     
-# #     def GetData4Draw(self) -> tuple[str, str, bool]:
-# #         """Return the current selected cond, rp and corrP.
+    def OnZScore(self, event: wx.CommandEvent) -> bool:
+        """Change Z score to plot.
     
-# #             Returns
-# #             -------
-# #             Data needed for the volcano plot
-# #                 (cond, rp, bool)
-# #         """
-# #         #region ---------------------------------------------------> Varaibles
-# #         cond = self.GetCheckedRadiodItem(self.cond)
-# #         rp   = self.GetCheckedRadiodItem(self.rp)
-# #         corrP = self.pCorr.IsChecked()
-# #         #endregion ------------------------------------------------> Varaibles
-        
-# #         return (cond, rp, corrP)
-# #     #---
-    
-# #     def SetCondRPMenuItems(
-# #         self, tDate: str
-# #         ) -> tuple[list[wx.MenuItem], list[wx.MenuItem]]:
-# #         """Set the menu items for conditions and relevant points as defined for 
-# #             the current analysis date.
-    
-# #             Parameters
-# #             ----------
-# #             tDate : str
-    
-# #             Returns
-# #             -------
-# #             tuple:
-# #                 First element is the condition menu items and second relevant 
-# #                 point menu items.
-# #         """
-# #         #region -------------------------------------------------> Empty lists
-# #         cond = []
-# #         rp = []
-# #         #endregion ----------------------------------------------> Empty lists
-        
-# #         #region ------------------------------------------------> Add elements
-# #         #------------------------------> Conditions
-# #         for c in self.crp[tDate]['C']:
-# #             #------------------------------> 
-# #             i = wx.MenuItem(None, -1, text=c, kind=wx.ITEM_RADIO)
-# #             #------------------------------> 
-# #             cond.append(i)
-# #             #------------------------------> 
-# #             self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=i)
-# #         #------------------------------> Relevant Points
-# #         for t in self.crp[tDate]['RP']:
-# #             #------------------------------> 
-# #             i = wx.MenuItem(None, -1, text=t, kind=wx.ITEM_RADIO)
-# #             #------------------------------> 
-# #             rp.append(i)
-# #             #------------------------------> 
-# #             self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=i)
-# #         #endregion ---------------------------------------------> Add elements
-        
-# #         return (cond, rp)
-# #     #---
-    
-# #     def UpdateCondRP(self, tDate) -> bool:
-# #         """Update the conditions and relevant points when date changes.
-    
-# #             Parameters
-# #             ----------
-# #             tDate : str
-# #                 Selected date
-    
-# #             Returns
-# #             -------
-# #             bool
-            
-# #             Notes
-# #             -----
-# #             Date changes in ProtProfToolMenu
-# #         """
-# #         #region ---------------------------------------------> Delete Elements
-# #         #------------------------------> Conditions
-# #         for c in self.cond:
-# #             self.Delete(c)
-# #         #------------------------------> Separators
-# #         self.Delete(self.sep)
-# #         self.sep = None
-# #         #------------------------------> RP
-# #         for rp in self.rp:
-# #             self.Delete(rp)
-# #         #endregion ------------------------------------------> Delete Elements
-        
-# #         #region -----------------------------------> Create & Add New Elements
-# #         #------------------------------> 
-# #         self.cond, self.rp = self.SetCondRPMenuItems(tDate)
-# #         #------------------------------> 
-# #         self.AddCondRPMenuItems2Menus()
-# #         #endregion --------------------------------> Create & Add New Elements
-        
-# #         return True
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
-
-
-# # class FCEvolution(wx.Menu):
-# #     """Menu for a log2FC evolution along relevant points """
-# #     #region -----------------------------------------------------> Class setup
-    
-# #     #endregion --------------------------------------------------> Class setup
-
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self) -> None:
-# #         """ """
-# #         #region -----------------------------------------------> Initial Setup
-# #         super().__init__()
-# #         #endregion --------------------------------------------> Initial Setup
-
-# #         #region --------------------------------------------------> Menu Items
-# #         self.showAll = self.Append(-1, 'Show All', kind=wx.ITEM_CHECK)
-# #         self.Check(self.showAll.GetId(), True)
-# #         self.AppendSeparator()
-# #         self.saveI = self.Append(-1, 'Export Image\tAlt+I')
-# #         self.AppendSeparator()
-# #         self.zoomR = self.Append(-1, 'Reset Zoom\tAlt+Z')
-# #         #endregion -----------------------------------------------> Menu Items
-
-# #         #region --------------------------------------------------------> Bind
-# #         self.Bind(wx.EVT_MENU, self.OnShowAll,    source=self.showAll)
-# #         self.Bind(wx.EVT_MENU, self.OnSaveImage,  source=self.saveI)
-# #         self.Bind(wx.EVT_MENU, self.OnZoomReset,  source=self.zoomR)
-# #         #endregion -----------------------------------------------------> Bind
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
-
-# #     #region ---------------------------------------------------> Class methods
-# #     #------------------------------> Event Methods
-# #     def OnSaveImage(self, event: wx.CommandEvent) -> bool:
-# #         """Save an image of the plot.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.OnSaveFCImage()
-        
-# #         return True
-# #     #---
-    
-# #     def OnShowAll(self, event: wx.CommandEvent) -> bool:
-# #         """Show the interval cover by all FC values in the data.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.OnFCChange(*self.GetData4Draw())
-        
-# #         return True
-# #     #---
-    
-# #     def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-# #         """Reset the Zoom level of the plot
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.OnZoomResetFC()
-        
-# #         return True
-# #     #---
-# #     #------------------------------> Other Methods
-# #     def GetData4Draw(self) -> tuple[bool]:
-# #         """Get the data needed to draw the FC evolution in window.          
-    
-# #             Returns
-# #             -------
-# #             tuple[bool]
-# #                 Return tuple to match similar data from VolcanoPlot
-# #         """
-# #         return (self.showAll.IsChecked(),)
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
-
-
-# # class FiltersProtProf(wx.Menu):
-# #     """Menu for the ProtProfPlot Filters"""
-# #     #region -----------------------------------------------------> Class setup
-    
-# #     #endregion --------------------------------------------------> Class setup
-
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self) -> None:
-# #         """ """
-# #         #region -----------------------------------------------> Initial Setup
-# #         super().__init__()
-# #         #endregion --------------------------------------------> Initial Setup
-
-# #         #region --------------------------------------------------> Menu Items
-# #         self.zScore   = self.Append(-1, 'Z Score')
-# #         self.log2FC   = self.Append(-1, 'Log2(FC)')
-# #         self.pValue   = self.Append(-1, 'P Value')
-# #         self.fcChange = self.Append(-1, 'FC Change')
-# #         self.fcNo     = self.Append(-1, 'FC No Change')
-# #         self.div      = self.Append(-1, 'FC Diverge')
-# #         self.AppendSeparator()
-# #         self.apply = self.Append(-1, 'Apply All\tCtrl+A')
-# #         self.update = self.Append(-1, 'Auto Apply Filters', kind=wx.ITEM_CHECK)
-# #         self.AppendSeparator()
-# #         self.removeLast = self.Append(-1, 'Remove Last\tCtrl+Shift+Z')
-# #         self.removeAny = self.Append(-1, 'Remove Filters')
-# #         self.removeAll = self.Append(-1, 'Remove All\tCtrl+Shift+A')
-# #         #endregion -----------------------------------------------> Menu Items
-        
-# #         #region --------------------------------------------------------> Bind
-# #         self.Bind(wx.EVT_MENU, self.OnZScore,      source=self.zScore)
-# #         self.Bind(wx.EVT_MENU, self.OnLog2FC,      source=self.log2FC)
-# #         self.Bind(wx.EVT_MENU, self.OnPValue,      source=self.pValue)
-# #         self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.fcChange)
-# #         self.Bind(wx.EVT_MENU, self.OnFCNoChange,  source=self.fcNo)
-# #         self.Bind(wx.EVT_MENU, self.OnDivergent,   source=self.div)
-# #         self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.apply)
-# #         self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.update)
-# #         self.Bind(wx.EVT_MENU, self.OnRemoveLast,  source=self.removeLast)
-# #         self.Bind(wx.EVT_MENU, self.OnRemoveAny,   source=self.removeAny)
-# #         self.Bind(wx.EVT_MENU, self.OnRemoveAll,   source=self.removeAll)
-# #         #endregion -----------------------------------------------------> Bind
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
-
-# #     #region ---------------------------------------------------> Class methods
-# #     #------------------------------> Event Methods
-# #     def OnApplyFilter(self, event: wx.CommandEvent) -> bool:
-# #         """Apply all filters.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
             
     
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.FilterApply()
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnZScore()
         
-# #         return True
-# #     #---
+        return True
+    #---
+    #------------------------------> Other Methods
+    def AddCondRPMenuItems2Menus(self) -> bool:
+        """Add the menu items in self.cond and self.rp to the menu
+        
+            Returns
+            -------
+            True
+        """
+        #region ---------------------------------------------------> Add items
+        #------------------------------> Conditions
+        for k,c in enumerate(self.cond):
+            self.Insert(k,c)
+        #------------------------------> Separator
+        self.sep = wx.MenuItem(None)
+        self.Insert(k+1, self.sep)
+        #------------------------------> Relevant Points
+        for j,t in enumerate(self.rp, k+2):
+            self.Insert(j, t)
+        #endregion ------------------------------------------------> Add items
+        
+        return True
+    #---
     
-# #     def OnAutoFilter(self, event: wx.CommandEvent) -> bool:
-# #         """Filter results by Z score.
+    def GetData4Draw(self) -> tuple[str, str, bool]:
+        """Return the current selected cond, rp and corrP.
     
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
+            Returns
+            -------
+            Data needed for the volcano plot
+                (cond, rp, bool)
+        """
+        #region ---------------------------------------------------> Varaibles
+        cond = self.GetCheckedRadiodItem(self.cond)
+        rp   = self.GetCheckedRadiodItem(self.rp)
+        corrP = self.miPCorr.IsChecked()
+        #endregion ------------------------------------------------> Varaibles
+        
+        return (cond, rp, corrP)
+    #---
+    
+    def SetCondRPMenuItems(
+        self, tDate: str
+        ) -> tuple[list[wx.MenuItem], list[wx.MenuItem]]:
+        """Set the menu items for conditions and relevant points as defined for 
+            the current analysis date.
+    
+            Parameters
+            ----------
+            tDate : str
+    
+            Returns
+            -------
+            tuple:
+                First element is the condition menu items and second relevant 
+                point menu items.
+        """
+        #region -------------------------------------------------> Empty lists
+        cond = []
+        rp = []
+        #endregion ----------------------------------------------> Empty lists
+        
+        #region ------------------------------------------------> Add elements
+        #------------------------------> Conditions
+        for c in self.rCrp[tDate]['C']:
+            #------------------------------> 
+            i = wx.MenuItem(None, -1, text=c, kind=wx.ITEM_RADIO)
+            #------------------------------> 
+            cond.append(i)
+            #------------------------------> 
+            self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=i)
+        #------------------------------> Relevant Points
+        for t in self.rCrp[tDate]['RP']:
+            #------------------------------> 
+            i = wx.MenuItem(None, -1, text=t, kind=wx.ITEM_RADIO)
+            #------------------------------> 
+            rp.append(i)
+            #------------------------------> 
+            self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=i)
+        #endregion ---------------------------------------------> Add elements
+        
+        return (cond, rp)
+    #---
+    
+    def UpdateCondRP(self, tDate) -> bool:
+        """Update the conditions and relevant points when date changes.
+    
+            Parameters
+            ----------
+            tDate : str
+                Selected date
+    
+            Returns
+            -------
+            bool
             
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.OnAutoFilter(self.IsChecked(event.GetId()))
+            Notes
+            -----
+            Date changes in ProtProfToolMenu
+        """
+        #region ---------------------------------------------> Delete Elements
+        #------------------------------> Conditions
+        for c in self.cond:
+            self.Delete(c)
+        #------------------------------> Separators
+        self.Delete(self.sep)
+        self.sep = None
+        #------------------------------> RP
+        for rp in self.rp:
+            self.Delete(rp)
+        #endregion ------------------------------------------> Delete Elements
         
-# #         return True
-# #     #---
-    
-# #     def OnDivergent(self, event: wx.CommandEvent) -> bool:
-# #         """Filter results by divergent.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.Filter_Divergent()
+        #region -----------------------------------> Create & Add New Elements
+        #------------------------------> 
+        self.cond, self.rp = self.SetCondRPMenuItems(tDate)
+        #------------------------------> 
+        self.AddCondRPMenuItems2Menus()
+        #endregion --------------------------------> Create & Add New Elements
         
-# #         return True
-# #     #---
-    
-# #     def OnFCChange(self, event: wx.CommandEvent) -> bool:
-# #         """Filter results by FC change.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.Filter_FCChange()
-        
-# #         return True
-# #     #---
-    
-# #     def OnFCNoChange(self, event: wx.CommandEvent) -> bool:
-# #         """Filter results by No FC change.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.Filter_FCNoChange()
-        
-# #         return True
-# #     #---
-    
-# #     def OnLog2FC(self, event: wx.CommandEvent) -> bool:
-# #         """Filter results by log2FC value.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.Filter_Log2FC()
-        
-# #         return True
-# #     #---
-    
-# #     def OnPValue(self, event: wx.CommandEvent) -> bool:
-# #         """Filter results by P value.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.Filter_PValue()
-        
-# #         return True
-# #     #---
-    
-# #     def OnRemoveAll(self, event: wx.CommandEvent) -> bool:
-# #         """Remove all filters.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.FilterRemoveAll()
-        
-# #         return True
-# #     #---
-    
-# #     def OnRemoveAny(self, event: wx.CommandEvent) -> bool:
-# #         """Remove any filter.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.FilterRemoveAny()
-        
-# #         return True
-# #     #---
-    
-# #     def OnRemoveLast(self, event: wx.CommandEvent) -> bool:
-# #         """Remove last filter.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.FilterRemoveLast()
-        
-# #         return True
-# #     #---
-
-# #     def OnZScore(self, event: wx.CommandEvent) -> bool:
-# #         """Filter results by Z score.
-    
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
-            
-    
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.Filter_ZScore()
-        
-# #         return True
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
-# # class LockPlotScale(wx.Menu):
-# #     """Lock the plots scale to the selected option
+class FCEvolution(wx.Menu):
+    """Menu for a log2FC evolution along relevant points """
+    #region -----------------------------------------------------> Class setup
     
-# #         Attributes
-# #         ----------
-# #         nameID : dict
-# #             To map menu items to the Lock type. Keys are MenuItems.GetId() and 
-# #             values are str. 
-# #     """
-# #     #region -----------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miShowAll = self.Append(-1, 'Show All', kind=wx.ITEM_CHECK)
+        self.Check(self.miShowAll.GetId(), True)
+        self.AppendSeparator()
+        self.miSaveI = self.Append(-1, 'Export Image\tAlt+I')
+        self.AppendSeparator()
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tAlt+Z')
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnShowAll,    source=self.miShowAll)
+        self.Bind(wx.EVT_MENU, self.OnSaveImage,  source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,  source=self.miZoomR)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    #------------------------------> Event Methods
+    def OnSaveImage(self, event: wx.CommandEvent) -> bool:
+        """Save an image of the plot.
     
-# #     #endregion --------------------------------------------------> Class setup
-
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self) -> None:
-# #         """ """
-# #         #region -----------------------------------------------> Initial Setup
-# #         super().__init__()
-# #         #endregion --------------------------------------------> Initial Setup
-
-# #         #region --------------------------------------------------> Menu Items
-# #         self.no      = self.Append(-1, 'No',         kind=wx.ITEM_RADIO)
-# #         self.date    = self.Append(-1, 'To Date',    kind=wx.ITEM_RADIO)
-# #         self.project = self.Append(-1, 'To Project', kind=wx.ITEM_RADIO)
-# #         #endregion -----------------------------------------------> Menu Items
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnSaveFCImage()
         
-# #         #region ------------------------------------------------------> nameID
-# #         self.nameID = { # Associate IDs with Tab names. Avoid manual IDs
-# #             self.no.GetId()     : 'No',
-# #             self.date.GetId()   : 'Date',
-# #             self.project.GetId(): 'Project',
-# #         }
-# #         #endregion ---------------------------------------------------> nameID
-        
-# #         #region --------------------------------------------------------> Bind
-# #         self.Bind(wx.EVT_MENU, self.OnLockScale, source=self.no)
-# #         self.Bind(wx.EVT_MENU, self.OnLockScale, source=self.date)
-# #         self.Bind(wx.EVT_MENU, self.OnLockScale, source=self.project)
-# #         #endregion -----------------------------------------------------> Bind
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
-
-# #     #region ---------------------------------------------------> Class methods
-# #     #------------------------------> Event Methods
-# #     def OnLockScale(self, event: wx.CommandEvent) -> bool:
-# #         """Lock or unlock the scale of the plots.
+        return True
+    #---
     
-# #             Parameters
-# #             ----------
-# #             event:wx.Event
-# #                 Information about the event
+    def OnShowAll(self, event: wx.CommandEvent) -> bool:
+        """Show the interval cover by all FC values in the data.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnFCChange(*self.GetData4Draw())
+        
+        return True
+    #---
+    
+    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
+        """Reset the Zoom level of the plot
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnZoomResetFC()
+        
+        return True
+    #---
+    #------------------------------> Other Methods
+    def GetData4Draw(self) -> tuple[bool]:
+        """Get the data needed to draw the FC evolution in window.          
+    
+            Returns
+            -------
+            tuple[bool]
+                Return tuple to match similar data from VolcanoPlot
+        """
+        return (self.miShowAll.IsChecked(),)
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class FiltersProtProf(wx.Menu):
+    """Menu for the ProtProfPlot Filters"""
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miZScore   = self.Append(-1, 'Z Score')
+        self.miLog2FC   = self.Append(-1, 'Log2(FC)')
+        self.miPValue   = self.Append(-1, 'P Value')
+        self.miFcChange = self.Append(-1, 'FC Change')
+        self.miFcNo     = self.Append(-1, 'FC No Change')
+        self.miDiv      = self.Append(-1, 'FC Diverge')
+        self.AppendSeparator()
+        self.miApply = self.Append(-1, 'Apply All\tCtrl+A')
+        self.miUpdate = self.Append(-1, 'Auto Apply Filters', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
+        self.miRemoveLast = self.Append(-1, 'Remove Last\tCtrl+Shift+Z')
+        self.miRemoveAny = self.Append(-1, 'Remove Filters')
+        self.miRemoveAll = self.Append(-1, 'Remove All\tCtrl+Shift+A')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnZScore,      source=self.miZScore)
+        self.Bind(wx.EVT_MENU, self.OnLog2FC,      source=self.miLog2FC)
+        self.Bind(wx.EVT_MENU, self.OnPValue,      source=self.miPValue)
+        self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.miFcChange)
+        self.Bind(wx.EVT_MENU, self.OnFCNoChange,  source=self.miFcNo)
+        self.Bind(wx.EVT_MENU, self.OnDivergent,   source=self.miDiv)
+        self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.miApply)
+        self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.miUpdate)
+        self.Bind(wx.EVT_MENU, self.OnRemoveLast,  source=self.miRemoveLast)
+        self.Bind(wx.EVT_MENU, self.OnRemoveAny,   source=self.miRemoveAny)
+        self.Bind(wx.EVT_MENU, self.OnRemoveAll,   source=self.miRemoveAll)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    #------------------------------> Event Methods
+    def OnApplyFilter(self, event: wx.CommandEvent) -> bool:
+        """Apply all filters.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
             
     
-# #             Returns
-# #             -------
-# #             bool
-# #         """
-# #         win = self.GetWindow()
-# #         win.OnLockScale(self.nameID[event.GetId()])
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.FilterApply()
         
-# #         return True
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+        return True
+    #---
+    
+    def OnAutoFilter(self, event: wx.CommandEvent) -> bool:
+        """Filter results by Z score.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnAutoFilter(self.IsChecked(event.GetId()))
+        
+        return True
+    #---
+    
+    def OnDivergent(self, event: wx.CommandEvent) -> bool:
+        """Filter results by divergent.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_Divergent()
+        
+        return True
+    #---
+    
+    def OnFCChange(self, event: wx.CommandEvent) -> bool:
+        """Filter results by FC change.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_FCChange()
+        
+        return True
+    #---
+    
+    def OnFCNoChange(self, event: wx.CommandEvent) -> bool:
+        """Filter results by No FC change.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_FCNoChange()
+        
+        return True
+    #---
+    
+    def OnLog2FC(self, event: wx.CommandEvent) -> bool:
+        """Filter results by log2FC value.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_Log2FC()
+        
+        return True
+    #---
+    
+    def OnPValue(self, event: wx.CommandEvent) -> bool:
+        """Filter results by P value.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_PValue()
+        
+        return True
+    #---
+    
+    def OnRemoveAll(self, event: wx.CommandEvent) -> bool:
+        """Remove all filters.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.FilterRemoveAll()
+        
+        return True
+    #---
+    
+    def OnRemoveAny(self, event: wx.CommandEvent) -> bool:
+        """Remove any filter.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.FilterRemoveAny()
+        
+        return True
+    #---
+    
+    def OnRemoveLast(self, event: wx.CommandEvent) -> bool:
+        """Remove last filter.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.FilterRemoveLast()
+        
+        return True
+    #---
+
+    def OnZScore(self, event: wx.CommandEvent) -> bool:
+        """Filter results by Z score.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.Filter_ZScore()
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class LockPlotScale(wx.Menu):
+    """Lock the plots scale to the selected option
+    
+        Attributes
+        ----------
+        nameID : dict
+            To map menu items to the Lock type. Keys are MenuItems.GetId() and 
+            values are str. 
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miNo      = self.Append(-1, 'No',         kind=wx.ITEM_RADIO)
+        self.miDate    = self.Append(-1, 'To Date',    kind=wx.ITEM_RADIO)
+        self.miProject = self.Append(-1, 'To Project', kind=wx.ITEM_RADIO)
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ------------------------------------------------------> nameID
+        self.rNameID = { # Associate IDs with Tab names. Avoid manual IDs
+            self.miNo.GetId()     : 'No',
+            self.miDate.GetId()   : 'Date',
+            self.miProject.GetId(): 'Project',
+        }
+        #endregion ---------------------------------------------------> nameID
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnLockScale, source=self.miNo)
+        self.Bind(wx.EVT_MENU, self.OnLockScale, source=self.miDate)
+        self.Bind(wx.EVT_MENU, self.OnLockScale, source=self.miProject)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    #------------------------------> Event Methods
+    def OnLockScale(self, event: wx.CommandEvent) -> bool:
+        """Lock or unlock the scale of the plots.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnLockScale(self.rNameID[event.GetId()])
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 class ClearSelLimProt(wx.Menu):
@@ -1601,128 +1599,131 @@ class GelLimProt(wx.Menu):
 
 
 #region -----------------------------------------------------------> Mix menus
-# # class ProtProfToolMenu(wx.Menu, MenuMethods):
-# #     """Tool menu for the Proteome Profiling Plot window.
+class ProtProfToolMenu(wx.Menu, MenuMethods):
+    """Tool menu for the Proteome Profiling Plot window.
         
-# #         Parameters
-# #         ----------
-# #         menuData: dict
-# #             Data needed to build the menu. See Notes below.
+        Parameters
+        ----------
+        cMenuData: dict
+            Data needed to build the menu. See Notes below.
         
-# #         Attributes
-# #         ----------
-# #         menuData: dict
-# #             Data needed to build the menu. See Notes below.
-# #         plotdate : list of wx.MenuItems
-# #             Available dates in the analysis.
+        Attributes
+        ----------
+        rPlotdate : list of wx.MenuItems
+            Available dates in the analysis.
         
-# #         Notes
-# #         -----
-# #         menuData has the following structure:
-# #             {
-# #                 'menudate' : [List of dates as str],
-# #                 'crp' : {
-# #                     'date1' : {
-# #                         'C' : [List of conditions as str],
-# #                         'RP': [List of relevant points as str],
-# #                     }
-# #                     .......
-# #                     'dateN'
-# #                 }
-# #             }    
-# #     """
-# #     #region -----------------------------------------------------> Class setup
+        Notes
+        -----
+        cMenuData has the following structure:
+            {
+                'menudate' : [List of dates as str],
+                'crp' : {
+                    'date1' : {
+                        'C' : [List of conditions as str],
+                        'RP': [List of relevant points as str],
+                    }
+                    .......
+                    'dateN'
+                }
+            }    
+    """
+    #region -----------------------------------------------------> Class setup
     
-# #     #endregion --------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
 
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self, menuData: dict) -> None:
-# #         """ """
-# #         #region -----------------------------------------------> Initial Setup
-# #         self.menuData = menuData
-# #         self.plotDate = []
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cMenuData: dict) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cMenuData = cMenuData
+        self.rPlotDate = []
         
-# #         super().__init__()
-# #         #endregion --------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-# #         #region --------------------------------------------------> Menu Items
-# #         #------------------------------> Add Dates
-# #         self.AddDateItems(self.menuData['menudate'])
-# #         self.AppendSeparator()
-# #         #------------------------------> Volcano Plot
-# #         self.volcano =  VolcanoPlot(
-# #                 self.menuData['crp'], self.plotDate[0].GetItemLabelText()
-# #         )
-# #         self.AppendSubMenu(self.volcano, 'Volcano Plot',)
-# #         self.AppendSeparator()
-# #         #------------------------------> Relevant Points
-# #         self.fc = FCEvolution()
-# #         self.AppendSubMenu(self.fc, 'FC Evolution')
-# #         self.AppendSeparator()
-# #         #------------------------------> Filter
-# #         self.AppendSubMenu(FiltersProtProf(), 'Filters')
-# #         self.AppendSeparator()
-# #         #------------------------------> Lock scale
-# #         self.lockScale = LockPlotScale()
-# #         self.AppendSubMenu(self.lockScale, 'Lock Plot Scale')
-# #         self.AppendSeparator()
-# #         #------------------------------> Duplicate Window
-# #         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
-# #         self.AppendSeparator()
-# #         #------------------------------> 
-# #         self.dataPrep = self.Append(-1, 'Data Preparation')
-# #         self.AppendSeparator()
-# #         #------------------------------> Export Data
-# #         self.saveD  = self.Append(-1, 'Export Data\tCtrl+E')
-# #         self.saveFD = self.Append(-1, 'Export Data Filtered\tShift+Ctrl+E')
-# #         self.saveI  = self.Append(-1, 'Export Images\tShift+Alt+I')
-# #         self.AppendSeparator()
-# #         #------------------------------> 
-# #         self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
-# #         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        #------------------------------> Add Dates
+        self.AddDateItems(self.cMenuData['menudate'])
+        self.AppendSeparator()
+        #------------------------------> Volcano Plot
+        self.mVolcano =  VolcanoPlot(
+                self.cMenuData['crp'], self.rPlotDate[0].GetItemLabelText()
+        )
+        self.AppendSubMenu(self.mVolcano, 'Volcano Plot',)
+        self.AppendSeparator()
+        #------------------------------> Relevant Points
+        self.mFc = FCEvolution()
+        self.AppendSubMenu(self.mFc, 'FC Evolution')
+        self.AppendSeparator()
+        #------------------------------> Filter
+        self.mFilter = FiltersProtProf()
+        self.AppendSubMenu(self.mFilter, 'Filters')
+        self.AppendSeparator()
+        #------------------------------> Lock scale
+        self.mLockScale = LockPlotScale()
+        self.AppendSubMenu(self.mLockScale, 'Lock Plot Scale')
+        self.AppendSeparator()
+        #------------------------------> Duplicate Window
+        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.miDataPrep = self.Append(-1, 'Data Preparation')
+        self.AppendSeparator()
+        #------------------------------> Export Data
+        self.miSaveD  = self.Append(-1, 'Export Data\tCtrl+E')
+        self.miSaveFD = self.Append(-1, 'Export Data Filtered\tShift+Ctrl+E')
+        self.miSaveI  = self.Append(-1, 'Export Images\tShift+Alt+I')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
+        #endregion -----------------------------------------------> Menu Items
 
-# #         #region --------------------------------------------------------> Bind
-# #         self.Bind(wx.EVT_MENU, self.OnDupWin,             source=self.dupWin)
-# #         self.Bind(wx.EVT_MENU, self.OnExportPlotData,     source=self.saveD)
-# #         self.Bind(wx.EVT_MENU, self.OnExportFilteredData, source=self.saveFD)
-# #         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,      source=self.dataPrep)
-# #         self.Bind(wx.EVT_MENU, self.OnZoomReset,          source=self.zoomR)
-# #         self.Bind(wx.EVT_MENU, self.OnSavePlot,           source=self.saveI)
-# #         #endregion -----------------------------------------------------> Bind
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnDupWin,            source=self.miDupWin)
+        self.Bind(wx.EVT_MENU, self.OnExportPlotData,    source=self.miSaveD)
+        self.Bind(wx.EVT_MENU, self.OnExportFilteredData,source=self.miSaveFD)
+        self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,     source=self.miDataPrep)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,         source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnSavePlot,          source=self.miSaveI)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-# #     #region ---------------------------------------------------> Class methods
-# #     #------------------------------> Event Methods
-# #     def OnPlotDate(self, event: wx.CommandEvent) -> Literal[True]:
-# #         """Plot a date of a section in an UMSAP file.
+    #region ---------------------------------------------------> Class methods
+    #------------------------------> Event Methods
+    def OnPlotDate(self, event: wx.CommandEvent) -> bool:
+        """Plot a date of a section in an UMSAP file.
     
-# #             Parameters
-# #             ----------
-# #             event : wx.Event
-# #                 Information about the event
-# #         """
-# #         #region --------------------------------------------------------> Date
-# #         tDate = self.GetLabelText(event.GetId())
-# #         #endregion -----------------------------------------------------> Date
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Date
+        tDate = self.GetLabelText(event.GetId())
+        #endregion -----------------------------------------------------> Date
         
-# #         #region -----------------------------------------> Update Volcano menu
-# #         self.volcano.UpdateCondRP(tDate)
-# #         #endregion --------------------------------------> Update Volcano menu
+        #region -----------------------------------------> Update Volcano menu
+        self.mVolcano.UpdateCondRP(tDate)
+        #endregion --------------------------------------> Update Volcano menu
         
-# #         #region --------------------------------------------------------> Draw
-# #         win = self.GetWindow()
-# #         win.OnDateChange(
-# #             tDate,
-# #             *self.volcano.GetData4Draw(),
-# #             *self.fc.GetData4Draw(),
-# #         )
-# #         #endregion -----------------------------------------------------> Draw
+        #region --------------------------------------------------------> Draw
+        win = self.GetWindow()
+        win.OnDateChange(
+            tDate,
+            *self.mVolcano.GetData4Draw(),
+            *self.mFc.GetData4Draw(),
+        )
+        #endregion -----------------------------------------------------> Draw
         
-# #         return True
-# #     #---
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 class LimProtToolMenu(wx.Menu, MenuMethods):
@@ -1958,7 +1959,7 @@ class ToolMenuBar(MainMenuBar):
         config.nwUMSAPControl : FileControlToolMenu,
         config.nwCorrAPlot    : CorrAPlotToolMenu,
         config.nwCheckDataPrep: DataPrepToolMenu,
-        # config.nwProtProf     : ProtProfToolMenu,
+        config.nwProtProf     : ProtProfToolMenu,
         config.nwLimProt      : LimProtToolMenu,
     }
     #endregion --------------------------------------------------> Class Setup
