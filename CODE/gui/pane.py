@@ -2301,87 +2301,81 @@ class ResControlExpConfBase(wx.Panel):
 
 
 #region -------------------------------------------------------------> Classes
-# # #------------------------------> Panes
-# # class ListCtrlSearchPlot(wx.Panel):
-# #     """Creates a panel with a wx.ListCtrl and below it a wx.SearchCtrl.
+#------------------------------> Panes
+class ListCtrlSearchPlot(wx.Panel):
+    """Creates a panel with a wx.ListCtrl and below it a wx.SearchCtrl.
 
-# #         Parameters
-# #         ----------
-# #         parent: wx.Window
-# #             Parent of the panel
-# #         colLabel : list of str or None
-# #             Name of the columns in the wx.ListCtrl. Default is None
-# #         colSize : list of int or None
-# #             Size of the columns in the wx.ListCtlr. Default is None
-# #         data : list of list
-# #             Data for the wx.ListCtrl when in virtual mode. Default is []. 
-# #         style : wx.Style
-# #             Style of the wx.ListCtrl. Default is wx.LC_REPORT.
-# #         tcHint : str
-# #             Hint for the wx.SearchCtrl. Default is ''.
+        Parameters
+        ----------
+        cParent: wx.Window
+            Parent of the panel
+        cColLabel : list of str or None
+            Name of the columns in the wx.ListCtrl. Default is None
+        cColSize : list of int or None
+            Size of the columns in the wx.ListCtlr. Default is None
+        cStyle : wx.Style
+            Style of the wx.ListCtrl. Default is wx.LC_REPORT.
+        cTcHint : str
+            Hint for the wx.SearchCtrl. Default is ''.
+        rData : list of list
+            Data for the wx.ListCtrl when in virtual mode. Default is []. 
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = config.npListCtrlSearchPlot
+    #endregion --------------------------------------------------> Class setup
 
-# #         Attributes
-# #         ----------
-# #         name : str
-# #             Name of the panel. Default is config.npListCtrlSearchPlot.
-# #         lcs : dtsWidget.ListCtrlSearch
-# #     """
-# #     #region -----------------------------------------------------> Class setup
-# #     name = config.npListCtrlSearchPlot
-# #     #endregion --------------------------------------------------> Class setup
-
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(
-# #         self, parent: wx.Window, colLabel: Optional[list[str]]=None, 
-# #         colSize: Optional[list[int]]=None, data: list[list]=[],
-# #         style = wx.LC_REPORT, tcHint: str = ''
-# #         ) -> None:
-# #         """ """
-# #         #region -------------------------------------------------> Check Input
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: wx.Window, cColLabel: Optional[list[str]]=None, 
+        cColSize: Optional[list[int]]=None, rData: list[list]=[],
+        cStyle = wx.LC_REPORT, cTcHint: str = ''
+        ) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
         
-# #         #endregion ----------------------------------------------> Check Input
+        #endregion ----------------------------------------------> Check Input
 
-# #         #region -----------------------------------------------> Initial Setup
-# #         super().__init__(parent, name=self.name)
-# #         #endregion --------------------------------------------> Initial Setup
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(cParent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
 
-# #         #region --------------------------------------------------------> Menu
+        #region --------------------------------------------------------> Menu
         
-# #         #endregion -----------------------------------------------------> Menu
+        #endregion -----------------------------------------------------> Menu
 
-# #         #region -----------------------------------------------------> Widgets
-# #         #------------------------------> 
-# #         self.lcs = dtsWidget.ListCtrlSearch(
-# #             self, 
-# #             listT    = 2,
-# #             colLabel = colLabel,
-# #             colSize  = colSize,
-# #             canCut   = False,
-# #             canPaste = False,
-# #             style    = style,
-# #             data     = data,
-# #             tcHint   = tcHint,
-# #         )
-# #         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> 
+        self.wLCS = dtsWidget.ListCtrlSearch(
+            self, 
+            listT    = 2,
+            colLabel = cColLabel,
+            colSize  = cColSize,
+            canCut   = False,
+            canPaste = False,
+            style    = cStyle,
+            data     = rData,
+            tcHint   = cTcHint,
+        )
+        #endregion --------------------------------------------------> Widgets
 
-# #         #region ------------------------------------------------------> Sizers
-# #         self.SetSizer(self.lcs.Sizer)
-# #         #endregion ---------------------------------------------------> Sizers
+        #region ------------------------------------------------------> Sizers
+        self.SetSizer(self.wLCS.Sizer)
+        #endregion ---------------------------------------------------> Sizers
 
-# #         #region --------------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
         
-# #         #endregion -----------------------------------------------------> Bind
+        #endregion -----------------------------------------------------> Bind
 
-# #         #region ---------------------------------------------> Window position
+        #region ---------------------------------------------> Window position
         
-# #         #endregion ------------------------------------------> Window position
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-# #     #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Class methods
     
-# #     #endregion ------------------------------------------------> Class methods
-# # #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 #------------------------------> Utils

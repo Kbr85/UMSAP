@@ -55,7 +55,7 @@ if os == 'Darwin':
     else:
         sbFieldSize = [-1, 300]
     sbPlot2Fields = [-1, 115]
-# #     sbPlot3Fields = [90, -1, 115] 
+    sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Cmd'
     #------------------------------> Delta space between consecutive windows
@@ -116,7 +116,7 @@ nwUMSAPControl  = 'UMSAPControl'
 nwCorrAPlot     = 'CorrAPlot'
 # # nwProtProf      = 'ProtProfPlot'
 # # nwLimProt       = 'LimProtPlot'
-# # nwCheckDataPrep = 'CheckDataPrep'
+nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
@@ -129,7 +129,7 @@ ntLimProt  = 'LimProtTab'
 ntProtProf = 'ProtProfTab'
 ntTarProt  = 'TarProtTab'
 #------------------------------> Individual Panes
-# # npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
+npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
 npDataPrep              = "DataPrepPane"
 npLimProt               = "LimProtPane"
@@ -356,8 +356,8 @@ oControlTypeProtProf = {
 #region -----------------------------------------------------> DF Column names
 dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
 dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
-# # dfcolDataCheck = [
-# #     'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
+dfcolDataCheck = [
+    'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
 dfcolLimProtFirstPart = [
     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
 dfcolLimProtCLevel = ['Ptost']
