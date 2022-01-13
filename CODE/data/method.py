@@ -19,11 +19,6 @@ import itertools
 from typing import Literal, Union
 
 import dat4s_core.data.method as dtsMethod
-
-# import config.config as config
-
-# if config.typeCheck:
-#     import pandas as pd
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -161,176 +156,176 @@ def ResControl2DF(
 #---
 
 
-# def Fragments(
-#     df: 'pd.DataFrame', val: float, comp: Literal['lt', 'le', 'e', 'ge', 'gt'], 
-#     protLoc: Union[list[int], list[None]],
-#     ) -> dict:
-#     """Creates the dict holding the fragments identified in the analysis
+def Fragments(
+    df: 'pd.DataFrame', val: float, comp: Literal['lt', 'le', 'e', 'ge', 'gt'], 
+    protLoc: Union[list[int], list[None]],
+    ) -> dict:
+    """Creates the dict holding the fragments identified in the analysis
 
-#         Parameters
-#         ----------
-#         df: pd.DataFrame with the data from the analysis. The columns in df are
-#             expected to be:
-#             Seq Nrec Crec Nnat Cnat Exp1 Exp2 ...... ExpN
-#         val : float
-#             Threshold value to filter df and identify relevant peptides
-#         comp : str
-#             One of 'lt', 'le', 'e', 'ge', 'gt'
-#         protLoc : list[int] or list[None]
-#             Native protein location in the recombinant sequence
+        Parameters
+        ----------
+        df: pd.DataFrame with the data from the analysis. The columns in df are
+            expected to be:
+            Seq Nrec Crec Nnat Cnat Exp1 Exp2 ...... ExpN
+        val : float
+            Threshold value to filter df and identify relevant peptides
+        comp : str
+            One of 'lt', 'le', 'e', 'ge', 'gt'
+        protLoc : list[int] or list[None]
+            Native protein location in the recombinant sequence
 
-#         Returns
-#         -------
-#         dict:
-#             {
-#                 'Exp1' : {
-#                     'Coord': [(x1, x2),...., (xN, xM)],
-#                     'Seq'  : [Aligned Seq1, ...., Aligned SeqN],
-#                     'SeqL  : [Flat List with Seqs1, ...., Flat List with SeqsN],
-#                     'Np'   : [Number of peptides1, ...., NpN],
-#                     'NpNat : [Number of native peptides1, ...., NpNatN],
-#                     'Nc'   : [Number of cleavages1, ...., NcN],
-#                     'NcNat': [Number of native cleavages1, ....., NcNatN],
-#                 },
-#                 'ExpN' : {},
-#             }
-#         All list inside each column have the same length
-#     """
-#     # No Test
-#     #region -----------------------------------------------------------> dictO
-#     dictO = {}
-#     #endregion --------------------------------------------------------> dictO
+        Returns
+        -------
+        dict:
+            {
+                'Exp1' : {
+                    'Coord': [(x1, x2),...., (xN, xM)],
+                    'Seq'  : [Aligned Seq1, ...., Aligned SeqN],
+                    'SeqL  : [Flat List with Seqs1, ...., Flat List with SeqsN],
+                    'Np'   : [Number of peptides1, ...., NpN],
+                    'NpNat : [Number of native peptides1, ...., NpNatN],
+                    'Nc'   : [Number of cleavages1, ...., NcN],
+                    'NcNat': [Number of native cleavages1, ....., NcNatN],
+                },
+                'ExpN' : {},
+            }
+        All list inside each column have the same length
+    """
+    # No Test
+    #region -----------------------------------------------------------> dictO
+    dictO = {}
+    #endregion --------------------------------------------------------> dictO
    
-#     #region ---------------------------------------------------> 
-#     for c in range(5, df.shape[1]):
-#         colK = str(df.columns.values[c])
-#         #------------------------------> Prepare dictO
-#         dictO[colK] = {}
-#         dictO[colK]['Coord'] = []
-#         dictO[colK]['Seq']   = []
-#         dictO[colK]['SeqL']  = []
-#         dictO[colK]['Np']    = []
-#         dictO[colK]['NpNat'] = []
-#         dictO[colK]['Nc']    = []
-#         dictO[colK]['NcNat'] = []
-#         #------------------------------> Filter df
-#         dfE = dtsMethod.DFFilterByColN(df, [c], val, comp)
-#         #------------------------------> 
-#         n       = None
-#         c       = None
-#         seq     = None
-#         seqL    = []
-#         np      = None
-#         npNat   = None
-#         ncL     = []
-#         ncLNat  = []
-#         nctL    = []
-#         nctLNat = []
-#         #------------------------------>    
-#         for r in range(0, dfE.shape[0]):
-#             if n is None:
-#                 seq = dfE.iat[r,0]
-#                 seqL.append(seq)
-#                 np = 1
-#                 n = dfE.iat[r,1]
-#                 c = dfE.iat[r,2]
-#                 if n >= protLoc[0] and c <= protLoc[1]:
-#                     npNat = 1
-#                 else:
-#                     npNat = 0
-#                 if n >= protLoc[0]:
-#                     ncLNat.append(n-1)
-#                     nctLNat.append(n-1)
-#                 else:
-#                     pass
-#                 if c <= protLoc[1]:
-#                     ncLNat.append(c)
-#                     nctLNat.append(c)
-#                 else:
-#                     pass
-#                 ncL.append(n-1)
-#                 ncL.append(c)
-#                 nctL.append(n-1)
-#                 nctL.append(c)
-#             else:
-#                 nc = dfE.iat[r,1]
-#                 cc = dfE.iat[r,2]
-#                 seqc = dfE.iat[r,0]
-#                 if nc <= c:
-#                     seq = f'{seq}\n{(nc-n)*" "}{seqc}'
-#                     seqL.append(seqc)
-#                     np = np + 1
-#                     if cc > c:
-#                         c = cc
-#                     else:
-#                         pass
-#                     if nc >= protLoc[0] and cc <= protLoc[1]:
-#                         npNat = npNat + 1
-#                     else:
-#                         pass
-#                     if nc >= protLoc[0]:
-#                         ncLNat.append(nc-1)
-#                         nctLNat.append(nc-1)
-#                     else:
-#                         pass
-#                     if cc <= protLoc[1]:
-#                         ncLNat.append(cc)
-#                         nctLNat.append(cc)
-#                     else:
-#                         pass
-#                     ncL.append(nc-1)
-#                     ncL.append(cc)
-#                     nctL.append(nc-1)
-#                     nctL.append(cc)
-#                 else:
-#                     dictO[colK]['Coord'].append((n,c))
-#                     dictO[colK]['Seq'].append(seq)
-#                     dictO[colK]['SeqL'].append(seqL)
-#                     dictO[colK]['Np'].append(np)
-#                     dictO[colK]['NpNat'].append(npNat)
-#                     dictO[colK]['Nc'].append(len(list(set(ncL))))
-#                     dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
-#                     n = nc
-#                     c = cc
-#                     seq = seqc
-#                     seqL = [seqc]
-#                     np = 1
-#                     if n >= protLoc[0] and c <= protLoc[1]:
-#                         npNat = 1
-#                     else:
-#                         npNat = 0
-#                     ncLNat = []
-#                     if n >= protLoc[0]:
-#                         ncLNat.append(n-1)
-#                         nctLNat.append(n-1)
-#                     else:
-#                         pass
-#                     if c <= protLoc[1]:
-#                         ncLNat.append(c)
-#                         nctLNat.append(c)
-#                     else:
-#                         pass
-#                     ncL    = []
-#                     ncL.append(n-1)
-#                     ncL.append(c)
-#                     nctL.append(n-1)
-#                     nctL.append(c)
-#         #------------------------------> Catch the last line
-#         if n is not None:        
-#             dictO[colK]['Coord'].append((n,c))
-#             dictO[colK]['Seq'].append(seq)
-#             dictO[colK]['SeqL'].append(seqL)
-#             dictO[colK]['Np'].append(np)
-#             dictO[colK]['NpNat'].append(npNat)
-#             dictO[colK]['Nc'].append(len(list(set(ncL))))
-#             dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
-#             dictO[colK]['Nct'] = len(list(set(nctL)))        
-#             dictO[colK]['NctNat'] = len(list(set(nctLNat)))        
-#         else:
-#             pass
-#         #------------------------------> All detected peptides as a list
-#     #endregion ------------------------------------------------> 
+    #region ---------------------------------------------------> 
+    for c in range(5, df.shape[1]):
+        colK = str(df.columns.values[c])
+        #------------------------------> Prepare dictO
+        dictO[colK] = {}
+        dictO[colK]['Coord'] = []
+        dictO[colK]['Seq']   = []
+        dictO[colK]['SeqL']  = []
+        dictO[colK]['Np']    = []
+        dictO[colK]['NpNat'] = []
+        dictO[colK]['Nc']    = []
+        dictO[colK]['NcNat'] = []
+        #------------------------------> Filter df
+        dfE = dtsMethod.DFFilterByColN(df, [c], val, comp)
+        #------------------------------> 
+        n       = None
+        c       = None
+        seq     = None
+        seqL    = []
+        np      = None
+        npNat   = None
+        ncL     = []
+        ncLNat  = []
+        nctL    = []
+        nctLNat = []
+        #------------------------------>    
+        for r in range(0, dfE.shape[0]):
+            if n is None:
+                seq = dfE.iat[r,0]
+                seqL.append(seq)
+                np = 1
+                n = dfE.iat[r,1]
+                c = dfE.iat[r,2]
+                if n >= protLoc[0] and c <= protLoc[1]:
+                    npNat = 1
+                else:
+                    npNat = 0
+                if n >= protLoc[0]:
+                    ncLNat.append(n-1)
+                    nctLNat.append(n-1)
+                else:
+                    pass
+                if c <= protLoc[1]:
+                    ncLNat.append(c)
+                    nctLNat.append(c)
+                else:
+                    pass
+                ncL.append(n-1)
+                ncL.append(c)
+                nctL.append(n-1)
+                nctL.append(c)
+            else:
+                nc = dfE.iat[r,1]
+                cc = dfE.iat[r,2]
+                seqc = dfE.iat[r,0]
+                if nc <= c:
+                    seq = f'{seq}\n{(nc-n)*" "}{seqc}'
+                    seqL.append(seqc)
+                    np = np + 1
+                    if cc > c:
+                        c = cc
+                    else:
+                        pass
+                    if nc >= protLoc[0] and cc <= protLoc[1]:
+                        npNat = npNat + 1
+                    else:
+                        pass
+                    if nc >= protLoc[0]:
+                        ncLNat.append(nc-1)
+                        nctLNat.append(nc-1)
+                    else:
+                        pass
+                    if cc <= protLoc[1]:
+                        ncLNat.append(cc)
+                        nctLNat.append(cc)
+                    else:
+                        pass
+                    ncL.append(nc-1)
+                    ncL.append(cc)
+                    nctL.append(nc-1)
+                    nctL.append(cc)
+                else:
+                    dictO[colK]['Coord'].append((n,c))
+                    dictO[colK]['Seq'].append(seq)
+                    dictO[colK]['SeqL'].append(seqL)
+                    dictO[colK]['Np'].append(np)
+                    dictO[colK]['NpNat'].append(npNat)
+                    dictO[colK]['Nc'].append(len(list(set(ncL))))
+                    dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
+                    n = nc
+                    c = cc
+                    seq = seqc
+                    seqL = [seqc]
+                    np = 1
+                    if n >= protLoc[0] and c <= protLoc[1]:
+                        npNat = 1
+                    else:
+                        npNat = 0
+                    ncLNat = []
+                    if n >= protLoc[0]:
+                        ncLNat.append(n-1)
+                        nctLNat.append(n-1)
+                    else:
+                        pass
+                    if c <= protLoc[1]:
+                        ncLNat.append(c)
+                        nctLNat.append(c)
+                    else:
+                        pass
+                    ncL    = []
+                    ncL.append(n-1)
+                    ncL.append(c)
+                    nctL.append(n-1)
+                    nctL.append(c)
+        #------------------------------> Catch the last line
+        if n is not None:        
+            dictO[colK]['Coord'].append((n,c))
+            dictO[colK]['Seq'].append(seq)
+            dictO[colK]['SeqL'].append(seqL)
+            dictO[colK]['Np'].append(np)
+            dictO[colK]['NpNat'].append(npNat)
+            dictO[colK]['Nc'].append(len(list(set(ncL))))
+            dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
+            dictO[colK]['Nct'] = len(list(set(nctL)))        
+            dictO[colK]['NctNat'] = len(list(set(nctLNat)))        
+        else:
+            pass
+        #------------------------------> All detected peptides as a list
+    #endregion ------------------------------------------------> 
 
-#     return dictO
-# #---
-# #endregion ----------------------------------------------------------> Methods
+    return dictO
+#---
+#endregion ----------------------------------------------------------> Methods

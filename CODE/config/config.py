@@ -115,7 +115,7 @@ nwMain          = 'MainW'
 nwUMSAPControl  = 'UMSAPControl'
 nwCorrAPlot     = 'CorrAPlot'
 # # nwProtProf      = 'ProtProfPlot'
-# # nwLimProt       = 'LimProtPlot'
+nwLimProt       = 'LimProtPlot'
 nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
@@ -482,8 +482,8 @@ color = { # Colors for the app
 # #     'Main' : [ # Lighter colors of the fragments and bands 
 # # 		'#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff',
 # # 	],
-# #     'RecProt' : 'gray',
-# #     'NatProt' : '#c94c4c',
+    'RecProt' : 'gray',
+    'NatProt' : '#c94c4c',
     nuCorrA : { # Color for plot in Correlation Analysis
         'CMAP' : { # CMAP colors and interval
             'N' : 128,
@@ -498,12 +498,12 @@ color = { # Colors for the app
 # #         'VolSel': '#6ac653',
 # #         'FCAll' : '#d3d3d3',
 # #     },
-# #     nwLimProt : {
-# #         'Spot' : [
-# #             '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
-# #             '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
-# #         ],
-# #     },
+    nwLimProt : {
+        'Spot' : [
+            '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
+            '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
+        ],
+    },
 }
 #endregion -----------------------------------------------------------> Colors
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS
