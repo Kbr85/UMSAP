@@ -264,9 +264,11 @@ class BaseWindow(wx.Frame):
             -----
             
         """
-        # CheckDataPrep(
-        #     self,f'{self.cSection} - {tDate}', self.rData[tDate]['DP']
-        # )
+        CheckDataPrep(
+            self, 
+            f'{self.GetTitle()} - {config.nuDataPrep}', 
+            self.rData[tDate]['DP']
+        )
         
         return True
     #---
@@ -5756,7 +5758,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        
+
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -6293,7 +6295,10 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> Text
 
         #region ---------------------------------------------------> Title
-        self.PlotTitle()
+        if self.rFromUMSAPFile:
+            self.PlotTitle()
+        else:
+            pass
         #endregion ------------------------------------------------> Title
 
         return True
