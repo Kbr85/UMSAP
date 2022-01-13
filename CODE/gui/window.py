@@ -5746,7 +5746,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #region --------------------------------------------------------> Menu
         
         #endregion -----------------------------------------------------> Menu
-
+        
         #region -----------------------------------------------------> Widgets
         
         #endregion --------------------------------------------------> Widgets
@@ -5769,7 +5769,176 @@ class CheckDataPrep(BaseWindowNPlotLT):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Event Methods
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+        """
+        #region -----------------------------------------------> Update parent
+        if self.rFromUMSAPFile:
+            self.cParent.UnCheckSection(self.cSection, self)		
+        else:
+            pass
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    
+    def OnListSelect(self, event: wx.CommandEvent) -> bool:
+        """Plot data for the selected column
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------------> Get Selected
+        idx = self.wLC.wLCS.lc.GetFirstSelected()
+        #endregion ---------------------------------------------> Get Selected
+        
+        #region ---------------------------------------------------------> dfS
+        try:
+            self.PlotdfS(idx)
+        except Exception as e:
+            #------------------------------> 
+            msg = (
+                f'It was not possible to build the histograms for the selected '
+                f'column.')
+            dtscore.Notification('errorU', msg=msg, tException=e, parent=self)
+            #------------------------------> 
+            for p in self.cLNPlots:
+                self.wPlots.dPlot[p].axes.clear()
+                self.wPlots.dPlot[p].canvas.draw()
+            #------------------------------> 
+            return False
+        #endregion ------------------------------------------------------> dfS
+        
+        #region ---------------------------------------------------------> dfT
+        self.PlotdfT(idx)
+        #endregion ------------------------------------------------------> dfT
+        
+        #region ---------------------------------------------------------> dfN
+        self.PlotdfN(idx)
+        #endregion ------------------------------------------------------> dfN
+        
+        #region --------------------------------------------------------> dfIm
+        self.PlotdfIm(idx)
+        #endregion -----------------------------------------------------> dfIm
+        
+        #region --------------------------------------------------------> Text
+        self.SetText(idx)
+        #endregion -----------------------------------------------------> Text
+        
+        return True
+    #---
+    
+    def OnDupWin(self) -> bool:
+        """Duplicate window.
+    
+            Returns
+            -------
+            True
+        """
+        #------------------------------> 
+        if self.rFromUMSAPFile:
+            super().OnDupWin()
+        else:
+            CheckDataPrep(self.cParent, cTitle=self.cTitle, rDpDF=self.rDpDF)
+        #------------------------------> 
+        return True
+    #---
+    
+    def OnExportPlotData(self) -> bool:
+        """ Export data to a csv file """
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.DirSelectDialog(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            #------------------------------> Export
+            try:
+                for k, v in self.rDpDF.items():
+                    #------------------------------> file path
+                    fPath = p / self.cFileName[k].format(self.rDateC, 'txt')
+                    #------------------------------> Write
+                    dtsFF.WriteDF2CSV(fPath, v)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---
+    
+    def OnSavePlot(self) -> bool:
+        """ Export all plots to a pdf image"""
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.DirSelectDialog(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            col = self.wLC.wLCS.lc.GetFirstSelected()
+            #------------------------------> Export
+            try:
+                for k, v in self.wPlots.dPlot.items():
+                    #------------------------------> file path
+                    fPath = p / self.cImgName[k].format(self.rDateC, col, 'pdf')
+                    #------------------------------> Write
+                    v.figure.savefig(fPath)
+            except Exception as e:
+                dtscore.Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---
+    
+    def OnZoomReset(self) -> bool:
+        """Reset the zoom of all plots"""
+        return self.OnZoomResetMany()
+    #---
+    #endregion ------------------------------------------------> Event Methods
+    
+    #region --------------------------------------------------> Manage Methods
     def SetWindow(self) -> bool:
         """Configure the window. 
         
@@ -5786,22 +5955,22 @@ class CheckDataPrep(BaseWindowNPlotLT):
         """
         #------------------------------> Set Variables 
         if self.cTitle is None:
-            self.fromUMSAPFile = True 
-            self.rObj    = self.cParent.rObj
-            self.rData   = self.rObj.rConfData[self.cSection]
-            self.rDate   = [k for k in self.rData.keys()]
+            self.rFromUMSAPFile = True 
+            self.rObj   = self.cParent.rObj
+            self.rData  = self.rObj.rConfData[self.cSection]
+            self.rDate  = [k for k in self.rData.keys()]
             self.rDateC = self.rDate[0]
             self.cTitle = (
                 f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}")
         else:
-            self.fromUMSAPFile = False
-            self.date = None
-            self.dateC = self.cParent.rDateC
+            self.rFromUMSAPFile = False
+            self.rDate = None
+            self.rDateC = self.cParent.rDateC
         #------------------------------> 
         return True
     #---
     
-    def WinPos(self) -> Literal[True]:
+    def WinPos(self) -> bool:
         """Set the position on the screen and adjust the total number of
             shown windows.
         """
@@ -5824,35 +5993,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
 
         return True
     #---
-    
-    def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
-        """Close window and uncheck section in UMSAPFile window. Assumes 
-            self.parent is an instance of UMSAPControl.
-            Override as needed.
-    
-            Parameters
-            ----------
-            event: wx.CloseEvent
-                Information about the event
-        """
-        #region -----------------------------------------------> Update parent
-        if self.fromUMSAPFile:
-            self.cParent.UnCheckSection(self.cSection, self)		
-        else:
-            pass
-        #endregion --------------------------------------------> Update parent
-        
-        #region ------------------------------------> Reduce number of windows
-        config.winNumber[self.cName] -= 1
-        #endregion ---------------------------------> Reduce number of windows
-        
-        #region -----------------------------------------------------> Destroy
-        self.Destroy()
-        #endregion --------------------------------------------------> Destroy
-        
-        return True
-    #---
-    
+
     def FillListCtrl(self) -> bool:
         """Update the column names for the given analysis.
     
@@ -5869,7 +6010,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion -----------------------------------------------> Delete old
         
         #region ----------------------------------------------------> Get Data
-        data = [[str(k), n] for k,n in enumerate(self.dpDF['dfS'].columns.values.tolist())]
+        data = [[str(k), n] for k,n in enumerate(self.rDpDF['dfS'].columns.values.tolist())]
         #endregion -------------------------------------------------> Get Data
         
         #region ------------------------------------------> Set in wx.ListCtrl
@@ -6051,8 +6192,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
         gausY = stats.gaussian_kde(x)
         self.wPlots.dPlot['Imp'].axes.plot(gausX, gausY.pdf(gausX))
         #------------------------------> 
-        idx = list(map(int, self.dpDF['dfS'][self.dpDF['dfS'].iloc[:,col].isnull()].index.tolist()))
-        y = self.dpDF['dfIm'].iloc[idx,col]
+        idx = list(map(int, self.rDpDF['dfS'][self.rDpDF['dfS'].iloc[:,col].isnull()].index.tolist()))
+        y = self.rDpDF['dfIm'].iloc[idx,col]
         if not y.empty:
             yBin = dtsStatistic.HistBin(y)[0]
             self.wPlots.dPlot['Imp'].axes.hist(y, bins=yBin, density=False)
@@ -6084,21 +6225,21 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion -------------------------------------------------> Empty DF
         
         #region --------------------------------------------> Calculate values
-        for r,k in enumerate(self.dpDF):
+        for r,k in enumerate(self.rDpDF):
             #------------------------------> N
-            df.iat[r,1] = self.dpDF[k].shape[0]
+            df.iat[r,1] = self.rDpDF[k].shape[0]
             #------------------------------> NA
-            df.iat[r,2] = self.dpDF[k].iloc[:,col].isnull().sum()
+            df.iat[r,2] = self.rDpDF[k].iloc[:,col].isnull().sum()
             #------------------------------> Mean
-            df.iat[r,3] = self.dpDF[k].iloc[:,col].mean()
+            df.iat[r,3] = self.rDpDF[k].iloc[:,col].mean()
             #------------------------------> Median
-            df.iat[r,4] = self.dpDF[k].iloc[:,col].median()
+            df.iat[r,4] = self.rDpDF[k].iloc[:,col].median()
             # #------------------------------> SD
-            df.iat[r,5] = self.dpDF[k].iloc[:,col].std()
+            df.iat[r,5] = self.rDpDF[k].iloc[:,col].std()
             # #------------------------------> Kurtosis
-            df.iat[r,6] = self.dpDF[k].iloc[:,col].kurt()
+            df.iat[r,6] = self.rDpDF[k].iloc[:,col].kurt()
             # #------------------------------> Skewness
-            df.iat[r,7] = self.dpDF[k].iloc[:,col].skew()
+            df.iat[r,7] = self.rDpDF[k].iloc[:,col].skew()
         #endregion -----------------------------------------> Calculate values
         
         #region ---------------------------------------------> Remove Old Text
@@ -6112,61 +6253,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
         
         return True
     #---
-
-    def OnListSelect(self, event: wx.CommandEvent) -> bool:
-        """Plot data for the selected column
     
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        #region ------------------------------------------------> Get Selected
-        idx = self.wLC.wLCS.lc.GetFirstSelected()
-        #endregion ---------------------------------------------> Get Selected
-        
-        #region ---------------------------------------------------------> dfS
-        try:
-            self.PlotdfS(idx)
-        except Exception as e:
-            #------------------------------> 
-            msg = (
-                f'It was not possible to build the histograms for the selected '
-                f'column.')
-            dtscore.Notification('errorU', msg=msg, tException=e, parent=self)
-            #------------------------------> 
-            for p in self.cLNPlots:
-                self.wPlots.dPlot[p].axes.clear()
-                self.wPlots.dPlot[p].canvas.draw()
-            #------------------------------> 
-            return False
-        #endregion ------------------------------------------------------> dfS
-        
-        #region ---------------------------------------------------------> dfT
-        self.PlotdfT(idx)
-        #endregion ------------------------------------------------------> dfT
-        
-        #region ---------------------------------------------------------> dfN
-        self.PlotdfN(idx)
-        #endregion ------------------------------------------------------> dfN
-        
-        #region --------------------------------------------------------> dfIm
-        self.PlotdfIm(idx)
-        #endregion -----------------------------------------------------> dfIm
-        
-        #region --------------------------------------------------------> Text
-        self.SetText(idx)
-        #endregion -----------------------------------------------------> Text
-        
-        return True
-    #---
-    
-    def Draw(self, date: Optional[str]=None):
+    def Draw(self, date: Optional[str]=None) -> bool:
         """Update window when a new date is selected.
     
             Parameters
@@ -6182,110 +6270,35 @@ class CheckDataPrep(BaseWindowNPlotLT):
             -----
             
         """
-        #------------------------------> Set the dataFrame
+        #region ---------------------------------------------------> Variables
         if date is not None:
-            self.dpDF = self.rData[date]['DP']
-            self.dateC = date
+            self.rDpDF = self.rData[date]['DP']
+            self.rDateC = date
         else:
             pass
-        #------------------------------> Fill
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> wx.ListCtrl
         self.FillListCtrl()
-        #------------------------------> Clean Plots
+        #endregion ----------------------------------------------> wx.ListCtrl
+
+        #region --------------------------------------------------------> Plot
         for k in self.wPlots.dPlot.keys():
             self.wPlots.dPlot[k].axes.clear()
             self.wPlots.dPlot[k].canvas.draw()
-        #------------------------------> Clean Text
+        #endregion -----------------------------------------------------> Plot
+
+        #region ---------------------------------------------------> Text
         self.wText.Clear()
-        #------------------------------> 
+        #endregion ------------------------------------------------> Text
+
+        #region ---------------------------------------------------> Title
+        self.PlotTitle()
+        #endregion ------------------------------------------------> Title
+
         return True
     #---
-    
-    def OnDupWin(self) -> Literal[True]:
-        """Duplicate window.
-    
-            Returns
-            -------
-            True
-        """
-        #------------------------------> 
-        if self.fromUMSAPFile:
-            super().OnDupWin()
-        else:
-            CheckDataPrep(self.cParent, cTitle=self.cTitle, rDpDF=self.rDpDF)
-        #------------------------------> 
-        return True
-    #---
-    
-    def OnExportPlotData(self) -> Literal[True]:
-        """ Export data to a csv file """
-        #region --------------------------------------------------> Dlg window
-        dlg = dtsWindow.DirSelectDialog(parent=self)
-        #endregion -----------------------------------------------> Dlg window
-        
-        #region ---------------------------------------------------> Get Path
-        if dlg.ShowModal() == wx.ID_OK:
-            #------------------------------> Variables
-            p = Path(dlg.GetPath())
-            #------------------------------> Export
-            try:
-                for k, v in self.dpDF.items():
-                    #------------------------------> file path
-                    fPath = p / self.cFileName[k].format(self.rDateC, 'txt')
-                    #------------------------------> Write
-                    dtsFF.WriteDF2CSV(fPath, v)
-            except Exception as e:
-                dtscore.Notification(
-                    'errorF',
-                    msg        = self.cMsgExportFailed,
-                    tException = e,
-                    parent     = self,
-                )
-        else:
-            pass
-        #endregion ------------------------------------------------> Get Path
-     
-        dlg.Destroy()
-        return True	
-    #---
-    
-    def OnSavePlot(self) -> Literal[True]:
-        """ Export all plots to a pdf image"""
-        #region --------------------------------------------------> Dlg window
-        dlg = dtsWindow.DirSelectDialog(parent=self)
-        #endregion -----------------------------------------------> Dlg window
-        
-        #region ---------------------------------------------------> Get Path
-        if dlg.ShowModal() == wx.ID_OK:
-            #------------------------------> Variables
-            p = Path(dlg.GetPath())
-            col = self.wLC.wLCS.lc.GetFirstSelected()
-            #------------------------------> Export
-            try:
-                for k, v in self.wPlots.dPlot.items():
-                    #------------------------------> file path
-                    fPath = p / self.cImgName[k].format(self.rDateC, col, 'pdf')
-                    #------------------------------> Write
-                    v.figure.savefig(fPath)
-            except Exception as e:
-                dtscore.Notification(
-                    'errorF',
-                    msg        = self.cMsgExportFailed,
-                    tException = e,
-                    parent     = self,
-                )
-        else:
-            pass
-        #endregion ------------------------------------------------> Get Path
-     
-        dlg.Destroy()
-        return True	
-    #---
-    
-    def OnZoomReset(self) -> Literal[True]:
-        """Reset the zoom of all plots"""
-        return self.OnZoomResetMany()
-    #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion -----------------------------------------------> Manage Methods
 #---
 
 

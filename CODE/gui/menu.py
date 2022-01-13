@@ -158,6 +158,29 @@ class MenuMethods():
         
         return True
     #---
+    
+    def OnPlotDate(self, event: wx.CommandEvent) -> bool:
+        """Plot a date of a section in an UMSAP file.
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+                    
+            Returns
+            -------
+            True
+            
+            Notes
+            -----
+            Generic implementation. Override as needed.
+        
+        """
+        win = self.GetWindow() 
+        win.Draw(self.GetLabelText(event.GetId()))
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
     
     #region --------------------------------------------------> Manage Methods
@@ -236,35 +259,6 @@ class MenuMethods():
         
 # #         return True
 # #     #---
-
-
-    
-# #     def OnPlotDate(self, event: wx.CommandEvent) -> Literal[True]:
-# #         """Plot a date of a section in an UMSAP file.
-    
-# #             Parameters
-# #             ----------
-# #             event : wx.Event
-# #                 Information about the event
-                    
-# #             Returns
-# #             -------
-# #             True
-            
-# #             Notes
-# #             -----
-# #             Generic implementation. Override as needed.
-        
-# #         """
-# #         win = self.GetWindow() 
-# #         win.Draw(self.GetLabelText(event.GetId()))
-        
-# #         return True
-# #     #---
-    
-
-    
-
     #endregion ------------------------------------------------> Class Methods
 #---
 
@@ -633,69 +627,69 @@ class CorrAPlotToolMenu(PlotMenu):
 #---
 
 
-# # class DataPrepToolMenu(wx.Menu, MenuMethods):
-# #     """Tool menu for the Data Preparation Plot window.
+class DataPrepToolMenu(wx.Menu, MenuMethods):
+    """Tool menu for the Data Preparation Plot window.
         
-# #         Parameters
-# #         ----------
-# #         menuData: dict
-# #             Data needed to build the menu. See Notes for more details.
+        Parameters
+        ----------
+        menuData: dict
+            Data needed to build the menu. See Notes for more details.
         
-# #         Attributes
-# #         ----------
-# #         menuData: dict
-# #             Data needed to build the menu. See Notes for more details.
-# #         plotDate : list of wx.MenuItems
-# #             Available dates in the analysis.
+        Attributes
+        ----------
+        menuData: dict
+            Data needed to build the menu. See Notes for more details.
+        plotDate : list of wx.MenuItems
+            Available dates in the analysis.
             
-# #         Notes
-# #         -----
-# #         menuData has the following structure:
-# #         {
-# #             'menudate' : [List of dates as str],
-# #         }
-# #     """
-# #     #region -----------------------------------------------------> Class setup
+        Notes
+        -----
+        menuData has the following structure:
+        {
+            'menudate' : [List of dates as str],
+        }
+    """
+    #region -----------------------------------------------------> Class setup
     
-# #     #endregion --------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
 
-# #     #region --------------------------------------------------> Instance setup
-# #     def __init__(self, menuData: Optional[dict]=None) -> None:
-# #         """ """
-# #         #region -----------------------------------------------> Initial Setup
-# #         self.menuData = menuData
-# #         self.plotDate = []
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cMenuData: Optional[dict]=None) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cMenuData = cMenuData
+        self.rPlotDate = []
         
-# #         super().__init__()
-# #         #endregion --------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-# #         #region --------------------------------------------------> Menu Items
-# #         #------------------------------> Add Dates
-# #         if menuData is not None:
-# #             self.AddDateItems(self.menuData['menudate'])
-# #             self.AppendSeparator()
-# #         else:
-# #             pass
-# #         #------------------------------> Duplicate Window
-# #         self.dupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
-# #         self.AppendSeparator()
-# #         #------------------------------> Export Data
-# #         self.saveD = self.Append(-1, 'Export Data\tCtrl+E')
-# #         self.saveI = self.Append(-1, 'Export Image\tShift+I')
-# #         self.AppendSeparator()
-# #         #------------------------------> 
-# #         self.zoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
-# #         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        #------------------------------> Add Dates
+        if cMenuData is not None:
+            self.AddDateItems(self.cMenuData['menudate'])
+            self.AppendSeparator()
+        else:
+            pass
+        #------------------------------> Duplicate Window
+        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        #------------------------------> Export Data
+        self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
+        self.miSaveI = self.Append(-1, 'Export Image\tShift+I')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        #endregion -----------------------------------------------> Menu Items
     
-# #         #region --------------------------------------------------------> Bind
-# #         self.Bind(wx.EVT_MENU, self.OnDupWin,             source=self.dupWin)
-# #         self.Bind(wx.EVT_MENU, self.OnExportPlotData,     source=self.saveD)
-# #         self.Bind(wx.EVT_MENU, self.OnSavePlot,           source=self.saveI)
-# #         self.Bind(wx.EVT_MENU, self.OnZoomReset,          source=self.zoomR)
-# #         #endregion -----------------------------------------------------> Bind    
-# #     #---
-# #     #endregion -----------------------------------------------> Instance setup
-# # #---
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
+        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
+        self.Bind(wx.EVT_MENU, self.OnSavePlot,       source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
+        #endregion -----------------------------------------------------> Bind    
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 
 
 # # class VolcanoPlot(wx.Menu, MenuMethods):
@@ -1965,7 +1959,7 @@ class ToolMenuBar(MainMenuBar):
     dTool = { # Key are window name
         config.nwUMSAPControl : FileControlToolMenu,
         config.nwCorrAPlot    : CorrAPlotToolMenu,
-        # config.nwCheckDataPrep: DataPrepToolMenu,
+        config.nwCheckDataPrep: DataPrepToolMenu,
         # config.nwProtProf     : ProtProfToolMenu,
         # config.nwLimProt      : LimProtToolMenu,
     }
