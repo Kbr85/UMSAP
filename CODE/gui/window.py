@@ -3792,15 +3792,59 @@ class LimProtPlot(BaseWindowProteolysis):
 
         Attributes
         ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        dClearMethod: dict
+            Methods to clear the selections in the window.
+        rAlpha: float
+            Significance level of the analysis
+        rBands: list[str]
+            Label for the bands
+        rBlSelC: list[int, int]
+            Coordinates for the Band/Lane selected from 1 to N
+        rBlSelRect: mpatch
+            Rectangle used to highlight the selected Band/Lane
+        rData: dict
+            Data for the Limited Proteolysis section of the UMSAP File.
+        rDate: list[str]
+            Avalaible dates.
+        rDateC: str
+            Currently selected date.
+        rDf: pd.DataFrame
+            Copy of the data used to plot
+        rFragments: dict
+            Dict with the info for the fragments. See dmethod.Fragments.
+        rFragSelC: list[band, lane, fragment]
+            Coordinates for the currently selected fragment. 0 based.
+        rFragSelLine: matplotlib line
+            Line to highlight the currently selected fragment.
+        rGelSelC: list[band, lane]
+            Coordinated for the currently selected gel spot. 1 based.
+        rGelSpotPicked: bool
+            Gel spot was selected (True) or not (False).
+        rLanes: list[str]
+            Name of the lanes.
+        rObj: UMSAPFile
+            Reference to the UMSAP file in the parent UMSAPCtrl window.
+        rPeptide: str
+            Sequence of the selected peptide in the wx.ListCtrl.
+        rProtDelta: int
+            Diference between the residue numbers in the recombinant and native 
+            protein.
+        rProtLength: int
+            Length of hte Recombinant Protein used in the analysis.
+        rProtLoc: list[int, int]
+            Location of the Native Sequence in the Recombinant Sequence.
+        rProtTarget: str
+            Name of the Recombinant protein used in the analysis.
+        rRectsFrag: list[mpatches]
+            Rectangles used in the Fragment plot.
+        rRectsGel: list[mpatches]
+            Rectangles used in the Gel spot.
+        rSelBands: bool
+            Select Bands (True) or Lanes (False).
+        rSpotSelLine: line
+            Line to highlight the selected Gel spot.
+        rUpdateColors: bool
+            Update Gel colors (True) or not (False).
     """
     #region -----------------------------------------------------> Class setup
     cName = config.nwLimProt
@@ -3980,8 +4024,6 @@ class LimProtPlot(BaseWindowProteolysis):
             self.rBlSelRect = None
         else:
             pass
-        
-        self.rSelC = []
         #endregion ------------------------------------> Remove Old Selections
        
         #region --------------------------------------------------------> Axis
