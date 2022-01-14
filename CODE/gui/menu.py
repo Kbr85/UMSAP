@@ -33,6 +33,7 @@ import gui.window as window
 class MenuMethods():
     """Base class to hold common methods to the menus"""
     
+    #------------------------------> Class methods
     #region ---------------------------------------------------> Event Methods
     def OnCreateTab(self, event:wx.CommandEvent) -> bool:
         """Creates a new tab in the main window
@@ -319,10 +320,6 @@ class PlotMenu(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
-
-    #region ---------------------------------------------------> Class methods
-    
-    #endregion ------------------------------------------------> Class methods
 #---	
 #endregion -----------------------------------------------------> Base Classes
 
@@ -412,6 +409,7 @@ class Utility(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------------> Bind
     #endregion -----------------------------------------------> Instance Setup
 
+    #------------------------------> Class methods
     #region ---------------------------------------------------> Event Methods
     #------------------------------> Event Methods
     def OnReadFile(self, event: wx.CommandEvent) -> bool:
@@ -490,8 +488,8 @@ class FileControlToolMenu(wx.Menu):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
-    #------------------------------> Event Methods
+    #------------------------------> Class methods
+    #region ---------------------------------------------------> Event methods
     def OnUpdateFileContent(self, event: wx.CommandEvent) -> bool:
         """Update the file content shown in the window
     
@@ -509,7 +507,7 @@ class FileControlToolMenu(wx.Menu):
         
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 
 
@@ -559,8 +557,8 @@ class CorrAPlotToolMenu(PlotMenu):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
-    #------------------------------> Event Methods
+    #------------------------------> Class methods
+    #region ---------------------------------------------------> Event methods
     def OnColType(self, event: wx.CommandEvent) -> bool:
         """Use either the name of the columns or the 0 based number of the 
             column for the axes
@@ -621,7 +619,7 @@ class CorrAPlotToolMenu(PlotMenu):
         
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 
 
@@ -763,8 +761,8 @@ class VolcanoPlot(wx.Menu, MenuMethods):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
-    #------------------------------> Event Methods
+    #------------------------------> Class method
+    #region ---------------------------------------------------> Event methods
     def OnSaveImage(self, event: wx.CommandEvent) -> bool:
         """Save an image of the plot.
     
@@ -841,7 +839,9 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         
         return True
     #---
-    #------------------------------> Other Methods
+    #endregion ------------------------------------------------> Event methods
+    
+    #region ---------------------------------------------------> Manage methods
     def AddCondRPMenuItems2Menus(self) -> bool:
         """Add the menu items in self.cond and self.rp to the menu
         
@@ -961,7 +961,8 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Manage methods
+
 #---
 
 
@@ -995,8 +996,8 @@ class FCEvolution(wx.Menu):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
-    #------------------------------> Event Methods
+    #------------------------------> Class method
+    #region ---------------------------------------------------> Event methods
     def OnSaveImage(self, event: wx.CommandEvent) -> bool:
         """Save an image of the plot.
     
@@ -1050,7 +1051,9 @@ class FCEvolution(wx.Menu):
         
         return True
     #---
-    #------------------------------> Other Methods
+    #endregion ------------------------------------------------> Event methods
+    
+    #region --------------------------------------------------> Manage methods
     def GetData4Draw(self) -> tuple[bool]:
         """Get the data needed to draw the FC evolution in window.          
     
@@ -1061,7 +1064,7 @@ class FCEvolution(wx.Menu):
         """
         return (self.miShowAll.IsChecked(),)
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Manage methods
 #---
 
 
@@ -1110,7 +1113,8 @@ class FiltersProtProf(wx.Menu):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+    #------------------------------> Class methods
+    #region ---------------------------------------------------> Event methods
     #------------------------------> Event Methods
     def OnApplyFilter(self, event: wx.CommandEvent) -> bool:
         """Apply all filters.
@@ -1320,7 +1324,7 @@ class FiltersProtProf(wx.Menu):
         
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 
 
@@ -1366,8 +1370,8 @@ class LockPlotScale(wx.Menu):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
-    #------------------------------> Event Methods
+    #------------------------------> Class methods
+    #region ---------------------------------------------------> Event methods
     def OnLockScale(self, event: wx.CommandEvent) -> bool:
         """Lock or unlock the scale of the plots.
     
@@ -1386,7 +1390,7 @@ class LockPlotScale(wx.Menu):
         
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 
 
@@ -1438,8 +1442,8 @@ class ClearSelLimProt(wx.Menu):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
-    #------------------------------> Event Methods
+    #------------------------------> Class method
+    #region ---------------------------------------------------> Event methods
     def OnClearSelection(self, event: wx.CommandEvent) -> bool:
         """Clear the selection in a LimProt Res Window
     
@@ -1457,7 +1461,7 @@ class ClearSelLimProt(wx.Menu):
         
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 
 
@@ -1486,8 +1490,8 @@ class FragmentLimProt(wx.Menu):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
-    #------------------------------> Event Methods
+    #------------------------------> Class method
+    #region ---------------------------------------------------> Event methods
     def OnImage(self, event: wx.CommandEvent) -> bool:
         """
     
@@ -1525,7 +1529,7 @@ class FragmentLimProt(wx.Menu):
         
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 
 
@@ -1554,7 +1558,8 @@ class GelLimProt(wx.Menu):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+    #------------------------------> Class methods
+    #region ---------------------------------------------------> Event methods
     #------------------------------> Event Methods
     def OnImage(self, event: wx.CommandEvent) -> bool:
         """
@@ -1593,7 +1598,7 @@ class GelLimProt(wx.Menu):
         
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 #endregion -------------------------------------------------> Individual menus
 
@@ -1689,7 +1694,8 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+    #------------------------------> Class methods
+    #region ---------------------------------------------------> Event methods
     #------------------------------> Event Methods
     def OnPlotDate(self, event: wx.CommandEvent) -> bool:
         """Plot a date of a section in an UMSAP file.
@@ -1722,7 +1728,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 
 
@@ -1809,8 +1815,8 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
-    #------------------------------> Event Methods
+    #------------------------------> Class methods
+    #region ---------------------------------------------------> Event methods
     def OnImageAll(self, event: wx.CommandEvent) -> bool:
         """
     
@@ -1910,7 +1916,7 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 #endregion --------------------------------------------------------> Mix menus
 

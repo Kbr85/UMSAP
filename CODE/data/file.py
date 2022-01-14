@@ -531,7 +531,7 @@ class UMSAPFile():
     #---
     #endregion --------------------------------------------------> Get Methods
 
-    #region -----------------------------------------------------> Export data
+    #region --------------------------------------------------> Export Methods
     def ExportPlotData(self, tSection: str, tDate: str, fileP: 'Path') -> bool:
         """Export the plot data
     
@@ -552,7 +552,7 @@ class UMSAPFile():
         
         return True
     #---
-    #endregion --------------------------------------------------> Export data
+    #endregion -----------------------------------------------> Export Methods
 #---
 #endregion ----------------------------------------------------------> Classes
 

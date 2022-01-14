@@ -102,8 +102,8 @@ class ResControl():
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
-    #------------------------------> Event Methods
+    #------------------------------> Class method
+    #region ---------------------------------------------------> Event methods
     def OnResW(self, event: wx.CommandEvent) -> bool:
         """ Open the window to write the results columns. 
         
@@ -122,7 +122,7 @@ class ResControl():
         #------------------------------> 
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 
 

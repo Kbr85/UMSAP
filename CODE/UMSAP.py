@@ -95,7 +95,8 @@ class SplashWindow(wx.adv.SplashScreen):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+    #------------------------------> Class methods
+    #region ---------------------------------------------------> Event methods
     def OnClose(self, event: wx.CloseEvent) -> bool:
         """Finish app configuration (parameters that need a running wx.App) & 
             launch main window

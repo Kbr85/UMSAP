@@ -35,7 +35,7 @@ os = platform.system() # Current operating system
 cwd = Path(__file__)    # Config file path
 
 obj = None # Reference to an instance of file.UMSAPFile to reload its content
-# #endregion -----------------------------------------------> General parameters
+#endregion -----------------------------------------------> General parameters
 
 
 #region ---------------------------------------- Platform Dependent Parameters
@@ -71,7 +71,6 @@ elif os == 'Windows':
         sbFieldSize = [-1, 325]
     else:
         sbFieldSize = [-1, 300]
-# #     sbPlot = [-1, 115]
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -87,7 +86,6 @@ else:
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
-# #     sbPlot = [-1, 115]
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -120,7 +118,7 @@ nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
-# # ndFilterRemoveAny      = 'Remove Filters'
+ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
 ntStart    = 'StartTab'
 ntDataPrep = "DataPrepTab"
@@ -134,11 +132,8 @@ npCorrA                 = 'CorrAPane'
 npDataPrep              = "DataPrepPane"
 npLimProt               = "LimProtPane"
 npProtProf              = 'ProtProfPane'
-# # npResControlExp         = 'ResControlExpPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
 npResControlExpLimProt  = 'ResControlExpPaneLimProt'
-# # #------------------------------> Files
-# # nfUMSAP = 'UMSAPFile'
 #------------------------------> Modules
 nmLimProt  = 'Limited Proteolysis'
 nmTarProt  = 'Targeted Proteolysis'
@@ -154,7 +149,7 @@ nuReadF    = 'Read UMSAP File'
 # # #------------------------------> Default names
 tdW = "Untitled Window"
 tdT = "Tab"
-# tdP = 'Pane'
+tdP = 'Pane'
 #------------------------------> 
 t = {
     #------------------------------> Windows
@@ -162,7 +157,7 @@ t = {
     #------------------------------> Dialogs
     ndCheckUpdateResDialog: "Check for Updates",
     ndResControlExp       : 'Results - Control Experiments',
-#     ndFilterRemoveAny     : 'Remove Filters',
+    ndFilterRemoveAny     : 'Remove Filters',
     #------------------------------> Tabs
     ntStart   : 'Start',
     ntDataPrep: 'DataPrep',
@@ -265,7 +260,6 @@ lPdError = 'Fatal Error'
 ttBtnHelp = 'Read tutorial at {}.'
 #------------------------------> wx.StaticText
 ttStScoreVal = f'Set the minimum acceptable Score value.\ne.g. -4'
-# # ttStMedianCorr = "Select whether to apply a median correction."
 ttStScoreCol = f'Set the column number containing the {lStScoreVal}.\ne.g. 4'
 ttStGenName = f'Set the column number containing the {lStGeneName}.\ne.g. 3'
 ttStExcludeProt = (
@@ -280,7 +274,7 @@ ttStSample = (f"Specify if samples are independent or paired.\n"
     f"used for the control and experiment.")
 ttStIntensity = ('Specify if intensities are raw intensity values or are '
     'already expressed as a ratio (SILAC, TMT/iTRAQ).')
-# # #------------------------------> wx.ListCtrl
+#------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
     f"the list cannot be modified."
@@ -316,11 +310,6 @@ oCorrMethod = {
     'Kendall' : 'Kendall',
     'Spearman': 'Spearman',
 }
-# # oYesNo = {
-# #     'Empty': '',
-# #     'Yes'  : 'Yes',
-# #     'No'   : 'No',
-# # }
 oIntensities = {
     'Empty' : '',
     'RawI'  : 'Raw Intensities',
@@ -373,28 +362,26 @@ ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
 #region -------------------------------------------------------------> Other 
 #------------------------------> Unexpected Error
 mUnexpectedError = 'An uexpected error was encountered.'
-# # #------------------------------> Not empty
-# # mNotEmpty = "Please select a value for {}."
 #------------------------------> Sequences related errors
 mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
     "protein.")
 #------------------------------> Data
 mDataExport = 'Export Data failed.'
-# #endregion ----------------------------------------------------------> Other
+#endregion ----------------------------------------------------------> Other
 
-# #region ------------------------------------------------------------> Values
+#region ------------------------------------------------------------> Values
 mOneRNumText = "Only one real number can be accepted here."
 mOneZPlusNumText = "Only a non-negative integer can be accepted here."
-# # mOneZNumText = "Only one positive integer can be accepted here."
+# mOneZNumText = "Only one positive integer can be accepted here."
 mOne01NumText = "Only one number between 0 and 1 can be accepted here"
 mNZPlusNumText = (
     "Only a list of unique non-negative integers can be accepted here.")
-# # mNumROne = "Only one number can be accepted in {}."
-# # mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
-# # mListNumN0L = (
-# #     "Only a list of unique non-negative integers can be accepted in {}.")
-# # mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
-# #endregion ---------------------------------------------------------> Values
+# mNumROne = "Only one number can be accepted in {}."
+# mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
+# mListNumN0L = (
+#     "Only a list of unique non-negative integers can be accepted in {}.")
+# mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
+#endregion ---------------------------------------------------------> Values
 
 #region ---------------------------------------------------------------> Files
 # mFileUMSAP = ('It was not possible to write the results of the analysis to '
@@ -402,9 +389,9 @@ mNZPlusNumText = (
 # mFileDataExport = 'It was not possible to write the data to the selected file.'
 mFileSelector = 'It was not possible to show the file selecting dialog.'
 mFileRead = 'An error occured when reading file:\n{}'
-# # mFileColNum = (
-# #     "In addition, the values cannot be bigger than the total number of columns "
-# #     "in the {}.")
+# mFileColNum = (
+#     "In addition, the values cannot be bigger than the total number of columns "
+#     "in the {}.")
 mFileSelUMSAP = 'Select the UMSAP File'
 #endregion ------------------------------------------------------------> Files
 
@@ -416,7 +403,7 @@ mPDDataTargetProt = ('Selection of Target Protein failed.\nTarget Protein: {} '
 mPDDataExclude = 'Data Exclusion failed.\nColumns used for data exclusion: {}.'
 mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
     'filtering by Score value: {}.')
-# # mPDDataType       = 'Unexpected data type.'
+# mPDDataType       = 'Unexpected data type.'
 mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
 #endregion ---------------------------------------------------------> Pandas
  
@@ -493,11 +480,11 @@ color = { # Colors for the app
             'NA': '#90EE90',
         },
     },
-# #     nwProtProf : {
-# #         'Vol'   : ['#ff3333', '#d3d3d3', '#3333ff'],
-# #         'VolSel': '#6ac653',
-# #         'FCAll' : '#d3d3d3',
-# #     },
+    nwProtProf : {
+        'Vol'   : ['#ff3333', '#d3d3d3', '#3333ff'],
+        'VolSel': '#6ac653',
+        'FCAll' : '#d3d3d3',
+    },
     nwLimProt : {
         'Spot' : [
             '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
