@@ -19,11 +19,6 @@ import itertools
 from typing import Literal, Union
 
 import dat4s_core.data.method as dtsMethod
-
-import config.config as config
-
-if config.typeCheck:
-    import pandas as pd
 #endregion ----------------------------------------------------------> Imports
 
 

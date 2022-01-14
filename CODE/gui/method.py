@@ -57,7 +57,10 @@ def LoadUMSAPFile(
         try:
             #------------------------------> Get File
             filePdlg = dtsGwxMethod.GetFilePath(
-                'openO', ext=config.elUMSAP, parent=win, msg=config.mUMSAPFile,
+                'openO', 
+                ext    = config.elUMSAP,
+                parent = win,
+                msg    = config.mFileSelUMSAP,
             )
             #------------------------------> Set Path
             if filePdlg is None:
@@ -104,9 +107,7 @@ def LoadUMSAPFile(
     #region --------------------------------------------------> Show modal
     if dlg.ShowModal() == 1:
         config.winUMSAP[tFileP] = window.UMSAPControl(
-            config.obj, 
-            shownSection = shownSection,
-        )
+            config.obj, cShownSection=shownSection)
     else:
         pass
 
@@ -179,7 +180,7 @@ def GetDisplayInfo(win: wx.Frame) -> dict[str, dict[str, int]]:
     #endregion -------------------------------------------------> Display info
     
     #region -----------------------------------------------------> Window info
-    nw = config.winNumber.get(win.name, 0)
+    nw = config.winNumber.get(win.cName, 0)
     ww, hw = win.GetSize()
     #endregion --------------------------------------------------> Window info
     

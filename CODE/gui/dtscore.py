@@ -112,7 +112,7 @@ class ListZebraMaxWidth(dtsWidget.ListZebraMaxWidth):
             selAll=selAll, style=style)
     #---    
 #---
-#endregion ----------------------------------------------------------> Classes
+# #endregion ----------------------------------------------------------> Classes
 
 
     
