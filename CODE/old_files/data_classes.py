@@ -25,7 +25,7 @@ from statistics import mean
 import wx
 from Bio import pairwise2
 from Bio.SubsMat.MatrixInfo import blosum62
-from fpdf    import FPDF
+#from fpdf    import FPDF
 
 import config.config        as config
 import checks.checks_single as check
@@ -257,19 +257,19 @@ class MyModules():
 #endregion -------------------------------------------------- Base Data Classes
 
 #region ------------------------------------------------------------ PDF Files
-class MyPDF(FPDF):
-	""" To create a pdf with footer containing Page #/#T """
+# class MyPDF(FPDF):
+# 	""" To create a pdf with footer containing Page #/#T """
 
-	def footer(self):
-		""" Set page footer """
-	  #--> Position at 1.5 cm from bottom
-		self.set_y(-15)
-	  #--> Arial italic 8
-		self.set_font('Arial', 'I', 8)
-	  #--> Page number
-		self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
-	#---
-#---
+# 	def footer(self):
+# 		""" Set page footer """
+# 	  #--> Position at 1.5 cm from bottom
+# 		self.set_y(-15)
+# 	  #--> Arial italic 8
+# 		self.set_font('Arial', 'I', 8)
+# 	  #--> Page number
+# 		self.cell(0, 10, 'Page ' + str(self.page_no()) + '/{nb}', 0, 0, 'C')
+# 	#---
+# #---
 #endregion --------------------------------------------------------- PDF Files
 
 #region ---------------------------------------- Files used as input for UMSAP

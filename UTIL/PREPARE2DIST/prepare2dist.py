@@ -13,23 +13,23 @@ cOS = platform.system()
 
 if cOS == 'Darwin':
 	pathF = '/Users/'
-	spec = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/BUNDLE/MAC/UMSAPm.spec')
+	spec = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/RESOURCES/BUNDLE/MAC/UMSAPm.spec')
 else:
 	pathF = 'C:/Users/'
-	spec  = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/BUNDLE/WIN/UMSAP.spec')
-	specH = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/BUNDLE/WIN/version.txt')
+	spec  = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/RESOURCES/BUNDLE/WIN/UMSAP.spec')
+	specH = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/RESOURCES/BUNDLE/WIN/version.txt')
 
 #--> FOLDERS TO COPY
-source = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/0-CODE/')
-img    = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/IMAGES/')
+source = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/CODE/')
+img    = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/RESOURCES/IMAGES/')
 data   = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/')
 dataF  = ['LIMPROT', 'TARPROT', 'PROTPROF', 'UMSAP-TEST-DATA']
 
 #--> FILES TO COPY
-icon   = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/ICON/MAC/icon.icns')
-icon2  = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/ICON/WIN/icon2.ico')
-manual = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/MANUAL/manual.pdf')
-config = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/2-RESOURCES/CONFIG/config_def.json')
+icon   = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/RESOURCES/ICON/MAC/icon.icns')
+icon2  = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/RESOURCES/ICON/WIN/icon2.ico')
+manual = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/RESOURCES/MANUAL/manual.pdf')
+config = Path(pathF + user + '/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/RESOURCES/CONFIG/config_def.json')
 
 #--> START RUNNING
 ##--> ASK IF PLAYGROUND FOLDER CAN BE DELETED
@@ -57,7 +57,7 @@ if var == "Y" or var == "y":
 	copy_tree(str(source), str(cwd))
   ##--> RESOURCE
    ###--> CREATE FOLDER
-	res = cwd / 'RESOURCES'
+	res = cwd / 'Resources'
 	res.mkdir()
    ###--> IMAGES
 	print('')
