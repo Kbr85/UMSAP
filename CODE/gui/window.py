@@ -2080,7 +2080,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #region -----------------------------------------------------> FC Plot
         #------------------------------> Variables
         idx = pd.IndexSlice
-        colorN = len(config.color['Main'])
+        colorN = len(self.cColor['FCLines'])
         x = list(range(0, len(self.rCI['RP'])+1))
         #------------------------------> 
         for k,c in enumerate(self.rCI['Cond']):
@@ -2091,7 +2091,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             yError = self.rDf.loc[self.rDf.index[[idxl]],idx[c,:,'CI']]
             yError = [0] + yError.values.tolist()[0]
             #------------------------------> Colors
-            color = config.color['Main'][k%colorN]
+            color = self.cColor['FCLines'][k%colorN]
             #------------------------------> Plot line
             self.rProtLine.append(
                 self.wPlots.dPlot['FC'].axes.errorbar(
@@ -2681,8 +2681,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.FillListCtrl()
         #------------------------------> Alpha
         self.rLog10alpha = -np.log10(float(self.rCI['Alpha']))
-        #------------------------------> Update StatusBar
-        self.wStatBar.SetStatusText(tDate, 2)
         #------------------------------> Clean text
         self.wText.SetValue('')
         #endregion -----------------------------------------------> Update GUI
@@ -2710,6 +2708,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.FCDraw()
         #endregion -------------------------------------------------------> FC
         
+        #region ------------------------------------------------------> Title
+        self.PlotTitle()
+        #endregion ---------------------------------------------------> Title
+
         return True
     #---
     
@@ -2847,7 +2849,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             try:
                 for k, v in self.wPlots.dPlot.items():
                     #------------------------------> file path
-                    fPath = p / self.imgName[k].format(self.rDateC)
+                    fPath = p / self.cImgName[k].format(self.rDateC)
                     #------------------------------> Write
                     v.figure.savefig(fPath)
             except Exception as e:
@@ -3404,7 +3406,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             if dlg.ShowModal():
                 #------------------------------>
                 uText = dlg.input.tc.GetValue()
-                absB  = dlg.cbAbs.IsChecked()
+                absB  = dlg.wCbAbs.IsChecked()
                 #------------------------------> 
                 dlg.Destroy()
             else:
@@ -3809,7 +3811,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.cTitle        = f"{cParent.cTitle} - {self.cSection}"
+        self.cTitle         = f'{cParent.cTitle} - {self.cSection}'
         self.rObj           = cParent.rObj
         self.rData          = self.rObj.rConfData[self.cSection]
         self.rDateC         = None

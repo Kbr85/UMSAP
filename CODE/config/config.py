@@ -466,9 +466,6 @@ general = { # General options
 #region --------------------------------------------------------------> Colors
 color = { # Colors for the app
     'Zebra' : '#ffe6e6',
-# #     'Main' : [ # Lighter colors of the fragments and bands 
-# # 		'#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff',
-# # 	],
     'RecProt' : 'gray',
     'NatProt' : '#c94c4c',
     nuCorrA : { # Color for plot in Correlation Analysis
@@ -484,6 +481,9 @@ color = { # Colors for the app
         'Vol'   : ['#ff3333', '#d3d3d3', '#3333ff'],
         'VolSel': '#6ac653',
         'FCAll' : '#d3d3d3',
+        'FCLines' : [
+            '#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff',
+        ],
     },
     nwLimProt : {
         'Spot' : [

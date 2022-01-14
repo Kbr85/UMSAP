@@ -841,7 +841,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
     #---
     #endregion ------------------------------------------------> Event methods
     
-    #region ---------------------------------------------------> Manage methods
+    #region --------------------------------------------------> Manage methods
     def AddCondRPMenuItems2Menus(self) -> bool:
         """Add the menu items in self.cond and self.rp to the menu
         
@@ -851,13 +851,13 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         """
         #region ---------------------------------------------------> Add items
         #------------------------------> Conditions
-        for k,c in enumerate(self.cond):
+        for k,c in enumerate(self.rCond):
             self.Insert(k,c)
         #------------------------------> Separator
-        self.sep = wx.MenuItem(None)
-        self.Insert(k+1, self.sep)
+        self.rSep = wx.MenuItem(None)
+        self.Insert(k+1, self.rSep)
         #------------------------------> Relevant Points
-        for j,t in enumerate(self.rp, k+2):
+        for j,t in enumerate(self.rRp, k+2):
             self.Insert(j, t)
         #endregion ------------------------------------------------> Add items
         
@@ -873,8 +873,8 @@ class VolcanoPlot(wx.Menu, MenuMethods):
                 (cond, rp, bool)
         """
         #region ---------------------------------------------------> Varaibles
-        cond = self.GetCheckedRadiodItem(self.cond)
-        rp   = self.GetCheckedRadiodItem(self.rp)
+        cond = self.GetCheckedRadiodItem(self.rCond)
+        rp   = self.GetCheckedRadiodItem(self.rRp)
         corrP = self.miPCorr.IsChecked()
         #endregion ------------------------------------------------> Varaibles
         
@@ -942,27 +942,26 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         """
         #region ---------------------------------------------> Delete Elements
         #------------------------------> Conditions
-        for c in self.cond:
+        for c in self.rCond:
             self.Delete(c)
         #------------------------------> Separators
-        self.Delete(self.sep)
+        self.Delete(self.rSep)
         self.sep = None
         #------------------------------> RP
-        for rp in self.rp:
+        for rp in self.rRp:
             self.Delete(rp)
         #endregion ------------------------------------------> Delete Elements
         
         #region -----------------------------------> Create & Add New Elements
         #------------------------------> 
-        self.cond, self.rp = self.SetCondRPMenuItems(tDate)
+        self.rCond, self.rRp = self.SetCondRPMenuItems(tDate)
         #------------------------------> 
         self.AddCondRPMenuItems2Menus()
         #endregion --------------------------------> Create & Add New Elements
         
         return True
     #---
-    #endregion ------------------------------------------------> Manage methods
-
+    #endregion -----------------------------------------------> Manage methods
 #---
 
 
