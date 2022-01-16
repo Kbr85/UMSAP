@@ -1512,7 +1512,7 @@ class BaseConfModPanel2(BaseConfModPanel):
         self.cTTSeqFile = getattr(
             self, 'cTTSeqFile', f'Select the {self.cLSeqFile} file.')
         self.cTTTargetProt = getattr(
-            self, 'cTTTargetProt', f'Set the name of the {self.cLTargetProt}')
+            self, 'cTTTargetProt', f'Set the name of the {self.cLTargetProt}.')
         self.cTTSeqLength = getattr(
             self, 'cTTSeqLength', ('Number of residues per line in the '
                 'sequence alignment files. When left empty the sequence '
@@ -5456,6 +5456,250 @@ class LimProt(BaseConfModPanel2):
 #---
 
 
+class TarProt(BaseConfModPanel2):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = config.nmTarProt
+    #------------------------------> Label
+    cLPDB   = 'PDB'
+    cLAAPos = 'AA Positions'
+    cLHist  = 'Histogram windows'
+    #------------------------------> Hint
+    cHPDB   = 'Path to the PDB file or PDB ID'
+    cHAAPos = 'e.g. 5'
+    cHHist  = 'e.g. 50 or 50 100 200'
+    #------------------------------> Tooltip
+    cTTPDB = f'Select the {cLPDB} file. This field is optional.'
+    cTTAAPos = ('Number of positions around the cleavage sites to consider '
+        'for the AA distribution analysis.\nThis field is optional.')
+    cTTHist = ('Size of the histogram windows. One number will result in '
+        'equally spaced windows. Multiple numbers allow defining custom sized '
+        'windows. This field is optional.')
+    #------------------------------> Size
+    cSTc = (120, 22)
+    #------------------------------> Extension
+    cEPDB  = config.elPDB
+    cESPDB = config.esPDB
+    #------------------------------> Needed by BaseConfPanel
+    cURL         = f"{config.urlTutorial}/targeted-proteolysis"
+    cSection     = config.nmTarProt
+    cTitlePD     = f"Running {config.nmTarProt} Analysis"
+    cGaugePD     = 50
+    rLLenLongest = len(config.lStResultCtrl)
+    rMainData    = '{}-TargetedProteolysis-Data-{}.txt'
+    rChangeKey   = ['iFile', 'uFile', 'seqFile']
+    #------------------------------> Optional configuration
+    cTTHelp = config.ttBtnHelp.format(cURL)
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cParent, cDataI: Optional[dict]) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(cParent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Files
+        self.wPDBFile = dtsWidget.ButtonTextCtrlFF(
+            self.sbFile,
+            btnLabel   = self.cLPDB,
+            btnTooltip = self.cTTPDB,
+            tcHint     = self.cHPDB,
+            mode       = 'openO',
+            ext        = self.cEPDB,
+            tcStyle    = wx.TE_READONLY,
+            validator  = dtsValidator.InputFF(fof='file', ext=self.cESPDB),
+            ownCopyCut = True,
+        )
+        #------------------------------> Values
+        self.wAAPos = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLAAPos,
+            stTooltip = self.cTTAAPos,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHAAPos,
+            validator = dtsValidator.NumberList(
+                numType='int', nN=1, vMin=0, opt=True),
+        )
+        self.wHist = dtsWidget.StaticTextCtrl(
+            self.sbValue,
+            stLabel   = self.cLHist,
+            stTooltip = self.cTTHist,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHHist,
+            validator = dtsValidator.NumberList(
+                numType='int', vMin=0, sep=' ', opt=True),
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Sizer Files
+        #--------------> 
+        self.sizersbFileWid.Detach(self.wId.st)
+        self.sizersbFileWid.Detach(self.wId.tc)
+        #--------------> 
+        self.sizersbFileWid.Add(
+            self.wPDBFile.btn,
+            pos    = (3,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.wPDBFile.tc,
+            pos    = (3,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.wId.st,
+            pos    = (4,0),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 5
+        )
+        self.sizersbFileWid.Add(
+            self.wId.tc,
+            pos    = (4,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        #------------------------------> Values
+        self.sizersbValueWid.Add(
+            1, 1,
+            pos    = (0,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+            span   = (2, 0),
+        )
+        self.sizersbValueWid.Add(
+            self.wTargetProt.st,
+            pos    = (0,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wTargetProt.tc,
+            pos    = (0,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wScoreVal.st,
+            pos    = (0,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wScoreVal.tc,
+            pos    = (0,4),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wAlpha.st,
+            pos    = (1,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wAlpha.tc,
+            pos    = (1,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wSeqLength.st,
+            pos    = (1,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wSeqLength.tc,
+            pos    = (1,4),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wAAPos.st,
+            pos    = (2,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wAAPos.tc,
+            pos    = (2,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wHist.st,
+            pos    = (2,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wHist.tc,
+            pos    = (2,4),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            1, 1,
+            pos    = (0,5),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+            span   = (2, 0),
+        )
+        
+        self.sizersbValueWid.AddGrowableCol(0, 1)
+        self.sizersbValueWid.AddGrowableCol(2, 1)
+        self.sizersbValueWid.AddGrowableCol(4, 1)
+        self.sizersbValueWid.AddGrowableCol(5, 1)
+        #------------------------------> Main Sizer
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        self.SetupScrolling()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
 #------------------------------> Panes for Type Results - Control Epxeriments
 class ProtProfResControlExp(ResControlExpConfBase):
     """Creates the configuration panel for the Results - Control Experiments

@@ -58,6 +58,7 @@ class BaseConfTab(wx.Panel):
         config.ntDataPrep: pane.DataPrep,
         config.ntLimProt : pane.LimProt,
         config.ntProtProf: pane.ProtProf,
+        config.ntTarProt : pane.TarProt,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -399,6 +400,10 @@ class Start(wx.Panel):
         self.wBtnProtProf.Bind(
             wx.EVT_BUTTON, 
             lambda event: config.winMain.OnCreateTab(config.ntProtProf)
+        )
+        self.wBtnTarProt.Bind(
+            wx.EVT_BUTTON, 
+            lambda event: config.winMain.OnCreateTab(config.ntTarProt)
         )
         #endregion -----------------------------------------------------> Bind
     #endregion -----------------------------------------------> Instance setup

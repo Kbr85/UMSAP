@@ -164,18 +164,21 @@ t = {
     ntCorrA   : 'CorrA',
     ntLimProt : 'LimProt',
     ntProtProf: 'ProtProf',
+    ntTarProt : 'TarProt',
 }
 #endregion -----------------------------------------------------------> Titles
 
 
 #region ----------------------------------------------------------- Extensions
 #------------------------------> For wx.Dialogs
-elData         = 'txt files (*.txt)|*.txt'
-elSeq          = (
+elData  = 'txt files (*.txt)|*.txt'
+elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
+elPDB   = 'PDB files (*.pdb)|*.pdb'
+elSeq   = (
     "Text files (*.txt)|*.txt|"
     "Fasta files (*.fasta)|*.fasta"
 )
-elUMSAP        = 'UMSAP files (*.umsap)|*.umsap'
+
 elMatPlotSaveI = (
     "Portable Document File (*.pdf)|*.pdf|"
     "Portable Network Graphic (*.png)|*.png|"
@@ -184,6 +187,7 @@ elMatPlotSaveI = (
 )
 #------------------------------> File extensions. First item is default
 esData  = ['.txt']
+esPDB   = ['.pdb']
 esSeq   = ['.txt', '.fasta']
 esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions

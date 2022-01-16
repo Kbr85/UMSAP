@@ -1007,6 +1007,7 @@ class MainWindow(BaseWindow):
         config.ntDataPrep: tab.BaseConfListTab,
         config.ntLimProt : tab.BaseConfListTab,
         config.ntProtProf: tab.BaseConfListTab,
+        config.ntTarProt : tab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup
     
