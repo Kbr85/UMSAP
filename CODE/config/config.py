@@ -129,11 +129,13 @@ ntTarProt  = 'TarProtTab'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
-npDataPrep              = "DataPrepPane"
-npLimProt               = "LimProtPane"
+npDataPrep              = 'DataPrepPane'
+npLimProt               = 'LimProtPane'
 npProtProf              = 'ProtProfPane'
+npTarProt               = 'TarProtPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
 npResControlExpLimProt  = 'ResControlExpPaneLimProt'
+npResControlExpTarProt  = 'ResControlExpPaneTarProt'
 #------------------------------> Modules
 nmLimProt  = 'Limited Proteolysis'
 nmTarProt  = 'Targeted Proteolysis'
@@ -235,6 +237,7 @@ lStProtProfCond = 'Conditions'
 lStProtProfRP   = 'Relevant Points'
 lStLimProtLane  = 'Lanes'
 lStLimProtBand  = 'Bands' 
+lStTarProtExp   = 'Experiments'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'
 #------------------------------> wx.Statictext

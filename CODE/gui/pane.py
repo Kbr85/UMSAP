@@ -327,6 +327,7 @@ class BaseConfPanel(
             stLabel   = self.cLId,
             stTooltip = self.cTTId,
             tcHint    = self.cHId,
+            validator = dtsValidator.IsNotEmpty(),
         )
 
         self.wCeroB = wx.CheckBox(self.sbData, label=self.cLCeroTreat)
@@ -1360,7 +1361,7 @@ class BaseConfPanel(
     #---
     #endregion -------------------------------------------------> Run Analysis
 #---
-    
+
     
 class BaseConfModPanel(BaseConfPanel, widget.ResControl):
     """Base configuration for a panel of a module.
@@ -4654,7 +4655,7 @@ class LimProt(BaseConfModPanel2):
         Sequence Score Nterm Cterm NtermF CtermF Delta Ptost ... Ptost
     """
     #region -----------------------------------------------------> Class setup
-    cName      = config.npLimProt
+    cName = config.npLimProt
     #------------------------------> Label
     cLBeta         = "β value"
     cLGamma        = "γ value"
@@ -5476,7 +5477,7 @@ class TarProt(BaseConfModPanel2):
         
     """
     #region -----------------------------------------------------> Class setup
-    cName = config.nmTarProt
+    cName = config.npTarProt
     #------------------------------> Label
     cLPDB   = 'PDB'
     cLAAPos = 'AA Positions'
@@ -5486,7 +5487,8 @@ class TarProt(BaseConfModPanel2):
     cHAAPos = 'e.g. 5'
     cHHist  = 'e.g. 50 or 50 100 200'
     #------------------------------> Tooltip
-    cTTPDB = f'Select the {cLPDB} file. This field is optional.'
+    cTTPDB = (f'Select the {cLPDB} file or type the PDB ID.\n---\nThis field '
+              f'is optional.')
     cTTAAPos = ('Number of positions around the cleavage sites to consider '
         'for the AA distribution analysis.\nThis field is optional.')
     cTTHist = ('Size of the histogram windows. One number will result in '
@@ -5693,6 +5695,38 @@ class TarProt(BaseConfModPanel2):
         #region ---------------------------------------------> Window position
         
         #endregion ------------------------------------------> Window position
+        
+        #region --------------------------------------------------------> Test
+        if config.development:
+            import getpass
+            user = getpass.getuser()
+            if config.os == "Darwin":
+                self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
+                self.wSeqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-rec.txt")
+            else:
+                pass
+            self.wId.tc.SetValue('Beta Test Dev')
+            self.wTransMethod.cb.SetValue('Log2')
+            self.wNormMethod.cb.SetValue('Median')
+            self.wImputationMethod.cb.SetValue('Normal Distribution')
+            self.wTargetProt.tc.SetValue('efeB')
+            self.wScoreVal.tc.SetValue('200')
+            self.wSeqLength.tc.SetValue('100')
+            self.wAAPos.tc.SetValue('5')
+            self.wHist.tc.SetValue('25')
+            self.wAlpha.tc.SetValue('0.05')
+            self.wSeqCol.tc.SetValue('0')
+            self.wDetectedProt.tc.SetValue('38')
+            self.wScore.tc.SetValue('44')
+            self.wTcResults.SetValue('98-105; 109-111; 112 113 114; 115-117 120')
+            self.rLbDict = {
+                1        : ['Exp1', 'Exp2', 'Exp3'],
+                'Control': ['Ctrl'],
+            }
+        else:
+            pass
+        #endregion -----------------------------------------------------> Test
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -5700,6 +5734,8 @@ class TarProt(BaseConfModPanel2):
     
     #endregion ------------------------------------------------> Class methods
 #---
+
+
 #------------------------------> Panes for Type Results - Control Epxeriments
 class ProtProfResControlExp(ResControlExpConfBase):
     """Creates the configuration panel for the Results - Control Experiments
@@ -6576,6 +6612,265 @@ class LimProtResControlExp(ResControlExpConfBase):
                     wx.EXPAND|wx.ALL,
                     5
                 )
+        #------------------------------> Grow Columns
+        for k in range(1, NCol):
+            if not self.sSWMatrix.IsColGrowable(k):
+                self.sSWMatrix.AddGrowableCol(k, 1)
+            else:
+                pass
+        #------------------------------> Update sizer
+        self.sSWMatrix.Layout()
+        #endregion ---------------------------------------------> Setup Sizers
+        
+        #region --------------------------------------------------> Set scroll
+        self.wSwMatrix.SetupScrolling()
+        #endregion -----------------------------------------------> Set scroll
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class TarProtResControlExp(ResControlExpConfBase):
+    """Creates the configuration panel for the Results - Control Experiments
+        dialog when called from the TarProt Tab.
+
+        Parameters
+        ----------
+        parent : wx.Widget
+            Parent of the panel
+        topParent : wx.Widget
+            Top parent window
+        NColF : int
+            Total number of columns present in the Data File
+
+        Attributes
+        ----------
+        cLabelText : dict
+            Keys are 1 to cN and values the prefix for the label values. e.g. C  
+        cN : int
+            Number of labels excluding control labels.
+        cStLabel : dict
+            Keys are 1 to cN and values the text of the labels. e.g. Condition.
+        cTTTotalField : str
+            Tooltip for the labels in the top region
+        mNoBL : str
+            Error message when the number of experiments is not given.
+        name : str
+            Name of the panel
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = config.npResControlExpLimProt
+    #------------------------------> Needed by ResControlExpConfBase
+    cN = 1
+    cStLabel = { # Keys runs in range(1, N+1)
+        1 : f"{config.lStTarProtExp}:",
+    }
+    cLabelText = { # Keys runs in range(1, N+1)
+        1 : 'Exp',
+    }
+    #------------------------------> Tooltips
+    cTTTotalField = [
+        f'Set the number of {cStLabel[1]}.',
+    ]  
+    #------------------------------> Error messages
+    mNoBL = f'{cStLabel[1][:-1]} must be defined.'
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cParent, cTopParent, cNColF):
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(cParent, self.cName, cTopParent, cNColF)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> 
+        self.sSWLabelControl = wx.FlexGridSizer(1,2,5,5)    
+        self.sSWLabelControl.Add(
+            self.wControlN.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5,
+        )
+        self.sSWLabelControl.Add(
+            self.wControlN.tc, 0, wx.EXPAND|wx.ALL, 5,
+        )
+        self.sSWLabelControl.AddGrowableCol(1,1)
+        #------------------------------> 
+        self.sSWLabelMain.Add(
+            self.sSWLabelControl, 
+            0, 
+            wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM, 
+            5,
+        )
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+        
+        #region -----------------------------------------------> Initial State
+        self.SetInitialState()
+        #endregion --------------------------------------------> Initial State
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnCreate(self, event: wx.CommandEvent) -> bool:
+        """Create the fields in the white panel. Override as needed.
+        
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event.
+                
+            Return
+            ------
+            bool
+        """
+        #region -------------------------------------------------> Check Input
+        n = []
+        #------------------------------> 
+        for k in range(1, self.cN+1):
+            n.append(len(self.rTcDict[k]))
+        #------------------------------> 
+        if all(n):
+            #------------------------------> Set default value if empty
+            for k in range(1, self.cN+1):
+                for j, tc in enumerate(self.rTcDict[k], 1):
+                    if tc.GetValue().strip() == '':
+                        tc.SetValue(f'{self.cLabelText[k]}{j}')
+                    else:
+                        pass
+        else:
+            dtscore.Notification(
+                'errorF', msg=self.mNoBL, parent=self,
+            )
+            return False
+        #------------------------------> Control
+        if self.wControlN.tc.GetValue().strip() == '':
+            self.wControlN.tc.SetValue(self.cHControlN)
+        else:
+            pass
+        #endregion ----------------------------------------------> Check Input
+        
+        #region ---------------------------------------------------> Variables
+        NCol = 2
+        NRow = n[0]+1
+        NExp = n[0]
+        #endregion ------------------------------------------------> Variables
+        
+        #region -------------------------------------------> Remove from sizer
+        self.sSWMatrix.Clear(delete_windows=False)
+        #endregion ----------------------------------------> Remove from sizer
+        
+        #region --------------------------------> Create/Destroy wx.StaticText
+        #------------------------------> Destroy
+        for k, v in self.rLbDict.items():
+            for j in range(0, len(v)):
+                v[-1].Destroy()
+                v.pop()
+        #------------------------------> Create
+        #--------------> Labels
+        for k, v in self.rTcDict.items():
+            #--------------> New row
+            row = []
+            #--------------> Fill row
+            for j in v:
+                row.append(
+                    wx.StaticText(
+                        self.wSwMatrix,
+                        label = j.GetValue(),
+                    )
+                )
+            #--------------> Assign
+            self.rLbDict[k] = row
+        #--------------> Control
+        self.rLbDict['Control'] = [
+            wx.StaticText(
+                self.wSwMatrix,
+                label = self.wControlN.tc.GetValue(),
+            )
+        ]
+        #endregion -----------------------------> Create/Destroy wx.StaticText
+        
+        #region ----------------------------------> Create/Destroy wx.TextCtrl
+        #------------------------------> Add new fields
+        for k in range(1, NExp+2):
+            #------------------------------> 
+            row = self.rTcDictF.get(k, [])
+            lrow = len(row)
+            #------------------------------> Control & Exp
+            if lrow:
+                continue
+            else:
+                #------------------------------> 
+                row.append(wx.TextCtrl(
+                    self.wSwMatrix, 
+                    size      = self.cSLabel,
+                    validator = self.cVColNumList,
+                ))
+                #------------------------------> 
+                self.rTcDictF[k] = row
+                #------------------------------> 
+                continue
+        #------------------------------> Destroy not neded old field
+        for k in range(NExp+2, len(self.rTcDictF.keys())+1):
+            row = self.rTcDictF.get(k, [])
+            if len(row):
+                row[0].Destroy()
+                row.pop
+                self.rTcDictF.pop(k)
+        #endregion -------------------------------> Create/Destroy wx.TextCtrl
+        
+        #region ------------------------------------------------> Setup Sizers
+        #------------------------------> Adjust size
+        self.sSWMatrix.SetCols(NCol)
+        self.sSWMatrix.SetRows(NRow)
+        #------------------------------> Add widgets
+        #--------------> Control row
+        self.sSWMatrix.Add(
+            self.rLbDict['Control'][0],
+            0,
+            wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+            5
+        )
+        self.sSWMatrix.Add(
+            self.rTcDictF[1][0],
+            0,
+            wx.EXPAND|wx.ALL,
+            5
+        )
+        #--------------> Experiments
+        for r, l in enumerate(self.rLbDict[1], 0):
+            #--------------> 
+            self.sSWMatrix.Add(
+                l,
+                0,
+                wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+                5
+            )
+            self.sSWMatrix.Add(
+                self.rTcDictF[r+2][0],
+                0,
+                wx.EXPAND|wx.ALL,
+                5
+            )
         #------------------------------> Grow Columns
         for k in range(1, NCol):
             if not self.sSWMatrix.IsColGrowable(k):
