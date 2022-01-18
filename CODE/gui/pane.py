@@ -15,7 +15,8 @@
 
 
 #region -------------------------------------------------------------> Imports
-import _thread 
+import _thread
+import secrets 
 import shutil
 from pathlib import Path
 from typing import Optional, Union
@@ -797,6 +798,21 @@ class BaseConfPanel(
                 self.rMsgError = config.mFileRead.format(self.rDO['seqFile'])
                 self.rExceptionn = e
                 return False
+            #------------------------------> 
+            try:
+                ProtLoc = self.rSeqFileObj.GetNatProtLoc()
+            except Exception:
+                ProtLoc = (None, None)
+        
+            self.rDO['ProtLength'] = self.rSeqFileObj.seqLengthRec
+            self.rDO['ProtLoc'] = ProtLoc
+            #------------------------------>         
+            try:
+                ProtDelta = self.rSeqFileObj.GetSelfDelta()
+            except Exception:
+                ProtDelta = (None, None)
+        
+            self.rDO['ProtDelta'] = ProtDelta
         else:
             pass
         #endregion ---------------------------------------------> Seq Rec File
@@ -5191,42 +5207,6 @@ class LimProt(BaseConfModPanel2):
         return True
     #---
     
-    def ReadInputFiles(self) -> bool:
-        """Read the input files.
-        
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Super
-        if super().ReadInputFiles():
-            pass
-        else:
-            return False
-        #endregion ------------------------------------------------> Super
-
-        #region ---------------------------------------------------> 
-        try:
-            ProtLoc = self.rSeqFileObj.GetNatProtLoc()
-        except Exception:
-            ProtLoc = (None, None)
-        
-        self.rDO['ProtLength'] = self.rSeqFileObj.seqLengthRec
-        self.rDO['ProtLoc'] = ProtLoc
-        #endregion ------------------------------------------------> 
-        
-        #region ---------------------------------------------------> 
-        try:
-            ProtDelta = self.rSeqFileObj.GetSelfDelta()
-        except Exception:
-            ProtDelta = (None, None)
-        
-        self.rDO['ProtDelta'] = ProtDelta
-        #endregion ------------------------------------------------> 
-        
-        return True
-    #---
-    
     def RunAnalysis(self) -> bool:
         """ Perform the equivalence tests 
 
@@ -5440,9 +5420,11 @@ class TarProt(BaseConfModPanel2):
     #region -----------------------------------------------------> Class setup
     cName = config.npTarProt
     #------------------------------> Label
-    cLPDB   = 'PDB'
-    cLAAPos = 'AA Positions'
-    cLHist  = 'Histogram windows'
+    cLPDB      = 'PDB'
+    cLAAPos    = 'AA Positions'
+    cLHist     = 'Histogram windows'
+    cLExp      = config.lStTarProtExp
+    cLCtrlName = config.lStCtrlName
     #------------------------------> Hint
     cHPDB   = 'Path to the PDB file or PDB ID'
     cHAAPos = 'e.g. 5'
@@ -5725,7 +5707,6 @@ class TarProt(BaseConfModPanel2):
             -------
             bool
         """
-        return False
         #region -----------------------------------------------------------> d
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
@@ -5737,6 +5718,8 @@ class TarProt(BaseConfModPanel2):
                 self.wUFile.tc.GetValue()),
             self.EqualLenLabel(f'{self.cLSeqFile} File') : (
                 self.wSeqFile.tc.GetValue()),
+            self.EqualLenLabel(f'{self.cLPDB}') : (
+                self.wPDBFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
@@ -5753,18 +5736,12 @@ class TarProt(BaseConfModPanel2):
                 self.wScoreVal.tc.GetValue()),
             self.EqualLenLabel(self.cLSeqLength) : (
                 self.wSeqLength.tc.GetValue()),
-            self.EqualLenLabel(self.cLSample) : (
-                self.wSample.cb.GetValue()),
             self.EqualLenLabel(self.cLAlpha) : (
                 self.wAlpha.tc.GetValue()),
-            self.EqualLenLabel(self.cLBeta) : (
-                self.wBeta.tc.GetValue()),
-            self.EqualLenLabel(self.cLGamma) : (
-                self.wGamma.tc.GetValue()),
-            self.EqualLenLabel(self.cLTheta) : (
-                self.wTheta.tc.GetValue()),
-            self.EqualLenLabel(self.cLThetaMax) : (
-                self.wThetaMax.tc.GetValue()),
+            self.EqualLenLabel(self.cLAAPos) : (
+                self.wAAPos.tc.GetValue()),
+            self.EqualLenLabel(self.cLHist) : (
+                self.wHist.tc.GetValue()),
             self.EqualLenLabel(f'{self.cLSeqCol} Column') : (
                 self.wSeqCol.tc.GetValue()),
             self.EqualLenLabel(self.cLDetectedProt) : (
@@ -5773,10 +5750,8 @@ class TarProt(BaseConfModPanel2):
                 self.wScore.tc.GetValue()),
             self.EqualLenLabel(self.cLResControl): (
                 self.wTcResults.GetValue()),
-            self.EqualLenLabel(self.cLLane) : (
+            self.EqualLenLabel(self.cLExp) : (
                 self.rLbDict[1]),
-            self.EqualLenLabel(self.cLBand) : (
-                self.rLbDict[2]),
             self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
                 self.rLbDict['Control']),
         }
@@ -5789,12 +5764,11 @@ class TarProt(BaseConfModPanel2):
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #--------------> SeqLength
         seqLengthVal = self.wSeqLength.tc.GetValue()
-        seqLength = float(seqLengthVal) if seqLengthVal != '' else None
-        #--------------> Theta
-        thetaVal = self.wTheta.tc.GetValue()
-        theta = float(thetaVal) if thetaVal != '' else None
-        thetaMaxVal = self.wThetaMax.tc.GetValue()
-        thetaMax = float(thetaMaxVal) if thetaMaxVal != '' else None
+        seqLength    = float(seqLengthVal) if seqLengthVal != '' else None
+        aaPosVal     = self.wAAPos.tc.GetValue()
+        aaPos        = float(aaPosVal) if aaPosVal != '' else None
+        histVal      = self.wHist.tc.GetValue()
+        hist         = float(histVal) if histVal != '' else None
         #--------------> Columns
         seqCol       = int(self.wSeqCol.tc.GetValue())
         detectedProt = int(self.wDetectedProt.tc.GetValue())
@@ -5808,6 +5782,7 @@ class TarProt(BaseConfModPanel2):
             'iFile'      : Path(self.wIFile.tc.GetValue()),
             'uFile'      : Path(self.wUFile.tc.GetValue()),
             'seqFile'    : Path(self.wSeqFile.tc.GetValue()),
+            'pdbFile'    : Path(self.wPDBFile.tc.GetValue()),
             'ID'         : self.wId.tc.GetValue(),
             'Cero'       : self.wCeroB.IsChecked(),
             'TransMethod': self.wTransMethod.cb.GetValue(),
@@ -5815,15 +5790,11 @@ class TarProt(BaseConfModPanel2):
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
             'TargetProt' : self.wTargetProt.tc.GetValue(),
             'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
-            'SeqLength'  : seqLength,
-            'Sample'     : self.cOSample[self.wSample.cb.GetValue()],
             'Alpha'      : float(self.wAlpha.tc.GetValue()),
-            'Beta'       : float(self.wBeta.tc.GetValue()),
-            'Gamma'      : float(self.wGamma.tc.GetValue()),
-            'Theta'      : theta,
-            'ThetaMax'   : thetaMax,
-            'Lane'       : self.rLbDict[1],
-            'Band'       : self.rLbDict[2],
+            'SeqLength'  : seqLength,
+            'AA'         : aaPos,
+            'Hist'       : hist,
+            'Exp'        : self.rLbDict[1],
             'ControlL'   : self.rLbDict['Control'],
             'oc'         : { # Column numbers in the initial dataframe
                 'SeqCol'       : seqCol,
@@ -5842,10 +5813,6 @@ class TarProt(BaseConfModPanel2):
                 'ColumnR'      : resctrlDFFlat,
                 'ColumnF'      : [2] + resctrlDFFlat,
             },
-            'dfo' : { # Column numbers in the output dataframe
-                'NC' : [2,3], # N and C Term Res Numbers in the Rec Seq
-                'NCF': [4,5], # N and C Term Res Numbers in the Nat Seq
-            }
         }
         #endregion -------------------------------------------------------> do
         
@@ -5878,7 +5845,37 @@ class TarProt(BaseConfModPanel2):
         #endregion ----------------------------------------------> Print d, do
         
         return True
-    #---    
+    #--- 
+    
+    def RunAnalysis(self) -> bool:
+        """ Perform the equivalence tests 
+
+            Returns
+            -------
+            bool
+        """
+        return False
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
+            pass
+        else:
+            return False
+        #endregion -----------------------------------------> Data Preparation
+        
+        #region ----------------------------------------------------> Empty DF
+        #------------------------------> Msg
+        msgStep = f'{self.cLPdRun} Creating empty dataframe'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        self.dfR = self.EmptyDFR()
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region ------------------------------------------------> N, C Res Num
+        if self.NCResNumbers(seqNat=False):
+            pass
+        else:
+            return False
+        #endregion ---------------------------------------------> N, C Res Num
     #endregion ------------------------------------------------> Run methods
 #---
 
