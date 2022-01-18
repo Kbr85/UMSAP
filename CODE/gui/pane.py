@@ -810,13 +810,27 @@ class BaseConfPanel(
             try:
                 ProtDelta = self.rSeqFileObj.GetSelfDelta()
             except Exception:
-                ProtDelta = (None, None)
+                ProtDelta = None
         
             self.rDO['ProtDelta'] = ProtDelta
         else:
             pass
         #endregion ---------------------------------------------> Seq Rec File
         
+        #region ----------------------------------------------------> PDB File
+        if 'pdbFile' in self.rDO:
+            #------------------------------> 
+            msgStep = self.cLPdReadFile + f"{self.cLPDB}, reading"
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------> 
+            try:
+                self.rPdbFileObj = dtsFF.PDBFile(self.rDO['pdbFile'])
+            except Exception as e:
+                self.rMsgError = config.mFileRead.format(self.rDO['pdbFile'])
+                self.rExceptionn = e
+                return False
+        #endregion -------------------------------------------------> PDB File 
+
         #region ---------------------------------------------------> Print Dev
         if config.development and self.rSeqFileObj is not None:
             print("Rec Seq: ", self.rSeqFileObj.seqRec)
@@ -2871,6 +2885,16 @@ class CorrA(BaseConfPanel):
             return False
         #endregion ------------------------------------------------> Super
         
+        return True
+    #---
+
+    def RunAnalysis(self) -> bool:
+        """Calculate coefficients
+        
+            Return
+            ------
+            bool
+        """
         #region -------------------------------------------------------> Print
         if config.development:
             print('d:')
@@ -2890,11 +2914,6 @@ class CorrA(BaseConfPanel):
             pass
         #endregion ----------------------------------------------------> Print
     
-        return True
-    #---
-
-    def RunAnalysis(self):
-        """Calculate coefficients"""
         #region --------------------------------------------> Data Preparation
         if self.DataPreparation():
             pass
@@ -3383,26 +3402,6 @@ class DataPrep(BaseConfPanel):
             self.rMsgError = 'Something went wrong when preparing the analysis.'
             return False
         #endregion ------------------------------------------------> Super
-
-        #region -------------------------------------------------> Print d, do
-        if config.development:
-            print('')
-            print('self.d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')
-            print('self.do')
-            for k,v in self.rDO.items():
-                if k in ['oc', 'df']:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-                else:
-                    print(str(k)+': '+str(v))
-            print('')
-        else:
-            pass
-        #endregion ----------------------------------------------> Print d, do
         
         return True
     #---
@@ -3414,6 +3413,25 @@ class DataPrep(BaseConfPanel):
             -------
             bool
         """
+        #region -------------------------------------------------------> Print
+        if config.development:
+            print('d:')
+            for k,v in self.rDI.items():
+                print(str(k)+': '+str(v))
+            print('')  
+            print('do:')
+            for k,v in self.rDO.items():
+                if k not in ['df', 'oc', 'dfo']:
+                    print(str(k)+': '+str(v))
+                else:
+                    print(k)
+                    for j,w in v.items():
+                        print(f'\t{j}: {w}')
+            print('')    
+        else:
+            pass
+        #endregion ----------------------------------------------------> Print
+        
         #region --------------------------------------------> Data Preparation
         if self.DataPreparation():
             pass
@@ -4140,26 +4158,6 @@ class ProtProf(BaseConfModPanel):
             return False
         #endregion ------------------------------------------------> Super
 
-        #region -------------------------------------------------> Print d, do
-        if config.development:
-            print('')
-            print('self.d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')
-            print('self.do')
-            for k,v in self.rDO.items():
-                if k in ['oc', 'df', 'dfo']:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-                else:
-                    print(str(k)+': '+str(v))
-            print('')
-        else:
-            pass
-        #endregion ----------------------------------------------> Print d, do
-        
         return True
     #---
     
@@ -4170,6 +4168,25 @@ class ProtProf(BaseConfModPanel):
             -------
             bool
         """
+        #region -------------------------------------------------------> Print
+        if config.development:
+            print('d:')
+            for k,v in self.rDI.items():
+                print(str(k)+': '+str(v))
+            print('')  
+            print('do:')
+            for k,v in self.rDO.items():
+                if k not in ['df', 'oc', 'dfo']:
+                    print(str(k)+': '+str(v))
+                else:
+                    print(k)
+                    for j,w in v.items():
+                        print(f'\t{j}: {w}')
+            print('')    
+        else:
+            pass
+        #endregion ----------------------------------------------------> Print
+        
         #region --------------------------------------------> Data Preparation
         if self.DataPreparation():
             pass
@@ -5184,6 +5201,16 @@ class LimProt(BaseConfModPanel2):
             return False
         #endregion ------------------------------------------------> Super
 
+        return True
+    #---
+    
+    def RunAnalysis(self) -> bool:
+        """ Perform the equivalence tests 
+
+            Returns
+            -------
+            bool
+        """
         #region -------------------------------------------------> Print d, do
         if config.development:
             print('')
@@ -5204,16 +5231,6 @@ class LimProt(BaseConfModPanel2):
             pass
         #endregion ----------------------------------------------> Print d, do
         
-        return True
-    #---
-    
-    def RunAnalysis(self) -> bool:
-        """ Perform the equivalence tests 
-
-            Returns
-            -------
-            bool
-        """
         #region --------------------------------------------> Data Preparation
         if self.DataPreparation():
             pass
@@ -5230,7 +5247,7 @@ class LimProt(BaseConfModPanel2):
         #endregion -------------------------------------------------> Empty DF
         
         #region ------------------------------------------------> N, C Res Num
-        if self.NCResNumbers(seqNat=False):
+        if self.NCResNumbers(seqNat=True):
             pass
         else:
             return False
@@ -5813,6 +5830,10 @@ class TarProt(BaseConfModPanel2):
                 'ColumnR'      : resctrlDFFlat,
                 'ColumnF'      : [2] + resctrlDFFlat,
             },
+            'dfo' : { # Column numbers in the output dataframe
+                'NC' : [2,3], # N and C Term Res Numbers in the Rec Seq
+                'NCF': [4,5], # N and C Term Res Numbers in the Nat Seq
+            }
         }
         #endregion -------------------------------------------------------> do
         
@@ -5824,6 +5845,16 @@ class TarProt(BaseConfModPanel2):
             return False
         #endregion ------------------------------------------------> Super
 
+        return True
+    #--- 
+    
+    def RunAnalysis(self) -> bool:
+        """ Perform the equivalence tests 
+
+            Returns
+            -------
+            bool
+        """
         #region -------------------------------------------------> Print d, do
         if config.development:
             print('')
@@ -5844,17 +5875,6 @@ class TarProt(BaseConfModPanel2):
             pass
         #endregion ----------------------------------------------> Print d, do
         
-        return True
-    #--- 
-    
-    def RunAnalysis(self) -> bool:
-        """ Perform the equivalence tests 
-
-            Returns
-            -------
-            bool
-        """
-        return False
         #region --------------------------------------------> Data Preparation
         if self.DataPreparation():
             pass
@@ -5871,11 +5891,49 @@ class TarProt(BaseConfModPanel2):
         #endregion -------------------------------------------------> Empty DF
         
         #region ------------------------------------------------> N, C Res Num
-        if self.NCResNumbers(seqNat=False):
+        if self.NCResNumbers(seqNat=True):
             pass
         else:
             return False
         #endregion ---------------------------------------------> N, C Res Num
+        
+        
+        if config.development:
+            print('self.dfR.shape: ', self.dfR.shape)
+            print('')
+            print(self.dfR)
+            print('')
+            
+        return False
+    #---
+    
+    def EmptyDFR(self) -> 'pd.DataFrame':
+        """Creates the empty df for the results
+        
+            Returns
+            -------
+            pd.DataFrame
+        """
+        #region -------------------------------------------------------> Index
+        col = config.dfcolTarProtFirstPart
+        #------------------------------> 
+        for exp in self.rDO['Exp']:
+            col.append(exp)
+        #endregion ----------------------------------------------------> Index
+        
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(
+            np.nan, columns=col, index=range(self.dfIm.shape[0]),
+        )
+        #endregion -------------------------------------------------> Empty DF
+        
+        #region -------------------------------------------------> Seq & Score
+        df[col[0]] = self.dfIm.iloc[:,0]
+        df[col[1]] = self.dfIm.iloc[:,2]
+        #endregion ----------------------------------------------> Seq & Score
+        
+        return df
+    #---
     #endregion ------------------------------------------------> Run methods
 #---
 

@@ -357,6 +357,8 @@ dfcolDataCheck = [
 dfcolLimProtFirstPart = [
     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
 dfcolLimProtCLevel = ['Ptost']
+dfcolTarProtFirstPart = [
+    'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 #endregion --------------------------------------------------> DF Column names
 
 
@@ -368,7 +370,7 @@ ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
 #region ------------------------------------------------------------> Messages
 #region -------------------------------------------------------------> Other 
 #------------------------------> Unexpected Error
-mUnexpectedError = 'An uexpected error was encountered.'
+mUnexpectedError = 'An unexpected error was encountered.'
 #------------------------------> Sequences related errors
 mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
     "protein.")
