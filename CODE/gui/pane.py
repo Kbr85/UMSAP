@@ -667,6 +667,11 @@ class BaseConfPanel(
         
             Notes
             -----
+            BaseErrorMessage must be a string with two placeholder for the 
+            error value and Field label in that order. For example:
+            'File: {bad_path_placeholder}\n cannot be used as 
+                                                    {Field_label_placeholder}'
+                                                    
             The child class must define a rCheckUserInput dict with the correct
             order for the checking process.
             
@@ -674,10 +679,8 @@ class BaseConfPanel(
                 'Field label' : [Widget, BaseErrorMessage]
             }
             
-            BaseErrorMessage must be a string with two placeholder for the 
-            error value and Field label in that order. For example:
-            'File: {bad_path_placeholder}\n cannot be used as 
-                                                    {Field_label_placeholder}'
+            The child class must define a rCheckUnique list with the wx.TextCtrl
+            that must hold unique column numbers.
         """
         #region -------------------------------------------------------> Check
         for k,v in self.rCheckUserInput.items():
@@ -693,6 +696,19 @@ class BaseConfPanel(
                     v[1].format(b[1], k), b[2])
                 return False
         #endregion ----------------------------------------------------> Check
+        
+        #region ---------------------------------------> Unique Column Numbers
+        if getattr(self, 'rCheckUnique', False):
+            msgStep = self.cLPdCheck + 'Unique Column Numbers'
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------> 
+            if self.UniqueColumnNumber(self.rCheckUnique):
+                pass
+            else:
+                return False
+        else:
+            pass
+        #endregion ------------------------------------> Unique Column Numbers
         
         return True
     #---
@@ -3089,7 +3105,10 @@ class DataPrep(BaseConfPanel):
             self.cLScoreCol   : [self.wScore.tc,           config.mOneZPlusNum],
             self.cLExcludeRow : [self.wExcludeRow.tc,      config.mNZPlusNum],
             self.cLColAnalysis: [self.wColAnalysis.tc,     config.mNZPlusNum],
-        }        
+        }    
+        
+        self.rCheckUnique = [self.wScore.tc, self.wExcludeRow.tc, 
+                             self.wColAnalysis.tc]    
         #endregion -------------------------------------------> checkUserInput
         
         #region -----------------------------------------------------> Tooltip
@@ -3267,41 +3286,6 @@ class DataPrep(BaseConfPanel):
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Run methods
-    def CheckInput(self) -> bool:
-        """Check user input
-        
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------> Super
-        if super().CheckInput():
-            pass
-        else:
-            return False
-        #endregion ----------------------------------------------------> Super
-        
-        #region -------------------------------------------> Individual Fields
-        
-        #endregion ----------------------------------------> Individual Fields
-        
-        #region ------------------------------------------------> Mixed Fields
-        #region ---------------------------------------> Unique Column Numbers
-        msgStep = self.cLPdCheck + 'Unique Column Numbers'
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> 
-        l = [self.wScore.tc, self.wExcludeRow.tc, self.wColAnalysis.tc]
-        #------------------------------>
-        if self.UniqueColumnNumber(l):
-            pass
-        else:
-            return False
-        #endregion ------------------------------------> Unique Column Numbers
-        #endregion ---------------------------------------------> Mixed Fields
-        
-        return True
-    #---
-    
     def PrepareRun(self) -> bool:
         """Set variable and prepare data for analysis.
         
@@ -3701,7 +3685,10 @@ class ProtProf(BaseConfModPanel):
             self.cLScoreCol    : [self.wScore.tc,          config.mOneZPlusNum],
             self.cLExcludeProt : [self.wExcludeProt.tc,    config.mNZPlusNum],
             self.cLResControl  : [self.wTcResults,         config.mResCtrl]
-        }        
+        }      
+        
+        self.rCheckUnique = [self.wDetectedProt.tc, self.wGeneName.tc, 
+            self.wScore.tc, self.wExcludeProt.tc, self.wTcResults]  
         #endregion -------------------------------------------> checkUserInput
 
         #region -----------------------------------------------------> Tooltip
@@ -4011,19 +3998,6 @@ class ProtProf(BaseConfModPanel):
             )
             return False
         #endregion -----------------------------> Raw or Ration of Intensities
-        
-        #region ---------------------------------------> Unique Column Numbers
-        msgStep = self.cLPdCheck + 'Unique Column Numbers'
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> 
-        l = [self.wDetectedProt.tc, self.wGeneName.tc, self.wScore.tc, 
-            self.wExcludeProt.tc, self.wTcResults]
-        #------------------------------> 
-        if self.UniqueColumnNumber(l):
-            pass
-        else:
-            return False
-        #endregion ------------------------------------> Unique Column Numbers
         #endregion ---------------------------------------------> Mixed Fields
         
         return True
@@ -5051,19 +5025,6 @@ class LimProt(BaseConfModPanel2):
         else:
             pass
         #endregion ----------------------------------------------------> Theta
-
-        #region ---------------------------------------> Unique Column Numbers
-        msgStep = self.cLPdCheck + 'Unique Column Numbers'
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> 
-        l = [self.wSeqCol.tc, self.wDetectedProt.tc, self.wScore.tc, 
-            self.wTcResults]
-        #------------------------------> 
-        if self.UniqueColumnNumber(l):
-            pass
-        else:
-            return False
-        #endregion ------------------------------------> Unique Column Numbers
         #endregion ---------------------------------------------> Mixed Fields
         
         return True
@@ -5536,7 +5497,8 @@ class TarProt(BaseConfModPanel2):
             mode       = 'openO',
             ext        = self.cEPDB,
             tcStyle    = wx.TE_READONLY,
-            validator  = dtsValidator.InputFF(fof='file', ext=self.cESPDB),
+            validator  = dtsValidator.InputFF(
+                fof='file', ext=self.cESPDB, opt=True),
             ownCopyCut = True,
         )
         #------------------------------> Values
@@ -5559,6 +5521,31 @@ class TarProt(BaseConfModPanel2):
                 numType='int', vMin=0, sep=' ', opt=True),
         )
         #endregion --------------------------------------------------> Widgets
+        
+        #region ----------------------------------------------> checkUserInput
+        self.rCheckUserInput = {
+            self.cLuFile       :[self.wUFile.tc,           config.mFileBad],
+            self.cLiFile       :[self.wIFile.tc,           config.mFileBad],
+            f'{self.cLSeqFile} file' :[self.wSeqFile.tc,   config.mFileBad],
+            self.cLPDB         :[self.wPDBFile.tc,         config.mFileBad],
+            self.cLId          :[self.wId.tc,              config.mValueBad],
+            self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad],
+            self.cLNormMethod  :[self.wNormMethod.cb,      config.mOptionBad],
+            self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad],
+            self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad],
+            self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum],
+            self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num],
+            self.cLSeqLength   :[self.wSeqLength.tc,       config.mOneZPlusNum],
+            self.cLAAPos       :[self.wAAPos.tc,           config.mOneZPlusNum],
+            self.cLHist        :[self.wHist.tc,            config.mValueBad],
+            f'{self.cLSeqCol} column' :[self.wSeqCol.tc,   config.mOneZPlusNum],
+            self.cLDetectedProt:[self.wDetectedProt.tc,    config.mOneZPlusNum],
+            self.cLScoreCol    :[self.wScore.tc,           config.mOneZPlusNum],
+            self.cLResControl  :[self.wTcResults,          config.mResCtrl]
+        }
+        self.rCheckUnique = [self.wSeqCol.tc, self.wDetectedProt.tc,
+                             self.wScore.tc, self.wTcResults]    
+        #endregion -------------------------------------------> checkUserInput
 
         #region ------------------------------------------------------> Sizers
         #------------------------------> Sizer Files
@@ -5730,9 +5717,169 @@ class TarProt(BaseConfModPanel2):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
-    
-    #endregion ------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Run methods
+    def PrepareRun(self) -> bool:
+        """Set variable and prepare data for analysis.
+        
+            Returns
+            -------
+            bool
+        """
+        return False
+        #region -----------------------------------------------------------> d
+        msgStep = self.cLPdPrepare + 'User input, reading'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> As given
+        self.rDI = {
+            self.EqualLenLabel(self.cLiFile) : (
+                self.wIFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLuFile) : (
+                self.wUFile.tc.GetValue()),
+            self.EqualLenLabel(f'{self.cLSeqFile} File') : (
+                self.wSeqFile.tc.GetValue()),
+            self.EqualLenLabel(self.cLId) : (
+                self.wId.tc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.wCeroB.IsChecked()),
+            self.EqualLenLabel(self.cLTransMethod) : (
+                self.wTransMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLNormMethod) : (
+                self.wNormMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLImputation) : (
+                self.wImputationMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLTargetProt) : (
+                self.wTargetProt.tc.GetValue()),
+            self.EqualLenLabel(self.cLScoreVal) : (
+                self.wScoreVal.tc.GetValue()),
+            self.EqualLenLabel(self.cLSeqLength) : (
+                self.wSeqLength.tc.GetValue()),
+            self.EqualLenLabel(self.cLSample) : (
+                self.wSample.cb.GetValue()),
+            self.EqualLenLabel(self.cLAlpha) : (
+                self.wAlpha.tc.GetValue()),
+            self.EqualLenLabel(self.cLBeta) : (
+                self.wBeta.tc.GetValue()),
+            self.EqualLenLabel(self.cLGamma) : (
+                self.wGamma.tc.GetValue()),
+            self.EqualLenLabel(self.cLTheta) : (
+                self.wTheta.tc.GetValue()),
+            self.EqualLenLabel(self.cLThetaMax) : (
+                self.wThetaMax.tc.GetValue()),
+            self.EqualLenLabel(f'{self.cLSeqCol} Column') : (
+                self.wSeqCol.tc.GetValue()),
+            self.EqualLenLabel(self.cLDetectedProt) : (
+                self.wDetectedProt.tc.GetValue()),
+            self.EqualLenLabel(self.cLScoreCol) : (
+                self.wScore.tc.GetValue()),
+            self.EqualLenLabel(self.cLResControl): (
+                self.wTcResults.GetValue()),
+            self.EqualLenLabel(self.cLLane) : (
+                self.rLbDict[1]),
+            self.EqualLenLabel(self.cLBand) : (
+                self.rLbDict[2]),
+            self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
+                self.rLbDict['Control']),
+        }
+        #endregion --------------------------------------------------------> d
+        
+        #region ----------------------------------------------------------> do
+        #------------------------------> Dict with all values
+        #--------------> Step
+        msgStep = self.cLPdPrepare + 'User input, processing'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #--------------> SeqLength
+        seqLengthVal = self.wSeqLength.tc.GetValue()
+        seqLength = float(seqLengthVal) if seqLengthVal != '' else None
+        #--------------> Theta
+        thetaVal = self.wTheta.tc.GetValue()
+        theta = float(thetaVal) if thetaVal != '' else None
+        thetaMaxVal = self.wThetaMax.tc.GetValue()
+        thetaMax = float(thetaMaxVal) if thetaMaxVal != '' else None
+        #--------------> Columns
+        seqCol       = int(self.wSeqCol.tc.GetValue())
+        detectedProt = int(self.wDetectedProt.tc.GetValue())
+        scoreCol     = int(self.wScore.tc.GetValue())
+        resctrl       = dmethod.ResControl2ListNumber(self.wTcResults.GetValue())
+        resctrlFlat   = dmethod.ResControl2Flat(resctrl)
+        resctrlDF     = dmethod.ResControl2DF(resctrl, 3)
+        resctrlDFFlat = dmethod.ResControl2Flat(resctrlDF)
+        #--------------> 
+        self.rDO  = {
+            'iFile'      : Path(self.wIFile.tc.GetValue()),
+            'uFile'      : Path(self.wUFile.tc.GetValue()),
+            'seqFile'    : Path(self.wSeqFile.tc.GetValue()),
+            'ID'         : self.wId.tc.GetValue(),
+            'Cero'       : self.wCeroB.IsChecked(),
+            'TransMethod': self.wTransMethod.cb.GetValue(),
+            'NormMethod' : self.wNormMethod.cb.GetValue(),
+            'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
+            'TargetProt' : self.wTargetProt.tc.GetValue(),
+            'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
+            'SeqLength'  : seqLength,
+            'Sample'     : self.cOSample[self.wSample.cb.GetValue()],
+            'Alpha'      : float(self.wAlpha.tc.GetValue()),
+            'Beta'       : float(self.wBeta.tc.GetValue()),
+            'Gamma'      : float(self.wGamma.tc.GetValue()),
+            'Theta'      : theta,
+            'ThetaMax'   : thetaMax,
+            'Lane'       : self.rLbDict[1],
+            'Band'       : self.rLbDict[2],
+            'ControlL'   : self.rLbDict['Control'],
+            'oc'         : { # Column numbers in the initial dataframe
+                'SeqCol'       : seqCol,
+                'TargetProtCol': detectedProt,
+                'ScoreCol'     : scoreCol,
+                'ResCtrl'      : resctrl,
+                'Column'       : (
+                    [seqCol, detectedProt, scoreCol] + resctrlFlat),
+            },
+            'df' : { # Column numbers in the selected data dataframe
+                'SeqCol'       : 0,
+                'TargetProtCol': 1,
+                'ScoreCol'     : 2,
+                'ResCtrl'      : resctrlDF,
+                'ResCtrlFlat'  : resctrlDFFlat,
+                'ColumnR'      : resctrlDFFlat,
+                'ColumnF'      : [2] + resctrlDFFlat,
+            },
+            'dfo' : { # Column numbers in the output dataframe
+                'NC' : [2,3], # N and C Term Res Numbers in the Rec Seq
+                'NCF': [4,5], # N and C Term Res Numbers in the Nat Seq
+            }
+        }
+        #endregion -------------------------------------------------------> do
+        
+        #region ---------------------------------------------------> Super
+        if super().PrepareRun():
+            pass
+        else:
+            self.rMsgError = 'Something went wrong when preparing the analysis.'
+            return False
+        #endregion ------------------------------------------------> Super
+
+        #region -------------------------------------------------> Print d, do
+        if config.development:
+            print('')
+            print('self.d:')
+            for k,v in self.rDI.items():
+                print(str(k)+': '+str(v))
+            print('')
+            print('self.do')
+            for k,v in self.rDO.items():
+                if k in ['oc', 'df', 'dfo']:
+                    print(k)
+                    for j,w in v.items():
+                        print(f'\t{j}: {w}')
+                else:
+                    print(str(k)+': '+str(v))
+            print('')
+        else:
+            pass
+        #endregion ----------------------------------------------> Print d, do
+        
+        return True
+    #---    
+    #endregion ------------------------------------------------> Run methods
 #---
 
 
