@@ -6194,6 +6194,7 @@ class UMSAPControl(BaseWindow):
         config.nuDataPrep: config.ntDataPrep,
         config.nmProtProf: config.ntProtProf,
         config.nmLimProt : config.ntLimProt,
+        config.nmTarProt : config.ntTarProt,
     }
     #endregion --------------------------------------------------> Class setup
 

@@ -5026,10 +5026,6 @@ class LimProt(BaseConfModPanel2):
     #---
     #endregion ------------------------------------------------> Manage Event
     
-    #region ---------------------------------------------------> Event Method
-
-    #endregion ------------------------------------------------> Event Method
-    
     #region ---------------------------------------------------> Run Method
     def CheckInput(self) -> bool:
         """Check user input
@@ -5825,8 +5821,63 @@ class TarProt(BaseConfModPanel2):
         else:
             pass
         #endregion -----------------------------------------------------> Test
+        
+        #region -------------------------------------------------------> DataI
+        self.SetInitialData(cDataI)
+        #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
+    
+    #------------------------------> Class Methods
+    #region ---------------------------------------------------> Manage Event
+    def SetInitialData(self, dataI: Optional[dict]=None) -> bool:
+        """Set initial data
+    
+            Parameters
+            ----------
+            dataI : dict or None
+                Data to fill all fields and repeat an analysis. See Notes.
+    
+            Returns
+            -------
+            True
+        """
+        #region -------------------------------------------------> Fill Fields
+        if dataI is not None:
+            #------------------------------> Files
+            self.wUFile.tc.SetValue(dataI['CI']['uFile'])
+            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
+            self.wSeqFile.tc.SetValue(dataI['I'][f'{self.cLSeqFile} File'])
+            self.wPDBFile.tc.SetValue(dataI['I'][f'{self.cLPDB}'])
+            self.wId.tc.SetValue(dataI['CI']['ID'])
+            #------------------------------> Data Preparation
+            self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
+            self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
+            self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
+            #------------------------------> Values
+            self.wTargetProt.tc.SetValue(dataI['I'][self.cLTargetProt])
+            self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
+            self.wSeqLength.tc.SetValue(dataI['I'][self.cLSeqLength])
+            self.wAlpha.tc.SetValue(dataI['I'][self.cLAlpha])
+            self.wAAPos.tc.SetValue(dataI['I'][self.cLAAPos])
+            self.wHist.tc.SetValue(dataI['I'][self.cLHist])
+            #------------------------------> Columns
+            self.wSeqCol.tc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
+            self.wDetectedProt.tc.SetValue(dataI['I'][self.cLDetectedProt])
+            self.wScore.tc.SetValue(dataI['I'][self.cLScoreCol])
+            self.wTcResults.SetValue(dataI['I'][self.cLResControl])
+            self.rLbDict[1] = dataI['I'][self.cLExp]
+            self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
+            #------------------------------> 
+            self.OnIFileLoad('fEvent')
+        else:
+            pass
+        #endregion ----------------------------------------------> Fill Fields
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Manage Event
 
     #region ---------------------------------------------------> Run methods
     def PrepareRun(self) -> bool:
