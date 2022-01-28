@@ -114,6 +114,7 @@ nwUMSAPControl  = 'UMSAPControl'
 nwCorrAPlot     = 'CorrAPlot'
 nwProtProf      = 'ProtProfPlot'
 nwLimProt       = 'LimProtPlot'
+nwTarProt       = 'TarProtPlot'
 nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
@@ -359,6 +360,7 @@ dfcolLimProtFirstPart = [
 dfcolLimProtCLevel = ['Ptost']
 dfcolTarProtFirstPart = [
     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
+dfcolTarProtBLevel = ['Int', 'P']
 #endregion --------------------------------------------------> DF Column names
 
 

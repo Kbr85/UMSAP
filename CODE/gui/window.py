@@ -5499,6 +5499,28 @@ class LimProtPlot(BaseWindowProteolysis):
 #---
 
 
+class TarProtPlot(BaseWindowProteolysis):
+    """Plot the results of a Targeted Proteolysis analysis.
+
+        Parameters
+        ----------
+        cParent: wx.Window
+            Parent of the window
+    
+        Attributes
+        ----------
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = config.nwTarProt
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nmTarProt
+    #------------------------------> Colors
+    cCNatProt = config.color['NatProt']
+    cCRecProt = config.color['RecProt']
+    # cColor = config.color[cName]
+    #endregion --------------------------------------------------> Class setup
+
 class CheckDataPrep(BaseWindowNPlotLT):
     """Window to check the data preparation steps
 
@@ -6187,6 +6209,7 @@ class UMSAPControl(BaseWindow):
         config.nuDataPrep: CheckDataPrep,
         config.nmProtProf: ProtProfPlot,
         config.nmLimProt : LimProtPlot, 
+        config.nmTarProt : TarProtPlot,
     }
     #------------------------------> 
     dSectionTab = { # Section name and Tab name correlation

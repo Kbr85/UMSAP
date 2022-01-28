@@ -4399,7 +4399,8 @@ class ProtProf(BaseConfModPanel):
     #---
     
     def CalcOutData(
-        self, cN: str, tN: str, colC: Optional[list[int]], colD: list[int]) -> bool:
+        self, cN: str, tN: str, colC: Optional[list[int]], colD: list[int]
+    ) -> bool:
         """Calculate the data for the main output dataframe
     
             Parameters
@@ -5550,6 +5551,7 @@ class TarProt(BaseConfModPanel2):
     cLExp      = config.lStTarProtExp
     cLCtrlName = config.lStCtrlName
     cLDFFirst  = config.dfcolTarProtFirstPart
+    cLDFSecond = config.dfcolTarProtBLevel
     #------------------------------> Hint
     cHPDB   = 'Path to the PDB file or PDB ID'
     cHAAPos = 'e.g. 5'
@@ -6066,7 +6068,8 @@ class TarProt(BaseConfModPanel2):
         totalRowAncovaDF = 2*max([len(x[0]) for x in self.rDO['df']['ResCtrl']])
         nGroups = [2 for x in self.rDO['df']['ResCtrl']]
         nGroups = nGroups[1:]
-        print(nGroups)
+        idx = pd.IndexSlice
+        idx = idx[self.rDO['Exp'], 'P']
         #------------------------------> 
         k = 0
         for row in self.dfIm.itertuples(index=False):
@@ -6076,8 +6079,11 @@ class TarProt(BaseConfModPanel2):
             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
             #------------------------------> 
             try:
-                self.dfR.loc[k,self.rDO['Exp']] = dtsStatistic.test_slope(
-                    self.PrepareAncova(row, totalRowAncovaDF), nGroups)
+                #------------------------------> Ancova df & Int
+                dfAncova = self.PrepareAncova(k, row, totalRowAncovaDF)
+                #------------------------------> P value
+                self.dfR.loc[k,idx] = dtsStatistic.test_slope(
+                    dfAncova, nGroups)
             except Exception as e:
                 self.rMsgError = (f'P value calculation failed for peptide '
                     f'{row[0]}.')
@@ -6129,40 +6135,56 @@ class TarProt(BaseConfModPanel2):
         """
         #region -------------------------------------------------------> Index
         aL = self.cLDFFirst
-        print(aL)
-        #------------------------------> 
+        bL = self.cLDFFirst
+        n = len(self.cLDFSecond)
+        #------------------------------> Ctrl
+        aL = aL + n*self.rDO['ControlL']
+        bL = bL + self.cLDFSecond
+        #------------------------------> Exp
         for exp in self.rDO['Exp']:
-            aL = aL + [exp]
+            aL = aL + n*[exp]
+            bL = bL + self.cLDFSecond
+        #------------------------------> 
+        idx = pd.MultiIndex.from_arrays([aL[:], bL[:]])
         #endregion ----------------------------------------------------> Index
         
         #region ----------------------------------------------------> Empty DF
         df = pd.DataFrame(
-            np.nan, columns=aL, index=range(self.dfIm.shape[0]),
+            np.nan, columns=idx, index=range(self.dfIm.shape[0]),
         )
+        idx = pd.IndexSlice
+        df.loc[:,idx[:,'Int']] = df.loc[:,idx[:,'Int']].astype('object')
         #endregion -------------------------------------------------> Empty DF
         
         #region -------------------------------------------------> Seq & Score
         df[aL[0]] = self.dfIm.iloc[:,0]
         df[aL[1]] = self.dfIm.iloc[:,2]
+        df[(self.rDO['ControlL'][0], 'P')] = 2
         #endregion ----------------------------------------------> Seq & Score
         
         return df
     #---
     
-    def PrepareAncova(self, row: 'namedtuple', rowN: int,) -> 'pd.DataFrame':
-        """
+    def PrepareAncova(
+        self, rowC: int, row: 'namedtuple', rowN: int
+        ) -> 'pd.DataFrame':
+        """Prepare the dataframe used to perform the ANCOVA test and add the
+            intensity to self.dfR
     
             Parameters
             ----------
-            
+            rowC: int
+                Current row index in self.dfR
+            row: namedtuple
+                Row from self.dfIm
+            rowN: int
+                Maximum number of rows in the output pd.df
     
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            pd.DataFrame
+                Dataframe to use in the ANCOVA test
+                Xc1, Yc1, Xe1, Ye1,....,XcN, YcN, XeN, YeN
         """
         #region ---------------------------------------------------> Variables
         dfAncova = pd.DataFrame(index=range(0,rowN))
@@ -6172,6 +6194,8 @@ class TarProt(BaseConfModPanel2):
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> 
+        #------------------------------> Control
+        #--------------> List
         for r in self.rDO['df']['ResCtrl'][0][0]:
             if np.isfinite(row[r]):
                 xC.append(1)
@@ -6179,7 +6203,9 @@ class TarProt(BaseConfModPanel2):
                 yC.append(row[r])
             else:
                 pass
-            
+        #--------------> Add to self.dfR
+        self.dfR.at[rowC,(self.rDO['ControlL'],'Int')] = str(yC)
+        #------------------------------> Points
         for k,r in enumerate(self.rDO['df']['ResCtrl'][1:], start=1):
             #------------------------------> 
             xE = []
@@ -6191,6 +6217,8 @@ class TarProt(BaseConfModPanel2):
                     yE.append(row[rE])
                 else:
                     pass
+            #------------------------------> 
+            self.dfR.at[rowC,(self.rDO['Exp'][k-1], 'Int')] = str(yE)
             #------------------------------> 
             a = xC + xCt
             b = yC + yC
