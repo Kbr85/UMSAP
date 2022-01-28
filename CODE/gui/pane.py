@@ -4561,12 +4561,12 @@ class LimProt(BaseConfModPanel2):
                 "iFile"      : "Path to input data file",
                 "uFile"      : "Path to umsap file.",
                 'seqFile'    : "Path to the sequence file",
-                'ID'         : 'Analysis ID',
-                "Cero"       : Boolean, how to treat cero values,
+                'ID'         : "Analysis ID",
+                "Cero"       : "Boolean, how to treat cero values",
                 "TransMethod": "Transformation method",
                 "NormMethod" : "Normalization method",
                 "ImpMethod"  : "Imputation method",
-                "TargetProt" : 'Target Protein',
+                "TargetProt" : "Target Protein",
                 "ScoreVal"   : "Score value threshold",
                 'SeqLength'  : "Sequence length",
                 'Sample'     : 'Independent or dependent samples',
@@ -4579,37 +4579,40 @@ class LimProt(BaseConfModPanel2):
                 "Band"       : [List of bands],
                 "ControlL"   : "Control label",
                 "oc": {
-                    'SeqCol'   : Column of Sequences,
-                    "TargetProtCol" : Column of Proteins,
-                    "ScoreCol" : Score column,
-                    "ResCtrl": [List of columns containing the control and 
-                                experiments column numbers],
+                    "SeqCol"       : Column of Sequences,
+                    "TargetProtCol": Column of Proteins,
+                    "ScoreCol"     : Score column,
+                    "ResCtrl"      : [List of columns containing the control and 
+                        experiments column numbers],
                     "Column": [Flat list of all column numbers with the 
                               following order: SeqCol, TargetProtCol, 
                               ScoreColRes & Control]
                 },
                 "df": { Column numbers in the pd.df created from the input file.
-                    "SeqCol" : 0,
+                    "SeqCol"       : 0,
                     "TargetProtCol": 1,
-                    "ScoreCol" : 2,
-                    "ResCtrl": [],
-                    "ResCtrlFlat": [ResCtrl as a flat list],
-                    "ColumnR : [Columns with the results] 
-                    "ColumnF": [Columns that must contain only float numbers]
+                    "ScoreCol"     : 2,
+                    "ResCtrl"      : [[[]], [[]],...,[[]]],
+                    "ResCtrlFlat"  : [ResCtrl as a flat list],
+                    "ColumnR"      : [Columns with the results],
+                    "ColumnF"      : [Columns that must contain only floats],
                 },
                 "dfo" : {
-                    'NC' : [Columns for the N and C residue numbers in the 
+                    "NC" : [Columns for the N and C residue numbers in the 
                         output df],
-                    'NCF' : [Columns for the Nnat and Cnat residue numbers in 
+                    "NCF" : [Columns for the Nnat and Cnat residue numbers in 
                         the output df],
                 },
+                "ProtLength": "Length of the Recombinant protein",
+                "ProtLoc"   : "Location of the Nat Seq in the Rec Seq",
+                "ProtDelta" : "To adjust Res Number. Nat = Res + Delta",
             },    
         rLbDict: dict
             Contains information about the Res - Ctrl e.g.
             {
-                1            : ['L1', 'L2'],
-                2            : ['B1', 'B2'],
-                'Control'    : ['TheControl'],
+                1        : ['L1', 'L2'],
+                2        : ['B1', 'B2'],
+                'Control': ['TheControl'],
             }
         rLLenLongest: int
             Number of characters in the longest label.
@@ -4704,7 +4707,7 @@ class LimProt(BaseConfModPanel2):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, cParent, cDataI: Optional[dict]):
+    def __init__(self, cParent, cDataI: Optional[dict]) -> None:
         """ """
         #region -------------------------------------------------> Check Input
         
@@ -5416,23 +5419,131 @@ class LimProt(BaseConfModPanel2):
 
 
 class TarProt(BaseConfModPanel2):
-    """
+    """Configuration Pane for the Targeted Proteolysis module.
 
         Parameters
         ----------
-        
+        cParent: wx.Widget
+            Parent of the pane
+        cDataI : dict or None
+            Initial data provided by the user in a previous analysis.
+            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
 
         Attributes
         ----------
+        rChangeKey: list of str
+            Keys in self.rDO that must be turned to str.
+        rCheckUserInput : dict
+            To check the user input in the right order. 
+            See pane.BaseConfPanel.CheckInput for a description of the dict.
+        rDI: dict
+            Dictionary with the user input. Keys are labels in the panel plus:
+            {
+                config.lStTarProtExp            : [list of experiments],
+                f"Control {config.lStCtrlName}" : "Control Name",
+            }
+        rDO: dict
+            Dictionary with checked user input. Keys are:
+            {
+                "iFile"      : "Path to input data file",
+                "uFile"      : "Path to umsap file.",
+                "seqFile"    : "Path to the sequence file",
+                "pdbFile"    : "Path to the PDB file",
+                "ID"         : "Analysis ID",
+                "Cero"       : Boolean, how to treat cero values,
+                "TransMethod": "Transformation method",
+                "NormMethod" : "Normalization method",
+                "ImpMethod"  : "Imputation method",
+                "TargetProt" : "Target Protein",
+                "ScoreVal"   : "Score value threshold",
+                "Alpha"      : "Significance level",
+                "SeqLength"  : "Sequence length",
+                "AA"         : "Positions to analyse during the AA distribution",
+                "Hist"       : "Windows width for the Histograms",
+                "Exp"        : "['Exp1', 'Exp2', 'Exp3']",
+                "ControlL"   : ['Ctrl']
+                "oc" : {
+                    "SeqCol"       : Column of Sequences,
+                    "TargetProtCol": Column of Proteins,
+                    "ScoreCol"     : Score column,
+                    "ResCtrl"      : [List of columns containing the control and 
+                        experiments column numbers],
+                    "Column"       : [Flat list of all column numbers with the 
+                              following order: SeqCol, TargetProtCol, 
+                              ScoreColRes & Control]
+                },
+                "df" : { Colum numbers if the pd.df created from the input file
+                    "SeqCol"       : 0,
+                    "TargetProtCol": 1,
+                    "ScoreCol"     : 2,
+                    "ResCtrl"      : [[[]], [[]],...,[[]]],
+                    "ResCtrlFlat"  : Flat ResCtrl,
+                    "ColumnR"      : [Columns with the results],
+                    "ColumnF"      : [Columns that must contain only floats],
+                },
+                "dfo" : {
+                    "NC" : [Columns for the N and C residue numbers in the 
+                        output df],
+                    "NCF" : [Columns for the Nnat and Cnat residue numbers in 
+                        the output df],   
+                },
+                "ProtLength": "Length of the Recombinant protein",
+                "ProtLoc"   : "Location of the Nat Seq in the Rec Seq",
+                "ProtDelta" : "To adjust Res Number. Nat = Res + Delta",
+            }
+        rLbDict: dict
+            Contains information about the Res - Ctrl e.g.
+            {
+                1        : ['Exp1', 'Exp1'],
+                'Control': ['TheControl'],
+            }
+        rLLenLongest: int
+            Number of characters in the longest label.
+        rMainData : str
+            Name of the file containing the results of the analysis in the 
+            step folder
         
+        See Parent classes for more aatributes.
+        
+        Notes
+        -----
+        Running the analysis results in the creation of:
+        
+        - Parent Folder/
+            - Input_Data_Files/
+            - Steps_Data_Files/20220104-214055_Targeted Proteolysis/
+            - output-file.umsap
+        
+        The Input_Data_Files folder contains the original data files. These are 
+        needed for data visualization, running analysis again with different 
+        parameters, etc.
+        The Steps_Data_Files/Date-Section folder contains regular csv files with 
+        the step by step data.
+    
+        The Targeted Proteolysis section in output-file.umsap conteins the 
+        information about the calculations, e.g
 
-        Raises
-        ------
+        {
+            'Targeted Proteolysis : {
+                '20210324-165609': {
+                    'V' : config.dictVersion,
+                    'I' : self.d,
+                    'CI': self.do,
+                    'DP': {
+                        'dfS' : pd.DataFrame with initial data as float and
+                                after discarding values by score.
+                        'dfT' : pd.DataFrame with transformed data.
+                        'dfN' : pd.DataFrame with normalized data.
+                        'dfIm': pd.DataFrame with imputed data.
+                    }
+                    'R' : pd.DataFrame (dict) with the calculation results.
+                }
+            }
+        }
         
-
-        Methods
-        -------
+        The result data frame has the following structure:
         
+        Sequence Score Nterm Cterm NtermF CtermF Exp1, Exp2,...,ExpN
     """
     #region -----------------------------------------------------> Class setup
     cName = config.npTarProt
