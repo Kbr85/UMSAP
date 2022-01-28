@@ -5515,11 +5515,77 @@ class TarProtPlot(BaseWindowProteolysis):
     #------------------------------> To id the section in the umsap file 
     # shown in the window
     cSection = config.nmTarProt
+    #------------------------------> Label
+    cLPanePlot = 'Intensity'
     #------------------------------> Colors
     cCNatProt = config.color['NatProt']
     cCRecProt = config.color['RecProt']
     # cColor = config.color[cName]
     #endregion --------------------------------------------------> Class setup
+    
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cParent: 'UMSAPControl') -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle         = f'{cParent.cTitle} - {self.cSection}'
+        self.rObj           = cParent.rObj
+        self.rData          = self.rObj.rConfData[self.cSection]
+        self.rDateC         = None
+        self.rExp           = None
+        self.rFragments     = None
+        self.rFragSelLine   = None
+        self.rFragSelC      = [None, None, None]
+        self.rAlpha         = None
+        self.rProtLoc       = None
+        self.rProtLength    = None
+        self.rProtDelta     = None
+        self.rProtTarget    = None
+        self.rPeptide       = None
+        
+        # self.rDate, cMenuData = self.SetDateMenuDate()
+        
+        # self.dClearMethod = {
+        #     'Peptide'  : self.OnClearPept,
+        #     'Fragment' : self.OnClearFrag,
+        #     'Gel Spot' : self.OnClearGel,
+        #     'Band/Lane': self.OnClearBL,
+        #     'All'      : self.OnClearAll,
+        # }
+        
+        super().__init__(cParent, cMenuData=None)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        # self.OnDateChange(self.rDate[0])
+        #------------------------------> 
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+    
+    #------------------------------> Class methods
+#---
 
 class CheckDataPrep(BaseWindowNPlotLT):
     """Window to check the data preparation steps
