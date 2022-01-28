@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
-import secrets 
+from collections import namedtuple
 import shutil
 from pathlib import Path
 from typing import Optional, Union
@@ -1782,7 +1782,7 @@ class BaseConfModPanel2(BaseConfModPanel):
             #------------------------------> 
             m = self.dfR.iloc[:,self.rDO['dfo']['NCF']] > 0
             a = self.dfR.iloc[:,self.rDO['dfo']['NCF']].where(m, np.nan)
-            a = a.astype('Int16')
+            a = a.astype('int')
             self.dfR.iloc[:,self.rDO['dfo']['NCF']] = a
         else:
             pass
@@ -5442,6 +5442,7 @@ class TarProt(BaseConfModPanel2):
     cLHist     = 'Histogram windows'
     cLExp      = config.lStTarProtExp
     cLCtrlName = config.lStCtrlName
+    cLDFFirst  = config.dfcolTarProtFirstPart
     #------------------------------> Hint
     cHPDB   = 'Path to the PDB file or PDB ID'
     cHAAPos = 'e.g. 5'
@@ -5888,6 +5889,7 @@ class TarProt(BaseConfModPanel2):
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> 
         self.dfR = self.EmptyDFR()
+        print(self.dfR)
         #endregion -------------------------------------------------> Empty DF
         
         #region ------------------------------------------------> N, C Res Num
@@ -5897,14 +5899,41 @@ class TarProt(BaseConfModPanel2):
             return False
         #endregion ---------------------------------------------> N, C Res Num
         
+        #region ----------------------------------------------------> P values
+        #------------------------------> 
+        totalPeptide = len(self.dfIm)
+        totalRowAncovaDF = 2*max([len(x[0]) for x in self.rDO['df']['ResCtrl']])
+        nGroups = [2 for x in self.rDO['df']['ResCtrl']]
+        nGroups = nGroups[1:]
+        print(nGroups)
+        #------------------------------> 
+        k = 0
+        for row in self.dfIm.itertuples(index=False):
+            #------------------------------> Msg
+            msgStep = (f'{self.cLPdRun} Calculating P values for peptide '
+                f'{k+1} ({totalPeptide})')
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------> 
+            try:
+                self.dfR.loc[k,self.rDO['Exp']] = dtsStatistic.test_slope(
+                    self.PrepareAncova(row, totalRowAncovaDF), nGroups)
+            except Exception as e:
+                self.rMsgError = (f'P value calculation failed for peptide '
+                    f'{row[0]}.')
+                self.rException = e
+                return False
+            #------------------------------> 
+            k = k + 1
+        #endregion -------------------------------------------------> P values
         
         if config.development:
             print('self.dfR.shape: ', self.dfR.shape)
             print('')
             print(self.dfR)
-            print('')
+        else:
+            pass
             
-        return False
+        return True
     #---
     
     def EmptyDFR(self) -> 'pd.DataFrame':
@@ -5915,24 +5944,81 @@ class TarProt(BaseConfModPanel2):
             pd.DataFrame
         """
         #region -------------------------------------------------------> Index
-        col = config.dfcolTarProtFirstPart
+        aL = self.cLDFFirst
+        print(aL)
         #------------------------------> 
         for exp in self.rDO['Exp']:
-            col.append(exp)
+            aL = aL + [exp]
         #endregion ----------------------------------------------------> Index
         
         #region ----------------------------------------------------> Empty DF
         df = pd.DataFrame(
-            np.nan, columns=col, index=range(self.dfIm.shape[0]),
+            np.nan, columns=aL, index=range(self.dfIm.shape[0]),
         )
         #endregion -------------------------------------------------> Empty DF
         
         #region -------------------------------------------------> Seq & Score
-        df[col[0]] = self.dfIm.iloc[:,0]
-        df[col[1]] = self.dfIm.iloc[:,2]
+        df[aL[0]] = self.dfIm.iloc[:,0]
+        df[aL[1]] = self.dfIm.iloc[:,2]
         #endregion ----------------------------------------------> Seq & Score
         
         return df
+    #---
+    
+    def PrepareAncova(self, row: 'namedtuple', rowN: int,) -> 'pd.DataFrame':
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        dfAncova = pd.DataFrame(index=range(0,rowN))
+        xC = []
+        xCt = []
+        yC = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        for r in self.rDO['df']['ResCtrl'][0][0]:
+            if np.isfinite(row[r]):
+                xC.append(1)
+                xCt.append(5)
+                yC.append(row[r])
+            else:
+                pass
+            
+        for k,r in enumerate(self.rDO['df']['ResCtrl'][1:], start=1):
+            #------------------------------> 
+            xE = []
+            yE = []
+            #------------------------------> 
+            for rE in r[0]:
+                if np.isfinite(row[rE]):
+                    xE.append(5)
+                    yE.append(row[rE])
+                else:
+                    pass
+            #------------------------------> 
+            a = xC + xCt
+            b = yC + yC
+            c = xC + xE
+            d = yC + yE
+            #------------------------------> 
+            dfAncova.loc[range(0, len(a)),f'Xc{k}'] = a
+            dfAncova.loc[range(0, len(b)),f'Yc{k}'] = b
+            dfAncova.loc[range(0, len(c)),f'Xe{k}'] = c
+            dfAncova.loc[range(0, len(d)),f'Ye{k}'] = d
+        #endregion ------------------------------------------------> 
+        return dfAncova
     #---
     #endregion ------------------------------------------------> Run methods
 #---
