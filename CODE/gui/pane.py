@@ -5467,7 +5467,7 @@ class TarProt(BaseConfModPanel2):
     cGaugePD     = 50
     rLLenLongest = len(config.lStResultCtrl)
     rMainData    = '{}-TargetedProteolysis-Data-{}.txt'
-    rChangeKey   = ['iFile', 'uFile', 'seqFile']
+    rChangeKey   = ['iFile', 'uFile', 'seqFile', 'pdbFile']
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
     #endregion --------------------------------------------------> Class setup
@@ -5889,7 +5889,6 @@ class TarProt(BaseConfModPanel2):
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> 
         self.dfR = self.EmptyDFR()
-        print(self.dfR)
         #endregion -------------------------------------------------> Empty DF
         
         #region ------------------------------------------------> N, C Res Num
@@ -5934,6 +5933,29 @@ class TarProt(BaseConfModPanel2):
             pass
             
         return True
+    #---
+    
+    def WriteOutput(self) -> bool:
+        """Write output 
+        
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Data Steps
+        stepDict = {
+            config.fnInitial.format('01', self.rDate)    : self.dfI,
+            config.fnFloat.format('02', self.rDate)      : self.dfF,
+            config.fnTargetProt.format('03', self.rDate) : self.dfTP,
+            config.fnScore.format('04', self.rDate)      : self.dfS,
+            config.fnTrans.format('05', self.rDate)      : self.dfT,
+            config.fnNorm.format('06', self.rDate)       : self.dfN,
+            config.fnImp.format('07', self.rDate)        : self.dfIm,
+            self.rMainData.format('08', self.rDate)      : self.dfR,
+        }
+        #endregion -----------------------------------------------> Data Steps
+        
+        return self.WriteOutputData(stepDict)
     #---
     
     def EmptyDFR(self) -> 'pd.DataFrame':
