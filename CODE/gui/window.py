@@ -557,6 +557,8 @@ class BaseWindowNPlotLT(BaseWindow):
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(cParent, cMenuData=cMenuData)
+        #------------------------------> 
+        self.dKeyMethod['PlotZoomResetAllinOne'] = self.OnPlotZoomResetAllinOne
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -757,7 +759,7 @@ class BaseWindowNPlotLT(BaseWindow):
         return True
     #---
     
-    def OnZoomResetMany(self) -> bool:
+    def OnPlotZoomResetAllinOne(self) -> bool:
         """Reset all the plots in the window.
         
             Returns
@@ -5676,10 +5678,10 @@ class CheckDataPrep(BaseWindowNPlotLT):
     cLdfCol = config.dfcolDataCheck
     #------------------------------> Other
     cFileName = {
-        config.ltDPKeys[0] : '{}-01-Filtered.{}',
-        config.ltDPKeys[1] : '{}-02-Transformed.{}',
-        config.ltDPKeys[2] : '{}-03-Normalized.{}',
-        config.ltDPKeys[3] : '{}-04-Imputed.{}',
+        config.ltDPKeys[0] : '{}-01-Filtered-{}.{}',
+        config.ltDPKeys[1] : '{}-02-Transformed-{}.{}',
+        config.ltDPKeys[2] : '{}-03-Normalized-{}.{}',
+        config.ltDPKeys[3] : '{}-04-Imputed-{}.{}',
     }
     cImgName = {
         cLNPlots[0] : '{}-01-Filtered-{}.{}',
@@ -5845,11 +5847,12 @@ class CheckDataPrep(BaseWindowNPlotLT):
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
             p = Path(dlg.GetPath())
+            col = self.wLC.wLCS.lc.GetFirstSelected()
             #------------------------------> Export
             try:
                 for k, v in self.rDpDF.items():
                     #------------------------------> file path
-                    fPath = p / self.cFileName[k].format(self.rDateC, 'txt')
+                    fPath = p/self.cFileName[k].format(self.rDateC, col, 'txt')
                     #------------------------------> Write
                     dtsFF.WriteDF2CSV(fPath, v)
             except Exception as e:
@@ -5867,7 +5870,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         return True	
     #---
     
-    def OnSavePlotImageImage(self) -> bool:
+    def OnPlotSaveImageOne(self) -> bool:
         """ Export all plots to a pdf image"""
         #region --------------------------------------------------> Dlg window
         dlg = dtsWindow.DirSelectDialog(parent=self)
@@ -5898,11 +5901,6 @@ class CheckDataPrep(BaseWindowNPlotLT):
      
         dlg.Destroy()
         return True	
-    #---
-    
-    def OnZoomReset(self) -> bool:
-        """Reset the zoom of all plots"""
-        return self.OnZoomResetMany()
     #---
     #endregion ------------------------------------------------> Event Methods
     

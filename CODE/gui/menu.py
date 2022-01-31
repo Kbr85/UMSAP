@@ -363,8 +363,8 @@ class Module(wx.Menu, MenuMethods):
         Attributes
         ----------
         rKeyID : dict
-            Keys are the menu ids and values the tab's unique names. Used by 
-            OnCreateTab
+            Link wx.MenuItems.Id with keywords used by methods in the window
+            owning the wx.Menu
     """
     #region -----------------------------------------------------> Class setup
 
@@ -405,9 +405,9 @@ class Utility(wx.Menu, MenuMethods):
     
         Attributes
         ----------
-        rKeyID : dict
-            Keys are the menu ids and values the tab's unique names. Used by
-            OnCreateTab
+        rrKeyID : dict
+            Link wx.MenuItems.Id with keywords used by methods in the window
+            owning the wx.Menu
     """
     #region -----------------------------------------------------> Class setup
     
@@ -554,8 +554,8 @@ class CorrAPlotToolMenu(PlotMenu):
         Attributes
         ----------
         rKeyID : dict
-            Keys are the menu ids and values the tab's unique names. Used by
-            OnCreateTab
+            Link wx.MenuItems.Id with keywords used by methods in the window
+            owning the wx.Menu
         rCol: list[wx.MenuItems]
             List of wx.MenuItems with the options for the 
             
@@ -673,10 +673,11 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         
         Attributes
         ----------
-        menuData: dict
-            Data needed to build the menu. See Notes for more details.
-        plotDate : list of wx.MenuItems
+        rPlotDate : list of wx.MenuItems
             Available dates in the analysis.
+        rKeyID : dict
+            Link wx.MenuItems.Id with keywords used by methods in the window
+            owning the wx.Menu
             
         Notes
         -----
@@ -716,11 +717,19 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         #------------------------------> 
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> 
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'PlotImageOne',
+            self.miZoomR.GetId(): 'PlotZoomResetAllinOne',
+        }
+        #endregion ------------------------------------------------> 
+
     
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
-        self.Bind(wx.EVT_MENU, self.OnSavePlotImageImage,       source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
         #endregion -----------------------------------------------------> Bind    
     #---
