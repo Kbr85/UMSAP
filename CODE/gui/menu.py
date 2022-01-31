@@ -1917,6 +1917,175 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
     #---
     #endregion ------------------------------------------------> Event methods
 #---
+
+
+class TarProtToolMenu(wx.Menu, MenuMethods):
+    """Tool menu for the Targeted Proteolysis window
+    
+        Parameters
+        ----------
+        cMenuData: dict
+            Data needed to build the menu. See Notes below.
+            
+        Attributes
+        ----------
+        rPlotdate : list of wx.MenuItems
+            Available dates in the analysis.
+        
+        Notes
+        -----
+        menuData has the following structure:
+            {
+                'menudate' : [List of dates as str],
+            }    
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cMenuData: dict) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cMenuData = cMenuData
+        self.rPlotDate = []
+        
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        #------------------------------> Add Dates
+        self.AddDateItems(self.cMenuData['menudate'])
+        self.AppendSeparator()
+        #------------------------------> Duplicate Window
+        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.miDataPrep = self.Append(-1, 'Data Preparation')
+        self.AppendSeparator()
+        #------------------------------> Export Data
+        self.miSaveD  = self.Append(-1, 'Export Data\tCtrl+E')
+        self.miSaveI  = self.Append(-1, 'Export Images\tShift+Alt+I')
+        self.AppendSeparator()
+        #------------------------------>
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnLaneBand,       source=self.miBandLane)
+        # self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
+        # self.Bind(wx.EVT_MENU, self.OnImageAll,       source=self.miSaveI)
+        # self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
+        # self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.miDataPrep)
+        # self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
+        # self.Bind(wx.EVT_MENU, self.OnShowAll,        source=self.miShowAll)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #------------------------------> Class methods
+    #region ---------------------------------------------------> Event methods
+    def OnImageAll(self, event: wx.CommandEvent) -> bool:
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnImageAll()
+        
+        return True
+    #---
+    
+    def OnLaneBand(self, event: wx.CommandEvent) -> bool:
+        """Change between Lane and Band selection mode.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnLaneBand(self.miBandLane.IsChecked())
+        
+        return True
+    #---
+    
+    def OnPlotDate(self, event: wx.CommandEvent) -> bool:
+        """Plot a date of a section in an UMSAP file.
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Date
+        tDate = self.GetLabelText(event.GetId())
+        #endregion -----------------------------------------------------> Date
+
+        #region --------------------------------------------------------> Draw
+        win = self.GetWindow()
+        win.OnDateChange(tDate)
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def OnShowAll(self, event: wx.CommandEvent) -> bool:
+        """Show all fragments
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnShowAll()
+        
+        return True
+    #---
+    
+    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
+        """
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnZoomReset()
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+#---
 #endregion --------------------------------------------------------> Mix menus
 
 
@@ -1966,6 +2135,7 @@ class ToolMenuBar(MainMenuBar):
         config.nwCheckDataPrep: DataPrepToolMenu,
         config.nwProtProf     : ProtProfToolMenu,
         config.nwLimProt      : LimProtToolMenu,
+        config.nwTarProt      : TarProtToolMenu,
     }
     #endregion --------------------------------------------------> Class Setup
     

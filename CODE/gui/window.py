@@ -980,6 +980,38 @@ class BaseWindowProteolysis(BaseWindow):
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
+    
+    #region --------------------------------------------------> Manage Methods
+    def SetDateMenuDate(self) -> tuple[list, dict]:
+        """Set the self.rDate list and the menuData dict needed to build the Tool
+            menu.
+
+            Returns
+            -------
+            tuple of list and dict
+            The list is a list of str with the dates in the analysis.
+            The dict has the following structure:
+                {
+                    'menudate' : [List of dates],
+                }                    
+        """
+        #region ---------------------------------------------------> Fill dict
+        #------------------------------> Variables
+        date = []
+        menuData = {}
+        #------------------------------> Fill 
+        for k in self.rData.keys():
+            #------------------------------> 
+            date.append(k)
+            #------------------------------> 
+        #------------------------------> 
+        menuData['menudate'] = date
+        #endregion ------------------------------------------------> Fill dict
+        
+        return (date, menuData)
+    #---
+    #endregion -----------------------------------------------> Manage Methods
+    
 #---
 #endregion -----------------------------------------------------> Base Classes
 
@@ -3879,35 +3911,6 @@ class LimProtPlot(BaseWindowProteolysis):
     
     #------------------------------> Class methods
     #region --------------------------------------------------> Manage Methods
-    def SetDateMenuDate(self) -> tuple[list, dict]:
-        """Set the self.rDate list and the menuData dict needed to build the Tool
-            menu.
-
-            Returns
-            -------
-            tuple of list and dict
-            The list is a list of str with the dates in the analysis.
-            The dict has the following structure:
-                {
-                    'menudate' : [List of dates],
-                }                    
-        """
-        #region ---------------------------------------------------> Fill dict
-        #------------------------------> Variables
-        date = []
-        menuData = {}
-        #------------------------------> Fill 
-        for k in self.rData.keys():
-            #------------------------------> 
-            date.append(k)
-            #------------------------------> 
-        #------------------------------> 
-        menuData['menudate'] = date
-        #endregion ------------------------------------------------> Fill dict
-        
-        return (date, menuData)
-    #---
-    
     def WinPos(self) -> bool:
         """Set the position on the screen and adjust the total number of
             shown windows.
@@ -5546,7 +5549,7 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rProtTarget    = None
         self.rPeptide       = None
         
-        # self.rDate, cMenuData = self.SetDateMenuDate()
+        self.rDate, cMenuData = self.SetDateMenuDate()
         
         # self.dClearMethod = {
         #     'Peptide'  : self.OnClearPept,
@@ -5556,7 +5559,7 @@ class TarProtPlot(BaseWindowProteolysis):
         #     'All'      : self.OnClearAll,
         # }
         
-        super().__init__(cParent, cMenuData=None)
+        super().__init__(cParent, cMenuData=cMenuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -5585,6 +5588,35 @@ class TarProtPlot(BaseWindowProteolysis):
     #endregion -----------------------------------------------> Instance setup
     
     #------------------------------> Class methods
+    #region --------------------------------------------------> Manage Methods
+    def WinPos(self) -> bool:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
+            
+            Returns
+            -------
+            bool
+        """
+        # #region ---------------------------------------------------> Variables
+        info = super().WinPos()
+        # #endregion ------------------------------------------------> Variables
+                
+        # #region ------------------------------------------------> Set Position
+        # x = info['D']['xo'] + info['W']['N']*config.deltaWin
+        # y = (
+        #     ((info['D']['h']/2) - (info['W']['h']/2)) 
+        #     + info['W']['N']*config.deltaWin
+        # )
+        # self.SetPosition(pt=(x,y))
+        # #endregion ---------------------------------------------> Set Position
+
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.cName] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
+
+        return True
+    #---
+    #endregion -----------------------------------------------> Manage Methods
 #---
 
 class CheckDataPrep(BaseWindowNPlotLT):
