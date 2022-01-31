@@ -558,7 +558,10 @@ class BaseWindowNPlotLT(BaseWindow):
         #region -----------------------------------------------> Initial Setup
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> 
-        self.dKeyMethod['PlotZoomResetAllinOne'] = self.OnPlotZoomResetAllinOne
+        dKeyMethod = {
+            'PlotZoomResetAllinOne' : self.OnPlotZoomResetAllinOne,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -1587,6 +1590,12 @@ class ProtProfPlot(BaseWindowNPlotLT):
         cLFFCDownMon : cLFFCDownMonL,
         cLFFCBothMon : cLFFCBothMonL,
     }
+    cLFFCMode = {
+        'Up'  : cLFFCUp,
+        'Down': cLFFCDown,
+        'Both': cLFFCBoth,
+        'No'  : cLFFCNo,
+    }
     #--------------> Id of the plots
     cLNPlots = ['Vol', 'FC']
     #------------------------------> Title
@@ -1641,28 +1650,20 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rProtLine    = []
         self.rFilterList  = []
         self.rDate, cMenuData = self.SetDateMenuDate()
+        #------------------------------> 
+        super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> Methods
-        self.dSetRange = {
+        dKeyMethod = {
+            #------------------------------> Set Range of Plots
             'No'     : self.SetRangeNo,
             'Date'   : self.SetRangeDate,
             'Project': self.SetRangeProject,
-        }
-        
-        self.dGetDF4TextInt = {
+            #------------------------------> Get DF for Text Intensities
             config.oControlTypeProtProf['OC']   : self.GetDF4TextInt_OC,
             config.oControlTypeProtProf['OCC']  : self.GetDF4TextInt_OCC,
             config.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
             config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
-        }
-        
-        self.cLFFCMode = {
-            'Up'  : self.cLFFCUp,
-            'Down': self.cLFFCDown,
-            'Both': self.cLFFCBoth,
-            'No'  : self.cLFFCNo,
-        }
-        
-        self.dFilterMethod = {
+            #------------------------------> Filter methods
             self.cLFZscore   : self.Filter_ZScore,
             self.cLFLog2FC   : self.Filter_Log2FC,
             self.cLFPValAbs  : self.Filter_PValue,
@@ -1678,9 +1679,16 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.cLFFCBothMon: self.Filter_FCChange,
             self.cLFFCNo     : self.Filter_FCNoChange,
             self.cLFDiv      : self.Filter_Divergent,
+            #------------------------------> Save Image
+            'VolcanoImg': self.OnSaveVolcanoImage,
+            'FCImage'   : self.OnSaveFCImage,
+            'AllImg'    : self.OnSaveAllPlotImage,
+            #------------------------------> Zoom Reset
+            'VolcanoZoom' : self.OnZoomResetVol,
+            'FCZoom'      : self.OnZoomResetFC,
+            'AllZoom'     : self.OnZoomResetAll,
         }
-        #------------------------------> 
-        super().__init__(cParent, cMenuData=cMenuData)
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -2193,7 +2201,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #------------------------------> Ave and st for intensity values
         self.wText.AppendText(
             '--> Intensity values after data preparation:\n\n')
-        dfList = self.dGetDF4TextInt[self.rCI['ControlT']](idx)
+        dfList = self.dKeyMethod[self.rCI['ControlT']](idx)
         for df in dfList:
             self.wText.AppendText(df.to_string(index=False))
             self.wText.AppendText('\n\n')
@@ -2467,7 +2475,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
     #---
     
     def SetRangeNo(self) -> bool:
-        """Do nothing. Just to make the dict self.dSetRange work.
+        """Do nothing. Just to make the dict self.dKeyMethod work.
     
             Returns
             -------
@@ -2869,7 +2877,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         )
     #---
     
-    def OnSavePlotImageImage(self) -> bool:
+    def OnSaveAllPlotImage(self) -> bool:
         """ Export all plots to a pdf image
         
             Returns
@@ -3000,14 +3008,16 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return self.wPlots.dPlot['FC'].ZoomResetPlot()
     #---
     
-    def OnZoomReset(self) -> bool:
-        """Reset the zoom level of all plots in the window.
+    def OnZoomResetAll(self) -> bool:
+        """Reset the Zoom level of all plots in the window
     
             Returns
             -------
             bool
         """
-        return self.OnZoomResetMany()
+        self.OnZoomResetVol()
+        self.OnZoomResetFC()
+        return True
     #---
     
     def OnLockScale(self, mode: str, updatePlot: bool=True) -> bool:
@@ -3034,7 +3044,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------------> Update Attr
         
         #region ---------------------------------------------------> Get Range
-        self.dSetRange[mode]()
+        self.dKeyMethod[mode]()
         #endregion ------------------------------------------------> Get Range
         
         #region ---------------------------------------------------> Set Range
@@ -3093,7 +3103,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         """
         #region -----------------------------------------------> Apply Filters
         for k in self.rFilterList:
-            self.dFilterMethod[k[0]](**k[1])
+            self.dKeyMethod[k[0]](**k[1])
         #endregion --------------------------------------------> Apply Filters
         
         return True

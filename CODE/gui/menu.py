@@ -800,37 +800,25 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         self.AppendSeparator()
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'VolcanoImg',
+            self.miZoomR.GetId(): 'VolcanoZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZScore,     source=self.miZScore)
-        self.Bind(wx.EVT_MENU, self.OnSaveImage,  source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=self.miPCorr)
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,  source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnZScore,         source=self.miZScore)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnUpdatePlot,     source=self.miPCorr)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #------------------------------> Class method
     #region ---------------------------------------------------> Event methods
-    def OnSaveImage(self, event: wx.CommandEvent) -> bool:
-        """Save an image of the plot.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnSaveVolcanoImage()
-        
-        return True
-    #---
-    
     def OnUpdatePlot(self, event: wx.CommandEvent) -> bool:
         """Update volcano plot.
     
@@ -847,25 +835,6 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         win = self.GetWindow()
         win.OnVolChange(*self.GetData4Draw())
         #endregion -----------------------------------------------------> Draw
-        
-        return True
-    #---
-    
-    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-        """Reset plot zoom.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnZoomResetVol()
         
         return True
     #---
@@ -1014,7 +983,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
 #---
 
 
-class FCEvolution(wx.Menu):
+class FCEvolution(wx.Menu, MenuMethods):
     """Menu for a log2FC evolution along relevant points """
     #region -----------------------------------------------------> Class setup
     
@@ -1035,35 +1004,24 @@ class FCEvolution(wx.Menu):
         self.AppendSeparator()
         self.miZoomR = self.Append(-1, 'Reset Zoom\tAlt+Z')
         #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'FCImage',
+            self.miZoomR.GetId(): 'FCZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnShowAll,    source=self.miShowAll)
-        self.Bind(wx.EVT_MENU, self.OnSaveImage,  source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,  source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnShowAll,       source=self.miShowAll)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage, source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,     source=self.miZoomR)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #------------------------------> Class method
     #region ---------------------------------------------------> Event methods
-    def OnSaveImage(self, event: wx.CommandEvent) -> bool:
-        """Save an image of the plot.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnSaveFCImage()
-        
-        return True
-    #---
-    
     def OnShowAll(self, event: wx.CommandEvent) -> bool:
         """Show the interval cover by all FC values in the data.
     
@@ -1078,24 +1036,6 @@ class FCEvolution(wx.Menu):
         """
         win = self.GetWindow()
         win.OnFCChange(*self.GetData4Draw())
-        
-        return True
-    #---
-    
-    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-        """Reset the Zoom level of the plot
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnZoomResetFC()
         
         return True
     #---
@@ -1730,6 +1670,13 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #------------------------------> 
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
         #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'AllImg',
+            self.miZoomR.GetId(): 'AllZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnDupWin,            source=self.miDupWin)
