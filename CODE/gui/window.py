@@ -5244,22 +5244,7 @@ class LimProtPlot(BaseWindowProteolysis):
         dlg.Destroy()
         return True	
     #---
-    
-    def OnClearSelection(self, tType: str) -> bool:
-        """Clear the selections in the window
-    
-            Parameters
-            ----------
-            tType: str
-                One of 'Peptide', 'Fragment', 'Gel Spot', 'Band/Lane', 'All'      
-    
-            Returns
-            -------
-            bool
-        """
-        return self.dKeyMethod[tType]()
-    #---
-    
+        
     def OnClearPept(self, plot: bool=True) -> bool:
         """Clear the Peptide selection.
     

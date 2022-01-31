@@ -1368,7 +1368,7 @@ class ClearSelLimProt(wx.Menu):
     
         Attributes
         ----------
-        nameID : dict
+        rKeyID : dict
             To map menu items to the Clear type. Keys are MenuItems.GetId() and 
             values are str. 
     """
@@ -1392,7 +1392,7 @@ class ClearSelLimProt(wx.Menu):
         #endregion -----------------------------------------------> Menu Items
         
         #region ---------------------------------------------------> 
-        self.nameID = {
+        self.rKeyID = {
             self.miNoPept.GetId(): 'Peptide',
             self.miNoFrag.GetId(): 'Fragment',
             self.miNoGel.GetId() : 'Gel Spot',
@@ -1425,9 +1425,15 @@ class ClearSelLimProt(wx.Menu):
             -------
             bool
         """
+        #region ---------------------------------------------------> Variables
         win = self.GetWindow()
-        win.OnClearSelection(self.nameID[event.GetId()])
+        tKey = self.rKeyID[event.GetId()]
+        #endregion ------------------------------------------------> Variables
         
+        #region ---------------------------------------------------> Run
+        win.dKeyMethod[tKey]()
+        #endregion ------------------------------------------------> Run
+
         return True
     #---
     #endregion ------------------------------------------------> Event methods

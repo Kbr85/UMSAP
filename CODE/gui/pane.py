@@ -6159,7 +6159,7 @@ class TarProt(BaseConfModPanel2):
         #region -------------------------------------------------> Seq & Score
         df[aL[0]] = self.dfIm.iloc[:,0]
         df[aL[1]] = self.dfIm.iloc[:,2]
-        df[(self.rDO['ControlL'][0], 'P')] = 2
+        df[(self.rDO['ControlL'][0], 'P')] = np.nan
         #endregion ----------------------------------------------> Seq & Score
         
         return df
