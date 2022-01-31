@@ -153,9 +153,11 @@ class BaseWindow(wx.Frame):
         #------------------------------> 
         self.dKeyMethod = {
             #------------------------------> Save Plot Images
-            'PlotImageOne' : self.OnPlotSaveImageOne,
+            'PlotImageOne': self.OnPlotSaveImageOne,
+            'AllImg'      : self.OnPlotSaveAllImage,
             #------------------------------> Reset Zoom Level
-            'PlotZoomResetOne' : self.OnPlotZoomResetOne,
+            'PlotZoomResetOne': self.OnPlotZoomResetOne,
+            'AllZoom'         : self.OnPlotZoomResetAll,
         }
         #------------------------------> 
         super().__init__(
@@ -235,6 +237,16 @@ class BaseWindow(wx.Frame):
             return False
     #---
     
+    def OnPlotSaveAllImage(self) -> bool:
+        """ Export all plots to a pdf image. Override as needed.
+        
+            Returns
+            -------
+            bool
+        """
+        return True	
+    #---
+    
     def OnPlotZoomResetOne(self) -> bool:
         """Reset the zoom of the plot.
     
@@ -257,6 +269,16 @@ class BaseWindow(wx.Frame):
             #------------------------------> 
             return False
         #------------------------------> 
+        return True
+    #---
+    
+    def OnPlotZoomResetAll(self) -> bool:
+        """Reset the Zoom level of all plots in the window. Override as needed.
+    
+            Returns
+            -------
+            bool
+        """
         return True
     #---
     
@@ -529,6 +551,11 @@ class BaseWindowNPlotLT(BaseWindow):
         menuData : dict or None
             Data to build the Tool menu of the window. Default is None.
             See Child class for more details.
+            
+        Attributes
+        ----------
+        dKeyMethod : dict
+            Keys are str and values methods to manage the window.
 
         Notes
         -----
@@ -1484,14 +1511,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
 
         Attributes
         ----------
-        dFilterMethod : dict
-            Keys are the StatusBar text and values the methods to apply the
-            filter.
-        dGetDF4TextInt : dict
-            Keys are the type of Control and values methods to create the df
-            with the intensities shown in the text region.
-        dSetRange : dict
-            Keys are the lockScale values and values methods to set the range.
+        dKeyMethod : dict
+            Keys are str and values methods to manage the window.
         rAutoFilter : bool
             Apply defined filters (True) when changing date or not (False).
             Default is False. 
@@ -1682,11 +1703,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
             #------------------------------> Save Image
             'VolcanoImg': self.OnSaveVolcanoImage,
             'FCImage'   : self.OnSaveFCImage,
-            'AllImg'    : self.OnSaveAllPlotImage,
             #------------------------------> Zoom Reset
             'VolcanoZoom' : self.OnZoomResetVol,
             'FCZoom'      : self.OnZoomResetFC,
-            'AllZoom'     : self.OnZoomResetAll,
+            'AllZoom'     : self.OnPlotZoomResetAllinOne,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -2877,7 +2897,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         )
     #---
     
-    def OnSaveAllPlotImage(self) -> bool:
+    def OnPlotSaveAllImage(self) -> bool:
         """ Export all plots to a pdf image
         
             Returns
@@ -3006,18 +3026,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
             bool
         """
         return self.wPlots.dPlot['FC'].ZoomResetPlot()
-    #---
-    
-    def OnZoomResetAll(self) -> bool:
-        """Reset the Zoom level of all plots in the window
-    
-            Returns
-            -------
-            bool
-        """
-        self.OnZoomResetVol()
-        self.OnZoomResetFC()
-        return True
     #---
     
     def OnLockScale(self, mode: str, updatePlot: bool=True) -> bool:
@@ -3884,18 +3892,25 @@ class LimProtPlot(BaseWindowProteolysis):
         self.rProtDelta     = None
         self.rProtTarget    = None
         self.rPeptide       = None
-        
+        #------------------------------> 
         self.rDate, cMenuData = self.SetDateMenuDate()
-        
-        self.dClearMethod = {
+        #------------------------------> 
+        super().__init__(cParent, cMenuData=cMenuData)
+        #------------------------------> 
+        dKeyMethod = {
             'Peptide'  : self.OnClearPept,
             'Fragment' : self.OnClearFrag,
             'Gel Spot' : self.OnClearGel,
             'Band/Lane': self.OnClearBL,
             'All'      : self.OnClearAll,
+            #------------------------------> Save Image
+            'FragImg' : self.OnImageFragment,
+            'GelImg'  : self.OnImageGel,
+            #------------------------------> Zoom Reset
+            'FragZoom' : self.OnZoomResetFragment,
+            'GelZoom'  : self.OnZoomResetGel,
         }
-        
-        super().__init__(cParent, cMenuData=cMenuData)
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -5145,7 +5160,7 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def OnZoomReset(self) -> bool:
+    def OnPlotZoomResetAll(self) -> bool:
         """Reset the zoom of the Gel and Fragment Plot.
         
             Returns
@@ -5198,7 +5213,7 @@ class LimProtPlot(BaseWindowProteolysis):
         return self.wPlot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
     #---
     
-    def OnImageAll(self) -> bool:
+    def OnPlotSaveAllImage(self) -> bool:
         """ Export all plots to a pdf image
         
             Returns
@@ -5242,7 +5257,7 @@ class LimProtPlot(BaseWindowProteolysis):
             -------
             bool
         """
-        return self.dClearMethod[tType]()
+        return self.dKeyMethod[tType]()
     #---
     
     def OnClearPept(self, plot: bool=True) -> bool:

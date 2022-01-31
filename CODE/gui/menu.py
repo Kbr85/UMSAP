@@ -154,25 +154,6 @@ class MenuMethods():
         return True
     #---
     
-    def OnImageAll(self, event: wx.CommandEvent) -> bool:
-        """Save an image of every pane showing plot in the plot window.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnImageAll()
-        
-        return True
-    #---
-    
     def OnCheckDataPrep(self, event: wx.CommandEvent) -> bool:
         """Launch the Check Data Preparation window.
     
@@ -1453,7 +1434,7 @@ class ClearSelLimProt(wx.Menu):
 #---
 
 
-class FragmentLimProt(wx.Menu):
+class FragmentLimProt(wx.Menu, MenuMethods):
     """Menu for the Fragments in a LimProtRes Window"""
     #region -----------------------------------------------------> Class setup
     
@@ -1467,61 +1448,27 @@ class FragmentLimProt(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miSaveFI = self.Append(-1, 'Save Image\tShift+I')
-        self.miZoomFR = self.Append(-1, 'Reset Fragment Zoom\tShift+Z')
+        self.miSaveI = self.Append(-1, 'Save Image\tShift+I')
+        self.miZoomR = self.Append(-1, 'Reset Fragment Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
         
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'FragImg',
+            self.miZoomR.GetId(): 'FragZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
+        
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.miZoomFR)
-        self.Bind(wx.EVT_MENU, self.OnImage, source=self.miSaveFI)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,     source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage, source=self.miSaveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
-
-    #------------------------------> Class method
-    #region ---------------------------------------------------> Event methods
-    def OnImage(self, event: wx.CommandEvent) -> bool:
-        """
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnImageFragment()
-        
-        return True
-    #---
-    
-    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-        """
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnZoomResetFragment()
-        
-        return True
-    #---
-    #endregion ------------------------------------------------> Event methods
 #---
 
 
-class GelLimProt(wx.Menu):
+class GelLimProt(wx.Menu, MenuMethods):
     """Menu for the Gel in a LimProtRes Window"""
     #region -----------------------------------------------------> Class setup
     
@@ -1535,58 +1482,23 @@ class GelLimProt(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miSaveGI = self.Append(-1, 'Save Image\tAlt+I')
-        self.miZoomGR = self.Append(-1, 'Reset Zoom\tAlt+Z')
+        self.miSaveI = self.Append(-1, 'Save Image\tAlt+I')
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tAlt+Z')
         #endregion -----------------------------------------------> Menu Items
         
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'GelImg',
+            self.miZoomR.GetId(): 'GelZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
+        
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.miZoomGR)
-        self.Bind(wx.EVT_MENU, self.OnImage,     source=self.miSaveGI)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,     source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage, source=self.miSaveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
-
-    #------------------------------> Class methods
-    #region ---------------------------------------------------> Event methods
-    #------------------------------> Event Methods
-    def OnImage(self, event: wx.CommandEvent) -> bool:
-        """
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnImageGel()
-        
-        return True
-    #---
-    
-    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-        """
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnZoomResetGel()
-        
-        return True
-    #---
-    #endregion ------------------------------------------------> Event methods
 #---
 #endregion -------------------------------------------------> Individual menus
 
@@ -1797,11 +1709,18 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         #------------------------------>
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
         #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'AllImg',
+            self.miZoomR.GetId(): 'AllZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnLaneBand,       source=self.miBandLane)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnImageAll,       source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.miDataPrep)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
