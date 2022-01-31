@@ -126,6 +126,11 @@ class BaseWindow(wx.Frame):
         cMenuData : dict
             Data to build the Tool menu of the window. See structure in child 
             class.
+            
+        Attributes
+        ----------
+        dKeyMethod : dict
+            Keys are str and values classes or methods. Use in SavePlot. etc.
     """
     #region -----------------------------------------------------> Class setup
     cSDeltaWin = config.deltaWin
@@ -145,6 +150,13 @@ class BaseWindow(wx.Frame):
             self, 'cTitle', config.t.get(self.cName, config.tdW))
         self.cMsgExportFailed = getattr(
             self, 'cMsgExportFailed', config.mDataExport)
+        #------------------------------> 
+        self.dKeyMethod = {
+            #------------------------------> Save Plot Images
+            'PlotImageOne' : self.OnPlotSaveImageOne,
+            #------------------------------> Reset Zoom Level
+            'PlotZoomResetOne' : self.OnPlotZoomResetOne,
+        }
         #------------------------------> 
         super().__init__(
             cParent, size=self.cSWindow, title=self.cTitle, name=self.cName,
@@ -199,7 +211,7 @@ class BaseWindow(wx.Frame):
         return True
     #---
     
-    def OnSavePlotOne(self) -> bool:
+    def OnPlotSaveImageOne(self) -> bool:
         """Save an image of the plot. Override as needed. 
         
             Returns
@@ -223,7 +235,7 @@ class BaseWindow(wx.Frame):
             return False
     #---
     
-    def OnZoomResetOne(self) -> bool:
+    def OnPlotZoomResetOne(self) -> bool:
         """Reset the zoom of the plot.
     
             Returns
@@ -431,7 +443,7 @@ class BaseWindowPlot(BaseWindow):
             
         Notes
         -----
-        - Method OnSavePlot assumes that this window has an attribute
+        - Method OnSavePlotImage assumes that this window has an attribute
         wPlot (dtsWidget.MatPlotPanel). Override as needed.
         - Method OnClose assumes the parent is an instance of UMSAPControl. 
         Override as needed.
@@ -502,16 +514,6 @@ class BaseWindowPlot(BaseWindow):
         #endregion --------------------------------------------------> Destroy
         
         return True
-    #---
-    
-    def OnSavePlot(self) -> bool:
-        """Save an image of the plot.
-        
-            Returns
-            -------
-            bool
-        """
-        return self.OnSavePlotOne()
     #---
     #endregion ------------------------------------------------> Event Methods
 #---
@@ -1280,7 +1282,7 @@ class CorrAPlot(BaseWindowPlot):
         #endregion -----------------------------------------------------> Bind
 
         #region ----------------------------------------------------> Position
-        self.Draw(self.rDateC, 'Name')
+        self.UpdateDisplayedData(self.rDateC, 'Name')
         self.WinPos()
         self.Show()
         #endregion -------------------------------------------------> Position
@@ -1323,7 +1325,9 @@ class CorrAPlot(BaseWindowPlot):
         return True
     #---
 
-    def Draw(self, tDate: str, col: Literal['Name', 'Number']) -> bool:
+    def UpdateDisplayedData(
+        self, tDate: str, col: Literal['Name', 'Number']
+        ) -> bool:
         """ Plot data from a given date.
         
             Paramenters
@@ -1691,7 +1695,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
 
         #region ---------------------------------------------> Window position
         #------------------------------> 
-        self.OnDateChange(
+        self.UpdateDisplayedData(
             self.rDate[0], 
             cMenuData['crp'][self.rDate[0]]['C'][0],
             cMenuData['crp'][self.rDate[0]]['RP'][0],
@@ -2673,7 +2677,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
     #endregion -----------------------------------------------> Manage Methods
     
     #region ---------------------------------------------------> Event Methods
-    def OnDateChange(
+    def UpdateDisplayedData(
         self, tDate: str, cond: str, rp:str, corrP: bool, showAll: bool,
         ) -> bool:
         """Configure window to update Volcano and FC plots when date changes.
@@ -2863,7 +2867,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         )
     #---
     
-    def OnSavePlot(self) -> bool:
+    def OnSavePlotImageImage(self) -> bool:
         """ Export all plots to a pdf image
         
             Returns
@@ -3107,7 +3111,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------> Update Attributes
         
         #region --------------------------------------------------> Update GUI
-        self.OnDateChange(
+        self.UpdateDisplayedData(
             self.rDateC, self.rCondC, self.rRpC, self.rCorrP, self.rShowAll)
         #endregion -----------------------------------------------> Update GUI 
         
@@ -3144,7 +3148,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------> Update Attributes
         
         #region --------------------------------------------------> Update GUI
-        self.OnDateChange(
+        self.UpdateDisplayedData(
             self.rDateC, self.rCondC, self.rRpC, self.rCorrP, self.rShowAll)
         #endregion -----------------------------------------------> Update GUI 
         
@@ -3901,7 +3905,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
-        self.OnDateChange(self.rDate[0])
+        self.UpdateDisplayedData(self.rDate[0])
         #------------------------------> 
         self.WinPos()
         self.Show()
@@ -4801,7 +4805,7 @@ class LimProtPlot(BaseWindowProteolysis):
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Event Methods
-    def OnDateChange(self, date):
+    def UpdateDisplayedData(self, date):
         """
     
             Parameters
@@ -5579,7 +5583,7 @@ class TarProtPlot(BaseWindowProteolysis):
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
-        # self.OnDateChange(self.rDate[0])
+        # self.UpdateDisplayedData(self.rDate[0])
         #------------------------------> 
         self.WinPos()
         self.Show()
@@ -5618,6 +5622,7 @@ class TarProtPlot(BaseWindowProteolysis):
     #---
     #endregion -----------------------------------------------> Manage Methods
 #---
+
 
 class CheckDataPrep(BaseWindowNPlotLT):
     """Window to check the data preparation steps
@@ -5723,7 +5728,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
 
         #region ---------------------------------------------> Window position
         date = None if self.rDate is None else self.rDate[0]
-        self.Draw(date)
+        self.UpdateDisplayedData(date)
         #------------------------------> 
         self.WinPos()
         self.Show()
@@ -5862,7 +5867,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         return True	
     #---
     
-    def OnSavePlot(self) -> bool:
+    def OnSavePlotImageImage(self) -> bool:
         """ Export all plots to a pdf image"""
         #region --------------------------------------------------> Dlg window
         dlg = dtsWindow.DirSelectDialog(parent=self)
@@ -6217,7 +6222,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         return True
     #---
     
-    def Draw(self, date: Optional[str]=None) -> bool:
+    def UpdateDisplayedData(self, date: Optional[str]=None) -> bool:
         """Update window when a new date is selected.
     
             Parameters
