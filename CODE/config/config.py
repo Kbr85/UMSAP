@@ -361,6 +361,7 @@ dfcolLimProtCLevel = ['Ptost']
 dfcolTarProtFirstPart = [
     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 dfcolTarProtBLevel = ['Int', 'P']
+dfcolSeqNC = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 #endregion --------------------------------------------------> DF Column names
 
 
@@ -475,6 +476,11 @@ general = { # General options
 
 
 #region --------------------------------------------------------------> Colors
+colorFragments = [
+    '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
+    '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
+]
+
 color = { # Colors for the app
     'Zebra' : '#ffe6e6',
     'RecProt' : 'gray',
@@ -497,10 +503,10 @@ color = { # Colors for the app
         ],
     },
     nwLimProt : {
-        'Spot' : [
-            '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
-            '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
-        ],
+        'Spot' : colorFragments,
+    },
+    nwTarProt : {
+        'Spot' : colorFragments,
     },
 }
 #endregion -----------------------------------------------------------> Colors

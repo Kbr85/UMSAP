@@ -1831,13 +1831,11 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnLaneBand,       source=self.miBandLane)
         # self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
         # self.Bind(wx.EVT_MENU, self.OnImageAll,       source=self.miSaveI)
-        # self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
-        # self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.miDataPrep)
-        # self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
-        # self.Bind(wx.EVT_MENU, self.OnShowAll,        source=self.miShowAll)
+        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
+        self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.miDataPrep)
+        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1845,44 +1843,6 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
     #------------------------------> Class methods
     #region ---------------------------------------------------> Event methods
     
-    
-    def OnShowAll(self, event: wx.CommandEvent) -> bool:
-        """Show all fragments
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnShowAll()
-        
-        return True
-    #---
-    
-    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-        """
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnZoomReset()
-        
-        return True
-    #---
     #endregion ------------------------------------------------> Event methods
 #---
 #endregion --------------------------------------------------------> Mix menus

@@ -5540,7 +5540,8 @@ class TarProt(BaseConfModPanel2):
         
         The result data frame has the following structure:
         
-        Sequence Score Nterm Cterm NtermF CtermF Exp1, Exp2,...,ExpN
+        Sequence Score Nterm Cterm NtermF CtermF Exp1, Exp1,..., ExpN, ExpN
+        Sequence Score Nterm Cterm NtermF CtermF IntL,    P,..., IntL, P
     """
     #region -----------------------------------------------------> Class setup
     cName = config.npTarProt

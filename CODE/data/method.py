@@ -18,6 +18,8 @@
 import itertools
 from typing import Literal, Union
 
+from numpy import nan as nan
+
 import dat4s_core.data.method as dtsMethod
 #endregion ----------------------------------------------------------> Imports
 
@@ -192,10 +194,12 @@ def Fragments(
         All list inside each column have the same length
     """
     # No Test
-    #region -----------------------------------------------------------> dictO
+    #region -------------------------------------------------------> Variables
     dictO = {}
-    #endregion --------------------------------------------------------> dictO
-   
+    #------------------------------> 
+    protLoc = [x if x is not None else nan for x in protLoc]
+    #endregion ----------------------------------------------------> Variables
+
     #region ---------------------------------------------------> 
     for c in range(5, df.shape[1]):
         colK = str(df.columns.values[c])
