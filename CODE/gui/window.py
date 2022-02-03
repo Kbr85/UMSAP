@@ -1000,19 +1000,27 @@ class BaseWindowProteolysis(BaseWindow):
     #---
     
     def OnListSelect(self, event: wx.CommandEvent) -> bool:
-        """Method triggered by selecting a row in the wx.ListCtrl. Override as 
-            needed.
-    
+        """Process a wx.ListCtrl select event.
+
             Parameters
             ----------
             event:wx.Event
                 Information about the event
-            
-    
+
+
             Returns
             -------
             bool
         """
+        #region ---------------------------------------------------> 
+        self.rPeptide = self.wLC.wLCS.lc.GetItemText(
+            self.wLC.wLCS.lc.GetFirstSelected(), col=1)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.ShowPeptideLoc()
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
@@ -5147,31 +5155,6 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def OnListSelect(self, event: wx.CommandEvent) -> bool:
-        """Process a wx.ListCtrl select event.
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> 
-        self.rPeptide = self.wLC.wLCS.lc.GetItemText(
-            self.wLC.wLCS.lc.GetFirstSelected(), col=1)
-        #endregion ------------------------------------------------> 
-        
-        #region ---------------------------------------------------> 
-        self.ShowPeptideLoc()
-        #endregion ------------------------------------------------> 
-
-        return True
-    #---
-    
     def OnLaneBand(self, state: bool) -> bool:
         """Change Band/Lane selectio mode.
     
@@ -5589,9 +5572,11 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rFragments   = None
         self.rFragSelLine = None
         self.rFragSelC    = [None, None, None]
+        self.rRectsFrag   = []
         self.rProtLoc     = None
         self.rProtLength  = None
         self.rExp         = None
+        self.rCtrl        = None
         self.rIdxP        = None
         self.rPeptide     = None
         
@@ -5672,11 +5657,13 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rDf          = self.rData[self.rDateC]['DF'].copy()
         self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
         self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
-        self.rProtLength = self.rData[self.rDateC]['PI']['ProtLength']
+        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength']
         self.rFragSelLine = None
         self.rFragSelC    = [None, None, None]
         self.rExp         = self.rData[self.rDateC]['PI']['Exp']
+        self.rCtrl        = self.rData[self.rDateC]['PI']['Ctrl']
         self.rIdxP        = pd.IndexSlice[self.rExp,'P']
+        self.rPeptide     = None
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> 
@@ -5697,6 +5684,11 @@ class TarProtPlot(BaseWindowProteolysis):
         
         self.DrawFragments()
         #endregion ------------------------------------------------> Fragments
+        
+        #region -----------------------------------------------------> Peptide
+        self.SetAxisInt()
+        self.wPlot.canvas.draw()
+        #endregion --------------------------------------------------> Peptide
 
         #region ---------------------------------------------------> Win Title
         self.PlotTitle()
@@ -5786,7 +5778,105 @@ class TarProtPlot(BaseWindowProteolysis):
             -------
             bool
         """
+        #region ---------------------------------------------------> Fragments
+        #------------------------------> Remove old 
+        for k in self.rRectsFrag:
+            k.set_linewidth(self.cGelLineWidth)
+        #------------------------------> Get Keys
+        fKeys = [f'{(x, "P")}' for x in self.rExp]
+        #------------------------------> Highlight
+        j = 0
+        for k in fKeys:
+            for p in self.rFragments[k]['SeqL']:
+                if self.rPeptide in p:
+                    self.rRectsFrag[j].set_linewidth(2.0)
+                else:
+                    pass
+                j = j + 1
+        #------------------------------> Show
+        self.wPlotM.canvas.draw()
+        #endregion ------------------------------------------------> Fragments
         
+        #region ---------------------------------------------------> Intensity
+        #------------------------------> Variables
+        nExp = len(self.rExp)
+        nc = len(self.cColor['Spot'])
+        #------------------------------> Clear Plot
+        self.wPlot.axes.clear()
+        #------------------------------> Axis
+        self.SetAxisInt()
+        #------------------------------> Row
+        row = self.rDf.loc[self.rDf[('Sequence', 'Sequence')] == self.rPeptide]
+        row =row.loc[:,pd.IndexSlice[:,('Int','P')]]
+        #------------------------------> Values
+        for k,c in enumerate(self.rCtrl+self.rExp, start=1):
+            #------------------------------> Variables
+            intL, P = row[c].values.tolist()[0]
+            intL = list(map(float, intL[1:-1].split(',')))
+            P = float(P)
+            intN = len(intL)
+            #------------------------------> Color
+            if k == 1:
+                color = self.cColor['Ctrl']
+                x = [1]
+                y = [sum(intL)/intN]
+            else:
+                color = self.cColor['Spot'][(k-2)%nc]
+            #------------------------------> Ave
+            if P <= self.rAlpha:
+                x.append(k)
+                y.append(sum(intL)/intN)
+            else:
+                pass
+            #------------------------------> Plot
+            self.wPlot.axes.scatter(
+                intN*[k], intL, color=color, edgecolor='black', zorder=3)
+        #------------------------------> 
+        self.wPlot.axes.scatter(
+            x, 
+            y, 
+            edgecolor = 'black',
+            marker    = 'D',
+            color     = 'cyan',
+            s         = 120,
+            zorder    = 2,
+        )
+        self.wPlot.axes.plot(x,y, zorder=1)
+        #------------------------------> Show
+        self.wPlot.canvas.draw()
+        #endregion ------------------------------------------------> Intensity
+
+        return True
+    #---
+    
+    def SetAxisInt(self) -> bool:
+        """Set the axis of the Intensity plot
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        nExp = len(self.rExp)
+        #endregion ------------------------------------------------> Variables
+
+        #region ------------------------------------------------------> Values
+        self.wPlot.axes.clear()
+        self.wPlot.axes.set_xticks(range(1,nExp+2))
+        self.wPlot.axes.set_xticklabels(self.rCtrl+self.rExp)
+        #------------------------------> 
+        self.wPlot.axes.set_xlim(0.5, nExp+1.5)
+        #------------------------------> 
+        self.wPlot.axes.set_ylabel('Intensity after Data Processing')
+        #endregion ---------------------------------------------------> Values
 
         return True
     #---

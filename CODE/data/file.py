@@ -381,6 +381,7 @@ class UMSAPFile():
                 #------------------------------> Plot Info
                 PI = {
                     'Exp'       : v['CI']['Exp'],
+                    'Ctrl'      : v['CI']['ControlL'],
                     'Alpha'     : v['CI']['Alpha'],
                     'ProtLength': v['CI']['ProtLength'],
                     'ProtLoc'   : v['CI']['ProtLoc'],

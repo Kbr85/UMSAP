@@ -507,6 +507,7 @@ color = { # Colors for the app
     },
     nwTarProt : {
         'Spot' : colorFragments,
+        'Ctrl' : 'black',
     },
 }
 #endregion -----------------------------------------------------------> Colors
