@@ -5598,7 +5598,7 @@ class TarProtPlot(BaseWindowProteolysis):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        
+        self.wPlotM.canvas.mpl_connect('pick_event', self.OnPickFragment)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -5843,6 +5843,7 @@ class TarProtPlot(BaseWindowProteolysis):
         )
         self.wPlot.axes.plot(x,y, zorder=1)
         #------------------------------> Show
+        self.wPlot.ZoomResetSetValues()
         self.wPlot.canvas.draw()
         #endregion ------------------------------------------------> Intensity
 
@@ -5852,17 +5853,9 @@ class TarProtPlot(BaseWindowProteolysis):
     def SetAxisInt(self) -> bool:
         """Set the axis of the Intensity plot
     
-            Parameters
-            ----------
-            
-    
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> Variables
         nExp = len(self.rExp)
@@ -5875,12 +5868,114 @@ class TarProtPlot(BaseWindowProteolysis):
         #------------------------------> 
         self.wPlot.axes.set_xlim(0.5, nExp+1.5)
         #------------------------------> 
-        self.wPlot.axes.set_ylabel('Intensity after Data Processing')
+        self.wPlot.axes.set_ylabel('Intensity (after DP)')
         #endregion ---------------------------------------------------> Values
 
         return True
     #---
+    
+    def PrintFragmentText(
+        self, tKey: tuple[str, str], fragC: list[int]):
+        """Print information about a selected Fragment
+    
+            Parameters
+            ----------
+            tKey: tuple(str, str)
+                Tuple with the column name in the pd.DataFrame with the results.
+            fragC: list[int]
+                Fragment coordinates.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Info
+        n, c = self.rFragments[tKey]["Coord"][fragC[1]]
+        
+        # if n >= self.rProtLoc[0] and n <= self.rProtLoc[1]:
+        #     nnat = n + self.rProtDelta
+        # else:
+        #     nnat = 'NA'
+        # if c >= self.rProtLoc[0] and c <= self.rProtLoc[1]:
+        #     cnat = c + self.rProtDelta
+        # else:
+        #     cnat = 'NA'
+        # resNum = f'Nterm {n}({nnat}) - Cterm {c}({cnat})'
+        
+        # np = (f'{self.rFragments[tKey]["Np"][fragC[2]]} '
+        #       f'({self.rFragments[tKey]["NpNat"][fragC[2]]})')
+        # clsite = (f'{self.rFragments[tKey]["Nc"][fragC[2]]} '
+        #           f'({self.rFragments[tKey]["NcNat"][fragC[2]]})')
+        #endregion ------------------------------------------------> Info
+
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.wText.AppendText(
+            f'Details for {self.rExp[fragC[0]]} - Fragment {fragC[1]+1}\n\n')
+        # self.wText.AppendText(f'Residue Numbers: {resNum}\n')
+        # self.wText.AppendText(f'Sequences: {np}\n')
+        # self.wText.AppendText(f'Cleavage Sites: {clsite}\n\n')
+        # self.wText.AppendText(f'Sequences in the fragment:\n\n')
+        # self.wText.AppendText(f'{self.rFragments[tKey]["Seq"][fragC[2]]}')
+        self.wText.SetInsertionPoint(0)
+        #endregion ------------------------------------------------> 
+        
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
+    
+    #region ----------------------------------------------------> Event Methods
+    def OnPickFragment(self, event) -> bool:
+        """Display info about the selected fragment.
+    
+            Parameters
+            ----------
+            event: matplotlib pick event
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        art = event.artist
+        fragC = list(map(int, art.get_label().split('.')))
+        #------------------------------> 
+        if self.rFragSelC != fragC:
+            self.rFragSelC = fragC
+        else:
+            return True
+        #------------------------------> 
+        x, y = event.artist.xy
+        x = round(x)
+        y = round(y)
+        #------------------------------> 
+        tKey = f'{(self.rExp[fragC[0]], "P")}'
+        #------------------------------> 
+        x1, x2 = self.rFragments[tKey]['Coord'][fragC[1]]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ------------------------------------------> Highlight Fragment
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+        else:
+            pass
+        #------------------------------> 
+        self.rFragSelLine = self.wPlotM.axes.plot(
+            [x1+2, x2-2], [y,y], color='black', linewidth=4)
+        #------------------------------> 
+        self.wPlotM.canvas.draw()
+        #endregion ---------------------------------------> Highlight Fragment
+        
+        #region -------------------------------------------------------> Print
+        self.PrintFragmentText(tKey, fragC)
+        #endregion ----------------------------------------------------> Print
+
+        return True
+    #---
+    #endregion -------------------------------------------------> Event Methods
 #---
 
 
