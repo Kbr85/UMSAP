@@ -101,6 +101,7 @@ class UMSAPFile():
             config.nuDataPrep: self.ConfigureDataCheckDataPrep,
             config.nmProtProf: self.ConfigureDataProtProf,
             config.nmLimProt : self.ConfigureDataLimProt,
+            config.nmTarProt : self.ConfigureDataTarProt,
         }
         #------------------------------> See Notes about the structure of dict
         self.rConfData = {}
@@ -342,6 +343,63 @@ class UMSAPFile():
         
         #region -------------------------------------------> Add/Reset section 
         self.rConfData[config.nmLimProt] = plotData
+        #endregion ----------------------------------------> Add/Reset section 
+        
+        return True
+    #---
+    
+    def ConfigureDataTarProt(self) -> bool:
+        """Configure a Targeted Proteolysis section
+        
+            Notes
+            -----
+            The dictionary with the data to plot contains the following 
+            key - value pairs:
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+                'PI' : { dict with information for the plotting window
+                    'Exp'       : list with the experiment's names,
+                    'Alpha'     : alpha value,
+                    'ProtLength': length of the recombinant protein,
+                    'ProtLoc'   : list with the location of the native protein,
+                    'ProtDelta' : value to calculate native residue numbers as
+                                    resN_Nat = resN_Rec + ProtDelta,
+                    'Prot'      : name of the Target Protein,
+                },
+            }
+        """
+        #region -------------------------------------------------> Plot & Menu
+        #------------------------------> Empty start
+        plotData = {}
+        #------------------------------> Fill
+        for k,v in self.rData[config.nmTarProt].items():
+            try:
+                #------------------------------> Create data
+                df  = pd.DataFrame(dtsMethod.DictStringKey2Tuple(v['R']))
+                #------------------------------> Plot Info
+                PI = {
+                    'Exp'       : v['CI']['Exp'],
+                    'Ctrl'      : v['CI']['ControlL'],
+                    'Alpha'     : v['CI']['Alpha'],
+                    'ProtLength': v['CI']['ProtLength'],
+                    'ProtLoc'   : v['CI']['ProtLoc'],
+                    'ProtDelta' : v['CI']['ProtDelta'],
+                    'Prot'      : v['CI']['TargetProt'],
+                }
+                #------------------------------> Add to dict if no error
+                plotData[k] = {
+                    'DF': df,
+                    'DP': {j: pd.DataFrame(w) for j,w in v['DP'].items()},
+                    'PI': PI,
+                }
+            except Exception:
+                pass
+        #endregion ----------------------------------------------> Plot & Menu
+        
+        #region -------------------------------------------> Add/Reset section 
+        self.rConfData[config.nmTarProt] = plotData
         #endregion ----------------------------------------> Add/Reset section 
         
         return True

@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
+import secrets
 from typing import Optional, Literal
 
 import matplotlib.patches as mpatches
@@ -126,6 +127,11 @@ class BaseWindow(wx.Frame):
         cMenuData : dict
             Data to build the Tool menu of the window. See structure in child 
             class.
+            
+        Attributes
+        ----------
+        dKeyMethod : dict
+            Keys are str and values classes or methods. Use in SavePlot. etc.
     """
     #region -----------------------------------------------------> Class setup
     cSDeltaWin = config.deltaWin
@@ -145,6 +151,15 @@ class BaseWindow(wx.Frame):
             self, 'cTitle', config.t.get(self.cName, config.tdW))
         self.cMsgExportFailed = getattr(
             self, 'cMsgExportFailed', config.mDataExport)
+        #------------------------------> 
+        self.dKeyMethod = {
+            #------------------------------> Save Plot Images
+            'PlotImageOne': self.OnPlotSaveImageOne,
+            'AllImg'      : self.OnPlotSaveAllImage,
+            #------------------------------> Reset Zoom Level
+            'PlotZoomResetOne': self.OnPlotZoomResetOne,
+            'AllZoom'         : self.OnPlotZoomResetAll,
+        }
         #------------------------------> 
         super().__init__(
             cParent, size=self.cSWindow, title=self.cTitle, name=self.cName,
@@ -199,7 +214,7 @@ class BaseWindow(wx.Frame):
         return True
     #---
     
-    def OnSavePlotOne(self) -> bool:
+    def OnPlotSaveImageOne(self) -> bool:
         """Save an image of the plot. Override as needed. 
         
             Returns
@@ -223,7 +238,17 @@ class BaseWindow(wx.Frame):
             return False
     #---
     
-    def OnZoomResetOne(self) -> bool:
+    def OnPlotSaveAllImage(self) -> bool:
+        """ Export all plots to a pdf image. Override as needed.
+        
+            Returns
+            -------
+            bool
+        """
+        return True	
+    #---
+    
+    def OnPlotZoomResetOne(self) -> bool:
         """Reset the zoom of the plot.
     
             Returns
@@ -245,6 +270,16 @@ class BaseWindow(wx.Frame):
             #------------------------------> 
             return False
         #------------------------------> 
+        return True
+    #---
+    
+    def OnPlotZoomResetAll(self) -> bool:
+        """Reset the Zoom level of all plots in the window. Override as needed.
+    
+            Returns
+            -------
+            bool
+        """
         return True
     #---
     
@@ -307,7 +342,7 @@ class BaseWindow(wx.Frame):
         #region ---------------------------------------------------> Get Path
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
-            p     = Path(dlg.GetPath())
+            p = Path(dlg.GetPath())
             #------------------------------> Export
             try:
                 self.rObj.ExportPlotData(self.cSection, self.rDateC, p)
@@ -431,7 +466,7 @@ class BaseWindowPlot(BaseWindow):
             
         Notes
         -----
-        - Method OnSavePlot assumes that this window has an attribute
+        - Method OnSavePlotImage assumes that this window has an attribute
         wPlot (dtsWidget.MatPlotPanel). Override as needed.
         - Method OnClose assumes the parent is an instance of UMSAPControl. 
         Override as needed.
@@ -503,16 +538,6 @@ class BaseWindowPlot(BaseWindow):
         
         return True
     #---
-    
-    def OnSavePlot(self) -> bool:
-        """Save an image of the plot.
-        
-            Returns
-            -------
-            bool
-        """
-        return self.OnSavePlotOne()
-    #---
     #endregion ------------------------------------------------> Event Methods
 #---
 
@@ -527,6 +552,11 @@ class BaseWindowNPlotLT(BaseWindow):
         menuData : dict or None
             Data to build the Tool menu of the window. Default is None.
             See Child class for more details.
+            
+        Attributes
+        ----------
+        dKeyMethod : dict
+            Keys are str and values methods to manage the window.
 
         Notes
         -----
@@ -555,6 +585,11 @@ class BaseWindowNPlotLT(BaseWindow):
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(cParent, cMenuData=cMenuData)
+        #------------------------------> 
+        dKeyMethod = {
+            'PlotZoomResetAllinOne' : self.OnPlotZoomResetAllinOne,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -755,7 +790,7 @@ class BaseWindowNPlotLT(BaseWindow):
         return True
     #---
     
-    def OnZoomResetMany(self) -> bool:
+    def OnPlotZoomResetAllinOne(self) -> bool:
         """Reset all the plots in the window.
         
             Returns
@@ -811,12 +846,25 @@ class BaseWindowProteolysis(BaseWindow):
         self.cLPaneList = getattr(self, 'cLPaneList', 'Peptide List')
         self.cLPanePlot = getattr(self, 'cLPanePlot', 'Gel Representation')
         self.cLCol      = getattr(self, 'cLCol', ['#', 'Peptides'])
+        #------------------------------> 
+        self.cGelLineWidth = getattr(self, 'cGelLineWidth', 0.5)
         #------------------------------> Sizes
         self.cSCol = getattr(self, 'cSCol', [45, 100])
         #------------------------------> Hints
         self.cHSearch = getattr(self, 'cHSearch', self.cLPaneList)
-        
+        #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
+        #------------------------------> 
+        dKeyMethod = {
+            #------------------------------> Images
+            'MainImg'  : self.OnImageMain,
+            'BottomImg': self.OnImageBottom,
+            #------------------------------> Zoom Reset
+            'MainZoom'  : self.OnZoomResetMain,
+            'BottomZoom': self.OnZoomResetBottom,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -925,10 +973,6 @@ class BaseWindowProteolysis(BaseWindow):
         #region --------------------------------------------------------> Bind
         self.wLC.wLCS.lc.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
         #endregion -----------------------------------------------------> Bind
-
-        #region ---------------------------------------------> Window position
-        
-        #endregion ------------------------------------------> Window position
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -964,22 +1008,322 @@ class BaseWindowProteolysis(BaseWindow):
     #---
     
     def OnListSelect(self, event: wx.CommandEvent) -> bool:
-        """Method triggered by selecting a row in the wx.ListCtrl. Override as 
-            needed.
-    
+        """Process a wx.ListCtrl select event.
+
             Parameters
             ----------
             event:wx.Event
                 Information about the event
-            
+
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        self.rPeptide = self.wLC.wLCS.lc.GetItemText(
+            self.wLC.wLCS.lc.GetFirstSelected(), col=1)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.ShowPeptideLoc()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnPlotZoomResetAll(self) -> bool:
+        """Reset the zoom of the main and bottom plot.
+        
+            Returns
+            -------
+            bool
+        """
+        self.OnZoomResetMain()
+        self.OnZoomResetBottom()
+        
+        return True
+    #---
+    
+    def OnZoomResetMain(self) -> bool:
+        """Reset the Zoom of the Main plot.
+        
+            Returns
+            -------
+            bool
+        """
+        return self.wPlotM.ZoomResetPlot()
+    #---
+    
+    def OnZoomResetBottom(self) -> bool:
+        """Reset the Zoom of the Bottom plot.
     
             Returns
             -------
             bool
         """
-        return True
+        return self.wPlot.ZoomResetPlot()
+    #---
+    
+    def OnImageMain(self) -> bool:
+        """Save an image of the Main plot. 
+        
+            Returns
+            -------
+            bool
+        """
+        return self.wPlotM.SaveImage(ext=config.elMatPlotSaveI, parent=self)
+    #---
+    
+    def OnImageBottom(self) -> bool:
+        """Save an image of the Bottom plot.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.wPlot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
     #---
     #endregion ------------------------------------------------> Event Methods
+    
+    #region --------------------------------------------------> Manage Methods
+    def SetDateMenuDate(self) -> tuple[list, dict]:
+        """Set the self.rDate list and the menuData dict needed to build the Tool
+            menu.
+
+            Returns
+            -------
+            tuple of list and dict
+            The list is a list of str with the dates in the analysis.
+            The dict has the following structure:
+                {
+                    'menudate' : [List of dates],
+                }                    
+        """
+        #region ---------------------------------------------------> Fill dict
+        #------------------------------> Variables
+        date = []
+        menuData = {}
+        #------------------------------> Fill 
+        for k in self.rData.keys():
+            #------------------------------> 
+            date.append(k)
+            #------------------------------> 
+        #------------------------------> 
+        menuData['menudate'] = date
+        #endregion ------------------------------------------------> Fill dict
+        
+        return (date, menuData)
+    #---
+    
+    def FillListCtrl(self) -> bool:
+        """Update the protein list for the given analysis.
+        
+            Attributes
+            ----------
+            tIDX: pd.IndexSlice
+                To select columns used to filter self.rDf by alpha value
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Entries are read from self.rDf
+        """
+        #region --------------------------------------------------> Delete old
+        self.wLC.wLCS.lc.DeleteAllItems()
+        #endregion -----------------------------------------------> Delete old
+        
+        #region ----------------------------------------------------> Get Data
+        col = [self.rDf.columns.get_loc(c) for c in self.rDf.loc[:,self.rIdxP].columns.values]
+        data = dtsMethod.DFFilterByColN(self.rDf, col, self.rAlpha, 'le')
+        data = data.iloc[:,0:2].reset_index(drop=True)
+        data.insert(0, 'kbr', data.index.values.tolist())
+        data = data.astype(str)
+        data = data.iloc[:,0:2].values.tolist()
+        #endregion -------------------------------------------------> Get Data
+        
+        #region ------------------------------------------> Set in wx.ListCtrl
+        self.wLC.wLCS.lc.SetNewData(data)
+        #endregion ---------------------------------------> Set in wx.ListCtrl
+        
+        #region ---------------------------------------> Update Protein Number
+        self._mgr.GetPane(self.wLC).Caption(f'{self.cLPaneList} ({len(data)})')
+        self._mgr.Update()
+        #endregion ------------------------------------> Update Protein Number
+        
+        return True
+    #---
+    
+    def GetDF4FragmentSearch(self) -> pd.DataFrame:
+        """Get the pd.Dataframe needed to create the fragments.
+    
+            Returns
+            -------
+            pd.DataFrame
+            Seq Nrec Crec Nnat Cnat Col1 Col2 ColN
+            
+            Notes
+            -----
+            Col1 to ColN is expected to hold the P values from the analysis.
+        """
+        a = self.rDf.loc[:,self.rIdxSeqNC]
+        b = self.rDf.loc[:,self.rIdxP]
+
+        return pd.concat([a,b], axis=1)
+    #---
+    
+    def SetEmptyFragmentAxis(self) -> bool:
+        """Set the axis for an empty fragment state.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+        else:
+            pass
+        
+        self.rFragSelLine = None
+        self.rFragSelC    = [None, None, None]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.wPlotM.axes.clear()
+        self.wPlotM.axes.set_xticks([])
+        self.wPlotM.axes.set_yticks([])
+        self.wPlotM.axes.tick_params(length=0)
+        self.wPlotM.axes.spines['top'].set_visible(False)
+        self.wPlotM.axes.spines['right'].set_visible(False)
+        self.wPlotM.axes.spines['bottom'].set_visible(False)
+        self.wPlotM.axes.spines['left'].set_visible(False)
+        self.wPlotM.canvas.draw()
+        #endregion ------------------------------------------------> 
+        
+        return True
+    #---
+    
+    def DrawProtein(self, y: int) -> bool:
+        """Draw the protein fragment
+    
+            Parameters
+            ----------
+            y: int
+                Y coordinate to draw the protein.
+                
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        recProt = []
+        natProt = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        if self.rProtLoc[0] is not None:
+            #------------------------------> 
+            natProt.append(self.rProtLoc)
+            a, b = self.rProtLoc
+            #------------------------------> 
+            if a == 1 and b == self.rProtLength:
+                pass
+            elif a == 1 and b < self.rProtLength:
+                recProt.append((b, self.rProtLength))
+            elif a > 1 and b == self.rProtLength:
+                recProt.append((1, a))
+            else:
+                recProt.append((1, a))
+                recProt.append((b, self.rProtLength))
+        else:
+            recProt.append((1, self.rProtLength))
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Draw Rect
+        for r in natProt:
+            self.wPlotM.axes.add_patch(mpatches.Rectangle(
+                (r[0], y-0.2),
+                r[1] - r[0],
+                0.4,
+                edgecolor = 'black',
+                facecolor = self.cCNatProt,
+            ))
+        
+        for r in recProt:
+            self.wPlotM.axes.add_patch(mpatches.Rectangle(
+                (r[0], y-0.2),
+                r[1] - r[0],
+                0.4,
+                edgecolor = 'black',
+                facecolor = self.cCRecProt,
+            ))
+        #endregion ------------------------------------------------> Draw Rect
+       
+        return True
+    #---
+    
+    def DrawFragments(self, tKeyLabel: dict) -> bool:
+        """Draw the fragments associated with the given keys.
+    
+            Parameters
+            ----------
+            tKeyLabel: dict
+                Keys are the key to plot and values the associated labels.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        self.rRectsFrag = []
+        #endregion ------------------------------------------------> Variables
+        
+        #region ----------------------------------------------------> Set Axis
+        self.SetFragmentAxis()
+        #endregion -------------------------------------------------> Set Axis
+        
+        #region ---------------------------------------------------> Fragments
+        nc = len(self.cColor['Spot'])
+        #------------------------------> 
+        for k,v in enumerate(tKeyLabel, start=1):
+            for j,f in enumerate(self.rFragments[v]['Coord']):
+                self.rRectsFrag.append(mpatches.Rectangle(
+                    (f[0], k-0.2), 
+                    (f[1]-f[0]), 
+                    0.4,
+                    picker    = True,
+                    linewidth = self.cGelLineWidth,
+                    facecolor = self.cColor['Spot'][(k-1)%nc],
+                    edgecolor = 'black',
+                    label     = f'{tKeyLabel[v]}.{j}',
+                ))
+                self.wPlotM.axes.add_patch(self.rRectsFrag[-1])
+        #endregion ------------------------------------------------> Fragments
+        
+        #region -----------------------------------------------------> Protein
+        self.DrawProtein(k+1)
+        #endregion --------------------------------------------------> Protein
+       
+        #region --------------------------------------------------------> Draw
+        self.wPlotM.ZoomResetSetValues()
+        
+        self.wPlotM.canvas.draw()
+        #endregion -----------------------------------------------------> Draw
+        
+        #region ---------------------------------------------------> 
+        if self.rPeptide is not None:
+            self.ShowPeptideLoc()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion -----------------------------------------------> Manage Methods
 #---
 #endregion -----------------------------------------------------> Base Classes
 
@@ -1007,6 +1351,7 @@ class MainWindow(BaseWindow):
         config.ntDataPrep: tab.BaseConfListTab,
         config.ntLimProt : tab.BaseConfListTab,
         config.ntProtProf: tab.BaseConfListTab,
+        config.ntTarProt : tab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup
     
@@ -1247,7 +1592,7 @@ class CorrAPlot(BaseWindowPlot):
         #endregion -----------------------------------------------------> Bind
 
         #region ----------------------------------------------------> Position
-        self.Draw(self.rDateC, 'Name')
+        self.UpdateDisplayedData(self.rDateC, 'Name')
         self.WinPos()
         self.Show()
         #endregion -------------------------------------------------> Position
@@ -1290,7 +1635,9 @@ class CorrAPlot(BaseWindowPlot):
         return True
     #---
 
-    def Draw(self, tDate: str, col: Literal['Name', 'Number']) -> bool:
+    def UpdateDisplayedData(
+        self, tDate: str, col: Literal['Name', 'Number']
+        ) -> bool:
         """ Plot data from a given date.
         
             Paramenters
@@ -1442,14 +1789,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
 
         Attributes
         ----------
-        dFilterMethod : dict
-            Keys are the StatusBar text and values the methods to apply the
-            filter.
-        dGetDF4TextInt : dict
-            Keys are the type of Control and values methods to create the df
-            with the intensities shown in the text region.
-        dSetRange : dict
-            Keys are the lockScale values and values methods to set the range.
+        dKeyMethod : dict
+            Keys are str and values methods to manage the window.
         rAutoFilter : bool
             Apply defined filters (True) when changing date or not (False).
             Default is False. 
@@ -1548,6 +1889,12 @@ class ProtProfPlot(BaseWindowNPlotLT):
         cLFFCDownMon : cLFFCDownMonL,
         cLFFCBothMon : cLFFCBothMonL,
     }
+    cLFFCMode = {
+        'Up'  : cLFFCUp,
+        'Down': cLFFCDown,
+        'Both': cLFFCBoth,
+        'No'  : cLFFCNo,
+    }
     #--------------> Id of the plots
     cLNPlots = ['Vol', 'FC']
     #------------------------------> Title
@@ -1602,28 +1949,20 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rProtLine    = []
         self.rFilterList  = []
         self.rDate, cMenuData = self.SetDateMenuDate()
+        #------------------------------> 
+        super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> Methods
-        self.dSetRange = {
+        dKeyMethod = {
+            #------------------------------> Set Range of Plots
             'No'     : self.SetRangeNo,
             'Date'   : self.SetRangeDate,
             'Project': self.SetRangeProject,
-        }
-        
-        self.dGetDF4TextInt = {
+            #------------------------------> Get DF for Text Intensities
             config.oControlTypeProtProf['OC']   : self.GetDF4TextInt_OC,
             config.oControlTypeProtProf['OCC']  : self.GetDF4TextInt_OCC,
             config.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
             config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
-        }
-        
-        self.cLFFCMode = {
-            'Up'  : self.cLFFCUp,
-            'Down': self.cLFFCDown,
-            'Both': self.cLFFCBoth,
-            'No'  : self.cLFFCNo,
-        }
-        
-        self.dFilterMethod = {
+            #------------------------------> Filter methods
             self.cLFZscore   : self.Filter_ZScore,
             self.cLFLog2FC   : self.Filter_Log2FC,
             self.cLFPValAbs  : self.Filter_PValue,
@@ -1639,9 +1978,15 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.cLFFCBothMon: self.Filter_FCChange,
             self.cLFFCNo     : self.Filter_FCNoChange,
             self.cLFDiv      : self.Filter_Divergent,
+            #------------------------------> Save Image
+            'VolcanoImg': self.OnSaveVolcanoImage,
+            'FCImage'   : self.OnSaveFCImage,
+            #------------------------------> Zoom Reset
+            'VolcanoZoom' : self.OnZoomResetVol,
+            'FCZoom'      : self.OnZoomResetFC,
+            'AllZoom'     : self.OnPlotZoomResetAllinOne,
         }
-        #------------------------------> 
-        super().__init__(cParent, cMenuData=cMenuData)
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -1658,7 +2003,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
 
         #region ---------------------------------------------> Window position
         #------------------------------> 
-        self.OnDateChange(
+        self.UpdateDisplayedData(
             self.rDate[0], 
             cMenuData['crp'][self.rDate[0]]['C'][0],
             cMenuData['crp'][self.rDate[0]]['RP'][0],
@@ -2154,7 +2499,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #------------------------------> Ave and st for intensity values
         self.wText.AppendText(
             '--> Intensity values after data preparation:\n\n')
-        dfList = self.dGetDF4TextInt[self.rCI['ControlT']](idx)
+        dfList = self.dKeyMethod[self.rCI['ControlT']](idx)
         for df in dfList:
             self.wText.AppendText(df.to_string(index=False))
             self.wText.AppendText('\n\n')
@@ -2428,7 +2773,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
     #---
     
     def SetRangeNo(self) -> bool:
-        """Do nothing. Just to make the dict self.dSetRange work.
+        """Do nothing. Just to make the dict self.dKeyMethod work.
     
             Returns
             -------
@@ -2640,7 +2985,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
     #endregion -----------------------------------------------> Manage Methods
     
     #region ---------------------------------------------------> Event Methods
-    def OnDateChange(
+    def UpdateDisplayedData(
         self, tDate: str, cond: str, rp:str, corrP: bool, showAll: bool,
         ) -> bool:
         """Configure window to update Volcano and FC plots when date changes.
@@ -2830,7 +3175,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         )
     #---
     
-    def OnSavePlot(self) -> bool:
+    def OnPlotSaveAllImage(self) -> bool:
         """ Export all plots to a pdf image
         
             Returns
@@ -2961,16 +3306,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return self.wPlots.dPlot['FC'].ZoomResetPlot()
     #---
     
-    def OnZoomReset(self) -> bool:
-        """Reset the zoom level of all plots in the window.
-    
-            Returns
-            -------
-            bool
-        """
-        return self.OnZoomResetMany()
-    #---
-    
     def OnLockScale(self, mode: str, updatePlot: bool=True) -> bool:
         """Lock the scale of the volcano and FC plot.
     
@@ -2995,7 +3330,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------------> Update Attr
         
         #region ---------------------------------------------------> Get Range
-        self.dSetRange[mode]()
+        self.dKeyMethod[mode]()
         #endregion ------------------------------------------------> Get Range
         
         #region ---------------------------------------------------> Set Range
@@ -3054,7 +3389,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         """
         #region -----------------------------------------------> Apply Filters
         for k in self.rFilterList:
-            self.dFilterMethod[k[0]](**k[1])
+            self.dKeyMethod[k[0]](**k[1])
         #endregion --------------------------------------------> Apply Filters
         
         return True
@@ -3074,7 +3409,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------> Update Attributes
         
         #region --------------------------------------------------> Update GUI
-        self.OnDateChange(
+        self.UpdateDisplayedData(
             self.rDateC, self.rCondC, self.rRpC, self.rCorrP, self.rShowAll)
         #endregion -----------------------------------------------> Update GUI 
         
@@ -3111,7 +3446,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------> Update Attributes
         
         #region --------------------------------------------------> Update GUI
-        self.OnDateChange(
+        self.UpdateDisplayedData(
             self.rDateC, self.rCondC, self.rRpC, self.rCorrP, self.rShowAll)
         #endregion -----------------------------------------------> Update GUI 
         
@@ -3795,12 +4130,13 @@ class LimProtPlot(BaseWindowProteolysis):
     #------------------------------> To id the section in the umsap file 
     # shown in the window
     cSection = config.nmLimProt
-    #------------------------------> 
-    cGelLineWidth = 0.5
     #------------------------------> Colors
     cCNatProt = config.color['NatProt']
     cCRecProt = config.color['RecProt']
     cColor = config.color[cName]
+    #------------------------------> 
+    rIdxP     = pd.IndexSlice[:,:,'Ptost']
+    rIdxSeqNC = pd.IndexSlice[config.dfcolSeqNC,:,:]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -3835,18 +4171,19 @@ class LimProtPlot(BaseWindowProteolysis):
         self.rProtDelta     = None
         self.rProtTarget    = None
         self.rPeptide       = None
-        
+        #------------------------------> 
         self.rDate, cMenuData = self.SetDateMenuDate()
-        
-        self.dClearMethod = {
+        #------------------------------> 
+        super().__init__(cParent, cMenuData=cMenuData)
+        #------------------------------> 
+        dKeyMethod = {
             'Peptide'  : self.OnClearPept,
             'Fragment' : self.OnClearFrag,
             'Gel Spot' : self.OnClearGel,
             'Band/Lane': self.OnClearBL,
             'All'      : self.OnClearAll,
         }
-        
-        super().__init__(cParent, cMenuData=cMenuData)
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -3868,7 +4205,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
-        self.OnDateChange(self.rDate[0])
+        self.UpdateDisplayedData(self.rDate[0])
         #------------------------------> 
         self.WinPos()
         self.Show()
@@ -3878,35 +4215,6 @@ class LimProtPlot(BaseWindowProteolysis):
     
     #------------------------------> Class methods
     #region --------------------------------------------------> Manage Methods
-    def SetDateMenuDate(self) -> tuple[list, dict]:
-        """Set the self.rDate list and the menuData dict needed to build the Tool
-            menu.
-
-            Returns
-            -------
-            tuple of list and dict
-            The list is a list of str with the dates in the analysis.
-            The dict has the following structure:
-                {
-                    'menudate' : [List of dates],
-                }                    
-        """
-        #region ---------------------------------------------------> Fill dict
-        #------------------------------> Variables
-        date = []
-        menuData = {}
-        #------------------------------> Fill 
-        for k in self.rData.keys():
-            #------------------------------> 
-            date.append(k)
-            #------------------------------> 
-        #------------------------------> 
-        menuData['menudate'] = date
-        #endregion ------------------------------------------------> Fill dict
-        
-        return (date, menuData)
-    #---
-    
     def WinPos(self) -> bool:
         """Set the position on the screen and adjust the total number of
             shown windows.
@@ -3934,19 +4242,61 @@ class LimProtPlot(BaseWindowProteolysis):
 
         return True
     #---
-
-    def GetColIdx(self) -> list[int]:
-        """Get the column indexes in the pd.DataFrame with the results.
+    
+    def UpdateDisplayedData(self, date) -> bool:
+        """Update the GUI and attributes when a new date is selected.
+    
+            Parameters
+            ----------
+            date : str
+                Selected date.
     
             Returns
             -------
-            list of int
-                Column indexes
+            bool
         """
-        listO = [0,2,3,4,5]
-        for x in range(7, self.rDf.shape[1]):
-            listO.append(x)
-        return listO
+        #region ---------------------------------------------------> Variables
+        self.rDateC      = date
+        self.rDf         = self.rData[self.rDateC]['DF'].copy()
+        self.rBands      = self.rData[self.rDateC]['PI']['Bands']
+        self.rLanes      = self.rData[self.rDateC]['PI']['Lanes']
+        self.rAlpha      = self.rData[self.rDateC]['PI']['Alpha']
+        self.rProtLoc    = self.rData[self.rDateC]['PI']['ProtLoc']
+        self.rProtLength = self.rData[self.rDateC]['PI']['ProtLength']
+        self.rProtDelta  = self.rData[self.rDateC]['PI']['ProtDelta']
+        self.rProtTarget = self.rData[self.rDateC]['PI']['Prot']
+        self.rRectsGel   = []
+        self.rRectsFrag  = []
+        self.rBlSelC     = [None, None]
+        self.rGelSelC    = [None, None]
+        self.rFragSelC   = [None, None, None]
+        self.rPeptide    = None
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        #endregion ------------------------------------------------> 
+        
+        #region -------------------------------------------------> wx.ListCtrl
+        self.FillListCtrl()
+        #endregion ----------------------------------------------> wx.ListCtrl
+        
+        #region ----------------------------------------------------> Gel Plot
+        self.DrawGel()
+        #endregion -------------------------------------------------> Gel Plot
+        
+        #region ---------------------------------------------------> Fragments
+        self.rFragments = dmethod.Fragments(
+            self.GetDF4FragmentSearch(), self.rAlpha,'le')
+                
+        self.SetEmptyFragmentAxis()
+        #endregion ------------------------------------------------> Fragments
+
+        #region ---------------------------------------------------> Win Title
+        self.PlotTitle()
+        #endregion ------------------------------------------------> Win Title
+        
+        return True
     #---
     
     def DrawGel(self) -> bool:
@@ -4146,120 +4496,89 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> Variables
         b = self.rBands[y-1]
         l = self.rLanes[x-1]
-        tKeys  = []
-        tLabel = []
-        self.rRectsFrag = []
+        tKeyLabel = {}
         #endregion ------------------------------------------------> Variables
         
-        #region ----------------------------------------------------> Set Axis
-        self.SetFragmentAxis()
-        #endregion -------------------------------------------------> Set Axis
-        
-        #region ---------------------------------------------------> Keys
+        #region --------------------------------------------------------> Keys
         if self.rSelBands:
             for k,tL in enumerate(self.rLanes):
-                tKeys.append(f"{(b, tL, 'Ptost')}")
-                tLabel.append(f'{y-1}.{k}')
+                tKeyLabel[f"{(b, tL, 'Ptost')}"] = f'{y-1}.{k}'
         else:
             for k,tB in enumerate(self.rBands):
-                tKeys.append(f"{(tB, l, 'Ptost')}")
-                tLabel.append(f'{k}.{x-1}')
-        #endregion ------------------------------------------------> Keys
+                tKeyLabel[f"{(tB, l, 'Ptost')}"] = f'{k}.{x-1}'
+        #endregion -----------------------------------------------------> Keys
         
-        #region ---------------------------------------------------> Fragments
-        nc = len(self.cColor['Spot'])
-        #------------------------------> 
-        for k,v in enumerate(tKeys, start=1):
-            for j,f in enumerate(self.rFragments[v]['Coord']):
-                self.rRectsFrag.append(mpatches.Rectangle(
-                    (f[0], k-0.2), 
-                    (f[1]-f[0]), 
-                    0.4,
-                    picker    = True,
-                    linewidth = self.cGelLineWidth,
-                    facecolor = self.cColor['Spot'][(k-1)%nc],
-                    edgecolor = 'black',
-                    label     = f'{tLabel[k-1]}.{j}',
-                ))
-                self.wPlotM.axes.add_patch(self.rRectsFrag[-1])
-        #endregion ------------------------------------------------> Fragments
+        #region -------------------------------------------------------> Super
+        super().DrawFragments(tKeyLabel)
+        #endregion ----------------------------------------------------> Super
         
-        #region -----------------------------------------------------> Protein
-        self.DrawProtein(k+1)
-        #endregion --------------------------------------------------> Protein
-       
-        #region --------------------------------------------------------> Draw
-        self.wPlotM.ZoomResetSetValues()
-        
-        self.wPlotM.canvas.draw()
-        #endregion -----------------------------------------------------> Draw
-        
-        #region ---------------------------------------------------> 
-        if self.rPeptide is not None:
-            self.ShowPeptideLoc()
-        else:
-            pass
-        #endregion ------------------------------------------------> 
-
         return True
     #---
     
-    def DrawProtein(self, y: int) -> bool:
-        """Draw the protein fragment
+    def SetFragmentAxis(self, showAll=False) -> bool:
+        """Set the axis for the plot showing the fragments.
     
             Parameters
             ----------
-            y: int
-                Y coordinate to draw the protein.
-                
+            showAll: bool
+                Show all fragments or not. Default is False.
+    
             Returns
             -------
             bool
         """
-        #region ---------------------------------------------------> Variables
-        recProt = []
-        natProt = []
-        #endregion ------------------------------------------------> Variables
-
         #region ---------------------------------------------------> 
-        if self.rProtLoc[0] is not None:
-            #------------------------------> 
-            natProt.append(self.rProtLoc)
-            a, b = self.rProtLoc
-            #------------------------------> 
-            if a == 1 and b == self.rProtLength:
-                pass
-            elif a == 1 and b < self.rProtLength:
-                recProt.append((b, self.rProtLength))
-            elif a > 1 and b == self.rProtLength:
-                recProt.append((1, a))
-            else:
-                recProt.append((1, a))
-                recProt.append((b, self.rProtLength))
-        else:
-            recProt.append((1, self.rProtLength))
+        self.wPlotM.axes.clear()
         #endregion ------------------------------------------------> 
 
-        #region ---------------------------------------------------> Draw Rect
-        for r in natProt:
-            self.wPlotM.axes.add_patch(mpatches.Rectangle(
-                (r[0], y-0.2),
-                r[1] - r[0],
-                0.4,
-                edgecolor = 'black',
-                facecolor = self.cCNatProt,
-            ))
+        #region ---------------------------------------------------> 
+        #------------------------------>
+        if self.rProtLoc[0] is not None:
+            xtick = [1] + list(self.rProtLoc) + [self.rProtLength]
+        else:
+            xtick = [1] + [self.rProtLength]
+        self.wPlotM.axes.set_xticks(xtick)
+        self.wPlotM.axes.set_xticklabels(xtick)
+        #------------------------------> 
+        if showAll:
+            self.wPlotM.axes.set_yticks(range(1, len(showAll)+2))
+            self.wPlotM.axes.set_yticklabels(showAll+['Protein'])
+            self.wPlotM.axes.set_ylim(0.5, len(showAll)+1.5)
+            #------------------------------> 
+            ymax = len(showAll)+0.8
+        else:
+            if self.rSelBands:
+                #------------------------------> 
+                self.wPlotM.axes.set_yticks(range(1, len(self.rLanes)+2))
+                self.wPlotM.axes.set_yticklabels(self.rLanes+['Protein'])            
+                self.wPlotM.axes.set_ylim(0.5, len(self.rLanes)+1.5)
+                #------------------------------> 
+                ymax = len(self.rLanes)+0.8
+            else:
+                #------------------------------> 
+                self.wPlotM.axes.set_yticks(range(1, len(self.rBands)+2))
+                self.wPlotM.axes.set_yticklabels(self.rBands+['Protein'])   
+                self.wPlotM.axes.set_ylim(0.5, len(self.rBands)+1.5)
+                #------------------------------> 
+                ymax = len(self.rBands)+0.8
+        #------------------------------> 
+        self.wPlotM.axes.tick_params(length=0)
+        #------------------------------> 
+        self.wPlotM.axes.set_xlim(0, self.rProtLength+1)
+        #endregion ------------------------------------------------> 
         
-        for r in recProt:
-            self.wPlotM.axes.add_patch(mpatches.Rectangle(
-                (r[0], y-0.2),
-                r[1] - r[0],
-                0.4,
-                edgecolor = 'black',
-                facecolor = self.cCRecProt,
-            ))
-        #endregion ------------------------------------------------> Draw Rect
+        #region ---------------------------------------------------> 
+        self.wPlotM.axes.vlines(
+            xtick, 0, ymax, linestyles='dashed', linewidth=0.5, color='black')
+        #endregion ------------------------------------------------> 
        
+        #region ------------------------------------------------> Remove Frame
+        self.wPlotM.axes.spines['top'].set_visible(False)
+        self.wPlotM.axes.spines['right'].set_visible(False)
+        self.wPlotM.axes.spines['bottom'].set_visible(False)
+        self.wPlotM.axes.spines['left'].set_visible(False)
+        #endregion ---------------------------------------------> Remove Frame
+        
         return True
     #---
     
@@ -4358,8 +4677,6 @@ class LimProtPlot(BaseWindowProteolysis):
             for a,b in ncO:
                 aX = a+self.rProtDelta
                 bX = b+self.rProtDelta
-                # aO = aX if aX >= self.rProtLoc[0] and aX <= self.rProtLoc[1] else 'NA'
-                # bO = bX if bX >= self.rProtLoc[0] and bX <= self.rProtLoc[1] else 'NA'
                 ncONat.append((aX,bX))
         else:
             ncONat = 'NA' 
@@ -4493,8 +4810,6 @@ class LimProtPlot(BaseWindowProteolysis):
             for a,b in self.rFragments[tKey]['Coord']:
                 aX = a+self.rProtDelta
                 bX = b+self.rProtDelta
-                # aO = aX if aX >= self.rProtLoc[0] and aX <= self.rProtLoc[1] else 'NA'
-                # bO = bX if bX >= self.rProtLoc[0] and bX <= self.rProtLoc[1] else 'NA'
                 ncONat.append((aX,bX))
         else:
             ncONat = 'NA' 
@@ -4569,141 +4884,6 @@ class LimProtPlot(BaseWindowProteolysis):
         self.wText.AppendText(f'{self.rFragments[tKey]["Seq"][fragC[2]]}')
         self.wText.SetInsertionPoint(0)
         #endregion ------------------------------------------------> 
-        
-        return True
-    #---
-    
-    def SetFragmentAxis(self, showAll=False) -> bool:
-        """Set the axis for the plot showing the fragments.
-    
-            Parameters
-            ----------
-            showAll: bool
-                Show all fragments or not. Default is False.
-    
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> 
-        self.wPlotM.axes.clear()
-        #endregion ------------------------------------------------> 
-
-        #region ---------------------------------------------------> 
-        #------------------------------>
-        if self.rProtLoc[0] is not None:
-            xtick = [1] + list(self.rProtLoc) + [self.rProtLength]
-        else:
-            xtick = [1] + [self.rProtLength]
-        self.wPlotM.axes.set_xticks(xtick)
-        self.wPlotM.axes.set_xticklabels(xtick)
-        #------------------------------> 
-        if showAll:
-            self.wPlotM.axes.set_yticks(range(1, len(showAll)+2))
-            self.wPlotM.axes.set_yticklabels(showAll+['Protein'])
-            self.wPlotM.axes.set_ylim(0.5, len(showAll)+1.5)
-            #------------------------------> 
-            ymax = len(showAll)+0.8
-        else:
-            if self.rSelBands:
-                #------------------------------> 
-                self.wPlotM.axes.set_yticks(range(1, len(self.rLanes)+2))
-                self.wPlotM.axes.set_yticklabels(self.rLanes+['Protein'])            
-                self.wPlotM.axes.set_ylim(0.5, len(self.rLanes)+1.5)
-                #------------------------------> 
-                ymax = len(self.rLanes)+0.8
-            else:
-                #------------------------------> 
-                self.wPlotM.axes.set_yticks(range(1, len(self.rBands)+2))
-                self.wPlotM.axes.set_yticklabels(self.rBands+['Protein'])   
-                self.wPlotM.axes.set_ylim(0.5, len(self.rBands)+1.5)
-                #------------------------------> 
-                ymax = len(self.rBands)+0.8
-        #------------------------------> 
-        self.wPlotM.axes.tick_params(length=0)
-        #------------------------------> 
-        self.wPlotM.axes.set_xlim(0, self.rProtLength+1)
-        #endregion ------------------------------------------------> 
-        
-        #region ---------------------------------------------------> 
-        self.wPlotM.axes.vlines(
-            xtick, 0, ymax, linestyles='dashed', linewidth=0.5, color='black')
-        #endregion ------------------------------------------------> 
-       
-        #region ------------------------------------------------> Remove Frame
-        self.wPlotM.axes.spines['top'].set_visible(False)
-        self.wPlotM.axes.spines['right'].set_visible(False)
-        self.wPlotM.axes.spines['bottom'].set_visible(False)
-        self.wPlotM.axes.spines['left'].set_visible(False)
-        #endregion ---------------------------------------------> Remove Frame
-        
-        return True
-    #---
-    
-    def SetEmptyFragmentAxis(self) -> bool:
-        """Set the axis for an empty fragment state.
-    
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> 
-        if self.rFragSelLine is not None:
-            self.rFragSelLine[0].remove()
-        else:
-            pass
-        
-        self.rFragSelLine = None
-        self.rFragSelC    = [None, None, None]
-        #endregion ------------------------------------------------> 
-
-        #region ---------------------------------------------------> 
-        self.wPlotM.axes.clear()
-        self.wPlotM.axes.set_xticks([])
-        self.wPlotM.axes.set_yticks([])
-        self.wPlotM.axes.tick_params(length=0)
-        self.wPlotM.axes.spines['top'].set_visible(False)
-        self.wPlotM.axes.spines['right'].set_visible(False)
-        self.wPlotM.axes.spines['bottom'].set_visible(False)
-        self.wPlotM.axes.spines['left'].set_visible(False)
-        self.wPlotM.canvas.draw()
-        #endregion ------------------------------------------------> 
-        
-        return True
-    #---
-    
-    def FillListCtrl(self) -> bool:
-        """Update the protein list for the given analysis.
-    
-            Returns
-            -------
-            bool
-            
-            Notes
-            -----
-            Entries are read from self.rDf
-        """
-        #region --------------------------------------------------> Delete old
-        self.wLC.wLCS.lc.DeleteAllItems()
-        #endregion -----------------------------------------------> Delete old
-        
-        #region ----------------------------------------------------> Get Data
-        col = [self.rDf.columns.get_loc(c) for c in self.rDf.loc[:,pd.IndexSlice[:,:,'Ptost']].columns.values]
-        data = dtsMethod.DFFilterByColN(self.rDf, col, self.rAlpha, 'lt')
-        data = data.iloc[:,0:2].reset_index(drop=True)
-        data.insert(0, 'kbr', data.index.values.tolist())
-        data = data.astype(str)
-        data = data.iloc[:,0:2].values.tolist()
-        #endregion -------------------------------------------------> Get Data
-        
-        #region ------------------------------------------> Set in wx.ListCtrl
-        self.wLC.wLCS.lc.SetNewData(data)
-        #endregion ---------------------------------------> Set in wx.ListCtrl
-        
-        #region ---------------------------------------> Update Protein Number
-        self._mgr.GetPane(self.wLC).Caption(f'{self.cLPaneList} ({len(data)})')
-        self._mgr.Update()
-        #endregion ------------------------------------> Update Protein Number
         
         return True
     #---
@@ -4797,67 +4977,6 @@ class LimProtPlot(BaseWindowProteolysis):
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Event Methods
-    def OnDateChange(self, date):
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        #region ---------------------------------------------------> Variables
-        self.rDateC      = date
-        self.rDf         = self.rData[self.rDateC]['DF'].copy()
-        self.rBands      = self.rData[self.rDateC]['PI']['Bands']
-        self.rLanes      = self.rData[self.rDateC]['PI']['Lanes']
-        self.rAlpha      = self.rData[self.rDateC]['PI']['Alpha']
-        self.rProtLoc    = self.rData[self.rDateC]['PI']['ProtLoc']
-        self.rProtLength = self.rData[self.rDateC]['PI']['ProtLength']
-        self.rProtDelta  = self.rData[self.rDateC]['PI']['ProtDelta']
-        self.rProtTarget = self.rData[self.rDateC]['PI']['Prot']
-        self.rRectsGel   = []
-        self.rRectsFrag  = []
-        self.rBlSelC     = [None, None]
-        self.rGelSelC    = [None, None]
-        self.rFragSelC   = [None, None, None]
-        self.rPeptide    = None
-        #endregion ------------------------------------------------> Variables
-        
-        #region ---------------------------------------------------> 
-        self.wText.Clear()
-        #endregion ------------------------------------------------> 
-        
-        #region -------------------------------------------------> wx.ListCtrl
-        self.FillListCtrl()
-        #endregion ----------------------------------------------> wx.ListCtrl
-        
-        #region ----------------------------------------------------> Gel Plot
-        self.DrawGel()
-        #endregion -------------------------------------------------> Gel Plot
-        
-        #region ---------------------------------------------------> Fragments
-        self.rFragments = dmethod.Fragments(
-            self.rDf.iloc[:,self.GetColIdx()], 
-            self.rAlpha,
-            'lt', 
-            self.rProtLoc,
-        )
-        
-        self.SetEmptyFragmentAxis()
-        #endregion ------------------------------------------------> Fragments
-
-        #region ---------------------------------------------------> Win Title
-        self.PlotTitle()
-        #endregion ------------------------------------------------> Win Title
-    #---
-    
     def OnPickFragment(self, event) -> bool:
         """Display info about the selected fragment.
     
@@ -5083,31 +5202,6 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def OnListSelect(self, event: wx.CommandEvent) -> bool:
-        """Process a wx.ListCtrl select event.
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> 
-        self.rPeptide = self.wLC.wLCS.lc.GetItemText(
-            self.wLC.wLCS.lc.GetFirstSelected(), col=1)
-        #endregion ------------------------------------------------> 
-        
-        #region ---------------------------------------------------> 
-        self.ShowPeptideLoc()
-        #endregion ------------------------------------------------> 
-
-        return True
-    #---
-    
     def OnLaneBand(self, state: bool) -> bool:
         """Change Band/Lane selectio mode.
     
@@ -5125,60 +5219,7 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def OnZoomReset(self) -> bool:
-        """Reset the zoom of the Gel and Fragment Plot.
-        
-            Returns
-            -------
-            bool
-        """
-        self.OnZoomResetFragment()
-        self.OnZoomResetGel()
-        
-        return True
-    #---
-    
-    def OnZoomResetFragment(self) -> bool:
-        """Reset the Zoom of the Fragment plot.
-        
-            Returns
-            -------
-            bool
-        """
-        return self.wPlotM.ZoomResetPlot()
-    #---
-    
-    def OnZoomResetGel(self) -> bool:
-        """Reset the Zoom of the Gel plot.
-    
-            Returns
-            -------
-            bool
-        """
-        return self.wPlot.ZoomResetPlot()
-    #---
-    
-    def OnImageFragment(self) -> bool:
-        """Save an image of the Fragment plot. 
-        
-            Returns
-            -------
-            bool
-        """
-        return self.wPlotM.SaveImage(ext=config.elMatPlotSaveI, parent=self)
-    #---
-    
-    def OnImageGel(self) -> bool:
-        """Save an image of the Gel plot.
-    
-            Returns
-            -------
-            bool
-        """
-        return self.wPlot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
-    #---
-    
-    def OnImageAll(self) -> bool:
+    def OnPlotSaveAllImage(self) -> bool:
         """ Export all plots to a pdf image
         
             Returns
@@ -5209,22 +5250,7 @@ class LimProtPlot(BaseWindowProteolysis):
         dlg.Destroy()
         return True	
     #---
-    
-    def OnClearSelection(self, tType: str) -> bool:
-        """Clear the selections in the window
-    
-            Parameters
-            ----------
-            tType: str
-                One of 'Peptide', 'Fragment', 'Gel Spot', 'Band/Lane', 'All'      
-    
-            Returns
-            -------
-            bool
-        """
-        return self.dClearMethod[tType]()
-    #---
-    
+        
     def OnClearPept(self, plot: bool=True) -> bool:
         """Clear the Peptide selection.
     
@@ -5498,6 +5524,587 @@ class LimProtPlot(BaseWindowProteolysis):
 #---
 
 
+class TarProtPlot(BaseWindowProteolysis):
+    """Plot the results of a Targeted Proteolysis analysis.
+
+        Parameters
+        ----------
+        cParent: wx.Window
+            Parent of the window
+    
+        Attributes
+        ----------
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = config.nwTarProt
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nmTarProt
+    #------------------------------> Label
+    cLPanePlot = 'Intensity'
+    #------------------------------> Colors
+    cCNatProt = config.color['NatProt']
+    cCRecProt = config.color['RecProt']
+    cColor = config.color[cName]
+    #------------------------------>
+    rIdxSeqNC = pd.IndexSlice[config.dfcolSeqNC,:]
+    #endregion --------------------------------------------------> Class setup
+    
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cParent: 'UMSAPControl') -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle       = f'{cParent.cTitle} - {self.cSection}'
+        self.rObj         = cParent.rObj
+        self.rData        = self.rObj.rConfData[self.cSection]
+        self.rDateC       = None
+        self.rAlpha       = None
+        self.rFragments   = None
+        self.rFragSelLine = None
+        self.rFragSelC    = [None, None, None]
+        self.rRectsFrag   = []
+        self.rProtLoc     = None
+        self.rProtLength  = None
+        self.rExp         = None
+        self.rCtrl        = None
+        self.rIdxP        = None
+        self.rPeptide     = None
+        #------------------------------> 
+        self.rDate, cMenuData = self.SetDateMenuDate()
+        #------------------------------> 
+        super().__init__(cParent, cMenuData=cMenuData)
+        #------------------------------> 
+        dKeyMethod = {
+            'Peptide'  : self.OnClearPept,
+            'Fragment' : self.OnClearFrag,
+            'All'      : self.OnClearAll,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.wPlotM.canvas.mpl_connect('pick_event', self.OnPickFragment)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.UpdateDisplayedData(self.rDate[0])
+        #------------------------------> 
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+    
+    #------------------------------> Class methods
+    #region --------------------------------------------------> Manage Methods
+    def WinPos(self) -> bool:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
+            
+            Returns
+            -------
+            bool
+        """
+        # #region ---------------------------------------------------> Variables
+        info = super().WinPos()
+        # #endregion ------------------------------------------------> Variables
+                
+        # #region ------------------------------------------------> Set Position
+        # x = info['D']['xo'] + info['W']['N']*config.deltaWin
+        # y = (
+        #     ((info['D']['h']/2) - (info['W']['h']/2)) 
+        #     + info['W']['N']*config.deltaWin
+        # )
+        # self.SetPosition(pt=(x,y))
+        # #endregion ---------------------------------------------> Set Position
+
+        #region ----------------------------------------------------> Update N
+        config.winNumber[self.cName] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
+
+        return True
+    #---
+    
+    def UpdateDisplayedData(self, date) -> bool:
+        """Update the GUI and attributes when a new date is selected.
+    
+            Parameters
+            ----------
+            date : str
+                Selected date.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        self.rDateC       = date
+        self.rDf          = self.rData[self.rDateC]['DF'].copy()
+        self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
+        self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
+        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength']
+        self.rFragSelLine = None
+        self.rFragSelC    = [None, None, None]
+        self.rExp         = self.rData[self.rDateC]['PI']['Exp']
+        self.rCtrl        = self.rData[self.rDateC]['PI']['Ctrl']
+        self.rIdxP        = pd.IndexSlice[self.rExp,'P']
+        self.rPeptide     = None
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        #endregion ------------------------------------------------> 
+        
+        #region -------------------------------------------------> wx.ListCtrl
+        self.FillListCtrl()
+        #endregion ----------------------------------------------> wx.ListCtrl
+        
+        #region ---------------------------------------------------> Fragments
+        self.rFragments = dmethod.Fragments(
+            self.GetDF4FragmentSearch(), self.rAlpha, 'le')
+        
+        self.DrawFragments()
+        #endregion ------------------------------------------------> Fragments
+        
+        #region -----------------------------------------------------> Peptide
+        self.SetAxisInt()
+        self.wPlot.canvas.draw()
+        #endregion --------------------------------------------------> Peptide
+
+        #region ---------------------------------------------------> Win Title
+        self.PlotTitle()
+        #endregion ------------------------------------------------> Win Title
+        
+        return True
+    #---
+    
+    def DrawFragments(self) -> bool:
+        """Draw the fragments associated with the date.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        tKeyLabel = {}
+        #endregion ------------------------------------------------> Variables
+        
+        #region --------------------------------------------------------> Keys
+        for k,v in enumerate(self.rExp):
+            tKeyLabel[f"{(v, 'P')}"] = f'{k}'
+        #endregion -----------------------------------------------------> Keys
+        
+        #region -------------------------------------------------------> Super
+        super().DrawFragments(tKeyLabel)
+        #endregion ----------------------------------------------------> Super
+        
+        return True
+    #---
+    
+    def SetFragmentAxis(self, showAll=False) -> bool:
+        """Set the axis for the plot showing the fragments.
+    
+            Parameters
+            ----------
+            showAll: bool
+                Show all fragments or not. Default is False.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        self.wPlotM.axes.clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        #------------------------------>
+        if self.rProtLoc[0] is not None:
+            xtick = [1] + list(self.rProtLoc) + [self.rProtLength]
+        else:
+            xtick = [1] + [self.rProtLength]
+        self.wPlotM.axes.set_xticks(xtick)
+        self.wPlotM.axes.set_xticklabels(xtick)
+        #------------------------------> 
+        self.wPlotM.axes.set_yticks(range(1, len(self.rExp)+2))
+        self.wPlotM.axes.set_yticklabels(self.rExp+['Protein'])   
+        self.wPlotM.axes.set_ylim(0.5, len(self.rExp)+1.5)
+        #------------------------------> 
+        ymax = len(self.rExp)+0.8
+        #------------------------------> 
+        self.wPlotM.axes.tick_params(length=0)
+        #------------------------------> 
+        self.wPlotM.axes.set_xlim(0, self.rProtLength+1)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.wPlotM.axes.vlines(
+            xtick, 0, ymax, linestyles='dashed', linewidth=0.5, color='black')
+        #endregion ------------------------------------------------> 
+       
+        #region ------------------------------------------------> Remove Frame
+        self.wPlotM.axes.spines['top'].set_visible(False)
+        self.wPlotM.axes.spines['right'].set_visible(False)
+        self.wPlotM.axes.spines['bottom'].set_visible(False)
+        self.wPlotM.axes.spines['left'].set_visible(False)
+        #endregion ---------------------------------------------> Remove Frame
+        
+        return True
+    #---
+    
+    def ShowPeptideLoc(self) -> bool:
+        """Show the location of the selected peptide.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Fragments
+        #------------------------------> Remove old 
+        for k in self.rRectsFrag:
+            k.set_linewidth(self.cGelLineWidth)
+        #------------------------------> Get Keys
+        fKeys = [f'{(x, "P")}' for x in self.rExp]
+        #------------------------------> Highlight
+        j = 0
+        for k in fKeys:
+            for p in self.rFragments[k]['SeqL']:
+                if self.rPeptide in p:
+                    self.rRectsFrag[j].set_linewidth(2.0)
+                else:
+                    pass
+                j = j + 1
+        #------------------------------> Show
+        self.wPlotM.canvas.draw()
+        #endregion ------------------------------------------------> Fragments
+        
+        #region ---------------------------------------------------> Intensity
+        #------------------------------> Variables
+        nExp = len(self.rExp)
+        nc = len(self.cColor['Spot'])
+        #------------------------------> Clear Plot
+        self.wPlot.axes.clear()
+        #------------------------------> Axis
+        self.SetAxisInt()
+        #------------------------------> Row
+        row = self.rDf.loc[self.rDf[('Sequence', 'Sequence')] == self.rPeptide]
+        row =row.loc[:,pd.IndexSlice[:,('Int','P')]]
+        #------------------------------> Values
+        for k,c in enumerate(self.rCtrl+self.rExp, start=1):
+            #------------------------------> Variables
+            intL, P = row[c].values.tolist()[0]
+            intL = list(map(float, intL[1:-1].split(',')))
+            P = float(P)
+            intN = len(intL)
+            #------------------------------> Color
+            if k == 1:
+                color = self.cColor['Ctrl']
+                x = [1]
+                y = [sum(intL)/intN]
+            else:
+                color = self.cColor['Spot'][(k-2)%nc]
+            #------------------------------> Ave
+            if P <= self.rAlpha:
+                x.append(k)
+                y.append(sum(intL)/intN)
+            else:
+                pass
+            #------------------------------> Plot
+            self.wPlot.axes.scatter(
+                intN*[k], intL, color=color, edgecolor='black', zorder=3)
+        #------------------------------> 
+        self.wPlot.axes.scatter(
+            x, 
+            y, 
+            edgecolor = 'black',
+            marker    = 'D',
+            color     = 'cyan',
+            s         = 120,
+            zorder    = 2,
+        )
+        self.wPlot.axes.plot(x,y, zorder=1)
+        #------------------------------> Show
+        self.wPlot.ZoomResetSetValues()
+        self.wPlot.canvas.draw()
+        #endregion ------------------------------------------------> Intensity
+
+        return True
+    #---
+    
+    def SetAxisInt(self) -> bool:
+        """Set the axis of the Intensity plot
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        nExp = len(self.rExp)
+        #endregion ------------------------------------------------> Variables
+
+        #region ------------------------------------------------------> Values
+        self.wPlot.axes.clear()
+        self.wPlot.axes.set_xticks(range(1,nExp+2))
+        self.wPlot.axes.set_xticklabels(self.rCtrl+self.rExp)
+        #------------------------------> 
+        self.wPlot.axes.set_xlim(0.5, nExp+1.5)
+        #------------------------------> 
+        self.wPlot.axes.set_ylabel('Intensity (after DP)')
+        #endregion ---------------------------------------------------> Values
+
+        return True
+    #---
+    
+    def PrintFragmentText(
+        self, tKey: tuple[str, str], fragC: list[int]):
+        """Print information about a selected Fragment
+    
+            Parameters
+            ----------
+            tKey: tuple(str, str)
+                Tuple with the column name in the pd.DataFrame with the results.
+            fragC: list[int]
+                Fragment coordinates.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Info
+        #------------------------------> Fragments
+        frag =  (f'{self.rFragments[tKey]["NFrag"][0]}'
+                 f'({self.rFragments[tKey]["NFrag"][1]})')
+        clsiteExp = (f'{self.rFragments[tKey]["NcT"][0]}'
+                     f'({self.rFragments[tKey]["NcT"][1]})')
+        seqExp = (f'{sum(self.rFragments[tKey]["Np"])}'
+                  f'({sum(self.rFragments[tKey]["NpNat"])})')
+        #------------------------------> Res Numbers
+        n, c = self.rFragments[tKey]["Coord"][fragC[1]]
+        nf, cf = self.rFragments[tKey]["CoordN"][fragC[1]]
+        resNum = f'Nterm {n}({nf}) - Cterm {c}({cf})'
+        #------------------------------> Sequences
+        np = (f'{self.rFragments[tKey]["Np"][fragC[1]]}'
+              f'({self.rFragments[tKey]["NpNat"][fragC[1]]})')
+        #------------------------------> Cleavages
+        clsite = (f'{self.rFragments[tKey]["Nc"][fragC[1]]}'
+                  f'({self.rFragments[tKey]["NcNat"][fragC[1]]})')
+        #------------------------------> Labels
+        expL, fragL = dtsMethod.StrEqualLength(
+            [self.rExp[fragC[0]], f'Fragment {fragC[1]+1}'])
+        emptySpace = (2+ len(expL))*' '
+        #endregion ------------------------------------------------> Info
+
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.wText.AppendText(
+            f'Details for {self.rExp[fragC[0]]} - Fragment {fragC[1]+1}\n\n')
+        self.wText.AppendText(f'{expL}: Fragments {frag}, Cleavage sites {clsiteExp}\n')
+        self.wText.AppendText(f'{emptySpace}Peptides {seqExp}\n\n')
+        self.wText.AppendText(f'{fragL}: Nterm {n}({nf}), Cterm {c}({cf})\n')
+        self.wText.AppendText(f'{emptySpace}Peptides {np}, Cleavage sites {clsite}\n\n')
+        self.wText.AppendText(f'Sequences in the fragment:\n\n')
+        self.wText.AppendText(f'{self.rFragments[tKey]["Seq"][fragC[1]]}')
+        self.wText.SetInsertionPoint(0)
+        #endregion ------------------------------------------------> 
+        
+        return True
+    #---
+    #endregion -----------------------------------------------> Manage Methods
+    
+    #region ----------------------------------------------------> Event Methods
+    def OnPickFragment(self, event) -> bool:
+        """Display info about the selected fragment.
+    
+            Parameters
+            ----------
+            event: matplotlib pick event
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        art = event.artist
+        fragC = list(map(int, art.get_label().split('.')))
+        #------------------------------> 
+        if self.rFragSelC != fragC:
+            self.rFragSelC = fragC
+        else:
+            return True
+        #------------------------------> 
+        x, y = event.artist.xy
+        x = round(x)
+        y = round(y)
+        #------------------------------> 
+        tKey = f'{(self.rExp[fragC[0]], "P")}'
+        #------------------------------> 
+        x1, x2 = self.rFragments[tKey]['Coord'][fragC[1]]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ------------------------------------------> Highlight Fragment
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+        else:
+            pass
+        #------------------------------> 
+        self.rFragSelLine = self.wPlotM.axes.plot(
+            [x1+2, x2-2], [y,y], color='black', linewidth=4)
+        #------------------------------> 
+        self.wPlotM.canvas.draw()
+        #endregion ---------------------------------------> Highlight Fragment
+        
+        #region -------------------------------------------------------> Print
+        self.PrintFragmentText(tKey, fragC)
+        #endregion ----------------------------------------------------> Print
+
+        return True
+    #---
+    
+    def OnPlotSaveAllImage(self) -> bool:
+        """ Export all plots to a pdf image
+        
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.DirSelectDialog(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            #------------------------------> Export
+            fName = p / f'{self.rDateC}-fragments.pdf'
+            self.wPlotM.figure.savefig(fName)
+            #------------------------------> 
+            fName = p / f'{self.rDateC}-intensities.pdf'
+            self.wPlot.figure.savefig(fName)
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
+    #---
+    
+    def OnClearPept(self, plot: bool=True) -> bool:
+        """Clear the Peptide selection.
+    
+            Parameters
+            ----------
+            plot: bool
+                Redraw the canvas.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if (rID := self.wLC.wLCS.lc.GetFirstSelected()):
+            self.wLC.wLCS.lc.Select(rID, on=0)
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for r in self.rRectsFrag:
+            r.set_linewidth(self.cGelLineWidth)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        if plot:
+            self.wPlotM.canvas.draw()
+            self.wPlot.canvas.draw()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.rPeptide = None
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearFrag(self, plot=True) -> bool:
+        """Clear the Fragment selection.
+    
+            Parameters
+            ----------
+            plot: bool
+                Redraw the canvas.
+            
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+            self.rFragSelLine = None
+            self.wPlotM.canvas.draw()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.rFragSelC = [None, None]
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearAll(self) -> bool:
+        """Clear all selections.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        self.OnClearPept(plot=False)
+        self.OnClearFrag(plot=False)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.wPlotM.canvas.draw()
+        self.wPlot.canvas.draw()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion -------------------------------------------------> Event Methods
+#---
+
+
 class CheckDataPrep(BaseWindowNPlotLT):
     """Window to check the data preparation steps
 
@@ -5550,10 +6157,10 @@ class CheckDataPrep(BaseWindowNPlotLT):
     cLdfCol = config.dfcolDataCheck
     #------------------------------> Other
     cFileName = {
-        config.ltDPKeys[0] : '{}-01-Filtered.{}',
-        config.ltDPKeys[1] : '{}-02-Transformed.{}',
-        config.ltDPKeys[2] : '{}-03-Normalized.{}',
-        config.ltDPKeys[3] : '{}-04-Imputed.{}',
+        config.ltDPKeys[0] : '{}-01-Filtered-{}.{}',
+        config.ltDPKeys[1] : '{}-02-Transformed-{}.{}',
+        config.ltDPKeys[2] : '{}-03-Normalized-{}.{}',
+        config.ltDPKeys[3] : '{}-04-Imputed-{}.{}',
     }
     cImgName = {
         cLNPlots[0] : '{}-01-Filtered-{}.{}',
@@ -5602,7 +6209,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
 
         #region ---------------------------------------------> Window position
         date = None if self.rDate is None else self.rDate[0]
-        self.Draw(date)
+        self.UpdateDisplayedData(date)
         #------------------------------> 
         self.WinPos()
         self.Show()
@@ -5719,11 +6326,12 @@ class CheckDataPrep(BaseWindowNPlotLT):
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
             p = Path(dlg.GetPath())
+            col = self.wLC.wLCS.lc.GetFirstSelected()
             #------------------------------> Export
             try:
                 for k, v in self.rDpDF.items():
                     #------------------------------> file path
-                    fPath = p / self.cFileName[k].format(self.rDateC, 'txt')
+                    fPath = p/self.cFileName[k].format(self.rDateC, col, 'txt')
                     #------------------------------> Write
                     dtsFF.WriteDF2CSV(fPath, v)
             except Exception as e:
@@ -5741,7 +6349,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         return True	
     #---
     
-    def OnSavePlot(self) -> bool:
+    def OnPlotSaveImageOne(self) -> bool:
         """ Export all plots to a pdf image"""
         #region --------------------------------------------------> Dlg window
         dlg = dtsWindow.DirSelectDialog(parent=self)
@@ -5772,11 +6380,6 @@ class CheckDataPrep(BaseWindowNPlotLT):
      
         dlg.Destroy()
         return True	
-    #---
-    
-    def OnZoomReset(self) -> bool:
-        """Reset the zoom of all plots"""
-        return self.OnZoomResetMany()
     #---
     #endregion ------------------------------------------------> Event Methods
     
@@ -6096,7 +6699,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         return True
     #---
     
-    def Draw(self, date: Optional[str]=None) -> bool:
+    def UpdateDisplayedData(self, date: Optional[str]=None) -> bool:
         """Update window when a new date is selected.
     
             Parameters
@@ -6186,6 +6789,7 @@ class UMSAPControl(BaseWindow):
         config.nuDataPrep: CheckDataPrep,
         config.nmProtProf: ProtProfPlot,
         config.nmLimProt : LimProtPlot, 
+        config.nmTarProt : TarProtPlot,
     }
     #------------------------------> 
     dSectionTab = { # Section name and Tab name correlation
@@ -6193,6 +6797,7 @@ class UMSAPControl(BaseWindow):
         config.nuDataPrep: config.ntDataPrep,
         config.nmProtProf: config.ntProtProf,
         config.nmLimProt : config.ntLimProt,
+        config.nmTarProt : config.ntTarProt,
     }
     #endregion --------------------------------------------------> Class setup
 
