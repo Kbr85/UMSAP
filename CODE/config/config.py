@@ -114,6 +114,7 @@ nwUMSAPControl  = 'UMSAPControl'
 nwCorrAPlot     = 'CorrAPlot'
 nwProtProf      = 'ProtProfPlot'
 nwLimProt       = 'LimProtPlot'
+nwTarProt       = 'TarProtPlot'
 nwCheckDataPrep = 'CheckDataPrep'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
@@ -129,11 +130,13 @@ ntTarProt  = 'TarProtTab'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
-npDataPrep              = "DataPrepPane"
-npLimProt               = "LimProtPane"
+npDataPrep              = 'DataPrepPane'
+npLimProt               = 'LimProtPane'
 npProtProf              = 'ProtProfPane'
+npTarProt               = 'TarProtPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
 npResControlExpLimProt  = 'ResControlExpPaneLimProt'
+npResControlExpTarProt  = 'ResControlExpPaneTarProt'
 #------------------------------> Modules
 nmLimProt  = 'Limited Proteolysis'
 nmTarProt  = 'Targeted Proteolysis'
@@ -164,18 +167,21 @@ t = {
     ntCorrA   : 'CorrA',
     ntLimProt : 'LimProt',
     ntProtProf: 'ProtProf',
+    ntTarProt : 'TarProt',
 }
 #endregion -----------------------------------------------------------> Titles
 
 
 #region ----------------------------------------------------------- Extensions
 #------------------------------> For wx.Dialogs
-elData         = 'txt files (*.txt)|*.txt'
-elSeq          = (
+elData  = 'txt files (*.txt)|*.txt'
+elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
+elPDB   = 'PDB files (*.pdb)|*.pdb'
+elSeq   = (
     "Text files (*.txt)|*.txt|"
     "Fasta files (*.fasta)|*.fasta"
 )
-elUMSAP        = 'UMSAP files (*.umsap)|*.umsap'
+
 elMatPlotSaveI = (
     "Portable Document File (*.pdf)|*.pdf|"
     "Portable Network Graphic (*.png)|*.png|"
@@ -184,6 +190,7 @@ elMatPlotSaveI = (
 )
 #------------------------------> File extensions. First item is default
 esData  = ['.txt']
+esPDB   = ['.pdb']
 esSeq   = ['.txt', '.fasta']
 esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
@@ -231,6 +238,7 @@ lStProtProfCond = 'Conditions'
 lStProtProfRP   = 'Relevant Points'
 lStLimProtLane  = 'Lanes'
 lStLimProtBand  = 'Bands' 
+lStTarProtExp   = 'Experiments'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'
 #------------------------------> wx.Statictext
@@ -350,6 +358,10 @@ dfcolDataCheck = [
 dfcolLimProtFirstPart = [
     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
 dfcolLimProtCLevel = ['Ptost']
+dfcolTarProtFirstPart = [
+    'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
+dfcolTarProtBLevel = ['Int', 'P']
+dfcolSeqNC = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 #endregion --------------------------------------------------> DF Column names
 
 
@@ -361,7 +373,7 @@ ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
 #region ------------------------------------------------------------> Messages
 #region -------------------------------------------------------------> Other 
 #------------------------------> Unexpected Error
-mUnexpectedError = 'An uexpected error was encountered.'
+mUnexpectedError = 'An unexpected error was encountered.'
 #------------------------------> Sequences related errors
 mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
     "protein.")
@@ -464,6 +476,11 @@ general = { # General options
 
 
 #region --------------------------------------------------------------> Colors
+colorFragments = [
+    '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
+    '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
+]
+
 color = { # Colors for the app
     'Zebra' : '#ffe6e6',
     'RecProt' : 'gray',
@@ -486,10 +503,11 @@ color = { # Colors for the app
         ],
     },
     nwLimProt : {
-        'Spot' : [
-            '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
-            '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
-        ],
+        'Spot' : colorFragments,
+    },
+    nwTarProt : {
+        'Spot' : colorFragments,
+        'Ctrl' : 'black',
     },
 }
 #endregion -----------------------------------------------------------> Colors

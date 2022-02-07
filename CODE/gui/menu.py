@@ -60,7 +60,7 @@ class MenuMethods():
         #endregion ----------------------------------------------> Check MainW
         
         #region --------------------------------------------------> Create Tab
-        config.winMain.OnCreateTab(self.rNameID[event.GetId()])
+        config.winMain.OnCreateTab(self.rKeyID[event.GetId()])
         #endregion -----------------------------------------------> Create Tab
         
         return True
@@ -100,9 +100,15 @@ class MenuMethods():
             -----
             Useful for windows showing only one plot.
         """
+        #region ---------------------------------------------------> Variables
         win = self.GetWindow()
-        win.OnZoomReset()
-        
+        tKey = self.rKeyID[event.GetId()]
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Run
+        win.dKeyMethod[tKey]()
+        #endregion ------------------------------------------------> Run
+
         return True
     #---
     
@@ -124,8 +130,8 @@ class MenuMethods():
         return True
     #---
     
-    def OnSavePlot(self, event: wx.CommandEvent) -> bool:
-        """Save an image of a plot
+    def OnSavePlotImage(self, event: wx.CommandEvent) -> bool:
+        """Save an image of a single pane showing a plot
     
             Parameters
             ----------
@@ -136,9 +142,15 @@ class MenuMethods():
             -------
             True
         """
-        win = self.GetWindow() 
-        win.OnSavePlot()
-        
+        #region ---------------------------------------------------> Variables
+        win = self.GetWindow()
+        tKey = self.rKeyID[event.GetId()]
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Run
+        win.dKeyMethod[tKey]()
+        #endregion ------------------------------------------------> Run
+
         return True
     #---
     
@@ -159,7 +171,7 @@ class MenuMethods():
         
         return True
     #---
-    
+        
     def OnPlotDate(self, event: wx.CommandEvent) -> bool:
         """Plot a date of a section in an UMSAP file.
     
@@ -167,18 +179,19 @@ class MenuMethods():
             ----------
             event : wx.Event
                 Information about the event
-                    
+                
             Returns
             -------
-            True
-            
-            Notes
-            -----
-            Generic implementation. Override as needed.
-        
+            bool
         """
-        win = self.GetWindow() 
-        win.Draw(self.GetLabelText(event.GetId()))
+        #region --------------------------------------------------------> Date
+        tDate = self.GetLabelText(event.GetId())
+        #endregion -----------------------------------------------------> Date
+
+        #region --------------------------------------------------------> Draw
+        win = self.GetWindow()
+        win.UpdateDisplayedData(tDate)
+        #endregion -----------------------------------------------------> Draw
         
         return True
     #---
@@ -315,12 +328,55 @@ class PlotMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
-        self.Bind(wx.EVT_MENU, self.OnSavePlot,       source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.miCheckDP)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 #---	
+
+
+class PlotSubMenu(wx.Menu, MenuMethods):
+    """Sub menu items for a plot region
+    
+        Parameters
+        ----------
+        tKey: str
+            For keyboard binding. Shift, Ctrl or Alt.
+    """
+    #region -----------------------------------------------------> Class setup
+    rKeys = {
+        'Shift': 'Main',
+        'Alt'  : 'Bottom'
+    }
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, tKey: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miSaveI = self.Append(-1, f'Save Image\t{tKey}+I')
+        self.miZoomR = self.Append(-1, f'Reset Zoom\t{tKey}+Z')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): f'{self.rKeys[tKey]}Img',
+            self.miZoomR.GetId(): f'{self.rKeys[tKey]}Zoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,     source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage, source=self.miSaveI)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 #endregion -----------------------------------------------------> Base Classes
 
 
@@ -330,9 +386,9 @@ class Module(wx.Menu, MenuMethods):
     
         Attributes
         ----------
-        rNameID : dict
-            Keys are the menu ids and values the tab's unique names. Used by 
-            OnCreateTab
+        rKeyID : dict
+            Link wx.MenuItems.Id with keywords used by methods in the window
+            owning the wx.Menu
     """
     #region -----------------------------------------------------> Class setup
 
@@ -352,7 +408,7 @@ class Module(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
-        self.rNameID = { # Associate IDs with Tab names. Avoid manual IDs
+        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
             self.miLimProt.GetId() : config.ntLimProt,
             self.miProtProf.GetId(): config.ntProtProf,
             self.miTarProt.GetId() : config.ntTarProt,
@@ -362,7 +418,7 @@ class Module(wx.Menu, MenuMethods):
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miLimProt)
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miProtProf)
-        # self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.tarprot)
+        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miTarProt)
         #endregion -----------------------------------------------------> Bind
     #endregion ------------------------------------------------ Instance Setup
 #---
@@ -373,9 +429,9 @@ class Utility(wx.Menu, MenuMethods):
     
         Attributes
         ----------
-        rNameID : dict
-            Keys are the menu ids and values the tab's unique names. Used by
-            OnCreateTab
+        rrKeyID : dict
+            Link wx.MenuItems.Id with keywords used by methods in the window
+            owning the wx.Menu
     """
     #region -----------------------------------------------------> Class setup
     
@@ -396,7 +452,7 @@ class Utility(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
-        self.rNameID = { # Associate IDs with Tab names. Avoid manual IDs
+        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
             self.miCorrA.GetId()   : config.ntCorrA,
             self.miDataPrep.GetId(): config.ntDataPrep,
         }
@@ -519,6 +575,14 @@ class CorrAPlotToolMenu(PlotMenu):
         menuData : dict
             Data to build the Tool menu. See Notes for more details.
             
+        Attributes
+        ----------
+        rKeyID : dict
+            Link wx.MenuItems.Id with keywords used by methods in the window
+            owning the wx.Menu
+        rCol: list[wx.MenuItems]
+            List of wx.MenuItems with the options for the 
+            
         Notes
         -----
         menuData has the following structure:
@@ -542,17 +606,27 @@ class CorrAPlotToolMenu(PlotMenu):
         pos = self.FindChildItem(self.miCheckDP.GetId())[1]
         #------------------------------> 
         self.Insert(pos, -1, kind=wx.ITEM_SEPARATOR)
-        self.colName   = self.Insert(
+        self.miColName   = self.Insert(
             pos, -1, "Column Names", kind=wx.ITEM_RADIO,
         )
-        self.colNumber = self.Insert(
+        self.miColNumber = self.Insert(
             pos+1, -1, "Column Numbers (0 based)",kind=wx.ITEM_RADIO,
         )
         #endregion -----------------------------------------------> Menu Items
+        
+        #region -------------------------------------------------------> Names
+        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
+            self.miColName.GetId()  : 'Name',
+            self.miColNumber.GetId(): 'Number',
+            self.miSaveI.GetId()    : 'PlotImageOne',
+            self.miZoomR.GetId()    : 'PlotZoomResetOne',
+        }
+        self.rCol = [self.miColName, self.miColNumber]
+        #endregion ----------------------------------------------------> Names
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnColType, source=self.colName)
-        self.Bind(wx.EVT_MENU, self.OnColType, source=self.colNumber)
+        self.Bind(wx.EVT_MENU, self.OnColType, source=self.miColName)
+        self.Bind(wx.EVT_MENU, self.OnColType, source=self.miColNumber)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -572,25 +646,14 @@ class CorrAPlotToolMenu(PlotMenu):
             -------
             True
         """
-        #region ----------------------------------------------------> Get Date
-        for k in self.rPlotDate:
-            #------------------------------> 
-            iD = k.GetId()
-            #------------------------------> 
-            if self.IsChecked(iD):
-                date = self.GetLabelText(iD)
-                break
-            else:
-                pass
-        #endregion -------------------------------------------------> Get Date
-        
-        #region -----------------------------------------------------> Get Col
-        col = 'Name' if self.IsChecked(self.colName.GetId()) else 'Number'
-        #endregion --------------------------------------------------> Get Col
-        
-        #region --------------------------------------------------------> Plot
-        win = self.GetWindow()
-        win.Draw(date, col)
+        #region ---------------------------------------------------> Variables
+        col  = self.rKeyID[event.GetId()]
+        date = self.GetCheckedRadiodItem(self.rPlotDate)
+        win  = self.GetWindow()
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------------> Plot        
+        win.UpdateDisplayedData(date, col)
         #endregion -----------------------------------------------------> Plot
         
         return True
@@ -609,12 +672,13 @@ class CorrAPlotToolMenu(PlotMenu):
             True
         """
         #region -----------------------------------------------------> Get Col
-        col = 'Name' if self.IsChecked(self.colName.GetId()) else 'Number'
+        col  = self.GetCheckedRadiodItem(self.rCol)
+        date = self.GetLabelText(event.GetId())
+        win  = self.GetWindow()
         #endregion --------------------------------------------------> Get Col
         
         #region --------------------------------------------------------> Plot
-        win = self.GetWindow()
-        win.Draw(self.GetLabelText(event.GetId()), col)
+        win.UpdateDisplayedData(date, col)
         #endregion -----------------------------------------------------> Plot
         
         return True
@@ -633,10 +697,11 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         
         Attributes
         ----------
-        menuData: dict
-            Data needed to build the menu. See Notes for more details.
-        plotDate : list of wx.MenuItems
+        rPlotDate : list of wx.MenuItems
             Available dates in the analysis.
+        rKeyID : dict
+            Link wx.MenuItems.Id with keywords used by methods in the window
+            owning the wx.Menu
             
         Notes
         -----
@@ -676,11 +741,19 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         #------------------------------> 
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> 
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'PlotImageOne',
+            self.miZoomR.GetId(): 'PlotZoomResetAllinOne',
+        }
+        #endregion ------------------------------------------------> 
+
     
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
-        self.Bind(wx.EVT_MENU, self.OnSavePlot,       source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
         #endregion -----------------------------------------------------> Bind    
     #---
@@ -751,37 +824,25 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         self.AppendSeparator()
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'VolcanoImg',
+            self.miZoomR.GetId(): 'VolcanoZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZScore,     source=self.miZScore)
-        self.Bind(wx.EVT_MENU, self.OnSaveImage,  source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=self.miPCorr)
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,  source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnZScore,         source=self.miZScore)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnUpdatePlot,     source=self.miPCorr)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #------------------------------> Class method
     #region ---------------------------------------------------> Event methods
-    def OnSaveImage(self, event: wx.CommandEvent) -> bool:
-        """Save an image of the plot.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnSaveVolcanoImage()
-        
-        return True
-    #---
-    
     def OnUpdatePlot(self, event: wx.CommandEvent) -> bool:
         """Update volcano plot.
     
@@ -798,25 +859,6 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         win = self.GetWindow()
         win.OnVolChange(*self.GetData4Draw())
         #endregion -----------------------------------------------------> Draw
-        
-        return True
-    #---
-    
-    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-        """Reset plot zoom.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnZoomResetVol()
         
         return True
     #---
@@ -965,7 +1007,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
 #---
 
 
-class FCEvolution(wx.Menu):
+class FCEvolution(wx.Menu, MenuMethods):
     """Menu for a log2FC evolution along relevant points """
     #region -----------------------------------------------------> Class setup
     
@@ -986,35 +1028,24 @@ class FCEvolution(wx.Menu):
         self.AppendSeparator()
         self.miZoomR = self.Append(-1, 'Reset Zoom\tAlt+Z')
         #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'FCImage',
+            self.miZoomR.GetId(): 'FCZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnShowAll,    source=self.miShowAll)
-        self.Bind(wx.EVT_MENU, self.OnSaveImage,  source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,  source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnShowAll,       source=self.miShowAll)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage, source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,     source=self.miZoomR)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #------------------------------> Class method
     #region ---------------------------------------------------> Event methods
-    def OnSaveImage(self, event: wx.CommandEvent) -> bool:
-        """Save an image of the plot.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnSaveFCImage()
-        
-        return True
-    #---
-    
     def OnShowAll(self, event: wx.CommandEvent) -> bool:
         """Show the interval cover by all FC values in the data.
     
@@ -1029,24 +1060,6 @@ class FCEvolution(wx.Menu):
         """
         win = self.GetWindow()
         win.OnFCChange(*self.GetData4Draw())
-        
-        return True
-    #---
-    
-    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-        """Reset the Zoom level of the plot
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnZoomResetFC()
         
         return True
     #---
@@ -1354,7 +1367,7 @@ class LockPlotScale(wx.Menu):
         #endregion -----------------------------------------------> Menu Items
         
         #region ------------------------------------------------------> nameID
-        self.rNameID = { # Associate IDs with Tab names. Avoid manual IDs
+        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
             self.miNo.GetId()     : 'No',
             self.miDate.GetId()   : 'Date',
             self.miProject.GetId(): 'Project',
@@ -1385,7 +1398,7 @@ class LockPlotScale(wx.Menu):
             bool
         """
         win = self.GetWindow()
-        win.OnLockScale(self.rNameID[event.GetId()])
+        win.OnLockScale(self.rKeyID[event.GetId()])
         
         return True
     #---
@@ -1398,7 +1411,7 @@ class ClearSelLimProt(wx.Menu):
     
         Attributes
         ----------
-        nameID : dict
+        rKeyID : dict
             To map menu items to the Clear type. Keys are MenuItems.GetId() and 
             values are str. 
     """
@@ -1416,13 +1429,14 @@ class ClearSelLimProt(wx.Menu):
         #region --------------------------------------------------> Menu Items
         self.miNoPept = self.Append(-1, 'Peptide')
         self.miNoFrag = self.Append(-1, 'Fragment')
-        self.miNoGel  = self.Append(-1,  'Gel Spot')
-        self.miNoBL   = self.Append(-1,   'Band/Lane')
-        self.miNoSel  = self.Append(-1,  'All')
+        self.miNoGel  = self.Append(-1, 'Gel Spot')
+        self.miNoBL   = self.Append(-1, 'Band/Lane')
+        self.AppendSeparator()
+        self.miNoSel  = self.Append(-1, 'All')
         #endregion -----------------------------------------------> Menu Items
         
         #region ---------------------------------------------------> 
-        self.nameID = {
+        self.rKeyID = {
             self.miNoPept.GetId(): 'Peptide',
             self.miNoFrag.GetId(): 'Fragment',
             self.miNoGel.GetId() : 'Gel Spot',
@@ -1455,17 +1469,64 @@ class ClearSelLimProt(wx.Menu):
             -------
             bool
         """
+        #region ---------------------------------------------------> Variables
         win = self.GetWindow()
-        win.OnClearSelection(self.nameID[event.GetId()])
+        tKey = self.rKeyID[event.GetId()]
+        #endregion ------------------------------------------------> Variables
         
+        #region ---------------------------------------------------> Run
+        win.dKeyMethod[tKey]()
+        #endregion ------------------------------------------------> Run
+
         return True
     #---
     #endregion ------------------------------------------------> Event methods
 #---
 
 
-class FragmentLimProt(wx.Menu):
-    """Menu for the Fragments in a LimProtRes Window"""
+class MainPlotProt(PlotSubMenu):
+    """Menu for the Main plot in a Proteolysis Window"""
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__('Shift')
+        #endregion --------------------------------------------> Initial Setup
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
+class BottomPlotProt(PlotSubMenu):
+    """Menu for the Bottom plot in a Proteolysis Window"""
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__('Alt')
+        #endregion --------------------------------------------> Initial Setup
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
+class ClearSelTarProt(wx.Menu):
+    """Clear the selection in a TarProtRes Window
+    
+        Attributes
+        ----------
+        rKeyID : dict
+            To map menu items to the Clear type. Keys are MenuItems.GetId() and 
+            values are str. 
+    """
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup
@@ -1478,127 +1539,56 @@ class FragmentLimProt(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miSaveFI = self.Append(-1, 'Save Image\tShift+I')
-        self.miZoomFR = self.Append(-1, 'Reset Fragment Zoom\tShift+Z')
+        self.miNoPept = self.Append(-1, 'Peptide')
+        self.miNoFrag = self.Append(-1, 'Fragment')
+        self.AppendSeparator()
+        self.miNoSel  = self.Append(-1, 'All')
         #endregion -----------------------------------------------> Menu Items
         
+        #region ---------------------------------------------------> 
+        self.rKeyID = {
+            self.miNoPept.GetId(): 'Peptide',
+            self.miNoFrag.GetId(): 'Fragment',
+            self.miNoSel.GetId() : 'All',
+        }
+        #endregion ------------------------------------------------> 
+
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.miZoomFR)
-        self.Bind(wx.EVT_MENU, self.OnImage, source=self.miSaveFI)
+        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoPept)
+        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoFrag)
+        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoSel)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #------------------------------> Class method
     #region ---------------------------------------------------> Event methods
-    def OnImage(self, event: wx.CommandEvent) -> bool:
-        """
+    def OnClearSelection(self, event: wx.CommandEvent) -> bool:
+        """Clear the selection in a LimProt Res Window
     
             Parameters
             ----------
             event:wx.Event
                 Information about the event
-
-    
+            
             Returns
             -------
             bool
         """
+        #region ---------------------------------------------------> Variables
         win = self.GetWindow()
-        win.OnImageFragment()
+        tKey = self.rKeyID[event.GetId()]
+        #endregion ------------------------------------------------> Variables
         
-        return True
-    #---
-    
-    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-        """
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
+        #region ---------------------------------------------------> Run
+        win.dKeyMethod[tKey]()
+        #endregion ------------------------------------------------> Run
 
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnZoomResetFragment()
-        
         return True
     #---
     #endregion ------------------------------------------------> Event methods
 #---
 
-
-class GelLimProt(wx.Menu):
-    """Menu for the Gel in a LimProtRes Window"""
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        self.miSaveGI = self.Append(-1, 'Save Image\tAlt+I')
-        self.miZoomGR = self.Append(-1, 'Reset Zoom\tAlt+Z')
-        #endregion -----------------------------------------------> Menu Items
-        
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZoomReset, source=self.miZoomGR)
-        self.Bind(wx.EVT_MENU, self.OnImage,     source=self.miSaveGI)
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
-
-    #------------------------------> Class methods
-    #region ---------------------------------------------------> Event methods
-    #------------------------------> Event Methods
-    def OnImage(self, event: wx.CommandEvent) -> bool:
-        """
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnImageGel()
-        
-        return True
-    #---
-    
-    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-        """
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnZoomResetGel()
-        
-        return True
-    #---
-    #endregion ------------------------------------------------> Event methods
-#---
 #endregion -------------------------------------------------> Individual menus
 
 
@@ -1681,6 +1671,13 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #------------------------------> 
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
         #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'AllImg',
+            self.miZoomR.GetId(): 'AllZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnDupWin,            source=self.miDupWin)
@@ -1688,7 +1685,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnExportFilteredData,source=self.miSaveFD)
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,     source=self.miDataPrep)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,         source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnSavePlot,          source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,     source=self.miSaveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1718,7 +1715,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         
         #region --------------------------------------------------------> Draw
         win = self.GetWindow()
-        win.OnDateChange(
+        win.UpdateDisplayedData(
             tDate,
             *self.mVolcano.GetData4Draw(),
             *self.mFc.GetData4Draw(),
@@ -1777,11 +1774,11 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         self.miShowAll = self.Append(-1, 'Show All\tCtrl+A')
         self.AppendSeparator()
         #------------------------------> 
-        self.mFragmentMenu = FragmentLimProt()
+        self.mFragmentMenu = MainPlotProt()
         self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
         self.AppendSeparator()
         #------------------------------> 
-        self.mGelMenu = GelLimProt()
+        self.mGelMenu = BottomPlotProt()
         self.AppendSubMenu(self.mGelMenu, 'Gel')
         self.AppendSeparator()
         #------------------------------> 
@@ -1801,11 +1798,18 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         #------------------------------>
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
         #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'AllImg',
+            self.miZoomR.GetId(): 'AllZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnLaneBand,       source=self.miBandLane)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnImageAll,       source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.miDataPrep)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
@@ -1816,25 +1820,6 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
 
     #------------------------------> Class methods
     #region ---------------------------------------------------> Event methods
-    def OnImageAll(self, event: wx.CommandEvent) -> bool:
-        """
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnImageAll()
-        
-        return True
-    #---
-    
     def OnLaneBand(self, event: wx.CommandEvent) -> bool:
         """Change between Lane and Band selection mode.
 
@@ -1853,31 +1838,7 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         
         return True
     #---
-    
-    def OnPlotDate(self, event: wx.CommandEvent) -> bool:
-        """Plot a date of a section in an UMSAP file.
-    
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-                
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------------> Date
-        tDate = self.GetLabelText(event.GetId())
-        #endregion -----------------------------------------------------> Date
-
-        #region --------------------------------------------------------> Draw
-        win = self.GetWindow()
-        win.OnDateChange(tDate)
-        #endregion -----------------------------------------------------> Draw
         
-        return True
-    #---
-    
     def OnShowAll(self, event: wx.CommandEvent) -> bool:
         """Show all fragments
     
@@ -1896,25 +1857,94 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         
         return True
     #---
-    
-    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-        """
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
+    #endregion ------------------------------------------------> Event methods
+#---
 
+
+class TarProtToolMenu(wx.Menu, MenuMethods):
+    """Tool menu for the Targeted Proteolysis window
     
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnZoomReset()
+        Parameters
+        ----------
+        cMenuData: dict
+            Data needed to build the menu. See Notes below.
+            
+        Attributes
+        ----------
+        rPlotdate : list of wx.MenuItems
+            Available dates in the analysis.
         
-        return True
+        Notes
+        -----
+        menuData has the following structure:
+            {
+                'menudate' : [List of dates as str],
+            }    
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cMenuData: dict) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cMenuData = cMenuData
+        self.rPlotDate = []
+        
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        #------------------------------> Add Dates
+        self.AddDateItems(self.cMenuData['menudate'])
+        self.AppendSeparator()
+        #------------------------------> 
+        self.mFragmentMenu = MainPlotProt()
+        self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.mGelMenu = BottomPlotProt()
+        self.AppendSubMenu(self.mGelMenu, 'Intensities')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.mClear = ClearSelTarProt()
+        self.AppendSubMenu(self.mClear, 'Clear Selection')
+        self.AppendSeparator()
+        #------------------------------> Duplicate Window
+        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.miDataPrep = self.Append(-1, 'Data Preparation')
+        self.AppendSeparator()
+        #------------------------------> Export Data
+        self.miSaveD  = self.Append(-1, 'Export Data\tCtrl+E')
+        self.miSaveI  = self.Append(-1, 'Export Images\tShift+Alt+I')
+        self.AppendSeparator()
+        #------------------------------>
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'AllImg',
+            self.miZoomR.GetId(): 'AllZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
+        self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.miDataPrep)
+        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
+        #endregion -----------------------------------------------------> Bind
     #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #------------------------------> Class methods
+    #region ---------------------------------------------------> Event methods
+    
     #endregion ------------------------------------------------> Event methods
 #---
 #endregion --------------------------------------------------------> Mix menus
@@ -1966,6 +1996,7 @@ class ToolMenuBar(MainMenuBar):
         config.nwCheckDataPrep: DataPrepToolMenu,
         config.nwProtProf     : ProtProfToolMenu,
         config.nwLimProt      : LimProtToolMenu,
+        config.nwTarProt      : TarProtToolMenu,
     }
     #endregion --------------------------------------------------> Class Setup
     
