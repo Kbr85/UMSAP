@@ -334,6 +334,49 @@ class PlotMenu(wx.Menu, MenuMethods):
     #---
     #endregion -----------------------------------------------> Instance setup
 #---	
+
+
+class PlotSubMenu(wx.Menu, MenuMethods):
+    """Sub menu items for a plot region
+    
+        Parameters
+        ----------
+        tKey: str
+            For keyboard binding. Shift, Ctrl or Alt.
+    """
+    #region -----------------------------------------------------> Class setup
+    rKeys = {
+        'Shift': 'Main',
+        'Alt'  : 'Bottom'
+    }
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, tKey: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miSaveI = self.Append(-1, f'Save Image\t{tKey}+I')
+        self.miZoomR = self.Append(-1, f'Reset Zoom\t{tKey}+Z')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): f'{self.rKeys[tKey]}Img',
+            self.miZoomR.GetId(): f'{self.rKeys[tKey]}Zoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,     source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage, source=self.miSaveI)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 #endregion -----------------------------------------------------> Base Classes
 
 
@@ -1440,8 +1483,8 @@ class ClearSelLimProt(wx.Menu):
 #---
 
 
-class FragmentLimProt(wx.Menu, MenuMethods):
-    """Menu for the Fragments in a LimProtRes Window"""
+class MainPlotProt(PlotSubMenu):
+    """Menu for the Main plot in a Proteolysis Window"""
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup
@@ -1450,32 +1493,15 @@ class FragmentLimProt(wx.Menu, MenuMethods):
     def __init__(self) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__()
+        super().__init__('Shift')
         #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        self.miSaveI = self.Append(-1, 'Save Image\tShift+I')
-        self.miZoomR = self.Append(-1, 'Reset Fragment Zoom\tShift+Z')
-        #endregion -----------------------------------------------> Menu Items
-        
-        #region ---------------------------------------------------> rKeyID
-        self.rKeyID = {
-            self.miSaveI.GetId(): 'FragImg',
-            self.miZoomR.GetId(): 'FragZoom',
-        }
-        #endregion ------------------------------------------------> rKeyID
-        
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,     source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnSavePlotImage, source=self.miSaveI)
-        #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
 
 
-class GelLimProt(wx.Menu, MenuMethods):
-    """Menu for the Gel in a LimProtRes Window"""
+class BottomPlotProt(PlotSubMenu):
+    """Menu for the Bottom plot in a Proteolysis Window"""
     #region -----------------------------------------------------> Class setup
     
     #endregion --------------------------------------------------> Class setup
@@ -1484,25 +1510,8 @@ class GelLimProt(wx.Menu, MenuMethods):
     def __init__(self) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__()
+        super().__init__('Alt')
         #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        self.miSaveI = self.Append(-1, 'Save Image\tAlt+I')
-        self.miZoomR = self.Append(-1, 'Reset Zoom\tAlt+Z')
-        #endregion -----------------------------------------------> Menu Items
-        
-        #region ---------------------------------------------------> rKeyID
-        self.rKeyID = {
-            self.miSaveI.GetId(): 'GelImg',
-            self.miZoomR.GetId(): 'GelZoom',
-        }
-        #endregion ------------------------------------------------> rKeyID
-        
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,     source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnSavePlotImage, source=self.miSaveI)
-        #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
@@ -1691,11 +1700,11 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         self.miShowAll = self.Append(-1, 'Show All\tCtrl+A')
         self.AppendSeparator()
         #------------------------------> 
-        self.mFragmentMenu = FragmentLimProt()
+        self.mFragmentMenu = MainPlotProt()
         self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
         self.AppendSeparator()
         #------------------------------> 
-        self.mGelMenu = GelLimProt()
+        self.mGelMenu = BottomPlotProt()
         self.AppendSubMenu(self.mGelMenu, 'Gel')
         self.AppendSeparator()
         #------------------------------> 
@@ -1816,6 +1825,14 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Add Dates
         self.AddDateItems(self.cMenuData['menudate'])
         self.AppendSeparator()
+        #------------------------------> 
+        self.mFragmentMenu = MainPlotProt()
+        self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.mGelMenu = BottomPlotProt()
+        self.AppendSubMenu(self.mGelMenu, 'Intensities')
+        self.AppendSeparator()
         #------------------------------> Duplicate Window
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
@@ -1829,10 +1846,17 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         #------------------------------>
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
         #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId(): 'AllImg',
+            self.miZoomR.GetId(): 'AllZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
-        # self.Bind(wx.EVT_MENU, self.OnImageAll,       source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.miDataPrep)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)

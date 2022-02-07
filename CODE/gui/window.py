@@ -853,6 +853,17 @@ class BaseWindowProteolysis(BaseWindow):
         self.cHSearch = getattr(self, 'cHSearch', self.cLPaneList)
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
+        #------------------------------> 
+        dKeyMethod = {
+            #------------------------------> Images
+            'MainImg'  : self.OnImageMain,
+            'BottomImg': self.OnImageBottom,
+            #------------------------------> Zoom Reset
+            'MainZoom'  : self.OnZoomResetMain,
+            'BottomZoom': self.OnZoomResetBottom,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -1022,6 +1033,59 @@ class BaseWindowProteolysis(BaseWindow):
         #endregion ------------------------------------------------> 
 
         return True
+    #---
+    
+    def OnPlotZoomResetAll(self) -> bool:
+        """Reset the zoom of the main and bottom plot.
+        
+            Returns
+            -------
+            bool
+        """
+        self.OnZoomResetMain()
+        self.OnZoomResetBottom()
+        
+        return True
+    #---
+    
+    def OnZoomResetMain(self) -> bool:
+        """Reset the Zoom of the Main plot.
+        
+            Returns
+            -------
+            bool
+        """
+        return self.wPlotM.ZoomResetPlot()
+    #---
+    
+    def OnZoomResetBottom(self) -> bool:
+        """Reset the Zoom of the Bottom plot.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.wPlot.ZoomResetPlot()
+    #---
+    
+    def OnImageMain(self) -> bool:
+        """Save an image of the Main plot. 
+        
+            Returns
+            -------
+            bool
+        """
+        return self.wPlotM.SaveImage(ext=config.elMatPlotSaveI, parent=self)
+    #---
+    
+    def OnImageBottom(self) -> bool:
+        """Save an image of the Bottom plot.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.wPlot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
     #---
     #endregion ------------------------------------------------> Event Methods
     
@@ -4121,12 +4185,6 @@ class LimProtPlot(BaseWindowProteolysis):
             'Gel Spot' : self.OnClearGel,
             'Band/Lane': self.OnClearBL,
             'All'      : self.OnClearAll,
-            #------------------------------> Save Image
-            'FragImg' : self.OnImageFragment,
-            'GelImg'  : self.OnImageGel,
-            #------------------------------> Zoom Reset
-            'FragZoom' : self.OnZoomResetFragment,
-            'GelZoom'  : self.OnZoomResetGel,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -5164,59 +5222,6 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def OnPlotZoomResetAll(self) -> bool:
-        """Reset the zoom of the Gel and Fragment Plot.
-        
-            Returns
-            -------
-            bool
-        """
-        self.OnZoomResetFragment()
-        self.OnZoomResetGel()
-        
-        return True
-    #---
-    
-    def OnZoomResetFragment(self) -> bool:
-        """Reset the Zoom of the Fragment plot.
-        
-            Returns
-            -------
-            bool
-        """
-        return self.wPlotM.ZoomResetPlot()
-    #---
-    
-    def OnZoomResetGel(self) -> bool:
-        """Reset the Zoom of the Gel plot.
-    
-            Returns
-            -------
-            bool
-        """
-        return self.wPlot.ZoomResetPlot()
-    #---
-    
-    def OnImageFragment(self) -> bool:
-        """Save an image of the Fragment plot. 
-        
-            Returns
-            -------
-            bool
-        """
-        return self.wPlotM.SaveImage(ext=config.elMatPlotSaveI, parent=self)
-    #---
-    
-    def OnImageGel(self) -> bool:
-        """Save an image of the Gel plot.
-    
-            Returns
-            -------
-            bool
-        """
-        return self.wPlot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
-    #---
-    
     def OnPlotSaveAllImage(self) -> bool:
         """ Export all plots to a pdf image
         
@@ -5968,6 +5973,35 @@ class TarProtPlot(BaseWindowProteolysis):
         #endregion ----------------------------------------------------> Print
 
         return True
+    #---
+    
+    def OnPlotSaveAllImage(self) -> bool:
+        """ Export all plots to a pdf image
+        
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Dlg window
+        dlg = dtsWindow.DirSelectDialog(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            #------------------------------> Export
+            fName = p / f'{self.rDateC}-fragments.pdf'
+            self.wPlotM.figure.savefig(fName)
+            #------------------------------> 
+            fName = p / f'{self.rDateC}-intensities.pdf'
+            self.wPlot.figure.savefig(fName)
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+     
+        dlg.Destroy()
+        return True	
     #---
     #endregion -------------------------------------------------> Event Methods
 #---
