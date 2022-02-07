@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
+import secrets
 from typing import Optional, Literal
 
 import matplotlib.patches as mpatches
@@ -972,10 +973,6 @@ class BaseWindowProteolysis(BaseWindow):
         #region --------------------------------------------------------> Bind
         self.wLC.wLCS.lc.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
         #endregion -----------------------------------------------------> Bind
-
-        #region ---------------------------------------------> Window position
-        
-        #endregion ------------------------------------------> Window position
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -5576,10 +5573,17 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rCtrl        = None
         self.rIdxP        = None
         self.rPeptide     = None
-        
+        #------------------------------> 
         self.rDate, cMenuData = self.SetDateMenuDate()
-        
+        #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
+        #------------------------------> 
+        dKeyMethod = {
+            'Peptide'  : self.OnClearPept,
+            'Fragment' : self.OnClearFrag,
+            'All'      : self.OnClearAll,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -6002,6 +6006,100 @@ class TarProtPlot(BaseWindowProteolysis):
      
         dlg.Destroy()
         return True	
+    #---
+    
+    def OnClearPept(self, plot: bool=True) -> bool:
+        """Clear the Peptide selection.
+    
+            Parameters
+            ----------
+            plot: bool
+                Redraw the canvas.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if (rID := self.wLC.wLCS.lc.GetFirstSelected()):
+            self.wLC.wLCS.lc.Select(rID, on=0)
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for r in self.rRectsFrag:
+            r.set_linewidth(self.cGelLineWidth)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        if plot:
+            self.wPlotM.canvas.draw()
+            self.wPlot.canvas.draw()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.rPeptide = None
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearFrag(self, plot=True) -> bool:
+        """Clear the Fragment selection.
+    
+            Parameters
+            ----------
+            plot: bool
+                Redraw the canvas.
+            
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+            self.rFragSelLine = None
+            self.wPlotM.canvas.draw()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.rFragSelC = [None, None]
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearAll(self) -> bool:
+        """Clear all selections.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        self.OnClearPept(plot=False)
+        self.OnClearFrag(plot=False)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.wPlotM.canvas.draw()
+        self.wPlot.canvas.draw()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        #endregion ------------------------------------------------> 
+
+        return True
     #---
     #endregion -------------------------------------------------> Event Methods
 #---

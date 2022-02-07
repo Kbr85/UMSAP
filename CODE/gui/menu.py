@@ -1429,9 +1429,10 @@ class ClearSelLimProt(wx.Menu):
         #region --------------------------------------------------> Menu Items
         self.miNoPept = self.Append(-1, 'Peptide')
         self.miNoFrag = self.Append(-1, 'Fragment')
-        self.miNoGel  = self.Append(-1,  'Gel Spot')
-        self.miNoBL   = self.Append(-1,   'Band/Lane')
-        self.miNoSel  = self.Append(-1,  'All')
+        self.miNoGel  = self.Append(-1, 'Gel Spot')
+        self.miNoBL   = self.Append(-1, 'Band/Lane')
+        self.AppendSeparator()
+        self.miNoSel  = self.Append(-1, 'All')
         #endregion -----------------------------------------------> Menu Items
         
         #region ---------------------------------------------------> 
@@ -1515,6 +1516,79 @@ class BottomPlotProt(PlotSubMenu):
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
+
+
+class ClearSelTarProt(wx.Menu):
+    """Clear the selection in a TarProtRes Window
+    
+        Attributes
+        ----------
+        rKeyID : dict
+            To map menu items to the Clear type. Keys are MenuItems.GetId() and 
+            values are str. 
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miNoPept = self.Append(-1, 'Peptide')
+        self.miNoFrag = self.Append(-1, 'Fragment')
+        self.AppendSeparator()
+        self.miNoSel  = self.Append(-1, 'All')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> 
+        self.rKeyID = {
+            self.miNoPept.GetId(): 'Peptide',
+            self.miNoFrag.GetId(): 'Fragment',
+            self.miNoSel.GetId() : 'All',
+        }
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoPept)
+        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoFrag)
+        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoSel)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #------------------------------> Class method
+    #region ---------------------------------------------------> Event methods
+    def OnClearSelection(self, event: wx.CommandEvent) -> bool:
+        """Clear the selection in a LimProt Res Window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        win = self.GetWindow()
+        tKey = self.rKeyID[event.GetId()]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Run
+        win.dKeyMethod[tKey]()
+        #endregion ------------------------------------------------> Run
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+#---
+
 #endregion -------------------------------------------------> Individual menus
 
 
@@ -1832,6 +1906,10 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         #------------------------------> 
         self.mGelMenu = BottomPlotProt()
         self.AppendSubMenu(self.mGelMenu, 'Intensities')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.mClear = ClearSelTarProt()
+        self.AppendSubMenu(self.mClear, 'Clear Selection')
         self.AppendSeparator()
         #------------------------------> Duplicate Window
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
