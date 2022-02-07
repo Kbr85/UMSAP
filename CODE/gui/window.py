@@ -4232,11 +4232,7 @@ class LimProtPlot(BaseWindowProteolysis):
         
         #region ---------------------------------------------------> Fragments
         self.rFragments = dmethod.Fragments(
-            self.GetDF4FragmentSearch(), 
-            self.rAlpha,
-            'le', 
-            self.rProtLoc,
-        )
+            self.GetDF4FragmentSearch(), self.rAlpha,'le')
                 
         self.SetEmptyFragmentAxis()
         #endregion ------------------------------------------------> Fragments
@@ -4626,8 +4622,6 @@ class LimProtPlot(BaseWindowProteolysis):
             for a,b in ncO:
                 aX = a+self.rProtDelta
                 bX = b+self.rProtDelta
-                # aO = aX if aX >= self.rProtLoc[0] and aX <= self.rProtLoc[1] else 'NA'
-                # bO = bX if bX >= self.rProtLoc[0] and bX <= self.rProtLoc[1] else 'NA'
                 ncONat.append((aX,bX))
         else:
             ncONat = 'NA' 
@@ -4761,8 +4755,6 @@ class LimProtPlot(BaseWindowProteolysis):
             for a,b in self.rFragments[tKey]['Coord']:
                 aX = a+self.rProtDelta
                 bX = b+self.rProtDelta
-                # aO = aX if aX >= self.rProtLoc[0] and aX <= self.rProtLoc[1] else 'NA'
-                # bO = bX if bX >= self.rProtLoc[0] and bX <= self.rProtLoc[1] else 'NA'
                 ncONat.append((aX,bX))
         else:
             ncONat = 'NA' 
@@ -5676,11 +5668,7 @@ class TarProtPlot(BaseWindowProteolysis):
         
         #region ---------------------------------------------------> Fragments
         self.rFragments = dmethod.Fragments(
-            self.GetDF4FragmentSearch(), 
-            self.rAlpha,
-            'le', 
-            self.rProtLoc,
-        )
+            self.GetDF4FragmentSearch(), self.rAlpha, 'le')
         
         self.DrawFragments()
         #endregion ------------------------------------------------> Fragments
@@ -5890,22 +5878,27 @@ class TarProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> Info
+        #------------------------------> Fragments
+        frag =  (f'{self.rFragments[tKey]["NFrag"][0]}'
+                 f'({self.rFragments[tKey]["NFrag"][1]})')
+        clsiteExp = (f'{self.rFragments[tKey]["NcT"][0]}'
+                     f'({self.rFragments[tKey]["NcT"][1]})')
+        seqExp = (f'{sum(self.rFragments[tKey]["Np"])}'
+                  f'({sum(self.rFragments[tKey]["NpNat"])})')
+        #------------------------------> Res Numbers
         n, c = self.rFragments[tKey]["Coord"][fragC[1]]
-        
-        # if n >= self.rProtLoc[0] and n <= self.rProtLoc[1]:
-        #     nnat = n + self.rProtDelta
-        # else:
-        #     nnat = 'NA'
-        # if c >= self.rProtLoc[0] and c <= self.rProtLoc[1]:
-        #     cnat = c + self.rProtDelta
-        # else:
-        #     cnat = 'NA'
-        # resNum = f'Nterm {n}({nnat}) - Cterm {c}({cnat})'
-        
-        # np = (f'{self.rFragments[tKey]["Np"][fragC[2]]} '
-        #       f'({self.rFragments[tKey]["NpNat"][fragC[2]]})')
-        # clsite = (f'{self.rFragments[tKey]["Nc"][fragC[2]]} '
-        #           f'({self.rFragments[tKey]["NcNat"][fragC[2]]})')
+        nf, cf = self.rFragments[tKey]["CoordN"][fragC[1]]
+        resNum = f'Nterm {n}({nf}) - Cterm {c}({cf})'
+        #------------------------------> Sequences
+        np = (f'{self.rFragments[tKey]["Np"][fragC[1]]}'
+              f'({self.rFragments[tKey]["NpNat"][fragC[1]]})')
+        #------------------------------> Cleavages
+        clsite = (f'{self.rFragments[tKey]["Nc"][fragC[1]]}'
+                  f'({self.rFragments[tKey]["NcNat"][fragC[1]]})')
+        #------------------------------> Labels
+        expL, fragL = dtsMethod.StrEqualLength(
+            [self.rExp[fragC[0]], f'Fragment {fragC[1]+1}'])
+        emptySpace = (2+ len(expL))*' '
         #endregion ------------------------------------------------> Info
 
         #region ---------------------------------------------------> 
@@ -5915,11 +5908,12 @@ class TarProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> 
         self.wText.AppendText(
             f'Details for {self.rExp[fragC[0]]} - Fragment {fragC[1]+1}\n\n')
-        # self.wText.AppendText(f'Residue Numbers: {resNum}\n')
-        # self.wText.AppendText(f'Sequences: {np}\n')
-        # self.wText.AppendText(f'Cleavage Sites: {clsite}\n\n')
-        # self.wText.AppendText(f'Sequences in the fragment:\n\n')
-        # self.wText.AppendText(f'{self.rFragments[tKey]["Seq"][fragC[2]]}')
+        self.wText.AppendText(f'{expL}: Fragments {frag}, Cleavage sites {clsiteExp}\n')
+        self.wText.AppendText(f'{emptySpace}Peptides {seqExp}\n\n')
+        self.wText.AppendText(f'{fragL}: Nterm {n}({nf}), Cterm {c}({cf})\n')
+        self.wText.AppendText(f'{emptySpace}Peptides {np}, Cleavage sites {clsite}\n\n')
+        self.wText.AppendText(f'Sequences in the fragment:\n\n')
+        self.wText.AppendText(f'{self.rFragments[tKey]["Seq"][fragC[1]]}')
         self.wText.SetInsertionPoint(0)
         #endregion ------------------------------------------------> 
         

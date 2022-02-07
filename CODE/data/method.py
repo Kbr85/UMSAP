@@ -159,8 +159,7 @@ def ResControl2DF(
 
 
 def Fragments(
-    df: 'pd.DataFrame', val: float, comp: Literal['lt', 'le', 'e', 'ge', 'gt'], 
-    protLoc: Union[list[int], list[None]],
+    df: 'pd.DataFrame', val: float, comp: Literal['lt', 'le', 'e', 'ge', 'gt'],
     ) -> dict:
     """Creates the dict holding the fragments identified in the analysis
 
@@ -173,45 +172,49 @@ def Fragments(
             Threshold value to filter df and identify relevant peptides
         comp : str
             One of 'lt', 'le', 'e', 'ge', 'gt'
-        protLoc : list[int] or list[None]
-            Native protein location in the recombinant sequence
 
         Returns
         -------
         dict:
             {
                 'Exp1' : {
-                    'Coord': [(x1, x2),...., (xN, xM)],
-                    'Seq'  : [Aligned Seq1, ...., Aligned SeqN],
-                    'SeqL  : [Flat List with Seqs1, ...., Flat List with SeqsN],
-                    'Np'   : [Number of peptides1, ...., NpN],
-                    'NpNat : [Number of native peptides1, ...., NpNatN],
-                    'Nc'   : [Number of cleavages1, ...., NcN],
-                    'NcNat': [Number of native cleavages1, ....., NcNatN],
+                    'Coord' : [(x1, x2),...., (xN, xM)],
+                    'CoordN': [(x1, x2),.(NaN, NaN)..., (xN, xM)]
+                    'Seq'   : [Aligned Seq1, ...., Aligned SeqN],
+                    'SeqL   : [Flat List with Seqs1, ...., Flat List with SeqsN],
+                    'Np'    : [Number of peptides1, ...., NpN],
+                    'NpNat  : [Number of native peptides1, ...., NpNatN],
+                    'Nc'    : [Number of cleavages1, ...., NcN],
+                    'NcNat' : [Number of native cleavages1, ....., NcNatN],
+                    'NFrag' : (Number of fragments, Number of fragments Nat),
+                    'NcT'   : (Number of cleavages for the Exp as a whole, 
+                               Number of cleavages for the Exp as a whole Nat),
                 },
                 'ExpN' : {},
             }
-        All list inside each column have the same length
+        - All list inside each Exp have the same length
+        - NFrag and NcT are tuples with two values each.
+        - Keys Exp1,...,ExpN are variables and depend on the module calling the
+        method.
     """
     # No Test
     #region -------------------------------------------------------> Variables
     dictO = {}
-    #------------------------------> 
-    protLoc = [x if x is not None else nan for x in protLoc]
     #endregion ----------------------------------------------------> Variables
 
     #region ---------------------------------------------------> 
     for c in range(5, df.shape[1]):
         colK = str(df.columns.values[c])
         #------------------------------> Prepare dictO
-        dictO[colK] = {}
-        dictO[colK]['Coord'] = []
-        dictO[colK]['Seq']   = []
-        dictO[colK]['SeqL']  = []
-        dictO[colK]['Np']    = []
-        dictO[colK]['NpNat'] = []
-        dictO[colK]['Nc']    = []
-        dictO[colK]['NcNat'] = []
+        dictO[colK]           = {}
+        dictO[colK]['Coord']  = []
+        dictO[colK]['CoordN'] = []
+        dictO[colK]['Seq']    = []
+        dictO[colK]['SeqL']   = []
+        dictO[colK]['Np']     = []
+        dictO[colK]['NpNat']  = []
+        dictO[colK]['Nc']     = []
+        dictO[colK]['NcNat']  = []
         #------------------------------> Filter df
         dfE = dtsMethod.DFFilterByColN(df, [c], val, comp)
         #------------------------------> 
@@ -231,18 +234,20 @@ def Fragments(
                 seq = dfE.iat[r,0]
                 seqL.append(seq)
                 np = 1
-                n = dfE.iat[r,1]
-                c = dfE.iat[r,2]
-                if n >= protLoc[0] and c <= protLoc[1]:
+                n  = dfE.iat[r,1]
+                c  = dfE.iat[r,2]
+                nf = dfE.iat[r,3]
+                cf = dfE.iat[r,4]
+                if nf != nan and cf != nan:
                     npNat = 1
                 else:
                     npNat = 0
-                if n >= protLoc[0]:
+                if nf != nan:
                     ncLNat.append(n-1)
                     nctLNat.append(n-1)
                 else:
                     pass
-                if c <= protLoc[1]:
+                if cf != nan:
                     ncLNat.append(c)
                     nctLNat.append(c)
                 else:
@@ -252,8 +257,10 @@ def Fragments(
                 nctL.append(n-1)
                 nctL.append(c)
             else:
-                nc = dfE.iat[r,1]
-                cc = dfE.iat[r,2]
+                nc   = dfE.iat[r,1]
+                cc   = dfE.iat[r,2]
+                ncf  = dfE.iat[r,3]
+                ccf  = dfE.iat[r,4]
                 seqc = dfE.iat[r,0]
                 if nc <= c:
                     seq = f'{seq}\n{(nc-n)*" "}{seqc}'
@@ -263,16 +270,16 @@ def Fragments(
                         c = cc
                     else:
                         pass
-                    if nc >= protLoc[0] and cc <= protLoc[1]:
+                    if ncf != nan and ccf != nan:
                         npNat = npNat + 1
                     else:
                         pass
-                    if nc >= protLoc[0]:
+                    if ncf != nan:
                         ncLNat.append(nc-1)
                         nctLNat.append(nc-1)
                     else:
                         pass
-                    if cc <= protLoc[1]:
+                    if ccf != nan:
                         ncLNat.append(cc)
                         nctLNat.append(cc)
                     else:
@@ -283,33 +290,36 @@ def Fragments(
                     nctL.append(cc)
                 else:
                     dictO[colK]['Coord'].append((n,c))
+                    dictO[colK]['CoordN'].append((nf,cf))
                     dictO[colK]['Seq'].append(seq)
                     dictO[colK]['SeqL'].append(seqL)
                     dictO[colK]['Np'].append(np)
                     dictO[colK]['NpNat'].append(npNat)
                     dictO[colK]['Nc'].append(len(list(set(ncL))))
                     dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
-                    n = nc
-                    c = cc
-                    seq = seqc
+                    n    = nc
+                    c    = cc
+                    nf   = ncf
+                    cf   = ccf
+                    seq  = seqc
                     seqL = [seqc]
-                    np = 1
-                    if n >= protLoc[0] and c <= protLoc[1]:
+                    np   = 1
+                    if nf != nan and cf != nan:
                         npNat = 1
                     else:
                         npNat = 0
                     ncLNat = []
-                    if n >= protLoc[0]:
+                    if nf != nan:
                         ncLNat.append(n-1)
                         nctLNat.append(n-1)
                     else:
                         pass
-                    if c <= protLoc[1]:
+                    if cf != nan:
                         ncLNat.append(c)
                         nctLNat.append(c)
                     else:
                         pass
-                    ncL    = []
+                    ncL = []
                     ncL.append(n-1)
                     ncL.append(c)
                     nctL.append(n-1)
@@ -317,16 +327,21 @@ def Fragments(
         #------------------------------> Catch the last line
         if n is not None:        
             dictO[colK]['Coord'].append((n,c))
+            dictO[colK]['CoordN'].append((nf,cf))
             dictO[colK]['Seq'].append(seq)
             dictO[colK]['SeqL'].append(seqL)
             dictO[colK]['Np'].append(np)
             dictO[colK]['NpNat'].append(npNat)
             dictO[colK]['Nc'].append(len(list(set(ncL))))
             dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
-            dictO[colK]['Nct'] = len(list(set(nctL)))        
-            dictO[colK]['NctNat'] = len(list(set(nctLNat)))        
+            
+            dictO[colK]['NcT'] = [len(list(set(nctL))), len(list(set(nctLNat)))]
+            
+            nFragN = [x for x in dictO[colK]['CoordN'] if x[0] is not nan or x[1] is not nan]
+            dictO[colK]['NFrag'] = [len(dictO[colK]['Coord']), len(nFragN)]
         else:
-            pass
+            dictO[colK]['NcT'] = []
+            dictO[colK]['NFrag'] = []
         #------------------------------> All detected peptides as a list
     #endregion ------------------------------------------------> 
 
