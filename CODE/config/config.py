@@ -203,17 +203,16 @@ pImages = res / 'IMAGES' # Images folder
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 # #------------------------------> Names
-fnInitial    = "{}-Initial-Data-{}.txt"
-fnFloat      = "{}-Floated-Data-{}.txt"
-fnTargetProt = "{}-Target-Protein-Data-{}.txt"
-fnExclude    = "{}-After-Excluding-Data-{}.txt"
-fnScore      = "{}-Score-Filtered-Data-{}.txt"
-fnTrans      = "{}-Transformed-Data-{}.txt"
-fnNorm       = "{}-Normalized-Data-{}.txt"
-fnImp        = "{}-Imputed-Data-{}.txt"
+fnInitial    = "{}_{}-Initial-Data.txt"
+fnFloat      = "{}_{}-Floated-Data.txt"
+fnTargetProt = "{}_{}-Target-Protein-Data.txt"
+fnExclude    = "{}_{}-After-Excluding-Data.txt"
+fnScore      = "{}_{}-Score-Filtered-Data.txt"
+fnTrans      = "{}_{}-Transformed-Data.txt"
+fnNorm       = "{}_{}-Normalized-Data.txt"
+fnImp        = "{}_{}-Imputed-Data.txt"
 fnDataSteps  = 'Steps_Data_Files'
 fnDataInit   = 'Input_Data_Files'
-fnMainDataProtProf = '{}-ProteomeProfiling-Data-{}.txt'
 #endregion ---------------------------------------------------> Path and Files
 
 

@@ -1256,7 +1256,7 @@ class BaseConfPanel(
         #------------------------------> 
         msgStep = self.cLPdWrite + 'Creating needed folders, Data-Steps folder'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        dataFolder = f"{self.rDate}_{self.cSection}"
+        dataFolder = f"{self.rDate}_{self.cSection.replace(' ', '-')}"
         dataFolder = self.rOFolder / config.fnDataSteps / dataFolder
         dataFolder.mkdir(parents=True, exist_ok=True)
         #------------------------------> 
@@ -1276,7 +1276,7 @@ class BaseConfPanel(
         if not piFolder == puFolder:
             #------------------------------> 
             name = (
-                f"{self.rDate}-{self.rDO['iFile'].stem}{self.rDO['iFile'].suffix}")
+                f"{self.rDate}_{self.rDO['iFile'].stem}{self.rDO['iFile'].suffix}")
             self.rDFile = puFolder/name
             #------------------------------> 
             shutil.copy(self.rDO['iFile'], self.rDFile)
@@ -2541,7 +2541,7 @@ class CorrA(BaseConfPanel):
     cGaugePD     = 24
     cTTHelp      = config.ttBtnHelp.format(cURL)
     rLLenLongest = len(cLCorrMethod)
-    rMainData    = '{}-CorrelationCoefficients-Data-{}.txt'
+    rMainData    = '{}_CorrelationCoefficients-Data-{}.txt'
     #endregion --------------------------------------------------> Class Setup
     
     #region --------------------------------------------------> Instance setup
@@ -2941,12 +2941,12 @@ class CorrA(BaseConfPanel):
         """Write output. Override as needed """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01', self.rDate): self.dfI,
-            config.fnFloat.format('02', self.rDate)  : self.dfS,
-            config.fnTrans.format('03', self.rDate)  : self.dfT,
-            config.fnNorm.format('04', self.rDate)   : self.dfN,
-            config.fnImp.format('05', self.rDate)    : self.dfIm,
-            self.rMainData.format('06', self.rDate)  : self.dfR,
+            config.fnInitial.format(self.rDate, '01'): self.dfI,
+            config.fnFloat.format(self.rDate, '02')  : self.dfS,
+            config.fnTrans.format(self.rDate, '03')  : self.dfT,
+            config.fnNorm.format(self.rDate, '04')   : self.dfN,
+            config.fnImp.format(self.rDate, '05')    : self.dfIm,
+            self.rMainData.format(self.rDate, '06')  : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
         
@@ -3451,13 +3451,13 @@ class DataPrep(BaseConfPanel):
         """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01', self.rDate) : self.dfI,
-            config.fnFloat.format('02',   self.rDate) : self.dfF,
-            config.fnExclude.format('03', self.rDate) : self.dfE,
-            config.fnScore.format('04',   self.rDate) : self.dfS,
-            config.fnTrans.format('05',   self.rDate) : self.dfT,
-            config.fnNorm.format('06',    self.rDate) : self.dfN,
-            config.fnImp.format('07',     self.rDate) : self.dfIm,
+            config.fnInitial.format(self.rDate, '01'): self.dfI,
+            config.fnFloat.format(self.rDate, '02')  : self.dfF,
+            config.fnExclude.format(self.rDate, '03'): self.dfE,
+            config.fnScore.format(self.rDate, '04')  : self.dfS,
+            config.fnTrans.format(self.rDate, '05')  : self.dfT,
+            config.fnNorm.format(self.rDate, '06')   : self.dfN,
+            config.fnImp.format(self.rDate, '07')    : self.dfIm,
         }
         #endregion -----------------------------------------------> Data Steps
 
@@ -3604,7 +3604,7 @@ class ProtProf(BaseConfModPanel):
     cTitlePD     = f"Running {config.nmProtProf} Analysis"
     cGaugePD     = 36
     rLLenLongest = len(config.lStResultCtrl)
-    rMainData    = config.fnMainDataProtProf
+    rMainData    = '{}_ProteomeProfiling-Data-{}.txt'
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
     #------------------------------> Label
@@ -4514,14 +4514,14 @@ class ProtProf(BaseConfModPanel):
         """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01', self.rDate): self.dfI,
-            config.fnFloat.format('02', self.rDate)  : self.dfF,
-            config.fnExclude.format('03', self.rDate): self.dfE,
-            config.fnScore.format('04', self.rDate)  : self.dfS,
-            config.fnTrans.format('05', self.rDate)  : self.dfT,
-            config.fnNorm.format('06', self.rDate)   : self.dfN,
-            config.fnImp.format('07', self.rDate)    : self.dfIm,
-            self.rMainData.format('08', self.rDate)  : self.dfR,
+            config.fnInitial.format(self.rDate, '01'): self.dfI,
+            config.fnFloat.format(self.rDate, '02')  : self.dfF,
+            config.fnExclude.format(self.rDate, '03'): self.dfE,
+            config.fnScore.format(self.rDate, '04')  : self.dfS,
+            config.fnTrans.format(self.rDate, '05')  : self.dfT,
+            config.fnNorm.format(self.rDate, '06')   : self.dfN,
+            config.fnImp.format(self.rDate, '07')    : self.dfIm,
+            self.rMainData.format(self.rDate, '08')  : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
 
@@ -4701,7 +4701,7 @@ class LimProt(BaseConfModPanel2):
     cTitlePD     = f"Running {config.nmLimProt} Analysis"
     cGaugePD     = 50
     rLLenLongest = len(config.lStResultCtrl)
-    rMainData    = '{}-LimitedProteolysis-Data-{}.txt'
+    rMainData    = '{}_LimitedProteolysis-Data-{}.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile']
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
@@ -5325,14 +5325,14 @@ class LimProt(BaseConfModPanel2):
         """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01', self.rDate)    : self.dfI,
-            config.fnFloat.format('02', self.rDate)      : self.dfF,
-            config.fnTargetProt.format('03', self.rDate) : self.dfTP,
-            config.fnScore.format('04', self.rDate)      : self.dfS,
-            config.fnTrans.format('05', self.rDate)      : self.dfT,
-            config.fnNorm.format('06', self.rDate)       : self.dfN,
-            config.fnImp.format('07', self.rDate)        : self.dfIm,
-            self.rMainData.format('08', self.rDate)      : self.dfR,
+            config.fnInitial.format(self.rDate, '01')   : self.dfI,
+            config.fnFloat.format(self.rDate, '02')     : self.dfF,
+            config.fnTargetProt.format(self.rDate, '03'): self.dfTP,
+            config.fnScore.format(self.rDate, '04')     : self.dfS,
+            config.fnTrans.format(self.rDate, '05')     : self.dfT,
+            config.fnNorm.format(self.rDate, '06')      : self.dfN,
+            config.fnImp.format(self.rDate, '07')       : self.dfIm,
+            self.rMainData.format(self.rDate, '08')     : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
         
@@ -5576,7 +5576,7 @@ class TarProt(BaseConfModPanel2):
     cTitlePD     = f"Running {config.nmTarProt} Analysis"
     cGaugePD     = 50
     rLLenLongest = len(config.lStResultCtrl)
-    rMainData    = '{}-TargetedProteolysis-Data-{}.txt'
+    rMainData    = '{}_TargetedProteolysis-Data-{}.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile', 'pdbFile']
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
@@ -6120,14 +6120,14 @@ class TarProt(BaseConfModPanel2):
         """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01', self.rDate)    : self.dfI,
-            config.fnFloat.format('02', self.rDate)      : self.dfF,
-            config.fnTargetProt.format('03', self.rDate) : self.dfTP,
-            config.fnScore.format('04', self.rDate)      : self.dfS,
-            config.fnTrans.format('05', self.rDate)      : self.dfT,
-            config.fnNorm.format('06', self.rDate)       : self.dfN,
-            config.fnImp.format('07', self.rDate)        : self.dfIm,
-            self.rMainData.format('08', self.rDate)      : self.dfR,
+            config.fnInitial.format(self.rDate, '01')    : self.dfI,
+            config.fnFloat.format(self.rDate, '02')      : self.dfF,
+            config.fnTargetProt.format(self.rDate, '03') : self.dfTP,
+            config.fnScore.format(self.rDate, '04')      : self.dfS,
+            config.fnTrans.format(self.rDate, '05')      : self.dfT,
+            config.fnNorm.format(self.rDate, '06')       : self.dfN,
+            config.fnImp.format(self.rDate, '07')        : self.dfIm,
+            self.rMainData.format(self.rDate, '08')      : self.dfR,
         }
         #endregion -----------------------------------------------> Data Steps
         
