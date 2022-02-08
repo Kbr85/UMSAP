@@ -15,6 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
+from pathlib import Path
 from typing import Optional
 
 import pandas as pd
@@ -90,10 +91,10 @@ class UMSAPFile():
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, rFileP: 'Path') -> None:
+    def __init__(self, rFileP: Path) -> None:
         """ """
         #region ---------------------------------------------------> Variables
-        self.rFileP = rFileP
+        self.rFileP = Path(rFileP)
 
         self.dConfigure = {# Configure methods. Keys are the section names as
                            # read from the file
@@ -564,6 +565,7 @@ class UMSAPFile():
                 {
                     'I' : user input with stripped keys,
                     'CI': corrected user input,
+                    'rootP' : path to the folder containing the UMSAP file,
                 }
     
             Raise
@@ -581,8 +583,9 @@ class UMSAPFile():
         
         try:
             return {
-                'I':  i, 
-                'CI': self.rData[tSection][tDate]['CI'], 
+                'I'    : i,
+                'CI'   : self.rData[tSection][tDate]['CI'],
+                'uFile': self.rFileP,
             }
         except KeyError as e:
             raise e

@@ -564,6 +564,7 @@ class BaseConfPanel(
             dtsMethod.LCtrlFillColNames(self.wLCtrlI, fileP)
         except Exception as e:
             dtscore.Notification('errorF', msg=str(e), tException=e)
+            self.wIFile.tc.SetValue('')
             return False
         #endregion ------------------------------------------------> Fill list
         
@@ -2760,8 +2761,11 @@ class CorrA(BaseConfPanel):
         """
         if dataI is not None:
             #------------------------------> 
-            self.wUFile.tc.SetValue(dataI['CI']['uFile'])
-            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
+            dataInit = dataI['uFile'].parent / config.fnDataInit
+            iFile = dataInit / dataI['I'][self.cLiFile]
+            #------------------------------> 
+            self.wUFile.tc.SetValue(str(dataI['uFile']))
+            self.wIFile.tc.SetValue(str(iFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> 
             self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
@@ -2770,7 +2774,7 @@ class CorrA(BaseConfPanel):
             self.wImputationMethod.cb.SetValue(dataI['CI']['ImpMethod'])
             self.wCorrMethod.cb.SetValue(dataI['CI']['CorrMethod'])
             #------------------------------> 
-            if Path(self.wIFile.tc.GetValue()).exists:
+            if iFile.exists:
                 #------------------------------> Add columns with the same order
                 l = []
                 for k in dataI['CI']['oc']['Column']:
@@ -3317,9 +3321,12 @@ class DataPrep(BaseConfPanel):
         """
         #region -------------------------------------------------> Fill Fields
         if dataI is not None:
+            #------------------------------> 
+            dataInit = dataI['uFile'].parent / config.fnDataInit
+            iFile = dataInit / dataI['I'][self.cLiFile]
             #------------------------------> Files
-            self.wUFile.tc.SetValue(dataI['CI']['uFile'])
-            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
+            self.wUFile.tc.SetValue(str(dataI['uFile']))
+            self.wIFile.tc.SetValue(str(iFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
             self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
@@ -3990,9 +3997,12 @@ class ProtProf(BaseConfModPanel):
         """
         #region -------------------------------------------------> Fill Fields
         if dataI is not None:
-            #------------------------------> Files
-            self.wUFile.tc.SetValue(dataI['CI']['uFile'])
-            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
+            #------------------------------> 
+            dataInit = dataI['uFile'].parent / config.fnDataInit
+            iFile = dataInit / dataI['I'][self.cLiFile]
+            #------------------------------> 
+            self.wUFile.tc.SetValue(str(dataI['uFile']))
+            self.wIFile.tc.SetValue(str(iFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
             self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
@@ -5029,10 +5039,14 @@ class LimProt(BaseConfModPanel2):
         """
         #region -------------------------------------------------> Fill Fields
         if dataI is not None:
+            #------------------------------> 
+            dataInit = dataI['uFile'].parent / config.fnDataInit
+            iFile = dataInit / dataI['I'][self.cLiFile]
+            seqFile = dataInit / dataI['I'][f'{self.cLSeqFile} File']
             #------------------------------> Files
-            self.wUFile.tc.SetValue(dataI['CI']['uFile'])
-            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
-            self.wSeqFile.tc.SetValue(dataI['I'][f'{self.cLSeqFile} File'])
+            self.wUFile.tc.SetValue(str(dataI['uFile']))
+            self.wIFile.tc.SetValue(str(iFile))
+            self.wSeqFile.tc.SetValue(str(seqFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
             self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
@@ -5908,11 +5922,16 @@ class TarProt(BaseConfModPanel2):
         """
         #region -------------------------------------------------> Fill Fields
         if dataI is not None:
+            #------------------------------> 
+            dataInit = dataI['uFile'].parent / config.fnDataInit
+            iFile    = dataInit / dataI['I'][self.cLiFile]
+            seqFile  = dataInit / dataI['I'][f'{self.cLSeqFile} File']
+            pdbFile  = dataInit / dataI['I'][f'{self.cLPDB}']
             #------------------------------> Files
-            self.wUFile.tc.SetValue(dataI['CI']['uFile'])
-            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
-            self.wSeqFile.tc.SetValue(dataI['I'][f'{self.cLSeqFile} File'])
-            self.wPDBFile.tc.SetValue(dataI['I'][f'{self.cLPDB}'])
+            self.wUFile.tc.SetValue(str(dataI['uFile']))
+            self.wIFile.tc.SetValue(str(iFile))
+            self.wSeqFile.tc.SetValue(str(seqFile))
+            self.wPDBFile.tc.SetValue(str(pdbFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
             self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
