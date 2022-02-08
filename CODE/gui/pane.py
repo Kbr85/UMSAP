@@ -91,8 +91,9 @@ class BaseConfPanel(
             Date for the new section in the umsap file.
         rDateID : str or None
             Date + Analysis ID
-        rDFile : Path
-            Full path to copy the given input file if not in Data-Files.
+        rDFile : list[Path]
+            Full paths to copied input files. Needed to repeat the analysis
+            directly after running.
         rDI: dict
             Dict with user input. 
             The following key-value pairs are expected.
@@ -148,6 +149,9 @@ class BaseConfPanel(
             order. See CheckInput method for more details.
         rLLenLongest : int 
             Length of the longest label in output dict
+        rCopyFile : dict
+            Keys are jeys in rDO and values keys in rDI. Signal input files that
+            must be copied to Data_Initial
     """
     #region -----------------------------------------------------> Class setup
     
@@ -274,12 +278,14 @@ class BaseConfPanel(
         self.rOFolder = None
         #--------------> input file for directing repeating analysis from
         # file copied to oFolder
-        self.rDFile   = None
+        self.rDFile   = []
         #--------------> Obj for files
         self.rIFileObj   = None
         self.rSeqFileObj = None
         #------------------------------> 
         self.rChangeKey = getattr(self, 'rChangeKey', ['iFile', 'uFile'])
+        #------------------------------> 
+        self.rCopyFile = getattr(self, 'rCopyFile', {'iFile':self.cLiFile})
         #------------------------------> Parent init
         scrolled.ScrolledPanel.__init__(self, cParent, name=self.cName)
 
@@ -1267,30 +1273,38 @@ class BaseConfPanel(
         #endregion --------------------------------------------> Create folder
         
         #region ------------------------------------------------> Data Initial
-        msgStep = self.cLPdWrite + 'Data files, Data file'
+        msgStep = self.cLPdWrite + 'Data files, Input Data'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> 
-        piFolder = self.rDO['iFile'].parent
         puFolder = self.rDO['uFile'].parent / config.fnDataInit
-        #------------------------------>
-        if not piFolder == puFolder:
-            #------------------------------> 
-            name = (
-                f"{self.rDate}_{self.rDO['iFile'].stem}{self.rDO['iFile'].suffix}")
-            self.rDFile = puFolder/name
-            #------------------------------> 
-            shutil.copy(self.rDO['iFile'], self.rDFile)
-            #------------------------------> 
-            self.rDI[self.EqualLenLabel(self.cLiFile)] = str(self.rDFile.name)
-        else:
-            #------------------------------> 
-            self.rDFile = None
-            #------------------------------> 
-            self.rDI[self.EqualLenLabel(self.cLiFile)] = str(self.rDO['iFile'].name)
+        #------------------------------> 
+        for k,v in self.rCopyFile.items():
+            if self.rDI[self.EqualLenLabel(v)] != '':
+                #------------------------------> 
+                piFolder = self.rDO[k].parent
+                #------------------------------>
+                if not piFolder == puFolder:
+                    #------------------------------> 
+                    name = (
+                        f"{self.rDate}_{self.rDO[k].stem.replace(' ', '-')}{self.rDO[k].suffix}")
+                    file = puFolder/name
+                    #------------------------------> 
+                    shutil.copy(self.rDO[k], file)
+                    #------------------------------> 
+                    self.rDI[self.EqualLenLabel(v)] = str(file.name)
+                    #------------------------------> 
+                    self.rDFile.append(file)
+                else:
+                    #------------------------------> 
+                    self.rDI[self.EqualLenLabel(v)] = str(self.rDO[k].name)
+                    #------------------------------> 
+                    self.rDFile.append(self.rDO[k])
+            else:
+                self.rDFile.append('')
         #endregion ---------------------------------------------> Data Initial
         
         #region --------------------------------------------------> Data Steps
-        msgStep = self.cLPdWrite + 'Data files, Step by Step Data files'
+        msgStep = self.cLPdWrite + 'Data files, Output Data'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         try:
             dtsFF.WriteDFs2CSV(dataFolder, stepDict['Files'])
@@ -1398,11 +1412,8 @@ class BaseConfPanel(
         self.rIFileObj  = None
         self.deltaT     = None # Defined in DAT4S 
         
-        if self.rDFile is not None:
-            self.wIFile.tc.SetValue(str(self.rDFile))
-        else:
-            pass
-        self.rDFile = None # Data File copied to Data-Initial
+        self.wIFile.tc.SetValue(str(self.rDFile[0]))
+        self.rDFile = []
         #endregion ----------------------------------------------------> Reset
         
         return True
@@ -4790,6 +4801,11 @@ class LimProt(BaseConfModPanel2):
         #endregion --------------------------------------------------> Widgets
         
         #region ----------------------------------------------> checkUserInput
+        self.rCopyFile = {
+            'iFile'  : self.cLiFile,
+            'seqFile': f'{self.cLSeqFile} File',
+        }
+        
         self.rCheckUserInput = {
             self.cLuFile       :[self.wUFile.tc,           config.mFileBad],
             self.cLiFile       :[self.wIFile.tc,           config.mFileBad],
@@ -5370,6 +5386,14 @@ class LimProt(BaseConfModPanel2):
         return self.WriteOutputData(stepDict)
     #---
     
+    def RunEnd(self) -> bool:
+        """"""
+        #------------------------------> 
+        self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
+        #------------------------------>     
+        return super().RunEnd()
+    #---
+    
     def EmptyDFR(self) -> 'pd.DataFrame':
         """Creates the empty df for the results
         
@@ -5664,6 +5688,12 @@ class TarProt(BaseConfModPanel2):
         #endregion --------------------------------------------------> Widgets
         
         #region ----------------------------------------------> checkUserInput
+        self.rCopyFile    = {
+            'iFile'  : self.cLiFile,
+            'seqFile': f'{self.cLSeqFile} File',
+            'pdbFile': self.cLPDB,
+        }
+        
         self.rCheckUserInput = {
             self.cLuFile       :[self.wUFile.tc,           config.mFileBad],
             self.cLiFile       :[self.wIFile.tc,           config.mFileBad],
@@ -6170,6 +6200,15 @@ class TarProt(BaseConfModPanel2):
         #endregion -----------------------------------------------> Data Steps
         
         return self.WriteOutputData(stepDict)
+    #---
+    
+    def RunEnd(self) -> bool:
+        """"""
+        #------------------------------> 
+        self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
+        self.wPDBFile.tc.SetValue(str(self.rDFile[2]))
+        #------------------------------>     
+        return super().RunEnd()
     #---
     
     def EmptyDFR(self) -> 'pd.DataFrame':
