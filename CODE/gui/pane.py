@@ -1290,7 +1290,7 @@ class BaseConfPanel(
         msgStep = self.cLPdWrite + 'Data files, Step by Step Data files'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         try:
-            dtsFF.WriteDFs2CSV(dataFolder, stepDict)
+            dtsFF.WriteDFs2CSV(dataFolder, stepDict['Files'])
         except Exception as e:
             self.rMsgError = ('It was not possible to create the files with '
                 'the data for the intermediate steps of the analysis.')
@@ -1308,18 +1308,17 @@ class BaseConfPanel(
                 'I' : self.rDI,
                 'CI': dtsMethod.DictVal2Str(self.rDO, self.rChangeKey, new=True),
                 'DP': {
-                    config.ltDPKeys[0] : self.dfS.to_dict(),
-                    config.ltDPKeys[1] : self.dfT.to_dict(),
-                    config.ltDPKeys[2] : self.dfN.to_dict(),
-                    config.ltDPKeys[3] : self.dfIm.to_dict(),
+                    config.ltDPKeys[0] : stepDict['DP'][config.ltDPKeys[0]],
+                    config.ltDPKeys[1] : stepDict['DP'][config.ltDPKeys[1]],
+                    config.ltDPKeys[2] : stepDict['DP'][config.ltDPKeys[2]],
+                    config.ltDPKeys[3] : stepDict['DP'][config.ltDPKeys[3]],
                 },
             }
         }
         #-------------->  DataPrep Util does not have dfR
-        if self.dfR is not None:
-            dateDict[self.rDateID]['R'] = dtsMethod.DictTuplesKey2StringKey(
-                self.dfR.to_dict()
-            )
+        if not self.dfR.empty:
+            print(self.dfR)
+            dateDict[self.rDateID]['R'] = stepDict['R']
         else:
             pass
         #------------------------------> Append or not
@@ -2941,12 +2940,23 @@ class CorrA(BaseConfPanel):
         """Write output. Override as needed """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format(self.rDate, '01'): self.dfI,
-            config.fnFloat.format(self.rDate, '02')  : self.dfS,
-            config.fnTrans.format(self.rDate, '03')  : self.dfT,
-            config.fnNorm.format(self.rDate, '04')   : self.dfN,
-            config.fnImp.format(self.rDate, '05')    : self.dfIm,
+            'Files': {
+                config.fnInitial.format(self.rDate, '01'): self.dfI,
+                config.fnFloat.format(self.rDate, '02')  : self.dfS,
+                config.fnTrans.format(self.rDate, '03')  : self.dfT,
+                config.fnNorm.format(self.rDate, '04')   : self.dfN,
+                config.fnImp.format(self.rDate, '05')    : self.dfIm,
+                self.rMainData.format(self.rDate, '06')  : self.dfR,    
             self.rMainData.format(self.rDate, '06')  : self.dfR,
+                self.rMainData.format(self.rDate, '06')  : self.dfR,    
+            },
+            'DP': {
+                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
+                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '03'),
+                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '04'),
+                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '05'),
+            },
+            'R' : self.rMainData.format(self.rDate, '06'),
         }
         #endregion -----------------------------------------------> Data Steps
         
@@ -3451,13 +3461,21 @@ class DataPrep(BaseConfPanel):
         """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format(self.rDate, '01'): self.dfI,
-            config.fnFloat.format(self.rDate, '02')  : self.dfF,
-            config.fnExclude.format(self.rDate, '03'): self.dfE,
-            config.fnScore.format(self.rDate, '04')  : self.dfS,
-            config.fnTrans.format(self.rDate, '05')  : self.dfT,
-            config.fnNorm.format(self.rDate, '06')   : self.dfN,
-            config.fnImp.format(self.rDate, '07')    : self.dfIm,
+            'Files' : {
+                config.fnInitial.format(self.rDate, '01'): self.dfI,
+                config.fnFloat.format(self.rDate, '02')  : self.dfF,
+                config.fnExclude.format(self.rDate, '03'): self.dfE,
+                config.fnScore.format(self.rDate, '04')  : self.dfS,
+                config.fnTrans.format(self.rDate, '05')  : self.dfT,
+                config.fnNorm.format(self.rDate, '06')   : self.dfN,
+                config.fnImp.format(self.rDate, '07')    : self.dfIm,
+            },
+            'DP': {
+                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
+                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '05'),
+                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '06'),
+                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '07'),
+            },
         }
         #endregion -----------------------------------------------> Data Steps
 
@@ -4514,14 +4532,23 @@ class ProtProf(BaseConfModPanel):
         """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format(self.rDate, '01'): self.dfI,
-            config.fnFloat.format(self.rDate, '02')  : self.dfF,
-            config.fnExclude.format(self.rDate, '03'): self.dfE,
-            config.fnScore.format(self.rDate, '04')  : self.dfS,
-            config.fnTrans.format(self.rDate, '05')  : self.dfT,
-            config.fnNorm.format(self.rDate, '06')   : self.dfN,
-            config.fnImp.format(self.rDate, '07')    : self.dfIm,
-            self.rMainData.format(self.rDate, '08')  : self.dfR,
+            'Files': {
+                config.fnInitial.format(self.rDate, '01'): self.dfI,
+                config.fnFloat.format(self.rDate, '02')  : self.dfF,
+                config.fnExclude.format(self.rDate, '03'): self.dfE,
+                config.fnScore.format(self.rDate, '04')  : self.dfS,
+                config.fnTrans.format(self.rDate, '05')  : self.dfT,
+                config.fnNorm.format(self.rDate, '06')   : self.dfN,
+                config.fnImp.format(self.rDate, '07')    : self.dfIm,
+                self.rMainData.format(self.rDate, '08')  : self.dfR,
+            },
+            'DP': {
+                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
+                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '05'),
+                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '06'),
+                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '07'),
+            },
+            'R' : self.rMainData.format(self.rDate, '08'),
         }
         #endregion -----------------------------------------------> Data Steps
 
@@ -5325,14 +5352,23 @@ class LimProt(BaseConfModPanel2):
         """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format(self.rDate, '01')   : self.dfI,
-            config.fnFloat.format(self.rDate, '02')     : self.dfF,
-            config.fnTargetProt.format(self.rDate, '03'): self.dfTP,
-            config.fnScore.format(self.rDate, '04')     : self.dfS,
-            config.fnTrans.format(self.rDate, '05')     : self.dfT,
-            config.fnNorm.format(self.rDate, '06')      : self.dfN,
-            config.fnImp.format(self.rDate, '07')       : self.dfIm,
-            self.rMainData.format(self.rDate, '08')     : self.dfR,
+            'Files': {
+                config.fnInitial.format(self.rDate, '01')   : self.dfI,
+                config.fnFloat.format(self.rDate, '02')     : self.dfF,
+                config.fnTargetProt.format(self.rDate, '03'): self.dfTP,
+                config.fnScore.format(self.rDate, '04')     : self.dfS,
+                config.fnTrans.format(self.rDate, '05')     : self.dfT,
+                config.fnNorm.format(self.rDate, '06')      : self.dfN,
+                config.fnImp.format(self.rDate, '07')       : self.dfIm,
+                self.rMainData.format(self.rDate, '08')     : self.dfR,
+            },
+            'DP': {
+                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
+                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '05'),
+                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '06'),
+                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '07'),
+            },
+            'R' : self.rMainData.format(self.rDate, '08'),
         }
         #endregion -----------------------------------------------> Data Steps
         
@@ -6120,14 +6156,23 @@ class TarProt(BaseConfModPanel2):
         """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format(self.rDate, '01')    : self.dfI,
-            config.fnFloat.format(self.rDate, '02')      : self.dfF,
-            config.fnTargetProt.format(self.rDate, '03') : self.dfTP,
-            config.fnScore.format(self.rDate, '04')      : self.dfS,
-            config.fnTrans.format(self.rDate, '05')      : self.dfT,
-            config.fnNorm.format(self.rDate, '06')       : self.dfN,
-            config.fnImp.format(self.rDate, '07')        : self.dfIm,
-            self.rMainData.format(self.rDate, '08')      : self.dfR,
+            'Files':{
+                config.fnInitial.format(self.rDate, '01')    : self.dfI,
+                config.fnFloat.format(self.rDate, '02')      : self.dfF,
+                config.fnTargetProt.format(self.rDate, '03') : self.dfTP,
+                config.fnScore.format(self.rDate, '04')      : self.dfS,
+                config.fnTrans.format(self.rDate, '05')      : self.dfT,
+                config.fnNorm.format(self.rDate, '06')       : self.dfN,
+                config.fnImp.format(self.rDate, '07')        : self.dfIm,
+                self.rMainData.format(self.rDate, '08')      : self.dfR,
+            },
+            'DP': {
+                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
+                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '05'),
+                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '06'),
+                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '07'),
+            },
+            'R' : self.rMainData.format(self.rDate, '08'),
         }
         #endregion -----------------------------------------------> Data Steps
         
