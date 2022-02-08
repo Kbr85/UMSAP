@@ -6782,7 +6782,7 @@ class UMSAPControl(BaseWindow):
     #------------------------------> 
     cSWindow = (400, 700)
     #------------------------------> 
-    cFileLabelCheck = ['Data File']
+    cFileLabelCheck = ['Data']
     #------------------------------> 
     dPlotMethod = { # Methods to create plot windows
         config.nuCorrA   : CorrAPlot,
@@ -6812,8 +6812,10 @@ class UMSAPControl(BaseWindow):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.rObj    = obj
+        self.rObj   = obj
         self.cTitle = self.rObj.rFileP.name
+        self.rDataInitPath = self.rObj.rFileP.parent / config.fnDataInit
+        self.rDataStepPath = self.rObj.rFileP.parent / config.fnDataSteps
         #-------------->  Reference to section items in wxCT.CustomTreeCtrl
         self.rSection = {}
         #------------------------------> Reference to plot windows
@@ -7007,11 +7009,7 @@ class UMSAPControl(BaseWindow):
         #region ------------------------------------------------> Add elements
         for a, b in self.rObj.rData.items():
             #------------------------------> Add section node
-            if self.rObj.rConfTree['Sections'][a]:
-                childa = self.wTrc.AppendItem(root, a, ct_type=1)
-            else:
-                childa = self.wTrc.AppendItem(root, a, ct_type=0)
-                self.wTrc.SetItemFont(childa, config.font['TreeItemFalse'])
+            childa = self.wTrc.AppendItem(root, a, ct_type=1)
             #------------------------------> Keep reference
             self.rSection[a] = childa
             
@@ -7019,18 +7017,14 @@ class UMSAPControl(BaseWindow):
                 #------------------------------> Add date node
                 childb = self.wTrc.AppendItem(childa, c)
                 self.wTrc.SetItemHyperText(childb, True)
-                #------------------------------> Set font
-                if self.rObj.rConfTree[a][c]:
-                    pass
-                else:
-                    self.wTrc.SetItemFont(childb, config.font['TreeItemFalse'])
 
                 for e, f in d['I'].items():
                     #------------------------------> Add date items
                     childc = self.wTrc.AppendItem(childb, f"{e}: {f}")
                     #------------------------------> Set font
                     if e.strip() in self.cFileLabelCheck:
-                        if Path(f).exists():
+                        fileP = self.rDataInitPath/f
+                        if fileP.exists():
                             self.wTrc.SetItemFont(
                             childc, 
                             config.font['TreeItemDataFile']

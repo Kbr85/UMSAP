@@ -1281,9 +1281,12 @@ class BaseConfPanel(
             #------------------------------> 
             shutil.copy(self.rDO['iFile'], self.rDFile)
             #------------------------------> 
-            self.rDI[self.EqualLenLabel(self.cLiFile)] = str(self.rDFile)
+            self.rDI[self.EqualLenLabel(self.cLiFile)] = str(self.rDFile.name)
         else:
+            #------------------------------> 
             self.rDFile = None
+            #------------------------------> 
+            self.rDI[self.EqualLenLabel(self.cLiFile)] = str(self.rDO['iFile'].name)
         #endregion ---------------------------------------------> Data Initial
         
         #region --------------------------------------------------> Data Steps
@@ -2836,8 +2839,6 @@ class CorrA(BaseConfPanel):
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
                 self.wIFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLuFile) : (
-                self.wUFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
@@ -3345,8 +3346,6 @@ class DataPrep(BaseConfPanel):
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
                 self.wIFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLuFile) : (
-                self.wUFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
@@ -4069,8 +4068,6 @@ class ProtProf(BaseConfModPanel):
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
                 self.wIFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLuFile) : (
-                self.wUFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
@@ -5104,8 +5101,6 @@ class LimProt(BaseConfModPanel2):
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
                 self.wIFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLuFile) : (
-                self.wUFile.tc.GetValue()),
             self.EqualLenLabel(f'{self.cLSeqFile} File') : (
                 self.wSeqFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
@@ -5933,8 +5928,6 @@ class TarProt(BaseConfModPanel2):
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
                 self.wIFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLuFile) : (
-                self.wUFile.tc.GetValue()),
             self.EqualLenLabel(f'{self.cLSeqFile} File') : (
                 self.wSeqFile.tc.GetValue()),
             self.EqualLenLabel(f'{self.cLPDB}') : (
