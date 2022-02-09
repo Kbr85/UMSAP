@@ -32,9 +32,7 @@ dictVersion = { # dict for directly write into output files
 }
 
 os = platform.system() # Current operating system
-cwd = Path(__file__)    # Config file path
-
-obj = None # Reference to an instance of file.UMSAPFile to reload its content
+cwd = Path(__file__)   # Config file path
 #endregion -----------------------------------------------> General parameters
 
 

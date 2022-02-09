@@ -41,6 +41,7 @@ import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
+import data.file as file
 import data.method as dmethod
 import gui.dtscore as dtscore
 import gui.menu as menu
@@ -48,7 +49,6 @@ import gui.method as method
 import gui.pane as pane
 import gui.tab as tab
 import gui.window as window
-from data.file import UMSAPFile
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -345,7 +345,7 @@ class BaseWindow(wx.Frame):
             p = Path(dlg.GetPath())
             #------------------------------> Export
             try:
-                self.rObj.ExportPlotData(self.cSection, self.rDateC, p)
+                dtsFF.WriteDF2CSV(p, self.rData[self.rDateC]['DF'])
             except Exception as e:
                 dtscore.Notification(
                     'errorF',
@@ -1562,7 +1562,7 @@ class CorrAPlot(BaseWindowPlot):
 
         #region -----------------------------------------------> Initial Setup
         self.rObj     = cParent.rObj
-        self.rData    = self.rObj.rConfData[self.cSection]
+        self.rData    = self.rObj.dConfigure[self.cSection]()
         self.rDate    = [x for x in self.rData.keys()]
         self.rDateC   = self.rDate[0]
         self.rCmap    = dtsMethod.MatplotLibCmap(
@@ -6755,11 +6755,8 @@ class UMSAPControl(BaseWindow):
 
         Parameters
         ----------
-        obj : file.UMSAPFile
-            UMSAP File obj for the window
-        cShownSection : list of str or None
-            If called from Update File Content menu list the sections that were
-            checked when starting the update
+        fileP : Path
+            Path to the UMSAP file
         cParent : wx.Window or None
             Parent of the window.
 
@@ -6802,17 +6799,18 @@ class UMSAPControl(BaseWindow):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self, obj: UMSAPFile, cShownSection: Optional[list[str]]=None, 
-        cParent: Optional[wx.Window]=None,
-        ) -> None:
+    def __init__(self, fileP: Path, cParent: Optional[wx.Window]=None) -> None:
         """ """
         #region -------------------------------------------------> Check Input
         
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.rObj   = obj
+        try:
+            self.rObj = file.UMSAPFile(fileP)
+        except Exception as e:
+            raise e
+        
         self.cTitle = self.rObj.rFileP.name
         self.rDataInitPath = self.rObj.rFileP.parent / config.fnDataInit
         self.rDataStepPath = self.rObj.rFileP.parent / config.fnDataSteps
@@ -6843,17 +6841,6 @@ class UMSAPControl(BaseWindow):
         self.WinPos()
         self.Show()
         #endregion ------------------------------------------> Window position
-
-        #region ----------------------------------------> Show opened Sections
-        if cShownSection is not None:
-            for k in cShownSection:
-                try:
-                    self.wTrc.CheckItem(self.rSection[k], checked=True)
-                except Exception:
-                    pass
-        else:
-            pass
-        #endregion -------------------------------------> Show opened Sections
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -7086,12 +7073,21 @@ class UMSAPControl(BaseWindow):
     
     def UpdateFileContent(self) -> Literal[True]:
         """Update the content of the file. """
+        #region ---------------------------------------------------> Read file
+        try:
+            self.rObj = file.UMSAPFile(self.rObj.rFileP)
+        except Exception as e:
+            raise e
+        #endregion ------------------------------------------------> Read file
+
+        #region ---------------------------------------------------> 
+        self.rSection = {}
         #------------------------------> 
-        method.LoadUMSAPFile(
-            fileP        = self.rObj.rFileP,
-            shownSection = self.GetCheckedSection(),
-        )
+        self.wTrc.DeleteAllItems()
         #------------------------------> 
+        self.SetTree()
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     #endregion -----------------------------------------------> Manage Methods
