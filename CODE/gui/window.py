@@ -1529,6 +1529,8 @@ class CorrAPlot(BaseWindowPlot):
         ----------
         rCmap : Matplotlib cmap
             CMAP to use in the plot
+        rCol : str one of 'Name', 'Number'
+            Plot column names or numbers
         rData : parent.obj.confData[Section]
             Data for the Correlation Analysis section.
         rDate : [parent.obj.confData[Section].keys()]
@@ -1653,6 +1655,7 @@ class CorrAPlot(BaseWindowPlot):
         """
         #region -------------------------------------------------> Update date
         self.rDateC = tDate
+        self.rCol = col
         #endregion ----------------------------------------------> Update date
         
         #region --------------------------------------------------------> Plot
@@ -1760,10 +1763,14 @@ class CorrAPlot(BaseWindowPlot):
                 #------------------------------> Set variables
                 x, y = event.xdata, event.ydata
                 xf = int(x)
-                xs = self.rData[self.rDateC]['DF'].columns[xf]
                 yf = int(y)
-                ys = self.rData[self.rDateC]['DF'].columns[yf]
                 zf = '{:.2f}'.format(self.rData[self.rDateC]['DF'].iat[yf,xf])
+                if self.rCol == 'Name':
+                    xs = self.rData[self.rDateC]['DF'].columns[xf]
+                    ys = self.rData[self.rDateC]['DF'].columns[yf]
+                else:
+                    xs = self.rData[self.rDateC]['NumColList'][xf]
+                    ys = self.rData[self.rDateC]['NumColList'][yf]
                 #------------------------------> Print
                 self.wStatBar.SetStatusText(
                     f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"

@@ -294,6 +294,11 @@ ttLCtrlPasteMod = (
 
 
 #region -------------------------------------------------------------> Options
+oYesNo = {
+    ''   : '',
+    'Yes': True,
+    'No' : False,
+}
 oTransMethod = {
     'Empty': '',
     'None' : 'None',
@@ -381,26 +386,14 @@ mDataExport = 'Export Data failed.'
 #region ------------------------------------------------------------> Values
 mOneRNumText = "Only one real number can be accepted here."
 mOneZPlusNumText = "Only a non-negative integer can be accepted here."
-# mOneZNumText = "Only one positive integer can be accepted here."
 mOne01NumText = "Only one number between 0 and 1 can be accepted here"
 mNZPlusNumText = (
     "Only a list of unique non-negative integers can be accepted here.")
-# mNumROne = "Only one number can be accepted in {}."
-# mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
-# mListNumN0L = (
-#     "Only a list of unique non-negative integers can be accepted in {}.")
-# mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 #endregion ---------------------------------------------------------> Values
 
 #region ---------------------------------------------------------------> Files
-# mFileUMSAP = ('It was not possible to write the results of the analysis to '
-#     'the selected UMSAP file.')
-# mFileDataExport = 'It was not possible to write the data to the selected file.'
 mFileSelector = 'It was not possible to show the file selecting dialog.'
 mFileRead = 'An error occured when reading file:\n{}'
-# mFileColNum = (
-#     "In addition, the values cannot be bigger than the total number of columns "
-#     "in the {}.")
 mFileSelUMSAP = 'Select the UMSAP File'
 #endregion ------------------------------------------------------------> Files
 
@@ -412,7 +405,6 @@ mPDDataTargetProt = ('Selection of Target Protein failed.\nTarget Protein: {} '
 mPDDataExclude = 'Data Exclusion failed.\nColumns used for data exclusion: {}.'
 mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
     'filtering by Score value: {}.')
-# mPDDataType       = 'Unexpected data type.'
 mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
 #endregion ---------------------------------------------------------> Pandas
  
