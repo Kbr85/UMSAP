@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
+import secrets
 from typing import Optional
 
 import pandas as pd
@@ -107,8 +108,6 @@ class UMSAPFile():
             dict
             {
                 'DF' : pd.DataFrame with the data to plot,
-                'DP' : dict with the data preparation steps key are the step's
-                        names and values the pd.DataFrame,
                 'NumCol' : number of columns in 'DF',
                 'NumColList' : List with the colum's names,
             }
@@ -248,8 +247,6 @@ class UMSAPFile():
             dict
             {
                 'DF' : pd.DataFrame with the data to plot,
-                'DP' : dict with the data preparation steps key are the step's
-                        names and values the pd.DataFrame,
             }
         """
         #region -------------------------------------------------> Plot & Menu
@@ -258,12 +255,13 @@ class UMSAPFile():
         #------------------------------> Fill
         for k,v in self.rData[config.nmProtProf].items():
             try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmProtProf.replace(" ", "-")}'
                 #------------------------------> Create data
-                df  = pd.DataFrame(dtsMethod.DictStringKey2Tuple(v['R']))
+                df  = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF': df,
-                    'DP': {j: pd.DataFrame(w) for j,w in v['DP'].items()},
                 }
             except Exception:
                 pass
@@ -280,8 +278,6 @@ class UMSAPFile():
             dict
             {
                 'DF' : pd.DataFrame with the data to plot,
-                'DP' : dict with the data preparation steps key are the step's
-                        names and values the pd.DataFrame,
                 'PI' : { dict with information for the plotting window
                     'Bands'     : list with the band's names,
                     'Lanes'     : list with the lane's names,
@@ -300,8 +296,10 @@ class UMSAPFile():
         #------------------------------> Fill
         for k,v in self.rData[config.nmLimProt].items():
             try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmLimProt.replace(" ", "-")}'
                 #------------------------------> Create data
-                df  = pd.DataFrame(dtsMethod.DictStringKey2Tuple(v['R']))
+                df  = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
                 #------------------------------> Plot Info
                 PI = {
                     'Bands'     : v['CI']['Band'],
@@ -315,7 +313,6 @@ class UMSAPFile():
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF': df,
-                    'DP': {j: pd.DataFrame(w) for j,w in v['DP'].items()},
                     'PI': PI,
                 }
             except Exception:
@@ -333,8 +330,6 @@ class UMSAPFile():
             dict
             {
                 'DF' : pd.DataFrame with the data to plot,
-                'DP' : dict with the data preparation steps key are the step's
-                        names and values the pd.DataFrame,
                 'PI' : { dict with information for the plotting window
                     'Exp'       : list with the experiment's names,
                     'Alpha'     : alpha value,
@@ -352,8 +347,10 @@ class UMSAPFile():
         #------------------------------> Fill
         for k,v in self.rData[config.nmTarProt].items():
             try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmTarProt.replace(" ", "-")}'
                 #------------------------------> Create data
-                df  = pd.DataFrame(dtsMethod.DictStringKey2Tuple(v['R']))
+                df  = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1])
                 #------------------------------> Plot Info
                 PI = {
                     'Exp'       : v['CI']['Exp'],
@@ -367,7 +364,6 @@ class UMSAPFile():
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF': df,
-                    'DP': {j: pd.DataFrame(w) for j,w in v['DP'].items()},
                     'PI': PI,
                 }
             except Exception:

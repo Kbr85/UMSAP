@@ -1925,7 +1925,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #region -----------------------------------------------> Initial Setup
         self.cTitle       = f"{cParent.cTitle} - {self.cSection}"
         self.rObj         = cParent.rObj
-        self.rData        = self.rObj.rConfData[self.cSection]
+        self.rData        = self.rObj.dConfigure[self.cSection]()
         self.rDf          = None
         self.rLog10alpha  = None
         self.rZScore      = stats.norm.ppf(0.9)
@@ -4149,7 +4149,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #region -----------------------------------------------> Initial Setup
         self.cTitle         = f'{cParent.cTitle} - {self.cSection}'
         self.rObj           = cParent.rObj
-        self.rData          = self.rObj.rConfData[self.cSection]
+        self.rData        = self.rObj.dConfigure[self.cSection]()
         self.rDateC         = None
         self.rBands         = None
         self.rLanes         = None
@@ -5560,7 +5560,7 @@ class TarProtPlot(BaseWindowProteolysis):
         #region -----------------------------------------------> Initial Setup
         self.cTitle       = f'{cParent.cTitle} - {self.cSection}'
         self.rObj         = cParent.rObj
-        self.rData        = self.rObj.rConfData[self.cSection]
+        self.rData        = self.rObj.dConfigure[self.cSection]()
         self.rDateC       = None
         self.rAlpha       = None
         self.rFragments   = None
