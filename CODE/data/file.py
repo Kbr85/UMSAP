@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 
@@ -141,7 +142,74 @@ class UMSAPFile():
         return plotData
     #---
     
-    def ConfigureDataCheckDataPrep(self) -> dict:
+    def ConfigureDataCheckDataPrep(
+        self, tSection: Optional[str]=None, tDate: Optional[str]=None
+        ) -> dict:
+        """Configure a Data Preparation Check section	
+        
+            Parameters
+            ----------
+            tSection: str or None
+                Section name. Default is None
+            tDate : str or None
+                Date and comment. Default is None
+        
+            Returns
+            -------
+            dict
+            {
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
+        """
+        if tSection is None and tDate is None:
+            return self.ConfigureDataCheckDataPrepFromUMSAP()
+        elif tSection is not None and tDate is not None:
+            return self.ConfigureDataCheckDataPrepFromPlot(tSection, tDate)
+        else:
+            msg = (f'Both tSection ({tSection}) and tDate ({tDate}) must be '
+                   f'None or be defined.')
+            raise dtsException.InputError(msg)
+    #---
+    
+    def ConfigureDataCheckDataPrepFromPlot(
+        self, tSection: str, tDate: str,
+        ) -> dict:
+        """Configure a Data Preparation Check section	
+        
+            Parameters
+            ----------
+            tSection: str
+                Section name
+            tDate : str
+                Date and comment
+        
+            Returns
+            -------
+            dict
+            {
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
+        """
+        #region ---------------------------------------------------> Variables
+        plotData = {}
+        tPath = self.rStepDataP / f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Plot & Menu
+        try:
+            plotData[tDate] = {
+                'DP': {j:dtsFF.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()},
+            }
+        except Exception as e:
+            pass        
+        #endregion ----------------------------------------------> Plot & Menu
+        
+        return plotData
+    #---
+    
+    def ConfigureDataCheckDataPrepFromUMSAP(self) -> dict:
         """Configure a Data Preparation Check section	
         
             Returns
@@ -152,15 +220,18 @@ class UMSAPFile():
                         names and values the pd.DataFrame,
             }
         """
-        #region -------------------------------------------------> Plot & Menu
-        #------------------------------> Empty start
+        #region ---------------------------------------------------> Variables
         plotData = {}
-        #------------------------------> Fill
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Plot & Menu        
         for k,v in self.rData[config.nuDataPrep].items():
             try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nuDataPrep.replace(" ", "-")}'
                 #------------------------------> Add to dict
                 plotData[k] = {
-                    'DP' : {j:pd.DataFrame(w) for j,w in v['DP'].items()},
+                    'DP' : {j:dtsFF.ReadCSV2DF(tPath/w) for j,w in v['DP'].items()},
                 }
             except Exception:
                 pass

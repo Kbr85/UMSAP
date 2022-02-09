@@ -17,7 +17,6 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
-import secrets
 from typing import Optional, Literal
 
 import matplotlib.patches as mpatches
@@ -302,7 +301,8 @@ class BaseWindow(wx.Frame):
         CheckDataPrep(
             self, 
             f'{self.GetTitle()} - {config.nuDataPrep}', 
-            self.rData[tDate]['DP']
+            tSection = self.cSection,
+            tDate    = self.rDateC,
         )
         
         return True
@@ -6173,7 +6173,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, cParent: wx.Window, cTitle: Optional[str]=None, 
-        rDpDF: Optional[dict[str, 'pd.DataFrame']]=None,
+        tSection: Optional[str]=None, tDate: Optional[str]=None,
         ) -> None:
         """ """
         #region -------------------------------------------------> Check Input
@@ -6181,10 +6181,12 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.cParent = cParent
-        self.cTitle = cTitle
-        self.rDpDF  = rDpDF
-        self.SetWindow()
+        self.cParent  = cParent
+        self.rObj     = self.cParent.rObj
+        self.cTitle   = cTitle
+        self.tSection = tSection
+        self.tDate    = tDate
+        self.SetWindow(tSection, tDate)
         #--------------> menuData here because it is not needed to save it
         cMenuData = None if self.rDate is None else {'menudate': self.rDate}
         #------------------------------> 
@@ -6311,7 +6313,12 @@ class CheckDataPrep(BaseWindowNPlotLT):
         if self.rFromUMSAPFile:
             super().OnDupWin()
         else:
-            CheckDataPrep(self.cParent, cTitle=self.cTitle, rDpDF=self.rDpDF)
+            CheckDataPrep(
+                self.cParent, 
+                cTitle   = self.cTitle,
+                tSection = self.tSection,
+                tDate    = self.tDate,
+            )
         #------------------------------> 
         return True
     #---
@@ -6384,7 +6391,9 @@ class CheckDataPrep(BaseWindowNPlotLT):
     #endregion ------------------------------------------------> Event Methods
     
     #region --------------------------------------------------> Manage Methods
-    def SetWindow(self) -> bool:
+    def SetWindow(
+        self, tSection: Optional[str]=None, tDate: Optional[str]=None,
+        ) -> bool:
         """Configure the window. 
         
             See Notes below
@@ -6401,17 +6410,18 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> Set Variables 
         if self.cTitle is None:
             self.rFromUMSAPFile = True 
-            self.rObj   = self.cParent.rObj
-            self.rData  = self.rObj.rConfData[self.cSection]
+            self.rData  = self.rObj.dConfigure[self.cSection]()
             self.rDate  = [k for k in self.rData.keys()]
             self.rDateC = self.rDate[0]
             self.cTitle = (
                 f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}")
         else:
             self.rFromUMSAPFile = False
+            self.rData = self.rObj.dConfigure[self.cSection](tSection, tDate)
             self.rDate = None
             self.rDateC = self.cParent.rDateC
         #------------------------------> 
+        
         return True
     #---
     
@@ -6720,7 +6730,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
             self.rDpDF = self.rData[date]['DP']
             self.rDateC = date
         else:
-            pass
+            self.rDpDF = self.rData[self.rDateC]['DP']
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> wx.ListCtrl
