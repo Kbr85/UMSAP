@@ -17,7 +17,6 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
-import secrets
 from typing import Optional, Literal
 
 import matplotlib.patches as mpatches
@@ -41,6 +40,7 @@ import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
+import data.file as file
 import data.method as dmethod
 import gui.dtscore as dtscore
 import gui.menu as menu
@@ -48,7 +48,6 @@ import gui.method as method
 import gui.pane as pane
 import gui.tab as tab
 import gui.window as window
-from data.file import UMSAPFile
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -302,7 +301,8 @@ class BaseWindow(wx.Frame):
         CheckDataPrep(
             self, 
             f'{self.GetTitle()} - {config.nuDataPrep}', 
-            self.rData[tDate]['DP']
+            tSection = self.cSection,
+            tDate    = self.rDateC,
         )
         
         return True
@@ -345,7 +345,7 @@ class BaseWindow(wx.Frame):
             p = Path(dlg.GetPath())
             #------------------------------> Export
             try:
-                self.rObj.ExportPlotData(self.cSection, self.rDateC, p)
+                dtsFF.WriteDF2CSV(p, self.rData[self.rDateC]['DF'])
             except Exception as e:
                 dtscore.Notification(
                     'errorF',
@@ -1562,7 +1562,7 @@ class CorrAPlot(BaseWindowPlot):
 
         #region -----------------------------------------------> Initial Setup
         self.rObj     = cParent.rObj
-        self.rData    = self.rObj.rConfData[self.cSection]
+        self.rData    = self.rObj.dConfigure[self.cSection]()
         self.rDate    = [x for x in self.rData.keys()]
         self.rDateC   = self.rDate[0]
         self.rCmap    = dtsMethod.MatplotLibCmap(
@@ -1925,7 +1925,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #region -----------------------------------------------> Initial Setup
         self.cTitle       = f"{cParent.cTitle} - {self.cSection}"
         self.rObj         = cParent.rObj
-        self.rData        = self.rObj.rConfData[self.cSection]
+        self.rData        = self.rObj.dConfigure[self.cSection]()
         self.rDf          = None
         self.rLog10alpha  = None
         self.rZScore      = stats.norm.ppf(0.9)
@@ -4149,7 +4149,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #region -----------------------------------------------> Initial Setup
         self.cTitle         = f'{cParent.cTitle} - {self.cSection}'
         self.rObj           = cParent.rObj
-        self.rData          = self.rObj.rConfData[self.cSection]
+        self.rData        = self.rObj.dConfigure[self.cSection]()
         self.rDateC         = None
         self.rBands         = None
         self.rLanes         = None
@@ -5560,7 +5560,7 @@ class TarProtPlot(BaseWindowProteolysis):
         #region -----------------------------------------------> Initial Setup
         self.cTitle       = f'{cParent.cTitle} - {self.cSection}'
         self.rObj         = cParent.rObj
-        self.rData        = self.rObj.rConfData[self.cSection]
+        self.rData        = self.rObj.dConfigure[self.cSection]()
         self.rDateC       = None
         self.rAlpha       = None
         self.rFragments   = None
@@ -6173,7 +6173,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, cParent: wx.Window, cTitle: Optional[str]=None, 
-        rDpDF: Optional[dict[str, 'pd.DataFrame']]=None,
+        tSection: Optional[str]=None, tDate: Optional[str]=None,
         ) -> None:
         """ """
         #region -------------------------------------------------> Check Input
@@ -6181,10 +6181,12 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.cParent = cParent
-        self.cTitle = cTitle
-        self.rDpDF  = rDpDF
-        self.SetWindow()
+        self.cParent  = cParent
+        self.rObj     = self.cParent.rObj
+        self.cTitle   = cTitle
+        self.tSection = tSection
+        self.tDate    = tDate
+        self.SetWindow(tSection, tDate)
         #--------------> menuData here because it is not needed to save it
         cMenuData = None if self.rDate is None else {'menudate': self.rDate}
         #------------------------------> 
@@ -6311,7 +6313,12 @@ class CheckDataPrep(BaseWindowNPlotLT):
         if self.rFromUMSAPFile:
             super().OnDupWin()
         else:
-            CheckDataPrep(self.cParent, cTitle=self.cTitle, rDpDF=self.rDpDF)
+            CheckDataPrep(
+                self.cParent, 
+                cTitle   = self.cTitle,
+                tSection = self.tSection,
+                tDate    = self.tDate,
+            )
         #------------------------------> 
         return True
     #---
@@ -6384,7 +6391,9 @@ class CheckDataPrep(BaseWindowNPlotLT):
     #endregion ------------------------------------------------> Event Methods
     
     #region --------------------------------------------------> Manage Methods
-    def SetWindow(self) -> bool:
+    def SetWindow(
+        self, tSection: Optional[str]=None, tDate: Optional[str]=None,
+        ) -> bool:
         """Configure the window. 
         
             See Notes below
@@ -6401,17 +6410,18 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> Set Variables 
         if self.cTitle is None:
             self.rFromUMSAPFile = True 
-            self.rObj   = self.cParent.rObj
-            self.rData  = self.rObj.rConfData[self.cSection]
+            self.rData  = self.rObj.dConfigure[self.cSection]()
             self.rDate  = [k for k in self.rData.keys()]
             self.rDateC = self.rDate[0]
             self.cTitle = (
                 f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}")
         else:
             self.rFromUMSAPFile = False
+            self.rData = self.rObj.dConfigure[self.cSection](tSection, tDate)
             self.rDate = None
             self.rDateC = self.cParent.rDateC
         #------------------------------> 
+        
         return True
     #---
     
@@ -6720,7 +6730,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
             self.rDpDF = self.rData[date]['DP']
             self.rDateC = date
         else:
-            pass
+            self.rDpDF = self.rData[self.rDateC]['DP']
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> wx.ListCtrl
@@ -6755,11 +6765,8 @@ class UMSAPControl(BaseWindow):
 
         Parameters
         ----------
-        obj : file.UMSAPFile
-            UMSAP File obj for the window
-        cShownSection : list of str or None
-            If called from Update File Content menu list the sections that were
-            checked when starting the update
+        fileP : Path
+            Path to the UMSAP file
         cParent : wx.Window or None
             Parent of the window.
 
@@ -6782,7 +6789,7 @@ class UMSAPControl(BaseWindow):
     #------------------------------> 
     cSWindow = (400, 700)
     #------------------------------> 
-    cFileLabelCheck = ['Data File']
+    cFileLabelCheck = ['Data']
     #------------------------------> 
     dPlotMethod = { # Methods to create plot windows
         config.nuCorrA   : CorrAPlot,
@@ -6802,18 +6809,21 @@ class UMSAPControl(BaseWindow):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self, obj: UMSAPFile, cShownSection: Optional[list[str]]=None, 
-        cParent: Optional[wx.Window]=None,
-        ) -> None:
+    def __init__(self, fileP: Path, cParent: Optional[wx.Window]=None) -> None:
         """ """
         #region -------------------------------------------------> Check Input
         
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        self.rObj    = obj
+        try:
+            self.rObj = file.UMSAPFile(fileP)
+        except Exception as e:
+            raise e
+        
         self.cTitle = self.rObj.rFileP.name
+        self.rDataInitPath = self.rObj.rFileP.parent / config.fnDataInit
+        self.rDataStepPath = self.rObj.rFileP.parent / config.fnDataSteps
         #-------------->  Reference to section items in wxCT.CustomTreeCtrl
         self.rSection = {}
         #------------------------------> Reference to plot windows
@@ -6841,17 +6851,6 @@ class UMSAPControl(BaseWindow):
         self.WinPos()
         self.Show()
         #endregion ------------------------------------------> Window position
-
-        #region ----------------------------------------> Show opened Sections
-        if cShownSection is not None:
-            for k in cShownSection:
-                try:
-                    self.wTrc.CheckItem(self.rSection[k], checked=True)
-                except Exception:
-                    pass
-        else:
-            pass
-        #endregion -------------------------------------> Show opened Sections
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -7007,11 +7006,7 @@ class UMSAPControl(BaseWindow):
         #region ------------------------------------------------> Add elements
         for a, b in self.rObj.rData.items():
             #------------------------------> Add section node
-            if self.rObj.rConfTree['Sections'][a]:
-                childa = self.wTrc.AppendItem(root, a, ct_type=1)
-            else:
-                childa = self.wTrc.AppendItem(root, a, ct_type=0)
-                self.wTrc.SetItemFont(childa, config.font['TreeItemFalse'])
+            childa = self.wTrc.AppendItem(root, a, ct_type=1)
             #------------------------------> Keep reference
             self.rSection[a] = childa
             
@@ -7019,18 +7014,14 @@ class UMSAPControl(BaseWindow):
                 #------------------------------> Add date node
                 childb = self.wTrc.AppendItem(childa, c)
                 self.wTrc.SetItemHyperText(childb, True)
-                #------------------------------> Set font
-                if self.rObj.rConfTree[a][c]:
-                    pass
-                else:
-                    self.wTrc.SetItemFont(childb, config.font['TreeItemFalse'])
 
                 for e, f in d['I'].items():
                     #------------------------------> Add date items
                     childc = self.wTrc.AppendItem(childb, f"{e}: {f}")
                     #------------------------------> Set font
                     if e.strip() in self.cFileLabelCheck:
-                        if Path(f).exists():
+                        fileP = self.rDataInitPath/f
+                        if fileP.exists():
                             self.wTrc.SetItemFont(
                             childc, 
                             config.font['TreeItemDataFile']
@@ -7092,12 +7083,21 @@ class UMSAPControl(BaseWindow):
     
     def UpdateFileContent(self) -> Literal[True]:
         """Update the content of the file. """
+        #region ---------------------------------------------------> Read file
+        try:
+            self.rObj = file.UMSAPFile(self.rObj.rFileP)
+        except Exception as e:
+            raise e
+        #endregion ------------------------------------------------> Read file
+
+        #region ---------------------------------------------------> 
+        self.rSection = {}
         #------------------------------> 
-        method.LoadUMSAPFile(
-            fileP        = self.rObj.rFileP,
-            shownSection = self.GetCheckedSection(),
-        )
+        self.wTrc.DeleteAllItems()
         #------------------------------> 
+        self.SetTree()
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     #endregion -----------------------------------------------> Manage Methods

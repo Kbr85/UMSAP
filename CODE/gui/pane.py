@@ -91,8 +91,9 @@ class BaseConfPanel(
             Date for the new section in the umsap file.
         rDateID : str or None
             Date + Analysis ID
-        rDFile : Path
-            Full path to copy the given input file if not in Data-Files.
+        rDFile : list[Path]
+            Full paths to copied input files. Needed to repeat the analysis
+            directly after running.
         rDI: dict
             Dict with user input. 
             The following key-value pairs are expected.
@@ -148,6 +149,9 @@ class BaseConfPanel(
             order. See CheckInput method for more details.
         rLLenLongest : int 
             Length of the longest label in output dict
+        rCopyFile : dict
+            Keys are jeys in rDO and values keys in rDI. Signal input files that
+            must be copied to Data_Initial
     """
     #region -----------------------------------------------------> Class setup
     
@@ -274,12 +278,14 @@ class BaseConfPanel(
         self.rOFolder = None
         #--------------> input file for directing repeating analysis from
         # file copied to oFolder
-        self.rDFile   = None
+        self.rDFile   = []
         #--------------> Obj for files
         self.rIFileObj   = None
         self.rSeqFileObj = None
         #------------------------------> 
         self.rChangeKey = getattr(self, 'rChangeKey', ['iFile', 'uFile'])
+        #------------------------------> 
+        self.rCopyFile = getattr(self, 'rCopyFile', {'iFile':self.cLiFile})
         #------------------------------> Parent init
         scrolled.ScrolledPanel.__init__(self, cParent, name=self.cName)
 
@@ -558,6 +564,7 @@ class BaseConfPanel(
             dtsMethod.LCtrlFillColNames(self.wLCtrlI, fileP)
         except Exception as e:
             dtscore.Notification('errorF', msg=str(e), tException=e)
+            self.wIFile.tc.SetValue('')
             return False
         #endregion ------------------------------------------------> Fill list
         
@@ -1256,7 +1263,7 @@ class BaseConfPanel(
         #------------------------------> 
         msgStep = self.cLPdWrite + 'Creating needed folders, Data-Steps folder'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        dataFolder = f"{self.rDate}_{self.cSection}"
+        dataFolder = f"{self.rDate}_{self.cSection.replace(' ', '-')}"
         dataFolder = self.rOFolder / config.fnDataSteps / dataFolder
         dataFolder.mkdir(parents=True, exist_ok=True)
         #------------------------------> 
@@ -1267,30 +1274,41 @@ class BaseConfPanel(
         #endregion --------------------------------------------> Create folder
         
         #region ------------------------------------------------> Data Initial
-        msgStep = self.cLPdWrite + 'Data files, Data file'
+        msgStep = self.cLPdWrite + 'Data files, Input Data'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> 
-        piFolder = self.rDO['iFile'].parent
         puFolder = self.rDO['uFile'].parent / config.fnDataInit
-        #------------------------------>
-        if not piFolder == puFolder:
-            #------------------------------> 
-            name = (
-                f"{self.rDate}-{self.rDO['iFile'].stem}{self.rDO['iFile'].suffix}")
-            self.rDFile = puFolder/name
-            #------------------------------> 
-            shutil.copy(self.rDO['iFile'], self.rDFile)
-            #------------------------------> 
-            self.rDI[self.EqualLenLabel(self.cLiFile)] = str(self.rDFile)
-        else:
-            self.rDFile = None
+        #------------------------------> 
+        for k,v in self.rCopyFile.items():
+            if self.rDI[self.EqualLenLabel(v)] != '':
+                #------------------------------> 
+                piFolder = self.rDO[k].parent
+                #------------------------------>
+                if not piFolder == puFolder:
+                    #------------------------------> 
+                    name = (
+                        f"{self.rDate}_{self.rDO[k].stem.replace(' ', '-')}{self.rDO[k].suffix}")
+                    file = puFolder/name
+                    #------------------------------> 
+                    shutil.copy(self.rDO[k], file)
+                    #------------------------------> 
+                    self.rDI[self.EqualLenLabel(v)] = str(file.name)
+                    #------------------------------> 
+                    self.rDFile.append(file)
+                else:
+                    #------------------------------> 
+                    self.rDI[self.EqualLenLabel(v)] = str(self.rDO[k].name)
+                    #------------------------------> 
+                    self.rDFile.append(self.rDO[k])
+            else:
+                self.rDFile.append('')
         #endregion ---------------------------------------------> Data Initial
         
         #region --------------------------------------------------> Data Steps
-        msgStep = self.cLPdWrite + 'Data files, Step by Step Data files'
+        msgStep = self.cLPdWrite + 'Data files, Output Data'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         try:
-            dtsFF.WriteDFs2CSV(dataFolder, stepDict)
+            dtsFF.WriteDFs2CSV(dataFolder, stepDict['Files'])
         except Exception as e:
             self.rMsgError = ('It was not possible to create the files with '
                 'the data for the intermediate steps of the analysis.')
@@ -1308,18 +1326,17 @@ class BaseConfPanel(
                 'I' : self.rDI,
                 'CI': dtsMethod.DictVal2Str(self.rDO, self.rChangeKey, new=True),
                 'DP': {
-                    config.ltDPKeys[0] : self.dfS.to_dict(),
-                    config.ltDPKeys[1] : self.dfT.to_dict(),
-                    config.ltDPKeys[2] : self.dfN.to_dict(),
-                    config.ltDPKeys[3] : self.dfIm.to_dict(),
+                    config.ltDPKeys[0] : stepDict['DP'][config.ltDPKeys[0]],
+                    config.ltDPKeys[1] : stepDict['DP'][config.ltDPKeys[1]],
+                    config.ltDPKeys[2] : stepDict['DP'][config.ltDPKeys[2]],
+                    config.ltDPKeys[3] : stepDict['DP'][config.ltDPKeys[3]],
                 },
             }
         }
         #-------------->  DataPrep Util does not have dfR
-        if self.dfR is not None:
-            dateDict[self.rDateID]['R'] = dtsMethod.DictTuplesKey2StringKey(
-                self.dfR.to_dict()
-            )
+        if not self.dfR.empty:
+            print(self.dfR)
+            dateDict[self.rDateID]['R'] = stepDict['R']
         else:
             pass
         #------------------------------> Append or not
@@ -1396,11 +1413,8 @@ class BaseConfPanel(
         self.rIFileObj  = None
         self.deltaT     = None # Defined in DAT4S 
         
-        if self.rDFile is not None:
-            self.wIFile.tc.SetValue(str(self.rDFile))
-        else:
-            pass
-        self.rDFile = None # Data File copied to Data-Initial
+        self.wIFile.tc.SetValue(str(self.rDFile[0]))
+        self.rDFile = []
         #endregion ----------------------------------------------------> Reset
         
         return True
@@ -2541,7 +2555,7 @@ class CorrA(BaseConfPanel):
     cGaugePD     = 24
     cTTHelp      = config.ttBtnHelp.format(cURL)
     rLLenLongest = len(cLCorrMethod)
-    rMainData    = '{}-CorrelationCoefficients-Data-{}.txt'
+    rMainData    = '{}_CorrelationCoefficients-Data-{}.txt'
     #endregion --------------------------------------------------> Class Setup
     
     #region --------------------------------------------------> Instance setup
@@ -2747,8 +2761,11 @@ class CorrA(BaseConfPanel):
         """
         if dataI is not None:
             #------------------------------> 
-            self.wUFile.tc.SetValue(dataI['CI']['uFile'])
-            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
+            dataInit = dataI['uFile'].parent / config.fnDataInit
+            iFile = dataInit / dataI['I'][self.cLiFile]
+            #------------------------------> 
+            self.wUFile.tc.SetValue(str(dataI['uFile']))
+            self.wIFile.tc.SetValue(str(iFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> 
             self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
@@ -2757,7 +2774,7 @@ class CorrA(BaseConfPanel):
             self.wImputationMethod.cb.SetValue(dataI['CI']['ImpMethod'])
             self.wCorrMethod.cb.SetValue(dataI['CI']['CorrMethod'])
             #------------------------------> 
-            if Path(self.wIFile.tc.GetValue()).exists:
+            if iFile.exists:
                 #------------------------------> Add columns with the same order
                 l = []
                 for k in dataI['CI']['oc']['Column']:
@@ -2837,8 +2854,6 @@ class CorrA(BaseConfPanel):
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
                 self.wIFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLuFile) : (
-                self.wUFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
@@ -2941,12 +2956,23 @@ class CorrA(BaseConfPanel):
         """Write output. Override as needed """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01', self.rDate): self.dfI,
-            config.fnFloat.format('02', self.rDate)  : self.dfS,
-            config.fnTrans.format('03', self.rDate)  : self.dfT,
-            config.fnNorm.format('04', self.rDate)   : self.dfN,
-            config.fnImp.format('05', self.rDate)    : self.dfIm,
-            self.rMainData.format('06', self.rDate)  : self.dfR,
+            'Files': {
+                config.fnInitial.format(self.rDate, '01'): self.dfI,
+                config.fnFloat.format(self.rDate, '02')  : self.dfS,
+                config.fnTrans.format(self.rDate, '03')  : self.dfT,
+                config.fnNorm.format(self.rDate, '04')   : self.dfN,
+                config.fnImp.format(self.rDate, '05')    : self.dfIm,
+                self.rMainData.format(self.rDate, '06')  : self.dfR,    
+            self.rMainData.format(self.rDate, '06')  : self.dfR,
+                self.rMainData.format(self.rDate, '06')  : self.dfR,    
+            },
+            'DP': {
+                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
+                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '03'),
+                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '04'),
+                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '05'),
+            },
+            'R' : self.rMainData.format(self.rDate, '06'),
         }
         #endregion -----------------------------------------------> Data Steps
         
@@ -3295,9 +3321,12 @@ class DataPrep(BaseConfPanel):
         """
         #region -------------------------------------------------> Fill Fields
         if dataI is not None:
+            #------------------------------> 
+            dataInit = dataI['uFile'].parent / config.fnDataInit
+            iFile = dataInit / dataI['I'][self.cLiFile]
             #------------------------------> Files
-            self.wUFile.tc.SetValue(dataI['CI']['uFile'])
-            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
+            self.wUFile.tc.SetValue(str(dataI['uFile']))
+            self.wIFile.tc.SetValue(str(iFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
             self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
@@ -3335,8 +3364,6 @@ class DataPrep(BaseConfPanel):
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
                 self.wIFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLuFile) : (
-                self.wUFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
@@ -3451,13 +3478,21 @@ class DataPrep(BaseConfPanel):
         """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01', self.rDate) : self.dfI,
-            config.fnFloat.format('02',   self.rDate) : self.dfF,
-            config.fnExclude.format('03', self.rDate) : self.dfE,
-            config.fnScore.format('04',   self.rDate) : self.dfS,
-            config.fnTrans.format('05',   self.rDate) : self.dfT,
-            config.fnNorm.format('06',    self.rDate) : self.dfN,
-            config.fnImp.format('07',     self.rDate) : self.dfIm,
+            'Files' : {
+                config.fnInitial.format(self.rDate, '01'): self.dfI,
+                config.fnFloat.format(self.rDate, '02')  : self.dfF,
+                config.fnExclude.format(self.rDate, '03'): self.dfE,
+                config.fnScore.format(self.rDate, '04')  : self.dfS,
+                config.fnTrans.format(self.rDate, '05')  : self.dfT,
+                config.fnNorm.format(self.rDate, '06')   : self.dfN,
+                config.fnImp.format(self.rDate, '07')    : self.dfIm,
+            },
+            'DP': {
+                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
+                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '05'),
+                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '06'),
+                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '07'),
+            },
         }
         #endregion -----------------------------------------------> Data Steps
 
@@ -3604,7 +3639,7 @@ class ProtProf(BaseConfModPanel):
     cTitlePD     = f"Running {config.nmProtProf} Analysis"
     cGaugePD     = 36
     rLLenLongest = len(config.lStResultCtrl)
-    rMainData    = config.fnMainDataProtProf
+    rMainData    = '{}_ProteomeProfiling-Data-{}.txt'
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
     #------------------------------> Label
@@ -3962,9 +3997,12 @@ class ProtProf(BaseConfModPanel):
         """
         #region -------------------------------------------------> Fill Fields
         if dataI is not None:
-            #------------------------------> Files
-            self.wUFile.tc.SetValue(dataI['CI']['uFile'])
-            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
+            #------------------------------> 
+            dataInit = dataI['uFile'].parent / config.fnDataInit
+            iFile = dataInit / dataI['I'][self.cLiFile]
+            #------------------------------> 
+            self.wUFile.tc.SetValue(str(dataI['uFile']))
+            self.wIFile.tc.SetValue(str(iFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
             self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
@@ -4051,8 +4089,6 @@ class ProtProf(BaseConfModPanel):
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
                 self.wIFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLuFile) : (
-                self.wUFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
@@ -4514,14 +4550,23 @@ class ProtProf(BaseConfModPanel):
         """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01', self.rDate): self.dfI,
-            config.fnFloat.format('02', self.rDate)  : self.dfF,
-            config.fnExclude.format('03', self.rDate): self.dfE,
-            config.fnScore.format('04', self.rDate)  : self.dfS,
-            config.fnTrans.format('05', self.rDate)  : self.dfT,
-            config.fnNorm.format('06', self.rDate)   : self.dfN,
-            config.fnImp.format('07', self.rDate)    : self.dfIm,
-            self.rMainData.format('08', self.rDate)  : self.dfR,
+            'Files': {
+                config.fnInitial.format(self.rDate, '01'): self.dfI,
+                config.fnFloat.format(self.rDate, '02')  : self.dfF,
+                config.fnExclude.format(self.rDate, '03'): self.dfE,
+                config.fnScore.format(self.rDate, '04')  : self.dfS,
+                config.fnTrans.format(self.rDate, '05')  : self.dfT,
+                config.fnNorm.format(self.rDate, '06')   : self.dfN,
+                config.fnImp.format(self.rDate, '07')    : self.dfIm,
+                self.rMainData.format(self.rDate, '08')  : self.dfR,
+            },
+            'DP': {
+                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
+                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '05'),
+                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '06'),
+                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '07'),
+            },
+            'R' : self.rMainData.format(self.rDate, '08'),
         }
         #endregion -----------------------------------------------> Data Steps
 
@@ -4701,7 +4746,7 @@ class LimProt(BaseConfModPanel2):
     cTitlePD     = f"Running {config.nmLimProt} Analysis"
     cGaugePD     = 50
     rLLenLongest = len(config.lStResultCtrl)
-    rMainData    = '{}-LimitedProteolysis-Data-{}.txt'
+    rMainData    = '{}_LimitedProteolysis-Data-{}.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile']
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
@@ -4766,6 +4811,11 @@ class LimProt(BaseConfModPanel2):
         #endregion --------------------------------------------------> Widgets
         
         #region ----------------------------------------------> checkUserInput
+        self.rCopyFile = {
+            'iFile'  : self.cLiFile,
+            'seqFile': f'{self.cLSeqFile} File',
+        }
+        
         self.rCheckUserInput = {
             self.cLuFile       :[self.wUFile.tc,           config.mFileBad],
             self.cLiFile       :[self.wIFile.tc,           config.mFileBad],
@@ -4989,10 +5039,14 @@ class LimProt(BaseConfModPanel2):
         """
         #region -------------------------------------------------> Fill Fields
         if dataI is not None:
+            #------------------------------> 
+            dataInit = dataI['uFile'].parent / config.fnDataInit
+            iFile = dataInit / dataI['I'][self.cLiFile]
+            seqFile = dataInit / dataI['I'][f'{self.cLSeqFile} File']
             #------------------------------> Files
-            self.wUFile.tc.SetValue(dataI['CI']['uFile'])
-            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
-            self.wSeqFile.tc.SetValue(dataI['I'][f'{self.cLSeqFile} File'])
+            self.wUFile.tc.SetValue(str(dataI['uFile']))
+            self.wIFile.tc.SetValue(str(iFile))
+            self.wSeqFile.tc.SetValue(str(seqFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
             self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
@@ -5077,8 +5131,6 @@ class LimProt(BaseConfModPanel2):
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
                 self.wIFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLuFile) : (
-                self.wUFile.tc.GetValue()),
             self.EqualLenLabel(f'{self.cLSeqFile} File') : (
                 self.wSeqFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
@@ -5325,18 +5377,35 @@ class LimProt(BaseConfModPanel2):
         """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01', self.rDate)    : self.dfI,
-            config.fnFloat.format('02', self.rDate)      : self.dfF,
-            config.fnTargetProt.format('03', self.rDate) : self.dfTP,
-            config.fnScore.format('04', self.rDate)      : self.dfS,
-            config.fnTrans.format('05', self.rDate)      : self.dfT,
-            config.fnNorm.format('06', self.rDate)       : self.dfN,
-            config.fnImp.format('07', self.rDate)        : self.dfIm,
-            self.rMainData.format('08', self.rDate)      : self.dfR,
+            'Files': {
+                config.fnInitial.format(self.rDate, '01')   : self.dfI,
+                config.fnFloat.format(self.rDate, '02')     : self.dfF,
+                config.fnTargetProt.format(self.rDate, '03'): self.dfTP,
+                config.fnScore.format(self.rDate, '04')     : self.dfS,
+                config.fnTrans.format(self.rDate, '05')     : self.dfT,
+                config.fnNorm.format(self.rDate, '06')      : self.dfN,
+                config.fnImp.format(self.rDate, '07')       : self.dfIm,
+                self.rMainData.format(self.rDate, '08')     : self.dfR,
+            },
+            'DP': {
+                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
+                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '05'),
+                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '06'),
+                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '07'),
+            },
+            'R' : self.rMainData.format(self.rDate, '08'),
         }
         #endregion -----------------------------------------------> Data Steps
         
         return self.WriteOutputData(stepDict)
+    #---
+    
+    def RunEnd(self) -> bool:
+        """"""
+        #------------------------------> 
+        self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
+        #------------------------------>     
+        return super().RunEnd()
     #---
     
     def EmptyDFR(self) -> 'pd.DataFrame':
@@ -5576,7 +5645,7 @@ class TarProt(BaseConfModPanel2):
     cTitlePD     = f"Running {config.nmTarProt} Analysis"
     cGaugePD     = 50
     rLLenLongest = len(config.lStResultCtrl)
-    rMainData    = '{}-TargetedProteolysis-Data-{}.txt'
+    rMainData    = '{}_TargetedProteolysis-Data-{}.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile', 'pdbFile']
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
@@ -5633,6 +5702,12 @@ class TarProt(BaseConfModPanel2):
         #endregion --------------------------------------------------> Widgets
         
         #region ----------------------------------------------> checkUserInput
+        self.rCopyFile    = {
+            'iFile'  : self.cLiFile,
+            'seqFile': f'{self.cLSeqFile} File',
+            'pdbFile': self.cLPDB,
+        }
+        
         self.rCheckUserInput = {
             self.cLuFile       :[self.wUFile.tc,           config.mFileBad],
             self.cLiFile       :[self.wIFile.tc,           config.mFileBad],
@@ -5847,11 +5922,16 @@ class TarProt(BaseConfModPanel2):
         """
         #region -------------------------------------------------> Fill Fields
         if dataI is not None:
+            #------------------------------> 
+            dataInit = dataI['uFile'].parent / config.fnDataInit
+            iFile    = dataInit / dataI['I'][self.cLiFile]
+            seqFile  = dataInit / dataI['I'][f'{self.cLSeqFile} File']
+            pdbFile  = dataInit / dataI['I'][f'{self.cLPDB}']
             #------------------------------> Files
-            self.wUFile.tc.SetValue(dataI['CI']['uFile'])
-            self.wIFile.tc.SetValue(dataI['I'][self.cLiFile])
-            self.wSeqFile.tc.SetValue(dataI['I'][f'{self.cLSeqFile} File'])
-            self.wPDBFile.tc.SetValue(dataI['I'][f'{self.cLPDB}'])
+            self.wUFile.tc.SetValue(str(dataI['uFile']))
+            self.wIFile.tc.SetValue(str(iFile))
+            self.wSeqFile.tc.SetValue(str(seqFile))
+            self.wPDBFile.tc.SetValue(str(pdbFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
             self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
@@ -5897,8 +5977,6 @@ class TarProt(BaseConfModPanel2):
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
                 self.wIFile.tc.GetValue()),
-            self.EqualLenLabel(self.cLuFile) : (
-                self.wUFile.tc.GetValue()),
             self.EqualLenLabel(f'{self.cLSeqFile} File') : (
                 self.wSeqFile.tc.GetValue()),
             self.EqualLenLabel(f'{self.cLPDB}') : (
@@ -6120,18 +6198,36 @@ class TarProt(BaseConfModPanel2):
         """
         #region --------------------------------------------------> Data Steps
         stepDict = {
-            config.fnInitial.format('01', self.rDate)    : self.dfI,
-            config.fnFloat.format('02', self.rDate)      : self.dfF,
-            config.fnTargetProt.format('03', self.rDate) : self.dfTP,
-            config.fnScore.format('04', self.rDate)      : self.dfS,
-            config.fnTrans.format('05', self.rDate)      : self.dfT,
-            config.fnNorm.format('06', self.rDate)       : self.dfN,
-            config.fnImp.format('07', self.rDate)        : self.dfIm,
-            self.rMainData.format('08', self.rDate)      : self.dfR,
+            'Files':{
+                config.fnInitial.format(self.rDate, '01')    : self.dfI,
+                config.fnFloat.format(self.rDate, '02')      : self.dfF,
+                config.fnTargetProt.format(self.rDate, '03') : self.dfTP,
+                config.fnScore.format(self.rDate, '04')      : self.dfS,
+                config.fnTrans.format(self.rDate, '05')      : self.dfT,
+                config.fnNorm.format(self.rDate, '06')       : self.dfN,
+                config.fnImp.format(self.rDate, '07')        : self.dfIm,
+                self.rMainData.format(self.rDate, '08')      : self.dfR,
+            },
+            'DP': {
+                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
+                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '05'),
+                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '06'),
+                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '07'),
+            },
+            'R' : self.rMainData.format(self.rDate, '08'),
         }
         #endregion -----------------------------------------------> Data Steps
         
         return self.WriteOutputData(stepDict)
+    #---
+    
+    def RunEnd(self) -> bool:
+        """"""
+        #------------------------------> 
+        self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
+        self.wPDBFile.tc.SetValue(str(self.rDFile[2]))
+        #------------------------------>     
+        return super().RunEnd()
     #---
     
     def EmptyDFR(self) -> 'pd.DataFrame':
