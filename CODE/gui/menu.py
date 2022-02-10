@@ -250,23 +250,35 @@ class MenuMethods():
         return True
     #---
     
-    def GetCheckedRadiodItem(self, lMenuItem: list[wx.MenuItem]) -> str:
+    def GetCheckedRadiodItem(
+        self, lMenuItem: list[wx.MenuItem], getVal: str='Label',
+        ) -> Union[str, int]:
         """Get the checked item in a list of radio menu items.
     
             Parameters
             ----------
             lMenuItem: list of wx.MenuItems
                 Items are expected to be radio items from the same group.
+            getVal: str
+                wx.MenuItem property to return. 'Id' or 'Label'. Defauls is 
+                'Label'.
     
             Returns
             -------
             str
                 Label of the checked item
+            
+            Notes
+            -----
+            If getVal is not known the Id is returned
         """
         #region -----------------------------------------------------> Checked
         for k in lMenuItem:
             if k.IsChecked():
-                return k.GetItemLabelText()
+                if getVal == 'Label':
+                    return k.GetItemLabelText()
+                else:
+                    return k.GetId()
             else:
                 pass
         #endregion --------------------------------------------------> Checked
@@ -668,7 +680,7 @@ class CorrAPlotToolMenu(PlotMenu):
             True
         """
         #region -----------------------------------------------------> Get Col
-        col    = self.GetCheckedRadiodItem(self.rCol)
+        col    = self.rKeyID[self.GetCheckedRadiodItem(self.rCol,getVal='Id')]
         date   = self.GetCheckedRadiodItem(self.rPlotDate)
         colBar = self.miColBar.IsChecked()
         win    = self.GetWindow()

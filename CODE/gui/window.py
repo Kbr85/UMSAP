@@ -1660,6 +1660,7 @@ class CorrAPlot(BaseWindowPlot):
             -------
             bool
         """
+        print(tDate, col, bar)
         #region -------------------------------------------------> Update date
         self.rDateC = tDate
         self.rCol = col
