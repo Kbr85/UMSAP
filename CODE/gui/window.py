@@ -19,6 +19,7 @@ import _thread
 from pathlib import Path
 from typing import Optional, Literal
 
+import matplotlib as mpl
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
@@ -1527,6 +1528,8 @@ class CorrAPlot(BaseWindowPlot):
 
         Attributes
         ----------
+        rBar : Matplotlib colorbar
+            Color bar in the plot
         rCmap : Matplotlib cmap
             CMAP to use in the plot
         rCol : str one of 'Name', 'Number'
@@ -1574,6 +1577,8 @@ class CorrAPlot(BaseWindowPlot):
             c3  = config.color[self.cSection]['CMAP']['c3'],
             bad = config.color[self.cSection]['CMAP']['NA'],
         )
+        self.rNorm = mpl.colors.Normalize(vmin=-1, vmax=1)
+        self.rBar = None
         #------------------------------> 
         self.cParent = cParent
         self.cTitle  = f"{cParent.cTitle} - {self.cSection} - {self.rDateC}"
@@ -1594,7 +1599,7 @@ class CorrAPlot(BaseWindowPlot):
         #endregion -----------------------------------------------------> Bind
 
         #region ----------------------------------------------------> Position
-        self.UpdateDisplayedData(self.rDateC, 'Name')
+        self.UpdateDisplayedData(self.rDateC, 'Name', False)
         self.WinPos()
         self.Show()
         #endregion -------------------------------------------------> Position
@@ -1638,7 +1643,7 @@ class CorrAPlot(BaseWindowPlot):
     #---
 
     def UpdateDisplayedData(
-        self, tDate: str, col: Literal['Name', 'Number']
+        self, tDate: str, col: Literal['Name', 'Number'], bar: bool
         ) -> bool:
         """ Plot data from a given date.
         
@@ -1648,6 +1653,8 @@ class CorrAPlot(BaseWindowPlot):
                 A date in the section e.g. '20210129-094504 - bla'
             col: One of Name or Number
                 Set the information to display in the axis
+            bar: bool
+                Show or not the colorbar
                 
             Returns
             -------
@@ -1658,6 +1665,10 @@ class CorrAPlot(BaseWindowPlot):
         self.rCol = col
         #endregion ----------------------------------------------> Update date
         
+        #region --------------------------------------------------------> Axis
+        self.SetAxis(tDate, col)
+        #endregion -----------------------------------------------------> Axis
+
         #region --------------------------------------------------------> Plot
         self.wPlot.axes.pcolormesh(
             self.rData[tDate]['DF'], 
@@ -1667,17 +1678,24 @@ class CorrAPlot(BaseWindowPlot):
             antialiased = True,
             edgecolors  = 'k',
             lw          = 0.005,
-        )		
+        )
+        
+        if bar:
+            self.wPlot.figure.colorbar(
+                mpl.cm.ScalarMappable(norm=self.rNorm, cmap=self.rCmap),
+                orientation = 'vertical',
+                ax          = self.wPlot.axes,
+            )
+        else:
+            pass
         #endregion -----------------------------------------------------> Plot
         
-        #region -------------------------------------------------> Axis & Plot
-        #------------------------------> Axis properties
-        self.SetAxis(tDate, col)
+        #region -------------------------------------------------> Zoom & Draw
         #------------------------------> Zoom Out level
         self.wPlot.ZoomResetSetValues()
         #------------------------------> Draw
         self.wPlot.canvas.draw()
-        #endregion ----------------------------------------------> Axis & Plot
+        #endregion ----------------------------------------------> Zoom & Draw 
 
         #region ---------------------------------------------------> Statusbar
         self.PlotTitle()
@@ -1700,6 +1718,11 @@ class CorrAPlot(BaseWindowPlot):
             -------
             bool
         """
+        #region -------------------------------------------------------> Clear
+        self.wPlot.figure.clear()
+        self.wPlot.axes = self.wPlot.figure.add_subplot(111)
+        #endregion ----------------------------------------------------> Clear
+
         #region --------------------------------------------------------> Grid
         self.wPlot.axes.grid(True)		
         #endregion -----------------------------------------------------> Grid

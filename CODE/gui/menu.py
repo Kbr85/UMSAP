@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import wx
 
@@ -612,6 +612,12 @@ class CorrAPlotToolMenu(PlotMenu):
         self.miColNumber = self.Insert(
             pos+1, -1, "Column Numbers (0 based)",kind=wx.ITEM_RADIO,
         )
+        #------------------------------> 
+        self.Insert(pos+2, -1, kind=wx.ITEM_SEPARATOR)
+        self.miColBar = self.Insert(
+            pos+3, -1, "Show ColorBar",kind=wx.ITEM_CHECK,
+        )
+        self.miColBar.Check(check=False)
         #endregion -----------------------------------------------> Menu Items
         
         #region -------------------------------------------------------> Names
@@ -625,40 +631,15 @@ class CorrAPlotToolMenu(PlotMenu):
         #endregion ----------------------------------------------------> Names
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnColType, source=self.miColName)
-        self.Bind(wx.EVT_MENU, self.OnColType, source=self.miColNumber)
+        self.Bind(wx.EVT_MENU, self.OnPlotData, source=self.miColName)
+        self.Bind(wx.EVT_MENU, self.OnPlotData, source=self.miColNumber)
+        self.Bind(wx.EVT_MENU, self.OnPlotData, source=self.miColBar)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #------------------------------> Class methods
     #region ---------------------------------------------------> Event methods
-    def OnColType(self, event: wx.CommandEvent) -> bool:
-        """Use either the name of the columns or the 0 based number of the 
-            column for the axes
-    
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event
-                
-            Returns
-            -------
-            True
-        """
-        #region ---------------------------------------------------> Variables
-        col  = self.rKeyID[event.GetId()]
-        date = self.GetCheckedRadiodItem(self.rPlotDate)
-        win  = self.GetWindow()
-        #endregion ------------------------------------------------> Variables
-
-        #region --------------------------------------------------------> Plot        
-        win.UpdateDisplayedData(date, col)
-        #endregion -----------------------------------------------------> Plot
-        
-        return True
-    #---
-    
     def OnPlotDate(self, event: wx.CommandEvent) -> bool:
         """Plot a date of a section in an UMSAP file.
     
@@ -671,14 +652,30 @@ class CorrAPlotToolMenu(PlotMenu):
             -------
             True
         """
+        return self.OnPlotData('fEvent')
+    #---
+    
+    def OnPlotData(self, event: Union[wx.CommandEvent, str]) -> bool:
+        """Plot a date of a section in an UMSAP file.
+        
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+    
+            Returns
+            -------
+            True
+        """
         #region -----------------------------------------------------> Get Col
-        col  = self.GetCheckedRadiodItem(self.rCol)
-        date = self.GetLabelText(event.GetId())
-        win  = self.GetWindow()
+        col    = self.GetCheckedRadiodItem(self.rCol)
+        date   = self.GetCheckedRadiodItem(self.rPlotDate)
+        colBar = self.miColBar.IsChecked()
+        win    = self.GetWindow()
         #endregion --------------------------------------------------> Get Col
         
         #region --------------------------------------------------------> Plot
-        win.UpdateDisplayedData(date, col)
+        win.UpdateDisplayedData(date, col, colBar)
         #endregion -----------------------------------------------------> Plot
         
         return True
