@@ -678,7 +678,7 @@ class BaseWindowNPlotLT(BaseWindow):
         #endregion ------------------------------------------------------> AUI
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        self.wLC.wLCS.lc.Bind(wx.EVT_LEFT_UP, self.OnListSelect)
         self.Bind(wx.EVT_SEARCH, self.OnSearch)
         #endregion -----------------------------------------------------> Bind
 
@@ -6398,8 +6398,18 @@ class CheckDataPrep(BaseWindowNPlotLT):
             -------
             bool
         """
+        #region ------------------------------------------------> Just in case
+        event.Skip()
+        #endregion ---------------------------------------------> Just in case
+
         #region ------------------------------------------------> Get Selected
         idx = self.wLC.wLCS.lc.GetFirstSelected()
+        #------------------------------> If nothing is selected clear the plot
+        if idx >= 0:
+            pass
+        else:
+            self.ClearPlots()
+            return False
         #endregion ---------------------------------------------> Get Selected
         
         #region ---------------------------------------------------------> dfF
@@ -6412,9 +6422,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
                 f'column.')
             dtscore.Notification('errorU', msg=msg, tException=e, parent=self)
             #------------------------------> 
-            for p in self.cLNPlots:
-                self.wPlots.dPlot[p].axes.clear()
-                self.wPlots.dPlot[p].canvas.draw()
+            self.ClearPlots()
             #------------------------------> 
             return False
         #endregion ------------------------------------------------------> dfF
@@ -6890,6 +6898,28 @@ class CheckDataPrep(BaseWindowNPlotLT):
             pass
         #endregion ------------------------------------------------> Title
 
+        return True
+    #---
+    
+    def ClearPlots(self):
+        """Clear the plots
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        for p in self.cLNPlots:
+            self.wPlots.dPlot[p].axes.clear()
+            self.wPlots.dPlot[p].canvas.draw()
+            
         return True
     #---
     #endregion -----------------------------------------------> Manage Methods
