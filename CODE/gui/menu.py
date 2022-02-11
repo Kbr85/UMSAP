@@ -626,11 +626,12 @@ class CorrAPlotToolMenu(PlotMenu):
         )
         #------------------------------> 
         self.Insert(pos+2, -1, kind=wx.ITEM_SEPARATOR)
-        self.miSelCol = self.Insert(pos+3, -1, "Select Columns")
+        self.miAllCol = self.Insert(pos+3, -1, "All Replicas")
+        self.miSelCol = self.Insert(pos+4, -1, "Select Replicas")
         #------------------------------> 
-        self.Insert(pos+4, -1, kind=wx.ITEM_SEPARATOR)
+        self.Insert(pos+5, -1, kind=wx.ITEM_SEPARATOR)
         self.miColBar = self.Insert(
-            pos+5, -1, "Show ColorBar",kind=wx.ITEM_CHECK,
+            pos+6, -1, "Show ColorBar",kind=wx.ITEM_CHECK,
         )
         self.miColBar.Check(check=False)
         #endregion -----------------------------------------------> Menu Items
@@ -641,6 +642,9 @@ class CorrAPlotToolMenu(PlotMenu):
             self.miColNumber.GetId(): 'Number',
             self.miSaveI.GetId()    : 'PlotImageOne',
             self.miZoomR.GetId()    : 'PlotZoomResetOne',
+            self.miAllCol.GetId()   : True,
+            self.miSelCol.GetId()   : False,
+            
         }
         self.rCol = [self.miColName, self.miColNumber]
         #endregion ----------------------------------------------------> Names
@@ -650,6 +654,7 @@ class CorrAPlotToolMenu(PlotMenu):
         self.Bind(wx.EVT_MENU, self.OnPlotData, source=self.miColNumber)
         self.Bind(wx.EVT_MENU, self.OnPlotData, source=self.miColBar)
         self.Bind(wx.EVT_MENU, self.OnSelCol,   source=self.miSelCol)
+        self.Bind(wx.EVT_MENU, self.OnSelCol,   source=self.miAllCol)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -711,7 +716,7 @@ class CorrAPlotToolMenu(PlotMenu):
         """
         #region ---------------------------------------------------> Plot
         win = self.GetWindow()
-        win.OnSelectColumns()
+        win.OnSelectColumns(self.rKeyID[event.GetId()])
         #endregion ------------------------------------------------> Plot
         
         return True

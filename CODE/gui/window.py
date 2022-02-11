@@ -1627,13 +1627,27 @@ class CorrAPlot(BaseWindowPlot):
         return self.OnZoomResetOne()
     #---
     
-    def OnSelectColumns(self) -> bool:
+    def OnSelectColumns(self, showAllCol: bool) -> bool:
         """Plot only selected columns
+        
+            Parameters
+            ----------
+            showAllCol: bool
+                Show all columns (True) or select columns to show (False).
     
             Returns
             -------
             bool
         """
+        #region ---------------------------------------------------> All
+        if showAllCol:
+            self.SetColDetails(self.rDateC)
+            self.UpdateDisplayedData(self.rDateC, self.rCol, self.rBar)
+            return True
+        else:
+            pass
+        #endregion ------------------------------------------------> All
+
         #region -----------------------------------------------------> Options
         allCol = []
         for k,c in enumerate(self.rData[self.rDateC]['DF'].columns):
