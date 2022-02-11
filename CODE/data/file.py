@@ -16,13 +16,9 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-import secrets
 from typing import Optional
 
-import pandas as pd
-
 import dat4s_core.data.file as dtsFF
-import dat4s_core.data.method as dtsMethod
 import dat4s_core.exception.exception as dtsException
 
 import config.config as config
@@ -109,7 +105,7 @@ class UMSAPFile():
             {
                 'DF' : pd.DataFrame with the data to plot,
                 'NumCol' : number of columns in 'DF',
-                'NumColList' : List with the colum's names,
+                'NumColList' : List with the number of the columns,
             }
         """
         #region -------------------------------------------------> Plot & Menu

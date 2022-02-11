@@ -191,6 +191,7 @@ class BaseConfPanel(
         #------------------------------> Size
         self.cSTc = getattr(self, 'cSTc', config.sTc)
         #------------------------------> Choices
+        self.cOCero = getattr(self, 'cOCero', list(config.oYesNo.keys()))
         self.cONorm = getattr(self, 'cONorm', list(config.oNormMethod.values()))
         self.cOTrans = getattr(
             self, 'cOTrans', list(config.oTransMethod.values()))
@@ -213,8 +214,8 @@ class BaseConfPanel(
         self.cTTClearAll = getattr(
             self, 'cTTClearAll', 'Clear all user input.')
         self.cTTId  = getattr(
-            self, 'cTTId', ('Short text to id the analysis. Do not include the '
-                            ' date of the analysis.'))
+            self, 'cTTId', ('Short text to identify the analysis. The date of '
+                            'the analysis will be automatically included.'))
         self.cTTNormMethod = getattr(
             self, 'cTTNormMethod', (f'Select the Data {self.cLNormMethod} '
                                     f'method.'))
@@ -337,11 +338,15 @@ class BaseConfPanel(
             validator = dtsValidator.IsNotEmpty(),
         )
 
-        self.wCeroB = wx.CheckBox(self.sbData, label=self.cLCeroTreat)
-        self.wCeroB.SetValue(True)
-        self.wCeroB.SetToolTip(f'Cero values in the {self.cLiFile} File will '
+        self.wCeroB = dtsWidget.StaticTextComboBox(
+            self.sbData,
+            label   = self.cLCeroTreat,
+            choices = self.cOCero,
+            tooltip = (f'Cero values in the {self.cLCeroTreat} File will '
             f'be treated as missing values when this option is selected or as '
-            f'real values when the option is not selected.')
+            f'real values when the option is not selected.'),
+            validator = dtsValidator.IsNotEmpty(),
+        )
         
         self.wNormMethod = dtsWidget.StaticTextComboBox(
             self.sbData, 
@@ -412,6 +417,10 @@ class BaseConfPanel(
         self.sizersbFileWid.AddGrowableCol(1,1)
         self.sizersbFileWid.AddGrowableRow(0,1)
         
+        self.sCeroTreat = wx.BoxSizer(wx.HORIZONTAL)
+        self.sCeroTreat.Add(self.wCeroB.st, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sCeroTreat.Add(self.wCeroB.cb, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        
         self.sizersbDataWid.Add(
             1, 1,
             pos    = (0,0),
@@ -419,7 +428,7 @@ class BaseConfPanel(
             border = 5
         )
         self.sizersbDataWid.Add(
-            self.wCeroB,
+            self.sCeroTreat,
             pos    = (0,1),
             flag   = wx.ALIGN_CENTER|wx.ALL,
             border = 5,
@@ -1413,8 +1422,11 @@ class BaseConfPanel(
         self.rIFileObj  = None
         self.deltaT     = None # Defined in DAT4S 
         
-        self.wIFile.tc.SetValue(str(self.rDFile[0]))
-        self.rDFile = []
+        if self.rDFile:
+            self.wIFile.tc.SetValue(str(self.rDFile[0]))
+            self.rDFile = []
+        else:
+            pass
         #endregion ----------------------------------------------------> Reset
         
         return True
@@ -2604,6 +2616,8 @@ class CorrA(BaseConfPanel):
         self.rCheckUserInput = {
             self.cLuFile      : [self.wUFile.tc,            config.mFileBad],
             self.cLiFile      : [self.wIFile.tc,            config.mFileBad],
+            self.cLId         : [self.wId.tc,               config.mValueBad],
+            self.cLCeroTreat  : [self.wCeroB.cb,            config.mOptionBad],
             self.cLTransMethod: [self.wTransMethod.cb,      config.mOptionBad],
             self.cLNormMethod : [self.wNormMethod.cb,       config.mOptionBad],
             self.cLImputation : [self.wImputationMethod.cb, config.mOptionBad],
@@ -2711,6 +2725,7 @@ class CorrA(BaseConfPanel):
             else:
                 pass
             self.wId.tc.SetValue("Beta Version Dev")
+            self.wCeroB.cb.SetValue("Yes")
             self.wTransMethod.cb.SetValue("Log2")
             self.wNormMethod.cb.SetValue("Median")
             self.wImputationMethod.cb.SetValue("Normal Distribution")
@@ -2768,7 +2783,7 @@ class CorrA(BaseConfPanel):
             self.wIFile.tc.SetValue(str(iFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> 
-            self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.wCeroB.cb.SetValue(dataI['I'][self.cLCeroTreatD])
             self.wTransMethod.cb.SetValue(dataI['CI']['TransMethod'])
             self.wNormMethod.cb.SetValue(dataI['CI']['NormMethod'])
             self.wImputationMethod.cb.SetValue(dataI['CI']['ImpMethod'])
@@ -2857,7 +2872,7 @@ class CorrA(BaseConfPanel):
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.IsChecked()),
+                self.wCeroB.cb.GetValue()),
             self.EqualLenLabel(self.cLTransMethod) : (
                 self.wTransMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLNormMethod) : (
@@ -2876,7 +2891,7 @@ class CorrA(BaseConfPanel):
             'uFile'      : Path(self.wUFile.tc.GetValue()),
             'iFile'      : Path(self.wIFile.tc.GetValue()),
             'ID'         : self.wId.tc.GetValue(),
-            'Cero'       : self.wCeroB.IsChecked(),
+            'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'TransMethod': self.wTransMethod.cb.GetValue(),
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
