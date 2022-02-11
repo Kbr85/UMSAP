@@ -29,104 +29,100 @@ class ResControl():
 
         Parameters
         ----------
-        parent : wx widget
+        cParent : wx widget
             Parent of the widgets
-
-        Attributes
-        ----------
-        cLResControl : str
-            Label for the wx.StaticText. Default to config.lStResultCtrl.
-        btnResultsW: wx.Button 
-        stResults: wx.StaticText
-        tcResults: wx.TextCtrl
-        
-        Notes
-        -----
-        Several configuration options are taken from parent.
-        Used as parent class.
     """
     #region -----------------------------------------------------> Class setup
-    
+    cLResControl     = config.lStResultCtrl
+    cLBtnTypeResCtrl = config.lBtnTypeResCtrl
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window):
+    def __init__(self, cParent: wx.Window) -> None:
         """ """
-        self.cLResControl = config.lStResultCtrl
         #region -----------------------------------------------------> Widgets
-        self.tcResults = wx.TextCtrl(
-            parent    = parent,
+        self.wTcResults = wx.TextCtrl(
+            parent    = cParent,
             style     = wx.TE_READONLY,
             value     = "",
             size      = config.sTc,
             validator = dtsValidator.IsNotEmpty(),
         )
 
-        self.stResults = wx.StaticText(
-            parent = parent,
+        self.wStResults = wx.StaticText(
+            parent = cParent,
             label  = self.cLResControl,
             style  = wx.ALIGN_RIGHT
         )
 
-        self.btnResultsW = wx.Button(
-            parent = parent,
-            label  = config.lBtnTypeResCtrl,
+        self.wBtnResultsW = wx.Button(
+            parent = cParent,
+            label  = self.cLBtnTypeResCtrl,
         )
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
         #------------------------------> 
-        self.sizerRes = wx.GridBagSizer(1,1)
+        self.sRes = wx.GridBagSizer(1,1)
         #------------------------------> 
-        self.sizerRes.Add(
-            self.stResults,
+        self.sRes.Add(
+            self.wStResults,
             pos    = (0,0),
             flag   = wx.ALIGN_LEFT|wx.ALL,
             border = 5,
             span   = (0,2),
         )
-        self.sizerRes.Add(
-            self.btnResultsW,
+        self.sRes.Add(
+            self.wBtnResultsW,
             pos    = (1,0),
             flag   = wx.ALIGN_CENTER_VERTICAL|wx.ALL,
             border = 5
         )
-        self.sizerRes.Add(
-            self.tcResults,
+        self.sRes.Add(
+            self.wTcResults,
             pos    = (1,1),
             flag   = wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
             border = 5,
         )
         #------------------------------> 
-        self.sizerRes.AddGrowableCol(1,1)
+        self.sRes.AddGrowableCol(1,1)
         #endregion ---------------------------------------------------> Sizers
         
         #region -----------------------------------------------------> Tooltip
-        self.btnResultsW.SetToolTip(
-            f"Type the column numbers in a helper window."
-        )
-        self.stResults.SetToolTip(
-            f"Set the column numbers containing the control and experiment "
-            f"results."
-        )
+        self.wBtnResultsW.SetToolTip(
+            'Type the column numbers in a helper window.')
+        self.wStResults.SetToolTip(
+            f'Set the column numbers containing the control and experiment '
+            f'results.')
         #endregion --------------------------------------------------> Tooltip
         
         #region --------------------------------------------------------> Bind
-        self.btnResultsW.Bind(wx.EVT_BUTTON, self.OnResW)
+        self.wBtnResultsW.Bind(wx.EVT_BUTTON, self.OnResW)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
-    def OnResW(self, event):
-        """ Open the window to write the results columns. """
+    #------------------------------> Class method
+    #region ---------------------------------------------------> Event methods
+    def OnResW(self, event: wx.CommandEvent) -> bool:
+        """ Open the window to write the results columns. 
+        
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+        """
         #------------------------------> 
         with window.ResControlExp(self) as dlg:
             dlg.ShowModal()
         #------------------------------> 
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 
 

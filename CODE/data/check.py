@@ -11,20 +11,15 @@
 # ------------------------------------------------------------------------------
 
 
-"""Classes and methods to check data """
+"""Classes and methods to check data"""
 
 
 #region -------------------------------------------------------------> Imports
 from typing import Optional, Union
 
 import dat4s_core.data.check as dtsCheck
-import dat4s_core.exception.exception as dtsException
 import dat4s_core.data.method as dtsMethod
-
-import config.config as config
-
-if config.typeCheck:
-    import wx
+import dat4s_core.exception.exception as dtsException
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -65,8 +60,6 @@ def UniqueColNumbers(
         
         Examples
         --------
-        >>> UniqueColNumbers([1, 2, 3, 4], sepList=[' ', ',', ';'])
-        >>> (True, None)
         >>> UniqueColNumbers(['1 2 3', '3-5'], sepList=[' ', ',', ';'])
         >>> (False, ('NotUnique', '3', 'Duplicated element: 3'))
     """
@@ -86,6 +79,7 @@ def UniqueColNumbers(
         #------------------------------> 
         return [x.strip() for x in out]
     #---
+    
     #region -----------------------------------------------------> Check input
     #------------------------------> 
     try:
@@ -94,6 +88,7 @@ def UniqueColNumbers(
             pass
         else:
             msg = ('value must be a list of strings.')
+            raise dtsException.InputError(msg)
     except Exception as e:
         raise e
     #------------------------------> 
@@ -122,6 +117,7 @@ def UniqueColNumbers(
     #------------------------------> 
     values = sepList[0].join(values)
     #endregion -------------------------------------------------> Get Elements
+    
     #region --------------------------------------------------> Check Elements
     #------------------------------> 
     try:
@@ -139,7 +135,7 @@ def UniqueColNumbers(
 def TcUniqueColNumbers(
     tcList: list['wx.TextCtrl'], sepList: list[str]=[' ', ',', ';'],
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
-    """Checks individual elements in the wx.TextCtrl are unique.
+    """Checks that all elements in the wx.TextCtrl(s) are unique.
 
         Parameters
         ----------
@@ -163,35 +159,32 @@ def TcUniqueColNumbers(
         Raises
         ------
         InputError
-            - When tcList is not a list or tuple.
+            - When tcList is not iterable.
+            - When tcList contains elements that do not support the GetValue()
+                method
         See also UniqueColNumbers.
             
         Notes
         -----
         Individual elements in tcList and resCtrl are expected to be integers.
     """
-    # No Test
-    #region -----------------------------------------------------> Check input
-    #------------------------------> 
-    if isinstance(tcList, (list, tuple)):
-        pass
-    else:
-        msg = f'tcList must be a list of wx.TextCtrl.'
-        raise dtsException.InputError(msg)
-    #endregion --------------------------------------------------> Check input
-    
+    # Partial test in test.unit.test_check.Test_TcUniqueColNumbers
     #region -------------------------------------------------------> Variables
     values = []
     #endregion ----------------------------------------------------> Variables
     
     #region -------------------------------------------------------> Form list
     #------------------------------> tcList
-    for tc in tcList:
-        try:
-            values.append(tc.GetValue())
-        except Exception:
-            msg = 'tcList must contain a list of wx.TextCtrl.'
-            raise dtsException.InputError(msg)
+    try:
+        for tc in tcList:
+            try:
+                values.append(tc.GetValue())
+            except Exception:
+                msg = 'tcList must contain a list of wx.TextCtrl.'
+                raise dtsException.InputError(msg)
+    except TypeError:
+        msg = f'tcList must be a list of wx.TextCtrl.'
+        raise dtsException.InputError(msg)
     #endregion ----------------------------------------------------> Form list
     
     #region ----------------------------------------------------------> Return

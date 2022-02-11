@@ -15,24 +15,13 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional, Literal
+from pathlib import Path
+from typing import Optional
 
-import pandas as pd
-
-import wx
-
-import dat4s_core.exception.exception as dtsException
-import dat4s_core.data.method as dtsMethod
 import dat4s_core.data.file as dtsFF
-
+import dat4s_core.exception.exception as dtsException
 
 import config.config as config
-
-if config.typeCheck:
-    #------------------------------> 
-    from pathlib import Path
-    #------------------------------> 
-    import gui.dtscore as dtscore
 #endregion ----------------------------------------------------------> Imports
 
 #region -------------------------------------------------------------> Classes
@@ -41,162 +30,96 @@ class UMSAPFile():
 
         Parameters
         ----------
-        fileP : Path
+        rFileP : Path
             Path to the UMSAP file
 
         Attributes
         ----------
-        name : str
+        cName : str
             Unique name of the class
-        fileP : Path
-            Path to the UMSAP file
-        data : dict
-            Data read from json formatted file
-        confData : dict
+        dConfigure : dict
+            Configure methods. Keys are the section names as read from the file
+        rConfData : dict
             Configured data. Data from the umsap file is checked and converted 
             to the proper python types. See Notes for the structure of the dict.
-        confTree : dict
+        rConfTree : dict
             Nodes to show in the wx.TreeCtrl of the control window. 
-            See Notes for the structure of the dict.
-        cSection : dict
-            Name of the sections in the umsap file
-        cConfigure : dict
-            Configure methods. Keys are the section names as read from the file
-
+            See Notes for the structure of the dict.    
+        rData : dict
+            Data read from json formatted file
+        rFileP : Path
+            Path to the UMSAP file
+        
         Raises
         ------
         InputError
             - When fileP cannot be read.
         ExecutionError
             - When a requested section is not found in the file (GetSectionData)
-
-        Notes
-        -----
-        The general structure of confData is:
-        {
-            'Correlation Analysis' : {
-                'Date' : { # Only valid date sections e.g. 20210325-112056
-                    'DF' : pd.DataFrame with Result values,
-                },
-            },
-        }
-        - Each Section.Date can have additional information. 
-        See the corresponding ConfigureDataSection
-
-        The general structure of confTree is:
-        {
-            'Sections': { 'A': True, 'B': False},
-            'Correlation Analysis' : {'DateA': True, 'DateB': False},
-        }
-        - Sections with True are shown with a checkbox in the TreeCtrl of the
-        UMSAPControl window to signal there is something to plot in the section.
-        - Dates with False are shown with a different font in the TreeCtrl of 
-        the UMSAPControl window.
     """
     #region -----------------------------------------------------> Class setup
-    name = 'UMSAPFile'
-    
-    cSection = {# Name of the sections in the umsap file
-        config.npCorrA   : config.nuCorrA,
-        config.npDataPrep: config.nuDataPrep,
-        config.npProtProf: config.nmProtProf,
-    }
+    cName = 'UMSAPFile'
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, fileP: 'Path') -> None:
+    def __init__(self, rFileP: Path) -> None:
         """ """
-        #region ---------------------------------------------------> Variables
-        self.fileP = fileP
-
-        self.cConfigure = {# Configure methods. Keys are the section names as
-                           # read from the file
-            self.cSection[config.npCorrA]   : self.ConfigureDataCorrA,
-            self.cSection[config.npDataPrep]: self.ConfigureDataCheckDataPrep,
-            self.cSection[config.npProtProf]: self.ConfigureDataProtProf,
-        }
-        #------------------------------> See Notes about the structure of dict
-        self.confData = {}
-        self.confTree = {
-            'Sections' : {},
-        }
-        #endregion ------------------------------------------------> Variables
-
         #region -------------------------------------------------> Check Input
         try:
             #------------------------------> Read File
-            data = dtsFF.ReadJSON(fileP)
+            data = dtsFF.ReadJSON(rFileP)
             #------------------------------> Sort Keys
             dataKey = sorted([x for x in data.keys()])
             #------------------------------> 
-            self.data = {}
+            self.rData = {}
             for k in dataKey:
-                self.data[k] = data[k]
+                self.rData[k] = data[k]
         except Exception:
-            raise dtsException.InputError(config.mFileRead.format(self.fileP))
+            raise dtsException.InputError(config.mFileRead.format(self.rFileP))
         #endregion ----------------------------------------------> Check Input
+        
+        #region ---------------------------------------------------> Variables
+        self.rFileP = Path(rFileP)
+        self.rStepDataP = self.rFileP.parent / config.fnDataSteps
+
+        self.dConfigure = {# Configure methods. Keys are the section names as
+                           # read from the file
+            config.nuCorrA   : self.ConfigureDataCorrA,
+            config.nuDataPrep: self.ConfigureDataCheckDataPrep,
+            config.nmProtProf: self.ConfigureDataProtProf,
+            config.nmLimProt : self.ConfigureDataLimProt,
+            config.nmTarProt : self.ConfigureDataTarProt,
+        }
+        #endregion ------------------------------------------------> Variables
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #----------------------------------------------------------> Class methods
+    #------------------------------>  Class methods
     #region -------------------------------------------------------> Configure
-    def Configure(
-        self, dlg: Optional['dtscore.ProgressDialog']=None,
-        ) -> Literal[True]:
-        """Prepare data for each section in the file and for the CustomTreeCtrl
-            in the control window. See Notes.
-    
-            Parameters
-            ----------
-            dlg : wx.Dialog or None
-                To show configuration progress.
-    
-            Notes
-            -----
-            If dlg is provided, then it is assumed the configuration is done 
-            from another thread and calls to dlg methods should be made with
-            wx.CallAfter()
-        """
-        #region ------------------------------------------> Configure sections
-        for k in self.data.keys():
-            #------------------------------> Configure data to plot
-            #--------------> Update dlg
-            if dlg is not None:
-                wx.CallAfter(dlg.UpdateStG, f"Configuring section: {k}")
-            else:
-                pass
-            #--------------> Configure data to plot
-            self.cConfigure[k]()
-            #------------------------------> Configure tree
-            #--------------> Update dlg
-            if dlg is not None:
-                wx.CallAfter(dlg.UpdateG)
-            else:
-                pass
-            #--------------> Configure tree
-            self.ConfigureTree(k)
-        #endregion ---------------------------------------> Configure sections
+    def ConfigureDataCorrA(self) -> dict:
+        """Configure a Correlation Analysis section	
         
-        #region -------------------------------------------------> Destroy dlg
-        if dlg is not None:
-            wx.CallAfter(dlg.EndModal, 1)
-        else:
-            pass		
-        #endregion ----------------------------------------------> Destroy dlg
-    
-        return True
-    #---
-
-    def ConfigureDataCorrA(self) -> Literal[True]:
-        """Configure a Correlation Analysis section	"""
+            Returns
+            ------
+            dict
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'NumCol' : number of columns in 'DF',
+                'NumColList' : List with the number of the columns,
+            }
+        """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
         plotData = {}
         #------------------------------> Fill
-        for k,v in self.data[self.cSection[config.npCorrA]].items():
+        for k,v in self.rData[config.nuCorrA].items():
+            #------------------------------> 
+            tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nuCorrA.replace(" ", "-")}'
+            #------------------------------> 
             try:
                 #------------------------------> Create data
-                df  = pd.DataFrame(v['R'], dtype='float64')
+                df = dtsFF.ReadCSV2DF(tPath/v['R'])
+                
                 if (numCol := len(v['CI']['oc']['Column'])) == df.shape[0]:
                     pass
                 else:
@@ -204,7 +127,6 @@ class UMSAPFile():
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF'     : df,
-                    'DP'     : {j:pd.DataFrame(w) for j,w in v['DP'].items()},
                     'NumCol' : numCol,
                     'NumColList': v['CI']['oc']['Column'],
                 }
@@ -212,88 +134,239 @@ class UMSAPFile():
                 pass
         #endregion ----------------------------------------------> Plot & Menu
         
-        #region -------------------------------------------> Add/Reset section 
-        self.confData[self.cSection[config.npCorrA]] = plotData
-        #endregion ----------------------------------------> Add/Reset section 
-        
-        return True
+        return plotData
     #---
     
-    def ConfigureDataCheckDataPrep(self) -> Literal[True]:
-        """Configure a Data Preparation Check section	"""
-        #region -------------------------------------------------> Plot & Menu
-        #------------------------------> Empty start
+    def ConfigureDataCheckDataPrep(
+        self, tSection: Optional[str]=None, tDate: Optional[str]=None
+        ) -> dict:
+        """Configure a Data Preparation Check section	
+        
+            Parameters
+            ----------
+            tSection: str or None
+                Section name. Default is None
+            tDate : str or None
+                Date and comment. Default is None
+        
+            Returns
+            -------
+            dict
+            {
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
+        """
+        if tSection is None and tDate is None:
+            return self.ConfigureDataCheckDataPrepFromUMSAP()
+        elif tSection is not None and tDate is not None:
+            return self.ConfigureDataCheckDataPrepFromPlot(tSection, tDate)
+        else:
+            msg = (f'Both tSection ({tSection}) and tDate ({tDate}) must be '
+                   f'None or be defined.')
+            raise dtsException.InputError(msg)
+    #---
+    
+    def ConfigureDataCheckDataPrepFromPlot(
+        self, tSection: str, tDate: str,
+        ) -> dict:
+        """Configure a Data Preparation Check section	
+        
+            Parameters
+            ----------
+            tSection: str
+                Section name
+            tDate : str
+                Date and comment
+        
+            Returns
+            -------
+            dict
+            {
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
+        """
+        #region ---------------------------------------------------> Variables
         plotData = {}
-        #------------------------------> Fill
-        for k,v in self.data[self.cSection[config.npDataPrep]].items():
+        tPath = self.rStepDataP / f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Plot & Menu
+        try:
+            plotData[tDate] = {
+                'DP': {j:dtsFF.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()},
+            }
+        except Exception as e:
+            pass        
+        #endregion ----------------------------------------------> Plot & Menu
+        
+        return plotData
+    #---
+    
+    def ConfigureDataCheckDataPrepFromUMSAP(self) -> dict:
+        """Configure a Data Preparation Check section	
+        
+            Returns
+            -------
+            dict
+            {
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
+        """
+        #region ---------------------------------------------------> Variables
+        plotData = {}
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Plot & Menu        
+        for k,v in self.rData[config.nuDataPrep].items():
             try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nuDataPrep.replace(" ", "-")}'
                 #------------------------------> Add to dict
                 plotData[k] = {
-                    'DP' : {j:pd.DataFrame(w) for j,w in v['DP'].items()},
+                    'DP' : {j:dtsFF.ReadCSV2DF(tPath/w) for j,w in v['DP'].items()},
                 }
             except Exception:
                 pass
         #endregion ----------------------------------------------> Plot & Menu
         
-        #region -------------------------------------------> Add/Reset section 
-        self.confData[self.cSection[config.npDataPrep]] = plotData
-        #endregion ----------------------------------------> Add/Reset section 
-        
-        return True
+        return plotData
     #---
     
-    def ConfigureDataProtProf(self) -> Literal[True]:
-        """Configure a Proteome Profiling section"""
+    def ConfigureDataProtProf(self) -> dict:
+        """Configure a Proteome Profiling section
+        
+            Returns
+            ------
+            dict
+            {
+                'DF' : pd.DataFrame with the data to plot,
+            }
+        """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
         plotData = {}
         #------------------------------> Fill
-        for k,v in self.data[self.cSection[config.npProtProf]].items():
+        for k,v in self.rData[config.nmProtProf].items():
             try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmProtProf.replace(" ", "-")}'
                 #------------------------------> Create data
-                df  = pd.DataFrame(dtsMethod.DictStringKey2Tuple(v['R']))
+                df  = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF': df,
-                    'DP': {j: pd.DataFrame(w) for j,w in v['DP'].items()},
                 }
             except Exception:
                 pass
         #endregion ----------------------------------------------> Plot & Menu
         
-        #region -------------------------------------------> Add/Reset section 
-        self.confData[self.cSection[config.npProtProf]] = plotData
-        #endregion ----------------------------------------> Add/Reset section 
-        
-        return True
+        return plotData
     #---
-
-    def ConfigureTree(self, tSection: str) -> Literal[True]:
-        """Configure a section for the Tree widget.
-            This is intended to be used after ConfigureDataX.
-
-            Parameters
-            ----------
-            tSection : str
-                One of config.nameUtilities or config.nameModules
+    
+    def ConfigureDataLimProt(self) -> dict:
+        """Configure a Limited Proteolysis section
+        
+            Returns
+            -------
+            dict
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'PI' : { dict with information for the plotting window
+                    'Bands'     : list with the band's names,
+                    'Lanes'     : list with the lane's names,
+                    'Alpha'     : alpha value,
+                    'ProtLength': length of the recombinant protein,
+                    'ProtLoc'   : list with the location of the native protein,
+                    'ProtDelta' : value to calculate native residue numbers as
+                                    resN_Nat = resN_Rec + ProtDelta,
+                    'Prot'      : name of the Target Protein,
+                },
+            }
         """
-        #region -----------------------------------------> Add Section Boolean
-        self.confTree['Sections'][tSection] = (
-            any(self.confData[tSection].keys())
-        )
-        #endregion --------------------------------------> Add Section Boolean
+        #region -------------------------------------------------> Plot & Menu
+        #------------------------------> Empty start
+        plotData = {}
+        #------------------------------> Fill
+        for k,v in self.rData[config.nmLimProt].items():
+            try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmLimProt.replace(" ", "-")}'
+                #------------------------------> Create data
+                df  = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
+                #------------------------------> Plot Info
+                PI = {
+                    'Bands'     : v['CI']['Band'],
+                    'Lanes'     : v['CI']['Lane'],
+                    'Alpha'     : v['CI']['Alpha'],
+                    'ProtLength': v['CI']['ProtLength'],
+                    'ProtLoc'   : v['CI']['ProtLoc'],
+                    'ProtDelta' : v['CI']['ProtDelta'],
+                    'Prot'      : v['CI']['TargetProt'],
+                }
+                #------------------------------> Add to dict if no error
+                plotData[k] = {
+                    'DF': df,
+                    'PI': PI,
+                }
+            except Exception:
+                pass
+        #endregion ----------------------------------------------> Plot & Menu
         
-        #region ---------------------------------------------------> Add Dates
-        #------------------------------> Dicts
-        self.confTree[tSection] = {}
-        #------------------------------> Date
-        for k in self.data[tSection].keys():
-            self.confTree[tSection][k] = (
-                k in self.confData[tSection]
-            )
-        #endregion ------------------------------------------------> Add Dates
+        return plotData
+    #---
+    
+    def ConfigureDataTarProt(self) -> dict:
+        """Configure a Targeted Proteolysis section
         
-        return True
+            Returns
+            ------
+            dict
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'PI' : { dict with information for the plotting window
+                    'Exp'       : list with the experiment's names,
+                    'Alpha'     : alpha value,
+                    'ProtLength': length of the recombinant protein,
+                    'ProtLoc'   : list with the location of the native protein,
+                    'ProtDelta' : value to calculate native residue numbers as
+                                    resN_Nat = resN_Rec + ProtDelta,
+                    'Prot'      : name of the Target Protein,
+                },
+            }
+        """
+        #region -------------------------------------------------> Plot & Menu
+        #------------------------------> Empty start
+        plotData = {}
+        #------------------------------> Fill
+        for k,v in self.rData[config.nmTarProt].items():
+            try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmTarProt.replace(" ", "-")}'
+                #------------------------------> Create data
+                df  = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1])
+                #------------------------------> Plot Info
+                PI = {
+                    'Exp'       : v['CI']['Exp'],
+                    'Ctrl'      : v['CI']['ControlL'],
+                    'Alpha'     : v['CI']['Alpha'],
+                    'ProtLength': v['CI']['ProtLength'],
+                    'ProtLoc'   : v['CI']['ProtLoc'],
+                    'ProtDelta' : v['CI']['ProtDelta'],
+                    'Prot'      : v['CI']['TargetProt'],
+                }
+                #------------------------------> Add to dict if no error
+                plotData[k] = {
+                    'DF': df,
+                    'PI': PI,
+                }
+            except Exception:
+                pass
+        #endregion ----------------------------------------------> Plot & Menu
+        
+        return plotData
     #---
     #endregion ----------------------------------------------------> Configure
     
@@ -306,7 +379,7 @@ class UMSAPFile():
             int:
                 Number of sections in the file	
         """
-        return len(self.data.keys())
+        return len(self.rData.keys())
     #---
 
     def GetSectionData(self, tSection: str) -> dict:
@@ -327,34 +400,14 @@ class UMSAPFile():
             ExecutionError
                 - When the section is not found in the file
         """
-        if (data := self.data.get(tSection, {})):
+        if (data := self.rData.get(tSection, {})):
             return data
         else:
             msg = (
                 f"Section {tSection} was not found in the content of "
-                f"file:\n{self.fileP}"
+                f"file:\n{self.rFileP}"
             )
             raise dtsException.ExecutionError(msg)
-    #---
-
-    def GetSectionDateDF(self, tSection: str, tDate: str) -> pd.DataFrame:
-        """Get the dataframe for the section and date
-    
-            Parameters
-            ----------
-            tSection : str
-                Section name
-            tDate : str
-                The date e.g. 20210325-112056
-    
-            Returns
-            -------
-            pd.DataFrame
-        """
-        try:
-            return self.confData[tSection][tDate]['DF']
-        except Exception as e:
-            raise e
     #---
 
     def GetDataI(self, tSection: str, tDate: str) -> dict:
@@ -365,7 +418,8 @@ class UMSAPFile():
             tSection: str
                 Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                Date of the analysis, e.g. '20210630-143556'
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
     
             Returns
             -------
@@ -377,7 +431,7 @@ class UMSAPFile():
                 When tSection or tDate is not found in the file
         """
         try:
-            return self.data[tSection][tDate]['I']
+            return self.rData[tSection][tDate]['I']
         except KeyError as e:
             raise e
     #---
@@ -390,7 +444,8 @@ class UMSAPFile():
             tSection: str
                 Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                Date of the analysis, e.g. '20210630-143556'
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
     
             Returns
             -------
@@ -402,7 +457,7 @@ class UMSAPFile():
                 When tSection or tDate is not found in the file
         """
         try:
-            return self.data[tSection][tDate]['CI']
+            return self.rData[tSection][tDate]['CI']
         except KeyError as e:
             raise e
     #---
@@ -415,11 +470,17 @@ class UMSAPFile():
             tSection: str
                 Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                Date of the analysis, e.g. '20210630-143556'
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
     
             Returns
             -------
-            dict
+            dict:
+                {
+                    'I' : user input with stripped keys,
+                    'CI': corrected user input,
+                    'rootP' : path to the folder containing the UMSAP file,
+                }
     
             Raise
             -----
@@ -430,42 +491,20 @@ class UMSAPFile():
         #------------------------------> 
         i = {}
         #------------------------------> 
-        for k,v in self.data[tSection][tDate]['I'].items():
+        for k,v in self.rData[tSection][tDate]['I'].items():
             i[k.strip()] = v
         #endregion ---------------------------------------------> Strip I keys
         
         try:
             return {
-                'I':  i, 
-                'CI': self.data[tSection][tDate]['CI'], 
+                'I'    : i,
+                'CI'   : self.rData[tSection][tDate]['CI'],
+                'uFile': self.rFileP,
             }
         except KeyError as e:
             raise e
     #---
     #endregion --------------------------------------------------> Get Methods
-
-    #region -----------------------------------------------------> Export data
-    def ExportPlotData(self, tSection: str, tDate: str, fileP: 'Path'
-                      ) -> Literal[True]:
-        """Export the plot data
-    
-            Parameters
-            ----------
-            tSection : str
-                Section name
-            tDate : str
-                The date e.g. 20210325-112056
-            fileP : Path
-                Path to the file
-        """
-        try:
-            dtsFF.WriteDF2CSV(fileP, self.GetSectionDateDF(tSection, tDate))
-        except Exception as e:
-            raise e
-        
-        return True
-    #---
-    #endregion --------------------------------------------------> Export data
 #---
 #endregion ----------------------------------------------------------> Classes
 
