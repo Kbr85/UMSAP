@@ -6244,7 +6244,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         rDpDF : dict[pd.DataFrame] or None
             The dictionary has the following structure:
             {
-                "dfS" : pd.DataFrame, Data after excluding and filter by Score
+                "dfF" : pd.DataFrame, Data after excluding and filter by Score
                 "dfT" : pd.DataFrame, Data after transformation
                 "dfN" : pd.DataFrame, Data after normalization
                 "dfIm": pd.DataFrame, Data after Imputation
@@ -6280,17 +6280,17 @@ class CheckDataPrep(BaseWindowNPlotLT):
     # shown in the window
     cSection = config.nuDataPrep
     #------------------------------> Label
-    cLDFData = ['Filtered', 'Transformed', 'Normalized', 'Imputed']
+    cLDFData = ['Floated', 'Transformed', 'Normalized', 'Imputed']
     cLdfCol = config.dfcolDataCheck
     #------------------------------> Other
     cFileName = {
-        config.ltDPKeys[0] : '{}-01-Filtered-{}.{}',
+        config.ltDPKeys[0] : '{}-01-Floated-{}.{}',
         config.ltDPKeys[1] : '{}-02-Transformed-{}.{}',
         config.ltDPKeys[2] : '{}-03-Normalized-{}.{}',
         config.ltDPKeys[3] : '{}-04-Imputed-{}.{}',
     }
     cImgName = {
-        cLNPlots[0] : '{}-01-Filtered-{}.{}',
+        cLNPlots[0] : '{}-01-Floated-{}.{}',
         cLNPlots[1] : '{}-02-Transformed-{}.{}',
         cLNPlots[2] : '{}-03-Normalized-{}.{}',
         cLNPlots[3] : '{}-04-Imputed-{}.{}',
@@ -6393,9 +6393,9 @@ class CheckDataPrep(BaseWindowNPlotLT):
         idx = self.wLC.wLCS.lc.GetFirstSelected()
         #endregion ---------------------------------------------> Get Selected
         
-        #region ---------------------------------------------------------> dfS
+        #region ---------------------------------------------------------> dfF
         try:
-            self.PlotdfS(idx)
+            self.PlotdfF(idx)
         except Exception as e:
             #------------------------------> 
             msg = (
@@ -6408,7 +6408,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
                 self.wPlots.dPlot[p].canvas.draw()
             #------------------------------> 
             return False
-        #endregion ------------------------------------------------------> dfS
+        #endregion ------------------------------------------------------> dfF
         
         #region ---------------------------------------------------------> dfT
         self.PlotdfT(idx)
@@ -6585,14 +6585,14 @@ class CheckDataPrep(BaseWindowNPlotLT):
             
             Notes
             -----
-            Entries are read from self.ddDF['dfS']
+            Entries are read from self.ddDF['dfF']
         """
         #region --------------------------------------------------> Delete old
         self.wLC.wLCS.lc.DeleteAllItems()
         #endregion -----------------------------------------------> Delete old
         
         #region ----------------------------------------------------> Get Data
-        data = [[str(k), n] for k,n in enumerate(self.rDpDF['dfS'].columns.values.tolist())]
+        data = [[str(k), n] for k,n in enumerate(self.rDpDF['dfF'].columns.values.tolist())]
         #endregion -------------------------------------------------> Get Data
         
         #region ------------------------------------------> Set in wx.ListCtrl
@@ -6607,8 +6607,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
         return True
     #---
     
-    def PlotdfS(self, col:int) -> bool:
-        """Plot the histograms for dfS
+    def PlotdfF(self, col:int) -> bool:
+        """Plot the histograms for dfF
     
             Parameters
             ----------
@@ -6621,7 +6621,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         """
         #region ---------------------------------------------------> Variables
         #------------------------------> 
-        x = self.rDpDF['dfS'].iloc[:,col]
+        x = self.rDpDF['dfF'].iloc[:,col]
         x = x[np.isfinite(x)]        
         #------------------------------> 
         nBin = dtsStatistic.HistBin(x)[0]
@@ -6631,7 +6631,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> 
         self.wPlots.dPlot['Init'].axes.clear()
         #------------------------------> title
-        self.wPlots.dPlot['Init'].axes.set_title("Filtered")
+        self.wPlots.dPlot['Init'].axes.set_title("Floated")
         #------------------------------> 
         a = self.wPlots.dPlot['Init'].axes.hist(x, bins=nBin, density=True)
         #------------------------------> 
@@ -6774,7 +6774,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         gausY = stats.gaussian_kde(x)
         self.wPlots.dPlot['Imp'].axes.plot(gausX, gausY.pdf(gausX))
         #------------------------------> 
-        idx = list(map(int, self.rDpDF['dfS'][self.rDpDF['dfS'].iloc[:,col].isnull()].index.tolist()))
+        idx = list(map(int, self.rDpDF['dfF'][self.rDpDF['dfF'].iloc[:,col].isnull()].index.tolist()))
         y = self.rDpDF['dfIm'].iloc[idx,col]
         if not y.empty:
             yBin = dtsStatistic.HistBin(y)[0]

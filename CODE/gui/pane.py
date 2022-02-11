@@ -3144,33 +3144,7 @@ class DataPrep(BaseConfPanel):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
-        self.wScoreVal = dtsWidget.StaticTextCtrl(
-            self.sbValue,
-            stLabel   = self.cLScoreVal,
-            stTooltip = self.cTTScoreVal,
-            tcSize    = self.cSTc,
-            tcHint    = 'e.g. 320',
-            validator = dtsValidator.NumberList(numType='float', nN=1),
-        )
-        
-        self.wScore = dtsWidget.StaticTextCtrl(
-            self.sbColumn,
-            stLabel   = self.cLScoreCol,
-            stTooltip = self.cTTScoreCol,
-            tcSize    = self.cSTc,
-            tcHint    = 'e.g. 39',
-            validator = dtsValidator.NumberList(numType='int', nN=1, vMin=0),
-        )
-        
-        self.wExcludeRow = dtsWidget.StaticTextCtrl(
-            self.sbColumn,
-            stLabel   = self.cLExcludeRow,
-            stTooltip = self.cTTExcludeRow,
-            tcSize    = self.cSTc,
-            tcHint    = 'e.g. 171 172 173',
-            validator = dtsValidator.NumberList(
-                numType='int', sep=' ', vMin=0, opt=True),
-        )
+        self.sbValue.Hide()
         
         self.wColAnalysis = dtsWidget.StaticTextCtrl(
             self.sbColumn,
@@ -3186,17 +3160,13 @@ class DataPrep(BaseConfPanel):
         self.rCheckUserInput = {
             self.cLuFile      : [self.wUFile.tc,           config.mFileBad],
             self.cLiFile      : [self.wIFile.tc,           config.mFileBad],
+            self.cLId         : [self.wId.tc,              config.mValueBad],
+            self.cLCeroTreat  : [self.wCeroB.cb,           config.mOptionBad],
             self.cLTransMethod: [self.wTransMethod.cb,     config.mOptionBad],
             self.cLNormMethod : [self.wNormMethod.cb,      config.mOptionBad],
             self.cLImputation : [self.wImputationMethod.cb,config.mOptionBad],
-            self.cLScoreVal   : [self.wScoreVal.tc,        config.mOneRealNum],
-            self.cLScoreCol   : [self.wScore.tc,           config.mOneZPlusNum],
-            self.cLExcludeRow : [self.wExcludeRow.tc,      config.mNZPlusNum],
             self.cLColAnalysis: [self.wColAnalysis.tc,     config.mNZPlusNum],
-        }    
-        
-        self.rCheckUnique = [self.wScore.tc, self.wExcludeRow.tc, 
-                             self.wColAnalysis.tc]    
+        }
         #endregion -------------------------------------------> checkUserInput
         
         #region -----------------------------------------------------> Tooltip
@@ -3205,33 +3175,7 @@ class DataPrep(BaseConfPanel):
 
         #region ------------------------------------------------------> Sizers
         #------------------------------> Sizer Values
-        self.sizersbValueWid.Add(
-            1, 1,
-            pos    = (0,0),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wScoreVal.st,
-            pos    = (0,1),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wScoreVal.tc,
-            pos    = (0,2),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            1, 1,
-            pos    = (0,3),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.AddGrowableCol(0, 1)
-        self.sizersbValueWid.AddGrowableCol(2, 1)
-        self.sizersbValueWid.AddGrowableCol(3, 1)
+        
         #------------------------------> Sizer Columns
         self.sizersbColumnWid.Add(
             1, 1,
@@ -3240,39 +3184,15 @@ class DataPrep(BaseConfPanel):
             border = 5,
         )
         self.sizersbColumnWid.Add(
-            self.wScore.st,
-            pos    = (0,1),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT,
-            border = 5,
-        )
-        self.sizersbColumnWid.Add(
-            self.wScore.tc,
-            pos    = (0,2),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbColumnWid.Add(
-            self.wExcludeRow.st,
-            pos    = (0,3),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT,
-            border = 5,
-        )
-        self.sizersbColumnWid.Add(
-            self.wExcludeRow.tc,
-            pos    = (0,4),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbColumnWid.Add(
             self.wColAnalysis.st,
-            pos    = (1,1),
+            pos    = (0,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT,
             border = 5,
             span   = (0,2),
         )
         self.sizersbColumnWid.Add(
             self.wColAnalysis.tc,
-            pos    = (2,1),
+            pos    = (1,1),
             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
             span   = (0,4),
@@ -3314,13 +3234,11 @@ class DataPrep(BaseConfPanel):
                 # self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT')))
             else:
                 pass
-            self.wScoreVal.tc.SetValue('320')
             self.wId.tc.SetValue('Beta Test Dev')
+            self.wCeroB.cb.SetValue('Yes')
             self.wTransMethod.cb.SetValue('Log2')
             self.wNormMethod.cb.SetValue('Median')
             self.wImputationMethod.cb.SetValue('Normal Distribution')  
-            self.wScore.tc.SetValue('39')     
-            self.wExcludeRow.tc.SetValue('171 172 173')
             self.wColAnalysis.tc.SetValue('130-135')
         else:
             pass
@@ -3356,15 +3274,11 @@ class DataPrep(BaseConfPanel):
             self.wIFile.tc.SetValue(str(iFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
-            self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.wCeroB.cb.SetValue(dataI['I'][self.cLCeroTreatD])
             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
-            #------------------------------> Values
-            self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
             #------------------------------> Columns
-            self.wScore.tc.SetValue(dataI['I'][self.cLScoreCol])
-            self.wExcludeRow.tc.SetValue(dataI['I'][self.cLExcludeRow])
             self.wColAnalysis.tc.SetValue(dataI['I'][self.cLColAnalysis])
             #------------------------------> 
             self.OnIFileLoad('fEvent')
@@ -3394,19 +3308,13 @@ class DataPrep(BaseConfPanel):
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.IsChecked()),
+                self.wCeroB.cb.GetValue()),
             self.EqualLenLabel(self.cLTransMethod) : (
                 self.wTransMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLNormMethod) : (
                 self.wNormMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLImputation) : (
                 self.wImputationMethod.cb.GetValue()),
-            self.EqualLenLabel(self.cLScoreVal) : (
-                self.wScoreVal.tc.GetValue()),
-            self.EqualLenLabel(self.cLScoreCol) : (
-                self.wScore.tc.GetValue()),
-            self.EqualLenLabel(self.cLExcludeRow) : (
-                self.wExcludeRow.tc.GetValue()),
             self.EqualLenLabel(self.cLColAnalysis) : (
                 self.wColAnalysis.tc.GetValue()),
         }
@@ -3415,36 +3323,27 @@ class DataPrep(BaseConfPanel):
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #--------------> 
-        scoreCol   = int(self.wScore.tc.GetValue())
-        excludeRow = dtsMethod.Str2ListNumber(
-            self.wExcludeRow.tc.GetValue(), sep=' ',
-        )
         colAnalysis = dtsMethod.Str2ListNumber(
             self.wColAnalysis.tc.GetValue(), sep=' ',
         )
-        resCtrlFlat = [x for x in range(1+len(excludeRow), 1+len(excludeRow)+len(colAnalysis))]
+        resCtrlFlat = [x for x in range(0, len(colAnalysis))]
         #--------------> 
         self.rDO  = {
             'iFile'      : Path(self.wIFile.tc.GetValue()),
             'uFile'      : Path(self.wUFile.tc.GetValue()),
             'ID'         : self.wId.tc.GetValue(),
-            'Cero'       : self.wCeroB.IsChecked(),
+            'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'TransMethod': self.wTransMethod.cb.GetValue(),
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
-            'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
             'oc'         : {
-                'ScoreCol'   : scoreCol,
-                'ExcludeP'   : excludeRow,
                 'ColAnalysis': colAnalysis,
-                'Column'     : [scoreCol] + excludeRow + colAnalysis,
+                'Column'     : colAnalysis,
             },
             'df' : {
-                'ScoreCol'   : 0,
-                'ExcludeP'   : [x for x in range(1, len(excludeRow)+1)],
                 'ColumnR'    : resCtrlFlat,
                 'ResCtrlFlat': resCtrlFlat,
-                'ColumnF'    : [0]+resCtrlFlat,
+                'ColumnF'    : resCtrlFlat,
             },
         }
         #endregion ----------------------------------------------------> Input
