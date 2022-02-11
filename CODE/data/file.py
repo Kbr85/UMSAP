@@ -105,7 +105,7 @@ class UMSAPFile():
             {
                 'DF' : pd.DataFrame with the data to plot,
                 'NumCol' : number of columns in 'DF',
-                'NumColList' : List with the colum's names,
+                'NumColList' : List with the number of the columns,
             }
         """
         #region -------------------------------------------------> Plot & Menu

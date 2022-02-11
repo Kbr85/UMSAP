@@ -626,8 +626,11 @@ class CorrAPlotToolMenu(PlotMenu):
         )
         #------------------------------> 
         self.Insert(pos+2, -1, kind=wx.ITEM_SEPARATOR)
+        self.miSelCol = self.Insert(pos+3, -1, "Select Columns")
+        #------------------------------> 
+        self.Insert(pos+4, -1, kind=wx.ITEM_SEPARATOR)
         self.miColBar = self.Insert(
-            pos+3, -1, "Show ColorBar",kind=wx.ITEM_CHECK,
+            pos+5, -1, "Show ColorBar",kind=wx.ITEM_CHECK,
         )
         self.miColBar.Check(check=False)
         #endregion -----------------------------------------------> Menu Items
@@ -646,6 +649,7 @@ class CorrAPlotToolMenu(PlotMenu):
         self.Bind(wx.EVT_MENU, self.OnPlotData, source=self.miColName)
         self.Bind(wx.EVT_MENU, self.OnPlotData, source=self.miColNumber)
         self.Bind(wx.EVT_MENU, self.OnPlotData, source=self.miColBar)
+        self.Bind(wx.EVT_MENU, self.OnSelCol,   source=self.miSelCol)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -689,6 +693,26 @@ class CorrAPlotToolMenu(PlotMenu):
         #region --------------------------------------------------------> Plot
         win.UpdateDisplayedData(date, col, colBar)
         #endregion -----------------------------------------------------> Plot
+        
+        return True
+    #---
+    
+    def OnSelCol(self, event: wx.CommandEvent) -> bool:
+        """Plot only the selected columns
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+
+            Returns
+            -------
+            True
+        """
+        #region ---------------------------------------------------> Plot
+        win = self.GetWindow()
+        win.OnSelectColumns()
+        #endregion ------------------------------------------------> Plot
         
         return True
     #---

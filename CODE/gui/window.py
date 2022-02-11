@@ -1528,21 +1528,29 @@ class CorrAPlot(BaseWindowPlot):
 
         Attributes
         ----------
-        rBar : Matplotlib colorbar
-            Color bar in the plot
+        rBar : Boolean
+            Show (True) or not (False) the Colorbar in the plot
         rCmap : Matplotlib cmap
             CMAP to use in the plot
         rCol : str one of 'Name', 'Number'
             Plot column names or numbers
         rData : parent.obj.confData[Section]
             Data for the Correlation Analysis section.
+        rDataPlot : pd.DF
+            Data to plot and search the values for the wx.StatusBar.
         rDate : [parent.obj.confData[Section].keys()]
             List of dates availables for plotting.
         rDateC : one of rDate
             Current selected date
         rObj : parent.obj
-            Pointer to the UMSAPFile object in parent. Instead of modifying this
-            object here, modify the configure step or add a Get method.
+            Pointer to the UMSAPFile object in parent.
+        rSelColIdx : list[int]
+            Selected columns index in self.rData[self.rDateC]['DF'].
+        rSelColName : list[int]
+            Selected columns name to plot.            
+        rSelColNum : list[int]
+            Selected columns numbers to plot.
+        
             
         Notes
         -----
@@ -1570,6 +1578,8 @@ class CorrAPlot(BaseWindowPlot):
         self.rData    = self.rObj.dConfigure[self.cSection]()
         self.rDate    = [x for x in self.rData.keys()]
         self.rDateC   = self.rDate[0]
+        self.rBar     = None
+        self.rNorm    = mpl.colors.Normalize(vmin=-1, vmax=1)
         self.rCmap    = dtsMethod.MatplotLibCmap(
             N   = config.color[self.cSection]['CMAP']['N'],
             c1  = config.color[self.cSection]['CMAP']['c1'],
@@ -1577,8 +1587,6 @@ class CorrAPlot(BaseWindowPlot):
             c3  = config.color[self.cSection]['CMAP']['c3'],
             bad = config.color[self.cSection]['CMAP']['NA'],
         )
-        self.rNorm = mpl.colors.Normalize(vmin=-1, vmax=1)
-        self.rBar = None
         #------------------------------> 
         self.cParent = cParent
         self.cTitle  = f"{cParent.cTitle} - {self.cSection} - {self.rDateC}"
@@ -1599,6 +1607,7 @@ class CorrAPlot(BaseWindowPlot):
         #endregion -----------------------------------------------------> Bind
 
         #region ----------------------------------------------------> Position
+        self.SetColDetails(self.rDateC)
         self.UpdateDisplayedData(self.rDateC, 'Name', False)
         self.WinPos()
         self.Show()
@@ -1616,6 +1625,61 @@ class CorrAPlot(BaseWindowPlot):
             bool
         """
         return self.OnZoomResetOne()
+    #---
+    
+    def OnSelectColumns(self) -> bool:
+        """Plot only selected columns
+    
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------------> Options
+        allCol = []
+        for k,c in enumerate(self.rData[self.rDateC]['DF'].columns):
+            allCol.append([self.rData[self.rDateC]['NumColList'][k], c])
+        
+        selCol = []
+        for c in self.rSelColIdx:
+            selCol.append([
+                self.rData[self.rDateC]['NumColList'][c], 
+                self.rData[self.rDateC]['DF'].columns[c]])    
+        #endregion --------------------------------------------------> Options
+
+        #region -------------------------------------------------> Get New Sel
+        #------------------------------> Create the window
+        dlg = dtsWindow.ListSelect(
+            allCol, 
+            config.lLCtrlColNameI, 
+            config.sLCtrlColI, 
+            tSelOptions = selCol,
+            title       = 'Select the columns to show in the correlation plot',            
+            tBtnLabel   = 'Add selection',
+            color       = config.color['Zebra'],
+            tStLabel = ['Columns in the current results', 'Selected columns'],
+        )
+        #------------------------------> Get the selected values
+        if dlg.ShowModal():
+            self.rSelColNum  = dlg.wLCtrlO.GetColContent(0)
+            self.rSelColIdx  = []
+            self.rSelColName = []
+            #------------------------------> 
+            for k in self.rSelColNum:
+                #------------------------------> 
+                tIDX = self.rData[self.rDateC]['NumColList'].index(int(k))
+                self.rSelColIdx.append(tIDX)
+                #------------------------------> 
+                self.rSelColName.append(
+                    self.rData[self.rDateC]['DF'].columns[tIDX])
+            #------------------------------> 
+            self.UpdateDisplayedData(self.rDateC, self.rCol, self.rBar)
+        else:
+            pass
+        
+        #endregion ----------------------------------------------> Get New Sel
+        
+        dlg.Destroy()
+        return True
     #---
     #endregion -------------------------------------------------> Event Manage
 
@@ -1641,7 +1705,22 @@ class CorrAPlot(BaseWindowPlot):
 
         return True
     #---
-
+    
+    def SetColDetails(self, tDate: str) -> bool:
+        """"Set the values of self.rSelColX to its default values, all values
+            in the analysis.
+            
+            Returns
+            -------
+            bool
+        """
+        self.rSelColName = self.rData[tDate]['DF'].columns.values
+        self.rSelColNum  = self.rData[tDate]['NumColList']
+        self.rSelColIdx  = [x for x,_ in enumerate(self.rSelColNum)]
+        
+        return True
+    #---
+    
     def UpdateDisplayedData(
         self, tDate: str, col: Literal['Name', 'Number'], bar: bool
         ) -> bool:
@@ -1660,19 +1739,27 @@ class CorrAPlot(BaseWindowPlot):
             -------
             bool
         """
-        print(tDate, col, bar)
         #region -------------------------------------------------> Update date
+        if tDate == self.rDateC:
+            pass
+        else:
+            self.SetColDetails(tDate)
+        #------------------------------>     
         self.rDateC = tDate
-        self.rCol = col
+        self.rCol   = col
+        self.rBar   = bar
         #endregion ----------------------------------------------> Update date
         
         #region --------------------------------------------------------> Axis
-        self.SetAxis(tDate, col)
+        self.SetAxis()
         #endregion -----------------------------------------------------> Axis
 
         #region --------------------------------------------------------> Plot
+        #------------------------------> 
+        self.rDataPlot = self.rData[self.rDateC]['DF'].iloc[self.rSelColIdx,self.rSelColIdx]
+        #------------------------------> 
         self.wPlot.axes.pcolormesh(
-            self.rData[tDate]['DF'], 
+            self.rDataPlot, 
             cmap        = self.rCmap,
             vmin        = -1,
             vmax        = 1,
@@ -1705,16 +1792,9 @@ class CorrAPlot(BaseWindowPlot):
         return True
     #---
 
-    def SetAxis(self, tDate: str, col: Literal['Name', 'Number']) -> bool:
+    def SetAxis(self) -> bool:
         """ General details of the plot area 
         
-            Parameters
-            ----------
-            tDate : str
-                A date in the section e.g. 20210129-094504
-            col: One of Name or Number
-                Set the information to display in the axis
-                
             Returns
             -------
             bool
@@ -1723,37 +1803,37 @@ class CorrAPlot(BaseWindowPlot):
         self.wPlot.figure.clear()
         self.wPlot.axes = self.wPlot.figure.add_subplot(111)
         #endregion ----------------------------------------------------> Clear
+        
+        #region ---------------------------------------------------> Variables
+        xlabel    = []
+        xticksloc = []
+        
+        if (tLen := len(self.rSelColIdx)) <= 30:
+            step = 1
+        elif tLen > 30 and tLen <= 60:
+            step = 2
+        else:
+            step = 3
+        #endregion ------------------------------------------------> Variables
 
         #region --------------------------------------------------------> Grid
         self.wPlot.axes.grid(True)		
         #endregion -----------------------------------------------------> Grid
         
         #region --------------------------------------------------> Axis range
-        self.wPlot.axes.set_xlim(0, self.rData[tDate]['NumCol'])
-        self.wPlot.axes.set_ylim(0, self.rData[tDate]['NumCol']) 
+        self.wPlot.axes.set_xlim(0, tLen)
+        self.wPlot.axes.set_ylim(0, tLen) 
         #endregion -----------------------------------------------> Axis range
         
-        #region ---------------------------------------------------> Variables
-        xlabel    = []
-        xticksloc = []
-        
-        if (self.rData[tDate]['NumCol']) <= 30:
-            step = 1
-        elif self.rData[tDate]['NumCol'] > 30 and self.rData[tDate]['NumCol'] <= 60:
-            step = 2
-        else:
-            step = 3		
-        #endregion ------------------------------------------------> Variables
-        
         #region ---------------------------------------------------> Set ticks
-        if col == 'Name':
-            for i in range(0, self.rData[tDate]['NumCol'], step):
+        if self.rCol == 'Name':
+            for i in range(0, tLen, step):
                 xticksloc.append(i + 0.5)		
-                xlabel.append(self.rData[tDate]['DF'].columns[i])
+                xlabel.append(self.rSelColName[i])
         else:
-            for i in range(0, self.rData[tDate]['NumCol'], step):
+            for i in range(0, tLen, step):
                 xticksloc.append(i + 0.5)
-                xlabel.append(self.rData[tDate]['NumColList'][i])
+                xlabel.append(self.rSelColNum[i])
 
         self.wPlot.axes.set_xticks(xticksloc)
         self.wPlot.axes.set_xticklabels(xlabel, rotation=90)
@@ -1784,17 +1864,19 @@ class CorrAPlot(BaseWindowPlot):
         #region ----------------------------------------------> Statusbar Text
         if event.inaxes:
             try:
-                #------------------------------> Set variables
+                #------------------------------> Set x,y,z
                 x, y = event.xdata, event.ydata
+                
                 xf = int(x)
                 yf = int(y)
-                zf = '{:.2f}'.format(self.rData[self.rDateC]['DF'].iat[yf,xf])
+                zf = '{:.2f}'.format(self.rDataPlot.iat[yf,xf])
+                
                 if self.rCol == 'Name':
-                    xs = self.rData[self.rDateC]['DF'].columns[xf]
-                    ys = self.rData[self.rDateC]['DF'].columns[yf]
+                    xs = self.rSelColName[xf]
+                    ys = self.rSelColName[yf]
                 else:
-                    xs = self.rData[self.rDateC]['NumColList'][xf]
-                    ys = self.rData[self.rDateC]['NumColList'][yf]
+                    xs = self.rSelColNum[xf]
+                    ys = self.rSelColNum[yf]
                 #------------------------------> Print
                 self.wStatBar.SetStatusText(
                     f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
