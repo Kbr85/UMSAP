@@ -626,8 +626,8 @@ class CorrAPlotToolMenu(PlotMenu):
         )
         #------------------------------> 
         self.Insert(pos+2, -1, kind=wx.ITEM_SEPARATOR)
-        self.miAllCol = self.Insert(pos+3, -1, "All Replicas")
-        self.miSelCol = self.Insert(pos+4, -1, "Select Replicas")
+        self.miAllCol = self.Insert(pos+3, -1, "All Columns")
+        self.miSelCol = self.Insert(pos+4, -1, "Select Columns")
         #------------------------------> 
         self.Insert(pos+5, -1, kind=wx.ITEM_SEPARATOR)
         self.miColBar = self.Insert(

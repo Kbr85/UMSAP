@@ -731,17 +731,26 @@ class BaseWindowNPlotLT(BaseWindow):
         #endregion -------------------------------------------> Show 1 Results
         
         #region ----------------------------------------------> Show N Results
-        msg = (f'The string, {tStr}, was found in multiple rows.')
-        tException = (
-            f'The row numbers where the string was found are:\n '
-            f'{str(iSimilar)[1:-1]}')
-        dtscore.Notification(
-            'warning', 
-            msg        = msg,
-            setText    = True,
-            tException = tException,
-            parent     = self,
-        )
+        if iSimilar:
+            msg = (f'The string, {tStr}, was found in multiple rows.')
+            tException = (
+                f'The row numbers where the string was found are:\n '
+                f'{str(iSimilar)[1:-1]}')
+            dtscore.Notification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                tException = tException,
+                parent     = self,
+            )
+        else:
+            msg = (f'The string, {tStr}, was not found.')
+            dtscore.Notification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                parent     = self,
+            )
         #endregion -------------------------------------------> Show N Results
         
         return True
