@@ -6287,7 +6287,13 @@ class CheckDataPrep(BaseWindowNPlotLT):
         rFromUMSAPFile : bool
             The window is invoked from an UMSAP File window (True) or not (False)
         rObj : UMSAPFile
-            Refernece to the UMSAPFile object.
+            Reference to the UMSAPFile object.
+            
+        Notes
+        -----
+        Requires a 'NumColList' key in self.rData[tSection][tDate] with a list
+        of all columns involved in the analysis with the column numbers in the
+        original data file.
         """
     #region -----------------------------------------------------> Class setup
     cName = config.nwCheckDataPrep
@@ -6334,7 +6340,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         self.cParent  = cParent
         self.rObj     = self.cParent.rObj
         self.cTitle   = cTitle
-        self.tSection = tSection
+        self.tSection = tSection if tSection is not None else self.cSection
         self.tDate    = tDate
         self.SetWindow(tSection, tDate)
         #--------------> menuData here because it is not needed to save it
@@ -6625,7 +6631,10 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion -----------------------------------------------> Delete old
         
         #region ----------------------------------------------------> Get Data
-        data = [[str(k), n] for k,n in enumerate(self.rDpDF['dfF'].columns.values.tolist())]
+        data = []
+        for k,n in enumerate(self.rDpDF['dfF'].columns.values.tolist()):
+            colN = str(self.rData[self.rDateC]['NumColList'][k])
+            data.append([colN, n])
         #endregion -------------------------------------------------> Get Data
         
         #region ------------------------------------------> Set in wx.ListCtrl
