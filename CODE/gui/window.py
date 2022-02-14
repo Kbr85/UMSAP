@@ -713,18 +713,10 @@ class BaseWindowNPlotLT(BaseWindow):
         
         #region ----------------------------------------------> Show 1 Results
         if len(iEqual) == 1:
-            #------------------------------> 
-            self.wLC.wLCS.lc.Select(iEqual[0], on=1)
-            self.wLC.wLCS.lc.EnsureVisible(iEqual[0])
-            self.wLC.wLCS.lc.SetFocus()
-            #------------------------------> 
+            self.OnSearchSelect(iEqual[0])
             return True
         elif len(iSimilar) == 1:
-            #------------------------------> 
-            self.wLC.wLCS.lc.Select(iSimilar[0], on=1)
-            self.wLC.wLCS.lc.EnsureVisible(iSimilar[0])
-            self.wLC.wLCS.lc.SetFocus()
-            #------------------------------> 
+            self.OnSearchSelect(iSimilar[0])
             return True
         else:
             pass
@@ -753,6 +745,28 @@ class BaseWindowNPlotLT(BaseWindow):
             )
         #endregion -------------------------------------------> Show N Results
         
+        return True
+    #---
+    
+    def OnSearchSelect(self, tRow: int) -> bool:
+        """Select one of the row in the wx.ListCtrl.
+    
+            Parameters
+            ----------
+            tRow: int
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Helper to OnSearch
+        """
+        self.wLC.wLCS.lc.Select(tRow, on=1)
+        self.wLC.wLCS.lc.EnsureVisible(tRow)
+        self.wLC.wLCS.lc.SetFocus()
+        self.OnListSelect('fEvent')
         return True
     #---
     
@@ -6399,7 +6413,10 @@ class CheckDataPrep(BaseWindowNPlotLT):
             bool
         """
         #region ------------------------------------------------> Just in case
-        event.Skip()
+        try:
+            event.Skip()
+        except Exception:
+            pass
         #endregion ---------------------------------------------> Just in case
 
         #region ------------------------------------------------> Get Selected
