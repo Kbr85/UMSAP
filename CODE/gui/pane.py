@@ -3658,6 +3658,8 @@ class ProtProf(BaseConfModPanel):
         self.rCheckUserInput = {
             self.cLuFile       : [self.wUFile.tc,           config.mFileBad],
             self.cLiFile       : [self.wIFile.tc,           config.mFileBad],
+            self.cLId          : [self.wId.tc,              config.mValueBad],
+            self.cLCeroTreat   : [self.wCeroB.cb,           config.mOptionBad],
             self.cLTransMethod : [self.wTransMethod.cb,     config.mOptionBad],
             self.cLNormMethod  : [self.wNormMethod.cb,      config.mOptionBad],
             self.cLImputation  : [self.wImputationMethod.cb,config.mOptionBad],
@@ -3844,6 +3846,7 @@ class ProtProf(BaseConfModPanel):
                 pass
             self.wScoreVal.tc.SetValue('320')
             self.wId.tc.SetValue('Beta Test Dev')
+            self.wCeroB.cb.SetValue('Yes')
             self.wTransMethod.cb.SetValue('Log2')
             self.wNormMethod.cb.SetValue('Median')
             self.wImputationMethod.cb.SetValue('Normal Distribution')
@@ -3922,7 +3925,7 @@ class ProtProf(BaseConfModPanel):
             self.wIFile.tc.SetValue(str(iFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
-            self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.wCeroB.cb.SetValue(dataI['I'][self.cLCeroTreatD])
             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
@@ -4009,7 +4012,7 @@ class ProtProf(BaseConfModPanel):
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.IsChecked()),
+                self.wCeroB.cb.GetValue()),
             self.EqualLenLabel(self.cLScoreVal) : (
                 self.wScoreVal.tc.GetValue()),
             self.EqualLenLabel(self.cLSample) : (
@@ -4068,7 +4071,7 @@ class ProtProf(BaseConfModPanel):
             'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
             'RawI'       : True if self.wRawI.cb.GetValue() == self.cOIntensity['RawI'] else False,
             'IndS'       : True if self.wSample.cb.GetValue() == self.cOSample['Independent Samples'] else False,
-            'Cero'       : self.wCeroB.IsChecked(),
+            'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'TransMethod': self.wTransMethod.cb.GetValue(),
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
