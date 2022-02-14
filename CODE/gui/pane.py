@@ -4114,6 +4114,16 @@ class ProtProf(BaseConfModPanel):
             )
             return False
         #endregion -----------------------------> Raw or Ration of Intensities
+        
+        #region ---------------------------------------------> # of Replicates
+        msgStep = self.cLPdCheck + 'Sample Options'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        if self.wSample.cb.GetValue() == 'Paired Samples':
+            pass
+        else:
+            pass
+        #endregion ------------------------------------------> # of Replicates
         #endregion ---------------------------------------------> Mixed Fields
         
         return True
@@ -4275,8 +4285,8 @@ class ProtProf(BaseConfModPanel):
         #endregion -----------------------------------------> Data Preparation
         
         #region --------------------------------------------------------> Sort
-        self.dfIm.sort_values(
-            by=list(self.dfIm.columns[0:2]), inplace=True, ignore_index=True,
+        self.dfS.sort_values(
+            by=list(self.dfS.columns[0:2]), inplace=True, ignore_index=True,
         )
         #endregion -----------------------------------------------------> Sort
         
@@ -4365,14 +4375,14 @@ class ProtProf(BaseConfModPanel):
         
         #region ----------------------------------------------------> Empty DF
         df = pd.DataFrame(
-            np.nan, columns=idx, index=range(self.dfIm.shape[0]),
+            np.nan, columns=idx, index=range(self.dfS.shape[0]),
         )
         #endregion -------------------------------------------------> Empty DF
         
         #region -----------------------------------------> First Three Columns
-        df[(aL[0], bL[0], cL[0])] = self.dfIm.iloc[:,0]
-        df[(aL[1], bL[1], cL[1])] = self.dfIm.iloc[:,1]
-        df[(aL[2], bL[2], cL[2])] = self.dfIm.iloc[:,2]
+        df[(aL[0], bL[0], cL[0])] = self.dfS.iloc[:,0]
+        df[(aL[1], bL[1], cL[1])] = self.dfS.iloc[:,1]
+        df[(aL[2], bL[2], cL[2])] = self.dfS.iloc[:,2]
         #endregion --------------------------------------> First Three Columns
         
         return df
@@ -4500,20 +4510,20 @@ class ProtProf(BaseConfModPanel):
             print(cN, tN, colC, colD)
         #------------------------------> Ave & Std
         if colC is not None:
-            self.dfR.loc[:,(cN, tN, 'aveC')] = self.dfIm.iloc[:,colC].mean(
+            self.dfR.loc[:,(cN, tN, 'aveC')] = self.dfS.iloc[:,colC].mean(
                 axis=1, skipna=True).to_numpy()
-            self.dfR.loc[:,(cN, tN, 'stdC')] = self.dfIm.iloc[:,colC].std(
+            self.dfR.loc[:,(cN, tN, 'stdC')] = self.dfS.iloc[:,colC].std(
                 axis=1, skipna=True).to_numpy()
         else:
             self.dfR.loc[:,(cN, tN, 'aveC')] = np.nan
             self.dfR.loc[:,(cN, tN, 'stdC')] = np.nan
         
-        self.dfR.loc[:,(cN, tN, 'ave')] = self.dfIm.iloc[:,colD].mean(
+        self.dfR.loc[:,(cN, tN, 'ave')] = self.dfS.iloc[:,colD].mean(
             axis=1, skipna=True).to_numpy()
-        self.dfR.loc[:,(cN, tN, 'std')] = self.dfIm.iloc[:,colD].std(
+        self.dfR.loc[:,(cN, tN, 'std')] = self.dfS.iloc[:,colD].std(
             axis=1, skipna=True).to_numpy()
         #------------------------------> Intensities as log2 Intensities
-        dfLogI = self.dfIm.copy() 
+        dfLogI = self.dfS.copy() 
         if self.rDO['TransMethod'] == 'Log2':
             pass
         else:
