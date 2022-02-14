@@ -1983,6 +1983,11 @@ class ResControlExpConfBase(wx.Panel):
         self.cVColNumList = dtsValidator.NumberList(
             sep=' ', opt=True, vMin=0, vMax=self.rNColF 
         )
+        #------------------------------> Messages
+        self.mNoControlT = getattr(
+            self, 'mNoControl', f'The Control Type must defined.')
+        self.mLabelEmpty = getattr(
+            self, 'mLabelEmpty', 'All labels and control name must be defined.')
         #------------------------------> super()
         super().__init__(cParent, name=cName)
         #endregion --------------------------------------------> Initial Setup
@@ -2455,6 +2460,57 @@ class ResControlExpConfBase(wx.Panel):
         #endregion -----------------------------------------------------> Bind
 
         return True
+    #---
+    
+    def CheckLabel(self, ctrlT: bool) -> list[int]:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #------------------------------> Label numbers & text
+        n = []
+        for k in range(1, self.cN+1):
+            n.append(len(self.rTcDict[k]))
+            for w in self.rTcDict[k]:
+                if w.GetValue() == '':
+                    dtscore.Notification(
+                        'errorF', msg=self.mLabelEmpty, parent=self)
+                    return []
+                else:
+                    pass
+        if all(n):
+            pass
+        else:
+            dtscore.Notification('errorF', msg=self.mNoCondRP, parent=self)
+            return []
+        #------------------------------> Control Type
+        if ctrlT:
+            if self.wCbControl.GetValidator().Validate()[0]:
+                pass
+            else:
+                dtscore.Notification(
+                    'errorF', msg=self.mNoControlT, parent=self)
+                return []
+        else:
+            pass
+        #------------------------------> 
+        if self.wControlN.tc.GetValue() == '':
+            dtscore.Notification('errorF', msg=self.mLabelEmpty, parent=self)
+            return []
+        else:
+            pass
+        
+        return n
     #---
     #endregion -----------------------------------------------> Manage methods
 #---
@@ -6374,7 +6430,6 @@ class ProtProfResControlExp(ResControlExpConfBase):
     #------------------------------> Error messages
     mNoCondRP = (
         f'Both {cStLabel[1][:-1]} and {cStLabel[2][:-1]} must be defined.')
-    mNoControl = (f'The Control Type must defined.')
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -6528,20 +6583,9 @@ class ProtProfResControlExp(ResControlExpConfBase):
             True
         """
         #region -------------------------------------------------> Check input
-        #------------------------------> Labels
-        n = []
-        for k in range(1, self.cN+1):
-            n.append(len(self.rTcDict[k]))
-        if all(n):
+        if (n := self.CheckLabel(True)):
             pass
         else:
-            dtscore.Notification('errorF', msg=self.mNoCondRP, parent=self)
-            return False
-        #------------------------------> Control
-        if self.wCbControl.GetValidator().Validate()[0]:
-            pass
-        else:
-            dtscore.Notification('errorF', msg=self.mNoControl, parent=self)
             return False
         #endregion ----------------------------------------------> Check input
         
