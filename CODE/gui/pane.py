@@ -240,13 +240,13 @@ class BaseConfPanel(
         )
         #------------------------------> To handle Data Preparation Steps
         self.dDataPrep = { # Keys are the messaging for the Progress Dialog
-            "Setting Data Types"         : self.DatPrep_0_Float,
-            "Filter Data: Target Protein": self.DatPrep_TargetProt,
-            "Filter Data: Exclude Rows"  : self.DatPrep_Exclude,
-            "Filter Data: Score Value"   : self.DatPrep_Score,
+            "Setting Data Types"         : self.DatPrep_Float,
             "Data Transformation"        : self.DatPrep_Transformation,
             "Data Normalization"         : self.DatPrep_Normalization,
             "Data Imputation"            : self.DatPrep_Imputation,
+            "Filter Data: Target Protein": self.DatPrep_TargetProt,
+            "Filter Data: Exclude Rows"  : self.DatPrep_Exclude,
+            "Filter Data: Score Value"   : self.DatPrep_Score,
         }
         #------------------------------> This is needed to handle Data File 
         # content load to the wx.ListCtrl in Tabs with multiple panels
@@ -265,12 +265,12 @@ class BaseConfPanel(
         #--------------> pd.DataFrames for:
         self.dfI  = pd.DataFrame() # Initial and
         self.dfF  = pd.DataFrame() # Data as float and 0 and '' values as np.nan
-        self.dfTP = pd.DataFrame() # Select Target Protein
-        self.dfE  = pd.DataFrame() # Exclude entries by some parameter
-        self.dfS  = pd.DataFrame() # Exclude entries by Score value
         self.dfT  = pd.DataFrame() # Transformed values
         self.dfN  = pd.DataFrame() # Normalized Values
         self.dfIm = pd.DataFrame() # Imputed values
+        self.dfTP = pd.DataFrame() # Select Target Protein
+        self.dfE  = pd.DataFrame() # Exclude entries by some parameter
+        self.dfS  = pd.DataFrame() # Exclude entries by Score value
         self.dfR  = pd.DataFrame() # Results values
         #--------------> date for umsap file
         self.rDate = None
@@ -873,13 +873,14 @@ class BaseConfPanel(
             Notes
             -----
             See the Notes for the individual methods:
-                self.DatPrep_0_Float, 
-                self.DatPrep_TargetProt,
-                self.DatPrep_Exclude, 
-                self.DatPrep_Score,
+                self.DatPrep_Float, 
                 self.DatPrep_Transformation,
                 self.DatPrep_Normalization,
                 self.DatPrep_Imputation,
+                self.DatPrep_TargetProt,
+                self.DatPrep_Exclude, 
+                self.DatPrep_Score,
+                
         """
         #region ----------------------------------------> Run Data Preparation
         for k, m in self.dDataPrep.items():
@@ -894,7 +895,7 @@ class BaseConfPanel(
         
         #region -------------------------------------------------> Reset index
         if resetIndex:
-            self.dfIm.reset_index(drop=True, inplace=True)
+            self.dfS.reset_index(drop=True, inplace=True)
         else:
             pass
         #endregion ----------------------------------------------> Reset index
@@ -903,10 +904,10 @@ class BaseConfPanel(
         if config.development:
             #------------------------------> 
             dfL = [
-                self.dfI, self.dfF, self.dfTP, self.dfE, self.dfS, self.dfT, 
-                self.dfN, self.dfIm
+                self.dfI, self.dfF, self.dfT, self.dfN, self.dfIm, 
+                self.dfTP, self.dfE, self.dfS, 
             ]
-            dfN = ['dfI', 'dfF', 'dfTP', 'dfEx', 'dfS', 'dfT', 'dfN', 'dfIm']
+            dfN = ['dfI', 'dfF', 'dfT', 'dfN', 'dfIm', 'dfTP', 'dfEx', 'dfS']
             #------------------------------> 
             print('')
             for i, df in enumerate(dfL):
@@ -921,7 +922,7 @@ class BaseConfPanel(
         return True
     #---
     
-    def DatPrep_0_Float(self) -> bool:
+    def DatPrep_Float(self) -> bool:
         """Convert or not 0s to NA and then all values to float.
         
             Returns
@@ -973,6 +974,113 @@ class BaseConfPanel(
         return True
     #---
     
+    def DatPrep_Transformation(self) -> bool:
+        """Apply selected data transformation.
+    
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - rDO, dict with at least the following key - values pairs:
+                'Cero' : bool, How to treat 0 values,
+                'TransMethod': str, Transformation method name,
+                'df' : {
+                    'ResCtrlFlat' : [List of int],
+                },   
+        """
+        #region -----------------------------------------------------> Set rep
+        if self.rDO['Cero']:
+            rep = np.nan
+        else:
+            rep = 0
+        #endregion --------------------------------------------------> Set rep
+        
+        #region ---------------------------------------------------> Transform
+        try:
+            self.dfT = dtsStatistic.DataTransformation(
+                self.dfF, 
+                self.rDO['df']['ResCtrlFlat'], 
+                method = self.rDO['TransMethod'],
+                rep    = rep,
+            )
+        except Exception as e:
+            self.rMsgError   = 'Data Transformation failed.'
+            self.rException = e
+            return False 
+        #endregion ------------------------------------------------> Transform
+        
+        return True
+    #---
+    
+    def DatPrep_Normalization(self) -> bool:
+        """Perform a data normalization.
+    
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - rDO, dict with at least the following key - values pairs:
+                'NormMethod' : str Normalization method selected
+                df : dict
+                    {
+                        'ResCtrlFlat' : list[int]
+                    }
+        """
+        #region -----------------------------------------------> Normalization
+        try:
+            self.dfN = dtsStatistic.DataNormalization(
+                self.dfT, 
+                self.rDO['df']['ResCtrlFlat'], 
+                method = self.rDO['NormMethod'],
+            )
+        except Exception as e:
+            self.rMsgError   = 'Data Normalization failed.'
+            self.rException = e
+            return False
+        #endregion --------------------------------------------> Normalization
+        
+        return True
+    #---
+    
+    def DatPrep_Imputation(self) -> bool:
+        """Perform a data imputation.
+    
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - rDO, dict with at least the following key - values pairs:
+                'ImpMethod' : str Imputation method selected
+                df : dict
+                    {
+                        'ResCtrlFlat' : list[int]
+                    }
+        """
+        #region --------------------------------------------------> Imputation
+        try:
+            self.dfIm = dtsStatistic.DataImputation(
+                self.dfN, 
+                self.rDO['df']['ResCtrlFlat'], 
+                method = self.rDO['ImpMethod'],
+            )
+        except Exception as e:
+            self.rMsgError   = 'Data Imputation failed.'
+            self.rException = e
+            return False
+        #endregion -----------------------------------------------> Imputation
+        
+        return True
+    #---
+    
     def DatPrep_TargetProt(self) -> bool:
         """Filter data based on the value of Target Protein.
         
@@ -995,13 +1103,13 @@ class BaseConfPanel(
         try:
             if self.rDO['df'].get('TargetProtCol', None) is not None:
                 self.dfTP = dtsMethod.DFFilterByColS(
-                    self.dfF, 
+                    self.dfIm, 
                     self.rDO['df']['TargetProtCol'],
                     self.rDO['TargetProt'], 
                     'e',
                 )
             else:
-                self.dfTP = self.dfF.copy()
+                self.dfTP = self.dfIm.copy()
         except Exception as e:
             self.rMsgError = config.mPDDataTargetProt.format(
                 self.rDO['TargetProt'], self.rDO['df']['TargetProtCol'])
@@ -1098,113 +1206,6 @@ class BaseConfPanel(
         return True
     #---
     
-    def DatPrep_Transformation(self) -> bool:
-        """Apply selected data transformation.
-    
-            Returns
-            -------
-            bool
-    
-            Notes
-            -----
-            Assumes child class has the following attributes:
-            - rDO, dict with at least the following key - values pairs:
-                'Cero' : bool, How to treat 0 values,
-                'TransMethod': str, Transformation method name,
-                'df' : {
-                    'ResCtrlFlat' : [List of int],
-                },   
-        """
-        #region -----------------------------------------------------> Set rep
-        if self.rDO['Cero']:
-            rep = np.nan
-        else:
-            rep = 0
-        #endregion --------------------------------------------------> Set rep
-        
-        #region ---------------------------------------------------> Transform
-        try:
-            self.dfT = dtsStatistic.DataTransformation(
-                self.dfS, 
-                self.rDO['df']['ResCtrlFlat'], 
-                method = self.rDO['TransMethod'],
-                rep    = rep,
-            )
-        except Exception as e:
-            self.rMsgError   = 'Data Transformation failed.'
-            self.rException = e
-            return False 
-        #endregion ------------------------------------------------> Transform
-        
-        return True
-    #---
-    
-    def DatPrep_Normalization(self) -> bool:
-        """Perform a data normalization.
-    
-            Returns
-            -------
-            bool
-    
-            Notes
-            -----
-            Assumes child class has the following attributes:
-            - rDO, dict with at least the following key - values pairs:
-                'NormMethod' : str Normalization method selected
-                df : dict
-                    {
-                        'ResCtrlFlat' : list[int]
-                    }
-        """
-        #region -----------------------------------------------> Normalization
-        try:
-            self.dfN = dtsStatistic.DataNormalization(
-                self.dfT, 
-                self.rDO['df']['ResCtrlFlat'], 
-                method = self.rDO['NormMethod'],
-            )
-        except Exception as e:
-            self.rMsgError   = 'Data Normalization failed.'
-            self.rException = e
-            return False
-        #endregion --------------------------------------------> Normalization
-        
-        return True
-    #---
-    
-    def DatPrep_Imputation(self) -> bool:
-        """Perform a data imputation.
-    
-            Returns
-            -------
-            bool
-    
-            Notes
-            -----
-            Assumes child class has the following attributes:
-            - rDO, dict with at least the following key - values pairs:
-                'ImpMethod' : str Imputation method selected
-                df : dict
-                    {
-                        'ResCtrlFlat' : list[int]
-                    }
-        """
-        #region --------------------------------------------------> Imputation
-        try:
-            self.dfIm = dtsStatistic.DataImputation(
-                self.dfN, 
-                self.rDO['df']['ResCtrlFlat'], 
-                method = self.rDO['ImpMethod'],
-            )
-        except Exception as e:
-            self.rMsgError   = 'Data Imputation failed.'
-            self.rException = e
-            return False
-        #endregion -----------------------------------------------> Imputation
-        
-        return True
-    #---
-    
     def SetOutputDict(self, dateDict) -> dict:
         """Creates the output dictionary to be written to the output file 
         
@@ -1253,6 +1254,25 @@ class BaseConfPanel(
         #endregion ---------------------------------------------> Add new data
 
         return outData
+    #---
+    
+    def SetStepDict(self) -> dict:
+        """Set the common part of the stepDict needed to write the output
+    
+            Returns
+            -------
+            dict
+        """
+        stepDict = {
+            'DP': {
+                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
+                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '03'),
+                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '04'),
+                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '05'),
+            },
+        }
+        
+        return stepDict
     #---
 
     def WriteOutputData(self, stepDict: dict) -> bool:
@@ -2970,25 +2990,17 @@ class CorrA(BaseConfPanel):
     def WriteOutput(self):
         """Write output. Override as needed """
         #region --------------------------------------------------> Data Steps
-        stepDict = {
-            'Files': {
-                config.fnInitial.format(self.rDate, '01'): self.dfI,
-                config.fnFloat.format(self.rDate, '02')  : self.dfS,
-                config.fnTrans.format(self.rDate, '03')  : self.dfT,
-                config.fnNorm.format(self.rDate, '04')   : self.dfN,
-                config.fnImp.format(self.rDate, '05')    : self.dfIm,
-                self.rMainData.format(self.rDate, '06')  : self.dfR,    
-            self.rMainData.format(self.rDate, '06')  : self.dfR,
-                self.rMainData.format(self.rDate, '06')  : self.dfR,    
-            },
-            'DP': {
-                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
-                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '03'),
-                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '04'),
-                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '05'),
-            },
-            'R' : self.rMainData.format(self.rDate, '06'),
+        stepDict = self.SetStepDict()
+        stepDict['Files'] = {
+            config.fnInitial.format(self.rDate, '01'): self.dfI,
+            config.fnFloat.format(self.rDate, '02')  : self.dfF,
+            config.fnTrans.format(self.rDate, '03')  : self.dfT,
+            config.fnNorm.format(self.rDate, '04')   : self.dfN,
+            config.fnImp.format(self.rDate, '05')    : self.dfIm,
+            config.fnFloat.format(self.rDate, '06')  : self.dfS,
+            self.rMainData.format(self.rDate, '07')  : self.dfR,    
         }
+        stepDict['R'] = self.rMainData.format(self.rDate, '07')
         #endregion -----------------------------------------------> Data Steps
         
         #region ---------------------------------------------------> Print
@@ -3132,33 +3144,7 @@ class DataPrep(BaseConfPanel):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
-        self.wScoreVal = dtsWidget.StaticTextCtrl(
-            self.sbValue,
-            stLabel   = self.cLScoreVal,
-            stTooltip = self.cTTScoreVal,
-            tcSize    = self.cSTc,
-            tcHint    = 'e.g. 320',
-            validator = dtsValidator.NumberList(numType='float', nN=1),
-        )
-        
-        self.wScore = dtsWidget.StaticTextCtrl(
-            self.sbColumn,
-            stLabel   = self.cLScoreCol,
-            stTooltip = self.cTTScoreCol,
-            tcSize    = self.cSTc,
-            tcHint    = 'e.g. 39',
-            validator = dtsValidator.NumberList(numType='int', nN=1, vMin=0),
-        )
-        
-        self.wExcludeRow = dtsWidget.StaticTextCtrl(
-            self.sbColumn,
-            stLabel   = self.cLExcludeRow,
-            stTooltip = self.cTTExcludeRow,
-            tcSize    = self.cSTc,
-            tcHint    = 'e.g. 171 172 173',
-            validator = dtsValidator.NumberList(
-                numType='int', sep=' ', vMin=0, opt=True),
-        )
+        self.sbValue.Hide()
         
         self.wColAnalysis = dtsWidget.StaticTextCtrl(
             self.sbColumn,
@@ -3174,17 +3160,13 @@ class DataPrep(BaseConfPanel):
         self.rCheckUserInput = {
             self.cLuFile      : [self.wUFile.tc,           config.mFileBad],
             self.cLiFile      : [self.wIFile.tc,           config.mFileBad],
+            self.cLId         : [self.wId.tc,              config.mValueBad],
+            self.cLCeroTreat  : [self.wCeroB.cb,           config.mOptionBad],
             self.cLTransMethod: [self.wTransMethod.cb,     config.mOptionBad],
             self.cLNormMethod : [self.wNormMethod.cb,      config.mOptionBad],
             self.cLImputation : [self.wImputationMethod.cb,config.mOptionBad],
-            self.cLScoreVal   : [self.wScoreVal.tc,        config.mOneRealNum],
-            self.cLScoreCol   : [self.wScore.tc,           config.mOneZPlusNum],
-            self.cLExcludeRow : [self.wExcludeRow.tc,      config.mNZPlusNum],
             self.cLColAnalysis: [self.wColAnalysis.tc,     config.mNZPlusNum],
-        }    
-        
-        self.rCheckUnique = [self.wScore.tc, self.wExcludeRow.tc, 
-                             self.wColAnalysis.tc]    
+        }
         #endregion -------------------------------------------> checkUserInput
         
         #region -----------------------------------------------------> Tooltip
@@ -3193,33 +3175,7 @@ class DataPrep(BaseConfPanel):
 
         #region ------------------------------------------------------> Sizers
         #------------------------------> Sizer Values
-        self.sizersbValueWid.Add(
-            1, 1,
-            pos    = (0,0),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wScoreVal.st,
-            pos    = (0,1),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wScoreVal.tc,
-            pos    = (0,2),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            1, 1,
-            pos    = (0,3),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.AddGrowableCol(0, 1)
-        self.sizersbValueWid.AddGrowableCol(2, 1)
-        self.sizersbValueWid.AddGrowableCol(3, 1)
+        
         #------------------------------> Sizer Columns
         self.sizersbColumnWid.Add(
             1, 1,
@@ -3228,39 +3184,15 @@ class DataPrep(BaseConfPanel):
             border = 5,
         )
         self.sizersbColumnWid.Add(
-            self.wScore.st,
-            pos    = (0,1),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT,
-            border = 5,
-        )
-        self.sizersbColumnWid.Add(
-            self.wScore.tc,
-            pos    = (0,2),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbColumnWid.Add(
-            self.wExcludeRow.st,
-            pos    = (0,3),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT,
-            border = 5,
-        )
-        self.sizersbColumnWid.Add(
-            self.wExcludeRow.tc,
-            pos    = (0,4),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbColumnWid.Add(
             self.wColAnalysis.st,
-            pos    = (1,1),
+            pos    = (0,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT,
             border = 5,
             span   = (0,2),
         )
         self.sizersbColumnWid.Add(
             self.wColAnalysis.tc,
-            pos    = (2,1),
+            pos    = (1,1),
             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
             span   = (0,4),
@@ -3302,13 +3234,11 @@ class DataPrep(BaseConfPanel):
                 # self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT')))
             else:
                 pass
-            self.wScoreVal.tc.SetValue('320')
             self.wId.tc.SetValue('Beta Test Dev')
+            self.wCeroB.cb.SetValue('Yes')
             self.wTransMethod.cb.SetValue('Log2')
             self.wNormMethod.cb.SetValue('Median')
             self.wImputationMethod.cb.SetValue('Normal Distribution')  
-            self.wScore.tc.SetValue('39')     
-            self.wExcludeRow.tc.SetValue('171 172 173')
             self.wColAnalysis.tc.SetValue('130-135')
         else:
             pass
@@ -3344,15 +3274,11 @@ class DataPrep(BaseConfPanel):
             self.wIFile.tc.SetValue(str(iFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
-            self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.wCeroB.cb.SetValue(dataI['I'][self.cLCeroTreatD])
             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
-            #------------------------------> Values
-            self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
             #------------------------------> Columns
-            self.wScore.tc.SetValue(dataI['I'][self.cLScoreCol])
-            self.wExcludeRow.tc.SetValue(dataI['I'][self.cLExcludeRow])
             self.wColAnalysis.tc.SetValue(dataI['I'][self.cLColAnalysis])
             #------------------------------> 
             self.OnIFileLoad('fEvent')
@@ -3382,19 +3308,13 @@ class DataPrep(BaseConfPanel):
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.IsChecked()),
+                self.wCeroB.cb.GetValue()),
             self.EqualLenLabel(self.cLTransMethod) : (
                 self.wTransMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLNormMethod) : (
                 self.wNormMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLImputation) : (
                 self.wImputationMethod.cb.GetValue()),
-            self.EqualLenLabel(self.cLScoreVal) : (
-                self.wScoreVal.tc.GetValue()),
-            self.EqualLenLabel(self.cLScoreCol) : (
-                self.wScore.tc.GetValue()),
-            self.EqualLenLabel(self.cLExcludeRow) : (
-                self.wExcludeRow.tc.GetValue()),
             self.EqualLenLabel(self.cLColAnalysis) : (
                 self.wColAnalysis.tc.GetValue()),
         }
@@ -3403,36 +3323,27 @@ class DataPrep(BaseConfPanel):
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #--------------> 
-        scoreCol   = int(self.wScore.tc.GetValue())
-        excludeRow = dtsMethod.Str2ListNumber(
-            self.wExcludeRow.tc.GetValue(), sep=' ',
-        )
         colAnalysis = dtsMethod.Str2ListNumber(
             self.wColAnalysis.tc.GetValue(), sep=' ',
         )
-        resCtrlFlat = [x for x in range(1+len(excludeRow), 1+len(excludeRow)+len(colAnalysis))]
+        resCtrlFlat = [x for x in range(0, len(colAnalysis))]
         #--------------> 
         self.rDO  = {
             'iFile'      : Path(self.wIFile.tc.GetValue()),
             'uFile'      : Path(self.wUFile.tc.GetValue()),
             'ID'         : self.wId.tc.GetValue(),
-            'Cero'       : self.wCeroB.IsChecked(),
+            'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'TransMethod': self.wTransMethod.cb.GetValue(),
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
-            'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
             'oc'         : {
-                'ScoreCol'   : scoreCol,
-                'ExcludeP'   : excludeRow,
                 'ColAnalysis': colAnalysis,
-                'Column'     : [scoreCol] + excludeRow + colAnalysis,
+                'Column'     : colAnalysis,
             },
             'df' : {
-                'ScoreCol'   : 0,
-                'ExcludeP'   : [x for x in range(1, len(excludeRow)+1)],
                 'ColumnR'    : resCtrlFlat,
                 'ResCtrlFlat': resCtrlFlat,
-                'ColumnF'    : [0]+resCtrlFlat,
+                'ColumnF'    : resCtrlFlat,
             },
         }
         #endregion ----------------------------------------------------> Input
@@ -3492,22 +3403,13 @@ class DataPrep(BaseConfPanel):
             bool
         """
         #region --------------------------------------------------> Data Steps
-        stepDict = {
-            'Files' : {
-                config.fnInitial.format(self.rDate, '01'): self.dfI,
-                config.fnFloat.format(self.rDate, '02')  : self.dfF,
-                config.fnExclude.format(self.rDate, '03'): self.dfE,
-                config.fnScore.format(self.rDate, '04')  : self.dfS,
-                config.fnTrans.format(self.rDate, '05')  : self.dfT,
-                config.fnNorm.format(self.rDate, '06')   : self.dfN,
-                config.fnImp.format(self.rDate, '07')    : self.dfIm,
-            },
-            'DP': {
-                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
-                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '05'),
-                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '06'),
-                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '07'),
-            },
+        stepDict = self.SetStepDict()
+        stepDict['Files'] = {
+            config.fnInitial.format(self.rDate, '01'): self.dfI,
+            config.fnFloat.format(self.rDate, '02')  : self.dfF,
+            config.fnTrans.format(self.rDate, '03')  : self.dfT,
+            config.fnNorm.format(self.rDate, '04')   : self.dfN,
+            config.fnImp.format(self.rDate, '05')    : self.dfIm,
         }
         #endregion -----------------------------------------------> Data Steps
 
@@ -4564,25 +4466,18 @@ class ProtProf(BaseConfModPanel):
             bool
         """
         #region --------------------------------------------------> Data Steps
-        stepDict = {
-            'Files': {
-                config.fnInitial.format(self.rDate, '01'): self.dfI,
-                config.fnFloat.format(self.rDate, '02')  : self.dfF,
-                config.fnExclude.format(self.rDate, '03'): self.dfE,
-                config.fnScore.format(self.rDate, '04')  : self.dfS,
-                config.fnTrans.format(self.rDate, '05')  : self.dfT,
-                config.fnNorm.format(self.rDate, '06')   : self.dfN,
-                config.fnImp.format(self.rDate, '07')    : self.dfIm,
-                self.rMainData.format(self.rDate, '08')  : self.dfR,
-            },
-            'DP': {
-                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
-                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '05'),
-                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '06'),
-                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '07'),
-            },
-            'R' : self.rMainData.format(self.rDate, '08'),
+        stepDict = self.SetStepDict()
+        stepDict['Files'] = {
+            config.fnInitial.format(self.rDate, '01'): self.dfI,
+            config.fnFloat.format(self.rDate, '02')  : self.dfF,
+            config.fnTrans.format(self.rDate, '03')  : self.dfT,
+            config.fnNorm.format(self.rDate, '04')   : self.dfN,
+            config.fnImp.format(self.rDate, '05')    : self.dfIm,
+            config.fnExclude.format(self.rDate, '06'): self.dfE,
+            config.fnScore.format(self.rDate, '07')  : self.dfS,
+            self.rMainData.format(self.rDate, '08')  : self.dfR,
         }
+        stepDict['R'] = self.rMainData.format(self.rDate, '08'),
         #endregion -----------------------------------------------> Data Steps
 
         return self.WriteOutputData(stepDict)

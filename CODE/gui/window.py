@@ -678,7 +678,7 @@ class BaseWindowNPlotLT(BaseWindow):
         #endregion ------------------------------------------------------> AUI
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        self.wLC.wLCS.lc.Bind(wx.EVT_LEFT_UP, self.OnListSelect)
         self.Bind(wx.EVT_SEARCH, self.OnSearch)
         #endregion -----------------------------------------------------> Bind
 
@@ -713,37 +713,60 @@ class BaseWindowNPlotLT(BaseWindow):
         
         #region ----------------------------------------------> Show 1 Results
         if len(iEqual) == 1:
-            #------------------------------> 
-            self.wLC.wLCS.lc.Select(iEqual[0], on=1)
-            self.wLC.wLCS.lc.EnsureVisible(iEqual[0])
-            self.wLC.wLCS.lc.SetFocus()
-            #------------------------------> 
+            self.OnSearchSelect(iEqual[0])
             return True
         elif len(iSimilar) == 1:
-            #------------------------------> 
-            self.wLC.wLCS.lc.Select(iSimilar[0], on=1)
-            self.wLC.wLCS.lc.EnsureVisible(iSimilar[0])
-            self.wLC.wLCS.lc.SetFocus()
-            #------------------------------> 
+            self.OnSearchSelect(iSimilar[0])
             return True
         else:
             pass
         #endregion -------------------------------------------> Show 1 Results
         
         #region ----------------------------------------------> Show N Results
-        msg = (f'The string, {tStr}, was found in multiple rows.')
-        tException = (
-            f'The row numbers where the string was found are:\n '
-            f'{str(iSimilar)[1:-1]}')
-        dtscore.Notification(
-            'warning', 
-            msg        = msg,
-            setText    = True,
-            tException = tException,
-            parent     = self,
-        )
+        if iSimilar:
+            msg = (f'The string, {tStr}, was found in multiple rows.')
+            tException = (
+                f'The row numbers where the string was found are:\n '
+                f'{str(iSimilar)[1:-1]}')
+            dtscore.Notification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                tException = tException,
+                parent     = self,
+            )
+        else:
+            msg = (f'The string, {tStr}, was not found.')
+            dtscore.Notification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                parent     = self,
+            )
         #endregion -------------------------------------------> Show N Results
         
+        return True
+    #---
+    
+    def OnSearchSelect(self, tRow: int) -> bool:
+        """Select one of the row in the wx.ListCtrl.
+    
+            Parameters
+            ----------
+            tRow: int
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Helper to OnSearch
+        """
+        self.wLC.wLCS.lc.Select(tRow, on=1)
+        self.wLC.wLCS.lc.EnsureVisible(tRow)
+        self.wLC.wLCS.lc.SetFocus()
+        self.OnListSelect('fEvent')
         return True
     #---
     
@@ -6244,7 +6267,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         rDpDF : dict[pd.DataFrame] or None
             The dictionary has the following structure:
             {
-                "dfS" : pd.DataFrame, Data after excluding and filter by Score
+                "dfF" : pd.DataFrame, Data after excluding and filter by Score
                 "dfT" : pd.DataFrame, Data after transformation
                 "dfN" : pd.DataFrame, Data after normalization
                 "dfIm": pd.DataFrame, Data after Imputation
@@ -6264,7 +6287,13 @@ class CheckDataPrep(BaseWindowNPlotLT):
         rFromUMSAPFile : bool
             The window is invoked from an UMSAP File window (True) or not (False)
         rObj : UMSAPFile
-            Refernece to the UMSAPFile object.
+            Reference to the UMSAPFile object.
+            
+        Notes
+        -----
+        Requires a 'NumColList' key in self.rData[tSection][tDate] with a list
+        of all columns involved in the analysis with the column numbers in the
+        original data file.
         """
     #region -----------------------------------------------------> Class setup
     cName = config.nwCheckDataPrep
@@ -6280,17 +6309,17 @@ class CheckDataPrep(BaseWindowNPlotLT):
     # shown in the window
     cSection = config.nuDataPrep
     #------------------------------> Label
-    cLDFData = ['Filtered', 'Transformed', 'Normalized', 'Imputed']
+    cLDFData = ['Floated', 'Transformed', 'Normalized', 'Imputed']
     cLdfCol = config.dfcolDataCheck
     #------------------------------> Other
     cFileName = {
-        config.ltDPKeys[0] : '{}-01-Filtered-{}.{}',
-        config.ltDPKeys[1] : '{}-02-Transformed-{}.{}',
-        config.ltDPKeys[2] : '{}-03-Normalized-{}.{}',
-        config.ltDPKeys[3] : '{}-04-Imputed-{}.{}',
+        config.ltDPKeys[0] : '{}-01-Floated.{}',
+        config.ltDPKeys[1] : '{}-02-Transformed.{}',
+        config.ltDPKeys[2] : '{}-03-Normalized.{}',
+        config.ltDPKeys[3] : '{}-04-Imputed.{}',
     }
     cImgName = {
-        cLNPlots[0] : '{}-01-Filtered-{}.{}',
+        cLNPlots[0] : '{}-01-Floated-{}.{}',
         cLNPlots[1] : '{}-02-Transformed-{}.{}',
         cLNPlots[2] : '{}-03-Normalized-{}.{}',
         cLNPlots[3] : '{}-04-Imputed-{}.{}',
@@ -6311,7 +6340,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         self.cParent  = cParent
         self.rObj     = self.cParent.rObj
         self.cTitle   = cTitle
-        self.tSection = tSection
+        self.tSection = tSection if tSection is not None else self.cSection
         self.tDate    = tDate
         self.SetWindow(tSection, tDate)
         #--------------> menuData here because it is not needed to save it
@@ -6389,13 +6418,26 @@ class CheckDataPrep(BaseWindowNPlotLT):
             -------
             bool
         """
+        #region ------------------------------------------------> Just in case
+        try:
+            event.Skip()
+        except Exception:
+            pass
+        #endregion ---------------------------------------------> Just in case
+
         #region ------------------------------------------------> Get Selected
         idx = self.wLC.wLCS.lc.GetFirstSelected()
+        #------------------------------> If nothing is selected clear the plot
+        if idx >= 0:
+            pass
+        else:
+            self.ClearPlots()
+            return False
         #endregion ---------------------------------------------> Get Selected
         
-        #region ---------------------------------------------------------> dfS
+        #region ---------------------------------------------------------> dfF
         try:
-            self.PlotdfS(idx)
+            self.PlotdfF(idx)
         except Exception as e:
             #------------------------------> 
             msg = (
@@ -6403,12 +6445,10 @@ class CheckDataPrep(BaseWindowNPlotLT):
                 f'column.')
             dtscore.Notification('errorU', msg=msg, tException=e, parent=self)
             #------------------------------> 
-            for p in self.cLNPlots:
-                self.wPlots.dPlot[p].axes.clear()
-                self.wPlots.dPlot[p].canvas.draw()
+            self.ClearPlots()
             #------------------------------> 
             return False
-        #endregion ------------------------------------------------------> dfS
+        #endregion ------------------------------------------------------> dfF
         
         #region ---------------------------------------------------------> dfT
         self.PlotdfT(idx)
@@ -6460,12 +6500,11 @@ class CheckDataPrep(BaseWindowNPlotLT):
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
             p = Path(dlg.GetPath())
-            col = self.wLC.wLCS.lc.GetFirstSelected()
             #------------------------------> Export
             try:
                 for k, v in self.rDpDF.items():
                     #------------------------------> file path
-                    fPath = p/self.cFileName[k].format(self.rDateC, col, 'txt')
+                    fPath = p/self.cFileName[k].format(self.rDateC, 'txt')
                     #------------------------------> Write
                     dtsFF.WriteDF2CSV(fPath, v)
             except Exception as e:
@@ -6585,14 +6624,17 @@ class CheckDataPrep(BaseWindowNPlotLT):
             
             Notes
             -----
-            Entries are read from self.ddDF['dfS']
+            Entries are read from self.ddDF['dfF']
         """
         #region --------------------------------------------------> Delete old
         self.wLC.wLCS.lc.DeleteAllItems()
         #endregion -----------------------------------------------> Delete old
         
         #region ----------------------------------------------------> Get Data
-        data = [[str(k), n] for k,n in enumerate(self.rDpDF['dfS'].columns.values.tolist())]
+        data = []
+        for k,n in enumerate(self.rDpDF['dfF'].columns.values.tolist()):
+            colN = str(self.rData[self.rDateC]['NumColList'][k])
+            data.append([colN, n])
         #endregion -------------------------------------------------> Get Data
         
         #region ------------------------------------------> Set in wx.ListCtrl
@@ -6607,8 +6649,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
         return True
     #---
     
-    def PlotdfS(self, col:int) -> bool:
-        """Plot the histograms for dfS
+    def PlotdfF(self, col:int) -> bool:
+        """Plot the histograms for dfF
     
             Parameters
             ----------
@@ -6621,7 +6663,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         """
         #region ---------------------------------------------------> Variables
         #------------------------------> 
-        x = self.rDpDF['dfS'].iloc[:,col]
+        x = self.rDpDF['dfF'].iloc[:,col]
         x = x[np.isfinite(x)]        
         #------------------------------> 
         nBin = dtsStatistic.HistBin(x)[0]
@@ -6631,7 +6673,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> 
         self.wPlots.dPlot['Init'].axes.clear()
         #------------------------------> title
-        self.wPlots.dPlot['Init'].axes.set_title("Filtered")
+        self.wPlots.dPlot['Init'].axes.set_title("Floated")
         #------------------------------> 
         a = self.wPlots.dPlot['Init'].axes.hist(x, bins=nBin, density=True)
         #------------------------------> 
@@ -6774,7 +6816,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         gausY = stats.gaussian_kde(x)
         self.wPlots.dPlot['Imp'].axes.plot(gausX, gausY.pdf(gausX))
         #------------------------------> 
-        idx = list(map(int, self.rDpDF['dfS'][self.rDpDF['dfS'].iloc[:,col].isnull()].index.tolist()))
+        idx = list(map(int, self.rDpDF['dfF'][self.rDpDF['dfF'].iloc[:,col].isnull()].index.tolist()))
         y = self.rDpDF['dfIm'].iloc[idx,col]
         if not y.empty:
             yBin = dtsStatistic.HistBin(y)[0]
@@ -6881,6 +6923,28 @@ class CheckDataPrep(BaseWindowNPlotLT):
             pass
         #endregion ------------------------------------------------> Title
 
+        return True
+    #---
+    
+    def ClearPlots(self):
+        """Clear the plots
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        for p in self.cLNPlots:
+            self.wPlots.dPlot[p].axes.clear()
+            self.wPlots.dPlot[p].canvas.draw()
+            
         return True
     #---
     #endregion -----------------------------------------------> Manage Methods

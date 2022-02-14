@@ -196,6 +196,7 @@ class UMSAPFile():
         try:
             plotData[tDate] = {
                 'DP': {j:dtsFF.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()},
+                'NumColList': self.rData[tSection][tDate]['CI']['oc']['Column'],
             }
         except Exception as e:
             pass        
@@ -227,6 +228,7 @@ class UMSAPFile():
                 #------------------------------> Add to dict
                 plotData[k] = {
                     'DP' : {j:dtsFF.ReadCSV2DF(tPath/w) for j,w in v['DP'].items()},
+                    'NumColList': v['CI']['oc']['Column'],
                 }
             except Exception:
                 pass

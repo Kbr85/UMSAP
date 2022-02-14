@@ -368,7 +368,7 @@ dfcolSeqNC = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 
 
 #region -----------------------------------------------------> Important Lists
-ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
+ltDPKeys = ['dfF', 'dfT', 'dfN', 'dfIm']
 #endregion --------------------------------------------------> Important Lists
 
 
