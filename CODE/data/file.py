@@ -256,7 +256,7 @@ class UMSAPFile():
                 #------------------------------> 
                 tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmProtProf.replace(" ", "-")}'
                 #------------------------------> Create data
-                df  = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
+                df = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF': df,

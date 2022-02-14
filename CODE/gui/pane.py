@@ -4604,7 +4604,7 @@ class ProtProf(BaseConfModPanel):
             config.fnScore.format(self.rDate, '07')  : self.dfS,
             self.rMainData.format(self.rDate, '08')  : self.dfR,
         }
-        stepDict['R'] = self.rMainData.format(self.rDate, '08'),
+        stepDict['R'] = self.rMainData.format(self.rDate, '08')
         #endregion -----------------------------------------------> Data Steps
 
         return self.WriteOutputData(stepDict)
