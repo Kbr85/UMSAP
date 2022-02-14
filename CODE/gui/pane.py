@@ -1975,6 +1975,10 @@ class ResControlExpConfBase(wx.Panel):
         self.cTTControlN = getattr(
             self, 'cTTControlN', ('Name or ID of the control experiment.\ne.g. '
                                   'MyControl."'))
+        self.cTTRight = getattr(self, 'cTTRight', ('Use the right mouse click '
+                                        'to clear the content of the window.'))
+        self.cTTBtnCreate = getattr(self, 'cTTBtnCreate', ('Create the fields '
+                                                'to type the column numbers.'))
         #------------------------------> Validator
         self.cVColNumList = dtsValidator.NumberList(
             sep=' ', opt=True, vMin=0, vMax=self.rNColF 
@@ -1998,22 +2002,8 @@ class ResControlExpConfBase(wx.Panel):
         self.rStLabel = []
         self.rTcLabel = []
         self.rTcDict = {}
-        for k in range(1, self.cN+1):
-            #------------------------------> tcDict key
-            self.rTcDict[k] = []
-            #------------------------------> wx.StaticText
-            a = wx.StaticText(self.wSwLabel, label=self.cStLabel[k])
-            a.SetToolTip(self.cTTTotalField[k-1])
-            self.rStLabel.append(a)
-            #------------------------------> wx.TextCtrl for the label
-            a = wx.TextCtrl(
-                    self.wSwLabel,
-                    size      = self.cSTotalField,
-                    name      = str(k),
-                    validator = dtsValidator.NumberList(vMin=1, nN=1),
-                )
-            a.SetHint(self.cHTotalField)
-            self.rTcLabel.append(a)
+        
+        self.AddLabelFields()
         #------------------------------> Control name
         self.wControlN = dtsWidget.StaticTextCtrl(
             self.wSwLabel,
@@ -2027,8 +2017,9 @@ class ResControlExpConfBase(wx.Panel):
         #endregion --------------------------------------------------> Widgets
 
         #region -----------------------------------------------------> Tooltip
-        self.wBtnCreate.SetToolTip(
-            'Create the fields to type the column numbers.')
+        self.wBtnCreate.SetToolTip(self.cTTBtnCreate)
+        self.wSwLabel.SetToolTip(self.cTTRight)
+        self.wSwMatrix.SetToolTip(self.cTTRight)
         #endregion --------------------------------------------------> Tooltip
         
         #region ------------------------------------------------------> Sizers
@@ -2057,10 +2048,9 @@ class ResControlExpConfBase(wx.Panel):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        for k in range(0, self.cN):
-            self.rTcLabel[k].Bind(wx.EVT_KILL_FOCUS, self.OnLabelNumber)
-
         self.wBtnCreate.Bind(wx.EVT_BUTTON, self.OnCreate)
+        self.wSwLabel.Bind(wx.EVT_RIGHT_DOWN, self.OnClear)
+        self.wSwMatrix.Bind(wx.EVT_RIGHT_DOWN, self.OnClear)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -2156,10 +2146,10 @@ class ResControlExpConfBase(wx.Panel):
         #endregion ---------------------------------------------> Add to sizer
         
         #region --------------------------------------------------> Event Skip
-        if isinstance(event, str):
-            pass
-        else:
+        try:
             event.Skip()
+        except Exception: 
+            pass
         #endregion -----------------------------------------------> Event Skip
         
         return True
@@ -2248,6 +2238,48 @@ class ResControlExpConfBase(wx.Panel):
         else:
             pass
         #endregion -------------------------------------> Set parent variables
+        return True
+    #---
+    
+    def OnClear(self, event: Union[wx.Event, str]) -> bool:
+        """Clear all input in the wx.Dialog
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Labels
+        self.sSWLabel.Clear(delete_windows=True)
+        #------------------------------> Control
+        self.wControlN.tc.SetValue('')
+        try:
+            self.wCbControl.SetValue('')
+        except Exception:
+            pass
+        #------------------------------> Fields
+        self.sSWMatrix.Clear(delete_windows=True)
+        #endregion --------------------------------------------------> Widgets
+
+        #region -------------------------------------------------> List & Dict
+        self.rTcDictF = {}
+        self.rLbDict  = {}
+        self.rStLabel = []
+        self.rTcLabel = []
+        self.rTcDict  = {}
+        #endregion ----------------------------------------------> List & Dict
+        
+        #region --------------------------------------------------> Add Labels
+        self.AddLabelFields()
+        self.Add2SWLabel()
+        #endregion -----------------------------------------------> Add Labels
+        
         return True
     #---
     #endregion ------------------------------------------------> Event methods
@@ -2386,6 +2418,42 @@ class ResControlExpConfBase(wx.Panel):
         self.wSwLabel.SetupScrolling()
         #endregion -----------------------------------------------> Set scroll
         
+        return True
+    #---
+    
+    def AddLabelFields(self) -> bool:
+        """Add the default label fields, name and wx.TextCtrl for number.
+        
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------------> Widgets
+        for k in range(1, self.cN+1):
+            #------------------------------> tcDict key
+            self.rTcDict[k] = []
+            #------------------------------> wx.StaticText
+            a = wx.StaticText(self.wSwLabel, label=self.cStLabel[k])
+            a.SetToolTip(self.cTTTotalField[k-1])
+            self.rStLabel.append(a)
+            #------------------------------> wx.TextCtrl for the label
+            a = wx.TextCtrl(
+                    self.wSwLabel,
+                    size      = self.cSTotalField,
+                    name      = str(k),
+                    validator = dtsValidator.NumberList(vMin=1, nN=1),
+                )
+            a.SetHint(self.cHTotalField)
+            self.rTcLabel.append(a)
+        #endregion --------------------------------------------------> Widgets
+
+        #region --------------------------------------------------------> Bind
+        # Here because these widgets are destroyed and created when clearing
+        # the window.
+        for k in range(0, self.cN):
+            self.rTcLabel[k].Bind(wx.EVT_KILL_FOCUS, self.OnLabelNumber)
+        #endregion -----------------------------------------------------> Bind
+
         return True
     #---
     #endregion -----------------------------------------------> Manage methods
