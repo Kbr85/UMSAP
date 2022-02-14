@@ -780,14 +780,13 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
         
-        #region ---------------------------------------------------> 
+        #region ---------------------------------------------------> rKeyID
         self.rKeyID = {
             self.miSaveI.GetId(): 'PlotImageOne',
             self.miZoomR.GetId(): 'PlotZoomResetAllinOne',
         }
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------> rKeyID
 
-    
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)

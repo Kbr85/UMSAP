@@ -6307,10 +6307,10 @@ class CheckDataPrep(BaseWindowNPlotLT):
     cLdfCol = config.dfcolDataCheck
     #------------------------------> Other
     cFileName = {
-        config.ltDPKeys[0] : '{}-01-Floated-{}.{}',
-        config.ltDPKeys[1] : '{}-02-Transformed-{}.{}',
-        config.ltDPKeys[2] : '{}-03-Normalized-{}.{}',
-        config.ltDPKeys[3] : '{}-04-Imputed-{}.{}',
+        config.ltDPKeys[0] : '{}-01-Floated.{}',
+        config.ltDPKeys[1] : '{}-02-Transformed.{}',
+        config.ltDPKeys[2] : '{}-03-Normalized.{}',
+        config.ltDPKeys[3] : '{}-04-Imputed.{}',
     }
     cImgName = {
         cLNPlots[0] : '{}-01-Floated-{}.{}',
@@ -6494,12 +6494,11 @@ class CheckDataPrep(BaseWindowNPlotLT):
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
             p = Path(dlg.GetPath())
-            col = self.wLC.wLCS.lc.GetFirstSelected()
             #------------------------------> Export
             try:
                 for k, v in self.rDpDF.items():
                     #------------------------------> file path
-                    fPath = p/self.cFileName[k].format(self.rDateC, col, 'txt')
+                    fPath = p/self.cFileName[k].format(self.rDateC, 'txt')
                     #------------------------------> Write
                     dtsFF.WriteDF2CSV(fPath, v)
             except Exception as e:
