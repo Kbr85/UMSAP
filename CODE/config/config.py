@@ -426,6 +426,15 @@ mResCtrl = (
     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
     f"correct input.")
 mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
+mRepNum = ('The number of replicates in some experiments does not match '
+    'the number of replicates in the control.')
+mRepNumProtProf = ('To perform a Proteome Profiling analysis using Raw '
+    'Intensities and Paired Samples the number of replicates in '
+    'experiments and the corresponding control must be the '
+    'same.\n\nThe number of replicates in the following '
+    'experiments does not match the number of replicates in the '
+    'corresponding control.\n{}'
+)
 #endregion -------------------------------------------------> For CheckInput
 #endregion ---------------------------------------------------------> Messages
 

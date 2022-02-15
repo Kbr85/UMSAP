@@ -3726,6 +3726,11 @@ class ProtProf(BaseConfModPanel):
             self.cDCtrlType['OCR']  : self.ColCtrlData_OCR,
             self.cDCtrlType['Ratio']: self.ColCtrlData_Ratio,
         }
+        self.dCheckRepNum = {
+            self.cDCtrlType['OC']   : self.CheckRepNum_OC,
+            self.cDCtrlType['OCC']  : self.CheckRepNum_OCC,
+            self.cDCtrlType['OCR']  : self.CheckRepNum_OCR,
+        }
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -4116,17 +4121,159 @@ class ProtProf(BaseConfModPanel):
         #endregion -----------------------------> Raw or Ration of Intensities
         
         #region ---------------------------------------------> # of Replicates
-        msgStep = self.cLPdCheck + 'Sample Options'
+        msgStep = self.cLPdCheck + 'Number of Replicates'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> 
-        if self.wSample.cb.GetValue() == 'Paired Samples':
-            pass
+        a = self.wSample.cb.GetValue() == 'Paired Samples'
+        b = self.wRawI.cb.GetValue() == config.oIntensities['RawI']
+        if a and b:
+            if self.CheckNumberReplicates():
+                pass
+            else:
+                return False
         else:
             pass
         #endregion ------------------------------------------> # of Replicates
         #endregion ---------------------------------------------> Mixed Fields
         
         return True
+    #---
+    
+    def CheckNumberReplicates(self) -> bool:
+        """Check the number of replicates when sampels are paired and raw 
+            intensities are used.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> ResCtrl
+        resctrl = dmethod.ResControl2ListNumber(self.wTcResults.GetValue())
+        #endregion ------------------------------------------------> ResCtrl
+        
+        #region ---------------------------------------------------> Check
+        if self.dCheckRepNum[self.rLbDict["ControlType"]](resctrl):
+            return True
+        else:
+            return False
+        #endregion ------------------------------------------------> Check
+    #---
+    
+    def CheckRepNum_OC(self, resCtrl: list[list[list[int]]]) -> bool:
+        """Check equal number of replicas
+    
+            Parameters
+            ----------
+            resCtrl: list[list[list[int]]]
+                Result and Control as a list of list of list of int
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        badRep = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Check
+        #------------------------------> 
+        ctrlL = len(resCtrl[0][0])
+        #------------------------------> 
+        for row in resCtrl:
+            for col in row:
+                if len(col) == ctrlL:
+                    pass
+                else:
+                    badRep.append(col)
+        #endregion ------------------------------------------------> Check
+
+        #region ---------------------------------------------------> Return
+        if not badRep:
+            return True        
+        else:
+            self.rMsgError = config.mRepNum
+            self.rException = dtsException.InputError(
+                config.mRepNumProtProf.format(badRep))
+            return False
+        #endregion ------------------------------------------------> Return
+    #---
+    
+    def CheckRepNum_OCC(self, resCtrl: list[list[list[int]]]) -> bool:
+        """Check equal number of replicas
+    
+            Parameters
+            ----------
+            resCtrl: list[list[list[int]]]
+                Result and Control as a list of list of list of int
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        badRep = []
+        rowL = len(resCtrl)
+        colL = len(resCtrl[0])
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Check
+        for colI in range(0, colL):
+            ctrlL = len(resCtrl[0][colI])
+            for rowI in range(1,rowL):
+                if len(resCtrl[rowI][colI]) == ctrlL:
+                    pass
+                else:
+                    badRep.append(resCtrl[rowI][colI])
+        #endregion ------------------------------------------------> Check
+
+        #region ---------------------------------------------------> Return
+        if not badRep:
+            return True        
+        else:
+            self.rMsgError = config.mRepNum
+            self.rException = dtsException.InputError(
+                config.mRepNumProtProf.format(badRep))
+            return False
+        #endregion ------------------------------------------------> Return
+    #---
+    
+    def CheckRepNum_OCR(self, resCtrl: list[list[list[int]]]) -> bool:
+        """Check equal number of replicas
+    
+            Parameters
+            ----------
+            resCtrl: list[list[list[int]]]
+                Result and Control as a list of list of list of int
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        badRep = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Check
+        for row in resCtrl:
+            #------------------------------> 
+            ctrlL = len(row[0])
+            #------------------------------> 
+            for col in row[1:]:
+                if len(col) == ctrlL:
+                    pass
+                else:
+                    badRep.append(col)
+        #endregion ------------------------------------------------> Check
+
+        #region ---------------------------------------------------> Return
+        if not badRep:
+            return True        
+        else:
+            self.rMsgError = config.mRepNum
+            self.rException = dtsException.InputError(
+                config.mRepNumProtProf.format(badRep))
+            return False
+        #endregion ------------------------------------------------> Return
     #---
     
     def PrepareRun(self) -> bool:
