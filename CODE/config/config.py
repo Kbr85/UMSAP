@@ -435,6 +435,7 @@ mRepNumProtProf = ('To perform a Proteome Profiling analysis using Raw '
     'experiments does not match the number of replicates in the '
     'corresponding control.\n{}'
 )
+mCtrlEmpty = 'None of the Control fields can be empty.'
 #endregion -------------------------------------------------> For CheckInput
 #endregion ---------------------------------------------------------> Messages
 

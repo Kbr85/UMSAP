@@ -2243,6 +2243,7 @@ class ResControlExpConfBase(wx.Panel):
         else:
             pass
         #endregion -------------------------------------> Set parent variables
+        
         return True
     #---
     
@@ -6896,6 +6897,64 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #endregion ----------------------------------------> Update controlVal
         
         return True
+    #---
+    
+    def OnOK(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        ctrlType = self.wCbControl.GetValue()
+        ctrl = True
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Super
+        if super().OnOK():
+            pass
+        else:
+            return False
+        #endregion ------------------------------------------------> Super
+
+        #region --------------------------------------------------> Check Ctrl
+        if ctrlType  == self.cCtrlType['OC']:
+            if self.rTcDictF[1][0].GetValue().strip() == '':
+                ctrl = False
+            else:
+                pass
+        elif ctrlType == self.cCtrlType['OCC']:
+            for w in self.rTcDictF[1]:
+                if w.GetValue().strip() == '':
+                    ctrl = False
+                    break
+                else:
+                    pass
+        else:
+            for w in self.rTcDictF.values():
+                if w[0].GetValue().strip() == '':
+                    ctrl = False
+                    break
+                else:
+                    pass
+        #endregion -----------------------------------------------> Check Ctrl
+
+        #region ---------------------------------------------------> 
+        if ctrl:
+            return True
+        else:
+            dtscore.Notification('errorF', msg=config.mCtrlEmpty, parent=self)
+            return False
+        #endregion ------------------------------------------------> 
     #---
     #endregion ------------------------------------------------> Event Methods
     
