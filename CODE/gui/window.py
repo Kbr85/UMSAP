@@ -2082,9 +2082,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rData        = self.rObj.dConfigure[self.cSection]()
         self.rDate, cMenuData = self.SetDateMenuDate()
         self.rDf          = None
-        self.rLog10alpha  = None
-        self.rZScore      = stats.norm.ppf(0.9)
-        self.rZScoreL     = '10%'
         self.rDateC       = self.rDate[0]
         self.rCondC       = cMenuData['crp'][self.rDate[0]]['C'][0]
         self.rRpC         = cMenuData['crp'][self.rDate[0]]['RP'][0]
@@ -2341,30 +2338,38 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion -----------------------------------------------------> Axes
         
         #region --------------------------------------------------------> Data
-        #------------------------------> 
+        #------------------------------> X
         x = self.rDf.loc[:,[(self.rCondC,self.rRpC,'FC')]]
-        #------------------------------> 
+        #------------------------------> Y
         if self.rCorrP:
             y = -np.log10(
                 self.rDf.loc[:,[(self.rCondC,self.rRpC,'Pc')]])
         else:
             y = -np.log10(
                 self.rDf.loc[:,[(self.rCondC,self.rRpC,'P')]])
-        #------------------------------> 
-        zFC = self.rDf.loc[:,[(self.rCondC,self.rRpC,'FCz')]]
-        zFC = zFC.squeeze().tolist()
-        #-------------->  One item series squeeze to float
-        zFC = zFC if type(zFC) == list else [zFC]
-        #------------------------------> 
-        color = dtsMethod.AssignProperty(
-            zFC, self.cColor['Vol'], [-self.rZScore, self.rZScore])
+        #------------------------------> H Curve
+        lim = self.rT0*self.rS0
+        xCP = np.arange(lim, 20, 0.001)
+        yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-lim))
+        #------------------------------> Color
+        color = []
+        for k,v in enumerate(x.values):
+            if v < -lim:
+                if abs((abs(v)*self.rT0)/(abs(v)-lim)) < y.values[k]:
+                    color.append(self.cColor['Vol'][0])
+                else:
+                    color.append(self.cColor['Vol'][1])
+            elif v > lim:
+                if abs((abs(v)*self.rT0)/(abs(v)-lim)) < y.values[k]:
+                    color.append(self.cColor['Vol'][2])
+                else:
+                    color.append(self.cColor['Vol'][1])
+            else:
+                color.append(self.cColor['Vol'][1])
         #endregion -----------------------------------------------------> Data
         
         #region -----------------------------------------------------> H Curve
-        xCP = np.arange(self.rT0*self.rS0, 20, 0.005)
-        xCN = np.arange(-20, -self.rT0*self.rS0, 0.005)
-        yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-self.rT0*self.rS0))
-        yCN = abs((abs(xCN)*self.rT0)/(abs(xCN)-self.rT0*self.rS0))
+        
         #endregion --------------------------------------------------> H Curve
 
         #region --------------------------------------------------------> Plot
@@ -2377,8 +2382,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
             picker    = True,
         )
         
-        self.wPlots.dPlot['Vol'].axes.plot(xCP, yCP, color=self.cColor['CV'])
-        self.wPlots.dPlot['Vol'].axes.plot(xCN, yCN, color=self.cColor['CV'])
+        self.wPlots.dPlot['Vol'].axes.plot(xCP,  yCP, color=self.cColor['CV'])
+        self.wPlots.dPlot['Vol'].axes.plot(-xCP, yCP, color=self.cColor['CV'])
         #------------------------------> Lock Scale or Set it manually
         if self.rVXRange and self.rVYRange:
             self.wPlots.dPlot['Vol'].axes.set_xlim(*self.rVXRange)
@@ -2409,11 +2414,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.wPlots.dPlot['Vol'].axes.clear()
         #------------------------------> 
         self.wPlots.dPlot['Vol'].axes.grid(True, linestyle=":")
-        self.wPlots.dPlot['Vol'].axes.axhline(
-            y=self.rLog10alpha, color="black", dashes=(5, 2, 1, 2), alpha=0.5)
         #------------------------------> Labels
         self.wPlots.dPlot['Vol'].axes.set_title(
-            f'C: {self.rCondC} RP: {self.rRpC} ' + 'Z$_{score}$: ' + f'{self.rZScoreL}')
+            f'C: {self.rCondC} RP: {self.rRpC}')
         self.wPlots.dPlot['Vol'].axes.set_xlabel(
             "log$_{2}$[Fold Change]", fontweight="bold")
         self.wPlots.dPlot['Vol'].axes.set_ylabel(
@@ -3193,8 +3196,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
             pass
         #------------------------------> Clean & Reload Protein List
         self.FillListCtrl()
-        #------------------------------> Alpha
-        self.rLog10alpha = -np.log10(float(self.rCI['Alpha']))
         #------------------------------> Clean text
         self.wText.SetValue('')
         #endregion -----------------------------------------------> Update GUI
@@ -3307,45 +3308,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.FCDraw()
         #endregion -----------------------------------------------------> Plot
         
-        return True
-    #---
-    
-    def OnZScore(self) -> bool:
-        """Change Z score to plot.
-    
-            Returns
-            -------
-            bool
-        """
-        #region ----------------------------------------------> Text Entry Dlg
-        dlg = dtsWindow.UserInput1Text(
-            'Z score threshold.',
-            'Z score threshold (%)',
-            'Decimal value between 0 and 100. e.g. 10',
-            self.wPlots.dPlot['Vol'],
-            dtsValidator.NumberList(
-                numType = 'float',
-                vMin    = 0,
-                vMax    = 100,
-                nN      = 1,
-            )
-        )
-        #endregion -------------------------------------------> Text Entry Dlg
-        
-        #region ------------------------------------------> Get Value and Plot
-        if dlg.ShowModal():
-            #------------------------------> 
-            val = float(dlg.input.tc.GetValue())
-            #------------------------------> 
-            self.rZScoreL = f'{val}%'
-            self.rZScore = stats.norm.ppf(1.0-(val/100.0))
-            #------------------------------> 
-            self.VolDraw()
-        else:
-            pass
-        #endregion ---------------------------------------> Get Value and Plot
-        
-        dlg.Destroy()
         return True
     #---
     

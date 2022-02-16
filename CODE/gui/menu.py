@@ -855,8 +855,6 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         self.AppendSeparator()
         self.miHypCurve = self.Append(-1, 'Hyperbolic Curve')
         self.AppendSeparator()
-        self.miZScore = self.Append(-1, 'Z score')
-        self.AppendSeparator()
         self.miPCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
         self.miSaveI = self.Append(-1, 'Export Image\tShift+I')
@@ -873,7 +871,6 @@ class VolcanoPlot(wx.Menu, MenuMethods):
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnHypCurve,       source=self.miHypCurve)
-        self.Bind(wx.EVT_MENU, self.OnZScore,         source=self.miZScore)
         self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         self.Bind(wx.EVT_MENU, self.OnUpdatePlot,     source=self.miPCorr)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
@@ -899,25 +896,6 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         win = self.GetWindow()
         win.OnVolChange(*self.GetData4Draw())
         #endregion -----------------------------------------------------> Draw
-        
-        return True
-    #---
-    
-    def OnZScore(self, event: wx.CommandEvent) -> bool:
-        """Change Z score to plot.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnZScore()
         
         return True
     #---
