@@ -1984,9 +1984,13 @@ class ProtProfPlot(BaseWindowNPlotLT):
             wx.ListCtrl.
         rRpC : str
             Currently selected relevant point.
+        rS0 : float
+            s0 value to calculate the hyperbolic curve
         rShowAll : bool
             Show (True) fcYMax and fcYMin in the FC plot or not (False).
             Default is True.
+        rT0: float
+            t0 value to calculate the hyperbolic curve
         rVXRange : list of float
             Min and Max values for the x axis in the Vol plot.
         rVYRange : list of float
@@ -2076,21 +2080,24 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.cTitle       = f"{cParent.cTitle} - {self.cSection}"
         self.rObj         = cParent.rObj
         self.rData        = self.rObj.dConfigure[self.cSection]()
+        self.rDate, cMenuData = self.SetDateMenuDate()
         self.rDf          = None
         self.rLog10alpha  = None
         self.rZScore      = stats.norm.ppf(0.9)
         self.rZScoreL     = '10%'
-        self.rDateC       = None
-        self.rCondC       = None
-        self.rRpC         = None
+        self.rDateC       = self.rDate[0]
+        self.rCondC       = cMenuData['crp'][self.rDate[0]]['C'][0]
+        self.rRpC         = cMenuData['crp'][self.rDate[0]]['RP'][0]
         self.rGreenP      = None
         self.rCorrP       = False
         self.rShowAll     = True
         self.rAutoFilter  = False
+        self.rT0          = 0.1
+        self.rS0          = 2.0
         self.rCI          = None
         self.rFcYMax      = None
         self.rFcYMin      = None
-        self.rLockScale   = None
+        self.rLockScale   = 'Date'
         self.rVXRange     = []
         self.rVYRange     = []
         self.rFcXRange    = []
@@ -2098,7 +2105,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rFcXLabel    = []
         self.rProtLine    = []
         self.rFilterList  = []
-        self.rDate, cMenuData = self.SetDateMenuDate()
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> Methods
@@ -2153,13 +2159,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
 
         #region ---------------------------------------------> Window position
         #------------------------------> 
-        self.UpdateDisplayedData(
-            self.rDate[0], 
-            cMenuData['crp'][self.rDate[0]]['C'][0],
-            cMenuData['crp'][self.rDate[0]]['RP'][0],
-            self.rCorrP,
-            self.rShowAll,
-        )
+        self.UpdateDisplayedData()
         #------------------------------> 
         self.WinPos()
         self.Show()
@@ -2360,6 +2360,13 @@ class ProtProfPlot(BaseWindowNPlotLT):
             zFC, self.cColor['Vol'], [-self.rZScore, self.rZScore])
         #endregion -----------------------------------------------------> Data
         
+        #region -----------------------------------------------------> H Curve
+        xCP = np.arange(self.rT0*self.rS0, 20, 0.005)
+        xCN = np.arange(-20, -self.rT0*self.rS0, 0.005)
+        yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-self.rT0*self.rS0))
+        yCN = abs((abs(xCN)*self.rT0)/(abs(xCN)-self.rT0*self.rS0))
+        #endregion --------------------------------------------------> H Curve
+
         #region --------------------------------------------------------> Plot
         self.wPlots.dPlot['Vol'].axes.scatter(
             x, y, 
@@ -2369,6 +2376,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
             color     = color,
             picker    = True,
         )
+        
+        self.wPlots.dPlot['Vol'].axes.plot(xCP, yCP, color=self.cColor['CV'])
+        self.wPlots.dPlot['Vol'].axes.plot(xCN, yCN, color=self.cColor['CV'])
         #------------------------------> Lock Scale or Set it manually
         if self.rVXRange and self.rVYRange:
             self.wPlots.dPlot['Vol'].axes.set_xlim(*self.rVXRange)
@@ -3136,7 +3146,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
     
     #region ---------------------------------------------------> Event Methods
     def UpdateDisplayedData(
-        self, tDate: str, cond: str, rp:str, corrP: bool, showAll: bool,
+        self, tDate: Optional[str]=None, cond: Optional[str]=None, 
+        rp: Optional[str]=None, corrP: Optional[bool]=None, 
+        showAll: Optional[bool]=None, t0: Optional[float]=None, 
+        s0: Optional[float]=None
         ) -> bool:
         """Configure window to update Volcano and FC plots when date changes.
     
@@ -3152,17 +3165,23 @@ class ProtProfPlot(BaseWindowNPlotLT):
                 Use corrected P values (True) or not (False)
             showAll : bool
                 Show FC rnge of values or not.
+            to: float
+                T0 value for the calculation of the hyperbolic curve
+            so: float
+                S0 value for the calculation of the hyperbolic curve
     
             Returns
             -------
             bool
         """
         #region --------------------------------------------> Update variables
-        self.rDateC   = tDate
-        self.rCondC   = cond
-        self.rRpC     = rp
-        self.rCorrP   = corrP
-        self.rShowAll = showAll
+        self.rDateC   = tDate if tDate is not None else self.rDateC
+        self.rCondC   = cond if cond is not None else self.rCondC
+        self.rRpC     = rp if rp is not None else self.rRpC
+        self.rCorrP   = corrP if corrP is not None else self.rCorrP
+        self.rShowAll = showAll if showAll is not None else self.rShowAll
+        self.rT0      = t0 if t0 is not None else self.rT0
+        self.rS0      = s0 if s0 is not None else self.rS0
         self.rCI      = self.rObj.rData[self.cSection][self.rDateC]['CI']
         self.rDf      = self.rData[self.rDateC]['DF'].copy()
         #endregion -----------------------------------------> Update variables
@@ -3208,6 +3227,35 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ---------------------------------------------------> Title
 
         return True
+    #---
+    
+    def OnHypCurve(self) -> bool:
+        """Adjust the hyperbolic curve on the volcano plot
+    
+            Returns
+            -------
+            bool
+    
+            Raise
+            -----
+            
+        """
+        #------------------------------> 
+        dlg = dtsWindow.UserInputText(
+            'Customize the Hyperbolic Curve',
+            ['t0', 's0'],
+            2*['Non negative number'],
+            2*[dtsValidator.NumberList('float', vMin=0, nN=1)],
+            parent=self,
+            values = [str(self.rT0), str(self.rS0)]
+        )
+        #------------------------------> 
+        if dlg.ShowModal():
+            self.rT0 = float(dlg.rInput[0].tc.GetValue().strip())
+            self.rS0 = float(dlg.rInput[1].tc.GetValue().strip())
+            self.UpdateDisplayedData()
+        else:
+            return False
     #---
     
     def OnVolChange(self, cond: str, rp:str, corrP: bool) -> bool:

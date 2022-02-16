@@ -1478,7 +1478,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Label
-        self.cLAlpha    = getattr(self, 'cLAlpha',    'Significance Level')
+        self.cLAlpha    = getattr(self, 'cLAlpha',    'α level')
         self.cLScoreVal = getattr(self, 'cLScoreVal', config.lStScoreVal)
         self.cLScoreCol = getattr(self, 'cLScoreCol', config.lStScoreCol)
         self.cLDetectedProt = getattr(
@@ -4908,8 +4908,8 @@ class LimProt(BaseConfModPanel2):
     #region -----------------------------------------------------> Class setup
     cName = config.npLimProt
     #------------------------------> Label
-    cLBeta         = "β value"
-    cLGamma        = "γ value"
+    cLBeta         = "β level"
+    cLGamma        = "γ level"
     cLTheta        = "Θ value"
     cLThetaMax     = "Θmax value"
     cLSample       = 'Samples'
