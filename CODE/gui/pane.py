@@ -3998,21 +3998,21 @@ class ProtProf(BaseConfModPanel):
             #     'ControlType': 'One Control per Column',
             # }
             #--> One Control per Row, 1 Cond and 2 TP
-            self.wTcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
-            self.rLbDict = {
-                1            : ['DMSO'],
-                2            : ['30min', '60min'],
-                'Control'    : ['MyControl'],
-                'ControlType': 'One Control per Row',
-            }
-            #--> One Control 2 Cond and 2 TP
-            # self.wTcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.wTcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
             # self.rLbDict = {
-            #     1            : ['C1', 'C2'],
-            #     2            : ['RP1', 'RP2'],
-            #     'Control'    : ['1Control'],
-            #     'ControlType': 'One Control',
+            #     1            : ['DMSO'],
+            #     2            : ['30min', '60min'],
+            #     'Control'    : ['MyControl'],
+            #     'ControlType': 'One Control per Row',
             # }
+            #--> One Control 2 Cond and 2 TP
+            self.wTcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            self.rLbDict = {
+                1            : ['C1', 'C2'],
+                2            : ['RP1', 'RP2'],
+                'Control'    : ['1Control'],
+                'ControlType': 'One Control',
+            }
             #--> Ratio 2 Cond and 2 TP
             # self.wTcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
             # self.rLbDict = {

@@ -17,7 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
-from typing import Optional, Literal
+from typing import Optional, Literal, Union
 
 import matplotlib as mpl
 import matplotlib.patches as mpatches
@@ -3392,6 +3392,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.wLC.wLCS.lc.Select(ind[0], on=1)
             self.wLC.wLCS.lc.EnsureVisible(ind[0])
             self.wLC.wLCS.lc.SetFocus()
+            self.OnListSelect('fEvent')
         else:
             #------------------------------> Disconnect events to avoid zoom in
             # while interacting with the modal window
@@ -3418,7 +3419,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return True
     #---
     
-    def OnListSelect(self, event) -> bool:
+    def OnListSelect(self, event: Union[wx.Event, str]) -> bool:
         """Select an element in the wx.ListCtrl.
     
             Parameters
