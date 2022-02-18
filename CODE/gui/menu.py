@@ -1700,7 +1700,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
         #------------------------------> 
-        self.miDataPrep = self.Append(-1, 'Data Preparation')
+        self.miDataPrep = self.Append(-1, 'Data Preparation\tCtrl+P')
         self.AppendSeparator()
         #------------------------------> Export Data
         self.miSaveD  = self.Append(-1, 'Export Data\tCtrl+E')
