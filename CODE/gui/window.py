@@ -2036,12 +2036,14 @@ class ProtProfPlot(BaseWindowNPlotLT):
         cLFFCUp      : cLFFCUpL,
         cLFFCDown    : cLFFCDownL,
         cLFFCBoth    : cLFFCBothL,
-        cLFFCUpAbs   : cLFFCUpAbsL,
-        cLFFCDownAbs : cLFFCDownAbsL,
-        cLFFCBothAbs : cLFFCBothAbsL,
         cLFFCUpMon   : cLFFCUpMonL,
         cLFFCDownMon : cLFFCDownMonL,
         cLFFCBothMon : cLFFCBothMonL,
+        cLFFCUpAbs   : cLFFCUpAbsL,
+        cLFFCDownAbs : cLFFCDownAbsL,
+        cLFFCBothAbs : cLFFCBothAbsL,
+        cLFFCNo      : cLFFCNo,
+        cLFDiv       : cLFDiv, 
     }
     cLFFCMode = {
         'Up'  : cLFFCUp,
@@ -2116,21 +2118,17 @@ class ProtProfPlot(BaseWindowNPlotLT):
             config.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
             config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
             #------------------------------> Filter methods
-            self.cLFZscore   : self.Filter_ZScore,
-            self.cLFLog2FC   : self.Filter_Log2FC,
-            self.cLFPValAbs  : self.Filter_PValue,
-            self.cLFPValLog  : self.Filter_PValue,
-            self.cLFFCUp     : self.Filter_FCChange,
-            self.cLFFCDown   : self.Filter_FCChange,
-            self.cLFFCBoth   : self.Filter_FCChange,
-            self.cLFFCUpAbs  : self.Filter_FCChange,
-            self.cLFFCDownAbs: self.Filter_FCChange,
-            self.cLFFCBothAbs: self.Filter_FCChange,
-            self.cLFFCUpMon  : self.Filter_FCChange,
-            self.cLFFCDownMon: self.Filter_FCChange,
-            self.cLFFCBothMon: self.Filter_FCChange,
-            self.cLFFCNo     : self.Filter_FCNoChange,
-            self.cLFDiv      : self.Filter_Divergent,
+            self.cLFFCUp   : self.Filter_FCChange,
+            'HCurve'       : self.Filter_HCurve,
+            self.cLFLog2FC : self.Filter_Log2FC,
+            self.cLFPValAbs: self.Filter_PValue,
+            self.cLFZscore : self.Filter_ZScore,
+            'Apply All'    : self.FilterApply,
+            'Remove Last'  : self.FilterRemoveLast,
+            'Remove Any'   : self.FilterRemoveAny,
+            'Remove All'   : self.FilterRemoveAll,
+            'Save Filter'  : None,
+            'Load Filter'  : None,
             #------------------------------> Save Image
             'VolcanoImg': self.OnSaveVolcanoImage,
             'FCImage'   : self.OnSaveFCImage,
@@ -2349,7 +2347,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
                 self.rDf.loc[:,[(self.rCondC,self.rRpC,'P')]])
         #------------------------------> H Curve
         lim = self.rT0*self.rS0
-        xCP = np.arange(lim, 20, 0.001)
+        xCP = np.arange(lim+0.001, 20, 0.001)
         yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-lim))
         #------------------------------> Color
         color = []
@@ -3541,6 +3539,201 @@ class ProtProfPlot(BaseWindowNPlotLT):
     #endregion ------------------------------------------------> Event Methods
 
     #region --------------------------------------------------> Filter Methods
+    def Filter_FCChange(
+        self, choice: Optional[str]=None, updateL: bool=True,
+        ) -> bool:
+        """Filter results based on FC change
+    
+            Parameters
+            ----------
+            choice : str
+                One of the keys in self.cLFFCDict
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Get Value
+        if choice is None:
+            #------------------------------> 
+            dlg = dtsWindow.MultipleCheckBox(
+                'Filter results by FC evolution.', 
+                self.cLFFCDict, 
+                3, 
+                parent=self.wPlots.dPlot['FC'],
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------> 
+                choice = dlg.GetChoice()[0]
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return False
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Value
+        
+        #region ----------------------------------------------------------> DF
+        #------------------------------> 
+        idx = pd.IndexSlice
+        df = self.rDf.loc[:,idx[:,:,'FC']]
+        #------------------------------> 
+        if choice == self.cLFFCUp:
+            self.rDf = self.rDf[df.apply(
+                lambda x: any([(x.loc[idx[y,:,'FC']] > 0).all() for y in self.rCI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCUpAbs:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.rDf = self.rDf[df.apply(
+                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.rCI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCUpMon:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.rDf = self.rDf[df.apply(
+                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.rCI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCDown:
+            self.rDf = self.rDf[df.apply(
+                lambda x: any([(x.loc[idx[y,:,'FC']] < 0).all() for y in self.rCI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCDownAbs:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.rDf = self.rDf[df.apply(
+                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.rCI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCDownMon:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.rDf = self.rDf[df.apply(
+                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.rCI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFFCBoth:
+            self.rDf = self.rDf[df.apply(
+                lambda x: any(
+                    [(x.loc[idx[y:,:'FC']] > 0).all() for y in self.rCI['Cond']] + 
+                    [(x.loc[idx[y:,:'FC']] < 0).all() for y in self.rCI['Cond']]
+                ), 
+                axis=1,
+            )]
+        elif choice == self.cLFFCBothAbs:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.rDf = self.rDf[df.apply(
+                lambda x: any(
+                    [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.rCI['Cond']] + 
+                    [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.rCI['Cond']]
+                ), 
+                axis=1,
+            )]
+        elif choice == self.cLFFCBothMon:
+            df.insert(0, ('C', 'C', 'FC'), 0)
+            self.rDf = self.rDf[df.apply(
+                lambda x: any(
+                    [x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.rCI['Cond']] +
+                    [x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.rCI['Cond']] 
+                ), 
+                axis=1,
+            )]
+        elif choice == self.cLFFCNo:
+            self.rDf = self.rDf[df.apply(
+                lambda x: any(
+                    [(x.loc[idx[y,:,'FC']] == 0).all() for y in self.rCI['Cond']]), axis=1
+            )]
+        elif choice == self.cLFDiv:
+            self.rDf = self.rDf[df.apply(self.Filter_Divergent_Helper, axis=1)]
+        else:
+            return False
+        #endregion -------------------------------------------------------> DF
+    
+        #region --------------------------------------------------> Update GUI
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #------------------------------> 
+        if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{choice}')
+            #------------------------------> 
+            self.rFilterList.append(
+                [choice, {'choice':choice, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion -----------------------------------------------> Update GUI
+            
+        return True
+    #---
+    
+    def Filter_HCurve(self, updateL: bool=True) -> bool:
+        """Filter results based on H Curve
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        filterText = 'Hyp Curve'
+        lim = self.rT0 * self.rS0
+        fc = self.rDf.loc[:,[(self.rCondC,self.rRpC,'FC')]]
+        p = -np.log10(self.rDf.loc[:,[(self.rCondC,self.rRpC,'P')]])
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> H Curve 
+        cond = [fc < -lim, fc > lim]
+        choice = [
+            dmethod.HCurve(fc, self.rT0, self.rS0), 
+            dmethod.HCurve(fc, self.rT0, self.rS0),
+        ]
+        pH = np.select(cond, choice, np.nan)
+        #endregion ------------------------------------------------> H Curve
+        
+        #region ---------------------------------------------------> Filter
+        cond = [pH < p, pH > p]
+        choice = [True, False]
+        npBool = np.select(cond, choice)
+        npBool = npBool.astype(bool)
+        self.rDf = self.rDf[npBool]
+        #endregion ------------------------------------------------> Filter
+
+        #region --------------------------------------------------> Update GUI
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #------------------------------> 
+        if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{filterText}')
+            #------------------------------> 
+            self.rFilterList.append(
+                [filterText, {'choice':filterText, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion -----------------------------------------------> Update GUI
+            
+        return True
+    #---
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
     def FilterApply(self) -> bool:
         """Apply all filter to the current date.
     
@@ -3973,210 +4166,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         else:
             pass
         #endregion ---------------------------> Update Filter List & StatusBar
-        
-        return True
-    #---
-    
-    def Filter_FCNoChange(self, updateL: bool=True) -> bool:
-        """Filter results by No FC change.
-    
-            Parameters
-            ----------
-            updateL : bool
-                Update filterList and StatusBar (True) or not (False)
-    
-            Returns
-            -------
-            bool
-        """
-        #region ----------------------------------------------------------> DF
-        idx = pd.IndexSlice
-        df = self.rDf.loc[:,idx[:,:,'FC']]
-        #endregion -------------------------------------------------------> DF
-        
-        #region ------------------------------------------> Get Value and Plot
-        self.rDf = self.rDf[df.apply(
-            lambda x: any([(x.loc[idx[y,:,'FC']] == 0).all() for y in self.rCI['Cond']]), axis=1
-        )]
-        #------------------------------> 
-        self.FillListCtrl()
-        self.VolDraw()
-        self.FCDraw()
-        #endregion ---------------------------------------> Get Value and Plot
-        
-        #region ------------------------------------------> Update Filter List
-        if updateL:
-            #------------------------------> 
-            self.StatusBarFilterText(f'{self.cLFFCNo}')
-            #------------------------------> 
-            self.rFilterList.append(
-                [self.cLFFCNo, {'updateL': False}]
-            )
-        else:
-            pass
-        #endregion ---------------------------------------> Update Filter List
-        
-        return True
-    #---
-    
-    def Filter_FCChange(
-        self, choice: Optional[str]=None, updateL: bool=True,
-        ) -> bool:
-        """Filter results based on FC change
-    
-            Parameters
-            ----------
-            choice : str
-                One of the keys in self.cLFFCDict
-            updateL : bool
-                Update filterList and StatusBar (True) or not (False)
-    
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Get Value
-        if choice is None:
-            #------------------------------> 
-            dlg = dtsWindow.MultipleCheckBox(
-                'Filter results by FC evolution.', 
-                self.cLFFCDict, 
-                3, 
-                parent=self.wPlots.dPlot['FC'],
-            )
-            #------------------------------> 
-            if dlg.ShowModal():
-                #------------------------------> 
-                choice = dlg.GetChoice()[0]
-                #------------------------------> 
-                dlg.Destroy()
-            else:
-                dlg.Destroy()
-                return False
-        else:
-            pass
-        #endregion ------------------------------------------------> Get Value
-        
-        #region ----------------------------------------------------------> DF
-        #------------------------------> 
-        idx = pd.IndexSlice
-        df = self.rDf.loc[:,idx[:,:,'FC']]
-        #------------------------------> 
-        if choice == self.cLFFCUp:
-            self.rDf = self.rDf[df.apply(
-                lambda x: any([(x.loc[idx[y,:,'FC']] > 0).all() for y in self.rCI['Cond']]), axis=1
-            )]
-        elif choice == self.cLFFCUpAbs:
-            df.insert(0, ('C', 'C', 'FC'), 0)
-            self.rDf = self.rDf[df.apply(
-                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.rCI['Cond']]), axis=1
-            )]
-        elif choice == self.cLFFCUpMon:
-            df.insert(0, ('C', 'C', 'FC'), 0)
-            self.rDf = self.rDf[df.apply(
-                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.rCI['Cond']]), axis=1
-            )]
-        elif choice == self.cLFFCDown:
-            self.rDf = self.rDf[df.apply(
-                lambda x: any([(x.loc[idx[y,:,'FC']] < 0).all() for y in self.rCI['Cond']]), axis=1
-            )]
-        elif choice == self.cLFFCDownAbs:
-            df.insert(0, ('C', 'C', 'FC'), 0)
-            self.rDf = self.rDf[df.apply(
-                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.rCI['Cond']]), axis=1
-            )]
-        elif choice == self.cLFFCDownMon:
-            df.insert(0, ('C', 'C', 'FC'), 0)
-            self.rDf = self.rDf[df.apply(
-                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.rCI['Cond']]), axis=1
-            )]
-        elif choice == self.cLFFCBoth:
-            self.rDf = self.rDf[df.apply(
-                lambda x: any(
-                    [(x.loc[idx[y:,:'FC']] > 0).all() for y in self.rCI['Cond']] + 
-                    [(x.loc[idx[y:,:'FC']] < 0).all() for y in self.rCI['Cond']]
-                ), 
-                axis=1,
-            )]
-        elif choice == self.cLFFCBothAbs:
-            df.insert(0, ('C', 'C', 'FC'), 0)
-            self.rDf = self.rDf[df.apply(
-                lambda x: any(
-                    [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.rCI['Cond']] + 
-                    [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.rCI['Cond']]
-                ), 
-                axis=1,
-            )]
-        elif choice == self.cLFFCBothMon:
-            df.insert(0, ('C', 'C', 'FC'), 0)
-            self.rDf = self.rDf[df.apply(
-                lambda x: any(
-                    [x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.rCI['Cond']] +
-                    [x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.rCI['Cond']] 
-                ), 
-                axis=1,
-            )]
-        else:
-            return False
-        #endregion -------------------------------------------------------> DF
-    
-        #region --------------------------------------------------> Update GUI
-        #------------------------------> 
-        self.FillListCtrl()
-        self.VolDraw()
-        self.FCDraw()
-        #------------------------------> 
-        if updateL:
-            #------------------------------> 
-            self.StatusBarFilterText(f'{choice}')
-            #------------------------------> 
-            self.rFilterList.append(
-                [choice, {'choice':choice, 'updateL': False}]
-            )
-        else:
-            pass
-        #endregion -----------------------------------------------> Update GUI
-            
-        return True
-    #---
-        
-    def Filter_Divergent(self, updateL: bool=True) -> bool:
-        """Filter results based on the simultaneous presence of a increasing and 
-            decreasing FC behavior in the conditions.
-    
-            Parameters
-            ----------
-            updateL : bool
-                Update filterList and StatusBar (True) or not (False)
-    
-            Returns
-            -------
-            bool
-        """
-        #region ----------------------------------------------------------> DF
-        idx = pd.IndexSlice
-        df = self.rDf.loc[:,idx[:,:,'FC']]
-        #endregion -------------------------------------------------------> DF
-        
-        #region ------------------------------------------> Get Value and Plot
-        self.rDf = self.rDf[df.apply(self.Filter_Divergent_Helper, axis=1)]
-        #------------------------------> 
-        self.FillListCtrl()
-        self.VolDraw()
-        self.FCDraw()
-        #endregion ---------------------------------------> Get Value and Plot
-        
-        #region ------------------------------------------> Update Filter List
-        if updateL:
-            #------------------------------> 
-            self.StatusBarFilterText(f'{self.cLFDiv}')
-            #------------------------------> 
-            self.rFilterList.append(
-                [self.cLFDiv, {'updateL': False}]
-            )
-        else:
-            pass
-        #endregion ---------------------------------------> Update Filter List
         
         return True
     #---

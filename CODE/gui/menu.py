@@ -1131,33 +1131,52 @@ class FiltersProtProf(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miZScore   = self.Append(-1, 'Z Score')
+        self.miFcChange = self.Append(-1, 'FC Change')
+        self.miHypCurve = self.Append(-1, 'Hyperbolic Curve')
         self.miLog2FC   = self.Append(-1, 'Log2(FC)')
         self.miPValue   = self.Append(-1, 'P Value')
-        self.miFcChange = self.Append(-1, 'FC Change')
-        self.miFcNo     = self.Append(-1, 'FC No Change')
-        self.miDiv      = self.Append(-1, 'FC Diverge')
+        self.miZScore   = self.Append(-1, 'Z Score')
         self.AppendSeparator()
         self.miApply = self.Append(-1, 'Apply All\tCtrl+A')
         self.miUpdate = self.Append(-1, 'Auto Apply Filters', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
+        self.miRemoveAny  = self.Append(-1, 'Remove Filters')
         self.miRemoveLast = self.Append(-1, 'Remove Last\tCtrl+Shift+Z')
-        self.miRemoveAny = self.Append(-1, 'Remove Filters')
-        self.miRemoveAll = self.Append(-1, 'Remove All\tCtrl+Shift+A')
+        self.miRemoveAll  = self.Append(-1, 'Remove All\tCtrl+Shift+A')
+        self.AppendSeparator()
+        self.miSave = self.Append(-1, 'Save\tCtrl+Shift+S')
+        self.miLoad = self.Append(-1, 'Load\tCtrl+Shift+L')
         #endregion -----------------------------------------------> Menu Items
         
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miFcChange.GetId():  'FC Up',
+            self.miHypCurve.GetId():  'HCurve',
+            self.miLog2FC.GetId():    'Log2FC',
+            self.miPValue.GetId():    'P(abs)',
+            self.miZScore.GetId():    'Z Score',
+            self.miApply.GetId():     'Apply All',
+            self.miRemoveLast.GetId():'Remove Last',
+            self.miRemoveAny.GetId(): 'Remove Any',
+            self.miRemoveAll.GetId(): 'Remove All',
+            self.miSave.GetId():      'Save Filter',
+            self.miLoad.GetId():      'Load Filter',
+        }
+        #endregion ------------------------------------------------> rKeyID
+
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZScore,      source=self.miZScore)
-        self.Bind(wx.EVT_MENU, self.OnLog2FC,      source=self.miLog2FC)
-        self.Bind(wx.EVT_MENU, self.OnPValue,      source=self.miPValue)
-        self.Bind(wx.EVT_MENU, self.OnFCChange,    source=self.miFcChange)
-        self.Bind(wx.EVT_MENU, self.OnFCNoChange,  source=self.miFcNo)
-        self.Bind(wx.EVT_MENU, self.OnDivergent,   source=self.miDiv)
-        self.Bind(wx.EVT_MENU, self.OnApplyFilter, source=self.miApply)
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miFcChange)
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miHypCurve)
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miLog2FC)
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miPValue)
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miZScore)        
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miApply)
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miRemoveLast)
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miRemoveAny)
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miRemoveAll)
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miSave)
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miLoad)
         self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.miUpdate)
-        self.Bind(wx.EVT_MENU, self.OnRemoveLast,  source=self.miRemoveLast)
-        self.Bind(wx.EVT_MENU, self.OnRemoveAny,   source=self.miRemoveAny)
-        self.Bind(wx.EVT_MENU, self.OnRemoveAll,   source=self.miRemoveAll)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1165,25 +1184,6 @@ class FiltersProtProf(wx.Menu):
     #------------------------------> Class methods
     #region ---------------------------------------------------> Event methods
     #------------------------------> Event Methods
-    def OnApplyFilter(self, event: wx.CommandEvent) -> bool:
-        """Apply all filters.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.FilterApply()
-        
-        return True
-    #---
-    
     def OnAutoFilter(self, event: wx.CommandEvent) -> bool:
         """Filter results by Z score.
     
@@ -1202,161 +1202,9 @@ class FiltersProtProf(wx.Menu):
         
         return True
     #---
-    
-    def OnDivergent(self, event: wx.CommandEvent) -> bool:
-        """Filter results by divergent.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.Filter_Divergent()
-        
-        return True
-    #---
-    
-    def OnFCChange(self, event: wx.CommandEvent) -> bool:
-        """Filter results by FC change.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.Filter_FCChange()
-        
-        return True
-    #---
-    
-    def OnFCNoChange(self, event: wx.CommandEvent) -> bool:
-        """Filter results by No FC change.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.Filter_FCNoChange()
-        
-        return True
-    #---
-    
-    def OnLog2FC(self, event: wx.CommandEvent) -> bool:
-        """Filter results by log2FC value.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.Filter_Log2FC()
-        
-        return True
-    #---
-    
-    def OnPValue(self, event: wx.CommandEvent) -> bool:
-        """Filter results by P value.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.Filter_PValue()
-        
-        return True
-    #---
-    
-    def OnRemoveAll(self, event: wx.CommandEvent) -> bool:
-        """Remove all filters.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.FilterRemoveAll()
-        
-        return True
-    #---
-    
-    def OnRemoveAny(self, event: wx.CommandEvent) -> bool:
-        """Remove any filter.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.FilterRemoveAny()
-        
-        return True
-    #---
-    
-    def OnRemoveLast(self, event: wx.CommandEvent) -> bool:
-        """Remove last filter.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.FilterRemoveLast()
-        
-        return True
-    #---
 
-    def OnZScore(self, event: wx.CommandEvent) -> bool:
-        """Filter results by Z score.
+    def OnFilter(self, event: wx.CommandEvent) -> bool:
+        """Perform selected action.
     
             Parameters
             ----------
@@ -1369,7 +1217,7 @@ class FiltersProtProf(wx.Menu):
             bool
         """
         win = self.GetWindow()
-        win.Filter_ZScore()
+        win.dKeyMethod[self.rKeyID[event.GetId()]]()
         
         return True
     #---
