@@ -252,6 +252,12 @@ lCbSample      = 'Samples'
 lCbIntensity   = 'Intensities'
 #------------------------------> wx.Dialog
 lPdError = 'Fatal Error'
+#------------------------------> Filters
+lFilFCEvol   = 'FC Evolution'
+lFilHypCurve = 'Hyp Curve'
+lFilFCLog    = 'Log2FC'
+lFilPVal     = 'P Val'
+lFilZScore   = 'Z Score'
 #endregion -----------------------------------------------------------> Labels
 
 

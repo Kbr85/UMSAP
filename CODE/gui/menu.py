@@ -1131,7 +1131,7 @@ class FiltersProtProf(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miFcChange = self.Append(-1, 'FC Change')
+        self.miFcChange = self.Append(-1, 'FC Evolution')
         self.miHypCurve = self.Append(-1, 'Hyperbolic Curve')
         self.miLog2FC   = self.Append(-1, 'Log2(FC)')
         self.miPValue   = self.Append(-1, 'P Value')
@@ -1150,11 +1150,11 @@ class FiltersProtProf(wx.Menu):
         
         #region ---------------------------------------------------> rKeyID
         self.rKeyID = {
-            self.miFcChange.GetId():  'FC Up',
-            self.miHypCurve.GetId():  'HCurve',
-            self.miLog2FC.GetId():    'Log2FC',
-            self.miPValue.GetId():    'P(abs)',
-            self.miZScore.GetId():    'Z Score',
+            self.miFcChange.GetId():  config.lFilFCEvol,
+            self.miHypCurve.GetId():  config.lFilHypCurve,
+            self.miLog2FC.GetId():    config.lFilFCLog,
+            self.miPValue.GetId():    config.lFilPVal,
+            self.miZScore.GetId():    config.lFilZScore,
             self.miApply.GetId():     'Apply All',
             self.miRemoveLast.GetId():'Remove Last',
             self.miRemoveAny.GetId(): 'Remove Any',

@@ -2013,42 +2013,26 @@ class ProtProfPlot(BaseWindowNPlotLT):
     cLFPValLog    = 'P(p)'
     cLFFCUp       = 'FC Up'
     cLFFCUpL      = 'FC Above 0'
-    cLFFCUpAbs    = 'FC Up Abs'
-    cLFFCUpAbsL   = 'FC Increases Strictly'
-    cLFFCUpMon    = 'FC Up Mon'
-    cLFFCUpMonL   = 'FC Increases Monotonically'
     cLFFCDown     = 'FC Down'
     cLFFCDownL    = 'FC Below 0'
-    cLFFCDownAbs  = 'FC Down Abs'
-    cLFFCDownAbsL = 'FC Decreases Strictly'
+    cLFFCUpMon    = 'FC Up Mon'
+    cLFFCUpMonL   = 'FC Increases'
     cLFFCDownMon  = 'FC Down Mon'
-    cLFFCDownMonL = 'FC Decreases Monotonically'
-    cLFFCBoth     = 'FC Up/Down'
-    cLFFCBothL    = 'FC Above/Below 0'
-    cLFFCBothAbs  = 'FC Up/Down Abs'
-    cLFFCBothAbsL = 'FC Increases/Decreases Strictly'
-    cLFFCBothMon  = 'FC Up/Down Mon'
-    cLFFCBothMonL = 'FC Increases/Decreases Monotonically'
+    cLFFCDownMonL = 'FC Decreases'
     cLFFCNo       = 'FC No Change'
-    cLFDiv        = 'FC Diverge'
+    cLFDiv        = 'FC Diverges'
     cLCol         = ['#', 'Gene', 'Protein']
     cLFFCDict     = {
         cLFFCUp      : cLFFCUpL,
         cLFFCDown    : cLFFCDownL,
-        cLFFCBoth    : cLFFCBothL,
         cLFFCUpMon   : cLFFCUpMonL,
         cLFFCDownMon : cLFFCDownMonL,
-        cLFFCBothMon : cLFFCBothMonL,
-        cLFFCUpAbs   : cLFFCUpAbsL,
-        cLFFCDownAbs : cLFFCDownAbsL,
-        cLFFCBothAbs : cLFFCBothAbsL,
-        cLFFCNo      : cLFFCNo,
         cLFDiv       : cLFDiv, 
+        cLFFCNo      : cLFFCNo,
     }
     cLFFCMode = {
         'Up'  : cLFFCUp,
         'Down': cLFFCDown,
-        'Both': cLFFCBoth,
         'No'  : cLFFCNo,
     }
     #--------------> Id of the plots
@@ -2118,17 +2102,17 @@ class ProtProfPlot(BaseWindowNPlotLT):
             config.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
             config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
             #------------------------------> Filter methods
-            self.cLFFCUp   : self.Filter_FCChange,
-            'HCurve'       : self.Filter_HCurve,
-            self.cLFLog2FC : self.Filter_Log2FC,
-            self.cLFPValAbs: self.Filter_PValue,
-            self.cLFZscore : self.Filter_ZScore,
-            'Apply All'    : self.FilterApply,
-            'Remove Last'  : self.FilterRemoveLast,
-            'Remove Any'   : self.FilterRemoveAny,
-            'Remove All'   : self.FilterRemoveAll,
-            'Save Filter'  : None,
-            'Load Filter'  : None,
+            config.lFilFCEvol  : self.Filter_FCChange,
+            config.lFilHypCurve: self.Filter_HCurve,
+            config.lFilFCLog   : self.Filter_Log2FC,
+            config.lFilPVal    : self.Filter_PValue,
+            config.lFilZScore  : self.Filter_ZScore,
+            'Apply All'        : self.FilterApply,
+            'Remove Last'      : self.FilterRemoveLast,
+            'Remove Any'       : self.FilterRemoveAny,
+            'Remove All'       : self.FilterRemoveAll,
+            'Save Filter'      : None,
+            'Load Filter'      : None,
             #------------------------------> Save Image
             'VolcanoImg': self.OnSaveVolcanoImage,
             'FCImage'   : self.OnSaveFCImage,
@@ -3255,6 +3239,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.UpdateDisplayedData()
         else:
             return False
+        #------------------------------> 
+        dlg.Destroy()
+        return True
     #---
     
     def OnVolChange(self, cond: str, rp:str, corrP: bool) -> bool:
@@ -3561,7 +3548,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             dlg = dtsWindow.MultipleCheckBox(
                 'Filter results by FC evolution.', 
                 self.cLFFCDict, 
-                3, 
+                2, 
                 parent=self.wPlots.dPlot['FC'],
             )
             #------------------------------> 
@@ -3586,11 +3573,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.rDf = self.rDf[df.apply(
                 lambda x: any([(x.loc[idx[y,:,'FC']] > 0).all() for y in self.rCI['Cond']]), axis=1
             )]
-        elif choice == self.cLFFCUpAbs:
-            df.insert(0, ('C', 'C', 'FC'), 0)
-            self.rDf = self.rDf[df.apply(
-                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.rCI['Cond']]), axis=1
-            )]
         elif choice == self.cLFFCUpMon:
             df.insert(0, ('C', 'C', 'FC'), 0)
             self.rDf = self.rDf[df.apply(
@@ -3600,41 +3582,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.rDf = self.rDf[df.apply(
                 lambda x: any([(x.loc[idx[y,:,'FC']] < 0).all() for y in self.rCI['Cond']]), axis=1
             )]
-        elif choice == self.cLFFCDownAbs:
-            df.insert(0, ('C', 'C', 'FC'), 0)
-            self.rDf = self.rDf[df.apply(
-                lambda x: any([np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.rCI['Cond']]), axis=1
-            )]
         elif choice == self.cLFFCDownMon:
             df.insert(0, ('C', 'C', 'FC'), 0)
             self.rDf = self.rDf[df.apply(
                 lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.rCI['Cond']]), axis=1
-            )]
-        elif choice == self.cLFFCBoth:
-            self.rDf = self.rDf[df.apply(
-                lambda x: any(
-                    [(x.loc[idx[y:,:'FC']] > 0).all() for y in self.rCI['Cond']] + 
-                    [(x.loc[idx[y:,:'FC']] < 0).all() for y in self.rCI['Cond']]
-                ), 
-                axis=1,
-            )]
-        elif choice == self.cLFFCBothAbs:
-            df.insert(0, ('C', 'C', 'FC'), 0)
-            self.rDf = self.rDf[df.apply(
-                lambda x: any(
-                    [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) > 0) for y in self.rCI['Cond']] + 
-                    [np.all(np.diff(x.loc[idx[['C',y],:,'FC']]) < 0) for y in self.rCI['Cond']]
-                ), 
-                axis=1,
-            )]
-        elif choice == self.cLFFCBothMon:
-            df.insert(0, ('C', 'C', 'FC'), 0)
-            self.rDf = self.rDf[df.apply(
-                lambda x: any(
-                    [x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.rCI['Cond']] +
-                    [x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.rCI['Cond']] 
-                ), 
-                axis=1,
             )]
         elif choice == self.cLFFCNo:
             self.rDf = self.rDf[df.apply(
@@ -3658,7 +3609,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.StatusBarFilterText(f'{choice}')
             #------------------------------> 
             self.rFilterList.append(
-                [choice, {'choice':choice, 'updateL': False}]
+                [config.lFilFCEvol, {'choice':choice, 'updateL': False}]
             )
         else:
             pass
@@ -3667,7 +3618,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return True
     #---
     
-    def Filter_HCurve(self, updateL: bool=True) -> bool:
+    def Filter_HCurve(self, updateL: bool=True, **kwargs) -> bool:
         """Filter results based on H Curve
     
             Parameters
@@ -3679,7 +3630,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             bool
         """
         #region ---------------------------------------------------> Variables
-        filterText = 'Hyp Curve'
+        filterText = config.lFilHypCurve
         lim = self.rT0 * self.rS0
         fc = self.rDf.loc[:,[(self.rCondC,self.rRpC,'FC')]]
         p = -np.log10(self.rDf.loc[:,[(self.rCondC,self.rRpC,'P')]])
@@ -3722,18 +3673,341 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return True
     #---
     
+    def Filter_Log2FC(
+        self, gText: Optional[str]=None, updateL: bool=True) -> bool:
+        """Filter results by log2FC.
     
+            Parameters
+            ----------
+            gText : str
+                FC threshold and operand, e.g. < 10 or > 3.4
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
     
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        if gText is None:
+            #------------------------------> 
+            dlg = dtsWindow.UserInput1Text(
+                'Filter results by Log2(FC) value.',
+                'Threshold',
+                'Absolute log2(FC) value. e.g. < 2.3 or > 3.5',
+                self.wPlots.dPlot['Vol'],
+                dtsValidator.Comparison(numType='float', op=['<', '>'], vMin=0),
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------>
+                uText = dlg.input.tc.GetValue()
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return True
+        else:
+            try:
+                #------------------------------> 
+                a, b = dtsCheck.Comparison(
+                    gText, numType='float', op=['<', '>'], vMin=0)
+                #------------------------------> 
+                if a:
+                    uText = gText
+                else:
+                    #------------------------------> 
+                    msg = 'It was not possible to apply the Log2FC filter.'
+                    tException = b[2]
+                    #------------------------------> 
+                    dtsWindow.NotificationDialog(
+                        'errorU', 
+                        msg        = msg,
+                        tException = tException,
+                        parent     = self,
+                        setText    = True,
+                    )
+                    #------------------------------> 
+                    return False
+            except Exception as e:
+                raise e
+        #endregion -------------------------------------------> Text Entry Dlg
+        
+        #region ------------------------------------------> Get Value and Plot
+        op, val = uText.strip().split()
+        val = float(val)
+        #------------------------------> 
+        idx = pd.IndexSlice
+        col = idx[self.rCondC,self.rRpC,'FC']
+        if op == '<':
+            self.rDf = self.rDf[
+                (self.rDf[col] <= val) & (self.rDf[col] >= -val)]
+        else:
+            self.rDf = self.rDf[
+                (self.rDf[col] >= val) | (self.rDf[col] <= -val)]
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
+            #------------------------------> 
+            self.rFilterList.append(
+                [config.lFilFCLog, {'gText': uText, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
+        
+        return True
+    #---    
     
+    def Filter_PValue(
+        self, gText: Optional[str]=None, absB: Optional[bool]=None, 
+        updateL: bool=True,
+        ) -> bool:
+        """Filter results by P value.
     
+            Parameters
+            ----------
+            gText : str
+                P value threshold and operand, e.g. < 10 or > 3.4
+            absB : bool
+                Use absolute values (True) or -log10 values (False)
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
     
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        if gText is None:
+            #------------------------------> 
+            dlg = window.FilterPValue(
+                'Filter results by P value.',
+                'Threshold',
+                'Absolute or -log10(P) value. e.g. < 0.01 or > 1',
+                self.wPlots.dPlot['Vol'],
+                dtsValidator.Comparison(numType='float', op=['<', '>'], vMin=0),
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------>
+                uText = dlg.input.tc.GetValue()
+                absB  = dlg.wCbAbs.IsChecked()
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return True
+        else:
+            try:
+                #------------------------------> 
+                a, b = dtsCheck.Comparison(
+                    gText, numType='float', op=['<', '>'], vMin=0)
+                #------------------------------> 
+                if a:
+                    uText = gText
+                else:
+                    #------------------------------> 
+                    msg = 'It was not possible to apply the P value filter.'
+                    tException = b[2]
+                    #------------------------------> 
+                    dtsWindow.NotificationDialog(
+                        'errorU', 
+                        msg        = msg,
+                        tException = tException,
+                        parent     = self,
+                        setText    = True,
+                    )
+                    #------------------------------> 
+                    return False
+            except Exception as e:
+                raise e
+        #endregion -------------------------------------------> Text Entry Dlg
+        
+        #region ------------------------------------------> Get Value and Plot
+        op, val = uText.strip().split()
+        val = float(val)
+        #------------------------------> Apply to regular or corrected P values
+        idx = pd.IndexSlice
+        if self.rCorrP:
+            col = idx[self.rCondC,self.rRpC,'Pc']
+        else:
+            col = idx[self.rCondC,self.rRpC,'P']
+        #------------------------------> Given value is abs or -log10 P value
+        df = self.rDf.copy()
+        if absB:
+            pass
+        else:
+            df.loc[:,col] = -np.log10(df.loc[:,col])
+        #------------------------------> 
+        if op == '<':
+            self.rDf = self.rDf[df[col] <= val]
+        else:
+            self.rDf = self.rDf[df[col] >= val]
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        #region ------------------------------> Update Filter List & StatusBar
+        if updateL:
+            #------------------------------> 
+            label = self.cLFPValAbs if absB else self.cLFPValLog
+            #------------------------------> 
+            self.StatusBarFilterText(f'{label} {op} {val}')
+            #------------------------------> 
+            self.rFilterList.append(
+                [config.lFilPVal, {'gText': uText, 'absB': absB, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------> Update Filter List & StatusBar
+        
+        return True
+    #---
+   
+    def Filter_ZScore(
+        self, gText: Optional[str]=None, updateL: bool=True
+        ) -> bool:
+        """Filter results by Z score.
     
+            Parameters
+            ----------
+            gText : str
+                Z score threshold and operand, e.g. < 10 or > 3.4
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
     
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        if gText is None:
+            #------------------------------> 
+            dlg = dtsWindow.UserInput1Text(
+                'Filter results by Z score.',
+                'Threshold (%)',
+                'Decimal value between 0 and 100. e.g. < 10.0 or > 20.4',
+                self.wPlots.dPlot['Vol'],
+                dtsValidator.Comparison(
+                    numType='float', vMin=0, vMax=100, op=['<', '>']
+                ),
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------>
+                uText = dlg.input.tc.GetValue()
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return True
+        else:
+            try:
+                #------------------------------> 
+                a, b = dtsCheck.Comparison(
+                    gText, 'int', vMin=0, vMax=100, op=['<', '>'])
+                #------------------------------> 
+                if a:
+                    uText = gText
+                else:
+                    #------------------------------> 
+                    msg = 'It was not possible to apply the Z Score filter.'
+                    tException = b[2]
+                    #------------------------------> 
+                    dtsWindow.NotificationDialog(
+                        'errorU', 
+                        msg        = msg,
+                        tException = tException,
+                        parent     = self,
+                        setText    = True,
+                    )
+                    #------------------------------> 
+                    return False
+            except Exception as e:
+                raise e
+        #endregion -------------------------------------------> Text Entry Dlg
+        
+        #region ------------------------------------------> Get Value and Plot
+        op, val = uText.strip().split()
+        zVal = stats.norm.ppf(1.0-(float(val.strip())/100.0))
+        #------------------------------> 
+        idx = pd.IndexSlice
+        col = idx[self.rCondC,self.rRpC,'FCz']
+        if op == '<':
+            self.rDf = self.rDf[
+                (self.rDf[col] >= zVal) | (self.rDf[col] <= -zVal)]
+        else:
+            self.rDf = self.rDf[
+                (self.rDf[col] <= zVal) | (self.rDf[col] >= -zVal)]
+        #------------------------------> 
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        #endregion ---------------------------------------> Get Value and Plot
+        
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            #------------------------------> 
+            self.StatusBarFilterText(f'{self.cLFZscore} {op} {val}')
+            #------------------------------> 
+            self.rFilterList.append(
+                [config.lFilZScore, {'gText': uText, 'updateL': False}]
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
+        
+        return True
+    #---
     
+    def Filter_Divergent_Helper(self, x: pd.Series) -> bool:
+        """Determine whether x shows divergent behavior
     
+            Parameters
+            ----------
+            x : pd.Series
+                Row in self.rDf
     
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        res = []
+        #endregion ------------------------------------------------> Variables
+        
+        #region -----------------------------------------------------> Compare
+        for y in self.rCI['Cond']:
+            if (x.loc[idx[y,:,'FC']] > 0).all():
+                res.append(True)
+            elif (x.loc[idx[y,:,'FC']] == 0).all():
+                res.append(None)
+            elif (x.loc[idx[y,:,'FC']] < 0).all():    
+                res.append(False)
+            else:
+                pass
+        #endregion --------------------------------------------------> Compare
+        
+        #region ---------------------------------------------------------> Set 
+        resS = set(res)
+        if resS and len(resS) > 1:
+            return True
+        else:
+            return False
+        #endregion ------------------------------------------------------> Set 
+    #---   
     
-
     def FilterApply(self) -> bool:
         """Apply all filter to the current date.
     
@@ -3867,345 +4141,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion -----------------------------------------------> Update GUI
         
         return True
-    #---
-    
-    def Filter_ZScore(
-        self, gText: Optional[str]=None, updateL: bool=True
-        ) -> bool:
-        """Filter results by Z score.
-    
-            Parameters
-            ----------
-            gText : str
-                Z score threshold and operand, e.g. < 10 or > 3.4
-            updateL : bool
-                Update filterList and StatusBar (True) or not (False)
-    
-            Returns
-            -------
-            bool
-        """
-        #region ----------------------------------------------> Text Entry Dlg
-        if gText is None:
-            #------------------------------> 
-            dlg = dtsWindow.UserInput1Text(
-                'Filter results by Z score.',
-                'Threshold (%)',
-                'Decimal value between 0 and 100. e.g. < 10.0 or > 20.4',
-                self.wPlots.dPlot['Vol'],
-                dtsValidator.Comparison(
-                    numType='float', vMin=0, vMax=100, op=['<', '>']
-                ),
-            )
-            #------------------------------> 
-            if dlg.ShowModal():
-                #------------------------------>
-                uText = dlg.input.tc.GetValue()
-                #------------------------------> 
-                dlg.Destroy()
-            else:
-                dlg.Destroy()
-                return True
-        else:
-            try:
-                #------------------------------> 
-                a, b = dtsCheck.Comparison(
-                    gText, 'int', vMin=0, vMax=100, op=['<', '>'])
-                #------------------------------> 
-                if a:
-                    uText = gText
-                else:
-                    #------------------------------> 
-                    msg = 'It was not possible to apply the Z Score filter.'
-                    tException = b[2]
-                    #------------------------------> 
-                    dtsWindow.NotificationDialog(
-                        'errorU', 
-                        msg        = msg,
-                        tException = tException,
-                        parent     = self,
-                        setText    = True,
-                    )
-                    #------------------------------> 
-                    return False
-            except Exception as e:
-                raise e
-        #endregion -------------------------------------------> Text Entry Dlg
-        
-        #region ------------------------------------------> Get Value and Plot
-        op, val = uText.strip().split()
-        zVal = stats.norm.ppf(1.0-(float(val.strip())/100.0))
-        #------------------------------> 
-        idx = pd.IndexSlice
-        col = idx[:,:,'FCz']
-        if op == '<':
-            self.rDf = self.rDf[(
-                (self.rDf.loc[:,col] >= zVal) | (self.rDf.loc[:,col] <= -zVal)
-            ).any(axis=1)]
-        else:
-            self.rDf = self.rDf[(
-                (self.rDf.loc[:,col] <= zVal) | (self.rDf.loc[:,col] >= -zVal)
-            ).any(axis=1)]
-        #------------------------------> 
-        self.FillListCtrl()
-        self.VolDraw()
-        self.FCDraw()
-        #endregion ---------------------------------------> Get Value and Plot
-        
-        #region ------------------------------------------> Update Filter List
-        if updateL:
-            #------------------------------> 
-            self.StatusBarFilterText(f'{self.cLFZscore} {op} {val}')
-            #------------------------------> 
-            self.rFilterList.append(
-                [self.cLFZscore, {'gText': uText, 'updateL': False}]
-            )
-        else:
-            pass
-        #endregion ---------------------------------------> Update Filter List
-        
-        return True
-    #---
-    
-    def Filter_Log2FC(
-        self, gText: Optional[str]=None, updateL: bool=True) -> bool:
-        """Filter results by log2FC.
-    
-            Parameters
-            ----------
-            gText : str
-                FC threshold and operand, e.g. < 10 or > 3.4
-            updateL : bool
-                Update filterList and StatusBar (True) or not (False)
-    
-            Returns
-            -------
-            bool
-        """
-        #region ----------------------------------------------> Text Entry Dlg
-        if gText is None:
-            #------------------------------> 
-            dlg = dtsWindow.UserInput1Text(
-                'Filter results by Log2(FC) value.',
-                'Threshold',
-                'Absolute log2(FC) value. e.g. < 2.3 or > 3.5',
-                self.wPlots.dPlot['Vol'],
-                dtsValidator.Comparison(numType='float', op=['<', '>'], vMin=0),
-            )
-            #------------------------------> 
-            if dlg.ShowModal():
-                #------------------------------>
-                uText = dlg.input.tc.GetValue()
-                #------------------------------> 
-                dlg.Destroy()
-            else:
-                dlg.Destroy()
-                return True
-        else:
-            try:
-                #------------------------------> 
-                a, b = dtsCheck.Comparison(
-                    gText, numType='float', op=['<', '>'], vMin=0)
-                #------------------------------> 
-                if a:
-                    uText = gText
-                else:
-                    #------------------------------> 
-                    msg = 'It was not possible to apply the Log2FC filter.'
-                    tException = b[2]
-                    #------------------------------> 
-                    dtsWindow.NotificationDialog(
-                        'errorU', 
-                        msg        = msg,
-                        tException = tException,
-                        parent     = self,
-                        setText    = True,
-                    )
-                    #------------------------------> 
-                    return False
-            except Exception as e:
-                raise e
-        #endregion -------------------------------------------> Text Entry Dlg
-        
-        #region ------------------------------------------> Get Value and Plot
-        op, val = uText.strip().split()
-        val = float(val)
-        #------------------------------> 
-        idx = pd.IndexSlice
-        col = idx[:,:,'FC']
-        if op == '<':
-            self.rDf = self.rDf[(
-                (self.rDf.loc[:,col] <= val) & (self.rDf.loc[:,col] >= -val)
-            ).any(axis=1)]
-        else:
-            self.rDf = self.rDf[(
-                (self.rDf.loc[:,col] >= val) | (self.rDf.loc[:,col] <= -val)
-            ).any(axis=1)]
-        #------------------------------> 
-        self.FillListCtrl()
-        self.VolDraw()
-        self.FCDraw()
-        #endregion ---------------------------------------> Get Value and Plot
-        
-        #region ------------------------------------------> Update Filter List
-        if updateL:
-            #------------------------------> 
-            self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
-            #------------------------------> 
-            self.rFilterList.append(
-                [self.cLFLog2FC, {'gText': uText, 'updateL': False}]
-            )
-        else:
-            pass
-        #endregion ---------------------------------------> Update Filter List
-        
-        return True
-    #---
-    
-    def Filter_PValue(
-        self, gText: Optional[str]=None, absB: Optional[bool]=None, 
-        updateL: bool=True,
-        ) -> bool:
-        """Filter results by P value.
-    
-            Parameters
-            ----------
-            gText : str
-                P value threshold and operand, e.g. < 10 or > 3.4
-            absB : bool
-                Use absolute values (True) or -log10 values (False)
-            updateL : bool
-                Update filterList and StatusBar (True) or not (False)
-    
-            Returns
-            -------
-            bool
-        """
-        #region ----------------------------------------------> Text Entry Dlg
-        if gText is None:
-            #------------------------------> 
-            dlg = window.FilterPValue(
-                'Filter results by P value.',
-                'Threshold',
-                'Absolute or -log10(P) value. e.g. < 0.01 or > 1',
-                self.wPlots.dPlot['Vol'],
-                dtsValidator.Comparison(numType='float', op=['<', '>'], vMin=0),
-            )
-            #------------------------------> 
-            if dlg.ShowModal():
-                #------------------------------>
-                uText = dlg.input.tc.GetValue()
-                absB  = dlg.wCbAbs.IsChecked()
-                #------------------------------> 
-                dlg.Destroy()
-            else:
-                dlg.Destroy()
-                return True
-        else:
-            try:
-                #------------------------------> 
-                a, b = dtsCheck.Comparison(
-                    gText, numType='float', op=['<', '>'], vMin=0)
-                #------------------------------> 
-                if a:
-                    uText = gText
-                else:
-                    #------------------------------> 
-                    msg = 'It was not possible to apply the P value filter.'
-                    tException = b[2]
-                    #------------------------------> 
-                    dtsWindow.NotificationDialog(
-                        'errorU', 
-                        msg        = msg,
-                        tException = tException,
-                        parent     = self,
-                        setText    = True,
-                    )
-                    #------------------------------> 
-                    return False
-            except Exception as e:
-                raise e
-        #endregion -------------------------------------------> Text Entry Dlg
-        
-        #region ------------------------------------------> Get Value and Plot
-        op, val = uText.strip().split()
-        val = float(val)
-        #------------------------------> Apply to regular or corrected P values
-        idx = pd.IndexSlice
-        if self.rCorrP:
-            col = idx[:,:,'Pc']
-        else:
-            col = idx[:,:,'P']
-        #------------------------------> Given value is abs or -log10 P value
-        df = self.rDf.copy()
-        if absB:
-            pass
-        else:
-            df.loc[:,col] = -np.log10(df.loc[:,col])
-        #------------------------------> 
-        if op == '<':
-            self.rDf = self.rDf[(df.loc[:,col] <= val).any(axis=1)]
-        else:
-            self.rDf = self.rDf[(df.loc[:,col] >= val).any(axis=1)]
-        #------------------------------> 
-        self.FillListCtrl()
-        self.VolDraw()
-        self.FCDraw()
-        #endregion ---------------------------------------> Get Value and Plot
-        
-        #region ------------------------------> Update Filter List & StatusBar
-        if updateL:
-            #------------------------------> 
-            label = self.cLFPValAbs if absB else self.cLFPValLog
-            #------------------------------> 
-            self.StatusBarFilterText(f'{label} {op} {val}')
-            #------------------------------> 
-            self.rFilterList.append(
-                [label, {'gText': uText, 'absB': absB, 'updateL': False}]
-            )
-        else:
-            pass
-        #endregion ---------------------------> Update Filter List & StatusBar
-        
-        return True
-    #---
-    
-    def Filter_Divergent_Helper(self, x: pd.Series) -> bool:
-        """Determine whether x shows divergent behavior
-    
-            Parameters
-            ----------
-            x : pd.Series
-                Row in self.rDf
-    
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Variables
-        idx = pd.IndexSlice
-        res = []
-        #endregion ------------------------------------------------> Variables
-        
-        #region -----------------------------------------------------> Compare
-        for y in self.rCI['Cond']:
-            if (x.loc[idx[y,:,'FC']] > 0).all():
-                res.append(True)
-            elif (x.loc[idx[y,:,'FC']] == 0).all():
-                res.append(None)
-            elif (x.loc[idx[y,:,'FC']] < 0).all():    
-                res.append(False)
-            else:
-                pass
-        #endregion --------------------------------------------------> Compare
-        
-        #region ---------------------------------------------------------> Set 
-        resS = set(res)
-        if resS and len(resS) > 1:
-            return True
-        else:
-            return False
-        #endregion ------------------------------------------------------> Set 
     #---
     #endregion -----------------------------------------------> Filter Methods
 #---
