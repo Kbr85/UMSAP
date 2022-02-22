@@ -1999,7 +1999,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         rFcYRange : list of float
             Min and Max value for the y axis in the FC Plot including the CI.
         rFilterList : list
-            List of applied filters. e.g. [['StatusBarText', {kwargs}], ...]
+            List of applied filters. e.g. [['Key', {kwargs}], 'StatusBarText']
         rGreenP : matplotlib object
             Reference to the green dot shown in the Volcano plot after selecting
             a protein in the wx.ListCtrl.
@@ -2141,8 +2141,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
             'Remove Last'      : self.FilterRemoveLast,
             'Remove Any'       : self.FilterRemoveAny,
             'Remove All'       : self.FilterRemoveAll,
-            'Save Filter'      : None,
-            'Load Filter'      : None,
+            'Save Filter'      : self.FilterSave,
+            'Load Filter'      : self.FilterLoad,
             #------------------------------> Save Image
             'VolcanoImg': self.OnSaveVolcanoImage,
             'FCImage'   : self.OnSaveFCImage,
@@ -3646,7 +3646,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.StatusBarFilterText(f'{choice}')
             #------------------------------> 
             self.rFilterList.append(
-                [config.lFilFCEvol, {'choice':choice, 'updateL': False}]
+                [config.lFilFCEvol, 
+                 {'choice':choice, 'updateL': False}, 
+                 f'{choice}']
             )
         else:
             pass
@@ -3701,7 +3703,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.StatusBarFilterText(f'{filterText}')
             #------------------------------> 
             self.rFilterList.append(
-                [filterText, {'choice':filterText, 'updateL': False}]
+                [filterText, 
+                 {'choice':filterText, 'updateL': False}, 
+                 f'{filterText}']
             )
         else:
             pass
@@ -3794,7 +3798,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
             #------------------------------> 
             self.rFilterList.append(
-                [config.lFilFCLog, {'gText': uText, 'updateL': False}]
+                [config.lFilFCLog, 
+                 {'gText': uText, 'updateL': False},
+                 f'{self.cLFLog2FC} {op} {val}']
             )
         else:
             pass
@@ -3902,7 +3908,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.StatusBarFilterText(f'{label} {op} {val}')
             #------------------------------> 
             self.rFilterList.append(
-                [config.lFilPVal, {'gText': uText, 'absB': absB, 'updateL': False}]
+                [config.lFilPVal, 
+                 {'gText': uText, 'absB': absB, 'updateL': False},
+                 f'{label} {op} {val}']
             )
         else:
             pass
@@ -3998,7 +4006,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.StatusBarFilterText(f'{self.cLFZscore} {op} {val}')
             #------------------------------> 
             self.rFilterList.append(
-                [config.lFilZScore, {'gText': uText, 'updateL': False}]
+                [config.lFilZScore, 
+                 {'gText': uText, 'updateL': False},
+                 f'{self.cLFZscore} {op} {val}']
             )
         else:
             pass
@@ -4177,6 +4187,59 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.FilterRemoveAll()
         #endregion -----------------------------------------------> Update GUI
         
+        return True
+    #---
+    
+    def FilterSave(self) -> bool:
+        """Save the filters
+    
+            Returns
+            -------
+            bool            
+        """
+        #region ---------------------------------------------------> 
+        filterDict = {x[0]: x[1:] for x in self.rFilterList}
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.rObj.rData[self.cSection][self.rDateC]['F'] = filterDict
+        #------------------------------> 
+        if self.rObj.Save():
+            self.rData[self.rDateC]['F'] = filterDict
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+        
+        return True
+    #---
+    
+    def FilterLoad(self) -> bool:
+        """Load the filters
+    
+            Returns
+            -------
+            bool            
+        """
+        #region ---------------------------------------------------> 
+        self.rFilterList = [
+            [k]+v for k,v in self.rData[self.rDateC]['F'].items()]
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        autoF = self.rAutoFilter
+        self.rAutoFilter = True
+        #------------------------------> 
+        self.UpdateDisplayedData()
+        #------------------------------> 
+        self.rAutoFilter = autoF
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.wStatBar.SetStatusText('', 1)
+        for k in self.rFilterList:
+            self.StatusBarFilterText(k[2])
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     #endregion -----------------------------------------------> Filter Methods

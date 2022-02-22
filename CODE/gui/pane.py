@@ -1362,10 +1362,14 @@ class BaseConfPanel(
                 },
             }
         }
-        #-------------->  DataPrep Util does not have dfR
+        #--------------> DataPrep Util does not have dfR
         if not self.dfR.empty:
-            print(self.dfR)
             dateDict[self.rDateID]['R'] = stepDict['R']
+        else:
+            pass
+        #--------------> Filters in ProtProf
+        if self.cName == config.npProtProf:
+            dateDict[self.rDateID]['F'] = {}
         else:
             pass
         #------------------------------> Append or not
