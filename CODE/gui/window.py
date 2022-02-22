@@ -3297,7 +3297,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion -----------------------------------------> Update variables
         
         #region ---------------------------------------------------------> Vol
-        self.VolDraw()
+        if self.rAutoFilter:
+            self.UpdateDisplayedData()
+        else:
+            self.VolDraw()
         #endregion ------------------------------------------------------> Vol
         
         return True
@@ -6387,12 +6390,9 @@ class CheckDataPrep(BaseWindowNPlotLT):
             -------
             bool
         """
-        #region ------------------------------------------------> Just in case
-        try:
-            event.Skip()
-        except Exception:
-            pass
-        #endregion ---------------------------------------------> Just in case
+        #region ------------------------------------------------> 
+        super().OnListSelect(event)
+        #endregion ---------------------------------------------> 
 
         #region ------------------------------------------------> Get Selected
         idx = self.wLC.wLCS.lc.GetFirstSelected()
