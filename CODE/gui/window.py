@@ -558,6 +558,8 @@ class BaseWindowNPlotLT(BaseWindow):
         ----------
         dKeyMethod : dict
             Keys are str and values methods to manage the window.
+        rLCIdx: int
+            Last selected row in the wx.ListCtrl
 
         Notes
         -----
@@ -591,6 +593,7 @@ class BaseWindowNPlotLT(BaseWindow):
             'PlotZoomResetAllinOne' : self.OnPlotZoomResetAllinOne,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        self.rLCIdx = None
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -678,7 +681,8 @@ class BaseWindowNPlotLT(BaseWindow):
         #endregion ------------------------------------------------------> AUI
 
         #region --------------------------------------------------------> Bind
-        self.wLC.wLCS.lc.Bind(wx.EVT_LEFT_UP, self.OnListSelect)
+        self.wLC.wLCS.lc.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        self.wLC.wLCS.lc.Bind(wx.EVT_LEFT_UP, self.OnListSelectEmpty)
         self.Bind(wx.EVT_SEARCH, self.OnSearch)
         #endregion -----------------------------------------------------> Bind
 
@@ -770,8 +774,8 @@ class BaseWindowNPlotLT(BaseWindow):
         return True
     #---
     
-    def OnListSelect(self, event: wx.CommandEvent) -> bool:
-        """What to do after selecting a row in hte wx.ListCtrl. 
+    def OnListSelect(self, event: Union[wx.Event, str]) -> bool:
+        """What to do after selecting a row in the wx.ListCtrl. 
             Override as needed
     
             Parameters
@@ -783,8 +787,34 @@ class BaseWindowNPlotLT(BaseWindow):
             -------
             bool
         """
+        self.rLCIdx = self.wLC.wLCS.lc.GetFirstSelected()
         return True
     #---
+    
+    def OnListSelectEmpty(self, event: wx.CommandEvent) -> bool:
+        """What to do after selecting a row in the wx.ListCtrl. 
+            Override as needed
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+    
+            Returns
+            -------
+            bool
+        """
+        idx = self.wLC.wLCS.lc.GetFirstSelected()
+        
+        if idx < 0 and self.rLCIdx is not None:
+            self.wLC.wLCS.lc.Select(self.rLCIdx, on=1)
+        else:
+            pass
+            
+        event.Skip()
+        return True
+    #---
+    
     
     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
         """Close window and uncheck section in UMSAPFile window. 
@@ -2076,7 +2106,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rShowAll     = True
         self.rAutoFilter  = False
         self.rT0          = 0.1
-        self.rS0          = 2.0
+        self.rS0          = 1.0
         self.rCI          = None
         self.rFcYMax      = None
         self.rFcYMin      = None
@@ -3417,6 +3447,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
             -------
             bool
         """
+        #region ---------------------------------------------------> Check Sel
+        super().OnListSelect(event)
+        #endregion ------------------------------------------------> Check Sel
+
         #region ------------------------------------------------> Volcano Plot
         self.DrawGreenPoint()
         #endregion ---------------------------------------------> Volcano Plot
