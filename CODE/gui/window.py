@@ -3213,7 +3213,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         
         #region --------------------------------------------------> Update GUI
         if self.rAutoFilter:
-            self.FilterApply()
+            self.FilterApply(reset=False)
         else:
             pass
         #------------------------------> Clean & Reload Protein List
@@ -4037,13 +4037,25 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return True
     #---
     
-    def FilterApply(self) -> bool:
+    def FilterApply(self, reset: bool=True) -> bool:
         """Apply all filter to the current date.
+        
+            Parameters
+            ----------
+            reset : bool
+                Reset self.rDf. Default is True
     
             Returns
             -------
             bool
         """
+        #region ----------------------------------------------------> Reset df
+        if reset:
+            self.rDf = self.rData[self.rDateC]['DF'].copy()
+        else:
+            pass
+        #endregion -------------------------------------------------> Reset df
+        
         #region -----------------------------------------------> Apply Filters
         for k in self.rFilterList:
             self.dKeyMethod[k[0]](**k[1])
@@ -4150,8 +4162,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         
         #region --------------------------------------------------> Update GUI
         if self.rFilterList:
-            #------------------------------> 
-            self.rDf = self.rData[self.rDateC]['DF'].copy()
             #------------------------------> 
             self.FilterApply()
             #------------------------------> 
