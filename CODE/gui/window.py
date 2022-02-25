@@ -2050,15 +2050,25 @@ class ProtProfPlot(BaseWindowNPlotLT):
     cLFFCDownMon  = 'FC Decr'
     cLFFCDownMonL = 'FC Decreases'
     cLFFCNo       = 'FC No Change'
+    cLFFCOpposite = 'FC Opposite'
     cLFDiv        = 'FC Diverges'
+    cLFCSel       = 'Selected'
+    cLFCAny       = 'Any'
+    cLFCAll       = 'All'
     cLCol         = ['#', 'Gene', 'Protein']
     cLFFCDict     = {
         cLFFCUp      : cLFFCUpL,
         cLFFCDown    : cLFFCDownL,
         cLFFCUpMon   : cLFFCUpMonL,
         cLFFCDownMon : cLFFCDownMonL,
+        cLFFCOpposite: cLFFCOpposite,
         cLFDiv       : cLFDiv, 
         cLFFCNo      : cLFFCNo,
+    }
+    cLFCOpt = {
+        cLFCSel : cLFCSel,
+        cLFCAny : cLFCAny,
+        cLFCAll : cLFCAll,
     }
     cLFFCMode = {
         'Up'  : cLFFCUp,
@@ -3584,14 +3594,16 @@ class ProtProfPlot(BaseWindowNPlotLT):
             #------------------------------> 
             dlg = dtsWindow.MultipleCheckBox(
                 'Filter results by FC evolution.', 
-                self.cLFFCDict, 
-                2, 
-                parent=self.wPlots.dPlot['FC'],
+                [self.cLFFCDict, self.cLFCOpt], 
+                [2, 3],
+                label       = ['Options', 'Conditions to use'],
+                multiChoice = [False, False],
+                parent      = self.wPlots.dPlot['FC'],
             )
             #------------------------------> 
             if dlg.ShowModal():
                 #------------------------------> 
-                choice = dlg.GetChoice()[0]
+                choice = dlg.GetChoice()
                 #------------------------------> 
                 dlg.Destroy()
             else:
@@ -3602,37 +3614,45 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> Get Value
         
         #region ----------------------------------------------------------> DF
-        #------------------------------> 
         idx = pd.IndexSlice
-        df = self.rDf.loc[:,idx[:,:,'FC']]
         #------------------------------> 
-        if choice == self.cLFFCUp:
-            self.rDf = self.rDf[df.apply(
-                lambda x: any([(x.loc[idx[y,:,'FC']] > 0).all() for y in self.rCI['Cond']]), axis=1
-            )]
-        elif choice == self.cLFFCUpMon:
-            df.insert(0, ('C', 'C', 'FC'), 0)
-            self.rDf = self.rDf[df.apply(
-                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_increasing for y in self.rCI['Cond']]), axis=1
-            )]
-        elif choice == self.cLFFCDown:
-            self.rDf = self.rDf[df.apply(
-                lambda x: any([(x.loc[idx[y,:,'FC']] < 0).all() for y in self.rCI['Cond']]), axis=1
-            )]
-        elif choice == self.cLFFCDownMon:
-            df.insert(0, ('C', 'C', 'FC'), 0)
-            self.rDf = self.rDf[df.apply(
-                lambda x: any([x.loc[idx[['C',y],:,'FC']].is_monotonic_decreasing for y in self.rCI['Cond']]), axis=1
-            )]
-        elif choice == self.cLFFCNo:
-            self.rDf = self.rDf[df.apply(
-                lambda x: any(
-                    [(x.loc[idx[y,:,'FC']] == 0).all() for y in self.rCI['Cond']]), axis=1
-            )]
-        elif choice == self.cLFDiv:
-            self.rDf = self.rDf[df.apply(self.Filter_Divergent_Helper, axis=1)]
+        if choice[1] == self.cLFCSel:
+            df = self.rDf.loc[:,idx[self.rCondC,:,'FC']]
+        else:
+            df = self.rDf.loc[:,idx[:,:,'FC']]
+        #------------------------------> 
+        if choice[0] == self.cLFFCUp:
+            mask = df.groupby(level=0, axis=1).apply(lambda x: (x > 0).all(axis=1))
+        elif choice[0] == self.cLFFCDown:
+            mask = df.groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1))
+        elif choice[0] == self.cLFFCNo:
+            mask = df.groupby(level=0, axis=1).apply(lambda x: ((x > -self.rT0*self.rS0) & (x < self.rT0*self.rS0)).all(axis=1))
+        elif choice[0] == self.cLFFCUpMon:
+            mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1))
+        elif choice[0] == self.cLFFCDownMon:
+            mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_decreasing) & (x < 0)).all(), axis=1))     
+        elif choice[0] == self.cLFDiv:
+            maskUp = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1))
+            maskUp = maskUp.any(axis=1)
+            maskDown = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_decreasing) & (x < 0)).all(), axis=1))
+            maskDown = maskDown.any(axis=1)   
+        elif choice[0] == self.cLFFCOpposite:
+            maskUp = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: (x > 0).all(axis=1))
+            maskUp = maskUp.any(axis=1)
+            maskDown = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1))
+            maskDown = maskDown.any(axis=1)   
         else:
             return False
+        #------------------------------> 
+        if choice[0] not in  [self.cLFDiv, self.cLFFCOpposite]:
+            if choice[1] == self.cLFCAny:
+                mask = mask.any(axis=1)
+            else:
+                mask = mask.all(axis=1)
+        else:
+            mask = pd.concat([maskUp, maskDown], axis=1).all(axis=1)
+        #------------------------------> 
+        self.rDf = self.rDf[mask]
         #endregion -------------------------------------------------------> DF
     
         #region --------------------------------------------------> Update GUI
@@ -3643,7 +3663,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #------------------------------> 
         if updateL:
             #------------------------------> 
-            self.StatusBarFilterText(f'{choice}')
+            self.StatusBarFilterText(f'{choice[0]}')
             #------------------------------> 
             self.rFilterList.append(
                 [config.lFilFCEvol, 
@@ -3656,7 +3676,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             
         return True
     #---
-    
+        
     def Filter_HCurve(self, updateL: bool=True, **kwargs) -> bool:
         """Filter results based on H Curve
     
@@ -4016,44 +4036,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         
         return True
     #---
-    
-    def Filter_Divergent_Helper(self, x: pd.Series) -> bool:
-        """Determine whether x shows divergent behavior
-    
-            Parameters
-            ----------
-            x : pd.Series
-                Row in self.rDf
-    
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Variables
-        idx = pd.IndexSlice
-        res = []
-        #endregion ------------------------------------------------> Variables
-        
-        #region -----------------------------------------------------> Compare
-        for y in self.rCI['Cond']:
-            if (x.loc[idx[y,:,'FC']] > 0).all():
-                res.append(True)
-            elif (x.loc[idx[y,:,'FC']] == 0).all():
-                res.append(None)
-            elif (x.loc[idx[y,:,'FC']] < 0).all():    
-                res.append(False)
-            else:
-                pass
-        #endregion --------------------------------------------------> Compare
-        
-        #region ---------------------------------------------------------> Set 
-        resS = set(res)
-        if resS and len(resS) > 1:
-            return True
-        else:
-            return False
-        #endregion ------------------------------------------------------> Set 
-    #---   
     
     def FilterApply(self) -> bool:
         """Apply all filter to the current date.
