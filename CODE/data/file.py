@@ -16,12 +16,13 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import dat4s_core.data.file as dtsFF
 import dat4s_core.exception.exception as dtsException
 
 import config.config as config
+import gui.dtscore as dtscore
 #endregion ----------------------------------------------------------> Imports
 
 #region -------------------------------------------------------------> Classes
@@ -95,6 +96,39 @@ class UMSAPFile():
     #endregion -----------------------------------------------> Instance setup
 
     #------------------------------>  Class methods
+    #region ---------------------------------------------------> 
+    def Save(self, tPath: Union[None, str, Path]=None) -> bool:
+        """Save the file content
+    
+            Parameters
+            ----------
+            tPath:
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        oPath = tPath if tPath is not None else self.rFileP
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Write
+        try:
+            dtsFF.WriteJSON(oPath, self.rData)
+        except Exception as e:
+            msg = f'It was not possible to update the content of file: {oPath}'
+            dtscore.Notification('errorF', msg=msg, tException=e)
+            return False
+        #endregion ------------------------------------------------> Write
+
+        return True
+    #---
+    #endregion ------------------------------------------------> 
+    
     #region -------------------------------------------------------> Configure
     def ConfigureDataCorrA(self) -> dict:
         """Configure a Correlation Analysis section	
@@ -256,10 +290,11 @@ class UMSAPFile():
                 #------------------------------> 
                 tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmProtProf.replace(" ", "-")}'
                 #------------------------------> Create data
-                df  = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
+                df = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF': df,
+                    'F' : v['F'],
                 }
             except Exception:
                 pass

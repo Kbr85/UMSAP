@@ -347,4 +347,26 @@ def Fragments(
 
     return dictO
 #---
+
+
+def HCurve(x:float, t0:float, s0:float) -> float:
+    """Calculate the hyperbolic curve values according to:
+        doi: 10.1142/S0219720012310038
+
+        Parameters
+        ----------
+        
+
+        Returns
+        -------
+        
+
+        Raise
+        -----
+        
+    """
+    #region ---------------------------------------------------> Calculate
+    return abs((abs(x)*t0)/(abs(x)-t0*s0))
+    #endregion ------------------------------------------------> Calculate
+#---
 #endregion ----------------------------------------------------------> Methods

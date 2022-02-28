@@ -252,6 +252,12 @@ lCbSample      = 'Samples'
 lCbIntensity   = 'Intensities'
 #------------------------------> wx.Dialog
 lPdError = 'Fatal Error'
+#------------------------------> Filters
+lFilFCEvol   = 'FC Evolution'
+lFilHypCurve = 'Hyp Curve'
+lFilFCLog    = 'Log2FC'
+lFilPVal     = 'P Val'
+lFilZScore   = 'Z Score'
 #endregion -----------------------------------------------------------> Labels
 
 
@@ -426,6 +432,16 @@ mResCtrl = (
     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
     f"correct input.")
 mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
+mRepNum = ('The number of replicates in some experiments does not match '
+    'the number of replicates in the control.')
+mRepNumProtProf = ('To perform a Proteome Profiling analysis using Raw '
+    'Intensities and Paired Samples the number of replicates in '
+    'experiments and the corresponding control must be the '
+    'same.\n\nThe number of replicates in the following '
+    'experiments does not match the number of replicates in the '
+    'corresponding control.\n{}'
+)
+mCtrlEmpty = 'None of the Control fields can be empty.'
 #endregion -------------------------------------------------> For CheckInput
 #endregion ---------------------------------------------------------> Messages
 
@@ -484,12 +500,11 @@ color = { # Colors for the app
         },
     },
     nwProtProf : {
-        'Vol'   : ['#ff3333', '#d3d3d3', '#3333ff'],
-        'VolSel': '#6ac653',
-        'FCAll' : '#d3d3d3',
-        'FCLines' : [
-            '#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff',
-        ],
+        'Vol'    : ['#ff3333', '#d3d3d3', '#3333ff'],
+        'VolSel' : '#6ac653',
+        'FCAll'  : '#d3d3d3',
+        'FCLines': ['#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff'],
+        'CV'     : 'gray',
     },
     nwLimProt : {
         'Spot' : colorFragments,

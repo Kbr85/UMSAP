@@ -86,6 +86,7 @@ def LoadUMSAPFile(
     return True
 #---
 
+
 def GetDisplayInfo(win: wx.Frame) -> dict[str, dict[str, int]]:
     """This will get the information needed to set the position of a window.
         Should be called after Fitting sizers for accurate window size 

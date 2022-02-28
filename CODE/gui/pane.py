@@ -1362,10 +1362,14 @@ class BaseConfPanel(
                 },
             }
         }
-        #-------------->  DataPrep Util does not have dfR
+        #--------------> DataPrep Util does not have dfR
         if not self.dfR.empty:
-            print(self.dfR)
             dateDict[self.rDateID]['R'] = stepDict['R']
+        else:
+            pass
+        #--------------> Filters in ProtProf
+        if self.cName == config.npProtProf:
+            dateDict[self.rDateID]['F'] = {}
         else:
             pass
         #------------------------------> Append or not
@@ -1478,7 +1482,7 @@ class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Label
-        self.cLAlpha    = getattr(self, 'cLAlpha',    'Significance Level')
+        self.cLAlpha    = getattr(self, 'cLAlpha',    'α level')
         self.cLScoreVal = getattr(self, 'cLScoreVal', config.lStScoreVal)
         self.cLScoreCol = getattr(self, 'cLScoreCol', config.lStScoreCol)
         self.cLDetectedProt = getattr(
@@ -1975,10 +1979,19 @@ class ResControlExpConfBase(wx.Panel):
         self.cTTControlN = getattr(
             self, 'cTTControlN', ('Name or ID of the control experiment.\ne.g. '
                                   'MyControl."'))
+        self.cTTRight = getattr(self, 'cTTRight', ('Use the right mouse click '
+                                        'to clear the content of the window.'))
+        self.cTTBtnCreate = getattr(self, 'cTTBtnCreate', ('Create the fields '
+                                                'to type the column numbers.'))
         #------------------------------> Validator
         self.cVColNumList = dtsValidator.NumberList(
             sep=' ', opt=True, vMin=0, vMax=self.rNColF 
         )
+        #------------------------------> Messages
+        self.mNoControlT = getattr(
+            self, 'mNoControl', f'The Control Type must defined.')
+        self.mLabelEmpty = getattr(
+            self, 'mLabelEmpty', 'All labels and control name must be defined.')
         #------------------------------> super()
         super().__init__(cParent, name=cName)
         #endregion --------------------------------------------> Initial Setup
@@ -1998,22 +2011,8 @@ class ResControlExpConfBase(wx.Panel):
         self.rStLabel = []
         self.rTcLabel = []
         self.rTcDict = {}
-        for k in range(1, self.cN+1):
-            #------------------------------> tcDict key
-            self.rTcDict[k] = []
-            #------------------------------> wx.StaticText
-            a = wx.StaticText(self.wSwLabel, label=self.cStLabel[k])
-            a.SetToolTip(self.cTTTotalField[k-1])
-            self.rStLabel.append(a)
-            #------------------------------> wx.TextCtrl for the label
-            a = wx.TextCtrl(
-                    self.wSwLabel,
-                    size      = self.cSTotalField,
-                    name      = str(k),
-                    validator = dtsValidator.NumberList(vMin=1, nN=1),
-                )
-            a.SetHint(self.cHTotalField)
-            self.rTcLabel.append(a)
+        
+        self.AddLabelFields()
         #------------------------------> Control name
         self.wControlN = dtsWidget.StaticTextCtrl(
             self.wSwLabel,
@@ -2027,8 +2026,9 @@ class ResControlExpConfBase(wx.Panel):
         #endregion --------------------------------------------------> Widgets
 
         #region -----------------------------------------------------> Tooltip
-        self.wBtnCreate.SetToolTip(
-            'Create the fields to type the column numbers.')
+        self.wBtnCreate.SetToolTip(self.cTTBtnCreate)
+        self.wSwLabel.SetToolTip(self.cTTRight)
+        self.wSwMatrix.SetToolTip(self.cTTRight)
         #endregion --------------------------------------------------> Tooltip
         
         #region ------------------------------------------------------> Sizers
@@ -2057,10 +2057,9 @@ class ResControlExpConfBase(wx.Panel):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        for k in range(0, self.cN):
-            self.rTcLabel[k].Bind(wx.EVT_KILL_FOCUS, self.OnLabelNumber)
-
         self.wBtnCreate.Bind(wx.EVT_BUTTON, self.OnCreate)
+        self.wSwLabel.Bind(wx.EVT_RIGHT_DOWN, self.OnClear)
+        self.wSwMatrix.Bind(wx.EVT_RIGHT_DOWN, self.OnClear)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -2156,10 +2155,10 @@ class ResControlExpConfBase(wx.Panel):
         #endregion ---------------------------------------------> Add to sizer
         
         #region --------------------------------------------------> Event Skip
-        if isinstance(event, str):
-            pass
-        else:
+        try:
             event.Skip()
+        except Exception: 
+            pass
         #endregion -----------------------------------------------> Event Skip
         
         return True
@@ -2248,6 +2247,49 @@ class ResControlExpConfBase(wx.Panel):
         else:
             pass
         #endregion -------------------------------------> Set parent variables
+        
+        return True
+    #---
+    
+    def OnClear(self, event: Union[wx.Event, str]) -> bool:
+        """Clear all input in the wx.Dialog
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Labels
+        self.sSWLabel.Clear(delete_windows=True)
+        #------------------------------> Control
+        self.wControlN.tc.SetValue('')
+        try:
+            self.wCbControl.SetValue('')
+        except Exception:
+            pass
+        #------------------------------> Fields
+        self.sSWMatrix.Clear(delete_windows=True)
+        #endregion --------------------------------------------------> Widgets
+
+        #region -------------------------------------------------> List & Dict
+        self.rTcDictF = {}
+        self.rLbDict  = {}
+        self.rStLabel = []
+        self.rTcLabel = []
+        self.rTcDict  = {}
+        #endregion ----------------------------------------------> List & Dict
+        
+        #region --------------------------------------------------> Add Labels
+        self.AddLabelFields()
+        self.Add2SWLabel()
+        #endregion -----------------------------------------------> Add Labels
+        
         return True
     #---
     #endregion ------------------------------------------------> Event methods
@@ -2387,6 +2429,93 @@ class ResControlExpConfBase(wx.Panel):
         #endregion -----------------------------------------------> Set scroll
         
         return True
+    #---
+    
+    def AddLabelFields(self) -> bool:
+        """Add the default label fields, name and wx.TextCtrl for number.
+        
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------------> Widgets
+        for k in range(1, self.cN+1):
+            #------------------------------> tcDict key
+            self.rTcDict[k] = []
+            #------------------------------> wx.StaticText
+            a = wx.StaticText(self.wSwLabel, label=self.cStLabel[k])
+            a.SetToolTip(self.cTTTotalField[k-1])
+            self.rStLabel.append(a)
+            #------------------------------> wx.TextCtrl for the label
+            a = wx.TextCtrl(
+                    self.wSwLabel,
+                    size      = self.cSTotalField,
+                    name      = str(k),
+                    validator = dtsValidator.NumberList(vMin=1, nN=1),
+                )
+            a.SetHint(self.cHTotalField)
+            self.rTcLabel.append(a)
+        #endregion --------------------------------------------------> Widgets
+
+        #region --------------------------------------------------------> Bind
+        # Here because these widgets are destroyed and created when clearing
+        # the window.
+        for k in range(0, self.cN):
+            self.rTcLabel[k].Bind(wx.EVT_KILL_FOCUS, self.OnLabelNumber)
+        #endregion -----------------------------------------------------> Bind
+
+        return True
+    #---
+    
+    def CheckLabel(self, ctrlT: bool) -> list[int]:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #------------------------------> Label numbers & text
+        n = []
+        for k in range(1, self.cN+1):
+            n.append(len(self.rTcDict[k]))
+            for w in self.rTcDict[k]:
+                if w.GetValue() == '':
+                    dtscore.Notification(
+                        'errorF', msg=self.mLabelEmpty, parent=self)
+                    return []
+                else:
+                    pass
+        if all(n):
+            pass
+        else:
+            dtscore.Notification('errorF', msg=self.mNoCondRP, parent=self)
+            return []
+        #------------------------------> Control Type
+        if ctrlT:
+            if self.wCbControl.GetValidator().Validate()[0]:
+                pass
+            else:
+                dtscore.Notification(
+                    'errorF', msg=self.mNoControlT, parent=self)
+                return []
+        else:
+            pass
+        #------------------------------> 
+        if self.wControlN.tc.GetValue() == '':
+            dtscore.Notification('errorF', msg=self.mLabelEmpty, parent=self)
+            return []
+        else:
+            pass
+        
+        return n
     #---
     #endregion -----------------------------------------------> Manage methods
 #---
@@ -3602,6 +3731,11 @@ class ProtProf(BaseConfModPanel):
             self.cDCtrlType['OCR']  : self.ColCtrlData_OCR,
             self.cDCtrlType['Ratio']: self.ColCtrlData_Ratio,
         }
+        self.dCheckRepNum = {
+            self.cDCtrlType['OC']   : self.CheckRepNum_OC,
+            self.cDCtrlType['OCC']  : self.CheckRepNum_OCC,
+            self.cDCtrlType['OCR']  : self.CheckRepNum_OCR,
+        }
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -3658,6 +3792,8 @@ class ProtProf(BaseConfModPanel):
         self.rCheckUserInput = {
             self.cLuFile       : [self.wUFile.tc,           config.mFileBad],
             self.cLiFile       : [self.wIFile.tc,           config.mFileBad],
+            self.cLId          : [self.wId.tc,              config.mValueBad],
+            self.cLCeroTreat   : [self.wCeroB.cb,           config.mOptionBad],
             self.cLTransMethod : [self.wTransMethod.cb,     config.mOptionBad],
             self.cLNormMethod  : [self.wNormMethod.cb,      config.mOptionBad],
             self.cLImputation  : [self.wImputationMethod.cb,config.mOptionBad],
@@ -3844,6 +3980,7 @@ class ProtProf(BaseConfModPanel):
                 pass
             self.wScoreVal.tc.SetValue('320')
             self.wId.tc.SetValue('Beta Test Dev')
+            self.wCeroB.cb.SetValue('Yes')
             self.wTransMethod.cb.SetValue('Log2')
             self.wNormMethod.cb.SetValue('Median')
             self.wImputationMethod.cb.SetValue('Normal Distribution')
@@ -3865,21 +4002,21 @@ class ProtProf(BaseConfModPanel):
             #     'ControlType': 'One Control per Column',
             # }
             #--> One Control per Row, 1 Cond and 2 TP
-            self.wTcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
-            self.rLbDict = {
-                1            : ['DMSO'],
-                2            : ['30min', '60min'],
-                'Control'    : ['MyControl'],
-                'ControlType': 'One Control per Row',
-            }
-            #--> One Control 2 Cond and 2 TP
-            # self.wTcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.wTcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
             # self.rLbDict = {
-            #     1            : ['C1', 'C2'],
-            #     2            : ['RP1', 'RP2'],
-            #     'Control'    : ['1Control'],
-            #     'ControlType': 'One Control',
+            #     1            : ['DMSO'],
+            #     2            : ['30min', '60min'],
+            #     'Control'    : ['MyControl'],
+            #     'ControlType': 'One Control per Row',
             # }
+            #--> One Control 2 Cond and 2 TP
+            self.wTcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            self.rLbDict = {
+                1            : ['C1', 'C2'],
+                2            : ['RP1', 'RP2'],
+                'Control'    : ['1Control'],
+                'ControlType': 'One Control',
+            }
             #--> Ratio 2 Cond and 2 TP
             # self.wTcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
             # self.rLbDict = {
@@ -3922,7 +4059,7 @@ class ProtProf(BaseConfModPanel):
             self.wIFile.tc.SetValue(str(iFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
-            self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.wCeroB.cb.SetValue(dataI['I'][self.cLCeroTreatD])
             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
@@ -3987,9 +4124,161 @@ class ProtProf(BaseConfModPanel):
             )
             return False
         #endregion -----------------------------> Raw or Ration of Intensities
+        
+        #region ---------------------------------------------> # of Replicates
+        msgStep = self.cLPdCheck + 'Number of Replicates'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        a = self.wSample.cb.GetValue() == 'Paired Samples'
+        b = self.wRawI.cb.GetValue() == config.oIntensities['RawI']
+        if a and b:
+            if self.CheckNumberReplicates():
+                pass
+            else:
+                return False
+        else:
+            pass
+        #endregion ------------------------------------------> # of Replicates
         #endregion ---------------------------------------------> Mixed Fields
         
         return True
+    #---
+    
+    def CheckNumberReplicates(self) -> bool:
+        """Check the number of replicates when sampels are paired and raw 
+            intensities are used.
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> ResCtrl
+        resctrl = dmethod.ResControl2ListNumber(self.wTcResults.GetValue())
+        #endregion ------------------------------------------------> ResCtrl
+        
+        #region ---------------------------------------------------> Check
+        if self.dCheckRepNum[self.rLbDict["ControlType"]](resctrl):
+            return True
+        else:
+            return False
+        #endregion ------------------------------------------------> Check
+    #---
+    
+    def CheckRepNum_OC(self, resCtrl: list[list[list[int]]]) -> bool:
+        """Check equal number of replicas
+    
+            Parameters
+            ----------
+            resCtrl: list[list[list[int]]]
+                Result and Control as a list of list of list of int
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        badRep = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Check
+        #------------------------------> 
+        ctrlL = len(resCtrl[0][0])
+        #------------------------------> 
+        for row in resCtrl:
+            for col in row:
+                if len(col) == ctrlL:
+                    pass
+                else:
+                    badRep.append(col)
+        #endregion ------------------------------------------------> Check
+
+        #region ---------------------------------------------------> Return
+        if not badRep:
+            return True        
+        else:
+            self.rMsgError = config.mRepNum
+            self.rException = dtsException.InputError(
+                config.mRepNumProtProf.format(badRep))
+            return False
+        #endregion ------------------------------------------------> Return
+    #---
+    
+    def CheckRepNum_OCC(self, resCtrl: list[list[list[int]]]) -> bool:
+        """Check equal number of replicas
+    
+            Parameters
+            ----------
+            resCtrl: list[list[list[int]]]
+                Result and Control as a list of list of list of int
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        badRep = []
+        rowL = len(resCtrl)
+        colL = len(resCtrl[0])
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Check
+        for colI in range(0, colL):
+            ctrlL = len(resCtrl[0][colI])
+            for rowI in range(1,rowL):
+                if len(resCtrl[rowI][colI]) == ctrlL:
+                    pass
+                else:
+                    badRep.append(resCtrl[rowI][colI])
+        #endregion ------------------------------------------------> Check
+
+        #region ---------------------------------------------------> Return
+        if not badRep:
+            return True        
+        else:
+            self.rMsgError = config.mRepNum
+            self.rException = dtsException.InputError(
+                config.mRepNumProtProf.format(badRep))
+            return False
+        #endregion ------------------------------------------------> Return
+    #---
+    
+    def CheckRepNum_OCR(self, resCtrl: list[list[list[int]]]) -> bool:
+        """Check equal number of replicas
+    
+            Parameters
+            ----------
+            resCtrl: list[list[list[int]]]
+                Result and Control as a list of list of list of int
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        badRep = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Check
+        for row in resCtrl:
+            #------------------------------> 
+            ctrlL = len(row[0])
+            #------------------------------> 
+            for col in row[1:]:
+                if len(col) == ctrlL:
+                    pass
+                else:
+                    badRep.append(col)
+        #endregion ------------------------------------------------> Check
+
+        #region ---------------------------------------------------> Return
+        if not badRep:
+            return True        
+        else:
+            self.rMsgError = config.mRepNum
+            self.rException = dtsException.InputError(
+                config.mRepNumProtProf.format(badRep))
+            return False
+        #endregion ------------------------------------------------> Return
     #---
     
     def PrepareRun(self) -> bool:
@@ -4009,7 +4298,7 @@ class ProtProf(BaseConfModPanel):
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.IsChecked()),
+                self.wCeroB.cb.GetValue()),
             self.EqualLenLabel(self.cLScoreVal) : (
                 self.wScoreVal.tc.GetValue()),
             self.EqualLenLabel(self.cLSample) : (
@@ -4068,7 +4357,7 @@ class ProtProf(BaseConfModPanel):
             'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
             'RawI'       : True if self.wRawI.cb.GetValue() == self.cOIntensity['RawI'] else False,
             'IndS'       : True if self.wSample.cb.GetValue() == self.cOSample['Independent Samples'] else False,
-            'Cero'       : self.wCeroB.IsChecked(),
+            'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'TransMethod': self.wTransMethod.cb.GetValue(),
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
@@ -4148,8 +4437,8 @@ class ProtProf(BaseConfModPanel):
         #endregion -----------------------------------------> Data Preparation
         
         #region --------------------------------------------------------> Sort
-        self.dfIm.sort_values(
-            by=list(self.dfIm.columns[0:2]), inplace=True, ignore_index=True,
+        self.dfS.sort_values(
+            by=list(self.dfS.columns[0:2]), inplace=True, ignore_index=True,
         )
         #endregion -----------------------------------------------------> Sort
         
@@ -4238,14 +4527,14 @@ class ProtProf(BaseConfModPanel):
         
         #region ----------------------------------------------------> Empty DF
         df = pd.DataFrame(
-            np.nan, columns=idx, index=range(self.dfIm.shape[0]),
+            np.nan, columns=idx, index=range(self.dfS.shape[0]),
         )
         #endregion -------------------------------------------------> Empty DF
         
         #region -----------------------------------------> First Three Columns
-        df[(aL[0], bL[0], cL[0])] = self.dfIm.iloc[:,0]
-        df[(aL[1], bL[1], cL[1])] = self.dfIm.iloc[:,1]
-        df[(aL[2], bL[2], cL[2])] = self.dfIm.iloc[:,2]
+        df[(aL[0], bL[0], cL[0])] = self.dfS.iloc[:,0]
+        df[(aL[1], bL[1], cL[1])] = self.dfS.iloc[:,1]
+        df[(aL[2], bL[2], cL[2])] = self.dfS.iloc[:,2]
         #endregion --------------------------------------> First Three Columns
         
         return df
@@ -4373,20 +4662,20 @@ class ProtProf(BaseConfModPanel):
             print(cN, tN, colC, colD)
         #------------------------------> Ave & Std
         if colC is not None:
-            self.dfR.loc[:,(cN, tN, 'aveC')] = self.dfIm.iloc[:,colC].mean(
+            self.dfR.loc[:,(cN, tN, 'aveC')] = self.dfS.iloc[:,colC].mean(
                 axis=1, skipna=True).to_numpy()
-            self.dfR.loc[:,(cN, tN, 'stdC')] = self.dfIm.iloc[:,colC].std(
+            self.dfR.loc[:,(cN, tN, 'stdC')] = self.dfS.iloc[:,colC].std(
                 axis=1, skipna=True).to_numpy()
         else:
             self.dfR.loc[:,(cN, tN, 'aveC')] = np.nan
             self.dfR.loc[:,(cN, tN, 'stdC')] = np.nan
         
-        self.dfR.loc[:,(cN, tN, 'ave')] = self.dfIm.iloc[:,colD].mean(
+        self.dfR.loc[:,(cN, tN, 'ave')] = self.dfS.iloc[:,colD].mean(
             axis=1, skipna=True).to_numpy()
-        self.dfR.loc[:,(cN, tN, 'std')] = self.dfIm.iloc[:,colD].std(
+        self.dfR.loc[:,(cN, tN, 'std')] = self.dfS.iloc[:,colD].std(
             axis=1, skipna=True).to_numpy()
         #------------------------------> Intensities as log2 Intensities
-        dfLogI = self.dfIm.copy() 
+        dfLogI = self.dfS.copy() 
         if self.rDO['TransMethod'] == 'Log2':
             pass
         else:
@@ -4477,7 +4766,7 @@ class ProtProf(BaseConfModPanel):
             config.fnScore.format(self.rDate, '07')  : self.dfS,
             self.rMainData.format(self.rDate, '08')  : self.dfR,
         }
-        stepDict['R'] = self.rMainData.format(self.rDate, '08'),
+        stepDict['R'] = self.rMainData.format(self.rDate, '08')
         #endregion -----------------------------------------------> Data Steps
 
         return self.WriteOutputData(stepDict)
@@ -4623,8 +4912,8 @@ class LimProt(BaseConfModPanel2):
     #region -----------------------------------------------------> Class setup
     cName = config.npLimProt
     #------------------------------> Label
-    cLBeta         = "β value"
-    cLGamma        = "γ value"
+    cLBeta         = "β level"
+    cLGamma        = "γ level"
     cLTheta        = "Θ value"
     cLThetaMax     = "Θmax value"
     cLSample       = 'Samples'
@@ -6303,7 +6592,6 @@ class ProtProfResControlExp(ResControlExpConfBase):
     #------------------------------> Error messages
     mNoCondRP = (
         f'Both {cStLabel[1][:-1]} and {cStLabel[2][:-1]} must be defined.')
-    mNoControl = (f'The Control Type must defined.')
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -6457,20 +6745,9 @@ class ProtProfResControlExp(ResControlExpConfBase):
             True
         """
         #region -------------------------------------------------> Check input
-        #------------------------------> Labels
-        n = []
-        for k in range(1, self.cN+1):
-            n.append(len(self.rTcDict[k]))
-        if all(n):
+        if (n := self.CheckLabel(True)):
             pass
         else:
-            dtscore.Notification('errorF', msg=self.mNoCondRP, parent=self)
-            return False
-        #------------------------------> Control
-        if self.wCbControl.GetValidator().Validate()[0]:
-            pass
-        else:
-            dtscore.Notification('errorF', msg=self.mNoControl, parent=self)
             return False
         #endregion ----------------------------------------------> Check input
         
@@ -6624,6 +6901,64 @@ class ProtProfResControlExp(ResControlExpConfBase):
         #endregion ----------------------------------------> Update controlVal
         
         return True
+    #---
+    
+    def OnOK(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        ctrlType = self.wCbControl.GetValue()
+        ctrl = True
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Super
+        if super().OnOK():
+            pass
+        else:
+            return False
+        #endregion ------------------------------------------------> Super
+
+        #region --------------------------------------------------> Check Ctrl
+        if ctrlType  == self.cCtrlType['OC']:
+            if self.rTcDictF[1][0].GetValue().strip() == '':
+                ctrl = False
+            else:
+                pass
+        elif ctrlType == self.cCtrlType['OCC']:
+            for w in self.rTcDictF[1]:
+                if w.GetValue().strip() == '':
+                    ctrl = False
+                    break
+                else:
+                    pass
+        else:
+            for w in self.rTcDictF.values():
+                if w[0].GetValue().strip() == '':
+                    ctrl = False
+                    break
+                else:
+                    pass
+        #endregion -----------------------------------------------> Check Ctrl
+
+        #region ---------------------------------------------------> 
+        if ctrl:
+            return True
+        else:
+            dtscore.Notification('errorF', msg=config.mCtrlEmpty, parent=self)
+            return False
+        #endregion ------------------------------------------------> 
     #---
     #endregion ------------------------------------------------> Event Methods
     
