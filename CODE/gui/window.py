@@ -7822,6 +7822,7 @@ class FilterPValue(dtsWindow.UserInput1Text):
         #region -----------------------------------------------------> Widgets
         self.wCbAbs = wx.CheckBox(self, label='Absolute P Value')
         self.wCbLog = wx.CheckBox(self, label='-Log10(P) Value')
+        self.rCheck = [self.wCbAbs, self.wCbLog]
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
@@ -7838,6 +7839,8 @@ class FilterPValue(dtsWindow.UserInput1Text):
 
         #region --------------------------------------------------------> Bind
         self.input.tc.Bind(wx.EVT_TEXT, self.OnTextChange)
+        for x in self.rCheck:
+            x.Bind(wx.EVT_CHECKBOX, self.OnCheck)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -7873,6 +7876,32 @@ class FilterPValue(dtsWindow.UserInput1Text):
         else:
             pass    
         #endregion ----------------------------------------------------> Check
+        
+        return True
+    #---
+    
+    def OnCheck(self, event: wx.Event) -> bool:
+        """Allow only one check box to be marked at any given time
+    
+            Parameters
+            ----------
+            event: wx.Event
+    
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Deselect
+        if event.IsChecked():
+            #------------------------------> 
+            tCheck = event.GetEventObject()
+            #------------------------------> 
+            [k.SetValue(False) for k in self.rCheck]
+            #------------------------------> 
+            tCheck.SetValue(True)
+        else:
+            pass
+        #endregion -------------------------------------------------> Deselect
         
         return True
     #---
