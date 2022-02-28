@@ -3570,21 +3570,54 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rAutoFilter = mode
         return True
     #---
+    
+    def UpdateGUI(self) -> bool:
+        """Updateh content of the wx.ListCtrl and Plots
+        
+            Returns
+            -------
+            bool
+        """
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        return True
+    #---
+    
+    def UpdateStatusBarFilterText(self) -> bool:
+        """Update the filter list in the statusbar
+        
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------------------> Delete
+        self.wStatBar.SetStatusText('', 1)
+        #endregion ---------------------------------------------------> Delete
+
+        #region ---------------------------------------------------------> Add
+        for k in self.rFilterList:
+            self.StatusBarFilterText(k[2])
+        #endregion ------------------------------------------------------> Add
+
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
 
     #region --------------------------------------------------> Filter Methods
     def Filter_FCChange(
-        self, choice: Optional[str]=None, updateL: bool=True,
+        self, choice: Optional[dict]=None, updateL: bool=True,
         ) -> bool:
         """Filter results based on FC change
     
             Parameters
             ----------
-            choice : str
-                One of the keys in self.cLFFCDict
+            choice : dict
+                Keys are int 0 to 1. Value in 0 is the filter to apply and 
+                in 1 the conditions to consider. 
             updateL : bool
-                Update filterList and StatusBar (True) or not (False)
-    
+                Update (True) or not (False) the GUI. Default is True.
+            
             Returns
             -------
             bool
@@ -3603,40 +3636,41 @@ class ProtProfPlot(BaseWindowNPlotLT):
             #------------------------------> 
             if dlg.ShowModal():
                 #------------------------------> 
-                choice = dlg.GetChoice()
+                choice = dlg.GetChoice() # The value of choice is needed below
+                choice0, choice1 = choice.values()
                 #------------------------------> 
                 dlg.Destroy()
             else:
                 dlg.Destroy()
                 return False
         else:
-            pass
+            choice0, choice1 = choice.values()
         #endregion ------------------------------------------------> Get Value
         
         #region ----------------------------------------------------------> DF
         idx = pd.IndexSlice
         #------------------------------> 
-        if choice[1] == self.cLFCSel:
+        if choice1 == self.cLFCSel:
             df = self.rDf.loc[:,idx[self.rCondC,:,'FC']]
         else:
             df = self.rDf.loc[:,idx[:,:,'FC']]
         #------------------------------> 
-        if choice[0] == self.cLFFCUp:
+        if choice0 == self.cLFFCUp:
             mask = df.groupby(level=0, axis=1).apply(lambda x: (x > 0).all(axis=1))
-        elif choice[0] == self.cLFFCDown:
+        elif choice0 == self.cLFFCDown:
             mask = df.groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1))
-        elif choice[0] == self.cLFFCNo:
+        elif choice0 == self.cLFFCNo:
             mask = df.groupby(level=0, axis=1).apply(lambda x: ((x > -self.rT0*self.rS0) & (x < self.rT0*self.rS0)).all(axis=1))
-        elif choice[0] == self.cLFFCUpMon:
+        elif choice0 == self.cLFFCUpMon:
             mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1))
-        elif choice[0] == self.cLFFCDownMon:
+        elif choice0 == self.cLFFCDownMon:
             mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_decreasing) & (x < 0)).all(), axis=1))     
-        elif choice[0] == self.cLFDiv:
+        elif choice0 == self.cLFDiv:
             maskUp = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1))
             maskUp = maskUp.any(axis=1)
             maskDown = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_decreasing) & (x < 0)).all(), axis=1))
             maskDown = maskDown.any(axis=1)   
-        elif choice[0] == self.cLFFCOpposite:
+        elif choice0 == self.cLFFCOpposite:
             maskUp = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: (x > 0).all(axis=1))
             maskUp = maskUp.any(axis=1)
             maskDown = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1))
@@ -3644,8 +3678,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
         else:
             return False
         #------------------------------> 
-        if choice[0] not in  [self.cLFDiv, self.cLFFCOpposite]:
-            if choice[1] == self.cLFCAny:
+        if choice0 not in  [self.cLFDiv, self.cLFFCOpposite]:
+            if choice1 == self.cLFCAny:
                 mask = mask.any(axis=1)
             else:
                 mask = mask.all(axis=1)
@@ -3656,19 +3690,15 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion -------------------------------------------------------> DF
     
         #region --------------------------------------------------> Update GUI
-        #------------------------------> 
-        self.FillListCtrl()
-        self.VolDraw()
-        self.FCDraw()
-        #------------------------------> 
         if updateL:
+            self.UpdateGUI()
             #------------------------------> 
-            self.StatusBarFilterText(f'{choice[0]}')
+            self.StatusBarFilterText(f'{choice0} ({choice1[0:3]})')
             #------------------------------> 
             self.rFilterList.append(
                 [config.lFilFCEvol, 
                  {'choice':choice, 'updateL': False}, 
-                 f'{choice}']
+                 f'{choice0} ({choice1[0:3]})']
             )
         else:
             pass
@@ -3713,12 +3743,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> Filter
 
         #region --------------------------------------------------> Update GUI
-        #------------------------------> 
-        self.FillListCtrl()
-        self.VolDraw()
-        self.FCDraw()
-        #------------------------------> 
         if updateL:
+            self.UpdateGUI()
             #------------------------------> 
             self.StatusBarFilterText(f'{filterText}')
             #------------------------------> 
@@ -3806,14 +3832,11 @@ class ProtProfPlot(BaseWindowNPlotLT):
         else:
             self.rDf = self.rDf[
                 (self.rDf[col] >= val) | (self.rDf[col] <= -val)]
-        #------------------------------> 
-        self.FillListCtrl()
-        self.VolDraw()
-        self.FCDraw()
         #endregion ---------------------------------------> Get Value and Plot
         
         #region ------------------------------------------> Update Filter List
         if updateL:
+            self.UpdateGUI()
             #------------------------------> 
             self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
             #------------------------------> 
@@ -3914,14 +3937,11 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.rDf = self.rDf[df[col] <= val]
         else:
             self.rDf = self.rDf[df[col] >= val]
-        #------------------------------> 
-        self.FillListCtrl()
-        self.VolDraw()
-        self.FCDraw()
         #endregion ---------------------------------------> Get Value and Plot
         
         #region ------------------------------> Update Filter List & StatusBar
         if updateL:
+            self.UpdateGUI()
             #------------------------------> 
             label = self.cLFPValAbs if absB else self.cLFPValLog
             #------------------------------> 
@@ -4014,14 +4034,11 @@ class ProtProfPlot(BaseWindowNPlotLT):
         else:
             self.rDf = self.rDf[
                 (self.rDf[col] <= zVal) | (self.rDf[col] >= -zVal)]
-        #------------------------------> 
-        self.FillListCtrl()
-        self.VolDraw()
-        self.FCDraw()
         #endregion ---------------------------------------> Get Value and Plot
         
         #region ------------------------------------------> Update Filter List
         if updateL:
+            self.UpdateGUI()
             #------------------------------> 
             self.StatusBarFilterText(f'{self.cLFZscore} {op} {val}')
             #------------------------------> 
@@ -4061,6 +4078,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.dKeyMethod[k[0]](**k[1])
         #endregion --------------------------------------------> Apply Filters
         
+        #region --------------------------------------------------> Update GUI
+        self.UpdateGUI()
+        #endregion -----------------------------------------------> Update GUI
+
         return True
     #---
     
@@ -4072,14 +4093,13 @@ class ProtProfPlot(BaseWindowNPlotLT):
             bool
         """
         #region -------------------------------------------> Update Attributes
-        self.rFilterList = []
         self.rDf = self.rData[self.rDateC]['DF'].copy()
+        self.rFilterList = []
         self.wStatBar.SetStatusText('', 1)
         #endregion ----------------------------------------> Update Attributes
         
         #region --------------------------------------------------> Update GUI
-        self.UpdateDisplayedData(
-            self.rDateC, self.rCondC, self.rRpC, self.rCorrP, self.rShowAll)
+        self.UpdateGUI()
         #endregion -----------------------------------------------> Update GUI 
         
         return True
@@ -4100,23 +4120,13 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion --------------------------------> Check Something to Delete
         
         #region -------------------------------------------> Update Attributes
-        #------------------------------> 
         del self.rFilterList[-1]
-        self.rDf = self.rData[self.rDateC]['DF'].copy()
-        #------------------------------> 
-        text = self.wStatBar.GetStatusText(1)
-        text = text.split("|")[0:-1]
-        text = [x.strip() for x in text if x.strip() != '']
-        if text:
-            text = f' | {" | ".join(text)}'
-        else:
-            text = ''
-        self.wStatBar.SetStatusText(text, 1)
         #endregion ----------------------------------------> Update Attributes
         
         #region --------------------------------------------------> Update GUI
-        self.UpdateDisplayedData(
-            self.rDateC, self.rCondC, self.rRpC, self.rCorrP, self.rShowAll)
+        self.FilterApply()
+        self.UpdateStatusBarFilterText()
+        self.UpdateGUI()
         #endregion -----------------------------------------------> Update GUI 
         
         return True
@@ -4162,19 +4172,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
         
         #region --------------------------------------------------> Update GUI
         if self.rFilterList:
-            #------------------------------> 
             self.FilterApply()
-            #------------------------------> 
-            for k in self.rFilterList:
-                #------------------------------> 
-                gText = k[1].get("gText", "")
-                #------------------------------> 
-                if gText:
-                    text = f'{text} | {k[0]} {gText}'
-                else:
-                    text = f'{text} | {k[0]}'
-            #------------------------------> 
-            self.wStatBar.SetStatusText(text, 1)
+            self.UpdateStatusBarFilterText()
+            self.UpdateGUI()
         else:
             self.FilterRemoveAll()
         #endregion -----------------------------------------------> Update GUI
