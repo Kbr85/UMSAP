@@ -3784,9 +3784,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
             dlg = dtsWindow.UserInput1Text(
                 'Filter results by Log2(FC) value.',
                 'Threshold',
-                'Absolute log2(FC) value. e.g. < 2.3 or > 3.5',
+                'log2(FC) value. e.g. < 2.3 or > -3.5',
                 self.wPlots.dPlot['Vol'],
-                dtsValidator.Comparison(numType='float', op=['<', '>'], vMin=0),
+                dtsValidator.Comparison(numType='float', op=['<', '>']),
             )
             #------------------------------> 
             if dlg.ShowModal():
@@ -3800,8 +3800,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         else:
             try:
                 #------------------------------> 
-                a, b = dtsCheck.Comparison(
-                    gText, numType='float', op=['<', '>'], vMin=0)
+                a, b = dtsCheck.Comparison(gText, numType='float', op=['<','>'])
                 #------------------------------> 
                 if a:
                     uText = gText
@@ -3830,11 +3829,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
         idx = pd.IndexSlice
         col = idx[self.rCondC,self.rRpC,'FC']
         if op == '<':
-            self.rDf = self.rDf[
-                (self.rDf[col] <= val) & (self.rDf[col] >= -val)]
+            self.rDf = self.rDf[self.rDf[col] <= val]
         else:
-            self.rDf = self.rDf[
-                (self.rDf[col] >= val) | (self.rDf[col] <= -val)]
+            self.rDf = self.rDf[self.rDf[col] >= val]
         #endregion ---------------------------------------> Get Value and Plot
         
         #region ------------------------------------------> Update Filter List
