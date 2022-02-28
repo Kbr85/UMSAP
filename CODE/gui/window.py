@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
+from ast import arg
 from pathlib import Path
 from typing import Optional, Literal, Union
 
@@ -2118,6 +2119,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rAutoFilter  = False
         self.rT0          = 0.1
         self.rS0          = 1.0
+        self.rZ           = 10.0
+        self.rColor       = 'Hyp Curve Color'
+        self.rHypCurve    = True
         self.rCI          = None
         self.rFcYMax      = None
         self.rFcYMin      = None
@@ -2142,6 +2146,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
             config.oControlTypeProtProf['OCC']  : self.GetDF4TextInt_OCC,
             config.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
             config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
+            #------------------------------> Colors
+            'Hyp Curve Color' : self.GetColorHyCurve,
+            'Z Score Color'   : self.GetColorZScore,
             #------------------------------> Filter methods
             config.lFilFCEvol  : self.Filter_FCChange,
             config.lFilHypCurve: self.Filter_HCurve,
@@ -2372,25 +2379,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
         else:
             y = -np.log10(
                 self.rDf.loc[:,[(self.rCondC,self.rRpC,'P')]])
-        #------------------------------> H Curve
-        lim = self.rT0*self.rS0
-        xCP = np.arange(lim+0.001, 20, 0.001)
-        yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-lim))
         #------------------------------> Color
-        color = []
-        for k,v in enumerate(x.values):
-            if v < -lim:
-                if abs((abs(v)*self.rT0)/(abs(v)-lim)) < y.values[k]:
-                    color.append(self.cColor['Vol'][0])
-                else:
-                    color.append(self.cColor['Vol'][1])
-            elif v > lim:
-                if abs((abs(v)*self.rT0)/(abs(v)-lim)) < y.values[k]:
-                    color.append(self.cColor['Vol'][2])
-                else:
-                    color.append(self.cColor['Vol'][1])
-            else:
-                color.append(self.cColor['Vol'][1])
+        color = self.dKeyMethod[self.rColor](x, y)
         #endregion -----------------------------------------------------> Data
         
         #region -----------------------------------------------------> H Curve
@@ -2406,9 +2396,16 @@ class ProtProfPlot(BaseWindowNPlotLT):
             color     = color,
             picker    = True,
         )
-        
-        self.wPlots.dPlot['Vol'].axes.plot(xCP,  yCP, color=self.cColor['CV'])
-        self.wPlots.dPlot['Vol'].axes.plot(-xCP, yCP, color=self.cColor['CV'])
+        if self.rHypCurve:
+            lim = self.rT0*self.rS0
+            xCP = np.arange(lim+0.001, 20, 0.001)
+            yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-lim))
+            self.wPlots.dPlot['Vol'].axes.plot(
+                xCP,  yCP, color=self.cColor['CV'])
+            self.wPlots.dPlot['Vol'].axes.plot(
+                -xCP, yCP, color=self.cColor['CV'])
+        else:
+            pass
         #------------------------------> Lock Scale or Set it manually
         if self.rVXRange and self.rVYRange:
             self.wPlots.dPlot['Vol'].axes.set_xlim(*self.rVXRange)
@@ -3170,6 +3167,56 @@ class ProtProfPlot(BaseWindowNPlotLT):
         
         return True
     #---
+    
+    def GetColorHyCurve(self, *args) -> list:
+        """Get color for Volcano plot when schems is Hyp Curve
+        
+            Returns
+            -------
+            list
+                List with a color for each protein
+        """
+        #region ---------------------------------------------------> Variables
+        color = []
+        lim = self.rT0*self.rS0
+        x = args[0]
+        y = args[1]
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------------> Color
+        for k,v in enumerate(x.values):
+            if v < -lim:
+                if abs((abs(v)*self.rT0)/(abs(v)-lim)) < y.values[k]:
+                    color.append(self.cColor['Vol'][0])
+                else:
+                    color.append(self.cColor['Vol'][1])
+            elif v > lim:
+                if abs((abs(v)*self.rT0)/(abs(v)-lim)) < y.values[k]:
+                    color.append(self.cColor['Vol'][2])
+                else:
+                    color.append(self.cColor['Vol'][1])
+            else:
+                color.append(self.cColor['Vol'][1])
+        #endregion ----------------------------------------------------> Color
+
+        return color
+    #---
+    
+    def GetColorZScore(self, *args):
+        """"""
+        zVal = stats.norm.ppf(1.0-(self.rZ/100.0))
+        #------------------------------> 
+        idx = pd.IndexSlice
+        col = idx[self.rCondC,self.rRpC,'FCz']
+        val = self.rDf.loc[:,col]
+        print(self.rZ)
+        print(zVal)
+        print(val.head(n=10))
+        
+        cond = [val < -zVal, val > zVal]
+        choice = [self.cColor['Vol'][0], self.cColor['Vol'][2]]
+        return np.select(cond, choice, default=self.cColor['Vol'][1])
+    #---
     #endregion -----------------------------------------------> Manage Methods
     
     #region ---------------------------------------------------> Event Methods
@@ -3255,8 +3302,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return True
     #---
     
-    def OnHypCurve(self) -> bool:
-        """Adjust the hyperbolic curve on the volcano plot
+    def OnVolColorScheme(self) -> bool:
+        """Adjust the color scheme for the proteins
     
             Returns
             -------
@@ -3267,19 +3314,19 @@ class ProtProfPlot(BaseWindowNPlotLT):
             
         """
         #------------------------------> 
-        dlg = dtsWindow.UserInputText(
-            'Customize the Hyperbolic Curve',
-            ['t0', 's0'],
-            2*['Non negative number'],
-            2*[dtsValidator.NumberList('float', vMin=0, nN=1)],
+        dlg = VolColorScheme(
+            self.rT0, 
+            self.rS0, 
+            self.rZ, 
+            self.rColor, 
+            self.rHypCurve, 
             parent=self,
-            values = [str(self.rT0), str(self.rS0)]
         )
         #------------------------------> 
         if dlg.ShowModal():
-            self.rT0 = float(dlg.rInput[0].tc.GetValue().strip())
-            self.rS0 = float(dlg.rInput[1].tc.GetValue().strip())
-            self.UpdateDisplayedData()
+            self.rT0, self.rS0, self.rZ, self.rColor, self.rHypCurve = (
+                dlg.GetVal())
+            self.VolDraw()
         else:
             return False
         #------------------------------> 
@@ -7860,6 +7907,283 @@ class FilterPValue(dtsWindow.UserInput1Text):
         return True
     #---
     #endregion ------------------------------------------------> Event methods
+#---
+
+
+class VolColorScheme(dtsWindow.OkCancel):
+    """Dialog for the setup of the color in the volcano plot of ProtProf
+
+        Parameters
+        ----------
+        t0: float
+        s0: float
+        z: str
+            '< 10' or '> 1.56'
+        color: str
+            Color scheme to use
+        hcurve : bool
+            Show (True) or not (False) the H Curve
+        parent: wx.Window
+            PArent of the wx.Dialog
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, t0:float, s0:float, z:float, color: str, hcurve: bool, 
+        parent: Optional[wx.Window]=None,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rT0 = str(t0)
+        self.rS0 = str(s0)
+        self.rZ  = str(z)
+        self.rColor = color
+        self.rHCurve = hcurve
+        self.rCheck = {0: self.CheckScheme, 1: self.CheckHCurve}
+        self.rKeys = {
+            '0-HypCurve': 'Hyp Curve Color',
+            '0-ZScore': 'Z Score Color',
+            '1-Yes': True,
+            '1-No': False,
+        }
+        #------------------------------> 
+        super().__init__(title='Adjust the Color Scheme', parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wsbVal = wx.StaticBox(self, label='Values')
+        self.wT0 = dtsWidget.StaticTextCtrl(
+            self.wsbVal,
+            stLabel   = 't0',
+            tcHint    = 'e.g. 1.0',
+            tcSize    = (100,22),
+            validator = dtsValidator.NumberList('float', vMin=0, nN=1)
+        )
+        self.wT0.tc.SetValue(self.rT0)
+        
+        self.wS0 = dtsWidget.StaticTextCtrl(
+            self.wsbVal,
+            stLabel   = 's0',
+            tcHint    = 'e.g. 0.1',
+            tcSize    = (100,22),
+            validator = dtsValidator.NumberList('float', vMin=0, nN=1)
+        )
+        self.wS0.tc.SetValue(self.rS0)
+        
+        self.wZ = dtsWidget.StaticTextCtrl(
+            self.wsbVal,
+            stLabel   = 'Z Score',
+            tcHint    = 'e.g. 10.0',
+            tcSize    = (100,22),
+            validator = dtsValidator.NumberList(
+                    numType='float', vMin=0, vMax=100, nN=1),
+        )
+        self.wZ.tc.SetValue(self.rZ)
+        
+        self.wsbOpt = wx.StaticBox(self, label='Options') 
+        self.wstColor = wx.StaticText(self.wsbOpt, label='Color Scheme')
+        self.wcbHC = wx.CheckBox(
+            self.wsbOpt, label='Hyperbolic Curve', name='0-HypCurve')
+        self.wcbZScore = wx.CheckBox(
+            self.wsbOpt, label='Z Score', name='0-ZScore')
+    
+        self.wstHCurve = wx.StaticText(
+            self.wsbOpt, label='Show Hyperbolic Curve')
+        self.wcbYes = wx.CheckBox(self.wsbOpt, label='Yes', name='1-Yes')
+        self.wcbNo  = wx.CheckBox(self.wsbOpt, label='No',  name='1-No')
+        #------------------------------> 
+        self.CheckScheme()
+        self.CheckHCurve()
+        #------------------------------> 
+        self.rG = {}
+        self.rG[0] = [self.wcbHC, self.wcbZScore]
+        self.rG[1] = [self.wcbYes, self.wcbNo]
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sFlex = wx.FlexGridSizer(2,3,1,1)
+        self.sFlex.Add(self.wT0.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlex.Add(self.wS0.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlex.Add(self.wZ.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlex.Add(self.wT0.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlex.Add(self.wS0.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlex.Add(self.wZ.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlex.AddGrowableCol(0,1)
+        self.sFlex.AddGrowableCol(1,1)
+        self.sFlex.AddGrowableCol(2,1)
+        
+        self.sFlexOpt = wx.FlexGridSizer(3,2,1,1)
+        self.sFlexOpt.Add(self.wstColor, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        self.sFlexOpt.Add(self.wstHCurve, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        self.sFlexOpt.Add(self.wcbHC, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        self.sFlexOpt.Add(self.wcbYes, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        self.sFlexOpt.Add(self.wcbZScore, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        self.sFlexOpt.Add(self.wcbNo, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        
+        self.ssbVal = wx.StaticBoxSizer(self.wsbVal, wx.VERTICAL)
+        self.ssbVal.Add(self.sFlex, 0, wx.EXPAND|wx.ALL, 5)
+        
+        self.ssbOpt = wx.StaticBoxSizer(self.wsbOpt, wx.VERTICAL)
+        self.ssbOpt.Add(self.sFlexOpt, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        
+        self.sSizer.Add(self.ssbVal, 0, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.ssbOpt, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        for v in self.rG.values():
+            for c in v:
+                c.Bind(wx.EVT_CHECKBOX, self.OnCheck)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnCheck(self, event:wx.CommandEvent):
+        """Deselect all other seleced options within the group.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Deselect
+        if event.IsChecked():
+            #------------------------------> 
+            tCheck = event.GetEventObject()
+            group = int(tCheck.GetName().split('-')[0])
+            #------------------------------> 
+            [k.SetValue(False) for k in self.rG[group]]
+            #------------------------------> 
+            tCheck.SetValue(True)
+        else:
+            pass
+        #endregion -------------------------------------------------> Deselect
+        
+        return True
+    #---
+    
+    def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
+        """Validate user information and close the window.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            True
+        """
+        #region ----------------------------------------------------> Validate
+        res = []
+        #------------------------------> 
+        if self.wT0.tc.GetValidator().Validate()[0]:
+            res.append(True)
+        else:
+            self.wT0.tc.SetValue(self.rT0)
+            res.append(False)
+        #------------------------------> 
+        if self.wS0.tc.GetValidator().Validate()[0]:
+            res.append(True)
+        else:
+            self.wS0.tc.SetValue(self.rS0)
+            res.append(False)
+        #------------------------------> 
+        if self.wZ.tc.GetValidator().Validate()[0]:
+            res.append(True)
+        else:
+            self.wZ.tc.SetValue(self.rZ)
+            res.append(False)
+        #------------------------------> 
+        for k,v in self.rG.items():
+            if any([x.IsChecked() for x in v]):
+                res.append(True)
+            else:
+                self.rCheck[k]()
+                res.append(False)
+        #endregion -------------------------------------------------> Validate
+        
+        #region ---------------------------------------------------> 
+        if all(res):
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+        
+        return True
+    #---
+    
+    def CheckScheme(self):
+        """Check the initial color scheme
+        
+            Return
+            ------
+            True
+        """
+        if self.rColor == 'Hyp Curve Color':
+            self.wcbHC.SetValue(True)
+        else:
+            self.wcbZScore.SetValue(True)
+        return True
+    #---
+    
+    def CheckHCurve(self):
+        """Check the initial H Curve option
+        
+            Return
+            ------
+            bool
+        """
+        if self.rHCurve:
+            self.wcbYes.SetValue(True)
+        else:
+            self.wcbNo.SetValue(True)
+        return True
+    #---
+    
+    def GetVal(self):
+        """Get the selected values
+        
+            Returns
+            -------
+            bool
+        """
+        return (
+            float(self.wT0.tc.GetValue()),
+            float(self.wS0.tc.GetValue()),
+            float(self.wZ.tc.GetValue()),
+            self.GetNameGroup(0),
+            self.GetNameGroup(1), 
+        )
+    #---
+    
+    def GetNameGroup(self, tKey: int) -> str:
+        """Get the corresponding key for the checked element
+
+            Returns
+            -------
+            str
+        """
+        for v in self.rG[tKey]:
+            if v.IsChecked():
+                return self.rKeys[v.GetName()]
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 #endregion --------------------------------------------------------> wx.Dialog
 

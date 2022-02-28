@@ -853,7 +853,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         #region --------------------------------------------------> Menu Items
         self.AddCondRPMenuItems2Menus()
         self.AppendSeparator()
-        self.miHypCurve = self.Append(-1, 'Hyperbolic Curve')
+        self.miColor = self.Append(-1, 'Color Scheme')
         self.AppendSeparator()
         self.miPCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
@@ -870,7 +870,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnHypCurve,       source=self.miHypCurve)
+        self.Bind(wx.EVT_MENU, self.OnColor,          source=self.miColor)
         self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         self.Bind(wx.EVT_MENU, self.OnUpdatePlot,     source=self.miPCorr)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
@@ -900,8 +900,8 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         return True
     #---
     
-    def OnHypCurve(self, event: wx.CommandEvent) -> bool:
-        """Adjust the Hyperbolic Curve.
+    def OnColor(self, event: wx.CommandEvent) -> bool:
+        """Adjust the Color Scheme for proteins.
     
             Parameters
             ----------
@@ -914,7 +914,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
             bool
         """
         win = self.GetWindow()
-        win.OnHypCurve()
+        win.OnVolColorScheme()
         
         return True
     #---
