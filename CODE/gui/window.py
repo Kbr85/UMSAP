@@ -3202,19 +3202,25 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return color
     #---
     
-    def GetColorZScore(self, *args):
-        """"""
+    def GetColorZScore(self, *args) -> list:
+        """Get the color by z value
+        
+            Returns
+            -------
+            list
+                List of colors
+        """
+        #region ---------------------------------------------------> Variables
         zVal = stats.norm.ppf(1.0-(self.rZ/100.0))
         #------------------------------> 
         idx = pd.IndexSlice
         col = idx[self.rCondC,self.rRpC,'FCz']
         val = self.rDf.loc[:,col]
-        print(self.rZ)
-        print(zVal)
-        print(val.head(n=10))
-        
+        #------------------------------> 
         cond = [val < -zVal, val > zVal]
         choice = [self.cColor['Vol'][0], self.cColor['Vol'][2]]
+        #endregion ------------------------------------------------> Variables
+
         return np.select(cond, choice, default=self.cColor['Vol'][1])
     #---
     #endregion -----------------------------------------------> Manage Methods
