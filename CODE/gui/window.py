@@ -2103,6 +2103,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
+        self.rParent      = cParent
         self.cTitle       = f"{cParent.cTitle} - {self.cSection}"
         self.rObj         = cParent.rObj
         self.rData        = self.rObj.dConfigure[self.cSection]()
@@ -2151,6 +2152,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
             'Remove Last'      : self.FilterRemoveLast,
             'Remove Any'       : self.FilterRemoveAny,
             'Remove All'       : self.FilterRemoveAll,
+            'Copy'             : self.FilterCopy,
+            'Paste'            : self.FilterPaste,
             'Save Filter'      : self.FilterSave,
             'Load Filter'      : self.FilterLoad,
             #------------------------------> Save Image
@@ -4179,6 +4182,41 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.FilterRemoveAll()
         #endregion -----------------------------------------------> Update GUI
         
+        return True
+    #---
+    
+    def FilterCopy(self) -> bool:
+        """Copy the applied filters
+        
+            Returns
+            -------
+            bool
+        """
+        self.rParent.rCopiedFilters = [x for x in self.rFilterList]
+        return True
+    #---
+    
+    def FilterPaste(self) -> bool:
+        """Paste the copied filters 
+        
+            Returns
+            -------
+            True
+        """
+        #region ---------------------------------------------------> Copy
+        self.rFilterList = [x for x in self.rParent.rCopiedFilters]
+        #endregion ------------------------------------------------> Copy
+
+        #region ---------------------------------------------------> 
+        self.FilterApply()
+        self.UpdateStatusBarFilterText()
+        self.UpdateGUI()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.rParent.rCopiedFilters = []
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     
@@ -6998,6 +7036,8 @@ class UMSAPControl(BaseWindow):
             tree control.
         rWindow : list[wx.Window]
             List of plot windows associated with this window.
+        rCopiedFilter: list
+            Copy of the List of applied filters in a ProtProfPlot Window
     """
     #region -----------------------------------------------------> Class setup
     cName = config.nwUMSAPControl
@@ -7043,7 +7083,9 @@ class UMSAPControl(BaseWindow):
         self.rSection = {}
         #------------------------------> Reference to plot windows
         self.rWindow = {}
-
+        #------------------------------> Copied Filters
+        self.rCopiedFilters = []
+        #------------------------------> 
         super().__init__(cParent=cParent)
         #endregion --------------------------------------------> Initial Setup
 

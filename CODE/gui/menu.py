@@ -1144,6 +1144,9 @@ class FiltersProtProf(wx.Menu):
         self.miRemoveLast = self.Append(-1, 'Remove Last\tCtrl+Shift+Z')
         self.miRemoveAll  = self.Append(-1, 'Remove All\tCtrl+Shift+X')
         self.AppendSeparator()
+        self.miCopy = self.Append(-1, 'Copy\tCtrl+Shift+C')
+        self.miPaste = self.Append(-1, 'Paste\tCtrl+Shift+P')
+        self.AppendSeparator()
         self.miSave = self.Append(-1, 'Save\tCtrl+Shift+S')
         self.miLoad = self.Append(-1, 'Load\tCtrl+Shift+L')
         #endregion -----------------------------------------------> Menu Items
@@ -1159,6 +1162,8 @@ class FiltersProtProf(wx.Menu):
             self.miRemoveLast.GetId():'Remove Last',
             self.miRemoveAny.GetId(): 'Remove Any',
             self.miRemoveAll.GetId(): 'Remove All',
+            self.miCopy.GetId():      'Copy',
+            self.miPaste.GetId():     'Paste',
             self.miSave.GetId():      'Save Filter',
             self.miLoad.GetId():      'Load Filter',
         }
@@ -1174,6 +1179,8 @@ class FiltersProtProf(wx.Menu):
         self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miRemoveLast)
         self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miRemoveAny)
         self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miRemoveAll)
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miCopy)
+        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miPaste)
         self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miSave)
         self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miLoad)
         self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.miUpdate)
