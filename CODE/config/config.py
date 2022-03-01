@@ -392,7 +392,7 @@ mDataExport = 'Export Data failed.'
 #region ------------------------------------------------------------> Values
 mOneRNumText = "Only one real number can be accepted here."
 mOneZPlusNumText = "Only a non-negative integer can be accepted here."
-mOne01NumText = "Only one number between 0 and 1 can be accepted here"
+mOne01NumText = "Only one number between 0 and 1 can be accepted here."
 mNZPlusNumText = (
     "Only a list of unique non-negative integers can be accepted here.")
 #endregion ---------------------------------------------------------> Values

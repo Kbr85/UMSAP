@@ -342,7 +342,7 @@ class BaseConfPanel(
             self.sbData,
             label   = self.cLCeroTreat,
             choices = self.cOCero,
-            tooltip = (f'Cero values in the {self.cLCeroTreat} File will '
+            tooltip = (f'Cero values in the {self.cLiFile} File will '
             f'be treated as missing values when this option is selected or as '
             f'real values when the option is not selected.'),
             validator = dtsValidator.IsNotEmpty(),
@@ -5027,8 +5027,8 @@ class LimProt(BaseConfModPanel2):
             self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad],
             self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum],
             self.cLSeqLength   :[self.wSeqLength.tc,       config.mOneZPlusNum],
-            self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num],
             self.cLSample      :[self.wSample.cb,          config.mOptionBad],
+            self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num],
             self.cLBeta        :[self.wBeta.tc,            config.mOne01Num],
             self.cLGamma       :[self.wGamma.tc,           config.mOne01Num],
             self.cLTheta       :[self.wTheta.tc,           config.mOneZPlusNum],
@@ -5037,6 +5037,9 @@ class LimProt(BaseConfModPanel2):
             self.cLScoreCol    :[self.wScore.tc,           config.mOneZPlusNum],
             self.cLResControl  :[self.wTcResults,          config.mResCtrl]
         }        
+        
+        self.rCheckUnique = [self.wSeqCol.tc, self.wDetectedProt.tc, 
+            self.wScore.tc, self.wTcResults]
         #endregion -------------------------------------------> checkUserInput
 
         #region ------------------------------------------------------> Sizers
@@ -5085,74 +5088,74 @@ class LimProt(BaseConfModPanel2):
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wAlpha.st,
+            self.wSample.st,
             pos    = (3,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wAlpha.tc,
+            self.wSample.cb,
             pos    = (3,2),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wBeta.st,
+            self.wAlpha.st,
             pos    = (0,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wBeta.tc,
+            self.wAlpha.tc,
             pos    = (0,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wGamma.st,
+            self.wBeta.st,
             pos    = (1,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wGamma.tc,
+            self.wBeta.tc,
             pos    = (1,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wTheta.st,
+            self.wGamma.st,
             pos    = (2,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wTheta.tc,
+            self.wGamma.tc,
             pos    = (2,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wThetaMax.st,
+            self.wTheta.st,
             pos    = (3,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wThetaMax.tc,
+            self.wTheta.tc,
             pos    = (3,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wSample.st,
-            pos    = (4,1),
+            self.wThetaMax.st,
+            pos    = (4,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wSample.cb,
-            pos    = (4,2),
+            self.wThetaMax.tc,
+            pos    = (4,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
@@ -5605,7 +5608,10 @@ class LimProt(BaseConfModPanel2):
     def RunEnd(self) -> bool:
         """"""
         #------------------------------> 
-        self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
+        if self.rDFile:
+            self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
+        else:
+            pass
         #------------------------------>     
         return super().RunEnd()
     #---
