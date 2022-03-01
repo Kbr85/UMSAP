@@ -5019,6 +5019,8 @@ class LimProt(BaseConfModPanel2):
             self.cLuFile       :[self.wUFile.tc,           config.mFileBad],
             self.cLiFile       :[self.wIFile.tc,           config.mFileBad],
             f'{self.cLSeqFile} file' :[self.wSeqFile.tc,   config.mFileBad],
+            self.cLId          :[self.wId.tc,              config.mValueBad],
+            self.cLCeroTreat   :[self.wCeroB.cb,           config.mOptionBad],
             self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad],
             self.cLNormMethod  :[self.wNormMethod.cb,      config.mOptionBad],
             self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad],
@@ -5191,6 +5193,7 @@ class LimProt(BaseConfModPanel2):
             else:
                 pass
             self.wId.tc.SetValue('Beta Test Dev')
+            self.wCeroB.cb.SetValue('Yes')
             self.wTransMethod.cb.SetValue('Log2')
             self.wNormMethod.cb.SetValue('Median')
             self.wImputationMethod.cb.SetValue('Normal Distribution')
@@ -5248,7 +5251,7 @@ class LimProt(BaseConfModPanel2):
             self.wSeqFile.tc.SetValue(str(seqFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
-            self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.wCeroB.cb.SetValue(dataI['I'][self.cLCeroTreatD])
             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
@@ -5335,7 +5338,7 @@ class LimProt(BaseConfModPanel2):
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.IsChecked()),
+                self.wCeroB.cb.GetValue()),
             self.EqualLenLabel(self.cLTransMethod) : (
                 self.wTransMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLNormMethod) : (
@@ -5404,7 +5407,7 @@ class LimProt(BaseConfModPanel2):
             'uFile'      : Path(self.wUFile.tc.GetValue()),
             'seqFile'    : Path(self.wSeqFile.tc.GetValue()),
             'ID'         : self.wId.tc.GetValue(),
-            'Cero'       : self.wCeroB.IsChecked(),
+            'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'TransMethod': self.wTransMethod.cb.GetValue(),
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
@@ -5515,7 +5518,7 @@ class LimProt(BaseConfModPanel2):
             delta = self.rDO['Theta']
         else:
             delta = dtsStatistic.tost_delta(
-                self.dfIm.iloc[:,colC], 
+                self.dfS.iloc[:,colC], 
                 self.rDO['Alpha'],
                 self.rDO['Beta'],
                 self.rDO['Gamma'], 
@@ -5633,13 +5636,13 @@ class LimProt(BaseConfModPanel2):
         
         #region ----------------------------------------------------> Empty DF
         df = pd.DataFrame(
-            np.nan, columns=idx, index=range(self.dfIm.shape[0]),
+            np.nan, columns=idx, index=range(self.dfS.shape[0]),
         )
         #endregion -------------------------------------------------> Empty DF
         
         #region -------------------------------------------------> Seq & Score
-        df[(aL[0], bL[0], cL[0])] = self.dfIm.iloc[:,0]
-        df[(aL[1], bL[1], cL[1])] = self.dfIm.iloc[:,2]
+        df[(aL[0], bL[0], cL[0])] = self.dfS.iloc[:,0]
+        df[(aL[1], bL[1], cL[1])] = self.dfS.iloc[:,2]
         #endregion ----------------------------------------------> Seq & Score
         
         return df
@@ -5667,7 +5670,7 @@ class LimProt(BaseConfModPanel2):
         """
         #region ----------------------------------------------> Delta and TOST
         a = dtsStatistic.tost(
-            self.dfIm, 
+            self.dfS, 
             colC, 
             colD, 
             sample = self.rDO['Sample'],
