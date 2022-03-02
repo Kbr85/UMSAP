@@ -16,7 +16,6 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
-from ast import arg
 from pathlib import Path
 from typing import Optional, Literal, Union
 
@@ -4544,6 +4543,9 @@ class LimProtPlot(BaseWindowProteolysis):
         self.rPeptide       = None
         self.rRecSeq        = {}
         self.rRecSeqC       = ''
+        self.rReqSeqColor   = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
+        self.rTextStyleDef  = wx.TextAttr(
+            'Black', 'White', config.font['SeqAlign'])
         #------------------------------> 
         self.rDate, cMenuData = self.SetDateMenuDate()
         #------------------------------> 
@@ -4646,23 +4648,24 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> Variables
-        self.rDateC      = date
-        self.rDf         = self.rData[self.rDateC]['DF'].copy()
-        self.rBands      = self.rData[self.rDateC]['PI']['Bands']
-        self.rLanes      = self.rData[self.rDateC]['PI']['Lanes']
-        self.rAlpha      = self.rData[self.rDateC]['PI']['Alpha']
-        self.rProtLoc    = self.rData[self.rDateC]['PI']['ProtLoc']
-        self.rProtLength = self.rData[self.rDateC]['PI']['ProtLength']
-        self.rProtDelta  = self.rData[self.rDateC]['PI']['ProtDelta']
-        self.rProtTarget = self.rData[self.rDateC]['PI']['Prot']
-        self.rRectsGel   = []
-        self.rRectsFrag  = []
-        self.rBlSelC     = [None, None]
-        self.rGelSelC    = [None, None]
-        self.rFragSelC   = [None, None, None]
-        self.rPeptide    = None
-        self.rLCIdx      = None
-        self.rRecSeqC    = (
+        self.rDateC       = date
+        self.rDf          = self.rData[self.rDateC]['DF'].copy()
+        self.rBands       = self.rData[self.rDateC]['PI']['Bands']
+        self.rLanes       = self.rData[self.rDateC]['PI']['Lanes']
+        self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
+        self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
+        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength']
+        self.rProtDelta   = self.rData[self.rDateC]['PI']['ProtDelta']
+        self.rProtTarget  = self.rData[self.rDateC]['PI']['Prot']
+        self.rRectsGel    = []
+        self.rRectsFrag   = []
+        self.rBlSelC      = [None, None]
+        self.rGelSelC     = [None, None]
+        self.rFragSelC    = [None, None, None]
+        self.rPeptide     = None
+        self.rLCIdx       = None
+        self.rReqSeqColor = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
+        self.rRecSeqC     = (
             self.rRecSeq.get(self.rDateC)
             or
             self.rObj.GetRecSeq(self.cSection, self.rDateC)
@@ -5378,9 +5381,197 @@ class LimProtPlot(BaseWindowProteolysis):
         
         return True
     #---
+    
+    def SeqHighPept(self) -> bool:
+        """Highlight the selected sequence in the wx.ListCtrl
+        
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        self.rReqSeqColor['Blue']['Pept'] = [self.wLC.wLCS.lc.GetItemText(
+            self.wLC.wLCS.lc.GetFirstSelected(), col=1)]
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------------> Color
+        self.RecSeqHighlight()
+        #endregion ----------------------------------------------------> Color
+        
+        return True
+    #---
+    
+    def SeqHighSpot(self) -> bool:
+        """Highlight the sequences in the selected Gel spot
+        
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        self.rReqSeqColor['Blue']['Frag'] = []
+        #------------------------------> 
+        b,l = self.rGelSelC
+        tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
+        self.rReqSeqColor['Blue']['Spot'] = [
+            x for y in self.rFragments[tKey]['SeqL'] for x in y]
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------------> Color
+        self.RecSeqHighlight()
+        #endregion ----------------------------------------------------> Color
+        
+        return True
+    #---
+    
+    def SeqHighFrag(self) -> bool:
+        """Highlight the sequences in the selected Fragment
+        
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        self.rReqSeqColor['Blue']['Spot'] = []
+        #------------------------------> 
+        b,l,j = self.rFragSelC
+        tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
+        self.rReqSeqColor['Blue']['Frag'] = self.rFragments[tKey]['SeqL'][j]
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------------> Color
+        self.RecSeqHighlight()
+        #endregion ----------------------------------------------------> Color
+        
+        return True
+    #---
+    
+    def SeqHighBL(self) -> bool:
+        """Highlight the sequences in the selected Band/Lane
+        
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        b, l = self.rBlSelC
+        if b is not None:
+            bN = self.rBands[b]
+            tKey = [f'{(bN, l, "Ptost")}' for l in self.rLanes]
+        else:
+            lN = self.rLanes[l]
+            tKey = [f'{(b, lN, "Ptost")}' for b in self.rBands]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Seqs
+        self.rReqSeqColor['Red'] = []
+        #------------------------------> 
+        seqL = [x for k in tKey for y in self.rFragments[k]['SeqL'] for x in y]
+        self.rReqSeqColor['Red'] = list(set(seqL))
+        #endregion ------------------------------------------------> Seqs
+
+        #region -------------------------------------------------------> Color
+        self.RecSeqHighlight()
+        #endregion ----------------------------------------------------> Color
+        
+        return True
+    #---
+    
+    def SeqHighAll(self) -> bool:
+        """Highlight the sequences in all Bands/Lanes
+        
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Seqs
+        self.rReqSeqColor['Red'] = []
+        #------------------------------> 
+        self.rReqSeqColor['Red'] = self.wLC.wLCS.lc.GetColContent(1)
+        #endregion ------------------------------------------------> Seqs
+
+        #region -------------------------------------------------------> Color
+        self.RecSeqHighlight()
+        #endregion ----------------------------------------------------> Color
+        
+        return True
+    #---
+    
+    def RecSeqHighlight(self) -> bool:
+        """Apply the colors to the recombinant sequence
+    
+            Returns
+            -------
+            bool
+        """
+        def StartEnd(seq:str, pept:str) -> tuple[int, int]:
+            """Calculate the position of pept in seq
+        
+                Parameters
+                ----------
+                seq: str
+                    Recombinant sequence
+                pept: str
+                    Peptide to find in seq
+        
+                Returns
+                -------
+                tupple
+                    start and end position
+            """
+            s = seq.find(pept)
+            e = s + len(pept)
+            return (s,e)
+        #---
+        #region -------------------------------------------------------> Reset
+        self.wTextSeq.SetStyle(
+            0, self.wTextSeq.GetLastPosition(), self.rTextStyleDef)
+        #endregion ----------------------------------------------------> Reset
+    
+        #region ---------------------------------------------------> Variables
+        styleRed = wx.TextAttr('RED', font=self.rTextStyleDef.GetFont())
+        styleRed.SetFontWeight(wx.FONTWEIGHT_BOLD)
+        styleBlue = wx.TextAttr('BLUE', font=self.rTextStyleDef.GetFont())
+        styleBlue.SetFontWeight(wx.FONTWEIGHT_BOLD)
+        #endregion ------------------------------------------------> Variables
+        
+        #region -------------------------------------------------------> Color
+        self.wTextSeq.SetStyle(
+            0, self.wTextSeq.GetLastPosition(), self.rTextStyleDef)
+        #------------------------------> 
+        for p in self.rReqSeqColor['Red']:
+            s,e = StartEnd(self.rRecSeqC, p)
+            self.wTextSeq.SetStyle(s, e, styleRed)
+        #------------------------------> 
+        for _,v in self.rReqSeqColor['Blue'].items():
+            for p in v:
+                s,e = StartEnd(self.rRecSeqC, p)
+                self.wTextSeq.SetStyle(s, e, styleBlue)   
+        #endregion ----------------------------------------------------> Color
+        
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Event Methods
+    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
+        """Process a wx.ListCtrl select event.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+            bool
+        """
+        super().OnListSelect(event)
+        self.SeqHighPept()
+        return True
+    #---
+    
     def OnPickFragment(self, event) -> bool:
         """Display info about the selected fragment.
     
@@ -5435,7 +5626,11 @@ class LimProtPlot(BaseWindowProteolysis):
         else:
             pass
         #endregion ----------------------------------------> Remove Sel in Gel
-
+        
+        #region -----------------------------------------------------> Rec Seq
+        self.SeqHighFrag()
+        #endregion --------------------------------------------------> Rec Seq
+        
         return True
     #---
     
@@ -5503,6 +5698,10 @@ class LimProtPlot(BaseWindowProteolysis):
         else:
             pass
         #endregion ------------------------------------------------> 
+        
+        #region -----------------------------------------------------> Rec Seq
+        self.SeqHighSpot()
+        #endregion --------------------------------------------------> Rec Seq
 
         return True
     #---
@@ -5602,6 +5801,10 @@ class LimProtPlot(BaseWindowProteolysis):
         else:
             pass
         #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> Rec Seq
+        self.SeqHighBL()
+        #endregion ------------------------------------------------> Rec Seq
 
         return True
     #---
@@ -5673,6 +5876,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> 
         self.rPeptide = None
         self.rLCIdx = None
+        self.rReqSeqColor['Blue']['Pept'] = []
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
@@ -5694,6 +5898,7 @@ class LimProtPlot(BaseWindowProteolysis):
         if plot:
             self.wPlotM.canvas.draw()
             self.wPlot.canvas.draw()
+            self.RecSeqHighlight()
         else:
             pass
         #endregion ------------------------------------------------> 
@@ -5715,6 +5920,8 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
+        self.rReqSeqColor['Blue']['Frag'] = []
+        #------------------------------> 
         if self.rFragSelLine is not None:
             self.rFragSelLine[0].remove()
             self.rFragSelLine = None
@@ -5722,7 +5929,9 @@ class LimProtPlot(BaseWindowProteolysis):
 
         #region ---------------------------------------------------> 
         if plot:
+            #------------------------------> 
             self.wPlotM.canvas.draw()
+            #------------------------------> 
             if self.rFragSelC != [None, None, None]:
                 self.wText.Clear()
                 #------------------------------> 
@@ -5732,6 +5941,8 @@ class LimProtPlot(BaseWindowProteolysis):
                     self.PrintLText(self.rBlSelC[1])
             else:
                 pass
+            #------------------------------> 
+            self.RecSeqHighlight()
         else:
             pass
         #endregion ------------------------------------------------> 
@@ -5757,6 +5968,8 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
+        self.rReqSeqColor['Blue']['Spot'] = []
+        
         if self.rSpotSelLine is not None:
             self.rSpotSelLine[0].remove()
             self.rSpotSelLine = None
@@ -5764,7 +5977,9 @@ class LimProtPlot(BaseWindowProteolysis):
 
         #region ---------------------------------------------------> 
         if plot:
+            #------------------------------> 
             self.wPlot.canvas.draw()
+            #------------------------------> 
             if self.rGelSelC != [None, None]:
                 self.wText.Clear()
                 #------------------------------> 
@@ -5774,6 +5989,8 @@ class LimProtPlot(BaseWindowProteolysis):
                     self.PrintLText(self.rBlSelC[1])
             else:
                 pass
+            #------------------------------> 
+            self.RecSeqHighlight()
         else:
             pass
         #endregion ------------------------------------------------> 
@@ -5799,6 +6016,7 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
+        self.rReqSeqColor['Red'] = []
         self.SetEmptyFragmentAxis()
         self.OnClearGel(plot=False)
         #endregion ------------------------------------------------> 
@@ -5813,6 +6031,7 @@ class LimProtPlot(BaseWindowProteolysis):
         if plot:
             self.wPlot.canvas.draw()
             self.wText.Clear()
+            self.RecSeqHighlight()
         else:
             pass
         #endregion ------------------------------------------------> 
@@ -5842,6 +6061,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> 
         self.wPlotM.canvas.draw()
         self.wPlot.canvas.draw()
+        self.RecSeqHighlight()
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
@@ -5933,6 +6153,10 @@ class LimProtPlot(BaseWindowProteolysis):
         else:
             pass
         #endregion -----------------------------------------> Reselect peptide
+        
+        #region ---------------------------------------------------> Rec Sec
+        self.SeqHighAll()
+        #endregion ------------------------------------------------> Rec Sec
 
         return True
     #---
