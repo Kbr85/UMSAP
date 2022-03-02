@@ -5610,11 +5610,14 @@ class LimProtPlot(BaseWindowProteolysis):
             #------------------------------> Variables
             p = Path(dlg.GetPath())
             #------------------------------> Export
-            if self.rSelBands:
-                fName = p / f'{self.rDateC}-{self.rBands[self.rBlSelC[0]]}-fragments.pdf'
-            else:
-                fName = p / f'{self.rDateC}-{self.rLanes[self.rBlSelC[1]]}-fragments.pdf'
-            self.wPlotM.figure.savefig(fName)
+            try:
+                if self.rSelBands:
+                    fName = p / f'{self.rDateC}-{self.rBands[self.rBlSelC[0]]}-fragments.pdf'
+                else:
+                    fName = p / f'{self.rDateC}-{self.rLanes[self.rBlSelC[1]]}-fragments.pdf'
+                self.wPlotM.figure.savefig(fName)
+            except TypeError:
+                pass
             #------------------------------> 
             fName = p / f'{self.rDateC}-gel.pdf'
             self.wPlot.figure.savefig(fName)
