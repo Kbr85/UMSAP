@@ -1009,7 +1009,7 @@ class BaseWindowProteolysis(BaseWindow):
             aui.AuiPaneInfo(
                 ).Left(
                 ).Layer(
-                    1    
+                    2    
                 ).Caption(
                     self.cLPaneList
                 ).Floatable(
@@ -4517,14 +4517,10 @@ class LimProtPlot(BaseWindowProteolysis):
     #region --------------------------------------------------> Instance setup
     def __init__(self, cParent: 'UMSAPControl') -> None:
         """ """
-        #region -------------------------------------------------> Check Input
-        
-        #endregion ----------------------------------------------> Check Input
-
         #region -----------------------------------------------> Initial Setup
         self.cTitle         = f'{cParent.cTitle} - {self.cSection}'
         self.rObj           = cParent.rObj
-        self.rData        = self.rObj.dConfigure[self.cSection]()
+        self.rData          = self.rObj.dConfigure[self.cSection]()
         self.rDateC         = None
         self.rBands         = None
         self.rLanes         = None
@@ -4561,17 +4557,34 @@ class LimProtPlot(BaseWindowProteolysis):
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
-        #region --------------------------------------------------------> Menu
-        
-        #endregion -----------------------------------------------------> Menu
-
         #region -----------------------------------------------------> Widgets
-        
+        self.wTextSeq = wx.TextCtrl(
+            self, size=(100,100), style=wx.TE_READONLY)
+        self.wTextSeq.SetFont(config.font['SeqAlign'])
         #endregion --------------------------------------------------> Widgets
 
-        #region ------------------------------------------------------> Sizers
-        
-        #endregion ---------------------------------------------------> Sizers
+        #region ---------------------------------------------------------> AUI
+        self._mgr.AddPane(
+            self.wTextSeq,
+            aui.AuiPaneInfo(
+            ).Bottom(
+            ).Layer(
+                1
+            ).Caption(
+                'Recombinant Sequence'
+            ).Floatable(
+                b=False
+            ).CloseButton(
+                visible=False
+            ).Movable(
+                b=False
+            ).PaneBorder(
+                visible=True
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ------------------------------------------------------> AUI
 
         #region --------------------------------------------------------> Bind
         self.wPlot.canvas.mpl_connect('pick_event', self.OnPickGel)
@@ -4646,6 +4659,8 @@ class LimProtPlot(BaseWindowProteolysis):
         self.rGelSelC    = [None, None]
         self.rFragSelC   = [None, None, None]
         self.rPeptide    = None
+        self.rLCIdx      = None
+        
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> 
