@@ -5859,6 +5859,7 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
+        idx = self.rLCIdx
         self.OnClearAll()
         #endregion ------------------------------------------------> 
         
@@ -5926,6 +5927,13 @@ class LimProtPlot(BaseWindowProteolysis):
         self.wPlotM.canvas.draw()
         #endregion ------------------------------------------------> 
         
+        #region --------------------------------------------> Reselect peptide
+        if idx is not None:
+            self.wLC.wLCS.lc.Select(idx, on=1)
+        else:
+            pass
+        #endregion -----------------------------------------> Reselect peptide
+
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
