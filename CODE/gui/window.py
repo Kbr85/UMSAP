@@ -5702,7 +5702,7 @@ class LimProtPlot(BaseWindowProteolysis):
     #---
     
     def OnClearFrag(self, plot=True) -> bool:
-        """Clear the FRagment selection.
+        """Clear the Fragment selection.
     
             Parameters
             ----------
@@ -5819,6 +5819,7 @@ class LimProtPlot(BaseWindowProteolysis):
 
         #region ---------------------------------------------------> 
         self.rBlSelC = [None, None]
+        self.rRectsFrag = []
         #endregion ------------------------------------------------> 
 
         return True
