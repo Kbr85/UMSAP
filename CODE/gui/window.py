@@ -4542,6 +4542,8 @@ class LimProtPlot(BaseWindowProteolysis):
         self.rProtDelta     = None
         self.rProtTarget    = None
         self.rPeptide       = None
+        self.rRecSeq        = {}
+        self.rRecSeqC       = ''
         #------------------------------> 
         self.rDate, cMenuData = self.SetDateMenuDate()
         #------------------------------> 
@@ -4559,7 +4561,7 @@ class LimProtPlot(BaseWindowProteolysis):
 
         #region -----------------------------------------------------> Widgets
         self.wTextSeq = wx.TextCtrl(
-            self, size=(100,100), style=wx.TE_READONLY)
+            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
         self.wTextSeq.SetFont(config.font['SeqAlign'])
         #endregion --------------------------------------------------> Widgets
 
@@ -4660,11 +4662,19 @@ class LimProtPlot(BaseWindowProteolysis):
         self.rFragSelC   = [None, None, None]
         self.rPeptide    = None
         self.rLCIdx      = None
-        
+        self.rRecSeqC    = (
+            self.rRecSeq.get(self.rDateC)
+            or
+            self.rObj.GetRecSeq(self.cSection, self.rDateC)
+        )
+        self.rRecSeq[self.rDateC] = self.rRecSeqC
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> 
         self.wText.Clear()
+        self.wTextSeq.Clear()
+        self.wTextSeq.AppendText(self.rRecSeqC)
+        self.wTextSeq.SetInsertionPoint(0)
         #endregion ------------------------------------------------> 
         
         #region -------------------------------------------------> wx.ListCtrl
