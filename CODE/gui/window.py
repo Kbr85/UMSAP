@@ -5306,14 +5306,17 @@ class LimProtPlot(BaseWindowProteolysis):
                 for l in self.rLanes:
                     fKeys.append(f'{(b, l, "Ptost")}')
         #------------------------------> 
-        j = 0
-        for k in fKeys:
-            for p in self.rFragments[k]['SeqL']:
-                if self.rPeptide in p:
-                    self.rRectsFrag[j].set_linewidth(2.0)
-                else:
-                    pass
-                j = j + 1
+        if self.rRectsFrag:
+            j = 0
+            for k in fKeys:
+                for p in self.rFragments[k]['SeqL']:
+                    if self.rPeptide in p:
+                        self.rRectsFrag[j].set_linewidth(2.0)
+                    else:
+                        pass
+                    j = j + 1
+        else:
+            pass
         #endregion ------------------------------------------------> Fragments
         
         #region ---------------------------------------------------> 
@@ -5643,6 +5646,11 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
+        self.rPeptide = None
+        self.rLCIdx = None
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
         if (rID := self.wLC.wLCS.lc.GetFirstSelected()):
             self.wLC.wLCS.lc.Select(rID, on=0)
         else:
@@ -5652,7 +5660,6 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> 
         for r in self.rRectsFrag:
             r.set_linewidth(self.cGelLineWidth)
-        
         
         for r in self.rRectsGel:
             r.set_linewidth(self.cGelLineWidth)
@@ -5664,10 +5671,6 @@ class LimProtPlot(BaseWindowProteolysis):
             self.wPlot.canvas.draw()
         else:
             pass
-        #endregion ------------------------------------------------> 
-
-        #region ---------------------------------------------------> 
-        self.rPeptide = None
         #endregion ------------------------------------------------> 
 
         return True
