@@ -5278,7 +5278,7 @@ class LimProtPlot(BaseWindowProteolysis):
             k.set_linewidth(self.cGelLineWidth)
         #endregion ------------------------------------------------> 
 
-        #region --------------------------------------------------->
+        #region ---------------------------------------------------> Gel
         j = 0 
         for b in self.rBands:
             for l in self.rLanes:
@@ -5289,31 +5289,32 @@ class LimProtPlot(BaseWindowProteolysis):
                     else:
                         pass
                 j = j + 1
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------> Gel
         
-        #region --------------------------------------------------->
+        #region ---------------------------------------------------> Fragments
+        fKeys = []
+        #------------------------------> 
         if self.rBlSelC != [None, None]:
-            #------------------------------> 
-            fKeys = []
-            #------------------------------> 
             if self.rSelBands:
                 for l in self.rLanes:
                     fKeys.append(f'{(self.rBands[self.rBlSelC[0]], l, "Ptost")}')
             else:
                 for b in self.rBands:
                     fKeys.append(f'{(b, self.rLanes[self.rBlSelC[1]], "Ptost")}')
-            #------------------------------> 
-            j = 0
-            for k in fKeys:
-                for p in self.rFragments[k]['SeqL']:
-                    if self.rPeptide in p:
-                        self.rRectsFrag[j].set_linewidth(2.0)
-                    else:
-                        pass
-                    j = j + 1
         else:
-            pass
-        #endregion ------------------------------------------------> 
+            for b in self.rBands:
+                for l in self.rLanes:
+                    fKeys.append(f'{(b, l, "Ptost")}')
+        #------------------------------> 
+        j = 0
+        for k in fKeys:
+            for p in self.rFragments[k]['SeqL']:
+                if self.rPeptide in p:
+                    self.rRectsFrag[j].set_linewidth(2.0)
+                else:
+                    pass
+                j = j + 1
+        #endregion ------------------------------------------------> Fragments
         
         #region ---------------------------------------------------> 
         self.wPlot.canvas.draw()
