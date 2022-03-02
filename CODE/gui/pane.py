@@ -5557,13 +5557,25 @@ class LimProt(BaseConfModPanel2):
                     pass
         #endregion ------------------------------------------------> Calculate
         
+        #region -------------------------------------------------> Check P < a
+        idx = pd.IndexSlice
+        if (self.dfR.loc[:,idx[:,:,'Ptost']] < self.rDO['Alpha']).any().any():
+            pass
+        else:
+            self.rMsgError = ('There were no peptides detected in the gel '
+                'spots with intensity values equivalent to the intensity '
+                'values in the control spot. You may run the analysis again '
+                'with different values for the configuration options.')
+            return False
+        #endregion ----------------------------------------------> Check P < a
+        
         #region --------------------------------------------------------> Sort
         self.dfR = self.dfR.sort_values(
             by=[('Nterm', 'Nterm', 'Nterm'),('Cterm', 'Cterm', 'Cterm')]
         )
         self.dfR = self.dfR.reset_index(drop=True)
         #endregion -----------------------------------------------------> Sort
-        
+
         if config.development:
             print('self.dfR.shape: ', self.dfR.shape)
             print('')
