@@ -816,7 +816,6 @@ class BaseWindowNPlotLT(BaseWindow):
         return True
     #---
     
-    
     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
         """Close window and uncheck section in UMSAPFile window. 
     
@@ -907,6 +906,8 @@ class BaseWindowProteolysis(BaseWindow):
         self.cSCol = getattr(self, 'cSCol', [45, 100])
         #------------------------------> Hints
         self.cHSearch = getattr(self, 'cHSearch', self.cLPaneList)
+        #------------------------------> 
+        self.rLCIdx = None
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> 
@@ -1027,6 +1028,8 @@ class BaseWindowProteolysis(BaseWindow):
 
         #region --------------------------------------------------------> Bind
         self.wLC.wLCS.lc.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        self.wLC.wLCS.lc.Bind(wx.EVT_LEFT_UP, self.OnListSelectEmpty)
+        self.Bind(wx.EVT_SEARCH, self.OnSearch)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1062,7 +1065,87 @@ class BaseWindowProteolysis(BaseWindow):
         return True
     #---
     
-    def OnListSelect(self, event: wx.CommandEvent) -> bool:
+    def OnSearch(self, event: wx.Event) -> bool:
+        """Search for a given string in the wx.ListCtrl.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            See dtsWidget.MyListCtrl.Search for more details.
+        """
+        #region ---------------------------------------------------> Get index
+        tStr = self.wLC.wLCS.search.GetValue()
+        iEqual, iSimilar = self.wLC.wLCS.lc.Search(tStr)
+        #endregion ------------------------------------------------> Get index
+        
+        #region ----------------------------------------------> Show 1 Results
+        if len(iEqual) == 1:
+            self.OnSearchSelect(iEqual[0])
+            return True
+        elif len(iSimilar) == 1:
+            self.OnSearchSelect(iSimilar[0])
+            return True
+        else:
+            pass
+        #endregion -------------------------------------------> Show 1 Results
+        
+        #region ----------------------------------------------> Show N Results
+        if iSimilar:
+            msg = (f'The string, {tStr}, was found in multiple rows.')
+            tException = (
+                f'The row numbers where the string was found are:\n '
+                f'{str(iSimilar)[1:-1]}')
+            dtscore.Notification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                tException = tException,
+                parent     = self,
+            )
+        else:
+            msg = (f'The string, {tStr}, was not found.')
+            dtscore.Notification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                parent     = self,
+            )
+        #endregion -------------------------------------------> Show N Results
+        
+        return True
+    #---
+    
+    def OnSearchSelect(self, tRow: int) -> bool:
+        """Select one of the row in the wx.ListCtrl.
+    
+            Parameters
+            ----------
+            tRow: int
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Helper to OnSearch
+        """
+        self.wLC.wLCS.lc.Select(tRow, on=1)
+        self.wLC.wLCS.lc.EnsureVisible(tRow)
+        self.wLC.wLCS.lc.SetFocus()
+        self.OnListSelect('fEvent')
+        return True
+    #---
+    
+    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
         """Process a wx.ListCtrl select event.
 
             Parameters
@@ -1076,14 +1159,41 @@ class BaseWindowProteolysis(BaseWindow):
             bool
         """
         #region ---------------------------------------------------> 
-        self.rPeptide = self.wLC.wLCS.lc.GetItemText(
-            self.wLC.wLCS.lc.GetFirstSelected(), col=1)
+        self.rLCIdx = self.wLC.wLCS.lc.GetFirstSelected()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.rPeptide = self.wLC.wLCS.lc.GetItemText(self.rLCIdx, col=1)
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
         self.ShowPeptideLoc()
         #endregion ------------------------------------------------> 
 
+        return True
+    #---
+    
+    def OnListSelectEmpty(self, event: wx.CommandEvent) -> bool:
+        """What to do after selecting a row in the wx.ListCtrl. 
+            Override as needed
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+    
+            Returns
+            -------
+            bool
+        """
+        idx = self.wLC.wLCS.lc.GetFirstSelected()
+        
+        if idx < 0 and self.rLCIdx is not None:
+            self.wLC.wLCS.lc.Select(self.rLCIdx, on=1)
+        else:
+            pass
+            
+        event.Skip()
         return True
     #---
     
