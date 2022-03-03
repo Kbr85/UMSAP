@@ -4963,6 +4963,9 @@ class LimProt(BaseConfModPanel2):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
+        self.wSeqLength.tc.Destroy()
+        self.wSeqLength.st.Destroy()
+        del self.wSeqLength
         #------------------------------> Values
         self.wBeta = dtsWidget.StaticTextCtrl(
             self.sbValue,
@@ -5026,7 +5029,6 @@ class LimProt(BaseConfModPanel2):
             self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad],
             self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad],
             self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum],
-            self.cLSeqLength   :[self.wSeqLength.tc,       config.mOneZPlusNum],
             self.cLSample      :[self.wSample.cb,          config.mOptionBad],
             self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num],
             self.cLBeta        :[self.wBeta.tc,            config.mOne01Num],
@@ -5076,86 +5078,74 @@ class LimProt(BaseConfModPanel2):
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wSeqLength.st,
+            self.wSample.st,
             pos    = (2,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wSeqLength.tc,
-            pos    = (2,2),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wSample.st,
-            pos    = (3,1),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
             self.wSample.cb,
-            pos    = (3,2),
+            pos    = (2,2),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wAlpha.st,
-            pos    = (0,3),
+            pos    = (3,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wAlpha.tc,
-            pos    = (0,4),
+            pos    = (3,2),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wBeta.st,
-            pos    = (1,3),
+            pos    = (0,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wBeta.tc,
-            pos    = (1,4),
+            pos    = (0,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wGamma.st,
-            pos    = (2,3),
+            pos    = (1,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wGamma.tc,
-            pos    = (2,4),
+            pos    = (1,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wTheta.st,
-            pos    = (3,3),
+            pos    = (2,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wTheta.tc,
-            pos    = (3,4),
+            pos    = (2,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wThetaMax.st,
-            pos    = (4,3),
+            pos    = (3,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wThetaMax.tc,
-            pos    = (4,4),
+            pos    = (3,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
@@ -5166,7 +5156,6 @@ class LimProt(BaseConfModPanel2):
             border = 5,
             span   = (2, 0),
         )
-        
         self.sizersbValueWid.AddGrowableCol(0, 1)
         self.sizersbValueWid.AddGrowableCol(2, 1)
         self.sizersbValueWid.AddGrowableCol(4, 1)
@@ -5176,14 +5165,6 @@ class LimProt(BaseConfModPanel2):
         self.sSizer.Fit(self)
         self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
-
-        #region ---------------------------------------------> Window position
-        
-        #endregion ------------------------------------------> Window position
         
         #region --------------------------------------------------------> Test
         if config.development:
@@ -5202,7 +5183,6 @@ class LimProt(BaseConfModPanel2):
             self.wImputationMethod.cb.SetValue('Normal Distribution')
             self.wTargetProt.tc.SetValue('Mis18alpha')
             self.wScoreVal.tc.SetValue('10')
-            self.wSeqLength.tc.SetValue('100')
             self.wAlpha.tc.SetValue('0.05')
             self.wBeta.tc.SetValue('0.05')
             self.wGamma.tc.SetValue('0.8')
@@ -5261,7 +5241,6 @@ class LimProt(BaseConfModPanel2):
             #------------------------------> Values
             self.wTargetProt.tc.SetValue(dataI['I'][self.cLTargetProt])
             self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
-            self.wSeqLength.tc.SetValue(dataI['I'][self.cLSeqLength])
             self.wAlpha.tc.SetValue(dataI['I'][self.cLAlpha])
             self.wSample.cb.SetValue(dataI['I'][self.cLSample])
             self.wBeta.tc.SetValue(dataI['I'][self.cLBeta])
@@ -5352,8 +5331,6 @@ class LimProt(BaseConfModPanel2):
                 self.wTargetProt.tc.GetValue()),
             self.EqualLenLabel(self.cLScoreVal) : (
                 self.wScoreVal.tc.GetValue()),
-            self.EqualLenLabel(self.cLSeqLength) : (
-                self.wSeqLength.tc.GetValue()),
             self.EqualLenLabel(self.cLSample) : (
                 self.wSample.cb.GetValue()),
             self.EqualLenLabel(self.cLAlpha) : (
@@ -5388,9 +5365,6 @@ class LimProt(BaseConfModPanel2):
         #--------------> Step
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #--------------> SeqLength
-        seqLengthVal = self.wSeqLength.tc.GetValue()
-        seqLength = float(seqLengthVal) if seqLengthVal != '' else None
         #--------------> Theta
         thetaVal = self.wTheta.tc.GetValue()
         theta = float(thetaVal) if thetaVal != '' else None
@@ -5416,7 +5390,6 @@ class LimProt(BaseConfModPanel2):
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
             'TargetProt' : self.wTargetProt.tc.GetValue(),
             'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
-            'SeqLength'  : seqLength,
             'Sample'     : self.cOSample[self.wSample.cb.GetValue()],
             'Alpha'      : float(self.wAlpha.tc.GetValue()),
             'Beta'       : float(self.wBeta.tc.GetValue()),
