@@ -4543,7 +4543,7 @@ class LimProtPlot(BaseWindowProteolysis):
         self.rPeptide       = None
         self.rRecSeq        = {}
         self.rRecSeqC       = ''
-        self.rReqSeqColor   = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
+        self.rRecSeqColor   = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
         self.rTextStyleDef  = wx.TextAttr(
             'Black', 'White', config.font['SeqAlign'])
         #------------------------------> 
@@ -4664,7 +4664,7 @@ class LimProtPlot(BaseWindowProteolysis):
         self.rFragSelC    = [None, None, None]
         self.rPeptide     = None
         self.rLCIdx       = None
-        self.rReqSeqColor = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
+        self.rRecSeqColor = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
         self.rRecSeqC     = (
             self.rRecSeq.get(self.rDateC)
             or
@@ -5390,7 +5390,7 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> Variables
-        self.rReqSeqColor['Blue']['Pept'] = [self.wLC.wLCS.lc.GetItemText(
+        self.rRecSeqColor['Blue']['Pept'] = [self.wLC.wLCS.lc.GetItemText(
             self.wLC.wLCS.lc.GetFirstSelected(), col=1)]
         #endregion ------------------------------------------------> Variables
 
@@ -5409,11 +5409,11 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> Variables
-        self.rReqSeqColor['Blue']['Frag'] = []
+        self.rRecSeqColor['Blue']['Frag'] = []
         #------------------------------> 
         b,l = self.rGelSelC
         tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
-        self.rReqSeqColor['Blue']['Spot'] = [
+        self.rRecSeqColor['Blue']['Spot'] = [
             x for y in self.rFragments[tKey]['SeqL'] for x in y]
         #endregion ------------------------------------------------> Variables
 
@@ -5432,11 +5432,11 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> Variables
-        self.rReqSeqColor['Blue']['Spot'] = []
+        self.rRecSeqColor['Blue']['Spot'] = []
         #------------------------------> 
         b,l,j = self.rFragSelC
         tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
-        self.rReqSeqColor['Blue']['Frag'] = self.rFragments[tKey]['SeqL'][j]
+        self.rRecSeqColor['Blue']['Frag'] = self.rFragments[tKey]['SeqL'][j]
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------------> Color
@@ -5464,10 +5464,10 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> Seqs
-        self.rReqSeqColor['Red'] = []
+        self.rRecSeqColor['Red'] = []
         #------------------------------> 
         seqL = [x for k in tKey for y in self.rFragments[k]['SeqL'] for x in y]
-        self.rReqSeqColor['Red'] = list(set(seqL))
+        self.rRecSeqColor['Red'] = list(set(seqL))
         #endregion ------------------------------------------------> Seqs
 
         #region -------------------------------------------------------> Color
@@ -5485,9 +5485,9 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> Seqs
-        self.rReqSeqColor['Red'] = []
+        self.rRecSeqColor['Red'] = []
         #------------------------------> 
-        self.rReqSeqColor['Red'] = self.wLC.wLCS.lc.GetColContent(1)
+        self.rRecSeqColor['Red'] = self.wLC.wLCS.lc.GetColContent(1)
         #endregion ------------------------------------------------> Seqs
 
         #region -------------------------------------------------------> Color
@@ -5539,11 +5539,11 @@ class LimProtPlot(BaseWindowProteolysis):
         self.wTextSeq.SetStyle(
             0, self.wTextSeq.GetLastPosition(), self.rTextStyleDef)
         #------------------------------> 
-        for p in self.rReqSeqColor['Red']:
+        for p in self.rRecSeqColor['Red']:
             s,e = StartEnd(self.rRecSeqC, p)
             self.wTextSeq.SetStyle(s, e, styleRed)
         #------------------------------> 
-        for _,v in self.rReqSeqColor['Blue'].items():
+        for _,v in self.rRecSeqColor['Blue'].items():
             for p in v:
                 s,e = StartEnd(self.rRecSeqC, p)
                 self.wTextSeq.SetStyle(s, e, styleBlue)   
@@ -5876,7 +5876,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> 
         self.rPeptide = None
         self.rLCIdx = None
-        self.rReqSeqColor['Blue']['Pept'] = []
+        self.rRecSeqColor['Blue']['Pept'] = []
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
@@ -5920,7 +5920,7 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
-        self.rReqSeqColor['Blue']['Frag'] = []
+        self.rRecSeqColor['Blue']['Frag'] = []
         #------------------------------> 
         if self.rFragSelLine is not None:
             self.rFragSelLine[0].remove()
@@ -5934,11 +5934,14 @@ class LimProtPlot(BaseWindowProteolysis):
             #------------------------------> 
             if self.rFragSelC != [None, None, None]:
                 self.wText.Clear()
-                #------------------------------> 
-                if self.rSelBands:
-                    self.PrintBText(self.rBlSelC[0])
+                #------------------------------> To test for showAll
+                if any(self.rGelSelC):
+                    if self.rSelBands:
+                        self.PrintBText(self.rBlSelC[0])
+                    else:
+                        self.PrintLText(self.rBlSelC[1])
                 else:
-                    self.PrintLText(self.rBlSelC[1])
+                    pass
             else:
                 pass
             #------------------------------> 
@@ -5968,7 +5971,7 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
-        self.rReqSeqColor['Blue']['Spot'] = []
+        self.rRecSeqColor['Blue']['Spot'] = []
         
         if self.rSpotSelLine is not None:
             self.rSpotSelLine[0].remove()
@@ -6016,7 +6019,8 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
-        self.rReqSeqColor['Red'] = []
+        self.rRecSeqColor['Red'] = []
+        self.rRecSeqColor['Blue']['Frag'] = []
         self.SetEmptyFragmentAxis()
         self.OnClearGel(plot=False)
         #endregion ------------------------------------------------> 
