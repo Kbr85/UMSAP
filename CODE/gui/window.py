@@ -5660,6 +5660,7 @@ class LimProtPlot(BaseWindowProteolysis):
         if self.rGelSelC != spotC:
             self.rGelSelC = spotC
         else:
+            self.PrintGelSpotText(x-1,y-1)
             return True
         #endregion --------------------------------------------> Spot Selected
         
@@ -5732,44 +5733,22 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ------------------------------------------------> Variables
         
         #region -----------------------------------------------> Redraw or Not
-        blSel = [y-1, x-1]
-        if self.rSelBands and self.rBlSelC[0] != blSel[0]:
-            self.rBlSelC = [blSel[0], None]
-        elif not self.rSelBands and self.rBlSelC[1] != blSel[1]:
-            self.rBlSelC = [None, blSel[1]]
+        if self.rGelSpotPicked:
+            self.rGelSpotPicked = False
+            return True
         else:
             #------------------------------> 
-            if self.rGelSpotPicked:
-                self.rGelSpotPicked = False
+            blSel = [y-1, x-1]
+            #------------------------------> Update sel curr or print again
+            if self.rSelBands and self.rBlSelC[0] != blSel[0]:
+                self.rBlSelC = [blSel[0], None]
+            elif not self.rSelBands and self.rBlSelC[1] != blSel[1]:
+                self.rBlSelC = [None, blSel[1]]
             else:
-                #------------------------------> 
-                if self.rSpotSelLine is not None:
-                    self.rSpotSelLine[0].remove()
-                    self.rSpotSelLine = None
-                    self.rGelSelC = [None, None]
-                    self.wPlot.canvas.draw()
-                else:
-                    pass
-                #------------------------------> 
                 self.PrintBLText(x-1,y-1)
-            #------------------------------> 
-            if self.rFragSelLine is not None:
-                self.rFragSelLine[0].remove()
-                self.rFragSelLine = None
-                self.wPlotM.canvas.draw()
-                self.rFragSelC = [None, None, None]
-            else:
-                pass
-            #------------------------------>
-            if self.rUpdateColors:
-                self.UpdateGelColor()
-                self.rUpdateColors = False
-            else:
-                pass
-            #------------------------------> 
-            return True
+                return True
         #endregion --------------------------------------------> Redraw or Not
-
+        
         #region -----------------------------------------------> Draw New Rect
         self.DrawBLRect(x,y)
         #endregion --------------------------------------------> Draw New Rect
@@ -5777,23 +5756,11 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ----------------------------------------------> Draw Fragments
         self.DrawFragments(x,y)
         #endregion -------------------------------------------> Draw Fragments
-
-        #region ---------------------------------------------------> 
-        if self.rGelSpotPicked:
-            self.rGelSpotPicked = False
-        else:
-            #------------------------------> 
-            if self.rSpotSelLine is not None:
-                self.rSpotSelLine[0].remove()
-                self.rSpotSelLine = None
-                self.rGelSelC = [None, None]
-                self.wPlot.canvas.draw()
-            else:
-                pass
-            #------------------------------> 
-            self.PrintBLText(x-1,y-1)
-        #endregion ------------------------------------------------> 
         
+        #region ---------------------------------------------------> Print
+        self.PrintBLText(x-1,y-1)
+        #endregion ------------------------------------------------> Print
+
         #region ---------------------------------------------------> 
         if self.rUpdateColors:
             self.UpdateGelColor()
