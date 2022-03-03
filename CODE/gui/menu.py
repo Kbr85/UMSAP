@@ -1688,6 +1688,7 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Export Data
         self.miSaveD  = self.Append(-1, 'Export Data\tCtrl+E')
         self.miSaveI  = self.Append(-1, 'Export Images\tShift+Alt+I')
+        self.miSaveS  = self.Append(-1, 'Export Sequences\tCtrl+S')
         self.AppendSeparator()
         #------------------------------>
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
@@ -1708,6 +1709,7 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.miDataPrep)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
         self.Bind(wx.EVT_MENU, self.OnShowAll,        source=self.miShowAll)
+        self.Bind(wx.EVT_MENU, self.OnExportSeq,      source=self.miSaveS)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1748,6 +1750,25 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         """
         win = self.GetWindow()
         win.OnShowAll()
+        
+        return True
+    #---
+    
+    def OnExportSeq(self, event: wx.CommandEvent) -> bool:
+        """Export Sequences to pdf
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.ExportSeq()
         
         return True
     #---

@@ -17,6 +17,8 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
+from sys import flags
+from tabnanny import check
 from typing import Optional, Literal, Union
 
 import matplotlib as mpl
@@ -5551,6 +5553,34 @@ class LimProtPlot(BaseWindowProteolysis):
         
         return True
     #---
+    
+    def ExportSeq(self) -> bool:
+        """Export the recombinant sequence 
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> wx.Dialog
+        dlg = window.ExportSeq(parent=self)
+
+        if dlg.ShowModal():
+            
+        else:
+            pass
+        #endregion ------------------------------------------------> wx.Dialog
+
+        dlg.Destroy()
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Event Methods
@@ -8564,6 +8594,193 @@ class VolColorScheme(dtsWindow.OkCancel):
             if v.IsChecked():
                 return self.rKeys[v.GetName()]
     #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class ExportSeq(dtsWindow.OkCancel):
+    """Export the sequence to a pdf file
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: Optional[wx.Window]=None):
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(title='Export Sequences', parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        self.wFile = dtsWidget.ButtonTextCtrlFF(self, 
+            btnLabel  = 'File',
+            tcStyle   = wx.TE_READONLY,
+            tcHint    = 'Path to the output file.',
+            mode      = 'save',
+            ext       = config.elPDF,
+            validator = dtsValidator.OutputFF(
+                fof='file', opt=False, ext=config.esPDF[0]
+            ),                                  
+        )
+        self.wLength = dtsWidget.StaticTextCtrl(self,
+            stLabel = 'Length',
+            tcHint  = 'Residues per line, e.g. 100',
+            validator = dtsValidator.NumberList('int', nN=1, nMin=1),
+        )
+        self.wLength.tc.SetValue('100')
+    
+        self.wSel = wx.CheckBox(self, label='Displayed')
+        self.wAll = wx.CheckBox(self, label='All')
+        self.wAll.SetValue(True)
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sFlex = wx.FlexGridSizer(1,2,1,1)
+        self.sFlex.Add(self.wAll, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sFlex.Add(self.wSel, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        
+        self.sGrid = wx.GridBagSizer(1,1)
+        self.sGrid.Add(
+            self.wFile.btn,
+            pos    = (0,0),
+            flag   = wx.ALIGN_RIGHT|wx.ALL,
+            border = 5,
+        )
+        self.sGrid.Add(
+            self.wFile.tc,
+            pos    = (0,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sGrid.Add(
+            self.wLength.st,
+            pos    = (1,0),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 5,
+        )
+        self.sGrid.Add(
+            self.wLength.tc,
+            pos    = (1,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sGrid.Add(
+            self.sFlex,
+            pos    = (2,0),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 5,
+            span   = (0,2),
+        )
+        self.sGrid.AddGrowableCol(1,1)
+        
+        self.sSizer.Add(self.sGrid, 0, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Basic implementation. Override as needed.
+        """
+        #region ---------------------------------------------------> Variables
+        checkRes = []
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------------> Check
+        #------------------------------> 
+        if self.wFile.tc.GetValidator().Validate()[0]:
+            checkRes.append(True)
+        else:
+            self.wFile.tc.SetValue('')
+        #------------------------------> 
+        if self.wLength.tc.GetValidator().Validate()[0]:
+            checkRes.append(True)
+        else:
+            self.wLength.tc.SetValue('')
+        #------------------------------> 
+        cbL = []
+        for cb in [self.wAll, self.wSel]:
+            cbL.append(cb.GetValue())
+        if any(cbL):
+            checkRes.append(True)
+        else:
+            return False
+        #endregion ----------------------------------------------------> Check
+
+        #region --------------------------------------------------------> End
+        if all(checkRes):
+            self.EndModal(1)
+            self.Close()    
+            return True
+        else:
+            return False
+        #endregion -----------------------------------------------------> End
+    #---
+    
+    def GetData(self) -> list:
+        """Return the user input
+        
+            Returns
+            -------
+            list
+                [Path, length, bool, bool]
+        """
+        return [
+            self.wFile.tc.GetValue(),
+            int(self.wLength.tc.GetValue()),
+            self.wAll.GetValue(),
+            self.wSel.GetValue(),
+        ]
     #endregion ------------------------------------------------> Class methods
 #---
 #endregion --------------------------------------------------------> wx.Dialog

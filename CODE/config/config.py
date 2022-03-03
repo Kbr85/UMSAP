@@ -175,6 +175,7 @@ t = {
 elData  = 'txt files (*.txt)|*.txt'
 elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
 elPDB   = 'PDB files (*.pdb)|*.pdb'
+elPDF   = 'PDF files (*.pdf)|*.pdf'
 elSeq   = (
     "Text files (*.txt)|*.txt|"
     "Fasta files (*.fasta)|*.fasta"
@@ -189,6 +190,7 @@ elMatPlotSaveI = (
 #------------------------------> File extensions. First item is default
 esData  = ['.txt']
 esPDB   = ['.pdb']
+esPDF   = ['.pdf']
 esSeq   = ['.txt', '.fasta']
 esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
