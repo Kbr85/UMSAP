@@ -17,8 +17,6 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
-from sys import flags
-from tabnanny import check
 from typing import Optional, Literal, Union
 
 import matplotlib as mpl
@@ -27,6 +25,12 @@ import numpy as np
 import pandas as pd
 import requests
 from scipy import stats
+
+
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus.flowables import KeepTogether
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 import wx
 import wx.adv as adv
@@ -5293,6 +5297,68 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
+    def PrintSeqPDF(self, fileP, lenL, allB, currB) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        seq = '<br />'.join(
+            [self.rRecSeqC[i:i+lenL] for i in range(0,len(self.rRecSeqC),lenL)])
+        doc = SimpleDocTemplate(fileP, pagesize=A4, rightMargin=25,
+            leftMargin=25, topMargin=25, bottomMargin=25)
+        Story  = []
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='Seq', fontName='Courier', fontSize=8.5))
+        #endregion ------------------------------------------------> Variables
+
+        #region -----------------------------------------------------> Current
+        if currB:
+            head = Paragraph('Current')
+            tSeq = Paragraph(f'<font color="red">{seq}</font>', styles['Seq'])
+            Story.append(KeepTogether([head, tSeq]))
+            Story.append(Spacer(1, 12))
+        else:
+            pass
+        #endregion --------------------------------------------------> Current
+        
+        #region ---------------------------------------------------> All
+        if allB:
+            #------------------------------> Gel
+            head = Paragraph('Gel')
+            tSeq = Paragraph(seq, styles['Seq'])
+            Story.append(KeepTogether([head, tSeq]))
+            Story.append(Spacer(1, 12))
+            #------------------------------> Lanes
+            for l in self.rLanes:
+                head = Paragraph(l)
+                tSeq = Paragraph(seq, styles['Seq'])
+                Story.append(KeepTogether([head, tSeq]))
+                Story.append(Spacer(1, 12))
+            #------------------------------> Bands
+            for b in self.rBands:
+                head = Paragraph(b)
+                tSeq = Paragraph(seq, styles['Seq'])
+                Story.append(KeepTogether([head, tSeq]))
+                Story.append(Spacer(1, 12))
+        else:
+            pass
+        #endregion ------------------------------------------------> All
+
+        doc.build(Story)
+        return True
+    #---
+    
     def ShowPeptideLoc(self) -> bool:
         """Show the location of the selected peptide.
 
@@ -5570,15 +5636,18 @@ class LimProtPlot(BaseWindowProteolysis):
             
         """
         #region ---------------------------------------------------> wx.Dialog
-        dlg = window.ExportSeq(parent=self)
+        # dlg = window.ExportSeq(parent=self)
 
-        if dlg.ShowModal():
-            
-        else:
-            pass
+        # if dlg.ShowModal():
+        #     self.PrintSeqPDF(*dlg.GetData())
+        # else:
+        #     pass
+        self.PrintSeqPDF(
+            '/Users/bravo/TEMP-GUI/BORRAR-UMSAP/Untitled.pdf',
+            100, True, True)
         #endregion ------------------------------------------------> wx.Dialog
 
-        dlg.Destroy()
+        # dlg.Destroy()
         return True
     #---
     #endregion -----------------------------------------------> Manage Methods
