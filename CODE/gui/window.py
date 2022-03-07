@@ -5458,8 +5458,10 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> Variables
-        self.rRecSeqColor['Blue']['Pept'] = [self.wLC.wLCS.lc.GetItemText(
-            self.wLC.wLCS.lc.GetFirstSelected(), col=1)]
+        seq = self.wLC.wLCS.lc.GetItemText(
+            self.wLC.wLCS.lc.GetFirstSelected(), col=1)
+        s = self.rRecSeqC.find(seq)
+        self.rRecSeqColor['Blue']['Pept'] = [(s+1, s+len(seq))]
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------------> Color
@@ -5481,8 +5483,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #------------------------------> 
         b,l = self.rGelSelC
         tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
-        self.rRecSeqColor['Blue']['Spot'] = [
-            x for y in self.rFragments[tKey]['SeqL'] for x in y]
+        self.rRecSeqColor['Blue']['Spot'] = self.rFragments[tKey]['Coord']
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------------> Color
@@ -5504,7 +5505,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #------------------------------> 
         b,l,j = self.rFragSelC
         tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
-        self.rRecSeqColor['Blue']['Frag'] = self.rFragments[tKey]['SeqL'][j]
+        self.rRecSeqColor['Blue']['Frag'] = [self.rFragments[tKey]['Coord'][j]]
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------------> Color
@@ -5534,7 +5535,9 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> Seqs
         self.rRecSeqColor['Red'] = []
         #------------------------------> 
-        seqL = [x for k in tKey for y in self.rFragments[k]['SeqL'] for x in y]
+        seqL = []
+        for k in tKey:
+            seqL = seqL + self.rFragments[k]['Coord']
         self.rRecSeqColor['Red'] = list(set(seqL))
         #endregion ------------------------------------------------> Seqs
 
@@ -5555,7 +5558,14 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> Seqs
         self.rRecSeqColor['Red'] = []
         #------------------------------> 
-        self.rRecSeqColor['Red'] = self.wLC.wLCS.lc.GetColContent(1)
+        pept = self.wLC.wLCS.lc.GetColContent(1)
+        #------------------------------> 
+        resN = []
+        for p in pept:
+            s = self.rRecSeqC.find(p)
+            resN.append((s+1, s+len(p)))
+        #------------------------------> 
+        self.rRecSeqColor['Red'] = [x for x in resN]
         #endregion ------------------------------------------------> Seqs
 
         #region -------------------------------------------------------> Color
@@ -5572,25 +5582,6 @@ class LimProtPlot(BaseWindowProteolysis):
             -------
             bool
         """
-        def StartEnd(seq:str, pept:str) -> tuple[int, int]:
-            """Calculate the position of pept in seq
-        
-                Parameters
-                ----------
-                seq: str
-                    Recombinant sequence
-                pept: str
-                    Peptide to find in seq
-        
-                Returns
-                -------
-                tupple
-                    start and end position
-            """
-            s = seq.find(pept)
-            e = s + len(pept)
-            return (s,e)
-        #---
         #region -------------------------------------------------------> Reset
         self.wTextSeq.SetStyle(
             0, self.wTextSeq.GetLastPosition(), self.rTextStyleDef)
@@ -5604,17 +5595,12 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ------------------------------------------------> Variables
         
         #region -------------------------------------------------------> Color
-        self.wTextSeq.SetStyle(
-            0, self.wTextSeq.GetLastPosition(), self.rTextStyleDef)
-        #------------------------------> 
         for p in self.rRecSeqColor['Red']:
-            s,e = StartEnd(self.rRecSeqC, p)
-            self.wTextSeq.SetStyle(s, e, styleRed)
+            self.wTextSeq.SetStyle(p[0]-1, p[1], styleRed)
         #------------------------------> 
         for _,v in self.rRecSeqColor['Blue'].items():
             for p in v:
-                s,e = StartEnd(self.rRecSeqC, p)
-                self.wTextSeq.SetStyle(s, e, styleBlue)   
+                self.wTextSeq.SetStyle(p[0]-1, p[1], styleBlue)   
         #endregion ----------------------------------------------------> Color
         
         return True
