@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
+from itertools import zip_longest
 from pathlib import Path
 from typing import Optional, Literal, Union
 
@@ -5297,7 +5298,7 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def PrintSeqPDF(self, fileP, lenL, allB, currB) -> bool:
+    def PrintSeqPDF(self, fileP) -> bool:
         """
     
             Parameters
@@ -5313,47 +5314,37 @@ class LimProtPlot(BaseWindowProteolysis):
             
         """
         #region ---------------------------------------------------> Variables
-        seq = '<br />'.join(
-            [self.rRecSeqC[i:i+lenL] for i in range(0,len(self.rRecSeqC),lenL)])
         doc = SimpleDocTemplate(fileP, pagesize=A4, rightMargin=25,
             leftMargin=25, topMargin=25, bottomMargin=25)
         Story  = []
         styles = getSampleStyleSheet()
         styles.add(ParagraphStyle(name='Seq', fontName='Courier', fontSize=8.5))
         #endregion ------------------------------------------------> Variables
-
-        #region -----------------------------------------------------> Current
-        if currB:
-            head = Paragraph('Current')
-            tSeq = Paragraph(f'<font color="red">{seq}</font>', styles['Seq'])
-            Story.append(KeepTogether([head, tSeq]))
-            Story.append(Spacer(1, 12))
-        else:
-            pass
-        #endregion --------------------------------------------------> Current
         
-        #region ---------------------------------------------------> All
-        if allB:
-            #------------------------------> Gel
-            head = Paragraph('Gel')
+        #region ---------------------------------------------------> Gel
+        #------------------------------> Seq
+        seq = self.GetPDFPrintSeq(self.SeqHighAll())
+        #------------------------------> Gel
+        head = Paragraph('Gel')
+        tSeq = Paragraph(seq, styles['Seq'])
+        Story.append(KeepTogether([head, tSeq]))
+        Story.append(Spacer(1, 12))
+        #endregion ------------------------------------------------> All
+        
+        #------------------------------> Lanes
+        for l in self.rLanes:
+            head = Paragraph(l)
             tSeq = Paragraph(seq, styles['Seq'])
             Story.append(KeepTogether([head, tSeq]))
             Story.append(Spacer(1, 12))
-            #------------------------------> Lanes
-            for l in self.rLanes:
-                head = Paragraph(l)
-                tSeq = Paragraph(seq, styles['Seq'])
-                Story.append(KeepTogether([head, tSeq]))
-                Story.append(Spacer(1, 12))
-            #------------------------------> Bands
-            for b in self.rBands:
-                head = Paragraph(b)
-                tSeq = Paragraph(seq, styles['Seq'])
-                Story.append(KeepTogether([head, tSeq]))
-                Story.append(Spacer(1, 12))
-        else:
-            pass
-        #endregion ------------------------------------------------> All
+        #------------------------------> Bands
+        for b in self.rBands:
+            head = Paragraph(b)
+            tSeq = Paragraph(seq, styles['Seq'])
+            Story.append(KeepTogether([head, tSeq]))
+            Story.append(Spacer(1, 12))
+        #------------------------------> Gel Spot
+        #------------------------------> Fragments
 
         doc.build(Story)
         return True
@@ -5548,12 +5539,13 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def SeqHighAll(self) -> bool:
+    def SeqHighAll(self) -> list[tuple[int, int]]:
         """Highlight the sequences in all Bands/Lanes
         
             Returns
             -------
-            bool
+            list(tuple(int, int))
+                All detected fragments in the gel
         """
         #region ---------------------------------------------------> Seqs
         self.rRecSeqColor['Red'] = []
@@ -5564,15 +5556,9 @@ class LimProtPlot(BaseWindowProteolysis):
         for p in pept:
             s = self.rRecSeqC.find(p)
             resN.append((s+1, s+len(p)))
-        #------------------------------> 
-        self.rRecSeqColor['Red'] = [x for x in resN]
         #endregion ------------------------------------------------> Seqs
 
-        #region -------------------------------------------------------> Color
-        self.RecSeqHighlight()
-        #endregion ----------------------------------------------------> Color
-        
-        return True
+        return dtsMethod.MergeCoord(resN, 1)
     #---
     
     def RecSeqHighlight(self) -> bool:
@@ -5622,19 +5608,64 @@ class LimProtPlot(BaseWindowProteolysis):
             
         """
         #region ---------------------------------------------------> wx.Dialog
-        # dlg = window.ExportSeq(parent=self)
-
-        # if dlg.ShowModal():
-        #     self.PrintSeqPDF(*dlg.GetData())
-        # else:
-        #     pass
-        self.PrintSeqPDF(
-            '/Users/bravo/TEMP-GUI/BORRAR-UMSAP/Untitled.pdf',
-            100, True, True)
+        dlg = dtsWindow.FileSelectDialog('save', config.elPDF, parent=self)
+        if dlg.ShowModal():
+            self.PrintSeqPDF(dlg.GetPath())
+        else:
+            pass
         #endregion ------------------------------------------------> wx.Dialog
 
-        # dlg.Destroy()
+        dlg.Destroy()
         return True
+    #---
+    
+    def GetPDFPrintSeq(self, region:list[tuple[int,int]]) -> str:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        black = []
+        blue = []
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Parts
+        a,b = region[0]
+        black.append(self.rRecSeqC[0:a-1])
+        blue.append(self.rRecSeqC[a-1:b])
+        #------------------------------> 
+        for ac,bc in region[1:]:
+            black.append(self.rRecSeqC[b:ac-1])
+            blue.append(self.rRecSeqC[ac-1:bc])
+            a, b = ac, bc
+        #------------------------------> 
+        black.append(self.rRecSeqC[b:])
+        #endregion ------------------------------------------------> Parts
+
+        #region ---------------------------------------------------> Colors
+        sO = ''
+        for bl,bs in zip_longest(black,blue):
+            if bl:
+                sO = sO+f'<font color="black">{bl}</font>'
+            else:
+                pass
+            if bs:
+                sO = sO+f'<font color="red">{bs}</font>'
+            else:
+                pass
+        #endregion ------------------------------------------------> Colors
+
+        return sO
     #---
     #endregion -----------------------------------------------> Manage Methods
 
@@ -6211,7 +6242,8 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion -----------------------------------------> Reselect peptide
         
         #region ---------------------------------------------------> Rec Sec
-        self.SeqHighAll()
+        self.rRecSeqColor['Red'] = self.SeqHighAll()
+        self.RecSeqHighlight()
         #endregion ------------------------------------------------> Rec Sec
 
         return True
@@ -8649,193 +8681,6 @@ class VolColorScheme(dtsWindow.OkCancel):
             if v.IsChecked():
                 return self.rKeys[v.GetName()]
     #---
-    #endregion ------------------------------------------------> Class methods
-#---
-
-
-class ExportSeq(dtsWindow.OkCancel):
-    """Export the sequence to a pdf file
-
-        Parameters
-        ----------
-        
-
-        Attributes
-        ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
-    """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: Optional[wx.Window]=None):
-        """ """
-        #region -------------------------------------------------> Check Input
-        
-        #endregion ----------------------------------------------> Check Input
-
-        #region -----------------------------------------------> Initial Setup
-        super().__init__(title='Export Sequences', parent=parent)
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------------> Menu
-        
-        #endregion -----------------------------------------------------> Menu
-
-        #region -----------------------------------------------------> Widgets
-        self.wFile = dtsWidget.ButtonTextCtrlFF(self, 
-            btnLabel  = 'File',
-            tcStyle   = wx.TE_READONLY,
-            tcHint    = 'Path to the output file.',
-            mode      = 'save',
-            ext       = config.elPDF,
-            validator = dtsValidator.OutputFF(
-                fof='file', opt=False, ext=config.esPDF[0]
-            ),                                  
-        )
-        self.wLength = dtsWidget.StaticTextCtrl(self,
-            stLabel = 'Length',
-            tcHint  = 'Residues per line, e.g. 100',
-            validator = dtsValidator.NumberList('int', nN=1, nMin=1),
-        )
-        self.wLength.tc.SetValue('100')
-    
-        self.wSel = wx.CheckBox(self, label='Displayed')
-        self.wAll = wx.CheckBox(self, label='All')
-        self.wAll.SetValue(True)
-        #endregion --------------------------------------------------> Widgets
-
-        #region ------------------------------------------------------> Sizers
-        self.sFlex = wx.FlexGridSizer(1,2,1,1)
-        self.sFlex.Add(self.wAll, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-        self.sFlex.Add(self.wSel, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-        
-        self.sGrid = wx.GridBagSizer(1,1)
-        self.sGrid.Add(
-            self.wFile.btn,
-            pos    = (0,0),
-            flag   = wx.ALIGN_RIGHT|wx.ALL,
-            border = 5,
-        )
-        self.sGrid.Add(
-            self.wFile.tc,
-            pos    = (0,1),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sGrid.Add(
-            self.wLength.st,
-            pos    = (1,0),
-            flag   = wx.ALIGN_CENTER|wx.ALL,
-            border = 5,
-        )
-        self.sGrid.Add(
-            self.wLength.tc,
-            pos    = (1,1),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sGrid.Add(
-            self.sFlex,
-            pos    = (2,0),
-            flag   = wx.ALIGN_CENTER|wx.ALL,
-            border = 5,
-            span   = (0,2),
-        )
-        self.sGrid.AddGrowableCol(1,1)
-        
-        self.sSizer.Add(self.sGrid, 0, wx.EXPAND|wx.ALL, 5)
-        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
-        
-        self.SetSizer(self.sSizer)
-        self.Fit()
-        #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
-
-        #region ---------------------------------------------> Window position
-        self.CenterOnParent()
-        #endregion ------------------------------------------> Window position
-    #---
-    #endregion -----------------------------------------------> Instance setup
-
-    #region ---------------------------------------------------> Class methods
-    def OnOK(self, event: wx.CommandEvent) -> bool:
-        """Validate user information and close the window
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-            Returns
-            -------
-            bool
-            
-            Notes
-            -----
-            Basic implementation. Override as needed.
-        """
-        #region ---------------------------------------------------> Variables
-        checkRes = []
-        #endregion ------------------------------------------------> Variables
-
-        #region -------------------------------------------------------> Check
-        #------------------------------> 
-        if self.wFile.tc.GetValidator().Validate()[0]:
-            checkRes.append(True)
-        else:
-            self.wFile.tc.SetValue('')
-        #------------------------------> 
-        if self.wLength.tc.GetValidator().Validate()[0]:
-            checkRes.append(True)
-        else:
-            self.wLength.tc.SetValue('')
-        #------------------------------> 
-        cbL = []
-        for cb in [self.wAll, self.wSel]:
-            cbL.append(cb.GetValue())
-        if any(cbL):
-            checkRes.append(True)
-        else:
-            return False
-        #endregion ----------------------------------------------------> Check
-
-        #region --------------------------------------------------------> End
-        if all(checkRes):
-            self.EndModal(1)
-            self.Close()    
-            return True
-        else:
-            return False
-        #endregion -----------------------------------------------------> End
-    #---
-    
-    def GetData(self) -> list:
-        """Return the user input
-        
-            Returns
-            -------
-            list
-                [Path, length, bool, bool]
-        """
-        return [
-            self.wFile.tc.GetValue(),
-            int(self.wLength.tc.GetValue()),
-            self.wAll.GetValue(),
-            self.wSel.GetValue(),
-        ]
     #endregion ------------------------------------------------> Class methods
 #---
 #endregion --------------------------------------------------------> wx.Dialog
