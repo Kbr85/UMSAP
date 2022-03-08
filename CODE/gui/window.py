@@ -5298,7 +5298,7 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def PrintSeqPDF(self, fileP) -> bool:
+    def PrintAllText(self) -> bool:
         """
     
             Parameters
@@ -5314,6 +5314,66 @@ class LimProtPlot(BaseWindowProteolysis):
             
         """
         #region ---------------------------------------------------> Variables
+        aSpot = len(self.rBands)*len(self.rLanes)
+        eSpot = sum([0 if x['Coord'] else 1 for k,x in self.rFragments.items()])
+        nPept = self.wLC.wLCS.lc.GetItemCount()
+        coord = self.SeqHighAll()
+        coordN = dmethod.Rec2NatCoord(coord, self.rProtLoc, self.rProtDelta)
+        if coordN[0] == 'NA':
+            coordN = coordN[0]
+        else:
+            coordN = ', '.join(map(str,coordN))
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.wText.AppendText(f'Details for Gel\n\n')
+        self.wText.AppendText(f'--> Analyzed Spots:\n\n')
+        self.wText.AppendText(f'Analyzed Spots: {aSpot}\n')
+        self.wText.AppendText(f'Empty Spots: {eSpot}\n')
+        self.wText.AppendText(f'Detected Peptides: {nPept}\n\n')
+        self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
+        self.wText.AppendText(f'Recombinant Sequence:\n')
+        self.wText.AppendText(f'{", ".join(map(str,coord))}\n\n')
+        self.wText.AppendText(f'Native Sequence:\n')
+        self.wText.AppendText(f'{coordN}')
+        self.wText.SetInsertionPoint(0)
+        #endregion ------------------------------------------------> 
+        
+        return True
+    #---
+
+    def PrintSeqPDF(self, fileP) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        def Helper(coord, label, style):
+            """"""
+            seq = self.GetPDFPrintSeq(coord)
+            coordN = dmethod.Rec2NatCoord(coord, self.rProtLoc, self.rProtDelta)
+            head = Paragraph(label)
+            coord = Paragraph(
+                f"Recombinant protein: {', '.join(map(str,coord))}", style)
+            coordN = Paragraph(
+                f"Native protein: {', '.join(map(str,coordN))}", style)
+            tSeq = Paragraph(seq, style)
+            return KeepTogether([head, Spacer(1,6), coord, coordN, tSeq])
+        #---
+        #region ---------------------------------------------------> Variables
         doc = SimpleDocTemplate(fileP, pagesize=A4, rightMargin=25,
             leftMargin=25, topMargin=25, bottomMargin=25)
         Story  = []
@@ -5323,31 +5383,19 @@ class LimProtPlot(BaseWindowProteolysis):
         
         #region ---------------------------------------------------> Gel
         coord = self.SeqHighAll()
-        seq = self.GetPDFPrintSeq(coord)
-        head = Paragraph('Gel')
-        coord = Paragraph(', '.join(map(str,coord)),styles['Seq'])
-        tSeq = Paragraph(seq, styles['Seq'])
-        Story.append(KeepTogether([head, Spacer(1,6), coord, tSeq]))
+        Story.append(Helper(coord, 'Gel', styles['Seq']))
         Story.append(Spacer(1, 18))
         #endregion ------------------------------------------------> All
         
         #region ---------------------------------------------------> B/L
         for k,l in enumerate(self.rLanes):
             coord = self.SeqHighBL(bl=k)
-            seq = self.GetPDFPrintSeq(coord)
-            head = Paragraph(l)
-            coord = Paragraph(', '.join(map(str,coord)),styles['Seq'])
-            tSeq = Paragraph(seq, styles['Seq'])
-            Story.append(KeepTogether([head, Spacer(1,6), coord, tSeq]))
+            Story.append(Helper(coord, l, styles['Seq']))
             Story.append(Spacer(1, 18))
         #------------------------------>     
         for k,b in enumerate(self.rBands):
             coord = self.SeqHighBL(bb=k)
-            seq = self.GetPDFPrintSeq(coord)
-            head = Paragraph(b)
-            coord = Paragraph(', '.join(map(str,coord)),styles['Seq'])
-            tSeq = Paragraph(seq, styles['Seq'])
-            Story.append(KeepTogether([head, Spacer(1,6), coord, tSeq]))
+            Story.append(Helper(coord, b, styles['Seq']))
             Story.append(Spacer(1, 18))
         #endregion ------------------------------------------------> B/L
 
@@ -5355,11 +5403,7 @@ class LimProtPlot(BaseWindowProteolysis):
         for j,l in enumerate(self.rLanes):
             for k,b in enumerate(self.rBands):
                 coord = self.SeqHighSpot(spot=[k,j])
-                seq = self.GetPDFPrintSeq(coord)
-                head = Paragraph(f'{l} - {b}')
-                coord = Paragraph(', '.join(map(str,coord)),styles['Seq'])
-                tSeq = Paragraph(seq, styles['Seq'])
-                Story.append(KeepTogether([head, Spacer(1,6), coord, tSeq]))
+                Story.append(Helper(coord,f'{l} - {b}', styles['Seq']))
                 Story.append(Spacer(1, 18))
         #endregion -------------------------------------------------> Gel Spot
 
@@ -6265,6 +6309,10 @@ class LimProtPlot(BaseWindowProteolysis):
         else:
             pass
         #endregion -----------------------------------------> Reselect peptide
+        
+        #region ---------------------------------------------------> Show Text
+        self.PrintAllText()
+        #endregion ------------------------------------------------> Show Text
         
         #region ---------------------------------------------------> Rec Sec
         self.rRecSeqColor['Red'] = self.SeqHighAll()
