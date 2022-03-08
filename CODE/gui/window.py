@@ -5322,29 +5322,46 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> Gel
-        #------------------------------> Seq
-        seq = self.GetPDFPrintSeq(self.SeqHighAll())
-        #------------------------------> Gel
+        coord = self.SeqHighAll()
+        seq = self.GetPDFPrintSeq(coord)
         head = Paragraph('Gel')
+        coord = Paragraph(', '.join(map(str,coord)),styles['Seq'])
         tSeq = Paragraph(seq, styles['Seq'])
-        Story.append(KeepTogether([head, tSeq]))
-        Story.append(Spacer(1, 12))
+        Story.append(KeepTogether([head, Spacer(1,6), coord, tSeq]))
+        Story.append(Spacer(1, 18))
         #endregion ------------------------------------------------> All
         
-        #------------------------------> Lanes
-        for l in self.rLanes:
+        #region ---------------------------------------------------> B/L
+        for k,l in enumerate(self.rLanes):
+            coord = self.SeqHighBL(bl=k)
+            seq = self.GetPDFPrintSeq(coord)
             head = Paragraph(l)
+            coord = Paragraph(', '.join(map(str,coord)),styles['Seq'])
             tSeq = Paragraph(seq, styles['Seq'])
-            Story.append(KeepTogether([head, tSeq]))
-            Story.append(Spacer(1, 12))
-        #------------------------------> Bands
-        for b in self.rBands:
+            Story.append(KeepTogether([head, Spacer(1,6), coord, tSeq]))
+            Story.append(Spacer(1, 18))
+        #------------------------------>     
+        for k,b in enumerate(self.rBands):
+            coord = self.SeqHighBL(bb=k)
+            seq = self.GetPDFPrintSeq(coord)
             head = Paragraph(b)
+            coord = Paragraph(', '.join(map(str,coord)),styles['Seq'])
             tSeq = Paragraph(seq, styles['Seq'])
-            Story.append(KeepTogether([head, tSeq]))
-            Story.append(Spacer(1, 12))
-        #------------------------------> Gel Spot
-        #------------------------------> Fragments
+            Story.append(KeepTogether([head, Spacer(1,6), coord, tSeq]))
+            Story.append(Spacer(1, 18))
+        #endregion ------------------------------------------------> B/L
+
+        #region ----------------------------------------------------> Gel Spot
+        for j,l in enumerate(self.rLanes):
+            for k,b in enumerate(self.rBands):
+                coord = self.SeqHighSpot(spot=[k,j])
+                seq = self.GetPDFPrintSeq(coord)
+                head = Paragraph(f'{l} - {b}')
+                coord = Paragraph(', '.join(map(str,coord)),styles['Seq'])
+                tSeq = Paragraph(seq, styles['Seq'])
+                Story.append(KeepTogether([head, Spacer(1,6), coord, tSeq]))
+                Story.append(Spacer(1, 18))
+        #endregion -------------------------------------------------> Gel Spot
 
         doc.build(Story)
         return True
@@ -5462,59 +5479,65 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def SeqHighSpot(self) -> bool:
+    def SeqHighSpot(
+        self, spot: Optional[list[int]]=None) -> list[tuple[int, int]]:
         """Highlight the sequences in the selected Gel spot
         
             Returns
             -------
-            bool
+            list[tuple[int, int]]
         """
         #region ---------------------------------------------------> Variables
         self.rRecSeqColor['Blue']['Frag'] = []
         #------------------------------> 
-        b,l = self.rGelSelC
+        if spot is None:
+            b,l = self.rGelSelC
+        else:
+            b,l = spot
         tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
-        self.rRecSeqColor['Blue']['Spot'] = self.rFragments[tKey]['Coord']
         #endregion ------------------------------------------------> Variables
 
-        #region -------------------------------------------------------> Color
-        self.RecSeqHighlight()
-        #endregion ----------------------------------------------------> Color
-        
-        return True
+        return dtsMethod.MergeOverlapingFragments(
+            self.rFragments[tKey]['Coord'])
     #---
     
-    def SeqHighFrag(self) -> bool:
+    def SeqHighFrag(
+        self, frag: Optional[list[int]]=None) -> list[tuple[int, int]]:
         """Highlight the sequences in the selected Fragment
         
             Returns
             -------
-            bool
+            list[tuple[int, int]]
         """
         #region ---------------------------------------------------> Variables
         self.rRecSeqColor['Blue']['Spot'] = []
         #------------------------------> 
-        b,l,j = self.rFragSelC
+        if frag is None:
+            b,l,j = self.rFragSelC
+        else:
+            b,l,j = frag
         tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
-        self.rRecSeqColor['Blue']['Frag'] = [self.rFragments[tKey]['Coord'][j]]
         #endregion ------------------------------------------------> Variables
 
-        #region -------------------------------------------------------> Color
-        self.RecSeqHighlight()
-        #endregion ----------------------------------------------------> Color
-        
-        return True
+        return dtsMethod.MergeOverlapingFragments(
+            [self.rFragments[tKey]['Coord'][j]])
     #---
     
-    def SeqHighBL(self) -> bool:
+    def SeqHighBL(
+        self, bb: Optional[int]=None, bl: Optional[int]=None,
+        ) -> list[tuple[int, int]]:
         """Highlight the sequences in the selected Band/Lane
         
             Returns
             -------
-            bool
+            list[tuple[int, int]]
         """
         #region ---------------------------------------------------> Variables
-        b, l = self.rBlSelC
+        if bb is None and bl is None:
+            b, l = self.rBlSelC
+        else:
+            b, l = bb, bl
+        #------------------------------> 
         if b is not None:
             bN = self.rBands[b]
             tKey = [f'{(bN, l, "Ptost")}' for l in self.rLanes]
@@ -5529,14 +5552,9 @@ class LimProtPlot(BaseWindowProteolysis):
         seqL = []
         for k in tKey:
             seqL = seqL + self.rFragments[k]['Coord']
-        self.rRecSeqColor['Red'] = list(set(seqL))
         #endregion ------------------------------------------------> Seqs
 
-        #region -------------------------------------------------------> Color
-        self.RecSeqHighlight()
-        #endregion ----------------------------------------------------> Color
-        
-        return True
+        return dtsMethod.MergeOverlapingFragments(list(set(seqL)))
     #---
     
     def SeqHighAll(self) -> list[tuple[int, int]]:
@@ -5558,7 +5576,7 @@ class LimProtPlot(BaseWindowProteolysis):
             resN.append((s+1, s+len(p)))
         #endregion ------------------------------------------------> Seqs
 
-        return dtsMethod.MergeCoord(resN, 1)
+        return dtsMethod.MergeOverlapingFragments(resN, 1)
     #---
     
     def RecSeqHighlight(self) -> bool:
@@ -5640,7 +5658,11 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> Parts
-        a,b = region[0]
+        try:
+            a,b = region[0]
+        except IndexError:
+            return self.rRecSeqC
+        
         black.append(self.rRecSeqC[0:a-1])
         blue.append(self.rRecSeqC[a-1:b])
         #------------------------------> 
@@ -5744,7 +5766,8 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ----------------------------------------> Remove Sel in Gel
         
         #region -----------------------------------------------------> Rec Seq
-        self.SeqHighFrag()
+        self.rRecSeqColor['Blue']['Frag'] = self.SeqHighFrag()
+        self.RecSeqHighlight()
         #endregion --------------------------------------------------> Rec Seq
         
         return True
@@ -5817,7 +5840,8 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ------------------------------------------------> 
         
         #region -----------------------------------------------------> Rec Seq
-        self.SeqHighSpot()
+        self.rRecSeqColor['Blue']['Spot'] = self.SeqHighSpot()
+        self.RecSeqHighlight()
         #endregion --------------------------------------------------> Rec Seq
 
         return True
@@ -5886,7 +5910,8 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> Rec Seq
-        self.SeqHighBL()
+        self.rRecSeqColor['Red'] = self.SeqHighBL()
+        self.RecSeqHighlight()
         #endregion ------------------------------------------------> Rec Seq
 
         return True
