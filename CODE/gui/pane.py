@@ -342,7 +342,7 @@ class BaseConfPanel(
             self.sbData,
             label   = self.cLCeroTreat,
             choices = self.cOCero,
-            tooltip = (f'Cero values in the {self.cLCeroTreat} File will '
+            tooltip = (f'Cero values in the {self.cLiFile} File will '
             f'be treated as missing values when this option is selected or as '
             f'real values when the option is not selected.'),
             validator = dtsValidator.IsNotEmpty(),
@@ -4963,6 +4963,9 @@ class LimProt(BaseConfModPanel2):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
+        self.wSeqLength.tc.Destroy()
+        self.wSeqLength.st.Destroy()
+        del self.wSeqLength
         #------------------------------> Values
         self.wBeta = dtsWidget.StaticTextCtrl(
             self.sbValue,
@@ -5019,14 +5022,15 @@ class LimProt(BaseConfModPanel2):
             self.cLuFile       :[self.wUFile.tc,           config.mFileBad],
             self.cLiFile       :[self.wIFile.tc,           config.mFileBad],
             f'{self.cLSeqFile} file' :[self.wSeqFile.tc,   config.mFileBad],
+            self.cLId          :[self.wId.tc,              config.mValueBad],
+            self.cLCeroTreat   :[self.wCeroB.cb,           config.mOptionBad],
             self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad],
             self.cLNormMethod  :[self.wNormMethod.cb,      config.mOptionBad],
             self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad],
             self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad],
             self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum],
-            self.cLSeqLength   :[self.wSeqLength.tc,       config.mOneZPlusNum],
-            self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num],
             self.cLSample      :[self.wSample.cb,          config.mOptionBad],
+            self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num],
             self.cLBeta        :[self.wBeta.tc,            config.mOne01Num],
             self.cLGamma       :[self.wGamma.tc,           config.mOne01Num],
             self.cLTheta       :[self.wTheta.tc,           config.mOneZPlusNum],
@@ -5035,6 +5039,9 @@ class LimProt(BaseConfModPanel2):
             self.cLScoreCol    :[self.wScore.tc,           config.mOneZPlusNum],
             self.cLResControl  :[self.wTcResults,          config.mResCtrl]
         }        
+        
+        self.rCheckUnique = [self.wSeqCol.tc, self.wDetectedProt.tc, 
+            self.wScore.tc, self.wTcResults]
         #endregion -------------------------------------------> checkUserInput
 
         #region ------------------------------------------------------> Sizers
@@ -5071,15 +5078,15 @@ class LimProt(BaseConfModPanel2):
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wSeqLength.st,
+            self.wSample.st,
             pos    = (2,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wSeqLength.tc,
+            self.wSample.cb,
             pos    = (2,2),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
@@ -5143,25 +5150,12 @@ class LimProt(BaseConfModPanel2):
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wSample.st,
-            pos    = (4,1),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wSample.cb,
-            pos    = (4,2),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
             1, 1,
             pos    = (0,5),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
             span   = (2, 0),
         )
-        
         self.sizersbValueWid.AddGrowableCol(0, 1)
         self.sizersbValueWid.AddGrowableCol(2, 1)
         self.sizersbValueWid.AddGrowableCol(4, 1)
@@ -5171,14 +5165,6 @@ class LimProt(BaseConfModPanel2):
         self.sSizer.Fit(self)
         self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
-
-        #region ---------------------------------------------> Window position
-        
-        #endregion ------------------------------------------> Window position
         
         #region --------------------------------------------------------> Test
         if config.development:
@@ -5191,12 +5177,12 @@ class LimProt(BaseConfModPanel2):
             else:
                 pass
             self.wId.tc.SetValue('Beta Test Dev')
+            self.wCeroB.cb.SetValue('Yes')
             self.wTransMethod.cb.SetValue('Log2')
             self.wNormMethod.cb.SetValue('Median')
             self.wImputationMethod.cb.SetValue('Normal Distribution')
             self.wTargetProt.tc.SetValue('Mis18alpha')
             self.wScoreVal.tc.SetValue('10')
-            self.wSeqLength.tc.SetValue('100')
             self.wAlpha.tc.SetValue('0.05')
             self.wBeta.tc.SetValue('0.05')
             self.wGamma.tc.SetValue('0.8')
@@ -5248,14 +5234,13 @@ class LimProt(BaseConfModPanel2):
             self.wSeqFile.tc.SetValue(str(seqFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
-            self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.wCeroB.cb.SetValue(dataI['I'][self.cLCeroTreatD])
             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
             #------------------------------> Values
             self.wTargetProt.tc.SetValue(dataI['I'][self.cLTargetProt])
             self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
-            self.wSeqLength.tc.SetValue(dataI['I'][self.cLSeqLength])
             self.wAlpha.tc.SetValue(dataI['I'][self.cLAlpha])
             self.wSample.cb.SetValue(dataI['I'][self.cLSample])
             self.wBeta.tc.SetValue(dataI['I'][self.cLBeta])
@@ -5335,7 +5320,7 @@ class LimProt(BaseConfModPanel2):
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.IsChecked()),
+                self.wCeroB.cb.GetValue()),
             self.EqualLenLabel(self.cLTransMethod) : (
                 self.wTransMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLNormMethod) : (
@@ -5346,8 +5331,6 @@ class LimProt(BaseConfModPanel2):
                 self.wTargetProt.tc.GetValue()),
             self.EqualLenLabel(self.cLScoreVal) : (
                 self.wScoreVal.tc.GetValue()),
-            self.EqualLenLabel(self.cLSeqLength) : (
-                self.wSeqLength.tc.GetValue()),
             self.EqualLenLabel(self.cLSample) : (
                 self.wSample.cb.GetValue()),
             self.EqualLenLabel(self.cLAlpha) : (
@@ -5382,9 +5365,6 @@ class LimProt(BaseConfModPanel2):
         #--------------> Step
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #--------------> SeqLength
-        seqLengthVal = self.wSeqLength.tc.GetValue()
-        seqLength = float(seqLengthVal) if seqLengthVal != '' else None
         #--------------> Theta
         thetaVal = self.wTheta.tc.GetValue()
         theta = float(thetaVal) if thetaVal != '' else None
@@ -5404,13 +5384,12 @@ class LimProt(BaseConfModPanel2):
             'uFile'      : Path(self.wUFile.tc.GetValue()),
             'seqFile'    : Path(self.wSeqFile.tc.GetValue()),
             'ID'         : self.wId.tc.GetValue(),
-            'Cero'       : self.wCeroB.IsChecked(),
+            'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'TransMethod': self.wTransMethod.cb.GetValue(),
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
             'TargetProt' : self.wTargetProt.tc.GetValue(),
             'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
-            'SeqLength'  : seqLength,
             'Sample'     : self.cOSample[self.wSample.cb.GetValue()],
             'Alpha'      : float(self.wAlpha.tc.GetValue()),
             'Beta'       : float(self.wBeta.tc.GetValue()),
@@ -5515,7 +5494,7 @@ class LimProt(BaseConfModPanel2):
             delta = self.rDO['Theta']
         else:
             delta = dtsStatistic.tost_delta(
-                self.dfIm.iloc[:,colC], 
+                self.dfS.iloc[:,colC], 
                 self.rDO['Alpha'],
                 self.rDO['Beta'],
                 self.rDO['Gamma'], 
@@ -5551,13 +5530,25 @@ class LimProt(BaseConfModPanel2):
                     pass
         #endregion ------------------------------------------------> Calculate
         
+        #region -------------------------------------------------> Check P < a
+        idx = pd.IndexSlice
+        if (self.dfR.loc[:,idx[:,:,'Ptost']] < self.rDO['Alpha']).any().any():
+            pass
+        else:
+            self.rMsgError = ('There were no peptides detected in the gel '
+                'spots with intensity values equivalent to the intensity '
+                'values in the control spot. You may run the analysis again '
+                'with different values for the configuration options.')
+            return False
+        #endregion ----------------------------------------------> Check P < a
+        
         #region --------------------------------------------------------> Sort
         self.dfR = self.dfR.sort_values(
             by=[('Nterm', 'Nterm', 'Nterm'),('Cterm', 'Cterm', 'Cterm')]
         )
         self.dfR = self.dfR.reset_index(drop=True)
         #endregion -----------------------------------------------------> Sort
-        
+
         if config.development:
             print('self.dfR.shape: ', self.dfR.shape)
             print('')
@@ -5602,7 +5593,10 @@ class LimProt(BaseConfModPanel2):
     def RunEnd(self) -> bool:
         """"""
         #------------------------------> 
-        self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
+        if self.rDFile:
+            self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
+        else:
+            pass
         #------------------------------>     
         return super().RunEnd()
     #---
@@ -5633,13 +5627,13 @@ class LimProt(BaseConfModPanel2):
         
         #region ----------------------------------------------------> Empty DF
         df = pd.DataFrame(
-            np.nan, columns=idx, index=range(self.dfIm.shape[0]),
+            np.nan, columns=idx, index=range(self.dfS.shape[0]),
         )
         #endregion -------------------------------------------------> Empty DF
         
         #region -------------------------------------------------> Seq & Score
-        df[(aL[0], bL[0], cL[0])] = self.dfIm.iloc[:,0]
-        df[(aL[1], bL[1], cL[1])] = self.dfIm.iloc[:,2]
+        df[(aL[0], bL[0], cL[0])] = self.dfS.iloc[:,0]
+        df[(aL[1], bL[1], cL[1])] = self.dfS.iloc[:,2]
         #endregion ----------------------------------------------> Seq & Score
         
         return df
@@ -5667,7 +5661,7 @@ class LimProt(BaseConfModPanel2):
         """
         #region ----------------------------------------------> Delta and TOST
         a = dtsStatistic.tost(
-            self.dfIm, 
+            self.dfS, 
             colC, 
             colD, 
             sample = self.rDO['Sample'],

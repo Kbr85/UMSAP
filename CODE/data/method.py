@@ -369,4 +369,41 @@ def HCurve(x:float, t0:float, s0:float) -> float:
     return abs((abs(x)*t0)/(abs(x)-t0*s0))
     #endregion ------------------------------------------------> Calculate
 #---
+
+
+def Rec2NatCoord(
+    coord: list[tuple[int,int]], protLoc:tuple[int,int], delta:int,
+    ) -> Union[list[tuple[int,int]], list[str]]:
+    """
+
+        Parameters
+        ----------
+        
+
+        Returns
+        -------
+        
+
+        Raise
+        -----
+        
+    """
+    #region ---------------------------------------------------> Return NA
+    if delta == 0 or delta is None or protLoc[0] is None or protLoc[1] is None:
+        return ['NA']
+    else:
+        pass
+    #endregion ------------------------------------------------> Return NA
+
+    #region ---------------------------------------------------> Calc
+    listO = []
+    for a,b in coord:
+        if protLoc[0] <= a <= protLoc[1] and protLoc[0] <= b <= protLoc[1]:
+            listO.append((a+delta, b+delta))
+        else:
+            pass
+    #endregion ------------------------------------------------> Calc
+
+    return listO
+#---
 #endregion ----------------------------------------------------------> Methods

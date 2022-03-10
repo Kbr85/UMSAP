@@ -81,7 +81,8 @@ class UMSAPFile():
         
         #region ---------------------------------------------------> Variables
         self.rFileP = Path(rFileP)
-        self.rStepDataP = self.rFileP.parent / config.fnDataSteps
+        self.rStepDataP  = self.rFileP.parent / config.fnDataSteps
+        self.rInputFileP = self.rFileP.parent / config.fnDataInit
 
         self.dConfigure = {# Configure methods. Keys are the section names as
                            # read from the file
@@ -541,6 +542,43 @@ class UMSAPFile():
         except KeyError as e:
             raise e
     #---
+    
+    def GetRecSeq(self, tSection: str, tDate: str) -> str:
+        """ Get the recombinant sequence used in an analysis.
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+    
+            Returns
+            -------
+            str
+    
+            Raise
+            -----
+            KeyError:
+                When tSection or tDate is not found in the file
+        """
+        #region ------------------------------------------------> Path
+        for k,v in self.rData[tSection][tDate]['I'].items():
+            if 'Sequences File' in k:
+                fileN = v
+                break
+            else:
+                pass
+        #endregion ---------------------------------------------> Path
+        
+        #region ---------------------------------------------------> 
+        seqObj = dtsFF.FastaFile(self.rInputFileP/fileN)
+        
+        return seqObj.seqRec
+        #endregion ------------------------------------------------> 
+    #---
+    
     #endregion --------------------------------------------------> Get Methods
 #---
 #endregion ----------------------------------------------------------> Classes
