@@ -130,14 +130,6 @@ class SplashWindow(wx.adv.SplashScreen):
             False,
             faceName="Arial",
         )
-        fTreeItemFalse = wx.Font(
-            12,
-            wx.FONTFAMILY_ROMAN,
-            wx.FONTSTYLE_ITALIC,
-            wx.FONTWEIGHT_NORMAL,
-            False,
-            faceName="Arial",
-        )
         fTreeItemFileData = wx.Font(
             12,
             wx.FONTFAMILY_ROMAN,
@@ -157,19 +149,16 @@ class SplashWindow(wx.adv.SplashScreen):
         if config.os == "Darwin":
             config.font['SeqAlign']              = fSeqAlignFont
             config.font['TreeItem']              = fTreeItem
-            config.font['TreeItemFalse']         = fTreeItemFalse
             config.font['TreeItemDataFile']      = fTreeItemFileData
             config.font['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
         elif config.os == "Windows":
             config.font['SeqAlign']              = fSeqAlignFont.SetPointSize(12)
             config.font['TreeItem']              = fTreeItem
-            config.font['TreeItemFalse']         = fTreeItemFalse
             config.font['TreeItemDataFile']      = fTreeItemFileData
             config.font['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
         else:
             config.font['SeqAlign']              = fSeqAlignFont.SetPointSize(11)
             config.font['TreeItem']              = fTreeItem
-            config.font['TreeItemFalse']         = fTreeItemFalse
             config.font['TreeItemDataFile']      = fTreeItemFileData
             config.font['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
         #endregion ----------------------------------------------------> Fonts

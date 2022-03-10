@@ -32,9 +32,7 @@ dictVersion = { # dict for directly write into output files
 }
 
 os = platform.system() # Current operating system
-cwd = Path(__file__)    # Config file path
-
-obj = None # Reference to an instance of file.UMSAPFile to reload its content
+cwd = Path(__file__)   # Config file path
 #endregion -----------------------------------------------> General parameters
 
 
@@ -177,6 +175,7 @@ t = {
 elData  = 'txt files (*.txt)|*.txt'
 elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
 elPDB   = 'PDB files (*.pdb)|*.pdb'
+elPDF   = 'PDF files (*.pdf)|*.pdf'
 elSeq   = (
     "Text files (*.txt)|*.txt|"
     "Fasta files (*.fasta)|*.fasta"
@@ -191,6 +190,7 @@ elMatPlotSaveI = (
 #------------------------------> File extensions. First item is default
 esData  = ['.txt']
 esPDB   = ['.pdb']
+esPDF   = ['.pdf']
 esSeq   = ['.txt', '.fasta']
 esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
@@ -203,17 +203,16 @@ pImages = res / 'IMAGES' # Images folder
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
 # #------------------------------> Names
-fnInitial    = "{}-Initial-Data-{}.txt"
-fnFloat      = "{}-Floated-Data-{}.txt"
-fnTargetProt = "{}-Target-Protein-Data-{}.txt"
-fnExclude    = "{}-After-Excluding-Data-{}.txt"
-fnScore      = "{}-Score-Filtered-Data-{}.txt"
-fnTrans      = "{}-Transformed-Data-{}.txt"
-fnNorm       = "{}-Normalized-Data-{}.txt"
-fnImp        = "{}-Imputed-Data-{}.txt"
+fnInitial    = "{}_{}-Initial-Data.txt"
+fnFloat      = "{}_{}-Floated-Data.txt"
+fnTargetProt = "{}_{}-Target-Protein-Data.txt"
+fnExclude    = "{}_{}-After-Excluding-Data.txt"
+fnScore      = "{}_{}-Score-Filtered-Data.txt"
+fnTrans      = "{}_{}-Transformed-Data.txt"
+fnNorm       = "{}_{}-Normalized-Data.txt"
+fnImp        = "{}_{}-Imputed-Data.txt"
 fnDataSteps  = 'Steps_Data_Files'
 fnDataInit   = 'Input_Data_Files'
-fnMainDataProtProf = '{}-ProteomeProfiling-Data-{}.txt'
 #endregion ---------------------------------------------------> Path and Files
 
 
@@ -255,6 +254,12 @@ lCbSample      = 'Samples'
 lCbIntensity   = 'Intensities'
 #------------------------------> wx.Dialog
 lPdError = 'Fatal Error'
+#------------------------------> Filters
+lFilFCEvol   = 'FC Evolution'
+lFilHypCurve = 'Hyp Curve'
+lFilFCLog    = 'Log2FC'
+lFilPVal     = 'P Val'
+lFilZScore   = 'Z Score'
 #endregion -----------------------------------------------------------> Labels
 
 
@@ -297,6 +302,11 @@ ttLCtrlPasteMod = (
 
 
 #region -------------------------------------------------------------> Options
+oYesNo = {
+    ''   : '',
+    'Yes': True,
+    'No' : False,
+}
 oTransMethod = {
     'Empty': '',
     'None' : 'None',
@@ -366,7 +376,7 @@ dfcolSeqNC = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 
 
 #region -----------------------------------------------------> Important Lists
-ltDPKeys = ['dfS', 'dfT', 'dfN', 'dfIm']
+ltDPKeys = ['dfF', 'dfT', 'dfN', 'dfIm']
 #endregion --------------------------------------------------> Important Lists
 
 
@@ -384,26 +394,14 @@ mDataExport = 'Export Data failed.'
 #region ------------------------------------------------------------> Values
 mOneRNumText = "Only one real number can be accepted here."
 mOneZPlusNumText = "Only a non-negative integer can be accepted here."
-# mOneZNumText = "Only one positive integer can be accepted here."
-mOne01NumText = "Only one number between 0 and 1 can be accepted here"
+mOne01NumText = "Only one number between 0 and 1 can be accepted here."
 mNZPlusNumText = (
     "Only a list of unique non-negative integers can be accepted here.")
-# mNumROne = "Only one number can be accepted in {}."
-# mNumZPlusOne = "Only one non-negative integer can be accepted in {}."
-# mListNumN0L = (
-#     "Only a list of unique non-negative integers can be accepted in {}.")
-# mAlphaRange = "Only one number between 0 and 1 can be accepted in {}."
 #endregion ---------------------------------------------------------> Values
 
 #region ---------------------------------------------------------------> Files
-# mFileUMSAP = ('It was not possible to write the results of the analysis to '
-#     'the selected UMSAP file.')
-# mFileDataExport = 'It was not possible to write the data to the selected file.'
 mFileSelector = 'It was not possible to show the file selecting dialog.'
 mFileRead = 'An error occured when reading file:\n{}'
-# mFileColNum = (
-#     "In addition, the values cannot be bigger than the total number of columns "
-#     "in the {}.")
 mFileSelUMSAP = 'Select the UMSAP File'
 #endregion ------------------------------------------------------------> Files
 
@@ -415,7 +413,6 @@ mPDDataTargetProt = ('Selection of Target Protein failed.\nTarget Protein: {} '
 mPDDataExclude = 'Data Exclusion failed.\nColumns used for data exclusion: {}.'
 mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
     'filtering by Score value: {}.')
-# mPDDataType       = 'Unexpected data type.'
 mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
 #endregion ---------------------------------------------------------> Pandas
  
@@ -437,6 +434,16 @@ mResCtrl = (
     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
     f"correct input.")
 mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
+mRepNum = ('The number of replicates in some experiments does not match '
+    'the number of replicates in the control.')
+mRepNumProtProf = ('To perform a Proteome Profiling analysis using Raw '
+    'Intensities and Paired Samples the number of replicates in '
+    'experiments and the corresponding control must be the '
+    'same.\n\nThe number of replicates in the following '
+    'experiments does not match the number of replicates in the '
+    'corresponding control.\n{}'
+)
+mCtrlEmpty = 'None of the Control fields can be empty.'
 #endregion -------------------------------------------------> For CheckInput
 #endregion ---------------------------------------------------------> Messages
 
@@ -495,12 +502,11 @@ color = { # Colors for the app
         },
     },
     nwProtProf : {
-        'Vol'   : ['#ff3333', '#d3d3d3', '#3333ff'],
-        'VolSel': '#6ac653',
-        'FCAll' : '#d3d3d3',
-        'FCLines' : [
-            '#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff',
-        ],
+        'Vol'    : ['#ff3333', '#d3d3d3', '#3333ff'],
+        'VolSel' : '#6ac653',
+        'FCAll'  : '#d3d3d3',
+        'FCLines': ['#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff'],
+        'CV'     : 'gray',
     },
     nwLimProt : {
         'Spot' : colorFragments,
