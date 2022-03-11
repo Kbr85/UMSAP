@@ -18,9 +18,12 @@
 import itertools
 from typing import Literal, Union
 
+import pandas as pd
 from numpy import nan as nan
 
 import dat4s_core.data.method as dtsMethod
+
+import config.config as config
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -405,5 +408,59 @@ def Rec2NatCoord(
     #endregion ------------------------------------------------> Calc
 
     return listO
+#---
+
+
+def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
+    """
+
+        Parameters
+        ----------
+        
+
+        Returns
+        -------
+        
+
+        Raise
+        -----
+        
+    """
+    print(df.to_string())
+    print(seq)
+    print(alpha)
+    print(pos)
+    #region ---------------------------------------------------> Empty
+    aL = ['AA']
+    bL = ['AA']
+    for l in df.columns.get_level_values(0)[1:]:
+        aL = aL + 2*pos*[l]
+        bL = bL + [f'{-x}' for x in range(pos, 0, -1)] + [f'{x}' for x in range(1, pos+1,1)]
+    idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
+    dfO = pd.DataFrame(0, columns=idx, index=config.lAA1)
+    dfO[('AA','AA')] = config.lAA1[:]
+    #endregion ------------------------------------------------> Empty
+
+
+    #region ---------------------------------------------------> Fill
+    idx = pd.IndexSlice
+    for l in df.columns.get_level_values(0)[1:]:
+        seqDF = df[df[idx[l,'P']] < alpha].iloc[:,0].to_list()
+        for s in seqDF:
+            n = seq.find(s)
+            c = n+len(s)
+            col = -pos
+            for a,b in zip(seq[n-pos:n], seq[c-pos:c]):
+                dfO.at[a,(l,f'{col}')] = dfO.at[a,(l,f'{col}')] + 1
+                dfO.at[b,(l,f'{col}')] = dfO.at[b,(l,f'{col}')] + 1
+                col += 1
+            col = 1
+            for a,b in zip(seq[n:n+pos], seq[c:c+pos]):
+                dfO.at[a,(l,f'{col}')] = dfO.at[a,(l,f'{col}')] + 1
+                dfO.at[b,(l,f'{col}')] = dfO.at[b,(l,f'{col}')] + 1
+                col += 1
+    #endregion ------------------------------------------------> Fill
+
+    return dfO
 #---
 #endregion ----------------------------------------------------------> Methods

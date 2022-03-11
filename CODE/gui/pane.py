@@ -1404,6 +1404,14 @@ class BaseConfPanel(
             return False
         #endregion -----------------------------------------------> Data Steps
         
+        #region --------------------------------------------> Further Analysis
+        if (aaDict := stepDict.get('AA', False)):
+            fileP = dataFolder/aaDict[f'{self.rDate}-{self.rDO["AA"]}']
+            dtsFF.WriteDF2CSV(fileP, self.dfAA)
+        else:
+            pass
+        #endregion -----------------------------------------> Further Analysis
+
         #region --------------------------------------------------> UMSAP File
         msgStep = self.cLPdWrite + 'Main file'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
@@ -1429,6 +1437,11 @@ class BaseConfPanel(
         #--------------> Filters in ProtProf
         if self.cName == config.npProtProf:
             dateDict[self.rDateID]['F'] = {}
+        else:
+            pass
+        #--------------> Further Analysis
+        if self.rDO.get('AA', False):
+            dateDict[self.rDateID]['AA'] = stepDict['AA']
         else:
             pass
         #------------------------------> Append or not
@@ -5842,6 +5855,8 @@ class TarProt(BaseConfModPanel2):
 
         #region -----------------------------------------------> Initial Setup
         super().__init__(cParent)
+        
+        self.dfAA = pd.DataFrame()
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -6211,7 +6226,7 @@ class TarProt(BaseConfModPanel2):
         seqLengthVal = self.wSeqLength.tc.GetValue()
         seqLength    = float(seqLengthVal) if seqLengthVal != '' else None
         aaPosVal     = self.wAAPos.tc.GetValue()
-        aaPos        = float(aaPosVal) if aaPosVal != '' else None
+        aaPos        = int(aaPosVal) if aaPosVal != '' else None
         histVal      = self.wHist.tc.GetValue()
         hist         = float(histVal) if histVal != '' else None
         #--------------> Columns
@@ -6375,6 +6390,25 @@ class TarProt(BaseConfModPanel2):
         self.dfR = self.dfR.reset_index(drop=True)
         #endregion -----------------------------------------------------> Sort
         
+        # Further Analysis
+        #region ----------------------------------------------------------> AA
+        if self.rDO['AA'] is not None:
+            tIdx = idx[['Sequence']+self.rDO['Exp'],['Sequence', 'P']]
+            try:
+                self.dfAA = dmethod.R2AA(
+                    self.dfR.loc[:,tIdx], 
+                    self.rSeqFileObj.seqRec, 
+                    self.rDO['Alpha'],
+                    self.rDO['AA'], 
+                )
+            except Exception as e:
+                self.rMsgError = 'Amino acid distribution calculation failed.'
+                self.rException = e
+                return False
+        else:
+            pass
+        #endregion -------------------------------------------------------> AA
+
         if config.development:
             print('self.dfR.shape: ', self.dfR.shape)
             print('')
@@ -6385,6 +6419,27 @@ class TarProt(BaseConfModPanel2):
         return True
     #---
     
+    def WriteOutput(self) -> bool:
+        """Write output for a module
+        
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Data Steps
+        stepDict = self.SetStepDictDPFileR()
+        #endregion -----------------------------------------------> Data Steps
+        
+        #region --------------------------------------------> Further Analysis
+        if self.rDO['AA'] is not None:
+            stepDict['AA']= {}
+            stepDict['AA'][f'{self.rDate}_{self.rDO["AA"]}'] = (
+                f'{self.rDate}_AA-{self.rDO["AA"]}.txt')
+        #endregion -----------------------------------------> Further Analysis
+
+        return self.WriteOutputData(stepDict)
+    #---
+    
     def RunEnd(self) -> bool:
         """"""
         #------------------------------> 
@@ -6393,6 +6448,8 @@ class TarProt(BaseConfModPanel2):
             self.wPDBFile.tc.SetValue(str(self.rDFile[2]))
         else:
             pass
+        
+        self.dfAA = pd.DataFrame()
         #------------------------------>     
         return super().RunEnd()
     #---
