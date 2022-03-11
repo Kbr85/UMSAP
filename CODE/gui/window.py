@@ -6836,6 +6836,7 @@ class TarProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> 
         if plot:
             self.wPlotM.canvas.draw()
+            self.SetAxisInt()
             self.wPlot.canvas.draw()
         else:
             pass
@@ -6843,6 +6844,7 @@ class TarProtPlot(BaseWindowProteolysis):
 
         #region ---------------------------------------------------> 
         self.rPeptide = None
+        self.rLCIdx = None
         #endregion ------------------------------------------------> 
 
         return True
@@ -6893,6 +6895,7 @@ class TarProtPlot(BaseWindowProteolysis):
         
         #region ---------------------------------------------------> 
         self.wPlotM.canvas.draw()
+        self.SetAxisInt()
         self.wPlot.canvas.draw()
         #endregion ------------------------------------------------> 
         
