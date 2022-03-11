@@ -1256,8 +1256,8 @@ class BaseConfPanel(
         return outData
     #---
     
-    def SetStepDict(self) -> dict:
-        """Set the common part of the stepDict needed to write the output
+    def SetStepDictDP(self) -> dict:
+        """Set the Data Procesing part of the stepDict to write in the output.
     
             Returns
             -------
@@ -1273,6 +1273,51 @@ class BaseConfPanel(
         }
         
         return stepDict
+    #---
+    
+    def SetStepDictDPFileR(self) -> dict:
+        """Set the Data Procesing, Files & Results parts of the stepDict to 
+            write in the output.
+    
+            Returns
+            -------
+            dict
+        """
+        stepDict = {
+            'DP': {
+                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
+                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '03'),
+                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '04'),
+                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '05'),
+            },
+            'Files' : {
+                config.fnInitial.format(self.rDate, '01'): self.dfI,
+                config.fnFloat.format(self.rDate, '02')  : self.dfF,
+                config.fnTrans.format(self.rDate, '03')  : self.dfT,
+                config.fnNorm.format(self.rDate, '04')   : self.dfN,
+                config.fnImp.format(self.rDate, '05')    : self.dfIm,
+                config.fnExclude.format(self.rDate, '06'): self.dfE,
+                config.fnScore.format(self.rDate, '07')  : self.dfS,
+                self.rMainData.format(self.rDate, '08')  : self.dfR,
+            },
+            'R' : self.rMainData.format(self.rDate, '08'),
+        }
+        
+        return stepDict
+    #---
+    
+    def WriteOutput(self) -> bool:
+        """Write output for a module
+        
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Data Steps
+        stepDict = self.SetStepDictDPFileR()
+        #endregion -----------------------------------------------> Data Steps
+
+        return self.WriteOutputData(stepDict)
     #---
 
     def WriteOutputData(self, stepDict: dict) -> bool:
@@ -3119,7 +3164,7 @@ class CorrA(BaseConfPanel):
     def WriteOutput(self):
         """Write output. Override as needed """
         #region --------------------------------------------------> Data Steps
-        stepDict = self.SetStepDict()
+        stepDict = self.SetStepDictDP()
         stepDict['Files'] = {
             config.fnInitial.format(self.rDate, '01'): self.dfI,
             config.fnFloat.format(self.rDate, '02')  : self.dfF,
@@ -3131,19 +3176,6 @@ class CorrA(BaseConfPanel):
         }
         stepDict['R'] = self.rMainData.format(self.rDate, '07')
         #endregion -----------------------------------------------> Data Steps
-        
-        #region ---------------------------------------------------> Print
-        if config.development:
-            print("DataFrames: Initial")
-            print(self.dfI.head())
-            print(self.dfI.shape)
-            print("")
-            print("DataFrames: CC")
-            print(self.dfR.head())
-            print(self.dfR.shape)
-        else:
-            pass
-        #endregion ------------------------------------------------> Print
 
         return self.WriteOutputData(stepDict)
     #---
@@ -3532,7 +3564,7 @@ class DataPrep(BaseConfPanel):
             bool
         """
         #region --------------------------------------------------> Data Steps
-        stepDict = self.SetStepDict()
+        stepDict = self.SetStepDictDP()
         stepDict['Files'] = {
             config.fnInitial.format(self.rDate, '01'): self.dfI,
             config.fnFloat.format(self.rDate, '02')  : self.dfF,
@@ -4746,31 +4778,6 @@ class ProtProf(BaseConfModPanel):
         
         return True
     #---
-    
-    def WriteOutput(self) -> bool:
-        """Write output 
-        
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------> Data Steps
-        stepDict = self.SetStepDict()
-        stepDict['Files'] = {
-            config.fnInitial.format(self.rDate, '01'): self.dfI,
-            config.fnFloat.format(self.rDate, '02')  : self.dfF,
-            config.fnTrans.format(self.rDate, '03')  : self.dfT,
-            config.fnNorm.format(self.rDate, '04')   : self.dfN,
-            config.fnImp.format(self.rDate, '05')    : self.dfIm,
-            config.fnExclude.format(self.rDate, '06'): self.dfE,
-            config.fnScore.format(self.rDate, '07')  : self.dfS,
-            self.rMainData.format(self.rDate, '08')  : self.dfR,
-        }
-        stepDict['R'] = self.rMainData.format(self.rDate, '08')
-        #endregion -----------------------------------------------> Data Steps
-
-        return self.WriteOutputData(stepDict)
-    #---
     #endregion --------------------------------------------------> Run Methods
 #---
 
@@ -5558,38 +5565,6 @@ class LimProt(BaseConfModPanel2):
         return True
     #---
     
-    def WriteOutput(self) -> bool:
-        """Write output 
-        
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------> Data Steps
-        stepDict = {
-            'Files': {
-                config.fnInitial.format(self.rDate, '01')   : self.dfI,
-                config.fnFloat.format(self.rDate, '02')     : self.dfF,
-                config.fnTargetProt.format(self.rDate, '03'): self.dfTP,
-                config.fnScore.format(self.rDate, '04')     : self.dfS,
-                config.fnTrans.format(self.rDate, '05')     : self.dfT,
-                config.fnNorm.format(self.rDate, '06')      : self.dfN,
-                config.fnImp.format(self.rDate, '07')       : self.dfIm,
-                self.rMainData.format(self.rDate, '08')     : self.dfR,
-            },
-            'DP': {
-                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
-                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '05'),
-                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '06'),
-                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '07'),
-            },
-            'R' : self.rMainData.format(self.rDate, '08'),
-        }
-        #endregion -----------------------------------------------> Data Steps
-        
-        return self.WriteOutputData(stepDict)
-    #---
-    
     def RunEnd(self) -> bool:
         """"""
         #------------------------------> 
@@ -5907,6 +5882,7 @@ class TarProt(BaseConfModPanel2):
             f'{self.cLSeqFile} file' :[self.wSeqFile.tc,   config.mFileBad],
             self.cLPDB         :[self.wPDBFile.tc,         config.mFileBad],
             self.cLId          :[self.wId.tc,              config.mValueBad],
+            self.cLCeroTreat   :[self.wCeroB.cb,           config.mOptionBad],
             self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad],
             self.cLNormMethod  :[self.wNormMethod.cb,      config.mOptionBad],
             self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad],
@@ -6072,6 +6048,7 @@ class TarProt(BaseConfModPanel2):
             else:
                 pass
             self.wId.tc.SetValue('Beta Test Dev')
+            self.wCeroB.cb.SetValue('Yes')
             self.wTransMethod.cb.SetValue('Log2')
             self.wNormMethod.cb.SetValue('Median')
             self.wImputationMethod.cb.SetValue('Normal Distribution')
@@ -6127,7 +6104,7 @@ class TarProt(BaseConfModPanel2):
             self.wPDBFile.tc.SetValue(str(pdbFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
-            self.wCeroB.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.wCeroB.cb.SetValue(dataI['I'][self.cLCeroTreatD])
             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
@@ -6177,7 +6154,7 @@ class TarProt(BaseConfModPanel2):
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.IsChecked()),
+                self.wCeroB.cb.GetValue()),
             self.EqualLenLabel(self.cLTransMethod) : (
                 self.wTransMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLNormMethod) : (
@@ -6238,7 +6215,7 @@ class TarProt(BaseConfModPanel2):
             'seqFile'    : Path(self.wSeqFile.tc.GetValue()),
             'pdbFile'    : Path(self.wPDBFile.tc.GetValue()),
             'ID'         : self.wId.tc.GetValue(),
-            'Cero'       : self.wCeroB.IsChecked(),
+            'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'TransMethod': self.wTransMethod.cb.GetValue(),
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
@@ -6336,7 +6313,7 @@ class TarProt(BaseConfModPanel2):
         
         #region ----------------------------------------------------> P values
         #------------------------------> 
-        totalPeptide = len(self.dfIm)
+        totalPeptide = len(self.dfS)
         totalRowAncovaDF = 2*max([len(x[0]) for x in self.rDO['df']['ResCtrl']])
         nGroups = [2 for x in self.rDO['df']['ResCtrl']]
         nGroups = nGroups[1:]
@@ -6344,7 +6321,7 @@ class TarProt(BaseConfModPanel2):
         idx = idx[self.rDO['Exp'], 'P']
         #------------------------------> 
         k = 0
-        for row in self.dfIm.itertuples(index=False):
+        for row in self.dfS.itertuples(index=False):
             #------------------------------> Msg
             msgStep = (f'{self.cLPdRun} Calculating P values for peptide '
                 f'{k+1} ({totalPeptide})')
@@ -6382,43 +6359,14 @@ class TarProt(BaseConfModPanel2):
         return True
     #---
     
-    def WriteOutput(self) -> bool:
-        """Write output 
-        
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------> Data Steps
-        stepDict = {
-            'Files':{
-                config.fnInitial.format(self.rDate, '01')    : self.dfI,
-                config.fnFloat.format(self.rDate, '02')      : self.dfF,
-                config.fnTargetProt.format(self.rDate, '03') : self.dfTP,
-                config.fnScore.format(self.rDate, '04')      : self.dfS,
-                config.fnTrans.format(self.rDate, '05')      : self.dfT,
-                config.fnNorm.format(self.rDate, '06')       : self.dfN,
-                config.fnImp.format(self.rDate, '07')        : self.dfIm,
-                self.rMainData.format(self.rDate, '08')      : self.dfR,
-            },
-            'DP': {
-                config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
-                config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '05'),
-                config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '06'),
-                config.ltDPKeys[3] : config.fnImp.format(self.rDate, '07'),
-            },
-            'R' : self.rMainData.format(self.rDate, '08'),
-        }
-        #endregion -----------------------------------------------> Data Steps
-        
-        return self.WriteOutputData(stepDict)
-    #---
-    
     def RunEnd(self) -> bool:
         """"""
         #------------------------------> 
-        self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
-        self.wPDBFile.tc.SetValue(str(self.rDFile[2]))
+        if self.rDFile:
+            self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
+            self.wPDBFile.tc.SetValue(str(self.rDFile[2]))
+        else:
+            pass
         #------------------------------>     
         return super().RunEnd()
     #---
@@ -6447,15 +6395,15 @@ class TarProt(BaseConfModPanel2):
         
         #region ----------------------------------------------------> Empty DF
         df = pd.DataFrame(
-            np.nan, columns=idx, index=range(self.dfIm.shape[0]),
+            np.nan, columns=idx, index=range(self.dfS.shape[0]),
         )
         idx = pd.IndexSlice
         df.loc[:,idx[:,'Int']] = df.loc[:,idx[:,'Int']].astype('object')
         #endregion -------------------------------------------------> Empty DF
         
         #region -------------------------------------------------> Seq & Score
-        df[aL[0]] = self.dfIm.iloc[:,0]
-        df[aL[1]] = self.dfIm.iloc[:,2]
+        df[aL[0]] = self.dfS.iloc[:,0]
+        df[aL[1]] = self.dfS.iloc[:,2]
         df[(self.rDO['ControlL'][0], 'P')] = np.nan
         #endregion ----------------------------------------------> Seq & Score
         
@@ -6473,7 +6421,7 @@ class TarProt(BaseConfModPanel2):
             rowC: int
                 Current row index in self.dfR
             row: namedtuple
-                Row from self.dfIm
+                Row from self.dfS
             rowN: int
                 Maximum number of rows in the output pd.df
     
