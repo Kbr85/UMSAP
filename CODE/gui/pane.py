@@ -800,6 +800,20 @@ class BaseConfPanel(
             self.rMsgError = config.mFileRead.format(self.rDO['iFile'])
             self.rException = e
             return False
+        #------------------------------> Check Target Protein. It cannot be done
+        # before this step
+        if 'TargetProt' in self.rDO:
+            if self.rIFileObj.StrInCol(
+                self.rDO['TargetProt'], self.rDO['oc']['TargetProtCol']):
+                pass
+            else:
+                self.rMsgError = (f'The Target Protein '
+                    f'({self.rDO["TargetProt"]}) was not found in the '
+                    f'{self.cLDetectedProt} column '
+                    f'({self.rDO["oc"]["TargetProtCol"]}).')
+                return False
+        else:
+            pass
         #endregion ------------------------------------------------> Data file
         
         #region ------------------------------------------------> Seq Rec File
