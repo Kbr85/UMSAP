@@ -6342,6 +6342,18 @@ class TarProt(BaseConfModPanel2):
             k = k + 1
         #endregion -------------------------------------------------> P values
         
+        #region -------------------------------------------------> Check P < a
+        idx = pd.IndexSlice
+        if (self.dfR.loc[:,idx[:,'P']] < self.rDO['Alpha']).any().any():
+            pass
+        else:
+            self.rMsgError = ('There were no peptides detected with intensity '
+                'values significantly higher to the intensity values in the '
+                'controls. You may run the analysis again with different '
+                'values for the configuration options.')
+            return False
+        #endregion ----------------------------------------------> Check P < a
+        
         #region --------------------------------------------------------> Sort
         self.dfR = self.dfR.sort_values(
             by=[('Nterm', 'Nterm'),('Cterm', 'Cterm')]
