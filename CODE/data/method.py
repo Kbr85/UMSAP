@@ -22,6 +22,7 @@ import pandas as pd
 from numpy import nan as nan
 
 import dat4s_core.data.method as dtsMethod
+import dat4s_core.data.statistic as dtsStatistic
 
 import config.config as config
 #endregion ----------------------------------------------------------> Imports
@@ -412,24 +413,26 @@ def Rec2NatCoord(
 
 
 def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
-    """
+    """AA distribution analysis
 
         Parameters
         ----------
-        
-
+        df: pd.DataFrame
+            Sequence Label1 LabelN
+            Sequence P      P
+        seq: str
+            Recombinant protein sequence
+        alpha: float
+            Significance level
+        pos: int
+            Number of positions to consider
+            
         Returns
         -------
-        
-
-        Raise
-        -----
-        
+        pd.DataFrame
+            AA Label1       LabelN
+            AA -2 -1 1 2 P  -2 -1 1 2 P
     """
-    print(df.to_string())
-    print(seq)
-    print(alpha)
-    print(pos)
     #region ---------------------------------------------------> Empty
     aL = ['AA']
     bL = ['AA']
@@ -437,10 +440,9 @@ def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
         aL = aL + 2*pos*[l]
         bL = bL + [f'{-x}' for x in range(pos, 0, -1)] + [f'{x}' for x in range(1, pos+1,1)]
     idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
-    dfO = pd.DataFrame(0, columns=idx, index=config.lAA1)
-    dfO[('AA','AA')] = config.lAA1[:]
+    dfO = pd.DataFrame(0, columns=idx, index=config.lAA1+['Chi'])
+    dfO[('AA','AA')] = config.lAA1[:]+['Chi']
     #endregion ------------------------------------------------> Empty
-
 
     #region ---------------------------------------------------> Fill
     idx = pd.IndexSlice
@@ -460,6 +462,38 @@ def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
                 dfO.at[b,(l,f'{col}')] = dfO.at[b,(l,f'{col}')] + 1
                 col += 1
     #endregion ------------------------------------------------> Fill
+    
+    #region ---------------------------------------------------> Random Cleavage
+    c = 'ALL_CLEAVAGES_UMSAP'
+    aL = 2*pos*[c]
+    bL = [f'{-x}' for x in range(pos, 0, -1)] + [f'{x}' for x in range(1, pos+1,1)]
+    idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
+    dfT = pd.DataFrame(0, columns=idx, index=config.lAA1+['Chi'])
+    dfO = pd.concat([dfO, dfT], axis=1)
+    for k,_ in enumerate(seq):
+        col = -pos
+        for a in seq[k-pos:k]:
+            dfO.at[a,(c, f'{col}')] = dfO.at[a,(c, f'{col}')] + 1
+            col += 1
+        col = 1
+        for a in seq[k:k+pos]:
+            dfO.at[a,(c, f'{col}')] = dfO.at[a,(c, f'{col}')] + 1
+            col += 1
+    #endregion ------------------------------------------------> Random Cleavage
+
+    #region ---------------------------------------------------> Group
+    idx = pd.IndexSlice
+    gS = []
+    for g in config.lAAGroups:
+        gS.append(dfO.loc[g,:].sum(axis=0))
+    g = pd.concat(gS, axis=1)
+    g = g.transpose()
+
+    for l in df.columns.get_level_values(0)[1:]:
+        for p in dfO.loc[:,idx[l,:]].columns.get_level_values(1):
+            dfO.at['Chi', idx[l,p]] = dtsStatistic.test_chi(
+                g.loc[:,idx[[l,c],p]], alpha)[0]
+    #endregion ------------------------------------------------> Group
 
     return dfO
 #---

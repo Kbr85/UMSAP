@@ -1406,7 +1406,7 @@ class BaseConfPanel(
         
         #region --------------------------------------------> Further Analysis
         if (aaDict := stepDict.get('AA', False)):
-            fileP = dataFolder/aaDict[f'{self.rDate}-{self.rDO["AA"]}']
+            fileP = dataFolder/aaDict[f'{self.rDate}_{self.rDO["AA"]}']
             dtsFF.WriteDF2CSV(fileP, self.dfAA)
         else:
             pass
@@ -6393,6 +6393,10 @@ class TarProt(BaseConfModPanel2):
         # Further Analysis
         #region ----------------------------------------------------------> AA
         if self.rDO['AA'] is not None:
+            #------------------------------> 
+            msgStep = (f'{self.cLPdRun} AA Distribution')
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------> 
             tIdx = idx[['Sequence']+self.rDO['Exp'],['Sequence', 'P']]
             try:
                 self.dfAA = dmethod.R2AA(

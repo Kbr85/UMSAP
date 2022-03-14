@@ -382,6 +382,15 @@ lAA1 = [ # AA one letter codes
 	'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
 	'H', 'S', 'T', 'N', 'G', 'P'
 ]
+
+lAAGroups = [ # AA groups
+	['A', 'I', 'L', 'V', 'M'], 
+	['F', 'W', 'Y'], 
+	['R', 'K'], 
+	['D', 'E'],
+	['C', 'Q', 'H', 'S', 'T', 'N'], 
+	['G', 'P']
+]
 #endregion --------------------------------------------------> Important Lists
 
 
