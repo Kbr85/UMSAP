@@ -6442,6 +6442,40 @@ class TarProtPlot(BaseWindowProteolysis):
         return True
     #---
     
+    def SetDateMenuDate(self) -> tuple[list, dict]:
+        """Set the self.rDate list and the menuData dict needed to build the Tool
+            menu.
+
+            Returns
+            -------
+            tuple of list and dict
+            The list is a list of str with the dates in the analysis.
+            The dict has the following structure:
+                {
+                    'menudate' : [List of dates],
+                }                    
+        """
+        #region ---------------------------------------------------> Fill dict
+        #------------------------------> Variables
+        date = []
+        menuData = {'FA':{}}
+        #------------------------------> Fill 
+        for k,v in self.rData.items():
+            #------------------------------> 
+            date.append(k)
+            #------------------------------> 
+            menuData['FA'][k] = {}
+            aa = v.get('AA', {})
+            hist = v.get('Hist',{})
+            menuData['FA'][k]['AA'] = [x for x in aa.keys()]
+            menuData['FA'][k]['Hist'] = [x for x in hist.keys()]            
+        #------------------------------> 
+        menuData['menudate'] = date
+        #endregion ------------------------------------------------> Fill dict
+        
+        return (date, menuData)
+    #---
+    
     def UpdateDisplayedData(self, date) -> bool:
         """Update the GUI and attributes when a new date is selected.
     

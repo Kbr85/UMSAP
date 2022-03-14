@@ -1483,6 +1483,120 @@ class ClearSelTarProt(wx.Menu):
     #endregion ------------------------------------------------> Event methods
 #---
 
+
+class FurtherAnalysisTarProt(wx.Menu):
+    """ """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cMenuData: dict, ciDate:str):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        self.cMenuData = cMenuData
+        self.rAA, self.rHist = self.SetFurtherAItems(ciDate)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.AddFurtherAItems()
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetFurtherAItems(self, tDate: str):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> Variables
+        aa = []
+        hist = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        for v in self.cMenuData[tDate]['AA']:
+            aa.append(wx.MenuItem(None, -1, text=v))
+        aa.append(wx.MenuItem(None, -1, text='New AA Analysis')) 
+        #------------------------------> 
+        hist.append(wx.MenuItem(None, -1, text='New Histogram Windows'))
+        #endregion ------------------------------------------------> 
+
+        return [aa, hist]
+    #---
+    
+    def AddFurtherAItems(self):
+        """"""
+        #------------------------------> 
+        for k,c in enumerate(self.rAA):
+            self.Insert(k,c)
+        #------------------------------> 
+        self.rSep = wx.MenuItem(None)
+        self.Insert(k+1, self.rSep)
+        #------------------------------> 
+        for j,c in enumerate(self.rHist, start=k+2):
+            self.Insert(j,c)
+        #------------------------------> 
+        return True
+    #---
+    
+    def UpdateAList(self, tDate: str):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------> Delete Elements
+        #------------------------------> Conditions
+        for c in self.rAA:
+            self.Delete(c)
+        #------------------------------> Separators
+        self.Delete(self.rSep)
+        #------------------------------> RP
+        for c in self.rHist:
+            self.Delete(c)
+        #endregion ------------------------------------------> Delete Elements
+        
+        #region -----------------------------------> Create & Add New Elements
+        #------------------------------> 
+        self.rAA, self.rHist = self.SetFurtherAItems(tDate)
+        #------------------------------> 
+        self.AddFurtherAItems()
+        #endregion --------------------------------> Create & Add New Elements
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion -------------------------------------------------> Individual menus
 
 
@@ -1823,6 +1937,11 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         self.AppendSubMenu(self.mGelMenu, 'Intensities')
         self.AppendSeparator()
         #------------------------------> 
+        self.mFurtherA = FurtherAnalysisTarProt(
+            self.cMenuData['FA'], self.rPlotDate[0].GetItemLabelText())
+        self.AppendSubMenu(self.mFurtherA, 'Further Analysis')
+        self.AppendSeparator()
+        #------------------------------> 
         self.mClear = ClearSelTarProt()
         self.AppendSubMenu(self.mClear, 'Clear Selection')
         self.AppendSeparator()
@@ -1859,7 +1978,28 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
 
     #------------------------------> Class methods
     #region ---------------------------------------------------> Event methods
+    def OnPlotDate(self, event: wx.CommandEvent) -> bool:
+        """Plot a date of a section in an UMSAP file.
     
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Date
+        tDate = self.GetLabelText(event.GetId())
+        #endregion -----------------------------------------------------> Date
+        
+        #region -----------------------------------------> Update Volcano menu
+        self.mFurtherA.UpdateAList(tDate)
+        #endregion --------------------------------------> Update Volcano menu
+        
+        return super().OnPlotDate(event)
+    #---
     #endregion ------------------------------------------------> Event methods
 #---
 #endregion --------------------------------------------------------> Mix menus

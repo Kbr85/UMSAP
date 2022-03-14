@@ -399,6 +399,7 @@ class UMSAPFile():
                 plotData[k] = {
                     'DF': df,
                     'PI': PI,
+                    'AA': v.get('AA', {}),
                 }
             except Exception:
                 pass
