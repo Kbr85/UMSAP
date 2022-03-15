@@ -7032,11 +7032,13 @@ class AAPlot(BaseWindowPlot):
         self.rUMSAP = cParent.cParent
         self.rObj = cParent.rObj
         self.rData = self.rObj.GetAAData(cParent.cSection,cParent.rDateC,fileN)
-        super().__init__(cParent, self.SetMenuDate())
+        menuData = self.SetMenuDate()
+        self.rPos = menuData['Pos']
+        super().__init__(cParent, menuData)
         #endregion --------------------------------------------> Initial Setup
         
         #region ---------------------------------------------------> Plot
-        self.UpdatePlot()
+        self.UpdatePlot(menuData['Label'][0])
         #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
@@ -7068,10 +7070,7 @@ class AAPlot(BaseWindowPlot):
         return menuData
     #---
     
-    
-    
-    
-    def SetAxis(self) -> bool:
+    def SetAxisExp(self) -> bool:
         """ General details of the plot area 
         
             Returns
@@ -7090,6 +7089,9 @@ class AAPlot(BaseWindowPlot):
         #region ---------------------------------------------------> Set ticks
         self.wPlot.axes.set_ylabel('AA distribution (%)')
         self.wPlot.axes.set_xlabel('Positions')
+        self.wPlot.axes.set_xticks(range(1,len(self.rPos)+1,1))
+        self.wPlot.axes.set_xticklabels(self.rPos)
+        self.wPlot.axes.set_xlim(0,len(self.rPos)+1)
         #endregion ------------------------------------------------> Set ticks
         
         #region -----------------------------------------------> Adjust figure
@@ -7099,7 +7101,7 @@ class AAPlot(BaseWindowPlot):
         return True
     #---
     
-    def UpdatePlot(self):
+    def PlotExp(self, label: str) -> bool:
         """
     
             Parameters
@@ -7114,11 +7116,30 @@ class AAPlot(BaseWindowPlot):
             -----
             
         """
-        self.SetAxis()
-        
-        # self.PlotExp()
-        
         self.wPlot.canvas.draw()
+    #---
+    
+    def UpdatePlot(self, label: str, exp: bool=True):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        if exp:
+            self.SetAxisExp()
+            self.PlotExp(label)
+        else:
+            pass
+        
         return True
     #---
     

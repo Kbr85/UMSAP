@@ -1623,7 +1623,7 @@ class FurtherAnalysisTarProt(wx.Menu):
 #---
 
 
-class AAToolMenu(wx.Menu):
+class AAToolMenu(wx.Menu, MenuMethods):
     """ """
     #region -----------------------------------------------------> Class setup
     
@@ -1652,7 +1652,10 @@ class AAToolMenu(wx.Menu):
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        
+        # self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
+        # self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
+        # self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
+        # self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
