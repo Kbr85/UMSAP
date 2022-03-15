@@ -1535,7 +1535,8 @@ class FurtherAnalysisTarProt(wx.Menu):
         #region ---------------------------------------------------> 
         for v in self.cMenuData[tDate]['AA']:
             aa.append(wx.MenuItem(None, -1, text=v))
-        aa.append(wx.MenuItem(None, -1, text='New AA Analysis')) 
+            self.Bind(wx.EVT_MENU, self.OnAASelect, source=aa[-1])
+        aa.append(wx.MenuItem(None, -1, text='New AA Analysis'))
         #------------------------------> 
         hist.append(wx.MenuItem(None, -1, text='New Histogram Windows'))
         #endregion ------------------------------------------------> 
@@ -1596,6 +1597,30 @@ class FurtherAnalysisTarProt(wx.Menu):
         return True
     #---
     #endregion ------------------------------------------------> Class methods
+    
+    #region ---------------------------------------------------> Event methods
+    def OnAASelect(self, event:wx.CommandEvent) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        win = self.GetWindow()
+        win.OnAASelect(self.GetLabelText(event.GetId()))
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+
 #---
 #endregion -------------------------------------------------> Individual menus
 

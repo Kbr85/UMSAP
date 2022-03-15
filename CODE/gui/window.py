@@ -324,7 +324,7 @@ class BaseWindow(wx.Frame):
             True
         """
         #------------------------------> 
-        self.cParent.rWindow[self.cSection].append(
+        self.cParent.rWindow[self.cSection]['Main'].append(
             self.cParent.dPlotMethod[self.cSection](self.cParent)
         )
         #------------------------------> 
@@ -543,6 +543,36 @@ class BaseWindowPlot(BaseWindow):
         #region -----------------------------------------------------> Destroy
         self.Destroy()
         #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    
+    def UpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info
+    
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            try:
+                #------------------------------>
+                x, y = event.xdata, event.ydata
+                #------------------------------> 
+                self.wStatBar.SetStatusText(
+                    f'x = {x}   y = {y}'
+                )
+            except Exception:
+                self.wStatBar.SetStatusText('')
+        else:
+            self.wStatBar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
         
         return True
     #---
@@ -6939,7 +6969,122 @@ class TarProtPlot(BaseWindowProteolysis):
 
         return True
     #---
+    
+    def OnAASelect(self, aa:str) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.cParent.rWindow[self.cSection]['FA'].append(
+            AAPlot(self)
+        )
+        return True
+    #---
     #endregion -------------------------------------------------> Event Methods
+#---
+
+
+class AAPlot(BaseWindowPlot):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    #------------------------------> To id the window
+    cName = config.nwAAPlot
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nuAA
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cParent: wx.Window) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(cParent, {'menudate' : []})
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Menu
+        
+        #endregion -----------------------------------------------------> Menu
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.cParent.cParent.rWindow[self.cParent.cSection]['FA'].remove(self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 
 
@@ -7790,7 +7935,7 @@ class UMSAPControl(BaseWindow):
         #region ----------------------------------------------> Destroy window
         #------------------------------> Event trigers before checkbox changes
         if self.wTrc.IsItemChecked(item):
-            [x.Destroy() for x in self.rWindow[section]]
+            [x.Destroy() for v in self.rWindow[section].values() for x in v]
             event.Skip()
             return True
         else:
@@ -7799,7 +7944,9 @@ class UMSAPControl(BaseWindow):
         
         #region -----------------------------------------------> Create window
         try:
-            self.rWindow[section] = [self.dPlotMethod[section](self)]
+            self.rWindow[section] = {'Main':[], 'FA':[]}
+            self.rWindow[section]['Main'].append(
+                self.dPlotMethod[section](self))
         except Exception as e:
             dtscore.Notification('errorU', msg=str(e), tException=e)
             return False
@@ -7941,11 +8088,11 @@ class UMSAPControl(BaseWindow):
             bool
         """
         #region --------------------------------------------> Remove from list
-        self.rWindow[sectionName].remove(win)
+        self.rWindow[sectionName]['Main'].remove(win)
         #endregion -----------------------------------------> Remove from list
         
         #region --------------------------------------------------> Update GUI
-        if len(self.rWindow[sectionName]) > 0:
+        if len(self.rWindow[sectionName]['Main']) > 0:
             return True
         else:
             #------------------------------> Remove check
