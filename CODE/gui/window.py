@@ -7029,32 +7029,15 @@ class AAPlot(BaseWindowPlot):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        super().__init__(cParent, {'menudate' : []})
-        self.rUMSAP = self.cParent.cParent
-        self.rObj = self.cParent.rObj
-        self.rData = self.rObj.GetAAData(
-            self.cParent.cSection, 
-            self.cParent.rDateC, 
-            fileN
-        )
-        print(self.rData)
+        self.rUMSAP = cParent.cParent
+        self.rObj = cParent.rObj
+        self.rData = self.rObj.GetAAData(cParent.cSection,cParent.rDateC,fileN)
+        super().__init__(cParent, self.SetMenuDate())
         #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------------> Menu
         
-        #endregion -----------------------------------------------------> Menu
-
-        #region -----------------------------------------------------> Widgets
-        
-        #endregion --------------------------------------------------> Widgets
-
-        #region ------------------------------------------------------> Sizers
-        
-        #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
+        #region ---------------------------------------------------> Plot
+        self.UpdatePlot()
+        #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
         self.WinPos()
@@ -7064,6 +7047,81 @@ class AAPlot(BaseWindowPlot):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def SetMenuDate(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        menuData = {}
+        menuData['Label'] = [k for k in self.rData.columns.unique(level=0)[1:-1]]
+        menuData['Pos'] = [k for k in self.rData[menuData['Label'][0]].columns.unique(level=0)]
+        return menuData
+    #---
+    
+    
+    
+    
+    def SetAxis(self) -> bool:
+        """ General details of the plot area 
+        
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Clear
+        self.wPlot.figure.clear()
+        self.wPlot.axes = self.wPlot.figure.add_subplot(111)
+        #endregion ----------------------------------------------------> Clear
+        
+        #region ---------------------------------------------------> Variables
+        
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Set ticks
+        self.wPlot.axes.set_ylabel('AA distribution (%)')
+        self.wPlot.axes.set_xlabel('Positions')
+        #endregion ------------------------------------------------> Set ticks
+        
+        #region -----------------------------------------------> Adjust figure
+        
+        #endregion --------------------------------------------> Adjust figure
+
+        return True
+    #---
+    
+    def UpdatePlot(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.SetAxis()
+        
+        # self.PlotExp()
+        
+        self.wPlot.canvas.draw()
+        return True
+    #---
+    
     def OnClose(self, event: wx.CloseEvent) -> bool:
         """Close window and uncheck section in UMSAPFile window. Assumes 
             self.parent is an instance of UMSAPControl.

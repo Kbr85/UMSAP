@@ -438,7 +438,7 @@ def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
     bL = ['AA']
     for l in df.columns.get_level_values(0)[1:]:
         aL = aL + 2*pos*[l]
-        bL = bL + [f'{-x}' for x in range(pos, 0, -1)] + [f'{x}' for x in range(1, pos+1,1)]
+        bL = bL + [f'P{x}' for x in range(pos, 0, -1)] + [f'P{x}\'' for x in range(1, pos+1,1)]
     idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
     dfO = pd.DataFrame(0, columns=idx, index=config.lAA1+['Chi'])
     dfO[('AA','AA')] = config.lAA1[:]+['Chi']
@@ -451,33 +451,33 @@ def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
         for s in seqDF:
             n = seq.find(s)
             c = n+len(s)
-            col = -pos
+            col = pos
             for a,b in zip(seq[n-pos:n], seq[c-pos:c]):
-                dfO.at[a,(l,f'{col}')] = dfO.at[a,(l,f'{col}')] + 1
-                dfO.at[b,(l,f'{col}')] = dfO.at[b,(l,f'{col}')] + 1
-                col += 1
+                dfO.at[a,(l,f'P{col}')] = dfO.at[a,(l,f'P{col}')] + 1
+                dfO.at[b,(l,f'P{col}')] = dfO.at[b,(l,f'P{col}')] + 1
+                col -= 1
             col = 1
             for a,b in zip(seq[n:n+pos], seq[c:c+pos]):
-                dfO.at[a,(l,f'{col}')] = dfO.at[a,(l,f'{col}')] + 1
-                dfO.at[b,(l,f'{col}')] = dfO.at[b,(l,f'{col}')] + 1
+                dfO.at[a,(l,f"P{col}'")] = dfO.at[a,(l,f"P{col}'")] + 1
+                dfO.at[b,(l,f"P{col}\'")] = dfO.at[b,(l,f"P{col}'")] + 1
                 col += 1
     #endregion ------------------------------------------------> Fill
     
     #region ---------------------------------------------------> Random Cleavage
     c = 'ALL_CLEAVAGES_UMSAP'
     aL = 2*pos*[c]
-    bL = [f'{-x}' for x in range(pos, 0, -1)] + [f'{x}' for x in range(1, pos+1,1)]
+    bL = [f'P{x}' for x in range(pos, 0, -1)] + [f"P{x}'" for x in range(1, pos+1,1)]
     idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
     dfT = pd.DataFrame(0, columns=idx, index=config.lAA1+['Chi'])
     dfO = pd.concat([dfO, dfT], axis=1)
     for k,_ in enumerate(seq):
-        col = -pos
+        col = pos
         for a in seq[k-pos:k]:
-            dfO.at[a,(c, f'{col}')] = dfO.at[a,(c, f'{col}')] + 1
-            col += 1
+            dfO.at[a,(c, f'P{col}')] = dfO.at[a,(c, f'P{col}')] + 1
+            col -= 1
         col = 1
         for a in seq[k:k+pos]:
-            dfO.at[a,(c, f'{col}')] = dfO.at[a,(c, f'{col}')] + 1
+            dfO.at[a,(c, f"P{col}'")] = dfO.at[a,(c, f"P{col}'")] + 1
             col += 1
     #endregion ------------------------------------------------> Random Cleavage
 

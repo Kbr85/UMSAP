@@ -1620,7 +1620,46 @@ class FurtherAnalysisTarProt(wx.Menu):
         return True
     #---
     #endregion ------------------------------------------------> Event methods
+#---
 
+
+class AAToolMenu(wx.Menu):
+    """ """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        for k in menuData['Label']:
+            self.Append(-1, k, kind=wx.ITEM_RADIO)
+        self.AppendSeparator()
+        for k in menuData['Pos']:
+            self.Append(-1, k, kind=wx.ITEM_RADIO)
+        self.AppendSeparator()
+        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
+        self.miSaveI = self.Append(-1, 'Export Image\tCtrl+I')
+        self.AppendSeparator()
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
 #---
 #endregion -------------------------------------------------> Individual menus
 
@@ -2077,6 +2116,7 @@ class ToolMenuBar(MainMenuBar):
         config.nwProtProf     : ProtProfToolMenu,
         config.nwLimProt      : LimProtToolMenu,
         config.nwTarProt      : TarProtToolMenu,
+        config.nwAAPlot       : AAToolMenu,
     }
     #endregion --------------------------------------------------> Class Setup
     
