@@ -6986,7 +6986,7 @@ class TarProtPlot(BaseWindowProteolysis):
             
         """
         self.cParent.rWindow[self.cSection]['FA'].append(
-            AAPlot(self)
+            AAPlot(self, self.rData[self.rDateC]['AA'][aa])
         )
         return True
     #---
@@ -7022,7 +7022,7 @@ class AAPlot(BaseWindowPlot):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, cParent: wx.Window) -> None:
+    def __init__(self, cParent: wx.Window, fileN: str) -> None:
         """ """
         #region -------------------------------------------------> Check Input
         
@@ -7030,6 +7030,14 @@ class AAPlot(BaseWindowPlot):
 
         #region -----------------------------------------------> Initial Setup
         super().__init__(cParent, {'menudate' : []})
+        self.rUMSAP = self.cParent.cParent
+        self.rObj = self.cParent.rObj
+        self.rData = self.rObj.GetAAData(
+            self.cParent.cSection, 
+            self.cParent.rDateC, 
+            fileN
+        )
+        print(self.rData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -7071,7 +7079,7 @@ class AAPlot(BaseWindowPlot):
             bool
         """
         #region -----------------------------------------------> Update parent
-        self.cParent.cParent.rWindow[self.cParent.cSection]['FA'].remove(self)		
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)		
         #endregion --------------------------------------------> Update parent
         
         #region ------------------------------------> Reduce number of windows

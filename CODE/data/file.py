@@ -580,6 +580,28 @@ class UMSAPFile():
         #endregion ------------------------------------------------> 
     #---
     
+    def GetAAData(self, tSection: str, tDate: str, fileN: str):
+        """Get an AA Distribution Data
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+            fileN : str
+                File name with the data
+    
+            Returns
+            -------
+            pd.DataFrame
+        """
+        tPath = (
+            self.rStepDataP/f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'/fileN
+        )
+        return dtsFF.ReadCSV2DF(tPath, header=[0,1])
+    #---
     #endregion --------------------------------------------------> Get Methods
 #---
 #endregion ----------------------------------------------------------> Classes
