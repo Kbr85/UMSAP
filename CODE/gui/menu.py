@@ -1638,7 +1638,8 @@ class AAToolMenu(wx.Menu, MenuMethods):
 
         #region --------------------------------------------------> Menu Items
         for k in menuData['Label']:
-            self.Append(-1, k, kind=wx.ITEM_RADIO)
+            i = self.Append(-1, k, kind=wx.ITEM_RADIO)
+            self.Bind(wx.EVT_MENU, self.OnLabel, source=i)
         self.AppendSeparator()
         for k in menuData['Pos']:
             self.Append(-1, k, kind=wx.ITEM_RADIO)
@@ -1661,7 +1662,24 @@ class AAToolMenu(wx.Menu, MenuMethods):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    
+    def OnLabel(self, event: wx.CommandEvent) -> bool:
+        """Change between Lane and Band selection mode.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.UpdatePlot(self.GetLabelText(event.GetId()))
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 #endregion -------------------------------------------------> Individual menus
