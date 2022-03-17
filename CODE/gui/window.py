@@ -6986,7 +6986,7 @@ class TarProtPlot(BaseWindowProteolysis):
             
         """
         self.cParent.rWindow[self.cSection]['FA'].append(
-            AAPlot(self, self.rData[self.rDateC]['AA'][aa])
+            AAPlot(self, self.rDateC, aa, self.rData[self.rDateC]['AA'][aa])
         )
         return True
     #---
@@ -7023,13 +7023,11 @@ class AAPlot(BaseWindowPlot):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, cParent: wx.Window, fileN: str) -> None:
+    def __init__(
+        self, cParent: wx.Window, dateC: str, key: str, fileN: str) -> None:
         """ """
-        #region -------------------------------------------------> Check Input
-        
-        #endregion ----------------------------------------------> Check Input
-
         #region -----------------------------------------------> Initial Setup
+        self.cTitle  = f"{cParent.cTitle} - {dateC} - {self.cSection} - {key}"
         self.rUMSAP = cParent.cParent
         self.rObj = cParent.rObj
         self.rData = self.rObj.GetAAData(cParent.cSection,cParent.rDateC,fileN)
@@ -7160,6 +7158,7 @@ class AAPlot(BaseWindowPlot):
         
         #region --------------------------------------------------> Tick Color
         chi = self.rData.loc[:,idx[('AA', label),:]].iloc[-1,1:].values
+        self.wPlot.axes.set_title(label)
         for k,v in enumerate(chi):
             color = self.cColor['Chi'][v]
             self.wPlot.axes.get_xticklabels()[k].set_color(color)
