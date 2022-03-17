@@ -7169,6 +7169,88 @@ class AAPlot(BaseWindowPlot):
         return True
     #---
     
+    def SetAxisPos(self) -> bool:
+        """ General details of the plot area 
+        
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Clear
+        self.wPlot.figure.clear()
+        self.wPlot.axes = self.wPlot.figure.add_subplot(111)
+        #endregion ----------------------------------------------------> Clear
+        
+        #region ---------------------------------------------------> Set ticks
+        self.wPlot.axes.set_ylabel('AA distribution (%)')
+        self.wPlot.axes.set_xlabel('Amino acids')
+        self.wPlot.axes.set_xticks(range(1,len(config.lAA1)+1,1))
+        self.wPlot.axes.set_xticklabels(config.lAA1)            
+        self.wPlot.axes.set_xlim(0,len(config.lAA1)+1)
+        #endregion ------------------------------------------------> Set ticks
+        
+        return True
+    #---
+    
+    def PlotPos(self, label: str) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Data
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[:,label]].iloc[0:-1,0:-1]
+        df = 100*(df/df.sum(axis=0))
+        #endregion ------------------------------------------------> Data
+        
+        #region ---------------------------------------------------> Bar
+        n = df.shape[1]
+        for row in df.itertuples():
+            s = row[0]+1-0.4
+            w = 0.8/n
+            for x in range(0,n,1):
+                self.wPlot.axes.bar(
+                    s+x*w, 
+                    row[x+1],
+                    width     = w,
+                    align     = 'edge',
+                    color     = self.cColor['Spot'][x],
+                    edgecolor = 'black',
+                )
+        #endregion ------------------------------------------------> Bar
+        
+        #region ------------------------------------------------------> Legend
+        leg = []
+        legLabel = self.rData.columns.unique(level=0)[1:-1]
+        for i in range(0, n, 1):
+            leg.append(mpatches.Patch(
+                color = self.cColor['Spot'][i],
+                label = legLabel[i],
+            ))
+        leg = self.wPlot.axes.legend(
+            handles        = leg,
+            loc            = 'upper left',
+            bbox_to_anchor = (1, 1)
+        )
+        leg.get_frame().set_edgecolor('k')		
+        #endregion ---------------------------------------------------> Legend
+        
+        self.wPlot.axes.set_title(label)
+        self.wPlot.canvas.draw()
+        
+        return True
+    #---
+    
     def UpdatePlot(self, label: str, exp: bool=True):
         """
     
@@ -7188,7 +7270,8 @@ class AAPlot(BaseWindowPlot):
             self.SetAxisExp()
             self.PlotExp(label)
         else:
-            pass
+            self.SetAxisPos()
+            self.PlotPos(label)
         
         return True
     #---

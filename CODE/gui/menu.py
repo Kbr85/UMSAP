@@ -1642,7 +1642,8 @@ class AAToolMenu(wx.Menu, MenuMethods):
             self.Bind(wx.EVT_MENU, self.OnLabel, source=i)
         self.AppendSeparator()
         for k in menuData['Pos']:
-            self.Append(-1, k, kind=wx.ITEM_RADIO)
+            i = self.Append(-1, k, kind=wx.ITEM_RADIO)
+            self.Bind(wx.EVT_MENU, self.OnPos, source=i)
         self.AppendSeparator()
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
@@ -1663,7 +1664,7 @@ class AAToolMenu(wx.Menu, MenuMethods):
 
     #region ---------------------------------------------------> Class methods
     def OnLabel(self, event: wx.CommandEvent) -> bool:
-        """Change between Lane and Band selection mode.
+        """Change between Experiments.
 
             Parameters
             ----------
@@ -1677,6 +1678,25 @@ class AAToolMenu(wx.Menu, MenuMethods):
         """
         win = self.GetWindow()
         win.UpdatePlot(self.GetLabelText(event.GetId()))
+        
+        return True
+    #---
+    
+    def OnPos(self, event: wx.CommandEvent) -> bool:
+        """Change between Positions.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.UpdatePlot(self.GetLabelText(event.GetId()), exp=False)
         
         return True
     #---

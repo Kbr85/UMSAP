@@ -545,6 +545,7 @@ color = { # Colors for the app
             -1: 'Black',
         },
         'Xaa' : 'GREY',
+        'Spot' : colorFragments,
     },
 }
 #endregion -----------------------------------------------------------> Colors
