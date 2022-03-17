@@ -7019,6 +7019,7 @@ class AAPlot(BaseWindowPlot):
     #------------------------------> To id the section in the umsap file 
     # shown in the window
     cSection = config.nuAA
+    cColor   = config.color[cName]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -7082,22 +7083,14 @@ class AAPlot(BaseWindowPlot):
         self.wPlot.axes = self.wPlot.figure.add_subplot(111)
         #endregion ----------------------------------------------------> Clear
         
-        #region ---------------------------------------------------> Variables
-        
-        #endregion ------------------------------------------------> Variables
-
         #region ---------------------------------------------------> Set ticks
         self.wPlot.axes.set_ylabel('AA distribution (%)')
         self.wPlot.axes.set_xlabel('Positions')
         self.wPlot.axes.set_xticks(range(1,len(self.rPos)+1,1))
-        self.wPlot.axes.set_xticklabels(self.rPos)
+        self.wPlot.axes.set_xticklabels(self.rPos)            
         self.wPlot.axes.set_xlim(0,len(self.rPos)+1)
         #endregion ------------------------------------------------> Set ticks
         
-        #region -----------------------------------------------> Adjust figure
-        
-        #endregion --------------------------------------------> Adjust figure
-
         return True
     #---
     
@@ -7116,7 +7109,65 @@ class AAPlot(BaseWindowPlot):
             -----
             
         """
+        #region ---------------------------------------------------> Data
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[('AA', label),:]].iloc[0:-1,:]
+        df.iloc[:,1:] = 100*(df.iloc[:,1:]/df.iloc[:,1:].sum(axis=0))
+        #endregion ------------------------------------------------> Data
+        
+        #region ---------------------------------------------------> Bar
+        col = df.loc[:,idx[label,:]].columns.unique(level=1)
+        for k,c in enumerate(col, start=1):
+            #------------------------------> Prepare DF
+            dfB = df.loc[:,idx[('AA',label),('AA',c)]]
+            dfB = dfB[dfB[(label,c)] != 0]
+            dfB = dfB.sort_values(by=(label,c), ascending=False)
+            #------------------------------> Supp Data
+            cumS = [0]+dfB[(label,c)].cumsum().values.tolist()[:-1]
+            #--------------> 
+            color = []
+            text = []
+            r = 0
+            for row in dfB.itertuples(index=False):
+                #--------------> 
+                color.append(self.cColor['BarColor'][row[0]] 
+                     if row[0] in config.lAA1 else self.cColor['Xaa'])
+                #--------------> 
+                if row[1] > 10.0:
+                    s = f'{row[0]}\n{row[1]:.1f}'
+                    y = (2*cumS[r]+row[1])/2
+                    text.append([k,y,s])
+                else:
+                    pass
+                r = r + 1
+            #------------------------------> Bar
+            self.wPlot.axes.bar(
+                k, 
+                dfB[(label,c)].values.tolist(),
+                bottom    = cumS,
+                color     = color,
+                edgecolor = 'black',
+            )
+            #------------------------------> Text
+            for x,y,t in text:
+                self.wPlot.axes.text(
+                    x,y,t, 
+                    fontsize            = 9,
+                    horizontalalignment = 'center',
+                    verticalalignment   = 'center',
+                )
+        #endregion ------------------------------------------------> Bar
+        
+        #region --------------------------------------------------> Tick Color
+        chi = self.rData.loc[:,idx[('AA', label),:]].iloc[-1,1:].values
+        for k,v in enumerate(chi):
+            color = self.cColor['Chi'][v]
+            self.wPlot.axes.get_xticklabels()[k].set_color(color)
+        #endregion -----------------------------------------------> Tick Color
+
         self.wPlot.canvas.draw()
+        
+        return True
     #---
     
     def UpdatePlot(self, label: str, exp: bool=True):
