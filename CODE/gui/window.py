@@ -6405,6 +6405,8 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rCtrl        = None
         self.rIdxP        = None
         self.rPeptide     = None
+        self.rRecSeq      = {}
+        self.rRecSeqC     = ''
         #------------------------------> 
         self.rDate, cMenuData = self.SetDateMenuDate()
         #------------------------------> 
@@ -6531,6 +6533,12 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rCtrl        = self.rData[self.rDateC]['PI']['Ctrl']
         self.rIdxP        = pd.IndexSlice[self.rExp,'P']
         self.rPeptide     = None
+        self.rRecSeqC     = (
+            self.rRecSeq.get(self.rDateC)
+            or
+            self.rObj.GetRecSeq(self.cSection, self.rDateC)
+        )
+        self.rRecSeq[self.rDateC] = self.rRecSeqC
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> 
@@ -6989,6 +6997,76 @@ class TarProtPlot(BaseWindowProteolysis):
         self.cParent.rWindow[self.cSection]['FA'].append(
             AAPlot(self, self.rDateC, aa, self.rData[self.rDateC]['AA'][aa])
         )
+        return True
+    #---
+    
+    def OnAANew(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> dlg
+        dlg = dtsWindow.UserInput1Text(
+            'New AA Distribution Analysis', 
+            'Positions', 
+            'Number of residues around the cleavage site to consider, e.g. 5',
+            parent = self,
+            validator = dtsValidator.NumberList('int', vMin=1, nN=1)
+        )
+        #endregion ------------------------------------------------> dlg
+        
+        #region ---------------------------------------------------> Get Pos
+        if dlg.ShowModal():
+            pos = int(dlg.input.tc.GetValue())
+            dateC = dtsMethod.StrNow()
+        else:
+            dlg.Destroy()
+            return False
+        #endregion ------------------------------------------------> Get Pos
+        
+        #region ---------------------------------------------------> Run 
+        dfI = self.rData[self.rDateC]['DF']
+        idx = pd.IndexSlice
+        dfI = dfI.loc[:,idx[['Sequence']+self.rExp,['Sequence', 'P']]]
+        dfO = dmethod.R2AA(dfI, self.rRecSeqC, self.rAlpha, pos)
+        #endregion ------------------------------------------------> Run
+        
+        #region -----------------------------------------------> Save & Update
+        #------------------------------> File
+        date = f'{self.rDateC.split(" - ")[0]}'
+        section = f'{self.cSection.replace(" ", "-")}'
+        folder = f'{date}_{section}'
+        fileN = f'{dateC}_AA-{pos}.txt'
+        fileP = self.rObj.rStepDataP/folder/fileN
+        dtsFF.WriteDF2CSV(fileP, dfO)
+        #------------------------------> Umsap
+        self.rObj.rData[self.cSection][self.rDateC]['AA'][f'{date}_{pos}'] = fileN
+        self.rObj.Save()
+        #------------------------------> Refresh
+        #--------------> UMSAPControl
+        self.cParent.UpdateFileContent()
+        #--------------> TarProt
+        self.rObj = self.cParent.rObj
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        #--------------> Menu
+        _, menuData = self.SetDateMenuDate()
+        self.mBar.mTool.mFurtherA.cMenuData = menuData['FA']
+        self.mBar.mTool.mFurtherA.UpdateAList(self.rDateC)
+        #--------------> GUI
+        self.UpdateDisplayedData(self.rDateC)
+        #endregion --------------------------------------------> Save & Update
+
+        dlg.Destroy()
         return True
     #---
     #endregion -------------------------------------------------> Event Methods
