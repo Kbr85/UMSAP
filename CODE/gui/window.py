@@ -331,7 +331,7 @@ class BaseWindow(wx.Frame):
         return True
     #---
     
-    def OnExportPlotData(self) -> bool:
+    def OnExportPlotData(self, df:Optional[pd.DataFrame]=None) -> bool:
         """ Export data to a csv file 
         
             Returns
@@ -351,9 +351,10 @@ class BaseWindow(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
             p = Path(dlg.GetPath())
+            tDF = self.rData[self.rDateC]['DF'] if df is None else df
             #------------------------------> Export
             try:
-                dtsFF.WriteDF2CSV(p, self.rData[self.rDateC]['DF'])
+                dtsFF.WriteDF2CSV(p, tDF)
             except Exception as e:
                 dtscore.Notification(
                     'errorF',
@@ -7031,6 +7032,9 @@ class AAPlot(BaseWindowPlot):
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cTitle  = f"{cParent.cTitle} - {dateC} - {self.cSection} - {key}"
+        self.cDateC  = dateC
+        self.cKey    = key
+        self.cFileN   = fileN
         self.rUMSAP  = cParent.cParent
         self.rObj    = cParent.rObj
         self.rData  = self.rObj.GetAAData(cParent.cSection,cParent.rDateC,fileN)
@@ -7286,6 +7290,10 @@ class AAPlot(BaseWindowPlot):
             self.SetAxisPos()
             self.PlotPos(label)
         #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> Zoom
+        self.wPlot.ZoomResetSetValues()
+        #endregion ------------------------------------------------> Zoom
 
         return True
     #---
@@ -7456,6 +7464,31 @@ class AAPlot(BaseWindowPlot):
         self.Destroy()
         #endregion --------------------------------------------------> Destroy
         
+        return True
+    #---
+    
+    def OnExportPlotData(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        return super().OnExportPlotData(df=self.rData)
+    #---
+    
+    def OnDupWin(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
+            AAPlot(self.cParent, self.cDateC, self.cKey, self.cFileN)
+        )
+        #------------------------------> 
         return True
     #---
     #endregion ------------------------------------------------> Class methods

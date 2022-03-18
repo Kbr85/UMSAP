@@ -1658,12 +1658,19 @@ class AAToolMenu(wx.Menu, MenuMethods):
         self.AppendSeparator()
         self.miZoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
         #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> 
+        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
+            self.miZoomR.GetId()    : 'PlotZoomResetOne',
+            self.miSaveI.GetId()    : 'PlotImageOne',
+        }
+        #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
-        # self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
-        # self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
-        # self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
