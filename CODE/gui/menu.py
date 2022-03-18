@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
+from tabnanny import check
 from typing import Optional, Union
 
 import wx
@@ -1637,13 +1638,18 @@ class AAToolMenu(wx.Menu, MenuMethods):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        for k in menuData['Label']:
-            i = self.Append(-1, k, kind=wx.ITEM_RADIO)
-            self.Bind(wx.EVT_MENU, self.OnLabel, source=i)
+        self.rItems = []
+        self.rItems.append(
+            self.Append(-1, menuData['Label'][0], kind=wx.ITEM_CHECK))
+        self.rItems[0].Check()
+        self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[0])
+        for k in menuData['Label'][1:]:
+            self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
+            self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
         self.AppendSeparator()
         for k in menuData['Pos']:
-            i = self.Append(-1, k, kind=wx.ITEM_RADIO)
-            self.Bind(wx.EVT_MENU, self.OnPos, source=i)
+            self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
+            self.Bind(wx.EVT_MENU, self.OnPos, source=self.rItems[-1])
         self.AppendSeparator()
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
@@ -1676,9 +1682,17 @@ class AAToolMenu(wx.Menu, MenuMethods):
             -------
             bool
         """
+        #region ---------------------------------------------------> 
+        [x.Check(check=False) for x in self.rItems]
+        tID = event.GetId()
+        self.Check(tID, True)
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
         win = self.GetWindow()
-        win.UpdatePlot(self.GetLabelText(event.GetId()))
-        
+        win.UpdatePlot(self.GetLabelText(tID))
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     
@@ -1695,9 +1709,17 @@ class AAToolMenu(wx.Menu, MenuMethods):
             -------
             bool
         """
-        win = self.GetWindow()
-        win.UpdatePlot(self.GetLabelText(event.GetId()), exp=False)
+        #region ---------------------------------------------------> 
+        [x.Check(check=False) for x in self.rItems]
+        tID = event.GetId()
+        self.Check(tID, True)
+        #endregion ------------------------------------------------> 
         
+        #region ---------------------------------------------------> 
+        win = self.GetWindow()
+        win.UpdatePlot(self.GetLabelText(tID), exp=False)
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     #endregion ------------------------------------------------> Class methods
