@@ -7020,6 +7020,9 @@ class AAPlot(BaseWindowPlot):
     # shown in the window
     cSection = config.nuAA
     cColor   = config.color[cName]
+    #------------------------------> 
+    rBandWidth = 0.8
+    rBandStart = 0.4
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -7028,11 +7031,15 @@ class AAPlot(BaseWindowPlot):
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cTitle  = f"{cParent.cTitle} - {dateC} - {self.cSection} - {key}"
-        self.rUMSAP = cParent.cParent
-        self.rObj = cParent.rObj
-        self.rData = self.rObj.GetAAData(cParent.cSection,cParent.rDateC,fileN)
-        menuData = self.SetMenuDate()
-        self.rPos = menuData['Pos']
+        self.rUMSAP  = cParent.cParent
+        self.rObj    = cParent.rObj
+        self.rData  = self.rObj.GetAAData(cParent.cSection,cParent.rDateC,fileN)
+        self.rRecSeq = self.rObj.GetRecSeq(cParent.cSection, dateC)
+        menuData     = self.SetMenuDate()
+        self.rPos    = menuData['Pos']
+        self.rLabel  = menuData['Label']
+        self.rExp    = True
+        self.rLabelC = ''
         super().__init__(cParent, menuData)
         #endregion --------------------------------------------> Initial Setup
         
@@ -7119,7 +7126,7 @@ class AAPlot(BaseWindowPlot):
             #------------------------------> Prepare DF
             dfB = df.loc[:,idx[('AA',label),('AA',c)]]
             dfB = dfB[dfB[(label,c)] != 0]
-            dfB = dfB.sort_values(by=(label,c), ascending=False)
+            dfB = dfB.sort_values(by=[(label,c),('AA','AA')], ascending=False)
             #------------------------------> Supp Data
             cumS = [0]+dfB[(label,c)].cumsum().values.tolist()[:-1]
             #--------------> 
@@ -7131,7 +7138,7 @@ class AAPlot(BaseWindowPlot):
                 color.append(self.cColor['BarColor'][row[0]] 
                      if row[0] in config.lAA1 else self.cColor['Xaa'])
                 #--------------> 
-                if row[1] > 10.0:
+                if row[1] >= 10.0:
                     s = f'{row[0]}\n{row[1]:.1f}'
                     y = (2*cumS[r]+row[1])/2
                     text.append([k,y,s])
@@ -7214,10 +7221,10 @@ class AAPlot(BaseWindowPlot):
         #endregion ------------------------------------------------> Data
         
         #region ---------------------------------------------------> Bar
-        n = df.shape[1]
+        n = len(self.rLabel)
         for row in df.itertuples():
-            s = row[0]+1-0.4
-            w = 0.8/n
+            s = row[0]+1-self.rBandStart
+            w = self.rBandWidth/n
             for x in range(0,n,1):
                 self.wPlot.axes.bar(
                     s+x*w, 
@@ -7266,13 +7273,160 @@ class AAPlot(BaseWindowPlot):
             -----
             
         """
+        #region ---------------------------------------------------> 
+        self.rExp    = exp
+        self.rLabelC = label
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
         if exp:
             self.SetAxisExp()
             self.PlotExp(label)
         else:
             self.SetAxisPos()
             self.PlotPos(label)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def UpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info
+    
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            #------------------------------> 
+            x, y = event.xdata, event.ydata
+            #------------------------------> 
+            if self.rExp:
+                return self.UpdateStatusBarExp(x,y)
+            else:
+                #------------------------------> Position
+                return self.UpdateStatusBarPos(x,y)
+        else:
+            self.wStatBar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
         
+        return True
+    #---
+    
+    def UpdateStatusBarExp(self, x: int, y: float) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if 1 <= (xf := round(x)) <= len(self.rPos):
+            pass
+        else:
+            self.wStatBar.SetStatusText('')
+            return False
+        pos = self.rPos[xf-1]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        df = self.rData.loc[:,[('AA', 'AA'),(self.rLabelC, pos)]].iloc[0:-1,:]
+        df['Pc'] = 100*(df.iloc[:,1]/df.iloc[:,1].sum(axis=0))
+        df = df.sort_values(
+            by=[(self.rLabelC, pos),('AA','AA')], ascending=False)
+        df['Sum'] = df['Pc'].cumsum()
+        df = df.reset_index(drop=True)
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        try:
+            row = df[df['Sum'].gt(y)].index[0]
+        except Exception:
+            self.wStatBar.SetStatusText('')
+            return False
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        aa    = df.iat[row,0]
+        pc    = f'{df.iat[row,-2]:.1f}'
+        absV  = f'{df.iat[row,1]:.0f}'
+        inSeq = self.rRecSeq.count(aa)
+        text = (f'Pos={pos}  AA={aa}  {pc}%  Abs={absV}  InSeq={inSeq}')
+        #endregion ------------------------------------------------> 
+
+        self.wStatBar.SetStatusText(text)    
+        return True
+    #---
+    
+    def UpdateStatusBarPos(self, x: int, y: int) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if 1 <= (xf := round(x)) <= len(config.lAA1):
+            pass
+        else:
+            self.wStatBar.SetStatusText('')
+            return False
+        aa = config.lAA1[xf-1]
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        n = len(self.rLabel)
+        w = self.rBandWidth / n
+        e = xf - self.rBandStart + (self.rBandWidth / n)
+        k = 0
+        for k in range(0, n, 1):
+            if e < x:
+                e = e + w
+            else:
+                break
+        exp = self.rLabel[k]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        df = self.rData.loc[:,[('AA', 'AA'),(exp, self.rLabelC)]].iloc[0:-1,:]
+        df['Pc'] = 100*(df.iloc[:,1]/df.iloc[:,1].sum(axis=0))
+        df = df.sort_values(
+            by=[(exp, self.rLabelC),('AA','AA')], ascending=False)
+        df['Sum'] = df['Pc'].cumsum()
+        df = df.reset_index(drop=True)
+        row = df.loc[df[('AA', 'AA')] == aa].index[0]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        pc    = f'{df.iat[row, 2]:.1f}'
+        absV  = f'{df.iat[row, 1]:.0f}'
+        inSeq = self.rRecSeq.count(aa)
+        text  = (f'AA={aa}  Exp={exp}  {pc}%  Abs={absV}  InSeq={inSeq}')
+        #endregion ------------------------------------------------> 
+        
+        self.wStatBar.SetStatusText(text)    
         return True
     #---
     
