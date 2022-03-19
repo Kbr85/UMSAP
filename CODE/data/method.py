@@ -497,4 +497,26 @@ def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
 
     return dfO
 #---
+
+
+def R2Hist(df: pd.DataFrame, alpha: float, win: list[int]) -> pd.DataFrame:
+    """
+
+        Parameters
+        ----------
+        
+
+        Returns
+        -------
+        
+
+        Raise
+        -----
+        
+    """
+    print(df.to_string())
+    print(alpha)
+    print(win)
+    return pd.DataFrame()
+#---
 #endregion ----------------------------------------------------------> Methods

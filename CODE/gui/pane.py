@@ -1410,6 +1410,12 @@ class BaseConfPanel(
             dtsFF.WriteDF2CSV(fileP, self.dfAA)
         else:
             pass
+        
+        if (histDict := stepDict.get('Hist', False)):
+            fileP = dataFolder/histDict[f'{self.rDate}_{self.rDO["Hist"]}']
+            dtsFF.WriteDF2CSV(fileP, self.dfHist)
+        else:
+            pass
         #endregion -----------------------------------------> Further Analysis
 
         #region --------------------------------------------------> UMSAP File
@@ -1442,6 +1448,10 @@ class BaseConfPanel(
         #--------------> Further Analysis
         if self.rDO.get('AA', False):
             dateDict[self.rDateID]['AA'] = stepDict['AA']
+        else:
+            pass
+        if self.rDO.get('Hist', False):
+            dateDict[self.rDateID]['Hist'] = stepDict['Hist']
         else:
             pass
         #------------------------------> Append or not
@@ -5857,6 +5867,7 @@ class TarProt(BaseConfModPanel2):
         super().__init__(cParent)
         
         self.dfAA = pd.DataFrame()
+        self.dfHist = pd.DataFrame()
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -6228,7 +6239,7 @@ class TarProt(BaseConfModPanel2):
         aaPosVal     = self.wAAPos.tc.GetValue()
         aaPos        = int(aaPosVal) if aaPosVal != '' else None
         histVal      = self.wHist.tc.GetValue()
-        hist         = float(histVal) if histVal != '' else None
+        hist         = [int(x) for x in histVal.split()] if histVal != '' else None
         #--------------> Columns
         seqCol       = int(self.wSeqCol.tc.GetValue())
         detectedProt = int(self.wDetectedProt.tc.GetValue())
@@ -6412,6 +6423,29 @@ class TarProt(BaseConfModPanel2):
         else:
             pass
         #endregion -------------------------------------------------------> AA
+        
+        #region --------------------------------------------------------> Hist
+        if self.rDO['Hist'] is not None:
+            #------------------------------> 
+            msgStep = (f'{self.cLPdRun} Histograms')
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------> 
+            a = self.cLDFFirst[2:]+self.rDO['Exp']
+            b = self.cLDFFirst[2:]+['P']
+            tIdx = idx[a,b]
+            try:
+                self.dfHist = dmethod.R2Hist(
+                    self.dfR.loc[:,tIdx], 
+                    self.rDO['Alpha'],
+                    self.rDO['Hist'], 
+                )
+            except Exception as e:
+                self.rMsgError = 'The Histogram creation failed.'
+                self.rException = e
+                return False
+        else:
+            pass
+        #endregion -----------------------------------------------------> Hist
 
         if config.development:
             print('self.dfR.shape: ', self.dfR.shape)
@@ -6439,6 +6473,12 @@ class TarProt(BaseConfModPanel2):
             stepDict['AA']= {}
             stepDict['AA'][f'{self.rDate}_{self.rDO["AA"]}'] = (
                 f'{self.rDate}_AA-{self.rDO["AA"]}.txt')
+        else:
+            pass
+        if self.rDO['Hist'] is not None:
+            stepDict['Hist']= {}
+            stepDict['Hist'][f'{self.rDate}_{self.rDO["Hist"]}'] = (
+                f'{self.rDate}_Hist-{self.rDO["Hist"]}.txt')
         #endregion -----------------------------------------> Further Analysis
 
         return self.WriteOutputData(stepDict)
@@ -6454,6 +6494,7 @@ class TarProt(BaseConfModPanel2):
             pass
         
         self.dfAA = pd.DataFrame()
+        self.dfHist = pd.DataFrame()
         #------------------------------>     
         return super().RunEnd()
     #---
