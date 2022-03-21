@@ -834,7 +834,8 @@ class BaseConfPanel(
             except Exception:
                 ProtLoc = (None, None)
         
-            self.rDO['ProtLength'] = self.rSeqFileObj.seqLengthRec
+            self.rDO['ProtLength'] = [
+                self.rSeqFileObj.seqLengthRec, self.rSeqFileObj.seqLengthNat]
             self.rDO['ProtLoc'] = ProtLoc
             #------------------------------>         
             try:
@@ -6437,7 +6438,8 @@ class TarProt(BaseConfModPanel2):
                 self.dfHist = dmethod.R2Hist(
                     self.dfR.loc[:,tIdx], 
                     self.rDO['Alpha'],
-                    self.rDO['Hist'], 
+                    self.rDO['Hist'],
+                    self.rDO['ProtLength']
                 )
             except Exception as e:
                 self.rMsgError = 'The Histogram creation failed.'

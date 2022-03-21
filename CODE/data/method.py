@@ -19,7 +19,8 @@ import itertools
 from typing import Literal, Union
 
 import pandas as pd
-from numpy import nan as nan
+import numpy as np
+from numpy import nan
 
 import dat4s_core.data.method as dtsMethod
 import dat4s_core.data.statistic as dtsStatistic
@@ -499,7 +500,9 @@ def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
 #---
 
 
-def R2Hist(df: pd.DataFrame, alpha: float, win: list[int]) -> pd.DataFrame:
+def R2Hist(
+    df: pd.DataFrame, alpha: float, win: list[int], maxL: list[int]
+    ) -> pd.DataFrame:
     """
 
         Parameters
@@ -514,9 +517,72 @@ def R2Hist(df: pd.DataFrame, alpha: float, win: list[int]) -> pd.DataFrame:
         -----
         
     """
-    print(df.to_string())
-    print(alpha)
-    print(win)
-    return pd.DataFrame()
+    #region ---------------------------------------------------> Variables
+    bin = []
+    if len(win) == 1:
+        bin.append([x for x in range(0, maxL[0]+win[0], win[0])])
+        if maxL[1] is not None:
+            bin.append([x for x in range(0, maxL[1]+win[0], win[0])])
+        else:
+            bin.append([None])
+    else:
+        bin.append(win)
+        bin.append(win)
+    #endregion ------------------------------------------------> Variables
+    
+    #region --------------------------------------------------------> Empty DF
+    #------------------------------> Columns
+    label = df.columns.unique(level=0).tolist()[4:]
+    nL = len(label)
+    a = (2*nL+1)*['Rec']+(2*nL+1)*['Nat']
+    b = ['Win']+nL*['All']+nL*['Unique']+['Win']+nL*['All']+nL*['Unique']
+    c = 2*(['Win']+2*label)
+    #------------------------------> Rows
+    nR = sorted([len(x) for x in bin])[-1]
+    #------------------------------> df
+    col = pd.MultiIndex.from_arrays([a[:],b[:],c[:]])
+    dfO = pd.DataFrame(nan, index=range(0,nR), columns=col)
+    #endregion -----------------------------------------------------> Empty DF
+
+    #region ---------------------------------------------------> Fill
+    #------------------------------> Windows
+    dfO.iloc[range(0,len(bin[0])), dfO.columns.get_loc(('Rec','Win','Win'))] = bin[0]
+    if bin[1][0] is not None:
+        dfO.iloc[range(0,len(bin[1])), dfO.columns.get_loc(('Nat','Win','Win'))] = bin[1]
+    else:
+        pass
+    print(dfO.to_string())
+    print(dfO.shape)
+    #------------------------------> 
+    for e in label:
+        dfT = df[df[(e,'P')] < alpha]
+        #------------------------------> 
+        dfR = dfT[[('Nterm','Nterm'),('Cterm', 'Cterm')]].copy()
+        dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 1
+        l = dfR.to_numpy().flatten()
+        a,_ = np.histogram(l, bins=bin[0])
+        print(a, len(a))
+        dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','All',e))] = a
+        l = list(set(l))
+        a,_ = np.histogram(l, bins=bin[0])
+        print(a)
+        dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','Unique',e))] = a
+        #------------------------------> 
+        if bin[1][0] is not None:
+            dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
+            dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 1
+            l = dfR.to_numpy().flatten()
+            a,_ = np.histogram(l, bins=bin[0])
+            print(a)
+            dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','All',e))] = a
+            l = list(set(l))
+            a,_ = np.histogram(l, bins=bin[0])
+            print(a)
+            dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','Unique',e))] = a
+        else:
+            pass
+    #endregion ------------------------------------------------> Fill
+
+    return dfO
 #---
 #endregion ----------------------------------------------------------> Methods

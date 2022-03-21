@@ -64,14 +64,14 @@ def UpdateCheck(
     ori: Literal['menu', 'main'], win: Optional[wx.Window]=None
     ) -> bool:
     """ Check for updates for UMSAP from another thread.
-        
+
         Parameters
         ----------
         ori: str
             Origin of the request, 'menu' or 'main'
         win : wx widget
             To center the result window in this widget
-            
+
         Return
         ------
         bool
@@ -4692,7 +4692,7 @@ class LimProtPlot(BaseWindowProteolysis):
         self.rLanes       = self.rData[self.rDateC]['PI']['Lanes']
         self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
         self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
-        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength']
+        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength'][0]
         self.rProtDelta   = self.rData[self.rDateC]['PI']['ProtDelta']
         self.rProtTarget  = self.rData[self.rDateC]['PI']['Prot']
         self.rRectsGel    = []
@@ -6526,7 +6526,7 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rDf          = self.rData[self.rDateC]['DF'].copy()
         self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
         self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
-        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength']
+        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength'][0]
         self.rFragSelLine = None
         self.rFragSelC    = [None, None, None]
         self.rExp         = self.rData[self.rDateC]['PI']['Exp']
@@ -9411,7 +9411,7 @@ class VolColorScheme(dtsWindow.OkCancel):
             self.GetNameGroup(1), 
         )
     #---
-    
+
     def GetNameGroup(self, tKey: int) -> str:
         """Get the corresponding key for the checked element
 
