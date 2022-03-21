@@ -7640,15 +7640,21 @@ class HistPlot(BaseWindowPlot):
     #------------------------------> To id the section in the umsap file 
     # shown in the window
     cSection = config.nuHist
-    # cColor   = config.color[cName]
+    cColor   = config.color[cName]
     #------------------------------> 
+    rBandWidth = 0.8
+    rBandStart = 0.4
     cRec = {
-        True: 'Rec',
+        True : 'Rec',
         False: 'Nat',
+        'Rec': 'Recombinant Sequence',
+        'Nat': 'Native Sequence',
     }
     cAll = {
-        True: 'All',
-        False: 'Unique',
+        True    : 'All',
+        False   : 'Unique',
+        'All'   : 'All Cleavages',
+        'Unique': 'Unique Cleavages',
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -7702,16 +7708,48 @@ class HistPlot(BaseWindowPlot):
         #------------------------------> 
         idx = pd.IndexSlice
         df = self.rData.loc[:,idx[tRec,['Win',tAllC],:]]
-        print(df)
+        #------------------------------> 
+        label = df.columns.unique(level=2).tolist()[1:]
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> 
         self.SetAxis(df.loc[:,idx[:,:,'Win']])
         #endregion ------------------------------------------------> 
 
-
+        #region ---------------------------------------------------> Plot
+        n = len(label)
+        w = self.rBandWidth / n
+        df = df.iloc[:,range(1,n+1,1)]
+        df = df[(df.notna()).all(axis=1)]
+        for row in df.itertuples():
+            s = row[0]+1-self.rBandStart
+            for x in range(0,n,1):
+                self.wPlot.axes.bar(
+                    s+x*w,
+                    row[x+1],
+                    width     = w,
+                    align     = 'edge',
+                    color     = self.cColor['Spot'][x],
+                    edgecolor = 'black',
+                )
+        #endregion ------------------------------------------------> Plot
         
-            
+        #region ------------------------------------------------------> Legend
+        leg = []
+        for i in range(0, n, 1):
+            leg.append(mpatches.Patch(
+                color = self.cColor['Spot'][i],
+                label = label[i],
+            ))
+        leg = self.wPlot.axes.legend(
+            handles        = leg,
+            loc            = 'upper left',
+            bbox_to_anchor = (1, 1)
+        )
+        leg.get_frame().set_edgecolor('k')		
+        #endregion ---------------------------------------------------> Legend
+        
+        self.wPlot.axes.set_title(f'{self.cRec[tRec]} - {self.cAll[tAllC]}')
         self.wPlot.canvas.draw()
         return True
     #---
@@ -7731,6 +7769,10 @@ class HistPlot(BaseWindowPlot):
             -----
             
         """
+        #region ---------------------------------------------------> 
+        self.wPlot.axes.clear()
+        #endregion ------------------------------------------------> 
+
         #region ---------------------------------------------------> Label
         #------------------------------> 
         win = win.dropna().astype('int').to_numpy().flatten()

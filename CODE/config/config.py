@@ -549,6 +549,9 @@ color = { # Colors for the app
         'Xaa' : 'GREY',
         'Spot' : colorFragments,
     },
+    nwHistPlot : {
+        'Spot' : colorFragments,
+    }
 }
 #endregion -----------------------------------------------------------> Colors
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS
