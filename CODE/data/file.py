@@ -400,6 +400,7 @@ class UMSAPFile():
                     'DF': df,
                     'PI': PI,
                     'AA': v.get('AA', {}),
+                    'Hist': v.get('Hist', {}),
                 }
             except Exception:
                 pass

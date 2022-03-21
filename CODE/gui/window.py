@@ -7069,6 +7069,44 @@ class TarProtPlot(BaseWindowProteolysis):
         dlg.Destroy()
         return True
     #---
+    
+    def OnHistSelect(self, hist:str) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        print('Hist Select: ', hist)
+        return True
+    #---
+    
+    def OnHistNew(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        print('Hist New Coming Soon')
+        return True
+    #---
     #endregion -------------------------------------------------> Event Methods
 #---
 

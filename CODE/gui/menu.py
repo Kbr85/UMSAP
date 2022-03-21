@@ -1540,7 +1540,11 @@ class FurtherAnalysisTarProt(wx.Menu):
         aa.append(wx.MenuItem(None, -1, text='New AA Analysis'))
         self.Bind(wx.EVT_MENU, self.OnAANew, source=aa[-1])
         #------------------------------> 
+        for v in self.cMenuData[tDate]['Hist']:
+            hist.append(wx.MenuItem(None, -1, text=v))
+            self.Bind(wx.EVT_MENU, self.OnHistSelect, source=hist[-1])
         hist.append(wx.MenuItem(None, -1, text='New Histogram Windows'))
+        self.Bind(wx.EVT_MENU, self.OnHistNew, source=hist[-1])
         #endregion ------------------------------------------------> 
 
         return [aa, hist]
@@ -1641,6 +1645,48 @@ class FurtherAnalysisTarProt(wx.Menu):
         """
         win = self.GetWindow()
         return getattr(win, 'OnAANew')()
+    #---
+    
+    def OnHistSelect(self, event:wx.CommandEvent) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        win = self.GetWindow()
+        win.OnHistSelect(self.GetLabelText(event.GetId()))
+        
+        return True
+    #---
+    
+    def OnHistNew(self, event: wx.CommandEvent) -> bool:
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        win = self.GetWindow()
+        return getattr(win, 'OnHistNew')()
     #---
     #endregion ------------------------------------------------> Event methods
 #---
