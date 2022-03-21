@@ -115,6 +115,7 @@ nwLimProt       = 'LimProtPlot'
 nwTarProt       = 'TarProtPlot'
 nwCheckDataPrep = 'CheckDataPrep'
 nwAAPlot        = 'AAPlot'
+nwHistPlot      = 'HistPlot'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
@@ -144,6 +145,7 @@ nmProtProf = 'Proteome Profiling'
 nuDataPrep = "Data Preparation"
 nuCorrA    = 'Correlation Analysis'
 nuAA       = 'AA Distribution'
+nuHist     = 'Histograms'
 nuReadF    = 'Read UMSAP File'
 #endregion ------------------------------------------------------------> Names
 

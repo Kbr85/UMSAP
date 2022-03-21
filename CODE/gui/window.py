@@ -7085,7 +7085,10 @@ class TarProtPlot(BaseWindowProteolysis):
             -----
             
         """
-        print('Hist Select: ', hist)
+        self.cParent.rWindow[self.cSection]['FA'].append(
+            HistPlot(
+                self, self.rDateC, hist, self.rData[self.rDateC]['Hist'][hist]
+        ))
         return True
     #---
     
@@ -7609,6 +7612,143 @@ class AAPlot(BaseWindowPlot):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
+
+
+class HistPlot(BaseWindowPlot):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    #------------------------------> To id the window
+    cName = config.nwHistPlot
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nuHist
+    # cColor   = config.color[cName]
+    #------------------------------> 
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: wx.Window, dateC: str, key: str, fileN: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle  = f"{cParent.cTitle} - {dateC} - {self.cSection} - {key}"
+        self.cDateC  = dateC
+        self.cKey    = key
+        self.cFileN   = fileN
+        self.rUMSAP  = cParent.cParent
+        self.rObj    = cParent.rObj
+        self.rData  = self.rObj.GetAAData(cParent.cSection,cParent.rDateC,fileN)
+        # menuData     = self.SetMenuDate()
+        
+        super().__init__(cParent, {})
+        #endregion --------------------------------------------> Initial Setup
+        
+        #region ---------------------------------------------------> Plot
+        self.UpdatePlot()
+        #endregion ------------------------------------------------> Plot
+
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods    
+    def UpdatePlot(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        
+
+        return True
+    #---
+    
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    
+    def OnExportPlotData(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        return super().OnExportPlotData(df=self.rData)
+    #---
+    
+    def OnDupWin(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
+            HistPlot(self.cParent, self.cDateC, self.cKey, self.cFileN)
+        )
+        #------------------------------> 
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
 
 
 class CheckDataPrep(BaseWindowNPlotLT):

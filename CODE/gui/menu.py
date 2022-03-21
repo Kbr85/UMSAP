@@ -1799,6 +1799,102 @@ class AAToolMenu(wx.Menu, MenuMethods):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
+
+
+class HistToolMenu(wx.Menu, MenuMethods):
+    """ """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, *args):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
+        self.miSaveI = self.Append(-1, 'Export Image\tCtrl+I')
+        self.AppendSeparator()
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> 
+        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
+            self.miZoomR.GetId()    : 'PlotZoomResetOne',
+            self.miSaveI.GetId()    : 'PlotImageOne',
+        }
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnLabel(self, event: wx.CommandEvent) -> bool:
+        """Change between Experiments.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        [x.Check(check=False) for x in self.rItems]
+        tID = event.GetId()
+        self.Check(tID, True)
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        win = self.GetWindow()
+        win.UpdatePlot(self.GetLabelText(tID))
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnPos(self, event: wx.CommandEvent) -> bool:
+        """Change between Positions.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        [x.Check(check=False) for x in self.rItems]
+        tID = event.GetId()
+        self.Check(tID, True)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        win = self.GetWindow()
+        win.UpdatePlot(self.GetLabelText(tID), exp=False)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion -------------------------------------------------> Individual menus
 
 
@@ -2255,6 +2351,7 @@ class ToolMenuBar(MainMenuBar):
         config.nwLimProt      : LimProtToolMenu,
         config.nwTarProt      : TarProtToolMenu,
         config.nwAAPlot       : AAToolMenu,
+        config.nwHistPlot     : HistToolMenu,
     }
     #endregion --------------------------------------------------> Class Setup
     
