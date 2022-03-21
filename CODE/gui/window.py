@@ -7156,7 +7156,8 @@ class AAPlot(BaseWindowPlot):
         self.cFileN   = fileN
         self.rUMSAP  = cParent.cParent
         self.rObj    = cParent.rObj
-        self.rData  = self.rObj.GetAAData(cParent.cSection,cParent.rDateC,fileN)
+        self.rData  = self.rObj.GetFAData(
+            cParent.cSection,cParent.rDateC,fileN, [0,1])
         self.rRecSeq = self.rObj.GetRecSeq(cParent.cSection, dateC)
         menuData     = self.SetMenuDate()
         self.rPos    = menuData['Pos']
@@ -7641,7 +7642,14 @@ class HistPlot(BaseWindowPlot):
     cSection = config.nuHist
     # cColor   = config.color[cName]
     #------------------------------> 
-    
+    cRec = {
+        True: 'Rec',
+        False: 'Nat',
+    }
+    cAll = {
+        True: 'All',
+        False: 'Unique',
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -7655,14 +7663,14 @@ class HistPlot(BaseWindowPlot):
         self.cFileN   = fileN
         self.rUMSAP  = cParent.cParent
         self.rObj    = cParent.rObj
-        self.rData  = self.rObj.GetAAData(cParent.cSection,cParent.rDateC,fileN)
-        # menuData     = self.SetMenuDate()
-        
+        self.rData  = self.rObj.GetFAData(
+            cParent.cSection,cParent.rDateC,fileN, [0,1,2])
+        #------------------------------> 
         super().__init__(cParent, {})
         #endregion --------------------------------------------> Initial Setup
         
         #region ---------------------------------------------------> Plot
-        self.UpdatePlot()
+        self.UpdatePlot(rec=True, allC=True)
         #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
@@ -7673,7 +7681,7 @@ class HistPlot(BaseWindowPlot):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods    
-    def UpdatePlot(self):
+    def UpdatePlot(self, rec:bool, allC: bool) -> bool:
         """
     
             Parameters
@@ -7688,7 +7696,55 @@ class HistPlot(BaseWindowPlot):
             -----
             
         """
+        #region ---------------------------------------------------> Variables
+        tRec  = self.cRec[rec]
+        tAllC = self.cAll[allC]
+        #------------------------------> 
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[tRec,['Win',tAllC],:]]
+        print(df)
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        self.SetAxis(df.loc[:,idx[:,:,'Win']])
+        #endregion ------------------------------------------------> 
+
+
         
+            
+        self.wPlot.canvas.draw()
+        return True
+    #---
+    
+    def SetAxis(self, win: pd.Series):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Label
+        #------------------------------> 
+        win = win.dropna().astype('int').to_numpy().flatten()
+        label = []
+        for k,w in enumerate(win[1:]):
+            label.append(f'{win[k]}-{w}')
+        #------------------------------> 
+        self.wPlot.axes.set_xticks(range(1,len(label)+1,1))
+        self.wPlot.axes.set_xticklabels(label)
+        self.wPlot.axes.set_xlim(0, len(label)+1)
+        self.wPlot.axes.tick_params(axis='x', labelrotation=45)
+        self.wPlot.axes.set_xlabel('Windows')
+        self.wPlot.axes.set_ylabel('Number of Cleavages')
+        #endregion ------------------------------------------------> Label
 
         return True
     #---

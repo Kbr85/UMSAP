@@ -581,8 +581,10 @@ class UMSAPFile():
         #endregion ------------------------------------------------> 
     #---
     
-    def GetAAData(self, tSection: str, tDate: str, fileN: str):
-        """Get an AA Distribution Data
+    def GetFAData(
+        self, tSection: str, tDate: str, fileN: str, header: list[int]
+        ) -> 'pd.DataFrame':
+        """Get the data for a Further Analysis section
     
             Parameters
             ----------
@@ -593,6 +595,8 @@ class UMSAPFile():
                 e.g. '20210325-112056 - bla'
             fileN : str
                 File name with the data
+            header: list[int]
+                Header rows in the file
     
             Returns
             -------
@@ -601,7 +605,7 @@ class UMSAPFile():
         tPath = (
             self.rStepDataP/f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'/fileN
         )
-        return dtsFF.ReadCSV2DF(tPath, header=[0,1])
+        return dtsFF.ReadCSV2DF(tPath, header=header)
     #---
     #endregion --------------------------------------------------> Get Methods
 #---

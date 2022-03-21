@@ -1815,6 +1815,13 @@ class HistToolMenu(wx.Menu, MenuMethods):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
+        self.miNat = self.Append(-1, 'Native Sequence', kind=wx.ITEM_RADIO)
+        self.miRec = self.Append(-1, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
+        self.miRec.Check()
+        self.AppendSeparator()
+        self.miAll = self.Append(-1, 'All Cleavages', kind=wx.ITEM_RADIO)
+        self.miUnique = self.Append(-1, 'Unique Cleavages', kind=wx.ITEM_RADIO)
+        self.AppendSeparator()
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
         self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
@@ -1831,6 +1838,10 @@ class HistToolMenu(wx.Menu, MenuMethods):
         #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnChange,         source=self.miNat)
+        self.Bind(wx.EVT_MENU, self.OnChange,         source=self.miRec)
+        self.Bind(wx.EVT_MENU, self.OnChange,         source=self.miAll)
+        self.Bind(wx.EVT_MENU, self.OnChange,         source=self.miUnique)
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
@@ -1840,8 +1851,8 @@ class HistToolMenu(wx.Menu, MenuMethods):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnLabel(self, event: wx.CommandEvent) -> bool:
-        """Change between Experiments.
+    def OnChange(self, event: wx.CommandEvent):
+        """
 
             Parameters
             ----------
@@ -1851,46 +1862,14 @@ class HistToolMenu(wx.Menu, MenuMethods):
 
             Returns
             -------
-            bool
+
+
+            Raise
+            -----
+
         """
-        #region ---------------------------------------------------> 
-        [x.Check(check=False) for x in self.rItems]
-        tID = event.GetId()
-        self.Check(tID, True)
-        #endregion ------------------------------------------------> 
-
-        #region ---------------------------------------------------> 
         win = self.GetWindow()
-        win.UpdatePlot(self.GetLabelText(tID))
-        #endregion ------------------------------------------------> 
-
-        return True
-    #---
-    
-    def OnPos(self, event: wx.CommandEvent) -> bool:
-        """Change between Positions.
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> 
-        [x.Check(check=False) for x in self.rItems]
-        tID = event.GetId()
-        self.Check(tID, True)
-        #endregion ------------------------------------------------> 
-        
-        #region ---------------------------------------------------> 
-        win = self.GetWindow()
-        win.UpdatePlot(self.GetLabelText(tID), exp=False)
-        #endregion ------------------------------------------------> 
-
+        win.UpdatePlot(rec=self.miRec.IsChecked(), allC=self.miAll.IsChecked())
         return True
     #---
     #endregion ------------------------------------------------> Class methods
