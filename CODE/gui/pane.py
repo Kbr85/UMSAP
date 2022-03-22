@@ -5823,7 +5823,7 @@ class TarProt(BaseConfModPanel2):
     #------------------------------> Label
     cLPDB      = 'PDB'
     cLAAPos    = 'AA Positions'
-    cLHist     = 'Histogram windows'
+    cLHist     = 'Histogram Windows'
     cLExp      = config.lStTarProtExp
     cLCtrlName = config.lStCtrlName
     cLDFFirst  = config.dfcolTarProtFirstPart

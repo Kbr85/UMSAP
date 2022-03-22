@@ -507,15 +507,13 @@ def R2Hist(
 
         Parameters
         ----------
-        
-
+        df: pd.DataFrame
+            Nterm Cterm NtermF CtermF Exp1 .... ExpN
+            Nterm Cterm NtermF CtermF P    .... P
+            
         Returns
         -------
-        
-
-        Raise
-        -----
-        
+        pd.DataFrame
     """
     #region ---------------------------------------------------> Variables
     bin = []
@@ -551,8 +549,6 @@ def R2Hist(
         dfO.iloc[range(0,len(bin[1])), dfO.columns.get_loc(('Nat','Win','Win'))] = bin[1]
     else:
         pass
-    print(dfO.to_string())
-    print(dfO.shape)
     #------------------------------> 
     for e in label:
         dfT = df[df[(e,'P')] < alpha]
@@ -561,11 +557,9 @@ def R2Hist(
         dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 1
         l = dfR.to_numpy().flatten()
         a,_ = np.histogram(l, bins=bin[0])
-        print(a, len(a))
         dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','All',e))] = a
         l = list(set(l))
         a,_ = np.histogram(l, bins=bin[0])
-        print(a)
         dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','Unique',e))] = a
         #------------------------------> 
         if bin[1][0] is not None:
@@ -573,11 +567,9 @@ def R2Hist(
             dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 1
             l = dfR.to_numpy().flatten()
             a,_ = np.histogram(l, bins=bin[0])
-            print(a)
             dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','All',e))] = a
             l = list(set(l))
             a,_ = np.histogram(l, bins=bin[0])
-            print(a)
             dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','Unique',e))] = a
         else:
             pass
