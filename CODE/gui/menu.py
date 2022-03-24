@@ -1485,213 +1485,6 @@ class ClearSelTarProt(wx.Menu):
 #---
 
 
-class FurtherAnalysisTarProt(wx.Menu):
-    """ """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, cMenuData: dict, ciDate:str):
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        self.cMenuData = cMenuData
-        self.rAA, self.rHist = self.SetFurtherAItems(ciDate)
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        self.AddFurtherAItems()
-        #endregion -----------------------------------------------> Menu Items
-
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
-
-    #region ---------------------------------------------------> Class methods
-    def SetFurtherAItems(self, tDate: str):
-        """
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-
-            Returns
-            -------
-
-
-            Raise
-            -----
-
-        """
-        #region ---------------------------------------------------> Variables
-        aa = []
-        hist = []
-        #endregion ------------------------------------------------> Variables
-
-        #region ---------------------------------------------------> 
-        for v in self.cMenuData[tDate]['AA']:
-            aa.append(wx.MenuItem(None, -1, text=v))
-            self.Bind(wx.EVT_MENU, self.OnAASelect, source=aa[-1])
-        aa.append(wx.MenuItem(None, -1, text='New AA Analysis'))
-        self.Bind(wx.EVT_MENU, self.OnAANew, source=aa[-1])
-        #------------------------------> 
-        for v in self.cMenuData[tDate]['Hist']:
-            hist.append(wx.MenuItem(None, -1, text=v))
-            self.Bind(wx.EVT_MENU, self.OnHistSelect, source=hist[-1])
-        hist.append(wx.MenuItem(None, -1, text='New Histogram Windows'))
-        self.Bind(wx.EVT_MENU, self.OnHistNew, source=hist[-1])
-        #endregion ------------------------------------------------> 
-
-        return [aa, hist]
-    #---
-    
-    def AddFurtherAItems(self):
-        """"""
-        #------------------------------> 
-        for k,c in enumerate(self.rAA):
-            self.Insert(k,c)
-        #------------------------------> 
-        self.rSep = wx.MenuItem(None)
-        self.Insert(k+1, self.rSep)
-        #------------------------------> 
-        for j,c in enumerate(self.rHist, start=k+2):
-            self.Insert(j,c)
-        #------------------------------> 
-        return True
-    #---
-    
-    def UpdateAList(self, tDate: str):
-        """
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-
-            Returns
-            -------
-
-
-            Raise
-            -----
-
-        """
-        #region ---------------------------------------------> Delete Elements
-        #------------------------------> Conditions
-        for c in self.rAA:
-            self.Delete(c)
-        #------------------------------> Separators
-        self.Delete(self.rSep)
-        #------------------------------> RP
-        for c in self.rHist:
-            self.Delete(c)
-        #endregion ------------------------------------------> Delete Elements
-        
-        #region -----------------------------------> Create & Add New Elements
-        #------------------------------> 
-        self.rAA, self.rHist = self.SetFurtherAItems(tDate)
-        #------------------------------> 
-        self.AddFurtherAItems()
-        #endregion --------------------------------> Create & Add New Elements
-        
-        return True
-    #---
-    #endregion ------------------------------------------------> Class methods
-    
-    #region ---------------------------------------------------> Event methods
-    def OnAASelect(self, event:wx.CommandEvent) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        win = self.GetWindow()
-        win.OnAASelect(self.GetLabelText(event.GetId()))
-        
-        return True
-    #---
-    
-    def OnAANew(self, event: wx.CommandEvent) -> bool:
-        """
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-
-            Returns
-            -------
-
-
-            Raise
-            -----
-
-        """
-        win = self.GetWindow()
-        return getattr(win, 'OnAANew')()
-    #---
-    
-    def OnHistSelect(self, event:wx.CommandEvent) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        win = self.GetWindow()
-        win.OnHistSelect(self.GetLabelText(event.GetId()))
-        
-        return True
-    #---
-    
-    def OnHistNew(self, event: wx.CommandEvent) -> bool:
-        """
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-
-            Returns
-            -------
-
-
-            Raise
-            -----
-
-        """
-        win = self.GetWindow()
-        return getattr(win, 'OnHistNew')()
-    #---
-    #endregion ------------------------------------------------> Event methods
-#---
-
-
 class AAToolMenu(wx.Menu, MenuMethods):
     """ """
     #region -----------------------------------------------------> Class setup
@@ -1874,10 +1667,403 @@ class HistToolMenu(wx.Menu, MenuMethods):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
+
+
+class FAMenuTarProtAA(wx.Menu):
+    """ """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cMenuData: dict, ciDate: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cMenuData = cMenuData
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.rAA = self.SetItems(ciDate)
+        self.AddItems()
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetItems(self, tDate: str):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> Variables
+        aa = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        for v in self.cMenuData[tDate]['AA']:
+            aa.append(wx.MenuItem(None, -1, text=v))
+            self.Bind(wx.EVT_MENU, self.OnAASelect, source=aa[-1])
+        aa.append(wx.MenuItem(None, -1, text='New AA Analysis'))
+        self.Bind(wx.EVT_MENU, self.OnAANew, source=aa[-1])
+        #endregion ------------------------------------------------> 
+
+        return aa
+    #---
+    
+    def AddItems(self) -> bool:
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> Add
+        for k,m in enumerate(self.rAA[:-1]):
+            self.Insert(k,m)
+
+        if len(self.rAA) > 1:
+            self.rSep = wx.MenuItem(None)
+            self.Insert(k+1, self.rSep)
+            k = k + 2
+            self.Insert(k, self.rAA[-1])
+        else:
+            self.rSep = None
+            self.Insert(0, self.rAA[-1])
+        #endregion ------------------------------------------------> Add
+        
+        return True
+    #---
+    
+    def Update(self, tDate: str, cMenuData: dict={}) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------------> 
+        for x in self.rAA:
+            self.Delete(x)
+        
+        if self.rSep is not None:
+            self.Delete(self.rSep)
+        else:
+            pass
+        #endregion -----------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.cMenuData = cMenuData if cMenuData else self.cMenuData
+        self.rAA = self.SetItems(tDate)
+        self.AddItems()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+    
+    #region ---------------------------------------------------> Event methods
+    def OnAASelect(self, event:wx.CommandEvent) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        win = self.GetWindow()
+        win.OnAASelect(self.GetLabelText(event.GetId()))
+        
+        return True
+    #---
+    
+    def OnAANew(self, event: wx.CommandEvent) -> bool:
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        win = self.GetWindow()
+        return getattr(win, 'OnAANew')()
+    #---
+    #region ---------------------------------------------------> Event methods
+#---
+
+
+class FAMenuTarProtHist(wx.Menu):
+    """ """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cMenuData: dict, ciDate: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cMenuData = cMenuData
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.rHist = self.SetItems(ciDate)
+        self.AddItems()
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetItems(self, tDate: str):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> Variables
+        hist = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        for v in self.cMenuData[tDate]['Hist']:
+            hist.append(wx.MenuItem(None, -1, text=v))
+            self.Bind(wx.EVT_MENU, self.OnHistSelect, source=hist[-1])
+        hist.append(wx.MenuItem(None, -1, text='New Histogram'))
+        self.Bind(wx.EVT_MENU, self.OnHistNew, source=hist[-1])
+        #endregion ------------------------------------------------> 
+
+        return hist
+    #---
+    
+    def AddItems(self) -> bool:
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> Add
+        for k,m in enumerate(self.rHist[:-1]):
+            self.Insert(k,m)
+
+        if len(self.rHist) > 1:
+            self.rSep = wx.MenuItem(None)
+            self.Insert(k+1, self.rSep)
+            self.Insert(k+2, self.rHist[-1])
+        else:
+            self.rSep = None
+            self.Insert(0, self.rHist[-1])
+        #endregion ------------------------------------------------> Add
+        
+        return True
+    #---
+    
+    def Update(self, tDate: str, cMenuData: dict={}) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------------> 
+        for x in self.rHist:
+            self.Delete(x)
+        
+        if self.rSep is not None:
+            self.Delete(self.rSep)
+        else:
+            pass
+        #endregion -----------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.cMenuData = cMenuData if cMenuData else self.cMenuData
+        self.rHist = self.SetItems(tDate)
+        self.AddItems()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+    
+    #region ---------------------------------------------------> Event methods
+    def OnHistSelect(self, event:wx.CommandEvent) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        win = self.GetWindow()
+        win.OnHistSelect(self.GetLabelText(event.GetId()))
+        
+        return True
+    #---
+    
+    def OnHistNew(self, event: wx.CommandEvent) -> bool:
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        win = self.GetWindow()
+        return getattr(win, 'OnHistNew')()
+    #---
+    #endregion ------------------------------------------------> Event methods
+#---
 #endregion -------------------------------------------------> Individual menus
 
 
 #region -----------------------------------------------------------> Mix menus
+class FurtherAnalysisTarProt(wx.Menu):
+    """ """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cMenuData: dict, ciDate:str):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        
+        self.mAA = FAMenuTarProtAA(cMenuData, ciDate)
+        self.AppendSubMenu(self.mAA, 'AA Distribution')
+        self.AppendSeparator()
+        self.mHist = FAMenuTarProtHist(cMenuData, ciDate)
+        self.AppendSubMenu(self.mHist, 'Cleavage Site Histograms')
+        #endregion --------------------------------------------> Initial Setup
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def UpdateFAList(self, tDate: str, cMenuData: dict={}):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        self.mAA.Update(tDate, cMenuData)
+        self.mHist.Update(tDate, cMenuData)
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
 class ProtProfToolMenu(wx.Menu, MenuMethods):
     """Tool menu for the Proteome Profiling Plot window.
         
@@ -2272,7 +2458,7 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------------> Date
         
         #region -----------------------------------------> Update Volcano menu
-        self.mFurtherA.UpdateAList(tDate)
+        self.mFurtherA.UpdateFAList(tDate)
         #endregion --------------------------------------> Update Volcano menu
         
         return super().OnPlotDate(event)

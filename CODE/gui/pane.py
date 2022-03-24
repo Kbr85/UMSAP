@@ -1447,11 +1447,11 @@ class BaseConfPanel(
         else:
             pass
         #--------------> Further Analysis
-        if self.rDO.get('AA', False):
+        if stepDict.get('AA', None) is not None:
             dateDict[self.rDateID]['AA'] = stepDict['AA']
         else:
             pass
-        if self.rDO.get('Hist', False):
+        if stepDict.get('Hist', None) is not None:
             dateDict[self.rDateID]['Hist'] = stepDict['Hist']
         else:
             pass
@@ -6471,16 +6471,20 @@ class TarProt(BaseConfModPanel2):
         #endregion -----------------------------------------------> Data Steps
         
         #region --------------------------------------------> Further Analysis
+        #------------------------------> 
+        stepDict['AA']= {}
         if self.rDO['AA'] is not None:
-            stepDict['AA']= {}
             stepDict['AA'][f'{self.rDate}_{self.rDO["AA"]}'] = (
                 f'{self.rDate}_AA-{self.rDO["AA"]}.txt')
         else:
             pass
+        #------------------------------> 
+        stepDict['Hist']= {}
         if self.rDO['Hist'] is not None:
-            stepDict['Hist']= {}
             stepDict['Hist'][f'{self.rDate}_{self.rDO["Hist"]}'] = (
                 f'{self.rDate}_Hist-{self.rDO["Hist"]}.txt')
+        else:
+            pass
         #endregion -----------------------------------------> Further Analysis
 
         return self.WriteOutputData(stepDict)

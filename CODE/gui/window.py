@@ -7060,8 +7060,7 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rData = self.rObj.dConfigure[self.cSection]()
         #--------------> Menu
         _, menuData = self.SetDateMenuDate()
-        self.mBar.mTool.mFurtherA.cMenuData = menuData['FA']
-        self.mBar.mTool.mFurtherA.UpdateAList(self.rDateC)
+        self.mBar.mTool.mFurtherA.UpdateFAList(self.rDateC, menuData['FA'])
         #--------------> GUI
         self.OnAASelect(f'{date}_{pos}')
         #endregion --------------------------------------------> Save & Update
@@ -7155,8 +7154,7 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rData = self.rObj.dConfigure[self.cSection]()
         #--------------> Menu
         _, menuData = self.SetDateMenuDate()
-        self.mBar.mTool.mFurtherA.cMenuData = menuData['FA']
-        self.mBar.mTool.mFurtherA.UpdateAList(self.rDateC)
+        self.mBar.mTool.mFurtherA.UpdateFAList(self.rDateC, menuData['FA'])
         #--------------> GUI
         self.OnHistSelect(f'{date}_{win}')
         #endregion --------------------------------------------> Save & Update
