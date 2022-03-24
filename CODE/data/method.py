@@ -591,8 +591,39 @@ def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         -------
         pd.DataFrame
     """
-    print(df.to_string())
-    print(alpha, protL)
-    return pd.DataFrame()
+    #region -------------------------------------------------------------> dfO
+    label = df.columns.unique(level=0).tolist()[4:]
+    nL = len(label)
+    a = (nL)*['Rec']+(nL)*['Nat']
+    b = 2*label
+    nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
+    idx = pd.IndexSlice
+    col = pd.MultiIndex.from_arrays([a[:],b[:]])
+    dfO = pd.DataFrame(0, index=range(0,nR), columns=col)   
+    #endregion ----------------------------------------------------------> dfO
+   
+    #region ------------------------------------------------------------> Fill
+    for e in label:
+        dfT = df[df[(e,'P')] < alpha]
+        #------------------------------> Rec
+        dfR = dfT[[('Nterm','Nterm'),('Cterm', 'Cterm')]].copy()
+        dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 2
+        dfR[('Cterm','Cterm')] = dfR[('Cterm','Cterm')] - 1
+        l = dfR.to_numpy().flatten()
+        for x in l:
+            dfO.at[x, idx['Rec',e]] = dfO.at[x, idx['Rec',e]] + 1
+        #------------------------------> Nat
+        if protL[1] is not None:
+            dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
+            dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 2
+            dfR[('CtermF','CtermF')] = dfR[('CtermF','CtermF')] - 1
+            l = dfR.to_numpy().flatten()
+            for x in l:
+                dfO.at[x, idx['Nat',e]] = dfO.at[x, idx['Nat',e]] + 1
+        else:
+            pass
+    #endregion ---------------------------------------------------------> Fill
+
+    return dfO
 #---
 #endregion ----------------------------------------------------------> Methods
