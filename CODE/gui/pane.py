@@ -1417,6 +1417,12 @@ class BaseConfPanel(
             dtsFF.WriteDF2CSV(fileP, self.dfHist)
         else:
             pass
+        
+        if (fileN := stepDict.get('CpR', False)):
+            fileP = dataFolder/fileN
+            dtsFF.WriteDF2CSV(fileP, self.dfCpR)
+        else:
+            pass
         #endregion -----------------------------------------> Further Analysis
 
         #region --------------------------------------------------> UMSAP File
@@ -1441,9 +1447,13 @@ class BaseConfPanel(
             dateDict[self.rDateID]['R'] = stepDict['R']
         else:
             pass
-        #--------------> Filters in ProtProf
+        #--------------> 
         if self.cName == config.npProtProf:
+            #--------------> Filters in ProtProf
             dateDict[self.rDateID]['F'] = {}
+        elif self.cName == config.npTarProt:
+            #--------------> TarProt    
+            dateDict[self.rDateID]['CpR'] = stepDict['CpR']
         else:
             pass
         #--------------> Further Analysis
@@ -5867,8 +5877,9 @@ class TarProt(BaseConfModPanel2):
         #region -----------------------------------------------> Initial Setup
         super().__init__(cParent)
         
-        self.dfAA = pd.DataFrame()
+        self.dfAA   = pd.DataFrame()
         self.dfHist = pd.DataFrame()
+        self.dfCpR  = pd.DataFrame()
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -6403,6 +6414,26 @@ class TarProt(BaseConfModPanel2):
         #endregion -----------------------------------------------------> Sort
         
         # Further Analysis
+        #region ----------------------------------------------------> Cleavage
+        msgStep = (f'{self.cLPdRun} Cleavage per Residue')
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        a = self.cLDFFirst[2:]+self.rDO['Exp']
+        b = self.cLDFFirst[2:]+['P']
+        tIdxH = idx[a,b] # Also used for Hist
+        #------------------------------> 
+        try:
+            self.dfCpR = dmethod.R2CpR(
+                self.dfR.loc[:, tIdxH],
+                self.rDO['Alpha'],
+                self.rDO['ProtLength'],
+            )
+        except Exception as e:
+            self.rMsgError = 'The Cleavage per Residue method failed.'
+            self.rException = e
+            return False
+        #endregion -------------------------------------------------> Cleavage
+        
         #region ----------------------------------------------------------> AA
         if self.rDO['AA'] is not None:
             #------------------------------> 
@@ -6431,18 +6462,15 @@ class TarProt(BaseConfModPanel2):
             msgStep = (f'{self.cLPdRun} Histograms')
             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
             #------------------------------> 
-            a = self.cLDFFirst[2:]+self.rDO['Exp']
-            b = self.cLDFFirst[2:]+['P']
-            tIdx = idx[a,b]
             try:
                 self.dfHist = dmethod.R2Hist(
-                    self.dfR.loc[:,tIdx], 
+                    self.dfR.loc[:,tIdxH], 
                     self.rDO['Alpha'],
                     self.rDO['Hist'],
                     self.rDO['ProtLength']
                 )
             except Exception as e:
-                self.rMsgError = 'The Histogram creation failed.'
+                self.rMsgError = 'The Histogram generation method failed.'
                 self.rException = e
                 return False
         else:
@@ -6472,6 +6500,8 @@ class TarProt(BaseConfModPanel2):
         
         #region --------------------------------------------> Further Analysis
         #------------------------------> 
+        stepDict['CpR'] = f'{self.rDate}_CpR.txt' 
+        #------------------------------> 
         stepDict['AA']= {}
         if self.rDO['AA'] is not None:
             stepDict['AA'][f'{self.rDate}_{self.rDO["AA"]}'] = (
@@ -6499,8 +6529,9 @@ class TarProt(BaseConfModPanel2):
         else:
             pass
         
-        self.dfAA = pd.DataFrame()
+        self.dfAA   = pd.DataFrame()
         self.dfHist = pd.DataFrame()
+        self.dfCpR  = pd.DataFrame()
         #------------------------------>     
         return super().RunEnd()
     #---

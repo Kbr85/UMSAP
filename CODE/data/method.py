@@ -577,4 +577,22 @@ def R2Hist(
 
     return dfO
 #---
+
+
+def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
+    """
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Nterm Cterm NtermF CtermF Exp1 .... ExpN
+            Nterm Cterm NtermF CtermF P    .... P
+            
+        Returns
+        -------
+        pd.DataFrame
+    """
+    print(df.to_string())
+    print(alpha, protL)
+    return pd.DataFrame()
+#---
 #endregion ----------------------------------------------------------> Methods
