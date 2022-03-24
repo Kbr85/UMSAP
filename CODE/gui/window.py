@@ -6979,6 +6979,28 @@ class TarProtPlot(BaseWindowProteolysis):
         return True
     #---
     
+    def OnCpR(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        print('HERE')
+        # self.cParent.rWindow[self.cSection]['FA'].append(
+        #     AAPlot(self, self.rDateC, aa, self.rData[self.rDateC]['AA'][aa])
+        # )
+        return True
+    #---
+    
     def OnAASelect(self, aa:str) -> bool:
         """
     

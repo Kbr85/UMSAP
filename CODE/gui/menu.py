@@ -2028,12 +2028,18 @@ class FurtherAnalysisTarProt(wx.Menu):
         #region -----------------------------------------------> Initial Setup
         super().__init__()
         
+        self.miCpR = self.Append(-1, 'Cleavage per Residue')
+        self.AppendSeparator()
         self.mAA = FAMenuTarProtAA(cMenuData, ciDate)
         self.AppendSubMenu(self.mAA, 'AA Distribution')
         self.AppendSeparator()
         self.mHist = FAMenuTarProtHist(cMenuData, ciDate)
         self.AppendSubMenu(self.mHist, 'Cleavage Site Histograms')
         #endregion --------------------------------------------> Initial Setup
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnCpR, source=self.miCpR)
+        #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -2057,6 +2063,31 @@ class FurtherAnalysisTarProt(wx.Menu):
         """
         self.mAA.Update(tDate, cMenuData)
         self.mHist.Update(tDate, cMenuData)
+        
+        return True
+    #---
+    
+    def OnCpR(self, event: wx.CommandEvent) -> bool:
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> Plot
+        win = self.GetWindow()
+        win.OnCpR()
+        #endregion ------------------------------------------------> Plot
         
         return True
     #---
