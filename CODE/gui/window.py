@@ -7948,7 +7948,12 @@ class CpRPlot(BaseWindowPlot):
     cSection = config.nuCpR
     # cColor   = config.color[cName]
     #------------------------------> 
-    
+    cRec = {
+        True : 'Rec',
+        False: 'Nat',
+        'Rec': 'Recombinant Sequence',
+        'Nat': 'Native Sequence',
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -7963,12 +7968,13 @@ class CpRPlot(BaseWindowPlot):
         self.rObj    = cParent.rObj
         self.rData  = self.rObj.GetFAData(
             cParent.cSection,cParent.rDateC,fileN, [0,1])
+        menuData     = self.SetMenuDate()
         #------------------------------> 
-        super().__init__(cParent, {})
+        super().__init__(cParent, menuData)
         #endregion --------------------------------------------> Initial Setup
         
         #region ---------------------------------------------------> Plot
-        # self.UpdatePlot(rec=True, allC=True)
+        self.UpdatePlot(rec=True, label=[menuData['Label'][0]])
         #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
@@ -7978,8 +7984,8 @@ class CpRPlot(BaseWindowPlot):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods    
-    def UpdatePlot(self, rec:bool, allC: bool) -> bool:
+    #region ---------------------------------------------------> Class methods
+    def SetMenuDate(self):
         """
     
             Parameters
@@ -7994,55 +8000,75 @@ class CpRPlot(BaseWindowPlot):
             -----
             
         """
-        #region ---------------------------------------------------> Variables
-        tRec  = self.cRec[rec]
-        tAllC = self.cAll[allC]
-        #------------------------------> 
-        idx = pd.IndexSlice
-        df = self.rData.loc[:,idx[tRec,['Win',tAllC],:]]
-        #------------------------------> 
-        label = df.columns.unique(level=2).tolist()[1:]
-        #endregion ------------------------------------------------> Variables
+        menuData = {}
+        menuData['Label'] = [k for k in self.rData.columns.unique(level=1)]
+        return menuData
+    #---
+    
+    def UpdatePlot(self, rec:bool, label: list[str]) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        print(rec, label)
+        # #region ---------------------------------------------------> Variables
+        # tRec  = self.cRec[rec]
+        # #------------------------------> 
+        # idx = pd.IndexSlice
+        # df = self.rData.loc[:,idx[tRec,['Win',tAllC],:]]
+        # #------------------------------> 
+        # label = df.columns.unique(level=2).tolist()[1:]
+        # #endregion ------------------------------------------------> Variables
 
-        #region ---------------------------------------------------> 
-        self.SetAxis(df.loc[:,idx[:,:,'Win']])
-        #endregion ------------------------------------------------> 
+        # #region ---------------------------------------------------> 
+        # self.SetAxis(df.loc[:,idx[:,:,'Win']])
+        # #endregion ------------------------------------------------> 
 
-        #region ---------------------------------------------------> Plot
-        n = len(label)
-        w = self.rBandWidth / n
-        df = df.iloc[:,range(1,n+1,1)]
-        df = df[(df.notna()).all(axis=1)]
-        for row in df.itertuples():
-            s = row[0]+1-self.rBandStart
-            for x in range(0,n,1):
-                self.wPlot.axes.bar(
-                    s+x*w,
-                    row[x+1],
-                    width     = w,
-                    align     = 'edge',
-                    color     = self.cColor['Spot'][x],
-                    edgecolor = 'black',
-                )
-        #endregion ------------------------------------------------> Plot
+        # #region ---------------------------------------------------> Plot
+        # n = len(label)
+        # w = self.rBandWidth / n
+        # df = df.iloc[:,range(1,n+1,1)]
+        # df = df[(df.notna()).all(axis=1)]
+        # for row in df.itertuples():
+        #     s = row[0]+1-self.rBandStart
+        #     for x in range(0,n,1):
+        #         self.wPlot.axes.bar(
+        #             s+x*w,
+        #             row[x+1],
+        #             width     = w,
+        #             align     = 'edge',
+        #             color     = self.cColor['Spot'][x],
+        #             edgecolor = 'black',
+        #         )
+        # #endregion ------------------------------------------------> Plot
         
-        #region ------------------------------------------------------> Legend
-        leg = []
-        for i in range(0, n, 1):
-            leg.append(mpatches.Patch(
-                color = self.cColor['Spot'][i],
-                label = label[i],
-            ))
-        leg = self.wPlot.axes.legend(
-            handles        = leg,
-            loc            = 'upper left',
-            bbox_to_anchor = (1, 1)
-        )
-        leg.get_frame().set_edgecolor('k')		
-        #endregion ---------------------------------------------------> Legend
+        # #region ------------------------------------------------------> Legend
+        # leg = []
+        # for i in range(0, n, 1):
+        #     leg.append(mpatches.Patch(
+        #         color = self.cColor['Spot'][i],
+        #         label = label[i],
+        #     ))
+        # leg = self.wPlot.axes.legend(
+        #     handles        = leg,
+        #     loc            = 'upper left',
+        #     bbox_to_anchor = (1, 1)
+        # )
+        # leg.get_frame().set_edgecolor('k')		
+        # #endregion ---------------------------------------------------> Legend
         
-        self.wPlot.axes.set_title(f'{self.cRec[tRec]} - {self.cAll[tAllC]}')
-        self.wPlot.canvas.draw()
+        # self.wPlot.axes.set_title(f'{self.cRec[tRec]} - {self.cAll[tAllC]}')
+        # self.wPlot.canvas.draw()
         return True
     #---
     
@@ -8131,7 +8157,7 @@ class CpRPlot(BaseWindowPlot):
         """
         #------------------------------> 
         self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
-            HistPlot(self.cParent, self.cDateC, self.cKey, self.cFileN)
+            CpRPlot(self.cParent, self.cDateC, self.cFileN)
         )
         #------------------------------> 
         return True
