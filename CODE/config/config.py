@@ -116,6 +116,7 @@ nwTarProt       = 'TarProtPlot'
 nwCheckDataPrep = 'CheckDataPrep'
 nwAAPlot        = 'AAPlot'
 nwHistPlot      = 'HistPlot'
+nwCpRPlot       = 'CpRPlot'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
@@ -147,6 +148,7 @@ nuCorrA    = 'Correlation Analysis'
 nuAA       = 'AA Distribution'
 nuHist     = 'Histograms'
 nuReadF    = 'Read UMSAP File'
+nuCpR      = 'Cleavage per Residues'
 #endregion ------------------------------------------------------------> Names
 
 

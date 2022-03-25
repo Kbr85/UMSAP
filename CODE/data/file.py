@@ -401,6 +401,7 @@ class UMSAPFile():
                     'PI': PI,
                     'AA': v.get('AA', {}),
                     'Hist': v.get('Hist', {}),
+                    'CpR': v['CpR'],
                 }
             except Exception:
                 pass

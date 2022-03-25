@@ -6994,10 +6994,9 @@ class TarProtPlot(BaseWindowProteolysis):
             -----
             
         """
-        print('HERE')
-        # self.cParent.rWindow[self.cSection]['FA'].append(
-        #     AAPlot(self, self.rDateC, aa, self.rData[self.rDateC]['AA'][aa])
-        # )
+        self.cParent.rWindow[self.cSection]['FA'].append(
+            CpRPlot(self, self.rDateC, self.rData[self.rDateC]['CpR'])
+        )
         return True
     #---
     
@@ -7921,6 +7920,224 @@ class HistPlot(BaseWindowPlot):
     #endregion ------------------------------------------------> Class methods
 #---
 
+
+class CpRPlot(BaseWindowPlot):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    #------------------------------> To id the window
+    cName = config.nwCpRPlot
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nuCpR
+    # cColor   = config.color[cName]
+    #------------------------------> 
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: wx.Window, dateC: str, fileN: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle  = f"{cParent.cTitle} - {dateC} - {self.cSection}"
+        self.cDateC  = dateC
+        self.cFileN   = fileN
+        self.rUMSAP  = cParent.cParent
+        self.rObj    = cParent.rObj
+        self.rData  = self.rObj.GetFAData(
+            cParent.cSection,cParent.rDateC,fileN, [0,1])
+        #------------------------------> 
+        super().__init__(cParent, {})
+        #endregion --------------------------------------------> Initial Setup
+        
+        #region ---------------------------------------------------> Plot
+        # self.UpdatePlot(rec=True, allC=True)
+        #endregion ------------------------------------------------> Plot
+
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods    
+    def UpdatePlot(self, rec:bool, allC: bool) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        tRec  = self.cRec[rec]
+        tAllC = self.cAll[allC]
+        #------------------------------> 
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[tRec,['Win',tAllC],:]]
+        #------------------------------> 
+        label = df.columns.unique(level=2).tolist()[1:]
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        self.SetAxis(df.loc[:,idx[:,:,'Win']])
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Plot
+        n = len(label)
+        w = self.rBandWidth / n
+        df = df.iloc[:,range(1,n+1,1)]
+        df = df[(df.notna()).all(axis=1)]
+        for row in df.itertuples():
+            s = row[0]+1-self.rBandStart
+            for x in range(0,n,1):
+                self.wPlot.axes.bar(
+                    s+x*w,
+                    row[x+1],
+                    width     = w,
+                    align     = 'edge',
+                    color     = self.cColor['Spot'][x],
+                    edgecolor = 'black',
+                )
+        #endregion ------------------------------------------------> Plot
+        
+        #region ------------------------------------------------------> Legend
+        leg = []
+        for i in range(0, n, 1):
+            leg.append(mpatches.Patch(
+                color = self.cColor['Spot'][i],
+                label = label[i],
+            ))
+        leg = self.wPlot.axes.legend(
+            handles        = leg,
+            loc            = 'upper left',
+            bbox_to_anchor = (1, 1)
+        )
+        leg.get_frame().set_edgecolor('k')		
+        #endregion ---------------------------------------------------> Legend
+        
+        self.wPlot.axes.set_title(f'{self.cRec[tRec]} - {self.cAll[tAllC]}')
+        self.wPlot.canvas.draw()
+        return True
+    #---
+    
+    def SetAxis(self, win: pd.Series):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.wPlot.axes.clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Label
+        #------------------------------> 
+        win = win.dropna().astype('int').to_numpy().flatten()
+        label = []
+        for k,w in enumerate(win[1:]):
+            label.append(f'{win[k]}-{w}')
+        #------------------------------> 
+        self.wPlot.axes.set_xticks(range(1,len(label)+1,1))
+        self.wPlot.axes.set_xticklabels(label)
+        self.wPlot.axes.set_xlim(0, len(label)+1)
+        self.wPlot.axes.tick_params(axis='x', labelrotation=45)
+        self.wPlot.axes.set_xlabel('Windows')
+        self.wPlot.axes.set_ylabel('Number of Cleavages')
+        #endregion ------------------------------------------------> Label
+
+        return True
+    #---
+    
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    
+    def OnExportPlotData(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        return super().OnExportPlotData(df=self.rData)
+    #---
+    
+    def OnDupWin(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
+            HistPlot(self.cParent, self.cDateC, self.cKey, self.cFileN)
+        )
+        #------------------------------> 
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 class CheckDataPrep(BaseWindowNPlotLT):
