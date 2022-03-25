@@ -1691,7 +1691,11 @@ class CpRToolMenu(wx.Menu, MenuMethods):
             self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
             self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
         self.AppendSeparator()
-        self.miNat = self.Append(-1, 'Native Sequence', kind=wx.ITEM_RADIO)
+        if menuData['Nat']:
+            self.miNat = self.Append(-1, 'Native Sequence', kind=wx.ITEM_RADIO)
+            self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miNat)
+        else:
+            pass
         self.miRec = self.Append(-1, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
         self.miRec.Check()
         self.AppendSeparator()
@@ -1713,7 +1717,6 @@ class CpRToolMenu(wx.Menu, MenuMethods):
         #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miNat)
         self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miRec)
         self.Bind(wx.EVT_MENU, self.OnClear,          source=self.miClear)
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
@@ -1741,6 +1744,11 @@ class CpRToolMenu(wx.Menu, MenuMethods):
         #region ---------------------------------------------------> 
         rec = self.miRec.IsChecked()
         label = [x.GetItemLabel() for x in self.rItems if x.IsChecked()]
+        if label:
+            pass
+        else:
+            self.rItems[0].Check()
+            label = [self.rItems[0].GetItemLabel()]
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 

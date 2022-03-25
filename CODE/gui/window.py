@@ -6995,8 +6995,7 @@ class TarProtPlot(BaseWindowProteolysis):
             
         """
         self.cParent.rWindow[self.cSection]['FA'].append(
-            CpRPlot(self, self.rDateC, self.rData[self.rDateC]['CpR'])
-        )
+            CpRPlot(self, self.rDateC, self.rData[self.rDateC]['CpR']))
         return True
     #---
     
@@ -7428,7 +7427,7 @@ class AAPlot(BaseWindowPlot):
                     row[x+1],
                     width     = w,
                     align     = 'edge',
-                    color     = self.cColor['Spot'][x],
+                    color     = self.cColor['Spot'][x%len(self.cColor['Spot'])],
                     edgecolor = 'black',
                 )
         #endregion ------------------------------------------------> Bar
@@ -7802,7 +7801,7 @@ class HistPlot(BaseWindowPlot):
                     row[x+1],
                     width     = w,
                     align     = 'edge',
-                    color     = self.cColor['Spot'][x],
+                    color     = self.cColor['Spot'][x%len(self.cColor['Spot'])],
                     edgecolor = 'black',
                 )
         #endregion ------------------------------------------------> Plot
@@ -7946,7 +7945,7 @@ class CpRPlot(BaseWindowPlot):
     #------------------------------> To id the section in the umsap file 
     # shown in the window
     cSection = config.nuCpR
-    # cColor   = config.color[cName]
+    cColor   = config.color[cName]
     #------------------------------> 
     cRec = {
         True : 'Rec',
@@ -7961,13 +7960,15 @@ class CpRPlot(BaseWindowPlot):
         self, cParent: wx.Window, dateC: str, fileN: str) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cTitle  = f"{cParent.cTitle} - {dateC} - {self.cSection}"
-        self.cDateC  = dateC
-        self.cFileN   = fileN
-        self.rUMSAP  = cParent.cParent
-        self.rObj    = cParent.rObj
+        self.cTitle = f"{cParent.cTitle} - {dateC} - {self.cSection}"
+        self.cDateC = dateC
+        self.cFileN = fileN
+        self.rUMSAP = cParent.cParent
+        self.rObj   = cParent.rObj
         self.rData  = self.rObj.GetFAData(
             cParent.cSection,cParent.rDateC,fileN, [0,1])
+        self.rLabel = self.rData.columns.unique(level=1).tolist()
+        self.rProtLength = cParent.rData[self.cDateC]['PI']['ProtLength']
         menuData     = self.SetMenuDate()
         #------------------------------> 
         super().__init__(cParent, menuData)
@@ -8000,8 +8001,19 @@ class CpRPlot(BaseWindowPlot):
             -----
             
         """
+        #region ---------------------------------------------------> 
         menuData = {}
-        menuData['Label'] = [k for k in self.rData.columns.unique(level=1)]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        menuData['Label'] = [k for k in self.rLabel]
+        #------------------------------> 
+        if self.rProtLength[1] is not None:
+            menuData['Nat'] = True
+        else:
+            menuData['Nat'] = False    
+        #endregion ------------------------------------------------> 
+    
         return menuData
     #---
     
@@ -8020,59 +8032,57 @@ class CpRPlot(BaseWindowPlot):
             -----
             
         """
-        print(rec, label)
-        # #region ---------------------------------------------------> Variables
-        # tRec  = self.cRec[rec]
-        # #------------------------------> 
-        # idx = pd.IndexSlice
-        # df = self.rData.loc[:,idx[tRec,['Win',tAllC],:]]
-        # #------------------------------> 
-        # label = df.columns.unique(level=2).tolist()[1:]
-        # #endregion ------------------------------------------------> Variables
+        #region ---------------------------------------------------> Variables
+        tRec  = self.cRec[rec]
+        #------------------------------> 
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[tRec,label]]
+        #------------------------------> 
+        if rec:
+            tXIdx = range(0, self.rProtLength[0])
+        else:
+            tXIdx = range(0, self.rProtLength[1])
+        x = [x+1 for x in tXIdx]
+        #------------------------------> 
+        color = []
+        #endregion ------------------------------------------------> Variables
 
-        # #region ---------------------------------------------------> 
-        # self.SetAxis(df.loc[:,idx[:,:,'Win']])
-        # #endregion ------------------------------------------------> 
+        #region ---------------------------------------------------> 
+        self.SetAxis()
+        #endregion ------------------------------------------------> 
 
-        # #region ---------------------------------------------------> Plot
-        # n = len(label)
-        # w = self.rBandWidth / n
-        # df = df.iloc[:,range(1,n+1,1)]
-        # df = df[(df.notna()).all(axis=1)]
-        # for row in df.itertuples():
-        #     s = row[0]+1-self.rBandStart
-        #     for x in range(0,n,1):
-        #         self.wPlot.axes.bar(
-        #             s+x*w,
-        #             row[x+1],
-        #             width     = w,
-        #             align     = 'edge',
-        #             color     = self.cColor['Spot'][x],
-        #             edgecolor = 'black',
-        #         )
-        # #endregion ------------------------------------------------> Plot
+        #region ---------------------------------------------------> Plot
+        for e in label:
+            #------------------------------> 
+            y = self.rData.iloc[tXIdx, self.rData.columns.get_loc(idx[tRec,e])]
+            tColor = self.cColor['Spot'][
+                self.rLabel.index(e)%len(self.cColor['Spot'])]
+            color.append(tColor)
+            #------------------------------>
+            self.wPlot.axes.plot(x,y, color=tColor)
+        #endregion ------------------------------------------------> Plot
         
-        # #region ------------------------------------------------------> Legend
-        # leg = []
-        # for i in range(0, n, 1):
-        #     leg.append(mpatches.Patch(
-        #         color = self.cColor['Spot'][i],
-        #         label = label[i],
-        #     ))
-        # leg = self.wPlot.axes.legend(
-        #     handles        = leg,
-        #     loc            = 'upper left',
-        #     bbox_to_anchor = (1, 1)
-        # )
-        # leg.get_frame().set_edgecolor('k')		
-        # #endregion ---------------------------------------------------> Legend
+        #region ----------------------------------------------------> Legend
+        leg = []
+        for i in range(0, len(label), 1):
+            leg.append(mpatches.Patch(
+                color = color[i],
+                label = label[i],
+            ))
+        leg = self.wPlot.axes.legend(
+            handles        = leg,
+            loc            = 'upper left',
+            bbox_to_anchor = (1, 1)
+        )
+        leg.get_frame().set_edgecolor('k')		
+        #endregion -------------------------------------------------> Legend
         
-        # self.wPlot.axes.set_title(f'{self.cRec[tRec]} - {self.cAll[tAllC]}')
-        # self.wPlot.canvas.draw()
+        self.wPlot.axes.set_title(f'{self.cRec[tRec]}')
+        self.wPlot.canvas.draw()
         return True
     #---
     
-    def SetAxis(self, win: pd.Series):
+    def SetAxis(self):
         """
     
             Parameters
@@ -8092,17 +8102,7 @@ class CpRPlot(BaseWindowPlot):
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> Label
-        #------------------------------> 
-        win = win.dropna().astype('int').to_numpy().flatten()
-        label = []
-        for k,w in enumerate(win[1:]):
-            label.append(f'{win[k]}-{w}')
-        #------------------------------> 
-        self.wPlot.axes.set_xticks(range(1,len(label)+1,1))
-        self.wPlot.axes.set_xticklabels(label)
-        self.wPlot.axes.set_xlim(0, len(label)+1)
-        self.wPlot.axes.tick_params(axis='x', labelrotation=45)
-        self.wPlot.axes.set_xlabel('Windows')
+        self.wPlot.axes.set_xlabel('Residue Number')
         self.wPlot.axes.set_ylabel('Number of Cleavages')
         #endregion ------------------------------------------------> Label
 

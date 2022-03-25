@@ -553,7 +553,10 @@ color = { # Colors for the app
     },
     nwHistPlot : {
         'Spot' : colorFragments,
-    }
+    },
+    nwCpRPlot : {
+        'Spot' : colorFragments,
+    },
 }
 #endregion -----------------------------------------------------------> Colors
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS
