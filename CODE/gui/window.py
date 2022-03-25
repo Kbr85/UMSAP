@@ -7821,6 +7821,10 @@ class HistPlot(BaseWindowPlot):
         leg.get_frame().set_edgecolor('k')		
         #endregion ---------------------------------------------------> Legend
         
+        #region ---------------------------------------------------> Zoom
+        self.wPlot.ZoomResetSetValues()
+        #endregion ------------------------------------------------> Zoom
+        
         self.wPlot.axes.set_title(f'{self.cRec[tRec]} - {self.cAll[tAllC]}')
         self.wPlot.canvas.draw()
         return True
@@ -7969,6 +7973,7 @@ class CpRPlot(BaseWindowPlot):
             cParent.cSection,cParent.rDateC,fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         self.rProtLength = cParent.rData[self.cDateC]['PI']['ProtLength']
+        self.rProtLoc    = cParent.rData[self.cDateC]['PI']['ProtLoc']
         menuData     = self.SetMenuDate()
         #------------------------------> 
         super().__init__(cParent, menuData)
@@ -8017,7 +8022,9 @@ class CpRPlot(BaseWindowPlot):
         return menuData
     #---
     
-    def UpdatePlot(self, rec:bool, label: list[str]) -> bool:
+    def UpdatePlot(
+        self, rec:bool, label: list[str], protLoc: bool=True
+        ) -> bool:
         """
     
             Parameters
@@ -8045,10 +8052,12 @@ class CpRPlot(BaseWindowPlot):
         x = [x+1 for x in tXIdx]
         #------------------------------> 
         color = []
+        #------------------------------> 
+        yMax = self.rData.loc[:,idx[tRec,label]].max().max()
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> 
-        self.SetAxis()
+        self.SetAxis(yMax)
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> Plot
@@ -8060,6 +8069,17 @@ class CpRPlot(BaseWindowPlot):
             color.append(tColor)
             #------------------------------>
             self.wPlot.axes.plot(x,y, color=tColor)
+        #------------------------------> 
+        if tRec == self.cRec[True] and protLoc:
+            if self.rProtLoc[0] is not None:
+                self.wPlot.axes.vlines(
+                    self.rProtLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
+                self.wPlot.axes.vlines(
+                    self.rProtLoc[1],0,yMax,linestyles='dashed',color='black',zorder=1)
+            else:
+                pass
+        else:
+            pass
         #endregion ------------------------------------------------> Plot
         
         #region ----------------------------------------------------> Legend
@@ -8077,12 +8097,16 @@ class CpRPlot(BaseWindowPlot):
         leg.get_frame().set_edgecolor('k')		
         #endregion -------------------------------------------------> Legend
         
+        #region ---------------------------------------------------> Zoom
+        self.wPlot.ZoomResetSetValues()
+        #endregion ------------------------------------------------> Zoom
+        
         self.wPlot.axes.set_title(f'{self.cRec[tRec]}')
         self.wPlot.canvas.draw()
         return True
     #---
     
-    def SetAxis(self):
+    def SetAxis(self, yMax: int) -> bool:
         """
     
             Parameters
@@ -8102,6 +8126,7 @@ class CpRPlot(BaseWindowPlot):
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> Label
+        self.wPlot.axes.set_yticks(range(0,yMax+1))
         self.wPlot.axes.set_xlabel('Residue Number')
         self.wPlot.axes.set_ylabel('Number of Cleavages')
         #endregion ------------------------------------------------> Label

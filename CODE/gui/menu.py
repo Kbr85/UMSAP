@@ -1702,6 +1702,9 @@ class CpRToolMenu(wx.Menu, MenuMethods):
         self.miSel = self.Append(
             -1, 'Single Selection\tCtrl+S', kind=wx.ITEM_CHECK)
         self.miSel.Check(True)
+        self.miProtLoc = self.Append(
+            -1, 'Show Native Protein Location', kind=wx.ITEM_CHECK)
+        self.miProtLoc.Check(True)
         self.AppendSeparator()
         self.miClear = self.Append(-1, 'Clear Selection')
         self.AppendSeparator()
@@ -1722,7 +1725,7 @@ class CpRToolMenu(wx.Menu, MenuMethods):
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miRec)
-        # self.Bind(wx.EVT_MENU, self.OnSel,            source=self.miSel)
+        self.Bind(wx.EVT_MENU, self.OnShow,           source=self.miProtLoc)
         self.Bind(wx.EVT_MENU, self.OnClear,          source=self.miClear)
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
@@ -1733,27 +1736,34 @@ class CpRToolMenu(wx.Menu, MenuMethods):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    # def OnSel(self, event: wx.CommandEvent) -> bool:
-    #     """Change between Experiments.
+    def OnShow(self, event: wx.CommandEvent) -> bool:
+        """Change between Experiments.
 
-    #         Parameters
-    #         ----------
-    #         event:wx.Event
-    #             Information about the event
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
 
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     print(self.miSel.IsChecked())
-    #     if self.miSel.IsChecked():
-    #         self.miSel.Check(False)
-    #     else:
-    #         self.miSel.Check(True)
-            
-    #     return True
-    # #---
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        rec = self.miRec.IsChecked()
+        #------------------------------> Labels
+        label = [x.GetItemLabel() for x in self.rItems if x.IsChecked()]
+        #------------------------------> Show
+        show = self.miProtLoc.IsChecked()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        win = self.GetWindow()
+        win.UpdatePlot(rec, label, show)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
     
     def OnLabel(self, event: wx.CommandEvent) -> bool:
         """Change between Experiments.
@@ -1770,6 +1780,7 @@ class CpRToolMenu(wx.Menu, MenuMethods):
         """
         #region ---------------------------------------------------> 
         rec = self.miRec.IsChecked()
+        show = self.miProtLoc.IsChecked()
         #------------------------------> Selection mode
         sel = self.miSel.IsChecked()
         if sel:
@@ -1788,7 +1799,7 @@ class CpRToolMenu(wx.Menu, MenuMethods):
 
         #region ---------------------------------------------------> 
         win = self.GetWindow()
-        win.UpdatePlot(rec, label)
+        win.UpdatePlot(rec, label, show)
         #endregion ------------------------------------------------> 
 
         return True
@@ -1808,14 +1819,20 @@ class CpRToolMenu(wx.Menu, MenuMethods):
             bool
         """
         #region ---------------------------------------------------> 
-        self.miRec.Check()
         self.rItems[0].Check()
         [x.Check(False) for x in self.rItems[1:]]
+        self.miRec.Check()
+        self.miNat.Check(False)
+        self.miSel.Check(True)
+        self.miProtLoc.Check(True)
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 
-        return self.OnLabel(event)
+        win = self.GetWindow()
+        win.UpdatePlot(True, [self.rItems[0].GetItemLabel()], True)
         #endregion ------------------------------------------------> 
+        
+        return True
     #---
     #endregion ------------------------------------------------> Class methods
 #---
