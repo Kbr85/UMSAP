@@ -8040,10 +8040,11 @@ class CpRPlot(BaseWindowPlot):
             
         """
         #region ---------------------------------------------------> Variables
-        tRec  = self.cRec[rec]
+        self.rRec  = self.cRec[rec]
+        self.rLabelC = label
         #------------------------------> 
         idx = pd.IndexSlice
-        df = self.rData.loc[:,idx[tRec,label]]
+        df = self.rData.loc[:,idx[self.rRec,label]]
         #------------------------------> 
         if rec:
             tXIdx = range(0, self.rProtLength[0])
@@ -8053,7 +8054,7 @@ class CpRPlot(BaseWindowPlot):
         #------------------------------> 
         color = []
         #------------------------------> 
-        yMax = self.rData.loc[:,idx[tRec,label]].max().max()
+        yMax = self.rData.loc[:,idx[self.rRec,label]].max().max()
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> 
@@ -8063,14 +8064,14 @@ class CpRPlot(BaseWindowPlot):
         #region ---------------------------------------------------> Plot
         for e in label:
             #------------------------------> 
-            y = self.rData.iloc[tXIdx, self.rData.columns.get_loc(idx[tRec,e])]
+            y = self.rData.iloc[tXIdx, self.rData.columns.get_loc(idx[self.rRec,e])]
             tColor = self.cColor['Spot'][
                 self.rLabel.index(e)%len(self.cColor['Spot'])]
             color.append(tColor)
             #------------------------------>
             self.wPlot.axes.plot(x,y, color=tColor)
         #------------------------------> 
-        if tRec == self.cRec[True] and protLoc:
+        if self.rRec == self.cRec[True] and protLoc:
             if self.rProtLoc[0] is not None:
                 self.wPlot.axes.vlines(
                     self.rProtLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
@@ -8101,7 +8102,7 @@ class CpRPlot(BaseWindowPlot):
         self.wPlot.ZoomResetSetValues()
         #endregion ------------------------------------------------> Zoom
         
-        self.wPlot.axes.set_title(f'{self.cRec[tRec]}')
+        self.wPlot.axes.set_title(f'{self.cRec[self.rRec]}')
         self.wPlot.canvas.draw()
         return True
     #---
@@ -8131,6 +8132,40 @@ class CpRPlot(BaseWindowPlot):
         self.wPlot.axes.set_ylabel('Number of Cleavages')
         #endregion ------------------------------------------------> Label
 
+        return True
+    #---
+    
+    def UpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info
+    
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            #------------------------------> 
+            x = event.xdata
+            xf = round(x)
+            idx = pd.IndexSlice
+            y = []
+            for l in self.rLabelC:
+                col = self.rData.columns.get_loc(idx[self.rRec,l])
+                y.append(self.rData.iat[xf-1,col])
+            #------------------------------> 
+            s = ''
+            for k,l in enumerate(self.rLabelC):
+                s = f'{s}{l}={y[k]}   '
+            self.wStatBar.SetStatusText(f'Res={xf}   {s}')
+        else:
+            self.wStatBar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
+        
         return True
     #---
     
