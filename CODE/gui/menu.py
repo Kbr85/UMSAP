@@ -1699,6 +1699,10 @@ class CpRToolMenu(wx.Menu, MenuMethods):
         self.miRec = self.Append(-1, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
         self.miRec.Check()
         self.AppendSeparator()
+        self.miSel = self.Append(
+            -1, 'Single Selection\tCtrl+S', kind=wx.ITEM_CHECK)
+        self.miSel.Check(True)
+        self.AppendSeparator()
         self.miClear = self.Append(-1, 'Clear Selection')
         self.AppendSeparator()
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
@@ -1718,6 +1722,7 @@ class CpRToolMenu(wx.Menu, MenuMethods):
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miRec)
+        # self.Bind(wx.EVT_MENU, self.OnSel,            source=self.miSel)
         self.Bind(wx.EVT_MENU, self.OnClear,          source=self.miClear)
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
@@ -1728,6 +1733,28 @@ class CpRToolMenu(wx.Menu, MenuMethods):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    # def OnSel(self, event: wx.CommandEvent) -> bool:
+    #     """Change between Experiments.
+
+    #         Parameters
+    #         ----------
+    #         event:wx.Event
+    #             Information about the event
+
+
+    #         Returns
+    #         -------
+    #         bool
+    #     """
+    #     print(self.miSel.IsChecked())
+    #     if self.miSel.IsChecked():
+    #         self.miSel.Check(False)
+    #     else:
+    #         self.miSel.Check(True)
+            
+    #     return True
+    # #---
+    
     def OnLabel(self, event: wx.CommandEvent) -> bool:
         """Change between Experiments.
 
@@ -1743,6 +1770,14 @@ class CpRToolMenu(wx.Menu, MenuMethods):
         """
         #region ---------------------------------------------------> 
         rec = self.miRec.IsChecked()
+        #------------------------------> Selection mode
+        sel = self.miSel.IsChecked()
+        if sel:
+            [x.Check(False) for x in self.rItems]
+            self.Check(event.GetId(), True)
+        else:
+            pass
+        #------------------------------> Labels
         label = [x.GetItemLabel() for x in self.rItems if x.IsChecked()]
         if label:
             pass
