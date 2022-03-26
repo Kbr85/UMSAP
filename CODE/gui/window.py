@@ -8153,15 +8153,21 @@ class CpRPlot(BaseWindowPlot):
             x = event.xdata
             xf = round(x)
             idx = pd.IndexSlice
+            #------------------------------> 
             y = []
-            for l in self.rLabelC:
-                col = self.rData.columns.get_loc(idx[self.rRec,l])
-                y.append(self.rData.iat[xf-1,col])
+            try:
+                for l in self.rLabelC:
+                    col = self.rData.columns.get_loc(idx[self.rRec,l])
+                    y.append(self.rData.iat[xf-1,col])
+            except IndexError:
+                self.wStatBar.SetStatusText('')
+                return False
             #------------------------------> 
             s = ''
             for k,l in enumerate(self.rLabelC):
                 s = f'{s}{l}={y[k]}   '
             self.wStatBar.SetStatusText(f'Res={xf}   {s}')
+            
         else:
             self.wStatBar.SetStatusText('')
         #endregion -------------------------------------------> Statusbar Text
