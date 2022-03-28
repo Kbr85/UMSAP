@@ -1691,7 +1691,6 @@ class BaseConfModPanel2(BaseConfModPanel):
         self.cLTargetProt = getattr(self, 'cLtargetProt', 'Target Protein')
         self.cLSeqCol     = getattr(self, 'cLSeqCol',     'Sequences')
         #------------------------------> Hint
-        self.cHSeqLength  = getattr(self, 'cHSeqLength',  'e.g. 100')
         self.cHTargetProt = getattr(self, 'cHTargetProt', 'e.g. MisAlpha18')
         self.cHSeqCol     = getattr(self, 'cHSeqCol',     'e.g. 1')
         self.cHSeqFile    = getattr(
@@ -1703,10 +1702,6 @@ class BaseConfModPanel2(BaseConfModPanel):
             self, 'cTTSeqFile', f'Select the {self.cLSeqFile} file.')
         self.cTTTargetProt = getattr(
             self, 'cTTTargetProt', f'Set the name of the {self.cLTargetProt}.')
-        self.cTTSeqLength = getattr(
-            self, 'cTTSeqLength', ('Number of residues per line in the '
-                'sequence alignment files. When left empty the sequence '
-                'alignment files will not be generated.\ne.g. 100'))
         self.cTTSeqCol = getattr(
             self, 'cTTSeqCol', ('Set the column number containing the '
                                 'Sequences.\ne.g. 0'))
@@ -1739,19 +1734,6 @@ class BaseConfModPanel2(BaseConfModPanel):
             tcSize    = self.cSTc,
             tcHint    = self.cHTargetProt,
             validator = dtsValidator.IsNotEmpty()
-        )
-        self.wSeqLength = dtsWidget.StaticTextCtrl(
-            self.sbValue,
-            stLabel   = self.cLSeqLength,
-            stTooltip = self.cTTSeqLength,
-            tcSize    = self.cSTc,
-            tcHint    = self.cHSeqLength,
-            validator = dtsValidator.NumberList(
-                numType = 'int',
-                nN      = 1,
-                vMin    = 1,
-                opt     = True,
-            )
         )
         #------------------------------> Columns
         self.wSeqCol = dtsWidget.StaticTextCtrl(
@@ -3919,18 +3901,6 @@ class ProtProf(BaseConfModPanel):
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wAlpha.st,
-            pos    = (0,3),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wAlpha.tc,
-            pos    = (0,4),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
             self.wSample.st,
             pos    = (1,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
@@ -3943,6 +3913,30 @@ class ProtProf(BaseConfModPanel):
             border = 5,
         )
         self.sizersbValueWid.Add(
+            self.wAlpha.st,
+            pos    = (2,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wAlpha.tc,
+            pos    = (2,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wRawI.st,
+            pos    = (0,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wRawI.cb,
+            pos    = (0,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
             self.wCorrectP.st,
             pos    = (1,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
@@ -3951,18 +3945,6 @@ class ProtProf(BaseConfModPanel):
         self.sizersbValueWid.Add(
             self.wCorrectP.cb,
             pos    = (1,4),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wRawI.st,
-            pos    = (2,1),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wRawI.cb,
-            pos    = (2,2),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
@@ -5018,9 +5000,6 @@ class LimProt(BaseConfModPanel2):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wSeqLength.tc.Destroy()
-        self.wSeqLength.st.Destroy()
-        del self.wSeqLength
         #------------------------------> Values
         self.wBeta = dtsWidget.StaticTextCtrl(
             self.sbValue,
@@ -5941,7 +5920,6 @@ class TarProt(BaseConfModPanel2):
             self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad],
             self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum],
             self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num],
-            self.cLSeqLength   :[self.wSeqLength.tc,       config.mOneZPlusNum],
             self.cLAAPos       :[self.wAAPos.tc,           config.mOneZPlusNum],
             self.cLHist        :[self.wHist.tc,            config.mValueBad],
             f'{self.cLSeqCol} column' :[self.wSeqCol.tc,   config.mOneZPlusNum],
@@ -6005,61 +5983,49 @@ class TarProt(BaseConfModPanel2):
         )
         self.sizersbValueWid.Add(
             self.wScoreVal.st,
-            pos    = (0,3),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wScoreVal.tc,
-            pos    = (0,4),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wAlpha.st,
             pos    = (1,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wAlpha.tc,
+            self.wScoreVal.tc,
             pos    = (1,2),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wSeqLength.st,
-            pos    = (1,3),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wSeqLength.tc,
-            pos    = (1,4),
             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wAAPos.st,
+            self.wAlpha.st,
             pos    = (2,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wAAPos.tc,
+            self.wAlpha.tc,
             pos    = (2,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wAAPos.st,
+            pos    = (0,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wAAPos.tc,
+            pos    = (0,4),
             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wHist.st,
-            pos    = (2,3),
+            pos    = (1,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wHist.tc,
-            pos    = (2,4),
+            pos    = (1,4),
             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
         )
@@ -6106,7 +6072,6 @@ class TarProt(BaseConfModPanel2):
             self.wImputationMethod.cb.SetValue('Normal Distribution')
             self.wTargetProt.tc.SetValue('efeB')
             self.wScoreVal.tc.SetValue('200')
-            self.wSeqLength.tc.SetValue('100')
             self.wAAPos.tc.SetValue('5')
             self.wHist.tc.SetValue('25')
             self.wAlpha.tc.SetValue('0.05')
@@ -6163,7 +6128,6 @@ class TarProt(BaseConfModPanel2):
             #------------------------------> Values
             self.wTargetProt.tc.SetValue(dataI['I'][self.cLTargetProt])
             self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
-            self.wSeqLength.tc.SetValue(dataI['I'][self.cLSeqLength])
             self.wAlpha.tc.SetValue(dataI['I'][self.cLAlpha])
             self.wAAPos.tc.SetValue(dataI['I'][self.cLAAPos])
             self.wHist.tc.SetValue(dataI['I'][self.cLHist])
@@ -6217,8 +6181,6 @@ class TarProt(BaseConfModPanel2):
                 self.wTargetProt.tc.GetValue()),
             self.EqualLenLabel(self.cLScoreVal) : (
                 self.wScoreVal.tc.GetValue()),
-            self.EqualLenLabel(self.cLSeqLength) : (
-                self.wSeqLength.tc.GetValue()),
             self.EqualLenLabel(self.cLAlpha) : (
                 self.wAlpha.tc.GetValue()),
             self.EqualLenLabel(self.cLAAPos) : (
@@ -6246,8 +6208,6 @@ class TarProt(BaseConfModPanel2):
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #--------------> SeqLength
-        seqLengthVal = self.wSeqLength.tc.GetValue()
-        seqLength    = float(seqLengthVal) if seqLengthVal != '' else None
         aaPosVal     = self.wAAPos.tc.GetValue()
         aaPos        = int(aaPosVal) if aaPosVal != '' else None
         histVal      = self.wHist.tc.GetValue()
@@ -6274,7 +6234,6 @@ class TarProt(BaseConfModPanel2):
             'TargetProt' : self.wTargetProt.tc.GetValue(),
             'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
             'Alpha'      : float(self.wAlpha.tc.GetValue()),
-            'SeqLength'  : seqLength,
             'AA'         : aaPos,
             'Hist'       : hist,
             'Exp'        : self.rLbDict[1],
