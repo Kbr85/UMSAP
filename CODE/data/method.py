@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import itertools
-from typing import Literal, Union
+from typing import Literal, Union, Optional
 
 import pandas as pd
 import numpy as np
@@ -625,5 +625,28 @@ def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     #endregion ---------------------------------------------------------> Fill
 
     return dfO
+#---
+
+
+def R2SeqAlignment(
+    df: pd.DataFrame, alpha: float, seqR: dict, fileP: 'Path', tLength: int,
+    ) -> bool:
+    """
+
+        Parameters
+        ----------
+        
+
+        Returns
+        -------
+        
+
+        Raise
+        -----
+        
+    """
+    print(df.to_string())
+    print(alpha, fileP, tLength, seqR)
+    return True
 #---
 #endregion ----------------------------------------------------------> Methods

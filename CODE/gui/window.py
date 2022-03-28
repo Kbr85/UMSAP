@@ -7215,46 +7215,19 @@ class TarProtPlot(BaseWindowProteolysis):
         if dlg.ShowModal():
             file = Path(dlg.wBtnTc.tc.GetValue())
             length = int(dlg.wLength.tc.GetValue())
-            print(length, file)
-            return True
         else:
             dlg.Destroy()
             return False
         #endregion ------------------------------------------------> Get Pos
         
         #region ---------------------------------------------------> Run 
-        dfI = self.rData[self.rDateC]['DF']
-        idx = pd.IndexSlice
-        a = config.dfcolTarProtFirstPart[2:]+self.rExp
-        b = config.dfcolTarProtFirstPart[2:]+len(self.rExp)*['P']
-        dfI = dfI.loc[:,idx[a,b]]
-        dfO = dmethod.R2Hist(
-            dfI, self.rAlpha, win, self.rData[self.rDateC]['PI']['ProtLength'])
+        try:
+            dmethod.R2SeqAlignment(
+                self.rDf, self.rAlpha, self.rRecSeqC, file, length)
+        except Exception as e:
+            msg = 'Export of Sequence Alignments failed.'
+            dtscore.Notification('errorF', msg=msg, tException=e)
         #endregion ------------------------------------------------> Run
-        
-        #region -----------------------------------------------> Save & Update
-        #------------------------------> File
-        date = f'{self.rDateC.split(" - ")[0]}'
-        section = f'{self.cSection.replace(" ", "-")}'
-        folder = f'{date}_{section}'
-        fileN = f'{dateC}_Hist-{win}.txt'
-        fileP = self.rObj.rStepDataP/folder/fileN
-        dtsFF.WriteDF2CSV(fileP, dfO)
-        #------------------------------> Umsap
-        self.rObj.rData[self.cSection][self.rDateC]['Hist'][f'{date}_{win}'] = fileN
-        self.rObj.Save()
-        #------------------------------> Refresh
-        #--------------> UMSAPControl
-        self.cParent.UpdateFileContent()
-        #--------------> TarProt
-        self.rObj = self.cParent.rObj
-        self.rData = self.rObj.dConfigure[self.cSection]()
-        #--------------> Menu
-        _, menuData = self.SetDateMenuDate()
-        self.mBar.mTool.mFurtherA.UpdateFAList(self.rDateC, menuData['FA'])
-        #--------------> GUI
-        self.OnHistSelect(f'{date}_{win}')
-        #endregion --------------------------------------------> Save & Update
         
         dlg.Destroy()
         return True
