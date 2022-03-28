@@ -582,6 +582,78 @@ class UMSAPFile():
         #endregion ------------------------------------------------> 
     #---
     
+    def GetNatSeq(self, tSection: str, tDate: str) -> str:
+        """ Get the native sequence used in an analysis.
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+    
+            Returns
+            -------
+            str
+    
+            Raise
+            -----
+            KeyError:
+                When tSection or tDate is not found in the file
+        """
+        #region ------------------------------------------------> Path
+        for k,v in self.rData[tSection][tDate]['I'].items():
+            if 'Sequences File' in k:
+                fileN = v
+                break
+            else:
+                pass
+        #endregion ---------------------------------------------> Path
+        
+        #region ---------------------------------------------------> 
+        seqObj = dtsFF.FastaFile(self.rInputFileP/fileN)
+        
+        return seqObj.seqNat
+        #endregion ------------------------------------------------> 
+    #---
+    
+    def GetSeq(self, tSection: str, tDate: str) -> tuple[str, str]:
+        """Get the sequences used in an analysis.
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+    
+            Returns
+            -------
+            tuple[RecSeq, NatSeq]
+    
+            Raise
+            -----
+            KeyError:
+                When tSection or tDate is not found in the file
+        """
+        #region ------------------------------------------------> Path
+        for k,v in self.rData[tSection][tDate]['I'].items():
+            if 'Sequences File' in k:
+                fileN = v
+                break
+            else:
+                pass
+        #endregion ---------------------------------------------> Path
+        
+        #region ---------------------------------------------------> 
+        seqObj = dtsFF.FastaFile(self.rInputFileP/fileN)
+        
+        return (seqObj.seqRec, seqObj.seqNat) 
+        #endregion ------------------------------------------------> 
+    #---
+    
     def GetFAData(
         self, tSection: str, tDate: str, fileN: str, header: list[int]
         ) -> 'pd.DataFrame':

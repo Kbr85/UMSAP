@@ -6533,12 +6533,12 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rCtrl        = self.rData[self.rDateC]['PI']['Ctrl']
         self.rIdxP        = pd.IndexSlice[self.rExp,'P']
         self.rPeptide     = None
-        self.rRecSeqC     = (
+        self.rRecSeqC, self.rNatSeqC = (
             self.rRecSeq.get(self.rDateC)
             or
-            self.rObj.GetRecSeq(self.cSection, self.rDateC)
+            self.rObj.GetSeq(self.cSection, self.rDateC)
         )
-        self.rRecSeq[self.rDateC] = self.rRecSeqC
+        self.rRecSeq[self.rDateC] = (self.rRecSeqC, self.rNatSeqC)
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> 
@@ -7213,7 +7213,7 @@ class TarProtPlot(BaseWindowProteolysis):
         
         #region ---------------------------------------------------> Get Pos
         if dlg.ShowModal():
-            file = Path(dlg.wBtnTc.tc.GetValue())
+            fileP  = dlg.wBtnTc.tc.GetValue()
             length = int(dlg.wLength.tc.GetValue())
         else:
             dlg.Destroy()
@@ -7223,13 +7223,19 @@ class TarProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> Run 
         try:
             dmethod.R2SeqAlignment(
-                self.rDf, self.rAlpha, self.rRecSeqC, file, length)
+                self.rDf, 
+                self.rAlpha, 
+                self.rRecSeqC, 
+                self.rNatSeqC, 
+                fileP, 
+                length
+            )
         except Exception as e:
             msg = 'Export of Sequence Alignments failed.'
             dtscore.Notification('errorF', msg=msg, tException=e)
         #endregion ------------------------------------------------> Run
         
-        dlg.Destroy()
+        # dlg.Destroy()
         return True
     #---
     #endregion -------------------------------------------------> Event Methods
