@@ -7743,6 +7743,7 @@ class HistPlot(BaseWindowPlot):
         self.rObj    = cParent.rObj
         self.rData  = self.rObj.GetFAData(
             cParent.cSection,cParent.rDateC,fileN, [0,1,2])
+        self.rLabel = self.rData.columns.unique(level=2).tolist()[1:]
         #------------------------------> 
         super().__init__(cParent, {})
         #endregion --------------------------------------------> Initial Setup
@@ -7775,13 +7776,11 @@ class HistPlot(BaseWindowPlot):
             
         """
         #region ---------------------------------------------------> Variables
-        tRec  = self.cRec[rec]
-        tAllC = self.cAll[allC]
+        self.rRec  = self.cRec[rec]
+        self.rAllC = self.cAll[allC]
         #------------------------------> 
         idx = pd.IndexSlice
-        df = self.rData.loc[:,idx[tRec,['Win',tAllC],:]]
-        #------------------------------> 
-        label = df.columns.unique(level=2).tolist()[1:]
+        df = self.rData.loc[:,idx[self.rRec,['Win',self.rAllC],:]]
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> 
@@ -7789,7 +7788,7 @@ class HistPlot(BaseWindowPlot):
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> Plot
-        n = len(label)
+        n = len(self.rLabel)
         w = self.rBandWidth / n
         df = df.iloc[:,range(1,n+1,1)]
         df = df[(df.notna()).all(axis=1)]
@@ -7811,7 +7810,7 @@ class HistPlot(BaseWindowPlot):
         for i in range(0, n, 1):
             leg.append(mpatches.Patch(
                 color = self.cColor['Spot'][i],
-                label = label[i],
+                label = self.rLabel[i],
             ))
         leg = self.wPlot.axes.legend(
             handles        = leg,
@@ -7825,7 +7824,7 @@ class HistPlot(BaseWindowPlot):
         self.wPlot.ZoomResetSetValues()
         #endregion ------------------------------------------------> Zoom
         
-        self.wPlot.axes.set_title(f'{self.cRec[tRec]} - {self.cAll[tAllC]}')
+        self.wPlot.axes.set_title(f'{self.cRec[self.rRec]} - {self.cAll[self.rAllC]}')
         self.wPlot.canvas.draw()
         return True
     #---
@@ -7860,10 +7859,66 @@ class HistPlot(BaseWindowPlot):
         self.wPlot.axes.set_xticklabels(label)
         self.wPlot.axes.set_xlim(0, len(label)+1)
         self.wPlot.axes.tick_params(axis='x', labelrotation=45)
+        self.wPlot.axes.yaxis.get_major_locator().set_params(integer=True)
         self.wPlot.axes.set_xlabel('Windows')
         self.wPlot.axes.set_ylabel('Number of Cleavages')
         #endregion ------------------------------------------------> Label
 
+        return True
+    #---
+    
+    def UpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info
+    
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if event.inaxes:
+            x, y = event.xdata, event.ydata
+            xf = round(x)
+        else:
+            self.wStatBar.SetStatusText('')
+            return True
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[self.rRec,['Win',self.rAllC],:]]
+        df = df.dropna(how='all')
+        if 0 < xf < df.shape[0]:
+            pass
+        else:
+            self.wStatBar.SetStatusText('')
+            return False
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        n = len(self.rLabel)
+        w = self.rBandWidth / n
+        e = xf - self.rBandStart + (self.rBandWidth / n)
+        k = 0
+        for k in range(0, n, 1):
+            if e < x:
+                e = e + w
+            else:
+                break
+        exp = self.rLabel[k]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        win = f'{df.iat[xf-1, 0]:.0f}-{df.iat[xf, 0]:.0f}'
+        clv = f'{df.iat[xf-1,df.columns.get_loc(idx[self.rRec,self.rAllC,exp])]}'
+        text = (f'Win={win}  Exp={exp}  Cleavages={clv}')
+        #endregion ------------------------------------------------> 
+        
+        self.wStatBar.SetStatusText(text)    
         return True
     #---
     
@@ -8058,7 +8113,7 @@ class CpRPlot(BaseWindowPlot):
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> 
-        self.SetAxis(yMax)
+        self.SetAxis()
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> Plot
@@ -8107,7 +8162,7 @@ class CpRPlot(BaseWindowPlot):
         return True
     #---
     
-    def SetAxis(self, yMax: int) -> bool:
+    def SetAxis(self) -> bool:
         """
     
             Parameters
@@ -8127,7 +8182,7 @@ class CpRPlot(BaseWindowPlot):
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> Label
-        self.wPlot.axes.set_yticks(range(0,yMax+1))
+        self.wPlot.axes.yaxis.get_major_locator().set_params(integer=True)
         self.wPlot.axes.set_xlabel('Residue Number')
         self.wPlot.axes.set_ylabel('Number of Cleavages')
         #endregion ------------------------------------------------> Label
