@@ -7198,23 +7198,25 @@ class TarProtPlot(BaseWindowProteolysis):
             -----
             
         """
-        print('HERE')
-        return True
-        
         #region ---------------------------------------------------> dlg
-        dlg = dtsWindow.UserInput1Text(
-            'New Histogram Analysis', 
-            'Histograms Windows', 
-            'Size of the histogram windows, e.g. 50 or 50 100 200',
+        dlg = window.FABtnText(
+            'File', 
+            'Path to the output file',
+            config.elPDF,
+            dtsValidator.OutputFF('file', ext=config.esPDF[0]),
+            'Length',
+            'Residues per line in the output file, e.g. 100',
+            dtsValidator.NumberList('int', vMin=1, vMax=100, nN=1),
             parent = self,
-            validator = dtsValidator.NumberList(numType='int', vMin=0, sep=' ')
         )
         #endregion ------------------------------------------------> dlg
         
         #region ---------------------------------------------------> Get Pos
         if dlg.ShowModal():
-            win = [int(x) for x in dlg.input.tc.GetValue().split()]
-            dateC = dtsMethod.StrNow()
+            file = Path(dlg.wBtnTc.tc.GetValue())
+            length = int(dlg.wLength.tc.GetValue())
+            print(length, file)
+            return True
         else:
             dlg.Destroy()
             return False
@@ -10211,6 +10213,135 @@ class VolColorScheme(dtsWindow.OkCancel):
         for v in self.rG[tKey]:
             if v.IsChecked():
                 return self.rKeys[v.GetName()]
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class FABtnText(dtsWindow.OkCancel):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, btnLabel: str, btnHint: str, ext: str, btnValidator: wx.Validator,
+        stLabel: str, stHint: str, stValidator: wx.Validator,
+        parent: Optional[wx.Window]=None):
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(title='Export Sequence Alignments', parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wBtnTc = dtsWidget.ButtonTextCtrlFF(
+            self,
+            btnLabel  = btnLabel,
+            tcHint    = btnHint,
+            ext       = ext,
+            mode      = 'save',
+            validator = btnValidator,
+        )
+        
+        self.wLength = dtsWidget.StaticTextCtrl(
+            self,
+            stLabel   = stLabel,
+            tcHint    = stHint,
+            validator = stValidator,
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sFlex = wx.FlexGridSizer(2,2,1,1)
+        self.sFlex.Add(self.wBtnTc.btn, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnTc.tc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wLength.st, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.sFlex.Add(self.wLength.tc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.AddGrowableCol(1,1)
+        
+        self.sSizer.Add(self.sFlex, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Basic implementation. Override as needed.
+        """
+        #region ---------------------------------------------------> 
+        errors = 0
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if self.wBtnTc.tc.GetValidator().Validate()[0]:
+            pass
+        else:
+            errors += 1
+            self.wBtnTc.tc.SetValue('')
+            
+        if self.wLength.tc.GetValidator().Validate()[0]:
+            pass
+        else:
+            errors += 1
+            self.wLength.tc.SetValue('')
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> 
+        if not errors:
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
+        #endregion -----------------------------------------------------> 
+
+        return True
     #---
     #endregion ------------------------------------------------> Class methods
 #---
