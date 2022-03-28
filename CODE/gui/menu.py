@@ -2617,6 +2617,7 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Export Data
         self.miSaveD  = self.Append(-1, 'Export Data\tCtrl+E')
         self.miSaveI  = self.Append(-1, 'Export Images\tShift+Alt+I')
+        self.miSaveS  = self.Append(-1, 'Export Sequences\tCtrl+S')
         self.AppendSeparator()
         #------------------------------>
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
@@ -2635,6 +2636,7 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.miDataPrep)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
+        self.Bind(wx.EVT_MENU, self.OnSeqExport,      source=self.miSaveS)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -2662,6 +2664,24 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         #endregion --------------------------------------> Update Volcano menu
         
         return super().OnPlotDate(event)
+    #---
+    
+    def OnSeqExport(self, event: wx.CommandEvent) -> bool:
+        """Export the Sequence Alignments
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnSeqExport()
+        
+        return True
     #---
     #endregion ------------------------------------------------> Event methods
 #---
