@@ -625,6 +625,9 @@ class BaseWindowNPlotLT(BaseWindow):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
+        self.cTText = getattr(self, 'cTText', 'Text')
+        self.cTPlots = getattr(self, 'cTPlots', 'Plots')
+        #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> 
         dKeyMethod = {
@@ -665,7 +668,7 @@ class BaseWindowNPlotLT(BaseWindow):
             aui.AuiPaneInfo(
                 ).Center(
                 ).Caption(
-                    'Plots'
+                    self.cTPlots
                 ).Floatable(
                     b=False
                 ).CloseButton(
@@ -8055,7 +8058,7 @@ class HistPlot(BaseWindowPlot):
 #---
 
 
-class CEvolPlot(BaseWindowPlot):
+class CEvolPlot(BaseWindowNPlotLT):
     """
 
         Parameters
@@ -8081,12 +8084,22 @@ class CEvolPlot(BaseWindowPlot):
     # shown in the window
     cSection = config.nuCEvol
     #------------------------------> 
-    cRec = {
-        True : 'Rec',
-        False: 'Nat',
-        'Rec': 'Recombinant Sequence',
-        'Nat': 'Native Sequence',
-    }
+    cTList   = 'Residue Numbers'
+    cTPlots  = 'Plot'
+    cLNPlots = ['M']
+    cLCol    = ['Residue']
+    #------------------------------> 
+    cHSearch = 'Residue Number'
+    #------------------------------> 
+    cNPlotsCol = 1
+    #------------------------------> 
+    cSCol = (100, 100)
+    # cRec = {
+    #     True : 'Rec',
+    #     False: 'Nat',
+    #     'Rec': 'Recombinant Sequence',
+    #     'Nat': 'Native Sequence',
+    # }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -8108,6 +8121,12 @@ class CEvolPlot(BaseWindowPlot):
         super().__init__(cParent, menuData)
         #endregion --------------------------------------------> Initial Setup
         
+        #region ---------------------------------------------------> 
+        self._mgr.DetachPane(self.wText)
+        self._mgr.Update()
+        self.wText.Destroy()
+        #endregion ------------------------------------------------> 
+        
         #region ---------------------------------------------------> Plot
         # self.UpdatePlot(rec=True, label=[menuData['Label'][0]])
         #endregion ------------------------------------------------> Plot
@@ -8118,6 +8137,63 @@ class CEvolPlot(BaseWindowPlot):
         #endregion ------------------------------------------> Window position
     #---
     #endregion -----------------------------------------------> Instance setup
+    
+    #region ---------------------------------------------------> Event Methods
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    
+    def OnExportPlotData(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        return super().OnExportPlotData(df=self.rData)
+    #---
+    
+    def OnDupWin(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
+            CEvolPlot(self.cParent, self.cDateC, self.cFileN)
+        )
+        #------------------------------> 
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
 #---
 
 
