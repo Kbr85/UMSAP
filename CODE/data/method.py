@@ -633,19 +633,73 @@ def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
 #---
 
 
-def R2CEvol(df: pd.DataFrame, alpha: float) -> pd.DataFrame:
+def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     """
         Parameters
         ----------
         df: pd.DataFrame
-            Nterm Cterm NtermF CtermF Exp1 .... ExpN
-            Nterm Cterm NtermF CtermF P    .... P
+            Nterm Cterm NtermF CtermF Exp1     .... ExpN
+            Nterm Cterm NtermF CtermF Int P    .... Int P
             
         Returns
         -------
         pd.DataFrame
     """
-    return pd.DataFrame()
+    def IntL2MeanI(a: list, alpha: float) -> float:
+        """
+        
+        
+        """
+        if a[-1] < alpha:
+            l = list(map(abs, list(map(float, a[0][1:-1].split(',')))))
+            # print(sum(l), len(l), sum(l)/len(l))
+            return (sum(l)/len(l))
+        else:
+            return 0.0
+    #---
+    #region --------------------------------------------------------> 
+    idx = pd.IndexSlice
+    label = df.columns.unique(level=0).tolist()[4:]
+    nL = len(label)
+    #endregion -----------------------------------------------------> 
+    
+    #region --------------------------------------------------------> 
+    a = (nL)*['Rec']+(nL)*['Nat']
+    b = 2*label
+    nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
+    col = pd.MultiIndex.from_arrays([a[:],b[:]])
+    dfO = pd.DataFrame(0, index=range(0,nR), columns=col)
+    #endregion -----------------------------------------------------> 
+
+    #region ---------------------------------------------------> 
+    dfT = df.iloc[:,[0,1]].copy()
+    dfT.iloc[:,0] = dfT.iloc[:,0]-1
+    resL = sorted(list(set(dfT.to_numpy().flatten())))
+    
+    for r in resL:
+        dfT = df.loc[(df[('Nterm','Nterm')]==r+1) | (df[('Cterm','Cterm')]==r)].copy()
+        for e in label:
+            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])  
+        dfT = dfT.loc[dfT.loc[:,idx[:,'Int']].any(axis=1)]
+        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
+        dfO.iloc[r, range(0,len(label))] = dfT.loc[:,idx[:,'Int']].sum(axis=0)    
+    #endregion ------------------------------------------------> 
+    
+    #region ---------------------------------------------------> 
+    dfT = df.iloc[:,[2,3]].copy()
+    dfT.iloc[:,0] = dfT.iloc[:,0]-1
+    resL = sorted(list(set(dfT.to_numpy().flatten())))
+    
+    for r in resL:
+        dfT = df.loc[(df[('NtermF','NtermF')]==r+1) | (df[('CtermF','CtermF')]==r)].copy()
+        for e in label:
+            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])  
+        dfT = dfT.loc[dfT.loc[:,idx[:,'Int']].any(axis=1)]
+        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
+        dfO.iloc[r, range(len(label),2*len(label))] = dfT.loc[:,idx[:,'Int']].sum(axis=0)    
+    #endregion ------------------------------------------------> 
+
+    return dfO
 #---
 
 

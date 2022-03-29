@@ -6387,7 +6387,7 @@ class TarProt(BaseConfModPanel2):
         #------------------------------> 
         a = self.cLDFFirst[2:]+self.rDO['Exp']
         b = self.cLDFFirst[2:]+['P']
-        tIdxH = idx[a,b] # Also used for Hist, CutEvo
+        tIdxH = idx[a,b] # Also used for Hist
         #------------------------------> 
         try:
             self.dfCpR = dmethod.R2CpR(
@@ -6405,9 +6405,16 @@ class TarProt(BaseConfModPanel2):
         msgStep = (f'{self.cLPdRun} Cleavage Evolution')
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> 
+        a = self.cLDFFirst[2:]+self.rDO['Exp']
+        b = self.cLDFFirst[2:]+['Int', 'P']
+        tIdx = idx[a,b]
+        #------------------------------> 
         try:
             self.dfCEvol = dmethod.R2CEvol(
-                self.dfR.loc[:, tIdxH], self.rDO['Alpha'])
+                self.dfR.loc[:, tIdx], 
+                self.rDO['Alpha'], 
+                self.rDO['ProtLength'],
+            )
         except Exception as e:
             self.rMsgError = 'The Cleavage Evolution method failed.'
             self.rException = e
