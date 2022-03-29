@@ -8115,10 +8115,14 @@ class CEvolPlot(BaseWindowNPlotLT):
         self.rData  = self.rObj.GetFAData(
             cParent.cSection, cParent.rDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
-        # menuData     = self.SetMenuDate()
-        menuData = {}
         #------------------------------> 
-        super().__init__(cParent, menuData)
+        super().__init__(cParent, {})
+        #------------------------------> 
+        dKeyMethod = {
+            'ZoomR' : self.OnZoomReset,
+            'SaveI' : self.OnSaveImage,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
         
         #region ---------------------------------------------------> 
@@ -8191,6 +8195,28 @@ class CEvolPlot(BaseWindowNPlotLT):
         )
         #------------------------------> 
         return True
+    #---
+    
+    def OnSaveImage(self) -> bool:
+        """Save an image of the plot.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.wPlots.dPlot['M'].SaveImage(
+            config.elMatPlotSaveI, parent=self.wPlots.dPlot['M']
+        )
+    #---
+    
+    def OnZoomReset(self) -> bool:
+        """Reset the zoom level in the plot.
+        
+            Returns
+            -------
+            bool
+        """
+        return self.wPlots.dPlot['M'].ZoomResetPlot()
     #---
     #endregion ------------------------------------------------> Event Methods
 

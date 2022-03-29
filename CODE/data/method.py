@@ -686,17 +686,20 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     #endregion ------------------------------------------------> 
     
     #region ---------------------------------------------------> 
-    dfT = df.iloc[:,[2,3]].copy()
-    dfT.iloc[:,0] = dfT.iloc[:,0]-1
-    resL = sorted(list(set(dfT.to_numpy().flatten())))
-    
-    for r in resL:
-        dfT = df.loc[(df[('NtermF','NtermF')]==r+1) | (df[('CtermF','CtermF')]==r)].copy()
-        for e in label:
-            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])  
-        dfT = dfT.loc[dfT.loc[:,idx[:,'Int']].any(axis=1)]
-        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
-        dfO.iloc[r, range(len(label),2*len(label))] = dfT.loc[:,idx[:,'Int']].sum(axis=0)    
+    if protL[1] is not None:
+        dfT = df.iloc[:,[2,3]].copy()
+        dfT.iloc[:,0] = dfT.iloc[:,0]-1
+        resL = sorted(list(set(dfT.to_numpy().flatten())))
+
+        for r in resL:
+            dfT = df.loc[(df[('NtermF','NtermF')]==r+1) | (df[('CtermF','CtermF')]==r)].copy()
+            for e in label:
+                dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])  
+            dfT = dfT.loc[dfT.loc[:,idx[:,'Int']].any(axis=1)]
+            dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
+            dfO.iloc[r, range(len(label),2*len(label))] = dfT.loc[:,idx[:,'Int']].sum(axis=0)    
+    else:
+        pass
     #endregion ------------------------------------------------> 
 
     return dfO

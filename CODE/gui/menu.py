@@ -1838,6 +1838,94 @@ class CpRToolMenu(wx.Menu, MenuMethods):
 #---
 
 
+class CEvolToolMenu(wx.Menu, MenuMethods):
+    """ """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miNat = self.Append(-1, 'Native Sequence', kind=wx.ITEM_RADIO)
+        self.miRec = self.Append(-1, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
+        self.miRec.Check()
+        self.AppendSeparator()
+        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
+        self.miSaveI = self.Append(-1, 'Export Image\tCtrl+I')
+        self.AppendSeparator()
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> 
+        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
+            self.miZoomR.GetId()    : 'ZoomR',
+            self.miSaveI.GetId()    : 'SaveI',
+        }
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miRec)
+        self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miNat)
+        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnLabel(self, event: wx.CommandEvent) -> bool:
+        """Change between Experiments.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        rec = self.miRec.IsChecked()
+        show = self.miProtLoc.IsChecked()
+        #------------------------------> Selection mode
+        sel = self.miSel.IsChecked()
+        if sel:
+            [x.Check(False) for x in self.rItems]
+            self.Check(event.GetId(), True)
+        else:
+            pass
+        #------------------------------> Labels
+        label = [x.GetItemLabel() for x in self.rItems if x.IsChecked()]
+        if label:
+            pass
+        else:
+            self.rItems[0].Check()
+            label = [self.rItems[0].GetItemLabel()]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        win = self.GetWindow()
+        win.UpdatePlot(rec, label, show)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
 class FAMenuTarProtAA(wx.Menu):
     """ """
     #region -----------------------------------------------------> Class setup
@@ -2765,6 +2853,7 @@ class ToolMenuBar(MainMenuBar):
         config.nwAAPlot       : AAToolMenu,
         config.nwHistPlot     : HistToolMenu,
         config.nwCpRPlot      : CpRToolMenu,
+        config.nwCEvolPlot    : CEvolToolMenu,
     }
     #endregion --------------------------------------------------> Class Setup
     
