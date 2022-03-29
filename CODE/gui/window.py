@@ -6999,6 +6999,26 @@ class TarProtPlot(BaseWindowProteolysis):
         return True
     #---
     
+    def OnCEvol(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.cParent.rWindow[self.cSection]['FA'].append(
+            CEvolPlot(self, self.rDateC, self.rData[self.rDateC]['CEvol']))
+        return True
+    #---
+    
     def OnAASelect(self, aa:str) -> bool:
         """
     
@@ -8032,6 +8052,72 @@ class HistPlot(BaseWindowPlot):
         return True
     #---
     #endregion ------------------------------------------------> Class methods
+#---
+
+
+class CEvolPlot(BaseWindowPlot):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    #------------------------------> To id the window
+    cName = config.nwCEvolPlot
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nuCEvol
+    #------------------------------> 
+    cRec = {
+        True : 'Rec',
+        False: 'Nat',
+        'Rec': 'Recombinant Sequence',
+        'Nat': 'Native Sequence',
+    }
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: wx.Window, dateC: str, fileN: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle = f"{cParent.cTitle} - {dateC} - {self.cSection}"
+        self.cDateC = dateC
+        self.cFileN = fileN
+        self.rUMSAP = cParent.cParent
+        self.rObj   = cParent.rObj
+        self.rData  = self.rObj.GetFAData(
+            cParent.cSection, cParent.rDateC, fileN, [0,1])
+        self.rLabel = self.rData.columns.unique(level=1).tolist()
+        # menuData     = self.SetMenuDate()
+        menuData = {}
+        #------------------------------> 
+        super().__init__(cParent, menuData)
+        #endregion --------------------------------------------> Initial Setup
+        
+        #region ---------------------------------------------------> Plot
+        # self.UpdatePlot(rec=True, label=[menuData['Label'][0]])
+        #endregion ------------------------------------------------> Plot
+
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
 #---
 
 

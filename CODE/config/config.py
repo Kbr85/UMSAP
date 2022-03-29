@@ -117,6 +117,7 @@ nwCheckDataPrep = 'CheckDataPrep'
 nwAAPlot        = 'AAPlot'
 nwHistPlot      = 'HistPlot'
 nwCpRPlot       = 'CpRPlot'
+nwCEvolPlot     = 'CEvolPlot'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
@@ -149,6 +150,7 @@ nuAA       = 'AA Distribution'
 nuHist     = 'Histograms'
 nuReadF    = 'Read UMSAP File'
 nuCpR      = 'Cleavage per Residues'
+nuCEvol    = 'Cleavage Evolution'
 #endregion ------------------------------------------------------------> Names
 
 

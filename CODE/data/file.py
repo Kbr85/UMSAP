@@ -397,11 +397,12 @@ class UMSAPFile():
                 }
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
-                    'DF': df,
-                    'PI': PI,
-                    'AA': v.get('AA', {}),
-                    'Hist': v.get('Hist', {}),
-                    'CpR': v['CpR'],
+                    'DF'   : df,
+                    'PI'   : PI,
+                    'AA'   : v.get('AA', {}),
+                    'Hist' : v.get('Hist', {}),
+                    'CpR'  : v['CpR'],
+                    'CEvol': v['CEvol'],
                 }
             except Exception:
                 pass

@@ -2197,7 +2197,8 @@ class FurtherAnalysisTarProt(wx.Menu):
         #region -----------------------------------------------> Initial Setup
         super().__init__()
         
-        self.miCpR = self.Append(-1, 'Cleavage per Residue')
+        self.miCEvol = self.Append(-1, 'Cleavage Evolution')
+        self.miCpR   = self.Append(-1, 'Cleavage per Residue')
         self.AppendSeparator()
         self.mAA = FAMenuTarProtAA(cMenuData, ciDate)
         self.AppendSubMenu(self.mAA, 'AA Distribution')
@@ -2207,7 +2208,8 @@ class FurtherAnalysisTarProt(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
         
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnCpR, source=self.miCpR)
+        self.Bind(wx.EVT_MENU, self.OnCpR,   source=self.miCpR)
+        self.Bind(wx.EVT_MENU, self.OnCEvol, source=self.miCEvol)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -2256,6 +2258,31 @@ class FurtherAnalysisTarProt(wx.Menu):
         #region ---------------------------------------------------> Plot
         win = self.GetWindow()
         win.OnCpR()
+        #endregion ------------------------------------------------> Plot
+        
+        return True
+    #---
+    
+    def OnCEvol(self, event: wx.CommandEvent) -> bool:
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> Plot
+        win = self.GetWindow()
+        win.OnCEvol()
         #endregion ------------------------------------------------> Plot
         
         return True
