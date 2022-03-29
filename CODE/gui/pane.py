@@ -1423,6 +1423,12 @@ class BaseConfPanel(
             dtsFF.WriteDF2CSV(fileP, self.dfCpR)
         else:
             pass
+        
+        if (fileN := stepDict.get('CEvol', False)):
+            fileP = dataFolder/fileN
+            dtsFF.WriteDF2CSV(fileP, self.dfCEvol)
+        else:
+            pass
         #endregion -----------------------------------------> Further Analysis
 
         #region --------------------------------------------------> UMSAP File
@@ -1454,6 +1460,7 @@ class BaseConfPanel(
         elif self.cName == config.npTarProt:
             #--------------> TarProt    
             dateDict[self.rDateID]['CpR'] = stepDict['CpR']
+            dateDict[self.rDateID]['CEvol'] = stepDict['CEvol']
         else:
             pass
         #--------------> Further Analysis
@@ -5856,9 +5863,10 @@ class TarProt(BaseConfModPanel2):
         #region -----------------------------------------------> Initial Setup
         super().__init__(cParent)
         
-        self.dfAA   = pd.DataFrame()
-        self.dfHist = pd.DataFrame()
-        self.dfCpR  = pd.DataFrame()
+        self.dfAA    = pd.DataFrame()
+        self.dfHist  = pd.DataFrame()
+        self.dfCpR   = pd.DataFrame()
+        self.dfCEvol = pd.DataFrame()
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------------> Menu
@@ -6379,7 +6387,7 @@ class TarProt(BaseConfModPanel2):
         #------------------------------> 
         a = self.cLDFFirst[2:]+self.rDO['Exp']
         b = self.cLDFFirst[2:]+['P']
-        tIdxH = idx[a,b] # Also used for Hist
+        tIdxH = idx[a,b] # Also used for Hist, CutEvo
         #------------------------------> 
         try:
             self.dfCpR = dmethod.R2CpR(
@@ -6392,6 +6400,19 @@ class TarProt(BaseConfModPanel2):
             self.rException = e
             return False
         #endregion -------------------------------------------------> Cleavage
+        
+        #region ---------------------------------------------------> CutEvo
+        msgStep = (f'{self.cLPdRun} Cleavage Evolution')
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.dfCEvol = dmethod.R2CEvol(
+                self.dfR.loc[:, tIdxH], self.rDO['Alpha'])
+        except Exception as e:
+            self.rMsgError = 'The Cleavage Evolution method failed.'
+            self.rException = e
+            return False
+        #endregion ------------------------------------------------> CutEvo
         
         #region ----------------------------------------------------------> AA
         if self.rDO['AA'] is not None:
@@ -6459,7 +6480,8 @@ class TarProt(BaseConfModPanel2):
         
         #region --------------------------------------------> Further Analysis
         #------------------------------> 
-        stepDict['CpR'] = f'{self.rDate}_CpR.txt' 
+        stepDict['CpR'] = f'{self.rDate}_CpR.txt'
+        stepDict['CEvol'] = f'{self.rDate}_CEvol.txt'
         #------------------------------> 
         stepDict['AA']= {}
         if self.rDO['AA'] is not None:
@@ -6488,9 +6510,10 @@ class TarProt(BaseConfModPanel2):
         else:
             pass
         
-        self.dfAA   = pd.DataFrame()
-        self.dfHist = pd.DataFrame()
-        self.dfCpR  = pd.DataFrame()
+        self.dfAA    = pd.DataFrame()
+        self.dfHist  = pd.DataFrame()
+        self.dfCpR   = pd.DataFrame()
+        self.dfCEvol = pd.DataFrame()
         #------------------------------>     
         return super().RunEnd()
     #---

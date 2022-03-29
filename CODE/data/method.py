@@ -633,6 +633,22 @@ def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
 #---
 
 
+def R2CEvol(df: pd.DataFrame, alpha: float) -> pd.DataFrame:
+    """
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Nterm Cterm NtermF CtermF Exp1 .... ExpN
+            Nterm Cterm NtermF CtermF P    .... P
+            
+        Returns
+        -------
+        pd.DataFrame
+    """
+    return pd.DataFrame()
+#---
+
+
 def R2SeqAlignment(
     df: pd.DataFrame, alpha: float, seqR: str, seqN: Union[None, str],
     fileP: 'Path', tLength: int,
