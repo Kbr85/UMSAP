@@ -8094,12 +8094,12 @@ class CEvolPlot(BaseWindowNPlotLT):
     cNPlotsCol = 1
     #------------------------------> 
     cSCol = (100, 100)
-    # cRec = {
-    #     True : 'Rec',
-    #     False: 'Nat',
-    #     'Rec': 'Recombinant Sequence',
-    #     'Nat': 'Native Sequence',
-    # }
+    cRec = {
+        True : 'Rec',
+        False: 'Nat',
+        'Rec': 'Recombinant Sequence',
+        'Nat': 'Native Sequence',
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -8132,7 +8132,7 @@ class CEvolPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> Plot
-        # self.UpdatePlot(rec=True, label=[menuData['Label'][0]])
+        self.UpdatePlot(rec=True)
         #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
@@ -8218,8 +8218,159 @@ class CEvolPlot(BaseWindowNPlotLT):
         """
         return self.wPlots.dPlot['M'].ZoomResetPlot()
     #---
-    #endregion ------------------------------------------------> Event Methods
+    
+    def OnListSelect(self, event: Union[wx.Event, str]) -> bool:
+        """What to do after selecting a row in the wx.ListCtrl. 
+            Override as needed
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        super().OnListSelect(event)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.Plot(self.rLCIdx)
+        #endregion ------------------------------------------------> 
 
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+    
+    #region --------------------------------------------------> Manage Methods
+    def UpdatePlot(self, rec: bool) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.rRec = self.cRec[rec]
+        idx = pd.IndexSlice
+        if rec:
+            self.rDF = self.rData.loc[:,idx[self.rRec,:]]
+        else:
+            self.rDF = self.rData.loc[:,idx[self.rRec,:]]
+        self.rDF = self.rDF[self.rDF.any(axis=1)]
+        print(self.rDF.to_string())
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.SetAxis()
+        #endregion ------------------------------------------------>
+        
+        #region ---------------------------------------------------> 
+        self.FillListCtrl(self.rDF.index.tolist())
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def FillListCtrl(self, tRes: list[int]) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.wLC.wLCS.lc.DeleteAllItems()
+        #endregion ------------------------------------------------> 
+    
+        #region ---------------------------------------------------> 
+        data = []
+        for k in tRes:
+            data.append([str(k+1)])
+        self.wLC.wLCS.lc.SetNewData(data)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def SetAxis(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.wPlots.dPlot['M'].axes.clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Label
+        self.wPlots.dPlot['M'].axes.set_xticks(range(1,len(self.rLabel)+1))
+        self.wPlots.dPlot['M'].axes.set_xticklabels(self.rLabel)
+        self.wPlots.dPlot['M'].axes.set_xlim(0, len(self.rLabel)+1)
+        self.wPlots.dPlot['M'].axes.set_xlabel('Experiment Label')
+        self.wPlots.dPlot['M'].axes.set_ylabel('Relative Cleavage Rate')
+        
+        self.wPlots.dPlot['M'].axes.set_title(self.cRec[self.rRec])
+        #endregion ------------------------------------------------> Label
+        return True
+    #---
+    
+    def Plot(self, idx) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.SetAxis()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        x = range(1,len(self.rLabel)+1)
+        y = self.rDF.iloc[idx,:]
+        self.wPlots.dPlot['M'].axes.plot(x,y)
+        self.wPlots.dPlot['M'].canvas.draw()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion -----------------------------------------------> Manage Methods 
 #---
 
 
