@@ -625,8 +625,10 @@ class BaseWindowNPlotLT(BaseWindow):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cTText = getattr(self, 'cTText', 'Text')
-        self.cTPlots = getattr(self, 'cTPlots', 'Plots')
+        self.cTText   = getattr(self, 'cTText', 'Text')
+        self.cTPlots  = getattr(self, 'cTPlots', 'Plots')
+        self.cLCStyle = getattr(
+            self, 'cLCStyle', wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL)
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> 
@@ -652,7 +654,7 @@ class BaseWindowNPlotLT(BaseWindow):
             self, 
             cColLabel = self.cLCol,
             cColSize  = self.cSCol,
-            cStyle    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
+            cStyle    = self.cLCStyle, 
             cTcHint   = f'Search {self.cHSearch}'
         )
         #endregion --------------------------------------------------> Widgets
@@ -828,7 +830,7 @@ class BaseWindowNPlotLT(BaseWindow):
             -------
             bool
         """
-        self.rLCIdx = self.wLC.wLCS.lc.GetFirstSelected()
+        self.rLCIdx = self.wLC.wLCS.lc.GetLastSelected()
         return True
     #---
     
@@ -8088,12 +8090,15 @@ class CEvolPlot(BaseWindowNPlotLT):
     cTPlots  = 'Plot'
     cLNPlots = ['M']
     cLCol    = ['Residue']
+    cLCStyle = wx.LC_REPORT|wx.LC_VIRTUAL
     #------------------------------> 
     cHSearch = 'Residue Number'
     #------------------------------> 
     cNPlotsCol = 1
     #------------------------------> 
-    cSCol = (100, 100)
+    cSCol    = (100, 100)
+    cSWindow = (670,560)
+    #------------------------------> 
     cRec = {
         True : 'Rec',
         False: 'Nat',
@@ -8115,6 +8120,7 @@ class CEvolPlot(BaseWindowNPlotLT):
         self.rData  = self.rObj.GetFAData(
             cParent.cSection, cParent.rDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
+        self.rIdx = {}
         #------------------------------> 
         super().__init__(cParent, {})
         #------------------------------> 
@@ -8134,7 +8140,7 @@ class CEvolPlot(BaseWindowNPlotLT):
         #region ---------------------------------------------------> Plot
         self.UpdatePlot(rec=True)
         #endregion ------------------------------------------------> Plot
-
+        
         #region ---------------------------------------------> Window position
         self.WinPos()
         self.Show()
@@ -8237,7 +8243,8 @@ class CEvolPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
-        self.Plot(self.rLCIdx)
+        self.rIdx = self.wLC.wLCS.lc.GetSelectedRows(True)
+        self.Plot()
         #endregion ------------------------------------------------> 
 
         return True
@@ -8342,7 +8349,7 @@ class CEvolPlot(BaseWindowNPlotLT):
         return True
     #---
     
-    def Plot(self, idx) -> bool:
+    def Plot(self) -> bool:
         """
     
             Parameters
@@ -8362,9 +8369,16 @@ class CEvolPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
-        x = range(1,len(self.rLabel)+1)
-        y = self.rDF.iloc[idx,:]
-        self.wPlots.dPlot['M'].axes.plot(x,y)
+        for idx,v in self.rIdx.items():
+            x = range(1,len(self.rLabel)+1)
+            y = self.rDF.iloc[idx,:]
+            self.wPlots.dPlot['M'].axes.plot(x,y, label=f'{v[0]}')
+        #------------------------------> 
+        if len(self.rIdx) > 1:
+            self.wPlots.dPlot['M'].axes.legend()
+        else:
+            pass
+        #------------------------------> 
         self.wPlots.dPlot['M'].canvas.draw()
         #endregion ------------------------------------------------> 
 
