@@ -7060,24 +7060,26 @@ class TarProtPlot(BaseWindowProteolysis):
             -----
             
         """
-        print('HERE')
         #region ---------------------------------------------------> dlg
-        # dlg = dtsWindow.UserInput1Text(
-        #     'New AA Distribution Analysis', 
-        #     'Positions', 
-        #     'Number of residues around the cleavage site to consider, e.g. 5',
-        #     parent = self,
-        #     validator = dtsValidator.NumberList('int', vMin=1, nN=1)
+        # dlg = FA2Btn(
+        #     ['PDB', 'Output'],
+        #     ['Path to the PDB file', 'Path to the output folder'],
+        #     [config.elPDB, config.elPDB],
+        #     [dtsValidator.InputFF('file', ext=config.esPDB),
+        #     dtsValidator.OutputFF('folder', ext=config.esPDB)],
+        #     parent = self
         # )
         #endregion ------------------------------------------------> dlg
         
         #region ---------------------------------------------------> Get Pos
         # if dlg.ShowModal():
-        #     pos = int(dlg.input.tc.GetValue())
-        #     dateC = dtsMethod.StrNow()
+        #     pdbI = dlg.wBtnI.tc.GetValue()
+        #     pdbO = dlg.wBtnO.tc.GetValue()
         # else:
         #     dlg.Destroy()
         #     return False
+        pdbI = '/Users/bravo/Downloads/2y4d.pdb'
+        pdbO = '/Users/bravo/TEMP-GUI/BORRAR-UMSAP/'
         #endregion ------------------------------------------------> Get Pos
         
         #region ---------------------------------------------------> Run 
@@ -7111,7 +7113,7 @@ class TarProtPlot(BaseWindowProteolysis):
         # self.OnAASelect(f'{date}_{pos}')
         #endregion --------------------------------------------> Save & Update
 
-        # dlg.Destroy()
+        dlg.Destroy()
         return True
     #---
     
@@ -10744,6 +10746,132 @@ class FABtnText(dtsWindow.OkCancel):
         else:
             errors += 1
             self.wLength.tc.SetValue('')
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> 
+        if not errors:
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
+        #endregion -----------------------------------------------------> 
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class FA2Btn(dtsWindow.OkCancel):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, btnLabel: list[str], btnHint: list[str], ext: list[str], 
+        btnValidator: list[wx.Validator], parent: Optional[wx.Window]=None):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(title='PDB Mapping', parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wBtnI = dtsWidget.ButtonTextCtrlFF(
+            self,
+            btnLabel  = btnLabel[0],
+            tcHint    = btnHint[0],
+            ext       = ext[0],
+            mode      = 'openO',
+            validator = btnValidator[0],
+        )
+        
+        self.wBtnO = dtsWidget.ButtonTextCtrlFF(
+            self,
+            btnLabel  = btnLabel[1],
+            tcHint    = btnHint[1],
+            ext       = ext[1],
+            mode      = 'folder',
+            validator = btnValidator[1],
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sFlex = wx.FlexGridSizer(2,2,1,1)
+        self.sFlex.Add(self.wBtnI.btn, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnI.tc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnO.btn, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnO.tc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.AddGrowableCol(1,1)
+        
+        self.sSizer.Add(self.sFlex, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Basic implementation. Override as needed.
+        """
+        #region ---------------------------------------------------> 
+        errors = 0
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if self.wBtnI.tc.GetValidator().Validate()[0]:
+            pass
+        else:
+            errors += 1
+            self.wBtnI.tc.SetValue('')
+            
+        if self.wBtnO.tc.GetValidator().Validate()[0]:
+            pass
+        else:
+            errors += 1
+            self.wBtnO.tc.SetValue('')
         #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> 
