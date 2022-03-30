@@ -5716,7 +5716,6 @@ class TarProt(BaseConfModPanel2):
                 "iFile"      : "Path to input data file",
                 "uFile"      : "Path to umsap file.",
                 "seqFile"    : "Path to the sequence file",
-                "pdbFile"    : "Path to the PDB file",
                 "ID"         : "Analysis ID",
                 "Cero"       : Boolean, how to treat cero values,
                 "TransMethod": "Transformation method",
@@ -5817,7 +5816,6 @@ class TarProt(BaseConfModPanel2):
     #region -----------------------------------------------------> Class setup
     cName = config.npTarProt
     #------------------------------> Label
-    cLPDB      = 'PDB'
     cLAAPos    = 'AA Positions'
     cLHist     = 'Histogram Windows'
     cLExp      = config.lStTarProtExp
@@ -5829,8 +5827,6 @@ class TarProt(BaseConfModPanel2):
     cHAAPos = 'e.g. 5'
     cHHist  = 'e.g. 50 or 50 100 200'
     #------------------------------> Tooltip
-    cTTPDB = (f'Select the {cLPDB} file or type the PDB ID.\n---\nThis field '
-              f'is optional.')
     cTTAAPos = ('Number of positions around the cleavage sites to consider '
         'for the AA distribution analysis.\nThis field is optional.')
     cTTHist = ('Size of the histogram windows. One number will result in '
@@ -5848,7 +5844,7 @@ class TarProt(BaseConfModPanel2):
     cGaugePD     = 50
     rLLenLongest = len(config.lStResultCtrl)
     rMainData    = '{}_TargetedProteolysis-Data-{}.txt'
-    rChangeKey   = ['iFile', 'uFile', 'seqFile', 'pdbFile']
+    rChangeKey   = ['iFile', 'uFile', 'seqFile']
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
     #endregion --------------------------------------------------> Class setup
@@ -5874,19 +5870,6 @@ class TarProt(BaseConfModPanel2):
         #endregion -----------------------------------------------------> Menu
 
         #region -----------------------------------------------------> Widgets
-        #------------------------------> Files
-        self.wPDBFile = dtsWidget.ButtonTextCtrlFF(
-            self.sbFile,
-            btnLabel   = self.cLPDB,
-            btnTooltip = self.cTTPDB,
-            tcHint     = self.cHPDB,
-            mode       = 'openO',
-            ext        = self.cEPDB,
-            tcStyle    = wx.TE_READONLY,
-            validator  = dtsValidator.InputFF(
-                fof='file', ext=self.cESPDB, opt=True),
-            ownCopyCut = True,
-        )
         #------------------------------> Values
         self.wAAPos = dtsWidget.StaticTextCtrl(
             self.sbValue,
@@ -5912,14 +5895,12 @@ class TarProt(BaseConfModPanel2):
         self.rCopyFile    = {
             'iFile'  : self.cLiFile,
             'seqFile': f'{self.cLSeqFile} File',
-            'pdbFile': self.cLPDB,
         }
         
         self.rCheckUserInput = {
             self.cLuFile       :[self.wUFile.tc,           config.mFileBad],
             self.cLiFile       :[self.wIFile.tc,           config.mFileBad],
             f'{self.cLSeqFile} file' :[self.wSeqFile.tc,   config.mFileBad],
-            self.cLPDB         :[self.wPDBFile.tc,         config.mFileBad],
             self.cLId          :[self.wId.tc,              config.mValueBad],
             self.cLCeroTreat   :[self.wCeroB.cb,           config.mOptionBad],
             self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad],
@@ -5940,35 +5921,6 @@ class TarProt(BaseConfModPanel2):
         #endregion -------------------------------------------> checkUserInput
 
         #region ------------------------------------------------------> Sizers
-        #------------------------------> Sizer Files
-        #--------------> 
-        self.sizersbFileWid.Detach(self.wId.st)
-        self.sizersbFileWid.Detach(self.wId.tc)
-        #--------------> 
-        self.sizersbFileWid.Add(
-            self.wPDBFile.btn,
-            pos    = (3,0),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5
-        )
-        self.sizersbFileWid.Add(
-            self.wPDBFile.tc,
-            pos    = (3,1),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5
-        )
-        self.sizersbFileWid.Add(
-            self.wId.st,
-            pos    = (4,0),
-            flag   = wx.ALIGN_CENTER|wx.ALL,
-            border = 5
-        )
-        self.sizersbFileWid.Add(
-            self.wId.tc,
-            pos    = (4,1),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5
-        )
         #------------------------------> Values
         self.sizersbValueWid.Add(
             1, 1,
@@ -6121,12 +6073,10 @@ class TarProt(BaseConfModPanel2):
             dataInit = dataI['uFile'].parent / config.fnDataInit
             iFile    = dataInit / dataI['I'][self.cLiFile]
             seqFile  = dataInit / dataI['I'][f'{self.cLSeqFile} File']
-            pdbFile  = dataInit / dataI['I'][f'{self.cLPDB}']
             #------------------------------> Files
             self.wUFile.tc.SetValue(str(dataI['uFile']))
             self.wIFile.tc.SetValue(str(iFile))
             self.wSeqFile.tc.SetValue(str(seqFile))
-            self.wPDBFile.tc.SetValue(str(pdbFile))
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> Data Preparation
             self.wCeroB.cb.SetValue(dataI['I'][self.cLCeroTreatD])
@@ -6173,8 +6123,6 @@ class TarProt(BaseConfModPanel2):
                 self.wIFile.tc.GetValue()),
             self.EqualLenLabel(f'{self.cLSeqFile} File') : (
                 self.wSeqFile.tc.GetValue()),
-            self.EqualLenLabel(f'{self.cLPDB}') : (
-                self.wPDBFile.tc.GetValue()),
             self.EqualLenLabel(self.cLId) : (
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
@@ -6233,7 +6181,6 @@ class TarProt(BaseConfModPanel2):
             'iFile'      : Path(self.wIFile.tc.GetValue()),
             'uFile'      : Path(self.wUFile.tc.GetValue()),
             'seqFile'    : Path(self.wSeqFile.tc.GetValue()),
-            'pdbFile'    : Path(self.wPDBFile.tc.GetValue()),
             'ID'         : self.wId.tc.GetValue(),
             'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'TransMethod': self.wTransMethod.cb.GetValue(),
@@ -6513,10 +6460,9 @@ class TarProt(BaseConfModPanel2):
         #------------------------------> 
         if self.rDFile:
             self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
-            self.wPDBFile.tc.SetValue(str(self.rDFile[2]))
         else:
             pass
-        
+        #------------------------------> 
         self.dfAA    = pd.DataFrame()
         self.dfHist  = pd.DataFrame()
         self.dfCpR   = pd.DataFrame()

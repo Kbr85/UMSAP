@@ -2274,19 +2274,21 @@ class FurtherAnalysisTarProt(wx.Menu):
         #region -----------------------------------------------> Initial Setup
         super().__init__()
         
-        self.miCEvol = self.Append(-1, 'Cleavage Evolution')
-        self.miCpR   = self.Append(-1, 'Cleavage per Residue')
-        self.AppendSeparator()
         self.mAA = FAMenuTarProtAA(cMenuData, ciDate)
         self.AppendSubMenu(self.mAA, 'AA Distribution')
         self.AppendSeparator()
-        self.mHist = FAMenuTarProtHist(cMenuData, ciDate)
-        self.AppendSubMenu(self.mHist, 'Cleavage Site Histograms')
+        self.miCEvol = self.Append(-1, 'Cleavage Evolution')
+        self.mHist   = FAMenuTarProtHist(cMenuData, ciDate)
+        self.AppendSubMenu(self.mHist, 'Cleavage Histograms')
+        self.miCpR = self.Append(-1, 'Cleavage per Residue')
+        self.AppendSeparator()
+        self.miPDB = self.Append(-1, 'PDB Mapping')
         #endregion --------------------------------------------> Initial Setup
         
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnCpR,   source=self.miCpR)
         self.Bind(wx.EVT_MENU, self.OnCEvol, source=self.miCEvol)
+        self.Bind(wx.EVT_MENU, self.OnPDBMap, source=self.miPDB)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -2360,6 +2362,31 @@ class FurtherAnalysisTarProt(wx.Menu):
         #region ---------------------------------------------------> Plot
         win = self.GetWindow()
         win.OnCEvol()
+        #endregion ------------------------------------------------> Plot
+        
+        return True
+    #---
+    
+    def OnPDBMap(self, event: wx.CommandEvent) -> bool:
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        #region ---------------------------------------------------> Plot
+        win = self.GetWindow()
+        win.OnPDBMap()
         #endregion ------------------------------------------------> Plot
         
         return True
