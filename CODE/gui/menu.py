@@ -1856,6 +1856,8 @@ class CEvolToolMenu(wx.Menu, MenuMethods):
         self.miRec = self.Append(-1, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
         self.miRec.Check()
         self.AppendSeparator()
+        self.miMon = self.Append(-1, 'Monotonic', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
         self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
@@ -1874,6 +1876,7 @@ class CEvolToolMenu(wx.Menu, MenuMethods):
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miRec)
         self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miNat)
+        self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miMon)
         self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
         self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
@@ -1898,11 +1901,12 @@ class CEvolToolMenu(wx.Menu, MenuMethods):
         """
         #region ---------------------------------------------------> 
         rec = self.miRec.IsChecked()
+        mon = self.miMon.IsChecked()
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 
         win = self.GetWindow()
-        win.UpdatePlot(rec)
+        win.UpdatePlot(rec, mon)
         #endregion ------------------------------------------------> 
 
         return True

@@ -8138,7 +8138,7 @@ class CEvolPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> Plot
-        self.UpdatePlot(rec=True)
+        self.UpdatePlot(True, False)
         #endregion ------------------------------------------------> Plot
         
         #region ---------------------------------------------> Window position
@@ -8252,7 +8252,7 @@ class CEvolPlot(BaseWindowNPlotLT):
     #endregion ------------------------------------------------> Event Methods
     
     #region --------------------------------------------------> Manage Methods
-    def UpdatePlot(self, rec: bool) -> bool:
+    def UpdatePlot(self, rec: bool, mon: bool) -> bool:
         """
     
             Parameters
@@ -8269,13 +8269,22 @@ class CEvolPlot(BaseWindowNPlotLT):
         """
         #region ---------------------------------------------------> 
         self.rRec = self.cRec[rec]
+        #------------------------------> 
         idx = pd.IndexSlice
         if rec:
             self.rDF = self.rData.loc[:,idx[self.rRec,:]]
         else:
             self.rDF = self.rData.loc[:,idx[self.rRec,:]]
+        #------------------------------> 
         self.rDF = self.rDF[self.rDF.any(axis=1)]
-        print(self.rDF.to_string())
+        #------------------------------> 
+        if mon:
+            self.rDF = self.rDF[self.rDF.apply(
+                lambda x: x.is_monotonic_increasing or x.is_monotonic_decreasing,
+                axis=1
+            )]
+        else:
+            pass
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 
