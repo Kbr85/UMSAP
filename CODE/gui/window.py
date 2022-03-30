@@ -8279,12 +8279,13 @@ class CEvolPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 
-        self.SetAxis()
-        #endregion ------------------------------------------------>
-        
-        #region ---------------------------------------------------> 
         self.FillListCtrl(self.rDF.index.tolist())
         #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.SetAxis()
+        self.wPlots.dPlot['M'].canvas.draw()
+        #endregion ------------------------------------------------>
 
         return True
     #---
@@ -8346,6 +8347,7 @@ class CEvolPlot(BaseWindowNPlotLT):
         
         self.wPlots.dPlot['M'].axes.set_title(self.cRec[self.rRec])
         #endregion ------------------------------------------------> Label
+        
         return True
     #---
     

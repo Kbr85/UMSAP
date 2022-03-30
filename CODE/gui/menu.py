@@ -1898,26 +1898,11 @@ class CEvolToolMenu(wx.Menu, MenuMethods):
         """
         #region ---------------------------------------------------> 
         rec = self.miRec.IsChecked()
-        show = self.miProtLoc.IsChecked()
-        #------------------------------> Selection mode
-        sel = self.miSel.IsChecked()
-        if sel:
-            [x.Check(False) for x in self.rItems]
-            self.Check(event.GetId(), True)
-        else:
-            pass
-        #------------------------------> Labels
-        label = [x.GetItemLabel() for x in self.rItems if x.IsChecked()]
-        if label:
-            pass
-        else:
-            self.rItems[0].Check()
-            label = [self.rItems[0].GetItemLabel()]
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 
         win = self.GetWindow()
-        win.UpdatePlot(rec, label, show)
+        win.UpdatePlot(rec)
         #endregion ------------------------------------------------> 
 
         return True
