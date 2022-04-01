@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import itertools
+from pickle import ADDITEMS
 from typing import Literal, Union
 
 import pandas as pd
@@ -418,7 +419,9 @@ def Rec2NatCoord(
 #---
 
 
-def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
+def R2AA(
+    df:pd.DataFrame, seq: str, alpha: float, protL: int, pos: int=5,
+    ) -> pd.DataFrame:
     """AA distribution analysis
 
         Parameters
@@ -439,6 +442,44 @@ def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
             AA Label1       LabelN
             AA -2 -1 1 2 P  -2 -1 1 2 P
     """
+    def AddNewAA(dfO, r, pos, seq, l):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if r >= pos:
+            col = pos
+            start = r - pos
+        else:
+            col = r
+            start = 0
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for a in seq[start:r]:
+            print(r, start, col, f'P{col}')
+            dfO.at[a,(l,f'P{col}')] = dfO.at[a,(l,f'P{col}')] + 1
+            col -= 1
+        col = 1
+        for a in seq[r:r+pos]:
+            print(r, start, col, f"P{col}'")
+            dfO.at[a,(l,f"P{col}'")] = dfO.at[a,(l,f"P{col}'")] + 1
+            col += 1
+        #endregion ------------------------------------------------> 
+
+        return dfO
+    #---
     #region ---------------------------------------------------> Empty
     aL = ['AA']
     bL = ['AA']
@@ -455,18 +496,18 @@ def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
     for l in df.columns.get_level_values(0)[1:]:
         seqDF = df[df[idx[l,'P']] < alpha].iloc[:,0].to_list()
         for s in seqDF:
+            #------------------------------> 
             n = seq.find(s)
+            if n > 0:
+                dfO = AddNewAA(dfO, n, pos, seq, l)
+            else:
+                pass
+            #------------------------------> 
             c = n+len(s)
-            col = pos
-            for a,b in zip(seq[n-pos:n], seq[c-pos:c]):
-                dfO.at[a,(l,f'P{col}')] = dfO.at[a,(l,f'P{col}')] + 1
-                dfO.at[b,(l,f'P{col}')] = dfO.at[b,(l,f'P{col}')] + 1
-                col -= 1
-            col = 1
-            for a,b in zip(seq[n:n+pos], seq[c:c+pos]):
-                dfO.at[a,(l,f"P{col}'")] = dfO.at[a,(l,f"P{col}'")] + 1
-                dfO.at[b,(l,f"P{col}\'")] = dfO.at[b,(l,f"P{col}'")] + 1
-                col += 1
+            if c < protL:
+                dfO = AddNewAA(dfO, c, pos, seq, l)
+            else:
+                pass
     #endregion ------------------------------------------------> Fill
     
     #region ---------------------------------------------------> Random Cleavage
@@ -476,15 +517,8 @@ def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
     idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
     dfT = pd.DataFrame(0, columns=idx, index=config.lAA1+['Chi'])
     dfO = pd.concat([dfO, dfT], axis=1)
-    for k,_ in enumerate(seq[1:-1]): # Exclude first and last residue
-        col = pos
-        for a in seq[k-pos:k]:
-            dfO.at[a,(c, f'P{col}')] = dfO.at[a,(c, f'P{col}')] + 1
-            col -= 1
-        col = 1
-        for a in seq[k:k+pos]:
-            dfO.at[a,(c, f"P{col}'")] = dfO.at[a,(c, f"P{col}'")] + 1
-            col += 1
+    for k,_ in enumerate(seq[1:-1], start=1): # Exclude first and last residue
+        dfO = AddNewAA(dfO, k, pos, seq, c)
     #endregion ------------------------------------------------> Random Cleavage
 
     #region ---------------------------------------------------> Group
