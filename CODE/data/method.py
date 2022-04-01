@@ -16,11 +16,22 @@
 
 #region -------------------------------------------------------------> Imports
 import itertools
+from pickle import ADDITEMS
 from typing import Literal, Union
 
-from numpy import nan as nan
+import pandas as pd
+import numpy as np
+from numpy import nan
+
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus.flowables import KeepTogether
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 import dat4s_core.data.method as dtsMethod
+import dat4s_core.data.statistic as dtsStatistic
+
+import config.config as config
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -405,5 +416,460 @@ def Rec2NatCoord(
     #endregion ------------------------------------------------> Calc
 
     return listO
+#---
+
+
+def R2AA(
+    df:pd.DataFrame, seq: str, alpha: float, protL: int, pos: int=5,
+    ) -> pd.DataFrame:
+    """AA distribution analysis
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Sequence Label1 LabelN
+            Sequence P      P
+        seq: str
+            Recombinant protein sequence
+        alpha: float
+            Significance level
+        pos: int
+            Number of positions to consider
+            
+        Returns
+        -------
+        pd.DataFrame
+            AA Label1       LabelN
+            AA -2 -1 1 2 P  -2 -1 1 2 P
+    """
+    def AddNewAA(dfO, r, pos, seq, l):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if r >= pos:
+            col = pos
+            start = r - pos
+        else:
+            col = r
+            start = 0
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for a in seq[start:r]:
+            print(r, start, col, f'P{col}')
+            dfO.at[a,(l,f'P{col}')] = dfO.at[a,(l,f'P{col}')] + 1
+            col -= 1
+        col = 1
+        for a in seq[r:r+pos]:
+            print(r, start, col, f"P{col}'")
+            dfO.at[a,(l,f"P{col}'")] = dfO.at[a,(l,f"P{col}'")] + 1
+            col += 1
+        #endregion ------------------------------------------------> 
+
+        return dfO
+    #---
+    #region ---------------------------------------------------> Empty
+    aL = ['AA']
+    bL = ['AA']
+    for l in df.columns.get_level_values(0)[1:]:
+        aL = aL + 2*pos*[l]
+        bL = bL + [f'P{x}' for x in range(pos, 0, -1)] + [f'P{x}\'' for x in range(1, pos+1,1)]
+    idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
+    dfO = pd.DataFrame(0, columns=idx, index=config.lAA1+['Chi'])
+    dfO[('AA','AA')] = config.lAA1[:]+['Chi']
+    #endregion ------------------------------------------------> Empty
+
+    #region ---------------------------------------------------> Fill
+    idx = pd.IndexSlice
+    for l in df.columns.get_level_values(0)[1:]:
+        seqDF = df[df[idx[l,'P']] < alpha].iloc[:,0].to_list()
+        for s in seqDF:
+            #------------------------------> 
+            n = seq.find(s)
+            if n > 0:
+                dfO = AddNewAA(dfO, n, pos, seq, l)
+            else:
+                pass
+            #------------------------------> 
+            c = n+len(s)
+            if c < protL:
+                dfO = AddNewAA(dfO, c, pos, seq, l)
+            else:
+                pass
+    #endregion ------------------------------------------------> Fill
+    
+    #region ---------------------------------------------------> Random Cleavage
+    c = 'ALL_CLEAVAGES_UMSAP'
+    aL = 2*pos*[c]
+    bL = [f'P{x}' for x in range(pos, 0, -1)] + [f"P{x}'" for x in range(1, pos+1,1)]
+    idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
+    dfT = pd.DataFrame(0, columns=idx, index=config.lAA1+['Chi'])
+    dfO = pd.concat([dfO, dfT], axis=1)
+    for k,_ in enumerate(seq[1:-1], start=1): # Exclude first and last residue
+        dfO = AddNewAA(dfO, k, pos, seq, c)
+    #endregion ------------------------------------------------> Random Cleavage
+
+    #region ---------------------------------------------------> Group
+    idx = pd.IndexSlice
+    gS = []
+    for g in config.lAAGroups:
+        gS.append(dfO.loc[g,:].sum(axis=0))
+    g = pd.concat(gS, axis=1)
+    g = g.transpose()
+
+    for l in df.columns.get_level_values(0)[1:]:
+        for p in dfO.loc[:,idx[l,:]].columns.get_level_values(1):
+            dfO.at['Chi', idx[l,p]] = dtsStatistic.test_chi(
+                g.loc[:,idx[[l,c],p]], alpha)[0]
+    #endregion ------------------------------------------------> Group
+
+    return dfO
+#---
+
+
+def R2Hist(
+    df: pd.DataFrame, alpha: float, win: list[int], maxL: list[int]
+    ) -> pd.DataFrame:
+    """
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Nterm Cterm NtermF CtermF Exp1 .... ExpN
+            Nterm Cterm NtermF CtermF P    .... P
+            
+        Returns
+        -------
+        pd.DataFrame
+    """
+    #region ---------------------------------------------------> Variables
+    bin = []
+    if len(win) == 1:
+        bin.append([x for x in range(0, maxL[0]+win[0], win[0])])
+        if maxL[1] is not None:
+            bin.append([x for x in range(0, maxL[1]+win[0], win[0])])
+        else:
+            bin.append([None])
+    else:
+        bin.append(win)
+        bin.append(win)
+    #endregion ------------------------------------------------> Variables
+    
+    #region --------------------------------------------------------> Empty DF
+    #------------------------------> Columns
+    label = df.columns.unique(level=0).tolist()[4:]
+    nL = len(label)
+    a = (2*nL+1)*['Rec']+(2*nL+1)*['Nat']
+    b = ['Win']+nL*['All']+nL*['Unique']+['Win']+nL*['All']+nL*['Unique']
+    c = 2*(['Win']+2*label)
+    #------------------------------> Rows
+    nR = sorted([len(x) for x in bin])[-1]
+    #------------------------------> df
+    col = pd.MultiIndex.from_arrays([a[:],b[:],c[:]])
+    dfO = pd.DataFrame(nan, index=range(0,nR), columns=col)
+    #endregion -----------------------------------------------------> Empty DF
+
+    #region ---------------------------------------------------> Fill
+    #------------------------------> Windows
+    dfO.iloc[range(0,len(bin[0])), dfO.columns.get_loc(('Rec','Win','Win'))] = bin[0]
+    if bin[1][0] is not None:
+        dfO.iloc[range(0,len(bin[1])), dfO.columns.get_loc(('Nat','Win','Win'))] = bin[1]
+    else:
+        pass
+    #------------------------------> 
+    for e in label:
+        dfT = df[df[(e,'P')] < alpha]
+        #------------------------------> 
+        dfR = dfT[[('Nterm','Nterm'),('Cterm', 'Cterm')]].copy()
+        dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 1
+        l = dfR.to_numpy().flatten()
+        l = [x for x in l if x > 0 and x < maxL[0]]
+        a,_ = np.histogram(l, bins=bin[0])
+        dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','All',e))] = a
+        l = list(set(l))
+        a,_ = np.histogram(l, bins=bin[0])
+        dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','Unique',e))] = a
+        #------------------------------> 
+        if bin[1][0] is not None:
+            dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
+            dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 1
+            l = dfR.to_numpy().flatten()
+            l = [x for x in l if x > 0 and x < maxL[0]]
+            a,_ = np.histogram(l, bins=bin[0])
+            dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','All',e))] = a
+            l = list(set(l))
+            a,_ = np.histogram(l, bins=bin[0])
+            dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','Unique',e))] = a
+        else:
+            pass
+    #endregion ------------------------------------------------> Fill
+
+    return dfO
+#---
+
+
+def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
+    """
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Nterm Cterm NtermF CtermF Exp1 .... ExpN
+            Nterm Cterm NtermF CtermF P    .... P
+            
+        Returns
+        -------
+        pd.DataFrame
+    """
+    #region -------------------------------------------------------------> dfO
+    label = df.columns.unique(level=0).tolist()[4:]
+    nL = len(label)
+    a = (nL)*['Rec']+(nL)*['Nat']
+    b = 2*label
+    nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
+    idx = pd.IndexSlice
+    col = pd.MultiIndex.from_arrays([a[:],b[:]])
+    dfO = pd.DataFrame(0, index=range(0,nR), columns=col)   
+    #endregion ----------------------------------------------------------> dfO
+   
+    #region ------------------------------------------------------------> Fill
+    for e in label:
+        dfT = df[df[(e,'P')] < alpha]
+        #------------------------------> Rec
+        dfR = dfT[[('Nterm','Nterm'),('Cterm', 'Cterm')]].copy()
+        dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 1
+        l = dfR.to_numpy().flatten()
+        # No Cleavage in 1 and last residue
+        l = [x for x in l if x > 0 and x < protL[0]]
+        for x in l:
+            dfO.at[x, idx['Rec',e]] = dfO.at[x, idx['Rec',e]] + 1
+        #------------------------------> Nat
+        if protL[1] is not None:
+            dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
+            dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 1
+            l = dfR.to_numpy().flatten()
+            l = [x for x in l if x > 0 and x < protL[0]]
+            for x in l:
+                dfO.at[x, idx['Nat',e]] = dfO.at[x, idx['Nat',e]] + 1
+        else:
+            pass
+    #endregion ---------------------------------------------------------> Fill
+
+    return dfO
+#---
+
+
+def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
+    """
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Nterm Cterm NtermF CtermF Exp1     .... ExpN
+            Nterm Cterm NtermF CtermF Int P    .... Int P
+            
+        Returns
+        -------
+        pd.DataFrame
+    """
+    def IntL2MeanI(a: list, alpha: float) -> float:
+        """
+        
+        
+        """
+        if a[-1] < alpha:
+            l = list(map(abs, list(map(float, a[0][1:-1].split(',')))))
+            # print(sum(l), len(l), sum(l)/len(l))
+            return (sum(l)/len(l))
+        else:
+            return 0.0
+    #---
+    #region --------------------------------------------------------> 
+    idx = pd.IndexSlice
+    label = df.columns.unique(level=0).tolist()[4:]
+    nL = len(label)
+    #endregion -----------------------------------------------------> 
+    
+    #region --------------------------------------------------------> 
+    a = (nL)*['Rec']+(nL)*['Nat']
+    b = 2*label
+    nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
+    col = pd.MultiIndex.from_arrays([a[:],b[:]])
+    dfO = pd.DataFrame(0, index=range(0,nR), columns=col)
+    #endregion -----------------------------------------------------> 
+
+    #region ---------------------------------------------------> 
+    dfT = df.iloc[:,[0,1]].copy()
+    dfT.iloc[:,0] = dfT.iloc[:,0]-1
+    resL = sorted(list(set(dfT.to_numpy().flatten())))
+    resL = [x for x in resL if x > 0 and x < protL[0]]
+    #------------------------------> 
+    for r in resL:
+        dfT = df.loc[(df[('Nterm','Nterm')]==r+1) | (df[('Cterm','Cterm')]==r)].copy()
+        for e in label:
+            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])  
+        dfT = dfT.loc[dfT.loc[:,idx[:,'Int']].any(axis=1)]
+        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
+        dfO.iloc[r, range(0,len(label))] = dfT.loc[:,idx[:,'Int']].sum(axis=0)    
+    #endregion ------------------------------------------------> 
+    
+    #region ---------------------------------------------------> 
+    if protL[1] is not None:
+        dfT = df.iloc[:,[2,3]].copy()
+        dfT.iloc[:,0] = dfT.iloc[:,0]-1
+        resL = sorted(list(set(dfT.to_numpy().flatten())))
+        resL = [x for x in resL if x > 0 and x < protL[0]]
+        #------------------------------> 
+        for r in resL:
+            dfT = df.loc[(df[('NtermF','NtermF')]==r+1) | (df[('CtermF','CtermF')]==r)].copy()
+            for e in label:
+                dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])  
+            dfT = dfT.loc[dfT.loc[:,idx[:,'Int']].any(axis=1)]
+            dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
+            dfO.iloc[r, range(len(label),2*len(label))] = dfT.loc[:,idx[:,'Int']].sum(axis=0)    
+    else:
+        pass
+    #endregion ------------------------------------------------> 
+
+    return dfO
+#---
+
+
+def R2SeqAlignment(
+    df: pd.DataFrame, alpha: float, seqR: str, seqN: Union[None, str],
+    fileP: 'Path', tLength: int,
+    ) -> bool:
+    """Sequence Alignment for the TarProt Module
+
+        Parameters
+        ----------
+        
+
+        Returns
+        -------
+        
+
+        Raise
+        -----
+        
+    """
+    def GetString(
+        df: pd.DataFrame, seq: str, rec: bool, alpha: float, label: str, 
+        lSeq: int,
+        ) -> tuple[int, list[str]]:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------------> 
+        idx = pd.IndexSlice
+        df = df[df.loc[:,idx[label,'P']] <= alpha].copy()
+        df = df.reset_index(drop=True)
+        nCero = len(str(df.shape[0]+1))
+        tString = [seq]
+        #endregion -----------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for r in df.itertuples():
+            n = r[3] if rec else r[5]  
+            tString.append((n-1)*' '+r[1]+(lSeq-n+1-len(r[1]))*' ')
+        #endregion ------------------------------------------------> 
+        return (nCero, tString)
+    #---
+    
+    #region ---------------------------------------------------> Variables
+    #------------------------------> 
+    label = df.columns.unique(level=0)[7:].tolist()
+    lenSeqR = len(seqR)
+    lenSeqN = len(seqN) if seqN is not None else None
+    #------------------------------> ReportLab
+    doc = SimpleDocTemplate(fileP, pagesize=A4, rightMargin=25,
+        leftMargin=25, topMargin=25, bottomMargin=25)
+    Story  = []
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Seq', fontName='Courier', fontSize=8.5))
+    #endregion ------------------------------------------------> Variables
+    
+    #region ---------------------------------------------------> 
+    for e in label:
+        #------------------------------> 
+        Story.append(Paragraph(f'{e} Recombinant Sequence'))
+        Story.append(Spacer(1,20))
+        nCero, tString = GetString(df, seqR, True, alpha, e, lenSeqR)
+        for s in range(0, lenSeqR, tLength):
+            #------------------------------> 
+            printString = ''
+            #------------------------------> 
+            for k,v in enumerate(tString):
+                a = v[s:s+tLength]
+                if a.strip():
+                    end = k
+                    printString = f"{printString}{str(k).zfill(nCero)}-{a.replace(' ', '&nbsp;')}<br />"
+                else:
+                    pass
+            #------------------------------> 
+            Story.append(Paragraph(printString, style=styles['Seq']))
+            if end:
+                Story.append(Spacer(1,10))
+            else:
+                pass
+        if end:
+            Story.append(Spacer(1,10))
+        else:
+            Story.append(Spacer(1,20))
+    #endregion ------------------------------------------------> 
+
+    #region ---------------------------------------------------> 
+    if seqN is not None:
+        for e in label:
+            #------------------------------> 
+            Story.append(Paragraph(f'{e} Native Sequence'))
+            Story.append(Spacer(1,20))
+            nCero, tString = GetString(df, seqN, False, alpha, e, lenSeqN)
+            for s in range(0, lenSeqN, tLength):
+                #------------------------------> 
+                printString = ''
+                #------------------------------> 
+                for k,v in enumerate(tString):
+                    a = v[s:s+tLength]
+                    if a.strip():
+                        end = k
+                        printString = f"{printString}{str(k).zfill(nCero)}-{a.replace(' ', '&nbsp;')}<br />"
+                    else:
+                        pass
+                #------------------------------> 
+                Story.append(Paragraph(printString, style=styles['Seq']))
+                if end:
+                    Story.append(Spacer(1,10))
+                else:
+                    pass
+            if end:
+                Story.append(Spacer(1,10))
+            else:
+                Story.append(Spacer(1,20))
+    #endregion ------------------------------------------------> 
+    
+    doc.build(Story)
+    return True
 #---
 #endregion ----------------------------------------------------------> Methods
