@@ -2459,6 +2459,9 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.mLockScale = LockPlotScale()
         self.AppendSubMenu(self.mLockScale, 'Lock Plot Scale')
         self.AppendSeparator()
+        #------------------------------> Clear Selection
+        self.miClearSel = self.Append(-1, 'Clear Selection')
+        self.AppendSeparator()
         #------------------------------> Duplicate Window
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
@@ -2488,6 +2491,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,     source=self.miDataPrep)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,         source=self.miZoomR)
         self.Bind(wx.EVT_MENU, self.OnSavePlotImage,     source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnClearSel,          source=self.miClearSel)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -2522,6 +2526,26 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
             *self.mVolcano.GetData4Draw(),
             *self.mFc.GetData4Draw(),
         )
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def OnClearSel(self, event: wx.CommandEvent) -> bool:
+        """Clear Sel.
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Draw
+        win = self.GetWindow()
+        win.OnClearSel()
         #endregion -----------------------------------------------------> Draw
         
         return True

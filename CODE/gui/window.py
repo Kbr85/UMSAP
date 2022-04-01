@@ -3657,6 +3657,38 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return True
     #---
     
+    def OnClearSel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        if self.rLCIdx is not None:
+            #------------------------------> 
+            self.wLC.wLCS.lc.Select(self.rLCIdx, on=0)
+            self.rLCIdx = None
+            #------------------------------> 
+            self.rGreenP.remove()
+            self.rGreenP = None
+            self.wPlots.dPlot['Vol'].canvas.draw()
+            #------------------------------> 
+            self.FCDraw()
+            #------------------------------> 
+            self.wText.Clear()
+        else:
+            pass
+        return True
+    #---
+    
     def OnListSelect(self, event: Union[wx.Event, str]) -> bool:
         """Select an element in the wx.ListCtrl.
     
