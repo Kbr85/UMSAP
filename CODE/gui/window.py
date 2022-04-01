@@ -5433,15 +5433,22 @@ class LimProtPlot(BaseWindowProteolysis):
         """
         def Helper(coord, label, style):
             """"""
-            seq = self.GetPDFPrintSeq(coord)
-            coordN = dmethod.Rec2NatCoord(coord, self.rProtLoc, self.rProtDelta)
+            #------------------------------> 
             head = Paragraph(label)
-            coord = Paragraph(
-                f"Recombinant protein: {', '.join(map(str,coord))}", style)
-            coordN = Paragraph(
-                f"Native protein: {', '.join(map(str,coordN))}", style)
-            tSeq = Paragraph(seq, style)
-            return KeepTogether([head, Spacer(1,6), coord, coordN, tSeq])
+            #------------------------------> 
+            if coord:
+                seq = self.GetPDFPrintSeq(coord)
+                coordN = dmethod.Rec2NatCoord(coord, self.rProtLoc, self.rProtDelta)
+                
+                coord = Paragraph(
+                    f"Recombinant protein: {', '.join(map(str,coord))}", style)
+                coordN = Paragraph(
+                    f"Native protein: {', '.join(map(str,coordN))}", style)
+                tSeq = Paragraph(seq, style)
+                return KeepTogether([head, Spacer(1,6), coord, coordN, tSeq])
+            else:
+                empty = Paragraph('No peptides detected here.', style)
+                return KeepTogether([head, Spacer(1,6), empty])
         #---
         #region ---------------------------------------------------> Variables
         doc = SimpleDocTemplate(fileP, pagesize=A4, rightMargin=25,
