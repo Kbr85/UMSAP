@@ -847,20 +847,6 @@ class BaseConfPanel(
         else:
             pass
         #endregion ---------------------------------------------> Seq Rec File
-        
-        #region ----------------------------------------------------> PDB File
-        if 'pdbFile' in self.rDO:
-            #------------------------------> 
-            msgStep = self.cLPdReadFile + f"{self.cLPDB}, reading"
-            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-            #------------------------------> 
-            try:
-                self.rPdbFileObj = dtsFF.PDBFile(self.rDO['pdbFile'])
-            except Exception as e:
-                self.rMsgError = config.mFileRead.format(self.rDO['pdbFile'])
-                self.rExceptionn = e
-                return False
-        #endregion -------------------------------------------------> PDB File 
 
         #region ---------------------------------------------------> Print Dev
         if config.development and self.rSeqFileObj is not None:
@@ -981,7 +967,7 @@ class BaseConfPanel(
             self.dfF.iloc[:,self.rDO['df']['ColumnF']] = self.dfF.iloc[:,self.rDO['df']['ColumnF']].astype('float')
         except Exception as e:
             self.rMsgError = config.mPDDataTypeCol.format(
-                self.cLiFile, ", ".join(map(str, self.rDO['df']['ColumnF'])))
+                self.cLiFile, ", ".join(map(str, self.rDO['oc']['ColumnF'])))
             self.rException = e
             return False
         #endregion --------------------------------------------------> Set dfF
@@ -3128,7 +3114,8 @@ class CorrA(BaseConfPanel):
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
             'CorrMethod' : self.wCorrMethod.cb.GetValue(),
             'oc'         : {
-                'Column'     : col,
+                'Column'  : col,
+                'ColumnF' : col,
             },
             'df'         : {
                 'ColumnR'    : colF,
@@ -3537,6 +3524,7 @@ class DataPrep(BaseConfPanel):
             'oc'         : {
                 'ColAnalysis': colAnalysis,
                 'Column'     : colAnalysis,
+                'ColumnF'    : colAnalysis,
             },
             'df' : {
                 'ColumnR'    : resCtrlFlat,
@@ -4442,6 +4430,7 @@ class ProtProf(BaseConfModPanel):
                 'ScoreCol'  : scoreCol,
                 'ExcludeP'  : excludeProt,
                 'ResCtrl'   : resctrl,
+                'ColumnF'   : [scoreCol] + resctrlFlat,
                 'Column'    : (
                     [geneName, detectedProt, scoreCol] 
                     + excludeProt 
@@ -5445,6 +5434,7 @@ class LimProt(BaseConfModPanel2):
                 'TargetProtCol': detectedProt,
                 'ScoreCol'     : scoreCol,
                 'ResCtrl'      : resctrl,
+                'ColumnF'      : [scoreCol] + resctrlFlat,
                 'Column'       : (
                     [seqCol, detectedProt, scoreCol] + resctrlFlat),
             },
@@ -6198,6 +6188,7 @@ class TarProt(BaseConfModPanel2):
                 'TargetProtCol': detectedProt,
                 'ScoreCol'     : scoreCol,
                 'ResCtrl'      : resctrl,
+                'ColumnF'      : [scoreCol] + resctrlFlat,
                 'Column'       : (
                     [seqCol, detectedProt, scoreCol] + resctrlFlat),
             },
