@@ -27,6 +27,8 @@ import pandas as pd
 import requests
 from scipy import stats
 
+from Bio import pairwise2
+from Bio.Align import substitution_matrices
 
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -7060,58 +7062,78 @@ class TarProtPlot(BaseWindowProteolysis):
             -----
             
         """
+        def Helper(pdbObj, tExp, tAlign, tDF, name):
+            """
+        
+                Parameters
+                ----------
+                
+        
+                Returns
+                -------
+                
+        
+                Raise
+                -----
+                
+            """
+            idx = pd.IndexSlice
+            #------------------------------> 
+            for e in tExp:
+                #------------------------------> 
+                betaDict = {}
+                k = 0
+                #------------------------------> 
+                for j,s in enumerate(tAlign[0].seqB):
+                    if s != '-':
+                        if tAlign[0].seqA[j] != '-':
+                            betaDict[pdbRes[k]] = tDF.iat[k, tDF.columns.get_loc(idx['Rec',e])]
+                            k = k + 1
+                        else:
+                            pass
+                    else:
+                        pass
+                #------------------------------> 
+                pdbObj.SetBeta(pdbObj.rChain[0], betaDict)
+                pdbObj.WritePDB(
+                    pdbO/f'{name[0]} - {e} - {name[1]}.pdb', pdbObj.rChain[0])
+        #---
         #region ---------------------------------------------------> dlg
-        # dlg = FA2Btn(
-        #     ['PDB', 'Output'],
-        #     ['Path to the PDB file', 'Path to the output folder'],
-        #     [config.elPDB, config.elPDB],
-        #     [dtsValidator.InputFF('file', ext=config.esPDB),
-        #     dtsValidator.OutputFF('folder', ext=config.esPDB)],
-        #     parent = self
-        # )
+        dlg = FA2Btn(
+            ['PDB', 'Output'],
+            ['Path to the PDB file', 'Path to the output folder'],
+            [config.elPDB, config.elPDB],
+            [dtsValidator.InputFF('file', ext=config.esPDB),
+            dtsValidator.OutputFF('folder', ext=config.esPDB)],
+            parent = self
+        )
         #endregion ------------------------------------------------> dlg
         
-        #region ---------------------------------------------------> Get Pos
-        # if dlg.ShowModal():
-        #     pdbI = dlg.wBtnI.tc.GetValue()
-        #     pdbO = dlg.wBtnO.tc.GetValue()
-        # else:
-        #     dlg.Destroy()
-        #     return False
-        pdbI = '/Users/bravo/Downloads/2y4d.pdb'
-        pdbO = '/Users/bravo/TEMP-GUI/BORRAR-UMSAP/'
-        #endregion ------------------------------------------------> Get Pos
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal():
+            pdbI = dlg.wBtnI.tc.GetValue()
+            pdbO = Path(dlg.wBtnO.tc.GetValue())
+        else:
+            dlg.Destroy()
+            return False
+        #endregion ------------------------------------------------> Get Path
         
-        #region ---------------------------------------------------> Run 
-        # dfI = self.rData[self.rDateC]['DF']
-        # idx = pd.IndexSlice
-        # dfI = dfI.loc[:,idx[['Sequence']+self.rExp,['Sequence', 'P']]]
-        # dfO = dmethod.R2AA(dfI, self.rRecSeqC, self.rAlpha, pos)
-        #endregion ------------------------------------------------> Run
+        #region ---------------------------------------------------> Variables
+        pdbObj   = dtsFF.PDBFile(pdbI)
+        pdbSeq   = pdbObj.GetSequence(pdbObj.rChain[0])
+        pdbRes   = pdbObj.GetResNum(pdbObj.rChain[0])
+        cut      = self.rObj.GetCleavagePerResidue(self.cSection, self.rDateC)
+        cEvol    = self.rObj.GetCleavageEvolution(self.cSection, self.rDateC)
+        blosum62 = substitution_matrices.load("BLOSUM62")
+        #endregion ------------------------------------------------> Variables
         
-        #region -----------------------------------------------> Save & Update
-        # #------------------------------> File
-        # date = f'{self.rDateC.split(" - ")[0]}'
-        # section = f'{self.cSection.replace(" ", "-")}'
-        # folder = f'{date}_{section}'
-        # fileN = f'{dateC}_AA-{pos}.txt'
-        # fileP = self.rObj.rStepDataP/folder/fileN
-        # dtsFF.WriteDF2CSV(fileP, dfO)
-        # #------------------------------> Umsap
-        # self.rObj.rData[self.cSection][self.rDateC]['AA'][f'{date}_{pos}'] = fileN
-        # self.rObj.Save()
-        # #------------------------------> Refresh
-        # #--------------> UMSAPControl
-        # self.cParent.UpdateFileContent()
-        # #--------------> TarProt
-        # self.rObj = self.cParent.rObj
-        # self.rData = self.rObj.dConfigure[self.cSection]()
-        # #--------------> Menu
-        # _, menuData = self.SetDateMenuDate()
-        # self.mBar.mTool.mFurtherA.UpdateFAList(self.rDateC, menuData['FA'])
-        # #--------------> GUI
-        # self.OnAASelect(f'{date}_{pos}')
-        #endregion --------------------------------------------> Save & Update
+        #region -----------------------------------------------> Run
+        align = pairwise2.align.globalds(
+            pdbSeq, self.rRecSeqC, blosum62, -10, -0.5)
+        #------------------------------> 
+        Helper(pdbObj, self.rExp, align, cut, (self.rDateC, 'CpR'))
+        Helper(pdbObj, self.rExp, align, cEvol, (self.rDateC, 'CEvol'))
+        #endregion --------------------------------------------> Run
 
         dlg.Destroy()
         return True

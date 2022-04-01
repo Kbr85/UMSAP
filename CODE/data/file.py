@@ -681,6 +681,56 @@ class UMSAPFile():
         )
         return dtsFF.ReadCSV2DF(tPath, header=header)
     #---
+    
+    def GetCleavagePerResidue(self, tSection:str, tDate:str) -> 'pd.DataFrame':
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        
+        #region ---------------------------------------------------> Path
+        folder = f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
+        fileN = self.rData[tSection][tDate]['CpR']
+        fileP = self.rStepDataP/folder/fileN
+        #endregion ------------------------------------------------> Path
+
+        return dtsFF.ReadCSV2DF(fileP, header=[0,1])
+    #---
+    
+    def GetCleavageEvolution(self, tSection:str, tDate:str) -> 'pd.DataFrame':
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        
+        #region ---------------------------------------------------> Path
+        folder = f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
+        fileN = self.rData[tSection][tDate]['CEvol']
+        fileP = self.rStepDataP/folder/fileN
+        #endregion ------------------------------------------------> Path
+
+        return dtsFF.ReadCSV2DF(fileP, header=[0,1])
+    #---
     #endregion --------------------------------------------------> Get Methods
 #---
 #endregion ----------------------------------------------------------> Classes
