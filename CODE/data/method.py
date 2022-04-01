@@ -476,7 +476,7 @@ def R2AA(df:pd.DataFrame, seq: str, alpha: float, pos: int=5) -> pd.DataFrame:
     idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
     dfT = pd.DataFrame(0, columns=idx, index=config.lAA1+['Chi'])
     dfO = pd.concat([dfO, dfT], axis=1)
-    for k,_ in enumerate(seq):
+    for k,_ in enumerate(seq[1:-1]): # Exclude first and last residue
         col = pos
         for a in seq[k-pos:k]:
             dfO.at[a,(c, f'P{col}')] = dfO.at[a,(c, f'P{col}')] + 1
@@ -561,6 +561,7 @@ def R2Hist(
         dfR = dfT[[('Nterm','Nterm'),('Cterm', 'Cterm')]].copy()
         dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 1
         l = dfR.to_numpy().flatten()
+        l = [x for x in l if x > 0 and x < maxL[0]]
         a,_ = np.histogram(l, bins=bin[0])
         dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','All',e))] = a
         l = list(set(l))
@@ -571,6 +572,7 @@ def R2Hist(
             dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
             dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 1
             l = dfR.to_numpy().flatten()
+            l = [x for x in l if x > 0 and x < maxL[0]]
             a,_ = np.histogram(l, bins=bin[0])
             dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','All',e))] = a
             l = list(set(l))
@@ -612,17 +614,18 @@ def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         dfT = df[df[(e,'P')] < alpha]
         #------------------------------> Rec
         dfR = dfT[[('Nterm','Nterm'),('Cterm', 'Cterm')]].copy()
-        dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 2
-        dfR[('Cterm','Cterm')] = dfR[('Cterm','Cterm')] - 1
+        dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 1
         l = dfR.to_numpy().flatten()
+        # No Cleavage in 1 and last residue
+        l = [x for x in l if x > 0 and x < protL[0]]
         for x in l:
             dfO.at[x, idx['Rec',e]] = dfO.at[x, idx['Rec',e]] + 1
         #------------------------------> Nat
         if protL[1] is not None:
             dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
-            dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 2
-            dfR[('CtermF','CtermF')] = dfR[('CtermF','CtermF')] - 1
+            dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 1
             l = dfR.to_numpy().flatten()
+            l = [x for x in l if x > 0 and x < protL[0]]
             for x in l:
                 dfO.at[x, idx['Nat',e]] = dfO.at[x, idx['Nat',e]] + 1
         else:
@@ -675,7 +678,8 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     dfT = df.iloc[:,[0,1]].copy()
     dfT.iloc[:,0] = dfT.iloc[:,0]-1
     resL = sorted(list(set(dfT.to_numpy().flatten())))
-    
+    resL = [x for x in resL if x > 0 and x < protL[0]]
+    #------------------------------> 
     for r in resL:
         dfT = df.loc[(df[('Nterm','Nterm')]==r+1) | (df[('Cterm','Cterm')]==r)].copy()
         for e in label:
@@ -690,7 +694,8 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         dfT = df.iloc[:,[2,3]].copy()
         dfT.iloc[:,0] = dfT.iloc[:,0]-1
         resL = sorted(list(set(dfT.to_numpy().flatten())))
-
+        resL = [x for x in resL if x > 0 and x < protL[0]]
+        #------------------------------> 
         for r in resL:
             dfT = df.loc[(df[('NtermF','NtermF')]==r+1) | (df[('CtermF','CtermF')]==r)].copy()
             for e in label:
