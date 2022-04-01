@@ -1326,7 +1326,7 @@ class ClearSelLimProt(wx.Menu):
         self.miNoGel  = self.Append(-1, 'Gel Spot')
         self.miNoBL   = self.Append(-1, 'Band/Lane')
         self.AppendSeparator()
-        self.miNoSel  = self.Append(-1, 'All')
+        self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
         #endregion -----------------------------------------------> Menu Items
         
         #region ---------------------------------------------------> 
@@ -1436,7 +1436,7 @@ class ClearSelTarProt(wx.Menu):
         self.miNoPept = self.Append(-1, 'Peptide')
         self.miNoFrag = self.Append(-1, 'Fragment')
         self.AppendSeparator()
-        self.miNoSel  = self.Append(-1, 'All')
+        self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
         #endregion -----------------------------------------------> Menu Items
         
         #region ---------------------------------------------------> 
@@ -1706,7 +1706,7 @@ class CpRToolMenu(wx.Menu, MenuMethods):
             -1, 'Show Native Protein Location', kind=wx.ITEM_CHECK)
         self.miProtLoc.Check(True)
         self.AppendSeparator()
-        self.miClear = self.Append(-1, 'Clear Selection')
+        self.miClear = self.Append(-1, 'Clear Selection\tCtrl+K')
         self.AppendSeparator()
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
@@ -2460,7 +2460,7 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.AppendSubMenu(self.mLockScale, 'Lock Plot Scale')
         self.AppendSeparator()
         #------------------------------> Clear Selection
-        self.miClearSel = self.Append(-1, 'Clear Selection')
+        self.miClearSel = self.Append(-1, 'Clear Selection\tCtrl+K')
         self.AppendSeparator()
         #------------------------------> Duplicate Window
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
