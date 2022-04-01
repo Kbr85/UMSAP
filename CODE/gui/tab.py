@@ -330,6 +330,7 @@ class Start(wx.Panel):
         self.cParent = cParent
         
         super().__init__(parent=cParent, name=self.cName)
+        self.SetBackgroundColour('white')
         #endregion --------------------------------------------> Initial setup
         
         #region -----------------------------------------------------> Widgets
