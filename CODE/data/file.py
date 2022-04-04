@@ -15,215 +15,400 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional, Literal
-
-import pandas as pd
-
-import wx
+from pathlib import Path
+from typing import Optional, Union
 
 import dat4s_core.data.file as dtsFF
 import dat4s_core.exception.exception as dtsException
 
 import config.config as config
-
-if config.typeCheck:
-    #------------------------------> 
-    from pathlib import Path
-    #------------------------------> 
-    import gui.dtscore as dtscore
+import gui.dtscore as dtscore
 #endregion ----------------------------------------------------------> Imports
 
 #region -------------------------------------------------------------> Classes
 class UMSAPFile():
-    """Read and analyse an umsap file.
+    """Read and analyse an UMSAP file.
 
         Parameters
         ----------
-        fileP : Path
+        rFileP : Path
             Path to the UMSAP file
 
         Attributes
         ----------
-        name : str
+        cName : str
             Unique name of the class
-        fileP : Path
-            Path to the UMSAP file
-        data : dict
-            Data read from json formatted file
-        confData : dict
-            Configured data. See Notes
-        confTree : dict
-            Nodes for the wx.TreeCtrl in the control window. See Notes
-        cSection : dict
-            Name of the sections in the umsap file
-        cConfigure : dict
+        dConfigure : dict
             Configure methods. Keys are the section names as read from the file
-
+        rConfData : dict
+            Configured data. Data from the umsap file is checked and converted 
+            to the proper python types. See Notes for the structure of the dict.
+        rConfTree : dict
+            Nodes to show in the wx.TreeCtrl of the control window. 
+            See Notes for the structure of the dict.    
+        rData : dict
+            Data read from json formatted file
+        rFileP : Path
+            Path to the UMSAP file
+        
         Raises
         ------
+        InputError
+            - When fileP cannot be read.
         ExecutionError
             - When a requested section is not found in the file (GetSectionData)
-
-        Methods
-        -------
-
-        Notes
-        -----
-        The general structure of confData is:
-        {
-            'Correlation Analysis' : {
-                'Date' : { # Only valid date sections e.g. 20210325-112056
-                    'DF' : pd.DataFrame with Result values,
-                },
-            },
-        }
-        Each Section.Date can have additional information. See the corresponding
-        ConfigureDataSection
-
-        The general structure of confTree is:
-        {
-            'Sections': { 'A': True, 'B': False},
-            'Correlation Analysis' : {DateA': True, 'DateB': False},
-        }
-        
     """
     #region -----------------------------------------------------> Class setup
-    name = 'UMSAPFile'
-    
-    cSection = {# Name of the sections in the umsap file
-        'CorrA' : config.nUCorrA,
-    }
+    cName = 'UMSAPFile'
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, fileP: 'Path') -> None:
+    def __init__(self, rFileP: Path) -> None:
         """ """
+        #region -------------------------------------------------> Check Input
+        try:
+            #------------------------------> Read File
+            data = dtsFF.ReadJSON(rFileP)
+            #------------------------------> Sort Keys
+            dataKey = sorted([x for x in data.keys()])
+            #------------------------------> 
+            self.rData = {}
+            for k in dataKey:
+                self.rData[k] = data[k]
+        except Exception:
+            raise dtsException.InputError(config.mFileRead.format(self.rFileP))
+        #endregion ----------------------------------------------> Check Input
+        
         #region ---------------------------------------------------> Variables
-        self.fileP = fileP
+        self.rFileP = Path(rFileP)
+        self.rStepDataP  = self.rFileP.parent / config.fnDataSteps
+        self.rInputFileP = self.rFileP.parent / config.fnDataInit
 
-        self.cConfigure = {# Configure methods. Keys are the section names as
+        self.dConfigure = {# Configure methods. Keys are the section names as
                            # read from the file
-            self.cSection['CorrA'] : self.ConfigureDataCorrA,
-        }
-        #------------------------------> See Notes about the structure of dict
-        self.confData = {}
-        self.confTree = {
-            'Sections' : {},
+            config.nuCorrA   : self.ConfigureDataCorrA,
+            config.nuDataPrep: self.ConfigureDataCheckDataPrep,
+            config.nmProtProf: self.ConfigureDataProtProf,
+            config.nmLimProt : self.ConfigureDataLimProt,
+            config.nmTarProt : self.ConfigureDataTarProt,
         }
         #endregion ------------------------------------------------> Variables
-
-        #region -------------------------------------------------> Check Input
-        self.data = dtsFF.ReadJSON(fileP)
-        #endregion ----------------------------------------------> Check Input
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #----------------------------------------------------------> Class methods
-    #region -------------------------------------------------------> Configure
-    def Configure(self, dlg: Optional['dtscore.ProgressDialog']=None,
-                 )-> Literal[True]:
-        """Prepare data for each section in the file and for the CustomTreeCtrl
-            in the control window. See Notes.
+    #------------------------------>  Class methods
+    #region ---------------------------------------------------> 
+    def Save(self, tPath: Union[None, str, Path]=None) -> bool:
+        """Save the file content
     
             Parameters
             ----------
-            dlg : wx.Dialog or None
-                To show configuration progress.
+            tPath:
     
-            Notes
+            Returns
+            -------
+            
+    
+            Raise
             -----
-            If dlg is provided, then it is assumed the configuration is done 
-            from another thread and calls to dlg methods should be made with
-            wx.CallAfter()
+            
         """
-        #region ------------------------------------------> Configure sections
-        for k in self.data.keys():
-            #------------------------------> Configure data to plot
-            #--------------> Update dlg
-            if dlg is not None:
-                wx.CallAfter(dlg.UpdateStG, f"Configuring section: {k}")
-            else:
-                pass
-            #--------------> Configure data to plot
-            self.cConfigure[k]()
-            #------------------------------> Configure tree
-            #--------------> Update dlg
-            if dlg is not None:
-                wx.CallAfter(dlg.UpdateG)
-            else:
-                pass
-            #--------------> Configure tree
-            self.ConfigureTree(k)
-        #endregion ---------------------------------------> Configure sections
+        #region ---------------------------------------------------> Variables
+        oPath = tPath if tPath is not None else self.rFileP
+        #endregion ------------------------------------------------> Variables
         
-        #region -------------------------------------------------> Destroy dlg
-        if dlg is not None:
-            wx.CallAfter(dlg.EndModal, 1)
-        else:
-            pass		
-        #endregion ----------------------------------------------> Destroy dlg
-    
+        #region ---------------------------------------------------> Write
+        try:
+            dtsFF.WriteJSON(oPath, self.rData)
+        except Exception as e:
+            msg = f'It was not possible to update the content of file: {oPath}'
+            dtscore.Notification('errorF', msg=msg, tException=e)
+            return False
+        #endregion ------------------------------------------------> Write
+
         return True
     #---
-
-    def ConfigureDataCorrA(self) -> Literal[True]:
-        """Configure a Correlation Analysis section	"""
+    #endregion ------------------------------------------------> 
+    
+    #region -------------------------------------------------------> Configure
+    def ConfigureDataCorrA(self) -> dict:
+        """Configure a Correlation Analysis section	
+        
+            Returns
+            ------
+            dict
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'NumCol' : number of columns in 'DF',
+                'NumColList' : List with the number of the columns,
+            }
+        """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
         plotData = {}
         #------------------------------> Fill
-        for k,v in self.data[self.cSection['CorrA']].items():
+        for k,v in self.rData[config.nuCorrA].items():
+            #------------------------------> 
+            tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nuCorrA.replace(" ", "-")}'
+            #------------------------------> 
             try:
                 #------------------------------> Create data
-                df  = pd.DataFrame(v['R'], dtype='float64')
-                if (numCol := len(v['CI']['Column'])) == df.shape[0]:
+                df = dtsFF.ReadCSV2DF(tPath/v['R'])
+                
+                if (numCol := len(v['CI']['oc']['Column'])) == df.shape[0]:
                     pass
                 else:
                     continue
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
-                    'DF'        : df,
-                    'NumCol'    : numCol,
-                    'NumColList': v['CI']['Column'],
+                    'DF'     : df,
+                    'NumCol' : numCol,
+                    'NumColList': v['CI']['oc']['Column'],
                 }
             except Exception:
                 pass
-
         #endregion ----------------------------------------------> Plot & Menu
         
-        #region -------------------------------------------> Add/Reset section 
-        self.confData[self.cSection['CorrA']] = plotData
-        #endregion ----------------------------------------> Add/Reset section 
-        
-        return True
+        return plotData
     #---
-
-    def ConfigureTree(self, tSection: str) -> Literal[True]:
-        """Configure a section for the Tree widget.
-            This is intended to be used after ConfigureDataX
-
+    
+    def ConfigureDataCheckDataPrep(
+        self, tSection: Optional[str]=None, tDate: Optional[str]=None
+        ) -> dict:
+        """Configure a Data Preparation Check section	
+        
             Parameters
             ----------
-            tSection : str
-                One of config.nameUtilities or config.nameModules
+            tSection: str or None
+                Section name. Default is None
+            tDate : str or None
+                Date and comment. Default is None
+        
+            Returns
+            -------
+            dict
+            {
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
         """
-        #region -----------------------------------------> Add Section Boolean
-        self.confTree['Sections'][tSection] = (
-            any(self.confData[tSection].keys())
-        )
-        #endregion --------------------------------------> Add Section Boolean
+        if tSection is None and tDate is None:
+            return self.ConfigureDataCheckDataPrepFromUMSAP()
+        elif tSection is not None and tDate is not None:
+            return self.ConfigureDataCheckDataPrepFromPlot(tSection, tDate)
+        else:
+            msg = (f'Both tSection ({tSection}) and tDate ({tDate}) must be '
+                   f'None or be defined.')
+            raise dtsException.InputError(msg)
+    #---
+    
+    def ConfigureDataCheckDataPrepFromPlot(
+        self, tSection: str, tDate: str,
+        ) -> dict:
+        """Configure a Data Preparation Check section	
         
-        #region ---------------------------------------------------> Add Dates
-        #------------------------------> Dicts
-        self.confTree[tSection] = {}
-        #------------------------------> Date
-        for k in self.data[tSection].keys():
-            self.confTree[tSection][k] = (
-                k in self.confData[tSection]
-            )
-        #endregion ------------------------------------------------> Add Dates
+            Parameters
+            ----------
+            tSection: str
+                Section name
+            tDate : str
+                Date and comment
         
-        return True
+            Returns
+            -------
+            dict
+            {
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
+        """
+        #region ---------------------------------------------------> Variables
+        plotData = {}
+        tPath = self.rStepDataP / f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Plot & Menu
+        try:
+            plotData[tDate] = {
+                'DP': {j:dtsFF.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()},
+                'NumColList': self.rData[tSection][tDate]['CI']['oc']['Column'],
+            }
+        except Exception as e:
+            pass        
+        #endregion ----------------------------------------------> Plot & Menu
+        
+        return plotData
+    #---
+    
+    def ConfigureDataCheckDataPrepFromUMSAP(self) -> dict:
+        """Configure a Data Preparation Check section	
+        
+            Returns
+            -------
+            dict
+            {
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
+        """
+        #region ---------------------------------------------------> Variables
+        plotData = {}
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Plot & Menu        
+        for k,v in self.rData[config.nuDataPrep].items():
+            try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nuDataPrep.replace(" ", "-")}'
+                #------------------------------> Add to dict
+                plotData[k] = {
+                    'DP' : {j:dtsFF.ReadCSV2DF(tPath/w) for j,w in v['DP'].items()},
+                    'NumColList': v['CI']['oc']['Column'],
+                }
+            except Exception:
+                pass
+        #endregion ----------------------------------------------> Plot & Menu
+        
+        return plotData
+    #---
+    
+    def ConfigureDataProtProf(self) -> dict:
+        """Configure a Proteome Profiling section
+        
+            Returns
+            ------
+            dict
+            {
+                'DF' : pd.DataFrame with the data to plot,
+            }
+        """
+        #region -------------------------------------------------> Plot & Menu
+        #------------------------------> Empty start
+        plotData = {}
+        #------------------------------> Fill
+        for k,v in self.rData[config.nmProtProf].items():
+            try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmProtProf.replace(" ", "-")}'
+                #------------------------------> Create data
+                df = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
+                #------------------------------> Add to dict if no error
+                plotData[k] = {
+                    'DF': df,
+                    'F' : v['F'],
+                }
+            except Exception:
+                pass
+        #endregion ----------------------------------------------> Plot & Menu
+        
+        return plotData
+    #---
+    
+    def ConfigureDataLimProt(self) -> dict:
+        """Configure a Limited Proteolysis section
+        
+            Returns
+            -------
+            dict
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'PI' : { dict with information for the plotting window
+                    'Bands'     : list with the band's names,
+                    'Lanes'     : list with the lane's names,
+                    'Alpha'     : alpha value,
+                    'ProtLength': length of the recombinant protein,
+                    'ProtLoc'   : list with the location of the native protein,
+                    'ProtDelta' : value to calculate native residue numbers as
+                                    resN_Nat = resN_Rec + ProtDelta,
+                    'Prot'      : name of the Target Protein,
+                },
+            }
+        """
+        #region -------------------------------------------------> Plot & Menu
+        #------------------------------> Empty start
+        plotData = {}
+        #------------------------------> Fill
+        for k,v in self.rData[config.nmLimProt].items():
+            try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmLimProt.replace(" ", "-")}'
+                #------------------------------> Create data
+                df  = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
+                #------------------------------> Plot Info
+                PI = {
+                    'Bands'     : v['CI']['Band'],
+                    'Lanes'     : v['CI']['Lane'],
+                    'Alpha'     : v['CI']['Alpha'],
+                    'ProtLength': v['CI']['ProtLength'],
+                    'ProtLoc'   : v['CI']['ProtLoc'],
+                    'ProtDelta' : v['CI']['ProtDelta'],
+                    'Prot'      : v['CI']['TargetProt'],
+                }
+                #------------------------------> Add to dict if no error
+                plotData[k] = {
+                    'DF': df,
+                    'PI': PI,
+                }
+            except Exception:
+                pass
+        #endregion ----------------------------------------------> Plot & Menu
+        
+        return plotData
+    #---
+    
+    def ConfigureDataTarProt(self) -> dict:
+        """Configure a Targeted Proteolysis section
+        
+            Returns
+            ------
+            dict
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'PI' : { dict with information for the plotting window
+                    'Exp'       : list with the experiment's names,
+                    'Alpha'     : alpha value,
+                    'ProtLength': length of the recombinant protein,
+                    'ProtLoc'   : list with the location of the native protein,
+                    'ProtDelta' : value to calculate native residue numbers as
+                                    resN_Nat = resN_Rec + ProtDelta,
+                    'Prot'      : name of the Target Protein,
+                },
+            }
+        """
+        #region -------------------------------------------------> Plot & Menu
+        #------------------------------> Empty start
+        plotData = {}
+        #------------------------------> Fill
+        for k,v in self.rData[config.nmTarProt].items():
+            try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmTarProt.replace(" ", "-")}'
+                #------------------------------> Create data
+                df  = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1])
+                #------------------------------> Plot Info
+                PI = {
+                    'Exp'       : v['CI']['Exp'],
+                    'Ctrl'      : v['CI']['ControlL'],
+                    'Alpha'     : v['CI']['Alpha'],
+                    'ProtLength': v['CI']['ProtLength'],
+                    'ProtLoc'   : v['CI']['ProtLoc'],
+                    'ProtDelta' : v['CI']['ProtDelta'],
+                    'Prot'      : v['CI']['TargetProt'],
+                }
+                #------------------------------> Add to dict if no error
+                plotData[k] = {
+                    'DF'   : df,
+                    'PI'   : PI,
+                    'AA'   : v.get('AA', {}),
+                    'Hist' : v.get('Hist', {}),
+                    'CpR'  : v['CpR'],
+                    'CEvol': v['CEvol'],
+                }
+            except Exception:
+                pass
+        #endregion ----------------------------------------------> Plot & Menu
+        
+        return plotData
     #---
     #endregion ----------------------------------------------------> Configure
     
@@ -236,7 +421,7 @@ class UMSAPFile():
             int:
                 Number of sections in the file	
         """
-        return len(self.data.keys())
+        return len(self.rData.keys())
     #---
 
     def GetSectionData(self, tSection: str) -> dict:
@@ -257,34 +442,14 @@ class UMSAPFile():
             ExecutionError
                 - When the section is not found in the file
         """
-        if (data := self.data.get(tSection, '')) != '':
+        if (data := self.rData.get(tSection, {})):
             return data
         else:
             msg = (
                 f"Section {tSection} was not found in the content of "
-                f"file:\n{self.fileP}"
+                f"file:\n{self.rFileP}"
             )
             raise dtsException.ExecutionError(msg)
-    #---
-
-    def GetSectionDateDF(self, tSection: str, tDate: str) -> pd.DataFrame:
-        """Get the dataframe for the section and date
-    
-            Parameters
-            ----------
-            tSection : str
-                Section name
-            tDate : str
-                The date e.g. 20210325-112056
-    
-            Returns
-            -------
-            pd.DataFrame
-        """
-        try:
-            return self.confData[tSection][tDate]['DF']
-        except Exception as e:
-            raise e
     #---
 
     def GetDataI(self, tSection: str, tDate: str) -> dict:
@@ -295,7 +460,8 @@ class UMSAPFile():
             tSection: str
                 Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                Date of the analysis, e.g. '20210630-143556'
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
     
             Returns
             -------
@@ -307,7 +473,7 @@ class UMSAPFile():
                 When tSection or tDate is not found in the file
         """
         try:
-            return self.data[tSection][tDate]['I']
+            return self.rData[tSection][tDate]['I']
         except KeyError as e:
             raise e
     #---
@@ -320,7 +486,8 @@ class UMSAPFile():
             tSection: str
                 Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                Date of the analysis, e.g. '20210630-143556'
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
     
             Returns
             -------
@@ -332,7 +499,7 @@ class UMSAPFile():
                 When tSection or tDate is not found in the file
         """
         try:
-            return self.data[tSection][tDate]['CI']
+            return self.rData[tSection][tDate]['CI']
         except KeyError as e:
             raise e
     #---
@@ -345,48 +512,225 @@ class UMSAPFile():
             tSection: str
                 Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                Date of the analysis, e.g. '20210630-143556'
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
     
             Returns
             -------
-            dict
+            dict:
+                {
+                    'I' : user input with stripped keys,
+                    'CI': corrected user input,
+                    'rootP' : path to the folder containing the UMSAP file,
+                }
     
             Raise
             -----
             KeyError:
                 When tSection or tDate is not found in the file
         """
+        #region ------------------------------------------------> Strip I keys
+        #------------------------------> 
+        i = {}
+        #------------------------------> 
+        for k,v in self.rData[tSection][tDate]['I'].items():
+            i[k.strip()] = v
+        #endregion ---------------------------------------------> Strip I keys
+        
         try:
             return {
-                'I':  self.data[tSection][tDate]['I'], 
-                'CI': self.data[tSection][tDate]['CI'], 
+                'I'    : i,
+                'CI'   : self.rData[tSection][tDate]['CI'],
+                'uFile': self.rFileP,
             }
         except KeyError as e:
             raise e
     #---
-    #region -----------------------------------------------------> Export data
-    def ExportPlotData(self, tSection: str, tDate: str, fileP: 'Path'
-                      ) -> Literal[True]:
-        """Export the plot data
+    
+    def GetRecSeq(self, tSection: str, tDate: str) -> str:
+        """ Get the recombinant sequence used in an analysis.
     
             Parameters
             ----------
-            tSection : str
-                Section name
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                The date e.g. 20210325-112056
-            fileP : Path
-                Path to the file
-        """
-        try:
-            dtsFF.WriteDF2CSV(fileP, self.GetSectionDateDF(tSection, tDate))
-        except Exception as e:
-            raise e
-        
-        return True
-    #---
-    #endregion --------------------------------------------------> Export data
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
     
+            Returns
+            -------
+            str
+    
+            Raise
+            -----
+            KeyError:
+                When tSection or tDate is not found in the file
+        """
+        #region ------------------------------------------------> Path
+        for k,v in self.rData[tSection][tDate]['I'].items():
+            if 'Sequences File' in k:
+                fileN = v
+                break
+            else:
+                pass
+        #endregion ---------------------------------------------> Path
+        
+        #region ---------------------------------------------------> 
+        seqObj = dtsFF.FastaFile(self.rInputFileP/fileN)
+        
+        return seqObj.seqRec
+        #endregion ------------------------------------------------> 
+    #---
+    
+    def GetNatSeq(self, tSection: str, tDate: str) -> str:
+        """ Get the native sequence used in an analysis.
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+    
+            Returns
+            -------
+            str
+    
+            Raise
+            -----
+            KeyError:
+                When tSection or tDate is not found in the file
+        """
+        #region ------------------------------------------------> Path
+        for k,v in self.rData[tSection][tDate]['I'].items():
+            if 'Sequences File' in k:
+                fileN = v
+                break
+            else:
+                pass
+        #endregion ---------------------------------------------> Path
+        
+        #region ---------------------------------------------------> 
+        seqObj = dtsFF.FastaFile(self.rInputFileP/fileN)
+        
+        return seqObj.seqNat
+        #endregion ------------------------------------------------> 
+    #---
+    
+    def GetSeq(self, tSection: str, tDate: str) -> tuple[str, str]:
+        """Get the sequences used in an analysis.
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+    
+            Returns
+            -------
+            tuple[RecSeq, NatSeq]
+    
+            Raise
+            -----
+            KeyError:
+                When tSection or tDate is not found in the file
+        """
+        #region ------------------------------------------------> Path
+        for k,v in self.rData[tSection][tDate]['I'].items():
+            if 'Sequences File' in k:
+                fileN = v
+                break
+            else:
+                pass
+        #endregion ---------------------------------------------> Path
+        
+        #region ---------------------------------------------------> 
+        seqObj = dtsFF.FastaFile(self.rInputFileP/fileN)
+        
+        return (seqObj.seqRec, seqObj.seqNat) 
+        #endregion ------------------------------------------------> 
+    #---
+    
+    def GetFAData(
+        self, tSection: str, tDate: str, fileN: str, header: list[int]
+        ) -> 'pd.DataFrame':
+        """Get the data for a Further Analysis section
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+            fileN : str
+                File name with the data
+            header: list[int]
+                Header rows in the file
+    
+            Returns
+            -------
+            pd.DataFrame
+        """
+        tPath = (
+            self.rStepDataP/f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'/fileN
+        )
+        return dtsFF.ReadCSV2DF(tPath, header=header)
+    #---
+    
+    def GetCleavagePerResidue(self, tSection:str, tDate:str) -> 'pd.DataFrame':
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        
+        #region ---------------------------------------------------> Path
+        folder = f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
+        fileN = self.rData[tSection][tDate]['CpR']
+        fileP = self.rStepDataP/folder/fileN
+        #endregion ------------------------------------------------> Path
+
+        return dtsFF.ReadCSV2DF(fileP, header=[0,1])
+    #---
+    
+    def GetCleavageEvolution(self, tSection:str, tDate:str) -> 'pd.DataFrame':
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        
+        #region ---------------------------------------------------> Path
+        folder = f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
+        fileN = self.rData[tSection][tDate]['CEvol']
+        fileP = self.rStepDataP/folder/fileN
+        #endregion ------------------------------------------------> Path
+
+        return dtsFF.ReadCSV2DF(fileP, header=[0,1])
+    #---
     #endregion --------------------------------------------------> Get Methods
 #---
 #endregion ----------------------------------------------------------> Classes

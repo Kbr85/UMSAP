@@ -17,37 +17,37 @@ fNameNorm    = 'Data-02-Normalization'
 #endregion ---------------------------------------------------> Path and Files
 
 # #region ------------------------------------------------------------> Messages
-# msg = { # Messages used by more than one object
-#     #------------------------------> ResControlExpConfBase
-#     'TCField' : (
-#         "Only a space-separated list of unique non-negative integers can be "
-#         "accepted in the {labelBtn}.\nIn addition, the values must be less "
-#         "than or equal to the total number of columns in the selected "
-#         "{labelF}."),
-# }
+msg = { # Messages used by more than one object
+    #------------------------------> ResControlExpConfBase
+    'TCField' : (
+        "Only a space-separated list of unique non-negative integers can be "
+        "accepted in the {labelBtn}.\nIn addition, the values must be less "
+        "than or equal to the total number of columns in the selected "
+        "{labelF}."),
+}
 # #endregion ---------------------------------------------------------> Messages
 
 
 #region ------------------------------------------------------------------ URL
 #------------------------------> www.umsap.nl
 
-# url = { # Selected URL needed by umsap.
-#     #--> Third party sites
-#     # 'Uniprot'  : 'https://www.uniprot.org/uniprot/',
-#     # 'Pdb'      : 'http://www.rcsb.org/pdb/files/',
-#     #--> www.umsap.nl
-#     'Tutorial'  : f"{url_tutorial}/start",
-#     # 'MergeAA'   : f"{url_tutorial}/merge-aadist-files",
-#     # 'ShortDFile': f"{url_tutorial}/short-data-files",
-#     # 'TarProt'   : f"{url_tutorial}/targeted-proteolysis",
-#     # 'AAdist'    : f"{url_tutorial}/aa-distribution",
-#     # 'Cuts2PDB'  : f"{url_tutorial}/cleavages-pdb-files",
-#     # 'Histo'     : f"{url_tutorial}/histograms",
-#     # 'SeqAlign'  : f"{url_tutorial}/sequence-alignment",
-#     # 'LimProt'   : f"{url_tutorial}/limited-proteolysis",
-#     # 'SeqH'      : f"{url_tutorial}/sequence-highlight",
-#     
-# }
+url = { # Selected URL needed by umsap.
+    #--> Third party sites
+    # 'Uniprot'  : 'https://www.uniprot.org/uniprot/',
+    # 'Pdb'      : 'http://www.rcsb.org/pdb/files/',
+    #--> www.umsap.nl
+    'Tutorial'  : f"{url_tutorial}/start",
+    # 'MergeAA'   : f"{url_tutorial}/merge-aadist-files",
+    # 'ShortDFile': f"{url_tutorial}/short-data-files",
+    # 'TarProt'   : f"{url_tutorial}/targeted-proteolysis",
+    # 'AAdist'    : f"{url_tutorial}/aa-distribution",
+    # 'Cuts2PDB'  : f"{url_tutorial}/cleavages-pdb-files",
+    # 'Histo'     : f"{url_tutorial}/histograms",
+    # 'SeqAlign'  : f"{url_tutorial}/sequence-alignment",
+    # 'LimProt'   : f"{url_tutorial}/limited-proteolysis",
+    # 'SeqH'      : f"{url_tutorial}/sequence-highlight",
+    
+}
 #endregion --------------------------------------------------------------- URL
 
 

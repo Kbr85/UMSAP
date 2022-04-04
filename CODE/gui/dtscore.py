@@ -16,21 +16,23 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Literal
 
 import wx
 
-import dat4s_core.gui.wx.window as dtsWindow
-import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.data.method as dtsMethod
+import dat4s_core.gui.wx.widget as dtsWidget
+import dat4s_core.gui.wx.window as dtsWindow
 
 import config.config as config
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------------> Methods
-def StrSetMessage(start, end, link='\n\nFurther details:\n'):
-    """Default link for message in Progress Dialog
+def StrSetMessage(
+    start: str, end: str, link: str='\n\nFurther details:\n'
+    )-> str:
+    """Default link for message in Progress Dialog.
 
         Parameters
         ----------
@@ -55,12 +57,17 @@ def StrSetMessage(start, end, link='\n\nFurther details:\n'):
 #region -------------------------------------------------------------> Classes
 class Notification(dtsWindow.NotificationDialog):
     """This avoids to type the title and the image of the window every time """
-    def __init__(self, mode: str, msg: Optional[str]=None, 
-        tException: Optional[Exception]=None, parent: Optional[wx.Window]=None, 
-        img: Path=config.fImgIcon, button: int=1,) -> None:
+    def __init__(
+        self, 
+        mode: Literal['errorF', 'errorU', 'warning', 'success', 'question'], 
+        msg: Optional[str]=None, tException: Optional[Exception]=None, 
+        parent: Optional[wx.Window]=None, img: Path=config.fImgIcon, 
+        button: int=1, setText=False
+        ) -> None:
         """ """
         super().__init__(mode, msg=msg, tException=tException, parent=parent,
-            button=button, img=img, title='UMSAP - Notification')
+            button=button, img=img, title='UMSAP - Notification', 
+            setText=setText)
     #---
 #---
 
@@ -105,7 +112,7 @@ class ListZebraMaxWidth(dtsWidget.ListZebraMaxWidth):
             selAll=selAll, style=style)
     #---    
 #---
-#endregion ----------------------------------------------------------> Classes
+# #endregion ----------------------------------------------------------> Classes
 
 
     
