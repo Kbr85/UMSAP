@@ -460,6 +460,30 @@ class BaseWindow(wx.Frame):
         
         return True
     #---
+    
+    def UpdateUMSAPData(self):
+        """Update the window after the UMSAP file have been updated.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.rObj  = self.cParent.rObj
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rDate = [x for x in self.rData.keys()]
+        menuBar    = self.GetMenuBar()
+        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(self.rDate)
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Manage Methods
 #---
 
@@ -2420,6 +2444,30 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> Fill dict
         
         return (date, menuData)
+    #---
+    
+    def UpdateUMSAPData(self):
+        """Update the window after the UMSAP file have been updated.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.rObj  = self.cParent.rObj
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rDate, menuData = self.SetDateMenuDate()
+        menuBar = self.GetMenuBar()
+        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
+        
+        return True
     #---
     
     def WinPos(self) -> bool:
@@ -6555,6 +6603,30 @@ class TarProtPlot(BaseWindowProteolysis):
         return (date, menuData)
     #---
     
+    def UpdateUMSAPData(self):
+        """Update the window after the UMSAP file have been updated.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.rObj  = self.cParent.rObj
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rDate, menuData = self.SetDateMenuDate()
+        menuBar = self.GetMenuBar()
+        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
+        
+        return True
+    #---
+    
     def UpdateDisplayedData(self, date) -> bool:
         """Update the GUI and attributes when a new date is selected.
     
@@ -9849,9 +9921,7 @@ class UMSAPControl(BaseWindow):
         else:
             #------------------------------> Remove check
             self.wTrc.SetItem3StateValue(
-                self.rSection[sectionName],
-                wx.CHK_UNCHECKED,
-            )		
+                self.rSection[sectionName], wx.CHK_UNCHECKED)		
             #------------------------------> Repaint
             self.Update()
             self.Refresh()		
@@ -9862,6 +9932,11 @@ class UMSAPControl(BaseWindow):
     
     def UpdateFileContent(self) -> Literal[True]:
         """Update the content of the file. """
+        
+        #region ---------------------------------------------------> 
+        tSectionChecked = self.GetCheckedSection()
+        #endregion ------------------------------------------------> 
+
         #region ---------------------------------------------------> Read file
         try:
             self.rObj = file.UMSAPFile(self.rObj.rFileP)
@@ -9875,6 +9950,19 @@ class UMSAPControl(BaseWindow):
         self.wTrc.DeleteAllItems()
         #------------------------------> 
         self.SetTree()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        for s in tSectionChecked:
+            #------------------------------> Check
+            self.wTrc.SetItem3StateValue(
+                self.rSection[s], wx.CHK_CHECKED)
+            #------------------------------> Win Menu
+            if (win := self.rWindow[s].get('Main', '')):
+                for w in win:
+                    w.UpdateUMSAPData()
+            else:
+                pass
         #endregion ------------------------------------------------> 
 
         return True
