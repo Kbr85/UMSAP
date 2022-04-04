@@ -250,6 +250,43 @@ class MenuMethods():
         return True
     #---
     
+    def UpdateDateItems(self, menuDate: list[str]) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        checked = self.GetCheckedRadiodItem(self.rPlotDate)
+        #------------------------------> 
+        for k in self.rPlotDate:
+            self.Delete(k)
+        self.rPlotDate = []
+        #------------------------------> 
+        for k in reversed(menuDate):
+            self.rPlotDate.append(self.InsertRadioItem(0,-1,k))
+            self.Bind(wx.EVT_MENU, self.OnPlotDate, source=self.rPlotDate[-1])
+        #------------------------------> 
+        for k in self.rPlotDate:
+            if k.GetItemLabelText() == checked:
+                k.Check(check=True)
+                break
+            else:
+                pass
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
     def GetCheckedRadiodItem(
         self, lMenuItem: list[wx.MenuItem], getVal: str='Label',
         ) -> Union[str, int]:
@@ -2550,6 +2587,26 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         
         return True
     #---
+    
+    def UpdateDateItems(self, menuData):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.cMenuData = menuData
+        self.mVolcano.rCrp = self.cMenuData['crp']
+        super().UpdateDateItems(self.cMenuData['menudate'])
+    #---
     #endregion ------------------------------------------------> Event methods
 #---
 
@@ -2837,6 +2894,27 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         win.OnSeqExport()
         
         return True
+    #---
+    
+    def UpdateDateItems(self, menuData):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.cMenuData = menuData
+        self.mFurtherA.mAA.cMenuData = self.cMenuData['FA']
+        self.mFurtherA.mHist.cMenuData = self.cMenuData['FA']
+        super().UpdateDateItems(self.cMenuData['menudate'])
     #---
     #endregion ------------------------------------------------> Event methods
 #---
