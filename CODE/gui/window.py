@@ -993,9 +993,9 @@ class BaseWindowProteolysis(BaseWindow):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wPlotM = dtsWidget.MatPlotPanel(self, statusbar=self.wStatBar)
+        self.wPlotM = dtsWidget.MatPlotPanel(self)
         #------------------------------>  Plot
-        self.wPlot = dtsWidget.MatPlotPanel(self, statusbar=self.wStatBar)
+        self.wPlot = dtsWidget.MatPlotPanel(self)
         #------------------------------> Text details
         self.wText = wx.TextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
