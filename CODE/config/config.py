@@ -69,6 +69,8 @@ elif os == 'Windows':
         sbFieldSize = [-1, 325]
     else:
         sbFieldSize = [-1, 300]
+    sbPlot2Fields = [-1, 115]
+    sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -84,6 +86,8 @@ else:
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
+    sbPlot2Fields = [-1, 115]
+    sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows

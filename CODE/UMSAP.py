@@ -152,8 +152,10 @@ class SplashWindow(wx.adv.SplashScreen):
             config.font['TreeItemDataFile']      = fTreeItemFileData
             config.font['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
         elif config.os == "Windows":
-            config.font['SeqAlign']              = fSeqAlignFont.SetPointSize(12)
+            fSeqAlignFont.SetPointSize(12)
+            config.font['SeqAlign']              = fSeqAlignFont
             config.font['TreeItem']              = fTreeItem
+            fTreeItemFileData.SetPointSize(10)
             config.font['TreeItemDataFile']      = fTreeItemFileData
             config.font['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
         else:
