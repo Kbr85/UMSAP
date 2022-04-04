@@ -4798,6 +4798,13 @@ class LimProtPlot(BaseWindowProteolysis):
         self.rRecSeq[self.rDateC] = self.rRecSeqC
         #endregion ------------------------------------------------> Variables
         
+        #region ---------------------------------------------------> Fragments
+        self.rFragments = dmethod.Fragments(
+            self.GetDF4FragmentSearch(), self.rAlpha,'le')
+                
+        self.SetEmptyFragmentAxis()
+        #endregion ------------------------------------------------> Fragments
+        
         #region ---------------------------------------------------> 
         self.wText.Clear()
         self.wTextSeq.Clear()
@@ -4812,14 +4819,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ----------------------------------------------------> Gel Plot
         self.DrawGel()
         #endregion -------------------------------------------------> Gel Plot
-        
-        #region ---------------------------------------------------> Fragments
-        self.rFragments = dmethod.Fragments(
-            self.GetDF4FragmentSearch(), self.rAlpha,'le')
-                
-        self.SetEmptyFragmentAxis()
-        #endregion ------------------------------------------------> Fragments
-
+    
         #region ---------------------------------------------------> Win Title
         self.PlotTitle()
         #endregion ------------------------------------------------> Win Title
@@ -4935,7 +4935,9 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> Variables  
         b = self.rBands[nb]
         l = self.rLanes[nl]
-        c = self.rDf.loc[:,(b,l,'Ptost')].isna().all()
+        c = (self.rDf.loc[:,(b,l,'Ptost')].isna().all() or
+            not self.rFragments[f"{(b,l,'Ptost')}"]['Coord']
+        )
         nc = len(self.cColor['Spot'])
         #endregion ------------------------------------------------> Variables  
 
@@ -5187,6 +5189,12 @@ class LimProtPlot(BaseWindowProteolysis):
 
         #region ---------------------------------------------------> 
         ncL.sort()
+        #------------------------------> 
+        if ncL:
+            pass
+        else:
+            return {}
+        #------------------------------> 
         n,c = ncL[0]
         for nc,cc in ncL[1:]:
             if nc <= c:
@@ -5240,17 +5248,21 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ----------------------------------------------------> Clear
         
         #region ----------------------------------------------------> New Text
-        self.wText.AppendText(f'Details for {self.rBands[band]}\n\n')
-        self.wText.AppendText(f'--> Analyzed Lanes\n\n')
-        self.wText.AppendText(f'Total Lanes  : {len(self.rLanes)}\n')
-        self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
-        self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
-        self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
-        self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
-        self.wText.AppendText(f'Recombinant Sequence:\n')
-        self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
-        self.wText.AppendText(f'Native Sequence:\n')
-        self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        if infoDict:
+            self.wText.AppendText(f'Details for {self.rBands[band]}\n\n')
+            self.wText.AppendText(f'--> Analyzed Lanes\n\n')
+            self.wText.AppendText(f'Total Lanes  : {len(self.rLanes)}\n')
+            self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
+            self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
+            self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
+            self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
+            self.wText.AppendText(f'Recombinant Sequence:\n')
+            self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
+            self.wText.AppendText(f'Native Sequence:\n')
+            self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        else:
+            self.wText.AppendText(f'There were no peptides from '
+                f'{self.rProtTarget} detected here.')
         
         self.wText.SetInsertionPoint(0)
         #endregion -------------------------------------------------> New Text
@@ -5282,17 +5294,21 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ----------------------------------------------------> Clear
         
         #region ----------------------------------------------------> New Text
-        self.wText.AppendText(f'Details for {self.rLanes[lane]}\n\n')
-        self.wText.AppendText(f'--> Analyzed Lanes\n\n')
-        self.wText.AppendText(f'Total Lanes  : {len(self.rBands)}\n')
-        self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
-        self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
-        self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
-        self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
-        self.wText.AppendText(f'Recombinant Sequence:\n')
-        self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
-        self.wText.AppendText(f'Native Sequence:\n')
-        self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        if infoDict:
+            self.wText.AppendText(f'Details for {self.rLanes[lane]}\n\n')
+            self.wText.AppendText(f'--> Analyzed Lanes\n\n')
+            self.wText.AppendText(f'Total Lanes  : {len(self.rBands)}\n')
+            self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
+            self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
+            self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
+            self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
+            self.wText.AppendText(f'Recombinant Sequence:\n')
+            self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
+            self.wText.AppendText(f'Native Sequence:\n')
+            self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        else:
+            self.wText.AppendText(f'There were no peptides from '
+                f'{self.rProtTarget} detected here.')
         
         self.wText.SetInsertionPoint(0)
         #endregion -------------------------------------------------> New Text
