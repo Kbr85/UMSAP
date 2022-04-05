@@ -8517,6 +8517,7 @@ class CEvolPlot(BaseWindowNPlotLT):
 
         #region ---------------------------------------------------> 
         self.SetAxis()
+        self.wPlots.dPlot['M'].ZoomResetSetValues()
         self.wPlots.dPlot['M'].canvas.draw()
         #endregion ------------------------------------------------>
 
@@ -8613,7 +8614,8 @@ class CEvolPlot(BaseWindowNPlotLT):
             self.wPlots.dPlot['M'].axes.legend()
         else:
             pass
-        #------------------------------> 
+        #------------------------------>
+        self.wPlots.dPlot['M'].ZoomResetSetValues()
         self.wPlots.dPlot['M'].canvas.draw()
         #endregion ------------------------------------------------> 
 
