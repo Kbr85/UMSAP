@@ -803,7 +803,6 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Add Dates
         if cMenuData is not None:
             self.AddDateItems(self.cMenuData['menudate'])
-            self.AppendSeparator()
         else:
             pass
         #------------------------------> Duplicate Window
@@ -2477,7 +2476,6 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #region --------------------------------------------------> Menu Items
         #------------------------------> Add Dates
         self.AddDateItems(self.cMenuData['menudate'])
-        self.AppendSeparator()
         #------------------------------> Volcano Plot
         self.mVolcano =  VolcanoPlot(
                 self.cMenuData['crp'], self.rPlotDate[0].GetItemLabelText()
@@ -2648,7 +2646,6 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         #region --------------------------------------------------> Menu Items
         #------------------------------> Add Dates
         self.AddDateItems(self.cMenuData['menudate'])
-        self.AppendSeparator()
         #------------------------------> 
         self.miBandLane = self.Append(
             -1, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
@@ -2802,7 +2799,6 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         #region --------------------------------------------------> Menu Items
         #------------------------------> Add Dates
         self.AddDateItems(self.cMenuData['menudate'])
-        self.AppendSeparator()
         #------------------------------> 
         self.mFragmentMenu = MainPlotProt()
         self.AppendSubMenu(self.mFragmentMenu, 'Fragments')

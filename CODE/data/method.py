@@ -441,6 +441,8 @@ def R2AA(
             AA Label1       LabelN
             AA -2 -1 1 2 P  -2 -1 1 2 P
     """
+    print('AA NUMBER OF POSITIONS')
+    print(pos)
     def AddNewAA(dfO, r, pos, seq, l):
         """
     

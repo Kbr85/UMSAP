@@ -36,6 +36,7 @@ from reportlab.platypus.flowables import KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 import wx
+import wx.richtext
 import wx.adv as adv
 import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
@@ -992,9 +993,9 @@ class BaseWindowProteolysis(BaseWindow):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wPlotM = dtsWidget.MatPlotPanel(self, statusbar=self.wStatBar)
+        self.wPlotM = dtsWidget.MatPlotPanel(self)
         #------------------------------>  Plot
-        self.wPlot = dtsWidget.MatPlotPanel(self, statusbar=self.wStatBar)
+        self.wPlot = dtsWidget.MatPlotPanel(self)
         #------------------------------> Text details
         self.wText = wx.TextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
@@ -4687,7 +4688,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wTextSeq = wx.TextCtrl(
+        self.wTextSeq = wx.richtext.RichTextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
         self.wTextSeq.SetFont(config.font['SeqAlign'])
         #endregion --------------------------------------------------> Widgets
@@ -5786,10 +5787,11 @@ class LimProtPlot(BaseWindowProteolysis):
         #region -------------------------------------------------------> Color
         for p in self.rRecSeqColor['Red']:
             self.wTextSeq.SetStyle(p[0]-1, p[1], styleRed)
+            
         #------------------------------> 
         for _,v in self.rRecSeqColor['Blue'].items():
             for p in v:
-                self.wTextSeq.SetStyle(p[0]-1, p[1], styleBlue)   
+                self.wTextSeq.SetStyle(p[0]-1, p[1], styleBlue)
         #endregion ----------------------------------------------------> Color
         
         return True
@@ -7304,7 +7306,8 @@ class TarProtPlot(BaseWindowProteolysis):
         dfI = self.rData[self.rDateC]['DF']
         idx = pd.IndexSlice
         dfI = dfI.loc[:,idx[['Sequence']+self.rExp,['Sequence', 'P']]]
-        dfO = dmethod.R2AA(dfI, self.rRecSeqC, self.rAlpha, pos)
+        dfO = dmethod.R2AA(
+            dfI, self.rRecSeqC, self.rAlpha, self.rProtLength, pos=pos)
         #endregion ------------------------------------------------> Run
         
         #region -----------------------------------------------> Save & Update
@@ -8514,6 +8517,7 @@ class CEvolPlot(BaseWindowNPlotLT):
 
         #region ---------------------------------------------------> 
         self.SetAxis()
+        self.wPlots.dPlot['M'].ZoomResetSetValues()
         self.wPlots.dPlot['M'].canvas.draw()
         #endregion ------------------------------------------------>
 
@@ -8610,7 +8614,8 @@ class CEvolPlot(BaseWindowNPlotLT):
             self.wPlots.dPlot['M'].axes.legend()
         else:
             pass
-        #------------------------------> 
+        #------------------------------>
+        self.wPlots.dPlot['M'].ZoomResetSetValues()
         self.wPlots.dPlot['M'].canvas.draw()
         #endregion ------------------------------------------------> 
 

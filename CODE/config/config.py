@@ -40,10 +40,7 @@ cwd = Path(__file__)   # Config file path
 # There are some that must be defined in other sections
 if os == 'Darwin':
     #------------------------------> Root & Resources Folder
-    if development:
-        root = cwd.parent.parent.parent
-    else:
-        root = cwd.parent.parent
+    root = cwd.parent.parent.parent
     res = root / 'Resources'  # Path to the Resources folder
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
@@ -60,8 +57,12 @@ if os == 'Darwin':
     deltaWin = 23
 elif os == 'Windows':
     #------------------------------> Root & Resources Folder
-    root = cwd.parent.parent.parent
-    res = root / 'Resources'
+    if development:
+        root = cwd.parent.parent.parent
+        res = root / 'Resources'
+    else:
+        root = cwd.parent.parent
+        res = root / 'RESOURCES/'
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
     #------------------------------> Statusbar split size
@@ -69,6 +70,8 @@ elif os == 'Windows':
         sbFieldSize = [-1, 325]
     else:
         sbFieldSize = [-1, 300]
+    sbPlot2Fields = [-1, 115]
+    sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -84,6 +87,8 @@ else:
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
+    sbPlot2Fields = [-1, 115]
+    sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
