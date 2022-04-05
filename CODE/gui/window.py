@@ -36,7 +36,6 @@ from reportlab.platypus.flowables import KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 import wx
-import wx.richtext
 import wx.adv as adv
 import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
@@ -4688,7 +4687,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wTextSeq = wx.richtext.RichTextCtrl(
+        self.wTextSeq = wx.TextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
         self.wTextSeq.SetFont(config.font['SeqAlign'])
         #endregion --------------------------------------------------> Widgets

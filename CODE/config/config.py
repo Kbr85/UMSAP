@@ -22,7 +22,7 @@ from pathlib import Path
 
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
 #region --------------------------------------------------> General parameters
-development = True # Track state, development (True) or production (False)
+development = False # Track state, development (True) or production (False)
 
 version     = '2.2.0 (beta)' # String to write in the output files
 software    = 'UMSAP' # Software short name
@@ -40,10 +40,7 @@ cwd = Path(__file__)   # Config file path
 # There are some that must be defined in other sections
 if os == 'Darwin':
     #------------------------------> Root & Resources Folder
-    if development:
-        root = cwd.parent.parent.parent
-    else:
-        root = cwd.parent.parent
+    root = cwd.parent.parent.parent
     res = root / 'Resources'  # Path to the Resources folder
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
