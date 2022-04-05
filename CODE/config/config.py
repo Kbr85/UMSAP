@@ -61,7 +61,7 @@ elif os == 'Windows':
         root = cwd.parent.parent.parent
         res = root / 'Resources'
     else:
-        root = cwd.parent.parent.parent
+        root = cwd.parent.parent
         res = root / 'RESOURCES/'
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
