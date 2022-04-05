@@ -6017,6 +6017,10 @@ class TarProt(BaseConfModPanel2):
                 self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
                 self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
                 self.wSeqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-both.txt")
+            elif config.os == 'Windows':
+                self.wUFile.tc.SetValue("C:/Users/" + str(user) + "/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.tc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
+                self.wSeqFile.tc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-both.txt")
             else:
                 pass
             self.wId.tc.SetValue('Beta Test Dev')
@@ -6375,7 +6379,8 @@ class TarProt(BaseConfModPanel2):
                     self.dfR.loc[:,tIdx], 
                     self.rSeqFileObj.seqRec, 
                     self.rDO['Alpha'],
-                    self.rDO['AA'], 
+                    self.rDO['ProtLength'][0],
+                    pos=self.rDO['AA'],
                 )
             except Exception as e:
                 self.rMsgError = 'Amino acid distribution calculation failed.'

@@ -7306,7 +7306,8 @@ class TarProtPlot(BaseWindowProteolysis):
         dfI = self.rData[self.rDateC]['DF']
         idx = pd.IndexSlice
         dfI = dfI.loc[:,idx[['Sequence']+self.rExp,['Sequence', 'P']]]
-        dfO = dmethod.R2AA(dfI, self.rRecSeqC, self.rAlpha, pos)
+        dfO = dmethod.R2AA(
+            dfI, self.rRecSeqC, self.rAlpha, self.rProtLength, pos=pos)
         #endregion ------------------------------------------------> Run
         
         #region -----------------------------------------------> Save & Update
