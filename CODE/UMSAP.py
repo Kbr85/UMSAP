@@ -42,22 +42,24 @@ class UmsapApp(wx.App):
         """
         #region ---------------------------------------------------> Variables
         os = platform.system()
-        fileRoot = str(Path(__file__).parent.parent)
-        imgPathDev = '/Resources/IMAGES/SPLASHSCREEN/splash.png'
-        imgPathProd = f'/UMSAP.app/Contents{imgPathDev}'
         #------------------------------> image_loc
-        if os == 'Darwin':
-            if DEVELOPMENT:
-                imgFullPath = f'{fileRoot}{imgPathDev}'
-            else:
-                imgFullPath = f'{fileRoot}{imgPathProd}'
+        if DEVELOPMENT:
+            fileRoot   = Path(__file__).parent.parent
+            imgPath = '/Resources/IMAGES/SPLASHSCREEN/splash.png'
+            imgFullPath = f'{fileRoot}{imgPath}'
         else:
-            imgFullPath = f'{fileRoot}{imgPathDev}'
+            imgPath = '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
+            if os == 'Darwin':
+                fileRoot = Path(__file__).parent.parent
+            elif os == 'Windows':
+                fileRoot = Path(__file__).parent
+            imgFullPath = f'{fileRoot}{imgPath}'
         #endregion ------------------------------------------------> Variables
 
         #region ------------------------------------------------> SplashScreen
-        SplashWindow(imgFullPath)
+        SplashWindow(str(imgFullPath))
         #endregion ---------------------------------------------> SplashScreen
+
 
         return True
     #---

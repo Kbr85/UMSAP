@@ -60,8 +60,12 @@ if os == 'Darwin':
     deltaWin = 23
 elif os == 'Windows':
     #------------------------------> Root & Resources Folder
-    root = cwd.parent.parent.parent
-    res = root / 'Resources'
+    if development:
+        root = cwd.parent.parent.parent
+        res = root / 'Resources'
+    else:
+        root = cwd.parent.parent.parent
+        res = root / 'RESOURCES/'
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
     #------------------------------> Statusbar split size
