@@ -416,6 +416,8 @@ mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
     "protein.")
 #------------------------------> Data
 mDataExport = 'Export Data failed.'
+#------------------------------> Optional Field
+mOptField = '\nThis field is optional.'
 #endregion ----------------------------------------------------------> Other
 
 #region ------------------------------------------------------------> Values

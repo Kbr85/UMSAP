@@ -3766,7 +3766,7 @@ class ProtProf(BaseConfModPanel):
     cTTSample      = config.ttStSample
     cTTIntensity   = config.ttStIntensity
     cTTGene        = config.ttStGenName
-    cTTExcludeProt = config.ttStExcludeProt
+    cTTExcludeProt = f'{config.ttStExcludeProt}{config.mOptField}'
     #------------------------------> Control Type
     cDCtrlType = config.oControlTypeProtProf
     #endregion --------------------------------------------------> Class setup
@@ -5821,11 +5821,11 @@ class TarProt(BaseConfModPanel2):
     cHAAPos = 'e.g. 5'
     cHHist  = 'e.g. 50 or 50 100 200'
     #------------------------------> Tooltip
-    cTTAAPos = ('Number of positions around the cleavage sites to consider '
-        'for the AA distribution analysis.\nThis field is optional.')
-    cTTHist = ('Size of the histogram windows. One number will result in '
-        'equally spaced windows. Multiple numbers allow defining custom sized '
-        'windows. This field is optional.')
+    cTTAAPos = (f'Number of positions around the cleavage sites to consider '
+        f'for the AA distribution analysis.\ne.g. 5{config.mOptField}')
+    cTTHist = (f'Size of the histogram windows. One number will result in '
+        f'equally spaced windows. Multiple numbers allow defining custom sized '
+        f'windows.\ne.g. 50 or 0 50 100 150 500{config.mOptField}')
     #------------------------------> Size
     cSTc = (120, 22)
     #------------------------------> Extension
