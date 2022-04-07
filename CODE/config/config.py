@@ -446,6 +446,10 @@ mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
 #endregion ---------------------------------------------------------> Pandas
  
 #region ----------------------------------------------------> For CheckInput
+mColNumbers = ('In addition, each value must be smaller than the total '
+    'number of columns in the Data file.')
+mColNumber = ('In addition, the value must be smaller than the total '
+    'number of columns in the Data file.')
 mSection = 'Values in section {} must be unique.'
 mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
 mRepeatColNum = 'There are repeated column numbers in the text fields.'
@@ -457,7 +461,9 @@ mOptionBad = "Option '{}' cannot be accepted in {}."
 mValueBad = "Value '{}' cannot be accepted in {}.\n"
 mOneRealNum = f"{mValueBad}{mOneRNumText}"
 mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
+mOneZPlusNumCol = f"{mOneZPlusNum} {mColNumber}"
 mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
+mNZPlusNumCol = f"{mNZPlusNum} {mColNumbers}"
 mOne01Num = f"{mValueBad}{mOne01NumText}"
 mResCtrl = (
     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
