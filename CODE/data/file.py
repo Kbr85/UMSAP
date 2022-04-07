@@ -145,7 +145,7 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {}
+        plotData = {'Error':[]}
         #------------------------------> Fill
         for k,v in self.rData[config.nuCorrA].items():
             #------------------------------> 
@@ -166,7 +166,7 @@ class UMSAPFile():
                     'NumColList': v['CI']['oc']['Column'],
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -252,7 +252,7 @@ class UMSAPFile():
             }
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
+        plotData = {'Error':[]}
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu        
@@ -266,7 +266,7 @@ class UMSAPFile():
                     'NumColList': v['CI']['oc']['Column'],
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -284,7 +284,7 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {}
+        plotData = {'Error':[]}
         #------------------------------> Fill
         for k,v in self.rData[config.nmProtProf].items():
             try:
@@ -298,7 +298,7 @@ class UMSAPFile():
                     'F' : v['F'],
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -326,7 +326,7 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {}
+        plotData = {'Error':[]}
         #------------------------------> Fill
         for k,v in self.rData[config.nmLimProt].items():
             try:
@@ -350,7 +350,7 @@ class UMSAPFile():
                     'PI': PI,
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -377,7 +377,7 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {}
+        plotData = {'Error':[]}
         #------------------------------> Fill
         for k,v in self.rData[config.nmTarProt].items():
             try:
@@ -405,7 +405,7 @@ class UMSAPFile():
                     'CEvol': v['CEvol'],
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData

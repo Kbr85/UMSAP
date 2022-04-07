@@ -3867,7 +3867,7 @@ class ProtProf(BaseConfModPanel):
             self.cLGene        : [self.wGeneName.tc,        config.mOneZPlusNumCol, True ],
             self.cLScoreCol    : [self.wScore.tc,           config.mOneZPlusNumCol, True ],
             self.cLExcludeProt : [self.wExcludeProt.tc,     config.mNZPlusNumCol  , True ],
-            self.cLResControl  : [self.wTcResults,          config.mResCtrl       , True ]
+            self.cLResControl  : [self.wTcResults,          config.mResCtrl       , False]
         }      
         
         self.rCheckUnique = [self.wDetectedProt.tc, self.wGeneName.tc, 
@@ -5071,7 +5071,7 @@ class LimProt(BaseConfModPanel2):
             f'{self.cLSeqCol} column' :[self.wSeqCol.tc,   config.mOneZPlusNumCol, True ],
             self.cLDetectedProt:[self.wDetectedProt.tc,    config.mOneZPlusNumCol, True ],
             self.cLScoreCol    :[self.wScore.tc,           config.mOneZPlusNumCol, True ],
-            self.cLResControl  :[self.wTcResults,          config.mResCtrl       , True ]
+            self.cLResControl  :[self.wTcResults,          config.mResCtrl       , False]
         }        
         
         self.rCheckUnique = [self.wSeqCol.tc, self.wDetectedProt.tc, 
@@ -5912,7 +5912,7 @@ class TarProt(BaseConfModPanel2):
             f'{self.cLSeqCol} column' :[self.wSeqCol.tc,   config.mOneZPlusNumCol, True ],
             self.cLDetectedProt:[self.wDetectedProt.tc,    config.mOneZPlusNumCol, True ],
             self.cLScoreCol    :[self.wScore.tc,           config.mOneZPlusNumCol, True ],
-            self.cLResControl  :[self.wTcResults,          config.mResCtrl       , True ]
+            self.cLResControl  :[self.wTcResults,          config.mResCtrl       , False]
         }
         self.rCheckUnique = [self.wSeqCol.tc, self.wDetectedProt.tc,
                              self.wScore.tc, self.wTcResults]    

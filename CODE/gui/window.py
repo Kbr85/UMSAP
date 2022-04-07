@@ -49,6 +49,7 @@ import dat4s_core.generator.generator as dtsGenerator
 import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
+import dat4s_core.exception.exception as dtsException
 
 import config.config as config
 import data.file as file
@@ -479,10 +480,51 @@ class BaseWindow(wx.Frame):
         """
         self.rObj  = self.cParent.rObj
         self.rData = self.rObj.dConfigure[self.cSection]()
-        self.rDate = [x for x in self.rData.keys()]
+        self.rDate = [x for x in self.rData.keys() if x != 'Error']
         menuBar    = self.GetMenuBar()
         menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(self.rDate)
         
+        return True
+    #---
+    
+    def ReportPlotDataError(self) -> bool:
+        """Check that there is somenthing to plot after reading a section in
+            an UMSAP Plot.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        if not self.rDate:
+            msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are '
+                f'corrupted or were not found.')
+            dtscore.Notification('errorU', msg=msg)
+            raise dtsException.PassException()
+        else:
+            pass
+        #------------------------------> Some mistakes
+        if self.rData['Error']:
+            fileList = '\n'.join(self.rData['Error'])
+            if len(self.rData['Error']) == 1:
+                msg = (f'The data for analysis\n\n{fileList}\n\n '
+                f'contains errors or was not found.')
+            else:
+                msg = (f'The data for analysis:\n\n{fileList}\n\n '
+                f'contain errors or were not found.')
+            dtscore.Notification('warning', msg=msg)
+        else:
+            pass
+        #------------------------------> 
         return True
     #---
     #endregion ------------------------------------------------> Manage Methods
@@ -1336,13 +1378,8 @@ class BaseWindowProteolysis(BaseWindow):
         """
         #region ---------------------------------------------------> Fill dict
         #------------------------------> Variables
-        date = []
+        date = [x for x in self.rData.keys() if x != 'Error']
         menuData = {}
-        #------------------------------> Fill 
-        for k in self.rData.keys():
-            #------------------------------> 
-            date.append(k)
-            #------------------------------> 
         #------------------------------> 
         menuData['menudate'] = date
         #endregion ------------------------------------------------> Fill dict
@@ -1803,13 +1840,16 @@ class CorrAPlot(BaseWindowPlot):
     #region --------------------------------------------------> Instance setup
     def __init__(self, cParent: 'UMSAPControl') -> None:
         """ """
-        #region -------------------------------------------------> Check Input
-        #endregion ----------------------------------------------> Check Input
-
         #region -----------------------------------------------> Initial Setup
         self.rObj     = cParent.rObj
         self.rData    = self.rObj.dConfigure[self.cSection]()
-        self.rDate    = [x for x in self.rData.keys()]
+        self.rDate    = [x for x in self.rData.keys() if x != 'Error']
+        #------------------------------> Nothing found
+        try:
+            self.ReportPlotDataError()
+        except Exception as e:
+            raise e
+        #------------------------------> 
         self.rDateC   = self.rDate[0]
         self.rBar     = None
         self.rNorm    = mpl.colors.Normalize(vmin=-1, vmax=1)
@@ -1821,7 +1861,7 @@ class CorrAPlot(BaseWindowPlot):
             bad = config.color[self.cSection]['CMAP']['NA'],
         )
         #------------------------------> 
-        self.cParent = cParent
+        self.cParent  = cParent
         self.cTitle  = f"{cParent.cTitle} - {self.cSection} - {self.rDateC}"
         #------------------------------> 
         super().__init__(cParent, {'menudate' : self.rDate})
@@ -2288,6 +2328,12 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rObj         = cParent.rObj
         self.rData        = self.rObj.dConfigure[self.cSection]()
         self.rDate, cMenuData = self.SetDateMenuDate()
+        #------------------------------> 
+        try:
+            self.ReportPlotDataError()
+        except Exception as e:
+            raise e
+        #------------------------------> 
         self.rDf          = None
         self.rDateC       = self.rDate[0]
         self.rCondC       = cMenuData['crp'][self.rDate[0]]['C'][0]
@@ -2433,13 +2479,16 @@ class ProtProfPlot(BaseWindowNPlotLT):
         }
         #------------------------------> Fill 
         for k in self.rData.keys():
-            #------------------------------> 
-            date.append(k)
-            #------------------------------> 
-            menuData['crp'][k] = {
-                'C' : self.rObj.rData[self.cSection][k]['CI']['Cond'],
-                'RP': self.rObj.rData[self.cSection][k]['CI']['RP']
-            }
+            if k != 'Error':
+                #------------------------------> 
+                date.append(k)
+                #------------------------------> 
+                menuData['crp'][k] = {
+                    'C' : self.rObj.rData[self.cSection][k]['CI']['Cond'],
+                    'RP': self.rObj.rData[self.cSection][k]['CI']['RP']
+                }
+            else:
+                pass
         #------------------------------> 
         menuData['menudate'] = date
         #endregion ------------------------------------------------> Fill dict
@@ -4643,9 +4692,16 @@ class LimProtPlot(BaseWindowProteolysis):
     def __init__(self, cParent: 'UMSAPControl') -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cTitle         = f'{cParent.cTitle} - {self.cSection}'
-        self.rObj           = cParent.rObj
-        self.rData          = self.rObj.dConfigure[self.cSection]()
+        self.cTitle           = f'{cParent.cTitle} - {self.cSection}'
+        self.rObj             = cParent.rObj
+        self.rData            = self.rObj.dConfigure[self.cSection]()
+        self.rDate, cMenuData = self.SetDateMenuDate()
+        #------------------------------> 
+        try:
+            self.ReportPlotDataError()
+        except Exception as e:
+            raise e
+        #------------------------------> 
         self.rDateC         = None
         self.rBands         = None
         self.rLanes         = None
@@ -4672,8 +4728,6 @@ class LimProtPlot(BaseWindowProteolysis):
         self.rRecSeqColor   = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
         self.rTextStyleDef  = wx.TextAttr(
             'Black', 'White', config.font['SeqAlign'])
-        #------------------------------> 
-        self.rDate, cMenuData = self.SetDateMenuDate()
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> 
@@ -6505,6 +6559,13 @@ class TarProtPlot(BaseWindowProteolysis):
         self.cTitle       = f'{cParent.cTitle} - {self.cSection}'
         self.rObj         = cParent.rObj
         self.rData        = self.rObj.dConfigure[self.cSection]()
+        self.rDate, cMenuData = self.SetDateMenuDate()
+        #------------------------------> 
+        try:
+            self.ReportPlotDataError()
+        except Exception as e:
+            raise e
+        #------------------------------> 
         self.rDateC       = None
         self.rAlpha       = None
         self.rFragments   = None
@@ -6519,8 +6580,6 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rPeptide     = None
         self.rRecSeq      = {}
         self.rRecSeqC     = ''
-        #------------------------------> 
-        self.rDate, cMenuData = self.SetDateMenuDate()
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> 
@@ -6606,14 +6665,17 @@ class TarProtPlot(BaseWindowProteolysis):
         menuData = {'FA':{}}
         #------------------------------> Fill 
         for k,v in self.rData.items():
-            #------------------------------> 
-            date.append(k)
-            #------------------------------> 
-            menuData['FA'][k] = {}
-            aa = v.get('AA', {})
-            hist = v.get('Hist',{})
-            menuData['FA'][k]['AA'] = [x for x in aa.keys()]
-            menuData['FA'][k]['Hist'] = [x for x in hist.keys()]            
+            if k != 'Error':
+                #------------------------------> 
+                date.append(k)
+                #------------------------------> 
+                menuData['FA'][k] = {}
+                aa = v.get('AA', {})
+                hist = v.get('Hist',{})
+                menuData['FA'][k]['AA'] = [x for x in aa.keys()]
+                menuData['FA'][k]['Hist'] = [x for x in hist.keys()]    
+            else:
+                pass        
         #------------------------------> 
         menuData['menudate'] = date
         #endregion ------------------------------------------------> Fill dict
@@ -9020,7 +9082,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         self.cTitle   = cTitle
         self.tSection = tSection if tSection is not None else self.cSection
         self.tDate    = tDate
-        self.SetWindow(tSection, tDate)
+        self.SetWindow(tSection, tDate) # Includes testing for something to plot
         #--------------> menuData here because it is not needed to save it
         cMenuData = None if self.rDate is None else {'menudate': self.rDate}
         #------------------------------> 
@@ -9252,7 +9314,13 @@ class CheckDataPrep(BaseWindowNPlotLT):
         if self.cTitle is None:
             self.rFromUMSAPFile = True 
             self.rData  = self.rObj.dConfigure[self.cSection]()
-            self.rDate  = [k for k in self.rData.keys()]
+            self.rDate  = [k for k in self.rData.keys() if k != 'Error']
+            #------------------------------> 
+            try:
+                self.ReportPlotDataError()
+            except Exception as e:
+                raise e
+            #------------------------------> 
             self.rDateC = self.rDate[0]
             self.cTitle = (
                 f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}")
@@ -9792,6 +9860,8 @@ class UMSAPControl(BaseWindow):
             self.rWindow[section] = {'Main':[], 'FA':[]}
             self.rWindow[section]['Main'].append(
                 self.dPlotMethod[section](self))
+        except dtsException.PassException:
+            return False
         except Exception as e:
             dtscore.Notification('errorU', msg=str(e), tException=e)
             return False
