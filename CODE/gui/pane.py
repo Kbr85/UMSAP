@@ -2781,7 +2781,7 @@ class CorrA(BaseConfPanel):
     cURL         = f"{config.urlTutorial}/correlation-analysis"
     cSection     = config.nuCorrA
     cTitlePD     = 'Calculating Correlation Coefficients'
-    cGaugePD     = 24
+    cGaugePD     = 26
     cTTHelp      = config.ttBtnHelp.format(cURL)
     rLLenLongest = len(cLCorrMethod)
     rMainData    = '{}_CorrelationCoefficients-Data-{}.txt'
@@ -3309,7 +3309,7 @@ class DataPrep(BaseConfPanel):
     cTTHelp      = config.ttBtnHelp.format(cURL)
     cSection     = config.nuDataPrep
     cTitlePD     = f"Running {config.nuDataPrep} Analysis"
-    cGaugePD     = 27
+    cGaugePD     = 24
     rLLenLongest = len(cLColAnalysis)
     #endregion --------------------------------------------------> Class setup
 
@@ -3740,7 +3740,7 @@ class ProtProf(BaseConfModPanel):
     cURL         = f'{config.urlTutorial}/proteome-profiling'
     cSection     = config.nmProtProf
     cTitlePD     = f"Running {config.nmProtProf} Analysis"
-    cGaugePD     = 36
+    cGaugePD     = 39
     rLLenLongest = len(config.lStResultCtrl)
     rMainData    = '{}_ProteomeProfiling-Data-{}.txt'
     #------------------------------> Optional configuration
@@ -4976,7 +4976,7 @@ class LimProt(BaseConfModPanel2):
     cURL         = f"{config.urlTutorial}/limited-proteolysis"
     cSection     = config.nmLimProt
     cTitlePD     = f"Running {config.nmLimProt} Analysis"
-    cGaugePD     = 50
+    cGaugePD     = 43
     rLLenLongest = len(config.lStResultCtrl)
     rMainData    = '{}_LimitedProteolysis-Data-{}.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile']
@@ -5835,7 +5835,7 @@ class TarProt(BaseConfModPanel2):
     cURL         = f"{config.urlTutorial}/targeted-proteolysis"
     cSection     = config.nmTarProt
     cTitlePD     = f"Running {config.nmTarProt} Analysis"
-    cGaugePD     = 50
+    cGaugePD     = 60
     rLLenLongest = len(config.lStResultCtrl)
     rMainData    = '{}_TargetedProteolysis-Data-{}.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile']
