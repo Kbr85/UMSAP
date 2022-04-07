@@ -705,7 +705,11 @@ class BaseConfPanel(
             msgStep = self.cLPdCheck + k
             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
             #------------------------------> 
-            a, b = v[0].GetValidator().Validate()
+            if v[2]:
+                a, b = v[0].GetValidator().Validate(vMax=self.rNCol)
+            else:
+                a, b = v[0].GetValidator().Validate()
+            #------------------------------> 
             if a:
                 pass
             else:
@@ -2781,7 +2785,7 @@ class CorrA(BaseConfPanel):
     cURL         = f"{config.urlTutorial}/correlation-analysis"
     cSection     = config.nuCorrA
     cTitlePD     = 'Calculating Correlation Coefficients'
-    cGaugePD     = 24
+    cGaugePD     = 26
     cTTHelp      = config.ttBtnHelp.format(cURL)
     rLLenLongest = len(cLCorrMethod)
     rMainData    = '{}_CorrelationCoefficients-Data-{}.txt'
@@ -2831,14 +2835,14 @@ class CorrA(BaseConfPanel):
         
         #region ----------------------------------------------> checkUserInput
         self.rCheckUserInput = {
-            self.cLuFile      : [self.wUFile.tc,            config.mFileBad],
-            self.cLiFile      : [self.wIFile.tc,            config.mFileBad],
-            self.cLId         : [self.wId.tc,               config.mValueBad],
-            self.cLCeroTreat  : [self.wCeroB.cb,            config.mOptionBad],
-            self.cLTransMethod: [self.wTransMethod.cb,      config.mOptionBad],
-            self.cLNormMethod : [self.wNormMethod.cb,       config.mOptionBad],
-            self.cLImputation : [self.wImputationMethod.cb, config.mOptionBad],
-            self.cLCorrMethod : [self.wCorrMethod.cb,       config.mOptionBad],
+            self.cLuFile      : [self.wUFile.tc,            config.mFileBad  , False],
+            self.cLiFile      : [self.wIFile.tc,            config.mFileBad  , False],
+            self.cLId         : [self.wId.tc,               config.mValueBad , False],
+            self.cLCeroTreat  : [self.wCeroB.cb,            config.mOptionBad, False],
+            self.cLTransMethod: [self.wTransMethod.cb,      config.mOptionBad, False],
+            self.cLNormMethod : [self.wNormMethod.cb,       config.mOptionBad, False],
+            self.cLImputation : [self.wImputationMethod.cb, config.mOptionBad, False],
+            self.cLCorrMethod : [self.wCorrMethod.cb,       config.mOptionBad, False],
         }        
         #endregion -------------------------------------------> checkUserInput
     
@@ -3309,7 +3313,7 @@ class DataPrep(BaseConfPanel):
     cTTHelp      = config.ttBtnHelp.format(cURL)
     cSection     = config.nuDataPrep
     cTitlePD     = f"Running {config.nuDataPrep} Analysis"
-    cGaugePD     = 27
+    cGaugePD     = 24
     rLLenLongest = len(cLColAnalysis)
     #endregion --------------------------------------------------> Class setup
 
@@ -3343,14 +3347,14 @@ class DataPrep(BaseConfPanel):
         
         #region ----------------------------------------------> checkUserInput
         self.rCheckUserInput = {
-            self.cLuFile      : [self.wUFile.tc,           config.mFileBad],
-            self.cLiFile      : [self.wIFile.tc,           config.mFileBad],
-            self.cLId         : [self.wId.tc,              config.mValueBad],
-            self.cLCeroTreat  : [self.wCeroB.cb,           config.mOptionBad],
-            self.cLTransMethod: [self.wTransMethod.cb,     config.mOptionBad],
-            self.cLNormMethod : [self.wNormMethod.cb,      config.mOptionBad],
-            self.cLImputation : [self.wImputationMethod.cb,config.mOptionBad],
-            self.cLColAnalysis: [self.wColAnalysis.tc,     config.mNZPlusNum],
+            self.cLuFile      : [self.wUFile.tc,           config.mFileBad     , False],
+            self.cLiFile      : [self.wIFile.tc,           config.mFileBad     , False],
+            self.cLId         : [self.wId.tc,              config.mValueBad    , False],
+            self.cLCeroTreat  : [self.wCeroB.cb,           config.mOptionBad   , False],
+            self.cLTransMethod: [self.wTransMethod.cb,     config.mOptionBad   , False],
+            self.cLNormMethod : [self.wNormMethod.cb,      config.mOptionBad   , False],
+            self.cLImputation : [self.wImputationMethod.cb,config.mOptionBad   , False],
+            self.cLColAnalysis: [self.wColAnalysis.tc,     config.mNZPlusNumCol, True ],
         }
         #endregion -------------------------------------------> checkUserInput
         
@@ -3415,8 +3419,8 @@ class DataPrep(BaseConfPanel):
                 self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt")
             elif config.os == 'Windows':
                 from pathlib import Path
-                # self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
-                # self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT')))
+                self.wUFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
+                self.wIFile.tc.SetValue(str(Path('C:/Users/bravo/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt')))
             else:
                 pass
             self.wId.tc.SetValue('Beta Test Dev')
@@ -3740,7 +3744,7 @@ class ProtProf(BaseConfModPanel):
     cURL         = f'{config.urlTutorial}/proteome-profiling'
     cSection     = config.nmProtProf
     cTitlePD     = f"Running {config.nmProtProf} Analysis"
-    cGaugePD     = 36
+    cGaugePD     = 39
     rLLenLongest = len(config.lStResultCtrl)
     rMainData    = '{}_ProteomeProfiling-Data-{}.txt'
     #------------------------------> Optional configuration
@@ -3766,7 +3770,7 @@ class ProtProf(BaseConfModPanel):
     cTTSample      = config.ttStSample
     cTTIntensity   = config.ttStIntensity
     cTTGene        = config.ttStGenName
-    cTTExcludeProt = config.ttStExcludeProt
+    cTTExcludeProt = f'{config.ttStExcludeProt}{config.mOptField}'
     #------------------------------> Control Type
     cDCtrlType = config.oControlTypeProtProf
     #endregion --------------------------------------------------> Class setup
@@ -3847,23 +3851,23 @@ class ProtProf(BaseConfModPanel):
 
         #region ----------------------------------------------> checkUserInput
         self.rCheckUserInput = {
-            self.cLuFile       : [self.wUFile.tc,           config.mFileBad],
-            self.cLiFile       : [self.wIFile.tc,           config.mFileBad],
-            self.cLId          : [self.wId.tc,              config.mValueBad],
-            self.cLCeroTreat   : [self.wCeroB.cb,           config.mOptionBad],
-            self.cLTransMethod : [self.wTransMethod.cb,     config.mOptionBad],
-            self.cLNormMethod  : [self.wNormMethod.cb,      config.mOptionBad],
-            self.cLImputation  : [self.wImputationMethod.cb,config.mOptionBad],
-            self.cLScoreVal    : [self.wScoreVal.tc,        config.mOneRealNum],
-            self.cLSample      : [self.wSample.cb,          config.mOptionBad],
-            self.cLIntensity   : [self.wRawI.cb,            config.mOptionBad],
-            self.cLAlpha       : [self.wAlpha.tc,           config.mOne01Num],
-            self.cLCorrectP    : [self.wCorrectP.cb,        config.mOptionBad],
-            self.cLDetectedProt: [self.wDetectedProt.tc,   config.mOneZPlusNum],
-            self.cLGene        : [self.wGeneName.tc,       config.mOneZPlusNum],
-            self.cLScoreCol    : [self.wScore.tc,          config.mOneZPlusNum],
-            self.cLExcludeProt : [self.wExcludeProt.tc,    config.mNZPlusNum],
-            self.cLResControl  : [self.wTcResults,         config.mResCtrl]
+            self.cLuFile       : [self.wUFile.tc,           config.mFileBad       , False],
+            self.cLiFile       : [self.wIFile.tc,           config.mFileBad       , False],
+            self.cLId          : [self.wId.tc,              config.mValueBad      , False],
+            self.cLCeroTreat   : [self.wCeroB.cb,           config.mOptionBad     , False],
+            self.cLTransMethod : [self.wTransMethod.cb,     config.mOptionBad     , False],
+            self.cLNormMethod  : [self.wNormMethod.cb,      config.mOptionBad     , False],
+            self.cLImputation  : [self.wImputationMethod.cb,config.mOptionBad     , False],
+            self.cLScoreVal    : [self.wScoreVal.tc,        config.mOneRealNum    , False],
+            self.cLSample      : [self.wSample.cb,          config.mOptionBad     , False],
+            self.cLIntensity   : [self.wRawI.cb,            config.mOptionBad     , False],
+            self.cLAlpha       : [self.wAlpha.tc,           config.mOne01Num      , False],
+            self.cLCorrectP    : [self.wCorrectP.cb,        config.mOptionBad     , False],
+            self.cLDetectedProt: [self.wDetectedProt.tc,    config.mOneZPlusNumCol, True ],
+            self.cLGene        : [self.wGeneName.tc,        config.mOneZPlusNumCol, True ],
+            self.cLScoreCol    : [self.wScore.tc,           config.mOneZPlusNumCol, True ],
+            self.cLExcludeProt : [self.wExcludeProt.tc,     config.mNZPlusNumCol  , True ],
+            self.cLResControl  : [self.wTcResults,          config.mResCtrl       , True ]
         }      
         
         self.rCheckUnique = [self.wDetectedProt.tc, self.wGeneName.tc, 
@@ -4031,8 +4035,8 @@ class ProtProf(BaseConfModPanel):
                 self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt")
             elif config.os == 'Windows':
                 from pathlib import Path
-                # self.iFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT/Mod-Enz-Dig-data-ms.txt')))
-                # self.oFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/PlayDATA/TARPROT')))
+                self.wUFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
+                self.wIFile.tc.SetValue(str(Path('C:/Users/bravo/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt')))
             else:
                 pass
             self.wScoreVal.tc.SetValue('320')
@@ -4976,7 +4980,7 @@ class LimProt(BaseConfModPanel2):
     cURL         = f"{config.urlTutorial}/limited-proteolysis"
     cSection     = config.nmLimProt
     cTitlePD     = f"Running {config.nmLimProt} Analysis"
-    cGaugePD     = 50
+    cGaugePD     = 43
     rLLenLongest = len(config.lStResultCtrl)
     rMainData    = '{}_LimitedProteolysis-Data-{}.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile']
@@ -5049,25 +5053,25 @@ class LimProt(BaseConfModPanel2):
         }
         
         self.rCheckUserInput = {
-            self.cLuFile       :[self.wUFile.tc,           config.mFileBad],
-            self.cLiFile       :[self.wIFile.tc,           config.mFileBad],
-            f'{self.cLSeqFile} file' :[self.wSeqFile.tc,   config.mFileBad],
-            self.cLId          :[self.wId.tc,              config.mValueBad],
-            self.cLCeroTreat   :[self.wCeroB.cb,           config.mOptionBad],
-            self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad],
-            self.cLNormMethod  :[self.wNormMethod.cb,      config.mOptionBad],
-            self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad],
-            self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad],
-            self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum],
-            self.cLSample      :[self.wSample.cb,          config.mOptionBad],
-            self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num],
-            self.cLBeta        :[self.wBeta.tc,            config.mOne01Num],
-            self.cLGamma       :[self.wGamma.tc,           config.mOne01Num],
-            self.cLTheta       :[self.wTheta.tc,           config.mOneZPlusNum],
-            f'{self.cLSeqCol} column' :[self.wSeqCol.tc,   config.mOneZPlusNum],
-            self.cLDetectedProt:[self.wDetectedProt.tc,    config.mOneZPlusNum],
-            self.cLScoreCol    :[self.wScore.tc,           config.mOneZPlusNum],
-            self.cLResControl  :[self.wTcResults,          config.mResCtrl]
+            self.cLuFile       :[self.wUFile.tc,           config.mFileBad       , False],
+            self.cLiFile       :[self.wIFile.tc,           config.mFileBad       , False],
+            f'{self.cLSeqFile} file' :[self.wSeqFile.tc,   config.mFileBad       , False],
+            self.cLId          :[self.wId.tc,              config.mValueBad      , False],
+            self.cLCeroTreat   :[self.wCeroB.cb,           config.mOptionBad     , False],
+            self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad     , False],
+            self.cLNormMethod  :[self.wNormMethod.cb,      config.mOptionBad     , False],
+            self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad     , False],
+            self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad      , False],
+            self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum    , False],
+            self.cLSample      :[self.wSample.cb,          config.mOptionBad     , False],
+            self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num      , False],
+            self.cLBeta        :[self.wBeta.tc,            config.mOne01Num      , False],
+            self.cLGamma       :[self.wGamma.tc,           config.mOne01Num      , False],
+            self.cLTheta       :[self.wTheta.tc,           config.mOneZPlusNumCol, False],
+            f'{self.cLSeqCol} column' :[self.wSeqCol.tc,   config.mOneZPlusNumCol, True ],
+            self.cLDetectedProt:[self.wDetectedProt.tc,    config.mOneZPlusNumCol, True ],
+            self.cLScoreCol    :[self.wScore.tc,           config.mOneZPlusNumCol, True ],
+            self.cLResControl  :[self.wTcResults,          config.mResCtrl       , True ]
         }        
         
         self.rCheckUnique = [self.wSeqCol.tc, self.wDetectedProt.tc, 
@@ -5204,6 +5208,10 @@ class LimProt(BaseConfModPanel2):
                 self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
                 self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
                 self.wSeqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
+            elif config.os == 'Windows':
+                self.wUFile.tc.SetValue("C:/Users/" + str(user) + "/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.tc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
+                self.wSeqFile.tc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
             else:
                 pass
             self.wId.tc.SetValue('Beta Test Dev')
@@ -5817,11 +5825,11 @@ class TarProt(BaseConfModPanel2):
     cHAAPos = 'e.g. 5'
     cHHist  = 'e.g. 50 or 50 100 200'
     #------------------------------> Tooltip
-    cTTAAPos = ('Number of positions around the cleavage sites to consider '
-        'for the AA distribution analysis.\nThis field is optional.')
-    cTTHist = ('Size of the histogram windows. One number will result in '
-        'equally spaced windows. Multiple numbers allow defining custom sized '
-        'windows. This field is optional.')
+    cTTAAPos = (f'Number of positions around the cleavage sites to consider '
+        f'for the AA distribution analysis.\ne.g. 5{config.mOptField}')
+    cTTHist = (f'Size of the histogram windows. One number will result in '
+        f'equally spaced windows. Multiple numbers allow defining custom sized '
+        f'windows.\ne.g. 50 or 0 50 100 150 500{config.mOptField}')
     #------------------------------> Size
     cSTc = (120, 22)
     #------------------------------> Extension
@@ -5831,7 +5839,7 @@ class TarProt(BaseConfModPanel2):
     cURL         = f"{config.urlTutorial}/targeted-proteolysis"
     cSection     = config.nmTarProt
     cTitlePD     = f"Running {config.nmTarProt} Analysis"
-    cGaugePD     = 50
+    cGaugePD     = 60
     rLLenLongest = len(config.lStResultCtrl)
     rMainData    = '{}_TargetedProteolysis-Data-{}.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile']
@@ -5888,23 +5896,23 @@ class TarProt(BaseConfModPanel2):
         }
         
         self.rCheckUserInput = {
-            self.cLuFile       :[self.wUFile.tc,           config.mFileBad],
-            self.cLiFile       :[self.wIFile.tc,           config.mFileBad],
-            f'{self.cLSeqFile} file' :[self.wSeqFile.tc,   config.mFileBad],
-            self.cLId          :[self.wId.tc,              config.mValueBad],
-            self.cLCeroTreat   :[self.wCeroB.cb,           config.mOptionBad],
-            self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad],
-            self.cLNormMethod  :[self.wNormMethod.cb,      config.mOptionBad],
-            self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad],
-            self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad],
-            self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum],
-            self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num],
-            self.cLAAPos       :[self.wAAPos.tc,           config.mOneZPlusNum],
-            self.cLHist        :[self.wHist.tc,            config.mValueBad],
-            f'{self.cLSeqCol} column' :[self.wSeqCol.tc,   config.mOneZPlusNum],
-            self.cLDetectedProt:[self.wDetectedProt.tc,    config.mOneZPlusNum],
-            self.cLScoreCol    :[self.wScore.tc,           config.mOneZPlusNum],
-            self.cLResControl  :[self.wTcResults,          config.mResCtrl]
+            self.cLuFile       :[self.wUFile.tc,           config.mFileBad       , False],
+            self.cLiFile       :[self.wIFile.tc,           config.mFileBad       , False],
+            f'{self.cLSeqFile} file' :[self.wSeqFile.tc,   config.mFileBad       , False],
+            self.cLId          :[self.wId.tc,              config.mValueBad      , False],
+            self.cLCeroTreat   :[self.wCeroB.cb,           config.mOptionBad     , False],
+            self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad     , False],
+            self.cLNormMethod  :[self.wNormMethod.cb,      config.mOptionBad     , False],
+            self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad     , False],
+            self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad      , False],
+            self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum    , False],
+            self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num      , False],
+            self.cLAAPos       :[self.wAAPos.tc,           config.mOneZPlusNum   , False],
+            self.cLHist        :[self.wHist.tc,            config.mValueBad      , False],
+            f'{self.cLSeqCol} column' :[self.wSeqCol.tc,   config.mOneZPlusNumCol, True ],
+            self.cLDetectedProt:[self.wDetectedProt.tc,    config.mOneZPlusNumCol, True ],
+            self.cLScoreCol    :[self.wScore.tc,           config.mOneZPlusNumCol, True ],
+            self.cLResControl  :[self.wTcResults,          config.mResCtrl       , True ]
         }
         self.rCheckUnique = [self.wSeqCol.tc, self.wDetectedProt.tc,
                              self.wScore.tc, self.wTcResults]    
@@ -6013,6 +6021,10 @@ class TarProt(BaseConfModPanel2):
                 self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
                 self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
                 self.wSeqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-both.txt")
+            elif config.os == 'Windows':
+                self.wUFile.tc.SetValue("C:/Users/" + str(user) + "/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.tc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
+                self.wSeqFile.tc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-both.txt")
             else:
                 pass
             self.wId.tc.SetValue('Beta Test Dev')
@@ -6371,7 +6383,8 @@ class TarProt(BaseConfModPanel2):
                     self.dfR.loc[:,tIdx], 
                     self.rSeqFileObj.seqRec, 
                     self.rDO['Alpha'],
-                    self.rDO['AA'], 
+                    self.rDO['ProtLength'][0],
+                    pos=self.rDO['AA'],
                 )
             except Exception as e:
                 self.rMsgError = 'Amino acid distribution calculation failed.'
