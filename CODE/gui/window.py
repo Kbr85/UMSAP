@@ -9901,6 +9901,67 @@ class UMSAPControl(BaseWindow):
         
         return True
     #---
+    
+    def OnExportDel(self, mode) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if mode == 1:
+            #------------------------------> 
+            dlg = dtsWindow.FileSelectDialog(
+                'openO', 
+                config.elUMSAP, 
+                parent  = self,
+                message = 'Select UMSAP file',
+            )
+            #------------------------------> 
+            if dlg.ShowModal() == wx.ID_OK:
+                #------------------------------> 
+                fileP = Path(dlg.GetPath())
+                dlg.Destroy()
+                #------------------------------> 
+                if fileP == self.rObj.rFileP:
+                    msg = ('New Analysis cannot be added from the same UMSAP '
+                        'file.\nPlease choose a different UMSAP file.')
+                    dtscore.Notification('warning', msg=msg)
+                    return False
+                else:
+                    pass
+                #------------------------------> 
+                try:
+                    objAdd = file.UMSAPFile(fileP)                    
+                except Exception as e:
+                    dtscore.Notification('errorF', tException=e)
+                    return False
+            else:
+                dlg.Destroy()
+                return False
+            #------------------------------> 
+            dlg = UMSAPAddDelExport(self.rObj, mode, objAdd=objAdd) 
+        else:
+            dlg = UMSAPAddDelExport(self.rObj, mode) 
+        
+        if dlg.ShowModal():
+            pass
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        dlg.Destroy()
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
 
     #region --------------------------------------------------> Manage Methods
@@ -10071,6 +10132,191 @@ class UMSAPControl(BaseWindow):
         return [k for k, v in self.rSection.items() if v.IsChecked()]
     #---
     #endregion --------------------------------------------------> Get Methods
+#---
+
+
+class UMSAPAddDelExport(dtsWindow.OkCancel):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    cSWindow = (400, 700)
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, obj: file.UMSAPFile, mode: int, 
+        objAdd: Optional[file.UMSAPFile]=None,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rObj    = obj
+        self.rObjAdd = objAdd
+        self.mode    = mode
+        #------------------------------> 
+        if mode==1:
+            self.cTitle = f'Add data from: {self.rObjAdd.rFileP.name}'
+        elif mode==2:
+            self.cTitle = f'Delete data from: {self.rObj.rFileP.name}'
+        else:
+            self.cTitle = f'Export data from: {self.rObj.rFileP.name}'
+        #------------------------------> 
+        super().__init__(title=self.cTitle, parent=None, size=self.cSWindow)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wTrc = wxCT.CustomTreeCtrl(self)
+        self.wTrc.SetFont(config.font['TreeItem'])
+        self.SetTree()
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer.Add(self.wTrc, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        
+        self.SetSizer(self.sSizer)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.wTrc.Bind(wxCT.EVT_TREE_ITEM_CHECKED, self.OnCheckItem)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.Center()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnCheckItem(self, event) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        item     = event.GetItem()
+        checked  = self.wTrc.IsItemChecked(item)
+        #endregion ------------------------------------------------> 
+    
+        #region ---------------------------------------------------> 
+        if checked:
+            #------------------------------> Check all children
+            for child in item.GetChildren():
+                child.Set3StateValue(wx.CHK_CHECKED)
+                for gchild in child.GetChildren():
+                    gchild.Set3StateValue(wx.CHK_CHECKED)
+            #------------------------------> Check parent or not
+            parent = item.GetParent()
+            if parent is not None:
+                if all([x.IsChecked() for x in parent.GetChildren()]):
+                    parent.Set3StateValue(wx.CHK_CHECKED)
+                    gparent = parent.GetParent()
+                    if gparent is not None:
+                        if all([x.IsChecked() for x in gparent.GetChildren()]):
+                            gparent.Set3StateValue(wx.CHK_CHECKED)
+                        else:
+                            pass
+                    else:
+                        pass
+                else:
+                    pass
+            else:
+                pass
+        else:
+            #------------------------------> Uncheck all children
+            for child in item.GetChildren():
+                child.Set3StateValue(wx.CHK_UNCHECKED)
+                for gchild in child.GetChildren():
+                    gchild.Set3StateValue(wx.CHK_UNCHECKED)
+            #------------------------------> Unchecked all parent
+            parent = item.GetParent()
+            if parent is not None:
+                parent.Set3StateValue(wx.CHK_UNCHECKED)
+                gparent = parent.GetParent()
+                if gparent is not None:
+                    gparent.Set3StateValue(wx.CHK_UNCHECKED)
+            else:
+                pass
+        #------------------------------> 
+        self.Update()
+        self.Refresh()
+        #endregion ------------------------------------------------> 
+
+        event.Skip()
+        return True
+    #---
+    
+    def SetTree(self) -> bool:
+        """Set the elements of the wx.TreeCtrl 
+        
+            Returns
+            -------
+            bool
+        
+            Notes
+            -----
+            See data.file.UMSAPFile for the structure of obj.confTree.
+        """
+        #region ----------------------------------------------------> Add root
+        if self.mode == 1:
+            obj = self.rObjAdd
+            root = self.wTrc.AddRoot(obj.rFileP.name, ct_type=1)
+        else:
+            obj = self.rObj
+            root = self.wTrc.AddRoot(obj.rFileP.name)
+        root.SetData(0)
+        #endregion -------------------------------------------------> Add root
+        
+        #region ------------------------------------------------> Add elements
+        for a, b in obj.rData.items():
+            #------------------------------> Add section node
+            childa = self.wTrc.AppendItem(root, a, ct_type=1)
+            childa.SetData(1)
+            for c, d in b.items():
+                #------------------------------> Add date node
+                childb = self.wTrc.AppendItem(childa, c, ct_type=1)
+                childb.SetData(2)
+                for e, f in d['I'].items():
+                    #------------------------------> Add date items
+                    childc = self.wTrc.AppendItem(childb, f"{e}: {f}")
+                    childc.SetData(3)
+                    self.wTrc.SetItemFont(
+                        childc, config.font['TreeItemDataFile'])
+        #endregion ---------------------------------------------> Add elements
+        
+        #region -------------------------------------------------> Expand root
+        self.wTrc.Expand(root)
+        [child.Expand() for child in root.GetChildren()]
+        #endregion ----------------------------------------------> Expand root
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 #endregion ----------------------------------------------------------> Classes
 

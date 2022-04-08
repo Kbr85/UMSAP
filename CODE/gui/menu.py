@@ -581,12 +581,19 @@ class FileControlToolMenu(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miExpData = self.Append(-1, 'Export Data\tCtrl+E')
+        self.miAddData = self.Append(-1, 'Add Analysis\tCtrl+A')
+        self.AppendSeparator()
+        self.miDelData = self.Append(-1, 'Delete Analysis\tCtrl+X')
+        self.AppendSeparator()
+        self.miExpData = self.Append(-1, 'Export Analysis\tCtrl+E')
         self.AppendSeparator()
         self.miUpdateFile = self.Append(-1, 'Reload File\tCtrl+U')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnAdd,    source=self.miAddData)
+        self.Bind(wx.EVT_MENU, self.OnDel,    source=self.miDelData)
+        self.Bind(wx.EVT_MENU, self.OnExport, source=self.miExpData)
         self.Bind(
             wx.EVT_MENU, self.OnUpdateFileContent, source=self.miUpdateFile)
         #endregion -----------------------------------------------------> Bind
@@ -609,6 +616,60 @@ class FileControlToolMenu(wx.Menu):
         """
         win = self.GetWindow()
         win.UpdateFileContent()
+        
+        return True
+    #---
+    
+    def OnExport(self, event: wx.CommandEvent) -> bool:
+        """Update the file content shown in the window
+    
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            True
+        """
+        win = self.GetWindow()
+        win.OnExportDel(mode=3)
+        
+        return True
+    #---
+    
+    def OnDel(self, event: wx.CommandEvent) -> bool:
+        """Update the file content shown in the window
+    
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            True
+        """
+        win = self.GetWindow()
+        win.OnExportDel(mode=2)
+        
+        return True
+    #---
+    
+    def OnAdd(self, event: wx.CommandEvent) -> bool:
+        """Update the file content shown in the window
+    
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            True
+        """
+        win = self.GetWindow()
+        win.OnExportDel(mode=1)
         
         return True
     #---
