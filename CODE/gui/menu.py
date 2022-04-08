@@ -633,7 +633,7 @@ class FileControlToolMenu(wx.Menu):
             True
         """
         win = self.GetWindow()
-        win.OnExportDel(mode=3)
+        win.OnAddDelExport(mode=3)
         
         return True
     #---
@@ -651,7 +651,7 @@ class FileControlToolMenu(wx.Menu):
             True
         """
         win = self.GetWindow()
-        win.OnExportDel(mode=2)
+        win.OnAddDelExport(mode=2)
         
         return True
     #---
@@ -669,7 +669,7 @@ class FileControlToolMenu(wx.Menu):
             True
         """
         win = self.GetWindow()
-        win.OnExportDel(mode=1)
+        win.OnAddDelExport(mode=1)
         
         return True
     #---

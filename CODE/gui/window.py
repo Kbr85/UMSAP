@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
+import shutil
 from itertools import zip_longest
 from pathlib import Path
 from typing import Optional, Literal, Union
@@ -9902,7 +9903,7 @@ class UMSAPControl(BaseWindow):
         return True
     #---
     
-    def OnExportDel(self, mode) -> bool:
+    def OnAddDelExport(self, mode) -> bool:
         """
     
             Parameters
@@ -9953,13 +9954,14 @@ class UMSAPControl(BaseWindow):
         else:
             dlg = UMSAPAddDelExport(self.rObj, mode) 
         
-        if dlg.ShowModal():
-            pass
-        else:
-            pass
-        #endregion ------------------------------------------------> 
-
+        dlg.ShowModal()
         dlg.Destroy()
+        #endregion ------------------------------------------------> 
+        
+        #region --------------------------------------------------------> 
+        self.UpdateFileContent()
+        #endregion -----------------------------------------------------> 
+
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
@@ -10156,6 +10158,11 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
     """
     #region -----------------------------------------------------> Class setup
     cSWindow = (400, 700)
+    cLError = {
+        1: 'adding',
+        2: 'deleting',
+        3: 'exporting',
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -10178,6 +10185,12 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
         else:
             self.cTitle = f'Export data from: {self.rObj.rFileP.name}'
             self.cLBtn = 'Export'
+        #------------------------------> 
+        self.dMethod = {
+            1: self.AddAnalysis,
+            2: self.DeleteAnalysis,
+            3: self.ExportAnalysis,
+        }
         #------------------------------> 
         super().__init__(title=self.cTitle, parent=None, size=self.cSWindow)
         self.FindWindowById(wx.ID_OK).SetLabel(self.cLBtn)
@@ -10318,6 +10331,186 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
         [child.Expand() for child in root.GetChildren()]
         #endregion ----------------------------------------------> Expand root
         
+        return True
+    #---
+    
+    def OnOK(self, event):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        selItems = {'Full':[], 'Part':{}}
+        checked = []
+        root = self.wTrc.GetRootItem()
+        #endregion ------------------------------------------------> 
+        
+        #region --------------------------------------------------->
+        for child in root.GetChildren():
+            #------------------------------> 
+            childN = child.GetText()
+            gchildL = child.GetChildren()
+            gChecked = [x.IsChecked() for x in gchildL]
+            #------------------------------> 
+            if all(gChecked):
+                selItems['Full'].append(childN)
+            elif any(gChecked):
+                checked.append(True)
+                selItems['Part'][childN] = []
+                for gchild in gchildL:
+                    if gchild.IsChecked():
+                        selItems['Part'][childN].append(gchild.GetText())
+                    else:
+                        pass
+                else:
+                    pass
+            else:
+                pass
+        #------------------------------> 
+        if not checked:
+            msg = (f'There are no analysis selected. Please select something '
+                'first.')
+            dtscore.Notification('warning', msg=msg)
+            return False
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        try:
+            self.dMethod[self.mode](selItems)
+        except Exception as e:
+            msg = (f'Something went wrong when {self.cLError[self.mode]} the '
+                f'selected analysis.')
+            dtscore.Notification('errorF', msg=msg, tException=e)
+            return False
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.rObj.Save()
+        self.EndModal(1)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def AddAnalysis(self, selItems: list[wxCT.GenericTreeItem]) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return True
+    #---
+    
+    def ExportAnalysis(self, selItems: list[wxCT.GenericTreeItem]) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return True
+    #---
+    
+    def DeleteAnalysis(self, selItems: dict) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        inputF = []
+        folder = []
+        seqF = [config.nmLimProt, config.nmTarProt]
+        #endregion ------------------------------------------------> 
+    
+        #region ---------------------------------------------------> 
+        for sec in selItems['Full']:
+            #------------------------------> 
+            for k,v in self.rObj.rData[sec].items():
+                folder.append(
+                    self.rObj.rStepDataP/f"{k.split(' - ')[0]}_{sec.replace(' ', '-')}")
+                #------------------------------> 
+                iVal = iter(v['I'].values())
+                inputF.append(next(iVal))
+                if sec in seqF:
+                    inputF.append(next(iVal))
+                else:
+                    pass
+            #------------------------------> 
+            self.rObj.rData.pop(sec)
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> 
+        for k,v in selItems['Part'].items():
+            for item in v:
+                #------------------------------> Folder
+                folder.append(
+                    self.rObj.rStepDataP/f"{item.split(' - ')[0]}_{k.replace(' ', '-')}")
+                #------------------------------> 
+                iVal = iter(self.rObj.rData[k][item]['I'].values())
+                inputF.append(next(iVal))
+                if k in seqF:
+                    inputF.append(next(iVal))
+                else:
+                    pass
+                #------------------------------> Delete Analysis
+                self.rObj.rData[k].pop(item)
+        #endregion -----------------------------------------------------> 
+        
+        #region --------------------------------------------------------> 
+        folder = list(set(folder))
+        [print(x) for x in folder]
+        [shutil.rmtree(x) for x in folder]
+        #------------------------------> 
+        inputF = list(set(inputF))
+        print(inputF)
+        inputNeeded = self.rObj.GetInputFiles()
+        print(inputNeeded)
+        for iFile in inputF:
+            if iFile in inputNeeded:
+                pass
+            else:
+                (self.rObj.rInputFileP/iFile).unlink()
+        #endregion -----------------------------------------------------> 
+
         return True
     #---
     #endregion ------------------------------------------------> Class methods

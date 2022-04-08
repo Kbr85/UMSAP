@@ -60,6 +60,7 @@ class UMSAPFile():
     """
     #region -----------------------------------------------------> Class setup
     cName = 'UMSAPFile'
+    SeqF = [config.nmTarProt, config.nmLimProt]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -730,6 +731,35 @@ class UMSAPFile():
         #endregion ------------------------------------------------> Path
 
         return dtsFF.ReadCSV2DF(fileP, header=[0,1])
+    #---
+    
+    def GetInputFiles(self) -> list[str]:
+        """Get a flat list of all input files in self.rData.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Notes
+            -----
+            This assumes files are added to I as the first and second items
+        """
+        
+        inputF = []
+        for k,v in self.rData.items():
+            for w in v.values():
+                iVal = iter(w['I'].values())
+                inputF.append(next(iVal))
+                if k in self.SeqF:
+                    inputF.append(next(iVal))
+                else:
+                    pass
+                
+        return inputF
     #---
     #endregion --------------------------------------------------> Get Methods
 #---
