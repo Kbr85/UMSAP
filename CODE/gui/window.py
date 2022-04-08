@@ -9953,15 +9953,14 @@ class UMSAPControl(BaseWindow):
             dlg = UMSAPAddDelExport(self.rObj, mode, objAdd=objAdd) 
         else:
             dlg = UMSAPAddDelExport(self.rObj, mode) 
-        
-        dlg.ShowModal()
-        dlg.Destroy()
+        #------------------------------> 
+        if dlg.ShowModal():
+            self.UpdateFileContent()
+        else:
+            pass
         #endregion ------------------------------------------------> 
         
-        #region --------------------------------------------------------> 
-        self.UpdateFileContent()
-        #endregion -----------------------------------------------------> 
-
+        dlg.Destroy()
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
@@ -10108,15 +10107,18 @@ class UMSAPControl(BaseWindow):
         
         #region ---------------------------------------------------> 
         for s in tSectionChecked:
-            #------------------------------> Check
-            self.wTrc.SetItem3StateValue(
-                self.rSection[s], wx.CHK_CHECKED)
-            #------------------------------> Win Menu
-            if (win := self.rWindow[s].get('Main', '')):
-                for w in win:
-                    w.UpdateUMSAPData()
+            if self.rSection.get(s, False):
+                #------------------------------> Check
+                self.wTrc.SetItem3StateValue(
+                    self.rSection[s], wx.CHK_CHECKED)
+                #------------------------------> Win Menu
+                if (win := self.rWindow[s].get('Main', False)):
+                    for w in win:
+                        w.UpdateUMSAPData()
+                else:
+                    pass
             else:
-                pass
+                [x.Destroy() for v in self.rWindow[s].values() for x in v]
         #endregion ------------------------------------------------> 
 
         return True
@@ -10399,6 +10401,7 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
         #region ---------------------------------------------------> 
         self.rObj.Save()
         self.EndModal(1)
+        self.Close()
         #endregion ------------------------------------------------> 
 
         return True
