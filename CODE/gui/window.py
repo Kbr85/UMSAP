@@ -10171,12 +10171,16 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
         #------------------------------> 
         if mode==1:
             self.cTitle = f'Add data from: {self.rObjAdd.rFileP.name}'
+            self.cLBtn = 'Add'
         elif mode==2:
             self.cTitle = f'Delete data from: {self.rObj.rFileP.name}'
+            self.cLBtn = 'Delete'
         else:
             self.cTitle = f'Export data from: {self.rObj.rFileP.name}'
+            self.cLBtn = 'Export'
         #------------------------------> 
         super().__init__(title=self.cTitle, parent=None, size=self.cSWindow)
+        self.FindWindowById(wx.ID_OK).SetLabel(self.cLBtn)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
