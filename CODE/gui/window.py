@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 import shutil
+import os
 from itertools import zip_longest
 from pathlib import Path
 from typing import Optional, Literal, Union
@@ -9769,6 +9770,13 @@ class UMSAPControl(BaseWindow):
         self.rCopiedFilters = []
         #------------------------------> 
         super().__init__(cParent=cParent)
+        #------------------------------> 
+        dKeyMethod = {
+            1: self.AddAnalysis,
+            2: self.DeleteAnalysis,
+            3: self.ExportAnalysis,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -9795,6 +9803,211 @@ class UMSAPControl(BaseWindow):
 
     #------------------------------> Class methods
     #region ---------------------------------------------------> Event Methods
+    def OnAddDelExport(self, mode) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if mode == 1:
+            #------------------------------> 
+            dlg = dtsWindow.FileSelectDialog(
+                'openO', 
+                config.elUMSAP, 
+                parent  = self,
+                message = 'Select UMSAP file',
+            )
+            #------------------------------> 
+            if dlg.ShowModal() == wx.ID_OK:
+                #------------------------------> 
+                fileP = Path(dlg.GetPath())
+                dlg.Destroy()
+                #------------------------------> 
+                if fileP == self.rObj.rFileP:
+                    msg = ('New Analysis cannot be added from the same UMSAP '
+                        'file.\nPlease choose a different UMSAP file.')
+                    dtscore.Notification('warning', msg=msg)
+                    return False
+                else:
+                    pass
+                #------------------------------> 
+                try:
+                    objAdd = file.UMSAPFile(fileP)                    
+                except Exception as e:
+                    dtscore.Notification('errorF', tException=e)
+                    return False
+            else:
+                dlg.Destroy()
+                return False
+            #------------------------------> 
+            dlg = UMSAPAddDelExport(objAdd, mode) 
+        else:
+            objAdd = None
+            dlg = UMSAPAddDelExport(self.rObj, mode) 
+        #------------------------------> 
+        if dlg.ShowModal():
+            selItem = dlg.rSelItems
+            dlg.Destroy()
+        else:
+            dlg.Destroy()
+            return True
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        return self.dKeyMethod[mode](selItem, objAdd)
+        #endregion ------------------------------------------------> 
+    #---
+    
+    def AddAnalysis(
+        self, selItems: dict, objAdd: Optional[file.UMSAPFile]=None,
+        ) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return True
+    #---
+    
+    def ExportAnalysis(
+        self, selItems: dict, objAdd: Optional[file.UMSAPFile]=None,
+        ) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return True
+    #---
+    
+    def DeleteAnalysis(
+        self, selItems: dict, objAdd: Optional[file.UMSAPFile]=None,
+        ) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        inputF = []
+        folder = []
+        seqF = [config.nmLimProt, config.nmTarProt]
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        if selItems['All']:
+            #------------------------------> 
+            shutil.rmtree(self.rObj.rStepDataP)            
+            shutil.rmtree(self.rObj.rInputFileP)
+            self.rObj.rFileP.unlink()
+            if config.os == 'Darwin':
+                (self.rObj.rFileP.parent/'.DS_Store').unlink(missing_ok=True)
+            else:
+                pass
+            #------------------------------> 
+            try:
+                self.rObj.rFileP.parent.rmdir()
+            except OSError:
+                pass
+            #------------------------------> 
+            self.OnClose('fEvent')
+            return True            
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for sec in selItems['Sec']:
+            #------------------------------> 
+            for k,v in self.rObj.rData[sec].items():
+                folder.append(
+                    self.rObj.rStepDataP/f"{k.split(' - ')[0]}_{sec.replace(' ', '-')}")
+                #------------------------------> 
+                iVal = iter(v['I'].values())
+                inputF.append(next(iVal))
+                if sec in seqF:
+                    inputF.append(next(iVal))
+                else:
+                    pass
+            #------------------------------> 
+            self.rObj.rData.pop(sec)
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> 
+        for k,v in selItems['Analysis'].items():
+            for item in v:
+                #------------------------------> Folder
+                folder.append(
+                    self.rObj.rStepDataP/f"{item.split(' - ')[0]}_{k.replace(' ', '-')}")
+                #------------------------------> 
+                iVal = iter(self.rObj.rData[k][item]['I'].values())
+                inputF.append(next(iVal))
+                if k in seqF:
+                    inputF.append(next(iVal))
+                else:
+                    pass
+                #------------------------------> Delete Analysis
+                self.rObj.rData[k].pop(item)
+        #endregion -----------------------------------------------------> 
+        
+        #region --------------------------------------------------------> 
+        folder = list(set(folder))
+        [shutil.rmtree(x) for x in folder]
+        #------------------------------> 
+        inputF = list(set(inputF))
+        inputNeeded = self.rObj.GetInputFiles()
+        for iFile in inputF:
+            if iFile in inputNeeded:
+                pass
+            else:
+                (self.rObj.rInputFileP/iFile).unlink()
+        #endregion -----------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.rObj.Save()
+        self.UpdateFileContent()
+        #endregion ------------------------------------------------> 
+    
+        return True
+    #---
+    
     def OnHyperLink(self, event) -> bool:
         """ Setup analysis.
     
@@ -9872,7 +10085,7 @@ class UMSAPControl(BaseWindow):
         return True
     #---
     
-    def OnClose(self, event: wx.CloseEvent) -> bool:
+    def OnClose(self, event: Union[wx.CloseEvent, str]) -> bool:
         """Destroy window and remove reference from config.umsapW
     
             Parameters
@@ -9893,74 +10106,9 @@ class UMSAPControl(BaseWindow):
         #endregion ---------------------------------> Reduce number of windows
         
         #region -----------------------------------------------------> Destroy
-        #------------------------------> Childs
-        for child in dtsGenerator.FindTopLevelChildren(self):
-            child.Destroy()
-        #------------------------------> Self
         self.Destroy()
         #endregion --------------------------------------------------> Destroy
         
-        return True
-    #---
-    
-    def OnAddDelExport(self, mode) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        #region ---------------------------------------------------> 
-        if mode == 1:
-            #------------------------------> 
-            dlg = dtsWindow.FileSelectDialog(
-                'openO', 
-                config.elUMSAP, 
-                parent  = self,
-                message = 'Select UMSAP file',
-            )
-            #------------------------------> 
-            if dlg.ShowModal() == wx.ID_OK:
-                #------------------------------> 
-                fileP = Path(dlg.GetPath())
-                dlg.Destroy()
-                #------------------------------> 
-                if fileP == self.rObj.rFileP:
-                    msg = ('New Analysis cannot be added from the same UMSAP '
-                        'file.\nPlease choose a different UMSAP file.')
-                    dtscore.Notification('warning', msg=msg)
-                    return False
-                else:
-                    pass
-                #------------------------------> 
-                try:
-                    objAdd = file.UMSAPFile(fileP)                    
-                except Exception as e:
-                    dtscore.Notification('errorF', tException=e)
-                    return False
-            else:
-                dlg.Destroy()
-                return False
-            #------------------------------> 
-            dlg = UMSAPAddDelExport(self.rObj, mode, objAdd=objAdd) 
-        else:
-            dlg = UMSAPAddDelExport(self.rObj, mode) 
-        #------------------------------> 
-        if dlg.ShowModal():
-            self.UpdateFileContent()
-        else:
-            pass
-        #endregion ------------------------------------------------> 
-        
-        dlg.Destroy()
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
@@ -10165,37 +10313,27 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
         2: 'deleting',
         3: 'exporting',
     }
+    cLBtnOpt = {
+        1: 'Add',
+        2: 'Delete',
+        3: 'Export',
+    } 
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self, obj: file.UMSAPFile, mode: int, 
-        objAdd: Optional[file.UMSAPFile]=None,
-        ) -> None:
+    def __init__(self, obj: file.UMSAPFile, mode: int) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rObj    = obj
-        self.rObjAdd = objAdd
-        self.mode    = mode
+        self.rObj = obj
+        self.mode = mode
         #------------------------------> 
-        if mode==1:
-            self.cTitle = f'Add data from: {self.rObjAdd.rFileP.name}'
-            self.cLBtn = 'Add'
-        elif mode==2:
-            self.cTitle = f'Delete data from: {self.rObj.rFileP.name}'
-            self.cLBtn = 'Delete'
-        else:
-            self.cTitle = f'Export data from: {self.rObj.rFileP.name}'
-            self.cLBtn = 'Export'
-        #------------------------------> 
-        self.dMethod = {
-            1: self.AddAnalysis,
-            2: self.DeleteAnalysis,
-            3: self.ExportAnalysis,
-        }
+        self.cLBtn = self.cLBtnOpt[mode]
+        self.cTitle = f'{self.cLBtn} data from: {self.rObj.rFileP.name}'
         #------------------------------> 
         super().__init__(title=self.cTitle, parent=None, size=self.cSWindow)
         self.FindWindowById(wx.ID_OK).SetLabel(self.cLBtn)
+        #------------------------------> 
+        self.rSelItems = {}
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -10302,28 +10440,19 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
             See data.file.UMSAPFile for the structure of obj.confTree.
         """
         #region ----------------------------------------------------> Add root
-        if self.mode == 1:
-            obj = self.rObjAdd
-            root = self.wTrc.AddRoot(obj.rFileP.name, ct_type=1)
-        else:
-            obj = self.rObj
-            root = self.wTrc.AddRoot(obj.rFileP.name)
-        root.SetData(0)
+        root = self.wTrc.AddRoot(self.rObj.rFileP.name, ct_type=1)
         #endregion -------------------------------------------------> Add root
         
         #region ------------------------------------------------> Add elements
-        for a, b in obj.rData.items():
+        for a, b in self.rObj.rData.items():
             #------------------------------> Add section node
             childa = self.wTrc.AppendItem(root, a, ct_type=1)
-            childa.SetData(1)
             for c, d in b.items():
                 #------------------------------> Add date node
                 childb = self.wTrc.AppendItem(childa, c, ct_type=1)
-                childb.SetData(2)
                 for e, f in d['I'].items():
                     #------------------------------> Add date items
                     childc = self.wTrc.AppendItem(childb, f"{e}: {f}")
-                    childc.SetData(3)
                     self.wTrc.SetItemFont(
                         childc, config.font['TreeItemDataFile'])
         #endregion ---------------------------------------------> Add elements
@@ -10352,9 +10481,13 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
             
         """
         #region ---------------------------------------------------> 
-        selItems = {'Full':[], 'Part':{}}
-        checked = []
         root = self.wTrc.GetRootItem()
+        self.rSelItems = {
+            'All'     : root.IsChecked(), 
+            'Sec'     :[], 
+            'Analysis':{},
+        }
+        checked = []
         #endregion ------------------------------------------------> 
         
         #region --------------------------------------------------->
@@ -10362,22 +10495,18 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
             #------------------------------> 
             childN = child.GetText()
             gchildL = child.GetChildren()
-            gChecked = [x.IsChecked() for x in gchildL]
             #------------------------------> 
-            if all(gChecked):
-                selItems['Full'].append(childN)
-            elif any(gChecked):
+            if child.IsChecked():
+                self.rSelItems['Sec'].append(childN)
                 checked.append(True)
-                selItems['Part'][childN] = []
+            else:
                 for gchild in gchildL:
                     if gchild.IsChecked():
-                        selItems['Part'][childN].append(gchild.GetText())
+                        self.rSelItems['Analysis'][childN] = self.rSelItems.get(childN, [])
+                        self.rSelItems['Analysis'][childN].append(gchild.GetText())
+                        checked.append(True)
                     else:
                         pass
-                else:
-                    pass
-            else:
-                pass
         #------------------------------> 
         if not checked:
             msg = (f'There are no analysis selected. Please select something '
@@ -10387,132 +10516,11 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
         else:
             pass
         #endregion ------------------------------------------------> 
-
-        #region ---------------------------------------------------> 
-        try:
-            self.dMethod[self.mode](selItems)
-        except Exception as e:
-            msg = (f'Something went wrong when {self.cLError[self.mode]} the '
-                f'selected analysis.')
-            dtscore.Notification('errorF', msg=msg, tException=e)
-            return False
-        #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
-        self.rObj.Save()
         self.EndModal(1)
         self.Close()
         #endregion ------------------------------------------------> 
-
-        return True
-    #---
-    
-    def AddAnalysis(self, selItems: list[wxCT.GenericTreeItem]) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        return True
-    #---
-    
-    def ExportAnalysis(self, selItems: list[wxCT.GenericTreeItem]) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        return True
-    #---
-    
-    def DeleteAnalysis(self, selItems: dict) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        #region ---------------------------------------------------> 
-        inputF = []
-        folder = []
-        seqF = [config.nmLimProt, config.nmTarProt]
-        #endregion ------------------------------------------------> 
-    
-        #region ---------------------------------------------------> 
-        for sec in selItems['Full']:
-            #------------------------------> 
-            for k,v in self.rObj.rData[sec].items():
-                folder.append(
-                    self.rObj.rStepDataP/f"{k.split(' - ')[0]}_{sec.replace(' ', '-')}")
-                #------------------------------> 
-                iVal = iter(v['I'].values())
-                inputF.append(next(iVal))
-                if sec in seqF:
-                    inputF.append(next(iVal))
-                else:
-                    pass
-            #------------------------------> 
-            self.rObj.rData.pop(sec)
-        #endregion ------------------------------------------------> 
-
-        #region --------------------------------------------------------> 
-        for k,v in selItems['Part'].items():
-            for item in v:
-                #------------------------------> Folder
-                folder.append(
-                    self.rObj.rStepDataP/f"{item.split(' - ')[0]}_{k.replace(' ', '-')}")
-                #------------------------------> 
-                iVal = iter(self.rObj.rData[k][item]['I'].values())
-                inputF.append(next(iVal))
-                if k in seqF:
-                    inputF.append(next(iVal))
-                else:
-                    pass
-                #------------------------------> Delete Analysis
-                self.rObj.rData[k].pop(item)
-        #endregion -----------------------------------------------------> 
-        
-        #region --------------------------------------------------------> 
-        folder = list(set(folder))
-        [print(x) for x in folder]
-        [shutil.rmtree(x) for x in folder]
-        #------------------------------> 
-        inputF = list(set(inputF))
-        print(inputF)
-        inputNeeded = self.rObj.GetInputFiles()
-        print(inputNeeded)
-        for iFile in inputF:
-            if iFile in inputNeeded:
-                pass
-            else:
-                (self.rObj.rInputFileP/iFile).unlink()
-        #endregion -----------------------------------------------------> 
 
         return True
     #---
