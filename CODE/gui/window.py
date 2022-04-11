@@ -9744,6 +9744,8 @@ class UMSAPControl(BaseWindow):
         config.nmLimProt : config.ntLimProt,
         config.nmTarProt : config.ntTarProt,
     }
+    #------------------------------> 
+    cLSecSeqF = [config.nmLimProt, config.nmTarProt]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -9905,6 +9907,106 @@ class UMSAPControl(BaseWindow):
             -----
             
         """
+        def GetFolderFile(
+            sec, run, valI, folderD, fileD, dataStep, folderData, initStep, 
+            folderInit,
+            ) -> tuple[dict, dict]:
+            """"""
+            #------------------------------> 
+            secN = sec.replace(' ', '-')
+            secF = f"{run.split(' - ')[0]}_{secN}"
+            folderD[dataStep/secF] = folderData/secF
+            #------------------------------> 
+            val = iter(valI.values())
+            dataFI = next(val)
+            fileD[initStep/dataFI] = folderInit/dataFI
+            if sec in self.cLSecSeqF:
+                dataFI = next(val)
+                fileD[initStep/dataFI] = folderInit/dataFI
+            else:
+                pass
+            #------------------------------> 
+            return (folderD, fileD)
+        #---
+        #region ---------------------------------------------------> 
+        dlg = dtsWindow.FileSelectDialog(
+            'save', config.elUMSAP, parent=self, message='Select file')
+        if dlg.ShowModal() == wx.ID_OK:
+            fileP = Path(dlg.GetPath())
+            name = fileP.name
+            dlg.Destroy()
+        else:
+            dlg.Destroy()
+            return True
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        step = fileP.parent/config.fnDataSteps
+        init = fileP.parent/config.fnDataInit
+        if step.exists() or init.exists():
+            folderN = f'{dtsMethod.StrNow()}_UMSAP_Export'
+            fileP = fileP.parent / folderN / name
+        else:
+            pass
+        #------------------------------> 
+        folder = fileP.parent
+        folderData = folder/config.fnDataSteps
+        folderInit = folder/config.fnDataInit
+        #------------------------------> 
+        dataStep = self.rObj.rStepDataP
+        initStep = self.rObj.rInputFileP
+        folderD = {}
+        fileD   = {}
+        data    = {}
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        if selItems['All']:
+            #------------------------------> 
+            data = self.rObj.rData
+            #------------------------------> 
+            for k,v in data.items():
+                for j,w in v.items():
+                    folderD, fileD = GetFolderFile(
+                        k, j, w['I'], folderD, fileD, dataStep, 
+                        folderData, initStep, folderInit)
+        else:
+            for sec in selItems['Sec']:
+                #------------------------------> 
+                data[sec] = self.rObj.rData[sec]
+                #------------------------------> 
+                for k,v in self.rObj.rData[sec].items():
+                    folderD, fileD = GetFolderFile(
+                        sec, k, v['I'], folderD, fileD, dataStep, 
+                        folderData, initStep, folderInit)
+            #------------------------------> 
+            for k,d in selItems['Analysis'].items():
+                #------------------------------> 
+                data[k] = data.get(k, {})
+                #------------------------------> 
+                for run in d:
+                    #------------------------------> 
+                    data[k][run] = self.rObj.rData[k][run]
+                    #------------------------------> 
+                    folderD, fileD = GetFolderFile(
+                        k, run, data[k][run]['I'], folderD, fileD, dataStep, 
+                        folderData, initStep, folderInit)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        folder.mkdir(parents=True, exist_ok=True)
+        #------------------------------> 
+        folderData.mkdir()
+        for k,v in folderD.items():
+            shutil.copytree(k,v)
+        #------------------------------> 
+        folderInit.mkdir()
+        for k,v in fileD.items():
+            shutil.copyfile(k,v)
+        #------------------------------> 
+        dtsFF.WriteJSON(fileP, data)
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     
@@ -9928,7 +10030,6 @@ class UMSAPControl(BaseWindow):
         #region ---------------------------------------------------> 
         inputF = []
         folder = []
-        seqF = [config.nmLimProt, config.nmTarProt]
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
@@ -9962,7 +10063,7 @@ class UMSAPControl(BaseWindow):
                 #------------------------------> 
                 iVal = iter(v['I'].values())
                 inputF.append(next(iVal))
-                if sec in seqF:
+                if sec in self.cLSecSeqF:
                     inputF.append(next(iVal))
                 else:
                     pass
@@ -9979,7 +10080,7 @@ class UMSAPControl(BaseWindow):
                 #------------------------------> 
                 iVal = iter(self.rObj.rData[k][item]['I'].values())
                 inputF.append(next(iVal))
-                if k in seqF:
+                if k in self.cLSecSeqF:
                     inputF.append(next(iVal))
                 else:
                     pass
