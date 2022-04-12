@@ -9887,6 +9887,13 @@ class UMSAPControl(BaseWindow):
             -----
             
         """
+        #region ---------------------------------------------------> 
+        if selItems['All']:
+            pass
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+    
         return True
     #---
     
@@ -9961,36 +9968,17 @@ class UMSAPControl(BaseWindow):
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
-        if selItems['All']:
+        for k,d in selItems.items():
             #------------------------------> 
-            data = self.rObj.rData
+            data[k] = data.get(k, {})
             #------------------------------> 
-            for k,v in data.items():
-                for j,w in v.items():
-                    folderD, fileD = GetFolderFile(
-                        k, j, w['I'], folderD, fileD, dataStep, 
-                        folderData, initStep, folderInit)
-        else:
-            for sec in selItems['Sec']:
+            for run in d:
                 #------------------------------> 
-                data[sec] = self.rObj.rData[sec]
+                data[k][run] = self.rObj.rData[k][run]
                 #------------------------------> 
-                for k,v in self.rObj.rData[sec].items():
-                    folderD, fileD = GetFolderFile(
-                        sec, k, v['I'], folderD, fileD, dataStep, 
-                        folderData, initStep, folderInit)
-            #------------------------------> 
-            for k,d in selItems['Analysis'].items():
-                #------------------------------> 
-                data[k] = data.get(k, {})
-                #------------------------------> 
-                for run in d:
-                    #------------------------------> 
-                    data[k][run] = self.rObj.rData[k][run]
-                    #------------------------------> 
-                    folderD, fileD = GetFolderFile(
-                        k, run, data[k][run]['I'], folderD, fileD, dataStep, 
-                        folderData, initStep, folderInit)
+                folderD, fileD = GetFolderFile(
+                    k, run, data[k][run]['I'], folderD, fileD, dataStep, 
+                    folderData, initStep, folderInit)
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
@@ -10033,8 +10021,28 @@ class UMSAPControl(BaseWindow):
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
-        if selItems['All']:
-            #------------------------------> 
+        for k,v in selItems.items():
+            #------------------------------> Analysis
+            for item in v:
+                #------------------------------> Folder
+                folder.append(
+                    self.rObj.rStepDataP/f"{item.split(' - ')[0]}_{k.replace(' ', '-')}")
+                #------------------------------> Files
+                iVal = iter(self.rObj.rData[k][item]['I'].values())
+                inputF.append(next(iVal))
+                if k in self.cLSecSeqF:
+                    inputF.append(next(iVal))
+                else:
+                    pass
+                #------------------------------> Delete Analysis
+                self.rObj.rData[k].pop(item)
+            #------------------------------> Section
+            if not self.rObj.rData[k]:
+                self.rObj.rData.pop(k)
+            else:
+                pass
+        #------------------------------> Full file
+        if not self.rObj.rData:
             shutil.rmtree(self.rObj.rStepDataP)            
             shutil.rmtree(self.rObj.rInputFileP)
             self.rObj.rFileP.unlink()
@@ -10054,40 +10062,6 @@ class UMSAPControl(BaseWindow):
             pass
         #endregion ------------------------------------------------> 
 
-        #region ---------------------------------------------------> 
-        for sec in selItems['Sec']:
-            #------------------------------> 
-            for k,v in self.rObj.rData[sec].items():
-                folder.append(
-                    self.rObj.rStepDataP/f"{k.split(' - ')[0]}_{sec.replace(' ', '-')}")
-                #------------------------------> 
-                iVal = iter(v['I'].values())
-                inputF.append(next(iVal))
-                if sec in self.cLSecSeqF:
-                    inputF.append(next(iVal))
-                else:
-                    pass
-            #------------------------------> 
-            self.rObj.rData.pop(sec)
-        #endregion ------------------------------------------------> 
-
-        #region --------------------------------------------------------> 
-        for k,v in selItems['Analysis'].items():
-            for item in v:
-                #------------------------------> Folder
-                folder.append(
-                    self.rObj.rStepDataP/f"{item.split(' - ')[0]}_{k.replace(' ', '-')}")
-                #------------------------------> 
-                iVal = iter(self.rObj.rData[k][item]['I'].values())
-                inputF.append(next(iVal))
-                if k in self.cLSecSeqF:
-                    inputF.append(next(iVal))
-                else:
-                    pass
-                #------------------------------> Delete Analysis
-                self.rObj.rData[k].pop(item)
-        #endregion -----------------------------------------------------> 
-        
         #region --------------------------------------------------------> 
         folder = list(set(folder))
         [shutil.rmtree(x) for x in folder]
@@ -10583,11 +10557,7 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
         """
         #region ---------------------------------------------------> 
         root = self.wTrc.GetRootItem()
-        self.rSelItems = {
-            'All'     : root.IsChecked(), 
-            'Sec'     :[], 
-            'Analysis':{},
-        }
+        self.rSelItems = {}
         checked = []
         #endregion ------------------------------------------------> 
         
@@ -10597,17 +10567,13 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
             childN = child.GetText()
             gchildL = child.GetChildren()
             #------------------------------> 
-            if child.IsChecked():
-                self.rSelItems['Sec'].append(childN)
-                checked.append(True)
-            else:
-                for gchild in gchildL:
-                    if gchild.IsChecked():
-                        self.rSelItems['Analysis'][childN] = self.rSelItems.get(childN, [])
-                        self.rSelItems['Analysis'][childN].append(gchild.GetText())
-                        checked.append(True)
-                    else:
-                        pass
+            for gchild in gchildL:
+                if gchild.IsChecked():
+                    self.rSelItems[childN] = self.rSelItems.get(childN, [])
+                    self.rSelItems[childN].append(gchild.GetText())
+                    checked.append(True)
+                else:
+                    pass
         #------------------------------> 
         if not checked:
             msg = (f'There are no analysis selected. Please select something '
