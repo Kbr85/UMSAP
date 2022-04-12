@@ -16,7 +16,9 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
-from ast import arg
+import shutil
+import os
+from itertools import zip_longest
 from pathlib import Path
 from typing import Optional, Literal, Union
 
@@ -27,7 +29,16 @@ import pandas as pd
 import requests
 from scipy import stats
 
+from Bio import pairwise2
+from Bio.Align import substitution_matrices
+
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus.flowables import KeepTogether
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
 import wx
+import wx.richtext
 import wx.adv as adv
 import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
@@ -40,6 +51,7 @@ import dat4s_core.generator.generator as dtsGenerator
 import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
+import dat4s_core.exception.exception as dtsException
 
 import config.config as config
 import data.file as file
@@ -58,14 +70,14 @@ def UpdateCheck(
     ori: Literal['menu', 'main'], win: Optional[wx.Window]=None
     ) -> bool:
     """ Check for updates for UMSAP from another thread.
-        
+
         Parameters
         ----------
         ori: str
             Origin of the request, 'menu' or 'main'
         win : wx widget
             To center the result window in this widget
-            
+
         Return
         ------
         bool
@@ -318,14 +330,14 @@ class BaseWindow(wx.Frame):
             True
         """
         #------------------------------> 
-        self.cParent.rWindow[self.cSection].append(
+        self.cParent.rWindow[self.cSection]['Main'].append(
             self.cParent.dPlotMethod[self.cSection](self.cParent)
         )
         #------------------------------> 
         return True
     #---
     
-    def OnExportPlotData(self) -> bool:
+    def OnExportPlotData(self, df:Optional[pd.DataFrame]=None) -> bool:
         """ Export data to a csv file 
         
             Returns
@@ -345,9 +357,10 @@ class BaseWindow(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
             p = Path(dlg.GetPath())
+            tDF = self.rData[self.rDateC]['DF'] if df is None else df
             #------------------------------> Export
             try:
-                dtsFF.WriteDF2CSV(p, self.rData[self.rDateC]['DF'])
+                dtsFF.WriteDF2CSV(p, tDF)
             except Exception as e:
                 dtscore.Notification(
                     'errorF',
@@ -451,6 +464,71 @@ class BaseWindow(wx.Frame):
         
         return True
     #---
+    
+    def UpdateUMSAPData(self):
+        """Update the window after the UMSAP file have been updated.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.rObj  = self.cParent.rObj
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rDate = [x for x in self.rData.keys() if x != 'Error']
+        menuBar    = self.GetMenuBar()
+        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(self.rDate)
+        
+        return True
+    #---
+    
+    def ReportPlotDataError(self) -> bool:
+        """Check that there is somenthing to plot after reading a section in
+            an UMSAP Plot.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        if not self.rDate:
+            msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are '
+                f'corrupted or were not found.')
+            dtscore.Notification('errorU', msg=msg)
+            raise dtsException.PassException()
+        else:
+            pass
+        #------------------------------> Some mistakes
+        if self.rData['Error']:
+            fileList = '\n'.join(self.rData['Error'])
+            if len(self.rData['Error']) == 1:
+                msg = (f'The data for analysis\n\n{fileList}\n\n '
+                f'contains errors or was not found.')
+            else:
+                msg = (f'The data for analysis:\n\n{fileList}\n\n '
+                f'contain errors or were not found.')
+            dtscore.Notification('warning', msg=msg)
+        else:
+            pass
+        #------------------------------> 
+        return True
+    #---
     #endregion ------------------------------------------------> Manage Methods
 #---
 
@@ -540,6 +618,36 @@ class BaseWindowPlot(BaseWindow):
         
         return True
     #---
+    
+    def UpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info
+    
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            try:
+                #------------------------------>
+                x, y = event.xdata, event.ydata
+                #------------------------------> 
+                self.wStatBar.SetStatusText(
+                    f'x = {x}   y = {y}'
+                )
+            except Exception:
+                self.wStatBar.SetStatusText('')
+        else:
+            self.wStatBar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
+        
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
 #---
 
@@ -588,6 +696,11 @@ class BaseWindowNPlotLT(BaseWindow):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
+        self.cTText   = getattr(self, 'cTText', 'Text')
+        self.cTPlots  = getattr(self, 'cTPlots', 'Plots')
+        self.cLCStyle = getattr(
+            self, 'cLCStyle', wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL)
+        #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> 
         dKeyMethod = {
@@ -612,7 +725,7 @@ class BaseWindowNPlotLT(BaseWindow):
             self, 
             cColLabel = self.cLCol,
             cColSize  = self.cSCol,
-            cStyle    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
+            cStyle    = self.cLCStyle, 
             cTcHint   = f'Search {self.cHSearch}'
         )
         #endregion --------------------------------------------------> Widgets
@@ -628,7 +741,7 @@ class BaseWindowNPlotLT(BaseWindow):
             aui.AuiPaneInfo(
                 ).Center(
                 ).Caption(
-                    'Plots'
+                    self.cTPlots
                 ).Floatable(
                     b=False
                 ).CloseButton(
@@ -788,7 +901,7 @@ class BaseWindowNPlotLT(BaseWindow):
             -------
             bool
         """
-        self.rLCIdx = self.wLC.wLCS.lc.GetFirstSelected()
+        self.rLCIdx = self.wLC.wLCS.lc.GetLastSelected()
         return True
     #---
     
@@ -815,7 +928,6 @@ class BaseWindowNPlotLT(BaseWindow):
         event.Skip()
         return True
     #---
-    
     
     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
         """Close window and uncheck section in UMSAPFile window. 
@@ -908,6 +1020,8 @@ class BaseWindowProteolysis(BaseWindow):
         #------------------------------> Hints
         self.cHSearch = getattr(self, 'cHSearch', self.cLPaneList)
         #------------------------------> 
+        self.rLCIdx = None
+        #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> 
         dKeyMethod = {
@@ -923,9 +1037,9 @@ class BaseWindowProteolysis(BaseWindow):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wPlotM = dtsWidget.MatPlotPanel(self, statusbar=self.wStatBar)
+        self.wPlotM = dtsWidget.MatPlotPanel(self)
         #------------------------------>  Plot
-        self.wPlot = dtsWidget.MatPlotPanel(self, statusbar=self.wStatBar)
+        self.wPlot = dtsWidget.MatPlotPanel(self)
         #------------------------------> Text details
         self.wText = wx.TextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
@@ -1008,7 +1122,7 @@ class BaseWindowProteolysis(BaseWindow):
             aui.AuiPaneInfo(
                 ).Left(
                 ).Layer(
-                    1    
+                    2    
                 ).Caption(
                     self.cLPaneList
                 ).Floatable(
@@ -1027,6 +1141,8 @@ class BaseWindowProteolysis(BaseWindow):
 
         #region --------------------------------------------------------> Bind
         self.wLC.wLCS.lc.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        self.wLC.wLCS.lc.Bind(wx.EVT_LEFT_UP, self.OnListSelectEmpty)
+        self.Bind(wx.EVT_SEARCH, self.OnSearch)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1062,7 +1178,87 @@ class BaseWindowProteolysis(BaseWindow):
         return True
     #---
     
-    def OnListSelect(self, event: wx.CommandEvent) -> bool:
+    def OnSearch(self, event: wx.Event) -> bool:
+        """Search for a given string in the wx.ListCtrl.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+    
+            Notes
+            -----
+            See dtsWidget.MyListCtrl.Search for more details.
+        """
+        #region ---------------------------------------------------> Get index
+        tStr = self.wLC.wLCS.search.GetValue()
+        iEqual, iSimilar = self.wLC.wLCS.lc.Search(tStr)
+        #endregion ------------------------------------------------> Get index
+        
+        #region ----------------------------------------------> Show 1 Results
+        if len(iEqual) == 1:
+            self.OnSearchSelect(iEqual[0])
+            return True
+        elif len(iSimilar) == 1:
+            self.OnSearchSelect(iSimilar[0])
+            return True
+        else:
+            pass
+        #endregion -------------------------------------------> Show 1 Results
+        
+        #region ----------------------------------------------> Show N Results
+        if iSimilar:
+            msg = (f'The string, {tStr}, was found in multiple rows.')
+            tException = (
+                f'The row numbers where the string was found are:\n '
+                f'{str(iSimilar)[1:-1]}')
+            dtscore.Notification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                tException = tException,
+                parent     = self,
+            )
+        else:
+            msg = (f'The string, {tStr}, was not found.')
+            dtscore.Notification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                parent     = self,
+            )
+        #endregion -------------------------------------------> Show N Results
+        
+        return True
+    #---
+    
+    def OnSearchSelect(self, tRow: int) -> bool:
+        """Select one of the row in the wx.ListCtrl.
+    
+            Parameters
+            ----------
+            tRow: int
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Helper to OnSearch
+        """
+        self.wLC.wLCS.lc.Select(tRow, on=1)
+        self.wLC.wLCS.lc.EnsureVisible(tRow)
+        self.wLC.wLCS.lc.SetFocus()
+        self.OnListSelect('fEvent')
+        return True
+    #---
+    
+    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
         """Process a wx.ListCtrl select event.
 
             Parameters
@@ -1076,14 +1272,41 @@ class BaseWindowProteolysis(BaseWindow):
             bool
         """
         #region ---------------------------------------------------> 
-        self.rPeptide = self.wLC.wLCS.lc.GetItemText(
-            self.wLC.wLCS.lc.GetFirstSelected(), col=1)
+        self.rLCIdx = self.wLC.wLCS.lc.GetFirstSelected()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.rPeptide = self.wLC.wLCS.lc.GetItemText(self.rLCIdx, col=1)
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
         self.ShowPeptideLoc()
         #endregion ------------------------------------------------> 
 
+        return True
+    #---
+    
+    def OnListSelectEmpty(self, event: wx.CommandEvent) -> bool:
+        """What to do after selecting a row in the wx.ListCtrl. 
+            Override as needed
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+    
+            Returns
+            -------
+            bool
+        """
+        idx = self.wLC.wLCS.lc.GetFirstSelected()
+        
+        if idx < 0 and self.rLCIdx is not None:
+            self.wLC.wLCS.lc.Select(self.rLCIdx, on=1)
+        else:
+            pass
+            
+        event.Skip()
         return True
     #---
     
@@ -1157,13 +1380,8 @@ class BaseWindowProteolysis(BaseWindow):
         """
         #region ---------------------------------------------------> Fill dict
         #------------------------------> Variables
-        date = []
+        date = [x for x in self.rData.keys() if x != 'Error']
         menuData = {}
-        #------------------------------> Fill 
-        for k in self.rData.keys():
-            #------------------------------> 
-            date.append(k)
-            #------------------------------> 
         #------------------------------> 
         menuData['menudate'] = date
         #endregion ------------------------------------------------> Fill dict
@@ -1624,13 +1842,16 @@ class CorrAPlot(BaseWindowPlot):
     #region --------------------------------------------------> Instance setup
     def __init__(self, cParent: 'UMSAPControl') -> None:
         """ """
-        #region -------------------------------------------------> Check Input
-        #endregion ----------------------------------------------> Check Input
-
         #region -----------------------------------------------> Initial Setup
         self.rObj     = cParent.rObj
         self.rData    = self.rObj.dConfigure[self.cSection]()
-        self.rDate    = [x for x in self.rData.keys()]
+        self.rDate    = [x for x in self.rData.keys() if x != 'Error']
+        #------------------------------> Nothing found
+        try:
+            self.ReportPlotDataError()
+        except Exception as e:
+            raise e
+        #------------------------------> 
         self.rDateC   = self.rDate[0]
         self.rBar     = None
         self.rNorm    = mpl.colors.Normalize(vmin=-1, vmax=1)
@@ -1642,7 +1863,7 @@ class CorrAPlot(BaseWindowPlot):
             bad = config.color[self.cSection]['CMAP']['NA'],
         )
         #------------------------------> 
-        self.cParent = cParent
+        self.cParent  = cParent
         self.cTitle  = f"{cParent.cTitle} - {self.cSection} - {self.rDateC}"
         #------------------------------> 
         super().__init__(cParent, {'menudate' : self.rDate})
@@ -2109,6 +2330,12 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rObj         = cParent.rObj
         self.rData        = self.rObj.dConfigure[self.cSection]()
         self.rDate, cMenuData = self.SetDateMenuDate()
+        #------------------------------> 
+        try:
+            self.ReportPlotDataError()
+        except Exception as e:
+            raise e
+        #------------------------------> 
         self.rDf          = None
         self.rDateC       = self.rDate[0]
         self.rCondC       = cMenuData['crp'][self.rDate[0]]['C'][0]
@@ -2254,18 +2481,45 @@ class ProtProfPlot(BaseWindowNPlotLT):
         }
         #------------------------------> Fill 
         for k in self.rData.keys():
-            #------------------------------> 
-            date.append(k)
-            #------------------------------> 
-            menuData['crp'][k] = {
-                'C' : self.rObj.rData[self.cSection][k]['CI']['Cond'],
-                'RP': self.rObj.rData[self.cSection][k]['CI']['RP']
-            }
+            if k != 'Error':
+                #------------------------------> 
+                date.append(k)
+                #------------------------------> 
+                menuData['crp'][k] = {
+                    'C' : self.rObj.rData[self.cSection][k]['CI']['Cond'],
+                    'RP': self.rObj.rData[self.cSection][k]['CI']['RP']
+                }
+            else:
+                pass
         #------------------------------> 
         menuData['menudate'] = date
         #endregion ------------------------------------------------> Fill dict
         
         return (date, menuData)
+    #---
+    
+    def UpdateUMSAPData(self):
+        """Update the window after the UMSAP file have been updated.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.rObj  = self.cParent.rObj
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rDate, menuData = self.SetDateMenuDate()
+        menuBar = self.GetMenuBar()
+        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
+        
+        return True
     #---
     
     def WinPos(self) -> bool:
@@ -3503,6 +3757,38 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return True
     #---
     
+    def OnClearSel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        if self.rLCIdx is not None:
+            #------------------------------> 
+            self.wLC.wLCS.lc.Select(self.rLCIdx, on=0)
+            self.rLCIdx = None
+            #------------------------------> 
+            self.rGreenP.remove()
+            self.rGreenP = None
+            self.wPlots.dPlot['Vol'].canvas.draw()
+            #------------------------------> 
+            self.FCDraw()
+            #------------------------------> 
+            self.wText.Clear()
+        else:
+            pass
+        return True
+    #---
+    
     def OnListSelect(self, event: Union[wx.Event, str]) -> bool:
         """Select an element in the wx.ListCtrl.
     
@@ -4407,14 +4693,17 @@ class LimProtPlot(BaseWindowProteolysis):
     #region --------------------------------------------------> Instance setup
     def __init__(self, cParent: 'UMSAPControl') -> None:
         """ """
-        #region -------------------------------------------------> Check Input
-        
-        #endregion ----------------------------------------------> Check Input
-
         #region -----------------------------------------------> Initial Setup
-        self.cTitle         = f'{cParent.cTitle} - {self.cSection}'
-        self.rObj           = cParent.rObj
-        self.rData        = self.rObj.dConfigure[self.cSection]()
+        self.cTitle           = f'{cParent.cTitle} - {self.cSection}'
+        self.rObj             = cParent.rObj
+        self.rData            = self.rObj.dConfigure[self.cSection]()
+        self.rDate, cMenuData = self.SetDateMenuDate()
+        #------------------------------> 
+        try:
+            self.ReportPlotDataError()
+        except Exception as e:
+            raise e
+        #------------------------------> 
         self.rDateC         = None
         self.rBands         = None
         self.rLanes         = None
@@ -4436,8 +4725,11 @@ class LimProtPlot(BaseWindowProteolysis):
         self.rProtDelta     = None
         self.rProtTarget    = None
         self.rPeptide       = None
-        #------------------------------> 
-        self.rDate, cMenuData = self.SetDateMenuDate()
+        self.rRecSeq        = {}
+        self.rRecSeqC       = ''
+        self.rRecSeqColor   = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
+        self.rTextStyleDef  = wx.TextAttr(
+            'Black', 'White', config.font['SeqAlign'])
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> 
@@ -4451,17 +4743,34 @@ class LimProtPlot(BaseWindowProteolysis):
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
-        #region --------------------------------------------------------> Menu
-        
-        #endregion -----------------------------------------------------> Menu
-
         #region -----------------------------------------------------> Widgets
-        
+        self.wTextSeq = wx.richtext.RichTextCtrl(
+            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
+        self.wTextSeq.SetFont(config.font['SeqAlign'])
         #endregion --------------------------------------------------> Widgets
 
-        #region ------------------------------------------------------> Sizers
-        
-        #endregion ---------------------------------------------------> Sizers
+        #region ---------------------------------------------------------> AUI
+        self._mgr.AddPane(
+            self.wTextSeq,
+            aui.AuiPaneInfo(
+            ).Bottom(
+            ).Layer(
+                1
+            ).Caption(
+                'Recombinant Sequence'
+            ).Floatable(
+                b=False
+            ).CloseButton(
+                visible=False
+            ).Movable(
+                b=False
+            ).PaneBorder(
+                visible=True
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ------------------------------------------------------> AUI
 
         #region --------------------------------------------------------> Bind
         self.wPlot.canvas.mpl_connect('pick_event', self.OnPickGel)
@@ -4521,25 +4830,43 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> Variables
-        self.rDateC      = date
-        self.rDf         = self.rData[self.rDateC]['DF'].copy()
-        self.rBands      = self.rData[self.rDateC]['PI']['Bands']
-        self.rLanes      = self.rData[self.rDateC]['PI']['Lanes']
-        self.rAlpha      = self.rData[self.rDateC]['PI']['Alpha']
-        self.rProtLoc    = self.rData[self.rDateC]['PI']['ProtLoc']
-        self.rProtLength = self.rData[self.rDateC]['PI']['ProtLength']
-        self.rProtDelta  = self.rData[self.rDateC]['PI']['ProtDelta']
-        self.rProtTarget = self.rData[self.rDateC]['PI']['Prot']
-        self.rRectsGel   = []
-        self.rRectsFrag  = []
-        self.rBlSelC     = [None, None]
-        self.rGelSelC    = [None, None]
-        self.rFragSelC   = [None, None, None]
-        self.rPeptide    = None
+        self.rDateC       = date
+        self.rDf          = self.rData[self.rDateC]['DF'].copy()
+        self.rBands       = self.rData[self.rDateC]['PI']['Bands']
+        self.rLanes       = self.rData[self.rDateC]['PI']['Lanes']
+        self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
+        self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
+        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength'][0]
+        self.rProtDelta   = self.rData[self.rDateC]['PI']['ProtDelta']
+        self.rProtTarget  = self.rData[self.rDateC]['PI']['Prot']
+        self.rRectsGel    = []
+        self.rRectsFrag   = []
+        self.rBlSelC      = [None, None]
+        self.rGelSelC     = [None, None]
+        self.rFragSelC    = [None, None, None]
+        self.rPeptide     = None
+        self.rLCIdx       = None
+        self.rRecSeqColor = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
+        self.rRecSeqC     = (
+            self.rRecSeq.get(self.rDateC)
+            or
+            self.rObj.GetRecSeq(self.cSection, self.rDateC)
+        )
+        self.rRecSeq[self.rDateC] = self.rRecSeqC
         #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Fragments
+        self.rFragments = dmethod.Fragments(
+            self.GetDF4FragmentSearch(), self.rAlpha,'le')
+                
+        self.SetEmptyFragmentAxis()
+        #endregion ------------------------------------------------> Fragments
         
         #region ---------------------------------------------------> 
         self.wText.Clear()
+        self.wTextSeq.Clear()
+        self.wTextSeq.AppendText(self.rRecSeqC)
+        self.wTextSeq.SetInsertionPoint(0)
         #endregion ------------------------------------------------> 
         
         #region -------------------------------------------------> wx.ListCtrl
@@ -4549,14 +4876,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ----------------------------------------------------> Gel Plot
         self.DrawGel()
         #endregion -------------------------------------------------> Gel Plot
-        
-        #region ---------------------------------------------------> Fragments
-        self.rFragments = dmethod.Fragments(
-            self.GetDF4FragmentSearch(), self.rAlpha,'le')
-                
-        self.SetEmptyFragmentAxis()
-        #endregion ------------------------------------------------> Fragments
-
+    
         #region ---------------------------------------------------> Win Title
         self.PlotTitle()
         #endregion ------------------------------------------------> Win Title
@@ -4672,7 +4992,9 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> Variables  
         b = self.rBands[nb]
         l = self.rLanes[nl]
-        c = self.rDf.loc[:,(b,l,'Ptost')].isna().all()
+        c = (self.rDf.loc[:,(b,l,'Ptost')].isna().all() or
+            not self.rFragments[f"{(b,l,'Ptost')}"]['Coord']
+        )
         nc = len(self.cColor['Spot'])
         #endregion ------------------------------------------------> Variables  
 
@@ -4924,6 +5246,12 @@ class LimProtPlot(BaseWindowProteolysis):
 
         #region ---------------------------------------------------> 
         ncL.sort()
+        #------------------------------> 
+        if ncL:
+            pass
+        else:
+            return {}
+        #------------------------------> 
         n,c = ncL[0]
         for nc,cc in ncL[1:]:
             if nc <= c:
@@ -4977,17 +5305,21 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ----------------------------------------------------> Clear
         
         #region ----------------------------------------------------> New Text
-        self.wText.AppendText(f'Details for {self.rBands[band]}\n\n')
-        self.wText.AppendText(f'--> Analyzed Lanes\n\n')
-        self.wText.AppendText(f'Total Lanes  : {len(self.rLanes)}\n')
-        self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
-        self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
-        self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
-        self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
-        self.wText.AppendText(f'Recombinant Sequence:\n')
-        self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
-        self.wText.AppendText(f'Native Sequence:\n')
-        self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        if infoDict:
+            self.wText.AppendText(f'Details for {self.rBands[band]}\n\n')
+            self.wText.AppendText(f'--> Analyzed Lanes\n\n')
+            self.wText.AppendText(f'Total Lanes  : {len(self.rLanes)}\n')
+            self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
+            self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
+            self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
+            self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
+            self.wText.AppendText(f'Recombinant Sequence:\n')
+            self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
+            self.wText.AppendText(f'Native Sequence:\n')
+            self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        else:
+            self.wText.AppendText(f'There were no peptides from '
+                f'{self.rProtTarget} detected here.')
         
         self.wText.SetInsertionPoint(0)
         #endregion -------------------------------------------------> New Text
@@ -5019,17 +5351,21 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ----------------------------------------------------> Clear
         
         #region ----------------------------------------------------> New Text
-        self.wText.AppendText(f'Details for {self.rLanes[lane]}\n\n')
-        self.wText.AppendText(f'--> Analyzed Lanes\n\n')
-        self.wText.AppendText(f'Total Lanes  : {len(self.rBands)}\n')
-        self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
-        self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
-        self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
-        self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
-        self.wText.AppendText(f'Recombinant Sequence:\n')
-        self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
-        self.wText.AppendText(f'Native Sequence:\n')
-        self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        if infoDict:
+            self.wText.AppendText(f'Details for {self.rLanes[lane]}\n\n')
+            self.wText.AppendText(f'--> Analyzed Lanes\n\n')
+            self.wText.AppendText(f'Total Lanes  : {len(self.rBands)}\n')
+            self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
+            self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
+            self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
+            self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
+            self.wText.AppendText(f'Recombinant Sequence:\n')
+            self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
+            self.wText.AppendText(f'Native Sequence:\n')
+            self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        else:
+            self.wText.AppendText(f'There were no peptides from '
+                f'{self.rProtTarget} detected here.')
         
         self.wText.SetInsertionPoint(0)
         #endregion -------------------------------------------------> New Text
@@ -5153,6 +5489,126 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
+    def PrintAllText(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        aSpot = len(self.rBands)*len(self.rLanes)
+        eSpot = sum([0 if x['Coord'] else 1 for k,x in self.rFragments.items()])
+        nPept = self.wLC.wLCS.lc.GetItemCount()
+        coord = self.SeqHighAll()
+        coordN = dmethod.Rec2NatCoord(coord, self.rProtLoc, self.rProtDelta)
+        if coordN[0] == 'NA':
+            coordN = coordN[0]
+        else:
+            coordN = ', '.join(map(str,coordN))
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.wText.AppendText(f'Details for Gel\n\n')
+        self.wText.AppendText(f'--> Analyzed Spots:\n\n')
+        self.wText.AppendText(f'Analyzed Spots: {aSpot}\n')
+        self.wText.AppendText(f'Empty Spots: {eSpot}\n')
+        self.wText.AppendText(f'Detected Peptides: {nPept}\n\n')
+        self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
+        self.wText.AppendText(f'Recombinant Sequence:\n')
+        self.wText.AppendText(f'{", ".join(map(str,coord))}\n\n')
+        self.wText.AppendText(f'Native Sequence:\n')
+        self.wText.AppendText(f'{coordN}')
+        self.wText.SetInsertionPoint(0)
+        #endregion ------------------------------------------------> 
+        
+        return True
+    #---
+
+    def PrintSeqPDF(self, fileP) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        def Helper(coord, label, style):
+            """"""
+            #------------------------------> 
+            head = Paragraph(label)
+            #------------------------------> 
+            if coord:
+                seq = self.GetPDFPrintSeq(coord)
+                coordN = dmethod.Rec2NatCoord(coord, self.rProtLoc, self.rProtDelta)
+                
+                coord = Paragraph(
+                    f"Recombinant protein: {', '.join(map(str,coord))}", style)
+                coordN = Paragraph(
+                    f"Native protein: {', '.join(map(str,coordN))}", style)
+                tSeq = Paragraph(seq, style)
+                return KeepTogether([head, Spacer(1,6), coord, coordN, tSeq])
+            else:
+                empty = Paragraph('No peptides detected here.', style)
+                return KeepTogether([head, Spacer(1,6), empty])
+        #---
+        #region ---------------------------------------------------> Variables
+        doc = SimpleDocTemplate(fileP, pagesize=A4, rightMargin=25,
+            leftMargin=25, topMargin=25, bottomMargin=25)
+        Story  = []
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='Seq', fontName='Courier', fontSize=8.5))
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Gel
+        coord = self.SeqHighAll()
+        Story.append(Helper(coord, 'Gel', styles['Seq']))
+        Story.append(Spacer(1, 18))
+        #endregion ------------------------------------------------> All
+        
+        #region ---------------------------------------------------> B/L
+        for k,l in enumerate(self.rLanes):
+            coord = self.SeqHighBL(bl=k)
+            Story.append(Helper(coord, l, styles['Seq']))
+            Story.append(Spacer(1, 18))
+        #------------------------------>     
+        for k,b in enumerate(self.rBands):
+            coord = self.SeqHighBL(bb=k)
+            Story.append(Helper(coord, b, styles['Seq']))
+            Story.append(Spacer(1, 18))
+        #endregion ------------------------------------------------> B/L
+
+        #region ----------------------------------------------------> Gel Spot
+        for j,l in enumerate(self.rLanes):
+            for k,b in enumerate(self.rBands):
+                coord = self.SeqHighSpot(spot=[k,j])
+                Story.append(Helper(coord,f'{l} - {b}', styles['Seq']))
+                Story.append(Spacer(1, 18))
+        #endregion -------------------------------------------------> Gel Spot
+
+        doc.build(Story)
+        return True
+    #---
+    
     def ShowPeptideLoc(self) -> bool:
         """Show the location of the selected peptide.
 
@@ -5168,7 +5624,7 @@ class LimProtPlot(BaseWindowProteolysis):
             k.set_linewidth(self.cGelLineWidth)
         #endregion ------------------------------------------------> 
 
-        #region --------------------------------------------------->
+        #region ---------------------------------------------------> Gel
         j = 0 
         for b in self.rBands:
             for l in self.rLanes:
@@ -5179,20 +5635,24 @@ class LimProtPlot(BaseWindowProteolysis):
                     else:
                         pass
                 j = j + 1
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------> Gel
         
-        #region --------------------------------------------------->
+        #region ---------------------------------------------------> Fragments
+        fKeys = []
+        #------------------------------> 
         if self.rBlSelC != [None, None]:
-            #------------------------------> 
-            fKeys = []
-            #------------------------------> 
             if self.rSelBands:
                 for l in self.rLanes:
                     fKeys.append(f'{(self.rBands[self.rBlSelC[0]], l, "Ptost")}')
             else:
                 for b in self.rBands:
                     fKeys.append(f'{(b, self.rLanes[self.rBlSelC[1]], "Ptost")}')
-            #------------------------------> 
+        else:
+            for b in self.rBands:
+                for l in self.rLanes:
+                    fKeys.append(f'{(b, l, "Ptost")}')
+        #------------------------------> 
+        if self.rRectsFrag:
             j = 0
             for k in fKeys:
                 for p in self.rFragments[k]['SeqL']:
@@ -5203,7 +5663,7 @@ class LimProtPlot(BaseWindowProteolysis):
                     j = j + 1
         else:
             pass
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------> Fragments
         
         #region ---------------------------------------------------> 
         self.wPlot.canvas.draw()
@@ -5239,9 +5699,260 @@ class LimProtPlot(BaseWindowProteolysis):
         
         return True
     #---
+    
+    def SeqHighPept(self) -> bool:
+        """Highlight the selected sequence in the wx.ListCtrl
+        
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        seq = self.wLC.wLCS.lc.GetItemText(
+            self.wLC.wLCS.lc.GetFirstSelected(), col=1)
+        s = self.rRecSeqC.find(seq)
+        self.rRecSeqColor['Blue']['Pept'] = [(s+1, s+len(seq))]
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------------> Color
+        self.RecSeqHighlight()
+        #endregion ----------------------------------------------------> Color
+        
+        return True
+    #---
+    
+    def SeqHighSpot(
+        self, spot: Optional[list[int]]=None) -> list[tuple[int, int]]:
+        """Highlight the sequences in the selected Gel spot
+        
+            Returns
+            -------
+            list[tuple[int, int]]
+        """
+        #region ---------------------------------------------------> Variables
+        self.rRecSeqColor['Blue']['Frag'] = []
+        #------------------------------> 
+        if spot is None:
+            b,l = self.rGelSelC
+        else:
+            b,l = spot
+        tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
+        #endregion ------------------------------------------------> Variables
+
+        return dtsMethod.MergeOverlapingFragments(
+            self.rFragments[tKey]['Coord'])
+    #---
+    
+    def SeqHighFrag(
+        self, frag: Optional[list[int]]=None) -> list[tuple[int, int]]:
+        """Highlight the sequences in the selected Fragment
+        
+            Returns
+            -------
+            list[tuple[int, int]]
+        """
+        #region ---------------------------------------------------> Variables
+        self.rRecSeqColor['Blue']['Spot'] = []
+        #------------------------------> 
+        if frag is None:
+            b,l,j = self.rFragSelC
+        else:
+            b,l,j = frag
+        tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
+        #endregion ------------------------------------------------> Variables
+
+        return dtsMethod.MergeOverlapingFragments(
+            [self.rFragments[tKey]['Coord'][j]])
+    #---
+    
+    def SeqHighBL(
+        self, bb: Optional[int]=None, bl: Optional[int]=None,
+        ) -> list[tuple[int, int]]:
+        """Highlight the sequences in the selected Band/Lane
+        
+            Returns
+            -------
+            list[tuple[int, int]]
+        """
+        #region ---------------------------------------------------> Variables
+        if bb is None and bl is None:
+            b, l = self.rBlSelC
+        else:
+            b, l = bb, bl
+        #------------------------------> 
+        if b is not None:
+            bN = self.rBands[b]
+            tKey = [f'{(bN, l, "Ptost")}' for l in self.rLanes]
+        else:
+            lN = self.rLanes[l]
+            tKey = [f'{(b, lN, "Ptost")}' for b in self.rBands]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Seqs
+        self.rRecSeqColor['Red'] = []
+        #------------------------------> 
+        seqL = []
+        for k in tKey:
+            seqL = seqL + self.rFragments[k]['Coord']
+        #endregion ------------------------------------------------> Seqs
+
+        return dtsMethod.MergeOverlapingFragments(list(set(seqL)))
+    #---
+    
+    def SeqHighAll(self) -> list[tuple[int, int]]:
+        """Highlight the sequences in all Bands/Lanes
+        
+            Returns
+            -------
+            list(tuple(int, int))
+                All detected fragments in the gel
+        """
+        #region ---------------------------------------------------> Seqs
+        self.rRecSeqColor['Red'] = []
+        #------------------------------> 
+        pept = self.wLC.wLCS.lc.GetColContent(1)
+        #------------------------------> 
+        resN = []
+        for p in pept:
+            s = self.rRecSeqC.find(p)
+            resN.append((s+1, s+len(p)))
+        #endregion ------------------------------------------------> Seqs
+
+        return dtsMethod.MergeOverlapingFragments(resN, 1)
+    #---
+    
+    def RecSeqHighlight(self) -> bool:
+        """Apply the colors to the recombinant sequence
+    
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Reset
+        self.wTextSeq.SetStyle(
+            0, self.wTextSeq.GetLastPosition(), self.rTextStyleDef)
+        #endregion ----------------------------------------------------> Reset
+    
+        #region ---------------------------------------------------> Variables
+        styleRed = wx.TextAttr('RED', font=self.rTextStyleDef.GetFont())
+        styleRed.SetFontWeight(wx.FONTWEIGHT_BOLD)
+        styleBlue = wx.TextAttr('BLUE', font=self.rTextStyleDef.GetFont())
+        styleBlue.SetFontWeight(wx.FONTWEIGHT_BOLD)
+        #endregion ------------------------------------------------> Variables
+        
+        #region -------------------------------------------------------> Color
+        for p in self.rRecSeqColor['Red']:
+            self.wTextSeq.SetStyle(p[0]-1, p[1], styleRed)
+            
+        #------------------------------> 
+        for _,v in self.rRecSeqColor['Blue'].items():
+            for p in v:
+                self.wTextSeq.SetStyle(p[0]-1, p[1], styleBlue)
+        #endregion ----------------------------------------------------> Color
+        
+        return True
+    #---
+    
+    def ExportSeq(self) -> bool:
+        """Export the recombinant sequence 
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> wx.Dialog
+        dlg = dtsWindow.FileSelectDialog('save', config.elPDF, parent=self)
+        if dlg.ShowModal():
+            self.PrintSeqPDF(dlg.GetPath())
+        else:
+            pass
+        #endregion ------------------------------------------------> wx.Dialog
+
+        dlg.Destroy()
+        return True
+    #---
+    
+    def GetPDFPrintSeq(self, region:list[tuple[int,int]]) -> str:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        black = []
+        blue = []
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Parts
+        try:
+            a,b = region[0]
+        except IndexError:
+            return self.rRecSeqC
+        
+        black.append(self.rRecSeqC[0:a-1])
+        blue.append(self.rRecSeqC[a-1:b])
+        #------------------------------> 
+        for ac,bc in region[1:]:
+            black.append(self.rRecSeqC[b:ac-1])
+            blue.append(self.rRecSeqC[ac-1:bc])
+            a, b = ac, bc
+        #------------------------------> 
+        black.append(self.rRecSeqC[b:])
+        #endregion ------------------------------------------------> Parts
+
+        #region ---------------------------------------------------> Colors
+        sO = ''
+        for bl,bs in zip_longest(black,blue):
+            if bl:
+                sO = sO+f'<font color="black">{bl}</font>'
+            else:
+                pass
+            if bs:
+                sO = sO+f'<font color="red">{bs}</font>'
+            else:
+                pass
+        #endregion ------------------------------------------------> Colors
+
+        return sO
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Event Methods
+    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
+        """Process a wx.ListCtrl select event.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+            bool
+        """
+        super().OnListSelect(event)
+        self.SeqHighPept()
+        return True
+    #---
+    
     def OnPickFragment(self, event) -> bool:
         """Display info about the selected fragment.
     
@@ -5296,7 +6007,12 @@ class LimProtPlot(BaseWindowProteolysis):
         else:
             pass
         #endregion ----------------------------------------> Remove Sel in Gel
-
+        
+        #region -----------------------------------------------------> Rec Seq
+        self.rRecSeqColor['Blue']['Frag'] = self.SeqHighFrag()
+        self.RecSeqHighlight()
+        #endregion --------------------------------------------------> Rec Seq
+        
         return True
     #---
     
@@ -5326,6 +6042,7 @@ class LimProtPlot(BaseWindowProteolysis):
         if self.rGelSelC != spotC:
             self.rGelSelC = spotC
         else:
+            self.PrintGelSpotText(x-1,y-1)
             return True
         #endregion --------------------------------------------> Spot Selected
         
@@ -5364,6 +6081,11 @@ class LimProtPlot(BaseWindowProteolysis):
         else:
             pass
         #endregion ------------------------------------------------> 
+        
+        #region -----------------------------------------------------> Rec Seq
+        self.rRecSeqColor['Blue']['Spot'] = self.SeqHighSpot()
+        self.RecSeqHighlight()
+        #endregion --------------------------------------------------> Rec Seq
 
         return True
     #---
@@ -5394,44 +6116,22 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ------------------------------------------------> Variables
         
         #region -----------------------------------------------> Redraw or Not
-        blSel = [y-1, x-1]
-        if self.rSelBands and self.rBlSelC[0] != blSel[0]:
-            self.rBlSelC = [blSel[0], None]
-        elif not self.rSelBands and self.rBlSelC[1] != blSel[1]:
-            self.rBlSelC = [None, blSel[1]]
+        if self.rGelSpotPicked:
+            self.rGelSpotPicked = False
+            return True
         else:
             #------------------------------> 
-            if self.rGelSpotPicked:
-                self.rGelSpotPicked = False
+            blSel = [y-1, x-1]
+            #------------------------------> Update sel curr or print again
+            if self.rSelBands and self.rBlSelC[0] != blSel[0]:
+                self.rBlSelC = [blSel[0], None]
+            elif not self.rSelBands and self.rBlSelC[1] != blSel[1]:
+                self.rBlSelC = [None, blSel[1]]
             else:
-                #------------------------------> 
-                if self.rSpotSelLine is not None:
-                    self.rSpotSelLine[0].remove()
-                    self.rSpotSelLine = None
-                    self.rGelSelC = [None, None]
-                    self.wPlot.canvas.draw()
-                else:
-                    pass
-                #------------------------------> 
                 self.PrintBLText(x-1,y-1)
-            #------------------------------> 
-            if self.rFragSelLine is not None:
-                self.rFragSelLine[0].remove()
-                self.rFragSelLine = None
-                self.wPlotM.canvas.draw()
-                self.rFragSelC = [None, None, None]
-            else:
-                pass
-            #------------------------------>
-            if self.rUpdateColors:
-                self.UpdateGelColor()
-                self.rUpdateColors = False
-            else:
-                pass
-            #------------------------------> 
-            return True
+                return True
         #endregion --------------------------------------------> Redraw or Not
-
+        
         #region -----------------------------------------------> Draw New Rect
         self.DrawBLRect(x,y)
         #endregion --------------------------------------------> Draw New Rect
@@ -5439,23 +6139,11 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ----------------------------------------------> Draw Fragments
         self.DrawFragments(x,y)
         #endregion -------------------------------------------> Draw Fragments
-
-        #region ---------------------------------------------------> 
-        if self.rGelSpotPicked:
-            self.rGelSpotPicked = False
-        else:
-            #------------------------------> 
-            if self.rSpotSelLine is not None:
-                self.rSpotSelLine[0].remove()
-                self.rSpotSelLine = None
-                self.rGelSelC = [None, None]
-                self.wPlot.canvas.draw()
-            else:
-                pass
-            #------------------------------> 
-            self.PrintBLText(x-1,y-1)
-        #endregion ------------------------------------------------> 
         
+        #region ---------------------------------------------------> Print
+        self.PrintBLText(x-1,y-1)
+        #endregion ------------------------------------------------> Print
+
         #region ---------------------------------------------------> 
         if self.rUpdateColors:
             self.UpdateGelColor()
@@ -5463,6 +6151,11 @@ class LimProtPlot(BaseWindowProteolysis):
         else:
             pass
         #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> Rec Seq
+        self.rRecSeqColor['Red'] = self.SeqHighBL()
+        self.RecSeqHighlight()
+        #endregion ------------------------------------------------> Rec Seq
 
         return True
     #---
@@ -5500,11 +6193,14 @@ class LimProtPlot(BaseWindowProteolysis):
             #------------------------------> Variables
             p = Path(dlg.GetPath())
             #------------------------------> Export
-            if self.rSelBands:
-                fName = p / f'{self.rDateC}-{self.rBands[self.rBlSelC[0]]}-fragments.pdf'
-            else:
-                fName = p / f'{self.rDateC}-{self.rLanes[self.rBlSelC[1]]}-fragments.pdf'
-            self.wPlotM.figure.savefig(fName)
+            try:
+                if self.rSelBands:
+                    fName = p / f'{self.rDateC}-{self.rBands[self.rBlSelC[0]]}-fragments.pdf'
+                else:
+                    fName = p / f'{self.rDateC}-{self.rLanes[self.rBlSelC[1]]}-fragments.pdf'
+                self.wPlotM.figure.savefig(fName)
+            except TypeError:
+                pass
             #------------------------------> 
             fName = p / f'{self.rDateC}-gel.pdf'
             self.wPlot.figure.savefig(fName)
@@ -5529,6 +6225,12 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
+        self.rPeptide = None
+        self.rLCIdx = None
+        self.rRecSeqColor['Blue']['Pept'] = []
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
         if (rID := self.wLC.wLCS.lc.GetFirstSelected()):
             self.wLC.wLCS.lc.Select(rID, on=0)
         else:
@@ -5539,7 +6241,6 @@ class LimProtPlot(BaseWindowProteolysis):
         for r in self.rRectsFrag:
             r.set_linewidth(self.cGelLineWidth)
         
-        
         for r in self.rRectsGel:
             r.set_linewidth(self.cGelLineWidth)
         #endregion ------------------------------------------------> 
@@ -5548,19 +6249,16 @@ class LimProtPlot(BaseWindowProteolysis):
         if plot:
             self.wPlotM.canvas.draw()
             self.wPlot.canvas.draw()
+            self.RecSeqHighlight()
         else:
             pass
-        #endregion ------------------------------------------------> 
-
-        #region ---------------------------------------------------> 
-        self.rPeptide = None
         #endregion ------------------------------------------------> 
 
         return True
     #---
     
     def OnClearFrag(self, plot=True) -> bool:
-        """Clear the FRagment selection.
+        """Clear the Fragment selection.
     
             Parameters
             ----------
@@ -5573,6 +6271,8 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
+        self.rRecSeqColor['Blue']['Frag'] = []
+        #------------------------------> 
         if self.rFragSelLine is not None:
             self.rFragSelLine[0].remove()
             self.rFragSelLine = None
@@ -5580,16 +6280,23 @@ class LimProtPlot(BaseWindowProteolysis):
 
         #region ---------------------------------------------------> 
         if plot:
+            #------------------------------> 
             self.wPlotM.canvas.draw()
+            #------------------------------> 
             if self.rFragSelC != [None, None, None]:
                 self.wText.Clear()
-                #------------------------------> 
-                if self.rSelBands:
-                    self.PrintBText(self.rBlSelC[0])
+                #------------------------------> To test for showAll
+                if any(self.rGelSelC):
+                    if self.rSelBands:
+                        self.PrintBText(self.rBlSelC[0])
+                    else:
+                        self.PrintLText(self.rBlSelC[1])
                 else:
-                    self.PrintLText(self.rBlSelC[1])
+                    pass
             else:
                 pass
+            #------------------------------> 
+            self.RecSeqHighlight()
         else:
             pass
         #endregion ------------------------------------------------> 
@@ -5615,6 +6322,8 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
+        self.rRecSeqColor['Blue']['Spot'] = []
+        
         if self.rSpotSelLine is not None:
             self.rSpotSelLine[0].remove()
             self.rSpotSelLine = None
@@ -5622,7 +6331,9 @@ class LimProtPlot(BaseWindowProteolysis):
 
         #region ---------------------------------------------------> 
         if plot:
+            #------------------------------> 
             self.wPlot.canvas.draw()
+            #------------------------------> 
             if self.rGelSelC != [None, None]:
                 self.wText.Clear()
                 #------------------------------> 
@@ -5632,6 +6343,8 @@ class LimProtPlot(BaseWindowProteolysis):
                     self.PrintLText(self.rBlSelC[1])
             else:
                 pass
+            #------------------------------> 
+            self.RecSeqHighlight()
         else:
             pass
         #endregion ------------------------------------------------> 
@@ -5657,6 +6370,8 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
+        self.rRecSeqColor['Red'] = []
+        self.rRecSeqColor['Blue']['Frag'] = []
         self.SetEmptyFragmentAxis()
         self.OnClearGel(plot=False)
         #endregion ------------------------------------------------> 
@@ -5671,12 +6386,14 @@ class LimProtPlot(BaseWindowProteolysis):
         if plot:
             self.wPlot.canvas.draw()
             self.wText.Clear()
+            self.RecSeqHighlight()
         else:
             pass
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 
         self.rBlSelC = [None, None]
+        self.rRectsFrag = []
         #endregion ------------------------------------------------> 
 
         return True
@@ -5699,6 +6416,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> 
         self.wPlotM.canvas.draw()
         self.wPlot.canvas.draw()
+        self.RecSeqHighlight()
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
@@ -5716,6 +6434,7 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> 
+        idx = self.rLCIdx
         self.OnClearAll()
         #endregion ------------------------------------------------> 
         
@@ -5783,6 +6502,22 @@ class LimProtPlot(BaseWindowProteolysis):
         self.wPlotM.canvas.draw()
         #endregion ------------------------------------------------> 
         
+        #region --------------------------------------------> Reselect peptide
+        if idx is not None:
+            self.wLC.wLCS.lc.Select(idx, on=1)
+        else:
+            pass
+        #endregion -----------------------------------------> Reselect peptide
+        
+        #region ---------------------------------------------------> Show Text
+        self.PrintAllText()
+        #endregion ------------------------------------------------> Show Text
+        
+        #region ---------------------------------------------------> Rec Sec
+        self.rRecSeqColor['Red'] = self.SeqHighAll()
+        self.RecSeqHighlight()
+        #endregion ------------------------------------------------> Rec Sec
+
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
@@ -5826,6 +6561,13 @@ class TarProtPlot(BaseWindowProteolysis):
         self.cTitle       = f'{cParent.cTitle} - {self.cSection}'
         self.rObj         = cParent.rObj
         self.rData        = self.rObj.dConfigure[self.cSection]()
+        self.rDate, cMenuData = self.SetDateMenuDate()
+        #------------------------------> 
+        try:
+            self.ReportPlotDataError()
+        except Exception as e:
+            raise e
+        #------------------------------> 
         self.rDateC       = None
         self.rAlpha       = None
         self.rFragments   = None
@@ -5838,8 +6580,8 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rCtrl        = None
         self.rIdxP        = None
         self.rPeptide     = None
-        #------------------------------> 
-        self.rDate, cMenuData = self.SetDateMenuDate()
+        self.rRecSeq      = {}
+        self.rRecSeqC     = ''
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> 
@@ -5906,6 +6648,67 @@ class TarProtPlot(BaseWindowProteolysis):
         return True
     #---
     
+    def SetDateMenuDate(self) -> tuple[list, dict]:
+        """Set the self.rDate list and the menuData dict needed to build the Tool
+            menu.
+
+            Returns
+            -------
+            tuple of list and dict
+            The list is a list of str with the dates in the analysis.
+            The dict has the following structure:
+                {
+                    'menudate' : [List of dates],
+                }                    
+        """
+        #region ---------------------------------------------------> Fill dict
+        #------------------------------> Variables
+        date = []
+        menuData = {'FA':{}}
+        #------------------------------> Fill 
+        for k,v in self.rData.items():
+            if k != 'Error':
+                #------------------------------> 
+                date.append(k)
+                #------------------------------> 
+                menuData['FA'][k] = {}
+                aa = v.get('AA', {})
+                hist = v.get('Hist',{})
+                menuData['FA'][k]['AA'] = [x for x in aa.keys()]
+                menuData['FA'][k]['Hist'] = [x for x in hist.keys()]    
+            else:
+                pass        
+        #------------------------------> 
+        menuData['menudate'] = date
+        #endregion ------------------------------------------------> Fill dict
+        
+        return (date, menuData)
+    #---
+    
+    def UpdateUMSAPData(self):
+        """Update the window after the UMSAP file have been updated.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.rObj  = self.cParent.rObj
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rDate, menuData = self.SetDateMenuDate()
+        menuBar = self.GetMenuBar()
+        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
+        
+        return True
+    #---
+    
     def UpdateDisplayedData(self, date) -> bool:
         """Update the GUI and attributes when a new date is selected.
     
@@ -5923,13 +6726,19 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rDf          = self.rData[self.rDateC]['DF'].copy()
         self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
         self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
-        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength']
+        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength'][0]
         self.rFragSelLine = None
         self.rFragSelC    = [None, None, None]
         self.rExp         = self.rData[self.rDateC]['PI']['Exp']
         self.rCtrl        = self.rData[self.rDateC]['PI']['Ctrl']
         self.rIdxP        = pd.IndexSlice[self.rExp,'P']
         self.rPeptide     = None
+        self.rRecSeqC, self.rNatSeqC = (
+            self.rRecSeq.get(self.rDateC)
+            or
+            self.rObj.GetSeq(self.cSection, self.rDateC)
+        )
+        self.rRecSeq[self.rDateC] = (self.rRecSeqC, self.rNatSeqC)
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> 
@@ -6300,6 +7109,7 @@ class TarProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> 
         if plot:
             self.wPlotM.canvas.draw()
+            self.SetAxisInt()
             self.wPlot.canvas.draw()
         else:
             pass
@@ -6307,6 +7117,7 @@ class TarProtPlot(BaseWindowProteolysis):
 
         #region ---------------------------------------------------> 
         self.rPeptide = None
+        self.rLCIdx = None
         #endregion ------------------------------------------------> 
 
         return True
@@ -6357,6 +7168,7 @@ class TarProtPlot(BaseWindowProteolysis):
         
         #region ---------------------------------------------------> 
         self.wPlotM.canvas.draw()
+        self.SetAxisInt()
         self.wPlot.canvas.draw()
         #endregion ------------------------------------------------> 
         
@@ -6366,7 +7178,1822 @@ class TarProtPlot(BaseWindowProteolysis):
 
         return True
     #---
+    
+    def OnCpR(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.cParent.rWindow[self.cSection]['FA'].append(
+            CpRPlot(self, self.rDateC, self.rData[self.rDateC]['CpR']))
+        return True
+    #---
+    
+    def OnCEvol(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.cParent.rWindow[self.cSection]['FA'].append(
+            CEvolPlot(self, self.rDateC, self.rData[self.rDateC]['CEvol']))
+        return True
+    #---
+    
+    def OnAASelect(self, aa:str) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.cParent.rWindow[self.cSection]['FA'].append(
+            AAPlot(self, self.rDateC, aa, self.rData[self.rDateC]['AA'][aa])
+        )
+        return True
+    #---
+    
+    def OnPDBMap(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        def Helper(pdbObj, tExp, tAlign, tDF, name):
+            """
+        
+                Parameters
+                ----------
+                
+        
+                Returns
+                -------
+                
+        
+                Raise
+                -----
+                
+            """
+            idx = pd.IndexSlice
+            #------------------------------> 
+            for e in tExp:
+                #------------------------------> 
+                betaDict = {}
+                k = 0
+                #------------------------------> 
+                for j,s in enumerate(tAlign[0].seqB):
+                    if s != '-':
+                        if tAlign[0].seqA[j] != '-':
+                            betaDict[pdbRes[k]] = tDF.iat[k, tDF.columns.get_loc(idx['Rec',e])]
+                            k = k + 1
+                        else:
+                            pass
+                    else:
+                        pass
+                #------------------------------> 
+                pdbObj.SetBeta(pdbObj.rChain[0], betaDict)
+                pdbObj.WritePDB(
+                    pdbO/f'{name[0]} - {e} - {name[1]}.pdb', pdbObj.rChain[0])
+        #---
+        #region ---------------------------------------------------> dlg
+        dlg = FA2Btn(
+            ['PDB', 'Output'],
+            ['Path to the PDB file', 'Path to the output folder'],
+            [config.elPDB, config.elPDB],
+            [dtsValidator.InputFF('file', ext=config.esPDB),
+            dtsValidator.OutputFF('folder', ext=config.esPDB)],
+            parent = self
+        )
+        #endregion ------------------------------------------------> dlg
+        
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal():
+            pdbI = dlg.wBtnI.tc.GetValue()
+            pdbO = Path(dlg.wBtnO.tc.GetValue())
+        else:
+            dlg.Destroy()
+            return False
+        #endregion ------------------------------------------------> Get Path
+        
+        #region ---------------------------------------------------> Variables
+        pdbObj   = dtsFF.PDBFile(pdbI)
+        pdbSeq   = pdbObj.GetSequence(pdbObj.rChain[0])
+        pdbRes   = pdbObj.GetResNum(pdbObj.rChain[0])
+        cut      = self.rObj.GetCleavagePerResidue(self.cSection, self.rDateC)
+        cEvol    = self.rObj.GetCleavageEvolution(self.cSection, self.rDateC)
+        blosum62 = substitution_matrices.load("BLOSUM62")
+        #endregion ------------------------------------------------> Variables
+        
+        #region -----------------------------------------------> Run
+        align = pairwise2.align.globalds(
+            pdbSeq, self.rRecSeqC, blosum62, -10, -0.5)
+        #------------------------------> 
+        Helper(pdbObj, self.rExp, align, cut, (self.rDateC, 'CpR'))
+        Helper(pdbObj, self.rExp, align, cEvol, (self.rDateC, 'CEvol'))
+        #endregion --------------------------------------------> Run
+
+        dlg.Destroy()
+        return True
+    #---
+    
+    def OnAANew(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> dlg
+        dlg = dtsWindow.UserInput1Text(
+            'New AA Distribution Analysis', 
+            'Positions', 
+            'Number of residues around the cleavage site to consider, e.g. 5',
+            parent = self,
+            validator = dtsValidator.NumberList('int', vMin=1, nN=1)
+        )
+        #endregion ------------------------------------------------> dlg
+        
+        #region ---------------------------------------------------> Get Pos
+        if dlg.ShowModal():
+            pos = int(dlg.input.tc.GetValue())
+            dateC = dtsMethod.StrNow()
+        else:
+            dlg.Destroy()
+            return False
+        #endregion ------------------------------------------------> Get Pos
+        
+        #region ---------------------------------------------------> Run 
+        dfI = self.rData[self.rDateC]['DF']
+        idx = pd.IndexSlice
+        dfI = dfI.loc[:,idx[['Sequence']+self.rExp,['Sequence', 'P']]]
+        dfO = dmethod.R2AA(
+            dfI, self.rRecSeqC, self.rAlpha, self.rProtLength, pos=pos)
+        #endregion ------------------------------------------------> Run
+        
+        #region -----------------------------------------------> Save & Update
+        #------------------------------> File
+        date = f'{self.rDateC.split(" - ")[0]}'
+        section = f'{self.cSection.replace(" ", "-")}'
+        folder = f'{date}_{section}'
+        fileN = f'{dateC}_AA-{pos}.txt'
+        fileP = self.rObj.rStepDataP/folder/fileN
+        dtsFF.WriteDF2CSV(fileP, dfO)
+        #------------------------------> Umsap
+        self.rObj.rData[self.cSection][self.rDateC]['AA'][f'{date}_{pos}'] = fileN
+        self.rObj.Save()
+        #------------------------------> Refresh
+        #--------------> UMSAPControl
+        self.cParent.UpdateFileContent()
+        #--------------> TarProt
+        self.rObj = self.cParent.rObj
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        #--------------> Menu
+        _, menuData = self.SetDateMenuDate()
+        self.mBar.mTool.mFurtherA.UpdateFAList(self.rDateC, menuData['FA'])
+        #--------------> GUI
+        self.OnAASelect(f'{date}_{pos}')
+        #endregion --------------------------------------------> Save & Update
+
+        dlg.Destroy()
+        return True
+    #---
+    
+    def OnHistSelect(self, hist:str) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.cParent.rWindow[self.cSection]['FA'].append(
+            HistPlot(
+                self, self.rDateC, hist, self.rData[self.rDateC]['Hist'][hist]
+        ))
+        return True
+    #---
+    
+    def OnHistNew(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> dlg
+        dlg = dtsWindow.UserInput1Text(
+            'New Histogram Analysis', 
+            'Histograms Windows', 
+            'Size of the histogram windows, e.g. 50 or 50 100 200',
+            parent = self,
+            validator = dtsValidator.NumberList(numType='int', vMin=0, sep=' ')
+        )
+        #endregion ------------------------------------------------> dlg
+        
+        #region ---------------------------------------------------> Get Pos
+        if dlg.ShowModal():
+            win = [int(x) for x in dlg.input.tc.GetValue().split()]
+            dateC = dtsMethod.StrNow()
+        else:
+            dlg.Destroy()
+            return False
+        #endregion ------------------------------------------------> Get Pos
+        
+        #region ---------------------------------------------------> Run 
+        dfI = self.rData[self.rDateC]['DF']
+        idx = pd.IndexSlice
+        a = config.dfcolTarProtFirstPart[2:]+self.rExp
+        b = config.dfcolTarProtFirstPart[2:]+len(self.rExp)*['P']
+        dfI = dfI.loc[:,idx[a,b]]
+        dfO = dmethod.R2Hist(
+            dfI, self.rAlpha, win, self.rData[self.rDateC]['PI']['ProtLength'])
+        #endregion ------------------------------------------------> Run
+        
+        #region -----------------------------------------------> Save & Update
+        #------------------------------> File
+        date = f'{self.rDateC.split(" - ")[0]}'
+        section = f'{self.cSection.replace(" ", "-")}'
+        folder = f'{date}_{section}'
+        fileN = f'{dateC}_Hist-{win}.txt'
+        fileP = self.rObj.rStepDataP/folder/fileN
+        dtsFF.WriteDF2CSV(fileP, dfO)
+        #------------------------------> Umsap
+        self.rObj.rData[self.cSection][self.rDateC]['Hist'][f'{date}_{win}'] = fileN
+        self.rObj.Save()
+        #------------------------------> Refresh
+        #--------------> UMSAPControl
+        self.cParent.UpdateFileContent()
+        #--------------> TarProt
+        self.rObj = self.cParent.rObj
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        #--------------> Menu
+        _, menuData = self.SetDateMenuDate()
+        self.mBar.mTool.mFurtherA.UpdateFAList(self.rDateC, menuData['FA'])
+        #--------------> GUI
+        self.OnHistSelect(f'{date}_{win}')
+        #endregion --------------------------------------------> Save & Update
+        
+        dlg.Destroy()
+        return True
+    #---
+    
+    def OnSeqExport(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> dlg
+        dlg = window.FABtnText(
+            'File', 
+            'Path to the output file',
+            config.elPDF,
+            dtsValidator.OutputFF('file', ext=config.esPDF[0]),
+            'Length',
+            'Residues per line in the output file, e.g. 100',
+            dtsValidator.NumberList('int', vMin=1, vMax=100, nN=1),
+            parent = self,
+        )
+        #endregion ------------------------------------------------> dlg
+        
+        #region ---------------------------------------------------> Get Pos
+        if dlg.ShowModal():
+            fileP  = dlg.wBtnTc.tc.GetValue()
+            length = int(dlg.wLength.tc.GetValue())
+        else:
+            dlg.Destroy()
+            return False
+        #endregion ------------------------------------------------> Get Pos
+        
+        #region ---------------------------------------------------> Run 
+        try:
+            dmethod.R2SeqAlignment(
+                self.rDf, 
+                self.rAlpha, 
+                self.rRecSeqC, 
+                self.rNatSeqC, 
+                fileP, 
+                length
+            )
+        except Exception as e:
+            msg = 'Export of Sequence Alignments failed.'
+            dtscore.Notification('errorF', msg=msg, tException=e)
+        #endregion ------------------------------------------------> Run
+        
+        # dlg.Destroy()
+        return True
+    #---
     #endregion -------------------------------------------------> Event Methods
+#---
+
+
+class AAPlot(BaseWindowPlot):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    #------------------------------> To id the window
+    cName = config.nwAAPlot
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nuAA
+    cColor   = config.color[cName]
+    #------------------------------> 
+    rBandWidth = 0.8
+    rBandStart = 0.4
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: wx.Window, dateC: str, key: str, fileN: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle  = f"{cParent.cTitle} - {dateC} - {self.cSection} - {key}"
+        self.cDateC  = dateC
+        self.cKey    = key
+        self.cFileN   = fileN
+        self.rUMSAP  = cParent.cParent
+        self.rObj    = cParent.rObj
+        self.rData  = self.rObj.GetFAData(
+            cParent.cSection,cParent.rDateC,fileN, [0,1])
+        self.rRecSeq = self.rObj.GetRecSeq(cParent.cSection, dateC)
+        menuData     = self.SetMenuDate()
+        self.rPos    = menuData['Pos']
+        self.rLabel  = menuData['Label']
+        self.rExp    = True
+        self.rLabelC = ''
+        super().__init__(cParent, menuData)
+        #endregion --------------------------------------------> Initial Setup
+        
+        #region ---------------------------------------------------> Plot
+        self.UpdatePlot(menuData['Label'][0])
+        #endregion ------------------------------------------------> Plot
+
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetMenuDate(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        menuData = {}
+        menuData['Label'] = [k for k in self.rData.columns.unique(level=0)[1:-1]]
+        menuData['Pos'] = [k for k in self.rData[menuData['Label'][0]].columns.unique(level=0)]
+        return menuData
+    #---
+    
+    def SetAxisExp(self) -> bool:
+        """ General details of the plot area 
+        
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Clear
+        self.wPlot.figure.clear()
+        self.wPlot.axes = self.wPlot.figure.add_subplot(111)
+        #endregion ----------------------------------------------------> Clear
+        
+        #region ---------------------------------------------------> Set ticks
+        self.wPlot.axes.set_ylabel('AA distribution (%)')
+        self.wPlot.axes.set_xlabel('Positions')
+        self.wPlot.axes.set_xticks(range(1,len(self.rPos)+1,1))
+        self.wPlot.axes.set_xticklabels(self.rPos)            
+        self.wPlot.axes.set_xlim(0,len(self.rPos)+1)
+        #endregion ------------------------------------------------> Set ticks
+        
+        return True
+    #---
+    
+    def PlotExp(self, label: str) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Data
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[('AA', label),:]].iloc[0:-1,:]
+        df.iloc[:,1:] = 100*(df.iloc[:,1:]/df.iloc[:,1:].sum(axis=0))
+        #endregion ------------------------------------------------> Data
+        
+        #region ---------------------------------------------------> Bar
+        col = df.loc[:,idx[label,:]].columns.unique(level=1)
+        for k,c in enumerate(col, start=1):
+            #------------------------------> Prepare DF
+            dfB = df.loc[:,idx[('AA',label),('AA',c)]]
+            dfB = dfB[dfB[(label,c)] != 0]
+            dfB = dfB.sort_values(by=[(label,c),('AA','AA')], ascending=False)
+            #------------------------------> Supp Data
+            cumS = [0]+dfB[(label,c)].cumsum().values.tolist()[:-1]
+            #--------------> 
+            color = []
+            text = []
+            r = 0
+            for row in dfB.itertuples(index=False):
+                #--------------> 
+                color.append(self.cColor['BarColor'][row[0]] 
+                     if row[0] in config.lAA1 else self.cColor['Xaa'])
+                #--------------> 
+                if row[1] >= 10.0:
+                    s = f'{row[0]}\n{row[1]:.1f}'
+                    y = (2*cumS[r]+row[1])/2
+                    text.append([k,y,s])
+                else:
+                    pass
+                r = r + 1
+            #------------------------------> Bar
+            self.wPlot.axes.bar(
+                k, 
+                dfB[(label,c)].values.tolist(),
+                bottom    = cumS,
+                color     = color,
+                edgecolor = 'black',
+            )
+            #------------------------------> Text
+            for x,y,t in text:
+                self.wPlot.axes.text(
+                    x,y,t, 
+                    fontsize            = 9,
+                    horizontalalignment = 'center',
+                    verticalalignment   = 'center',
+                )
+        #endregion ------------------------------------------------> Bar
+        
+        #region --------------------------------------------------> Tick Color
+        chi = self.rData.loc[:,idx[('AA', label),:]].iloc[-1,1:].values
+        self.wPlot.axes.set_title(label)
+        for k,v in enumerate(chi):
+            color = self.cColor['Chi'][v]
+            self.wPlot.axes.get_xticklabels()[k].set_color(color)
+        #endregion -----------------------------------------------> Tick Color
+
+        self.wPlot.canvas.draw()
+        
+        return True
+    #---
+    
+    def SetAxisPos(self) -> bool:
+        """ General details of the plot area 
+        
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Clear
+        self.wPlot.figure.clear()
+        self.wPlot.axes = self.wPlot.figure.add_subplot(111)
+        #endregion ----------------------------------------------------> Clear
+        
+        #region ---------------------------------------------------> Set ticks
+        self.wPlot.axes.set_ylabel('AA distribution (%)')
+        self.wPlot.axes.set_xlabel('Amino acids')
+        self.wPlot.axes.set_xticks(range(1,len(config.lAA1)+1,1))
+        self.wPlot.axes.set_xticklabels(config.lAA1)            
+        self.wPlot.axes.set_xlim(0,len(config.lAA1)+1)
+        #endregion ------------------------------------------------> Set ticks
+        
+        return True
+    #---
+    
+    def PlotPos(self, label: str) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Data
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[:,label]].iloc[0:-1,0:-1]
+        df = 100*(df/df.sum(axis=0))
+        #endregion ------------------------------------------------> Data
+        
+        #region ---------------------------------------------------> Bar
+        n = len(self.rLabel)
+        for row in df.itertuples():
+            s = row[0]+1-self.rBandStart
+            w = self.rBandWidth/n
+            for x in range(0,n,1):
+                self.wPlot.axes.bar(
+                    s+x*w, 
+                    row[x+1],
+                    width     = w,
+                    align     = 'edge',
+                    color     = self.cColor['Spot'][x%len(self.cColor['Spot'])],
+                    edgecolor = 'black',
+                )
+        #endregion ------------------------------------------------> Bar
+        
+        #region ------------------------------------------------------> Legend
+        leg = []
+        legLabel = self.rData.columns.unique(level=0)[1:-1]
+        for i in range(0, n, 1):
+            leg.append(mpatches.Patch(
+                color = self.cColor['Spot'][i],
+                label = legLabel[i],
+            ))
+        leg = self.wPlot.axes.legend(
+            handles        = leg,
+            loc            = 'upper left',
+            bbox_to_anchor = (1, 1)
+        )
+        leg.get_frame().set_edgecolor('k')		
+        #endregion ---------------------------------------------------> Legend
+        
+        self.wPlot.axes.set_title(label)
+        self.wPlot.canvas.draw()
+        
+        return True
+    #---
+    
+    def UpdatePlot(self, label: str, exp: bool=True):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.rExp    = exp
+        self.rLabelC = label
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if exp:
+            self.SetAxisExp()
+            self.PlotExp(label)
+        else:
+            self.SetAxisPos()
+            self.PlotPos(label)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> Zoom
+        self.wPlot.ZoomResetSetValues()
+        #endregion ------------------------------------------------> Zoom
+
+        return True
+    #---
+    
+    def UpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info
+    
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            #------------------------------> 
+            x, y = event.xdata, event.ydata
+            #------------------------------> 
+            if self.rExp:
+                return self.UpdateStatusBarExp(x,y)
+            else:
+                #------------------------------> Position
+                return self.UpdateStatusBarPos(x,y)
+        else:
+            self.wStatBar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
+        
+        return True
+    #---
+    
+    def UpdateStatusBarExp(self, x: int, y: float) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if 1 <= (xf := round(x)) <= len(self.rPos):
+            pass
+        else:
+            self.wStatBar.SetStatusText('')
+            return False
+        pos = self.rPos[xf-1]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        df = self.rData.loc[:,[('AA', 'AA'),(self.rLabelC, pos)]].iloc[0:-1,:]
+        df['Pc'] = 100*(df.iloc[:,1]/df.iloc[:,1].sum(axis=0))
+        df = df.sort_values(
+            by=[(self.rLabelC, pos),('AA','AA')], ascending=False)
+        df['Sum'] = df['Pc'].cumsum()
+        df = df.reset_index(drop=True)
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        try:
+            row = df[df['Sum'].gt(y)].index[0]
+        except Exception:
+            self.wStatBar.SetStatusText('')
+            return False
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        aa    = df.iat[row,0]
+        pc    = f'{df.iat[row,-2]:.1f}'
+        absV  = f'{df.iat[row,1]:.0f}'
+        inSeq = self.rRecSeq.count(aa)
+        text = (f'Pos={pos}  AA={aa}  {pc}%  Abs={absV}  InSeq={inSeq}')
+        #endregion ------------------------------------------------> 
+
+        self.wStatBar.SetStatusText(text)    
+        return True
+    #---
+    
+    def UpdateStatusBarPos(self, x: int, y: int) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if 1 <= (xf := round(x)) <= len(config.lAA1):
+            pass
+        else:
+            self.wStatBar.SetStatusText('')
+            return False
+        aa = config.lAA1[xf-1]
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        n = len(self.rLabel)
+        w = self.rBandWidth / n
+        e = xf - self.rBandStart + (self.rBandWidth / n)
+        k = 0
+        for k in range(0, n, 1):
+            if e < x:
+                e = e + w
+            else:
+                break
+        exp = self.rLabel[k]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        df = self.rData.loc[:,[('AA', 'AA'),(exp, self.rLabelC)]].iloc[0:-1,:]
+        df['Pc'] = 100*(df.iloc[:,1]/df.iloc[:,1].sum(axis=0))
+        df = df.sort_values(
+            by=[(exp, self.rLabelC),('AA','AA')], ascending=False)
+        df['Sum'] = df['Pc'].cumsum()
+        df = df.reset_index(drop=True)
+        row = df.loc[df[('AA', 'AA')] == aa].index[0]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        pc    = f'{df.iat[row, 2]:.1f}'
+        absV  = f'{df.iat[row, 1]:.0f}'
+        inSeq = self.rRecSeq.count(aa)
+        text  = (f'AA={aa}  Exp={exp}  {pc}%  Abs={absV}  InSeq={inSeq}')
+        #endregion ------------------------------------------------> 
+        
+        self.wStatBar.SetStatusText(text)    
+        return True
+    #---
+    
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    
+    def OnExportPlotData(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        return super().OnExportPlotData(df=self.rData)
+    #---
+    
+    def OnDupWin(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
+            AAPlot(self.cParent, self.cDateC, self.cKey, self.cFileN)
+        )
+        #------------------------------> 
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class HistPlot(BaseWindowPlot):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    #------------------------------> To id the window
+    cName = config.nwHistPlot
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nuHist
+    cColor   = config.color[cName]
+    #------------------------------> 
+    rBandWidth = 0.8
+    rBandStart = 0.4
+    cRec = {
+        True : 'Rec',
+        False: 'Nat',
+        'Rec': 'Recombinant Sequence',
+        'Nat': 'Native Sequence',
+    }
+    cAll = {
+        True    : 'All',
+        False   : 'Unique',
+        'All'   : 'All Cleavages',
+        'Unique': 'Unique Cleavages',
+    }
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: wx.Window, dateC: str, key: str, fileN: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle  = f"{cParent.cTitle} - {dateC} - {self.cSection} - {key}"
+        self.cDateC  = dateC
+        self.cKey    = key
+        self.cFileN   = fileN
+        self.rUMSAP  = cParent.cParent
+        self.rObj    = cParent.rObj
+        self.rData  = self.rObj.GetFAData(
+            cParent.cSection,cParent.rDateC,fileN, [0,1,2])
+        self.rLabel = self.rData.columns.unique(level=2).tolist()[1:]
+        #------------------------------> 
+        super().__init__(cParent, {})
+        #endregion --------------------------------------------> Initial Setup
+        
+        #region ---------------------------------------------------> Plot
+        self.UpdatePlot(rec=True, allC=True)
+        #endregion ------------------------------------------------> Plot
+
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods    
+    def UpdatePlot(self, rec:bool, allC: bool) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        self.rRec  = self.cRec[rec]
+        self.rAllC = self.cAll[allC]
+        #------------------------------> 
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[self.rRec,['Win',self.rAllC],:]]
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        self.SetAxis(df.loc[:,idx[:,:,'Win']])
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Plot
+        n = len(self.rLabel)
+        w = self.rBandWidth / n
+        df = df.iloc[:,range(1,n+1,1)]
+        df = df[(df.notna()).all(axis=1)]
+        for row in df.itertuples():
+            s = row[0]+1-self.rBandStart
+            for x in range(0,n,1):
+                self.wPlot.axes.bar(
+                    s+x*w,
+                    row[x+1],
+                    width     = w,
+                    align     = 'edge',
+                    color     = self.cColor['Spot'][x%len(self.cColor['Spot'])],
+                    edgecolor = 'black',
+                )
+        #endregion ------------------------------------------------> Plot
+        
+        #region ------------------------------------------------------> Legend
+        leg = []
+        for i in range(0, n, 1):
+            leg.append(mpatches.Patch(
+                color = self.cColor['Spot'][i],
+                label = self.rLabel[i],
+            ))
+        leg = self.wPlot.axes.legend(
+            handles        = leg,
+            loc            = 'upper left',
+            bbox_to_anchor = (1, 1)
+        )
+        leg.get_frame().set_edgecolor('k')		
+        #endregion ---------------------------------------------------> Legend
+        
+        #region ---------------------------------------------------> Zoom
+        self.wPlot.ZoomResetSetValues()
+        #endregion ------------------------------------------------> Zoom
+        
+        self.wPlot.axes.set_title(f'{self.cRec[self.rRec]} - {self.cAll[self.rAllC]}')
+        self.wPlot.canvas.draw()
+        return True
+    #---
+    
+    def SetAxis(self, win: pd.Series):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.wPlot.axes.clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Label
+        #------------------------------> 
+        win = win.dropna().astype('int').to_numpy().flatten()
+        label = []
+        for k,w in enumerate(win[1:]):
+            label.append(f'{win[k]}-{w}')
+        #------------------------------> 
+        self.wPlot.axes.set_xticks(range(1,len(label)+1,1))
+        self.wPlot.axes.set_xticklabels(label)
+        self.wPlot.axes.set_xlim(0, len(label)+1)
+        self.wPlot.axes.tick_params(axis='x', labelrotation=45)
+        self.wPlot.axes.yaxis.get_major_locator().set_params(integer=True)
+        self.wPlot.axes.set_xlabel('Windows')
+        self.wPlot.axes.set_ylabel('Number of Cleavages')
+        #endregion ------------------------------------------------> Label
+
+        return True
+    #---
+    
+    def UpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info
+    
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if event.inaxes:
+            x, y = event.xdata, event.ydata
+            xf = round(x)
+        else:
+            self.wStatBar.SetStatusText('')
+            return True
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[self.rRec,['Win',self.rAllC],:]]
+        df = df.dropna(how='all')
+        if 0 < xf < df.shape[0]:
+            pass
+        else:
+            self.wStatBar.SetStatusText('')
+            return False
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        n = len(self.rLabel)
+        w = self.rBandWidth / n
+        e = xf - self.rBandStart + (self.rBandWidth / n)
+        k = 0
+        for k in range(0, n, 1):
+            if e < x:
+                e = e + w
+            else:
+                break
+        exp = self.rLabel[k]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        win = f'{df.iat[xf-1, 0]:.0f}-{df.iat[xf, 0]:.0f}'
+        clv = f'{df.iat[xf-1,df.columns.get_loc(idx[self.rRec,self.rAllC,exp])]}'
+        text = (f'Win={win}  Exp={exp}  Cleavages={clv}')
+        #endregion ------------------------------------------------> 
+        
+        self.wStatBar.SetStatusText(text)    
+        return True
+    #---
+    
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    
+    def OnExportPlotData(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        return super().OnExportPlotData(df=self.rData)
+    #---
+    
+    def OnDupWin(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
+            HistPlot(self.cParent, self.cDateC, self.cKey, self.cFileN)
+        )
+        #------------------------------> 
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class CEvolPlot(BaseWindowNPlotLT):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    #------------------------------> To id the window
+    cName = config.nwCEvolPlot
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nuCEvol
+    #------------------------------> 
+    cTList   = 'Residue Numbers'
+    cTPlots  = 'Plot'
+    cLNPlots = ['M']
+    cLCol    = ['Residue']
+    cLCStyle = wx.LC_REPORT|wx.LC_VIRTUAL
+    #------------------------------> 
+    cHSearch = 'Residue Number'
+    #------------------------------> 
+    cNPlotsCol = 1
+    #------------------------------> 
+    cSCol    = (100, 100)
+    cSWindow = (670,560)
+    #------------------------------> 
+    cRec = {
+        True : 'Rec',
+        False: 'Nat',
+        'Rec': 'Recombinant Sequence',
+        'Nat': 'Native Sequence',
+    }
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: wx.Window, dateC: str, fileN: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle = f"{cParent.cTitle} - {dateC} - {self.cSection}"
+        self.cDateC = dateC
+        self.cFileN = fileN
+        self.rUMSAP = cParent.cParent
+        self.rObj   = cParent.rObj
+        self.rData  = self.rObj.GetFAData(
+            cParent.cSection, cParent.rDateC, fileN, [0,1])
+        self.rLabel = self.rData.columns.unique(level=1).tolist()
+        self.rIdx = {}
+        #------------------------------> 
+        super().__init__(cParent, {})
+        #------------------------------> 
+        dKeyMethod = {
+            'ZoomR' : self.OnZoomReset,
+            'SaveI' : self.OnSaveImage,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        #endregion --------------------------------------------> Initial Setup
+        
+        #region ---------------------------------------------------> 
+        self._mgr.DetachPane(self.wText)
+        self._mgr.Update()
+        self.wText.Destroy()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> Plot
+        self.UpdatePlot(True, False)
+        #endregion ------------------------------------------------> Plot
+        
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+    
+    #region ---------------------------------------------------> Event Methods
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    
+    def OnExportPlotData(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        return super().OnExportPlotData(df=self.rData)
+    #---
+    
+    def OnDupWin(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
+            CEvolPlot(self.cParent, self.cDateC, self.cFileN)
+        )
+        #------------------------------> 
+        return True
+    #---
+    
+    def OnSaveImage(self) -> bool:
+        """Save an image of the plot.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.wPlots.dPlot['M'].SaveImage(
+            config.elMatPlotSaveI, parent=self.wPlots.dPlot['M']
+        )
+    #---
+    
+    def OnZoomReset(self) -> bool:
+        """Reset the zoom level in the plot.
+        
+            Returns
+            -------
+            bool
+        """
+        return self.wPlots.dPlot['M'].ZoomResetPlot()
+    #---
+    
+    def OnListSelect(self, event: Union[wx.Event, str]) -> bool:
+        """What to do after selecting a row in the wx.ListCtrl. 
+            Override as needed
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        super().OnListSelect(event)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.rIdx = self.wLC.wLCS.lc.GetSelectedRows(True)
+        self.Plot()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+    
+    #region --------------------------------------------------> Manage Methods
+    def UpdatePlot(self, rec: bool, mon: bool) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.rRec = self.cRec[rec]
+        #------------------------------> 
+        idx = pd.IndexSlice
+        if rec:
+            self.rDF = self.rData.loc[:,idx[self.rRec,:]]
+        else:
+            self.rDF = self.rData.loc[:,idx[self.rRec,:]]
+        #------------------------------> 
+        self.rDF = self.rDF[self.rDF.any(axis=1)]
+        #------------------------------> 
+        if mon:
+            self.rDF = self.rDF[self.rDF.apply(
+                lambda x: x.is_monotonic_increasing or x.is_monotonic_decreasing,
+                axis=1
+            )]
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.FillListCtrl(self.rDF.index.tolist())
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.SetAxis()
+        self.wPlots.dPlot['M'].ZoomResetSetValues()
+        self.wPlots.dPlot['M'].canvas.draw()
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+    
+    def FillListCtrl(self, tRes: list[int]) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.wLC.wLCS.lc.DeleteAllItems()
+        #endregion ------------------------------------------------> 
+    
+        #region ---------------------------------------------------> 
+        data = []
+        for k in tRes:
+            data.append([str(k+1)])
+        self.wLC.wLCS.lc.SetNewData(data)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def SetAxis(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.wPlots.dPlot['M'].axes.clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Label
+        self.wPlots.dPlot['M'].axes.set_xticks(range(1,len(self.rLabel)+1))
+        self.wPlots.dPlot['M'].axes.set_xticklabels(self.rLabel)
+        self.wPlots.dPlot['M'].axes.set_xlim(0, len(self.rLabel)+1)
+        self.wPlots.dPlot['M'].axes.set_xlabel('Experiment Label')
+        self.wPlots.dPlot['M'].axes.set_ylabel('Relative Cleavage Rate')
+        
+        self.wPlots.dPlot['M'].axes.set_title(self.cRec[self.rRec])
+        #endregion ------------------------------------------------> Label
+        
+        return True
+    #---
+    
+    def Plot(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.SetAxis()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        for idx,v in self.rIdx.items():
+            x = range(1,len(self.rLabel)+1)
+            y = self.rDF.iloc[idx,:]
+            self.wPlots.dPlot['M'].axes.plot(x,y, label=f'{v[0]}')
+        #------------------------------> 
+        if len(self.rIdx) > 1:
+            self.wPlots.dPlot['M'].axes.legend()
+        else:
+            pass
+        #------------------------------>
+        self.wPlots.dPlot['M'].ZoomResetSetValues()
+        self.wPlots.dPlot['M'].canvas.draw()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion -----------------------------------------------> Manage Methods 
+#---
+
+
+class CpRPlot(BaseWindowPlot):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    #------------------------------> To id the window
+    cName = config.nwCpRPlot
+    #------------------------------> To id the section in the umsap file 
+    # shown in the window
+    cSection = config.nuCpR
+    cColor   = config.color[cName]
+    #------------------------------> 
+    cRec = {
+        True : 'Rec',
+        False: 'Nat',
+        'Rec': 'Recombinant Sequence',
+        'Nat': 'Native Sequence',
+    }
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, cParent: wx.Window, dateC: str, fileN: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle = f"{cParent.cTitle} - {dateC} - {self.cSection}"
+        self.cDateC = dateC
+        self.cFileN = fileN
+        self.rUMSAP = cParent.cParent
+        self.rObj   = cParent.rObj
+        self.rData  = self.rObj.GetFAData(
+            cParent.cSection,cParent.rDateC,fileN, [0,1])
+        self.rLabel = self.rData.columns.unique(level=1).tolist()
+        self.rProtLength = cParent.rData[self.cDateC]['PI']['ProtLength']
+        self.rProtLoc    = cParent.rData[self.cDateC]['PI']['ProtLoc']
+        menuData     = self.SetMenuDate()
+        #------------------------------> 
+        super().__init__(cParent, menuData)
+        #endregion --------------------------------------------> Initial Setup
+        
+        #region ---------------------------------------------------> Plot
+        self.UpdatePlot(rec=True, label=[menuData['Label'][0]])
+        #endregion ------------------------------------------------> Plot
+
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetMenuDate(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        menuData = {}
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        menuData['Label'] = [k for k in self.rLabel]
+        #------------------------------> 
+        if self.rProtLength[1] is not None:
+            menuData['Nat'] = True
+        else:
+            menuData['Nat'] = False    
+        #endregion ------------------------------------------------> 
+    
+        return menuData
+    #---
+    
+    def UpdatePlot(
+        self, rec:bool, label: list[str], protLoc: bool=True
+        ) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        self.rRec  = self.cRec[rec]
+        self.rLabelC = label
+        #------------------------------> 
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[self.rRec,label]]
+        #------------------------------> 
+        if rec:
+            tXIdx = range(0, self.rProtLength[0])
+        else:
+            tXIdx = range(0, self.rProtLength[1])
+        x = [x+1 for x in tXIdx]
+        #------------------------------> 
+        color = []
+        #------------------------------> 
+        yMax = self.rData.loc[:,idx[self.rRec,label]].max().max()
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        self.SetAxis()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Plot
+        for e in label:
+            #------------------------------> 
+            y = self.rData.iloc[tXIdx, self.rData.columns.get_loc(idx[self.rRec,e])]
+            tColor = self.cColor['Spot'][
+                self.rLabel.index(e)%len(self.cColor['Spot'])]
+            color.append(tColor)
+            #------------------------------>
+            self.wPlot.axes.plot(x,y, color=tColor)
+        #------------------------------> 
+        if self.rRec == self.cRec[True] and protLoc:
+            if self.rProtLoc[0] is not None:
+                self.wPlot.axes.vlines(
+                    self.rProtLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
+                self.wPlot.axes.vlines(
+                    self.rProtLoc[1],0,yMax,linestyles='dashed',color='black',zorder=1)
+            else:
+                pass
+        else:
+            pass
+        #endregion ------------------------------------------------> Plot
+        
+        #region ----------------------------------------------------> Legend
+        leg = []
+        for i in range(0, len(label), 1):
+            leg.append(mpatches.Patch(
+                color = color[i],
+                label = label[i],
+            ))
+        leg = self.wPlot.axes.legend(
+            handles        = leg,
+            loc            = 'upper left',
+            bbox_to_anchor = (1, 1)
+        )
+        leg.get_frame().set_edgecolor('k')		
+        #endregion -------------------------------------------------> Legend
+        
+        #region ---------------------------------------------------> Zoom
+        self.wPlot.ZoomResetSetValues()
+        #endregion ------------------------------------------------> Zoom
+        
+        self.wPlot.axes.set_title(f'{self.cRec[self.rRec]}')
+        self.wPlot.canvas.draw()
+        return True
+    #---
+    
+    def SetAxis(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.wPlot.axes.clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Label
+        self.wPlot.axes.yaxis.get_major_locator().set_params(integer=True)
+        self.wPlot.axes.set_xlabel('Residue Number')
+        self.wPlot.axes.set_ylabel('Number of Cleavages')
+        #endregion ------------------------------------------------> Label
+
+        return True
+    #---
+    
+    def UpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info
+    
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            #------------------------------> 
+            x = event.xdata
+            xf = round(x)
+            idx = pd.IndexSlice
+            #------------------------------> 
+            y = []
+            try:
+                for l in self.rLabelC:
+                    col = self.rData.columns.get_loc(idx[self.rRec,l])
+                    y.append(self.rData.iat[xf-1,col])
+            except IndexError:
+                self.wStatBar.SetStatusText('')
+                return False
+            #------------------------------> 
+            s = ''
+            for k,l in enumerate(self.rLabelC):
+                s = f'{s}{l}={y[k]}   '
+            self.wStatBar.SetStatusText(f'Res={xf}   {s}')
+            
+        else:
+            self.wStatBar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
+        
+        return True
+    #---
+    
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)		
+        #endregion --------------------------------------------> Update parent
+        
+        #region ------------------------------------> Reduce number of windows
+        config.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+        
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+        
+        return True
+    #---
+    
+    def OnExportPlotData(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        return super().OnExportPlotData(df=self.rData)
+    #---
+    
+    def OnDupWin(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
+            CpRPlot(self.cParent, self.cDateC, self.cFileN)
+        )
+        #------------------------------> 
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 
 
@@ -6457,7 +9084,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         self.cTitle   = cTitle
         self.tSection = tSection if tSection is not None else self.cSection
         self.tDate    = tDate
-        self.SetWindow(tSection, tDate)
+        self.SetWindow(tSection, tDate) # Includes testing for something to plot
         #--------------> menuData here because it is not needed to save it
         cMenuData = None if self.rDate is None else {'menudate': self.rDate}
         #------------------------------> 
@@ -6689,7 +9316,13 @@ class CheckDataPrep(BaseWindowNPlotLT):
         if self.cTitle is None:
             self.rFromUMSAPFile = True 
             self.rData  = self.rObj.dConfigure[self.cSection]()
-            self.rDate  = [k for k in self.rData.keys()]
+            self.rDate  = [k for k in self.rData.keys() if k != 'Error']
+            #------------------------------> 
+            try:
+                self.ReportPlotDataError()
+            except Exception as e:
+                raise e
+            #------------------------------> 
             self.rDateC = self.rDate[0]
             self.cTitle = (
                 f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}")
@@ -7111,6 +9744,8 @@ class UMSAPControl(BaseWindow):
         config.nmLimProt : config.ntLimProt,
         config.nmTarProt : config.ntTarProt,
     }
+    #------------------------------> 
+    cLSecSeqF = [config.nmLimProt, config.nmTarProt]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -7137,6 +9772,13 @@ class UMSAPControl(BaseWindow):
         self.rCopiedFilters = []
         #------------------------------> 
         super().__init__(cParent=cParent)
+        #------------------------------> 
+        dKeyMethod = {
+            1: self.AddAnalysis,
+            2: self.DeleteAnalysis,
+            3: self.ExportAnalysis,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -7163,6 +9805,377 @@ class UMSAPControl(BaseWindow):
 
     #------------------------------> Class methods
     #region ---------------------------------------------------> Event Methods
+    def OnAddDelExport(self, mode) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if mode == 1:
+            #------------------------------> 
+            dlg = dtsWindow.FileSelectDialog(
+                'openO', 
+                config.elUMSAP, 
+                parent  = self,
+                message = 'Select UMSAP file',
+            )
+            #------------------------------> 
+            if dlg.ShowModal() == wx.ID_OK:
+                #------------------------------> 
+                fileP = Path(dlg.GetPath())
+                dlg.Destroy()
+                #------------------------------> 
+                if fileP == self.rObj.rFileP:
+                    msg = ('New Analysis cannot be added from the same UMSAP '
+                        'file.\nPlease choose a different UMSAP file.')
+                    dtscore.Notification('warning', msg=msg)
+                    return False
+                else:
+                    pass
+                #------------------------------> 
+                try:
+                    objAdd = file.UMSAPFile(fileP)                    
+                except Exception as e:
+                    dtscore.Notification('errorF', tException=e)
+                    return False
+            else:
+                dlg.Destroy()
+                return False
+            #------------------------------> 
+            dlg = UMSAPAddDelExport(objAdd, mode) 
+        else:
+            objAdd = None
+            dlg = UMSAPAddDelExport(self.rObj, mode) 
+        #------------------------------> 
+        if dlg.ShowModal():
+            selItem = dlg.rSelItems
+            dlg.Destroy()
+        else:
+            dlg.Destroy()
+            return True
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        return self.dKeyMethod[mode](selItem, objAdd)
+        #endregion ------------------------------------------------> 
+    #---
+    
+    def AddAnalysis(
+        self, selItems: dict, objAdd: Optional[file.UMSAPFile]=None,
+        ) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        folderData = self.rObj.rStepDataP
+        folderInit = self.rObj.rInputFileP
+        #------------------------------> 
+        dataStep = objAdd.rStepDataP
+        initStep = objAdd.rInputFileP
+        folderD  = {}
+        fileD    = {}
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for k, d in selItems.items():
+            sec = k.replace(" ","-")
+            #------------------------------> Make sure section exist
+            self.rObj.rData[k] = self.rObj.rData.get(k, {})
+            #------------------------------> 
+            for run in d:
+                temp = run.split(" - ")
+                date = temp[0]
+                tID = " - ".join(temp[1:]) 
+                #------------------------------> 
+                folderN = f'{date}_{sec}'
+                #------------------------------> 
+                a = (folderData/folderN).exists()
+                b = self.rObj.rData[k].get(run, False)
+                if a or b:
+                    #------------------------------> 
+                    n = 1
+                    dateF = f'{date}M{n}'
+                    c = dateF in self.rObj.rData[k].keys()
+                    d = (folderData/f"{dateF}_{sec}").exists()
+                    while(c or d):
+                        n = n + 1
+                        dateF = f'{date}M{n}'
+                        c = dateF in self.rObj.rData[k].keys()
+                        d = (folderData/f"{dateF}_{sec}").exists()
+                    #------------------------------> 
+                    runN    = f'{dateF} - {tID}'
+                    folderT = f'{dateF}_{sec}'
+                else:
+                    runN    = run
+                    folderT = folderN
+                #------------------------------> Data
+                self.rObj.rData[k][runN] = objAdd.rData[k][run]
+                #------------------------------> Folder
+                folderD[dataStep/folderN] = folderData/folderT
+                #------------------------------> Files
+                valI = iter(objAdd.rData[k][run]['I'].values())
+                keyI = iter(objAdd.rData[k][run]['I'].keys())
+                dataFile = next(valI)
+                if (folderInit/dataFile).exists():
+                    #------------------------------> 
+                    n = 1
+                    dateFile, nameFile = dataFile.split('_')
+                    nameF = f"{dateFile}M{n}_{nameFile}"
+                    while((folderInit/nameF).exists()):
+                        n = n + 1
+                        nameF = f"{dateFile}M{n}_{nameFile}"
+                    #------------------------------> 
+                    fileD[initStep/dataFile] = folderInit/nameF
+                    #------------------------------> 
+                    self.rObj.rData[k][runN]['I'][next(keyI)] = nameF
+                else:
+                    fileD[initStep/dataFile] = folderInit/dataFile
+                if k in self.cLSecSeqF:
+                    dataFile = next(valI)
+                    if (folderInit/dataFile).exists():
+                        #------------------------------> 
+                        n = 1
+                        dateFile, nameFile = dataFile.split('_')
+                        nameF = f"{dateFile}M{n}_{nameFile}"
+                        while((folderInit/nameF).exists()):
+                            n = n + 1
+                            nameF = f"{dateFile}M{n}_{nameFile}"
+                        #------------------------------> 
+                        fileD[initStep/dataFile] = folderInit/nameF
+                        #------------------------------> 
+                        self.rObj.rData[k][runN]['I'][next(keyI)] = nameF
+                    else:
+                        fileD[initStep/dataFile] = folderInit/dataFile
+                else:
+                    pass
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        for k,v in folderD.items():
+            shutil.copytree(k,v)
+        #------------------------------> 
+        for k,v in fileD.items():
+            shutil.copyfile(k,v)
+        #------------------------------> 
+        self.rObj.Save()
+        #------------------------------> 
+        self.UpdateFileContent()
+        #endregion ------------------------------------------------> 
+    
+        return True
+    #---
+    
+    def ExportAnalysis(
+        self, selItems: dict, objAdd: Optional[file.UMSAPFile]=None,
+        ) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        dlg = dtsWindow.FileSelectDialog(
+            'save', config.elUMSAP, parent=self, message='Select file')
+        if dlg.ShowModal() == wx.ID_OK:
+            fileP = Path(dlg.GetPath())
+            name = fileP.name
+            dlg.Destroy()
+        else:
+            dlg.Destroy()
+            return True
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        step = fileP.parent/config.fnDataSteps
+        init = fileP.parent/config.fnDataInit
+        if step.exists() or init.exists():
+            folderN = f'{dtsMethod.StrNow()}_UMSAP_Export'
+            fileP = fileP.parent / folderN / name
+        else:
+            pass
+        #------------------------------> 
+        folder = fileP.parent
+        folderData = folder/config.fnDataSteps
+        folderInit = folder/config.fnDataInit
+        #------------------------------> 
+        dataStep = self.rObj.rStepDataP
+        initStep = self.rObj.rInputFileP
+        folderD = {}
+        fileD   = {}
+        data    = {}
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        for k,d in selItems.items():
+            #------------------------------> 
+            data[k] = data.get(k, {})
+            #------------------------------> 
+            for run in d:
+                #------------------------------> 
+                data[k][run] = self.rObj.rData[k][run]
+                #------------------------------> 
+                folderD, fileD = self.GetFolderFile(
+                    k, run, data[k][run]['I'], folderD, fileD, dataStep, 
+                    folderData, initStep, folderInit)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        folder.mkdir(parents=True, exist_ok=True)
+        #------------------------------> 
+        folderData.mkdir()
+        for k,v in folderD.items():
+            shutil.copytree(k,v)
+        #------------------------------> 
+        folderInit.mkdir()
+        for k,v in fileD.items():
+            shutil.copyfile(k,v)
+        #------------------------------> 
+        dtsFF.WriteJSON(fileP, data)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def DeleteAnalysis(
+        self, selItems: dict, objAdd: Optional[file.UMSAPFile]=None,
+        ) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        inputF = []
+        folder = []
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        for k,v in selItems.items():
+            #------------------------------> Analysis
+            for item in v:
+                #------------------------------> Folder
+                folder.append(
+                    self.rObj.rStepDataP/f"{item.split(' - ')[0]}_{k.replace(' ', '-')}")
+                #------------------------------> Files
+                iVal = iter(self.rObj.rData[k][item]['I'].values())
+                inputF.append(next(iVal))
+                if k in self.cLSecSeqF:
+                    inputF.append(next(iVal))
+                else:
+                    pass
+                #------------------------------> Delete Analysis
+                self.rObj.rData[k].pop(item)
+            #------------------------------> Section
+            if not self.rObj.rData[k]:
+                self.rObj.rData.pop(k)
+            else:
+                pass
+        #------------------------------> Full file
+        if not self.rObj.rData:
+            shutil.rmtree(self.rObj.rStepDataP)            
+            shutil.rmtree(self.rObj.rInputFileP)
+            self.rObj.rFileP.unlink()
+            if config.os == 'Darwin':
+                (self.rObj.rFileP.parent/'.DS_Store').unlink(missing_ok=True)
+            else:
+                pass
+            #------------------------------> 
+            try:
+                self.rObj.rFileP.parent.rmdir()
+            except OSError:
+                pass
+            #------------------------------> 
+            self.OnClose('fEvent')
+            return True            
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> 
+        folder = list(set(folder))
+        [shutil.rmtree(x) for x in folder]
+        #------------------------------> 
+        inputF = list(set(inputF))
+        inputNeeded = self.rObj.GetInputFiles()
+        for iFile in inputF:
+            if iFile in inputNeeded:
+                pass
+            else:
+                (self.rObj.rInputFileP/iFile).unlink()
+        #endregion -----------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.rObj.Save()
+        self.UpdateFileContent()
+        #endregion ------------------------------------------------> 
+    
+        return True
+    #---
+    
+    def GetFolderFile(
+        self, sec, run, valI, folderD, fileD, dataStep, folderData, 
+        initStep, folderInit,
+        ) -> tuple[dict, dict]:
+        """
+        
+        
+        """
+        #------------------------------> 
+        secN = sec.replace(' ', '-')
+        secF = f"{run.split(' - ')[0]}_{secN}"
+        folderD[dataStep/secF] = folderData/secF
+        #------------------------------> 
+        val = iter(valI.values())
+        dataFI = next(val)
+        fileD[initStep/dataFI] = folderInit/dataFI
+        if sec in self.cLSecSeqF:
+            dataFI = next(val)
+            fileD[initStep/dataFI] = folderInit/dataFI
+        else:
+            pass
+        #------------------------------> 
+        return (folderD, fileD)
+    #---
+    
     def OnHyperLink(self, event) -> bool:
         """ Setup analysis.
     
@@ -7217,7 +10230,7 @@ class UMSAPControl(BaseWindow):
         #region ----------------------------------------------> Destroy window
         #------------------------------> Event trigers before checkbox changes
         if self.wTrc.IsItemChecked(item):
-            [x.Destroy() for x in self.rWindow[section]]
+            [x.Destroy() for v in self.rWindow[section].values() for x in v]
             event.Skip()
             return True
         else:
@@ -7226,7 +10239,11 @@ class UMSAPControl(BaseWindow):
         
         #region -----------------------------------------------> Create window
         try:
-            self.rWindow[section] = [self.dPlotMethod[section](self)]
+            self.rWindow[section] = {'Main':[], 'FA':[]}
+            self.rWindow[section]['Main'].append(
+                self.dPlotMethod[section](self))
+        except dtsException.PassException:
+            return False
         except Exception as e:
             dtscore.Notification('errorU', msg=str(e), tException=e)
             return False
@@ -7236,7 +10253,7 @@ class UMSAPControl(BaseWindow):
         return True
     #---
     
-    def OnClose(self, event: wx.CloseEvent) -> bool:
+    def OnClose(self, event: Union[wx.CloseEvent, str]) -> bool:
         """Destroy window and remove reference from config.umsapW
     
             Parameters
@@ -7257,10 +10274,6 @@ class UMSAPControl(BaseWindow):
         #endregion ---------------------------------> Reduce number of windows
         
         #region -----------------------------------------------------> Destroy
-        #------------------------------> Childs
-        for child in dtsGenerator.FindTopLevelChildren(self):
-            child.Destroy()
-        #------------------------------> Self
         self.Destroy()
         #endregion --------------------------------------------------> Destroy
         
@@ -7368,18 +10381,16 @@ class UMSAPControl(BaseWindow):
             bool
         """
         #region --------------------------------------------> Remove from list
-        self.rWindow[sectionName].remove(win)
+        self.rWindow[sectionName]['Main'].remove(win)
         #endregion -----------------------------------------> Remove from list
         
         #region --------------------------------------------------> Update GUI
-        if len(self.rWindow[sectionName]) > 0:
+        if len(self.rWindow[sectionName]['Main']) > 0:
             return True
         else:
             #------------------------------> Remove check
             self.wTrc.SetItem3StateValue(
-                self.rSection[sectionName],
-                wx.CHK_UNCHECKED,
-            )		
+                self.rSection[sectionName], wx.CHK_UNCHECKED)		
             #------------------------------> Repaint
             self.Update()
             self.Refresh()		
@@ -7390,6 +10401,11 @@ class UMSAPControl(BaseWindow):
     
     def UpdateFileContent(self) -> Literal[True]:
         """Update the content of the file. """
+        
+        #region ---------------------------------------------------> 
+        tSectionChecked = self.GetCheckedSection()
+        #endregion ------------------------------------------------> 
+
         #region ---------------------------------------------------> Read file
         try:
             self.rObj = file.UMSAPFile(self.rObj.rFileP)
@@ -7403,6 +10419,22 @@ class UMSAPControl(BaseWindow):
         self.wTrc.DeleteAllItems()
         #------------------------------> 
         self.SetTree()
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        for s in tSectionChecked:
+            if self.rSection.get(s, False):
+                #------------------------------> Check
+                self.wTrc.SetItem3StateValue(
+                    self.rSection[s], wx.CHK_CHECKED)
+                #------------------------------> Win Menu
+                if (win := self.rWindow[s].get('Main', False)):
+                    for w in win:
+                        w.UpdateUMSAPData()
+                else:
+                    pass
+            else:
+                [x.Destroy() for v in self.rWindow[s].values() for x in v]
         #endregion ------------------------------------------------> 
 
         return True
@@ -7420,6 +10452,239 @@ class UMSAPControl(BaseWindow):
         return [k for k, v in self.rSection.items() if v.IsChecked()]
     #---
     #endregion --------------------------------------------------> Get Methods
+#---
+
+
+class UMSAPAddDelExport(dtsWindow.OkCancel):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    cSWindow = (400, 700)
+    cLError = {
+        1: 'adding',
+        2: 'deleting',
+        3: 'exporting',
+    }
+    cLBtnOpt = {
+        1: 'Add',
+        2: 'Delete',
+        3: 'Export',
+    } 
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, obj: file.UMSAPFile, mode: int) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rObj = obj
+        self.mode = mode
+        #------------------------------> 
+        self.cLBtn = self.cLBtnOpt[mode]
+        self.cTitle = f'{self.cLBtn} data from: {self.rObj.rFileP.name}'
+        #------------------------------> 
+        super().__init__(title=self.cTitle, parent=None, size=self.cSWindow)
+        self.FindWindowById(wx.ID_OK).SetLabel(self.cLBtn)
+        #------------------------------> 
+        self.rSelItems = {}
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wTrc = wxCT.CustomTreeCtrl(self)
+        self.wTrc.SetFont(config.font['TreeItem'])
+        self.SetTree()
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer.Add(self.wTrc, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        
+        self.SetSizer(self.sSizer)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.wTrc.Bind(wxCT.EVT_TREE_ITEM_CHECKED, self.OnCheckItem)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.Center()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnCheckItem(self, event) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        item     = event.GetItem()
+        checked  = self.wTrc.IsItemChecked(item)
+        #endregion ------------------------------------------------> 
+    
+        #region ---------------------------------------------------> 
+        if checked:
+            #------------------------------> Check all children
+            for child in item.GetChildren():
+                child.Set3StateValue(wx.CHK_CHECKED)
+                for gchild in child.GetChildren():
+                    gchild.Set3StateValue(wx.CHK_CHECKED)
+            #------------------------------> Check parent or not
+            parent = item.GetParent()
+            if parent is not None:
+                if all([x.IsChecked() for x in parent.GetChildren()]):
+                    parent.Set3StateValue(wx.CHK_CHECKED)
+                    gparent = parent.GetParent()
+                    if gparent is not None:
+                        if all([x.IsChecked() for x in gparent.GetChildren()]):
+                            gparent.Set3StateValue(wx.CHK_CHECKED)
+                        else:
+                            pass
+                    else:
+                        pass
+                else:
+                    pass
+            else:
+                pass
+        else:
+            #------------------------------> Uncheck all children
+            for child in item.GetChildren():
+                child.Set3StateValue(wx.CHK_UNCHECKED)
+                for gchild in child.GetChildren():
+                    gchild.Set3StateValue(wx.CHK_UNCHECKED)
+            #------------------------------> Unchecked all parent
+            parent = item.GetParent()
+            if parent is not None:
+                parent.Set3StateValue(wx.CHK_UNCHECKED)
+                gparent = parent.GetParent()
+                if gparent is not None:
+                    gparent.Set3StateValue(wx.CHK_UNCHECKED)
+            else:
+                pass
+        #------------------------------> 
+        self.Update()
+        self.Refresh()
+        #endregion ------------------------------------------------> 
+
+        event.Skip()
+        return True
+    #---
+    
+    def SetTree(self) -> bool:
+        """Set the elements of the wx.TreeCtrl 
+        
+            Returns
+            -------
+            bool
+        
+            Notes
+            -----
+            See data.file.UMSAPFile for the structure of obj.confTree.
+        """
+        #region ----------------------------------------------------> Add root
+        root = self.wTrc.AddRoot(self.rObj.rFileP.name, ct_type=1)
+        #endregion -------------------------------------------------> Add root
+        
+        #region ------------------------------------------------> Add elements
+        for a, b in self.rObj.rData.items():
+            #------------------------------> Add section node
+            childa = self.wTrc.AppendItem(root, a, ct_type=1)
+            for c, d in b.items():
+                #------------------------------> Add date node
+                childb = self.wTrc.AppendItem(childa, c, ct_type=1)
+                for e, f in d['I'].items():
+                    #------------------------------> Add date items
+                    childc = self.wTrc.AppendItem(childb, f"{e}: {f}")
+                    self.wTrc.SetItemFont(
+                        childc, config.font['TreeItemDataFile'])
+        #endregion ---------------------------------------------> Add elements
+        
+        #region -------------------------------------------------> Expand root
+        self.wTrc.Expand(root)
+        [child.Expand() for child in root.GetChildren()]
+        #endregion ----------------------------------------------> Expand root
+        
+        return True
+    #---
+    
+    def OnOK(self, event):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        root = self.wTrc.GetRootItem()
+        self.rSelItems = {}
+        checked = []
+        #endregion ------------------------------------------------> 
+        
+        #region --------------------------------------------------->
+        for child in root.GetChildren():
+            #------------------------------> 
+            childN = child.GetText()
+            gchildL = child.GetChildren()
+            #------------------------------> 
+            for gchild in gchildL:
+                if gchild.IsChecked():
+                    self.rSelItems[childN] = self.rSelItems.get(childN, [])
+                    self.rSelItems[childN].append(gchild.GetText())
+                    checked.append(True)
+                else:
+                    pass
+        #------------------------------> 
+        if not checked:
+            msg = (f'There are no analysis selected. Please select something '
+                'first.')
+            dtscore.Notification('warning', msg=msg)
+            return False
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.EndModal(1)
+        self.Close()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 #endregion ----------------------------------------------------------> Classes
 
@@ -8206,7 +11471,7 @@ class VolColorScheme(dtsWindow.OkCancel):
             self.GetNameGroup(1), 
         )
     #---
-    
+
     def GetNameGroup(self, tKey: int) -> str:
         """Get the corresponding key for the checked element
 
@@ -8217,6 +11482,261 @@ class VolColorScheme(dtsWindow.OkCancel):
         for v in self.rG[tKey]:
             if v.IsChecked():
                 return self.rKeys[v.GetName()]
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class FABtnText(dtsWindow.OkCancel):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, btnLabel: str, btnHint: str, ext: str, btnValidator: wx.Validator,
+        stLabel: str, stHint: str, stValidator: wx.Validator,
+        parent: Optional[wx.Window]=None):
+        """ """
+        #region -------------------------------------------------> Check Input
+        
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(title='Export Sequence Alignments', parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wBtnTc = dtsWidget.ButtonTextCtrlFF(
+            self,
+            btnLabel  = btnLabel,
+            tcHint    = btnHint,
+            ext       = ext,
+            mode      = 'save',
+            validator = btnValidator,
+        )
+        
+        self.wLength = dtsWidget.StaticTextCtrl(
+            self,
+            stLabel   = stLabel,
+            tcHint    = stHint,
+            validator = stValidator,
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sFlex = wx.FlexGridSizer(2,2,1,1)
+        self.sFlex.Add(self.wBtnTc.btn, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnTc.tc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wLength.st, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.sFlex.Add(self.wLength.tc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.AddGrowableCol(1,1)
+        
+        self.sSizer.Add(self.sFlex, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Basic implementation. Override as needed.
+        """
+        #region ---------------------------------------------------> 
+        errors = 0
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if self.wBtnTc.tc.GetValidator().Validate()[0]:
+            pass
+        else:
+            errors += 1
+            self.wBtnTc.tc.SetValue('')
+            
+        if self.wLength.tc.GetValidator().Validate()[0]:
+            pass
+        else:
+            errors += 1
+            self.wLength.tc.SetValue('')
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> 
+        if not errors:
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
+        #endregion -----------------------------------------------------> 
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class FA2Btn(dtsWindow.OkCancel):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, btnLabel: list[str], btnHint: list[str], ext: list[str], 
+        btnValidator: list[wx.Validator], parent: Optional[wx.Window]=None):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(title='PDB Mapping', parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wBtnI = dtsWidget.ButtonTextCtrlFF(
+            self,
+            btnLabel  = btnLabel[0],
+            tcHint    = btnHint[0],
+            ext       = ext[0],
+            mode      = 'openO',
+            validator = btnValidator[0],
+        )
+        
+        self.wBtnO = dtsWidget.ButtonTextCtrlFF(
+            self,
+            btnLabel  = btnLabel[1],
+            tcHint    = btnHint[1],
+            ext       = ext[1],
+            mode      = 'folder',
+            validator = btnValidator[1],
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sFlex = wx.FlexGridSizer(2,2,1,1)
+        self.sFlex.Add(self.wBtnI.btn, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnI.tc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnO.btn, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnO.tc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.AddGrowableCol(1,1)
+        
+        self.sSizer.Add(self.sFlex, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Basic implementation. Override as needed.
+        """
+        #region ---------------------------------------------------> 
+        errors = 0
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if self.wBtnI.tc.GetValidator().Validate()[0]:
+            pass
+        else:
+            errors += 1
+            self.wBtnI.tc.SetValue('')
+            
+        if self.wBtnO.tc.GetValidator().Validate()[0]:
+            pass
+        else:
+            errors += 1
+            self.wBtnO.tc.SetValue('')
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> 
+        if not errors:
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
+        #endregion -----------------------------------------------------> 
+
+        return True
     #---
     #endregion ------------------------------------------------> Class methods
 #---

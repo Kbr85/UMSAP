@@ -40,10 +40,7 @@ cwd = Path(__file__)   # Config file path
 # There are some that must be defined in other sections
 if os == 'Darwin':
     #------------------------------> Root & Resources Folder
-    if development:
-        root = cwd.parent.parent.parent
-    else:
-        root = cwd.parent.parent
+    root = cwd.parent.parent.parent
     res = root / 'Resources'  # Path to the Resources folder
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
@@ -60,8 +57,12 @@ if os == 'Darwin':
     deltaWin = 23
 elif os == 'Windows':
     #------------------------------> Root & Resources Folder
-    root = cwd.parent.parent.parent
-    res = root / 'Resources'
+    if development:
+        root = cwd.parent.parent.parent
+        res = root / 'Resources'
+    else:
+        root = cwd.parent.parent
+        res = root / 'RESOURCES/'
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
     #------------------------------> Statusbar split size
@@ -69,6 +70,8 @@ elif os == 'Windows':
         sbFieldSize = [-1, 325]
     else:
         sbFieldSize = [-1, 300]
+    sbPlot2Fields = [-1, 115]
+    sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -84,6 +87,8 @@ else:
         sbFieldSize = [-1, 350]
     else:
         sbFieldSize = [-1, 300]
+    sbPlot2Fields = [-1, 115]
+    sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -114,6 +119,10 @@ nwProtProf      = 'ProtProfPlot'
 nwLimProt       = 'LimProtPlot'
 nwTarProt       = 'TarProtPlot'
 nwCheckDataPrep = 'CheckDataPrep'
+nwAAPlot        = 'AAPlot'
+nwHistPlot      = 'HistPlot'
+nwCpRPlot       = 'CpRPlot'
+nwCEvolPlot     = 'CEvolPlot'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
@@ -142,7 +151,11 @@ nmProtProf = 'Proteome Profiling'
 #------------------------------> Utilities
 nuDataPrep = "Data Preparation"
 nuCorrA    = 'Correlation Analysis'
+nuAA       = 'AA Distribution'
+nuHist     = 'Histograms'
 nuReadF    = 'Read UMSAP File'
+nuCpR      = 'Cleavage per Residues'
+nuCEvol    = 'Cleavage Evolution'
 #endregion ------------------------------------------------------------> Names
 
 
@@ -175,6 +188,7 @@ t = {
 elData  = 'txt files (*.txt)|*.txt'
 elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
 elPDB   = 'PDB files (*.pdb)|*.pdb'
+elPDF   = 'PDF files (*.pdf)|*.pdf'
 elSeq   = (
     "Text files (*.txt)|*.txt|"
     "Fasta files (*.fasta)|*.fasta"
@@ -189,6 +203,7 @@ elMatPlotSaveI = (
 #------------------------------> File extensions. First item is default
 esData  = ['.txt']
 esPDB   = ['.pdb']
+esPDF   = ['.pdf']
 esSeq   = ['.txt', '.fasta']
 esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
@@ -375,6 +390,20 @@ dfcolSeqNC = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 
 #region -----------------------------------------------------> Important Lists
 ltDPKeys = ['dfF', 'dfT', 'dfN', 'dfIm']
+
+lAA1 = [ # AA one letter codes
+	'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
+	'H', 'S', 'T', 'N', 'G', 'P'
+]
+
+lAAGroups = [ # AA groups
+	['A', 'I', 'L', 'V', 'M'], 
+	['F', 'W', 'Y'], 
+	['R', 'K'], 
+	['D', 'E'],
+	['C', 'Q', 'H', 'S', 'T', 'N'], 
+	['G', 'P']
+]
 #endregion --------------------------------------------------> Important Lists
 
 
@@ -387,12 +416,14 @@ mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
     "protein.")
 #------------------------------> Data
 mDataExport = 'Export Data failed.'
+#------------------------------> Optional Field
+mOptField = '\nThis field is optional.'
 #endregion ----------------------------------------------------------> Other
 
 #region ------------------------------------------------------------> Values
 mOneRNumText = "Only one real number can be accepted here."
 mOneZPlusNumText = "Only a non-negative integer can be accepted here."
-mOne01NumText = "Only one number between 0 and 1 can be accepted here"
+mOne01NumText = "Only one number between 0 and 1 can be accepted here."
 mNZPlusNumText = (
     "Only a list of unique non-negative integers can be accepted here.")
 #endregion ---------------------------------------------------------> Values
@@ -415,6 +446,10 @@ mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
 #endregion ---------------------------------------------------------> Pandas
  
 #region ----------------------------------------------------> For CheckInput
+mColNumbers = ('In addition, each value must be smaller than the total '
+    'number of columns in the Data file.')
+mColNumber = ('In addition, the value must be smaller than the total '
+    'number of columns in the Data file.')
 mSection = 'Values in section {} must be unique.'
 mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
 mRepeatColNum = 'There are repeated column numbers in the text fields.'
@@ -426,7 +461,9 @@ mOptionBad = "Option '{}' cannot be accepted in {}."
 mValueBad = "Value '{}' cannot be accepted in {}.\n"
 mOneRealNum = f"{mValueBad}{mOneRNumText}"
 mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
+mOneZPlusNumCol = f"{mOneZPlusNum} {mColNumber}"
 mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
+mNZPlusNumCol = f"{mNZPlusNum} {mColNumbers}"
 mOne01Num = f"{mValueBad}{mOne01NumText}"
 mResCtrl = (
     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
@@ -512,6 +549,28 @@ color = { # Colors for the app
     nwTarProt : {
         'Spot' : colorFragments,
         'Ctrl' : 'black',
+    },
+    nwAAPlot : {
+        'BarColor': { 
+			'R': '#0099ff', 'K': '#0099ff', 'D': '#ff4d4d', 'W': '#FF51FD', 
+			'E': '#ff4d4d', 'S': '#70db70', 'T': '#70db70', 'H': '#70db70', 
+			'N': '#70db70', 'Q': '#70db70', 'C': '#FFFC00', 'G': '#FFFC00', 
+			'P': '#FFFC00', 'A': '#BEBEBE', 'V': '#BEBEBE', 'I': '#BEBEBE', 
+			'L': '#BEBEBE', 'M': '#BEBEBE', 'F': '#FF51FD', 'Y': '#FF51FD', 
+		},
+        'Chi' : {
+            1 : 'Green',
+            0 : 'Red',
+            -1: 'Black',
+        },
+        'Xaa' : 'GREY',
+        'Spot' : colorFragments,
+    },
+    nwHistPlot : {
+        'Spot' : colorFragments,
+    },
+    nwCpRPlot : {
+        'Spot' : colorFragments,
     },
 }
 #endregion -----------------------------------------------------------> Colors

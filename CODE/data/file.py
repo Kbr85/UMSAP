@@ -60,6 +60,7 @@ class UMSAPFile():
     """
     #region -----------------------------------------------------> Class setup
     cName = 'UMSAPFile'
+    SeqF = [config.nmTarProt, config.nmLimProt]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -81,7 +82,8 @@ class UMSAPFile():
         
         #region ---------------------------------------------------> Variables
         self.rFileP = Path(rFileP)
-        self.rStepDataP = self.rFileP.parent / config.fnDataSteps
+        self.rStepDataP  = self.rFileP.parent / config.fnDataSteps
+        self.rInputFileP = self.rFileP.parent / config.fnDataInit
 
         self.dConfigure = {# Configure methods. Keys are the section names as
                            # read from the file
@@ -144,7 +146,7 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {}
+        plotData = {'Error':[]}
         #------------------------------> Fill
         for k,v in self.rData[config.nuCorrA].items():
             #------------------------------> 
@@ -165,7 +167,7 @@ class UMSAPFile():
                     'NumColList': v['CI']['oc']['Column'],
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -251,7 +253,7 @@ class UMSAPFile():
             }
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
+        plotData = {'Error':[]}
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu        
@@ -265,7 +267,7 @@ class UMSAPFile():
                     'NumColList': v['CI']['oc']['Column'],
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -283,7 +285,7 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {}
+        plotData = {'Error':[]}
         #------------------------------> Fill
         for k,v in self.rData[config.nmProtProf].items():
             try:
@@ -297,7 +299,7 @@ class UMSAPFile():
                     'F' : v['F'],
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -325,7 +327,7 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {}
+        plotData = {'Error':[]}
         #------------------------------> Fill
         for k,v in self.rData[config.nmLimProt].items():
             try:
@@ -349,7 +351,7 @@ class UMSAPFile():
                     'PI': PI,
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -376,7 +378,7 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {}
+        plotData = {'Error':[]}
         #------------------------------> Fill
         for k,v in self.rData[config.nmTarProt].items():
             try:
@@ -396,11 +398,15 @@ class UMSAPFile():
                 }
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
-                    'DF': df,
-                    'PI': PI,
+                    'DF'   : df,
+                    'PI'   : PI,
+                    'AA'   : v.get('AA', {}),
+                    'Hist' : v.get('Hist', {}),
+                    'CpR'  : v['CpR'],
+                    'CEvol': v['CEvol'],
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -540,6 +546,220 @@ class UMSAPFile():
             }
         except KeyError as e:
             raise e
+    #---
+    
+    def GetRecSeq(self, tSection: str, tDate: str) -> str:
+        """ Get the recombinant sequence used in an analysis.
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+    
+            Returns
+            -------
+            str
+    
+            Raise
+            -----
+            KeyError:
+                When tSection or tDate is not found in the file
+        """
+        #region ------------------------------------------------> Path
+        for k,v in self.rData[tSection][tDate]['I'].items():
+            if 'Sequences File' in k:
+                fileN = v
+                break
+            else:
+                pass
+        #endregion ---------------------------------------------> Path
+        
+        #region ---------------------------------------------------> 
+        seqObj = dtsFF.FastaFile(self.rInputFileP/fileN)
+        
+        return seqObj.seqRec
+        #endregion ------------------------------------------------> 
+    #---
+    
+    def GetNatSeq(self, tSection: str, tDate: str) -> str:
+        """ Get the native sequence used in an analysis.
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+    
+            Returns
+            -------
+            str
+    
+            Raise
+            -----
+            KeyError:
+                When tSection or tDate is not found in the file
+        """
+        #region ------------------------------------------------> Path
+        for k,v in self.rData[tSection][tDate]['I'].items():
+            if 'Sequences File' in k:
+                fileN = v
+                break
+            else:
+                pass
+        #endregion ---------------------------------------------> Path
+        
+        #region ---------------------------------------------------> 
+        seqObj = dtsFF.FastaFile(self.rInputFileP/fileN)
+        
+        return seqObj.seqNat
+        #endregion ------------------------------------------------> 
+    #---
+    
+    def GetSeq(self, tSection: str, tDate: str) -> tuple[str, str]:
+        """Get the sequences used in an analysis.
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+    
+            Returns
+            -------
+            tuple[RecSeq, NatSeq]
+    
+            Raise
+            -----
+            KeyError:
+                When tSection or tDate is not found in the file
+        """
+        #region ------------------------------------------------> Path
+        for k,v in self.rData[tSection][tDate]['I'].items():
+            if 'Sequences File' in k:
+                fileN = v
+                break
+            else:
+                pass
+        #endregion ---------------------------------------------> Path
+        
+        #region ---------------------------------------------------> 
+        seqObj = dtsFF.FastaFile(self.rInputFileP/fileN)
+        
+        return (seqObj.seqRec, seqObj.seqNat) 
+        #endregion ------------------------------------------------> 
+    #---
+    
+    def GetFAData(
+        self, tSection: str, tDate: str, fileN: str, header: list[int]
+        ) -> 'pd.DataFrame':
+        """Get the data for a Further Analysis section
+    
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+            fileN : str
+                File name with the data
+            header: list[int]
+                Header rows in the file
+    
+            Returns
+            -------
+            pd.DataFrame
+        """
+        tPath = (
+            self.rStepDataP/f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'/fileN
+        )
+        return dtsFF.ReadCSV2DF(tPath, header=header)
+    #---
+    
+    def GetCleavagePerResidue(self, tSection:str, tDate:str) -> 'pd.DataFrame':
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        
+        #region ---------------------------------------------------> Path
+        folder = f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
+        fileN = self.rData[tSection][tDate]['CpR']
+        fileP = self.rStepDataP/folder/fileN
+        #endregion ------------------------------------------------> Path
+
+        return dtsFF.ReadCSV2DF(fileP, header=[0,1])
+    #---
+    
+    def GetCleavageEvolution(self, tSection:str, tDate:str) -> 'pd.DataFrame':
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        
+        #region ---------------------------------------------------> Path
+        folder = f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
+        fileN = self.rData[tSection][tDate]['CEvol']
+        fileP = self.rStepDataP/folder/fileN
+        #endregion ------------------------------------------------> Path
+
+        return dtsFF.ReadCSV2DF(fileP, header=[0,1])
+    #---
+    
+    def GetInputFiles(self) -> list[str]:
+        """Get a flat list of all input files in self.rData.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Notes
+            -----
+            This assumes files are added to I as the first and second items
+        """
+        
+        inputF = []
+        for k,v in self.rData.items():
+            for w in v.values():
+                iVal = iter(w['I'].values())
+                inputF.append(next(iVal))
+                if k in self.SeqF:
+                    inputF.append(next(iVal))
+                else:
+                    pass
+                
+        return inputF
     #---
     #endregion --------------------------------------------------> Get Methods
 #---
