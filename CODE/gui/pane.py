@@ -1365,8 +1365,9 @@ class BaseConfPanel(
                 #------------------------------>
                 if not piFolder == puFolder:
                     #------------------------------> 
-                    name = (
-                        f"{self.rDate}_{self.rDO[k].stem.replace(' ', '-')}{self.rDO[k].suffix}")
+                    tStem = self.rDO[k].stem.replace(' ', '-')
+                    tStem = tStem.replace('_', '-')
+                    name = f"{self.rDate}_{tStem}{self.rDO[k].suffix}"
                     file = puFolder/name
                     #------------------------------> 
                     shutil.copy(self.rDO[k], file)

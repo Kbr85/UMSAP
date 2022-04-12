@@ -9888,10 +9888,99 @@ class UMSAPControl(BaseWindow):
             
         """
         #region ---------------------------------------------------> 
-        if selItems['All']:
-            pass
-        else:
-            pass
+        folderData = self.rObj.rStepDataP
+        folderInit = self.rObj.rInputFileP
+        #------------------------------> 
+        dataStep = objAdd.rStepDataP
+        initStep = objAdd.rInputFileP
+        folderD  = {}
+        fileD    = {}
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for k, d in selItems.items():
+            sec = k.replace(" ","-")
+            #------------------------------> Make sure section exist
+            self.rObj.rData[k] = self.rObj.rData.get(k, {})
+            #------------------------------> 
+            for run in d:
+                temp = run.split(" - ")
+                date = temp[0]
+                tID = " - ".join(temp[1:]) 
+                #------------------------------> 
+                folderN = f'{date}_{sec}'
+                #------------------------------> 
+                a = (folderData/folderN).exists()
+                b = self.rObj.rData[k].get(run, False)
+                if a or b:
+                    #------------------------------> 
+                    n = 1
+                    dateF = f'{date}M{n}'
+                    c = dateF in self.rObj.rData[k].keys()
+                    d = (folderData/f"{dateF}_{sec}").exists()
+                    while(c or d):
+                        n = n + 1
+                        dateF = f'{date}M{n}'
+                        c = dateF in self.rObj.rData[k].keys()
+                        d = (folderData/f"{dateF}_{sec}").exists()
+                    #------------------------------> 
+                    runN    = f'{dateF} - {tID}'
+                    folderT = f'{dateF}_{sec}'
+                else:
+                    runN    = run
+                    folderT = folderN
+                #------------------------------> Data
+                self.rObj.rData[k][runN] = objAdd.rData[k][run]
+                #------------------------------> Folder
+                folderD[dataStep/folderN] = folderData/folderT
+                #------------------------------> Files
+                valI = iter(objAdd.rData[k][run]['I'].values())
+                keyI = iter(objAdd.rData[k][run]['I'].keys())
+                dataFile = next(valI)
+                if (folderInit/dataFile).exists():
+                    #------------------------------> 
+                    n = 1
+                    dateFile, nameFile = dataFile.split('_')
+                    nameF = f"{dateFile}M{n}_{nameFile}"
+                    while((folderInit/nameF).exists()):
+                        n = n + 1
+                        nameF = f"{dateFile}M{n}_{nameFile}"
+                    #------------------------------> 
+                    fileD[initStep/dataFile] = folderInit/nameF
+                    #------------------------------> 
+                    self.rObj.rData[k][runN]['I'][next(keyI)] = nameF
+                else:
+                    fileD[initStep/dataFile] = folderInit/dataFile
+                if k in self.cLSecSeqF:
+                    dataFile = next(valI)
+                    if (folderInit/dataFile).exists():
+                        #------------------------------> 
+                        n = 1
+                        dateFile, nameFile = dataFile.split('_')
+                        nameF = f"{dateFile}M{n}_{nameFile}"
+                        while((folderInit/nameF).exists()):
+                            n = n + 1
+                            nameF = f"{dateFile}M{n}_{nameFile}"
+                        #------------------------------> 
+                        fileD[initStep/dataFile] = folderInit/nameF
+                        #------------------------------> 
+                        self.rObj.rData[k][runN]['I'][next(keyI)] = nameF
+                    else:
+                        fileD[initStep/dataFile] = folderInit/dataFile
+                else:
+                    pass
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        for k,v in folderD.items():
+            shutil.copytree(k,v)
+        #------------------------------> 
+        for k,v in fileD.items():
+            shutil.copyfile(k,v)
+        #------------------------------> 
+        self.rObj.Save()
+        #------------------------------> 
+        self.UpdateFileContent()
         #endregion ------------------------------------------------> 
     
         return True
@@ -9914,27 +10003,6 @@ class UMSAPControl(BaseWindow):
             -----
             
         """
-        def GetFolderFile(
-            sec, run, valI, folderD, fileD, dataStep, folderData, initStep, 
-            folderInit,
-            ) -> tuple[dict, dict]:
-            """"""
-            #------------------------------> 
-            secN = sec.replace(' ', '-')
-            secF = f"{run.split(' - ')[0]}_{secN}"
-            folderD[dataStep/secF] = folderData/secF
-            #------------------------------> 
-            val = iter(valI.values())
-            dataFI = next(val)
-            fileD[initStep/dataFI] = folderInit/dataFI
-            if sec in self.cLSecSeqF:
-                dataFI = next(val)
-                fileD[initStep/dataFI] = folderInit/dataFI
-            else:
-                pass
-            #------------------------------> 
-            return (folderD, fileD)
-        #---
         #region ---------------------------------------------------> 
         dlg = dtsWindow.FileSelectDialog(
             'save', config.elUMSAP, parent=self, message='Select file')
@@ -9976,7 +10044,7 @@ class UMSAPControl(BaseWindow):
                 #------------------------------> 
                 data[k][run] = self.rObj.rData[k][run]
                 #------------------------------> 
-                folderD, fileD = GetFolderFile(
+                folderD, fileD = self.GetFolderFile(
                     k, run, data[k][run]['I'], folderD, fileD, dataStep, 
                     folderData, initStep, folderInit)
         #endregion ------------------------------------------------> 
@@ -10081,6 +10149,31 @@ class UMSAPControl(BaseWindow):
         #endregion ------------------------------------------------> 
     
         return True
+    #---
+    
+    def GetFolderFile(
+        self, sec, run, valI, folderD, fileD, dataStep, folderData, 
+        initStep, folderInit,
+        ) -> tuple[dict, dict]:
+        """
+        
+        
+        """
+        #------------------------------> 
+        secN = sec.replace(' ', '-')
+        secF = f"{run.split(' - ')[0]}_{secN}"
+        folderD[dataStep/secF] = folderData/secF
+        #------------------------------> 
+        val = iter(valI.values())
+        dataFI = next(val)
+        fileD[initStep/dataFI] = folderInit/dataFI
+        if sec in self.cLSecSeqF:
+            dataFI = next(val)
+            fileD[initStep/dataFI] = folderInit/dataFI
+        else:
+            pass
+        #------------------------------> 
+        return (folderD, fileD)
     #---
     
     def OnHyperLink(self, event) -> bool:
