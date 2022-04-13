@@ -2259,6 +2259,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
     # shown in the window
     cSection = config.nmProtProf
     #------------------------------> Labels
+    cLProtLAvail  = 'Displayed Proteins'
+    cLProtLShow   = 'Proteins to Label'
     cLFZscore     = 'Z'
     cLFLog2FC     = 'Log2FC'
     cLFPValAbs    = 'P'
@@ -2360,6 +2362,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rFcXLabel    = []
         self.rProtLine    = []
         self.rFilterList  = []
+        self.rLabelProt   = []
+        self.rLabelProtD  = {}
+        self.rPickLabel   = False
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> Methods
@@ -2397,6 +2402,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
             'VolcanoZoom' : self.OnZoomResetVol,
             'FCZoom'      : self.OnZoomResetFC,
             'AllZoom'     : self.OnPlotZoomResetAllinOne,
+            #------------------------------> 
+            'Labels'      : self.OnClearLabel,
+            'Selection'   : self.OnClearSel,
+            'AllClear'    : self.OnClearAll, 
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -2637,10 +2646,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         color = self.dKeyMethod[self.rColor](x, y)
         #endregion -----------------------------------------------------> Data
         
-        #region -----------------------------------------------------> H Curve
-        
-        #endregion --------------------------------------------------> H Curve
-
         #region --------------------------------------------------------> Plot
         self.wPlots.dPlot['Vol'].axes.scatter(
             x, y, 
@@ -2675,6 +2680,11 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #region -------------------------------------> Update selected protein
         self.DrawGreenPoint()
         #endregion ----------------------------------> Update selected protein
+        
+        #region ---------------------------------------------------> 
+        self.AddProtLabel()
+        #endregion ------------------------------------------------> 
+
     
         return True
     #---
@@ -2750,6 +2760,78 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.wPlots.dPlot['Vol'].canvas.draw()
         #endregion ---------------------------------------------> Volcano Plot
         
+        return True
+    #---
+    
+    def AddProtLabel(self, draw=False, checkKey=False):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if self.rLabelProt:
+            pass
+        else:
+            if draw:
+                self.wPlots.dPlot['Vol'].canvas.draw()
+            else:
+                pass
+            return True
+        #endregion ------------------------------------------------> 
+    
+        #region ---------------------------------------------------> 
+        idx = pd.IndexSlice
+        fc = idx[(self.rCondC, self.rRpC, 'FC')]
+        if self.rCorrP:
+            p = idx[(self.rCondC, self.rRpC, 'Pc')]
+        else:
+            p = idx[(self.rCondC, self.rRpC, 'P')]
+        #------------------------------> 
+        dX = self.wPlots.dPlot['Vol'].axes.get_xlim()
+        dX = dX[1] - dX[0]
+        dX = dX * 0.002
+        
+        dY = self.wPlots.dPlot['Vol'].axes.get_ylim()
+        dY = dY[1] - dY[0]
+        dY = dY * 0.002
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------->
+        for prot in self.rLabelProt:
+            tIdx = int(prot[0])
+            tKey = prot[0]
+            #------------------------------> 
+            if tKey in self.rLabelProtD.keys() and checkKey:
+                continue
+            else:
+                pass
+            #------------------------------> 
+            try:
+                x,y  = self.rDf.loc[tIdx,[fc,p]].to_numpy().tolist() 
+            except KeyError:
+                continue
+            y = -np.log10(y)
+            #------------------------------> 
+            if x > 0:
+                self.rLabelProtD[tKey] = self.wPlots.dPlot['Vol'].axes.text(
+                    x+dX,y-dY, prot[1], va='top')
+            else:
+                self.rLabelProtD[tKey] = self.wPlots.dPlot['Vol'].axes.text(
+                    x+dX,y-dY, prot[1], ha='right',va='top')
+        #------------------------------> 
+        self.wPlots.dPlot['Vol'].canvas.draw()
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     
@@ -3477,6 +3559,82 @@ class ProtProfPlot(BaseWindowNPlotLT):
 
         return np.select(cond, choice, default=self.cColor['Vol'][1])
     #---
+    
+    def PickLabel(self, ind: list[int]) -> bool:
+        """Show label for the picked protein.
+    
+            Parameters
+            ----------
+            ind: list[int]
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        col = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for k in ind:
+            idx = self.rDf.index[k]
+            idxS = str(idx)
+            row = [idxS]+self.rDf.loc[idx,col].to_numpy().tolist()
+            if row in self.rLabelProt:
+                self.rLabelProtD[idxS].remove()
+                self.rLabelProtD.pop(idxS)
+                self.rLabelProt.remove(row)
+            else:
+                self.rLabelProt.append(row)
+        #------------------------------> 
+        self.AddProtLabel(draw=True, checkKey=True)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def PickShow(self, ind: list[int]) -> bool:
+        """Show info about the picked protein.
+    
+            Parameters
+            ----------
+            ind: list[int]
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Pick
+        if len(ind) == 1:
+            self.wLC.wLCS.lc.Select(ind[0], on=1)
+            self.wLC.wLCS.lc.EnsureVisible(ind[0])
+            self.wLC.wLCS.lc.SetFocus()
+            self.OnListSelect('fEvent')
+        else:
+            #------------------------------> Disconnect events to avoid zoom in
+            # while interacting with the modal window
+            self.wPlots.dPlot['Vol'].DisconnectEvent()
+            #------------------------------> sort ind
+            ind = sorted(ind, key=int)
+            #------------------------------> 
+            msg = (f'The selected point is an overlap of several proteins.')
+            tException = (
+                f'The numbers of the proteins included in the selected '
+                f'point are:\n {str(ind)[1:-1]}')
+            dtscore.Notification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                tException = tException,
+                parent     = self.wPlots.dPlot['Vol'],
+            )
+            #------------------------------> Reconnect event
+            self.wPlots.dPlot['Vol'].ConnectEvent()
+            return False
+        #endregion ------------------------------------------------> Pick
+        
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
     
     #region ---------------------------------------------------> Event Methods
@@ -3510,15 +3668,17 @@ class ProtProfPlot(BaseWindowNPlotLT):
             bool
         """
         #region --------------------------------------------> Update variables
-        self.rDateC   = tDate if tDate is not None else self.rDateC
-        self.rCondC   = cond if cond is not None else self.rCondC
-        self.rRpC     = rp if rp is not None else self.rRpC
-        self.rCorrP   = corrP if corrP is not None else self.rCorrP
-        self.rShowAll = showAll if showAll is not None else self.rShowAll
-        self.rT0      = t0 if t0 is not None else self.rT0
-        self.rS0      = s0 if s0 is not None else self.rS0
-        self.rCI      = self.rObj.rData[self.cSection][self.rDateC]['CI']
-        self.rDf      = self.rData[self.rDateC]['DF'].copy()
+        self.rDateC      = tDate if tDate is not None else self.rDateC
+        self.rCondC      = cond if cond is not None else self.rCondC
+        self.rRpC        = rp if rp is not None else self.rRpC
+        self.rCorrP      = corrP if corrP is not None else self.rCorrP
+        self.rShowAll    = showAll if showAll is not None else self.rShowAll
+        self.rT0         = t0 if t0 is not None else self.rT0
+        self.rS0         = s0 if s0 is not None else self.rS0
+        self.rCI         = self.rObj.rData[self.cSection][self.rDateC]['CI']
+        self.rDf         = self.rData[self.rDateC]['DF'].copy()
+        self.rLabelProt  = [] if tDate is not None else self.rLabelProt
+        self.rLabelProtD = {} if tDate is not None else self.rLabelProtD
         #endregion -----------------------------------------> Update variables
         
         #region --------------------------------------------------> Update GUI
@@ -3710,6 +3870,25 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return True	
     #---
     
+    def OnLabelPick(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.rPickLabel = not self.rPickLabel
+        return True
+    #---
+    
     def OnPick(self, event) -> bool:
         """Process a pick event in the volcano plot.
     
@@ -3726,35 +3905,11 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> Pick
-        if len(ind) == 1:
-            self.wLC.wLCS.lc.Select(ind[0], on=1)
-            self.wLC.wLCS.lc.EnsureVisible(ind[0])
-            self.wLC.wLCS.lc.SetFocus()
-            self.OnListSelect('fEvent')
+        if self.rPickLabel:
+            return self.PickLabel(ind)
         else:
-            #------------------------------> Disconnect events to avoid zoom in
-            # while interacting with the modal window
-            self.wPlots.dPlot['Vol'].DisconnectEvent()
-            #------------------------------> sort ind
-            ind = sorted(ind, key=int)
-            #------------------------------> 
-            msg = (f'The selected point is an overlap of several proteins.')
-            tException = (
-                f'The numbers of the proteins included in the selected '
-                f'point are:\n {str(ind)[1:-1]}')
-            dtscore.Notification(
-                'warning', 
-                msg        = msg,
-                setText    = True,
-                tException = tException,
-                parent     = self.wPlots.dPlot['Vol'],
-            )
-            #------------------------------> Reconnect event
-            self.wPlots.dPlot['Vol'].ConnectEvent()
-            return False
+            return self.PickShow(ind)
         #endregion ------------------------------------------------> Pick
-        
-        return True
     #---
     
     def OnClearSel(self):
@@ -3786,6 +3941,54 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.wText.Clear()
         else:
             pass
+        return True
+    #---
+    
+    def OnClearLabel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        for t in self.rLabelProtD.values():
+            t.remove()
+        #------------------------------> 
+        self.rLabelProtD = {}
+        self.rLabelProt = []
+        #------------------------------> 
+        self.wPlots.dPlot['Vol'].canvas.draw()        
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearAll(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.OnClearSel()
+        self.OnClearLabel()
         return True
     #---
     
@@ -3942,6 +4145,72 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.StatusBarFilterText(k[2])
         #endregion ------------------------------------------------------> Add
 
+        return True
+    #---
+    
+    def OnProtLabel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        data = self.rDf.iloc[:,0:2]
+        data.insert(0, 'kbr', self.rDf.index.values.tolist())
+        data = data.astype(str)
+        data = data.values.tolist()
+        #endregion ------------------------------------------------> 
+
+        #region -------------------------------------------------> Get New Sel
+        #------------------------------> Create the window
+        dlg = dtsWindow.ListSelect(
+            data, 
+            self.cLCol, 
+            self.cSCol, 
+            tSelOptions = self.rLabelProt,
+            title       = 'Select Proteins',            
+            tBtnLabel   = 'Add Protein',
+            color       = config.color['Zebra'],
+            tStLabel = [self.cLProtLAvail, self.cLProtLShow],
+        )
+        #------------------------------> Get the selected values
+        if dlg.ShowModal():
+            #------------------------------> 
+            rowN = dlg.wLCtrlO.GetItemCount()
+            rowL = [dlg.wLCtrlO.GetRowContent(x) for x in range(0, rowN)]
+            #------------------------------> 
+            for z in reversed(self.rLabelProt):
+                if z not in rowL:
+                    self.rLabelProtD[z[0]].remove()
+                    self.rLabelProtD.pop(z[0])
+                    self.rLabelProt.remove(z)
+                else:
+                    pass
+            print("")
+            #------------------------------> 
+            for y in rowL:
+                if y in self.rLabelProt:
+                    pass
+                else:
+                    self.rLabelProt.append(y)
+        else:
+            pass
+        #endregion ----------------------------------------------> Get New Sel
+        
+        #region --------------------------------------------------------> 
+        self.AddProtLabel(draw=True, checkKey=True)
+        #endregion -----------------------------------------------------> 
+
+        dlg.Destroy()
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
