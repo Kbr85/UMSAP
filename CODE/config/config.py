@@ -55,6 +55,8 @@ if os == 'Darwin':
     copyShortCut = 'Cmd'
     #------------------------------> Delta space between consecutive windows
     deltaWin = 23
+    #------------------------------> 
+    commOpen = 'open'
 elif os == 'Windows':
     #------------------------------> Root & Resources Folder
     if development:
@@ -76,6 +78,8 @@ elif os == 'Windows':
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
     deltaWin = 20
+    #------------------------------> 
+    commOpen = 'start'
 else:
     #------------------------------> Root & Resources Folder
     root = cwd.parent
@@ -93,6 +97,8 @@ else:
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
     deltaWin = 20
+    #------------------------------> 
+    commOpen = 'xdg-open'
 #endregion ------------------------------------- Platform Dependent Parameters
 
 
@@ -123,6 +129,7 @@ nwAAPlot        = 'AAPlot'
 nwHistPlot      = 'HistPlot'
 nwCpRPlot       = 'CpRPlot'
 nwCEvolPlot     = 'CEvolPlot'
+nwAbout         = 'About UMSAP'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
@@ -214,8 +221,11 @@ esUMSAP = ['.umsap']
 pImages = res / 'IMAGES' # Images folder
 #------------------------------> Location & names of important files
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
-fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
-# #------------------------------> Names
+fImgIcon  = pImages / 'DIALOGUE/dlg.png'
+fImgAbout = pImages / 'ABOUT/p97-2-about.png'
+#------------------------------> Manual & About
+fManual = res / 'MANUAL/manual.pdf'
+#------------------------------> Names
 fnInitial    = "{}_{}-Initial-Data.txt"
 fnFloat      = "{}_{}-Floated-Data.txt"
 fnTargetProt = "{}_{}-Target-Protein-Data.txt"
@@ -233,7 +243,7 @@ fnDataInit   = 'Input_Data_Files'
 #------------------------------> www.umsap.nl
 urlHome     = 'https://www.umsap.nl'
 urlUpdate   = f"{urlHome}/page/release-notes"
-urlTutorial = f"{urlHome}/tutorial/2-1-0"
+urlTutorial = f"{urlHome}/tutorial/2-2-0"
 #endregion --------------------------------------------------------------- URL
 
 
