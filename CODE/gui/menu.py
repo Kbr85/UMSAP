@@ -951,6 +951,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         self.AddCondRPMenuItems2Menus()
         self.AppendSeparator()
         self.miLabelProt = self.Append(-1, 'Add Label\tShift+A')
+        self.miLabelPick = self.Append(-1, 'Pick Label\tShift+P', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
         self.miColor = self.Append(-1, 'Color Scheme')
         self.AppendSeparator()
@@ -970,6 +971,7 @@ class VolcanoPlot(wx.Menu, MenuMethods):
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miLabelProt)
+        self.Bind(wx.EVT_MENU, self.OnLabelPick,      source=self.miLabelPick)
         self.Bind(wx.EVT_MENU, self.OnColor,          source=self.miColor)
         self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         self.Bind(wx.EVT_MENU, self.OnUpdatePlot,     source=self.miPCorr)
@@ -1034,6 +1036,25 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         """
         win = self.GetWindow()
         win.OnProtLabel()
+        
+        return True
+    #---
+    
+    def OnLabelPick(self, event: wx.CommandEvent) -> bool:
+        """Pick and Label proteins.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnLabelPick()
         
         return True
     #---
