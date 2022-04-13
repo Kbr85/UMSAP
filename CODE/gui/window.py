@@ -3577,11 +3577,12 @@ class ProtProfPlot(BaseWindowNPlotLT):
 
         #region ---------------------------------------------------> 
         for k in ind:
-            sK = str(k)
-            row = [sK]+self.rDf.loc[k,col].to_numpy().tolist()
+            idx = self.rDf.index[k]
+            idxS = str(idx)
+            row = [idxS]+self.rDf.loc[idx,col].to_numpy().tolist()
             if row in self.rLabelProt:
-                self.rLabelProtD[sK].remove()
-                self.rLabelProtD.pop(sK)
+                self.rLabelProtD[idxS].remove()
+                self.rLabelProtD.pop(idxS)
                 self.rLabelProt.remove(row)
             else:
                 self.rLabelProt.append(row)
@@ -4183,15 +4184,17 @@ class ProtProfPlot(BaseWindowNPlotLT):
         )
         #------------------------------> Get the selected values
         if dlg.ShowModal():
-            self.rLabelProt = []
             for row in range(0, dlg.wLCtrlO.GetItemCount()):
-                self.rLabelProt.append(dlg.wLCtrlO.GetRowContent(row))
+                if row in self.rLabelProt:
+                    pass
+                else:
+                    self.rLabelProt.append(dlg.wLCtrlO.GetRowContent(row))
         else:
             pass
         #endregion ----------------------------------------------> Get New Sel
         
         #region --------------------------------------------------------> 
-        self.AddProtLabel()
+        self.AddProtLabel(draw=True, checkKey=True)
         #endregion -----------------------------------------------------> 
 
         dlg.Destroy()
