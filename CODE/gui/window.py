@@ -2259,6 +2259,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
     # shown in the window
     cSection = config.nmProtProf
     #------------------------------> Labels
+    cLProtLAvail  = 'Displayed Proteins'
+    cLProtLShow   = 'Proteins to Label'
     cLFZscore     = 'Z'
     cLFLog2FC     = 'Log2FC'
     cLFPValAbs    = 'P'
@@ -2360,6 +2362,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rFcXLabel    = []
         self.rProtLine    = []
         self.rFilterList  = []
+        self.rLabelProt   = []
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> Methods
@@ -2637,10 +2640,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
         color = self.dKeyMethod[self.rColor](x, y)
         #endregion -----------------------------------------------------> Data
         
-        #region -----------------------------------------------------> H Curve
-        
-        #endregion --------------------------------------------------> H Curve
-
         #region --------------------------------------------------------> Plot
         self.wPlots.dPlot['Vol'].axes.scatter(
             x, y, 
@@ -2675,6 +2674,11 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #region -------------------------------------> Update selected protein
         self.DrawGreenPoint()
         #endregion ----------------------------------> Update selected protein
+        
+        #region ---------------------------------------------------> 
+        self.AddProtLabel()
+        #endregion ------------------------------------------------> 
+
     
         return True
     #---
@@ -2750,6 +2754,66 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.wPlots.dPlot['Vol'].canvas.draw()
         #endregion ---------------------------------------------> Volcano Plot
         
+        return True
+    #---
+    
+    def AddProtLabel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if self.rLabelProt:
+            pass
+        else:
+            return True
+        #endregion ------------------------------------------------> 
+    
+        #region ---------------------------------------------------> 
+        idx = pd.IndexSlice
+        fc = idx[(self.rCondC, self.rRpC, 'FC')]
+        if self.rCorrP:
+            p = idx[(self.rCondC, self.rRpC, 'Pc')]
+        else:
+            p = idx[(self.rCondC, self.rRpC, 'P')]
+        #------------------------------> 
+        dX = self.wPlots.dPlot['Vol'].axes.get_xlim()
+        dX = dX[1] - dX[0]
+        dX = dX * 0.002
+        
+        dY = self.wPlots.dPlot['Vol'].axes.get_ylim()
+        dY = dY[1] - dY[0]
+        dY = dY * 0.002
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------->
+        for prot in self.rLabelProt:
+            tIdx = int(prot[0])
+            try:
+                x,y  = self.rDf.loc[tIdx,[fc,p]].to_numpy().tolist() 
+            except KeyError:
+                continue
+            y = -np.log10(y)
+            if x > 0:
+                self.wPlots.dPlot['Vol'].axes.text(
+                    x+dX,y-dY, prot[1], va='top')
+            else:
+                self.wPlots.dPlot['Vol'].axes.text(
+                    x+dX,y-dY, prot[1], ha='right',va='top')
+        #------------------------------> 
+        self.wPlots.dPlot['Vol'].canvas.draw()
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     
@@ -3519,6 +3583,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rS0      = s0 if s0 is not None else self.rS0
         self.rCI      = self.rObj.rData[self.cSection][self.rDateC]['CI']
         self.rDf      = self.rData[self.rDateC]['DF'].copy()
+        self.rLabelProt = [] if tDate is not None else self.rLabelProt
         #endregion -----------------------------------------> Update variables
         
         #region --------------------------------------------------> Update GUI
@@ -3942,6 +4007,57 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.StatusBarFilterText(k[2])
         #endregion ------------------------------------------------------> Add
 
+        return True
+    #---
+    
+    def OnProtLabel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        data = self.rDf.iloc[:,0:2]
+        data.insert(0, 'kbr', self.rDf.index.values.tolist())
+        data = data.astype(str)
+        data = data.values.tolist()
+        #endregion ------------------------------------------------> 
+
+        #region -------------------------------------------------> Get New Sel
+        #------------------------------> Create the window
+        dlg = dtsWindow.ListSelect(
+            data, 
+            self.cLCol, 
+            self.cSCol, 
+            tSelOptions = self.rLabelProt,
+            title       = 'Select Proteins',            
+            tBtnLabel   = 'Add Protein',
+            color       = config.color['Zebra'],
+            tStLabel = [self.cLProtLAvail, self.cLProtLShow],
+        )
+        #------------------------------> Get the selected values
+        if dlg.ShowModal():
+            self.rLabelProt = []
+            for row in range(0, dlg.wLCtrlO.GetItemCount()):
+                self.rLabelProt.append(dlg.wLCtrlO.GetRowContent(row))
+        else:
+            pass
+        #endregion ----------------------------------------------> Get New Sel
+        
+        #region --------------------------------------------------------> 
+        self.AddProtLabel()
+        #endregion -----------------------------------------------------> 
+
+        dlg.Destroy()
         return True
     #---
     #endregion ------------------------------------------------> Event Methods

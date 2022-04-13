@@ -950,6 +950,8 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         #region --------------------------------------------------> Menu Items
         self.AddCondRPMenuItems2Menus()
         self.AppendSeparator()
+        self.miLabelProt = self.Append(-1, 'Add Label\tShift+A')
+        self.AppendSeparator()
         self.miColor = self.Append(-1, 'Color Scheme')
         self.AppendSeparator()
         self.miPCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
@@ -961,12 +963,13 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         
         #region ---------------------------------------------------> rKeyID
         self.rKeyID = {
-            self.miSaveI.GetId(): 'VolcanoImg',
-            self.miZoomR.GetId(): 'VolcanoZoom',
+            self.miSaveI.GetId    (): 'VolcanoImg',
+            self.miZoomR.GetId    (): 'VolcanoZoom',
         }
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miLabelProt)
         self.Bind(wx.EVT_MENU, self.OnColor,          source=self.miColor)
         self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         self.Bind(wx.EVT_MENU, self.OnUpdatePlot,     source=self.miPCorr)
@@ -1012,6 +1015,25 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         """
         win = self.GetWindow()
         win.OnVolColorScheme()
+        
+        return True
+    #---
+    
+    def OnLabel(self, event: wx.CommandEvent) -> bool:
+        """Add Label to selected proteins.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnProtLabel()
         
         return True
     #---
