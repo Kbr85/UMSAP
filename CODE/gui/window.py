@@ -172,6 +172,12 @@ class BaseWindow(wx.Frame):
             #------------------------------> Reset Zoom Level
             'PlotZoomResetOne': self.OnPlotZoomResetOne,
             'AllZoom'         : self.OnPlotZoomResetAll,
+            #------------------------------> 
+            'HelpAbout'      : self.OnAbout,
+            # 'HelpManual'     : ,
+            # 'HelpTutorial'   : ,
+            # 'HelpCheckUpd'   : ,
+            # 'HelpPreferences': ,
         }
         #------------------------------> 
         super().__init__(
@@ -201,6 +207,25 @@ class BaseWindow(wx.Frame):
 
     #------------------------------> Class methods
     #region ---------------------------------------------------> Event Methods
+    def OnAbout(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        print('About UMSAP')
+        return True
+    #---
+    
     def OnClose(self, event: wx.CloseEvent) -> bool:
         """Destroy window. Override as needed.
     
