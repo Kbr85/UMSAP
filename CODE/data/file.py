@@ -286,6 +286,7 @@ class UMSAPFile():
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
         plotData = {'Error':[]}
+        colStr = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
         #------------------------------> Fill
         for k,v in self.rData[config.nmProtProf].items():
             try:
@@ -293,6 +294,7 @@ class UMSAPFile():
                 tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmProtProf.replace(" ", "-")}'
                 #------------------------------> Create data
                 df = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
+                df.loc[:,colStr] = df.loc[:,colStr].astype('str')
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF': df,

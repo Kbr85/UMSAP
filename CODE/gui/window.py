@@ -4184,11 +4184,24 @@ class ProtProfPlot(BaseWindowNPlotLT):
         )
         #------------------------------> Get the selected values
         if dlg.ShowModal():
-            for row in range(0, dlg.wLCtrlO.GetItemCount()):
-                if row in self.rLabelProt:
+            #------------------------------> 
+            rowN = dlg.wLCtrlO.GetItemCount()
+            rowL = [dlg.wLCtrlO.GetRowContent(x) for x in range(0, rowN)]
+            #------------------------------> 
+            for z in reversed(self.rLabelProt):
+                if z not in rowL:
+                    self.rLabelProtD[z[0]].remove()
+                    self.rLabelProtD.pop(z[0])
+                    self.rLabelProt.remove(z)
+                else:
+                    pass
+            print("")
+            #------------------------------> 
+            for y in rowL:
+                if y in self.rLabelProt:
                     pass
                 else:
-                    self.rLabelProt.append(dlg.wLCtrlO.GetRowContent(row))
+                    self.rLabelProt.append(y)
         else:
             pass
         #endregion ----------------------------------------------> Get New Sel
