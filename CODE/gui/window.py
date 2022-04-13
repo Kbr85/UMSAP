@@ -2402,6 +2402,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
             'VolcanoZoom' : self.OnZoomResetVol,
             'FCZoom'      : self.OnZoomResetFC,
             'AllZoom'     : self.OnPlotZoomResetAllinOne,
+            #------------------------------> 
+            'Labels'      : self.OnClearLabel,
+            'Selection'   : self.OnClearSel,
+            'AllClear'    : self.OnClearAll, 
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -3936,6 +3940,54 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.wText.Clear()
         else:
             pass
+        return True
+    #---
+    
+    def OnClearLabel(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        for t in self.rLabelProtD.values():
+            t.remove()
+        #------------------------------> 
+        self.rLabelProtD = {}
+        self.rLabelProt = []
+        #------------------------------> 
+        self.wPlots.dPlot['Vol'].canvas.draw()        
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def OnClearAll(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.OnClearSel()
+        self.OnClearLabel()
         return True
     #---
     

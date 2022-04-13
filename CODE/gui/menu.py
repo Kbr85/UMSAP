@@ -1624,6 +1624,78 @@ class ClearSelTarProt(wx.Menu):
 #---
 
 
+class ClearSelProtProf(wx.Menu):
+    """Clear the selection in a ProtProf Res Window
+    
+        Attributes
+        ----------
+        rKeyID : dict
+            To map menu items to the Clear type. Keys are MenuItems.GetId() and 
+            values are str. 
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miLabel = self.Append(-1, 'Labels')
+        self.miSel   = self.Append(-1, 'Selection')
+        self.AppendSeparator()
+        self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> 
+        self.rKeyID = {
+            self.miLabel.GetId(): 'Labels',
+            self.miSel.GetId(): 'Selection',
+            self.miNoSel.GetId() : 'AllClear',
+        }
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miLabel)
+        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miSel)
+        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoSel)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #------------------------------> Class method
+    #region ---------------------------------------------------> Event methods
+    def OnClearSelection(self, event: wx.CommandEvent) -> bool:
+        """Clear the selection in a LimProt Res Window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        win = self.GetWindow()
+        tKey = self.rKeyID[event.GetId()]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Run
+        win.dKeyMethod[tKey]()
+        #endregion ------------------------------------------------> Run
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+#---
+
+
 class AAToolMenu(wx.Menu, MenuMethods):
     """ """
     #region -----------------------------------------------------> Class setup
@@ -2599,7 +2671,8 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.AppendSubMenu(self.mLockScale, 'Lock Plot Scale')
         self.AppendSeparator()
         #------------------------------> Clear Selection
-        self.miClearSel = self.Append(-1, 'Clear Selection\tCtrl+K')
+        self.mClearSel = ClearSelProtProf()
+        self.AppendSubMenu(self.mClearSel, 'Clear Selection')
         self.AppendSeparator()
         #------------------------------> Duplicate Window
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
@@ -2630,7 +2703,6 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,     source=self.miDataPrep)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,         source=self.miZoomR)
         self.Bind(wx.EVT_MENU, self.OnSavePlotImage,     source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnClearSel,          source=self.miClearSel)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -2665,26 +2737,6 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
             *self.mVolcano.GetData4Draw(),
             *self.mFc.GetData4Draw(),
         )
-        #endregion -----------------------------------------------------> Draw
-        
-        return True
-    #---
-    
-    def OnClearSel(self, event: wx.CommandEvent) -> bool:
-        """Clear Sel.
-    
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-                
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------------> Draw
-        win = self.GetWindow()
-        win.OnClearSel()
         #endregion -----------------------------------------------------> Draw
         
         return True
