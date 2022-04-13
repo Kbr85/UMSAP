@@ -250,6 +250,43 @@ class MenuMethods():
         return True
     #---
     
+    def UpdateDateItems(self, menuDate: list[str]) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        checked = self.GetCheckedRadiodItem(self.rPlotDate)
+        #------------------------------> 
+        for k in self.rPlotDate:
+            self.Delete(k)
+        self.rPlotDate = []
+        #------------------------------> 
+        for k in reversed(menuDate):
+            self.rPlotDate.append(self.InsertRadioItem(0,-1,k))
+            self.Bind(wx.EVT_MENU, self.OnPlotDate, source=self.rPlotDate[-1])
+        #------------------------------> 
+        for k in self.rPlotDate:
+            if k.GetItemLabelText() == checked:
+                k.Check(check=True)
+                break
+            else:
+                pass
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
     def GetCheckedRadiodItem(
         self, lMenuItem: list[wx.MenuItem], getVal: str='Label',
         ) -> Union[str, int]:
@@ -544,12 +581,19 @@ class FileControlToolMenu(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miExpData = self.Append(-1, 'Export Data\tCtrl+E')
+        self.miAddData = self.Append(-1, 'Add Analysis\tCtrl+A')
+        self.AppendSeparator()
+        self.miDelData = self.Append(-1, 'Delete Analysis\tCtrl+X')
+        self.AppendSeparator()
+        self.miExpData = self.Append(-1, 'Export Analysis\tCtrl+E')
         self.AppendSeparator()
         self.miUpdateFile = self.Append(-1, 'Reload File\tCtrl+U')
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnAdd,    source=self.miAddData)
+        self.Bind(wx.EVT_MENU, self.OnDel,    source=self.miDelData)
+        self.Bind(wx.EVT_MENU, self.OnExport, source=self.miExpData)
         self.Bind(
             wx.EVT_MENU, self.OnUpdateFileContent, source=self.miUpdateFile)
         #endregion -----------------------------------------------------> Bind
@@ -572,6 +616,60 @@ class FileControlToolMenu(wx.Menu):
         """
         win = self.GetWindow()
         win.UpdateFileContent()
+        
+        return True
+    #---
+    
+    def OnExport(self, event: wx.CommandEvent) -> bool:
+        """Update the file content shown in the window
+    
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            True
+        """
+        win = self.GetWindow()
+        win.OnAddDelExport(mode=3)
+        
+        return True
+    #---
+    
+    def OnDel(self, event: wx.CommandEvent) -> bool:
+        """Update the file content shown in the window
+    
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            True
+        """
+        win = self.GetWindow()
+        win.OnAddDelExport(mode=2)
+        
+        return True
+    #---
+    
+    def OnAdd(self, event: wx.CommandEvent) -> bool:
+        """Update the file content shown in the window
+    
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            True
+        """
+        win = self.GetWindow()
+        win.OnAddDelExport(mode=1)
         
         return True
     #---
@@ -766,7 +864,6 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         #------------------------------> Add Dates
         if cMenuData is not None:
             self.AddDateItems(self.cMenuData['menudate'])
-            self.AppendSeparator()
         else:
             pass
         #------------------------------> Duplicate Window
@@ -853,6 +950,9 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         #region --------------------------------------------------> Menu Items
         self.AddCondRPMenuItems2Menus()
         self.AppendSeparator()
+        self.miLabelProt = self.Append(-1, 'Add Label\tShift+A')
+        self.miLabelPick = self.Append(-1, 'Pick Label\tShift+P', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
         self.miColor = self.Append(-1, 'Color Scheme')
         self.AppendSeparator()
         self.miPCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
@@ -864,12 +964,14 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         
         #region ---------------------------------------------------> rKeyID
         self.rKeyID = {
-            self.miSaveI.GetId(): 'VolcanoImg',
-            self.miZoomR.GetId(): 'VolcanoZoom',
+            self.miSaveI.GetId    (): 'VolcanoImg',
+            self.miZoomR.GetId    (): 'VolcanoZoom',
         }
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miLabelProt)
+        self.Bind(wx.EVT_MENU, self.OnLabelPick,      source=self.miLabelPick)
         self.Bind(wx.EVT_MENU, self.OnColor,          source=self.miColor)
         self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         self.Bind(wx.EVT_MENU, self.OnUpdatePlot,     source=self.miPCorr)
@@ -915,6 +1017,44 @@ class VolcanoPlot(wx.Menu, MenuMethods):
         """
         win = self.GetWindow()
         win.OnVolColorScheme()
+        
+        return True
+    #---
+    
+    def OnLabel(self, event: wx.CommandEvent) -> bool:
+        """Add Label to selected proteins.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnProtLabel()
+        
+        return True
+    #---
+    
+    def OnLabelPick(self, event: wx.CommandEvent) -> bool:
+        """Pick and Label proteins.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnLabelPick()
         
         return True
     #---
@@ -1450,6 +1590,78 @@ class ClearSelTarProt(wx.Menu):
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoPept)
         self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoFrag)
+        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoSel)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #------------------------------> Class method
+    #region ---------------------------------------------------> Event methods
+    def OnClearSelection(self, event: wx.CommandEvent) -> bool:
+        """Clear the selection in a LimProt Res Window
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        win = self.GetWindow()
+        tKey = self.rKeyID[event.GetId()]
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> Run
+        win.dKeyMethod[tKey]()
+        #endregion ------------------------------------------------> Run
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+#---
+
+
+class ClearSelProtProf(wx.Menu):
+    """Clear the selection in a ProtProf Res Window
+    
+        Attributes
+        ----------
+        rKeyID : dict
+            To map menu items to the Clear type. Keys are MenuItems.GetId() and 
+            values are str. 
+    """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miLabel = self.Append(-1, 'Labels')
+        self.miSel   = self.Append(-1, 'Selection')
+        self.AppendSeparator()
+        self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> 
+        self.rKeyID = {
+            self.miLabel.GetId(): 'Labels',
+            self.miSel.GetId(): 'Selection',
+            self.miNoSel.GetId() : 'AllClear',
+        }
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miLabel)
+        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miSel)
         self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoSel)
         #endregion -----------------------------------------------------> Bind
     #---
@@ -2440,7 +2652,6 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         #region --------------------------------------------------> Menu Items
         #------------------------------> Add Dates
         self.AddDateItems(self.cMenuData['menudate'])
-        self.AppendSeparator()
         #------------------------------> Volcano Plot
         self.mVolcano =  VolcanoPlot(
                 self.cMenuData['crp'], self.rPlotDate[0].GetItemLabelText()
@@ -2460,7 +2671,8 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.AppendSubMenu(self.mLockScale, 'Lock Plot Scale')
         self.AppendSeparator()
         #------------------------------> Clear Selection
-        self.miClearSel = self.Append(-1, 'Clear Selection\tCtrl+K')
+        self.mClearSel = ClearSelProtProf()
+        self.AppendSubMenu(self.mClearSel, 'Clear Selection')
         self.AppendSeparator()
         #------------------------------> Duplicate Window
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
@@ -2491,7 +2703,6 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,     source=self.miDataPrep)
         self.Bind(wx.EVT_MENU, self.OnZoomReset,         source=self.miZoomR)
         self.Bind(wx.EVT_MENU, self.OnSavePlotImage,     source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnClearSel,          source=self.miClearSel)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -2531,24 +2742,24 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
         return True
     #---
     
-    def OnClearSel(self, event: wx.CommandEvent) -> bool:
-        """Clear Sel.
+    def UpdateDateItems(self, menuData):
+        """
     
             Parameters
             ----------
-            event : wx.Event
-                Information about the event
-                
+            
+    
             Returns
             -------
-            bool
+            
+    
+            Raise
+            -----
+            
         """
-        #region --------------------------------------------------------> Draw
-        win = self.GetWindow()
-        win.OnClearSel()
-        #endregion -----------------------------------------------------> Draw
-        
-        return True
+        self.cMenuData = menuData
+        self.mVolcano.rCrp = self.cMenuData['crp']
+        super().UpdateDateItems(self.cMenuData['menudate'])
     #---
     #endregion ------------------------------------------------> Event methods
 #---
@@ -2591,7 +2802,6 @@ class LimProtToolMenu(wx.Menu, MenuMethods):
         #region --------------------------------------------------> Menu Items
         #------------------------------> Add Dates
         self.AddDateItems(self.cMenuData['menudate'])
-        self.AppendSeparator()
         #------------------------------> 
         self.miBandLane = self.Append(
             -1, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
@@ -2745,7 +2955,6 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         #region --------------------------------------------------> Menu Items
         #------------------------------> Add Dates
         self.AddDateItems(self.cMenuData['menudate'])
-        self.AppendSeparator()
         #------------------------------> 
         self.mFragmentMenu = MainPlotProt()
         self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
@@ -2837,6 +3046,27 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
         win.OnSeqExport()
         
         return True
+    #---
+    
+    def UpdateDateItems(self, menuData):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.cMenuData = menuData
+        self.mFurtherA.mAA.cMenuData = self.cMenuData['FA']
+        self.mFurtherA.mHist.cMenuData = self.cMenuData['FA']
+        super().UpdateDateItems(self.cMenuData['menudate'])
     #---
     #endregion ------------------------------------------------> Event methods
 #---

@@ -60,6 +60,7 @@ class UMSAPFile():
     """
     #region -----------------------------------------------------> Class setup
     cName = 'UMSAPFile'
+    SeqF = [config.nmTarProt, config.nmLimProt]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -145,7 +146,7 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {}
+        plotData = {'Error':[]}
         #------------------------------> Fill
         for k,v in self.rData[config.nuCorrA].items():
             #------------------------------> 
@@ -166,7 +167,7 @@ class UMSAPFile():
                     'NumColList': v['CI']['oc']['Column'],
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -252,7 +253,7 @@ class UMSAPFile():
             }
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
+        plotData = {'Error':[]}
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu        
@@ -266,7 +267,7 @@ class UMSAPFile():
                     'NumColList': v['CI']['oc']['Column'],
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -284,7 +285,8 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {}
+        plotData = {'Error':[]}
+        colStr = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
         #------------------------------> Fill
         for k,v in self.rData[config.nmProtProf].items():
             try:
@@ -292,13 +294,14 @@ class UMSAPFile():
                 tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmProtProf.replace(" ", "-")}'
                 #------------------------------> Create data
                 df = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
+                df.loc[:,colStr] = df.loc[:,colStr].astype('str')
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
                     'DF': df,
                     'F' : v['F'],
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -326,7 +329,7 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {}
+        plotData = {'Error':[]}
         #------------------------------> Fill
         for k,v in self.rData[config.nmLimProt].items():
             try:
@@ -350,7 +353,7 @@ class UMSAPFile():
                     'PI': PI,
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -377,7 +380,7 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {}
+        plotData = {'Error':[]}
         #------------------------------> Fill
         for k,v in self.rData[config.nmTarProt].items():
             try:
@@ -405,7 +408,7 @@ class UMSAPFile():
                     'CEvol': v['CEvol'],
                 }
             except Exception:
-                pass
+                plotData['Error'].append(k)
         #endregion ----------------------------------------------> Plot & Menu
         
         return plotData
@@ -730,6 +733,35 @@ class UMSAPFile():
         #endregion ------------------------------------------------> Path
 
         return dtsFF.ReadCSV2DF(fileP, header=[0,1])
+    #---
+    
+    def GetInputFiles(self) -> list[str]:
+        """Get a flat list of all input files in self.rData.
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Notes
+            -----
+            This assumes files are added to I as the first and second items
+        """
+        
+        inputF = []
+        for k,v in self.rData.items():
+            for w in v.values():
+                iVal = iter(w['I'].values())
+                inputF.append(next(iVal))
+                if k in self.SeqF:
+                    inputF.append(next(iVal))
+                else:
+                    pass
+                
+        return inputF
     #---
     #endregion --------------------------------------------------> Get Methods
 #---

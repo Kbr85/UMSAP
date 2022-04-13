@@ -4,10 +4,10 @@ block_cipher = None
 
 
 a = Analysis(['UMSAP.py'],
-             pathex=['/Users/bravo/TEMP-GUI/BORRAR-GUI/'],
+             pathex=['/Users/bravo/TEMP-GUI/BORRAR-UMSAP/'],
              binaries=[],
              datas=[ ('RESOURCES', '.') ],
-             hiddenimports=[],
+             hiddenimports=['wx._xml'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -39,7 +39,7 @@ app = BUNDLE(coll,
                'NSHighResolutionCapable': 'True',
                'NSPrincipleClass': 'NSApplication',
                'NSAppleScriptEnabled': False,
-               'CFBundleShortVersionString': '2.1.1',
+               'CFBundleShortVersionString': '2.2.0',
                'CFBundleDocumentTypes': [
                   {
                     'CFBundleTypeName': 'My File Format',

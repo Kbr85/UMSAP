@@ -16,7 +16,6 @@
 
 #region -------------------------------------------------------------> Imports
 import itertools
-from pickle import ADDITEMS
 from typing import Literal, Union
 
 import pandas as pd
@@ -442,6 +441,8 @@ def R2AA(
             AA Label1       LabelN
             AA -2 -1 1 2 P  -2 -1 1 2 P
     """
+    print('AA NUMBER OF POSITIONS')
+    print(pos)
     def AddNewAA(dfO, r, pos, seq, l):
         """
     
@@ -468,12 +469,10 @@ def R2AA(
 
         #region ---------------------------------------------------> 
         for a in seq[start:r]:
-            print(r, start, col, f'P{col}')
             dfO.at[a,(l,f'P{col}')] = dfO.at[a,(l,f'P{col}')] + 1
             col -= 1
         col = 1
         for a in seq[r:r+pos]:
-            print(r, start, col, f"P{col}'")
             dfO.at[a,(l,f"P{col}'")] = dfO.at[a,(l,f"P{col}'")] + 1
             col += 1
         #endregion ------------------------------------------------> 
@@ -689,7 +688,6 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         """
         if a[-1] < alpha:
             l = list(map(abs, list(map(float, a[0][1:-1].split(',')))))
-            # print(sum(l), len(l), sum(l)/len(l))
             return (sum(l)/len(l))
         else:
             return 0.0
