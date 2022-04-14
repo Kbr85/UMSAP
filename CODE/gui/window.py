@@ -11208,6 +11208,8 @@ class Preference(wx.Dialog):
         self.FindWindowById(wx.ID_OK).SetLabel('Save')
         self.FindWindowById(wx.ID_CANCEL).SetLabel('Cancel')
         self.FindWindowById(wx.ID_NO).SetLabel('Load Defaults')
+        #------------------------------> 
+        self.OnDefault('fEvent')
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
@@ -11249,6 +11251,24 @@ class Preference(wx.Dialog):
             -----
             
         """
+        #region ---------------------------------------------------> Set
+        #------------------------------> Update
+        config.general['checkUpdate'] = not bool(self.wUpdate.wRBox.GetSelection())
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Save
+        data = {}
+        for sec in config.CONFLIST:
+            data[sec] = getattr(config, sec)
+        #------------------------------> 
+        try:
+            dtsFF.WriteJSON(config.fConfig, data)
+        except Exception as e:
+            msg = 'Configuration options could not be saved.'
+            dtscore.Notification('errorF', msg=msg, tException=e)
+            return False
+        #endregion ------------------------------------------------> 
+
         self.EndModal(1)
         return True
     #---
@@ -11272,7 +11292,7 @@ class Preference(wx.Dialog):
         return True
     #---
     
-    def OnDefault(self, event: wx.CommandEvent) -> bool:
+    def OnDefault(self, event: Union[wx.CommandEvent, str]) -> bool:
         """
     
             Parameters
@@ -11287,9 +11307,97 @@ class Preference(wx.Dialog):
             -----
             
         """
-        print('Load Default')
-        return True
+        #region ---------------------------------------------------> 
+        if type(event) == str:
+            data = self.GetConfConf()
+        else:
+            data = self.GetConfFile()
+        #endregion ------------------------------------------------> 
+    
+        #region ---------------------------------------------------> 
+        if data:
+            return self.SetConfValues(data)
+        else:
+            return False
+        #endregion ------------------------------------------------> 
     #---
+    
+    def GetConfFile(self) -> dict:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        try:
+            data = dtsFF.ReadJSON(config.fConfigDef)
+        except Exception as e:
+            msg = 'It was not possible to read the default configuration file.'
+            dtscore.Notification('errorF', msg=msg, tException=e)
+            return {}
+        #endregion ------------------------------------------------> 
+        
+        return data
+    #---
+    
+    def GetConfConf(self) -> dict:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        data = {}
+        for sec in config.CONFLIST:
+            data[sec] = getattr(config, sec)
+        return data
+    #---
+    
+    def SetConfValues(self, data: dict) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        try:
+            #------------------------------> Update
+            val = 0 if data['general']['checkUpdate'] else 1
+            self.wUpdate.wRBox.SetSelection(val)
+        except Exception as e:
+            msg = 'Something went wrong when loading the configuration options.'
+            dtscore.Notification('errorU', msg=msg, tException=e)
+            return False
+        #endregion ------------------------------------------------> 
+        
+        return True
+    #---    
     #endregion ------------------------------------------------> Class methods
 #---
 

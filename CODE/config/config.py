@@ -226,8 +226,11 @@ pImages = res / 'IMAGES' # Images folder
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE/dlg.png'
 fImgAbout = pImages / 'ABOUT/p97-2-about.png'
-#------------------------------> Manual & About
+#------------------------------> Manual
 fManual = res / 'MANUAL/manual.pdf'
+#------------------------------> 
+fConfig = Path.home() / '.umsap_config.json'
+fConfigDef = res / 'CONFIG/config_def.json'
 #------------------------------> Names
 fnInitial    = "{}_{}-Initial-Data.txt"
 fnFloat      = "{}_{}-Floated-Data.txt"
@@ -513,6 +516,8 @@ sLCtrlColI = [50, 150]
 
 
 #region ---------------------------------------------> CONFIGURABLE PARAMETERS
+CONFLIST = ['general'] # Sections to save/load in the configuration file
+
 #------------------------------> These must be dictionaries to save/load from
 #------------------------------> configuration file
 #region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object
