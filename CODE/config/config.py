@@ -23,14 +23,14 @@ from pathlib import Path
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
 #region --------------------------------------------------> General parameters
 development = True # Track state, development (True) or production (False)
-
+#------------------------------> 
 version     = '2.2.0 (beta)' # String to write in the output files
 software    = 'UMSAP' # Software short name
 softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
 dictVersion = { # dict for directly write into output files
     'Version': version,
 }
-
+#------------------------------> 
 os = platform.system() # Current operating system
 cwd = Path(__file__)   # Config file path
 #endregion -----------------------------------------------> General parameters
@@ -55,6 +55,8 @@ if os == 'Darwin':
     copyShortCut = 'Cmd'
     #------------------------------> Delta space between consecutive windows
     deltaWin = 23
+    #------------------------------> 
+    commOpen = 'open'
 elif os == 'Windows':
     #------------------------------> Root & Resources Folder
     if development:
@@ -76,6 +78,8 @@ elif os == 'Windows':
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
     deltaWin = 20
+    #------------------------------> 
+    commOpen = 'start'
 else:
     #------------------------------> Root & Resources Folder
     root = cwd.parent
@@ -93,6 +97,8 @@ else:
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
     deltaWin = 20
+    #------------------------------> 
+    commOpen = 'xdg-open'
 #endregion ------------------------------------- Platform Dependent Parameters
 
 
@@ -123,6 +129,8 @@ nwAAPlot        = 'AAPlot'
 nwHistPlot      = 'HistPlot'
 nwCpRPlot       = 'CpRPlot'
 nwCEvolPlot     = 'CEvolPlot'
+nwAbout         = 'About UMSAP'
+nwPreferences   = 'Preferences'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'
@@ -134,6 +142,7 @@ ntCorrA    = 'CorrATab'
 ntLimProt  = 'LimProtTab'
 ntProtProf = 'ProtProfTab'
 ntTarProt  = 'TarProtTab'
+ntPrefUpdate = 'Updates'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
@@ -144,6 +153,7 @@ npTarProt               = 'TarProtPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
 npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 npResControlExpTarProt  = 'ResControlExpPaneTarProt'
+npPrefUpdate            = 'PrefUpdate'
 #------------------------------> Modules
 nmLimProt  = 'Limited Proteolysis'
 nmTarProt  = 'Targeted Proteolysis'
@@ -214,8 +224,14 @@ esUMSAP = ['.umsap']
 pImages = res / 'IMAGES' # Images folder
 #------------------------------> Location & names of important files
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
-fImgIcon  = pImages / 'DIALOGUE'/'dlg.png'
-# #------------------------------> Names
+fImgIcon  = pImages / 'DIALOGUE/dlg.png'
+fImgAbout = pImages / 'ABOUT/p97-2-about.png'
+#------------------------------> Manual
+fManual = res / 'MANUAL/manual.pdf'
+#------------------------------> 
+fConfig = Path.home() / '.umsap_config.json'
+fConfigDef = res / 'CONFIG/config_def.json'
+#------------------------------> Names
 fnInitial    = "{}_{}-Initial-Data.txt"
 fnFloat      = "{}_{}-Floated-Data.txt"
 fnTargetProt = "{}_{}-Target-Protein-Data.txt"
@@ -233,7 +249,7 @@ fnDataInit   = 'Input_Data_Files'
 #------------------------------> www.umsap.nl
 urlHome     = 'https://www.umsap.nl'
 urlUpdate   = f"{urlHome}/page/release-notes"
-urlTutorial = f"{urlHome}/tutorial/2-1-0"
+urlTutorial = f"{urlHome}/tutorial/2-2-0"
 #endregion --------------------------------------------------------------- URL
 
 
@@ -500,6 +516,9 @@ sLCtrlColI = [50, 150]
 
 
 #region ---------------------------------------------> CONFIGURABLE PARAMETERS
+conflist = ['general'] # Sections to save/load in the configuration file
+confUserFile = True # User configuration file was read
+confUserFileException = Exception()
 #------------------------------> These must be dictionaries to save/load from
 #------------------------------> configuration file
 #region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object

@@ -7785,6 +7785,62 @@ class TarProtResControlExp(ResControlExpConfBase):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
+
+
+class PrefUpdate(wx.Panel):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = config.npPrefUpdate
+    #------------------------------> 
+    cLTab = config.ntPrefUpdate
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wRBox = wx.RadioBox(
+            self, 
+            label   = 'Check for Updates',
+            choices = ['Always', 'Never'],
+         )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
+        
+        self.sSizer.Add(self.wRBox, 0, wx.EXPAND|wx.ALL, 5)
+        
+        self.SetSizer(self.sSizer)
+        #endregion ---------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion ----------------------------------------------------------> Classes
 
 

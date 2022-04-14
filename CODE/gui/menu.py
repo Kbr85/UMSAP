@@ -2470,6 +2470,81 @@ class FAMenuTarProtHist(wx.Menu):
     #---
     #endregion ------------------------------------------------> Event methods
 #---
+
+
+class Help(wx.Menu):
+    """ """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miAbout    = self.Append(-1, 'About UMSAP')
+        self.AppendSeparator()
+        self.miManual   = self.Append(-1, 'Manual')
+        self.miTutorial = self.Append(-1, 'Tutorial')
+        self.AppendSeparator()
+        self.miCheckUpd = self.Append(-1, 'Check for Updates')
+        self.AppendSeparator()
+        self.miPref     = self.Append(-1, 'Preferences')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> 
+        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
+            self.miAbout.GetId   (): 'HelpAbout',
+            self.miManual.GetId  (): 'HelpManual',
+            self.miTutorial.GetId(): 'HelpTutorial',
+            self.miCheckUpd.GetId(): 'HelpCheckUpd',
+            self.miPref.GetId    (): 'HelpPreferences',
+        }
+        #endregion ------------------------------------------------> 
+        
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miAbout)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miManual)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miTutorial)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCheckUpd)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miPref)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnMethod(self, event):
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+
+
+            Raise
+            -----
+
+        """
+        win = self.GetWindow()
+        win.dKeyMethod[self.rKeyID[event.GetId()]]()
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+    
+    #region ---------------------------------------------------> Event methods
+    
+    #endregion ------------------------------------------------> Event methods
+#---
 #endregion -------------------------------------------------> Individual menus
 
 
@@ -3087,11 +3162,13 @@ class MainMenuBar(wx.MenuBar):
         #region --------------------------------------------------> Menu items
         self.mModule  = Module()
         self.mUtility = Utility()
+        self.mHelp    = Help()
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------> Append to menubar
-        self.Append(self.mModule, '&Modules')
+        self.Append(self.mModule,  '&Modules')
         self.Append(self.mUtility, '&Utilities')
+        self.Append(self.mHelp,    '&Help')
         #endregion ----------------------------------------> Append to menubar
     #endregion ------------------------------------------------ Instance Setup
 #---
