@@ -130,6 +130,7 @@ nwHistPlot      = 'HistPlot'
 nwCpRPlot       = 'CpRPlot'
 nwCEvolPlot     = 'CEvolPlot'
 nwAbout         = 'About UMSAP'
+nwPreferences   = 'Preferences'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'CheckUpdateResDialog'
 ndResControlExp        = 'ResControlExp'

@@ -49,7 +49,6 @@ import dat4s_core.data.check as dtsCheck
 import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
 import dat4s_core.data.statistic as dtsStatistic
-import dat4s_core.generator.generator as dtsGenerator
 import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
@@ -179,7 +178,7 @@ class BaseWindow(wx.Frame):
             'HelpManual'     : self.OnManual,
             'HelpTutorial'   : self.OnTutorial,
             'HelpCheckUpd'   : self.OnCheckUpdate,
-            # 'HelpPreferences': ,
+            'HelpPreferences': self.OnPreference,
         }
         #------------------------------> 
         super().__init__(
@@ -209,6 +208,25 @@ class BaseWindow(wx.Frame):
 
     #------------------------------> Class methods
     #region ---------------------------------------------------> Event Methods
+    def OnPreference(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        Preference()
+        return True
+    #---
+    
     def OnAbout(self) -> bool:
         """
     
@@ -11145,6 +11163,137 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
 
 
 #region -----------------------------------------------------------> wx.Dialog
+class Preference(wx.Dialog):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = config.nwPreferences
+    #------------------------------> 
+    cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
+    #------------------------------> 
+    cSize = (900,700)
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(
+            None, title=self.cName, style=self.cStyle, size=self.cSize)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wNoteBook = wx.Notebook(self, style=wx.NB_TOP)
+        #------------------------------> 
+        self.wUpdate = wx.Panel(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wUpdate, 'Updates')
+        #------------------------------> 
+        self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.NO)
+        self.FindWindowById(wx.ID_OK).SetLabel('Save')
+        self.FindWindowById(wx.ID_CANCEL).SetLabel('Cancel')
+        self.FindWindowById(wx.ID_NO).SetLabel('Load Defaults')
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
+        #------------------------------> 
+        self.sSizer.Add(self.wNoteBook, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------> 
+        self.SetSizer(self.sSizer)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_BUTTON, self.OnSave,    id=wx.ID_OK)
+        self.Bind(wx.EVT_BUTTON, self.OnCancel,  id=wx.ID_CANCEL)
+        self.Bind(wx.EVT_BUTTON, self.OnDefault, id=wx.ID_NO)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.Center()
+        self.ShowModal()
+        self.Destroy()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnSave(self, event: wx.CommandEvent) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.EndModal(1)
+        return True
+    #---
+    
+    def OnCancel(self, event: wx.CommandEvent) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.EndModal(0)
+        return True
+    #---
+    
+    def OnDefault(self, event: wx.CommandEvent) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        print('Load Default')
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
 class CheckUpdateResult(wx.Dialog):
     """Show a dialog with the result of the check for update operation.
     
