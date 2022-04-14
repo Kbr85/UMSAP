@@ -11187,7 +11187,7 @@ class Preference(wx.Dialog):
     #------------------------------> 
     cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
     #------------------------------> 
-    cSize = (900,700)
+    cSize = (340,200)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -11201,8 +11201,8 @@ class Preference(wx.Dialog):
         #region -----------------------------------------------------> Widgets
         self.wNoteBook = wx.Notebook(self, style=wx.NB_TOP)
         #------------------------------> 
-        self.wUpdate = wx.Panel(self.wNoteBook)
-        self.wNoteBook.AddPage(self.wUpdate, 'Updates')
+        self.wUpdate = pane.PrefUpdate(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wUpdate, self.wUpdate.cLTab)
         #------------------------------> 
         self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.NO)
         self.FindWindowById(wx.ID_OK).SetLabel('Save')
