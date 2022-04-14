@@ -127,6 +127,27 @@ def UpdateCheck(
     
     return True
 #---
+
+
+def BadUserConf(tException):
+    """
+
+        Parameters
+        ----------
+        
+
+        Returns
+        -------
+        
+
+        Raise
+        -----
+    
+    """
+    msg = 'It was not possible to read the user configuration file.'
+    wx.CallAfter(dtscore.Notification,'errorU', msg=msg, tException=tException)
+    return True
+#---
 #endregion ----------------------------------------------------------> Methods
 
 
@@ -1864,16 +1885,24 @@ class MainWindow(BaseWindow):
         self.Show()
         #endregion ------------------------------------------> Position & Show
 
+        #region --------------------------------------------------------> Bind
+        self.wNotebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
+        #endregion -----------------------------------------------------> Bind
+        
         #region	------------------------------------------------------> Update
         if config.general["checkUpdate"]:
             _thread.start_new_thread(UpdateCheck, ("main", self))
         else:
             pass
         #endregion	--------------------------------------------------> Update
-
-        #region --------------------------------------------------------> Bind
-        self.wNotebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
-        #endregion -----------------------------------------------------> Bind
+        
+        #region -------------------------------------> User Configuration File 
+        if not config.confUserFile:
+            _thread.start_new_thread(
+                BadUserConf, (config.confUserFileException,))
+        else:
+            pass
+        #endregion ----------------------------------> User Configuration File
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -11258,7 +11287,7 @@ class Preference(wx.Dialog):
 
         #region ---------------------------------------------------> Save
         data = {}
-        for sec in config.CONFLIST:
+        for sec in config.conflist:
             data[sec] = getattr(config, sec)
         #------------------------------> 
         try:
@@ -11365,7 +11394,7 @@ class Preference(wx.Dialog):
             
         """
         data = {}
-        for sec in config.CONFLIST:
+        for sec in config.conflist:
             data[sec] = getattr(config, sec)
         return data
     #---

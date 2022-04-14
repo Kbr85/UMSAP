@@ -23,14 +23,14 @@ from pathlib import Path
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
 #region --------------------------------------------------> General parameters
 development = True # Track state, development (True) or production (False)
-
+#------------------------------> 
 version     = '2.2.0 (beta)' # String to write in the output files
 software    = 'UMSAP' # Software short name
 softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
 dictVersion = { # dict for directly write into output files
     'Version': version,
 }
-
+#------------------------------> 
 os = platform.system() # Current operating system
 cwd = Path(__file__)   # Config file path
 #endregion -----------------------------------------------> General parameters
@@ -516,8 +516,9 @@ sLCtrlColI = [50, 150]
 
 
 #region ---------------------------------------------> CONFIGURABLE PARAMETERS
-CONFLIST = ['general'] # Sections to save/load in the configuration file
-
+conflist = ['general'] # Sections to save/load in the configuration file
+confUserFile = True # User configuration file was read
+confUserFileException = Exception()
 #------------------------------> These must be dictionaries to save/load from
 #------------------------------> configuration file
 #region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object

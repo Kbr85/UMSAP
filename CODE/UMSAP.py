@@ -109,7 +109,10 @@ class SplashWindow(wx.adv.SplashScreen):
                 Information regarding the event
         """
         #region	-----------------------------------------------------> Imports
+        import dat4s_core.data.file as dtsFF
+        
         import config.config as config
+        import gui.dtscore as dtscore
         import gui.menu as menu
         import gui.window as window
         #endregion---------------------------------------------------> Imports
@@ -166,7 +169,26 @@ class SplashWindow(wx.adv.SplashScreen):
             config.font['TreeItemDataFile']      = fTreeItemFileData
             config.font['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
         #endregion ----------------------------------------------------> Fonts
-
+        
+        #region ------------------------------------------> User Configuration
+        # After fonts were created and asign to config, load user values
+        try:
+            data = dtsFF.ReadJSON(config.fConfig)
+        except FileNotFoundError:
+            data = {}
+        except Exception as e:
+            config.confUserFile = False
+            config.confUserFileException = e
+            data = {}
+        #------------------------------> 
+        if data:
+            #------------------------------> General
+            config.general['checkUpdate'] = data['general'].get(
+                'checkUpdate', config.general['checkUpdate'])
+        else:
+            pass
+        #endregion ---------------------------------------> User Configuration
+        
         #region --------------------------------------------------------> Menu
         if config.os == "Darwin":
             wx.MenuBar.MacSetCommonMenuBar(menu.MainMenuBar())
