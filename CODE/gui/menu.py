@@ -871,10 +871,10 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         self.AppendSeparator()
         #------------------------------> Export Data
         self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
-        self.miSaveI = self.Append(-1, 'Export Image\tShift+I')
+        self.miSaveI = self.Append(-1, 'Export Image\tAlt+Shift+I')
         self.AppendSeparator()
         #------------------------------> 
-        self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tAlt+Shift+Z')
         #endregion -----------------------------------------------> Menu Items
         
         #region ---------------------------------------------------> rKeyID
