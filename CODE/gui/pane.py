@@ -167,7 +167,7 @@ class BaseConfPanel(
         self.cLuFile       = getattr(self, 'cLuFile',       'UMSAP')
         self.cLiFile       = getattr(self, 'cLiFile',       'Data')
         self.cLRunBtn      = getattr(self, 'cLRunBtn',      'Start Analysis')        
-        self.cLFileBox     = getattr(self, 'cLFileBox',     'Files && Folders')
+        self.cLFileBox     = getattr(self, 'cLFileBox',     'Files')
         self.cLDataBox     = getattr(self, 'cLDataBox',     'Data Preparation')
         self.cLColumnBox   = getattr(self, 'cLColumnBox',   'Column numbers')
         self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD',  '0s Missing')
