@@ -2789,7 +2789,7 @@ class CorrA(BaseConfPanel):
     cGaugePD     = 26
     cTTHelp      = config.ttBtnHelp.format(cURL)
     rLLenLongest = len(cLCorrMethod)
-    rMainData    = '{}_CorrelationCoefficients-Data-{}.txt'
+    rMainData    = '{}_{}-CorrelationCoefficients-Data.txt'
     #endregion --------------------------------------------------> Class Setup
     
     #region --------------------------------------------------> Instance setup
@@ -3747,7 +3747,7 @@ class ProtProf(BaseConfModPanel):
     cTitlePD     = f"Running {config.nmProtProf} Analysis"
     cGaugePD     = 39
     rLLenLongest = len(config.lStResultCtrl)
-    rMainData    = '{}_ProteomeProfiling-Data-{}.txt'
+    rMainData    = '{}_{}-ProteomeProfiling-Data.txt'
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
     #------------------------------> Label
@@ -4983,7 +4983,7 @@ class LimProt(BaseConfModPanel2):
     cTitlePD     = f"Running {config.nmLimProt} Analysis"
     cGaugePD     = 43
     rLLenLongest = len(config.lStResultCtrl)
-    rMainData    = '{}_LimitedProteolysis-Data-{}.txt'
+    rMainData    = '{}_{}-LimitedProteolysis-Data.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile']
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
@@ -5842,7 +5842,7 @@ class TarProt(BaseConfModPanel2):
     cTitlePD     = f"Running {config.nmTarProt} Analysis"
     cGaugePD     = 60
     rLLenLongest = len(config.lStResultCtrl)
-    rMainData    = '{}_TargetedProteolysis-Data-{}.txt'
+    rMainData    = '{}_{}-TargetedProteolysis-Data.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile']
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
