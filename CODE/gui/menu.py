@@ -1285,7 +1285,7 @@ class FiltersProtProf(wx.Menu):
         self.miRemoveAll  = self.Append(-1, 'Remove All\tCtrl+Shift+X')
         self.AppendSeparator()
         self.miCopy = self.Append(-1, 'Copy\tCtrl+Shift+C')
-        self.miPaste = self.Append(-1, 'Paste\tCtrl+Shift+P')
+        self.miPaste = self.Append(-1, 'Paste\tCtrl+Shift+V')
         self.AppendSeparator()
         self.miSave = self.Append(-1, 'Save\tCtrl+Shift+S')
         self.miLoad = self.Append(-1, 'Load\tCtrl+Shift+L')
