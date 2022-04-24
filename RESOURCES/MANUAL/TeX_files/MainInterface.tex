@@ -33,7 +33,17 @@ Proteolysis and Limited Proteolysis use fasta files containing the sequences of
 the recombinant and native proteins used in the experiments. The first sequence
 found in the fasta file is assumed to be the sequence of the recombinant protein.
 The second sequence found in the fasta file is assumed to be the sequence of the
-native protein. All other sequences found in the fasta file are discarded.
+native protein. All other sequences found in the fasta file are discarded. If the
+sequence of the native protein is given UMSAP performs a sequence alignment between
+the native and recombinant sequences. The alignment allows UMSAP to translate the
+results obtained with the residue numbers of the recombinant protein to the residue
+numbers of the native protein. This is done to facilitate future comparison of results
+between different recombinant proteins of the same native protein. However, when
+analyzing the results of the alignment UMSAP assumes that the recombinant and native
+sequences differs only in the N and C-terminal tags while the sequence between the
+tags is identical. If this is not the case, e.g. there are point mutations or
+insertion/deletion in the sequence of the recombinant protein no native sequence
+file should be given to UMSAP.
 
 The Targeted Proteolysis module may also use a local PDB file. 
 

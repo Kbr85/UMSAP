@@ -204,7 +204,19 @@ Duplicate column numbers are not allowed.
 
 \section{The analysis}
 \label{sec:limprotEquivalenceTest}
-First, UMSAP will check the validity of the user provided input. Then, the Data file is processed as follow. All rows in the Data file containing peptides that do not belong to the Target protein are removed. Then, all rows containing peptides from the Target protein but with Score values lower than the user defined Score threshold are removed. These steps leave only relevant peptides, this means, peptides with a Score value higher than the user defined threshold that belong to the Target protein. For each one of these relevant peptides the equivalence test is performed \cite{Limentani2005}.
+First, UMSAP will check the validity of the user-provided input and then the selected
+Data file is read. The columns specified in section Column numbers are extracted
+from the Data file. All other columns present in the Data file are discarded. After
+this, all steps selected in the Data Preparation section are applied to the columns
+specified in the text field Result - Control experiments (\autoref{chap:dataPrep}).
+Then, the following actions are performed.
+
+All rows in the prepared data containing peptides that do not belong to the Target
+protein are removed. Then, all rows containing peptides from the Target protein
+but with Score values lower than the user-defined Score threshold are removed. These
+steps leave only relevant peptides, this means, peptides with a Score value higher
+than the user-defined threshold that belong to the Target protein. For each one of
+these relevant peptides the equivalence test is performed \cite{Limentani2005}.
 
 The implementation of the equivalence test is based on the following equations:
 \begin{equation}
@@ -220,44 +232,37 @@ The implementation of the equivalence test is based on the following equations:
 (\bar{y}_1 - \bar{y}_2) \pm t_{(1-\alpha, n_1+n_2-2)} \cdot \sqrt{s^2_p\left(\frac{1}{n_1}+\frac{1}{n_2}\right)}
 \end{equation}
 
-where $s^*$ is an estimate of the upper confidence limit of the standard deviation, $\chi^2_{(\gamma, n-1)}$ is the ($100\gamma$)th percentile of the chi-squared distribution with $n-1$ degrees of freedom, $\Theta$ is the acceptance criterion, $\delta$ is the absolute value of the true difference between the group's mean values, $t$ is the Student's $t$ value, $\bar{y}$ is the measurement mean and $s_p$ is the pooled standard deviation of the measurements calculated with:
+where $s^*$ is an estimate of the upper confidence limit of the standard deviation,
+$\chi^2_{(\gamma, n-1)}$ is the ($100\gamma$)th percentile of the chi-squared distribution
+with $n-1$ degrees of freedom, $\Theta$ is the acceptance criterion, $\delta$ is the
+absolute value of the true difference between the group's mean values, $t$ is the
+Student's $t$ value, $\bar{y}$ is the measurement mean and $s_p$ is the pooled standard
+deviation of the measurements calculated with:
 \begin{equation}
 \label{eq:poolStDev}
 s_p =  \sqrt{\frac{(n_1-1)s^2_1+(n_2-1)s^2_2}{n_1+n_2-2}}
 \end{equation}
-$\alpha$, $\beta$, $\gamma$ and $\Theta$ are the parameters defined in section Values of Region \num{2} of the main window of the module.
+$\alpha$, $\beta$, $\gamma$ and $\Theta$ are the parameters defined in section
+User-defined values of region Configuration Options in the tab of the module.
 
-In essence, for each relevant peptide, the control experiments are used to estimate the upper confidence limit for the standard deviation using \autoref{eq:limprotDeviationUpperLimit} and then the acceptance criterion is calculated with \autoref{eq:limprotAcceptanceCriterion}. Finally, the confidence interval for the mean difference for the gel spot and the control is calculated with \autoref{eq:limprotEquivalenceTest} and compare to $\Theta$. Peptides with equivalent mean intensity in at least one gel spot and the control are retained while not equivalent peptides are discarded. 
+In essence, for each relevant peptide, the control experiments are used to estimate
+the upper confidence limit for the standard deviation using \autoref{eq:limprotDeviationUpperLimit}
+and then the acceptance criterion is calculated with \autoref{eq:limprotAcceptanceCriterion}.
+Finally, the confidence interval for the mean difference for the gel spot and the
+control is calculated with \autoref{eq:limprotEquivalenceTest} and compare to $\Theta$.
+Peptides with equivalent mean intensity in at least one gel spot and the control
+are retained while not equivalent peptides are discarded.
 
-If the value of $\Theta$ is given in Region \num{2} of the module's interface then only the confidence interval for the mean difference is calculated and the value is directly compared to the given $\Theta$ value. The maximum possible $\Theta$ value must always be provided. The reason for this is that when only a few replicates of the experiments are performed the calculated $\Theta$ value may be to large and then the equivalence test is not able to detect the peptides with intensity values in the experiments lower than in the control.
-
-If the sequence of the native protein is given the module performs a sequence alignment between the native and recombinant sequences. The alignment allows UMSAP to translate the results obtained with the residue numbers of the recombinant protein to the residue numbers of the native protein. This is done to facilitate future comparison of results between different recombinant proteins of the same native protein. However, when analyzing the results of the alignment the module assumes that the recombinant and native sequences differs only in the N and C-terminal tags while the sequence between the tags is identical. If this is not the case, e.g. there are point mutations or insertion/deletion in the sequence of the recombinant protein no native sequence file should be given to UMSAP.
+If the value of $\Theta$ is given in section User-defined values of the module's tab
+then only the confidence interval for the mean difference is calculated, and the value
+is directly compared to the given $\Theta$ value. The maximum possible $\Theta$ value
+must always be provided. The reason for this is that when only a few replicates of the
+experiments are performed the calculated $\Theta$ value may be too large and then
+the equivalence test is easily past by all relevant peptides.
 
 After the filtered peptide (FP) are identified the modules creates the output files.
 
-\section{The output files}
-
-All the output generated by the Limited Proteolysis module will be contained in a LimProt folder created inside the selected Output folder. If the Output folder field in section \textit{Files} of Region \num{2} of the interface is left empty, then the LimProt folder will be created in the directory containing the Data file. If the selected Output folder already contains a LimProt folder, then the current date and time to the second will be added to the name in order to avoid overwriting files from previous analyses. By default the LimProt folder will contain two files with extensions .limprot and .uscr and a Data{\_}Steps folder. The name of these files is provided with the Output name field in section \textit{Files} of Region \num{2} of the interface. Depending on the user provided input extra folders and files will be created inside the LimProt folder (\autoref{fig:limprotOutFolder}). For the rest of this chapter we will assume that the user provided name for the Output folder was \textit{t}, the Output name was myLimTest, the Target protein was \textit{Mis18alpha} and all optional analyses were performed.
-
-Information regarding the content and use of the .uscr file can be found in \autoref{subsec:utilUscrFile}.
-
-If the parameter Sequence length is different than NA, then the file myLimTest.seq.pdf will be created. The file contains the sequence of the Target protein with the sequence of the FP highlighted. More details are given in \autoref{subsec:utilSeqHigh}.
-
-If the parameter Columns to extract is different than NA, then the folder Data will be created. The folder will contain several files that are shorter versions of the Data file. These files will contain only information regarding the Target protein. More details are given in \autoref{subsec:utilShortDF}.
-
-The folder Data\_Steps contains a step by step account of all the calculations performed so users can check the accuracy of the calculation or perform further analysis. The files inside Data\_Steps are plain text file with tab separated columns. The first line contains the name of the columns in the file.
-
-A file containing a list of FP can also be generated as indicated in \autoref{subsec:utilExpData}.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.35\textwidth]{./IMAGES/MOD-LIMPROT/limprot-files.jpg}	    
-    \caption[The structure of the Output folder from the Limited Proteolysis module]{\textbf{The structure of the Output folder from the Limited Proteolysis module.} The folder Data and the file myLimTest.seq.pdf will be created only if requested.} 
-    \label{fig:limprotOutFolder}
-    \vspace{-5pt} 	
-\end{figure}
-
-\section{Visualizing the output files}
+\section{The result window}
 
 The main output of the module is the .limprot file. This file contains the list of FP,  all parameters values and all the information needed to visualize the results with UMSAP. After creating the file at the end of the analysis, the Limited Proteolysis module will automatically load the file and create a windows to display the results, see \autoref{fig:limprotResultsWindow}.
 
