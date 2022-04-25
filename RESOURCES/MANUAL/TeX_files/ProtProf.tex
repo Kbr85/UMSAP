@@ -206,14 +206,17 @@ in Regions Profiling details.
 Region Plots contains two plots. A volcano plot showing the results for the t-test
 comparing the condition (C), relevant point (RP) to the corresponding control. The
 points in the plot can be colored by Z-score allowing to quickly identified the top
-up (blue) or down (red) regulated proteins or according to the hyperbolic curve.
-Selecting a protein in the plot will highlight the selected protein in region Protein
-List and display information about it in region Profiling details.
+up (blue) or down (red) regulated proteins or according to the hyperbolic curve cut-off
+\cite{LI2012}. Selecting a protein in the plot will highlight the selected protein
+in region Protein List and display information about it in region Profiling details,
+or it will add a label to the plot.
 
 The plot of $log_2[FC]$ vs Relevant points allows to see the evolution of the FC
 along the Relevant points and to compare the FC across the various conditions in
 the analysis. The error bars in the plot represent the confident interval for the
-FC values calculate at the $1-\alpha$ level.
+FC values calculate at the $1-\alpha$ level. The gray zone shown in the plot represent
+the maximum and minimum FC value for each Relevant point across all Conditions in
+the analysis.
 
 Region Profiling details shows a summary of the results for the selected protein.
 Proteins can be selected in the table in region Protein List or in the volcano plot
@@ -223,47 +226,84 @@ as well as averages and standard deviations for intensities and ratios.
 \section{The Tools menu}
 \label{sec:protprofTools}
 
-The Tools menu for the results window of the Proteome Profiling module allows to further customize the plots and to apply different filters to the protein list shown in the window.
+The Tools menu in the window showing the results from a Proteome Proteolysis analysis
+allows user to display any of the analyses contained in the selected .umsap file.
 
-Under the menu entry Volcano Plot, users can change the condition and relevant point shown in the volcano plot, the Z score value used to color the points in the plot and the $\alpha$ value. An image of the volcano plot can also be created. If the condition or relevant point displayed is changed the Apply Filters menu entry allows to recalculate the filters for the current condition, relevant point displayed.
+The submenu Volcano Plot allows to control the appearance of the volcano plot. Users
+can change the the Condition - Relevant point displayed, add labels (Shift+A) to
+the points in the plot, toggle between using the left click of the mouse for selecting
+proteins or adding labels (Shift+P), adjusting the Color Scheme of the plot, show
+corrected p values, create an image of the plot (Shift+I) or reset the zoom level of
+the plot (Shift+Z). The entry Color Scheme allows coloring points in the Volcano plot
+by Z-score or the hyperbolic curve cut-off. It also allows configuring the Z-score
+threshold and the hyperbolic curve parameters.
 
-Under the menu entry Relevant Points, users can show all the proteins at once with different or the same colors and create an image of the Relevant Points graph.
+The submenu FC Evolution allows toggling the display of the maximum/minimum area,
+to create an image of the plot (Alt+I) and to reset the zoom level of the plot (Alt+Z).
 
-The menu entry Export Data can be used to export the data shown in the window to a plain text file (see \autoref{subsec:utilExpData}) while the Corrected P values entry will display the information in the .protprof file using the corrected p values instead of the regular p values.
+The submenu Lock Plot Scale allows setting the scale of the plot. If this option
+is set to No, then the scale of the plot is allowed to change every time the plots
+are updated, for example changing the Condition - Relevant point displayed for a
+given analysis. If set to Date, then the scale of the plot is fixed for all Conditions
+- Relevant points in one analysis and updated every time a new analysis is displayed.
+If set to Project, then all plots for all analysis will have the same scale.
 
+The submenu Clear Selection allows removing any selection done by the user. In
+particular, the entry All (Cmd+K) will remove all selections basically resetting
+the state of the window.
+
+The Tools menu also allows duplicating the window (Cmd+D) for easier comparison of
+two or more analysis, checking the Data Preparation steps of the analysis (Cmd+P),
+and exporting the results of the analysis to a tab separated CSV file (Cmd+E).
+
+\newpage
 \subsection{Filters}
 
-The menu entry Filters allows to Add or Remove the filters applied to the protein list. The idea behind Filters is to identify proteins with a desired behavior and discard the rest of the proteins from the listbox in Region \num{1} and the plots in Regions \num{2} and \num{3}. Filters are applied to the current Condition and Relevant point shown in the Volcano plot in Region \num{2}. If the Condition or the Relevant point shown is changed, the new plot will show the proteins obtained after the filter was applied. This allows to follow the behavior of the filtered proteins in all Conditions and Relevant points. The menu entry Applied Filters in the Volcano plot submenu allows to recalculate the filters based on the new Conditions and Relevant point shown. Any number of filters can be applied. The applied filters are shown in the bottom left corner of the results window. 
-
-Filter can be removed in any given order using the menu entry Any in the Remove filter submenu. Additionally, the last applied filter can be removed with the menu entry Last Added or the shortcut Ctrl/Cmd + Z.
+The proteins displayed in the Volcano plot can be filtered in order to display only
+proteins with a particular behavior. The submenu Filters allows managing which 
+proteins will be displayed. Filters are applied to the current Condition and Relevant
+point shown in the Volcano plot. If the Condition or the Relevant point shown is
+changed, the new plot will show the proteins obtained after the filter was applied.
+This allows to follow the behavior of the filtered proteins in all Conditions and
+Relevant points. Any number of filters can be applied. The applied filters are shown
+in the bottom left corner of the window. Selecting a different analysis will reset
+the filters unless the option Auto Apply (Shift+Cmd+F) is selected. Also, filters
+can be manually reapplied with the menu entry Apply All (Shift+Cmd+A). Filter can
+also be removed, copied (Shift+Cmd+C) and pasted (Shift+Cmd+V) in a different window
+and saved (Shift+Cmd+S) and load (Shift+Cmd+L) from/to the .umsap file.
 
 Currently, the implemented filters are:
 
-\textbf{\textit{\underline{Z score}}}
+\textbf{\textit{\underline{FC Evolution}}}
 
-This menu entry allows to filter proteins by the Z score value of the Fold change. 
+This filter allows identifying proteins whose FC evolution follows a defined pattern.
+For example, all proteins for which the FC is always greater than \num{0} or proteins
+that show $FC > 0$ in one condition but $FC < 0$ in others. The filter can be applied
+to the current selected Condition - Relevant point or considering any or all the
+conditions.
+
+\textbf{\textit{\underline{Hyperbolic Curve}}}
+
+This filter allows identifying proteins above the Hyperbolic curve cut-off. It is
+only applied to the current Condition - Relevant point.
 
 \textbf{\textit{\underline{Log2FC}}}
 
-This menu entry allows to filter proteins by the absolute value of the $log_2[FC]$. 
+This filter allows identifying proteins whose $log_2[FC]$ are greater or smaller
+than the given value. It is only applied to the current Condition - Relevant point.
 
 \textbf{\textit{\underline{P value}}}
 
-This menu entry allows to filter proteins by the p value calculated for the comparison of the currently displayed  Condition and Relevant point to the control experiment. The threshold p value can be given in the 0 to 1 range or as a $-log10$ value. Regular or corrected P values can be used in the filter.
+This filter allows identifying proteins by the calculated p value. The p value
+can be given in the 0 to 1 range or as a $-log10$ value. Regular or corrected P
+values can be used in the filter. It is only applied to the current Condition -
+Relevant point.
 
-\textbf{\textit{\underline{$\alpha$ value}}}
+\textbf{\textit{\underline{Z score}}}
 
-This menu entry allows to filter proteins by the p values calculated for the comparison of the relevant points. The returned list of proteins consists of proteins for which the calculated p value is less than the selected $\alpha$ value, for at least one relevant point.
-
-\textbf{\textit{\underline{Monotonic}}}
-
-This menu entry allows to filter proteins by the behavior of the $log_2[FC]$ along the Relevant points. The filter searches for proteins that have a monotonically increasing or decreasing (or both) behavior for the condition shown in the Volcano plot. 
-
-\textbf{\textit{\underline{Divergent}}}
-
-This menu entry allows to filter proteins by the behavior of the $log_2[FC]$ along the Relevant points. In this case, the filter searches for proteins that have a monotonically increasing and decreasing behavior in at least two of the conditions tested.
-
-
+This filter allows identifying proteins by the Z score value of the FC. This is a
+quick way to identify, for example, the top \SI{10}{\percent} up and down regulated
+proteins. It is only applied to the current Condition - Relevant point.
 
 
 
