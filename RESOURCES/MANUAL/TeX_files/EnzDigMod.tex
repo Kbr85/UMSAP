@@ -1,18 +1,32 @@
-\chapter{The Targeted Proteolysis module}
+\chapter{Targeted Proteolysis}
 \label{chap:tarprot}
 
-The module Targeted Proteolysis is designed to post-process the mass spectrometry data acquired during the enzymatic proteolysis of a Target protein by a single protease. In a typical experimental setup both the protease and the Target protein are mixed together under various experimental conditions and the peptides generated during the proteolysis are identified by mass spectrometry. It is expected that several control experiments and several replicates of the tested experimental conditions are performed. The main objective of the module is to identify the peptides with intensity values that are significantly different in the control experiments and the replicates of the various experimental condition tested at the chosen significance level. 
+The module Targeted Proteolysis is designed to post-process the mass spectrometry
+data acquired during the enzymatic proteolysis of a Target protein by a single
+protease. In a typical experimental setup both the protease and the Target protein
+are mixed together under various experimental conditions and the peptides generated
+during the proteolysis are identified by mass spectrometry. It is expected that
+several control experiments and several replicates of the tested experimental
+conditions are performed. The main objective of the module is to identify the peptides
+with intensity values that are significantly different in the control experiments
+and the replicates of the various experimental condition tested at the chosen
+significance level.
 
 \section{Definitions}
 
-Before explaining in detail the interface and how does the module works, lets make clear the meaning of the term Filtered peptide in the context of the Targeted proteolysis module:
+Before explaining in detail the interface and how does the module work, let's make
+clear the meaning of the term Filtered peptide in the context of the Targeted 
+proteolysis module:
 
 \phantomsection
 \begin{itemize}
-	\item \textit{Filtered peptide}: a relevant peptide with a significantly different behavior in the control and a given experiment at the chosen significance level.\label{par:tarprotPIP}
+    \item \textit{Filtered peptide}: a relevant peptide with a significantly different
+    behavior in the control and a given experiment at the chosen significance level.
+    \label{par:tarprotPIP}
 \end{itemize}
 
-The rest of the definitions in \autoref{sec:limprotDefinitions} are valid for this module too.
+The rest of the definitions in \autoref{sec:limprotDefinitions} are valid for this
+module too.
 
 \section{The input files}
 
@@ -37,11 +51,11 @@ Region \num{2} contains the fields where users provide the information needed in
 See \autoref{sec:dataFile} for more details about the data files.
 
 \begin{figure}[h]
-	\centering
-	\includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-mod.jpg}
-	\caption[The Targeted Proteolysis module window]{\textbf{The Targeted Proteolysis module window.} This window allows users to performed the analysis of the results obtained during an enzymatic proteolysis experiment. Optional parameters default to NA when the window is created. The rest of the parameters must be provided by the user.} 
-	\label{fig:tarprotMainWindow}
-	\vspace{-5pt} 	
+    \centering
+    \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-mod.jpg}
+    \caption[The Targeted Proteolysis module window]{\textbf{The Targeted Proteolysis module window.} This window allows users to performed the analysis of the results obtained during an enzymatic proteolysis experiment. Optional parameters default to NA when the window is created. The rest of the parameters must be provided by the user.} 
+    \label{fig:tarprotMainWindow}
+    \vspace{-5pt} 	
 \end{figure} 
 
 \phantomsection
@@ -91,11 +105,11 @@ Independently of the chosen method, the expected input here is a semicolon (;) s
 The helper window is divided in four Regions, see \autoref{fig:tarprotResControlWindow}. Region \num{1} allows to define the number of experiments performed and to create the matrix in Region \num{2}. The text fields in Region \num{2} must contain the column numbers for the replicates of the experiments and control. The column numbers can be seen in the list box in Region \num{3}. Selected entries in the list box can be copied and then pasted to the text fields using the right mouse button or the Tools menu. Region \num{4} contains two buttons to Cancel or to Export the values to the window of the module.   
 
 \begin{figure}[h]
-	\centering
-	\includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-rescontrol.jpg}
-	\caption[The Result - Control experiments helper window for the Targeted Proteolysis module]{\textbf{The Result - Control experiments helper window for the Targeted Proteolysis module.} This window allows users to specify the column numbers in the Data file containing the MS results for the selected experiments and control.} 
-	\label{fig:tarprotResControlWindow}
-	\vspace{-5pt} 	
+    \centering
+    \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-rescontrol.jpg}
+    \caption[The Result - Control experiments helper window for the Targeted Proteolysis module]{\textbf{The Result - Control experiments helper window for the Targeted Proteolysis module.} This window allows users to specify the column numbers in the Data file containing the MS results for the selected experiments and control.} 
+    \label{fig:tarprotResControlWindow}
+    \vspace{-5pt} 	
 \end{figure}
 
 The format of the .txt file that can loaded is very simple. Each line of the file correspond to one experiment with the first line reserved for the control experiment. No comas or semicolons are needed. For example, the following file content will result in the same configuration already discussed.
@@ -125,11 +139,11 @@ After all relevant peptides in all experiments have been analyzed, the output fi
 If the sequence of the native protein is given the module performs a sequence alignment between the native and recombinant sequences. The alignment allows UMSAP to translate the results obtained with the residue numbers of the recombinant protein to the residue numbers of the native protein. This is done to facilitate future comparison of results between different recombinant proteins of the same native protein. However, when analyzing the results of the alignment the module assumes that the recombinant and native sequences differs only in the N and C-terminal tags while the sequence between the tags is identical. If this is not the case, e.g. there are point mutations or insertion/deletion in the sequence of the recombinant protein no native sequence file should be given to UMSAP. This restriction will be eliminated in future versions of UMSAP. Mapping of the cleavage sites to the .pdb file involves also a sequence alignment between the recombinant protein and the sequence found in the .pdb file. However, the mapping of the detected cleavage sites does not have the restriction discussed before. 
 
 \begin{figure}[h]
-	\centering
-	\includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-ancova.png}	    
-	\caption[Data organization prior to the ANCOVA test]{\textbf{Data organization prior to the ANCOVA test.} Two data sets with two points each are created, one data set for the control (red) and one for a given experiment (blue). The intensity data in the replicates of the control is used in both data points for the control (+) and in the first data point of the given experiment. The intensity data in the replicates of the given experiment is used for the second point of the data set for the given experiment (x). After this, the best fitting line for each data set is found and the slopes of the lines are compared in a test for homogeneity of the regression slopes.} 
-	\label{fig:tarprotAncova}
-	\vspace{-5pt} 	
+    \centering
+    \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-ancova.png}	    
+    \caption[Data organization prior to the ANCOVA test]{\textbf{Data organization prior to the ANCOVA test.} Two data sets with two points each are created, one data set for the control (red) and one for a given experiment (blue). The intensity data in the replicates of the control is used in both data points for the control (+) and in the first data point of the given experiment. The intensity data in the replicates of the given experiment is used for the second point of the data set for the given experiment (x). After this, the best fitting line for each data set is found and the slopes of the lines are compared in a test for homogeneity of the regression slopes.} 
+    \label{fig:tarprotAncova}
+    \vspace{-5pt} 	
 \end{figure} 
 
 \section{The output files}
@@ -137,11 +151,11 @@ If the sequence of the native protein is given the module performs a sequence al
 All the output generated by the Targeted Proteolysis module will be saved in a TarProt folder created inside the selected Output folder. If the Output folder field in section Files of Region \num{2} of the interface is left empty, then the TarProt folder will be created in the directory containing the Data file. If the selected Output folder already contains a TarProt folder, then the current date and time to the second will be added to the name in order to avoid overwriting files from previous analyses. By default the TarProt folder will contain four files with extensions .tarprot, .cutprop, .txt and .uscr and a Data{\_}Steps folder. The name of these files is provided with the Output name field in section Files of Region \num{2} of the interface. Depending on the user provided input extra folders and files will be created inside the TarProt folder (\autoref{fig:tarprotOutFolder}). For the rest of this chapter we will assume that the user provided name for the Output folder was \textit{t}, the Output name was myTest, the Target protein was \textit{efeB} and all optional analyses were performed.
 
 \begin{figure}[h]
-	\centering
-	\includegraphics[width=0.35\textwidth]{./IMAGES/MOD-TARPROT/tarprot-files.jpg}	    
-	\caption[The structure of the Output folder from the Targeted Proteolysis module]{\textbf{The structure of the Output folder from the Targeted Proteolysis module.} Folders Data, PDB and Sequences are optional and will be created only if requested. The same is true for the .aadist file.} 
-	\label{fig:tarprotOutFolder}
-	\vspace{-5pt} 	
+    \centering
+    \includegraphics[width=0.35\textwidth]{./IMAGES/MOD-TARPROT/tarprot-files.jpg}	    
+    \caption[The structure of the Output folder from the Targeted Proteolysis module]{\textbf{The structure of the Output folder from the Targeted Proteolysis module.} Folders Data, PDB and Sequences are optional and will be created only if requested. The same is true for the .aadist file.} 
+    \label{fig:tarprotOutFolder}
+    \vspace{-5pt} 	
 \end{figure} 
 
 \phantomsection
@@ -166,11 +180,11 @@ After the analysis of the Targeted Proteolysis module is finished new windows wi
 The window displaying the results in the .tarprot file is divided in four regions (\autoref{fig:tarprotFra}).
 
 \begin{figure}[h]
-	\centering
-	\includegraphics[width=0.8\textwidth]{./IMAGES/MOD-TARPROT/tarprot-frag.jpg}	    
-	\caption[The Fragment analysis window]{\textbf{The Fragment analysis window.} Users can performed here the analysis of the fragments obtained in the enzymatic proteolysis experiments.} 
-	\label{fig:tarprotFra}
-	\vspace{-5pt} 	
+    \centering
+    \includegraphics[width=0.8\textwidth]{./IMAGES/MOD-TARPROT/tarprot-frag.jpg}	    
+    \caption[The Fragment analysis window]{\textbf{The Fragment analysis window.} Users can performed here the analysis of the fragments obtained in the enzymatic proteolysis experiments.} 
+    \label{fig:tarprotFra}
+    \vspace{-5pt} 	
 \end{figure} 
 
 Region \num{1} contains a list box displaying the complete list of FP. Selecting one sequence in the list box will highlight the fragments in Region \num{2} containing the selected peptide with a blue thicker border. In addition, a plot of Normalized intensities vs experiment number for the selected peptide will be displayed in Region \num{3}. Below the list box there is a search box that allows to search for a sequence in the FP list. If the typed sequence exactly matches one peptide of the FP list, then the sequence will be selected in the list box, the fragments containing the sequence in Region \num{2} will be highlighted and the plot in Region \num{3} will be updated. If the typed sequence is found in more than one peptide of the FP list, the number and the sequence of the peptides containing the typed sequence will be shown.
