@@ -12,9 +12,9 @@ let's make clear the meaning of some terms that will be used in the following pa
 
 \phantomsection
 \begin{itemize}
-	\item \textit{Detected protein}: any protein detected in any of the mass spectrometry
+    \item \textit{Detected protein}: any protein detected in any of the mass spectrometry
     experiments including the control experiments.
-	\item \textit{Relevant proteins}: a detected protein with a Score value above
+    \item \textit{Relevant proteins}: a detected protein with a Score value above
     a user-defined thresholds (page \pageref{par:protprofScoreValue}).
 \end{itemize}
 
@@ -32,12 +32,12 @@ in the Data file.
 The tab of the Proteome Profiling module is divided in two regions (\autoref{fig:protprofTab}).
 
 \begin{figure}[h]
-	\centering
-	\includegraphics[width=0.7\textwidth]{./IMAGES/MOD-PROTPROF/protprof-mod.jpg}
-	\caption[The Proteome Profiling module tab]{\textbf{The Proteome Profiling module
+    \centering
+    \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-PROTPROF/protprof-mod.jpg}
+    \caption[The Proteome Profiling module tab]{\textbf{The Proteome Profiling module
     tab.} This tab allows users to perform a proteome profiling analysis.}
-	\label{fig:protprofTab}
-	\vspace{-5pt}
+    \label{fig:protprofTab}
+    \vspace{-5pt}
 \end{figure}
 
 The Data File Content region holds only a table to show the name of the columns in
@@ -98,7 +98,7 @@ treated as relevant proteins.
 or paired. For example, samples are paired when the same Petri dish is used for the
 control and experiments.
 
-\num{3}. The text field \alpha level allows users to define the significance level
+\num{3}. The text field $\alpha$ level allows users to define the significance level
 used for the analysis. Only a number between \num{0} and \num{1} will be accepted
 here.
 
@@ -140,11 +140,11 @@ experiments. The button Type Values calls a helper window (\autoref{fig:protprof
 where users can type the information needed. Duplicate column numbers are not allowed here.
 
 \begin{figure}[h]
-	\centering
-	\includegraphics[width=0.7\textwidth]{./IMAGES/MOD-PROTPROF/protprof-rescontrol.jpg}
-	\caption[The Result - Control experiments helper window for the Proteome Profiling module]{\textbf{The Result - Control experiments helper window for the Proteome Profiling module.} This window allows users to specify the column numbers in the Data file containing the MS results for the selected conditions, relevant points and control experiments.} 
-	\label{fig:protprofResControlWindow}
-	\vspace{-5pt} 	
+    \centering
+    \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-PROTPROF/protprof-rescontrol.jpg}
+    \caption[The Result - Control experiments helper window for the Proteome Profiling module]{\textbf{The Result - Control experiments helper window for the Proteome Profiling module.} This window allows users to specify the column numbers in the Data file containing the MS results for the selected conditions, relevant points and control experiments.} 
+    \label{fig:protprofResControlWindow}
+    \vspace{-5pt} 	
 \end{figure}
 
 The helper window is divided in two Regions. Region Data File Content will show the 
@@ -163,58 +163,64 @@ are not allowed.
 \section{The analysis}
 \label{sec:protprofTTest}
 
-First, UMSAP will check the validity of the user provided input. In particular, all experiments need to have the same number of replicates as the respective control. Then, the Data file is processed as follow. All proteins found in the Exclude proteins columns are discarded. Proteins that were not identified in all conditions are discarded. Finally, all proteins with a Score value lower than the defined threshold are removed. The intensity values of the remaining proteins are normalized and then a median correction is applied to each experiment if Median correction was selected in section Values. With the resulting intensity values the fold change for each protein and experiment as well as the intensity ratios with respect to the control experiments are calculated and two different analysis are performed.
+First, UMSAP will check the validity of the user-provided input and then the selected
+Data file is read. The columns specified in section Column numbers are extracted
+from the Data file. All other columns present in the Data file are discarded. After
+this, all steps selected in the Data Preparation section are applied to the columns
+specified in the text field Result - Control experiments (\autoref{chap:dataPrep}).
+Then, the following actions are performed.
 
-The fold change is calculated as: 
+All proteins found in the Exclude proteins columns are discarded. Also, all proteins
+with a Score value lower than the defined threshold are removed. The resulting data
+is used for the proteome profiling analysis \cite{Aguilan2020}. This includes the
+calculation of the fold change (FC) (\autoref{eq:protprofFC}), the p values and the correction
+of the p values. Currently, the p values are calculated using a t-test.
 
 \begin{equation}
 \label{eq:protprofFC}
 FC = ave(I_{C, RP}) / ave(I_{Control})
 \end{equation}
 
-The first analysis is a t-test to determine if each experiment is significantly different to the corresponding control. The second analysis is a t-test, or ANOVA test if more than two conditions are studied, to determine if the values for the studied conditions are significantly different for each selected relevant point.
+\section{The result window}
 
-Finally, the corrected p values are calculated.
-
-\section{The output files}
-
-The Proteome Profiling module generates up to three files and a folder named Data\_Steps, see \autoref{fig:protprofOutFolder}. The folder Data\_Steps contains a step by step account of all the calculations performed so users can check the accuracy of the calculation or perform further analysis. The files inside Data\_Steps are plain text file with tab separated columns. The first line contains the name of the columns in the file.  
+The window showing the results from a Proteome Profiling analysis is divided in three
+regions (\autoref{fig:limprotResWindow}).
 
 \begin{figure}[h]
-	\centering
-	\includegraphics[width=0.35\textwidth]{./IMAGES/MOD-PROTPROF/protprof-files.jpg}	    
-	\caption[The structure of the Output folder from the Proteome Profiling module]{\textbf{The structure of the Output folder from the Proteome profiling module.} The file protprof.txt will be created only if requested.} 
-	\label{fig:protprofOutFolder}
-	\vspace{-5pt} 	
+    \centering
+    \includegraphics[width=0.8\textwidth]{./IMAGES/MOD-PROTPROF/protprof-frag.jpg}
+    \caption[The Proteome Profiling result window]{\textbf{The Proteome Profiling
+    result window.} Users can perform here the analysis of the proteome profiling
+    results.} 
+    \label{fig:protprofResultsWindow}
+    \vspace{-5pt} 	
 \end{figure}
 
-The three files created have extension .txt, .uscr and .protprof. The file with extension .txt contains all the lines in the Data files but only the columns specified with the parameter Columns to extract in section Column numbers of Region \num{2} of the Proteome Profiling module. This file is generated only if the value of the parameter Columns to extract is not NA. 
+Region Protein List contains a table with the protein IDs and Gene names that were not
+excluded from the analysis and whose Score values are greater than the user-defined
+threshold. Selecting a protein in the table will highlight the protein with a green
+dot in the Volcano plot and display the $log_2[FC]$ evolution along the relevant points
+in region Plots. In addition, information about the selected protein will be displayed
+in Regions Profiling details.
 
-The file with extension .uscr contains all the input given by the user so a new analysis may be performed without typing all the option values again, see \autoref{subsec:utilUscrFile}. 
+Region Plots contains two plots. A volcano plot showing the results for the t-test
+comparing the condition (C), relevant point (RP) to the corresponding control. The
+points in the plot can be colored by Z-score allowing to quickly identified the top
+up (blue) or down (red) regulated proteins or according to the hyperbolic curve.
+Selecting a protein in the plot will highlight the selected protein in region Protein
+List and display information about it in region Profiling details.
 
-The file with extension .protprof is the main output of the module. This file contains all the results and can be used to generate the graphical representation of the results.    
+The plot of $log_2[FC]$ vs Relevant points allows to see the evolution of the FC
+along the Relevant points and to compare the FC across the various conditions in
+the analysis. The error bars in the plot represent the confident interval for the
+FC values calculate at the $1-\alpha$ level.
 
-\section{Visualizing the output files}
+Region Profiling details shows a summary of the results for the selected protein.
+Proteins can be selected in the table in region Protein List or in the volcano plot
+of region Plots. The information includes the calculated p and $log_2[FC]$ values
+as well as averages and standard deviations for intensities and ratios.
 
-After creating the .protprof at the end of the analysis, the Proteome Profiling module will automatically load the file and create a windows to display the results, see \autoref{fig:protprofResultsWindow}. This window is divided in four Regions. 
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.8\textwidth]{./IMAGES/MOD-PROTPROF/protprof-frag.jpg}	    
-	\caption[The Proteome Profiling analysis window]{\textbf{The Proteome Profiling analysis window.} Users can performed here the analysis of the proteome profiling.} 
-	\label{fig:protprofResultsWindow}
-	\vspace{-5pt} 	
-\end{figure}
-
-Region \num{1} contains a list of all protein IDs and Gene names contained in the .protprof file being shown. The search box at the bottom allows to search for a protein in the list. Selecting a protein in the list will highlight the protein in Region \num{2} and display information about it in Regions \num{3} and \num{4}.
-
-Region \num{2} contains a volcano plot showing the results for the t-test comparing the condition (C), relevant point (RP) to the corresponding control. The volcano plot has a horizontal line indicating the chosen significance level. In addition, the points in the plot can be colored by Z-score allowing to quickly identified the top up (blue) or down (red) regulated proteins. In \autoref{fig:protprofResultsWindow}, the top \SI{10}{\percent} up and down regulated proteins are colored and $\alpha$ is set to 0.05. Selecting a protein in the plot will highlight the selected protein in Region \num{1} and display information about it in Regions \num{3} and \num{4}. See \autoref{sec:protprofTools} for more options.
-
-Region \num{3} contains a plot of $log_2[FC]$ vs Relevant points. The plot allows to see the behavior of the FC along the relevant points for each condition tested in the experiments. See \autoref{sec:protprofTools} for more options.
-
-Region \num{4} shows a summary of the results for a selected proteins. Proteins can be selected in the listbox in Region \num{1} or in the volcano plot of Region \num{2}. The information includes a summary of the selected protein including the number of the protein in the listbox, the gene name and the protein id. Calculated p and $log_2[FC]$ values as well as averages and standard deviations for intensities and ratios.
-
-\subsection{The Tools menu}
+\section{The Tools menu}
 \label{sec:protprofTools}
 
 The Tools menu for the results window of the Proteome Profiling module allows to further customize the plots and to apply different filters to the protein list shown in the window.
@@ -225,7 +231,7 @@ Under the menu entry Relevant Points, users can show all the proteins at once wi
 
 The menu entry Export Data can be used to export the data shown in the window to a plain text file (see \autoref{subsec:utilExpData}) while the Corrected P values entry will display the information in the .protprof file using the corrected p values instead of the regular p values.
 
-\subsubsection{Filters}
+\subsection{Filters}
 
 The menu entry Filters allows to Add or Remove the filters applied to the protein list. The idea behind Filters is to identify proteins with a desired behavior and discard the rest of the proteins from the listbox in Region \num{1} and the plots in Regions \num{2} and \num{3}. Filters are applied to the current Condition and Relevant point shown in the Volcano plot in Region \num{2}. If the Condition or the Relevant point shown is changed, the new plot will show the proteins obtained after the filter was applied. This allows to follow the behavior of the filtered proteins in all Conditions and Relevant points. The menu entry Applied Filters in the Volcano plot submenu allows to recalculate the filters based on the new Conditions and Relevant point shown. Any number of filters can be applied. The applied filters are shown in the bottom left corner of the results window. 
 

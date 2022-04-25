@@ -9,7 +9,7 @@ a full enzymatic digestion and the generated peptides are analyzed using mass sp
 
 The main objective of the module is to identify the protein fragments generated in
 the initial limited proteolysis from the peptides found in the MS analyzed gel spots.
-This is achieved by performing an equivalence test\cite{Limentani2005} between the
+This is achieved by performing an equivalence test\cite{Limentani2005a} between the
 peptides in the selected gel spots and a control spot containing the full length
 target protein. In this way, peptides leaked from one gel spot to another can be
 eliminated. Several replicates of the experiment are expected.
@@ -146,7 +146,7 @@ or paired. For example, samples are paired when the same Petri dish is used for 
 control and experiments.
 
 \numrange[range-phrase = --]{4}{8}. The parameters $\alpha$, $\beta$, $\gamma$,
-$\Theta$ and $\Theta$max are used to configure the equivalence test\cite{Limentani2005}
+$\Theta$ and $\Theta$max are used to configure the equivalence test\cite{Limentani2005a}
 performed to identify peptides in the selected gel spots with equivalent intensity
 values to the control spots (\autoref{sec:limprotEquivalenceTest}). $\alpha$, $\beta$ and 
 $\gamma$ must be between \num{0} and \num{1}. The value of $\Theta$ is optional. If
@@ -217,7 +217,7 @@ protein are removed. Then, all rows containing peptides from the Target protein
 but with Score values lower than the user-defined Score threshold are removed. These
 steps leave only relevant peptides, this means, peptides with a Score value higher
 than the user-defined threshold that belong to the Target protein. For each one of
-these relevant peptides the equivalence test is performed \cite{Limentani2005}.
+these relevant peptides the equivalence test is performed \cite{Limentani2005a}.
 
 The implementation of the equivalence test is based on the following equations:
 \begin{equation}
