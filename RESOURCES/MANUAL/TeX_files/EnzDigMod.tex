@@ -412,6 +412,94 @@ and to reset zoom level of the plot (Cmd+Z).
 \subsection{Cleavage Evolution}
 \label{subsec:tarprotCutEvol}
 
+The Cleavage Evolution analysis allows to follow the Relative Cleavage Rate (RCR)
+of the detected cleavage sites during a Targeted Proteolysis analysis.
+
+\textit{\textbf{\underline{The analysis}}}
+
+This analysis is performed by default after the Targeted Proteolysis analysis is
+finished. First, UMSAP groups all MS-detected peptides that share the same \(P1\)-\(P1'\)
+bond. Subsequently, the RCR is calculated as follows. For each
+peptide and experiment the average intensities are calculated. Subsequently, for
+each peptide the average intensity ratios are calculated taking as reference the
+first average intensity greater than zero along the experiments for each peptide.
+Finally, the RCR for a \(P1\) site at an experiment is calculated
+as the sum of the average intensity ratios of all peptides that share the same \(P1\)
+site. If the peptide was not detected in an experiment or the intensity values are
+not significantly different to the control experiments, then the average intensity
+is set to zero for this experiment. A numeric example is provided below.
+
+Let's assume the following peptides were detected in a set of experiments. They all
+share the same \(P1\) site at V231.
+
+\begin{texshade}{./TeX_files/testCutEvol.fasta}
+    \residuesperline*{50}
+    \shadingmode[kenny]{functional}
+    \hideconsensus
+\end{texshade}
+
+The average intensity for each peptide in the three experiments performed are given
+in \autoref{table:tarprotCutEvolAveInt}.
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{lcccccc}
+        \hline
+        Experiment & A & B & C & D & E & F \\
+        Exp1 & 2 & 0 & 0 & 3 & 3 & 10 \\
+        Exp2 & 4 & 1 & 0 & 0 & 6 & 5 \\
+        Exp3 & 8 & 3 & 5 & 0 & 0 & 1 \\
+        \hline
+    \end{tabular}
+    \caption[Average intensity for the detected peptide]{\textbf{Average intensity
+    for the detected peptide.}}
+    \label{table:tarprotCutEvolAveInt}
+\end{table}
+
+The RCR for residue V231 is then calculated as indicated in \autoref{table:tarprotCutEvolRCR}.
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{lccccccc}
+        \hline
+        Experiment & A       & B       & C       & D       & E       & F          & RCR\\
+        Exp1       & 2/2 = 1 & 0/1 = 0 & 0/5 = 0 & 3/3 = 1 & 3/3 = 1 & 10/10 = 1  & 4  \\
+        Exp2       & 4/2 = 2 & 1/1 = 1 & 0/5 = 0 & 0/3 = 0 & 6/3 = 2 & 5/10 = 0.5 & 5.5\\
+        Exp3       & 8/2 = 4 & 3/1 = 3 & 5/5 = 1 & 0/3 = 0 & 0/3 = 0 & 1/10 = 0.1 & 8.1\\
+        \hline
+    \end{tabular}
+    \caption[Average intensity for the detected peptide]{\textbf{Average intensity
+    for the detected peptide.}}
+    \label{table:tarprotCutEvolRCR}
+\end{table}
+
+\textit{\textbf{\underline{The result window}}}
+
+The result window for the Cleavage Evolution analysis is divided in two regions
+(\autoref{fig:tarprotCutEvol}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-cutevol.jpg}
+    \caption[The Cleavage Evolution result window]{\textbf{The Cleavage Evolution
+    result window.} This window allows to visualize the RCR for the selected Targeted
+    Proteolysis analysis.}
+    \label{fig:tarprotCutEvol}
+    \vspace{-5pt}
+\end{figure}
+
+Region Residue Numbers shows a table with the residue numbers for which the RCR is
+not zero for at least one experiment. A given residue number can be searched for using
+the search box at the bottom of the table. Region Plot shows a plot of the RCR vs Experiment.
+The plot can show the behavior for multiple residues selected in the table.
+
+\textit{\textbf{\underline{The Tools menu}}}
+
+The Tools menu allows showing the residues for the recombinant or native protein
+and identifying residues whose RCR have a monotonic behavior. In addition,
+users may select to duplicate the window (Cmd+D) for easier comparison of the results,
+to export the data shown in the window (Cmd+E), save a figure of the plot (Cmd+I)
+and to reset zoom level of the plot (Cmd+Z).
 
 \subsection{Cleavage Histograms}
 \label{subsec:tarprotHist}
