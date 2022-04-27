@@ -312,164 +312,236 @@ The submenu Further Analysis give access to other analysis that can be performed
 with the information obtained with the Targeted Proteolysis analysis.
 
 \subsection{AA Distribution}
-\label{subsec:utilAadistCalc}
-The AA Distribution utility allows user to calculate the AA distribution around the detected cleavage sites using a list of FP (see page \pageref{par:tarprotPIP}). The list of FP is automatically generated from a .tarprot file. How to generate a .tarprot file is discussed in \autoref{chap:tarprot}. The list of FP is a non redundant list. 
+\label{subsec:tarprotAA}
+The AA Distribution analysis allows user calculating the AA distribution around
+the detected cleavage sites in a Targeted Proteolysis analysis. The submenu AA Distribution
+gives access to all AA distribution analysis associated with the currently selected
+Targeted Proteolysis analysis. The submenu is one of the entries in submenu Further
+Analysis of the Tools menu of the result window.
 
-\textit{\textbf{The interface}}
+The entry New AA Analysis in submenu AA Distribution allows creating a new analysis.
+The only input needed from the user is the number of AA positions around the cleavage
+sites to be considered.
 
-The window of the AA Distribution utility is divided in three regions (\autoref{fig:utilAadistCalc}).
+\textit{\textbf{\underline{The analysis}}}
+
+First, UMSAP will check the validity of the user-provided input. For each FP found
+in the current Targeted Proteolysis analysis, the sequence around the N and C terminal
+ends of the peptide is analyzed up to the user-provided number of AA. For the N terminus
+of the peptide the identity of residues in positions \(Pn\) to \(P1\) is inferred
+from the sequence of the recombinant protein. The same is done for positions \(P1'\)
+to \(Pn'\) at the C terminus of the peptide. If the N or C terminus of a peptide is
+the first or last residue of the recombinant protein under study the N or C terminus
+is excluded from the analysis. For each position the number of times that each AA
+appears at a given position are counted. Finally, the absolute numbers of AA appearances
+for each position are converted to percent taking the total for each position as the
+sum of all counted AA in the position.
+
+In addition, UMSAP tests whether the obtained AA distribution is significantly different
+to the expected AA distribution from the proteolysis of the Target protein by a
+totally non-selective protease. The first step is to generate an AA distribution with
+the same number of positions defined by the user with the Position parameter. This
+distribution is generated assuming that all peptidic bonds in the recombinant protein
+may be cleaved by the protease with equal probability and that all peptidic bonds
+will be cleaved. Here, we are also assuming that all products of cleaving all peptidic
+bonds will be detected in the MS experiment. Then, UMSAP compares each position in
+both distributions using a $\chi^2$ test with the same significance level given for
+the Targeted Proteolysis analysis. In order to be able to perform the $\chi^2$ test,
+AAs are pooled together in the same groups as described below for the color code
+used in the output.
+
+\textit{\textbf{\underline{The result window}}} 
+
+The window showing the results from an AA Distribution analysis contains a single
+plot (\autoref{fig:tarprotAARes}). The plot can show the results for each experiment
+in the analysis or the results for each position in each experiment. 
 
 \begin{figure}[h]
-	\centering
-	\includegraphics[width=0.7\textwidth]{./IMAGES/UTIL-AA-WINDOW/util-aa.jpg}	    
-	\caption[The AA Distribution utility window]{\textbf{The AA Distribution utility window.} This window allows to obtain the AA distribution around the detected cleavage sites from a .tarprot file.} 
-	\label{fig:utilAadistCalc}
-	\vspace{-5pt} 	
+    \centering
+    \includegraphics[width=1.0\textwidth]{./IMAGES/MOD-TARPROT/tarprot-aa.jpg}
+    \caption[The AA Distribution result window]{\textbf{The AA Distribution result
+    window.} This window allows to visualize the results from an AA Distribution
+    analysis.}
+    \label{fig:tarprotAARes}
+    \vspace{-5pt}
 \end{figure}
 
-Region \num{1} contains three buttons allowing users to quickly delete all provided input to generate a new .pdf file. The Clear all button will delete all user provided input. The Clear files button will delete all values in section Files of Region \num{2}. Finally, the Clear values button will delete all values in section Values of Region \num{2}.
+The results for each experiment is presented as a bar graph of the AA distribution
+in which each bar represents a position. AAs are color coded with positively charged
+AAs (R and K) in blue, negatively charged AAs (D and E) in red, polar AAs (S, T,
+N, H, C and Q) in green, non-polar AAs (A, V, I, L and M) in gray, aromatic AAs
+(F, Y and W) in pink and Gly and Pro in yellow. AAs with an occurrence higher than
+\SI{10}{\percent} are labeled with the one-letter code for the AA and the percentage
+value. For example, in \autoref{fig:tarprotAARes} the value of \SI{25.0}{\percent}
+obtained for S in position \(P1\) means that S was found in position \(P1\) in the
+\SI{25.0}{\percent} of the total cleavage sites detected.
 
-Region \num{2} contains the fields where users provide the information needed in order to perform the AA distribution calculation. The Tarprot file button allows users to browse the file system to select the .tarprot file that will be used for the analysis. Only one .tarprot file can be provided here. The Output file button allows users to browse the file system to select the location and name of the Output file. If left empty, then the .aadist file, resulting from the analysis, will be saved in the same directory containing the .tarprot file and will have the same name as the .tarprot file. If the folder containing the selected .tarprot file already contains a .aadist file with the same name as the selected .tarprot file, then UMSAP will add the current date and time to the seconds to the end of the .aadist file in order to avoid overwriting the older .aadist file without explicit user permission.    
+The results of the $\chi^2$ test are given in the color of the name of the position.
+A green color represents that the obtained distribution in the position is significantly
+different to a no selectivity distribution at the level of significance given for
+Targeted Proteolysis analysis. A red color represents that the distributions are
+not significantly different at the level of significance given for the Targeted
+Proteolysis analysis. Finally, a black color indicates that the number of expected
+values below 5 was higher than the \SI{20}{\percent} threshold recommended by Yates
+et al. and the test was not performed \cite{Yates1999}.
 
-The parameter Positions indicates the number of positions around the cleavage sites to be analyzed. The value here must be an integer number greater than zero.
+If the mouse pointer is placed on top of the bars, then information related to the
+bar and the AA will be shown in the status bar at the bottom of the window. The
+information includes the Position (Pos), the amino acid (AA), how many times does
+the AA appear in the position as a percent of the total AA count for the given position
+(\%) and the absolute number (Abs) and how many times does the AA appear in the sequence
+of the recombinant protein (InSeq).
 
-Region \num{3} contains the Help and Start analysis buttons and a progress bar. The Help button leads to an online tutorial while the Start analysis button will start the analysis. The progress bar will give users a rough idea of the remaining processing time once the analysis is started.
+The results for the analyzed positions allows comparing the AA distribution in one
+position across all experiments. This is also a bar representation in which each
+bar represents an experiment and each position an AA. Placing the mouse pointer
+over a bar shows information about it. The information includes the AA (AA), the
+experiment (Exp), how many times does the AA appear in the position for the given
+experiment as a percent of the total AA count found at the position for the given
+experiment (\%) and the absolute number (Abs) and how many times does the AA appear
+in the sequence of the recombinant protein (InSeq).
 
-\textit{\textbf{The analysis}}
+\textit{\textbf{\underline{The Tools menu}}}
 
-First, UMSAP will check the validity of the user provided input. After this, a list of FP is created using the .tarprot file. For each FP, the sequence around the N and C terminal ends of the peptide is analyzed up to the user provided number of Positions. For the N terminus of the peptide the identity of residues in positions \(Pn\) to \(P1\) is inferred from the sequence of the recombinant protein contained in the .tarprot file. The same is done for positions \(P1'\) to \(Pn'\) at the C terminus of the peptide. If the N or C terminus of a peptide is the first or last residue of the recombinant protein under study the N or C terminus is excluded from the analysis. For each position the number of times that each AA appears at a given position are counted. Finally, the absolute numbers of AA appearances for each position are converted to percent taking the total for each position as the sum of all counted AA in the position.
-
-In addition, UMSAP tests whether the obtained AA distribution is significantly different to the expected AA distribution from the proteolysis of the Target protein by a totally non-selective protease. The first step is to generate an AA distribution with the same number of positions defined by the user with the Position parameter. This distribution is generated assuming that all peptidic bonds in the recombinant protein may be cleaved by the protease with equal probability and that all peptidic bonds will be cleaved. Here, we are also assuming that all products of cleaving all peptidic bonds will be detected in the MS experiment. Then, UMSAP compares each position in both distributions using a $\chi^2$ test with the significance level found in the .tarprot file. In order to be able to perform the $\chi^2$ test, AAs are pooled together in the same groups as described below for the color code used in the output.    
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.9\textwidth]{./IMAGES/UTIL-AA-WINDOW/util-aa-res.jpg}	    
-	\caption[The AA Distribution analysis window]{\textbf{The AA Distribution analysis window.} This window allows to visualize the results contained in a .aadist file.}
-	\label{fig:utilAadistShow}
-	\vspace{-5pt} 	
-\end{figure}
-
-\textit{\textbf{The output}} 
-
-The output from the AA distribution calculation is a file with .aadist extension. The file will be automatically loaded and a graphical representation of the results will be shown (\autoref{fig:utilAadistShow}). There are two graphical representations. The first representation shows a bar graph of the AA distribution in which each bar represents a position. AAs are color coded with positively charged AAs (R and K) in blue, negatively charged AAs (D and E) in red, polar AAs (S, T, N, H, C and Q) in green, non-polar AAs (A, V, I, L and M) in gray, aromatic AAs (F, Y and W) in pink and Gly and Pro in yellow. AAs with an occurrence higher than \SI{10}{\percent} are labeled with the one letter code for the AA and the percentage value. For example, in \autoref{fig:utilAadistShow} the value of \SI{16.7}{\percent} obtained for A in position \(P1'\) means that A was found in position \(P1'\) in the \SI{16.7}{\percent} of the total cleavage sites detected. 
-
-The results of the $\chi^2$ test are given in the color of the name of the position. A green color represents that the obtained distribution in the position is significantly different to a no selectivity distribution at the level of significance found in the .tarprot file. A red color represents that the distributions are not significantly different at the level of significance found in the .tarprot file. Finally, a black color indicates that the number of expected values below 5 was higher than the \SI{20}{\percent} threshold recommended by Yates et al. and the test was not performed \cite{Yates1999}. 
-
-If the mouse pointer is placed on top of the bars, then information related to the bar and the AA will be shown in the status bar at the bottom of the window. The information includes the Position (Pos), the amino acid (AA), how many times does the AA appears in the position as a percent of the total AA count for the given position (\%) and the absolute number (Abs) and how many times does the AA appears in the sequence of the recombinant protein (InSeq).
-
-The second representation allows to compare the AA distribution in one position across all experiments. This is also a bar representation in which each bar represents an experiment and each position an AA. Placing the mouse pointer over a bar shows information about it. The information includes the AA (AA), the experiment (Exp), how many times does the AA appears in the position for the given experiment as a percent of the total AA count found at the position for the given experiment (\%) and  the absolute number (Abs) and how many times does the AA appears in the sequence of the recombinant protein (InSeq).
-
-\textit{\textbf{The Tools menu}}
-
-By default, the AA distribution for all AA in the FP list will be shown when the .aadist file is loaded. The Tools menu in the window allows user to change the displayed experiment or to select the position for which results in the experiments should be compared. In addition, users may select to export the data shown in the window (see \autoref{subsec:utilExpData}), save a figure of the plot and to reset the view. 
+The Tools menu in the window allows user changing the displayed experiment or selecting
+the position for which results in the experiments should be compared. In addition,
+users may select to duplicate the window (Cmd+D) for easier comparison of the results,
+to export the data shown in the window (Cmd+E), save a figure of the plot (Cmd+I)
+and to reset zoom level of the plot (Cmd+Z).
 
 \subsection{Cleavage Evolution}
+\label{subsec:tarprotCutEvol}
+
 
 \subsection{Cleavage Histograms}
-\label{subsec:utilHistoCut}
-The Histograms utility allows to create histograms of the identified cleavage sites using the residue numbers of the Target protein as the definition of the windows in the histograms. Histograms are created from a .tarprot file. How to generate the .tarprot file is discussed in \autoref{chap:tarprot}. Only FP are used to create the histograms, see page \pageref{par:tarprotPIP}. The list of FP is a non redundant list. 
+\label{subsec:tarprotHist}
+The Cleavage Histogram analysis allows creating histograms of the identified cleavage
+sites using the residue numbers of the Target protein as the definition of the windows
+in the histograms. The submenu Cleavage Histograms gives access to all histograms
+associated with the currently selected Targeted Proteolysis analysis. The submenu
+is one of the entries in submenu Further Analysis of the Tools menu of the result window.
 
-\textit{\textbf{The interface}}
+The entry New Histograms in submenu Cleavage Histograms allows creating a new histogram.
+The only input needed from the user is the definition of the windows for the histograms.
+Only integer numbers equal or greater than zero will be accepted as input. In addition,
+the values must be organized from smaller to bigger values. Users may specify a fix
+histogram window size by given just one integer number greater than zero. In this
+case the histogram will have even spaced windows with the specified width.If more
+than one number is provided here, then windows with the customs width will be created.
+For example, the input \numlist{50 100} will create only one window
+including cleavage sites between residues \numrange{50}{99}. The input
+\numlist{1 50 100 150} will create three windows including cleavages sites between
+residues \numrange{1}{49}, \numrange{50}{99} and \numrange{100}{149}. Duplicate values
+are not allowed.
 
-The Histograms window is divided in three regions (\autoref{fig:utilHistoCut}).
+\textit{\textbf{\underline{The analysis}}}
+
+First, UMSAP will check the validity of the user-provided input. After this, the
+windows of the histograms will be created and for each experiment in the currently
+selected analysis the detected cleavage sites will be assigned to the corresponding
+windows. Histograms are created for the residue numbers in the recombinant protein
+and for the residue numbers in the native protein if the native sequence was given
+when configuring the Targeted Proteolysis analysis.
+
+\textit{\textbf{\underline{The result window}}}
+
+The Histograms window will display a bar plot with the selected histogram 
+(\autoref{fig:tarprotHistRes}).
 
 \begin{figure}[h]
-	\centering
-	\includegraphics[width=0.9\textwidth]{./IMAGES/UTIL-HIST-WINDOW/util-histo.jpg}	    
-	\caption[The Histograms utility window]{\textbf{The Histograms utility window.} This window allows to create histograms of the identified cleavage sites using the residue numbers of the Target protein as the definition of the windows in the histograms.} 
-	\label{fig:utilHistoCut}
-	\vspace{-5pt} 	
+    \centering
+    \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-hist.jpg}
+    \caption[The Histograms result window]{\textbf{The Histograms result window.}
+    This window allows to visualize the histograms generated for the selected Targeted
+    Proteolysis analysis.}
+    \label{fig:tarprotHistRes}
+    \vspace{-5pt}
 \end{figure}
 
-Region \num{1} contains three buttons allowing users to quickly delete all provided input to generate a new .pdf file. The Clear all button will delete all user provided input. The Clear files button will delete all values in section Files of Region \num{2}. Finally, the Clear values button will delete all values in section Values of Region \num{2}.
+In the histogram, experiments are shown in the order specified when configuring the
+analysis. Placing the mouse over the plot will display information at the bottom of
+the window. The information displayed includes the selected window (Win), the experiment
+represented by the bar (Exp) and the number of cleavages (Cleavages).
 
-Region \num{2} contains the fields where users provide the information needed in order to create the histograms. The Tarprot file button allows users to browse the file system to select the .tarprot file that will be used for the analysis. Only one .tarprot file can be selected here. The Output file button allows users to browse the file system to select the location of the .hist file to be created. If no Output file is selected the .hist file will be created in the same directory as the selected .tarprot file. If an older .hist file exists in the selected folder, UMSAP will append the date and time to the second to the end of the .hist file name in order to avoid overwriting the old .hist file. 
+\textit{\textbf{\underline{The Tools menu}}}
 
-The parameter Windows allows to define the length of the windows in the histograms. Values here are expected to be integers greater than zero. A single value will results in equally spaced windows covering the entire length of the recombinant protein under study. Several values will result in custom sized windows. This may be useful if users want to define windows matching a structure related property of the Target protein e.g. secondary structure. In this case, the values must be space separated and organized from lower to higher values. For example, the input \numlist{1 50 100 200 220} will create four windows covering residues \numrange{1}{49}, \numrange{50}{99}, \numrange{100}{199} and \numrange{200}{219}.
-
-Region \num{3} contains the Help and Start analysis buttons and a progress bar. The Help button leads to an online tutorial while the Start analysis button will start the analysis. The progress bar will give users a rough idea of the remaining processing time once the analysis is started.
-
-\textit{\textbf{The analysis}}
-
-First, UMSAP will check the validity of the user provided input. After this, the windows of the histograms will be created and for each experiment in the .tarprot file the detected cleavage sites will be assigned to the corresponding windows. Since most of the time the protein under study is a recombinant protein containing purification tags or only a region of the native protein, histograms are created for the residue numbers in the recombinant protein and for the residue numbers in the native protein. For this to be possible the sequence of the native protein must have been provided during the creation of the .tarprot file. In the last case cleavage sites outside the native sequence contained in the recombinant protein are discarded and the residue numbers used for the definition of the windows and cleavages sites are the residue numbers of the native sequence. After the analysis is done the .hist file will be automatically loaded and the results shown in a new window (\autoref{fig:utilHistoCutShow}).
-
-\textit{\textbf{The output}}
-
-The Histograms analysis window will display the results contained in a .hist file, see \autoref{fig:utilHistoCutShow}. In the histogram, experiments are shown in the order specified when creating the .tarprot file. In addition, the values for the histograms considering the results from all experiments (all FP) will be displayed as the last bar and colored in gray. Placing the mouse over the plot will display information at the bottom of the window. The information displayed includes the selected window (Win), the experiment represented by the bar (Exp) and the number of cleavages (Cleavages).
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.7\textwidth]{./IMAGES/UTIL-HIST-WINDOW/util-histo-res.jpg}	    
-	\caption[The Histograms analysis window]{\textbf{The Histograms analysis window.} This window allows to visualize the results contained in a .hist file.} 
-	\label{fig:utilHistoCutShow}
-	\vspace{-5pt} 	
-\end{figure}
-
-\textit{\textbf{The Tools menu}}
-
-The Tools menu allows to show the results for the recombinant or native sequence and to show only unique cleavages or the total count of the detected cleavages. In addition, users may export the data shown in the window to a plain text file (see \autoref{subsec:utilExpData}), save an image of the plot or reset the state of the plot.
+The Tools menu allows showing the results for the recombinant or native sequence and
+showing only unique cleavages or the total count of the detected cleavages. In addition,
+users may select to duplicate the window (Cmd+D) for easier comparison of the results,
+to export the data shown in the window (Cmd+E), save a figure of the plot (Cmd+I)
+and to reset zoom level of the plot (Cmd+Z).
 
 \subsection{Cleavage per Residue}
-\label{subsec:utilCutsPerRes}
-The Cleavages per residue utility calculates the absolute number of cleavages detected in the MS experiments for each residue in the recombinant protein under study. The peptides used to identify the cleavage sites are the FP contained in the .tarprot file used as input for the calculation (see page \pageref{par:tarprotPIP}). How to generate the .tarprot file is discussed in \autoref{chap:tarprot}. The FP list is a non redundant list.
+\label{subsec:tarprotCutsRes}
+The Cleavages per Residue analysis calculates the absolute number of cleavages detected
+in the MS experiments for each residue in the recombinant protein under study.
 
-\textit{\textbf{The interface}}
+\textit{\textbf{\underline{The analysis}}}
 
-The Cleavages per residue utility does not have a window since there are no options to specify. When the utility is selected users will be asked to select a .tarprot file and then users must select the output file. That is all.
+This analysis is performed by default after the Targeted Proteolysis analysis is
+finished. Basically, UMSAP will count how many times each residue in the protein
+under study appears at the C terminus of a FP or at the \(N-1\) position of a FP
+(\(N\) is the N terminus of the FP). The cleavages per residue value for the first
+and last residue of the protein under study is of course zero. This is done for
+every experiment in the analysis.
 
-\textit{\textbf{The analysis}}
+\textit{\textbf{\underline{The result window}}}
 
-First, UMSAP will check the validity of the user provided input. After this the list of FP will be generated from the .tarprot file. Then, UMSAP will count how many times each residue in the protein under study appears at the C terminus of a FP or at the \(N-1\) position of a FP (\(N\) is the N terminus of the FP). The cleavages per residue value for the first and last residue of the protein under study is of course zero. This is done for every experiment in the .tarprot file and also taking into account the results for all experiments. Finally, UMSAP will take the absolute number of cleavages per residue and will normalize the values to bring them in the 0 to 1 range. Both the absolute and normalized values are written to the output file. After the analysis is done the results will be automatically loaded and displayed in a new window (\autoref{fig:utilCutsPerRes}). 
-
-\textit{\textbf{The output}}
-
-The output file from the Cleavages per residue utility will be shown as a simple number of cleavages vs residue number plot (\autoref{fig:utilCutsPerRes}). Residues with cleavages per residue higher than one third of the maximum number of cleavages per residue will be highlighted with an asterisk (*). Placing the mouse pointer inside the plot will display the residue number and the number of cleavages in the status bar at the bottom of the window. When two data sets are plotted simultaneously, the number of cleavages are given in the same order shown by the legend in the window. The gray vertical lines enclose the native residues. 
-
-\textit{\textbf{The Tools menu}}
-
-The window shows by default the absolute number of cleavages considering all FP for the recombinant protein. The Tools menu allows users to change this. Users may select to plot the results for a particular experiment or to compare two experiments. In addition, only the native sequence could be plotted or the normalized cleavages per residue values may be shown. An image of the plot can be created using the Save Plot Image entry in the Tools menu. The Reset View option restores the default appearance of the window. The Export Data option allows to save the data shown in the window to a plain text file.  
+The Cleavage per Residue window will display a line plot for the selected experiments
+(\autoref{fig:tarprotCutRes}).
 
 \begin{figure}[h]
-	\centering
-	\includegraphics[width=0.7\textwidth]{./IMAGES/UTIL-CUTPROP-WINDOW/util-cutprop-res.jpg}	    
-	\caption[The Cleavages per Residue analysis window]{\textbf{The Cleavages per Residue analysis window.} This window allows to visualize the results contained in a .cutprop file.} 
-	\label{fig:utilCutsPerRes}
-	\vspace{-5pt} 	
+    \centering
+    \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-cutres.jpg}
+    \caption[The Cleavages per Residue result window]{\textbf{The Cleavages per
+    Residue result window.} This window allows to visualize the cleavage per residue
+    for a Targeted Proteolysis analysis.}
+    \label{fig:tarprotCutsRes}
+    \vspace{-5pt}
 \end{figure}
+
+The plot will be shown as a simple number of cleavages vs residue number line.
+Placing the mouse pointer inside the plot will display the residue number and the
+number of cleavages in the status bar at the bottom of the window. When two or more
+data sets are plotted simultaneously, the number of cleavages are given in the same
+order shown by the legend in the window. The dash vertical lines enclose the native
+residues. 
+
+\textit{\textbf{\underline{The Tools menu}}}
+
+The Tools menu allows showing the results for the recombinant or native sequence,
+displaying one experiment or several (Cmd+S) and show/hide the dash vertical lines
+enclosing the native residues. The state of the window can be reset with the Clear All
+option (Cmd+K). In addition, users may select to duplicate the window (Cmd+D) for
+easier comparison of the results, to export the data shown in the window (Cmd+E),
+save a figure of the plot (Cmd+I) and to reset the zoom level of the plot (Cmd+Z).
 
 \subsection{PDB Mapping}
+\label{subsec:tarprotPDB}
 
-\label{subsec:utilCut2Pdb}
+The PDB Mapping utility maps the number of cleavages per residue found in a Targeted
+Proteolysis analysis to a .pdb file containing the structure of the Target protein.
+The menu entry PDB Mapping is one of the entries in submenu Further Analysis of the
+Tools menu in the Targeted Proteolysis result window. The only input needed from
+the user are the paths to the .pdb file and the folder in which the generated .pdb
+files will be saved. Importantly, the mapping is performed using the first chain
+in the given .pdb file.
 
-The Cleavages to PDB Files utility maps the number of cleavages per residue found in a .tarprot file to a .pdb file containing the structure of the Target protein. The peptides used to identify the cleavage sites are the FP contained in the .tarprot file used as input for the calculation, see page \pageref{par:tarprotPIP}. How to generate the .tarprot file is discussed in \autoref{chap:tarprot}. The FP list is a non redundant list.
+\textit{\textbf{\underline{The analysis}}}
 
-\textit{\textbf{The interface}}
+First, UMSAP will check the validity of the user-provided input. Then, a sequence
+alignment between the first chain in the selected .pdb file and the recombinant 
+sequence of the Target protein is done. Finally, the number of cleavages found in
+the Cleavage per Residue and Cleavage Evolution analysis are mapped to the
+corresponding residues in the .pdb file. The mapping is done to the beta field of
+the pdb.
 
-The Cleavages to PDB Files window is divided in three regions, see \autoref{fig:utilCut2PDB}.
+\textit{\textbf{\underline{The output}}}
 
-Region \num{1} contains three buttons allowing users to quickly delete all provided input to generate a new .pdf file. The Clear all button will delete all user provided input. The Clear files button will delete all values in section Files of Region \num{2}. Finally, the Clear values button will delete all values in section Values of Region \num{2}.
-
-Region \num{2} contains the fields where users provide the information needed in order to perform the mapping of the number of cleavages. The Tarprot file button allows users to browse the file system to select the .tarprot file that will be use for the analysis. Only one .tarprot file can be provided here. The PDB file allows user to browse the file system to select a .pdb file. The .pdb file will contain the structure of the Target protein. This field can be left empty if the PDB file is to be downloaded from the PDB database. The Output folder button allows users to browse the file system to select the location of the resulting PDB folder containing the results. If left empty, then the PDB folder, resulting from the analysis, will be saved in the same directory containing the .tarprot file. If the Output folder option is left empty and the folder containing the selected .tarprot file already contains a PDB folder, then UMSAP will add the current date and time to the second to the end of the folder name in order to avoid overwriting the older PDB folder without explicit user permission.
-
-The PDB ID field allows users to specify the chain or the segment id in the .pdb file that should be used for the mapping. Alternatively, if the PDB file field is left empty a code from the PDB database plus the chain or segment id may be given here. In this case, the pdb file will be directly downloaded from the PDB database. The expected syntax in this case is code;chain or code;segment for example, 2f4y;A or 2f4y;PROA.  
-
-Region \num{3} contains the Help and Start analysis buttons and a progress bar. The Help button leads to an online tutorial while the Start analysis button will start the analysis. The progress bar will give users a rough idea of the remaining processing time once the analysis is started.
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.7\textwidth]{./IMAGES/UTIL-PDB-WINDOW/util-pdb.jpg}	    
-	\caption[The Cleavages to PDB Files utility window]{\textbf{The Cleavages to PDB Files utility window.} This window allows to map the detected number of cleavages per residue to a .pdb file containing the structure of the Target protein. The number of cleavages are mapped to the beta field in the .pdb.} 
-	\label{fig:utilCut2PDB}
-	\vspace{-5pt} 	
-\end{figure}
-
-\textit{\textbf{The analysis}}
-
-First, UMSAP will check the validity of the user provided input. Then, a temporal .cutprop file will be created. Details about the .cutprop files can be found in \autoref{subsec:utilCutsPerRes}. After this, the sequence from the .pdb file is extracted and aligned with the sequence of the recombinant protein found in the .tarprot file. Finally, the number of cleavages found in the .cutprop file are mapped to the corresponding residues in the .pdb file.
-
-\textit{\textbf{The output}}
-
-The output from this utility is a series of .pdb files that will be saved in a PDB folder. Each file contains the number of cleavages mapped to the beta field of the corresponding residue in the .pdb structure. The results for each experiment and the FP list are mapped to individual files. The mapped values can be visualized by opening the .pdb files with VMD, PyMol or Chimera and coloring the structure by beta factors.
+The output from this utility is a series of .pdb files that will be saved in the
+selected folder. Each file contains the number of cleavages mapped to the beta field
+of the corresponding residue in the .pdb structure. The results for each experiment
+are mapped to individual files.
 
 
 
