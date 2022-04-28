@@ -169,12 +169,12 @@ class BaseConfPanel(
         self.cLRunBtn      = getattr(self, 'cLRunBtn',      'Start Analysis')        
         self.cLFileBox     = getattr(self, 'cLFileBox',     'Files')
         self.cLDataBox     = getattr(self, 'cLDataBox',     'Data Preparation')
-        self.cLColumnBox   = getattr(self, 'cLColumnBox',   'Column numbers')
+        self.cLColumnBox   = getattr(self, 'cLColumnBox',   'Column Numbers')
         self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD',  '0s Missing')
         self.cLNormMethod  = getattr(self, 'cLNormMethod',  'Normalization')
         self.cLImputation  = getattr(self, 'cLImputation',  'Imputation')
         self.cLTransMethod = getattr(self, 'cLTransMethod', 'Transformation')
-        self.cLValueBox  = getattr(self, 'cLValueBox', 'User-defined values')
+        self.cLValueBox  = getattr(self, 'cLValueBox', 'User-defined Values')
         self.cLCeroTreat = getattr(
             self, 'cLCeroTreat', 'Treat 0s as missing values')
         # For Progress Dialog

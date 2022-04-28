@@ -1994,6 +1994,11 @@ class MainWindow(BaseWindow):
             pass
         #endregion ------------------------------------------------> Start Tab
         
+        #region ---------------------------------------------------> Raise
+        self.Raise()
+        #endregion ------------------------------------------------> Raise
+
+        
         return True
     #---
 
@@ -2535,7 +2540,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
     cLNPlots = ['Vol', 'FC']
     #------------------------------> Title
     cTList = 'Protein List'
-    cTText = 'Profiling details'
+    cTText = 'Profiling Details'
     #------------------------------> Sizes
     cSWindow = config.sWinModPlot
     cSCol    = [45, 70, 100]
@@ -9545,9 +9550,9 @@ class CheckDataPrep(BaseWindowNPlotLT):
     cNPlotsCol = 2
     cLCol      = config.lLCtrlColNameI
     cSCol      = [45, 100]
-    cHSearch   = 'Colum names'
-    cTList     = 'Column names'
-    cTText     = 'Statistic information'
+    cHSearch   = 'Column Names'
+    cTList     = 'Column Names'
+    cTText     = 'Statistic Information'
     #------------------------------> To id the section in the umsap file 
     # shown in the window
     cSection = config.nuDataPrep
