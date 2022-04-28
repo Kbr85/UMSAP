@@ -1,11 +1,11 @@
 \chapter{Targeted Proteolysis}
 \label{chap:tarprot}
 
-The module Targeted Proteolysis is designed to post-process the mass spectrometry
+The module Targeted Proteolysis is designed to post-process the MS
 data acquired during the enzymatic proteolysis of a Target protein by a single
 protease. In a typical experimental setup both the protease and the Target protein
 are mixed together under various experimental conditions and the peptides generated
-during the proteolysis are identified by mass spectrometry. It is expected that
+during the proteolysis are identified by MS. It is expected that
 several control experiments and several replicates of the tested experimental
 conditions are performed. The main objective of the module is to identify the peptides
 with intensity values that are significantly different in the control experiments
@@ -30,7 +30,7 @@ module too.
 
 \section{The input files}
 
-The Targeted Proteolysis module requires a Data file containing the detected peptides
+The module requires a Data file containing the detected peptides
 and a sequence file containing the amino acid sequence of the recombinant protein
 used in the study. Both files must follow the guidelines specified in \autoref{sec:dataFile}.
 In short, the Data file must have a tabular format with tab separated columns and
@@ -42,95 +42,97 @@ the Native protein. All other sequences are discarded.
 
 \section{The interface}
 
-The tab of the Targeted Proteolysis module is divided in two regions (\autoref{fig:tarprotTab}).
+The tab of the module Targeted Proteolysis is divided in two regions (\autoref{fig:tarprotTab}).
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-mod.jpg}
     \caption[The Targeted Proteolysis module tab]{\textbf{The Targeted Proteolysis
-    module tab.} This tab allows users to perform the analysis of the results obtained
+    module tab.} This tab allows performing the analysis of the results obtained
     during an enzymatic proteolysis experiment.}
     \label{fig:tarprotTab}
     \vspace{-5pt}
 \end{figure} 
 
-The Data File Content region holds only a table to show the name of the columns in
+Region Data File Content holds a table to show the number and name of the columns in
 the selected Data File. The table will be automatically filled after selecting the
 file. Selected rows in the table can be copied (Cmd+C) and pasted (Cmd+V) to the
 text fields in region Configuration Options.
 
-The Configuration Options region contains all the fields needed to configure and
+Region Configuration Options contains all the fields needed to configure and
 run the analysis.
 
 Section Files contains three buttons and a text field. Here users select the input
 and output files for the analysis.
 
-\num{1}. The button UMSAP allows users to browse the file system to select the location
+\num{1}. The button UMSAP allows selecting the location
 and name of the umsap file. When selecting an already existing umsap file the operating
 system will ask if it is ok to replace the file, the answer can be yes since UMSAP
-will never overwrite or replace an umsap file, instead the new analysis will be
+will never overwrite or replace an umsap file. Instead, the new analysis will be
 added to the already existing file. Only umsap files can be selected here.
 
-\num{2}. The button Data allows users to browse the file system to select the input
+\num{2}. The button Data allows selecting the input
 data file that will be used for the analysis. The Data file is expected to be a
 plain text file with tab separated columns and the name of the columns in the first
-row of the file. In addition, columns to be analyzed must contain only numbers and
-must be of the same length. Only .txt files can be selected here.
+row of the file. Only .txt files can be selected here.
 
-\num{3}. The button Sequences allows users to browse the file system to select the
+\num{3}. The button Sequences allows selecting the
 FASTA file containing the sequence of the Recombinant protein and the Native protein.
 The FASTA file must contain at least one sequence.
 
-\num{4}. The text field Analysis ID allows users to provide an ID for the analysis
+\num{4}. The text field Analysis ID allows providing an ID for the analysis
 to be run. The date and time of the analysis will be automatically added to the
-beginning of the name.
+beginning of the name. For example, the Analysis ID \textit{First experiment} will
+be transformed into \textit{20220504-124534 - First experiment}.
 
 Section Data Preparation contains four dropdown boxes. Here users select how the data
-in the Data file should be prepared before starting the analysis.
+in the Data file should be prepared before starting the analysis (\autoref{chap:dataPrep}).
 
-\num{1}. The dropdown Treat \num{0}s as missing values allows user to define how
-to handle \num{0} values present in the Data file.
+\num{1}. The dropdown Treat \num{0}s as missing values allows defining how
+to handle zero values present in the Data file. Selecting Yes results in UMSAP
+replacing zero values with NA values. Selecting No results in UMSAP considering
+zeros as valid values.
 
-\num{2}. The dropdown Transformation allows user to select the Transformation method
+\num{2}. The dropdown Transformation allows selecting the Transformation method
 to be applied to the data.
 
-\num{3}. The dropdown Normalization allows users to select the Normalization method
+\num{3}. The dropdown Normalization allows selecting the Normalization method
 to be applied to the data.
 
-\num{4}. The dropdown Imputation allows user to select the Imputation method used
+\num{4}. The dropdown Imputation allows selecting the Imputation method used
 to replace missing values in the data.
 
-Section User-defined values contains five text fields Here users configure the 
+Section User-defined values contains five text fields. Here users configure the 
 Targeted Proteolysis analysis to be run.
 
 \phantomsection
-\num{1}. The text field Target Protein\label{par:tarportTargetProtein} allows users
-to specify the protein of interest. Users may type here any unique protein identifier
+\num{1}. The text field Target Protein\label{par:tarportTargetProtein} allows
+specifying the protein of interest. Users may type here any unique protein identifier
 present in the Data file. The search for the Target Protein is case-sensitive, meaning
 that eFeB is not the same as efeb.
 
 \phantomsection
-\num{2}. The text field Score Value\label{par:tarprotScoreValue} allows users to
-define a threshold value above which the detected peptides will be considered as
+\num{2}. The text field Score Value\label{par:tarprotScoreValue} allows
+defining a threshold value above which the detected peptides will be considered as
 relevant. The Score Value is an indicator of how reliable was the detection of the peptide
 during the MS experiments. The value given to UMSAP depends on the program generating
 the Data file. Only one real number equal or greater than zero will be accepted here.
 A value of zero means all detected peptides belonging to the Target Protein will
 be treated as relevant peptides.
 
-\num{3}. The text field $\alpha$ level allows users to define the significance level
+\num{3}. The text field $\alpha$ level allows defining the significance level
 used for the analysis. Only a number between \num{0} and \num{1} will be accepted
 here.
 
 \phantomsection
-\num{4}. The text field AA Positions\label{par:tarprotPos} allows users to define
+\num{4}. The text field AA Positions\label{par:tarprotPos} allows defining
 the number of positions to be considered during the amino acid (AA) distribution
 calculation (\autoref{subsec:tarprotAA}). Only one integer number greater than zero
 will be accepted here. If left empty the calculation will not be performed.
 
 \phantomsection
-\num{5}. The text field Histogram Windows\label{par:tarprotHist} allows users to
-define the size of the windows for the Histogram analysis (\autoref{subsec:tarprotHist}).
+\num{5}. The text field Histogram Windows\label{par:tarprotHist} allows
+defining the size of the windows for the Histogram analysis (\autoref{subsec:tarprotHist}).
 Only integer numbers equal or greater than zero will be accepted here. In addition,
 the values must be organized from smaller to bigger values. Users may specify a fix
 histogram window size by given just one integer number greater than zero. In this
@@ -148,25 +150,25 @@ the analysis of the module. All columns specified in this section must be presen
 in the Data file. Column numbers start at \num{0}. The column numbers are shown in
 the table of Region Data File Content after the Data file is selected.
 
-\num{1}. The text field Sequences allows users to specify the column in the Data
+\num{1}. The text field Sequences allows specifying the column in the Data
 file containing the sequences of the peptides identified in the MS experiments.
 Only one integer number equal or greater than zero will be accepted here.
 
-\num{2}. The text field Detected Proteins allows users to specify the column in
+\num{2}. The text field Detected Proteins allows specifying the column in
 the Data file containing the unique protein identifier for the proteins detected
 in the MS experiments. It is in this column where the program will look for the
 Target Protein value given in Section User-defined values. It is important that
 in this column the Target Protein value is used to refer to only one protein. Only
 one integer number equal or greater than zero will be accepted here.
 
-\num{3}. The text field Score allows users to specify the column in the Data file
+\num{3}. The text field Score allows specifying the column in the Data file
 containing the Score values. It is in this column where the program will look for
 the values to be compared against the Score threshold given in Section User-defined
 values.
 
 \phantomsection
 \num{4}. \label{par:limprotResultControl}The text field Results - Control experiments
-allows users to specify the columns in the Data file containing the results of the
+allows specifying the columns in the Data file containing the results of the
 control and experiments. The button Type Values call a helper window
 (\autoref{fig:tarprotResControlWindow}) where users can type the information needed. 
 
@@ -174,7 +176,7 @@ control and experiments. The button Type Values call a helper window
     \centering
     \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-rescontrol.jpg}
     \caption[The Result - Control experiments helper window]{\textbf{The Result -
-    Control experiments helper window.} This window allows users to specify the column
+    Control experiments helper window.} This window allows specifying the column
     numbers in the Data file containing the MS results for the selected experiments
     and control.} 
     \label{fig:tarprotResControlWindow}
@@ -182,7 +184,7 @@ control and experiments. The button Type Values call a helper window
 \end{figure}
 
 The helper window is divided in two Regions. Region Data File Content will show the 
-column numbers and names of the columns present in the selected Data file. Region
+number and name of the columns present in the selected Data file. Region
 Configuration Options has two sections. The upper section allows defining the number
 of experiments performed as well as the label for the control and experiments. The
 button Setup Fields creates the corresponding text fields in the bottom section to
@@ -204,7 +206,7 @@ Then, the following actions are performed.
 All rows in the Data file containing peptides that do not belong to the Target protein
 are removed. Then, all rows containing peptides from the Target protein but with
 Scores values lower than the user-defined Score threshold are removed. These steps
-leave only relevant peptides, this means peptides with a Score value higher than
+leave only relevant peptides, this means, peptides with a Score value higher than
 the user defined threshold that belong to the Target protein. For each one of these
 relevant peptides a test for Homogeneity of Regression \cite{ancova} is performed.
 
@@ -226,6 +228,7 @@ the slopes are different implies that the peptide is found in an increased
 concentration in the given experiment than in the control experiment. Only positive
 slopes are considered. Peptides that past this test are not included in the list of
 FP for the given experiment. 
+\newpage
 
 \begin{figure}[h]
     \centering
@@ -263,7 +266,7 @@ a peptide in the table will highlight with a thick black border all fragments in
 region Protein Fragments where the selected peptide was found. In addition, region
 Intensity will show the behavior of the intensity values in the control and experiments
 for the selected peptide. The search box at the bottom allows searching for a sequence
-in the list of FP.
+in the table of FP.
 
 Region Protein Fragments will display a graphical representation of the fragments
 found in each experiment. The first fragment in this region represents the full length
@@ -295,16 +298,16 @@ the fragment.
 
 \section{The Tools menu}
 
-The Tools menu in the window showing the results from a Targeted Proteolysis analysis
-allows user to view any of the analyses contained in the selected umsap file. The
-submenus Fragments and Intensities allow resetting the zoom level and create an image
+The menu Tools in the window showing the results from a Targeted Proteolysis analysis
+allows viewing any of the analyses contained in the selected umsap file. The
+submenus Fragments and Intensities allow resetting the zoom level and creating an image
 of the corresponding plots.
 
 The submenu Clear Selection allows removing any selection done by the user. In
 particular, the entry All (Cmd+K) will remove all selections basically resetting
 the state of the window.
 
-The Tools menu also allows duplicating the window (Cmd+D) for easier comparison of
+The menu Tools also allows duplicating the window (Cmd+D) for easier comparison of
 two or more analysis, checking the Data Preparation steps of the analysis (Cmd+P),
 exporting the results of the analysis to a tab separated CSV file (Cmd+E) and to
 export the sequence alignments (Cmd+S) between the peptides found in the analysis
@@ -316,11 +319,11 @@ with the information obtained with the Targeted Proteolysis analysis.
 
 \subsection{AA Distribution}
 \label{subsec:tarprotAA}
-The AA Distribution analysis allows user calculating the AA distribution around
+The AA Distribution analysis allows calculating the AA distribution around
 the detected cleavage sites in a Targeted Proteolysis analysis. The submenu AA Distribution
-gives access to all AA distribution analysis associated with the currently selected
+gives access to all AA distribution analyses associated with the currently selected
 Targeted Proteolysis analysis. The submenu is one of the entries in submenu Further
-Analysis of the Tools menu of the result window.
+Analysis of the menu Tools of the result window.
 
 The entry New AA Analysis in submenu AA Distribution allows creating a new analysis.
 The only input needed from the user is the number of AA positions around the cleavage
@@ -335,7 +338,7 @@ of the peptide the identity of residues in positions \(Pn\) to \(P1\) is inferre
 from the sequence of the recombinant protein. The same is done for positions \(P1'\)
 to \(Pn'\) at the C terminus of the peptide. If the N or C terminus of a peptide is
 the first or last residue of the recombinant protein under study the N or C terminus
-is excluded from the analysis. For each position the number of times that each AA
+is excluded from the analysis. Then, the number of times that each AA
 appears at a given position are counted. Finally, the absolute numbers of AA appearances
 for each position are converted to percent taking the total for each position as the
 sum of all counted AA in the position.
@@ -343,7 +346,7 @@ sum of all counted AA in the position.
 In addition, UMSAP tests whether the obtained AA distribution is significantly different
 to the expected AA distribution from the proteolysis of the Target protein by a
 totally non-selective protease. The first step is to generate an AA distribution with
-the same number of positions defined by the user with the Position parameter. This
+the same number of positions defined by the user. This
 distribution is generated assuming that all peptidic bonds in the recombinant protein
 may be cleaved by the protease with equal probability and that all peptidic bonds
 will be cleaved. Here, we are also assuming that all products of cleaving all peptidic
@@ -351,26 +354,28 @@ bonds will be detected in the MS experiment. Then, UMSAP compares each position 
 both distributions using a $\chi^2$ test with the same significance level given for
 the Targeted Proteolysis analysis. In order to be able to perform the $\chi^2$ test,
 AAs are pooled together in the same groups as described below for the color code
-used in the output.
+used in the results window.
 
-\textit{\textbf{\underline{The result window}}} 
+\textit{\textbf{\underline{The results window}}} 
 
 The window showing the results from an AA Distribution analysis contains a single
-plot (\autoref{fig:tarprotAARes}). The plot can show the results for each experiment
-in the analysis or the results for each position in each experiment. 
+plot (\autoref{fig:tarprotAARes}).
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=1.0\textwidth]{./IMAGES/MOD-TARPROT/tarprot-aa.jpg}
     \caption[The AA Distribution result window]{\textbf{The AA Distribution result
-    window.} This window allows to visualize the results from an AA Distribution
-    analysis.}
+    window.} This window allows visualizing the results from an AA Distribution
+    analysis. The results for a given experiment (left) or position (right) can
+    be shown.}
     \label{fig:tarprotAARes}
     \vspace{-5pt}
 \end{figure}
 
-The results for each experiment is presented as a bar graph of the AA distribution
-in which each bar represents a position. AAs are color coded with positively charged
+The plot can show the results for a given experiment in the analysis or for one of
+the considered positions.
+The results for each experiment is presented as a bar graph in which each bar
+represents a position. AAs are color coded with positively charged
 AAs (R and K) in blue, negatively charged AAs (D and E) in red, polar AAs (S, T,
 N, H, C and Q) in green, non-polar AAs (A, V, I, L and M) in gray, aromatic AAs
 (F, Y and W) in pink and Gly and Pro in yellow. AAs with an occurrence higher than
@@ -379,10 +384,10 @@ value. For example, in \autoref{fig:tarprotAARes} the value of \SI{25.0}{\percen
 obtained for S in position \(P1\) means that S was found in position \(P1\) in the
 \SI{25.0}{\percent} of the total cleavage sites detected.
 
-The results of the $\chi^2$ test are given in the color of the name of the position.
+The results of the $\chi^2$ test are given in the color of the name of the positions.
 A green color represents that the obtained distribution in the position is significantly
 different to a no selectivity distribution at the level of significance given for
-Targeted Proteolysis analysis. A red color represents that the distributions are
+the Targeted Proteolysis analysis. A red color represents that the distributions are
 not significantly different at the level of significance given for the Targeted
 Proteolysis analysis. Finally, a black color indicates that the number of expected
 values below 5 was higher than the \SI{20}{\percent} threshold recommended by Yates
@@ -406,16 +411,16 @@ in the sequence of the recombinant protein (InSeq).
 
 \textit{\textbf{\underline{The Tools menu}}}
 
-The Tools menu in the window allows user changing the displayed experiment or selecting
+The menu Tools in the window allows changing the displayed experiment or selecting
 the position for which results in the experiments should be compared. In addition,
 users may select to duplicate the window (Cmd+D) for easier comparison of the results,
-to export the data shown in the window (Cmd+E), save a figure of the plot (Cmd+I)
+to export the data shown in the window (Cmd+E), to save a figure of the plot (Cmd+I)
 and to reset zoom level of the plot (Cmd+Z).
 
 \subsection{Cleavage Evolution}
 \label{subsec:tarprotCutEvol}
 
-The Cleavage Evolution analysis allows to follow the Relative Cleavage Rate (RCR)
+The Cleavage Evolution analysis allows following the Relative Cleavage Rate (RCR)
 of the detected cleavage sites during a Targeted Proteolysis analysis.
 
 \textit{\textbf{\underline{The analysis}}}
@@ -476,16 +481,16 @@ The RCR for residue V231 is then calculated as indicated in \autoref{table:tarpr
     \label{table:tarprotCutEvolRCR}
 \end{table}
 
-\textit{\textbf{\underline{The result window}}}
+\textit{\textbf{\underline{The results window}}}
 
-The result window for the Cleavage Evolution analysis is divided in two regions
+The results window for the Cleavage Evolution analysis is divided in two regions
 (\autoref{fig:tarprotCutEvol}).
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-cutevol.jpg}
     \caption[The Cleavage Evolution result window]{\textbf{The Cleavage Evolution
-    result window.} This window allows to visualize the RCR for the selected Targeted
+    result window.} This window allows visualizing the RCR for the selected Targeted
     Proteolysis analysis.}
     \label{fig:tarprotCutEvol}
     \vspace{-5pt}
@@ -498,7 +503,7 @@ The plot can show the behavior for multiple residues selected in the table.
 
 \textit{\textbf{\underline{The Tools menu}}}
 
-The Tools menu allows showing the residues for the recombinant or native protein
+The menu Tools allows showing the residues for the recombinant or native protein
 and identifying residues whose RCR have a monotonic behavior. In addition,
 users may select to duplicate the window (Cmd+D) for easier comparison of the results,
 to export the data shown in the window (Cmd+E), save a figure of the plot (Cmd+I)
@@ -510,19 +515,19 @@ The Cleavage Histogram analysis allows creating histograms of the identified cle
 sites using the residue numbers of the Target protein as the definition of the windows
 in the histograms. The submenu Cleavage Histograms gives access to all histograms
 associated with the currently selected Targeted Proteolysis analysis. The submenu
-is one of the entries in submenu Further Analysis of the Tools menu of the result window.
+is one of the entries in submenu Further Analysis of the menu Tools of the result window.
 
 The entry New Histograms in submenu Cleavage Histograms allows creating a new histogram.
 The only input needed from the user is the definition of the windows for the histograms.
 Only integer numbers equal or greater than zero will be accepted as input. In addition,
 the values must be organized from smaller to bigger values. Users may specify a fix
 histogram window size by given just one integer number greater than zero. In this
-case the histogram will have even spaced windows with the specified width.If more
+case the histogram will have even spaced windows with the specified width. If more
 than one number is provided here, then windows with the customs width will be created.
 For example, the input \numlist{50 100} will create only one window
 including cleavage sites between residues \numrange{50}{99}. The input
-\numlist{1 50 100 150} will create three windows including cleavages sites between
-residues \numrange{1}{49}, \numrange{50}{99} and \numrange{100}{149}. Duplicate values
+\numlist{50 100 150 200} will create three windows including cleavages sites between
+residues \numrange{50}{99}, \numrange{100}{149} and \numrange{150}{199}. Duplicate values
 are not allowed.
 
 \textit{\textbf{\underline{The analysis}}}
@@ -534,7 +539,7 @@ windows. Histograms are created for the residue numbers in the recombinant prote
 and for the residue numbers in the native protein if the native sequence was given
 when configuring the Targeted Proteolysis analysis.
 
-\textit{\textbf{\underline{The result window}}}
+\textit{\textbf{\underline{The results window}}}
 
 The Histograms window will display a bar plot with the selected histogram 
 (\autoref{fig:tarprotHistRes}).
@@ -543,7 +548,7 @@ The Histograms window will display a bar plot with the selected histogram
     \centering
     \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-hist.jpg}
     \caption[The Histograms result window]{\textbf{The Histograms result window.}
-    This window allows to visualize the histograms generated for the selected Targeted
+    This window allows visualizing the histograms generated for the selected Targeted
     Proteolysis analysis.}
     \label{fig:tarprotHistRes}
     \vspace{-5pt}
@@ -556,7 +561,7 @@ represented by the bar (Exp) and the number of cleavages (Cleavages).
 
 \textit{\textbf{\underline{The Tools menu}}}
 
-The Tools menu allows showing the results for the recombinant or native sequence and
+The menu Tools allows showing the results for the recombinant or native sequence and
 showing only unique cleavages or the total count of the detected cleavages. In addition,
 users may select to duplicate the window (Cmd+D) for easier comparison of the results,
 to export the data shown in the window (Cmd+E), save a figure of the plot (Cmd+I)
@@ -576,16 +581,16 @@ under study appears at the C terminus of a FP or at the \(N-1\) position of a FP
 and last residue of the protein under study is of course zero. This is done for
 every experiment in the analysis.
 
-\textit{\textbf{\underline{The result window}}}
+\textit{\textbf{\underline{The results window}}}
 
 The Cleavage per Residue window will display a line plot for the selected experiments
-(\autoref{fig:tarprotCutRes}).
+(\autoref{fig:tarprotCutsRes}).
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-cutres.jpg}
     \caption[The Cleavages per Residue result window]{\textbf{The Cleavages per
-    Residue result window.} This window allows to visualize the cleavage per residue
+    Residue result window.} This window allows visualizing the cleavage per residue
     for a Targeted Proteolysis analysis.}
     \label{fig:tarprotCutsRes}
     \vspace{-5pt}
@@ -600,7 +605,7 @@ residues.
 
 \textit{\textbf{\underline{The Tools menu}}}
 
-The Tools menu allows showing the results for the recombinant or native sequence,
+The menu Tools allows showing the results for the recombinant or native sequence,
 displaying one experiment or several (Cmd+S) and show/hide the dash vertical lines
 enclosing the native residues. The state of the window can be reset with the Clear All
 option (Cmd+K). In addition, users may select to duplicate the window (Cmd+D) for
@@ -611,27 +616,27 @@ save a figure of the plot (Cmd+I) and to reset the zoom level of the plot (Cmd+Z
 \label{subsec:tarprotPDB}
 
 The PDB Mapping utility maps the number of cleavages per residue found in a Targeted
-Proteolysis analysis to a .pdb file containing the structure of the Target protein.
+Proteolysis analysis to a PDB file containing the structure of the Target protein.
 The menu entry PDB Mapping is one of the entries in submenu Further Analysis of the
-Tools menu in the Targeted Proteolysis result window. The only input needed from
-the user are the paths to the .pdb file and the folder in which the generated .pdb
+menu Tools in the Targeted Proteolysis result window. The only input needed from
+the user are the paths to the PDB file and the folder in which the generated PDB
 files will be saved. Importantly, the mapping is performed using the first chain
-in the given .pdb file.
+in the given PDB file.
 
 \textit{\textbf{\underline{The analysis}}}
 
 First, UMSAP will check the validity of the user-provided input. Then, a sequence
-alignment between the first chain in the selected .pdb file and the recombinant 
+alignment between the first chain in the selected PDB file and the recombinant 
 sequence of the Target protein is done. Finally, the number of cleavages found in
 the Cleavage per Residue and Cleavage Evolution analysis are mapped to the
-corresponding residues in the .pdb file. The mapping is done to the beta field of
-the pdb.
+corresponding residues in the PDB file. The mapping is done to the beta field of
+the PDB.
 
 \textit{\textbf{\underline{The output}}}
 
-The output from this utility is a series of .pdb files that will be saved in the
+The output from this utility is a series of PDB files that will be saved in the
 selected folder. Each file contains the number of cleavages mapped to the beta field
-of the corresponding residue in the .pdb structure. The results for each experiment
+of the corresponding residue in the PDB structure. The results for each experiment
 are mapped to individual files.
 
 
