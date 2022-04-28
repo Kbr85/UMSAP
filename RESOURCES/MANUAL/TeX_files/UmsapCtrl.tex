@@ -3,6 +3,13 @@
 
 The UMSAP Control windows shows the content of an umsap file (\autoref{fig:umsapCtrlWin}).
 
+\section{The interface}
+
+The analysis contained in the selected umsap file are displayed in alphabetical
+order and grouped by the analysis type. The checkboxes to the left of the names of
+the Modules and Utilities allow creating the corresponding window showing the results
+available for the selected Module or Utility.
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{./IMAGES/UMSAPCtrl/UMSAPCtrl.jpg}
@@ -14,13 +21,6 @@ The UMSAP Control windows shows the content of an umsap file (\autoref{fig:umsap
     \vspace{-5pt}
 \end{figure}
 
-\section{The interface}
-
-The analysis contained in the selected umsap file are displayed in alphabetical
-order and grouped by the analysis type. The checkboxes to the left of the names of
-the Utilities and Modules allow creating the corresponding window showing the results
-available for the selected Utility or Module.
-
 Each analysis in the file is represented by the user-provided Analysis ID. Unfolding
 any ID will display all the configuration values provided by the user prior to running
 the analysis. In addition, a left click over any Analysis ID will create the corresponding
@@ -28,11 +28,11 @@ tab in the Analysis Setup window (\autoref{fig:mainWindow}) and populate all fie
 with the values in the selected analysis. This is the fastest way to configure the
 analysis tab to rerun an analysis with slight changes in the configuration options.
 After rerunning an analysis or simply adding a new analysis to the umsap file, the
-window will be automatically updated to display the new results.
+window will be automatically updated to incorporate the new results.
 
 \section{The Tools menu}
 
-The UMSAP Control windows allows also to manage the content of the selected umsap
+The UMSAP Control windows also allows managing the content of the selected umsap
 file. Currently, it is possible to Add (Cmd+A) analysis from a different umsap
 file, to Delete (Cmd+X) analysis from an existing umsap file and to Export (Cmd+E)
 the analysis in an umsap file to a new umsap file.
