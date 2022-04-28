@@ -17,7 +17,7 @@
 {pdfborder=0 0 0,
 colorlinks=true,
 urlcolor=blue,
-linkcolor=black,	
+linkcolor=black,
 }
 
 \usepackage[labelfont=bf]{caption}
@@ -25,7 +25,7 @@ linkcolor=black,
 \usepackage{amsmath}
 
 \usepackage[style=science]{biblatex}
-\addbibresource{./TeX_files/UMSAP-Art.bib}
+\addbibresource{./TeX_files/UMSAP-Manual.bib}
 
 \usepackage{siunitx}
 
@@ -35,7 +35,7 @@ linkcolor=black,
 \setcounter{tocdepth}{5}
 
 \usepackage{fancyhdr}
-	
+
 \begin{document} 
 
 \pagenumbering{Roman}
@@ -55,10 +55,12 @@ linkcolor=black,
 \include{./TeX_files/Introduction}
 \include{./TeX_files/Instaling}
 \include{./TeX_files/MainInterface}
+\include{./TeX_files/UmsapCtrl}
+\include{./TeX_files/CorrAnalysis}
+\include{./TeX_files/DataPrep}
 \include{./TeX_files/Limprot}
 \include{./Tex_files/ProtProf}
 \include{./TeX_files/EnzDigMod}
-\include{./TeX_files/Utilities}
 
 % This is needed because Lic. Agreement has no section
 \fancyhead[LO]{}

@@ -871,10 +871,10 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         self.AppendSeparator()
         #------------------------------> Export Data
         self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
-        self.miSaveI = self.Append(-1, 'Export Image\tShift+I')
+        self.miSaveI = self.Append(-1, 'Export Image\tAlt+Shift+I')
         self.AppendSeparator()
         #------------------------------> 
-        self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tAlt+Shift+Z')
         #endregion -----------------------------------------------> Menu Items
         
         #region ---------------------------------------------------> rKeyID
@@ -1285,7 +1285,7 @@ class FiltersProtProf(wx.Menu):
         self.miRemoveAll  = self.Append(-1, 'Remove All\tCtrl+Shift+X')
         self.AppendSeparator()
         self.miCopy = self.Append(-1, 'Copy\tCtrl+Shift+C')
-        self.miPaste = self.Append(-1, 'Paste\tCtrl+Shift+P')
+        self.miPaste = self.Append(-1, 'Paste\tCtrl+Shift+V')
         self.AppendSeparator()
         self.miSave = self.Append(-1, 'Save\tCtrl+Shift+S')
         self.miLoad = self.Append(-1, 'Load\tCtrl+Shift+L')
@@ -1394,8 +1394,8 @@ class LockPlotScale(wx.Menu):
 
         #region --------------------------------------------------> Menu Items
         self.miNo      = self.Append(-1, 'No',         kind=wx.ITEM_RADIO)
-        self.miDate    = self.Append(-1, 'To Date',    kind=wx.ITEM_RADIO)
-        self.miProject = self.Append(-1, 'To Project', kind=wx.ITEM_RADIO)
+        self.miDate    = self.Append(-1, 'Date',       kind=wx.ITEM_RADIO)
+        self.miProject = self.Append(-1, 'Project',    kind=wx.ITEM_RADIO)
         
         self.miDate.Check()
         #endregion -----------------------------------------------> Menu Items
