@@ -1994,6 +1994,11 @@ class MainWindow(BaseWindow):
             pass
         #endregion ------------------------------------------------> Start Tab
         
+        #region ---------------------------------------------------> Raise
+        self.Raise()
+        #endregion ------------------------------------------------> Raise
+
+        
         return True
     #---
 
