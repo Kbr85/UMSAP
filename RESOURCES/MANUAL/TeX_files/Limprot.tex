@@ -1,7 +1,7 @@
 \chapter{Limited Proteolysis}
 \label{chap:limprot}
 
-The Limited Proteolysis module is designed to post-process the results from an enzymatic
+The module Limited Proteolysis is designed to post-process the results from an enzymatic
 digestion performed in two steps. The first step is assumed to be a limited proteolysis
 in which a large protein is split in smaller fragments. The fragments are then separated
 using a SDS-PAGE electrophoresis. Finally, selected bands from the gel are submitted to
@@ -10,8 +10,8 @@ a full enzymatic digestion and the generated peptides are analyzed using mass sp
 The main objective of the module is to identify the protein fragments generated in
 the initial limited proteolysis from the peptides found in the MS analyzed gel spots.
 This is achieved by performing an equivalence test\cite{Limentani2005a} between the
-peptides in the selected gel spots and a control spot containing the full length
-target protein. In this way, peptides leaked from one gel spot to another can be
+peptides in the selected gel spots and a positive control spot containing the full length
+Target protein. In this way, peptides leaked from one gel spot to another can be
 eliminated. Several replicates of the experiment are expected.
 
 \section{Definitions}
@@ -27,10 +27,10 @@ paragraphs.
     spectrometry experiments. It may be identical to the native sequence of the Target
     protein under study or not.
     \item \textit{Native protein}: full amino acid sequence expressed in wild type cells.
-    \item \textit{Detected peptide}: any peptide detected in any of the mass spectrometry
+    \item \textit{Detected peptide}: any peptide detected in any of the MS
     experiments including the control experiments.
     \item \textit{Relevant peptide}: a detected peptide with a Score value above
-    a user defined threshold, see page \pageref{par:limprotScoreValue}.
+    a user-defined threshold, see page \pageref{par:limprotScoreValue}.
     \item \textit{Filtered peptide}: a relevant peptide with equivalent intensities
     in the control and a given gel spot at the chosen significance level.\label{par:limprotFP}
     \item \textit{Fragment}: group of filtered peptides with no gaps when their
@@ -64,7 +64,7 @@ the Native protein. All other sequences are discarded.
 
 \section{The interface}
 
-The tab of the Limited Proteolysis module is divided in two regions (\autoref{fig:limprotTab}).
+The tab of module Limited Proteolysis is divided in two regions (\autoref{fig:limprotTab}).
 
 \begin{figure}[h]
     \centering
@@ -77,81 +77,83 @@ The tab of the Limited Proteolysis module is divided in two regions (\autoref{fi
     \vspace{-5pt}
 \end{figure}
 
-The Data File Content region holds only a table to show the name of the columns in
-the selected Data File. The table will be automatically filled after selecting the
+Region Data File Content holds a table to show the name of the columns in
+the selected Data file. The table will be automatically filled after selecting the
 file. Selected rows in the table can be copied (Cmd+C) and pasted (Cmd+V) to the
 text fields in region Configuration Options.
 
-The Configuration Options region contains all the fields needed to configure and
+Region Configuration Options contains all the fields needed to configure and
 run the analysis.
 
 Section Files contains three buttons and a text field. Here users select the input
 and output files for the analysis.
 
-\num{1}. The button UMSAP allows users to browse the file system to select the location
+\num{1}. The button UMSAP allows selecting the location
 and name of the umsap file. When selecting an already existing umsap file the operating
 system will ask if it is ok to replace the file, the answer can be yes since UMSAP
-will never overwrite or replace an umsap file, instead the new analysis will be
+will never overwrite or replace an umsap file. Instead, the new analysis will be
 added to the already existing file. Only umsap files can be selected here.
 
-\num{2}. The button Data allows users to browse the file system to select the input
+\num{2}. The button Data allows selecting the input
 data file that will be used for the analysis. The Data file is expected to be a
 plain text file with tab separated columns and the name of the columns in the first
-row of the file. In addition, columns to be analyzed must contain only numbers and
-must be of the same length. Only .txt files can be selected here.
+row of the file. Only .txt files can be selected here.
 
-\num{3}. The button Sequences allows users to browse the file system to select the
+\num{3}. The button Sequences allows selecting the
 FASTA file containing the sequence of the Recombinant protein and the Native protein.
 The FASTA file must contain at least one sequence.
 
-\num{4}. The text field Analysis ID allows users to provide an ID for the analysis
+\num{4}. The text field Analysis ID allows providing an ID for the analysis
 to be run. The date and time of the analysis will be automatically added to the
-beginning of the name.
+beginning of the name. For example, the Analysis ID \textit{First experiment} will
+be transformed into \textit{20220504-124534 - First experiment}.
 
 Section Data Preparation contains four dropdown boxes. Here users select how the data
-in the Data file should be prepared before starting the analysis.
+in the Data file should be prepared before starting the analysis (\autoref{chap:dataPrep}).
 
-\num{1}. The dropdown Treat \num{0}s as missing values allows user to define how
-to handle \num{0} values present in the Data file.
+\num{1}. The dropdown Treat \num{0}s as missing values allows defining how
+to handle zero values present in the Data file. Selecting Yes results in UMSAP
+replacing zero values with NA values. Selecting No results in UMSAP considering
+zeros as valid values.
 
-\num{2}. The dropdown Transformation allows user to select the Transformation method
+\num{2}. The dropdown Transformation allows selecting the Transformation method
 to be applied to the data.
 
-\num{3}. The dropdown Normalization allows users to select the Normalization method
+\num{3}. The dropdown Normalization allows selecting the Normalization method
 to be applied to the data.
 
-\num{4}. The dropdown Imputation allows user to select the Imputation method used
+\num{4}. The dropdown Imputation allows selecting the Imputation method used
 to replace missing values in the data.
 
 Section User-defined values contains seven text fields and one dropdown box. Here
 users configure the Limited Proteolysis analysis to be run.
 
 \phantomsection
-\num{1}. The text field Target Protein\label{par:limprotTargetProtein} allows users
-to specify the protein of interest. Users may type here any unique protein identifier
+\num{1}. The text field Target Protein\label{par:limprotTargetProtein} allows
+specifying the protein of interest. Users may type here any unique protein identifier
 present in the Data file. The search for the Target Protein is case-sensitive, meaning
 that eFeB is not the same as efeb.
 
 \phantomsection
-\num{2}. The text field Score Value\label{par:limprotScoreValue} allows users to
-define a threshold value above which the detected peptides will be considered as
+\num{2}. The text field Score Value\label{par:limprotScoreValue} allows
+defining a threshold value above which the detected peptides will be considered as
 relevant. The Score Value is an indicator of how reliable was the detection of the peptide
 during the MS experiments. The value given to UMSAP depends on the program generating
 the Data file. Only one real number equal or greater than zero will be accepted here.
 A value of zero means all detected peptides belonging to the Target Protein will
 be treated as relevant peptides.
 
-\num{3}. The dropdown Samples allows users to specify whether samples are independent
+\num{3}. The dropdown Samples allows specifying whether samples are independent
 or paired. For example, samples are paired when the same Petri dish is used for the
 control and experiments.
 
-\numrange[range-phrase = --]{4}{8}. The parameters $\alpha$, $\beta$, $\gamma$,
-$\Theta$ and $\Theta$max are used to configure the equivalence test\cite{Limentani2005a}
+\numrange[range-phrase = --]{4}{8}. The text fields $\alpha$, $\beta$, $\gamma$,
+$\Theta$ and $\Theta$max are used to configure the equivalence test \cite{Limentani2005a}
 performed to identify peptides in the selected gel spots with equivalent intensity
 values to the control spots (\autoref{sec:limprotEquivalenceTest}). $\alpha$, $\beta$ and 
 $\gamma$ must be between \num{0} and \num{1}. The value of $\Theta$ is optional. If
-left blank UMSAP will calculate a value for each peptide based on the intensity values
-found in the Data file. If given then the given value will be used for each peptide.
+left blank, then UMSAP will calculate a value for each peptide based on the intensity values
+found in the Data file. If given, then the given value will be used for each peptide.
 $\Theta$max is the maximum value to consider the intensity values in the gel spot
 and control as equivalent.
 
@@ -161,33 +163,33 @@ the Limited Proteolysis analysis. All columns specified in this section must be 
 in the Data file. Column numbers start at \num{0}. The column numbers are shown in
 the table of Region Data File Content after the Data file is selected.
 
-\num{1}. The text field Sequences allows users to specify the column in the Data
+\num{1}. The text field Sequences allows defining the column in the Data
 file containing the sequences of the peptides identified in the MS experiments.
 Only one integer number equal or greater than zero will be accepted here.
 
-\num{2}. The text field Detected Proteins allows users to specify the column in
+\num{2}. The text field Detected Proteins allows defining the column in
 the Data file containing the unique protein identifier for the proteins detected
 in the MS experiments. It is in this column where the program will look for the
 Target Protein value given in Section User-defined values. It is important that
-in this column the Target Protein value is used to refer to only one protein. Only
+in this column the Target Protein value is used to identify only one protein. Only
 one integer number equal or greater than zero will be accepted here.
 
-\num{3}. The text field Score allows users to specify the column in the Data file
+\num{3}. The text field Score allows defining the column in the Data file
 containing the Score values. It is in this column where the program will look for
 the values to be compared against the Score threshold given in Section User-defined
 values.
 
 \phantomsection
 \num{4}. \label{par:limprotResultControl}The text field Results - Control experiments
-allows users to specify the columns in the Data file containing the results of the
-control and experiments. The button Type Values call a helper window
+allows defining the columns in the Data file containing the results of the
+control and experiments. The button Type Values calls a helper window
 (\autoref{fig:limprotResControlWindow}) where users can type the information needed. 
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-LIMPROT/limprot-rescontrol.jpg}
     \caption[The Result - Control experiments helper window]{\textbf{The Result -
-    Control experiments helper window.} This window allows users to specify the column
+    Control experiments helper window.} This window allows typing the column
     numbers in the Data file containing the MS results for the selected gel spots.} 
     \label{fig:limprotResControlWindow}
     \vspace{-5pt} 	
@@ -215,10 +217,10 @@ specified in the text field Result - Control experiments (\autoref{chap:dataPrep
 Then, the following actions are performed.
 
 All rows in the prepared data containing peptides that do not belong to the Target
-protein are removed. Then, all rows containing peptides from the Target protein
+Protein are removed. Then, all rows containing peptides from the Target Protein
 but with Score values lower than the user-defined Score threshold are removed. These
 steps leave only relevant peptides, this means, peptides with a Score value higher
-than the user-defined threshold that belong to the Target protein. For each one of
+than the user-defined threshold that belong to the Target Protein. For each one of
 these relevant peptides the equivalence test is performed \cite{Limentani2005a}.
 
 The implementation of the equivalence test is based on the following equations:
@@ -265,9 +267,9 @@ the equivalence test is easily past by all relevant peptides.
 
 After the filtered peptide (FP) are identified the modules creates the output files.
 
-\section{The result window}
+\section{The results window}
 
-The window showing the results from a Limited Proteolysis workflow is divided in
+The window showing the results from a Limited Proteolysis analysis is divided in
 four regions (\autoref{fig:limprotResWindow}).
 
 \begin{figure}[h]
@@ -275,7 +277,7 @@ four regions (\autoref{fig:limprotResWindow}).
     \includegraphics[width=0.8\textwidth]{./IMAGES/MOD-LIMPROT/limprot-res.jpg}
     \caption[The Limited Proteolysis result window]{\textbf{The Limited Proteolysis
     result window.} Users can perform here the analysis of the fragments obtained
-    in the limited proteolysis experiments.}
+    in the Limited Proteolysis experiments.}
     \label{fig:limprotResWindow}
     \vspace{-5pt}
 \end{figure}
@@ -289,25 +291,25 @@ in the list of FP.
 
 Region Gel Representation contains a representation of the analyzed gel. Here, each
 gel spot is represented with a square. White squares represent gel spot for which
-no peptide from the Target protein was detected with intensity values equivalent
+no peptide from the Target Protein was detected with intensity values equivalent
 to the controls or that were not analyzed because no column number information was
 given when configuring the analysis. The rest of the square will be colored according
 to the band/lane they belong to.
 
-There are two selection modes available for Region Gel Representation. In the Lane
+There are two selection modes available for region Gel Representation. In the Lane
 selection mode a left click over an empty space in the gel representation will select
 the closer lane. In this mode the gel spot will be colored according to the band
 they belong to. The selected lane will be highlighted with a red rectangle. The band
 selection mode works similarly, but users can select bands and the gel spot are colored
 according to the lane they belong to. The selection mode can be toggled through
-the keyboard shortcut Cmd+L or the Tools menu. In addition, the entire gel can be
+the menu Tools (Cmd+L). In addition, the entire gel can be
 selected (Cmd+A) or a single gel spot can be selected with a left click. Any selection
 on the gel will update the content of Regions Protein Fragments, Selection Details
 and Recombinant Sequence.
 
 Region Protein Fragments will display a graphical representation of the fragments
 found in each gel spot for the selected band/lane. The first fragment in this region
-represents the full length of the recombinant sequence of the Target protein. Here
+represents the full length of the recombinant sequence of the Target Protein. Here
 the central red section represents the sequence in the recombinant protein that is
 identical to the native protein sequence while gray sections represent the sequences
 in the recombinant protein that are different to the native protein sequence. If
@@ -326,11 +328,17 @@ will display the following information: number of cleavage sites, first and last
 residue number for the selected fragment and a sequence alignment of all peptides
 forming the fragment.
 
+Region Recombinant Sequence shows the residues in the recombinant protein with gray
+letters. Selecting a peptide in region Peptide List or a fragment in region Protein
+Fragments or a gel spot in region Gel Representation will highlight the sequence of the
+peptides in the selection using blue letters. Selecting a band/lane or the whole gel
+will highlight the sequence of the peptides in the selection using red letters.
+
 \section{The Tools menu}
 \label{sec:limprotToolsMenu}
 
-The Tools menu in the window showing the results from a Limited Proteolysis analysis
-allows user to view any of the analyzes contained in the selected umsap file. Users
+The menu Tools in the window showing the results from a Limited Proteolysis analysis
+allows viewing any of the analyses contained in the selected umsap file. Users
 can toggle the band/lane selection mode (Cmd+L) and select all gel spot in the analysis
 (Cmd+A). In addition, the zoom level in the plots can be reset (Shift+Alt+Z) and
 an image of the plots can be created (Shift+Alt+I).
@@ -339,7 +347,7 @@ The submenu Clear Selection allows removing any selection done by the user. In
 particular, the entry All (Cmd+K) will remove all selections basically resetting
 the state of the window.
 
-The Tools menu also allows duplicating the window (Cmd+D) for easier comparison of
+The menu Tools also allows duplicating the window (Cmd+D) for easier comparison of
 two or more analysis, checking the Data Preparation steps of the analysis (Cmd+P),
 exporting the results of the analysis to a tab separated CSV file (Cmd+E) and to
 export the sequence alignments (Cmd+S) between the peptides found in the analysis
