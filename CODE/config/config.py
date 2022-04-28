@@ -45,10 +45,6 @@ if os == 'Darwin':
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
     #------------------------------> Statusbar split size
-    if development:
-        sbFieldSize = [-1, 350]
-    else:
-        sbFieldSize = [-1, 300]
     sbPlot2Fields = [-1, 115]
     sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
@@ -68,10 +64,6 @@ elif os == 'Windows':
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
     #------------------------------> Statusbar split size
-    if development:
-        sbFieldSize = [-1, 325]
-    else:
-        sbFieldSize = [-1, 300]
     sbPlot2Fields = [-1, 115]
     sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
@@ -87,10 +79,6 @@ else:
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 3
     #------------------------------> Statusbar split size
-    if development:
-        sbFieldSize = [-1, 350]
-    else:
-        sbFieldSize = [-1, 300]
     sbPlot2Fields = [-1, 115]
     sbPlot3Fields = [90, -1, 115] 
     #------------------------------> Key for shortcuts
@@ -274,6 +262,7 @@ lStColAnalysis = 'Columns for Analysis'
 lStScoreVal    = 'Score Value'
 lStScoreCol    = 'Score'
 lStResultCtrl  = 'Results - Control experiments'
+lStResultCtrlS = 'Results - Control'
 lStExcludeRow  = 'Exclude Rows'
 lStExcludeProt = 'Exclude Proteins'
 lStGeneName    = 'Gene Names'
@@ -505,8 +494,6 @@ sWinRegular = (990, 775)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
 sWinModPlot = (1100, 625)
-#------------------------------> wx.StatusBar Fields
-sSbarFieldSizeI = sbFieldSize
 #------------------------------> wx.TextCtrl
 sTc = (50, 22)
 #------------------------------> wx.ListCtrl

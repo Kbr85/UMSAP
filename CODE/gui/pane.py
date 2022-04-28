@@ -167,7 +167,7 @@ class BaseConfPanel(
         self.cLuFile       = getattr(self, 'cLuFile',       'UMSAP')
         self.cLiFile       = getattr(self, 'cLiFile',       'Data')
         self.cLRunBtn      = getattr(self, 'cLRunBtn',      'Start Analysis')        
-        self.cLFileBox     = getattr(self, 'cLFileBox',     'Files && Folders')
+        self.cLFileBox     = getattr(self, 'cLFileBox',     'Files')
         self.cLDataBox     = getattr(self, 'cLDataBox',     'Data Preparation')
         self.cLColumnBox   = getattr(self, 'cLColumnBox',   'Column numbers')
         self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD',  '0s Missing')
@@ -2789,7 +2789,7 @@ class CorrA(BaseConfPanel):
     cGaugePD     = 26
     cTTHelp      = config.ttBtnHelp.format(cURL)
     rLLenLongest = len(cLCorrMethod)
-    rMainData    = '{}_CorrelationCoefficients-Data-{}.txt'
+    rMainData    = '{}_{}-CorrelationCoefficients-Data.txt'
     #endregion --------------------------------------------------> Class Setup
     
     #region --------------------------------------------------> Instance setup
@@ -3746,8 +3746,8 @@ class ProtProf(BaseConfModPanel):
     cSection     = config.nmProtProf
     cTitlePD     = f"Running {config.nmProtProf} Analysis"
     cGaugePD     = 39
-    rLLenLongest = len(config.lStResultCtrl)
-    rMainData    = '{}_ProteomeProfiling-Data-{}.txt'
+    rLLenLongest = len(config.lStResultCtrlS)
+    rMainData    = '{}_{}-ProteomeProfiling-Data.txt'
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
     #------------------------------> Label
@@ -4136,7 +4136,7 @@ class ProtProf(BaseConfModPanel):
             self.wGeneName.tc.SetValue(dataI['I'][self.cLGene])
             self.wScore.tc.SetValue(dataI['I'][self.cLScoreCol])
             self.wExcludeProt.tc.SetValue(dataI['I'][self.cLExcludeProt])
-            self.wTcResults.SetValue(dataI['I'][self.cLResControl])
+            self.wTcResults.SetValue(dataI['I'][config.lStResultCtrlS])
             self.rLbDict[1] = dataI['I'][self.cLCond]
             self.rLbDict[2] = dataI['I'][self.cLRP]
             self.rLbDict['ControlType'] = dataI['I'][f'Control {self.cLCtrlType}']
@@ -4393,7 +4393,7 @@ class ProtProf(BaseConfModPanel):
                 self.rLbDict['ControlType']),
             self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
                 self.rLbDict['Control']),
-            self.EqualLenLabel(self.cLResControl): (
+            self.EqualLenLabel(config.lStResultCtrlS): (
                 self.wTcResults.GetValue()),
         }
         #------------------------------> Dict with all values
@@ -4982,8 +4982,8 @@ class LimProt(BaseConfModPanel2):
     cSection     = config.nmLimProt
     cTitlePD     = f"Running {config.nmLimProt} Analysis"
     cGaugePD     = 43
-    rLLenLongest = len(config.lStResultCtrl)
-    rMainData    = '{}_LimitedProteolysis-Data-{}.txt'
+    rLLenLongest = len(config.lStResultCtrlS)
+    rMainData    = '{}_{}-LimitedProteolysis-Data.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile']
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
@@ -5290,7 +5290,7 @@ class LimProt(BaseConfModPanel2):
             self.wSeqCol.tc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
             self.wDetectedProt.tc.SetValue(dataI['I'][self.cLDetectedProt])
             self.wScore.tc.SetValue(dataI['I'][self.cLScoreCol])
-            self.wTcResults.SetValue(dataI['I'][self.cLResControl])
+            self.wTcResults.SetValue(dataI['I'][config.lStResultCtrlS])
             self.rLbDict[1] = dataI['I'][self.cLLane]
             self.rLbDict[2] = dataI['I'][self.cLBand]
             self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
@@ -5388,7 +5388,7 @@ class LimProt(BaseConfModPanel2):
                 self.wDetectedProt.tc.GetValue()),
             self.EqualLenLabel(self.cLScoreCol) : (
                 self.wScore.tc.GetValue()),
-            self.EqualLenLabel(self.cLResControl): (
+            self.EqualLenLabel(config.lStResultCtrlS): (
                 self.wTcResults.GetValue()),
             self.EqualLenLabel(self.cLLane) : (
                 self.rLbDict[1]),
@@ -5841,8 +5841,8 @@ class TarProt(BaseConfModPanel2):
     cSection     = config.nmTarProt
     cTitlePD     = f"Running {config.nmTarProt} Analysis"
     cGaugePD     = 60
-    rLLenLongest = len(config.lStResultCtrl)
-    rMainData    = '{}_TargetedProteolysis-Data-{}.txt'
+    rLLenLongest = len(config.lStResultCtrlS)
+    rMainData    = '{}_{}-TargetedProteolysis-Data.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile']
     #------------------------------> Optional configuration
     cTTHelp = config.ttBtnHelp.format(cURL)
@@ -6096,7 +6096,7 @@ class TarProt(BaseConfModPanel2):
             self.wSeqCol.tc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
             self.wDetectedProt.tc.SetValue(dataI['I'][self.cLDetectedProt])
             self.wScore.tc.SetValue(dataI['I'][self.cLScoreCol])
-            self.wTcResults.SetValue(dataI['I'][self.cLResControl])
+            self.wTcResults.SetValue(dataI['I'][config.lStResultCtrlS])
             self.rLbDict[1] = dataI['I'][self.cLExp]
             self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
             #------------------------------> 
@@ -6152,7 +6152,7 @@ class TarProt(BaseConfModPanel2):
                 self.wDetectedProt.tc.GetValue()),
             self.EqualLenLabel(self.cLScoreCol) : (
                 self.wScore.tc.GetValue()),
-            self.EqualLenLabel(self.cLResControl): (
+            self.EqualLenLabel(config.lStResultCtrlS): (
                 self.wTcResults.GetValue()),
             self.EqualLenLabel(self.cLExp) : (
                 self.rLbDict[1]),

@@ -1862,8 +1862,7 @@ class MainWindow(BaseWindow):
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> StatusBar fields
-        self.wStatBar.SetFieldsCount(2, config.sSbarFieldSizeI)
-        self.wStatBar.SetStatusText(f"{config.softwareF} {config.version}", 1)
+        self.wStatBar.SetStatusText(f"{config.softwareF} {config.version}", 0)
         #------------------------------> Notebook
         self.wNotebook = aui.auibook.AuiNotebook(
             self,
