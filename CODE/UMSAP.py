@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -109,9 +109,8 @@ class SplashWindow(wx.adv.SplashScreen):
                 Information regarding the event
         """
         #region	-----------------------------------------------------> Imports
-        import dat4s_core.data.file as dtsFF
-        
         import config.config as config
+        import dtscore.file as dtsFF
         import gui.dtscore as dtscore
         import gui.menu as menu
         import gui.window as window
@@ -171,7 +170,7 @@ class SplashWindow(wx.adv.SplashScreen):
         #endregion ----------------------------------------------------> Fonts
         
         #region ------------------------------------------> User Configuration
-        # After fonts were created and asign to config, load user values
+        # After fonts were created and assign to config, load user values
         try:
             data = dtsFF.ReadJSON(config.fConfig)
         except FileNotFoundError:

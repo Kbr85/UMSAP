@@ -18,10 +18,10 @@
 from pathlib import Path
 from typing import Optional, Union
 
-import dat4s_core.data.file as dtsFF
 import dat4s_core.exception.exception as dtsException
 
 import config.config as config
+import dtscore.file as dtsFF
 import gui.dtscore as dtscore
 #endregion ----------------------------------------------------------> Imports
 

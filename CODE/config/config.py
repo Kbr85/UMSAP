@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -397,18 +397,26 @@ dfcolSeqNC = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 ltDPKeys = ['dfF', 'dfT', 'dfN', 'dfIm']
 
 lAA1 = [ # AA one letter codes
-	'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
-	'H', 'S', 'T', 'N', 'G', 'P'
+    'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
+    'H', 'S', 'T', 'N', 'G', 'P'
 ]
 
 lAAGroups = [ # AA groups
-	['A', 'I', 'L', 'V', 'M'], 
-	['F', 'W', 'Y'], 
-	['R', 'K'], 
-	['D', 'E'],
-	['C', 'Q', 'H', 'S', 'T', 'N'], 
-	['G', 'P']
+    ['A', 'I', 'L', 'V', 'M'], 
+    ['F', 'W', 'Y'], 
+    ['R', 'K'], 
+    ['D', 'E'],
+    ['C', 'Q', 'H', 'S', 'T', 'N'], 
+    ['G', 'P']
 ]
+
+oAA3toAA = { # Three to one AA code translation
+    'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D', 
+    'CYS': 'C', 'GLU': 'E', 'GLN': 'Q', 'GLY': 'G',
+    'HIS': 'H', 'ILE': 'I', 'LEU': 'L', 'LYS': 'K', 
+    'MET': 'M', 'PHE': 'F', 'PRO': 'P', 'SER': 'S', 
+    'THR': 'T', 'TRP': 'W', 'TYR': 'Y', 'VAL': 'V',
+}
 #endregion --------------------------------------------------> Important Lists
 
 
@@ -435,8 +443,10 @@ mNZPlusNumText = (
 
 #region ---------------------------------------------------------------> Files
 mFileSelector = 'It was not possible to show the file selecting dialog.'
-mFileRead = 'An error occured when reading file:\n{}'
+mFileRead = 'An error occurred when reading file:\n{}'
 mFileSelUMSAP = 'Select the UMSAP File'
+mReadErrorIO  = "The selected file could not be read.\nSelected file: {}"
+mWriteErrorIO = "The selected file could not be written.\nSelected file: {}"
 #endregion ------------------------------------------------------------> Files
 
 #region ------------------------------------------------------------> Pandas
@@ -484,6 +494,10 @@ mRepNumProtProf = ('To perform a Proteome Profiling analysis using Raw '
     'corresponding control.\n{}'
 )
 mCtrlEmpty = 'None of the Control fields can be empty.'
+#------------------------------> 
+mCompNYI = "Comparison method is not yet implemented: {}."
+mPDFilterByCol  = "Filtering process failed."
+mWriteFilesIO = "The selected files could not be written to: {}"
 #endregion -------------------------------------------------> For CheckInput
 #endregion ---------------------------------------------------------> Messages
 
@@ -558,12 +572,12 @@ color = { # Colors for the app
     },
     nwAAPlot : {
         'BarColor': { 
-			'R': '#0099ff', 'K': '#0099ff', 'D': '#ff4d4d', 'W': '#FF51FD', 
-			'E': '#ff4d4d', 'S': '#70db70', 'T': '#70db70', 'H': '#70db70', 
-			'N': '#70db70', 'Q': '#70db70', 'C': '#FFFC00', 'G': '#FFFC00', 
-			'P': '#FFFC00', 'A': '#BEBEBE', 'V': '#BEBEBE', 'I': '#BEBEBE', 
-			'L': '#BEBEBE', 'M': '#BEBEBE', 'F': '#FF51FD', 'Y': '#FF51FD', 
-		},
+            'R': '#0099ff', 'K': '#0099ff', 'D': '#ff4d4d', 'W': '#FF51FD', 
+            'E': '#ff4d4d', 'S': '#70db70', 'T': '#70db70', 'H': '#70db70', 
+            'N': '#70db70', 'Q': '#70db70', 'C': '#FFFC00', 'G': '#FFFC00', 
+            'P': '#FFFC00', 'A': '#BEBEBE', 'V': '#BEBEBE', 'I': '#BEBEBE', 
+            'L': '#BEBEBE', 'M': '#BEBEBE', 'F': '#FF51FD', 'Y': '#FF51FD', 
+        },
         'Chi' : {
             1 : 'Green',
             0 : 'Red',

@@ -46,7 +46,6 @@ import wx.lib.agw.customtreectrl as wxCT
 import wx.lib.agw.hyperlink as hl
 
 import dat4s_core.data.check as dtsCheck
-import dat4s_core.data.file as dtsFF
 import dat4s_core.data.method as dtsMethod
 import dat4s_core.data.statistic as dtsStatistic
 import dat4s_core.gui.wx.validator as dtsValidator
@@ -57,6 +56,7 @@ import dat4s_core.exception.exception as dtsException
 import config.config as config
 import data.file as file
 import data.method as dmethod
+import dtscore.file as dtsFF
 import gui.dtscore as dtscore
 import gui.menu as menu
 import gui.method as method
