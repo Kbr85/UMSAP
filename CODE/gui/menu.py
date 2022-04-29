@@ -23,7 +23,7 @@ import wx
 import dat4s_core.gui.wx.method as dtsGwxMethod
 
 import config.config as config
-import gui.dtscore as dtscore
+import dtscore.window as dtsWindow
 import gui.method as method
 import gui.window as window
 #endregion ----------------------------------------------------------> Imports
@@ -546,7 +546,7 @@ class Utility(wx.Menu, MenuMethods):
             else:
                 fileP = Path(fileP[0])
         except Exception as e:      
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'errorF', 
                 msg        = config.mFileSelector,
                 tException = e,

@@ -24,13 +24,12 @@ from numpy import nan
 
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.platypus.flowables import KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
-import dat4s_core.data.method as dtsMethod
 import dat4s_core.data.statistic as dtsStatistic
 
 import config.config as config
+import dtscore.data_method as dtsMethod
 #endregion ----------------------------------------------------------> Imports
 
 

@@ -320,6 +320,11 @@ ttLCtrlPasteMod = (
 
 
 #region -------------------------------------------------------------> Options
+oNumType = { 
+    'int'  : int,
+    'float': float,
+}
+
 oYesNo = {
     ''   : '',
     'Yes': True,
@@ -375,6 +380,18 @@ oControlTypeProtProf = {
     'OCR'  : 'One Control per Row',
     'Ratio': oIntensities['RatioI'],
 }
+
+oFillLoc = ('end', 'start')
+
+oNotification = {
+    'errorF' : 'Fatal Error',
+    'errorU' : 'Unexpected Error',
+    'warning': 'Warning',
+    'success': 'Success',
+    'question':'Please answer the following question:',
+}
+
+oMsgType = ('errorF', 'errorU', 'warning', 'success')
 #endregion ----------------------------------------------------------> Options
 
 
@@ -494,12 +511,39 @@ mRepNumProtProf = ('To perform a Proteome Profiling analysis using Raw '
     'corresponding control.\n{}'
 )
 mCtrlEmpty = 'None of the Control fields can be empty.'
+#endregion -------------------------------------------------> For CheckInput
+
+#region ---------------------------------------------------> dtscore
 #------------------------------> 
 mCompNYI = "Comparison method is not yet implemented: {}."
 mPDFilterByCol  = "Filtering process failed."
 mWriteFilesIO = "The selected files could not be written to: {}"
-#endregion -------------------------------------------------> For CheckInput
+mRangeNumIE = "Invalid range or number: {}"
+mNotIterable = "{} must be iterable but the given value ({}) is not."
+mpdReplaceVal = ("It was not possible to replace {} values with {}.")
+mPDExcludeCol  = "Exclusion process failed."
+mNotImplementedFull = ('Option {} is not yet implemented. Valid options for {} '
+    'are: {}.')
+mMsgTypeIE = (
+    f"Options for message mode are: {*oMsgType,}. "
+    "Option {} is unknown.")
+mwxLCtrNoCopy     = "The elements of this list cannot be copied."
+mCopyFailedW     = f"Copy operation failed. Try again."
+mwxLCtrNoChange   = "This list cannot be modified."
+mPasteFailedW    = f"Paste operation failed. Try again."
+mNothingToPasteW = f"Nothing to paste."
+mwxLCtrlNColPaste = (
+    "The clipboard content cannot be pasted because the number of "
+    "columns being pasted is different to the number of columns "
+    "in the list."
+)
+#endregion ------------------------------------------------> dtscore
 #endregion ---------------------------------------------------------> Messages
+
+
+#region ---------------------------------------------------------> Date & Time
+dtFormat = '%Y%m%d-%H%M%S'
+#endregion ------------------------------------------------------> Date & Time
 
 
 #region ---------------------------------------------------------------> Sizes

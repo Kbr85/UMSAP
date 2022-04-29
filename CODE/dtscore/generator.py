@@ -36,7 +36,6 @@ def FastaSequence(fileP: Path) -> tuple[str, str]:
         tuple
             (Fasta header, sequence) or ('', '') if file is empty
     """
-    # Test in tests.unit.generator.test_generator.
     #region -------------------------------------------------------> Variables
     first  = True # To skip yield in the first header of the fasta file
     header = ''

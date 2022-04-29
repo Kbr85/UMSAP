@@ -21,7 +21,7 @@ from typing import Optional, Union
 import config.config as config
 import dtscore.exception as dtsException
 import dtscore.file as dtsFF
-import gui.dtscore as dtscore
+import dtscore.window as dtsWindow
 #endregion ----------------------------------------------------------> Imports
 
 #region -------------------------------------------------------------> Classes
@@ -122,7 +122,7 @@ class UMSAPFile():
             dtsFF.WriteJSON(oPath, self.rData)
         except Exception as e:
             msg = f'It was not possible to update the content of file: {oPath}'
-            dtscore.Notification('errorF', msg=msg, tException=e)
+            dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
             return False
         #endregion ------------------------------------------------> Write
 

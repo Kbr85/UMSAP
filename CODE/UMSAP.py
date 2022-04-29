@@ -111,7 +111,6 @@ class SplashWindow(wx.adv.SplashScreen):
         #region	-----------------------------------------------------> Imports
         import config.config as config
         import dtscore.file as dtsFF
-        import gui.dtscore as dtscore
         import gui.menu as menu
         import gui.window as window
         #endregion---------------------------------------------------> Imports
