@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -28,7 +28,6 @@ from statsmodels.stats.multitest import multipletests
 import wx
 import wx.lib.scrolledpanel as scrolled
 
-import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 
 import config.config as config
@@ -39,6 +38,7 @@ import dtscore.data_method as dtsMethod
 import dtscore.exception as dtsException
 import dtscore.file as dtsFF
 import dtscore.statistic as dtsStatistic
+import dtscore.validator as dtsValidator
 import dtscore.widget as dtsWidgetTEMP
 import dtscore.window as dtsWindow
 import gui.method as gmethod

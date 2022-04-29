@@ -12,6 +12,8 @@
 
 
 #region -------------------------------------------------------------> Imports
+import os
+from pathlib import Path
 from typing import Union, Optional, Callable, Literal
 
 import wx
@@ -145,6 +147,134 @@ def UniqueNumbers(
     except Exception as e:
         raise e
     #endregion -------------------------------------------------> Check unique
+#---
+
+def NumberList(
+    tStr: str, numType: Literal['int', 'float']='int', unique: bool=True, 
+    sep: str=',', opt: bool=False, vMin: Optional[float]=None, 
+    vMax: Optional[float]=None, nMin: Optional[int]=None, 
+    nN: Optional[int]=None, nMax: Optional[int]=None,
+    ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+    """Check tStr contains a list of numbers
+    
+        See Notes for more details
+
+        Parameters
+        ----------
+        tStr: str
+            String to check
+        numType: str
+            One of 'int' or 'float'. Default is 'int'
+        unique: boolean
+            Elements must be unique (True) or not (False)
+        sep: str
+            List elements are separated by sep. Default ' '
+        opt: boolean
+            To allow for empty fields
+        vMin: float or None
+            Elements in the list must be >= vMin
+        vMax: float or None
+            Elements in the list must be <= vMax
+        nMin: int or None
+            List must contain at least nMin elements
+        nN: int or None
+            List must contain exactle nN elements
+        nMax: int or None
+            List must contain maximun nMax elements
+
+        Returns
+        -------
+        tuple
+            - (True, None)
+            - (False, (code, val, msg))
+                code val are:
+                - (NotOptional, None) : String is not optional
+                - (BadElement, str) : Value not valid
+                - (ListLength, length) : The length of the list is not equal to 
+                    nN and it is not withing the range nMin - nMax
+                - (NotUnique, list) : list is the list of repeated elements
+                
+        Notes
+        -----
+        Range in the tStr (4-8) are expanded before checking.
+        
+        Examples
+        --------
+        >>> NumberList('1,2,3, 4-10', numType='int', sep=',')
+        >>> (True, None)
+    """
+    #region -------------------------------------------------------> Variables
+    value    = ' '.join(tStr.split())
+    elements = value.split(sep)
+    numbers  = []
+    #endregion ----------------------------------------------------> Variables
+    
+    #region --------------------------------------------------------> Optional
+    if value == '':
+        if opt:
+            return (True, None)
+        else:
+            msg = "An empty string is not a valid input."
+            return (False, ('NotOptional', str(value), msg))
+    else:
+        pass
+    #endregion -----------------------------------------------------> Optional
+    
+    #region ----------------------------------------> numType, refMin & refMax
+    for n in elements:
+        #------------------------------> Expand range
+        try:
+            rN = dtsMethod.ExpandRange(n, numType)
+        except Exception:
+            msg = config.mInvalidValue.format(n)
+            return (False, ('BadElement', n, msg))
+        #------------------------------> Compare
+        if vMin is None and vMax is None:
+            numbers = numbers + rN
+        else:
+            for tN in rN:
+                #------------------------------> 
+                if AInRange(tN, refMin=vMin, refMax=vMax)[0]:
+                    pass
+                else:
+                    msg = config.mInvalidValue.format(n)
+                    return (False, ('BadElement', n, msg))
+                #------------------------------> 
+                numbers.append(tN)
+    #endregion -------------------------------------> numType, refMin & refMax
+    
+    #region -----------------------------------------------------> List Length
+    #------------------------------> Number of Elements
+    lN = len(numbers)
+    #------------------------------>
+    if nN is not None:
+        #------------------------------> Exact Number of Elements
+        if lN == nN:
+            pass
+        else:
+            msg = (f'The number of elements in tStr ({lN}), after expanding '
+                f'ranges, is not equal to nN ({nN}).')
+            return (False, ('ListLength', str(lN), msg))
+    elif nMin is not None or nMax is not None:
+        #------------------------------> Number of Elements in range
+        if AInRange(lN, refMin=nMin, refMax=nMax)[0]:
+            pass
+        else:
+            msg = (f'The number of elements in tStr ({lN}), after expanding '
+                f'ranges, is not in the [{nMin}, {nMax}] range.')
+            return (False, ('ListLength', str(lN), msg))
+    else:
+        pass
+    #endregion --------------------------------------------------> List Length
+    
+    #region ----------------------------------------------------------> Unique
+    if unique:
+        return ListUnique(numbers)
+    else:
+        pass
+    #endregion -------------------------------------------------------> Unique
+    
+    return (True, None)
 #---
 
 def ListUnique(
@@ -558,6 +688,235 @@ def Comparison(
             return (False, ('BadElement', tStr, msg))
     #endregion --------------------------------------------------------> Range
     
+    return (True, None)
+#---
+
+def Path2FFInput(
+    value: Union[str, Path], fof: Literal['file', 'folder']='folder', 
+    opt: bool=False, ext: Optional[list[str]]=None,
+    ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+    """Check that value is a valid path to a file or folder. 
+
+        Parameters
+        ----------
+        value: str or Path
+            Path to the file or folder
+        fof : str
+            One of 'file', 'folder'. Check widgets hold path to file or folder.
+            Default is 'folder'
+        opt : Boolean
+            Value is optional. Default is False.
+        ext : list of str or None
+            If fof is 'folder' then check if files with 'ext' are present inside
+            the folder. ext must be like ['.corr', '.txt', ...]. Default is None
+
+        Returns
+        -------
+        tuple
+            - (True, None)
+            - (False, (code, value, msg))
+            code is:
+                - NotPath,   Input is not valid path
+                - NotFile,   Input is not valid file
+                - NotDir,    Input is not valid folder
+                - NoRead,    Input cannot be read
+                - FileExt,   Input does not have the required extension
+                - FolderExt, Input does not contain any file with the given ext
+
+        Raise
+        -----
+        InputError
+            - When fof is not one of 'file', 'folder'
+            
+        Notes
+        -----
+        If ext is given then it check that the given file path has the given
+        extension or that the given folder contains files with the given 
+        extension
+        
+        Examples
+        --------
+        >>> Path2FFInput('', 'file', opt=True, ext=None)
+        >>> (False, ('NotPath', '', 'The path "" is not valid.'))
+        >>> Path2FFInput('/Users/DAT4S/test.py', 'file', ext=['.py'])
+        >>> (True, None)
+    """
+    #region --------------------------------------------------------> Optional
+    if value == '':
+        if opt:
+            return (True, None)
+        else:
+            msg = f"The path '{value}' is not valid."
+            return (False, ('NotPath', str(value), msg))
+    else:
+        pass
+    #endregion -----------------------------------------------------> Optional
+    
+    
+    #region ---------------------------------------------------> Is valid Path
+    try:
+        tPath = Path(value)
+    except Exception:
+        msg = f"The path '{value}' is not valid."
+        return (False, ('NotPath', str(value), msg))
+    #endregion ------------------------------------------------> Is valid Path
+    
+    #region -------------------------------------------------------------> Fof
+    if fof == 'file':
+        if tPath.is_file():
+            pass
+        else:
+            msg = f"The path '{tPath}' does not point to a file."
+            return (False, ('NotFile', str(value), msg))
+    elif fof == 'folder':
+        if tPath.is_dir():
+            pass
+        else:
+            msg = f"The path '{tPath}' does not point to a folder."
+            return (False, ('NotDir', str(value), msg))
+    else:
+        msg = config.mNotSupported.format('fof', fof)
+        raise dtsException.InputError(msg)
+    #endregion ----------------------------------------------------------> Fof
+    
+    #region -------------------------------------------------------> Extension
+    if ext is not None:
+        if fof == 'file':
+            if tPath.suffix in ext:
+                pass
+            else:
+                #------------------------------> msg
+                msg = (f'File {tPath.name} does not have an allowed extension '
+                    f'({ext}).')
+                #------------------------------> 
+                return (False, ('FileExt', str(value), msg))
+        else:
+            #------------------------------> 
+            res = [False]
+            #------------------------------> 
+            for e in ext:
+                try:
+                    next(tPath.glob(f"*{e}"))
+                    res.append(True)
+                except Exception:
+                    pass
+            #------------------------------> 
+            if any(res):
+                pass
+            else:
+                #------------------------------> msg
+                msg = (f'Folder {tPath.name} does not contain any file with '
+                        f'an allowed extension ({ext}.')
+                #------------------------------> 
+                return (False, ('FolderExt', str(value), msg))
+    else:
+        pass
+    #endregion ----------------------------------------------------> Extension
+    
+    #region --------------------------------------------------------> Can read
+    if os.access(tPath, os.R_OK):
+        pass
+    else:
+        msg = f"The file ({tPath}) cannot be read."
+        return (False, ('NoRead', str(value), msg))
+    #endregion -----------------------------------------------------> Can read
+
+    return (True, None)
+#---
+
+def Path2FFOutput(
+    value: Union[str, Path], fof: Literal['file', 'folder']='folder', 
+    opt: bool=False, ext: Optional[str]=None,
+    ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+    """Check if value holds a valid path that can be used for output data
+
+        Parameters
+        ----------
+        value: str or Path
+            Path to the file or folder
+        fof : str
+            One of 'file', 'folder'. Check widgets hold path to file or folder.
+            Default is 'folder'
+        opt : Boolean
+            Value is optional. Default is False.
+        ext : str or None
+            If fof is 'folder' then check if files with 'ext' are present inside
+            the folder. ext must be like '.corr'. Default is None
+
+
+        Returns
+        -------
+        tuple
+            - (True, None)
+            - (False, (code, value, msg))
+                code is:
+                - NotPath, Input is not a valid path
+                - FileExt, Incorrect file extension
+                - NoWrite, It is not possible to write		
+
+        Raise
+        -----
+        InputError
+            - When fof is not one of 'file', 'folder'
+            
+        Examples
+        --------
+        >>> Path2FFOutput('', 'file', opt=False)
+        >>> (False, (NoPath, '', The path '' is not valid.))
+    """
+    #region --------------------------------------------------------> Optional
+    if value == '':
+        if opt:
+            return (True, None)
+        else:
+            msg = f"The path '{value}' is not valid."
+            return (False, ('NotPath', str(value), msg))
+    else:
+        pass
+    #endregion -----------------------------------------------------> Optional
+    
+    #region ---------------------------------------------------> Is valid Path
+    try:
+        tPath = Path(value)
+    except Exception:
+        msg = f"The path '{value}' is not valid."
+        return (False, ('NotPath', str(value), msg))
+    #endregion ------------------------------------------------> Is valid Path
+    
+    #region -------------------------------------------------------> Extension
+    if ext is not None:
+        if fof == 'file':
+            if tPath.suffix == ext:
+                pass
+            else:
+                msg = (
+                    f"The file '{tPath}' does not have extension "
+                    f"{ext}."
+                )
+                return (False, ('FileExt', str(value), msg))
+        elif fof == 'folder':
+            pass
+        else:
+            msg = config.mNotSupported.format('fof', fof)
+            raise dtsException.InputError(msg)
+    else:
+        pass
+    #endregion ----------------------------------------------------> Extension
+    
+    #region -------------------------------------------------------> Can write
+    tempFileName = 'kbr-'+dtsMethod.StrNow()+'.kbr'
+    if fof == 'file':	
+        f = tPath.parent / tempFileName 
+    else:
+        f = tPath / tempFileName
+    try:
+        f.touch()
+        f.unlink()
+    except Exception:
+        msg = f"{f} cannot be used for writting."
+        return (False, ('NoWrite', str(value), msg))
+    #endregion ----------------------------------------------------> Can write
+
     return (True, None)
 #---
 #endregion ----------------------------------------------------------> Methods

@@ -557,6 +557,8 @@ mPairSamplesDiffRep = (
     'For paired samples the number of replicates in {} and {} must be equal.')
 m1IntGET = ('{} must be an integer greater/equal than/to {}.')
 mNotImplemented = 'Option {} is not yet implemented.'
+mNotSupported = "{} value ({}) is not supported."
+mEmpty = 'The field value cannot be empty.'
 #endregion ------------------------------------------------> dtscore
 #endregion ---------------------------------------------------------> Messages
 
