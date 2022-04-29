@@ -22,7 +22,7 @@ import wx.lib.agw.aui as aui
 
 import config.config as config
 import dtscore.data_method as dtsMethod
-import dtscore.widget as dtsWidgetTEMP
+import dtscore.widget as dtsWidget
 import gui.pane as pane
 #endregion ----------------------------------------------------------> Imports
 
@@ -144,7 +144,7 @@ class BaseConfListTab(BaseConfTab):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wLCtrl = dtsWidgetTEMP.ListZebraMaxWidth(
+        self.wLCtrl = dtsWidget.ListZebraMaxWidth(
             self, colLabel=self.cLCColLabel, colSize=self.cSColSize)
         #----------------------------> Pointer to lc to load data file content
         self.wConf.wLCtrlI = self.wLCtrl
@@ -235,7 +235,7 @@ class ResControlExp(wx.Panel):
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> ListCtrl and fill it
-        self.wLCtrl = dtsWidgetTEMP.ListZebraMaxWidth(
+        self.wLCtrl = dtsWidget.ListZebraMaxWidth(
             self, 
             colLabel = self.cLLCtrlColName,
             colSize  = self.cSLCTrlCol,

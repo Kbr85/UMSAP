@@ -25,6 +25,86 @@ import dtscore.exception as dtsException
 
 
 #region ----------------------------------------------------------> wx.Dialogs
+#------------------------------> 
+class FileSelectDialog(wx.FileDialog):
+    """Creates a dialog to select a file to read/save content from/into
+
+        Parameters
+        ----------
+        mode : str
+            One of 'openO', 'openM', 'save'. The same values are used in
+            dat4s_core.widget.wx_widget.ButtonTextCtrlFF.mode
+        wildcard : str
+            File extensions, 'txt files (*.txt)|*.txt'
+        parent : wx widget or None
+            Parent of the window. If given modal window will be centered on it.
+        message : str or None
+            Message to show in the window
+        defPath: Path, str or None
+            Default value for opening wx.FileDialog.
+         
+        Attributes
+        ----------
+        title : dict
+            Default titles for the dialog
+        style : dict
+            Style for the dialog
+
+        Raises
+        ------
+        InputError:
+            - When mode is not in modeAll
+    """
+
+    #region -----------------------------------------------------> Class setup
+    title = {
+        'openO': 'Select a file',
+        'openM': 'Select files',
+        'save' : 'Select a file',
+    }
+    
+    style = {
+        'openO': wx.FD_OPEN|wx.FD_CHANGE_DIR|wx.FD_FILE_MUST_EXIST|wx.FD_PREVIEW,
+        'openM': wx.FD_OPEN|wx.FD_CHANGE_DIR|wx.FD_FILE_MUST_EXIST|wx.FD_PREVIEW|wx.FD_MULTIPLE,
+        'save' : wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT,
+    }
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, mode: Literal['openO', 'openM', 'save'], 
+        wildcard: str, parent: Optional['wx.Window']=None, message: str=None, 
+        defPath: Union[Path, str, None]=None,
+        ) -> None:
+        """ """
+        #region -------------------------------------------------> Check input
+        if mode not in config.oSelectF:
+            raise dtsException.InputError(config.mSelectFIE.format(mode))
+        else:
+            pass
+        #endregion ----------------------------------------------> Check input
+        
+        #region -----------------------------------------------------> Message
+        msg = self.title[mode] if message is None else message
+        #endregion --------------------------------------------------> Message
+
+        #region ---------------------------------------------> Create & Center
+        super().__init__(
+            parent, 
+            message    = msg,
+            wildcard   = wildcard,
+            style      = self.style[mode],
+            defaultDir = '' if defPath is None else str(defPath),
+        )
+
+        self.CenterOnParent()
+         #endregion ------------------------------------------> Create & Center
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
+#------------------------------> 
 class MessageDialog(wx.MessageDialog):
     """Show a message to the user.
     

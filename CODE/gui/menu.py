@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -20,9 +20,8 @@ from typing import Optional, Union
 
 import wx
 
-import dat4s_core.gui.wx.method as dtsGwxMethod
-
 import config.config as config
+import dtscore.gui_method as dtsGuiMethod
 import dtscore.window as dtsWindow
 import gui.method as method
 import gui.window as window
@@ -535,7 +534,7 @@ class Utility(wx.Menu, MenuMethods):
         
         #region ---------------------------------------------------> Get fileP
         try:
-            fileP = dtsGwxMethod.GetFilePath(
+            fileP = dtsGuiMethod.GetFilePath(
                 'openO', 
                 ext    = config.elUMSAP,
                 parent = win,

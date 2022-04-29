@@ -392,6 +392,8 @@ oNotification = {
 }
 
 oMsgType = ('errorF', 'errorU', 'warning', 'success')
+
+oSelectF = ('openO', 'openM', 'save')
 #endregion ----------------------------------------------------------> Options
 
 
