@@ -17,8 +17,7 @@
 #region -------------------------------------------------------------> Imports
 from typing import Optional, Union
 
-import dat4s_core.data.check as dtsCheck
-
+import dtscore.check as dtsCheck
 import dtscore.exception as dtsException
 import dtscore.data_method as dtsMethod
 #endregion ----------------------------------------------------------> Imports

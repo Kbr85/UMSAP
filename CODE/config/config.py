@@ -539,6 +539,7 @@ mwxLCtrlNColPaste = (
     "columns being pasted is different to the number of columns "
     "in the list."
 )
+mInvalidValue = "'{}' is an invalid value."
 #endregion ------------------------------------------------> dtscore
 #endregion ---------------------------------------------------------> Messages
 
