@@ -51,11 +51,11 @@ import dat4s_core.data.statistic as dtsStatistic
 import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
-import dat4s_core.exception.exception as dtsException
 
 import config.config as config
 import data.file as file
 import data.method as dmethod
+import dtscore.exception as dtsException
 import dtscore.file as dtsFF
 import gui.dtscore as dtscore
 import gui.menu as menu

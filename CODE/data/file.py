@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -18,9 +18,8 @@
 from pathlib import Path
 from typing import Optional, Union
 
-import dat4s_core.exception.exception as dtsException
-
 import config.config as config
+import dtscore.exception as dtsException
 import dtscore.file as dtsFF
 import gui.dtscore as dtscore
 #endregion ----------------------------------------------------------> Imports

@@ -17,9 +17,8 @@
 #region -------------------------------------------------------------> Imports
 import unittest
 
-import dat4s_core.exception.exception as dtsException
-
 import data.check as dcheck
+import dtscore.exception as dtsException
 #endregion ----------------------------------------------------------> Imports
 
 #region ---------------------------------------------------------> Class Setup

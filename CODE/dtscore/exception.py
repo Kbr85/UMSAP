@@ -90,4 +90,40 @@ class NotYetImplementedError(Exception):
     #----
     #endregion -----------------------------------------------> Instance setup
 #---
+
+
+class InputError(Exception):
+    """Exception raised for errors in the input of a method.
+
+        Parameters
+        ----------
+        message : str
+            Explanation of the error
+    """
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, message: str) -> None:
+        """ """
+        self.message = message
+    #----
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
+class PassException(Exception):
+    """To signal that the exception was already handle it can be skipped.
+
+        Parameters
+        ----------
+        message : str
+            Explanation of the error
+    """
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, message: str='') -> None:
+        """ """
+        self.message = message
+    #----
+    #endregion -----------------------------------------------> Instance setup
+#---
 #endregion ---------------------------------------------------------> Classess
