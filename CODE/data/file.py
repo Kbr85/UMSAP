@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -18,11 +18,10 @@
 from pathlib import Path
 from typing import Optional, Union
 
-import dat4s_core.data.file as dtsFF
-import dat4s_core.exception.exception as dtsException
-
 import config.config as config
-import gui.dtscore as dtscore
+import dtscore.exception as dtsException
+import dtscore.file as dtsFF
+import dtscore.window as dtsWindow
 #endregion ----------------------------------------------------------> Imports
 
 #region -------------------------------------------------------------> Classes
@@ -123,7 +122,7 @@ class UMSAPFile():
             dtsFF.WriteJSON(oPath, self.rData)
         except Exception as e:
             msg = f'It was not possible to update the content of file: {oPath}'
-            dtscore.Notification('errorF', msg=msg, tException=e)
+            dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
             return False
         #endregion ------------------------------------------------> Write
 

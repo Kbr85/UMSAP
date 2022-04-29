@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -28,18 +28,17 @@ from statsmodels.stats.multitest import multipletests
 import wx
 import wx.lib.scrolledpanel as scrolled
 
-import dat4s_core.data.check as dtsCheck
-import dat4s_core.data.file as dtsFF
-import dat4s_core.data.method as dtsMethod
-import dat4s_core.data.statistic as dtsStatistic
-import dat4s_core.exception.exception as dtsException
-import dat4s_core.gui.wx.validator as dtsValidator
-import dat4s_core.gui.wx.widget as dtsWidget
-
 import config.config as config
 import data.check as check
 import data.method as dmethod
-import gui.dtscore as dtscore
+import dtscore.check as dtsCheck
+import dtscore.data_method as dtsMethod
+import dtscore.exception as dtsException
+import dtscore.file as dtsFF
+import dtscore.statistic as dtsStatistic
+import dtscore.validator as dtsValidator
+import dtscore.widget as dtsWidget
+import dtscore.window as dtsWindow
 import gui.method as gmethod
 import gui.widget as widget
 #endregion ----------------------------------------------------------> Imports
@@ -572,7 +571,7 @@ class BaseConfPanel(
         try:
             dtsMethod.LCtrlFillColNames(self.wLCtrlI, fileP)
         except Exception as e:
-            dtscore.Notification('errorF', msg=str(e), tException=e)
+            dtsWindow.NotificationDialog('errorF', msg=str(e), tException=e)
             self.wIFile.tc.SetValue('')
             return False
         #endregion ------------------------------------------------> Fill list
@@ -624,7 +623,7 @@ class BaseConfPanel(
             bool
         """
         #region --------------------------------------------------> Dlg window
-        self.rDlg = dtscore.ProgressDialog(
+        self.rDlg = dtsWindow.ProgressDialog(
             config.winMain, self.cTitlePD, self.cGaugePD)
         #endregion -----------------------------------------------> Dlg window
 
@@ -668,7 +667,7 @@ class BaseConfPanel(
             pass
         else:
             msg = config.mSection.format(self.cLColumnBox)
-            self.rMsgError = dtscore.StrSetMessage(msg, b[2])
+            self.rMsgError = dtsMethod.StrSetMessage(msg, b[2])
             return False
         #endregion ----------------------------------------------------> Check
         
@@ -713,7 +712,7 @@ class BaseConfPanel(
             if a:
                 pass
             else:
-                self.rMsgError = dtscore.StrSetMessage(
+                self.rMsgError = dtsMethod.StrSetMessage(
                     v[1].format(b[1], k), b[2])
                 return False
         #endregion ----------------------------------------------------> Check
@@ -2277,7 +2276,7 @@ class ResControlExpConfBase(wx.Panel):
                 else:
                     msg = config.mResCtrlWin.format(b[1])
                     e = dtsException.ExecutionError(b[2])
-                    dtscore.Notification(
+                    dtsWindow.NotificationDialog(
                         'errorF', msg=msg, parent=self, tException=e)
                     j.SetFocus(),
                     return False
@@ -2288,7 +2287,7 @@ class ResControlExpConfBase(wx.Panel):
         if not a:
             pass
         else:
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'errorF', msg=config.mAllTextFieldEmpty, parent=self)
             return False
         #------------------------------> All unique
@@ -2297,7 +2296,7 @@ class ResControlExpConfBase(wx.Panel):
             pass
         else:
             e = dtsException.InputError(b[2])
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'errorF', msg=config.mRepeatColNum, parent=self, tException=e)
             return False
         #endregion ----------------------------------------------> Check input
@@ -2561,7 +2560,7 @@ class ResControlExpConfBase(wx.Panel):
             n.append(len(self.rTcDict[k]))
             for w in self.rTcDict[k]:
                 if w.GetValue() == '':
-                    dtscore.Notification(
+                    dtsWindow.NotificationDialog(
                         'errorF', msg=self.mLabelEmpty, parent=self)
                     return []
                 else:
@@ -2569,21 +2568,21 @@ class ResControlExpConfBase(wx.Panel):
         if all(n):
             pass
         else:
-            dtscore.Notification('errorF', msg=self.mNoCondRP, parent=self)
+            dtsWindow.NotificationDialog('errorF', msg=self.mNoCondRP, parent=self)
             return []
         #------------------------------> Control Type
         if ctrlT:
             if self.wCbControl.GetValidator().Validate()[0]:
                 pass
             else:
-                dtscore.Notification(
+                dtsWindow.NotificationDialog(
                     'errorF', msg=self.mNoControlT, parent=self)
                 return []
         else:
             pass
         #------------------------------> 
         if self.wControlN.tc.GetValue() == '':
-            dtscore.Notification('errorF', msg=self.mLabelEmpty, parent=self)
+            dtsWindow.NotificationDialog('errorF', msg=self.mLabelEmpty, parent=self)
             return []
         else:
             pass
@@ -2814,12 +2813,12 @@ class CorrA(BaseConfPanel):
         self.wStListO = wx.StaticText(
             self.sbColumn, label=self.cLColAnalysis)
         #------------------------------> dtscore.ListZebra
-        self.wLCtrlI = dtscore.ListZebra(self.sbColumn, 
+        self.wLCtrlI = dtsWidget.ListZebra(self.sbColumn, 
             colLabel        = self.cLNumName,
             colSize         = self.cSNumName,
             copyFullContent = True,
         )
-        self.wLCtrlO = dtscore.ListZebra(self.sbColumn, 
+        self.wLCtrlO = dtsWidget.ListZebra(self.sbColumn, 
             colLabel        = self.cLNumName,
             colSize         = self.cSNumName,
             canPaste        = True,
@@ -5329,7 +5328,7 @@ class LimProt(BaseConfModPanel2):
             if a:
                 pass
             else:
-                self.rMsgError = dtscore.StrSetMessage(
+                self.rMsgError = dtsMethod.StrSetMessage(
                     config.mOneZPlusNum.format(b[1], self.cLThetaMax), b[2])
                 return False
         else:
@@ -7003,7 +7002,7 @@ class ProtProfResControlExp(ResControlExpConfBase):
         if ctrl:
             return True
         else:
-            dtscore.Notification('errorF', msg=config.mCtrlEmpty, parent=self)
+            dtsWindow.NotificationDialog('errorF', msg=config.mCtrlEmpty, parent=self)
             return False
         #endregion ------------------------------------------------> 
     #---
@@ -7355,7 +7354,7 @@ class LimProtResControlExp(ResControlExpConfBase):
                     else:
                         pass
         else:
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'errorF', msg=self.mNoBL, parent=self,
             )
             return False
@@ -7654,7 +7653,7 @@ class TarProtResControlExp(ResControlExpConfBase):
                     else:
                         pass
         else:
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'errorF', msg=self.mNoBL, parent=self,
             )
             return False

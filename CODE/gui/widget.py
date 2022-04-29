@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -17,9 +17,8 @@
 #region -------------------------------------------------------------> Imports
 import wx
 
-import dat4s_core.gui.wx.validator as dtsValidator
-
 import config.config as config
+import dtscore.validator as dtsValidator
 import gui.window as window
 #endregion ----------------------------------------------------------> Imports
 

@@ -45,19 +45,17 @@ import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
 import wx.lib.agw.hyperlink as hl
 
-import dat4s_core.data.check as dtsCheck
-import dat4s_core.data.file as dtsFF
-import dat4s_core.data.method as dtsMethod
-import dat4s_core.data.statistic as dtsStatistic
-import dat4s_core.gui.wx.validator as dtsValidator
-import dat4s_core.gui.wx.widget as dtsWidget
-import dat4s_core.gui.wx.window as dtsWindow
-import dat4s_core.exception.exception as dtsException
-
 import config.config as config
 import data.file as file
 import data.method as dmethod
-import gui.dtscore as dtscore
+import dtscore.check as dtsCheck
+import dtscore.data_method as dtsMethod
+import dtscore.exception as dtsException
+import dtscore.file as dtsFF
+import dtscore.statistic as dtsStatistic
+import dtscore.validator as dtsValidator
+import dtscore.widget as dtsWidget
+import dtscore.window as dtsWindow
 import gui.menu as menu
 import gui.method as method
 import gui.pane as pane
@@ -88,7 +86,7 @@ def UpdateCheck(
         r = requests.get(config.urlUpdate)
     except Exception as e:
         msg = 'Check for Updates failed. Please try again later.'
-        wx.CallAfter(dtscore.Notification, 'errorU', msg=msg, tException=e)
+        wx.CallAfter(dtsWindow.NotificationDialog, 'errorU', msg=msg, tException=e)
         return False
     #endregion ------------------------------> Get web page text from Internet
     
@@ -109,7 +107,7 @@ def UpdateCheck(
         versionI = versionI.strip()
     else:
         msg = 'Check for Updates failed. Please try again later.'
-        wx.CallAfter(dtscore.Notification, 'errorU', msg=msg)
+        wx.CallAfter(dtsWindow.NotificationDialog, 'errorU', msg=msg)
         return False
     #endregion -----------------------------------------> Get Internet version
 
@@ -145,7 +143,7 @@ def BadUserConf(tException):
     
     """
     msg = 'It was not possible to read the user configuration file.'
-    wx.CallAfter(dtscore.Notification,'errorU', msg=msg, tException=tException)
+    wx.CallAfter(dtsWindow.NotificationDialog,'errorU', msg=msg, tException=tException)
     return True
 #---
 #endregion ----------------------------------------------------------> Methods
@@ -287,7 +285,7 @@ class BaseWindow(wx.Frame):
             return True
         except Exception as e:
             msg = 'It was not possible to open the UMSAP manual.'
-            dtscore.Notification('errorF', msg=msg, tException=e)
+            dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
             return False
     #---
     
@@ -373,7 +371,7 @@ class BaseWindow(wx.Frame):
             return True
         except Exception as e:
             #------------------------------> 
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'errorF', msg=str(e), tException=e, parent=self)
             #------------------------------> 
             return False
@@ -490,7 +488,7 @@ class BaseWindow(wx.Frame):
             try:
                 dtsFF.WriteDF2CSV(p, tDF)
             except Exception as e:
-                dtscore.Notification(
+                dtsWindow.NotificationDialog(
                     'errorF',
                     msg        = self.cMsgExportFailed,
                     tException = e,
@@ -527,7 +525,7 @@ class BaseWindow(wx.Frame):
             try:
                 dtsFF.WriteDF2CSV(p, self.rDf)
             except Exception as e:
-                dtscore.Notification(
+                dtsWindow.NotificationDialog(
                     'errorF',
                     msg        = self.cMsgExportFailed,
                     tException = e,
@@ -638,7 +636,7 @@ class BaseWindow(wx.Frame):
         if not self.rDate:
             msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are '
                 f'corrupted or were not found.')
-            dtscore.Notification('errorU', msg=msg)
+            dtsWindow.NotificationDialog('errorU', msg=msg)
             raise dtsException.PassException()
         else:
             pass
@@ -651,7 +649,7 @@ class BaseWindow(wx.Frame):
             else:
                 msg = (f'The data for analysis:\n\n{fileList}\n\n '
                 f'contain errors or were not found.')
-            dtscore.Notification('warning', msg=msg)
+            dtsWindow.NotificationDialog('warning', msg=msg)
         else:
             pass
         #------------------------------> 
@@ -974,7 +972,7 @@ class BaseWindowNPlotLT(BaseWindow):
             tException = (
                 f'The row numbers where the string was found are:\n '
                 f'{str(iSimilar)[1:-1]}')
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'warning', 
                 msg        = msg,
                 setText    = True,
@@ -983,7 +981,7 @@ class BaseWindowNPlotLT(BaseWindow):
             )
         else:
             msg = (f'The string, {tStr}, was not found.')
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'warning', 
                 msg        = msg,
                 setText    = True,
@@ -1344,7 +1342,7 @@ class BaseWindowProteolysis(BaseWindow):
             tException = (
                 f'The row numbers where the string was found are:\n '
                 f'{str(iSimilar)[1:-1]}')
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'warning', 
                 msg        = msg,
                 setText    = True,
@@ -1353,7 +1351,7 @@ class BaseWindowProteolysis(BaseWindow):
             )
         else:
             msg = (f'The string, {tStr}, was not found.')
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'warning', 
                 msg        = msg,
                 setText    = True,
@@ -3858,7 +3856,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             tException = (
                 f'The numbers of the proteins included in the selected '
                 f'point are:\n {str(ind)[1:-1]}')
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'warning', 
                 msg        = msg,
                 setText    = True,
@@ -4093,7 +4091,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
                     #------------------------------> Write
                     v.figure.savefig(fPath)
             except Exception as e:
-                dtscore.Notification(
+                dtsWindow.NotificationDialog(
                     'errorF',
                     msg        = self.cMsgExportFailed,
                     tException = e,
@@ -4624,7 +4622,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             bool
         """
         #region ----------------------------------------------> Text Entry Dlg
-        if gText is None:
+        if gText is None: 
             #------------------------------> 
             dlg = dtsWindow.UserInput1Text(
                 'Filter results by Log2(FC) value.',
@@ -8051,7 +8049,7 @@ class TarProtPlot(BaseWindowProteolysis):
             )
         except Exception as e:
             msg = 'Export of Sequence Alignments failed.'
-            dtscore.Notification('errorF', msg=msg, tException=e)
+            dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
         #endregion ------------------------------------------------> Run
         
         # dlg.Destroy()
@@ -9688,7 +9686,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
             msg = (
                 f'It was not possible to build the histograms for the selected '
                 f'column.')
-            dtscore.Notification('errorU', msg=msg, tException=e, parent=self)
+            dtsWindow.NotificationDialog('errorU', msg=msg, tException=e, parent=self)
             #------------------------------> 
             self.ClearPlots()
             #------------------------------> 
@@ -9753,7 +9751,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
                     #------------------------------> Write
                     dtsFF.WriteDF2CSV(fPath, v)
             except Exception as e:
-                dtscore.Notification(
+                dtsWindow.NotificationDialog(
                     'errorF',
                     msg        = self.cMsgExportFailed,
                     tException = e,
@@ -9786,7 +9784,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
                     #------------------------------> Write
                     v.figure.savefig(fPath)
             except Exception as e:
-                dtscore.Notification(
+                dtsWindow.NotificationDialog(
                     'errorF',
                     msg        = self.cMsgExportFailed,
                     tException = e,
@@ -10344,7 +10342,7 @@ class UMSAPControl(BaseWindow):
                 if fileP == self.rObj.rFileP:
                     msg = ('New Analysis cannot be added from the same UMSAP '
                         'file.\nPlease choose a different UMSAP file.')
-                    dtscore.Notification('warning', msg=msg)
+                    dtsWindow.NotificationDialog('warning', msg=msg)
                     return False
                 else:
                     pass
@@ -10352,7 +10350,7 @@ class UMSAPControl(BaseWindow):
                 try:
                     objAdd = file.UMSAPFile(fileP)                    
                 except Exception as e:
-                    dtscore.Notification('errorF', tException=e)
+                    dtsWindow.NotificationDialog('errorF', tException=e)
                     return False
             else:
                 dlg.Destroy()
@@ -10751,7 +10749,7 @@ class UMSAPControl(BaseWindow):
         except dtsException.PassException:
             return False
         except Exception as e:
-            dtscore.Notification('errorU', msg=str(e), tException=e)
+            dtsWindow.NotificationDialog('errorU', msg=str(e), tException=e)
             return False
         #endregion --------------------------------------------> Create window
         
@@ -11177,7 +11175,7 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
         if not checked:
             msg = (f'There are no analysis selected. Please select something '
                 'first.')
-            dtscore.Notification('warning', msg=msg)
+            dtsWindow.NotificationDialog('warning', msg=msg)
             return False
         else:
             pass
@@ -11298,7 +11296,7 @@ class Preference(wx.Dialog):
             dtsFF.WriteJSON(config.fConfig, data)
         except Exception as e:
             msg = 'Configuration options could not be saved.'
-            dtscore.Notification('errorF', msg=msg, tException=e)
+            dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
             return False
         #endregion ------------------------------------------------> 
 
@@ -11375,7 +11373,7 @@ class Preference(wx.Dialog):
             data = dtsFF.ReadJSON(config.fConfigDef)
         except Exception as e:
             msg = 'It was not possible to read the default configuration file.'
-            dtscore.Notification('errorF', msg=msg, tException=e)
+            dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
             return {}
         #endregion ------------------------------------------------> 
         
@@ -11425,7 +11423,7 @@ class Preference(wx.Dialog):
             self.wUpdate.wRBox.SetSelection(val)
         except Exception as e:
             msg = 'Something went wrong when loading the configuration options.'
-            dtscore.Notification('errorU', msg=msg, tException=e)
+            dtsWindow.NotificationDialog('errorU', msg=msg, tException=e)
             return False
         #endregion ------------------------------------------------> 
         
