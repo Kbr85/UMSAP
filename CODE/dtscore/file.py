@@ -34,6 +34,70 @@ import dtscore.generator as dtsGenerator
 
 #region ------------------------------------------------------> File/Folder IO
 #------------------------------> Read
+def ReadFile(
+    fileP: Union[Path, str], char: Optional[str]='\t', empty: bool=False
+    ) -> list[list[str]]:
+    """Custom method to read in a file.
+
+        See Notes below for more details.
+
+        Parameters
+        ----------
+        fileP : path or str
+            File path of the file to be read 
+        char : str or None
+            each line in the file is splitted using the value of char or not if 
+            char is None
+        empty : boolean
+            Keep (True) or discard (False) empty lines in the file
+
+        Returns
+        -------
+        list of list
+            List of list containing the lines in the read file like:
+            [['first', 'line'], ['second', 'line'], ... , ['last', 'line']]
+
+        Raises
+        ------
+        ExecutionError:
+            - When the file cannot be read
+
+        Notes
+        -----
+        The method returns a list of list containing the lines in the files. 
+        Each line is splitted using char. Empty lines can be discarded.
+        This will read the entire file and return a list of list with the 
+        content of the entire file or an empty list if the file is empty.
+    """
+    #region -------------------------------------------------------> Variables
+    data = []
+    #endregion ----------------------------------------------------> Variables
+    
+    #region --------------------------------------------> Read and split lines
+    try:
+        #------------------------------> Read file
+        with open(fileP, 'r') as file:
+            for line in file:
+                #--> To remove ' ', \n, \t & \r from start/end of line
+                l = line.strip()
+                #------------------------------> Add to data
+                if l == '' and not empty:
+                    #------------------------------> Discard empty
+                    pass
+                else:
+                    #------------------------------> Add to data
+                    if char is None:
+                        data.append([l])
+                    else:
+                        ll = l.split(char)
+                        data.append(ll)
+        #------------------------------> Return list
+        return data
+    except Exception:
+        raise dtsException.ExecutionError(config.mReadErrorIO.format(fileP))
+    #endregion -----------------------------------------> Read and split lines
+#---
+
 def ReadJSON(fileP: Union[Path, str]) -> dict:
     """Reads a file with a json format 
         
