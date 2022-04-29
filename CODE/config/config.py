@@ -316,6 +316,9 @@ ttLCtrlPasteMod = (
     f"({copyShortCut}+X) or copied "
     f"({copyShortCut}+C)."    
 )
+#------------------------------> dtscore
+ttSectionRightClick = (
+    'The content of the Section can be deleted with a right click.')
 #endregion ---------------------------------------------------------> Tooltips
 
 

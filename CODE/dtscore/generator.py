@@ -17,6 +17,8 @@
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
 
+import wx
+
 import config.config as config
 import dtscore.exception as dtsException
 #endregion ----------------------------------------------------------> Imports
@@ -73,5 +75,30 @@ def FastaSequence(fileP: Path) -> tuple[str, str]:
     #region --------------------------------------------> Get the last protein
     yield (header, "".join(seq))
     #endregion -----------------------------------------> Get the last protein
+#---
+
+def FindChildren(parent: wx.Window) -> wx.Window:
+    """Find all child widgets in parent
+
+        Parameters
+        ----------
+        parent : wx.Window
+            Parent of the child widgets to search for
+
+        Yield
+        -----
+        wx.Window
+            Each child in parent
+
+        Raises
+        ------
+        InputError
+            When parent is not a wx.Window
+    """
+    #region ---------------------------------------------------------> Iterate
+    for child in parent.GetChildren():
+        yield child
+        yield from FindChildren(child)
+    #endregion ------------------------------------------------------> Iterate
 #---
 #endregion ----------------------------------------------------------> Methods

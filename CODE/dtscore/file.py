@@ -255,6 +255,99 @@ def WriteDFs2CSV(
 #endregion ---------------------------------------------------> File/Folder IO
 
 
+#region -------------------------------------------------------------> Methods
+def OutputPath(
+    baseP: Union[Path, str], outP: Union[Path, str], defVal: str, 
+    unique: bool=True, returnTimeStamp: bool=True
+    ) -> Union[Path, tuple[Path, str]]:
+    """Creates the path to the output file or folder. 
+    
+        See Notes below for more deails.
+
+        Parameters
+        ----------
+        baseP : str
+            Path to a file or folder used as the base to construct the 
+            output
+        outP: str
+            If empty string '' then uses baseP and defVal to build the path to 
+            the output file. Full path is expected if not empty.
+        defVal : str
+            Default name for the output file or folder
+        unique : boolean
+            Check file or folder does not exist. If it does add the datetime
+            to the name to make it unique.
+        returnTimeStamp : boolean
+            If True the value of dtsFF.NowFormat() used to build the output
+            path is also returned
+
+        Returns
+        -------
+        str:
+            Path to the output file or folder
+        tupple:
+            (Path to the output file or folder, dtsFF.NowFormat())
+
+        Raise
+        -----
+        InputError:
+            - When baseP is ''.
+            - When out and defVal are ''
+
+        Notes
+        -----
+        If unique is True and file/folder exists, then add dtsFF.NowFormat() to 
+        the name to make it unique.
+
+        Examples
+        --------
+        >>> OutputPath('/Users/john/file.txt', '/Users/john/Desktop/b.zip', 'test.corr', unique=False)
+        ('/Users/john/Desktop/b.zip', '20120423-102354')
+        
+        >>> OutputPath('/Users/john/file.txt', '', 'test.corr', unique=False, returnTimeStamp=False)
+        'Users/john/test.corr'
+
+        >>> OutputPath('/Users/john/file.txt', '', 'test.corr', unique=True)
+        ('Users/john/test_20210107-101256.corr', '20210107-101256') # If 'Users/john/test.corr' already exists
+    """
+    #region -------------------------------------------------------> Variables
+    date = dtsMethod.StrNow()
+    #endregion ----------------------------------------------------> Variables
+    
+    #region ------------------------------------------------------> Build path
+    if outP != '':
+        oPath = Path(outP)
+    else:
+        #------------------------------> 
+        iPath = Path(baseP).parent
+        oPath = iPath / defVal
+        #------------------------------> 
+        if unique:
+            if oPath.exists():
+                defPath = Path(defVal)
+                name = (
+                    defPath.stem
+                    + '_'
+                    + date
+                    + defPath.suffix
+                )
+                oPath = oPath.with_name(name)
+            else:
+                pass
+        else:
+            pass
+    #endregion ---------------------------------------------------> Build path
+    
+    #region ----------------------------------------------------------> Return
+    if returnTimeStamp:
+        return (oPath, date)
+    else:
+        return oPath
+    #endregion -------------------------------------------------------> Return
+#---
+#endregion ----------------------------------------------------------> Methods
+
+
 #region -----------------------------------------------> File content classess
 class FastaFile():
     """Class to handle fasta files.

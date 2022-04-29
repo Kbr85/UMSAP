@@ -28,8 +28,6 @@ from statsmodels.stats.multitest import multipletests
 import wx
 import wx.lib.scrolledpanel as scrolled
 
-import dat4s_core.gui.wx.widget as dtsWidget
-
 import config.config as config
 import data.check as check
 import data.method as dmethod
@@ -39,7 +37,7 @@ import dtscore.exception as dtsException
 import dtscore.file as dtsFF
 import dtscore.statistic as dtsStatistic
 import dtscore.validator as dtsValidator
-import dtscore.widget as dtsWidgetTEMP
+import dtscore.widget as dtsWidget
 import dtscore.window as dtsWindow
 import gui.method as gmethod
 import gui.widget as widget
@@ -2815,12 +2813,12 @@ class CorrA(BaseConfPanel):
         self.wStListO = wx.StaticText(
             self.sbColumn, label=self.cLColAnalysis)
         #------------------------------> dtscore.ListZebra
-        self.wLCtrlI = dtsWidgetTEMP.ListZebra(self.sbColumn, 
+        self.wLCtrlI = dtsWidget.ListZebra(self.sbColumn, 
             colLabel        = self.cLNumName,
             colSize         = self.cSNumName,
             copyFullContent = True,
         )
-        self.wLCtrlO = dtsWidgetTEMP.ListZebra(self.sbColumn, 
+        self.wLCtrlO = dtsWidget.ListZebra(self.sbColumn, 
             colLabel        = self.cLNumName,
             colSize         = self.cSNumName,
             canPaste        = True,

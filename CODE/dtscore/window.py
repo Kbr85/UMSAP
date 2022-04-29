@@ -104,6 +104,47 @@ class FileSelectDialog(wx.FileDialog):
 #---
 
 
+class DirSelectDialog(wx.DirDialog):
+    """Creates a dialog to select a folder
+
+        Parameters
+        ----------
+        parent : wx widget or None
+            Parent of the window. If given modal window will be centered on it
+        message : str or None
+            Message to show in the window
+        defPath: Path, str or None
+            Default value for opnening wx.FileDialog.
+    """
+
+    #region -----------------------------------------------------> Class setup
+    title = 'Select a folder'
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, message: Optional[str]=None,
+        defPath: Union[str,Path,None]=None,
+        ) -> None:
+        """ """
+        #region -------------------------------------------------> Check input
+        msg = self.title if message is None else message
+        #endregion ----------------------------------------------> Check input
+
+        #region ---------------------------------------------> Create & Center
+        super().__init__(
+            parent, 
+            message     = msg,
+            defaultPath = '' if defPath is None else str(defPath),
+        )
+
+        self.CenterOnParent()
+         #endregion ------------------------------------------> Create & Center
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
 #------------------------------> 
 class MessageDialog(wx.MessageDialog):
     """Show a message to the user.
