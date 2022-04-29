@@ -540,6 +540,23 @@ mwxLCtrlNColPaste = (
     "in the list."
 )
 mInvalidValue = "'{}' is an invalid value."
+mPDSelCol  = "The specified columns {} were not found in the dataframe."
+mTransMethodIE = (
+    f"Options for transformation method are: {*oTransMethod,}. "
+    "Option {} is unknown.")
+mNormMethodIE = (
+    f"Options for normalization method are: {*oNormMethod,}. "
+    "Option {} is unknown.")
+mImputationMethodIE = (
+    f"Options for imputation method are: {*oImputation,}. "
+    "Option {} is unknown.")
+mAlpha = (
+    "The significance level (alpha) must be a number between 0 and 1. "
+    "The given value ({}) it is not within this range. ")
+mPairSamplesDiffRep = (
+    'For paired samples the number of replicates in {} and {} must be equal.')
+m1IntGET = ('{} must be an integer greater/equal than/to {}.')
+mNotImplemented = 'Option {} is not yet implemented.'
 #endregion ------------------------------------------------> dtscore
 #endregion ---------------------------------------------------------> Messages
 

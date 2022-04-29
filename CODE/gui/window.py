@@ -45,7 +45,6 @@ import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
 import wx.lib.agw.hyperlink as hl
 
-import dat4s_core.data.statistic as dtsStatistic
 import dat4s_core.gui.wx.validator as dtsValidator
 import dat4s_core.gui.wx.widget as dtsWidget
 import dat4s_core.gui.wx.window as dtsWindow
@@ -57,6 +56,7 @@ import dtscore.check as dtsCheck
 import dtscore.data_method as dtsMethod
 import dtscore.exception as dtsException
 import dtscore.file as dtsFF
+import dtscore.statistic as dtsStatistic
 import dtscore.window as dtsWindowTEMP
 import gui.menu as menu
 import gui.method as method

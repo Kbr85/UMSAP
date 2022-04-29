@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -26,10 +26,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
-import dat4s_core.data.statistic as dtsStatistic
-
 import config.config as config
 import dtscore.data_method as dtsMethod
+import dtscore.statistic as dtsStatistic
 #endregion ----------------------------------------------------------> Imports
 
 
