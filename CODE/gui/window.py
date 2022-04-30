@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -12491,19 +12491,19 @@ myText = """UMSAP: Fast post-processing of mass spectrometry data
 
 -- Modules and Python version --
 
-UMSAP 2.1.1 (beta) is written in Python 3.7.1 and uses the following modules:
+UMSAP 2.2.0 is written in Python 3.9.2 and uses the following modules:
 
-Biopython 1.73  
-pyFPDF 1.7.2 
-Python 3.7.1
-Matplotlib 3.0.2 
-NumPy 1.16.1
-Pandas 0.24.2   
-PyInstaller 3.4 
-Requests 2.21.0 
-Scipy 1.2.0 
-Statsmodels 0.9.0
-wxPython 4.0.4
+Biopython 1.79
+Matplotlib 3.3.4 
+NumPy 1.20.1
+Pandas 1.2.3
+PyInstaller 4.3
+Python 3.9.2
+ReportLab 3.6.8
+Requests 2.25.1
+Scipy 1.6.3
+Statsmodels 0.13.2
+wxPython 4.1.1
 
 Copyright notice and License for the modules can be found in the User's manual of UMSAP.
 
@@ -12514,8 +12514,7 @@ of UMSAP, either by contributing ideas and suggestions or by testing the code.
 Special thanks go to: Dr. Farnusch Kaschani, Dr. Juliana Rey, Dr. Petra Janning 
 and Prof. Dr. Daniel Hoffmann.
 
-In particular, I would like to thank Prof. Dr. Michael Ehrmann for the support and 
-useful discussions during my postdoc stay in his group at the University of Duisburg-Essen.
+In particular, I would like to thank Prof. Dr. Michael Ehrmann.
 
 -- License Agreement --
 
