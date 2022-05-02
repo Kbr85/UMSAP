@@ -763,16 +763,24 @@ class BaseConfPanel(
             -------
             bool
         """
-        #------------------------------> File base name
-        self.rOFolder = self.rDO['uFile'].parent
+        #------------------------------> Output folder
+        if self.rDO['uFile'].exists():
+            self.rOFolder = self.rDO['uFile'].parent
+        else:
+            folder = self.rDO['uFile'].parent
+            step = folder/config.fnDataSteps
+            init = folder/config.fnDataInit
+            #------------------------------>
+            if step.exists() or init.exists():
+                self.rOFolder = folder/f'{dtsMethod.StrNow()}'
+                self.rDO['uFile'] = self.rOFolder/self.rDO['uFile'].name
+            else:
+                self.rOFolder = self.rDO['uFile'].parent
         #------------------------------> Date
         self.rDate = dtsMethod.StrNow()
         #------------------------------> DateID
-        if self.rDO['ID']:
-            self.rDateID = f'{self.rDate} - {self.rDO["ID"]}'
-        else:
-            self.rDateID = f'{self.rDate}'
-    
+        self.rDateID = f'{self.rDate} - {self.rDO["ID"]}'
+        
         return True
     #---
   
@@ -1508,7 +1516,7 @@ class BaseConfPanel(
         """
         #region ---------------------------------------> Dlg progress dialogue
         if self.rMsgError is None:
-            #--> 
+            self.rDFile.append(self.rDO['uFile'])
             self.rDlg.SuccessMessage(
                 self.cLPdDone, eTime=f"{self.cLPdEllapsed} {self.deltaT}")
         else:
@@ -1537,6 +1545,7 @@ class BaseConfPanel(
         self.deltaT     = None # Defined in DAT4S 
         
         if self.rDFile:
+            self.wUFile.tc.SetValue(str(self.rDFile[-1]))
             self.wIFile.tc.SetValue(str(self.rDFile[0]))
             self.rDFile = []
         else:
