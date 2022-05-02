@@ -9578,10 +9578,6 @@ class CheckDataPrep(BaseWindowNPlotLT):
         tSection: Optional[str]=None, tDate: Optional[str]=None,
         ) -> None:
         """ """
-        #region -------------------------------------------------> Check Input
-        
-        #endregion ----------------------------------------------> Check Input
-
         #region -----------------------------------------------> Initial Setup
         self.cParent  = cParent
         self.rObj     = self.cParent.rObj
@@ -9595,21 +9591,11 @@ class CheckDataPrep(BaseWindowNPlotLT):
         super().__init__(cParent=cParent, cMenuData=cMenuData)
         #endregion --------------------------------------------> Initial Setup
 
-        #region --------------------------------------------------------> Menu
-        
-        #endregion -----------------------------------------------------> Menu
-        
         #region -----------------------------------------------------> Widgets
-        
+        self.wPlots.dPlot['Transf'].axes2 = self.wPlots.dPlot['Transf'].axes.twinx()
+        self.wPlots.dPlot['Norm'].axes2 = self.wPlots.dPlot['Norm'].axes.twinx()
+        self.wPlots.dPlot['Imp'].axes2 = self.wPlots.dPlot['Imp'].axes.twinx()
         #endregion --------------------------------------------------> Widgets
-
-        #region ------------------------------------------------------> Sizers
-        
-        #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-
-        #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
         date = None if self.rDate is None else self.rDate[0]
@@ -9816,7 +9802,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
             If self.cTitle is None the window is invoked from the main Data 
             Preparation section of a UMSAP File window
         """
-        #------------------------------> Set Variables 
+        #region -----------------------------------------------> Set Variables
         if self.cTitle is None:
             self.rFromUMSAPFile = True 
             self.rData  = self.rObj.dConfigure[self.cSection]()
@@ -9835,8 +9821,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
             self.rData = self.rObj.dConfigure[self.cSection](tSection, tDate)
             self.rDate = None
             self.rDateC = self.cParent.rDateC
-        #------------------------------> 
-        
+        #endregion --------------------------------------------> Set Variables
+
         return True
     #---
     
@@ -9924,7 +9910,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> title
         self.wPlots.dPlot['Init'].axes.set_title("Floated")
         #------------------------------> 
-        a = self.wPlots.dPlot['Init'].axes.hist(x, bins=nBin, density=True)
+        a = self.wPlots.dPlot['Init'].axes.hist(x, bins=nBin, density=False)
         #------------------------------> 
         self.wPlots.dPlot['Init'].axes.set_xlim(*dtsStatistic.DataRange(
             a[1], margin=config.general['MatPlotMargin']))
@@ -9962,7 +9948,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> title
         self.wPlots.dPlot['Transf'].axes.set_title("Transformed")
         #------------------------------> 
-        a = self.wPlots.dPlot['Transf'].axes.hist(x, bins=nBin, density=True)
+        a = self.wPlots.dPlot['Transf'].axes.hist(x, bins=nBin, density=False)
         #------------------------------> 
         xRange = dtsStatistic.DataRange(
             a[1], margin=config.general['MatPlotMargin'])
@@ -9973,7 +9959,11 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> 
         gausX = np.linspace(xRange[0], xRange[1], 300)
         gausY = stats.gaussian_kde(x)
-        self.wPlots.dPlot['Transf'].axes.plot(gausX, gausY.pdf(gausX))
+        self.wPlots.dPlot['Transf'].axes2.clear()
+        self.wPlots.dPlot['Transf'].axes2.plot(
+            gausX, gausY.pdf(gausX), color='C1')
+        self.wPlots.dPlot['Transf'].axes2.set_yticks([])
+        self.wPlots.dPlot['Transf'].axes2.set_yticklabels([])
         #------------------------------> 
         self.wPlots.dPlot['Transf'].canvas.draw()
         #endregion -----------------------------------------------------> Draw
@@ -10007,7 +9997,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> title
         self.wPlots.dPlot['Norm'].axes.set_title("Normalized")
         #------------------------------> 
-        a = self.wPlots.dPlot['Norm'].axes.hist(x, bins=nBin, density=True)
+        a = self.wPlots.dPlot['Norm'].axes.hist(x, bins=nBin, density=False)
         #------------------------------>
         xRange = dtsStatistic.DataRange(
             a[1], margin=config.general['MatPlotMargin'])
@@ -10018,7 +10008,11 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> 
         gausX = np.linspace(xRange[0], xRange[1], 300)
         gausY = stats.gaussian_kde(x)
-        self.wPlots.dPlot['Norm'].axes.plot(gausX, gausY.pdf(gausX))
+        self.wPlots.dPlot['Norm'].axes2.clear()
+        self.wPlots.dPlot['Norm'].axes2.plot(
+            gausX, gausY.pdf(gausX), color='C1')
+        self.wPlots.dPlot['Norm'].axes2.set_yticks([])
+        self.wPlots.dPlot['Norm'].axes2.set_yticklabels([])
         #------------------------------> 
         self.wPlots.dPlot['Norm'].canvas.draw()
         #endregion -----------------------------------------------------> Draw
@@ -10052,7 +10046,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> title
         self.wPlots.dPlot['Imp'].axes.set_title("Imputed")
         #------------------------------> 
-        a = self.wPlots.dPlot['Imp'].axes.hist(x, bins=nBin, density=True)
+        a = self.wPlots.dPlot['Imp'].axes.hist(x, bins=nBin, density=False)
         #------------------------------> 
         xRange = dtsStatistic.DataRange(
             a[1], margin=config.general['MatPlotMargin'])
@@ -10061,18 +10055,20 @@ class CheckDataPrep(BaseWindowNPlotLT):
             a[0], margin=config.general['MatPlotMargin']))
         self.wPlots.dPlot['Imp'].ZoomResetSetValues()
         #------------------------------> 
-        gausX = np.linspace(xRange[0], xRange[1], 300)
-        gausY = stats.gaussian_kde(x)
-        self.wPlots.dPlot['Imp'].axes.plot(gausX, gausY.pdf(gausX))
-        #------------------------------> 
         idx = list(map(int, self.rDpDF['dfF'][self.rDpDF['dfF'].iloc[:,col].isnull()].index.tolist()))
         y = self.rDpDF['dfIm'].iloc[idx,col]
         if not y.empty:
-            yBin = dtsStatistic.HistBin(y)[0]
-            self.wPlots.dPlot['Imp'].axes.hist(y, bins=yBin, density=False)
+            self.wPlots.dPlot['Imp'].axes.hist(
+                y, bins=nBin, density=False, color='C2')
         else:
             pass
         #------------------------------> 
+        gausX = np.linspace(xRange[0], xRange[1], 300)
+        gausY = stats.gaussian_kde(x)
+        self.wPlots.dPlot['Imp'].axes2.clear()
+        self.wPlots.dPlot['Imp'].axes2.plot(gausX, gausY.pdf(gausX), color='C1')
+        self.wPlots.dPlot['Imp'].axes2.set_yticks([])
+        self.wPlots.dPlot['Imp'].axes2.set_yticklabels([])
         self.wPlots.dPlot['Imp'].canvas.draw()
         #endregion -----------------------------------------------------> Draw
         
@@ -10192,6 +10188,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         """
         for p in self.cLNPlots:
             self.wPlots.dPlot[p].axes.clear()
+            self.wPlots.dPlot[p].axes2.clear()
             self.wPlots.dPlot[p].canvas.draw()
             
         return True

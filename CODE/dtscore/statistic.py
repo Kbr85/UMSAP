@@ -419,25 +419,6 @@ def DataNormalization(
 
 
 #region -----------------------------------------------------> Data Imputation
-def Normal_Distribution_Random_Value(std: float):
-    """Calculate a random value from a normal distribution with given std
-    
-        Parameters
-        ----------
-        std: float
-            Standard deviation of the column
-            
-        Return
-        ------
-        float
-        
-        Notes
-        -----
-        It is assumed the distribution has a mean of 0.
-    """
-    return (random.random()*0.3 - std*2.5)
-#---
-
 def _DataImputation_None(df: 'pd.DataFrame', *args, **kwargs) -> 'pd.DataFrame':
     """This will just return the original df.
 
@@ -498,8 +479,10 @@ def _DataImputation_NormalDistribution(
     for c in col:
         #------------------------------> 
         std = df[c].std(skipna=True)
+        tIDX = np.where(df[c].isna())[0]
         #------------------------------> 
-        df[c] = df[c].apply(lambda x: x if np.isfinite(x) else Normal_Distribution_Random_Value(std))
+        df.loc[tIDX, c] = np.random.default_rng().normal(
+            -std*1.8, std*0.3, len(tIDX))
     #endregion -------------------------------> Normal Distribution imputation
 
     return df
