@@ -341,9 +341,9 @@ class BaseConfPanel(
             self.sbData,
             label   = self.cLCeroTreat,
             choices = self.cOCero,
-            tooltip = (f'Cero values in the {self.cLiFile} File will '
-            f'be treated as missing values when this option is selected or as '
-            f'real values when the option is not selected.'),
+            tooltip = (f'Cero values in the {self.cLiFile} file will '
+            f'be treated as missing values when this option is set to Yes and '
+            f'as real values when the option is set to No.'),
             validator = dtsValidator.IsNotEmpty(),
         )
         
@@ -3480,6 +3480,37 @@ class DataPrep(BaseConfPanel):
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Run methods
+    def CheckInput(self) -> bool:
+        """Check user input
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Super
+        if super().CheckInput():
+            pass
+        else:
+            return False
+        #endregion ----------------------------------------------------> Super
+        
+        #region ----------------------------------------------------> All None
+        a = self.wTransMethod.cb.GetValue()
+        b = self.wNormMethod.cb.GetValue()
+        c = self.wImputationMethod.cb.GetValue()
+        #------------------------------> 
+        if a == b == c == 'None':
+            self.rMsgError = (f'{self.cLTransMethod}, {self.cLNormMethod} and '
+                f'{self.cLImputation} methods are all set to None. There is '
+                f'nothing to be done.')
+            return False
+        else:
+            pass
+        #endregion -------------------------------------------------> All None
+
+        return True
+    #---
+    
     def PrepareRun(self) -> bool:
         """Set variable and prepare data for analysis.
         

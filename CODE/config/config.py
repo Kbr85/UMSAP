@@ -493,7 +493,7 @@ mRepeatColNum = 'There are repeated column numbers in the text fields.'
 mRowsInLCtrl = 'There must be at least {} items in {}.'
 mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
     'Protein, etc) were applied.')
-mFileBad = "File: '{}'\ncannot be used as {}."
+mFileBad = "File: '{}'\ncannot be used as {} file."
 mOptionBad = "Option '{}' cannot be accepted in {}."
 mValueBad = "Value '{}' cannot be accepted in {}.\n"
 mOneRealNum = f"{mValueBad}{mOneRNumText}"
