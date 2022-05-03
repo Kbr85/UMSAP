@@ -457,6 +457,8 @@ mOptField = '\nThis field is optional.'
 
 #region ------------------------------------------------------------> Values
 mOneRNumText = "Only one real number can be accepted here."
+mOneRPlusNumText = (
+    "Only one number equal or greater than zero can be accepted here.")
 mOneZPlusNumText = "Only a non-negative integer can be accepted here."
 mOne01NumText = "Only one number between 0 and 1 can be accepted here."
 mNZPlusNumText = (
@@ -497,6 +499,7 @@ mFileBad = "File: '{}'\ncannot be used as {} file."
 mOptionBad = "Option '{}' cannot be accepted in {}."
 mValueBad = "Value '{}' cannot be accepted in {}.\n"
 mOneRealNum = f"{mValueBad}{mOneRNumText}"
+mOneRPlusNum = f"{mValueBad}{mOneRPlusNumText}"
 mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
 mOneZPlusNumCol = f"{mOneZPlusNum} {mColNumber}"
 mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
@@ -663,4 +666,14 @@ color = { # Colors for the app
     },
 }
 #endregion -----------------------------------------------------------> Colors
+
+
+#region --------------------------------------------------------------> Values
+values = {
+    nwCheckDataPrep : {
+        'Shift' : '1.8',
+        'Width' : '0.3',
+    }
+}
+#endregion -----------------------------------------------------------> Values
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS

@@ -171,8 +171,10 @@ class BaseConfPanel(
         self.cLColumnBox   = getattr(self, 'cLColumnBox',   'Column Numbers')
         self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD',  '0s Missing')
         self.cLNormMethod  = getattr(self, 'cLNormMethod',  'Normalization')
-        self.cLImputation  = getattr(self, 'cLImputation',  'Imputation')
         self.cLTransMethod = getattr(self, 'cLTransMethod', 'Transformation')
+        self.cLImputation  = getattr(self, 'cLImputation',  'Imputation')
+        self.cLShift       = getattr(self, 'cLShift', 'Shift')
+        self.cLWidth       = getattr(self, 'cLWidth', 'Width')
         self.cLValueBox  = getattr(self, 'cLValueBox', 'User-defined Values')
         self.cLCeroTreat = getattr(
             self, 'cLCeroTreat', 'Treat 0s as missing values')
@@ -224,6 +226,10 @@ class BaseConfPanel(
         self.cTTImputation  = getattr(
             self, 'cTTImputation', (f'Select the Data {self.cLImputation} '
                                     f'method.'))
+        self.cTTShift = getattr(self, 'cTTShift', (f'Specify the {self.cLShift}' 
+                                                   f'value. e.g. 1.8'))
+        self.cTTWidth = getattr(self, 'cTTWidth', (f'Specify the {self.cLWidth}' 
+                                                   f'value. e.g. 0.3'))
         #------------------------------> Extensions
         self.cEiFile = getattr(self, 'ciFileE', config.elData)
         #------------------------------> Validator
@@ -237,6 +243,9 @@ class BaseConfPanel(
             'cViFile',
             dtsValidator.InputFF(fof='file', ext=config.esData),
         )
+        #------------------------------> Values
+        self.cValShift = config.values[config.nwCheckDataPrep]['Shift']
+        self.cValWidth = config.values[config.nwCheckDataPrep]['Width']
         #------------------------------> To handle Data Preparation Steps
         self.dDataPrep = { # Keys are the messaging for the Progress Dialog
             "Setting Data Types"         : self.DatPrep_Float,
@@ -370,6 +379,22 @@ class BaseConfPanel(
             tooltip   = self.cTTImputation,
             validator = dtsValidator.IsNotEmpty(),
         )
+        self.wShift = dtsWidget.StaticTextCtrl(
+            self.sbData,
+            stLabel   = 'Shift',
+            stTooltip = self.cTTShift,
+            tcSize    = (60,22),
+            tcHint    = f'e.g. {self.cValShift}',
+            validator = dtsValidator.NumberList('float', nN=1, vMin=0),
+        )
+        self.wWidth = dtsWidget.StaticTextCtrl(
+            self.sbData,
+            stLabel   = 'Width',
+            stTooltip = self.cTTWidth,
+            tcSize    = (60,22),
+            tcHint    = f'e.g. {self.cValWidth}',
+            validator = dtsValidator.NumberList('float', nN=1, vMin=0),
+        )
         #endregion --------------------------------------------------> Widgets
         
         #region -----------------------------------------------------> Tooltip
@@ -419,6 +444,12 @@ class BaseConfPanel(
         self.sCeroTreat = wx.BoxSizer(wx.HORIZONTAL)
         self.sCeroTreat.Add(self.wCeroB.st, 0, wx.ALIGN_CENTER|wx.ALL, 5)
         self.sCeroTreat.Add(self.wCeroB.cb, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        
+        self.sImpNorm = wx.BoxSizer(wx.HORIZONTAL)
+        self.sImpNorm.Add(self.wShift.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+        self.sImpNorm.Add(self.wShift.tc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sImpNorm.Add(self.wWidth.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+        self.sImpNorm.Add(self.wWidth.tc, 0, wx.EXPAND|wx.ALL, 5)
         
         self.sizersbDataWid.Add(
             1, 1,
@@ -470,6 +501,13 @@ class BaseConfPanel(
             border = 5,
         )
         self.sizersbDataWid.Add(
+            self.sImpNorm,
+            pos    = (2,5),
+            flag   = wx.ALL|wx.ALIGN_CENTER,
+            border = 5,
+            span   = (0,2),
+        )
+        self.sizersbDataWid.Add(
             1, 1,
             pos    = (0,7),
             flag   = wx.EXPAND|wx.ALL,
@@ -485,12 +523,15 @@ class BaseConfPanel(
         self.sSizer.Add(self.sizersbValue,  0, wx.EXPAND|wx.ALL,       5)
         self.sSizer.Add(self.sizersbColumn, 0, wx.EXPAND|wx.ALL,       5)
         self.sSizer.Add(self.btnSizer,      0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------> 
+        self.sSizer.Hide(self.sImpNorm, recursive=True)
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
         self.wIFile.tc.Bind(wx.EVT_TEXT,       self.OnIFileLoad)
         self.wIFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnIFileLoad)
         self.wUFile.tc.Bind(wx.EVT_TEXT,       self.OnUFileChange)
+        self.wImputationMethod.cb.Bind(wx.EVT_COMBOBOX, self.OnImpMethod)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -581,7 +622,35 @@ class BaseConfPanel(
         #endregion --------------------------------------> Columns in the file
 
         return True
-    #---	
+    #---
+    
+    def OnImpMethod(self, event: Union[wx.CommandEvent, str])-> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        if self.wImputationMethod.cb.GetValue() == config.oImputation['ND']:
+            self.sSizer.Show(self.sImpNorm, show=True, recursive=True)
+            self.sSizer.Layout()
+            self.SetupScrolling()
+        else:
+            self.sSizer.Show(self.sImpNorm, show=False, recursive=True)
+            self.wShift.tc.SetValue(self.cValShift)
+            self.wWidth.tc.SetValue(self.cValWidth)
+            self.sSizer.Layout()
+            self.SetupScrolling()
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Other Methods
@@ -1081,8 +1150,10 @@ class BaseConfPanel(
         try:
             self.dfIm = dtsStatistic.DataImputation(
                 self.dfN, 
-                self.rDO['df']['ResCtrlFlat'], 
+                self.rDO['df']['ResCtrlFlat'],
                 method = self.rDO['ImpMethod'],
+                shift  = self.rDO['Shift'],
+                width  = self.rDO['Width'],
             )
         except Exception as e:
             self.rMsgError   = 'Data Imputation failed.'
@@ -3363,6 +3434,8 @@ class DataPrep(BaseConfPanel):
             self.cLTransMethod: [self.wTransMethod.cb,     config.mOptionBad   , False],
             self.cLNormMethod : [self.wNormMethod.cb,      config.mOptionBad   , False],
             self.cLImputation : [self.wImputationMethod.cb,config.mOptionBad   , False],
+            self.cLShift      : [self.wShift.tc,           config.mOneRPlusNum , False],
+            self.cLWidth      : [self.wWidth.tc,           config.mOneRPlusNum , False],
             self.cLColAnalysis: [self.wColAnalysis.tc,     config.mNZPlusNumCol, True ],
         }
         #endregion -------------------------------------------> checkUserInput
@@ -3411,14 +3484,6 @@ class DataPrep(BaseConfPanel):
         self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
 
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
-
-        #region ---------------------------------------------> Window position
-        
-        #endregion ------------------------------------------> Window position
-        
         #region --------------------------------------------------------> Test
         if config.development:
             import getpass
@@ -3476,10 +3541,13 @@ class DataPrep(BaseConfPanel):
             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
+            self.wShift.tc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
+            self.wWidth.tc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
             #------------------------------> Columns
             self.wColAnalysis.tc.SetValue(dataI['I'][self.cLColAnalysis])
             #------------------------------> 
             self.OnIFileLoad('fEvent')
+            self.OnImpMethod('fEvent')
         else:
             pass
         #endregion ----------------------------------------------> Fill Fields
@@ -3530,6 +3598,8 @@ class DataPrep(BaseConfPanel):
         #region -------------------------------------------------------> Input
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> Variables
+        impMethod = self.wImputationMethod.cb.GetValue()
         #------------------------------> As given
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
@@ -3543,10 +3613,17 @@ class DataPrep(BaseConfPanel):
             self.EqualLenLabel(self.cLNormMethod) : (
                 self.wNormMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLImputation) : (
-                self.wImputationMethod.cb.GetValue()),
-            self.EqualLenLabel(self.cLColAnalysis) : (
-                self.wColAnalysis.tc.GetValue()),
+                impMethod)
         }
+        if impMethod == config.oImputation['ND']:
+            self.rDI[self.EqualLenLabel(self.cLShift)] = (
+                self.wShift.tc.GetValue())
+            self.rDI[self.EqualLenLabel(self.cLWidth)] = (
+                self.wWidth.tc.GetValue())
+        else:
+            pass
+        self.rDI[self.EqualLenLabel(self.cLColAnalysis)] = (
+            self.wColAnalysis.tc.GetValue())
         #------------------------------> Dict with all values
         #--------------> 
         msgStep = self.cLPdPrepare + 'User input, processing'
@@ -3565,6 +3642,8 @@ class DataPrep(BaseConfPanel):
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'TransMethod': self.wTransMethod.cb.GetValue(),
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
+            'Shift'      : float(self.wShift.tc.GetValue()),
+            'Width'      : float(self.wWidth.tc.GetValue()),
             'oc'         : {
                 'ColAnalysis': colAnalysis,
                 'Column'     : colAnalysis,
