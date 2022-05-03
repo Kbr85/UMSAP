@@ -10022,21 +10022,21 @@ class CheckDataPrep(BaseWindowNPlotLT):
     
     def PlotdfIm(self, col:int) -> bool:
         """Plot the histograms for dfIm
-    
+
             Parameters
             ----------
             col : int
                 Column to plot
-    
+
             Returns
             -------
             bool
         """
         #region ---------------------------------------------------> Variables
-        #------------------------------> 
+        #------------------------------>
         x = self.rDpDF['dfIm'].iloc[:,col]
-        x = x[np.isfinite(x)]        
-        #------------------------------> 
+        x = x[np.isfinite(x)]
+        #------------------------------>
         nBin = dtsStatistic.HistBin(x)[0]
         #endregion ------------------------------------------------> Variables
         
@@ -10055,11 +10055,14 @@ class CheckDataPrep(BaseWindowNPlotLT):
             a[0], margin=config.general['MatPlotMargin']))
         self.wPlots.dPlot['Imp'].ZoomResetSetValues()
         #------------------------------> 
-        idx = list(map(int, self.rDpDF['dfF'][self.rDpDF['dfF'].iloc[:,col].isnull()].index.tolist()))
-        y = self.rDpDF['dfIm'].iloc[idx,col]
-        if not y.empty:
-            self.wPlots.dPlot['Imp'].axes.hist(
-                y, bins=nBin, density=False, color='C2')
+        idx = np.where(self.rDpDF['dfF'].iloc[:,col].isna())[0]
+        if len(idx) > 0:
+            y = self.rDpDF['dfIm'].iloc[idx,col]
+            if y.count() > 0:
+                self.wPlots.dPlot['Imp'].axes.hist(
+                    y, bins=nBin, density=False, color='C2')
+            else:
+                pass
         else:
             pass
         #------------------------------> 
@@ -10152,9 +10155,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion ----------------------------------------------> wx.ListCtrl
 
         #region --------------------------------------------------------> Plot
-        for k in self.wPlots.dPlot.keys():
-            self.wPlots.dPlot[k].axes.clear()
-            self.wPlots.dPlot[k].canvas.draw()
+        self.ClearPlots()
         #endregion -----------------------------------------------------> Plot
 
         #region ---------------------------------------------------> Text
@@ -10186,11 +10187,18 @@ class CheckDataPrep(BaseWindowNPlotLT):
             -----
             
         """
-        for p in self.cLNPlots:
+        #region ---------------------------------------------------> 
+        self.wPlots.dPlot[self.cLNPlots[0]].axes.clear()
+        self.wPlots.dPlot[self.cLNPlots[0]].canvas.draw()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for p in self.cLNPlots[1:]:
             self.wPlots.dPlot[p].axes.clear()
             self.wPlots.dPlot[p].axes2.clear()
             self.wPlots.dPlot[p].canvas.draw()
-            
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     #endregion -----------------------------------------------> Manage Methods
