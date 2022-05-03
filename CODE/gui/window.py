@@ -10196,6 +10196,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
         for p in self.cLNPlots[1:]:
             self.wPlots.dPlot[p].axes.clear()
             self.wPlots.dPlot[p].axes2.clear()
+            self.wPlots.dPlot[p].axes2.set_yticks([])
+            self.wPlots.dPlot[p].axes2.set_yticklabels([])
             self.wPlots.dPlot[p].canvas.draw()
         #endregion ------------------------------------------------> 
 
