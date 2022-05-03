@@ -1724,6 +1724,17 @@ class MatPlotPanel(wx.Panel):
         return True
     #---
     
+    def GetAxesXY(self, event) -> tuple[float, float]:
+        """"""
+        x = event.xdata
+        if getattr(self, 'axes2', None) is not None:
+            _, y = self.axes.transData.inverted().transform((event.x,event.y))
+        else:
+            y = event.ydata
+        
+        return (x,y)
+    #---
+    
     #--------------------------------------------------------> Key press event
     def OnKeyPress(self, event) -> Literal[True]:
         """Process a key press event
@@ -1776,8 +1787,7 @@ class MatPlotPanel(wx.Panel):
                 Information about the mpl event
         """
         #region -------------------------------------------------------> Event
-        self.initX = event.xdata
-        self.initY = event.ydata
+        self.initX, self.initY = self.GetAxesXY(event)
         #endregion ----------------------------------------------------> Event
 
         return True
@@ -1834,15 +1844,13 @@ class MatPlotPanel(wx.Panel):
 
         #region -----------------------------------------> Initial coordinates
         if self.initX is None:
-            self.initX = event.xdata
-            self.initY = event.ydata
+            self.initX, self.initY = self.GetAxesXY(event)
         else:
             pass
         #endregion --------------------------------------> Initial coordinates
         
         #region -------------------------------------------> Final coordinates
-        self.finalX = event.xdata
-        self.finalY = event.ydata
+        self.finalX, self.finalY = self.GetAxesXY(event)
         #endregion ----------------------------------------> Final coordinates
 
         #region ------------------------------------> Delete & Create zoomRect
