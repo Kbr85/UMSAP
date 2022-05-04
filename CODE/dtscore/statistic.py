@@ -483,10 +483,11 @@ def _DataImputation_NormalDistribution(
     for c in col:
         #------------------------------> 
         std = df[c].std(skipna=True)
+        median = df[c].median(skipna=True)
         tIDX = np.where(df[c].isna())[0]
         #------------------------------> 
         df.loc[tIDX, c] = np.random.default_rng().normal(
-            -std*shift, std*width, len(tIDX))
+            median-std*shift, std*width, len(tIDX))
     #endregion -------------------------------> Normal Distribution imputation
 
     return df

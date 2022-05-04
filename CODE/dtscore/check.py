@@ -254,7 +254,7 @@ def NumberList(
         else:
             msg = (f'The number of elements in tStr ({lN}), after expanding '
                 f'ranges, is not equal to nN ({nN}).')
-            return (False, ('ListLength', str(lN), msg))
+            return (False, ('ListLength', tStr, msg))
     elif nMin is not None or nMax is not None:
         #------------------------------> Number of Elements in range
         if AInRange(lN, refMin=nMin, refMax=nMax)[0]:
@@ -262,7 +262,7 @@ def NumberList(
         else:
             msg = (f'The number of elements in tStr ({lN}), after expanding '
                 f'ranges, is not in the [{nMin}, {nMax}] range.')
-            return (False, ('ListLength', str(lN), msg))
+            return (False, ('ListLength', tStr, msg))
     else:
         pass
     #endregion --------------------------------------------------> List Length

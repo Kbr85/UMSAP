@@ -226,10 +226,10 @@ class BaseConfPanel(
         self.cTTImputation  = getattr(
             self, 'cTTImputation', (f'Select the Data {self.cLImputation} '
                                     f'method.'))
-        self.cTTShift = getattr(self, 'cTTShift', (f'Specify the {self.cLShift}' 
-                                                   f'value. e.g. 1.8'))
-        self.cTTWidth = getattr(self, 'cTTWidth', (f'Specify the {self.cLWidth}' 
-                                                   f'value. e.g. 0.3'))
+        self.cTTShift = getattr(self, 'cTTShift', (f'Shift to the center of '
+            f'the normal distribution used to replace missing values\ne.g. 1.8'))
+        self.cTTWidth = getattr(self, 'cTTWidth', (f'Approximate width of the '
+            f'the normal distribution used to replace missing values\ne.g. 0.3'))
         #------------------------------> Extensions
         self.cEiFile = getattr(self, 'ciFileE', config.elData)
         #------------------------------> Validator
@@ -769,15 +769,15 @@ class BaseConfPanel(
         """
         #region -------------------------------------------------------> Check
         for k,v in self.rCheckUserInput.items():
-            #------------------------------> 
+            #------------------------------>
             msgStep = self.cLPdCheck + k
             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-            #------------------------------> 
+            #------------------------------>
             if v[2]:
                 a, b = v[0].GetValidator().Validate(vMax=self.rNCol)
             else:
                 a, b = v[0].GetValidator().Validate()
-            #------------------------------> 
+            #------------------------------>
             if a:
                 pass
             else:
@@ -790,7 +790,7 @@ class BaseConfPanel(
         if getattr(self, 'rCheckUnique', False):
             msgStep = self.cLPdCheck + 'Unique Column Numbers'
             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-            #------------------------------> 
+            #------------------------------>
             if self.UniqueColumnNumber(self.rCheckUnique):
                 pass
             else:
@@ -3503,6 +3503,9 @@ class DataPrep(BaseConfPanel):
             self.wNormMethod.cb.SetValue('Median')
             self.wImputationMethod.cb.SetValue('Normal Distribution')  
             self.wColAnalysis.tc.SetValue('130-135')
+            self.OnImpMethod('fEvent')
+            self.wShift.tc.SetValue('1.8')
+            self.wWidth.tc.SetValue('0.3')
         else:
             pass
         #endregion -----------------------------------------------------> Test
