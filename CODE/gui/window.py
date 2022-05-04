@@ -9762,6 +9762,10 @@ class CheckDataPrep(BaseWindowNPlotLT):
             #------------------------------> Variables
             p = Path(dlg.GetPath())
             col = self.wLC.wLCS.lc.GetFirstSelected()
+            if col >= 0:
+                col = self.wLC.wLCS.lc.GetItemText(col, col=1)
+            else:
+                col = 'None'
             #------------------------------> Export
             try:
                 for k, v in self.wPlots.dPlot.items():

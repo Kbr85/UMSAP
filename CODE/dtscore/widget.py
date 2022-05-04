@@ -1896,8 +1896,9 @@ class MatPlotPanel(wx.Panel):
             if self.statusMethod is not None:
                 self.statusMethod(event)
             else:
+                x,y = self.GetAxesXY(event)
                 self.statusbar.SetStatusText(
-                    f"x={event.xdata:.2f} y={event.ydata:.2f}"
+                    f"x={x:.2f} y={y:.2f}"
                 )
         else:
             self.statusbar.SetStatusText('') 

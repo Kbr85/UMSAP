@@ -46,7 +46,7 @@ if os == 'Darwin':
     toolsMenuIdx = 2
     #------------------------------> Statusbar split size
     sbPlot2Fields = [-1, 115]
-    sbPlot3Fields = [90, -1, 115] 
+    sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Cmd'
     #------------------------------> Delta space between consecutive windows
@@ -65,7 +65,7 @@ elif os == 'Windows':
     toolsMenuIdx = 2
     #------------------------------> Statusbar split size
     sbPlot2Fields = [-1, 115]
-    sbPlot3Fields = [90, -1, 115] 
+    sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -80,7 +80,7 @@ else:
     toolsMenuIdx = 3
     #------------------------------> Statusbar split size
     sbPlot2Fields = [-1, 115]
-    sbPlot3Fields = [90, -1, 115] 
+    sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
