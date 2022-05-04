@@ -1667,10 +1667,13 @@ class MatPlotPanel(wx.Panel):
         #--------------> Accelerator entries
         accel = {
             'Zoom' : wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('Z'), wx.NewId()),
+            'Img'  : wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('I'), wx.NewId()),
         }
         #--------------> Bind
         self.Bind(
             wx.EVT_MENU, self.ZoomResetPlot, id=accel['Zoom'].GetCommand())
+        self.Bind(
+            wx.EVT_MENU, self.OnSaveImage, id=accel['Img'].GetCommand())
         #--------------> Add 
         self.SetAcceleratorTable(
             wx.AcceleratorTable([x for x in accel.values()])
@@ -1970,6 +1973,25 @@ class MatPlotPanel(wx.Panel):
         """
         return True
     #---
+    
+    def OnSaveImage(self, event) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        print('OnSaveImage')
+        return self.SaveImage(config.elMatPlotSaveI, parent=self, message=None)
+    #---
 
     #---------------------------------------------------> Zoom related methods
     def ZoomResetSetValues(self) -> Literal[True]:
@@ -2041,7 +2063,7 @@ class MatPlotPanel(wx.Panel):
         
         return True
     #---
-
+    
     def SaveImage(
         self, ext: str, parent: Optional[wx.Window]=None, 
         message: Optional[str]=None
@@ -2056,7 +2078,8 @@ class MatPlotPanel(wx.Panel):
                 To center the save dialog. Default is None
             message : str or None
                 Title for the save file window. Default is None
-        """		
+        """
+        print('SaveImage')
         #region ------------------------------------------------------> Dialog
         dlg = dtsWindow.FileSelectDialog(
             'save',
