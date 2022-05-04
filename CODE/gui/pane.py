@@ -216,7 +216,7 @@ class BaseConfPanel(
             self, 'cTTClearAll', 'Clear all user input.')
         self.cTTId  = getattr(
             self, 'cTTId', ('Short text to identify the analysis. The date of '
-                            'the analysis will be automatically included.'))
+            'the analysis will be automatically included.\ne.g. HIV inhibitor'))
         self.cTTNormMethod = getattr(
             self, 'cTTNormMethod', (f'Select the Data {self.cLNormMethod} '
                                     f'method.'))
@@ -2932,7 +2932,7 @@ class CorrA(BaseConfPanel):
         self.wStListI.SetToolTip(config.ttLCtrlCopyNoMod)
         self.wStListO.SetToolTip(config.ttLCtrlPasteMod)
         self.wAddCol.SetToolTip(f'Add selected Columns in the Data File to '
-            f'the list of Columns to Analyse. New columns will be added after '
+            f'the table of Columns to Analyse. New columns will be added after '
             f'the last selected element in Columns to analyse. Duplicate '
             f'columns are discarded.')
         #endregion --------------------------------------------------> Tooltip
@@ -3173,7 +3173,7 @@ class CorrA(BaseConfPanel):
         
         col = [int(x) for x in self.wLCtrlO.GetColContent(0)]
         colF = [x for x in range(0, len(col))]
-        
+        impMethod = self.wImputationMethod.cb.GetValue()
         #------------------------------> As given
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
@@ -3187,12 +3187,22 @@ class CorrA(BaseConfPanel):
             self.EqualLenLabel(self.cLNormMethod) : (
                 self.wNormMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLImputation) : (
-                self.wImputationMethod.cb.GetValue()),
+                impMethod),
+            self.EqualLenLabel(self.cLShift) : (
+                self.wShift.tc.GetValue()),
+            self.EqualLenLabel(self.cLWidth) : (
+                self.wWidth.tc.GetValue()),
             self.EqualLenLabel(self.cLCorrMethod) : (
                 self.wCorrMethod.cb.GetValue()),
             self.EqualLenLabel('Selected Columns') : col,
         }
-
+        #------------------------------> Remove Shift & Width if not needed
+        if impMethod == config.oImputation['ND']:
+            pass
+        else:
+            del self.rDI[self.EqualLenLabel(self.cLShift)]
+            del self.rDI[self.EqualLenLabel(self.cLWidth)]
+        #------------------------------> 
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> Dict with all values
@@ -3203,7 +3213,9 @@ class CorrA(BaseConfPanel):
             'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'TransMethod': self.wTransMethod.cb.GetValue(),
             'NormMethod' : self.wNormMethod.cb.GetValue(),
-            'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
+            'ImpMethod'  : impMethod,
+            'Shift'      : float(self.wShift.tc.GetValue()),
+            'Width'      : float(self.wWidth.tc.GetValue()),
             'CorrMethod' : self.wCorrMethod.cb.GetValue(),
             'oc'         : {
                 'Column'  : col,
@@ -3249,7 +3261,7 @@ class CorrA(BaseConfPanel):
                     print(k)
                     for j,w in v.items():
                         print(f'\t{j}: {w}')
-            print('')    
+            print('')
         else:
             pass
         #endregion ----------------------------------------------------> Print
@@ -3278,7 +3290,7 @@ class CorrA(BaseConfPanel):
     #---
 
     def WriteOutput(self):
-        """Write output. Override as needed """
+        """Write output. Override as needed"""
         #region --------------------------------------------------> Data Steps
         stepDict = self.SetStepDictDP()
         stepDict['Files'] = {
@@ -3287,10 +3299,9 @@ class CorrA(BaseConfPanel):
             config.fnTrans.format(self.rDate, '03')  : self.dfT,
             config.fnNorm.format(self.rDate, '04')   : self.dfN,
             config.fnImp.format(self.rDate, '05')    : self.dfIm,
-            config.fnFloat.format(self.rDate, '06')  : self.dfS,
-            self.rMainData.format(self.rDate, '07')  : self.dfR,    
+            self.rMainData.format(self.rDate, '06')  : self.dfR,
         }
-        stepDict['R'] = self.rMainData.format(self.rDate, '07')
+        stepDict['R'] = self.rMainData.format(self.rDate, '06')
         #endregion -----------------------------------------------> Data Steps
 
         return self.WriteOutputData(stepDict)
@@ -3624,19 +3635,22 @@ class DataPrep(BaseConfPanel):
             self.EqualLenLabel(self.cLNormMethod) : (
                 self.wNormMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLImputation) : (
-                impMethod)
+                impMethod),
+            self.EqualLenLabel(self.cLShift) : (
+                self.wShift.tc.GetValue()),
+            self.EqualLenLabel(self.cLWidth) : (
+                self.wWidth.tc.GetValue()),
+            self.EqualLenLabel(self.cLColAnalysis): (
+                self.wColAnalysis.tc.GetValue()),
         }
+        #------------------------------> Remove Shift & Width if not needed
         if impMethod == config.oImputation['ND']:
-            self.rDI[self.EqualLenLabel(self.cLShift)] = (
-                self.wShift.tc.GetValue())
-            self.rDI[self.EqualLenLabel(self.cLWidth)] = (
-                self.wWidth.tc.GetValue())
-        else:
             pass
-        self.rDI[self.EqualLenLabel(self.cLColAnalysis)] = (
-            self.wColAnalysis.tc.GetValue())
+        else:
+            del self.rDI[self.EqualLenLabel(self.cLShift)]
+            del self.rDI[self.EqualLenLabel(self.cLWidth)]
         #------------------------------> Dict with all values
-        #--------------> 
+        #-------------->
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #--------------> 
@@ -3652,7 +3666,7 @@ class DataPrep(BaseConfPanel):
             'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'TransMethod': self.wTransMethod.cb.GetValue(),
-            'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
+            'ImpMethod'  : impMethod,
             'Shift'      : float(self.wShift.tc.GetValue()),
             'Width'      : float(self.wWidth.tc.GetValue()),
             'oc'         : {

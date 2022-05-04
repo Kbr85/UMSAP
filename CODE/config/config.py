@@ -308,7 +308,7 @@ ttStIntensity = ('Specify if intensities are raw intensity values or are '
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
-    f"the list cannot be modified."
+    f"the table cannot be modified."
 )
 ttLCtrlPasteMod = (
     f"New rows can be pasted ({copyShortCut}+V) after the "
