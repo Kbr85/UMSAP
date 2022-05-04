@@ -2104,18 +2104,6 @@ class CorrAPlot(BaseWindowPlot):
         super().__init__(cParent, {'menudate' : self.rDate})
         #endregion --------------------------------------------> Initial Setup
 
-        #region -----------------------------------------------------> Widgets
-        
-        #endregion --------------------------------------------------> Widgets
-
-        #region ------------------------------------------------------> Sizers
-
-        #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
-
         #region ----------------------------------------------------> Position
         self.SetColDetails(self.rDateC)
         self.UpdateDisplayedData(self.rDateC, 'Name', False)
@@ -2161,13 +2149,13 @@ class CorrAPlot(BaseWindowPlot):
         #region -----------------------------------------------------> Options
         allCol = []
         for k,c in enumerate(self.rData[self.rDateC]['DF'].columns):
-            allCol.append([self.rData[self.rDateC]['NumColList'][k], c])
+            allCol.append([str(self.rData[self.rDateC]['NumColList'][k]), c])
         
         selCol = []
         for c in self.rSelColIdx:
             selCol.append([
-                self.rData[self.rDateC]['NumColList'][c], 
-                self.rData[self.rDateC]['DF'].columns[c]])    
+                str(self.rData[self.rDateC]['NumColList'][c]),
+                self.rData[self.rDateC]['DF'].columns[c]])
         #endregion --------------------------------------------------> Options
 
         #region -------------------------------------------------> Get New Sel
@@ -2177,7 +2165,7 @@ class CorrAPlot(BaseWindowPlot):
             config.lLCtrlColNameI, 
             config.sLCtrlColI, 
             tSelOptions = selCol,
-            title       = 'Select the columns to show in the correlation plot',            
+            title       = 'Select the columns to show in the correlation plot',
             tBtnLabel   = 'Add selection',
             color       = config.color['Zebra'],
             tStLabel = ['Columns in the current results', 'Selected columns'],
