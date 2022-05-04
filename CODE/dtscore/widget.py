@@ -1990,7 +1990,6 @@ class MatPlotPanel(wx.Panel):
             -----
             
         """
-        print('OnSaveImage')
         return self.SaveImage(config.elMatPlotSaveI, parent=self, message=None)
     #---
 
@@ -2080,7 +2079,6 @@ class MatPlotPanel(wx.Panel):
             message : str or None
                 Title for the save file window. Default is None
         """
-        print('SaveImage')
         #region ------------------------------------------------------> Dialog
         dlg = dtsWindow.FileSelectDialog(
             'save',

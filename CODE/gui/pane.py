@@ -2915,15 +2915,17 @@ class CorrA(BaseConfPanel):
         
         #region ----------------------------------------------> checkUserInput
         self.rCheckUserInput = {
-            self.cLuFile      : [self.wUFile.tc,            config.mFileBad  , False],
-            self.cLiFile      : [self.wIFile.tc,            config.mFileBad  , False],
-            self.cLId         : [self.wId.tc,               config.mValueBad , False],
-            self.cLCeroTreat  : [self.wCeroB.cb,            config.mOptionBad, False],
-            self.cLTransMethod: [self.wTransMethod.cb,      config.mOptionBad, False],
-            self.cLNormMethod : [self.wNormMethod.cb,       config.mOptionBad, False],
-            self.cLImputation : [self.wImputationMethod.cb, config.mOptionBad, False],
-            self.cLCorrMethod : [self.wCorrMethod.cb,       config.mOptionBad, False],
-        }        
+            self.cLuFile      : [self.wUFile.tc,            config.mFileBad  ,    False],
+            self.cLiFile      : [self.wIFile.tc,            config.mFileBad  ,    False],
+            self.cLId         : [self.wId.tc,               config.mValueBad ,    False],
+            self.cLCeroTreat  : [self.wCeroB.cb,            config.mOptionBad,    False],
+            self.cLTransMethod: [self.wTransMethod.cb,      config.mOptionBad,    False],
+            self.cLNormMethod : [self.wNormMethod.cb,       config.mOptionBad,    False],
+            self.cLImputation : [self.wImputationMethod.cb, config.mOptionBad,    False],
+            self.cLShift      : [self.wShift.tc,            config.mOneRPlusNum , False],
+            self.cLWidth      : [self.wWidth.tc,            config.mOneRPlusNum , False],
+            self.cLCorrMethod : [self.wCorrMethod.cb,       config.mOptionBad,    False],
+        }
         #endregion -------------------------------------------> checkUserInput
     
         #region -----------------------------------------------------> Tooltip
@@ -3030,6 +3032,9 @@ class CorrA(BaseConfPanel):
             self.wTransMethod.cb.SetValue("Log2")
             self.wNormMethod.cb.SetValue("Median")
             self.wImputationMethod.cb.SetValue("Normal Distribution")
+            self.OnImpMethod('fEvent')
+            self.wShift.tc.SetValue('1.8')
+            self.wWidth.tc.SetValue('0.3')
             self.wCorrMethod.cb.SetValue("Pearson")
         else:
             pass
@@ -3085,36 +3090,39 @@ class CorrA(BaseConfPanel):
             self.wId.tc.SetValue(dataI['CI']['ID'])
             #------------------------------> 
             self.wCeroB.cb.SetValue(dataI['I'][self.cLCeroTreatD])
-            self.wTransMethod.cb.SetValue(dataI['CI']['TransMethod'])
-            self.wNormMethod.cb.SetValue(dataI['CI']['NormMethod'])
-            self.wImputationMethod.cb.SetValue(dataI['CI']['ImpMethod'])
-            self.wCorrMethod.cb.SetValue(dataI['CI']['CorrMethod'])
+            self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
+            self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
+            self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
+            self.wShift.tc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
+            self.wWidth.tc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
             #------------------------------> 
             if iFile.exists:
                 #------------------------------> Add columns with the same order
                 l = []
                 for k in dataI['CI']['oc']['Column']:
                     if len(l) == 0:
-                        #------------------------------> 
+                        #------------------------------>
                         l.append(k)
                         continue
                     else:
-                        #------------------------------> 
+                        #------------------------------>
                         if k > l[-1]:
-                            #------------------------------> 
+                            #------------------------------>
                             l.append(k)
                             continue
                         else:
-                            #------------------------------> 
+                            #------------------------------>
                             self.wLCtrlI.SelectList(l)
-                            self.OnAdd('fEvent')            
-                            #------------------------------> 
+                            self.OnAdd('fEvent')
+                            #------------------------------>
                             l = [k]
                 #------------------------------> Last past
                 self.wLCtrlI.SelectList(l)
-                self.OnAdd('fEvent')    
+                self.OnAdd('fEvent')
             else:
                 pass
+            #------------------------------> 
+            self.OnImpMethod('fEvent')
         else:
             pass
         
