@@ -1360,7 +1360,7 @@ class BaseConfPanel(
     #---
     
     def SetStepDictDP(self) -> dict:
-        """Set the Data Procesing part of the stepDict to write in the output.
+        """Set the Data Processing part of the stepDict to write in the output.
     
             Returns
             -------
@@ -1379,7 +1379,7 @@ class BaseConfPanel(
     #---
     
     def SetStepDictDPFileR(self) -> dict:
-        """Set the Data Procesing, Files & Results parts of the stepDict to 
+        """Set the Data Processing, Files & Results parts of the stepDict to 
             write in the output.
     
             Returns
@@ -1394,16 +1394,17 @@ class BaseConfPanel(
                 config.ltDPKeys[3] : config.fnImp.format(self.rDate, '05'),
             },
             'Files' : {
-                config.fnInitial.format(self.rDate, '01'): self.dfI,
-                config.fnFloat.format(self.rDate, '02')  : self.dfF,
-                config.fnTrans.format(self.rDate, '03')  : self.dfT,
-                config.fnNorm.format(self.rDate, '04')   : self.dfN,
-                config.fnImp.format(self.rDate, '05')    : self.dfIm,
-                config.fnExclude.format(self.rDate, '06'): self.dfE,
-                config.fnScore.format(self.rDate, '07')  : self.dfS,
-                self.rMainData.format(self.rDate, '08')  : self.dfR,
+                config.fnInitial.format(self.rDate, '01')   : self.dfI,
+                config.fnFloat.format(self.rDate, '02')     : self.dfF,
+                config.fnTrans.format(self.rDate, '03')     : self.dfT,
+                config.fnNorm.format(self.rDate, '04')      : self.dfN,
+                config.fnImp.format(self.rDate, '05')       : self.dfIm,
+                config.fnTargetProt.format(self.rDate, '06'): self.dfTP,
+                config.fnExclude.format(self.rDate, '07')   : self.dfE,
+                config.fnScore.format(self.rDate, '08')     : self.dfS,
+                self.rMainData.format(self.rDate, '09')     : self.dfR,
             },
-            'R' : self.rMainData.format(self.rDate, '08'),
+            'R' : self.rMainData.format(self.rDate, '09'),
         }
         
         return stepDict
@@ -5780,6 +5781,26 @@ class LimProt(BaseConfModPanel2):
             print('')
         
         return True
+    #---
+    
+    def WriteOutput(self):
+        """Write output. Override as needed"""
+        #region --------------------------------------------------> Data Steps
+        stepDict = self.SetStepDictDP()
+        stepDict['Files'] = {
+            config.fnInitial.format(self.rDate, '01')   : self.dfI,
+            config.fnFloat.format(self.rDate, '02')     : self.dfF,
+            config.fnTrans.format(self.rDate, '03')     : self.dfT,
+            config.fnNorm.format(self.rDate, '04')      : self.dfN,
+            config.fnImp.format(self.rDate, '05')       : self.dfIm,
+            config.fnTargetProt.format(self.rDate, '06'): self.dfTP,
+            config.fnScore.format(self.rDate, '07')     : self.dfS,
+            self.rMainData.format(self.rDate, '08')     : self.dfR,
+        }
+        stepDict['R'] = self.rMainData.format(self.rDate, '08')
+        #endregion -----------------------------------------------> Data Steps
+
+        return self.WriteOutputData(stepDict)
     #---
     
     def RunEnd(self) -> bool:

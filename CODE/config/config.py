@@ -222,12 +222,12 @@ fConfigDef = res / 'CONFIG/config_def.json'
 #------------------------------> Names
 fnInitial    = "{}_{}-Initial-Data.txt"
 fnFloat      = "{}_{}-Floated-Data.txt"
-fnTargetProt = "{}_{}-Target-Protein-Data.txt"
-fnExclude    = "{}_{}-After-Excluding-Data.txt"
-fnScore      = "{}_{}-Score-Filtered-Data.txt"
 fnTrans      = "{}_{}-Transformed-Data.txt"
 fnNorm       = "{}_{}-Normalized-Data.txt"
 fnImp        = "{}_{}-Imputed-Data.txt"
+fnTargetProt = "{}_{}-Target-Protein-Data.txt"
+fnExclude    = "{}_{}-After-Excluding-Data.txt"
+fnScore      = "{}_{}-Score-Filtered-Data.txt"
 fnDataSteps  = 'Steps_Data_Files'
 fnDataInit   = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
