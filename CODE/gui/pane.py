@@ -5046,7 +5046,7 @@ class LimProt(BaseConfModPanel2):
             Name of the file containing the results of the analysis in the 
             step folder
         
-        See Parent classes for more aatributes.
+        See Parent classes for more attributes.
         
         Notes
         -----
@@ -5205,6 +5205,8 @@ class LimProt(BaseConfModPanel2):
             self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad     , False],
             self.cLNormMethod  :[self.wNormMethod.cb,      config.mOptionBad     , False],
             self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad     , False],
+            self.cLShift       :[self.wShift.tc,           config.mOneRPlusNum   , False],
+            self.cLWidth       :[self.wWidth.tc,           config.mOneRPlusNum   , False],
             self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad      , False],
             self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum    , False],
             self.cLSample      :[self.wSample.cb,          config.mOptionBad     , False],
@@ -5380,6 +5382,9 @@ class LimProt(BaseConfModPanel2):
                 2        : ['Band1', 'Band2', 'Band3', 'Band4'],
                 'Control': ['Ctrl'],
             }
+            self.OnImpMethod('fEvent')
+            self.wShift.tc.SetValue('1.8')
+            self.wWidth.tc.SetValue('0.3')
         else:
             pass
         #endregion -----------------------------------------------------> Test
@@ -5420,6 +5425,8 @@ class LimProt(BaseConfModPanel2):
             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
+            self.wShift.tc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
+            self.wWidth.tc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
             #------------------------------> Values
             self.wTargetProt.tc.SetValue(dataI['I'][self.cLTargetProt])
             self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
@@ -5493,6 +5500,8 @@ class LimProt(BaseConfModPanel2):
         #region -----------------------------------------------------------> d
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> Variables
+        impMethod = self.wImputationMethod.cb.GetValue()
         #------------------------------> As given
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
@@ -5508,7 +5517,11 @@ class LimProt(BaseConfModPanel2):
             self.EqualLenLabel(self.cLNormMethod) : (
                 self.wNormMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLImputation) : (
-                self.wImputationMethod.cb.GetValue()),
+                impMethod),
+            self.EqualLenLabel(self.cLShift) : (
+                self.wShift.tc.GetValue()),
+            self.EqualLenLabel(self.cLWidth) : (
+                self.wWidth.tc.GetValue()),
             self.EqualLenLabel(self.cLTargetProt) : (
                 self.wTargetProt.tc.GetValue()),
             self.EqualLenLabel(self.cLScoreVal) : (
@@ -5540,6 +5553,12 @@ class LimProt(BaseConfModPanel2):
             self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
                 self.rLbDict['Control']),
         }
+        #------------------------------> Remove Shift & Width if not needed
+        if impMethod == config.oImputation['ND']:
+            pass
+        else:
+            del self.rDI[self.EqualLenLabel(self.cLShift)]
+            del self.rDI[self.EqualLenLabel(self.cLWidth)]
         #endregion --------------------------------------------------------> d
         
         #region ----------------------------------------------------------> do
@@ -5569,7 +5588,9 @@ class LimProt(BaseConfModPanel2):
             'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'TransMethod': self.wTransMethod.cb.GetValue(),
             'NormMethod' : self.wNormMethod.cb.GetValue(),
-            'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
+            'ImpMethod'  : impMethod,
+            'Shift'      : float(self.wShift.tc.GetValue()),
+            'Width'      : float(self.wWidth.tc.GetValue()),
             'TargetProt' : self.wTargetProt.tc.GetValue(),
             'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
             'Sample'     : self.cOSample[self.wSample.cb.GetValue()],
@@ -5707,7 +5728,7 @@ class LimProt(BaseConfModPanel2):
                             f'Calculation of the Limited Proteolysis data for '
                             f'point {bN} - {lN} failed.'
                         )
-                        self.rExceptionn = e
+                        self.rException = e
                         return False
                 else:
                     pass
@@ -5748,7 +5769,7 @@ class LimProt(BaseConfModPanel2):
             self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
         else:
             pass
-        #------------------------------>     
+        #------------------------------>
         return super().RunEnd()
     #---
     
