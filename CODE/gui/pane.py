@@ -651,6 +651,26 @@ class BaseConfPanel(
             self.SetupScrolling()
         return True
     #---
+    
+    def OnClear(self, event) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        super().OnClear(event)
+        self.OnImpMethod('fEvent')
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Other Methods
