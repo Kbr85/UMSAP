@@ -4025,6 +4025,8 @@ class ProtProf(BaseConfModPanel):
             self.cLTransMethod : [self.wTransMethod.cb,     config.mOptionBad     , False],
             self.cLNormMethod  : [self.wNormMethod.cb,      config.mOptionBad     , False],
             self.cLImputation  : [self.wImputationMethod.cb,config.mOptionBad     , False],
+            self.cLShift       : [self.wShift.tc,           config.mOneRPlusNum   , False],
+            self.cLWidth       : [self.wWidth.tc,           config.mOneRPlusNum   , False],
             self.cLScoreVal    : [self.wScoreVal.tc,        config.mOneRealNum    , False],
             self.cLSample      : [self.wSample.cb,          config.mOptionBad     , False],
             self.cLIntensity   : [self.wRawI.cb,            config.mOptionBad     , False],
@@ -4253,6 +4255,9 @@ class ProtProf(BaseConfModPanel):
             #     'Control'    : ['1Control'],
             #     'ControlType': 'Ratio of Intensities',
             # }
+            self.OnImpMethod('fEvent')
+            self.wShift.tc.SetValue('1.8')
+            self.wWidth.tc.SetValue('0.3')
         else:
             pass
         #endregion -----------------------------------------------------> Test
@@ -4291,6 +4296,8 @@ class ProtProf(BaseConfModPanel):
             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
+            self.wShift.tc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
+            self.wWidth.tc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
             #------------------------------> Values
             self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
             self.wSample.cb.SetValue(dataI['I'][self.cLSample])
@@ -4309,6 +4316,7 @@ class ProtProf(BaseConfModPanel):
             self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
             #------------------------------> 
             self.OnIFileLoad('fEvent')
+            self.OnImpMethod('fEvent')
         else:
             pass
         #endregion ----------------------------------------------> Fill Fields
@@ -4500,7 +4508,7 @@ class ProtProf(BaseConfModPanel):
 
         #region ---------------------------------------------------> Return
         if not badRep:
-            return True        
+            return True
         else:
             self.rMsgError = config.mRepNum
             self.rException = dtsException.InputError(
@@ -4519,6 +4527,8 @@ class ProtProf(BaseConfModPanel):
         #region -------------------------------------------------------> Input
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> Variables
+        impMethod = self.wImputationMethod.cb.GetValue()
         #------------------------------> As given
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
@@ -4538,7 +4548,11 @@ class ProtProf(BaseConfModPanel):
             self.EqualLenLabel(self.cLNormMethod) : (
                 self.wNormMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLImputation) : (
-                self.wImputationMethod.cb.GetValue()),
+                impMethod),
+            self.EqualLenLabel(self.cLShift) : (
+                self.wShift.tc.GetValue()),
+            self.EqualLenLabel(self.cLWidth) : (
+                self.wWidth.tc.GetValue()),
             self.EqualLenLabel(self.cLAlpha) : (
                 self.wAlpha.tc.GetValue()),
             self.EqualLenLabel(self.cLCorrectP) : (
@@ -4562,6 +4576,12 @@ class ProtProf(BaseConfModPanel):
             self.EqualLenLabel(config.lStResultCtrlS): (
                 self.wTcResults.GetValue()),
         }
+        #------------------------------> Remove Shift & Width if not needed
+        if impMethod == config.oImputation['ND']:
+            pass
+        else:
+            del self.rDI[self.EqualLenLabel(self.cLShift)]
+            del self.rDI[self.EqualLenLabel(self.cLWidth)]
         #------------------------------> Dict with all values
         #--------------> 
         msgStep = self.cLPdPrepare + 'User input, processing'
@@ -4588,7 +4608,9 @@ class ProtProf(BaseConfModPanel):
             'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'TransMethod': self.wTransMethod.cb.GetValue(),
-            'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
+            'ImpMethod'  : impMethod,
+            'Shift'      : float(self.wShift.tc.GetValue()),
+            'Width'      : float(self.wWidth.tc.GetValue()),
             'Alpha'      : float(self.wAlpha.tc.GetValue()),
             'CorrectP'   : self.wCorrectP.cb.GetValue(),
             'Cond'       : self.rLbDict[1],
