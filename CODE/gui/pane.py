@@ -5467,6 +5467,7 @@ class LimProt(BaseConfModPanel2):
             self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
             #------------------------------> 
             self.OnIFileLoad('fEvent')
+            self.OnImpMethod('fEvent')
         else:
             pass
         #endregion ----------------------------------------------> Fill Fields
