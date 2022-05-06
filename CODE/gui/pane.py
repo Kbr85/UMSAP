@@ -3911,7 +3911,7 @@ class ProtProf(BaseConfModPanel):
     cURL         = f'{config.urlTutorial}/proteome-profiling'
     cSection     = config.nmProtProf
     cTitlePD     = f"Running {config.nmProtProf} Analysis"
-    cGaugePD     = 39
+    cGaugePD     = 38
     rLLenLongest = len(config.lStResultCtrlS)
     rMainData    = '{}_{}-ProteomeProfiling-Data.txt'
     #------------------------------> Optional configuration
@@ -3919,7 +3919,6 @@ class ProtProf(BaseConfModPanel):
     #------------------------------> Label
     cLCorrectP    = config.lCbCorrectP
     cLSample      = config.lCbSample
-    cLIntensity   = config.lCbIntensity
     cLGene        = config.lStGeneName
     cLExcludeProt = config.lStExcludeProt
     cLCond        = config.lStProtProfCond
@@ -3935,7 +3934,6 @@ class ProtProf(BaseConfModPanel):
     #------------------------------> Tooltip
     cTTCorrectP    = config.ttStCorrectP
     cTTSample      = config.ttStSample
-    cTTIntensity   = config.ttStIntensity
     cTTGene        = config.ttStGenName
     cTTExcludeProt = f'{config.ttStExcludeProt}{config.mOptField}'
     #------------------------------> Control Type
@@ -3987,14 +3985,6 @@ class ProtProf(BaseConfModPanel):
             tooltip   = self.cTTSample,
             validator = dtsValidator.IsNotEmpty(),
         )
-        
-        self.wRawI = dtsWidget.StaticTextComboBox(
-            self.sbValue,
-            label     = self.cLIntensity,
-            choices   = list(self.cOIntensity.values()),
-            tooltip   = self.cTTIntensity,
-            validator = dtsValidator.IsNotEmpty(),
-        )
         #------------------------------> Columns
         self.wGeneName = dtsWidget.StaticTextCtrl(
             self.sbColumn,
@@ -4029,7 +4019,6 @@ class ProtProf(BaseConfModPanel):
             self.cLWidth       : [self.wWidth.tc,           config.mOneRPlusNum   , False],
             self.cLScoreVal    : [self.wScoreVal.tc,        config.mOneRealNum    , False],
             self.cLSample      : [self.wSample.cb,          config.mOptionBad     , False],
-            self.cLIntensity   : [self.wRawI.cb,            config.mOptionBad     , False],
             self.cLAlpha       : [self.wAlpha.tc,           config.mOne01Num      , False],
             self.cLCorrectP    : [self.wCorrectP.cb,        config.mOptionBad     , False],
             self.cLDetectedProt: [self.wDetectedProt.tc,    config.mOneZPlusNumCol, True ],
@@ -4082,24 +4071,12 @@ class ProtProf(BaseConfModPanel):
         )
         self.sizersbValueWid.Add(
             self.wAlpha.st,
-            pos    = (2,1),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wAlpha.tc,
-            pos    = (2,2),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sizersbValueWid.Add(
-            self.wRawI.st,
             pos    = (0,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
-            self.wRawI.cb,
+            self.wAlpha.tc,
             pos    = (0,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
@@ -4216,7 +4193,6 @@ class ProtProf(BaseConfModPanel):
             self.wImputationMethod.cb.SetValue('Normal Distribution')
             self.wAlpha.tc.SetValue('0.05')
             self.wSample.cb.SetValue('Independent Samples')
-            self.wRawI.cb.SetValue('Raw Intensities')
             self.wCorrectP.cb.SetValue('Benjamini - Hochberg')
             self.wDetectedProt.tc.SetValue('0')
             self.wGeneName.tc.SetValue('6')   
@@ -4301,7 +4277,6 @@ class ProtProf(BaseConfModPanel):
             #------------------------------> Values
             self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
             self.wSample.cb.SetValue(dataI['I'][self.cLSample])
-            self.wRawI.cb.SetValue(dataI['I'][self.cLIntensity])
             self.wAlpha.tc.SetValue(dataI['I'][self.cLAlpha])
             self.wCorrectP.cb.SetValue(dataI['I'][self.cLCorrectP])
             #------------------------------> Columns
@@ -4339,35 +4314,15 @@ class ProtProf(BaseConfModPanel):
         else:
             return False
         #endregion ----------------------------------------------------> Super
-        
+
         #region ------------------------------------------------> Mixed Fields
-        #region --------------------------------> Raw or Ration of Intensities
-        msgStep = self.cLPdCheck + 'Intensity Options'
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> 
-        a = self.wRawI.cb.GetValue()
-        b = self.rLbDict['ControlType']
-        if a == b == config.oIntensities['RatioI']:
-            pass
-        elif a != config.oIntensities['RatioI'] and b != config.oIntensities['RatioI']:
-            pass
-        else:
-            self.rMsgError = (
-                f'The values for {self.cLIntensity} '
-                f'({self.wRawI.cb.GetValue()}) and Control Type '
-                f'({self.rLbDict["ControlType"]}) are incompatible with each '
-                f'other.'
-            )
-            return False
-        #endregion -----------------------------> Raw or Ration of Intensities
-        
         #region ---------------------------------------------> # of Replicates
         msgStep = self.cLPdCheck + 'Number of Replicates'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> 
         a = self.wSample.cb.GetValue() == 'Paired Samples'
-        b = self.wRawI.cb.GetValue() == config.oIntensities['RawI']
-        if a and b:
+        b = self.rLbDict['Control'] == config.oControlTypeProtProf['Ratio']
+        if a and not b:
             if self.CheckNumberReplicates():
                 pass
             else:
@@ -4376,10 +4331,10 @@ class ProtProf(BaseConfModPanel):
             pass
         #endregion ------------------------------------------> # of Replicates
         #endregion ---------------------------------------------> Mixed Fields
-        
+
         return True
     #---
-    
+
     def CheckNumberReplicates(self) -> bool:
         """Check the number of replicates when sampels are paired and raw 
             intensities are used.
@@ -4399,7 +4354,7 @@ class ProtProf(BaseConfModPanel):
             return False
         #endregion ------------------------------------------------> Check
     #---
-    
+
     def CheckRepNum_OC(self, resCtrl: list[list[list[int]]]) -> bool:
         """Check equal number of replicas
     
@@ -4438,7 +4393,7 @@ class ProtProf(BaseConfModPanel):
             return False
         #endregion ------------------------------------------------> Return
     #---
-    
+
     def CheckRepNum_OCC(self, resCtrl: list[list[list[int]]]) -> bool:
         """Check equal number of replicas
     
@@ -4477,7 +4432,7 @@ class ProtProf(BaseConfModPanel):
             return False
         #endregion ------------------------------------------------> Return
     #---
-    
+
     def CheckRepNum_OCR(self, resCtrl: list[list[list[int]]]) -> bool:
         """Check equal number of replicas
     
@@ -4516,7 +4471,7 @@ class ProtProf(BaseConfModPanel):
             return False
         #endregion ------------------------------------------------> Return
     #---
-    
+
     def PrepareRun(self) -> bool:
         """Set variable and prepare data for analysis.
         
@@ -4537,12 +4492,6 @@ class ProtProf(BaseConfModPanel):
                 self.wId.tc.GetValue()),
             self.EqualLenLabel(self.cLCeroTreatD) : (
                 self.wCeroB.cb.GetValue()),
-            self.EqualLenLabel(self.cLScoreVal) : (
-                self.wScoreVal.tc.GetValue()),
-            self.EqualLenLabel(self.cLSample) : (
-                self.wSample.cb.GetValue()),
-            self.EqualLenLabel(self.cLIntensity) : (
-                self.wRawI.cb.GetValue()),
             self.EqualLenLabel(self.cLTransMethod) : (
                 self.wTransMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLNormMethod) : (
@@ -4553,6 +4502,10 @@ class ProtProf(BaseConfModPanel):
                 self.wShift.tc.GetValue()),
             self.EqualLenLabel(self.cLWidth) : (
                 self.wWidth.tc.GetValue()),
+            self.EqualLenLabel(self.cLScoreVal) : (
+                self.wScoreVal.tc.GetValue()),
+            self.EqualLenLabel(self.cLSample) : (
+                self.wSample.cb.GetValue()),
             self.EqualLenLabel(self.cLAlpha) : (
                 self.wAlpha.tc.GetValue()),
             self.EqualLenLabel(self.cLCorrectP) : (
@@ -4603,7 +4556,7 @@ class ProtProf(BaseConfModPanel):
             'uFile'      : Path(self.wUFile.tc.GetValue()),
             'ID'         : self.wId.tc.GetValue(),
             'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
-            'RawI'       : True if self.wRawI.cb.GetValue() == self.cOIntensity['RawI'] else False,
+            'RawI'       : True if self.rLbDict['Control'] == config.oControlTypeProtProf['Ratio'] else False,
             'IndS'       : True if self.wSample.cb.GetValue() == self.cOSample['Independent Samples'] else False,
             'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'NormMethod' : self.wNormMethod.cb.GetValue(),
@@ -5169,7 +5122,7 @@ class LimProt(BaseConfModPanel2):
     cURL         = f"{config.urlTutorial}/limited-proteolysis"
     cSection     = config.nmLimProt
     cTitlePD     = f"Running {config.nmLimProt} Analysis"
-    cGaugePD     = 43
+    cGaugePD     = 44
     rLLenLongest = len(config.lStResultCtrlS)
     rMainData    = '{}_{}-LimitedProteolysis-Data.txt'
     rChangeKey   = ['iFile', 'uFile', 'seqFile']
