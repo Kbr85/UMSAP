@@ -226,10 +226,12 @@ class BaseConfPanel(
         self.cTTImputation  = getattr(
             self, 'cTTImputation', (f'Select the Data {self.cLImputation} '
                                     f'method.'))
-        self.cTTShift = getattr(self, 'cTTShift', (f'Shift to the center of '
-            f'the normal distribution used to replace missing values\ne.g. 1.8'))
-        self.cTTWidth = getattr(self, 'cTTWidth', (f'Approximate width of the '
-            f'the normal distribution used to replace missing values\ne.g. 0.3'))
+        self.cTTShift = getattr(self, 'cTTShift', (f'Factor to shift the '
+            f'center of the normal distribution used to replace missing. '
+            f'values\ne.g. 1.8'))
+        self.cTTWidth = getattr(self, 'cTTWidth', (f'Factor to control the '
+            f'width of the normal distribution used to replace missing. '
+            f'values\ne.g. 0.3'))
         #------------------------------> Extensions
         self.cEiFile = getattr(self, 'ciFileE', config.elData)
         #------------------------------> Validator

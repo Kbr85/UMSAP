@@ -5731,7 +5731,7 @@ class LimProtPlot(BaseWindowProteolysis):
         dictO['LanesWithFP'] = (
             f'{len(lanesWithFP)} (' + f'{lanesWithFP}'[1:-1] + f')')
         dictO['Fragments'] = (
-            f'{len(fragments)} (' + f'{fragments}'[1:-1] + f')')
+            f'{sum(fragments)} (' + f'{fragments}'[1:-1] + f')')
         dictO['FP'] = (
             f'{sum(fP)} (' +f'{fP}'[1:-1] + f')')
         #endregion ------------------------------------------------> 
@@ -5835,7 +5835,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #------------------------------> Keys
         tKeys = [(x, self.rLanes[lane], 'Ptost') for x in self.rBands]
         #------------------------------> Info
-        infoDict = self.PrintLBGetInfo(tKeys)           
+        infoDict = self.PrintLBGetInfo(tKeys)
         #endregion -----------------------------------------------> Get Values
         
         #region -------------------------------------------------------> Clear
@@ -5845,9 +5845,9 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ----------------------------------------------------> New Text
         if infoDict:
             self.wText.AppendText(f'Details for {self.rLanes[lane]}\n\n')
-            self.wText.AppendText(f'--> Analyzed Lanes\n\n')
-            self.wText.AppendText(f'Total Lanes  : {len(self.rBands)}\n')
-            self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
+            self.wText.AppendText(f'--> Analyzed Bands\n\n')
+            self.wText.AppendText(f'Total Bands  : {len(self.rBands)}\n')
+            self.wText.AppendText(f'Bands with FP: {infoDict["LanesWithFP"]}\n')
             self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
             self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
             self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
