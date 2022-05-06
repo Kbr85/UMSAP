@@ -15,7 +15,6 @@
 
 
 #region -------------------------------------------------------------> Imports
-import random
 from typing import Optional, Any, Literal, Union
 
 import numpy as np
@@ -1067,7 +1066,7 @@ def ttest_PS_DF(
         col2: list[int]
             Experiment columns
         value: float
-            Hypotethical value for the mean difference. Default is 0.
+            Hypothetical value for the mean difference. Default is 0.
         alpha: float
             Significance level
         roundTo: int

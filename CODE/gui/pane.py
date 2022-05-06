@@ -5506,8 +5506,25 @@ class LimProt(BaseConfModPanel2):
         else:
             pass
         #endregion ----------------------------------------------------> Theta
-        #endregion ---------------------------------------------> Mixed Fields
         
+        #region ----------------------------------------------> Paired Samples
+        msgStep = self.cLPdCheck + f'{self.cLSample}'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------>
+        if self.wSample.cb.GetValue() == 'Paired Samples':
+            resctrl = dmethod.ResControl2ListNumber(self.wTcResults.GetValue())
+            n = [len(x) for y in resctrl for x in y if len(x) != 0]
+            if len(set(n)) == 1:
+                pass
+            else:
+                self.rMsgError = (f'The Pair Samples analysis requires all gel '
+                    f'spots and control to have the same number of replicates.')
+                return False
+        else:
+            pass
+        #endregion -------------------------------------------> Paired Samples
+        #endregion ---------------------------------------------> Mixed Fields
+
         return True
     #---
     
@@ -5725,7 +5742,7 @@ class LimProt(BaseConfModPanel2):
                 self.rDO['Gamma'], 
                 deltaMax=self.rDO['ThetaMax'],
             )
-        #------------------------------>         
+        #------------------------------>
         self.dfR[('Delta', 'Delta', 'Delta')] = delta
         #endregion ----------------------------------------------------> Delta
         
