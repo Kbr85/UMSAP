@@ -1237,7 +1237,7 @@ class BaseConfPanel(
     
             Returns
             -------
-            bool      
+            bool
             
             Notes
             -----
@@ -3913,6 +3913,7 @@ class ProtProf(BaseConfModPanel):
     #------------------------------> Label
     cLCorrectP    = config.lCbCorrectP
     cLSample      = config.lCbSample
+    cLIntensity   = config.lCbIntensity
     cLGene        = config.lStGeneName
     cLExcludeProt = config.lStExcludeProt
     cLCond        = config.lStProtProfCond
@@ -3928,6 +3929,7 @@ class ProtProf(BaseConfModPanel):
     #------------------------------> Tooltip
     cTTCorrectP    = config.ttStCorrectP
     cTTSample      = config.ttStSample
+    cTTIntensity   = config.ttStIntensity
     cTTGene        = config.ttStGenName
     cTTExcludeProt = f'{config.ttStExcludeProt}{config.mOptField}'
     #------------------------------> Control Type
@@ -3971,12 +3973,18 @@ class ProtProf(BaseConfModPanel):
             tooltip   = self.cTTCorrectP,
             validator = dtsValidator.IsNotEmpty(),
         )
-        
         self.wSample = dtsWidget.StaticTextComboBox(
             self.sbValue,
             label     = self.cLSample,
             choices   = list(self.cOSample.keys()),
             tooltip   = self.cTTSample,
+            validator = dtsValidator.IsNotEmpty(),
+        )
+        self.wRawI = dtsWidget.StaticTextComboBox(
+            self.sbValue,
+            label     = self.cLIntensity,
+            choices   = list(self.cOIntensity.values()),
+            tooltip   = self.cTTIntensity,
             validator = dtsValidator.IsNotEmpty(),
         )
         #------------------------------> Columns
@@ -4013,6 +4021,7 @@ class ProtProf(BaseConfModPanel):
             self.cLWidth       : [self.wWidth.tc,           config.mOneRPlusNum   , False],
             self.cLScoreVal    : [self.wScoreVal.tc,        config.mOneRealNum    , False],
             self.cLSample      : [self.wSample.cb,          config.mOptionBad     , False],
+            self.cLIntensity   : [self.wRawI.cb,            config.mOptionBad     , False],
             self.cLAlpha       : [self.wAlpha.tc,           config.mOne01Num      , False],
             self.cLCorrectP    : [self.wCorrectP.cb,        config.mOptionBad     , False],
             self.cLDetectedProt: [self.wDetectedProt.tc,    config.mOneZPlusNumCol, True ],
@@ -4065,12 +4074,24 @@ class ProtProf(BaseConfModPanel):
         )
         self.sizersbValueWid.Add(
             self.wAlpha.st,
-            pos    = (0,3),
+            pos    = (2,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sizersbValueWid.Add(
             self.wAlpha.tc,
+            pos    = (2,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wRawI.st,
+            pos    = (0,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sizersbValueWid.Add(
+            self.wRawI.cb,
             pos    = (0,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
@@ -4187,6 +4208,7 @@ class ProtProf(BaseConfModPanel):
             self.wImputationMethod.cb.SetValue('Normal Distribution')
             self.wAlpha.tc.SetValue('0.05')
             self.wSample.cb.SetValue('Independent Samples')
+            self.wRawI.cb.SetValue('Raw Intensities')
             self.wCorrectP.cb.SetValue('Benjamini - Hochberg')
             self.wDetectedProt.tc.SetValue('0')
             self.wGeneName.tc.SetValue('6')   
@@ -4271,6 +4293,7 @@ class ProtProf(BaseConfModPanel):
             #------------------------------> Values
             self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
             self.wSample.cb.SetValue(dataI['I'][self.cLSample])
+            self.wRawI.cb.SetValue(dataI['I'][self.cLIntensity])
             self.wAlpha.tc.SetValue(dataI['I'][self.cLAlpha])
             self.wCorrectP.cb.SetValue(dataI['I'][self.cLCorrectP])
             #------------------------------> Columns
@@ -4310,6 +4333,26 @@ class ProtProf(BaseConfModPanel):
         #endregion ----------------------------------------------------> Super
 
         #region ------------------------------------------------> Mixed Fields
+        #region --------------------------------> Raw or Ration of Intensities
+        msgStep = self.cLPdCheck + 'Intensity Options'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        a = self.wRawI.cb.GetValue()
+        b = self.rLbDict['ControlType']
+        if a == b == config.oIntensities['RatioI']:
+            pass
+        elif a != config.oIntensities['RatioI'] and b != config.oIntensities['RatioI']:
+            pass
+        else:
+            self.rMsgError = (
+                f'The values for {self.cLIntensity} '
+                f'({self.wRawI.cb.GetValue()}) and Control Type '
+                f'({self.rLbDict["ControlType"]}) are incompatible with each '
+                f'other.'
+            )
+            return False
+        #endregion -----------------------------> Raw or Ration of Intensities
+        
         #region ---------------------------------------------> # of Replicates
         msgStep = self.cLPdCheck + 'Number of Replicates'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
@@ -4498,6 +4541,8 @@ class ProtProf(BaseConfModPanel):
                 self.wScoreVal.tc.GetValue()),
             self.EqualLenLabel(self.cLSample) : (
                 self.wSample.cb.GetValue()),
+            self.EqualLenLabel(self.cLIntensity) : (
+                self.wRawI.cb.GetValue()),
             self.EqualLenLabel(self.cLAlpha) : (
                 self.wAlpha.tc.GetValue()),
             self.EqualLenLabel(self.cLCorrectP) : (
@@ -4536,18 +4581,18 @@ class ProtProf(BaseConfModPanel):
         resctrlFlat   = dmethod.ResControl2Flat(resctrl)
         resctrlDF     = dmethod.ResControl2DF(resctrl, 2+len(excludeProt)+1)
         resctrlDFFlat = dmethod.ResControl2Flat(resctrlDF)
-        #--------------> 
+        #-------------->
         self.rDO  = {
             'iFile'      : Path(self.wIFile.tc.GetValue()),
             'uFile'      : Path(self.wUFile.tc.GetValue()),
             'ID'         : self.wId.tc.GetValue(),
             'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
-            'RawI'       : True if self.rLbDict['Control'] == config.oControlTypeProtProf['Ratio'] else False,
+            'RawI'       : True if self.wRawI.cb.GetValue() == self.cOIntensity['RawI'] else False,
             'IndS'       : True if self.wSample.cb.GetValue() == self.cOSample['Independent Samples'] else False,
             'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'TransMethod': self.wTransMethod.cb.GetValue(),
-            'ImpMethod'  : impMethod,
+            'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
             'Shift'      : float(self.wShift.tc.GetValue()),
             'Width'      : float(self.wWidth.tc.GetValue()),
             'Alpha'      : float(self.wAlpha.tc.GetValue()),
@@ -4573,7 +4618,7 @@ class ProtProf(BaseConfModPanel):
                 'DetectedP'  : 0,
                 'GeneName'   : 1,
                 'ScoreCol'   : 2,
-                'ExcludeP'   : [2+x for x in range(1, len(excludeProt)+1)],
+                'ExcludeR'   : [2+x for x in range(1, len(excludeProt)+1)],
                 'ResCtrl'    : resctrlDF,
                 'ResCtrlFlat': resctrlDFFlat,
                 'ColumnR'    : resctrlDFFlat,
@@ -4627,8 +4672,8 @@ class ProtProf(BaseConfModPanel):
         #endregion -----------------------------------------> Data Preparation
         
         #region --------------------------------------------------------> Sort
-        self.dfS.sort_values(
-            by=list(self.dfS.columns[0:2]), inplace=True, ignore_index=True,
+        self.dfS = self.dfS.sort_values(
+            by=list(self.dfS.columns[0:2]), ignore_index=True,
         )
         #endregion -----------------------------------------------------> Sort
         
@@ -4935,6 +4980,26 @@ class ProtProf(BaseConfModPanel):
         )
         
         return True
+    #---
+    
+    def WriteOutput(self):
+        """Write output. Override as needed"""
+        #region --------------------------------------------------> Data Steps
+        stepDict = self.SetStepDictDP()
+        stepDict['Files'] = {
+            config.fnInitial.format(self.rDate, '01'): self.dfI,
+            config.fnFloat.format(self.rDate, '02')  : self.dfF,
+            config.fnTrans.format(self.rDate, '03')  : self.dfT,
+            config.fnNorm.format(self.rDate, '04')   : self.dfN,
+            config.fnImp.format(self.rDate, '05')    : self.dfIm,
+            config.fnExclude.format(self.rDate, '06'): self.dfE,
+            config.fnScore.format(self.rDate, '07')  : self.dfS,
+            self.rMainData.format(self.rDate, '08')  : self.dfR,
+        }
+        stepDict['R'] = self.rMainData.format(self.rDate, '08')
+        #endregion -----------------------------------------------> Data Steps
+
+        return self.WriteOutputData(stepDict)
     #---
     #endregion --------------------------------------------------> Run Methods
 #---
