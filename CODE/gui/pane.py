@@ -871,7 +871,13 @@ class BaseConfPanel(
         self.rDate = dtsMethod.StrNow()
         #------------------------------> DateID
         self.rDateID = f'{self.rDate} - {self.rDO["ID"]}'
-        
+        #------------------------------> Remove Shift & Width if not needed
+        if self.wImputationMethod.cb.GetValue() == config.oImputation['ND']:
+            pass
+        else:
+            del self.rDI[self.EqualLenLabel(self.cLShift)]
+            del self.rDI[self.EqualLenLabel(self.cLWidth)]
+
         return True
     #---
   
@@ -3219,12 +3225,6 @@ class CorrA(BaseConfPanel):
                 self.wCorrMethod.cb.GetValue()),
             self.EqualLenLabel('Selected Columns') : col,
         }
-        #------------------------------> Remove Shift & Width if not needed
-        if impMethod == config.oImputation['ND']:
-            pass
-        else:
-            del self.rDI[self.EqualLenLabel(self.cLShift)]
-            del self.rDI[self.EqualLenLabel(self.cLWidth)]
         #------------------------------> 
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
@@ -3666,12 +3666,6 @@ class DataPrep(BaseConfPanel):
             self.EqualLenLabel(self.cLColAnalysis): (
                 self.wColAnalysis.tc.GetValue()),
         }
-        #------------------------------> Remove Shift & Width if not needed
-        if impMethod == config.oImputation['ND']:
-            pass
-        else:
-            del self.rDI[self.EqualLenLabel(self.cLShift)]
-            del self.rDI[self.EqualLenLabel(self.cLWidth)]
         #------------------------------> Dict with all values
         #-------------->
         msgStep = self.cLPdPrepare + 'User input, processing'
@@ -3859,7 +3853,7 @@ class ProtProf(BaseConfModPanel):
             Name of the file containing the results of the analysis in the 
             step folder
             
-        See Parent classes for more aatributes.
+        See Parent classes for more attributes.
         
         Notes
         -----
@@ -4482,8 +4476,6 @@ class ProtProf(BaseConfModPanel):
         #region -------------------------------------------------------> Input
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> Variables
-        impMethod = self.wImputationMethod.cb.GetValue()
         #------------------------------> As given
         self.rDI = {
             self.EqualLenLabel(self.cLiFile) : (
@@ -4497,7 +4489,7 @@ class ProtProf(BaseConfModPanel):
             self.EqualLenLabel(self.cLNormMethod) : (
                 self.wNormMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLImputation) : (
-                impMethod),
+                self.wImputationMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLShift) : (
                 self.wShift.tc.GetValue()),
             self.EqualLenLabel(self.cLWidth) : (
@@ -4529,12 +4521,6 @@ class ProtProf(BaseConfModPanel):
             self.EqualLenLabel(config.lStResultCtrlS): (
                 self.wTcResults.GetValue()),
         }
-        #------------------------------> Remove Shift & Width if not needed
-        if impMethod == config.oImputation['ND']:
-            pass
-        else:
-            del self.rDI[self.EqualLenLabel(self.cLShift)]
-            del self.rDI[self.EqualLenLabel(self.cLWidth)]
         #------------------------------> Dict with all values
         #--------------> 
         msgStep = self.cLPdPrepare + 'User input, processing'
@@ -5569,12 +5555,6 @@ class LimProt(BaseConfModPanel2):
             self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
                 self.rLbDict['Control']),
         }
-        #------------------------------> Remove Shift & Width if not needed
-        if impMethod == config.oImputation['ND']:
-            pass
-        else:
-            del self.rDI[self.EqualLenLabel(self.cLShift)]
-            del self.rDI[self.EqualLenLabel(self.cLWidth)]
         #endregion --------------------------------------------------------> d
         
         #region ----------------------------------------------------------> do
