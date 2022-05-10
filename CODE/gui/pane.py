@@ -3955,6 +3955,7 @@ class ProtProf(BaseConfModPanel):
             self.cDCtrlType['OC']   : self.CheckRepNum_OC,
             self.cDCtrlType['OCC']  : self.CheckRepNum_OCC,
             self.cDCtrlType['OCR']  : self.CheckRepNum_OCR,
+            self.cDCtrlType['Ratio']: self.CheckRepNum_Ratio,
         }
         #endregion --------------------------------------------> Initial Setup
 
@@ -4387,6 +4388,21 @@ class ProtProf(BaseConfModPanel):
             return False
         #endregion ------------------------------------------------> Return
     #---
+    
+    def CheckRepNum_Ratio(self, resCtrl: list[list[list[int]]]) -> bool:
+        """Check equal number of replicas. Only needed for completion.
+    
+            Parameters
+            ----------
+            resCtrl: list[list[list[int]]]
+                Result and Control as a list of list of list of int
+    
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
 
     def CheckRepNum_OCC(self, resCtrl: list[list[list[int]]]) -> bool:
         """Check equal number of replicas
@@ -4445,9 +4461,9 @@ class ProtProf(BaseConfModPanel):
 
         #region ---------------------------------------------------> Check
         for row in resCtrl:
-            #------------------------------> 
+            #------------------------------>
             ctrlL = len(row[0])
-            #------------------------------> 
+            #------------------------------>
             for col in row[1:]:
                 if len(col) == ctrlL:
                     pass
@@ -4542,12 +4558,12 @@ class ProtProf(BaseConfModPanel):
             'uFile'      : Path(self.wUFile.tc.GetValue()),
             'ID'         : self.wId.tc.GetValue(),
             'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
-            'RawI'       : True if self.rLbDict['Control'] == config.oControlTypeProtProf['Ratio'] else False,
-            'IndS'       : True if self.wSample.cb.GetValue() == self.cOSample['Independent Samples'] else False,
+            'RawI'       : False if self.rLbDict['ControlType'] == config.oControlTypeProtProf['Ratio'] else True,
+            'IndS'       : True if self.wSample.cb.GetValue() == 'Independent Samples' else False,
             'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'TransMethod': self.wTransMethod.cb.GetValue(),
-            'ImpMethod'  : impMethod,
+            'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
             'Shift'      : float(self.wShift.tc.GetValue()),
             'Width'      : float(self.wWidth.tc.GetValue()),
             'Alpha'      : float(self.wAlpha.tc.GetValue()),
@@ -4903,11 +4919,11 @@ class ProtProf(BaseConfModPanel):
         if self.rDO['RawI']:
             if self.rDO['IndS']:
                 self.dfR.loc[:,(cN,tN,'P')] = dtsStatistic.ttest_IS_DF(
-                    dfLogI, colC, colD,
+                    dfLogI, colC, colD, alpha=self.rDO['Alpha']
                 )['P'].to_numpy()        
             else:
                 self.dfR.loc[:,(cN,tN,'P')] = dtsStatistic.ttest_PS_DF(
-                    dfLogI, colC, colD,
+                    dfLogI, colC, colD, alpha=self.rDO['Alpha']
                 )['P'].to_numpy()
         else:
             #------------------------------> Dummy 0 columns
