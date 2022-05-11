@@ -6782,7 +6782,7 @@ class TarProt(BaseConfModPanel2):
 #---
 
 
-#------------------------------> Panes for Type Results - Control Epxeriments
+#------------------------------> Panes for Type Results - Control Experiments
 class ProtProfResControlExp(ResControlExpConfBase):
     """Creates the configuration panel for the Results - Control Experiments
         dialog when called from the ProtProf Tab

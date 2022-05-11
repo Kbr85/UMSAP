@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
+from curses import color_pair
 import os
 import shutil
 import webbrowser
@@ -2572,6 +2573,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rT0          = 0.1
         self.rS0          = 1.0
         self.rZ           = 10.0
+        self.rP           = self.rData[self.rDateC]['Alpha']
+        self.rLog2FC      = 0.1
         self.rColor       = 'Hyp Curve Color'
         self.rHypCurve    = True
         self.rCI          = None
@@ -2588,6 +2591,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rLabelProt   = []
         self.rLabelProtD  = {}
         self.rPickLabel   = False
+        self.rVolLines    = ['Hyp Curve Lines']
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> Methods
@@ -2604,6 +2608,11 @@ class ProtProfPlot(BaseWindowNPlotLT):
             #------------------------------> Colors
             'Hyp Curve Color' : self.GetColorHyCurve,
             'Z Score Color'   : self.GetColorZScore,
+            'P - Log2FC Color': self.GetColorPLog2FC,
+            #------------------------------> Lines
+            'Hyp Curve Line' : self.DrawLinesHypCurve,
+            'Z Score Line'   : self.DrawLinesZScore,
+            'P - Log2FC Line': self.DrawLinesPLog2FC,
             #------------------------------> Filter methods
             config.lFilFCEvol  : self.Filter_FCChange,
             config.lFilHypCurve: self.Filter_HCurve,
@@ -2655,7 +2664,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #------------------------------> Class methods    
+    #------------------------------> Class methods
     #region --------------------------------------------------> Manage Methods
     def StatusBarFilterText(self, text: str) -> bool:
         """Update the StatusBar text
@@ -2878,16 +2887,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
             color     = color,
             picker    = True,
         )
-        if self.rHypCurve:
-            lim = self.rT0*self.rS0
-            xCP = np.arange(lim+0.001, 20, 0.001)
-            yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-lim))
-            self.wPlots.dPlot['Vol'].axes.plot(
-                xCP,  yCP, color=self.cColor['CV'])
-            self.wPlots.dPlot['Vol'].axes.plot(
-                -xCP, yCP, color=self.cColor['CV'])
-        else:
-            pass
+        
+        for x in self.rVolLines:
+            self.dKeyMethod[x]()
         #------------------------------> Lock Scale or Set it manually
         if self.rVXRange and self.rVYRange:
             self.wPlots.dPlot['Vol'].axes.set_xlim(*self.rVXRange)
@@ -2907,8 +2909,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #region ---------------------------------------------------> 
         self.AddProtLabel()
         #endregion ------------------------------------------------> 
-
-    
+        
         return True
     #---
     
@@ -3727,6 +3728,80 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return True
     #---
     
+    def DrawLinesHypCurve(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        lim = self.rT0*self.rS0
+        xCP = np.arange(lim+0.001, 20, 0.001)
+        yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-lim))
+        self.wPlots.dPlot['Vol'].axes.plot(
+            xCP,  yCP, color=self.cColor['CV'])
+        self.wPlots.dPlot['Vol'].axes.plot(
+            -xCP, yCP, color=self.cColor['CV'])
+        return True
+    #---
+    
+    def DrawLinesPLog2FC(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        p = -np.log10(self.rP)
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> 
+        self.wPlots.dPlot['Vol'].axes.hlines(
+            p, -100, 100, color=self.cColor['CV'])
+        self.wPlots.dPlot['Vol'].axes.vlines(
+            self.rLog2FC, -100, 100, color=self.cColor['CV'])
+        self.wPlots.dPlot['Vol'].axes.vlines(
+            -self.rLog2FC, -100, 100, color=self.cColor['CV'])
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def DrawLinesZScore(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return True
+    #---
+    
     def GetColorHyCurve(self, *args) -> list:
         """Get color for Volcano plot when schems is Hyp Curve
         
@@ -3757,6 +3832,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
             else:
                 color.append(self.cColor['Vol'][1])
         #endregion ----------------------------------------------------> Color
+        
+        #region ---------------------------------------------------> 
+        self.rVolLines = ['Hyp Curve Line']
+        #endregion ------------------------------------------------> 
 
         return color
     #---
@@ -3779,7 +3858,33 @@ class ProtProfPlot(BaseWindowNPlotLT):
         cond = [val < -zVal, val > zVal]
         choice = [self.cColor['Vol'][0], self.cColor['Vol'][2]]
         #endregion ------------------------------------------------> Variables
+        
+        return np.select(cond, choice, default=self.cColor['Vol'][1])
+    #---
+    
+    def GetColorPLog2FC(self, *args) -> list:
+        """Get the color by P - Log2FC
+        
+            Returns
+            -------
+            list
+                List of colors
+        """
+        #region --------------------------------------------------------> 
+        idx = pd.IndexSlice
+        colP = idx[self.rCondC, self.rRpC,'P']
+        valP = self.rDf.loc[:,colP]
+        colF = idx[self.rCondC, self.rRpC,'FC']
+        valF = self.rDf.loc[:,colF]
+        cond = [(valP < self.rP) & (valF < -self.rLog2FC),
+                (valP < self.rP) & (valF > self.rLog2FC),]
+        choice = [self.cColor['Vol'][0], self.cColor['Vol'][2]]
+        #endregion -----------------------------------------------------> 
 
+        #region ---------------------------------------------------> 
+        self.rVolLines = ['P - Log2FC Line']
+        #endregion ------------------------------------------------> 
+        
         return np.select(cond, choice, default=self.cColor['Vol'][1])
     #---
     
@@ -4418,7 +4523,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
                     self.rLabelProt.remove(z)
                 else:
                     pass
-            print("")
             #------------------------------> 
             for y in rowL:
                 if y in self.rLabelProt:
