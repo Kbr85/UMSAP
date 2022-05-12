@@ -3859,6 +3859,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
         choice = [self.cColor['Vol'][0], self.cColor['Vol'][2]]
         #endregion ------------------------------------------------> Variables
         
+        #region ---------------------------------------------------> 
+        self.rVolLines = ['Z Score Line']
+        #endregion ------------------------------------------------> 
+        
         return np.select(cond, choice, default=self.cColor['Vol'][1])
     #---
     
@@ -4066,13 +4070,13 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.rT0, 
             self.rS0, 
             self.rZ, 
-            self.rColor, 
-            self.rHypCurve, 
+            self.rP,
+            self.rLog2FC,
             parent=self,
         )
         #------------------------------> 
         if dlg.ShowModal():
-            self.rT0, self.rS0, self.rZ, self.rColor, self.rHypCurve = (
+            self.rT0, self.rS0, self.rP, self.rLog2FC, self.rZ = (
                 dlg.GetVal())
             self.VolDraw()
         else:
@@ -12074,7 +12078,7 @@ class VolColorScheme(dtsWindow.OkCancel):
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, t0:float, s0:float, z:float, color: str, hcurve: bool, 
+        self, t0:float, s0:float, z:float, p:float, fc:float, 
         parent: Optional[wx.Window]=None,
         ) -> None:
         """ """
@@ -12082,23 +12086,16 @@ class VolColorScheme(dtsWindow.OkCancel):
         self.rT0 = str(t0)
         self.rS0 = str(s0)
         self.rZ  = str(z)
-        self.rColor = color
-        self.rHCurve = hcurve
-        self.rCheck = {0: self.CheckScheme, 1: self.CheckHCurve}
-        self.rKeys = {
-            '0-HypCurve': 'Hyp Curve Color',
-            '0-ZScore': 'Z Score Color',
-            '1-Yes': True,
-            '1-No': False,
-        }
+        self.rP  = str(p)
+        self.rFC = str(fc)
         #------------------------------> 
-        super().__init__(title='Adjust the Color Scheme', parent=parent)
+        super().__init__(title='Color Scheme Parameters', parent=parent)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wsbVal = wx.StaticBox(self, label='Values')
+        self.wsbHC = wx.StaticBox(self, label='Hyperbolic Curve')
         self.wT0 = dtsWidget.StaticTextCtrl(
-            self.wsbVal,
+            self.wsbHC,
             stLabel   = 't0',
             tcHint    = 'e.g. 1.0',
             tcSize    = (100,22),
@@ -12107,7 +12104,7 @@ class VolColorScheme(dtsWindow.OkCancel):
         self.wT0.tc.SetValue(self.rT0)
         
         self.wS0 = dtsWidget.StaticTextCtrl(
-            self.wsbVal,
+            self.wsbHC,
             stLabel   = 's0',
             tcHint    = 'e.g. 0.1',
             tcSize    = (100,22),
@@ -12115,8 +12112,28 @@ class VolColorScheme(dtsWindow.OkCancel):
         )
         self.wS0.tc.SetValue(self.rS0)
         
+        self.wsbPFC = wx.StaticBox(self, label='Log2FC - P')
+        self.wP = dtsWidget.StaticTextCtrl(
+            self.wsbPFC,
+            stLabel   = 'P',
+            tcHint    = 'e.g. 0.05',
+            tcSize    = (100,22),
+            validator = dtsValidator.NumberList('float', vMin=0, nN=1)
+        )
+        self.wP.tc.SetValue(self.rP)
+        
+        self.wFC = dtsWidget.StaticTextCtrl(
+            self.wsbPFC,
+            stLabel   = 'log2FC',
+            tcHint    = 'e.g. 0.1',
+            tcSize    = (100,22),
+            validator = dtsValidator.NumberList('float', vMin=0, nN=1)
+        )
+        self.wFC.tc.SetValue(self.rFC)
+        
+        self.wsbZ = wx.StaticBox(self, label='Z Score')
         self.wZ = dtsWidget.StaticTextCtrl(
-            self.wsbVal,
+            self.wsbZ,
             stLabel   = 'Z Score',
             tcHint    = 'e.g. 10.0',
             tcSize    = (100,22),
@@ -12124,66 +12141,51 @@ class VolColorScheme(dtsWindow.OkCancel):
                     numType='float', vMin=0, vMax=100, nN=1),
         )
         self.wZ.tc.SetValue(self.rZ)
-        
-        self.wsbOpt = wx.StaticBox(self, label='Options') 
-        self.wstColor = wx.StaticText(self.wsbOpt, label='Color Scheme')
-        self.wcbHC = wx.CheckBox(
-            self.wsbOpt, label='Hyperbolic Curve', name='0-HypCurve')
-        self.wcbZScore = wx.CheckBox(
-            self.wsbOpt, label='Z Score', name='0-ZScore')
-    
-        self.wstHCurve = wx.StaticText(
-            self.wsbOpt, label='Show Hyperbolic Curve')
-        self.wcbYes = wx.CheckBox(self.wsbOpt, label='Yes', name='1-Yes')
-        self.wcbNo  = wx.CheckBox(self.wsbOpt, label='No',  name='1-No')
-        #------------------------------> 
-        self.CheckScheme()
-        self.CheckHCurve()
-        #------------------------------> 
-        self.rG = {}
-        self.rG[0] = [self.wcbHC, self.wcbZScore]
-        self.rG[1] = [self.wcbYes, self.wcbNo]
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
-        self.sFlex = wx.FlexGridSizer(2,3,1,1)
-        self.sFlex.Add(self.wT0.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
-        self.sFlex.Add(self.wS0.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
-        self.sFlex.Add(self.wZ.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
-        self.sFlex.Add(self.wT0.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-        self.sFlex.Add(self.wS0.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-        self.sFlex.Add(self.wZ.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-        self.sFlex.AddGrowableCol(0,1)
-        self.sFlex.AddGrowableCol(1,1)
-        self.sFlex.AddGrowableCol(2,1)
+        self.sFlexHC = wx.FlexGridSizer(2,2,1,1)
+        self.sFlexHC.Add(self.wT0.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexHC.Add(self.wT0.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexHC.Add(self.wS0.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexHC.Add(self.wS0.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexHC.AddGrowableCol(1,1)
         
-        self.sFlexOpt = wx.FlexGridSizer(3,2,1,1)
-        self.sFlexOpt.Add(self.wstColor, 0, wx.ALIGN_LEFT|wx.ALL, 5)
-        self.sFlexOpt.Add(self.wstHCurve, 0, wx.ALIGN_LEFT|wx.ALL, 5)
-        self.sFlexOpt.Add(self.wcbHC, 0, wx.ALIGN_LEFT|wx.ALL, 5)
-        self.sFlexOpt.Add(self.wcbYes, 0, wx.ALIGN_LEFT|wx.ALL, 5)
-        self.sFlexOpt.Add(self.wcbZScore, 0, wx.ALIGN_LEFT|wx.ALL, 5)
-        self.sFlexOpt.Add(self.wcbNo, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        self.sFlexPFC = wx.FlexGridSizer(2,2,1,1)
+        self.sFlexPFC.Add(self.wP.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexPFC.Add(self.wP.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexPFC.Add(self.wFC.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexPFC.Add(self.wFC.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexPFC.AddGrowableCol(1,1)
         
-        self.ssbVal = wx.StaticBoxSizer(self.wsbVal, wx.VERTICAL)
-        self.ssbVal.Add(self.sFlex, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlexZ = wx.FlexGridSizer(2,2,1,1)
+        self.sFlexZ.Add(self.wZ.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.Add(self.wZ.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.AddGrowableCol(1,1)
         
-        self.ssbOpt = wx.StaticBoxSizer(self.wsbOpt, wx.VERTICAL)
-        self.ssbOpt.Add(self.sFlexOpt, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.ssbHC = wx.StaticBoxSizer(self.wsbHC, wx.VERTICAL)
+        self.ssbHC.Add(self.sFlexHC, 0, wx.EXPAND|wx.ALL, 5)
         
-        self.sSizer.Add(self.ssbVal, 0, wx.EXPAND|wx.ALL, 5)
-        self.sSizer.Add(self.ssbOpt, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.ssbPFC = wx.StaticBoxSizer(self.wsbPFC, wx.VERTICAL)
+        self.ssbPFC.Add(self.sFlexPFC, 0, wx.EXPAND|wx.ALL, 5)
+        
+        self.ssbZ = wx.StaticBoxSizer(self.wsbZ, wx.VERTICAL)
+        self.ssbZ.Add(self.sFlexZ, 0, wx.EXPAND|wx.ALL, 5)
+        
+        self.sFlexVal = wx.FlexGridSizer(1,3,1,1)
+        self.sFlexVal.Add(self.ssbHC, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlexVal.Add(self.ssbPFC, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlexVal.Add(self.ssbZ, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlexVal.AddGrowableCol(0,1)
+        self.sFlexVal.AddGrowableCol(1,1)
+        self.sFlexVal.AddGrowableCol(2,1)
+        
+        self.sSizer.Add(self.sFlexVal, 0, wx.EXPAND|wx.ALL, 5)
         self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
         
         self.SetSizer(self.sSizer)
         self.Fit()
         #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-        for v in self.rG.values():
-            for c in v:
-                c.Bind(wx.EVT_CHECKBOX, self.OnCheck)
-        #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
         self.CenterOnParent()
@@ -12192,35 +12194,6 @@ class VolColorScheme(dtsWindow.OkCancel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnCheck(self, event:wx.CommandEvent):
-        """Deselect all other seleced options within the group.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        #region ----------------------------------------------------> Deselect
-        if event.IsChecked():
-            #------------------------------> 
-            tCheck = event.GetEventObject()
-            group = int(tCheck.GetName().split('-')[0])
-            #------------------------------> 
-            [k.SetValue(False) for k in self.rG[group]]
-            #------------------------------> 
-            tCheck.SetValue(True)
-        else:
-            pass
-        #endregion -------------------------------------------------> Deselect
-        
-        return True
-    #---
-    
     def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
         """Validate user information and close the window.
     
@@ -12249,18 +12222,23 @@ class VolColorScheme(dtsWindow.OkCancel):
             self.wS0.tc.SetValue(self.rS0)
             res.append(False)
         #------------------------------> 
+        if self.wP.tc.GetValidator().Validate()[0]:
+            res.append(True)
+        else:
+            self.wP.tc.SetValue(self.rP)
+            res.append(False)
+        #------------------------------> 
+        if self.wFC.tc.GetValidator().Validate()[0]:
+            res.append(True)
+        else:
+            self.wFC.tc.SetValue(self.rFC)
+            res.append(False)
+        #------------------------------> 
         if self.wZ.tc.GetValidator().Validate()[0]:
             res.append(True)
         else:
             self.wZ.tc.SetValue(self.rZ)
             res.append(False)
-        #------------------------------> 
-        for k,v in self.rG.items():
-            if any([x.IsChecked() for x in v]):
-                res.append(True)
-            else:
-                self.rCheck[k]()
-                res.append(False)
         #endregion -------------------------------------------------> Validate
         
         #region ---------------------------------------------------> 
@@ -12274,34 +12252,6 @@ class VolColorScheme(dtsWindow.OkCancel):
         return True
     #---
     
-    def CheckScheme(self):
-        """Check the initial color scheme
-        
-            Return
-            ------
-            True
-        """
-        if self.rColor == 'Hyp Curve Color':
-            self.wcbHC.SetValue(True)
-        else:
-            self.wcbZScore.SetValue(True)
-        return True
-    #---
-    
-    def CheckHCurve(self):
-        """Check the initial H Curve option
-        
-            Return
-            ------
-            bool
-        """
-        if self.rHCurve:
-            self.wcbYes.SetValue(True)
-        else:
-            self.wcbNo.SetValue(True)
-        return True
-    #---
-    
     def GetVal(self):
         """Get the selected values
         
@@ -12312,22 +12262,10 @@ class VolColorScheme(dtsWindow.OkCancel):
         return (
             float(self.wT0.tc.GetValue()),
             float(self.wS0.tc.GetValue()),
+            float(self.wP.tc.GetValue()),
+            float(self.wFC.tc.GetValue()),
             float(self.wZ.tc.GetValue()),
-            self.GetNameGroup(0),
-            self.GetNameGroup(1), 
         )
-    #---
-
-    def GetNameGroup(self, tKey: int) -> str:
-        """Get the corresponding key for the checked element
-
-            Returns
-            -------
-            str
-        """
-        for v in self.rG[tKey]:
-            if v.IsChecked():
-                return self.rKeys[v.GetName()]
     #---
     #endregion ------------------------------------------------> Class methods
 #---
