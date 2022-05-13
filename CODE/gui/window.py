@@ -16,7 +16,6 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
-from curses import color_pair
 import os
 import shutil
 import webbrowser
@@ -2888,8 +2887,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
             picker    = True,
         )
         
-        for x in self.rVolLines:
-            self.dKeyMethod[x]()
+        for l in self.rVolLines:
+            self.dKeyMethod[l]()
         #------------------------------> Lock Scale or Set it manually
         if self.rVXRange and self.rVYRange:
             self.wPlots.dPlot['Vol'].axes.set_xlim(*self.rVXRange)
@@ -3524,6 +3523,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             -------
             bool
         """
+        
         return True
     #---
     
@@ -3716,8 +3716,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------------> Check input
         
         #region ---------------------------------------------------> Get Range
-        xR = dtsStatistic.DataRange(x, margin= config.general['MatPlotMargin'])
-        yR = dtsStatistic.DataRange(y, margin= config.general['MatPlotMargin'])
+        xR = dtsStatistic.DataRange(x, margin=config.general['MatPlotMargin'])
+        yR = dtsStatistic.DataRange(y, margin=config.general['MatPlotMargin'])
         #endregion ------------------------------------------------> Get Range
         
         #region ---------------------------------------------------> Set Range
@@ -4422,7 +4422,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             #--------------> 
             self.wPlots.dPlot['FC'].ZoomResetSetValues()
         else:
-            pass    
+            pass
         #endregion ------------------------------------------------> Set Range
         
         return True

@@ -1104,7 +1104,7 @@ class LockPlotScale(wx.Menu):
 
         #region --------------------------------------------------> Menu Items
         self.miNo      = self.Append(-1, 'No',         kind=wx.ITEM_RADIO)
-        self.miDate    = self.Append(-1, 'Date',       kind=wx.ITEM_RADIO)
+        self.miDate    = self.Append(-1, 'Analysis',   kind=wx.ITEM_RADIO)
         self.miProject = self.Append(-1, 'Project',    kind=wx.ITEM_RADIO)
         
         self.miDate.Check()
