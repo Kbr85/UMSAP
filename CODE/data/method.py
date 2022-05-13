@@ -278,7 +278,6 @@ def Fragments(
                     else:
                         pass
                     if not np.isnan(ncf) and not np.isnan(ccf):
-                        print('1 - ncf != nan', ncf, nan, type(ncf), type(nan), ncf != nan)
                         npNat = npNat + 1
                     else:
                         pass
@@ -575,7 +574,7 @@ def R2Hist(
     nR = sorted([len(x) for x in bin])[-1]
     #------------------------------> df
     col = pd.MultiIndex.from_arrays([a[:],b[:],c[:]])
-    dfO = pd.DataFrame(nan, index=range(0,nR), columns=col)
+    dfO = pd.DataFrame(np.nan, index=range(0,nR), columns=col)
     #endregion -----------------------------------------------------> Empty DF
 
     #region ---------------------------------------------------> Fill
