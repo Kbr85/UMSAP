@@ -5135,10 +5135,6 @@ class LimProt(BaseConfModPanel2):
     #region --------------------------------------------------> Instance setup
     def __init__(self, cParent, cDataI: Optional[dict]) -> None:
         """ """
-        #region -------------------------------------------------> Check Input
-        
-        #endregion ----------------------------------------------> Check Input
-
         #region -----------------------------------------------> Initial Setup
         super().__init__(cParent)
         #endregion --------------------------------------------> Initial Setup
@@ -5965,7 +5961,7 @@ class TarProt(BaseConfModPanel2):
             Name of the file containing the results of the analysis in the 
             step folder
         
-        See Parent classes for more aatributes.
+        See Parent classes for more attributes.
         
         Notes
         -----
@@ -6101,6 +6097,8 @@ class TarProt(BaseConfModPanel2):
             self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad     , False],
             self.cLNormMethod  :[self.wNormMethod.cb,      config.mOptionBad     , False],
             self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad     , False],
+            self.cLShift       :[self.wShift.tc,           config.mOneRPlusNum   , False],
+            self.cLWidth       :[self.wWidth.tc,           config.mOneRPlusNum   , False],
             self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad      , False],
             self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum    , False],
             self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num      , False],
@@ -6242,6 +6240,9 @@ class TarProt(BaseConfModPanel2):
                 1        : ['Exp1', 'Exp2', 'Exp3'],
                 'Control': ['Ctrl'],
             }
+            self.OnImpMethod('fEvent')
+            self.wShift.tc.SetValue('1.8')
+            self.wWidth.tc.SetValue('0.3')
         else:
             pass
         #endregion -----------------------------------------------------> Test
@@ -6282,6 +6283,8 @@ class TarProt(BaseConfModPanel2):
             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
+            self.wShift.tc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
+            self.wWidth.tc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
             #------------------------------> Values
             self.wTargetProt.tc.SetValue(dataI['I'][self.cLTargetProt])
             self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
@@ -6332,6 +6335,10 @@ class TarProt(BaseConfModPanel2):
                 self.wNormMethod.cb.GetValue()),
             self.EqualLenLabel(self.cLImputation) : (
                 self.wImputationMethod.cb.GetValue()),
+            self.EqualLenLabel(self.cLShift) : (
+                self.wShift.tc.GetValue()),
+            self.EqualLenLabel(self.cLWidth) : (
+                self.wWidth.tc.GetValue()),
             self.EqualLenLabel(self.cLTargetProt) : (
                 self.wTargetProt.tc.GetValue()),
             self.EqualLenLabel(self.cLScoreVal) : (
@@ -6385,6 +6392,8 @@ class TarProt(BaseConfModPanel2):
             'TransMethod': self.wTransMethod.cb.GetValue(),
             'NormMethod' : self.wNormMethod.cb.GetValue(),
             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
+            'Shift'      : float(self.wShift.tc.GetValue()),
+            'Width'      : float(self.wWidth.tc.GetValue()),
             'TargetProt' : self.wTargetProt.tc.GetValue(),
             'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
             'Alpha'      : float(self.wAlpha.tc.GetValue()),
@@ -6630,7 +6639,18 @@ class TarProt(BaseConfModPanel2):
             bool
         """
         #region --------------------------------------------------> Data Steps
-        stepDict = self.SetStepDictDPFileR()
+        stepDict = self.SetStepDictDP()
+        stepDict['Files'] = {
+            config.fnInitial.format(self.rDate, '01')   : self.dfI,
+            config.fnFloat.format(self.rDate, '02')     : self.dfF,
+            config.fnTrans.format(self.rDate, '03')     : self.dfT,
+            config.fnNorm.format(self.rDate, '04')      : self.dfN,
+            config.fnImp.format(self.rDate, '05')       : self.dfIm,
+            config.fnTargetProt.format(self.rDate, '06'): self.dfTP,
+            config.fnScore.format(self.rDate, '07')     : self.dfS,
+            self.rMainData.format(self.rDate, '08')     : self.dfR,
+        }
+        stepDict['R'] = self.rMainData.format(self.rDate, '08')
         #endregion -----------------------------------------------> Data Steps
         
         #region --------------------------------------------> Further Analysis
