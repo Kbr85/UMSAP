@@ -20,7 +20,6 @@ from typing import Literal, Union
 
 import pandas as pd
 import numpy as np
-from numpy import nan
 
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -210,7 +209,7 @@ def Fragments(
     dictO = {}
     #endregion ----------------------------------------------------> Variables
 
-    #region ---------------------------------------------------> 
+    #region --------------------------------------------------->
     for c in range(5, df.shape[1]):
         colK = str(df.columns.values[c])
         #------------------------------> Prepare dictO
@@ -230,7 +229,7 @@ def Fragments(
         c       = None
         seq     = None
         seqL    = []
-        np      = None
+        nP      = None
         npNat   = None
         ncL     = []
         ncLNat  = []
@@ -241,25 +240,25 @@ def Fragments(
             if n is None:
                 seq = dfE.iat[r,0]
                 seqL.append(seq)
-                np = 1
+                nP = 1
                 n  = dfE.iat[r,1]
                 c  = dfE.iat[r,2]
                 nf = dfE.iat[r,3]
                 cf = dfE.iat[r,4]
-                if nf != nan and cf != nan:
-                    npNat = 1
-                else:
+                if np.isnan(nf) and np.isnan(cf):
                     npNat = 0
-                if nf != nan:
+                else:
+                    npNat = 1
+                if np.isnan(nf):
+                    pass
+                else:
                     ncLNat.append(n-1)
                     nctLNat.append(n-1)
-                else:
+                if np.isnan(cf):
                     pass
-                if cf != nan:
+                else:
                     ncLNat.append(c)
                     nctLNat.append(c)
-                else:
-                    pass
                 ncL.append(n-1)
                 ncL.append(c)
                 nctL.append(n-1)
@@ -273,21 +272,22 @@ def Fragments(
                 if nc <= c:
                     seq = f'{seq}\n{(nc-n)*" "}{seqc}'
                     seqL.append(seqc)
-                    np = np + 1
+                    nP = nP + 1
                     if cc > c:
                         c = cc
                     else:
                         pass
-                    if ncf != nan and ccf != nan:
+                    if not np.isnan(ncf) and not np.isnan(ccf):
+                        print('1 - ncf != nan', ncf, nan, type(ncf), type(nan), ncf != nan)
                         npNat = npNat + 1
                     else:
                         pass
-                    if ncf != nan:
+                    if not np.isnan(ncf):
                         ncLNat.append(nc-1)
                         nctLNat.append(nc-1)
                     else:
                         pass
-                    if ccf != nan:
+                    if not np.isnan(ccf):
                         ncLNat.append(cc)
                         nctLNat.append(cc)
                     else:
@@ -301,7 +301,7 @@ def Fragments(
                     dictO[colK]['CoordN'].append((nf,cf))
                     dictO[colK]['Seq'].append(seq)
                     dictO[colK]['SeqL'].append(seqL)
-                    dictO[colK]['Np'].append(np)
+                    dictO[colK]['Np'].append(nP)
                     dictO[colK]['NpNat'].append(npNat)
                     dictO[colK]['Nc'].append(len(list(set(ncL))))
                     dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
@@ -311,18 +311,18 @@ def Fragments(
                     cf   = ccf
                     seq  = seqc
                     seqL = [seqc]
-                    np   = 1
-                    if nf != nan and cf != nan:
+                    nP   = 1
+                    if not np.isnan(nf) and not np.isnan(cf):
                         npNat = 1
                     else:
                         npNat = 0
                     ncLNat = []
-                    if nf != nan:
+                    if not np.isnan(nf):
                         ncLNat.append(n-1)
                         nctLNat.append(n-1)
                     else:
                         pass
-                    if cf != nan:
+                    if not np.isnan(cf):
                         ncLNat.append(c)
                         nctLNat.append(c)
                     else:
@@ -333,25 +333,25 @@ def Fragments(
                     nctL.append(n-1)
                     nctL.append(c)
         #------------------------------> Catch the last line
-        if n is not None:        
+        if n is not None:
             dictO[colK]['Coord'].append((n,c))
             dictO[colK]['CoordN'].append((nf,cf))
             dictO[colK]['Seq'].append(seq)
             dictO[colK]['SeqL'].append(seqL)
-            dictO[colK]['Np'].append(np)
+            dictO[colK]['Np'].append(nP)
             dictO[colK]['NpNat'].append(npNat)
             dictO[colK]['Nc'].append(len(list(set(ncL))))
             dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
             
             dictO[colK]['NcT'] = [len(list(set(nctL))), len(list(set(nctLNat)))]
             
-            nFragN = [x for x in dictO[colK]['CoordN'] if x[0] is not nan or x[1] is not nan]
+            nFragN = [x for x in dictO[colK]['CoordN'] if not np.isnan(x[0]) or not np.isnan(x[1])]
             dictO[colK]['NFrag'] = [len(dictO[colK]['Coord']), len(nFragN)]
         else:
             dictO[colK]['NcT'] = []
             dictO[colK]['NFrag'] = []
         #------------------------------> All detected peptides as a list
-    #endregion ------------------------------------------------> 
+    #endregion ------------------------------------------------>
 
     return dictO
 #---

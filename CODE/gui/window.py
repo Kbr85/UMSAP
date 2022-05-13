@@ -6040,14 +6040,14 @@ class LimProtPlot(BaseWindowProteolysis):
     def PrintFragmentText(
         self, tKey: tuple[str, str,str], fragC: list[int]):
         """Print information about a selected Fragment
-    
+
             Parameters
             ----------
             tKey: tuple(str, str, str)
                 Tuple with the column name in the pd.DataFrame with the results.
             fragC: list[int]
                 Fragment coordinates.
-    
+
             Returns
             -------
             bool
@@ -6055,13 +6055,18 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> Info
         n, c = self.rFragments[tKey]["Coord"][fragC[2]]
         
-        if n >= self.rProtLoc[0] and n <= self.rProtLoc[1]:
-            nnat = n + self.rProtDelta
+        if self.rProtLoc[0] is not None:
+            if n >= self.rProtLoc[0] and n <= self.rProtLoc[1]:
+                nnat = n + self.rProtDelta
+            else:
+                nnat = 'NA'
+        
+            if c >= self.rProtLoc[0] and c <= self.rProtLoc[1]:
+                cnat = c + self.rProtDelta
+            else:
+                cnat = 'NA'
         else:
             nnat = 'NA'
-        if c >= self.rProtLoc[0] and c <= self.rProtLoc[1]:
-            cnat = c + self.rProtDelta
-        else:
             cnat = 'NA'
         resNum = f'Nterm {n}({nnat}) - Cterm {c}({cnat})'
         
@@ -7149,7 +7154,7 @@ class TarProtPlot(BaseWindowProteolysis):
     #------------------------------>
     rIdxSeqNC = pd.IndexSlice[config.dfcolSeqNC,:]
     #endregion --------------------------------------------------> Class setup
-    
+
     #region --------------------------------------------------> Instance setup
     def __init__(self, cParent: 'UMSAPControl') -> None:
         """ """
@@ -7162,12 +7167,12 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rObj         = cParent.rObj
         self.rData        = self.rObj.dConfigure[self.cSection]()
         self.rDate, cMenuData = self.SetDateMenuDate()
-        #------------------------------> 
+        #------------------------------>
         try:
             self.ReportPlotDataError()
         except Exception as e:
             raise e
-        #------------------------------> 
+        #------------------------------>
         self.rDateC       = None
         self.rAlpha       = None
         self.rFragments   = None
