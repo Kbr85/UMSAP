@@ -644,18 +644,22 @@ def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         dfT = df[df[(e,'P')] < alpha]
         #------------------------------> Rec
         dfR = dfT[[('Nterm','Nterm'),('Cterm', 'Cterm')]].copy()
-        dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 1
+        #------------------------------> 0 based residue number
+        dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 2
+        dfR[('Cterm','Cterm')] = dfR[('Cterm','Cterm')] - 1
         l = dfR.to_numpy().flatten()
         # No Cleavage in 1 and last residue
-        l = [x for x in l if x > 0 and x < protL[0]]
+        l = [x for x in l if x > -1 and x < protL[0]]
         for x in l:
             dfO.at[x, idx['Rec',e]] = dfO.at[x, idx['Rec',e]] + 1
         #------------------------------> Nat
         if protL[1] is not None:
             dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
-            dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 1
+            #------------------------------> 0 based residue number
+            dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 2
+            dfR[('CtermF','CtermF')] = dfR[('CtermF','CtermF')] - 1
             l = dfR.to_numpy().flatten()
-            l = [x for x in l if x > 0 and x < protL[0]]
+            l = [x for x in l if x > -1 and x < protL[0]]
             for x in l:
                 dfO.at[x, idx['Nat',e]] = dfO.at[x, idx['Nat',e]] + 1
         else:

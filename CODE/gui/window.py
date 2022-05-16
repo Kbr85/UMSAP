@@ -7876,19 +7876,23 @@ class TarProtPlot(BaseWindowProteolysis):
                 
             """
             idx = pd.IndexSlice
-            #------------------------------> 
+            #------------------------------>
             for e in tExp:
-                #------------------------------> 
+                #------------------------------>
                 betaDict = {}
-                k = 0
-                #------------------------------> 
-                for j,s in enumerate(tAlign[0].seqB):
-                    if s != '-':
+                p = 0
+                s = 0
+                #------------------------------>
+                for j,r in enumerate(tAlign[0].seqB):
+                    if r != '-':
+                        #------------------------------>
                         if tAlign[0].seqA[j] != '-':
-                            betaDict[pdbRes[k]] = tDF.iat[k, tDF.columns.get_loc(idx['Rec',e])]
-                            k = k + 1
+                            betaDict[pdbRes[p]] = tDF.iat[s, tDF.columns.get_loc(idx['Rec',e])]
+                            p = p + 1
                         else:
                             pass
+                        #------------------------------>
+                        s = s + 1
                     else:
                         pass
                 #------------------------------> 
