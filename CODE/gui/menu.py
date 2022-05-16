@@ -1744,7 +1744,10 @@ class CpRToolMenu(wx.Menu, MenuMethods):
         self.rItems[0].Check()
         [x.Check(False) for x in self.rItems[1:]]
         self.miRec.Check()
-        self.miNat.Check(False)
+        try:
+            self.miNat.Check(False)
+        except AttributeError:
+            pass
         self.miSel.Check(True)
         self.miProtLoc.Check(True)
         #endregion ------------------------------------------------> 
