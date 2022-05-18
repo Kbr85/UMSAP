@@ -173,7 +173,7 @@ class MyListCtrl(wx.ListCtrl):
         self, parent: wx.Window, colLabel: Optional[list[str]]=None, 
         colSize: Optional[list[int]]=None, canCopy: bool=True, 
         canCut: bool=False, canPaste: bool=False, copyFullContent:bool=False, 
-        sep: str=',', pasteUnique: bool=True, selAll: bool=True, 
+        sep: str=' ', pasteUnique: bool=True, selAll: bool=True, 
         style=wx.LC_REPORT, data: list[list]=[], color=config.color['Zebra'], 
         **kwargs,
         ) -> None:
@@ -1140,7 +1140,7 @@ class ListZebra(MyListCtrl, listmix.ListRowHighlighter):
         self, parent: wx.Window, color: str=config.color['Zebra'], 
         colLabel: Optional[list[str]]=None, colSize: Optional[list[int]]=None, 
         canCopy: bool=True, canCut: bool=False, canPaste: bool=False, 
-        copyFullContent: bool=False, sep: str=',', pasteUnique: bool=True, 
+        copyFullContent: bool=False, sep: str=' ', pasteUnique: bool=True, 
         selAll: bool=True, style=wx.LC_REPORT, data: list[list]=[],
         ) -> None:
         """"""
@@ -1215,7 +1215,7 @@ class ListZebraMaxWidth(ListZebra, listmix.ListCtrlAutoWidthMixin):
         self, parent: wx.Window, color: str=config.color['Zebra'], 
         colLabel: Optional[list[str]]=None, colSize: Optional[list[int]]=None, 
         canCopy: bool=True, canCut: bool=False, canPaste: bool=False, 
-        copyFullContent: bool=False, sep: str=',', pasteUnique: bool=True, 
+        copyFullContent: bool=False, sep: str=' ', pasteUnique: bool=True, 
         selAll: bool=True, style=wx.LC_REPORT, data: list[list]=[],
         ) -> None:
         """"""
@@ -2962,7 +2962,7 @@ class ListCtrlSearch():
         color: str=config.color['Zebra'], colLabel: Optional[list[str]]=None, 
         colSize: Optional[list[int]]=None, canCopy: bool=True, 
         canCut: bool=False, canPaste: bool=False, copyFullContent: bool=False, 
-        sep: str=',', pasteUnique: bool=True, selAll: bool=True, 
+        sep: str=' ', pasteUnique: bool=True, selAll: bool=True, 
         style=wx.LC_REPORT, data: list[list]=[], tcHint: str='',
         ) -> None:
         """ """
