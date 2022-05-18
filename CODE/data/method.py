@@ -275,6 +275,7 @@ def Fragments(
                     nP = nP + 1
                     if cc > c:
                         c = cc
+                        cf = ccf
                     else:
                         pass
                     if not np.isnan(ncf) and not np.isnan(ccf):
