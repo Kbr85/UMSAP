@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -20,10 +20,9 @@ from typing import Optional, Union
 
 import wx
 
-import dat4s_core.gui.wx.method as dtsGwxMethod
-
 import config.config as config
-import gui.dtscore as dtscore
+import dtscore.gui_method as dtsGuiMethod
+import dtscore.window as dtsWindow
 import gui.method as method
 import gui.window as window
 #endregion ----------------------------------------------------------> Imports
@@ -535,7 +534,7 @@ class Utility(wx.Menu, MenuMethods):
         
         #region ---------------------------------------------------> Get fileP
         try:
-            fileP = dtsGwxMethod.GetFilePath(
+            fileP = dtsGuiMethod.GetFilePath(
                 'openO', 
                 ext    = config.elUMSAP,
                 parent = win,
@@ -546,7 +545,7 @@ class Utility(wx.Menu, MenuMethods):
             else:
                 fileP = Path(fileP[0])
         except Exception as e:      
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'errorF', 
                 msg        = config.mFileSelector,
                 tException = e,
@@ -895,295 +894,6 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
 #---
 
 
-class VolcanoPlot(wx.Menu, MenuMethods):
-    """Menu for a Volcano Plot.
-    
-        Parameters
-        ----------
-        cCrp: dict
-            Available conditions and relevant point for the analysis. 
-            See Notes for more details.
-        ciDate : str
-            Initially selected date
-            
-        Attributes
-        ----------
-        rCond : list of wx.MenuItems
-            Available conditions as wx.MenuItems for the current date.
-        rCrp : dict
-            Available conditions and relevant point for the analysis. 
-            See Notes for more details.
-        rRp : list of wx.MenuItems
-            Available relevant points as wx.MenuItems for the current date.
-        rSep : wx.MenuItem
-            Separator between conditions and relevant points.
-            
-        Notes
-        -----
-        rCrp has the following structure
-            {
-                    'date1' : {
-                        'C' : [List of conditions as str],
-                        'RP': [List of relevant points as str],
-                    }
-                    .......
-                    'dateN' : {}
-            }
-    """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, cCrp: dict, ciDate: str) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        self.rCrp = cCrp
-        #------------------------------> Cond - RP separator. To remove/create.
-        self.rSep = None
-        #------------------------------> 
-        super().__init__()
-        #------------------------------> Menu items for cond & relevant points
-        self.rCond, self.rRp = self.SetCondRPMenuItems(ciDate)
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        self.AddCondRPMenuItems2Menus()
-        self.AppendSeparator()
-        self.miLabelProt = self.Append(-1, 'Add Label\tShift+A')
-        self.miLabelPick = self.Append(-1, 'Pick Label\tShift+P', kind=wx.ITEM_CHECK)
-        self.AppendSeparator()
-        self.miColor = self.Append(-1, 'Color Scheme')
-        self.AppendSeparator()
-        self.miPCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
-        self.AppendSeparator()
-        self.miSaveI = self.Append(-1, 'Export Image\tShift+I')
-        self.AppendSeparator()
-        self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
-        #endregion -----------------------------------------------> Menu Items
-        
-        #region ---------------------------------------------------> rKeyID
-        self.rKeyID = {
-            self.miSaveI.GetId    (): 'VolcanoImg',
-            self.miZoomR.GetId    (): 'VolcanoZoom',
-        }
-        #endregion ------------------------------------------------> rKeyID
-
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miLabelProt)
-        self.Bind(wx.EVT_MENU, self.OnLabelPick,      source=self.miLabelPick)
-        self.Bind(wx.EVT_MENU, self.OnColor,          source=self.miColor)
-        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnUpdatePlot,     source=self.miPCorr)
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
-
-    #------------------------------> Class method
-    #region ---------------------------------------------------> Event methods
-    def OnUpdatePlot(self, event: wx.CommandEvent) -> bool:
-        """Update volcano plot.
-    
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-    
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------------> Draw
-        win = self.GetWindow()
-        win.OnVolChange(*self.GetData4Draw())
-        #endregion -----------------------------------------------------> Draw
-        
-        return True
-    #---
-    
-    def OnColor(self, event: wx.CommandEvent) -> bool:
-        """Adjust the Color Scheme for proteins.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnVolColorScheme()
-        
-        return True
-    #---
-    
-    def OnLabel(self, event: wx.CommandEvent) -> bool:
-        """Add Label to selected proteins.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnProtLabel()
-        
-        return True
-    #---
-    
-    def OnLabelPick(self, event: wx.CommandEvent) -> bool:
-        """Pick and Label proteins.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnLabelPick()
-        
-        return True
-    #---
-    #endregion ------------------------------------------------> Event methods
-    
-    #region --------------------------------------------------> Manage methods
-    def AddCondRPMenuItems2Menus(self) -> bool:
-        """Add the menu items in self.cond and self.rp to the menu
-        
-            Returns
-            -------
-            True
-        """
-        #region ---------------------------------------------------> Add items
-        #------------------------------> Conditions
-        for k,c in enumerate(self.rCond):
-            self.Insert(k,c)
-        #------------------------------> Separator
-        self.rSep = wx.MenuItem(None)
-        self.Insert(k+1, self.rSep)
-        #------------------------------> Relevant Points
-        for j,t in enumerate(self.rRp, k+2):
-            self.Insert(j, t)
-        #endregion ------------------------------------------------> Add items
-        
-        return True
-    #---
-    
-    def GetData4Draw(self) -> tuple[str, str, bool]:
-        """Return the current selected cond, rp and corrP.
-    
-            Returns
-            -------
-            Data needed for the volcano plot
-                (cond, rp, bool)
-        """
-        #region ---------------------------------------------------> Varaibles
-        cond = self.GetCheckedRadiodItem(self.rCond)
-        rp   = self.GetCheckedRadiodItem(self.rRp)
-        corrP = self.miPCorr.IsChecked()
-        #endregion ------------------------------------------------> Varaibles
-        
-        return (cond, rp, corrP)
-    #---
-    
-    def SetCondRPMenuItems(
-        self, tDate: str
-        ) -> tuple[list[wx.MenuItem], list[wx.MenuItem]]:
-        """Set the menu items for conditions and relevant points as defined for 
-            the current analysis date.
-    
-            Parameters
-            ----------
-            tDate : str
-    
-            Returns
-            -------
-            tuple:
-                First element is the condition menu items and second relevant 
-                point menu items.
-        """
-        #region -------------------------------------------------> Empty lists
-        cond = []
-        rp = []
-        #endregion ----------------------------------------------> Empty lists
-        
-        #region ------------------------------------------------> Add elements
-        #------------------------------> Conditions
-        for c in self.rCrp[tDate]['C']:
-            #------------------------------> 
-            i = wx.MenuItem(None, -1, text=c, kind=wx.ITEM_RADIO)
-            #------------------------------> 
-            cond.append(i)
-            #------------------------------> 
-            self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=i)
-        #------------------------------> Relevant Points
-        for t in self.rCrp[tDate]['RP']:
-            #------------------------------> 
-            i = wx.MenuItem(None, -1, text=t, kind=wx.ITEM_RADIO)
-            #------------------------------> 
-            rp.append(i)
-            #------------------------------> 
-            self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=i)
-        #endregion ---------------------------------------------> Add elements
-        
-        return (cond, rp)
-    #---
-    
-    def UpdateCondRP(self, tDate) -> bool:
-        """Update the conditions and relevant points when date changes.
-    
-            Parameters
-            ----------
-            tDate : str
-                Selected date
-    
-            Returns
-            -------
-            bool
-            
-            Notes
-            -----
-            Date changes in ProtProfToolMenu
-        """
-        #region ---------------------------------------------> Delete Elements
-        #------------------------------> Conditions
-        for c in self.rCond:
-            self.Delete(c)
-        #------------------------------> Separators
-        self.Delete(self.rSep)
-        self.sep = None
-        #------------------------------> RP
-        for rp in self.rRp:
-            self.Delete(rp)
-        #endregion ------------------------------------------> Delete Elements
-        
-        #region -----------------------------------> Create & Add New Elements
-        #------------------------------> 
-        self.rCond, self.rRp = self.SetCondRPMenuItems(tDate)
-        #------------------------------> 
-        self.AddCondRPMenuItems2Menus()
-        #endregion --------------------------------> Create & Add New Elements
-        
-        return True
-    #---
-    #endregion -----------------------------------------------> Manage methods
-#---
-
-
 class FCEvolution(wx.Menu, MenuMethods):
     """Menu for a log2FC evolution along relevant points """
     #region -----------------------------------------------------> Class setup
@@ -1394,7 +1104,7 @@ class LockPlotScale(wx.Menu):
 
         #region --------------------------------------------------> Menu Items
         self.miNo      = self.Append(-1, 'No',         kind=wx.ITEM_RADIO)
-        self.miDate    = self.Append(-1, 'Date',       kind=wx.ITEM_RADIO)
+        self.miDate    = self.Append(-1, 'Analysis',   kind=wx.ITEM_RADIO)
         self.miProject = self.Append(-1, 'Project',    kind=wx.ITEM_RADIO)
         
         self.miDate.Check()
@@ -2034,7 +1744,10 @@ class CpRToolMenu(wx.Menu, MenuMethods):
         self.rItems[0].Check()
         [x.Check(False) for x in self.rItems[1:]]
         self.miRec.Check()
-        self.miNat.Check(False)
+        try:
+            self.miNat.Check(False)
+        except AttributeError:
+            pass
         self.miSel.Check(True)
         self.miProtLoc.Check(True)
         #endregion ------------------------------------------------> 
@@ -2296,7 +2009,7 @@ class FAMenuTarProtAA(wx.Menu):
         win = self.GetWindow()
         return getattr(win, 'OnAANew')()
     #---
-    #region ---------------------------------------------------> Event methods
+    #endregion ------------------------------------------------> Event methods
 #---
 
 
@@ -2545,10 +2258,356 @@ class Help(wx.Menu):
     
     #endregion ------------------------------------------------> Event methods
 #---
+
+
+class VolcanoPlotColorScheme(wx.Menu):
+    """ """
+    #region -----------------------------------------------------> Class setup
+    
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miHypCurve = self.Append(-1, 'Hyperbolic Curve', kind=wx.ITEM_RADIO)
+        self.miPLogFC   = self.Append(-1, 'P - Log2FC',       kind=wx.ITEM_RADIO)
+        self.miZScore   = self.Append(-1, 'Z Score',          kind=wx.ITEM_RADIO)
+        self.AppendSeparator()
+        self.miConfigure= self.Append(-1, 'Configure')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ------------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miHypCurve.GetId(): 'Hyp Curve Color',
+            self.miZScore.GetId()  : 'Z Score Color',
+            self.miPLogFC.GetId()  : 'P - Log2FC Color',
+        }
+        #endregion ---------------------------------------------------> rKeyID
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnOption, source=self.miHypCurve)
+        self.Bind(wx.EVT_MENU, self.OnOption, source=self.miPLogFC)
+        self.Bind(wx.EVT_MENU, self.OnOption, source=self.miZScore)
+        self.Bind(wx.EVT_MENU, self.OnConfigure, source=self.miConfigure)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOption(self, event:wx.CommandEvent) -> bool:
+        """
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.rColor = self.rKeyID[event.GetId()]
+        win.VolDraw()
+        return True
+    #---
+    
+    def OnConfigure(self, event: wx.CommandEvent) -> bool:
+        """Adjust the Color Scheme for proteins.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnVolColorScheme()
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion -------------------------------------------------> Individual menus
 
 
 #region -----------------------------------------------------------> Mix menus
+class VolcanoPlot(wx.Menu, MenuMethods):
+    """Menu for a Volcano Plot.
+    
+        Parameters
+        ----------
+        cCrp: dict
+            Available conditions and relevant point for the analysis. 
+            See Notes for more details.
+        ciDate : str
+            Initially selected date
+            
+        Attributes
+        ----------
+        rCond : list of wx.MenuItems
+            Available conditions as wx.MenuItems for the current date.
+        rCrp : dict
+            Available conditions and relevant point for the analysis. 
+            See Notes for more details.
+        rRp : list of wx.MenuItems
+            Available relevant points as wx.MenuItems for the current date.
+        rSep : wx.MenuItem
+            Separator between conditions and relevant points.
+            
+        Notes
+        -----
+        rCrp has the following structure
+            {
+                    'date1' : {
+                        'C' : [List of conditions as str],
+                        'RP': [List of relevant points as str],
+                    }
+                    .......
+                    'dateN' : {}
+            }
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cCrp: dict, ciDate: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rCrp = cCrp
+        #------------------------------> Cond - RP separator. To remove/create.
+        self.rSep = None
+        #------------------------------> 
+        super().__init__()
+        #------------------------------> Menu items for cond & relevant points
+        self.rCond, self.rRp = self.SetCondRPMenuItems(ciDate)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.AddCondRPMenuItems2Menus()
+        self.AppendSeparator()
+        self.miLabelProt = self.Append(-1, 'Add Label\tShift+A')
+        self.miLabelPick = self.Append(-1, 'Pick Label\tShift+P', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
+        self.mColor = VolcanoPlotColorScheme()
+        self.AppendSubMenu(self.mColor, 'Color Scheme')
+        self.AppendSeparator()
+        self.miPCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
+        self.miSaveI = self.Append(-1, 'Export Image\tShift+I')
+        self.AppendSeparator()
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        self.rKeyID = {
+            self.miSaveI.GetId    (): 'VolcanoImg',
+            self.miZoomR.GetId    (): 'VolcanoZoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miLabelProt)
+        self.Bind(wx.EVT_MENU, self.OnLabelPick,      source=self.miLabelPick)
+        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnUpdatePlot,     source=self.miPCorr)
+        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #------------------------------> Class method
+    #region ---------------------------------------------------> Event methods
+    def OnUpdatePlot(self, event: wx.CommandEvent) -> bool:
+        """Update volcano plot.
+    
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+    
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Draw
+        win = self.GetWindow()
+        win.OnVolChange(*self.GetData4Draw())
+        #endregion -----------------------------------------------------> Draw
+        
+        return True
+    #---
+    
+    def OnLabel(self, event: wx.CommandEvent) -> bool:
+        """Add Label to selected proteins.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnProtLabel()
+        
+        return True
+    #---
+    
+    def OnLabelPick(self, event: wx.CommandEvent) -> bool:
+        """Pick and Label proteins.
+    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+    
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.OnLabelPick()
+        
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+    
+    #region --------------------------------------------------> Manage methods
+    def AddCondRPMenuItems2Menus(self) -> bool:
+        """Add the menu items in self.cond and self.rp to the menu
+        
+            Returns
+            -------
+            True
+        """
+        #region ---------------------------------------------------> Add items
+        #------------------------------> Conditions
+        for k,c in enumerate(self.rCond):
+            self.Insert(k,c)
+        #------------------------------> Separator
+        self.rSep = wx.MenuItem(None)
+        self.Insert(k+1, self.rSep)
+        #------------------------------> Relevant Points
+        for j,t in enumerate(self.rRp, k+2):
+            self.Insert(j, t)
+        #endregion ------------------------------------------------> Add items
+        
+        return True
+    #---
+    
+    def GetData4Draw(self) -> tuple[str, str, bool]:
+        """Return the current selected cond, rp and corrP.
+    
+            Returns
+            -------
+            Data needed for the volcano plot
+                (cond, rp, bool)
+        """
+        #region ---------------------------------------------------> Varaibles
+        cond = self.GetCheckedRadiodItem(self.rCond)
+        rp   = self.GetCheckedRadiodItem(self.rRp)
+        corrP = self.miPCorr.IsChecked()
+        #endregion ------------------------------------------------> Varaibles
+        
+        return (cond, rp, corrP)
+    #---
+    
+    def SetCondRPMenuItems(
+        self, tDate: str
+        ) -> tuple[list[wx.MenuItem], list[wx.MenuItem]]:
+        """Set the menu items for conditions and relevant points as defined for 
+            the current analysis date.
+    
+            Parameters
+            ----------
+            tDate : str
+    
+            Returns
+            -------
+            tuple:
+                First element is the condition menu items and second relevant 
+                point menu items.
+        """
+        #region -------------------------------------------------> Empty lists
+        cond = []
+        rp = []
+        #endregion ----------------------------------------------> Empty lists
+        
+        #region ------------------------------------------------> Add elements
+        #------------------------------> Conditions
+        for c in self.rCrp[tDate]['C']:
+            #------------------------------> 
+            i = wx.MenuItem(None, -1, text=c, kind=wx.ITEM_RADIO)
+            #------------------------------> 
+            cond.append(i)
+            #------------------------------> 
+            self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=i)
+        #------------------------------> Relevant Points
+        for t in self.rCrp[tDate]['RP']:
+            #------------------------------> 
+            i = wx.MenuItem(None, -1, text=t, kind=wx.ITEM_RADIO)
+            #------------------------------> 
+            rp.append(i)
+            #------------------------------> 
+            self.Bind(wx.EVT_MENU, self.OnUpdatePlot, source=i)
+        #endregion ---------------------------------------------> Add elements
+        
+        return (cond, rp)
+    #---
+    
+    def UpdateCondRP(self, tDate) -> bool:
+        """Update the conditions and relevant points when date changes.
+    
+            Parameters
+            ----------
+            tDate : str
+                Selected date
+    
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Date changes in ProtProfToolMenu
+        """
+        #region ---------------------------------------------> Delete Elements
+        #------------------------------> Conditions
+        for c in self.rCond:
+            self.Delete(c)
+        #------------------------------> Separators
+        self.Delete(self.rSep)
+        self.sep = None
+        #------------------------------> RP
+        for rp in self.rRp:
+            self.Delete(rp)
+        #endregion ------------------------------------------> Delete Elements
+        
+        #region -----------------------------------> Create & Add New Elements
+        #------------------------------> 
+        self.rCond, self.rRp = self.SetCondRPMenuItems(tDate)
+        #------------------------------> 
+        self.AddCondRPMenuItems2Menus()
+        #endregion --------------------------------> Create & Add New Elements
+        
+        return True
+    #---
+    #endregion -----------------------------------------------> Manage methods
+#---
+
+
 class FurtherAnalysisTarProt(wx.Menu):
     """ """
     #region -----------------------------------------------------> Class setup

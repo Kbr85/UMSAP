@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -46,7 +46,7 @@ if os == 'Darwin':
     toolsMenuIdx = 2
     #------------------------------> Statusbar split size
     sbPlot2Fields = [-1, 115]
-    sbPlot3Fields = [90, -1, 115] 
+    sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Cmd'
     #------------------------------> Delta space between consecutive windows
@@ -65,7 +65,7 @@ elif os == 'Windows':
     toolsMenuIdx = 2
     #------------------------------> Statusbar split size
     sbPlot2Fields = [-1, 115]
-    sbPlot3Fields = [90, -1, 115] 
+    sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -80,7 +80,7 @@ else:
     toolsMenuIdx = 3
     #------------------------------> Statusbar split size
     sbPlot2Fields = [-1, 115]
-    sbPlot3Fields = [90, -1, 115] 
+    sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -222,12 +222,12 @@ fConfigDef = res / 'CONFIG/config_def.json'
 #------------------------------> Names
 fnInitial    = "{}_{}-Initial-Data.txt"
 fnFloat      = "{}_{}-Floated-Data.txt"
-fnTargetProt = "{}_{}-Target-Protein-Data.txt"
-fnExclude    = "{}_{}-After-Excluding-Data.txt"
-fnScore      = "{}_{}-Score-Filtered-Data.txt"
 fnTrans      = "{}_{}-Transformed-Data.txt"
 fnNorm       = "{}_{}-Normalized-Data.txt"
 fnImp        = "{}_{}-Imputed-Data.txt"
+fnTargetProt = "{}_{}-Target-Protein-Data.txt"
+fnExclude    = "{}_{}-After-Excluding-Data.txt"
+fnScore      = "{}_{}-Score-Filtered-Data.txt"
 fnDataSteps  = 'Steps_Data_Files'
 fnDataInit   = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
@@ -308,7 +308,7 @@ ttStIntensity = ('Specify if intensities are raw intensity values or are '
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
-    f"the list cannot be modified."
+    f"the table cannot be modified."
 )
 ttLCtrlPasteMod = (
     f"New rows can be pasted ({copyShortCut}+V) after the "
@@ -316,10 +316,18 @@ ttLCtrlPasteMod = (
     f"({copyShortCut}+X) or copied "
     f"({copyShortCut}+C)."    
 )
+#------------------------------> dtscore
+ttSectionRightClick = (
+    'The content of the Section can be deleted with a right click.')
 #endregion ---------------------------------------------------------> Tooltips
 
 
 #region -------------------------------------------------------------> Options
+oNumType = { 
+    'int'  : int,
+    'float': float,
+}
+
 oYesNo = {
     ''   : '',
     'Yes': True,
@@ -375,6 +383,20 @@ oControlTypeProtProf = {
     'OCR'  : 'One Control per Row',
     'Ratio': oIntensities['RatioI'],
 }
+
+oFillLoc = ('end', 'start')
+
+oNotification = {
+    'errorF' : 'Fatal Error',
+    'errorU' : 'Unexpected Error',
+    'warning': 'Warning',
+    'success': 'Success',
+    'question':'Please answer the following question:',
+}
+
+oMsgType = ('errorF', 'errorU', 'warning', 'success')
+
+oSelectF = ('openO', 'openM', 'save')
 #endregion ----------------------------------------------------------> Options
 
 
@@ -397,18 +419,26 @@ dfcolSeqNC = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 ltDPKeys = ['dfF', 'dfT', 'dfN', 'dfIm']
 
 lAA1 = [ # AA one letter codes
-	'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
-	'H', 'S', 'T', 'N', 'G', 'P'
+    'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
+    'H', 'S', 'T', 'N', 'G', 'P'
 ]
 
 lAAGroups = [ # AA groups
-	['A', 'I', 'L', 'V', 'M'], 
-	['F', 'W', 'Y'], 
-	['R', 'K'], 
-	['D', 'E'],
-	['C', 'Q', 'H', 'S', 'T', 'N'], 
-	['G', 'P']
+    ['A', 'I', 'L', 'V', 'M'], 
+    ['F', 'W', 'Y'], 
+    ['R', 'K'], 
+    ['D', 'E'],
+    ['C', 'Q', 'H', 'S', 'T', 'N'], 
+    ['G', 'P']
 ]
+
+oAA3toAA = { # Three to one AA code translation
+    'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D', 
+    'CYS': 'C', 'GLU': 'E', 'GLN': 'Q', 'GLY': 'G',
+    'HIS': 'H', 'ILE': 'I', 'LEU': 'L', 'LYS': 'K', 
+    'MET': 'M', 'PHE': 'F', 'PRO': 'P', 'SER': 'S', 
+    'THR': 'T', 'TRP': 'W', 'TYR': 'Y', 'VAL': 'V',
+}
 #endregion --------------------------------------------------> Important Lists
 
 
@@ -427,6 +457,8 @@ mOptField = '\nThis field is optional.'
 
 #region ------------------------------------------------------------> Values
 mOneRNumText = "Only one real number can be accepted here."
+mOneRPlusNumText = (
+    "Only one number equal or greater than zero can be accepted here.")
 mOneZPlusNumText = "Only a non-negative integer can be accepted here."
 mOne01NumText = "Only one number between 0 and 1 can be accepted here."
 mNZPlusNumText = (
@@ -435,8 +467,10 @@ mNZPlusNumText = (
 
 #region ---------------------------------------------------------------> Files
 mFileSelector = 'It was not possible to show the file selecting dialog.'
-mFileRead = 'An error occured when reading file:\n{}'
+mFileRead = 'An error occurred when reading file:\n{}'
 mFileSelUMSAP = 'Select the UMSAP File'
+mReadErrorIO  = "The selected file could not be read.\nSelected file: {}"
+mWriteErrorIO = "The selected file could not be written.\nSelected file: {}"
 #endregion ------------------------------------------------------------> Files
 
 #region ------------------------------------------------------------> Pandas
@@ -461,10 +495,11 @@ mRepeatColNum = 'There are repeated column numbers in the text fields.'
 mRowsInLCtrl = 'There must be at least {} items in {}.'
 mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
     'Protein, etc) were applied.')
-mFileBad = "File: '{}'\ncannot be used as {}."
+mFileBad = "File: '{}'\ncannot be used as {} file."
 mOptionBad = "Option '{}' cannot be accepted in {}."
 mValueBad = "Value '{}' cannot be accepted in {}.\n"
 mOneRealNum = f"{mValueBad}{mOneRNumText}"
+mOneRPlusNum = f"{mValueBad}{mOneRPlusNumText}"
 mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
 mOneZPlusNumCol = f"{mOneZPlusNum} {mColNumber}"
 mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
@@ -485,7 +520,58 @@ mRepNumProtProf = ('To perform a Proteome Profiling analysis using Raw '
 )
 mCtrlEmpty = 'None of the Control fields can be empty.'
 #endregion -------------------------------------------------> For CheckInput
+
+#region ---------------------------------------------------> dtscore
+#------------------------------> 
+mCompNYI = "Comparison method is not yet implemented: {}."
+mPDFilterByCol  = "Filtering process failed."
+mWriteFilesIO = "The selected files could not be written to: {}"
+mRangeNumIE = "Invalid range or number: {}"
+mNotIterable = "{} must be iterable but the given value ({}) is not."
+mpdReplaceVal = ("It was not possible to replace {} values with {}.")
+mPDExcludeCol  = "Exclusion process failed."
+mNotImplementedFull = ('Option {} is not yet implemented. Valid options for {} '
+    'are: {}.')
+mMsgTypeIE = (
+    f"Options for message mode are: {*oMsgType,}. "
+    "Option {} is unknown.")
+mwxLCtrNoCopy     = "The elements of this list cannot be copied."
+mCopyFailedW     = f"Copy operation failed. Try again."
+mwxLCtrNoChange   = "This list cannot be modified."
+mPasteFailedW    = f"Paste operation failed. Try again."
+mNothingToPasteW = f"Nothing to paste."
+mwxLCtrlNColPaste = (
+    "The clipboard content cannot be pasted because the number of "
+    "columns being pasted is different to the number of columns "
+    "in the list."
+)
+mInvalidValue = "'{}' is an invalid value."
+mPDSelCol  = "The specified columns {} were not found in the dataframe."
+mTransMethodIE = (
+    f"Options for transformation method are: {*oTransMethod,}. "
+    "Option {} is unknown.")
+mNormMethodIE = (
+    f"Options for normalization method are: {*oNormMethod,}. "
+    "Option {} is unknown.")
+mImputationMethodIE = (
+    f"Options for imputation method are: {*oImputation,}. "
+    "Option {} is unknown.")
+mAlpha = (
+    "The significance level (alpha) must be a number between 0 and 1. "
+    "The given value ({}) it is not within this range. ")
+mPairSamplesDiffRep = (
+    'For paired samples the number of replicates in {} and {} must be equal.')
+m1IntGET = ('{} must be an integer greater/equal than/to {}.')
+mNotImplemented = 'Option {} is not yet implemented.'
+mNotSupported = "{} value ({}) is not supported."
+mEmpty = 'The field value cannot be empty.'
+#endregion ------------------------------------------------> dtscore
 #endregion ---------------------------------------------------------> Messages
+
+
+#region ---------------------------------------------------------> Date & Time
+dtFormat = '%Y%m%d-%H%M%S'
+#endregion ------------------------------------------------------> Date & Time
 
 
 #region ---------------------------------------------------------------> Sizes
@@ -558,12 +644,12 @@ color = { # Colors for the app
     },
     nwAAPlot : {
         'BarColor': { 
-			'R': '#0099ff', 'K': '#0099ff', 'D': '#ff4d4d', 'W': '#FF51FD', 
-			'E': '#ff4d4d', 'S': '#70db70', 'T': '#70db70', 'H': '#70db70', 
-			'N': '#70db70', 'Q': '#70db70', 'C': '#FFFC00', 'G': '#FFFC00', 
-			'P': '#FFFC00', 'A': '#BEBEBE', 'V': '#BEBEBE', 'I': '#BEBEBE', 
-			'L': '#BEBEBE', 'M': '#BEBEBE', 'F': '#FF51FD', 'Y': '#FF51FD', 
-		},
+            'R': '#0099ff', 'K': '#0099ff', 'D': '#ff4d4d', 'W': '#FF51FD', 
+            'E': '#ff4d4d', 'S': '#70db70', 'T': '#70db70', 'H': '#70db70', 
+            'N': '#70db70', 'Q': '#70db70', 'C': '#FFFC00', 'G': '#FFFC00', 
+            'P': '#FFFC00', 'A': '#BEBEBE', 'V': '#BEBEBE', 'I': '#BEBEBE', 
+            'L': '#BEBEBE', 'M': '#BEBEBE', 'F': '#FF51FD', 'Y': '#FF51FD', 
+        },
         'Chi' : {
             1 : 'Green',
             0 : 'Red',
@@ -580,4 +666,14 @@ color = { # Colors for the app
     },
 }
 #endregion -----------------------------------------------------------> Colors
+
+
+#region --------------------------------------------------------------> Values
+values = {
+    nwCheckDataPrep : {
+        'Shift' : '1.8',
+        'Width' : '0.3',
+    }
+}
+#endregion -----------------------------------------------------------> Values
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS

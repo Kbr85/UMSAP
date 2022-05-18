@@ -20,10 +20,9 @@ from typing import Optional
 import wx
 import wx.lib.agw.aui as aui
 
-import dat4s_core.data.method as dtsMethod
-
 import config.config as config
-import gui.dtscore as dtscore
+import dtscore.data_method as dtsMethod
+import dtscore.widget as dtsWidget
 import gui.pane as pane
 #endregion ----------------------------------------------------------> Imports
 
@@ -145,7 +144,7 @@ class BaseConfListTab(BaseConfTab):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wLCtrl = dtscore.ListZebraMaxWidth(
+        self.wLCtrl = dtsWidget.ListZebraMaxWidth(
             self, colLabel=self.cLCColLabel, colSize=self.cSColSize)
         #----------------------------> Pointer to lc to load data file content
         self.wConf.wLCtrlI = self.wLCtrl
@@ -236,7 +235,7 @@ class ResControlExp(wx.Panel):
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> ListCtrl and fill it
-        self.wLCtrl = dtscore.ListZebraMaxWidth(
+        self.wLCtrl = dtsWidget.ListZebraMaxWidth(
             self, 
             colLabel = self.cLLCtrlColName,
             colSize  = self.cSLCTrlCol,

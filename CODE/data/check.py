@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -17,9 +17,9 @@
 #region -------------------------------------------------------------> Imports
 from typing import Optional, Union
 
-import dat4s_core.data.check as dtsCheck
-import dat4s_core.data.method as dtsMethod
-import dat4s_core.exception.exception as dtsException
+import dtscore.check as dtsCheck
+import dtscore.exception as dtsException
+import dtscore.data_method as dtsMethod
 #endregion ----------------------------------------------------------> Imports
 
 

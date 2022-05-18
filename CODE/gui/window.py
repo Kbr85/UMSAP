@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -45,19 +45,17 @@ import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
 import wx.lib.agw.hyperlink as hl
 
-import dat4s_core.data.check as dtsCheck
-import dat4s_core.data.file as dtsFF
-import dat4s_core.data.method as dtsMethod
-import dat4s_core.data.statistic as dtsStatistic
-import dat4s_core.gui.wx.validator as dtsValidator
-import dat4s_core.gui.wx.widget as dtsWidget
-import dat4s_core.gui.wx.window as dtsWindow
-import dat4s_core.exception.exception as dtsException
-
 import config.config as config
 import data.file as file
 import data.method as dmethod
-import gui.dtscore as dtscore
+import dtscore.check as dtsCheck
+import dtscore.data_method as dtsMethod
+import dtscore.exception as dtsException
+import dtscore.file as dtsFF
+import dtscore.statistic as dtsStatistic
+import dtscore.validator as dtsValidator
+import dtscore.widget as dtsWidget
+import dtscore.window as dtsWindow
 import gui.menu as menu
 import gui.method as method
 import gui.pane as pane
@@ -88,7 +86,7 @@ def UpdateCheck(
         r = requests.get(config.urlUpdate)
     except Exception as e:
         msg = 'Check for Updates failed. Please try again later.'
-        wx.CallAfter(dtscore.Notification, 'errorU', msg=msg, tException=e)
+        wx.CallAfter(dtsWindow.NotificationDialog, 'errorU', msg=msg, tException=e)
         return False
     #endregion ------------------------------> Get web page text from Internet
     
@@ -109,7 +107,7 @@ def UpdateCheck(
         versionI = versionI.strip()
     else:
         msg = 'Check for Updates failed. Please try again later.'
-        wx.CallAfter(dtscore.Notification, 'errorU', msg=msg)
+        wx.CallAfter(dtsWindow.NotificationDialog, 'errorU', msg=msg)
         return False
     #endregion -----------------------------------------> Get Internet version
 
@@ -145,7 +143,7 @@ def BadUserConf(tException):
     
     """
     msg = 'It was not possible to read the user configuration file.'
-    wx.CallAfter(dtscore.Notification,'errorU', msg=msg, tException=tException)
+    wx.CallAfter(dtsWindow.NotificationDialog,'errorU', msg=msg, tException=tException)
     return True
 #---
 #endregion ----------------------------------------------------------> Methods
@@ -287,7 +285,7 @@ class BaseWindow(wx.Frame):
             return True
         except Exception as e:
             msg = 'It was not possible to open the UMSAP manual.'
-            dtscore.Notification('errorF', msg=msg, tException=e)
+            dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
             return False
     #---
     
@@ -373,7 +371,7 @@ class BaseWindow(wx.Frame):
             return True
         except Exception as e:
             #------------------------------> 
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'errorF', msg=str(e), tException=e, parent=self)
             #------------------------------> 
             return False
@@ -490,7 +488,7 @@ class BaseWindow(wx.Frame):
             try:
                 dtsFF.WriteDF2CSV(p, tDF)
             except Exception as e:
-                dtscore.Notification(
+                dtsWindow.NotificationDialog(
                     'errorF',
                     msg        = self.cMsgExportFailed,
                     tException = e,
@@ -527,7 +525,7 @@ class BaseWindow(wx.Frame):
             try:
                 dtsFF.WriteDF2CSV(p, self.rDf)
             except Exception as e:
-                dtscore.Notification(
+                dtsWindow.NotificationDialog(
                     'errorF',
                     msg        = self.cMsgExportFailed,
                     tException = e,
@@ -638,7 +636,7 @@ class BaseWindow(wx.Frame):
         if not self.rDate:
             msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are '
                 f'corrupted or were not found.')
-            dtscore.Notification('errorU', msg=msg)
+            dtsWindow.NotificationDialog('errorU', msg=msg)
             raise dtsException.PassException()
         else:
             pass
@@ -651,7 +649,7 @@ class BaseWindow(wx.Frame):
             else:
                 msg = (f'The data for analysis:\n\n{fileList}\n\n '
                 f'contain errors or were not found.')
-            dtscore.Notification('warning', msg=msg)
+            dtsWindow.NotificationDialog('warning', msg=msg)
         else:
             pass
         #------------------------------> 
@@ -974,7 +972,7 @@ class BaseWindowNPlotLT(BaseWindow):
             tException = (
                 f'The row numbers where the string was found are:\n '
                 f'{str(iSimilar)[1:-1]}')
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'warning', 
                 msg        = msg,
                 setText    = True,
@@ -983,7 +981,7 @@ class BaseWindowNPlotLT(BaseWindow):
             )
         else:
             msg = (f'The string, {tStr}, was not found.')
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'warning', 
                 msg        = msg,
                 setText    = True,
@@ -1344,7 +1342,7 @@ class BaseWindowProteolysis(BaseWindow):
             tException = (
                 f'The row numbers where the string was found are:\n '
                 f'{str(iSimilar)[1:-1]}')
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'warning', 
                 msg        = msg,
                 setText    = True,
@@ -1353,7 +1351,7 @@ class BaseWindowProteolysis(BaseWindow):
             )
         else:
             msg = (f'The string, {tStr}, was not found.')
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'warning', 
                 msg        = msg,
                 setText    = True,
@@ -1994,6 +1992,11 @@ class MainWindow(BaseWindow):
             pass
         #endregion ------------------------------------------------> Start Tab
         
+        #region ---------------------------------------------------> Raise
+        self.Raise()
+        #endregion ------------------------------------------------> Raise
+
+        
         return True
     #---
 
@@ -2101,18 +2104,6 @@ class CorrAPlot(BaseWindowPlot):
         super().__init__(cParent, {'menudate' : self.rDate})
         #endregion --------------------------------------------> Initial Setup
 
-        #region -----------------------------------------------------> Widgets
-        
-        #endregion --------------------------------------------------> Widgets
-
-        #region ------------------------------------------------------> Sizers
-
-        #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
-
         #region ----------------------------------------------------> Position
         self.SetColDetails(self.rDateC)
         self.UpdateDisplayedData(self.rDateC, 'Name', False)
@@ -2158,13 +2149,13 @@ class CorrAPlot(BaseWindowPlot):
         #region -----------------------------------------------------> Options
         allCol = []
         for k,c in enumerate(self.rData[self.rDateC]['DF'].columns):
-            allCol.append([self.rData[self.rDateC]['NumColList'][k], c])
+            allCol.append([str(self.rData[self.rDateC]['NumColList'][k]), c])
         
         selCol = []
         for c in self.rSelColIdx:
             selCol.append([
-                self.rData[self.rDateC]['NumColList'][c], 
-                self.rData[self.rDateC]['DF'].columns[c]])    
+                str(self.rData[self.rDateC]['NumColList'][c]),
+                self.rData[self.rDateC]['DF'].columns[c]])
         #endregion --------------------------------------------------> Options
 
         #region -------------------------------------------------> Get New Sel
@@ -2174,7 +2165,7 @@ class CorrAPlot(BaseWindowPlot):
             config.lLCtrlColNameI, 
             config.sLCtrlColI, 
             tSelOptions = selCol,
-            title       = 'Select the columns to show in the correlation plot',            
+            title       = 'Select the columns to show in the correlation plot',
             tBtnLabel   = 'Add selection',
             color       = config.color['Zebra'],
             tStLabel = ['Columns in the current results', 'Selected columns'],
@@ -2535,7 +2526,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
     cLNPlots = ['Vol', 'FC']
     #------------------------------> Title
     cTList = 'Protein List'
-    cTText = 'Profiling details'
+    cTText = 'Profiling Details'
     #------------------------------> Sizes
     cSWindow = config.sWinModPlot
     cSCol    = [45, 70, 100]
@@ -2581,6 +2572,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rT0          = 0.1
         self.rS0          = 1.0
         self.rZ           = 10.0
+        self.rP           = self.rData[self.rDateC]['Alpha']
+        self.rLog2FC      = 0.1
         self.rColor       = 'Hyp Curve Color'
         self.rHypCurve    = True
         self.rCI          = None
@@ -2597,6 +2590,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rLabelProt   = []
         self.rLabelProtD  = {}
         self.rPickLabel   = False
+        self.rVolLines    = ['Hyp Curve Lines']
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> Methods
@@ -2613,6 +2607,11 @@ class ProtProfPlot(BaseWindowNPlotLT):
             #------------------------------> Colors
             'Hyp Curve Color' : self.GetColorHyCurve,
             'Z Score Color'   : self.GetColorZScore,
+            'P - Log2FC Color': self.GetColorPLog2FC,
+            #------------------------------> Lines
+            'Hyp Curve Line' : self.DrawLinesHypCurve,
+            'Z Score Line'   : self.DrawLinesZScore,
+            'P - Log2FC Line': self.DrawLinesPLog2FC,
             #------------------------------> Filter methods
             config.lFilFCEvol  : self.Filter_FCChange,
             config.lFilHypCurve: self.Filter_HCurve,
@@ -2664,7 +2663,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #------------------------------> Class methods    
+    #------------------------------> Class methods
     #region --------------------------------------------------> Manage Methods
     def StatusBarFilterText(self, text: str) -> bool:
         """Update the StatusBar text
@@ -2887,16 +2886,9 @@ class ProtProfPlot(BaseWindowNPlotLT):
             color     = color,
             picker    = True,
         )
-        if self.rHypCurve:
-            lim = self.rT0*self.rS0
-            xCP = np.arange(lim+0.001, 20, 0.001)
-            yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-lim))
-            self.wPlots.dPlot['Vol'].axes.plot(
-                xCP,  yCP, color=self.cColor['CV'])
-            self.wPlots.dPlot['Vol'].axes.plot(
-                -xCP, yCP, color=self.cColor['CV'])
-        else:
-            pass
+        
+        for l in self.rVolLines:
+            self.dKeyMethod[l]()
         #------------------------------> Lock Scale or Set it manually
         if self.rVXRange and self.rVYRange:
             self.wPlots.dPlot['Vol'].axes.set_xlim(*self.rVXRange)
@@ -2916,8 +2908,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #region ---------------------------------------------------> 
         self.AddProtLabel()
         #endregion ------------------------------------------------> 
-
-    
+        
         return True
     #---
     
@@ -3532,6 +3523,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             -------
             bool
         """
+        
         return True
     #---
     
@@ -3724,8 +3716,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------------> Check input
         
         #region ---------------------------------------------------> Get Range
-        xR = dtsStatistic.DataRange(x, margin= config.general['MatPlotMargin'])
-        yR = dtsStatistic.DataRange(y, margin= config.general['MatPlotMargin'])
+        xR = dtsStatistic.DataRange(x, margin=config.general['MatPlotMargin'])
+        yR = dtsStatistic.DataRange(y, margin=config.general['MatPlotMargin'])
         #endregion ------------------------------------------------> Get Range
         
         #region ---------------------------------------------------> Set Range
@@ -3733,6 +3725,80 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.wPlots.dPlot['Vol'].axes.set_ylim(*yR)
         #endregion ------------------------------------------------> Set Range
         
+        return True
+    #---
+    
+    def DrawLinesHypCurve(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        lim = self.rT0*self.rS0
+        xCP = np.arange(lim+0.001, 20, 0.001)
+        yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-lim))
+        self.wPlots.dPlot['Vol'].axes.plot(
+            xCP,  yCP, color=self.cColor['CV'])
+        self.wPlots.dPlot['Vol'].axes.plot(
+            -xCP, yCP, color=self.cColor['CV'])
+        return True
+    #---
+    
+    def DrawLinesPLog2FC(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        p = -np.log10(self.rP)
+        #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> 
+        self.wPlots.dPlot['Vol'].axes.hlines(
+            p, -100, 100, color=self.cColor['CV'])
+        self.wPlots.dPlot['Vol'].axes.vlines(
+            self.rLog2FC, -100, 100, color=self.cColor['CV'])
+        self.wPlots.dPlot['Vol'].axes.vlines(
+            -self.rLog2FC, -100, 100, color=self.cColor['CV'])
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    
+    def DrawLinesZScore(self):
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
         return True
     #---
     
@@ -3766,6 +3832,10 @@ class ProtProfPlot(BaseWindowNPlotLT):
             else:
                 color.append(self.cColor['Vol'][1])
         #endregion ----------------------------------------------------> Color
+        
+        #region ---------------------------------------------------> 
+        self.rVolLines = ['Hyp Curve Line']
+        #endregion ------------------------------------------------> 
 
         return color
     #---
@@ -3788,7 +3858,37 @@ class ProtProfPlot(BaseWindowNPlotLT):
         cond = [val < -zVal, val > zVal]
         choice = [self.cColor['Vol'][0], self.cColor['Vol'][2]]
         #endregion ------------------------------------------------> Variables
+        
+        #region ---------------------------------------------------> 
+        self.rVolLines = ['Z Score Line']
+        #endregion ------------------------------------------------> 
+        
+        return np.select(cond, choice, default=self.cColor['Vol'][1])
+    #---
+    
+    def GetColorPLog2FC(self, *args) -> list:
+        """Get the color by P - Log2FC
+        
+            Returns
+            -------
+            list
+                List of colors
+        """
+        #region --------------------------------------------------------> 
+        idx = pd.IndexSlice
+        colP = idx[self.rCondC, self.rRpC,'P']
+        valP = self.rDf.loc[:,colP]
+        colF = idx[self.rCondC, self.rRpC,'FC']
+        valF = self.rDf.loc[:,colF]
+        cond = [(valP < self.rP) & (valF < -self.rLog2FC),
+                (valP < self.rP) & (valF > self.rLog2FC),]
+        choice = [self.cColor['Vol'][0], self.cColor['Vol'][2]]
+        #endregion -----------------------------------------------------> 
 
+        #region ---------------------------------------------------> 
+        self.rVolLines = ['P - Log2FC Line']
+        #endregion ------------------------------------------------> 
+        
         return np.select(cond, choice, default=self.cColor['Vol'][1])
     #---
     
@@ -3853,7 +3953,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             tException = (
                 f'The numbers of the proteins included in the selected '
                 f'point are:\n {str(ind)[1:-1]}')
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'warning', 
                 msg        = msg,
                 setText    = True,
@@ -3970,13 +4070,13 @@ class ProtProfPlot(BaseWindowNPlotLT):
             self.rT0, 
             self.rS0, 
             self.rZ, 
-            self.rColor, 
-            self.rHypCurve, 
+            self.rP,
+            self.rLog2FC,
             parent=self,
         )
         #------------------------------> 
         if dlg.ShowModal():
-            self.rT0, self.rS0, self.rZ, self.rColor, self.rHypCurve = (
+            self.rT0, self.rS0, self.rP, self.rLog2FC, self.rZ = (
                 dlg.GetVal())
             self.VolDraw()
         else:
@@ -4088,7 +4188,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
                     #------------------------------> Write
                     v.figure.savefig(fPath)
             except Exception as e:
-                dtscore.Notification(
+                dtsWindow.NotificationDialog(
                     'errorF',
                     msg        = self.cMsgExportFailed,
                     tException = e,
@@ -4322,7 +4422,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             #--------------> 
             self.wPlots.dPlot['FC'].ZoomResetSetValues()
         else:
-            pass    
+            pass
         #endregion ------------------------------------------------> Set Range
         
         return True
@@ -4427,7 +4527,6 @@ class ProtProfPlot(BaseWindowNPlotLT):
                     self.rLabelProt.remove(z)
                 else:
                     pass
-            print("")
             #------------------------------> 
             for y in rowL:
                 if y in self.rLabelProt:
@@ -4619,7 +4718,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             bool
         """
         #region ----------------------------------------------> Text Entry Dlg
-        if gText is None:
+        if gText is None: 
             #------------------------------> 
             dlg = dtsWindow.UserInput1Text(
                 'Filter results by Log2(FC) value.',
@@ -5740,7 +5839,7 @@ class LimProtPlot(BaseWindowProteolysis):
         dictO['LanesWithFP'] = (
             f'{len(lanesWithFP)} (' + f'{lanesWithFP}'[1:-1] + f')')
         dictO['Fragments'] = (
-            f'{len(fragments)} (' + f'{fragments}'[1:-1] + f')')
+            f'{sum(fragments)} (' + f'{fragments}'[1:-1] + f')')
         dictO['FP'] = (
             f'{sum(fP)} (' +f'{fP}'[1:-1] + f')')
         #endregion ------------------------------------------------> 
@@ -5844,7 +5943,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #------------------------------> Keys
         tKeys = [(x, self.rLanes[lane], 'Ptost') for x in self.rBands]
         #------------------------------> Info
-        infoDict = self.PrintLBGetInfo(tKeys)           
+        infoDict = self.PrintLBGetInfo(tKeys)
         #endregion -----------------------------------------------> Get Values
         
         #region -------------------------------------------------------> Clear
@@ -5854,9 +5953,9 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ----------------------------------------------------> New Text
         if infoDict:
             self.wText.AppendText(f'Details for {self.rLanes[lane]}\n\n')
-            self.wText.AppendText(f'--> Analyzed Lanes\n\n')
-            self.wText.AppendText(f'Total Lanes  : {len(self.rBands)}\n')
-            self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
+            self.wText.AppendText(f'--> Analyzed Bands\n\n')
+            self.wText.AppendText(f'Total Bands  : {len(self.rBands)}\n')
+            self.wText.AppendText(f'Bands with FP: {infoDict["LanesWithFP"]}\n')
             self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
             self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
             self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
@@ -5941,14 +6040,14 @@ class LimProtPlot(BaseWindowProteolysis):
     def PrintFragmentText(
         self, tKey: tuple[str, str,str], fragC: list[int]):
         """Print information about a selected Fragment
-    
+
             Parameters
             ----------
             tKey: tuple(str, str, str)
                 Tuple with the column name in the pd.DataFrame with the results.
             fragC: list[int]
                 Fragment coordinates.
-    
+
             Returns
             -------
             bool
@@ -5956,13 +6055,18 @@ class LimProtPlot(BaseWindowProteolysis):
         #region ---------------------------------------------------> Info
         n, c = self.rFragments[tKey]["Coord"][fragC[2]]
         
-        if n >= self.rProtLoc[0] and n <= self.rProtLoc[1]:
-            nnat = n + self.rProtDelta
+        if self.rProtLoc[0] is not None:
+            if n >= self.rProtLoc[0] and n <= self.rProtLoc[1]:
+                nnat = n + self.rProtDelta
+            else:
+                nnat = 'NA'
+        
+            if c >= self.rProtLoc[0] and c <= self.rProtLoc[1]:
+                cnat = c + self.rProtDelta
+            else:
+                cnat = 'NA'
         else:
             nnat = 'NA'
-        if c >= self.rProtLoc[0] and c <= self.rProtLoc[1]:
-            cnat = c + self.rProtDelta
-        else:
             cnat = 'NA'
         resNum = f'Nterm {n}({nnat}) - Cterm {c}({cnat})'
         
@@ -7050,7 +7154,7 @@ class TarProtPlot(BaseWindowProteolysis):
     #------------------------------>
     rIdxSeqNC = pd.IndexSlice[config.dfcolSeqNC,:]
     #endregion --------------------------------------------------> Class setup
-    
+
     #region --------------------------------------------------> Instance setup
     def __init__(self, cParent: 'UMSAPControl') -> None:
         """ """
@@ -7063,12 +7167,12 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rObj         = cParent.rObj
         self.rData        = self.rObj.dConfigure[self.cSection]()
         self.rDate, cMenuData = self.SetDateMenuDate()
-        #------------------------------> 
+        #------------------------------>
         try:
             self.ReportPlotDataError()
         except Exception as e:
             raise e
-        #------------------------------> 
+        #------------------------------>
         self.rDateC       = None
         self.rAlpha       = None
         self.rFragments   = None
@@ -7772,19 +7876,23 @@ class TarProtPlot(BaseWindowProteolysis):
                 
             """
             idx = pd.IndexSlice
-            #------------------------------> 
+            #------------------------------>
             for e in tExp:
-                #------------------------------> 
+                #------------------------------>
                 betaDict = {}
-                k = 0
-                #------------------------------> 
-                for j,s in enumerate(tAlign[0].seqB):
-                    if s != '-':
+                p = 0
+                s = 0
+                #------------------------------>
+                for j,r in enumerate(tAlign[0].seqB):
+                    if r != '-':
+                        #------------------------------>
                         if tAlign[0].seqA[j] != '-':
-                            betaDict[pdbRes[k]] = tDF.iat[k, tDF.columns.get_loc(idx['Rec',e])]
-                            k = k + 1
+                            betaDict[pdbRes[p]] = tDF.iat[s, tDF.columns.get_loc(idx['Rec',e])]
+                            p = p + 1
                         else:
                             pass
+                        #------------------------------>
+                        s = s + 1
                     else:
                         pass
                 #------------------------------> 
@@ -8046,7 +8154,7 @@ class TarProtPlot(BaseWindowProteolysis):
             )
         except Exception as e:
             msg = 'Export of Sequence Alignments failed.'
-            dtscore.Notification('errorF', msg=msg, tException=e)
+            dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
         #endregion ------------------------------------------------> Run
         
         # dlg.Destroy()
@@ -9545,9 +9653,9 @@ class CheckDataPrep(BaseWindowNPlotLT):
     cNPlotsCol = 2
     cLCol      = config.lLCtrlColNameI
     cSCol      = [45, 100]
-    cHSearch   = 'Colum names'
-    cTList     = 'Column names'
-    cTText     = 'Statistic information'
+    cHSearch   = 'Column Names'
+    cTList     = 'Column Names'
+    cTText     = 'Statistic Information'
     #------------------------------> To id the section in the umsap file 
     # shown in the window
     cSection = config.nuDataPrep
@@ -9575,10 +9683,6 @@ class CheckDataPrep(BaseWindowNPlotLT):
         tSection: Optional[str]=None, tDate: Optional[str]=None,
         ) -> None:
         """ """
-        #region -------------------------------------------------> Check Input
-        
-        #endregion ----------------------------------------------> Check Input
-
         #region -----------------------------------------------> Initial Setup
         self.cParent  = cParent
         self.rObj     = self.cParent.rObj
@@ -9592,21 +9696,11 @@ class CheckDataPrep(BaseWindowNPlotLT):
         super().__init__(cParent=cParent, cMenuData=cMenuData)
         #endregion --------------------------------------------> Initial Setup
 
-        #region --------------------------------------------------------> Menu
-        
-        #endregion -----------------------------------------------------> Menu
-        
         #region -----------------------------------------------------> Widgets
-        
+        self.wPlots.dPlot['Transf'].axes2 = self.wPlots.dPlot['Transf'].axes.twinx()
+        self.wPlots.dPlot['Norm'].axes2 = self.wPlots.dPlot['Norm'].axes.twinx()
+        self.wPlots.dPlot['Imp'].axes2 = self.wPlots.dPlot['Imp'].axes.twinx()
         #endregion --------------------------------------------------> Widgets
-
-        #region ------------------------------------------------------> Sizers
-        
-        #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-
-        #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
         date = None if self.rDate is None else self.rDate[0]
@@ -9683,7 +9777,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
             msg = (
                 f'It was not possible to build the histograms for the selected '
                 f'column.')
-            dtscore.Notification('errorU', msg=msg, tException=e, parent=self)
+            dtsWindow.NotificationDialog('errorU', msg=msg, tException=e, parent=self)
             #------------------------------> 
             self.ClearPlots()
             #------------------------------> 
@@ -9748,7 +9842,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
                     #------------------------------> Write
                     dtsFF.WriteDF2CSV(fPath, v)
             except Exception as e:
-                dtscore.Notification(
+                dtsWindow.NotificationDialog(
                     'errorF',
                     msg        = self.cMsgExportFailed,
                     tException = e,
@@ -9773,6 +9867,10 @@ class CheckDataPrep(BaseWindowNPlotLT):
             #------------------------------> Variables
             p = Path(dlg.GetPath())
             col = self.wLC.wLCS.lc.GetFirstSelected()
+            if col >= 0:
+                col = self.wLC.wLCS.lc.GetItemText(col, col=1)
+            else:
+                col = 'None'
             #------------------------------> Export
             try:
                 for k, v in self.wPlots.dPlot.items():
@@ -9781,7 +9879,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
                     #------------------------------> Write
                     v.figure.savefig(fPath)
             except Exception as e:
-                dtscore.Notification(
+                dtsWindow.NotificationDialog(
                     'errorF',
                     msg        = self.cMsgExportFailed,
                     tException = e,
@@ -9813,7 +9911,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
             If self.cTitle is None the window is invoked from the main Data 
             Preparation section of a UMSAP File window
         """
-        #------------------------------> Set Variables 
+        #region -----------------------------------------------> Set Variables
         if self.cTitle is None:
             self.rFromUMSAPFile = True 
             self.rData  = self.rObj.dConfigure[self.cSection]()
@@ -9832,8 +9930,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
             self.rData = self.rObj.dConfigure[self.cSection](tSection, tDate)
             self.rDate = None
             self.rDateC = self.cParent.rDateC
-        #------------------------------> 
-        
+        #endregion --------------------------------------------> Set Variables
+
         return True
     #---
     
@@ -9921,7 +10019,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> title
         self.wPlots.dPlot['Init'].axes.set_title("Floated")
         #------------------------------> 
-        a = self.wPlots.dPlot['Init'].axes.hist(x, bins=nBin, density=True)
+        a = self.wPlots.dPlot['Init'].axes.hist(x, bins=nBin, density=False)
         #------------------------------> 
         self.wPlots.dPlot['Init'].axes.set_xlim(*dtsStatistic.DataRange(
             a[1], margin=config.general['MatPlotMargin']))
@@ -9959,7 +10057,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> title
         self.wPlots.dPlot['Transf'].axes.set_title("Transformed")
         #------------------------------> 
-        a = self.wPlots.dPlot['Transf'].axes.hist(x, bins=nBin, density=True)
+        a = self.wPlots.dPlot['Transf'].axes.hist(x, bins=nBin, density=False)
         #------------------------------> 
         xRange = dtsStatistic.DataRange(
             a[1], margin=config.general['MatPlotMargin'])
@@ -9970,7 +10068,11 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> 
         gausX = np.linspace(xRange[0], xRange[1], 300)
         gausY = stats.gaussian_kde(x)
-        self.wPlots.dPlot['Transf'].axes.plot(gausX, gausY.pdf(gausX))
+        self.wPlots.dPlot['Transf'].axes2.clear()
+        self.wPlots.dPlot['Transf'].axes2.plot(
+            gausX, gausY.pdf(gausX), color='C1')
+        self.wPlots.dPlot['Transf'].axes2.set_yticks([])
+        self.wPlots.dPlot['Transf'].axes2.set_yticklabels([])
         #------------------------------> 
         self.wPlots.dPlot['Transf'].canvas.draw()
         #endregion -----------------------------------------------------> Draw
@@ -10004,7 +10106,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> title
         self.wPlots.dPlot['Norm'].axes.set_title("Normalized")
         #------------------------------> 
-        a = self.wPlots.dPlot['Norm'].axes.hist(x, bins=nBin, density=True)
+        a = self.wPlots.dPlot['Norm'].axes.hist(x, bins=nBin, density=False)
         #------------------------------>
         xRange = dtsStatistic.DataRange(
             a[1], margin=config.general['MatPlotMargin'])
@@ -10015,7 +10117,11 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> 
         gausX = np.linspace(xRange[0], xRange[1], 300)
         gausY = stats.gaussian_kde(x)
-        self.wPlots.dPlot['Norm'].axes.plot(gausX, gausY.pdf(gausX))
+        self.wPlots.dPlot['Norm'].axes2.clear()
+        self.wPlots.dPlot['Norm'].axes2.plot(
+            gausX, gausY.pdf(gausX), color='C1')
+        self.wPlots.dPlot['Norm'].axes2.set_yticks([])
+        self.wPlots.dPlot['Norm'].axes2.set_yticklabels([])
         #------------------------------> 
         self.wPlots.dPlot['Norm'].canvas.draw()
         #endregion -----------------------------------------------------> Draw
@@ -10025,21 +10131,21 @@ class CheckDataPrep(BaseWindowNPlotLT):
     
     def PlotdfIm(self, col:int) -> bool:
         """Plot the histograms for dfIm
-    
+
             Parameters
             ----------
             col : int
                 Column to plot
-    
+
             Returns
             -------
             bool
         """
         #region ---------------------------------------------------> Variables
-        #------------------------------> 
+        #------------------------------>
         x = self.rDpDF['dfIm'].iloc[:,col]
-        x = x[np.isfinite(x)]        
-        #------------------------------> 
+        x = x[np.isfinite(x)]
+        #------------------------------>
         nBin = dtsStatistic.HistBin(x)[0]
         #endregion ------------------------------------------------> Variables
         
@@ -10049,7 +10155,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #------------------------------> title
         self.wPlots.dPlot['Imp'].axes.set_title("Imputed")
         #------------------------------> 
-        a = self.wPlots.dPlot['Imp'].axes.hist(x, bins=nBin, density=True)
+        a = self.wPlots.dPlot['Imp'].axes.hist(x, bins=nBin, density=False)
         #------------------------------> 
         xRange = dtsStatistic.DataRange(
             a[1], margin=config.general['MatPlotMargin'])
@@ -10058,18 +10164,23 @@ class CheckDataPrep(BaseWindowNPlotLT):
             a[0], margin=config.general['MatPlotMargin']))
         self.wPlots.dPlot['Imp'].ZoomResetSetValues()
         #------------------------------> 
-        gausX = np.linspace(xRange[0], xRange[1], 300)
-        gausY = stats.gaussian_kde(x)
-        self.wPlots.dPlot['Imp'].axes.plot(gausX, gausY.pdf(gausX))
-        #------------------------------> 
-        idx = list(map(int, self.rDpDF['dfF'][self.rDpDF['dfF'].iloc[:,col].isnull()].index.tolist()))
-        y = self.rDpDF['dfIm'].iloc[idx,col]
-        if not y.empty:
-            yBin = dtsStatistic.HistBin(y)[0]
-            self.wPlots.dPlot['Imp'].axes.hist(y, bins=yBin, density=False)
+        idx = np.where(self.rDpDF['dfF'].iloc[:,col].isna())[0]
+        if len(idx) > 0:
+            y = self.rDpDF['dfIm'].iloc[idx,col]
+            if y.count() > 0:
+                self.wPlots.dPlot['Imp'].axes.hist(
+                    y, bins=nBin, density=False, color='C2')
+            else:
+                pass
         else:
             pass
         #------------------------------> 
+        gausX = np.linspace(xRange[0], xRange[1], 300)
+        gausY = stats.gaussian_kde(x)
+        self.wPlots.dPlot['Imp'].axes2.clear()
+        self.wPlots.dPlot['Imp'].axes2.plot(gausX, gausY.pdf(gausX), color='C1')
+        self.wPlots.dPlot['Imp'].axes2.set_yticks([])
+        self.wPlots.dPlot['Imp'].axes2.set_yticklabels([])
         self.wPlots.dPlot['Imp'].canvas.draw()
         #endregion -----------------------------------------------------> Draw
         
@@ -10153,9 +10264,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion ----------------------------------------------> wx.ListCtrl
 
         #region --------------------------------------------------------> Plot
-        for k in self.wPlots.dPlot.keys():
-            self.wPlots.dPlot[k].axes.clear()
-            self.wPlots.dPlot[k].canvas.draw()
+        self.ClearPlots()
         #endregion -----------------------------------------------------> Plot
 
         #region ---------------------------------------------------> Text
@@ -10187,10 +10296,20 @@ class CheckDataPrep(BaseWindowNPlotLT):
             -----
             
         """
-        for p in self.cLNPlots:
+        #region ---------------------------------------------------> 
+        self.wPlots.dPlot[self.cLNPlots[0]].axes.clear()
+        self.wPlots.dPlot[self.cLNPlots[0]].canvas.draw()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for p in self.cLNPlots[1:]:
             self.wPlots.dPlot[p].axes.clear()
+            self.wPlots.dPlot[p].axes2.clear()
+            self.wPlots.dPlot[p].axes2.set_yticks([])
+            self.wPlots.dPlot[p].axes2.set_yticklabels([])
             self.wPlots.dPlot[p].canvas.draw()
-            
+        #endregion ------------------------------------------------> 
+
         return True
     #---
     #endregion -----------------------------------------------> Manage Methods
@@ -10339,7 +10458,7 @@ class UMSAPControl(BaseWindow):
                 if fileP == self.rObj.rFileP:
                     msg = ('New Analysis cannot be added from the same UMSAP '
                         'file.\nPlease choose a different UMSAP file.')
-                    dtscore.Notification('warning', msg=msg)
+                    dtsWindow.NotificationDialog('warning', msg=msg)
                     return False
                 else:
                     pass
@@ -10347,7 +10466,7 @@ class UMSAPControl(BaseWindow):
                 try:
                     objAdd = file.UMSAPFile(fileP)                    
                 except Exception as e:
-                    dtscore.Notification('errorF', tException=e)
+                    dtsWindow.NotificationDialog('errorF', tException=e)
                     return False
             else:
                 dlg.Destroy()
@@ -10746,7 +10865,7 @@ class UMSAPControl(BaseWindow):
         except dtsException.PassException:
             return False
         except Exception as e:
-            dtscore.Notification('errorU', msg=str(e), tException=e)
+            dtsWindow.NotificationDialog('errorU', msg=str(e), tException=e)
             return False
         #endregion --------------------------------------------> Create window
         
@@ -11172,7 +11291,7 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
         if not checked:
             msg = (f'There are no analysis selected. Please select something '
                 'first.')
-            dtscore.Notification('warning', msg=msg)
+            dtsWindow.NotificationDialog('warning', msg=msg)
             return False
         else:
             pass
@@ -11293,7 +11412,7 @@ class Preference(wx.Dialog):
             dtsFF.WriteJSON(config.fConfig, data)
         except Exception as e:
             msg = 'Configuration options could not be saved.'
-            dtscore.Notification('errorF', msg=msg, tException=e)
+            dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
             return False
         #endregion ------------------------------------------------> 
 
@@ -11370,7 +11489,7 @@ class Preference(wx.Dialog):
             data = dtsFF.ReadJSON(config.fConfigDef)
         except Exception as e:
             msg = 'It was not possible to read the default configuration file.'
-            dtscore.Notification('errorF', msg=msg, tException=e)
+            dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
             return {}
         #endregion ------------------------------------------------> 
         
@@ -11420,7 +11539,7 @@ class Preference(wx.Dialog):
             self.wUpdate.wRBox.SetSelection(val)
         except Exception as e:
             msg = 'Something went wrong when loading the configuration options.'
-            dtscore.Notification('errorU', msg=msg, tException=e)
+            dtsWindow.NotificationDialog('errorU', msg=msg, tException=e)
             return False
         #endregion ------------------------------------------------> 
         
@@ -11968,7 +12087,7 @@ class VolColorScheme(dtsWindow.OkCancel):
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, t0:float, s0:float, z:float, color: str, hcurve: bool, 
+        self, t0:float, s0:float, z:float, p:float, fc:float, 
         parent: Optional[wx.Window]=None,
         ) -> None:
         """ """
@@ -11976,23 +12095,16 @@ class VolColorScheme(dtsWindow.OkCancel):
         self.rT0 = str(t0)
         self.rS0 = str(s0)
         self.rZ  = str(z)
-        self.rColor = color
-        self.rHCurve = hcurve
-        self.rCheck = {0: self.CheckScheme, 1: self.CheckHCurve}
-        self.rKeys = {
-            '0-HypCurve': 'Hyp Curve Color',
-            '0-ZScore': 'Z Score Color',
-            '1-Yes': True,
-            '1-No': False,
-        }
+        self.rP  = str(p)
+        self.rFC = str(fc)
         #------------------------------> 
-        super().__init__(title='Adjust the Color Scheme', parent=parent)
+        super().__init__(title='Color Scheme Parameters', parent=parent)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wsbVal = wx.StaticBox(self, label='Values')
+        self.wsbHC = wx.StaticBox(self, label='Hyperbolic Curve')
         self.wT0 = dtsWidget.StaticTextCtrl(
-            self.wsbVal,
+            self.wsbHC,
             stLabel   = 't0',
             tcHint    = 'e.g. 1.0',
             tcSize    = (100,22),
@@ -12001,7 +12113,7 @@ class VolColorScheme(dtsWindow.OkCancel):
         self.wT0.tc.SetValue(self.rT0)
         
         self.wS0 = dtsWidget.StaticTextCtrl(
-            self.wsbVal,
+            self.wsbHC,
             stLabel   = 's0',
             tcHint    = 'e.g. 0.1',
             tcSize    = (100,22),
@@ -12009,8 +12121,28 @@ class VolColorScheme(dtsWindow.OkCancel):
         )
         self.wS0.tc.SetValue(self.rS0)
         
+        self.wsbPFC = wx.StaticBox(self, label='Log2FC - P')
+        self.wP = dtsWidget.StaticTextCtrl(
+            self.wsbPFC,
+            stLabel   = 'P',
+            tcHint    = 'e.g. 0.05',
+            tcSize    = (100,22),
+            validator = dtsValidator.NumberList('float', vMin=0, nN=1)
+        )
+        self.wP.tc.SetValue(self.rP)
+        
+        self.wFC = dtsWidget.StaticTextCtrl(
+            self.wsbPFC,
+            stLabel   = 'log2FC',
+            tcHint    = 'e.g. 0.1',
+            tcSize    = (100,22),
+            validator = dtsValidator.NumberList('float', vMin=0, nN=1)
+        )
+        self.wFC.tc.SetValue(self.rFC)
+        
+        self.wsbZ = wx.StaticBox(self, label='Z Score')
         self.wZ = dtsWidget.StaticTextCtrl(
-            self.wsbVal,
+            self.wsbZ,
             stLabel   = 'Z Score',
             tcHint    = 'e.g. 10.0',
             tcSize    = (100,22),
@@ -12018,66 +12150,51 @@ class VolColorScheme(dtsWindow.OkCancel):
                     numType='float', vMin=0, vMax=100, nN=1),
         )
         self.wZ.tc.SetValue(self.rZ)
-        
-        self.wsbOpt = wx.StaticBox(self, label='Options') 
-        self.wstColor = wx.StaticText(self.wsbOpt, label='Color Scheme')
-        self.wcbHC = wx.CheckBox(
-            self.wsbOpt, label='Hyperbolic Curve', name='0-HypCurve')
-        self.wcbZScore = wx.CheckBox(
-            self.wsbOpt, label='Z Score', name='0-ZScore')
-    
-        self.wstHCurve = wx.StaticText(
-            self.wsbOpt, label='Show Hyperbolic Curve')
-        self.wcbYes = wx.CheckBox(self.wsbOpt, label='Yes', name='1-Yes')
-        self.wcbNo  = wx.CheckBox(self.wsbOpt, label='No',  name='1-No')
-        #------------------------------> 
-        self.CheckScheme()
-        self.CheckHCurve()
-        #------------------------------> 
-        self.rG = {}
-        self.rG[0] = [self.wcbHC, self.wcbZScore]
-        self.rG[1] = [self.wcbYes, self.wcbNo]
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
-        self.sFlex = wx.FlexGridSizer(2,3,1,1)
-        self.sFlex.Add(self.wT0.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
-        self.sFlex.Add(self.wS0.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
-        self.sFlex.Add(self.wZ.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
-        self.sFlex.Add(self.wT0.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-        self.sFlex.Add(self.wS0.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-        self.sFlex.Add(self.wZ.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-        self.sFlex.AddGrowableCol(0,1)
-        self.sFlex.AddGrowableCol(1,1)
-        self.sFlex.AddGrowableCol(2,1)
+        self.sFlexHC = wx.FlexGridSizer(2,2,1,1)
+        self.sFlexHC.Add(self.wT0.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexHC.Add(self.wT0.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexHC.Add(self.wS0.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexHC.Add(self.wS0.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexHC.AddGrowableCol(1,1)
         
-        self.sFlexOpt = wx.FlexGridSizer(3,2,1,1)
-        self.sFlexOpt.Add(self.wstColor, 0, wx.ALIGN_LEFT|wx.ALL, 5)
-        self.sFlexOpt.Add(self.wstHCurve, 0, wx.ALIGN_LEFT|wx.ALL, 5)
-        self.sFlexOpt.Add(self.wcbHC, 0, wx.ALIGN_LEFT|wx.ALL, 5)
-        self.sFlexOpt.Add(self.wcbYes, 0, wx.ALIGN_LEFT|wx.ALL, 5)
-        self.sFlexOpt.Add(self.wcbZScore, 0, wx.ALIGN_LEFT|wx.ALL, 5)
-        self.sFlexOpt.Add(self.wcbNo, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        self.sFlexPFC = wx.FlexGridSizer(2,2,1,1)
+        self.sFlexPFC.Add(self.wP.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexPFC.Add(self.wP.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexPFC.Add(self.wFC.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexPFC.Add(self.wFC.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexPFC.AddGrowableCol(1,1)
         
-        self.ssbVal = wx.StaticBoxSizer(self.wsbVal, wx.VERTICAL)
-        self.ssbVal.Add(self.sFlex, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlexZ = wx.FlexGridSizer(2,2,1,1)
+        self.sFlexZ.Add(self.wZ.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.Add(self.wZ.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.AddGrowableCol(1,1)
         
-        self.ssbOpt = wx.StaticBoxSizer(self.wsbOpt, wx.VERTICAL)
-        self.ssbOpt.Add(self.sFlexOpt, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.ssbHC = wx.StaticBoxSizer(self.wsbHC, wx.VERTICAL)
+        self.ssbHC.Add(self.sFlexHC, 0, wx.EXPAND|wx.ALL, 5)
         
-        self.sSizer.Add(self.ssbVal, 0, wx.EXPAND|wx.ALL, 5)
-        self.sSizer.Add(self.ssbOpt, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.ssbPFC = wx.StaticBoxSizer(self.wsbPFC, wx.VERTICAL)
+        self.ssbPFC.Add(self.sFlexPFC, 0, wx.EXPAND|wx.ALL, 5)
+        
+        self.ssbZ = wx.StaticBoxSizer(self.wsbZ, wx.VERTICAL)
+        self.ssbZ.Add(self.sFlexZ, 0, wx.EXPAND|wx.ALL, 5)
+        
+        self.sFlexVal = wx.FlexGridSizer(1,3,1,1)
+        self.sFlexVal.Add(self.ssbHC, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlexVal.Add(self.ssbPFC, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlexVal.Add(self.ssbZ, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlexVal.AddGrowableCol(0,1)
+        self.sFlexVal.AddGrowableCol(1,1)
+        self.sFlexVal.AddGrowableCol(2,1)
+        
+        self.sSizer.Add(self.sFlexVal, 0, wx.EXPAND|wx.ALL, 5)
         self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
         
         self.SetSizer(self.sSizer)
         self.Fit()
         #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-        for v in self.rG.values():
-            for c in v:
-                c.Bind(wx.EVT_CHECKBOX, self.OnCheck)
-        #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
         self.CenterOnParent()
@@ -12086,35 +12203,6 @@ class VolColorScheme(dtsWindow.OkCancel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnCheck(self, event:wx.CommandEvent):
-        """Deselect all other seleced options within the group.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        #region ----------------------------------------------------> Deselect
-        if event.IsChecked():
-            #------------------------------> 
-            tCheck = event.GetEventObject()
-            group = int(tCheck.GetName().split('-')[0])
-            #------------------------------> 
-            [k.SetValue(False) for k in self.rG[group]]
-            #------------------------------> 
-            tCheck.SetValue(True)
-        else:
-            pass
-        #endregion -------------------------------------------------> Deselect
-        
-        return True
-    #---
-    
     def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
         """Validate user information and close the window.
     
@@ -12143,18 +12231,23 @@ class VolColorScheme(dtsWindow.OkCancel):
             self.wS0.tc.SetValue(self.rS0)
             res.append(False)
         #------------------------------> 
+        if self.wP.tc.GetValidator().Validate()[0]:
+            res.append(True)
+        else:
+            self.wP.tc.SetValue(self.rP)
+            res.append(False)
+        #------------------------------> 
+        if self.wFC.tc.GetValidator().Validate()[0]:
+            res.append(True)
+        else:
+            self.wFC.tc.SetValue(self.rFC)
+            res.append(False)
+        #------------------------------> 
         if self.wZ.tc.GetValidator().Validate()[0]:
             res.append(True)
         else:
             self.wZ.tc.SetValue(self.rZ)
             res.append(False)
-        #------------------------------> 
-        for k,v in self.rG.items():
-            if any([x.IsChecked() for x in v]):
-                res.append(True)
-            else:
-                self.rCheck[k]()
-                res.append(False)
         #endregion -------------------------------------------------> Validate
         
         #region ---------------------------------------------------> 
@@ -12168,34 +12261,6 @@ class VolColorScheme(dtsWindow.OkCancel):
         return True
     #---
     
-    def CheckScheme(self):
-        """Check the initial color scheme
-        
-            Return
-            ------
-            True
-        """
-        if self.rColor == 'Hyp Curve Color':
-            self.wcbHC.SetValue(True)
-        else:
-            self.wcbZScore.SetValue(True)
-        return True
-    #---
-    
-    def CheckHCurve(self):
-        """Check the initial H Curve option
-        
-            Return
-            ------
-            bool
-        """
-        if self.rHCurve:
-            self.wcbYes.SetValue(True)
-        else:
-            self.wcbNo.SetValue(True)
-        return True
-    #---
-    
     def GetVal(self):
         """Get the selected values
         
@@ -12206,22 +12271,10 @@ class VolColorScheme(dtsWindow.OkCancel):
         return (
             float(self.wT0.tc.GetValue()),
             float(self.wS0.tc.GetValue()),
+            float(self.wP.tc.GetValue()),
+            float(self.wFC.tc.GetValue()),
             float(self.wZ.tc.GetValue()),
-            self.GetNameGroup(0),
-            self.GetNameGroup(1), 
         )
-    #---
-
-    def GetNameGroup(self, tKey: int) -> str:
-        """Get the corresponding key for the checked element
-
-            Returns
-            -------
-            str
-        """
-        for v in self.rG[tKey]:
-            if v.IsChecked():
-                return self.rKeys[v.GetName()]
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -12488,19 +12541,19 @@ myText = """UMSAP: Fast post-processing of mass spectrometry data
 
 -- Modules and Python version --
 
-UMSAP 2.1.1 (beta) is written in Python 3.7.1 and uses the following modules:
+UMSAP 2.2.0 is written in Python 3.9.2 and uses the following modules:
 
-Biopython 1.73  
-pyFPDF 1.7.2 
-Python 3.7.1
-Matplotlib 3.0.2 
-NumPy 1.16.1
-Pandas 0.24.2   
-PyInstaller 3.4 
-Requests 2.21.0 
-Scipy 1.2.0 
-Statsmodels 0.9.0
-wxPython 4.0.4
+Biopython 1.79
+Matplotlib 3.3.4 
+NumPy 1.20.1
+Pandas 1.2.3
+PyInstaller 4.3
+Python 3.9.2
+ReportLab 3.6.8
+Requests 2.25.1
+Scipy 1.6.3
+Statsmodels 0.13.2
+wxPython 4.1.1
 
 Copyright notice and License for the modules can be found in the User's manual of UMSAP.
 
@@ -12511,8 +12564,7 @@ of UMSAP, either by contributing ideas and suggestions or by testing the code.
 Special thanks go to: Dr. Farnusch Kaschani, Dr. Juliana Rey, Dr. Petra Janning 
 and Prof. Dr. Daniel Hoffmann.
 
-In particular, I would like to thank Prof. Dr. Michael Ehrmann for the support and 
-useful discussions during my postdoc stay in his group at the University of Duisburg-Essen.
+In particular, I would like to thank Prof. Dr. Michael Ehrmann.
 
 -- License Agreement --
 

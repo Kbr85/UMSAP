@@ -7,7 +7,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# See the accompaning licence for more details.
+# See the accompanying license for more details.
 # ------------------------------------------------------------------------------
 
 
@@ -20,10 +20,9 @@ from typing import Optional
 
 import wx
 
-import dat4s_core.gui.wx.method as dtsGwxMethod
-
 import config.config as config
-import gui.dtscore as dtscore
+import dtscore.gui_method as dtsGuiMethod
+import dtscore.window as dtsWindow
 import gui.window as window
 #endregion ----------------------------------------------------------> Imports
 
@@ -51,7 +50,7 @@ def LoadUMSAPFile(
     if fileP is None:
         try:
             #------------------------------> Get File
-            filePdlg = dtsGwxMethod.GetFilePath(
+            filePdlg = dtsGuiMethod.GetFilePath(
                 'openO', 
                 ext    = config.elUMSAP,
                 parent = win,
@@ -63,7 +62,7 @@ def LoadUMSAPFile(
             else:
                 tFileP = Path(filePdlg[0])
         except Exception as e:      
-            dtscore.Notification(
+            dtsWindow.NotificationDialog(
                 'errorF', 
                 msg        = config.mFileSelector,
                 tException = e,
