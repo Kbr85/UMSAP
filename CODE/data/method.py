@@ -688,15 +688,19 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         
         """
         if a[-1] < alpha:
-            l = list(map(abs, list(map(float, a[0][1:-1].split(',')))))
+            l = list(map(float, a[0][1:-1].split(',')))
             return (sum(l)/len(l))
         else:
-            return 0.0
+            return np.nan
     #---
     #region --------------------------------------------------------> 
     idx = pd.IndexSlice
     label = df.columns.unique(level=0).tolist()[4:]
     nL = len(label)
+    a = df.columns.tolist()[4:]
+    print(a)
+    colN = list(range(4, len(a)+4))
+    print(colN)
     #endregion -----------------------------------------------------> 
     
     #region --------------------------------------------------------> 
@@ -708,34 +712,61 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     #endregion -----------------------------------------------------> 
 
     #region ---------------------------------------------------> 
-    dfT = df.iloc[:,[0,1]].copy()
-    dfT.iloc[:,0] = dfT.iloc[:,0]-1
-    resL = sorted(list(set(dfT.to_numpy().flatten())))
-    resL = [x for x in resL if x > 0 and x < protL[0]]
+    dfT = df.iloc[:,[0,1]+colN].copy()
+    #------------------------------> 0 range for residue numbers
+    dfT.iloc[:,0] = dfT.iloc[:,0]-2
+    dfT.iloc[:,1] = dfT.iloc[:,1]-1
+    resL = sorted(list(set(dfT.iloc[:,[0,1]].to_numpy().flatten())))
+    resL = [x for x in resL if x > -1 and x < protL[0]]
+    #------------------------------>
+    for e in label:
+        dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])
     #------------------------------> 
+    maxN = dfT.loc[:,idx[:,'Int']].max().max()
+    minN = dfT.loc[:,idx[:,'Int']].min().min()
+    if maxN != minN:
+        dfT.loc[:,idx[:,'Int']] = 1 + (((dfT.loc[:,idx[:,'Int']] - minN)*(9))/(maxN - minN))
+        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].replace(np.nan, 0)
+    else:
+        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].notnull().astype('int')
+    #------------------------------>
     for r in resL:
-        dfT = df.loc[(df[('Nterm','Nterm')]==r+1) | (df[('Cterm','Cterm')]==r)].copy()
-        for e in label:
-            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])  
-        dfT = dfT.loc[dfT.loc[:,idx[:,'Int']].any(axis=1)]
-        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
-        dfO.iloc[r, range(0,len(label))] = dfT.loc[:,idx[:,'Int']].sum(axis=0)    
+        #------------------------------>
+        dfG = dfT.loc[(dfT[('Nterm','Nterm')]==r) | (dfT[('Cterm','Cterm')]==r)].copy()
+        #------------------------------>
+        dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]
+        dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
+        #------------------------------>
+        dfO.iloc[r, range(0,len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)
     #endregion ------------------------------------------------> 
     
     #region ---------------------------------------------------> 
     if protL[1] is not None:
-        dfT = df.iloc[:,[2,3]].copy()
-        dfT.iloc[:,0] = dfT.iloc[:,0]-1
-        resL = sorted(list(set(dfT.to_numpy().flatten())))
-        resL = [x for x in resL if x > 0 and x < protL[0]]
+        dfT = df.iloc[:,[2,3]+colN].copy()
+        #------------------------------> 0 range for residue number
+        dfT.iloc[:,0] = dfT.iloc[:,0]-2
+        dfT.iloc[:,1] = dfT.iloc[:,1]-1
+        resL = sorted(list(set(dfT.iloc[:,[0,1]].to_numpy().flatten())))
+        resL = [x for x in resL if x > -1 and x < protL[0]]
+        #------------------------------> 
+        for e in label:
+            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])
+        #------------------------------> 
+        maxN = dfT.loc[:,idx[:,'Int']].max().max()
+        minN = dfT.loc[:,idx[:,'Int']].min().min()
+        if maxN != minN:
+            dfT.loc[:,idx[:,'Int']] = 1 + (((dfT.loc[:,idx[:,'Int']] - minN)*(9))/(maxN - minN))
+            dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].replace(np.nan, 0)
+        else:
+            dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].notnull().astype('int')    
         #------------------------------> 
         for r in resL:
-            dfT = df.loc[(df[('NtermF','NtermF')]==r+1) | (df[('CtermF','CtermF')]==r)].copy()
-            for e in label:
-                dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])  
-            dfT = dfT.loc[dfT.loc[:,idx[:,'Int']].any(axis=1)]
-            dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
-            dfO.iloc[r, range(len(label),2*len(label))] = dfT.loc[:,idx[:,'Int']].sum(axis=0)    
+            dfG = dfT.loc[(dfT[('NtermF','NtermF')]==r) | (dfT[('CtermF','CtermF')]==r)].copy()
+            #------------------------------>
+            dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]
+            dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
+            #------------------------------> 
+            dfO.iloc[r, range(len(label),2*len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)    
     else:
         pass
     #endregion ------------------------------------------------> 
