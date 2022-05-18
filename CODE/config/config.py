@@ -46,7 +46,7 @@ if os == 'Darwin':
     toolsMenuIdx = 2
     #------------------------------> Statusbar split size
     sbPlot2Fields = [-1, 115]
-    sbPlot3Fields = [90, -1, 115] 
+    sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Cmd'
     #------------------------------> Delta space between consecutive windows
@@ -65,7 +65,7 @@ elif os == 'Windows':
     toolsMenuIdx = 2
     #------------------------------> Statusbar split size
     sbPlot2Fields = [-1, 115]
-    sbPlot3Fields = [90, -1, 115] 
+    sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -80,7 +80,7 @@ else:
     toolsMenuIdx = 3
     #------------------------------> Statusbar split size
     sbPlot2Fields = [-1, 115]
-    sbPlot3Fields = [90, -1, 115] 
+    sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -222,12 +222,12 @@ fConfigDef = res / 'CONFIG/config_def.json'
 #------------------------------> Names
 fnInitial    = "{}_{}-Initial-Data.txt"
 fnFloat      = "{}_{}-Floated-Data.txt"
-fnTargetProt = "{}_{}-Target-Protein-Data.txt"
-fnExclude    = "{}_{}-After-Excluding-Data.txt"
-fnScore      = "{}_{}-Score-Filtered-Data.txt"
 fnTrans      = "{}_{}-Transformed-Data.txt"
 fnNorm       = "{}_{}-Normalized-Data.txt"
 fnImp        = "{}_{}-Imputed-Data.txt"
+fnTargetProt = "{}_{}-Target-Protein-Data.txt"
+fnExclude    = "{}_{}-After-Excluding-Data.txt"
+fnScore      = "{}_{}-Score-Filtered-Data.txt"
 fnDataSteps  = 'Steps_Data_Files'
 fnDataInit   = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
@@ -308,7 +308,7 @@ ttStIntensity = ('Specify if intensities are raw intensity values or are '
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
-    f"the list cannot be modified."
+    f"the table cannot be modified."
 )
 ttLCtrlPasteMod = (
     f"New rows can be pasted ({copyShortCut}+V) after the "
@@ -457,6 +457,8 @@ mOptField = '\nThis field is optional.'
 
 #region ------------------------------------------------------------> Values
 mOneRNumText = "Only one real number can be accepted here."
+mOneRPlusNumText = (
+    "Only one number equal or greater than zero can be accepted here.")
 mOneZPlusNumText = "Only a non-negative integer can be accepted here."
 mOne01NumText = "Only one number between 0 and 1 can be accepted here."
 mNZPlusNumText = (
@@ -493,10 +495,11 @@ mRepeatColNum = 'There are repeated column numbers in the text fields.'
 mRowsInLCtrl = 'There must be at least {} items in {}.'
 mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
     'Protein, etc) were applied.')
-mFileBad = "File: '{}'\ncannot be used as {}."
+mFileBad = "File: '{}'\ncannot be used as {} file."
 mOptionBad = "Option '{}' cannot be accepted in {}."
 mValueBad = "Value '{}' cannot be accepted in {}.\n"
 mOneRealNum = f"{mValueBad}{mOneRNumText}"
+mOneRPlusNum = f"{mValueBad}{mOneRPlusNumText}"
 mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
 mOneZPlusNumCol = f"{mOneZPlusNum} {mColNumber}"
 mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
@@ -663,4 +666,14 @@ color = { # Colors for the app
     },
 }
 #endregion -----------------------------------------------------------> Colors
+
+
+#region --------------------------------------------------------------> Values
+values = {
+    nwCheckDataPrep : {
+        'Shift' : '1.8',
+        'Width' : '0.3',
+    }
+}
+#endregion -----------------------------------------------------------> Values
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS

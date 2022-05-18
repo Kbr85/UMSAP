@@ -15,7 +15,6 @@
 
 
 #region -------------------------------------------------------------> Imports
-import random
 from typing import Optional, Any, Literal, Union
 
 import numpy as np
@@ -419,25 +418,6 @@ def DataNormalization(
 
 
 #region -----------------------------------------------------> Data Imputation
-def Normal_Distribution_Random_Value(std: float):
-    """Calculate a random value from a normal distribution with given std
-    
-        Parameters
-        ----------
-        std: float
-            Standard deviation of the column
-            
-        Return
-        ------
-        float
-        
-        Notes
-        -----
-        It is assumed the distribution has a mean of 0.
-    """
-    return (random.random()*0.3 - std*2.5)
-#---
-
 def _DataImputation_None(df: 'pd.DataFrame', *args, **kwargs) -> 'pd.DataFrame':
     """This will just return the original df.
 
@@ -456,7 +436,11 @@ def _DataImputation_None(df: 'pd.DataFrame', *args, **kwargs) -> 'pd.DataFrame':
 
 
 def _DataImputation_NormalDistribution(
-    df: 'pd.DataFrame', sel: Optional[list[int]]=None) -> 'pd.DataFrame':
+    df: 'pd.DataFrame', sel: Optional[list[int]]=None,
+    shift=config.values[config.nwCheckDataPrep]['Shift'],
+    width=config.values[config.nwCheckDataPrep]['Width'],
+    **kwargs
+    ) -> 'pd.DataFrame':
     """Performs a Normal Distribution imputation of selected columns in df. 
     
         See Notes below for more details.
@@ -498,8 +482,11 @@ def _DataImputation_NormalDistribution(
     for c in col:
         #------------------------------> 
         std = df[c].std(skipna=True)
+        median = df[c].median(skipna=True)
+        tIDX = np.where(df[c].isna())[0]
         #------------------------------> 
-        df[c] = df[c].apply(lambda x: x if np.isfinite(x) else Normal_Distribution_Random_Value(std))
+        df.loc[tIDX, c] = np.random.default_rng().normal(
+            median-std*shift, std*width, len(tIDX))
     #endregion -------------------------------> Normal Distribution imputation
 
     return df
@@ -514,7 +501,7 @@ IMPUTATION_METHOD = {
 def DataImputation(
     df: 'pd.DataFrame', sel: Optional[list[int]]=None, 
     method: Literal['Normal Distribution']='Normal Distribution',
-    ) -> 'pd.DataFrame':
+    **kwargs) -> 'pd.DataFrame':
     """Perform a data imputation over the selected columns in the 
         dataframe.
 
@@ -545,26 +532,10 @@ def DataImputation(
         Correct data types in df are expected.
         For most methods, only np.nan values will be replaced.
     """
-    #region -----------------------------------------------------> Check input
-    #------------------------------> Selection
-    if sel is not None:
-        try:
-            df.iloc[:,sel]
-        except Exception:
-            raise dtsException.InputError(config.mPDSelCol.format(sel))
-    else:
-        pass
-    #------------------------------> Method
-    try:
-        IMPUTATION_METHOD[method]
-    except KeyError:
-        raise dtsException.InputError(config.mImputationMethodIE.format(method))
-    #endregion --------------------------------------------------> Check input
-
     #region ------------------------------------------------------> Imputation
     try:
         #----------------------------->  Copy df, avoid modifying the original
-        return IMPUTATION_METHOD[method](df.copy(), sel=sel) 
+        return IMPUTATION_METHOD[method](df.copy(), sel=sel, **kwargs)
     except Exception as e:
         raise e
     #endregion ---------------------------------------------------> Imputation
@@ -1095,7 +1066,7 @@ def ttest_PS_DF(
         col2: list[int]
             Experiment columns
         value: float
-            Hypotethical value for the mean difference. Default is 0.
+            Hypothetical value for the mean difference. Default is 0.
         alpha: float
             Significance level
         roundTo: int

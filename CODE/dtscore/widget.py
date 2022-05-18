@@ -173,7 +173,7 @@ class MyListCtrl(wx.ListCtrl):
         self, parent: wx.Window, colLabel: Optional[list[str]]=None, 
         colSize: Optional[list[int]]=None, canCopy: bool=True, 
         canCut: bool=False, canPaste: bool=False, copyFullContent:bool=False, 
-        sep: str=',', pasteUnique: bool=True, selAll: bool=True, 
+        sep: str=' ', pasteUnique: bool=True, selAll: bool=True, 
         style=wx.LC_REPORT, data: list[list]=[], color=config.color['Zebra'], 
         **kwargs,
         ) -> None:
@@ -1140,7 +1140,7 @@ class ListZebra(MyListCtrl, listmix.ListRowHighlighter):
         self, parent: wx.Window, color: str=config.color['Zebra'], 
         colLabel: Optional[list[str]]=None, colSize: Optional[list[int]]=None, 
         canCopy: bool=True, canCut: bool=False, canPaste: bool=False, 
-        copyFullContent: bool=False, sep: str=',', pasteUnique: bool=True, 
+        copyFullContent: bool=False, sep: str=' ', pasteUnique: bool=True, 
         selAll: bool=True, style=wx.LC_REPORT, data: list[list]=[],
         ) -> None:
         """"""
@@ -1215,7 +1215,7 @@ class ListZebraMaxWidth(ListZebra, listmix.ListCtrlAutoWidthMixin):
         self, parent: wx.Window, color: str=config.color['Zebra'], 
         colLabel: Optional[list[str]]=None, colSize: Optional[list[int]]=None, 
         canCopy: bool=True, canCut: bool=False, canPaste: bool=False, 
-        copyFullContent: bool=False, sep: str=',', pasteUnique: bool=True, 
+        copyFullContent: bool=False, sep: str=' ', pasteUnique: bool=True, 
         selAll: bool=True, style=wx.LC_REPORT, data: list[list]=[],
         ) -> None:
         """"""
@@ -1667,10 +1667,13 @@ class MatPlotPanel(wx.Panel):
         #--------------> Accelerator entries
         accel = {
             'Zoom' : wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('Z'), wx.NewId()),
+            'Img'  : wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('I'), wx.NewId()),
         }
         #--------------> Bind
         self.Bind(
             wx.EVT_MENU, self.ZoomResetPlot, id=accel['Zoom'].GetCommand())
+        self.Bind(
+            wx.EVT_MENU, self.OnSaveImage, id=accel['Img'].GetCommand())
         #--------------> Add 
         self.SetAcceleratorTable(
             wx.AcceleratorTable([x for x in accel.values()])
@@ -1722,6 +1725,17 @@ class MatPlotPanel(wx.Panel):
         #endregion -----------------------------------------------> Reset list
         
         return True
+    #---
+    
+    def GetAxesXY(self, event) -> tuple[float, float]:
+        """"""
+        x = event.xdata
+        if getattr(self, 'axes2', None) is not None:
+            _, y = self.axes.transData.inverted().transform((event.x,event.y))
+        else:
+            y = event.ydata
+        
+        return (x,y)
     #---
     
     #--------------------------------------------------------> Key press event
@@ -1776,8 +1790,7 @@ class MatPlotPanel(wx.Panel):
                 Information about the mpl event
         """
         #region -------------------------------------------------------> Event
-        self.initX = event.xdata
-        self.initY = event.ydata
+        self.initX, self.initY = self.GetAxesXY(event)
         #endregion ----------------------------------------------------> Event
 
         return True
@@ -1834,15 +1847,13 @@ class MatPlotPanel(wx.Panel):
 
         #region -----------------------------------------> Initial coordinates
         if self.initX is None:
-            self.initX = event.xdata
-            self.initY = event.ydata
+            self.initX, self.initY = self.GetAxesXY(event)
         else:
             pass
         #endregion --------------------------------------> Initial coordinates
         
         #region -------------------------------------------> Final coordinates
-        self.finalX = event.xdata
-        self.finalY = event.ydata
+        self.finalX, self.finalY = self.GetAxesXY(event)
         #endregion ----------------------------------------> Final coordinates
 
         #region ------------------------------------> Delete & Create zoomRect
@@ -1885,8 +1896,9 @@ class MatPlotPanel(wx.Panel):
             if self.statusMethod is not None:
                 self.statusMethod(event)
             else:
+                x,y = self.GetAxesXY(event)
                 self.statusbar.SetStatusText(
-                    f"x={event.xdata:.2f} y={event.ydata:.2f}"
+                    f"x={x:.2f} y={y:.2f}"
                 )
         else:
             self.statusbar.SetStatusText('') 
@@ -1962,6 +1974,24 @@ class MatPlotPanel(wx.Panel):
         """
         return True
     #---
+    
+    def OnSaveImage(self, event) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        return self.SaveImage(config.elMatPlotSaveI, parent=self, message=None)
+    #---
 
     #---------------------------------------------------> Zoom related methods
     def ZoomResetSetValues(self) -> Literal[True]:
@@ -2033,7 +2063,7 @@ class MatPlotPanel(wx.Panel):
         
         return True
     #---
-
+    
     def SaveImage(
         self, ext: str, parent: Optional[wx.Window]=None, 
         message: Optional[str]=None
@@ -2048,7 +2078,7 @@ class MatPlotPanel(wx.Panel):
                 To center the save dialog. Default is None
             message : str or None
                 Title for the save file window. Default is None
-        """		
+        """
         #region ------------------------------------------------------> Dialog
         dlg = dtsWindow.FileSelectDialog(
             'save',
@@ -2932,7 +2962,7 @@ class ListCtrlSearch():
         color: str=config.color['Zebra'], colLabel: Optional[list[str]]=None, 
         colSize: Optional[list[int]]=None, canCopy: bool=True, 
         canCut: bool=False, canPaste: bool=False, copyFullContent: bool=False, 
-        sep: str=',', pasteUnique: bool=True, selAll: bool=True, 
+        sep: str=' ', pasteUnique: bool=True, selAll: bool=True, 
         style=wx.LC_REPORT, data: list[list]=[], tcHint: str='',
         ) -> None:
         """ """

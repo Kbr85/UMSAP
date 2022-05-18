@@ -298,6 +298,7 @@ class UMSAPFile():
                 plotData[k] = {
                     'DF': df,
                     'F' : v['F'],
+                    'Alpha': v['CI']['Alpha'],
                 }
             except Exception:
                 plotData['Error'].append(k)
