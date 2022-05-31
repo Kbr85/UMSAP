@@ -3010,32 +3010,6 @@ class CorrA(BaseConfPanel):
         self.wAddCol.Bind(wx.EVT_BUTTON, self.OnAdd)
         #endregion -----------------------------------------------------> Bind
     
-        #region --------------------------------------------------------> Test
-        if config.development:
-            import getpass
-            user = getpass.getuser()
-            if config.os == "Darwin":
-                self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-                self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
-            elif config.os == 'Windows':
-                from pathlib import Path
-                self.wUFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
-                self.wIFile.tc.SetValue(str(Path(f'C:/Users/{user}/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt')))
-            else:
-                pass
-            self.wId.tc.SetValue("Beta Version Dev")
-            self.wCeroB.cb.SetValue("Yes")
-            self.wTransMethod.cb.SetValue("Log2")
-            self.wNormMethod.cb.SetValue("Median")
-            self.wImputationMethod.cb.SetValue("Normal Distribution")
-            self.OnImpMethod('fEvent')
-            self.wShift.tc.SetValue('1.8')
-            self.wWidth.tc.SetValue('0.3')
-            self.wCorrMethod.cb.SetValue("Pearson")
-        else:
-            pass
-        #endregion -----------------------------------------------------> Test
-        
         #region -------------------------------------------------------> DataI
         self.SetInitialData(cDataI)
         #endregion ----------------------------------------------------> DataI
@@ -3474,32 +3448,6 @@ class DataPrep(BaseConfPanel):
         self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
 
-        #region --------------------------------------------------------> Test
-        if config.development:
-            import getpass
-            user = getpass.getuser()
-            if config.os == "Darwin":
-                self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-                self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt")
-            elif config.os == 'Windows':
-                from pathlib import Path
-                self.wUFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
-                self.wIFile.tc.SetValue(str(Path('C:/Users/bravo/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt')))
-            else:
-                pass
-            self.wId.tc.SetValue('Beta Test Dev')
-            self.wCeroB.cb.SetValue('Yes')
-            self.wTransMethod.cb.SetValue('Log2')
-            self.wNormMethod.cb.SetValue('Median')
-            self.wImputationMethod.cb.SetValue('Normal Distribution')  
-            self.wColAnalysis.tc.SetValue('130-135')
-            self.OnImpMethod('fEvent')
-            self.wShift.tc.SetValue('1.8')
-            self.wWidth.tc.SetValue('0.3')
-        else:
-            pass
-        #endregion -----------------------------------------------------> Test
-        
         #region -------------------------------------------------------> DataI
         self.SetInitialData(cDataI)
         #endregion ----------------------------------------------------> DataI
@@ -4092,76 +4040,6 @@ class ProtProf(BaseConfModPanel):
         self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
 
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
-
-        #region --------------------------------------------------------> Test
-        if config.development:
-            import getpass
-            user = getpass.getuser()
-            if config.os == "Darwin":
-                self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-                self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt")
-            elif config.os == 'Windows':
-                from pathlib import Path
-                self.wUFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
-                self.wIFile.tc.SetValue(str(Path('C:/Users/bravo/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt')))
-            else:
-                pass
-            self.wScoreVal.tc.SetValue('320')
-            self.wId.tc.SetValue('Beta Test Dev')
-            self.wCeroB.cb.SetValue('Yes')
-            self.wTransMethod.cb.SetValue('Log2')
-            self.wNormMethod.cb.SetValue('Median')
-            self.wImputationMethod.cb.SetValue('Normal Distribution')
-            self.wAlpha.tc.SetValue('0.05')
-            self.wSample.cb.SetValue('Independent Samples')
-            self.wCorrectP.cb.SetValue('Benjamini - Hochberg')
-            self.wDetectedProt.tc.SetValue('0')
-            self.wGeneName.tc.SetValue('6')   
-            self.wScore.tc.SetValue('39')
-            self.wExcludeProt.tc.SetValue('171 172 173')
-            #------------------------------> 
-            #--> One Control per Column, 2 Cond and 2 TP
-            # self.wTcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-            # self.rLbDict = {
-            #     1            : ['C1', 'C2'],
-            #     2            : ['RP1', 'RP2'],
-            #     'Control'    : ['TheControl'],
-            #     'ControlType': 'One Control per Column',
-            # }
-            #--> One Control per Row, 1 Cond and 2 TP
-            # self.wTcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
-            # self.rLbDict = {
-            #     1            : ['DMSO'],
-            #     2            : ['30min', '60min'],
-            #     'Control'    : ['MyControl'],
-            #     'ControlType': 'One Control per Row',
-            # }
-            #--> One Control 2 Cond and 2 TP
-            self.wTcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-            self.rLbDict = {
-                1            : ['C1', 'C2'],
-                2            : ['RP1', 'RP2'],
-                'Control'    : ['1Control'],
-                'ControlType': 'One Control',
-            }
-            #--> Ratio 2 Cond and 2 TP
-            # self.wTcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
-            # self.rLbDict = {
-            #     1            : ['C1', 'C2'],
-            #     2            : ['RP1', 'RP2'],
-            #     'Control'    : ['1Control'],
-            #     'ControlType': 'Ratio of Intensities',
-            # }
-            self.OnImpMethod('fEvent')
-            self.wShift.tc.SetValue('1.8')
-            self.wWidth.tc.SetValue('0.3')
-        else:
-            pass
-        #endregion -----------------------------------------------------> Test
-        
         #region -------------------------------------------------------> DataI
         self.SetInitialData(cDataI)
         #endregion ----------------------------------------------------> DataI
@@ -5236,49 +5114,6 @@ class LimProt(BaseConfModPanel2):
         self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
         
-        #region --------------------------------------------------------> Test
-        if config.development:
-            import getpass
-            user = getpass.getuser()
-            if config.os == "Darwin":
-                self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-                self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
-                self.wSeqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
-            elif config.os == 'Windows':
-                self.wUFile.tc.SetValue("C:/Users/" + str(user) + "/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap")
-                self.wIFile.tc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
-                self.wSeqFile.tc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
-            else:
-                pass
-            self.wId.tc.SetValue('Beta Test Dev')
-            self.wCeroB.cb.SetValue('Yes')
-            self.wTransMethod.cb.SetValue('Log2')
-            self.wNormMethod.cb.SetValue('Median')
-            self.wImputationMethod.cb.SetValue('Normal Distribution')
-            self.wTargetProt.tc.SetValue('Mis18alpha')
-            self.wScoreVal.tc.SetValue('10')
-            self.wAlpha.tc.SetValue('0.05')
-            self.wBeta.tc.SetValue('0.05')
-            self.wGamma.tc.SetValue('0.8')
-            self.wTheta.tc.SetValue('')
-            self.wThetaMax.tc.SetValue('8')
-            self.wSample.cb.SetValue('Independent Samples')
-            self.wSeqCol.tc.SetValue('0')
-            self.wDetectedProt.tc.SetValue('34')
-            self.wScore.tc.SetValue('42')
-            self.wTcResults.SetValue('69-71; 81-83, 78-80, 75-77, 72-74, ; , , , 66-68, ; 63-65, 105-107, 102-104, 99-101, ; 93-95, 90-92, 87-89, 84-86, 60-62')
-            self.rLbDict = {
-                1        : ['Lane1', 'Lane2', 'Lane3', 'Lane4', 'Lane5'],
-                2        : ['Band1', 'Band2', 'Band3', 'Band4'],
-                'Control': ['Ctrl'],
-            }
-            self.OnImpMethod('fEvent')
-            self.wShift.tc.SetValue('1.8')
-            self.wWidth.tc.SetValue('0.3')
-        else:
-            pass
-        #endregion -----------------------------------------------------> Test
-        
         #region -------------------------------------------------------> DataI
         self.SetInitialData(cDataI)
         #endregion ----------------------------------------------------> DataI
@@ -6075,46 +5910,6 @@ class TarProt(BaseConfModPanel2):
         #region ---------------------------------------------> Window position
         
         #endregion ------------------------------------------> Window position
-        
-        #region --------------------------------------------------------> Test
-        if config.development:
-            import getpass
-            user = getpass.getuser()
-            if config.os == "Darwin":
-                self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-                self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
-                self.wSeqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-both.txt")
-                # self.wSeqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-rec.txt")
-            elif config.os == 'Windows':
-                self.wUFile.tc.SetValue("C:/Users/" + str(user) + "/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap")
-                self.wIFile.tc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
-                self.wSeqFile.tc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-both.txt")
-            else:
-                pass
-            self.wId.tc.SetValue('Beta Test Dev')
-            self.wCeroB.cb.SetValue('Yes')
-            self.wTransMethod.cb.SetValue('Log2')
-            self.wNormMethod.cb.SetValue('Median')
-            self.wImputationMethod.cb.SetValue('Normal Distribution')
-            self.wTargetProt.tc.SetValue('efeB')
-            self.wScoreVal.tc.SetValue('200')
-            self.wAAPos.tc.SetValue('5')
-            self.wHist.tc.SetValue('25')
-            self.wAlpha.tc.SetValue('0.05')
-            self.wSeqCol.tc.SetValue('0')
-            self.wDetectedProt.tc.SetValue('38')
-            self.wScore.tc.SetValue('44')
-            self.wTcResults.SetValue('98-105; 109-111; 112 113 114; 115-117 120')
-            self.rLbDict = {
-                1        : ['Exp1', 'Exp2', 'Exp3'],
-                'Control': ['Ctrl'],
-            }
-            self.OnImpMethod('fEvent')
-            self.wShift.tc.SetValue('1.8')
-            self.wWidth.tc.SetValue('0.3')
-        else:
-            pass
-        #endregion -----------------------------------------------------> Test
         
         #region -------------------------------------------------------> DataI
         self.SetInitialData(cDataI)
