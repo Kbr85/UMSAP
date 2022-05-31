@@ -1,0 +1,74 @@
+\documentclass[openany, notitlepage, 11pt, openright, twoside]{report}
+
+\usepackage[left=3.5cm,top=3cm,right=3.5cm,bottom=3cm]{geometry}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{graphicx}
+
+\usepackage[usenames,dvipsnames,cmyk]{xcolor}
+
+\usepackage{hyperref}
+\renewcommand*{\chapterautorefname}{Chapter}
+\renewcommand*{\sectionautorefname}{Section}
+\hypersetup
+{pdfborder=0 0 0,
+colorlinks=true,
+urlcolor=blue,
+linkcolor=black,
+}
+
+\usepackage[labelfont=bf]{caption}
+
+\usepackage{amsmath}
+
+\usepackage[style=science]{biblatex}
+\addbibresource{./TeX_files/UMSAP-Manual.bib}
+
+\usepackage{siunitx}
+
+\usepackage{texshade}
+
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{5}
+
+\usepackage{fancyhdr}
+
+\begin{document} 
+
+\pagenumbering{Roman}
+\include{./TeX_files/Title}
+
+\newpage
+
+\pagestyle{fancy}
+\cfoot{}
+\fancyhead[LE]{\footnotesize {Chapter \thechapter}}
+\fancyhead[RE]{}
+\fancyhead[LO]{}
+\fancyhead[RO]{\footnotesize\nouppercase {\rightmark}}
+\fancyfoot[LE,RO]{\thepage}
+
+\pagenumbering{arabic}
+\include{./TeX_files/Introduction}
+\include{./TeX_files/Instaling}
+\include{./TeX_files/MainInterface}
+\include{./TeX_files/UmsapCtrl}
+\include{./TeX_files/CorrAnalysis}
+\include{./TeX_files/DataPrep}
+\include{./TeX_files/Limprot}
+\include{./Tex_files/ProtProf}
+\include{./TeX_files/EnzDigMod}
+
+% This is needed because Lic. Agreement has no section
+\fancyhead[LO]{}
+\fancyhead[RO]{\footnotesize\nouppercase {License Agreement}}
+\include{./TeX_files/LicAgreem}
+
+\newpage
+\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography
+
+\end{document}
