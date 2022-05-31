@@ -22,9 +22,9 @@ from pathlib import Path
 
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
 #region --------------------------------------------------> General parameters
-development = True # Track state, development (True) or production (False)
+development = False # Track state, development (True) or production (False)
 #------------------------------> 
-version     = '2.2.0 (beta)' # String to write in the output files
+version     = '2.2.0' # String to write in the output files
 software    = 'UMSAP' # Software short name
 softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
 dictVersion = { # dict for directly write into output files
