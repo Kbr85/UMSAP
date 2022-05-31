@@ -955,14 +955,6 @@ class BaseConfPanel(
         else:
             pass
         #endregion ---------------------------------------------> Seq Rec File
-
-        #region ---------------------------------------------------> Print Dev
-        if config.development and self.rSeqFileObj is not None:
-            print("Rec Seq: ", self.rSeqFileObj.seqRec)
-            print("Nat Seq: ", self.rSeqFileObj.seqNat)
-        else:
-            pass
-        #endregion ------------------------------------------------> Print Dev
         
         return True
     #---
@@ -1008,25 +1000,6 @@ class BaseConfPanel(
         else:
             pass
         #endregion ----------------------------------------------> Reset index
-        
-        #region -------------------------------------------------------> Print
-        if config.development:
-            #------------------------------> 
-            dfL = [
-                self.dfI, self.dfF, self.dfT, self.dfN, self.dfIm, 
-                self.dfTP, self.dfE, self.dfS, 
-            ]
-            dfN = ['dfI', 'dfF', 'dfT', 'dfN', 'dfIm', 'dfTP', 'dfEx', 'dfS']
-            #------------------------------> 
-            print('')
-            for i, df in enumerate(dfL):
-                if df is not None:
-                    print(f'{dfN[i]}: {df.shape}')
-                else:
-                    print(f'{dfN[i]}: None')
-        else:
-            pass
-        #endregion ----------------------------------------------------> Print
         
         return True
     #---
@@ -2492,12 +2465,6 @@ class ResControlExpConfBase(wx.Panel):
         #endregion ----------------------------------------------> Check input
 
         #region --------------------------------------------------> Add Labels
-        #------------------------------> Check the labels
-        if config.development:
-            for k,v in self.cTopParent.rLbDict.items():
-                print(str(k)+': '+str(v))
-        else:
-            pass
         #------------------------------> Set the label numbers
         for k, v in self.cTopParent.rLbDict.items():
             if k != 'Control' and k != 'ControlType':
@@ -3270,25 +3237,6 @@ class CorrA(BaseConfPanel):
             ------
             bool
         """
-        #region -------------------------------------------------------> Print
-        if config.development:
-            print('d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')  
-            print('do:')
-            for k,v in self.rDO.items():
-                if k not in ['df', 'oc', 'dfo']:
-                    print(str(k)+': '+str(v))
-                else:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-            print('')
-        else:
-            pass
-        #endregion ----------------------------------------------------> Print
-    
         #region --------------------------------------------> Data Preparation
         if self.DataPreparation():
             pass
@@ -3717,25 +3665,6 @@ class DataPrep(BaseConfPanel):
             -------
             bool
         """
-        #region -------------------------------------------------------> Print
-        if config.development:
-            print('d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')  
-            print('do:')
-            for k,v in self.rDO.items():
-                if k not in ['df', 'oc', 'dfo']:
-                    print(str(k)+': '+str(v))
-                else:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-            print('')    
-        else:
-            pass
-        #endregion ----------------------------------------------------> Print
-        
         #region --------------------------------------------> Data Preparation
         if self.DataPreparation():
             pass
@@ -4616,25 +4545,6 @@ class ProtProf(BaseConfModPanel):
             -------
             bool
         """
-        #region -------------------------------------------------------> Print
-        if config.development:
-            print('d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')  
-            print('do:')
-            for k,v in self.rDO.items():
-                if k not in ['df', 'oc', 'dfo']:
-                    print(str(k)+': '+str(v))
-                else:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-            print('')    
-        else:
-            pass
-        #endregion ----------------------------------------------------> Print
-        
         #region --------------------------------------------> Data Preparation
         if self.DataPreparation():
             pass
@@ -4657,13 +4567,6 @@ class ProtProf(BaseConfModPanel):
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> 
         self.dfR = self.EmptyDFR()
-        
-        if config.development:
-            print('self.dfR.shape: ', self.dfR.shape)
-            print(self.dfR.head())
-            print('')
-        else:
-            pass
         #endregion -------------------------------------------------> Empty DF
         
         #region --------------------------------------------> Calculate values
@@ -4694,13 +4597,6 @@ class ProtProf(BaseConfModPanel):
                     )
                     self.rExceptionn = e
                     return False
-                
-        if config.development:
-            print('self.dfR.shape: ', self.dfR.shape)
-            print(self.dfR.head())
-            print('')
-        else:
-            pass
         #endregion -----------------------------------------> Calculate values
                 
         return True
@@ -4864,8 +4760,6 @@ class ProtProf(BaseConfModPanel):
             ExecutionError:
                 - When the calculation fails
         """
-        if config.development:
-            print(cN, tN, colC, colD)
         #------------------------------> Ave & Std
         if colC is not None:
             self.dfR.loc[:,(cN, tN, 'aveC')] = self.dfS.iloc[:,colC].mean(
@@ -5653,26 +5547,6 @@ class LimProt(BaseConfModPanel2):
             -------
             bool
         """
-        #region -------------------------------------------------> Print d, do
-        if config.development:
-            print('')
-            print('self.d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')
-            print('self.do')
-            for k,v in self.rDO.items():
-                if k in ['oc', 'df', 'dfo']:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-                else:
-                    print(str(k)+': '+str(v))
-            print('')
-        else:
-            pass
-        #endregion ----------------------------------------------> Print d, do
-        
         #region --------------------------------------------> Data Preparation
         if self.DataPreparation():
             pass
@@ -5761,12 +5635,6 @@ class LimProt(BaseConfModPanel2):
         self.dfR = self.dfR.reset_index(drop=True)
         #endregion -----------------------------------------------------> Sort
 
-        if config.development:
-            print('self.dfR.shape: ', self.dfR.shape)
-            print('')
-            print(self.dfR)
-            print('')
-        
         return True
     #---
     
@@ -6446,26 +6314,6 @@ class TarProt(BaseConfModPanel2):
             -------
             bool
         """
-        #region -------------------------------------------------> Print d, do
-        if config.development:
-            print('')
-            print('self.d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')
-            print('self.do')
-            for k,v in self.rDO.items():
-                if k in ['oc', 'df', 'dfo']:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-                else:
-                    print(str(k)+': '+str(v))
-            print('')
-        else:
-            pass
-        #endregion ----------------------------------------------> Print d, do
-        
         #region --------------------------------------------> Data Preparation
         if self.DataPreparation():
             pass
@@ -6623,13 +6471,6 @@ class TarProt(BaseConfModPanel2):
             pass
         #endregion -----------------------------------------------------> Hist
 
-        if config.development:
-            print('self.dfR.shape: ', self.dfR.shape)
-            print('')
-            print(self.dfR)
-        else:
-            pass
-            
         return True
     #---
     

@@ -439,8 +439,6 @@ def R2AA(
             AA Label1       LabelN
             AA -2 -1 1 2 P  -2 -1 1 2 P
     """
-    print('AA NUMBER OF POSITIONS')
-    print(pos)
     def AddNewAA(dfO, r, pos, seq, l):
         """
     
@@ -699,9 +697,7 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     label = df.columns.unique(level=0).tolist()[4:]
     nL = len(label)
     a = df.columns.tolist()[4:]
-    print(a)
     colN = list(range(4, len(a)+4))
-    print(colN)
     #endregion -----------------------------------------------------> 
     
     #region --------------------------------------------------------> 
