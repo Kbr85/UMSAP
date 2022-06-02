@@ -2,6 +2,8 @@
 .DS_Store
 
 # Latex files
+*.fls
+*.fdb_latexmk
 *.aux
 *.log
 *.toc
@@ -13,6 +15,8 @@
 *.out
 *.run.xml
 *.synctex.gz
+*.pyc
+*.pdf
 
 # Ignore folders
 __pychache__

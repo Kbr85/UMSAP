@@ -1,4 +1,0 @@
---->  References to Figure, Table or equations numbers goes in italics
-
---->  FIGURES WITH INTERFACE REGIONS Pencil 4px space 400 hard edge basic dynamics blue stroke path
-									 Text   Arial 60pt Blue
