@@ -209,10 +209,10 @@ in Regions Profiling Details.
 Region Plots contains two plots. A volcano plot showing the results for the t-test
 comparing the condition (C), relevant point (RP) to the corresponding control. The
 points in the plot can be colored by Z-score allowing to quickly identified the top
-up (blue) or down (red) regulated proteins or according to the hyperbolic curve cut-off
-\cite{LI2012}. Selecting a protein in the plot will highlight the selected protein
-in region Protein List and display information about it in region Profiling Details,
-or it will add a label to the plot.
+up (blue) or down (red) regulated proteins, according to the hyperbolic curve cut-off
+\cite{LI2012}, or using defined p, $log_2[FC]$ thresholds. Selecting a protein in 
+the plot will highlight the selected protein in region Protein List and display 
+information about it in region Profiling Details, or it will add a label to the plot.
 
 The plot of $log_2[FC]$ vs Relevant points allows seeing the evolution of the FC
 along the Relevant points and to compare the FC across the various conditions in
@@ -238,8 +238,9 @@ the points in the plot, toggle between using the left click of the mouse for sel
 proteins or adding labels (Shift+P), adjusting the Color Scheme of the plot, show
 corrected p values, create an image of the plot (Shift+I) or reset the zoom level of
 the plot (Shift+Z). The entry Color Scheme allows coloring points in the Volcano plot
-by Z-score or the hyperbolic curve cut-off. It also allows configuring the Z-score
-threshold and the hyperbolic curve parameters.
+by Z-score, the hyperbolic curve cut-off, or defined p, $log_2[FC]$ thresholds. It 
+also allows configuring the hyperbolic curve parameters and the thresholds for the
+Z-score, p and $log_2[FC]$.
 
 The submenu FC Evolution allows toggling the display of the maximum/minimum area,
 to create an image of the plot (Alt+I) and to reset the zoom level of the plot (Alt+Z).

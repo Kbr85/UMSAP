@@ -427,15 +427,16 @@ of the detected cleavage sites during a Targeted Proteolysis analysis.
 
 This analysis is performed by default after the Targeted Proteolysis analysis is
 finished. First, UMSAP groups all MS-detected peptides that share the same \(P1\)-\(P1'\)
-bond. Subsequently, the RCR is calculated as follows. For each
-peptide and experiment the average intensities are calculated. Subsequently, for
-each peptide the average intensity ratios are calculated taking as reference the
-first average intensity greater than zero along the experiments for each peptide.
+bond. Subsequently, the RCR is calculated as follows. For each peptide and experiment
+the average intensities are calculated. The average intensity is set to \num{0} if
+the peptide was not detected in a given experiment ($p>\alpha$). All other intensity
+values are then scaled to the range \numrange{1}{10}. This is done in order to make
+all intensity values greater than \num{0}. Subsequently, for
+each peptide the scaled average intensity ratios are calculated taking as reference the
+first scaled average intensity greater than zero along the experiments for each peptide.
 Finally, the RCR for a \(P1\) site at an experiment is calculated
-as the sum of the average intensity ratios of all peptides that share the same \(P1\)
-site. If the peptide was not detected in an experiment or the intensity values are
-not significantly different to the control experiments, then the average intensity
-is set to zero for this experiment. A numeric example is provided below.
+as the sum of the intensity ratios of all peptides that share the same \(P1\)
+site. A numeric example is provided below.
 
 Let's assume the following peptides were detected in a set of experiments. They all
 share the same \(P1\) site at V231.
@@ -446,8 +447,8 @@ share the same \(P1\) site at V231.
     \hideconsensus
 \end{texshade}
 
-The average intensity for each peptide in the three experiments performed are given
-in \autoref{table:tarprotCutEvolAveInt}.
+The intensity values for each peptide in the three experiments performed, after scaling,
+are given in \autoref{table:tarprotCutEvolAveInt}. 
 
 \begin{table}[h!]
     \centering
@@ -459,7 +460,7 @@ in \autoref{table:tarprotCutEvolAveInt}.
         Exp3 & 8 & 3 & 5 & 0 & 0 & 1 \\
         \hline
     \end{tabular}
-    \caption[Average intensity for the detected peptide]{\textbf{Average intensity
+    \caption[Scaled average intensity for the detected peptide]{\textbf{Average intensity
     for the detected peptide.}}
     \label{table:tarprotCutEvolAveInt}
 \end{table}

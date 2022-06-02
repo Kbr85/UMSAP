@@ -22,7 +22,7 @@ from pathlib import Path
 
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
 #region --------------------------------------------------> General parameters
-development = True # Track state, development (True) or production (False)
+development = False # Track state, development (True) or production (False)
 #------------------------------> 
 version     = '2.2.1 (beta)' # String to write in the output files
 software    = 'UMSAP' # Software short name
