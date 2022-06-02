@@ -24,7 +24,7 @@ from pathlib import Path
 #region --------------------------------------------------> General parameters
 development = True # Track state, development (True) or production (False)
 #------------------------------> 
-version     = '2.2.0 (beta)' # String to write in the output files
+version     = '2.2.1 (beta)' # String to write in the output files
 software    = 'UMSAP' # Software short name
 softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
 dictVersion = { # dict for directly write into output files
@@ -237,7 +237,7 @@ fnDataInit   = 'Input_Data_Files'
 #------------------------------> www.umsap.nl
 urlHome     = 'https://www.umsap.nl'
 urlUpdate   = f"{urlHome}/page/release-notes"
-urlTutorial = f"{urlHome}/tutorial/2-2-0"
+urlTutorial = f"{urlHome}/tutorial/2-2-X"
 #endregion --------------------------------------------------------------- URL
 
 
