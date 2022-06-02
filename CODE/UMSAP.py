@@ -31,11 +31,10 @@ DEVELOPMENT = True # Track state, development (True) or production (False)
 #region -------------------------------------------------------------> Classes
 class UmsapApp(wx.App):
     """Start the UMSAP app"""
-
     #region ----------------------------------------------> Overridden methods
     def OnInit(self) -> bool:
         """Initialize the app
-        
+
             Returns
             -------
             bool
@@ -44,8 +43,8 @@ class UmsapApp(wx.App):
         os = platform.system()
         #------------------------------> image_loc
         if DEVELOPMENT:
-            fileRoot   = Path(__file__).parent.parent
-            imgPath = '/Resources/IMAGES/SPLASHSCREEN/splash.png'
+            imgPath     = '/Resources/IMAGES/SPLASHSCREEN/splash.png'
+            fileRoot    = Path(__file__).parent.parent
             imgFullPath = f'{fileRoot}{imgPath}'
         else:
             imgPath = '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
@@ -53,13 +52,14 @@ class UmsapApp(wx.App):
                 fileRoot = Path(__file__).parent.parent
             elif os == 'Windows':
                 fileRoot = Path(__file__).parent
+            else:
+                fileRoot = Path(__file__).parent
             imgFullPath = f'{fileRoot}{imgPath}'
         #endregion ------------------------------------------------> Variables
 
         #region ------------------------------------------------> SplashScreen
         SplashWindow(str(imgFullPath))
         #endregion ---------------------------------------------> SplashScreen
-
 
         return True
     #---
@@ -69,10 +69,10 @@ class UmsapApp(wx.App):
 
 class SplashWindow(wx.adv.SplashScreen):
     """Create the Splash Screen 
-    
+
         Parameters
         ----------
-        cImgPath : str
+        imgPath : str
             Path to the image used in the splash window
     """
     #region --------------------------------------------------> Instance setup
@@ -80,10 +80,10 @@ class SplashWindow(wx.adv.SplashScreen):
         """"""
         #region -----------------------------------------------> Initial setup
         super().__init__(
-            wx.Bitmap(imgPath, type=wx.BITMAP_TYPE_PNG), 
+            wx.Bitmap(imgPath, type=wx.BITMAP_TYPE_PNG),
             wx.adv.SPLASH_CENTER_ON_SCREEN|wx.adv.SPLASH_TIMEOUT,
             1500,
-            None,	
+            None,
         )
         #endregion --------------------------------------------> Initial setup
 
@@ -97,10 +97,9 @@ class SplashWindow(wx.adv.SplashScreen):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #------------------------------> Class methods
     #region ---------------------------------------------------> Event methods
     def OnClose(self, event: wx.CloseEvent) -> bool:
-        """Finish app configuration (parameters that need a running wx.App) & 
+        """Finish app configuration (parameters that need a running wx.App) &
             launch main window
 
             Parameters
@@ -155,19 +154,17 @@ class SplashWindow(wx.adv.SplashScreen):
             config.font['TreeItemDataFile']      = fTreeItemFileData
             config.font['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
         elif config.os == "Windows":
-            fSeqAlignFont.SetPointSize(12)
-            config.font['SeqAlign']              = fSeqAlignFont
-            config.font['TreeItem']              = fTreeItem
-            fTreeItemFileData.SetPointSize(10)
-            config.font['TreeItemDataFile']      = fTreeItemFileData
-            config.font['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
+            config.font['SeqAlign']             = fSeqAlignFont.SetPointSize(12)
+            config.font['TreeItem']             = fTreeItem
+            config.font['TreeItemDataFileFalse']= fTreeItemFileDataFalse
+            config.font['TreeItemDataFile'] = fTreeItemFileData.SetPointSize(10)
         else:
-            config.font['SeqAlign']              = fSeqAlignFont.SetPointSize(11)
-            config.font['TreeItem']              = fTreeItem
-            config.font['TreeItemDataFile']      = fTreeItemFileData
-            config.font['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
+            config.font['SeqAlign']             = fSeqAlignFont.SetPointSize(11)
+            config.font['TreeItem']             = fTreeItem
+            config.font['TreeItemDataFile']     = fTreeItemFileData
+            config.font['TreeItemDataFileFalse']= fTreeItemFileDataFalse
         #endregion ----------------------------------------------------> Fonts
-        
+
         #region ------------------------------------------> User Configuration
         # After fonts were created and assign to config, load user values
         try:
@@ -178,7 +175,7 @@ class SplashWindow(wx.adv.SplashScreen):
             config.confUserFile = False
             config.confUserFileException = e
             data = {}
-        #------------------------------> 
+        #------------------------------>
         if data:
             #------------------------------> General
             config.general['checkUpdate'] = data['general'].get(
@@ -186,14 +183,14 @@ class SplashWindow(wx.adv.SplashScreen):
         else:
             pass
         #endregion ---------------------------------------> User Configuration
-        
+
         #region --------------------------------------------------------> Menu
         if config.os == "Darwin":
             wx.MenuBar.MacSetCommonMenuBar(menu.MainMenuBar())
         else:
             pass
         #endregion -----------------------------------------------------> Menu
-        
+
         #region ------------------------------------------> Create main window
         config.winMain = window.MainWindow()
         #endregion ---------------------------------------> Create main window
