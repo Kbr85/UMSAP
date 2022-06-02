@@ -186,7 +186,7 @@ class SplashWindow(wx.adv.SplashScreen):
 
         #region --------------------------------------------------------> Menu
         if config.os == "Darwin":
-            wx.MenuBar.MacSetCommonMenuBar(menu.MainMenuBar())
+            wx.MenuBar.MacSetCommonMenuBar(menu.MenuBarMain())
         else:
             pass
         #endregion -----------------------------------------------------> Menu

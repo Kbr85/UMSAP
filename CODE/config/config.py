@@ -207,6 +207,15 @@ esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
 
 
+#region ------------------------------------> Keywords for Menu - Method Links
+klHelpAbout    = 'HelpAbout'
+klHelpManual   = 'HelpManual'
+klHelpTutorial = 'HelpTutorial'
+klHelpCheckUpd = 'HelpCheckUpd'
+klHelpPref     = 'HelpPreferences'
+#endregion ---------------------------------> Keywords for Menu - Method Links
+
+
 #region ------------------------------------------------------> Path and Files
 #------------------------------> Relevant paths
 pImages = res / 'IMAGES' # Images folder
@@ -257,7 +266,7 @@ lStLimProtBand  = 'Bands'
 lStTarProtExp   = 'Experiments'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'
-#------------------------------> wx.Statictext
+#------------------------------> wx.StaticText
 lStColAnalysis = 'Columns for Analysis'
 lStScoreVal    = 'Score Value'
 lStScoreCol    = 'Score'
@@ -279,11 +288,6 @@ lFilFCLog    = 'Log2FC'
 lFilPVal     = 'P Val'
 lFilZScore   = 'Z Score'
 #endregion -----------------------------------------------------------> Labels
-
-
-#region ---------------------------------------------------------------> Hints
-
-#endregion ------------------------------------------------------------> Hints
 
 
 #region ------------------------------------------------------------> Tooltips
@@ -371,7 +375,7 @@ oCorrectP = {
     'Sidak'                : 'sidak',
     'Holm - Sidak'         : 'holm-sidak',
     'Holm'                 : 'holm',
-    'Simes-Hochberg'       : 'simes-hochberg',
+    'Simes - Hochberg'     : 'simes-hochberg',
     'Hommel'               : 'hommel',
     'Benjamini - Hochberg' : 'fdr_bh',
     'Benjamini - Yekutieli': 'fdr_by',

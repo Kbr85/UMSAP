@@ -21,9 +21,9 @@ import dtscore.window as dtsWindow
 
 
 def GetFilePath(
-    mode: Literal['openO', 'openM', 'save'], ext: Optional[str]=None, 
-    parent: Optional[wx.Window]=None, msg=None,
-    ) -> Optional[list[str]]:
+    mode: Literal['openO', 'openM', 'save'], ext: str,
+    parent: Optional[wx.Window]=None, msg: Optional[str]=None,
+    ) -> list[str]:
     """Open the dtsWindow.FileSelectDialog to select files.
 
         Parameters
@@ -41,30 +41,26 @@ def GetFilePath(
         Returns
         -------
         list
-            List of selected file paths as str
-
-        Raise
-        -----
-        InputError:
-            - When mode is not in dtsConfig.varOpt['FFSelect']['All']
+            List of selected file paths as str or empty list
     """
-    #region -----------------------------------------------------> Open dialog
+    #region ------------------------------------------------> Create wx.Dialog
     try:
-        with dtsWindow.FileSelectDialog(
-            mode, 
-            ext, 
-            parent  = parent,
-            message = msg,
-        ) as dlg:
-            if dlg.ShowModal() == wx.ID_OK:
-                if mode == 'openM':
-                    return dlg.GetPaths()
-                else:
-                    return [dlg.GetPath()]
-            else:
-                return None
+        dlg = dtsWindow.FileSelectDialog(mode, ext, parent=parent, message=msg)
     except Exception as e:
         raise e
-    #endregion --------------------------------------------------> Open dialog
+    #endregion ---------------------------------------------> Create wx.Dialog
+
+    #region ---------------------------------------------------> Get File Path
+    if dlg.ShowModal() == wx.ID_OK:
+        if mode == 'openM':
+            fileP = dlg.GetPaths()
+        else:
+            fileP = [dlg.GetPath()]
+    else:
+        fileP = []
+    #endregion ------------------------------------------------> Get File Path
+
+    dlg.Destroy()
+    return fileP
 #---
 

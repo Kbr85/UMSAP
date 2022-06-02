@@ -29,6 +29,78 @@ import gui.window as window
 
 
 #region --------------------------------------------------------> Base Classes
+class BaseMenu(wx.Menu):
+    """ Base class for menus
+
+        Attributes
+        ----------
+        rIDMap: dict
+            Maps menu item's ID with key words
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #------------------------------>
+        self.rIDMap = {}
+        #endregion --------------------------------------------> Initial Setup
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event methods
+    def OnCreateTab(self, event:wx.CommandEvent) -> bool:
+        """Creates a new tab in the main window
+
+            Parameters
+            ----------
+            event : wx.CommandEvent
+                Information about the event
+
+            Returns
+            -------
+            True
+
+            Notes
+            -----
+            Assumes child class has a self.rIDMap dict with event's id as keys
+            and tab's ids as values.
+        """
+        #region -------------------------------------------------> Check MainW
+        if config.winMain is None:
+            config.winMain = window.MainWindow()
+        else:
+            pass
+        #endregion ----------------------------------------------> Check MainW
+
+        #region --------------------------------------------------> Create Tab
+        config.winMain.OnCreateTab(self.rIDMap[event.GetId()])
+        #endregion -----------------------------------------------> Create Tab
+
+        return True
+    #---
+    
+    def OnMethod(self, event):
+        """Call the corresponding method in the window with no arguments or
+            keyword arguments
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+            Returns
+            -------
+            bool
+        """
+        win = self.GetWindow()
+        win.dKeyMethod[self.rIDMap[event.GetId()]]()
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+#---
+
+
 class MenuMethods():
     """Base class to hold common methods to the menus"""
     
@@ -429,19 +501,15 @@ class PlotSubMenu(wx.Menu, MenuMethods):
 
 
 #region ----------------------------------------------------> Individual menus
-class Module(wx.Menu, MenuMethods):
+class MenuModule(BaseMenu):
     """Menu with module entries
-    
+
         Attributes
         ----------
-        rKeyID : dict
-            Link wx.MenuItems.Id with keywords used by methods in the window
-            owning the wx.Menu
+        rIDMap : dict
+            Link wx.MenuItems.Id with the name of the tabs in the Analysis Setup
+            window.
     """
-    #region -----------------------------------------------------> Class setup
-
-    #endregion --------------------------------------------------> Class setup
-    
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -456,7 +524,7 @@ class Module(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
-        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
+        self.rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
             self.miLimProt.GetId() : config.ntLimProt,
             self.miProtProf.GetId(): config.ntProtProf,
             self.miTarProt.GetId() : config.ntTarProt,
@@ -468,23 +536,20 @@ class Module(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miProtProf)
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miTarProt)
         #endregion -----------------------------------------------------> Bind
+    #---
     #endregion ------------------------------------------------ Instance Setup
 #---
 
 
-class Utility(wx.Menu, MenuMethods):
-    """Utilites menu
-    
+class MenuUtility(BaseMenu):
+    """Menu with the utilities entries
+
         Attributes
         ----------
-        rrKeyID : dict
-            Link wx.MenuItems.Id with keywords used by methods in the window
-            owning the wx.Menu
+        rIDMap : dict
+            Link wx.MenuItems.Id with the name of the tabs in the Analysis Setup
+            window.
     """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-    
     #region --------------------------------------------------> Instance Setup
     def __init__(self) -> None:
         """"""
@@ -493,14 +558,14 @@ class Utility(wx.Menu, MenuMethods):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu items
-        self.miCorrA   = self.Append(-1, config.nuCorrA)
+        self.miCorrA    = self.Append(-1, config.nuCorrA)
         self.miDataPrep = self.Append(-1, config.nuDataPrep)
         self.AppendSeparator()
         self.miReadFile = self.Append(-1, f'{config.nuReadF}\tCtrl+R')
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
-        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
+        self.rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
             self.miCorrA.GetId()   : config.ntCorrA,
             self.miDataPrep.GetId(): config.ntDataPrep,
         }
@@ -511,28 +576,28 @@ class Utility(wx.Menu, MenuMethods):
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miCorrA)
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miDataPrep)
         #endregion -----------------------------------------------------> Bind
+    #---
     #endregion -----------------------------------------------> Instance Setup
 
-    #------------------------------> Class methods
     #region ---------------------------------------------------> Event Methods
-    #------------------------------> Event Methods
     def OnReadFile(self, event: wx.CommandEvent) -> bool:
         """Read an UMSAP output file.
-    
+
             Parameters
             ----------
-            event : wx.EVENT
+            event : wx.Event
                 Information about the event
-                
+
             Returns
             -------
-            True
+            bool
         """
         #region ------------------------------------------------------> Window
-        win = self.GetWindow()        
+        win = self.GetWindow()
         #endregion ---------------------------------------------------> Window
-        
+
         #region ---------------------------------------------------> Get fileP
+        #------------------------------>
         try:
             fileP = dtsGuiMethod.GetFilePath(
                 'openO', 
@@ -540,11 +605,7 @@ class Utility(wx.Menu, MenuMethods):
                 parent = win,
                 msg    = config.mFileSelUMSAP,
             )
-            if fileP is None:
-                return False
-            else:
-                fileP = Path(fileP[0])
-        except Exception as e:      
+        except Exception as e:
             dtsWindow.NotificationDialog(
                 'errorF', 
                 msg        = config.mFileSelector,
@@ -552,15 +613,68 @@ class Utility(wx.Menu, MenuMethods):
                 parent     = win,
             )
             return False
+        #------------------------------>
+        if fileP:
+            fileP = Path(fileP[0])
+        else:
+            return False
         #endregion ------------------------------------------------> Get fileP
-        
+
         #region ---------------------------------------------------> Load file
         method.LoadUMSAPFile(fileP=fileP)
         #endregion ------------------------------------------------> Load file
-        
+
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
+#---
+
+
+class MenuHelp(BaseMenu):
+    """Menu with the help entries
+
+        Attributes
+        ----------
+        rIDMap : dict
+            Link wx.MenuItems.Id with the method keyword.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miAbout    = self.Append(-1, 'About UMSAP')
+        self.AppendSeparator()
+        self.miManual   = self.Append(-1, 'Manual')
+        self.miTutorial = self.Append(-1, 'Tutorial')
+        self.AppendSeparator()
+        self.miCheckUpd = self.Append(-1, 'Check for Updates')
+        self.AppendSeparator()
+        self.miPref     = self.Append(-1, 'Preferences')
+        #endregion -----------------------------------------------> Menu Items
+
+        #region ---------------------------------------------------> 
+        self.rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
+            self.miAbout.GetId   (): config.klHelpAbout,
+            self.miManual.GetId  (): config.klHelpManual,
+            self.miTutorial.GetId(): config.klHelpTutorial,
+            self.miCheckUpd.GetId(): config.klHelpCheckUpd,
+            self.miPref.GetId    (): config.klHelpPref,
+        }
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miAbout)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miManual)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miTutorial)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCheckUpd)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miPref)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 #---
 
 
@@ -2185,81 +2299,6 @@ class FAMenuTarProtHist(wx.Menu):
 #---
 
 
-class Help(wx.Menu):
-    """ """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        self.miAbout    = self.Append(-1, 'About UMSAP')
-        self.AppendSeparator()
-        self.miManual   = self.Append(-1, 'Manual')
-        self.miTutorial = self.Append(-1, 'Tutorial')
-        self.AppendSeparator()
-        self.miCheckUpd = self.Append(-1, 'Check for Updates')
-        self.AppendSeparator()
-        self.miPref     = self.Append(-1, 'Preferences')
-        #endregion -----------------------------------------------> Menu Items
-        
-        #region ---------------------------------------------------> 
-        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
-            self.miAbout.GetId   (): 'HelpAbout',
-            self.miManual.GetId  (): 'HelpManual',
-            self.miTutorial.GetId(): 'HelpTutorial',
-            self.miCheckUpd.GetId(): 'HelpCheckUpd',
-            self.miPref.GetId    (): 'HelpPreferences',
-        }
-        #endregion ------------------------------------------------> 
-        
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miAbout)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miManual)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miTutorial)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCheckUpd)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miPref)
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
-
-    #region ---------------------------------------------------> Class methods
-    def OnMethod(self, event):
-        """
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-
-            Returns
-            -------
-
-
-            Raise
-            -----
-
-        """
-        win = self.GetWindow()
-        win.dKeyMethod[self.rKeyID[event.GetId()]]()
-        return True
-    #---
-    #endregion ------------------------------------------------> Class methods
-    
-    #region ---------------------------------------------------> Event methods
-    
-    #endregion ------------------------------------------------> Event methods
-#---
-
-
 class VolcanoPlotColorScheme(wx.Menu):
     """ """
     #region -----------------------------------------------------> Class setup
@@ -3208,20 +3247,20 @@ class TarProtToolMenu(wx.Menu, MenuMethods):
 
 
 #region -------------------------------------------------------------> Menubar
-class MainMenuBar(wx.MenuBar):
+class MenuBarMain(wx.MenuBar):
     """ Creates the application menu bar"""
-    
+
     #region --------------------------------------------------- Instance Setup
     def __init__(self) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
-        
+
         #region --------------------------------------------------> Menu items
-        self.mModule  = Module()
-        self.mUtility = Utility()
-        self.mHelp    = Help()
+        self.mModule  = MenuModule()
+        self.mUtility = MenuUtility()
+        self.mHelp    = MenuHelp()
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------> Append to menubar
@@ -3229,11 +3268,12 @@ class MainMenuBar(wx.MenuBar):
         self.Append(self.mUtility, '&Utilities')
         self.Append(self.mHelp,    '&Help')
         #endregion ----------------------------------------> Append to menubar
+    #---
     #endregion ------------------------------------------------ Instance Setup
 #---
 
 
-class ToolMenuBar(MainMenuBar):
+class ToolMenuBar(MenuBarMain):
     """Menu bar for a window showing the corresponding tool menu
     
         Parameters

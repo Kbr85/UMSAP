@@ -193,11 +193,11 @@ class BaseWindow(wx.Frame):
             'PlotZoomResetOne': self.OnPlotZoomResetOne,
             'AllZoom'         : self.OnPlotZoomResetAll,
             #------------------------------> 
-            'HelpAbout'      : self.OnAbout,
-            'HelpManual'     : self.OnManual,
-            'HelpTutorial'   : self.OnTutorial,
-            'HelpCheckUpd'   : self.OnCheckUpdate,
-            'HelpPreferences': self.OnPreference,
+            config.klHelpAbout   : self.OnAbout,
+            config.klHelpManual  : self.OnManual,
+            config.klHelpTutorial: self.OnTutorial,
+            config.klHelpCheckUpd: self.OnCheckUpdate,
+            config.klHelpPref    : self.OnPreference,
         }
         #------------------------------> 
         super().__init__(
@@ -304,7 +304,7 @@ class BaseWindow(wx.Frame):
             -----
             
         """
-        webbrowser.open_new(config.urlTutorial)
+        webbrowser.open_new(f'{config.urlTutorial}/start')
         return True
     #---
     
