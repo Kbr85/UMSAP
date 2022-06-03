@@ -210,7 +210,7 @@ class BaseWindow(wx.Frame):
         #endregion --------------------------------------------------> Widgets
 
         #region --------------------------------------------------------> Menu
-        self.mBar = menu.ToolMenuBar(self.cName, cMenuData)
+        self.mBar = menu.MenuBarTool(self.cName, cMenuData)
         self.SetMenuBar(self.mBar)		
         #endregion -----------------------------------------------------> Menu
         
@@ -10392,11 +10392,13 @@ class UMSAPControl(BaseWindow):
         self.rCopiedFilters = []
         #------------------------------> 
         super().__init__(cParent=cParent)
-        #------------------------------> 
+        #------------------------------>
         dKeyMethod = {
-            1: self.AddAnalysis,
-            2: self.DeleteAnalysis,
-            3: self.ExportAnalysis,
+            config.klToolUMSAPCtrlAddDelExp: self.OnAddDelExport,
+            config.klToolUMSAPCtrlAdd      : self.AddAnalysis,
+            config.klToolUMSAPCtrlDel      : self.DeleteAnalysis,
+            config.klToolUMSAPCtrlExp      : self.ExportAnalysis,
+            config.klToolUMSAPCtrlReload   : self.UpdateFileContent,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -10441,7 +10443,7 @@ class UMSAPControl(BaseWindow):
             
         """
         #region ---------------------------------------------------> 
-        if mode == 1:
+        if mode == config.klToolUMSAPCtrlAdd:
             #------------------------------> 
             dlg = dtsWindow.FileSelectDialog(
                 'openO', 
@@ -10472,10 +10474,10 @@ class UMSAPControl(BaseWindow):
                 dlg.Destroy()
                 return False
             #------------------------------> 
-            dlg = UMSAPAddDelExport(objAdd, mode) 
+            dlg = UMSAPAddDelExport(objAdd, mode)
         else:
             objAdd = None
-            dlg = UMSAPAddDelExport(self.rObj, mode) 
+            dlg = UMSAPAddDelExport(self.rObj, mode)
         #------------------------------> 
         if dlg.ShowModal():
             selItem = dlg.rSelItems
@@ -11097,19 +11099,19 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
     #region -----------------------------------------------------> Class setup
     cSWindow = (400, 700)
     cLError = {
-        1: 'adding',
-        2: 'deleting',
-        3: 'exporting',
+        config.klToolUMSAPCtrlAdd: 'adding',
+        config.klToolUMSAPCtrlDel: 'deleting',
+        config.klToolUMSAPCtrlExp: 'exporting',
     }
     cLBtnOpt = {
-        1: 'Add',
-        2: 'Delete',
-        3: 'Export',
+        config.klToolUMSAPCtrlAdd: 'Add',
+        config.klToolUMSAPCtrlDel: 'Delete',
+        config.klToolUMSAPCtrlExp: 'Export',
     } 
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, obj: file.UMSAPFile, mode: int) -> None:
+    def __init__(self, obj: file.UMSAPFile, mode: str) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.rObj = obj

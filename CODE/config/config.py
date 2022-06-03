@@ -208,11 +208,18 @@ esUMSAP = ['.umsap']
 
 
 #region ------------------------------------> Keywords for Menu - Method Links
-klHelpAbout    = 'HelpAbout'
-klHelpManual   = 'HelpManual'
-klHelpTutorial = 'HelpTutorial'
-klHelpCheckUpd = 'HelpCheckUpd'
-klHelpPref     = 'HelpPreferences'
+#------------------------------> Help menu
+klHelpAbout    = 'About UMSAP'
+klHelpManual   = 'Manual'
+klHelpTutorial = 'Tutorial'
+klHelpCheckUpd = 'Check for Updates'
+klHelpPref     = 'Preferences'
+#------------------------------> Tool menu for UMSAPCtrl
+klToolUMSAPCtrlAddDelExp = 'AddDelExp'
+klToolUMSAPCtrlAdd       = 'Add Analysis'
+klToolUMSAPCtrlDel       = 'Delete Analysis'
+klToolUMSAPCtrlExp       = 'Export Analysis'
+klToolUMSAPCtrlReload    = 'Reload File'
 #endregion ---------------------------------> Keywords for Menu - Method Links
 
 

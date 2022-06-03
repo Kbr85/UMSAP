@@ -79,7 +79,7 @@ class BaseMenu(wx.Menu):
 
         return True
     #---
-    
+
     def OnMethod(self, event):
         """Call the corresponding method in the window with no arguments or
             keyword arguments
@@ -95,6 +95,31 @@ class BaseMenu(wx.Menu):
         """
         win = self.GetWindow()
         win.dKeyMethod[self.rIDMap[event.GetId()]]()
+        return True
+    #---
+
+    def OnMethodLabel(self, event):
+        """Call the corresponding method in the window with the text of the menu
+            item as argument.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        tID = event.GetId()
+        win = self.GetWindow()
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Call Method
+        win.dKeyMethod[self.rIDMap[tID]](self.GetLabelText(tID))
+        #endregion ----------------------------------------------> Call Method
+
         return True
     #---
     #endregion ------------------------------------------------> Event methods
@@ -646,17 +671,17 @@ class MenuHelp(BaseMenu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miAbout    = self.Append(-1, 'About UMSAP')
+        self.miAbout    = self.Append(-1, config.klHelpAbout)
         self.AppendSeparator()
-        self.miManual   = self.Append(-1, 'Manual')
-        self.miTutorial = self.Append(-1, 'Tutorial')
+        self.miManual   = self.Append(-1, config.klHelpManual)
+        self.miTutorial = self.Append(-1, config.klHelpTutorial)
         self.AppendSeparator()
-        self.miCheckUpd = self.Append(-1, 'Check for Updates')
+        self.miCheckUpd = self.Append(-1, config.klHelpCheckUpd)
         self.AppendSeparator()
-        self.miPref     = self.Append(-1, 'Preferences')
+        self.miPref     = self.Append(-1, config.klHelpPref)
         #endregion -----------------------------------------------> Menu Items
 
-        #region ---------------------------------------------------> 
+        #region ---------------------------------------------------> Links
         self.rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
             self.miAbout.GetId   (): config.klHelpAbout,
             self.miManual.GetId  (): config.klHelpManual,
@@ -664,7 +689,7 @@ class MenuHelp(BaseMenu):
             self.miCheckUpd.GetId(): config.klHelpCheckUpd,
             self.miPref.GetId    (): config.klHelpPref,
         }
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------> Links
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miAbout)
@@ -678,12 +703,8 @@ class MenuHelp(BaseMenu):
 #---
 
 
-class FileControlToolMenu(wx.Menu):
-    """Tool menu for the UMSAP file control window """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
+class MenuToolFileControl(BaseMenu):
+    """Tool menu for the UMSAP file control window"""
     #region --------------------------------------------------> Instance setup
     def __init__(self, *args, **kwargs) -> None:
         """*args and **kwargs are needed to use this menu with ToolMenuBar.
@@ -694,99 +715,32 @@ class FileControlToolMenu(wx.Menu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miAddData = self.Append(-1, 'Add Analysis\tCtrl+A')
+        self.miAddData = self.Append(-1, f'{config.klToolUMSAPCtrlAdd}\tCtrl+A')
         self.AppendSeparator()
-        self.miDelData = self.Append(-1, 'Delete Analysis\tCtrl+X')
+        self.miDelData = self.Append(-1, f'{config.klToolUMSAPCtrlDel}\tCtrl+X')
         self.AppendSeparator()
-        self.miExpData = self.Append(-1, 'Export Analysis\tCtrl+E')
+        self.miExpData = self.Append(-1, f'{config.klToolUMSAPCtrlExp}\tCtrl+E')
         self.AppendSeparator()
         self.miUpdateFile = self.Append(-1, 'Reload File\tCtrl+U')
         #endregion -----------------------------------------------> Menu Items
 
+        #region -------------------------------------------------------> Links
+        self.rIDMap = { # Associate IDs with method keyword
+            self.miAddData.GetId()   : config.klToolUMSAPCtrlAddDelExp,
+            self.miDelData.GetId()   : config.klToolUMSAPCtrlAddDelExp,
+            self.miExpData.GetId()   : config.klToolUMSAPCtrlAddDelExp,
+            self.miUpdateFile.GetId(): config.klToolUMSAPCtrlReload,
+        }
+        #endregion ----------------------------------------------------> Links
+
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnAdd,    source=self.miAddData)
-        self.Bind(wx.EVT_MENU, self.OnDel,    source=self.miDelData)
-        self.Bind(wx.EVT_MENU, self.OnExport, source=self.miExpData)
-        self.Bind(
-            wx.EVT_MENU, self.OnUpdateFileContent, source=self.miUpdateFile)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miAddData)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miDelData)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miExpData)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miUpdateFile)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
-
-    #------------------------------> Class methods
-    #region ---------------------------------------------------> Event methods
-    def OnUpdateFileContent(self, event: wx.CommandEvent) -> bool:
-        """Update the file content shown in the window
-    
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event
-            
-            Returns
-            -------
-            True
-        """
-        win = self.GetWindow()
-        win.UpdateFileContent()
-        
-        return True
-    #---
-    
-    def OnExport(self, event: wx.CommandEvent) -> bool:
-        """Update the file content shown in the window
-    
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event
-            
-            Returns
-            -------
-            True
-        """
-        win = self.GetWindow()
-        win.OnAddDelExport(mode=3)
-        
-        return True
-    #---
-    
-    def OnDel(self, event: wx.CommandEvent) -> bool:
-        """Update the file content shown in the window
-    
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event
-            
-            Returns
-            -------
-            True
-        """
-        win = self.GetWindow()
-        win.OnAddDelExport(mode=2)
-        
-        return True
-    #---
-    
-    def OnAdd(self, event: wx.CommandEvent) -> bool:
-        """Update the file content shown in the window
-    
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event
-            
-            Returns
-            -------
-            True
-        """
-        win = self.GetWindow()
-        win.OnAddDelExport(mode=1)
-        
-        return True
-    #---
-    #endregion ------------------------------------------------> Event methods
 #---
 
 
@@ -3273,9 +3227,9 @@ class MenuBarMain(wx.MenuBar):
 #---
 
 
-class ToolMenuBar(MenuBarMain):
+class MenuBarTool(MenuBarMain):
     """Menu bar for a window showing the corresponding tool menu
-    
+
         Parameters
         ----------
         cName : str
@@ -3287,10 +3241,9 @@ class ToolMenuBar(MenuBarMain):
         dTool: dict
             Methods to create the Tool Menu
     """
-
     #region -----------------------------------------------------> Class Setup
-    dTool = { # Key are window name
-        config.nwUMSAPControl : FileControlToolMenu,
+    dTool = { # Key are window name and values the corresponding tool menu
+        config.nwUMSAPControl : MenuToolFileControl,
         config.nwCorrAPlot    : CorrAPlotToolMenu,
         config.nwCheckDataPrep: DataPrepToolMenu,
         config.nwProtProf     : ProtProfToolMenu,
@@ -3309,7 +3262,7 @@ class ToolMenuBar(MenuBarMain):
         #region -----------------------------------------------> Initial Setup
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
-        
+
         #region -----------------------------------------> Menu items & Append
         if cName in self.dTool:
             self.mTool = self.dTool[cName](cMenuData)
@@ -3317,6 +3270,7 @@ class ToolMenuBar(MenuBarMain):
         else:
             pass
         #endregion --------------------------------------> Menu items & Append
+    #---
     #endregion ------------------------------------------------ Instance Setup
 #---
 #endregion ----------------------------------------------------------> Menubar
