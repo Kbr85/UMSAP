@@ -22,7 +22,7 @@ from pathlib import Path
 
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
 #region --------------------------------------------------> General parameters
-development = False # Track state, development (True) or production (False)
+development = True # Track state, development (True) or production (False)
 #------------------------------> 
 version     = '2.2.1 (beta)' # String to write in the output files
 software    = 'UMSAP' # Software short name
@@ -208,18 +208,27 @@ esUMSAP = ['.umsap']
 
 
 #region ------------------------------------> Keywords for Menu - Method Links
-#------------------------------> Help menu
+#------------------------------> Help Menu
 klHelpAbout    = 'About UMSAP'
 klHelpManual   = 'Manual'
 klHelpTutorial = 'Tutorial'
 klHelpCheckUpd = 'Check for Updates'
 klHelpPref     = 'Preferences'
-#------------------------------> Tool menu for UMSAPCtrl
+#------------------------------> Tool Menu for UMSAPCtrl
 klToolUMSAPCtrlAddDelExp = 'AddDelExp'
 klToolUMSAPCtrlAdd       = 'Add Analysis'
 klToolUMSAPCtrlDel       = 'Delete Analysis'
 klToolUMSAPCtrlExp       = 'Export Analysis'
 klToolUMSAPCtrlReload    = 'Reload File'
+#------------------------------> Tool Menu for Plot Window. General Items
+klToolGuiUpdate    = 'Update Result Window'
+klToolDupWin       = 'Duplicate Window'
+klToolZoomResetAll = 'Reset All Zoom'
+klToolExpData      = 'Export Data'
+klToolExpImgAll    = 'Export Image'
+klToolCheckDP      = 'Check DP'
+#------------------------------> Tool Menu for CorrA
+klToolCorrASelCol  = 'Select Column'
 #endregion ---------------------------------> Keywords for Menu - Method Links
 
 
@@ -294,6 +303,11 @@ lFilHypCurve = 'Hyp Curve'
 lFilFCLog    = 'Log2FC'
 lFilPVal     = 'P Val'
 lFilZScore   = 'Z Score'
+#------------------------------> wx.Menu
+lmCorrAColNum  = 'Column Numbers (0 based)'
+lmCorrAColName = 'Column Names'
+lmCorrASelCol  = 'Select Columns'
+lmCorrAAllCol  = 'All Columns'
 #endregion -----------------------------------------------------------> Labels
 
 

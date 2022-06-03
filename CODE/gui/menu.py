@@ -35,7 +35,9 @@ class BaseMenu(wx.Menu):
         Attributes
         ----------
         rIDMap: dict
-            Maps menu item's ID with key words
+            Maps menu item's ID with function in window
+        rKeyMap : dict
+            Maps menu items's ID with the keywords of the functions in the win.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(self):
@@ -43,7 +45,8 @@ class BaseMenu(wx.Menu):
         #region -----------------------------------------------> Initial Setup
         super().__init__()
         #------------------------------>
-        self.rIDMap = {}
+        self.rIDMap  = {}
+        self.rKeyMap = {}
         #endregion --------------------------------------------> Initial Setup
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -118,6 +121,94 @@ class BaseMenu(wx.Menu):
 
         #region -------------------------------------------------> Call Method
         win.dKeyMethod[self.rIDMap[tID]](self.GetLabelText(tID))
+        #endregion ----------------------------------------------> Call Method
+
+        return True
+    #---
+    
+    def OnMethodLabelBool(self, event):
+        """Call the corresponding method in the window with the boolean of the
+            menu item as argument.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Method assumes the wx.MenuItem is a radio or check item that will
+            be True if checked or False if not checked.
+        """
+        #region ---------------------------------------------------> Variables
+        tID = event.GetId()
+        win = self.GetWindow()
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Call Method
+        win.dKeyMethod[self.rIDMap[tID]](self.IsChecked(tID))
+        #endregion ----------------------------------------------> Call Method
+
+        return True
+    #---
+    
+    def OnMethodKey(self, event):
+        """Call the corresponding method in the window with a keyword argument.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        tID = event.GetId()
+        win = self.GetWindow()
+        tFunction = self.rIDMap[tID]
+        tDict = {self.rKeyMap[tID] : self.GetLabelText(tID)}
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Call Method
+        win.dKeyMethod[tFunction](**tDict)
+        #endregion ----------------------------------------------> Call Method
+
+        return True
+    #---
+    
+    def OnMethodKeyBool(self, event):
+        """Call the corresponding method in the window with a keyword argument 
+            with boolean value.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Method assumes the wx.MenuItem is a radio or check item that will
+            be True if checked or False if not checked.
+        """
+        #region ---------------------------------------------------> Variables
+        tID = event.GetId()
+        win = self.GetWindow()
+        tFunction = self.rIDMap[tID]
+        tDict = {self.rKeyMap[tID] : self.IsChecked(tID)}
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Call Method
+        win.dKeyMethod[tFunction](**tDict)
         #endregion ----------------------------------------------> Call Method
 
         return True
@@ -312,40 +403,6 @@ class MenuMethods():
     #endregion ------------------------------------------------> Event Methods
     
     #region --------------------------------------------------> Manage Methods
-    def AddDateItems(self, menuDate: list[str]) -> bool:
-        """Add and bind the date to plot. 
-    
-            Parameters
-            ----------
-            menuDate: list of str
-                Available dates to plot e.g. '20210324-123456 - bla'
-                  
-            Returns
-            -------
-            True
-              
-            Notes
-            -----
-            Base class needs to have a empty self.plotDate list. The filled list
-            will be used by other menu methods.
-        """
-        #region ---------------------------------------------------> Add items
-        for k in menuDate:
-            #------------------------------> Add item
-            i = self.AppendRadioItem(-1, k)
-            #------------------------------> Add to plotDate
-            self.rPlotDate.append(i)
-            #------------------------------> Bind
-            self.Bind(wx.EVT_MENU, self.OnPlotDate, source=i)
-        #endregion ------------------------------------------------> Add items
-        
-        #region -----------------------------------------------> Add Separator
-        self.AppendSeparator()
-        #endregion --------------------------------------------> Add Separator
-        
-        return True
-    #---
-    
     def UpdateDateItems(self, menuDate: list[str]) -> bool:
         """
     
@@ -420,9 +477,9 @@ class MenuMethods():
 #---
 
 
-class PlotMenu(wx.Menu, MenuMethods):
+class BaseMenuPlot(BaseMenu):
     """Menu for a window plotting results, like Correlation Analysis
-    
+
         Parameters
         ----------
         menuData : dict
@@ -430,7 +487,7 @@ class PlotMenu(wx.Menu, MenuMethods):
             a key - value pair like:
             'menudate' : ['20210324-123456 - bla',..., '20220730-105402 - bla2']
             See other key - value pairs in the window class.
-            
+
         Attributes
         ----------
         menuData : dict
@@ -441,24 +498,63 @@ class PlotMenu(wx.Menu, MenuMethods):
         plotDate : list[wx.MenuItems]
             List of available dates menu items.
     """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
     def __init__(self, cMenuData: dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cMenuData = cMenuData
         self.rPlotDate = []
-        #------------------------------> 
+        #------------------------------>
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        #------------------------------> Add Dates
         self.AddDateItems(self.cMenuData['menudate'])
-        #------------------------------> Other items
+        #endregion -----------------------------------------------> Menu Items
+    #---
+    #endregion -----------------------------------------------> Instance setup
+    
+    #region ---------------------------------------------------> Class Methods
+    def AddDateItems(self, menuDate: list[str]) -> bool:
+        """Add and bind the date to plot. 
+
+            Parameters
+            ----------
+            menuDate: list of str
+                Available dates to plot e.g. '20210324-123456 - bla'
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Add items
+        for k in menuDate:
+            #------------------------------> Add item
+            i = self.AppendRadioItem(-1, k)
+            #------------------------------> Add to plotDate
+            self.rPlotDate.append(i)
+            #------------------------------> Add to IDMap
+            self.rIDMap[i.GetId()] = config.klToolGuiUpdate
+            self.rKeyMap[i.GetId()] = 'tDate'
+            #------------------------------> Bind
+            self.Bind(wx.EVT_MENU, self.OnMethodKey, source=i)
+        #endregion ------------------------------------------------> Add items
+
+        #region -----------------------------------------------> Add Separator
+        self.AppendSeparator()
+        #endregion --------------------------------------------> Add Separator
+
+        return True
+    #---
+
+    def AddLastItems(self) -> bool:
+        """Add the last items to the Tool menu of a window showing results.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Add Items
         self.miCheckDP = self.Append(-1, 'Data Preparation\tCtrl+P')
         self.AppendSeparator()
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
@@ -467,17 +563,28 @@ class PlotMenu(wx.Menu, MenuMethods):
         self.miSaveI = self.Append(-1, 'Export Image\tCtrl+I')
         self.AppendSeparator()
         self.miZoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
-        #endregion -----------------------------------------------> Menu Items
+        #endregion ------------------------------------------------> Add Items
+
+        #region --------------------------------------------------> Add rIDMap
+        self.rIDMap[self.miDupWin.GetId()]  = config.klToolDupWin
+        self.rIDMap[self.miZoomR.GetId()]   = config.klToolZoomResetAll
+        self.rIDMap[self.miSaveD.GetId()]   = config.klToolExpData
+        self.rIDMap[self.miSaveI.GetId()]   = config.klToolExpImgAll
+        self.rIDMap[self.miCheckDP.GetId()] = config.klToolCheckDP
+        #endregion -----------------------------------------------> Add rIDMap
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
-        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.miCheckDP)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miDupWin)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveD)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miCheckDP)
         #endregion -----------------------------------------------------> Bind
+
+        return True
     #---
-    #endregion -----------------------------------------------> Instance setup
+    #endregion ------------------------------------------------> Class Methods
+
 #---	
 
 
@@ -744,22 +851,14 @@ class MenuToolFileControl(BaseMenu):
 #---
 
 
-class CorrAPlotToolMenu(PlotMenu):
+class MenuToolCorrA(BaseMenuPlot):
     """Creates the Tools menu for a Correlation Analysis Plot window 
-    
+
         Parameters
         ----------
         menuData : dict
             Data to build the Tool menu. See Notes for more details.
-            
-        Attributes
-        ----------
-        rKeyID : dict
-            Link wx.MenuItems.Id with keywords used by methods in the window
-            owning the wx.Menu
-        rCol: list[wx.MenuItems]
-            List of wx.MenuItems with the options for the 
-            
+
         Notes
         -----
         menuData has the following structure:
@@ -767,10 +866,6 @@ class CorrAPlotToolMenu(PlotMenu):
             'menudate' : ['dateA',....,'dateN'],
         }
     """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
     def __init__(self, menuData: dict) -> None:
         """ """
@@ -779,114 +874,50 @@ class CorrAPlotToolMenu(PlotMenu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        #------------------------------> 
-        pos = self.FindChildItem(self.miCheckDP.GetId())[1]
-        #------------------------------> 
-        self.Insert(pos, -1, kind=wx.ITEM_SEPARATOR)
-        self.miColName   = self.Insert(
-            pos, -1, "Column Names", kind=wx.ITEM_RADIO,
-        )
-        self.miColNumber = self.Insert(
-            pos+1, -1, "Column Numbers (0 based)",kind=wx.ITEM_RADIO,
-        )
-        #------------------------------> 
-        self.Insert(pos+2, -1, kind=wx.ITEM_SEPARATOR)
-        self.miAllCol = self.Insert(pos+3, -1, "All Columns")
-        self.miSelCol = self.Insert(pos+4, -1, "Select Columns")
-        #------------------------------> 
-        self.Insert(pos+5, -1, kind=wx.ITEM_SEPARATOR)
-        self.miColBar = self.Insert(
-            pos+6, -1, "Show ColorBar",kind=wx.ITEM_CHECK,
-        )
+        self.miColName  = self.Append(
+            -1, config.lmCorrAColName, kind=wx.ITEM_RADIO)
+        self.miColNumber = self.Append(
+            -1, config.lmCorrAColNum,kind=wx.ITEM_RADIO)
+        #------------------------------>
+        self.AppendSeparator()
+        self.miAllCol = self.Append(-1, config.lmCorrAAllCol)
+        self.miSelCol = self.Append(-1, config.lmCorrASelCol)
+        #------------------------------>
+        self.AppendSeparator()
+        self.miColBar = self.Append(-1, "Show ColorBar",kind=wx.ITEM_CHECK)
         self.miColBar.Check(check=False)
+        #------------------------------>
+        self.AppendSeparator()
+        self.AddLastItems()
         #endregion -----------------------------------------------> Menu Items
-        
+
         #region -------------------------------------------------------> Names
-        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
-            self.miColName.GetId()  : 'Name',
-            self.miColNumber.GetId(): 'Number',
-            self.miSaveI.GetId()    : 'PlotImageOne',
-            self.miZoomR.GetId()    : 'PlotZoomResetOne',
-            self.miAllCol.GetId()   : True,
-            self.miSelCol.GetId()   : False,
-            
+        rIDMap = {
+            self.miColName.GetId()  : config.klToolGuiUpdate,
+            self.miColNumber.GetId(): config.klToolGuiUpdate,
+            self.miColBar.GetId()   : config.klToolGuiUpdate,
+            self.miSelCol.GetId()   : config.klToolCorrASelCol,
+            self.miAllCol.GetId()   : config.klToolCorrASelCol,
         }
-        self.rCol = [self.miColName, self.miColNumber]
+        self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------>
+        rKeyMap = {
+            self.miColName.GetId()  : 'col',
+            self.miColNumber.GetId(): 'col',
+            self.miColBar.GetId()   : 'bar',
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ----------------------------------------------------> Names
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnPlotData, source=self.miColName)
-        self.Bind(wx.EVT_MENU, self.OnPlotData, source=self.miColNumber)
-        self.Bind(wx.EVT_MENU, self.OnPlotData, source=self.miColBar)
-        self.Bind(wx.EVT_MENU, self.OnSelCol,   source=self.miSelCol)
-        self.Bind(wx.EVT_MENU, self.OnSelCol,   source=self.miAllCol)
+        self.Bind(wx.EVT_MENU, self.OnMethodKey,     source=self.miColName)
+        self.Bind(wx.EVT_MENU, self.OnMethodKey,     source=self.miColNumber)
+        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miColBar)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabel,   source=self.miSelCol)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabel,   source=self.miAllCol)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
-
-    #------------------------------> Class methods
-    #region ---------------------------------------------------> Event methods
-    def OnPlotDate(self, event: wx.CommandEvent) -> bool:
-        """Plot a date of a section in an UMSAP file.
-    
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-
-            Returns
-            -------
-            True
-        """
-        return self.OnPlotData('fEvent')
-    #---
-    
-    def OnPlotData(self, event: Union[wx.CommandEvent, str]) -> bool:
-        """Plot a date of a section in an UMSAP file.
-        
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-    
-            Returns
-            -------
-            True
-        """
-        #region -----------------------------------------------------> Get Col
-        col    = self.rKeyID[self.GetCheckedRadiodItem(self.rCol,getVal='Id')]
-        date   = self.GetCheckedRadiodItem(self.rPlotDate)
-        colBar = self.miColBar.IsChecked()
-        win    = self.GetWindow()
-        #endregion --------------------------------------------------> Get Col
-        
-        #region --------------------------------------------------------> Plot
-        win.UpdateDisplayedData(date, col, colBar)
-        #endregion -----------------------------------------------------> Plot
-        
-        return True
-    #---
-    
-    def OnSelCol(self, event: wx.CommandEvent) -> bool:
-        """Plot only the selected columns
-    
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-
-            Returns
-            -------
-            True
-        """
-        #region ---------------------------------------------------> Plot
-        win = self.GetWindow()
-        win.OnSelectColumns(self.rKeyID[event.GetId()])
-        #endregion ------------------------------------------------> Plot
-        
-        return True
-    #---
-    #endregion ------------------------------------------------> Event methods
 #---
 
 
@@ -3244,7 +3275,7 @@ class MenuBarTool(MenuBarMain):
     #region -----------------------------------------------------> Class Setup
     dTool = { # Key are window name and values the corresponding tool menu
         config.nwUMSAPControl : MenuToolFileControl,
-        config.nwCorrAPlot    : CorrAPlotToolMenu,
+        config.nwCorrAPlot    : MenuToolCorrA,
         config.nwCheckDataPrep: DataPrepToolMenu,
         config.nwProtProf     : ProtProfToolMenu,
         config.nwLimProt      : LimProtToolMenu,

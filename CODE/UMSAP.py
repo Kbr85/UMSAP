@@ -25,7 +25,7 @@ import wx.adv
 #endregion ----------------------------------------------------------> Imports
 
 
-DEVELOPMENT = False # Track state, development (True) or production (False)
+DEVELOPMENT = True # Track state, development (True) or production (False)
 
 
 #region -------------------------------------------------------------> Classes

@@ -192,12 +192,18 @@ class BaseWindow(wx.Frame):
             #------------------------------> Reset Zoom Level
             'PlotZoomResetOne': self.OnPlotZoomResetOne,
             'AllZoom'         : self.OnPlotZoomResetAll,
-            #------------------------------> 
+            #------------------------------> Help Menu
             config.klHelpAbout   : self.OnAbout,
             config.klHelpManual  : self.OnManual,
             config.klHelpTutorial: self.OnTutorial,
             config.klHelpCheckUpd: self.OnCheckUpdate,
             config.klHelpPref    : self.OnPreference,
+            #------------------------------> Tool Menu
+            config.klToolZoomResetAll : self.OnPlotZoomResetAll,
+            config.klToolExpData      : self.OnExportPlotData,
+            config.klToolExpImgAll    : self.OnPlotSaveAllImage,
+            config.klToolCheckDP      : self.OnCheckDataPrep,
+            config.klToolDupWin       : self.OnDupWin,
         }
         #------------------------------> 
         super().__init__(
@@ -383,8 +389,23 @@ class BaseWindow(wx.Frame):
             Returns
             -------
             bool
+            
+            Notes
+            -----
+            If the results window contains more than one plot then the method
+            must be overridden.
         """
-        return True	
+        try:
+            #------------------------------> 
+            self.wPlot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
+            #------------------------------> 
+            return True
+        except Exception as e:
+            #------------------------------> 
+            dtsWindow.NotificationDialog(
+                'errorF', msg=str(e), tException=e, parent=self)
+            #------------------------------> 
+            return False
     #---
     
     def OnPlotZoomResetOne(self) -> bool:
@@ -418,7 +439,23 @@ class BaseWindow(wx.Frame):
             Returns
             -------
             bool
+            
+            Notes
+            -----
+            If the results window contains more than one plot then the method
+            must be overridden.
         """
+        #------------------------------> Try reset
+        try:
+            self.wPlot.ZoomResetPlot()
+        except Exception as e:
+            #------------------------------> 
+            msg = 'It was not possible to reset the zoom level of the plot.'
+            dtsWindow.NotificationDialog(
+                'errorU', msg=msg, tException=e, parent=self)
+            #------------------------------> 
+            return False
+        #------------------------------> 
         return True
     #---
     
@@ -2088,7 +2125,8 @@ class CorrAPlot(BaseWindowPlot):
             raise e
         #------------------------------> 
         self.rDateC   = self.rDate[0]
-        self.rBar     = None
+        self.rBar     = False
+        self.rCol     = config.lmCorrAColName
         self.rNorm    = mpl.colors.Normalize(vmin=-1, vmax=1)
         self.rCmap    = dtsMethod.MatplotLibCmap(
             N   = config.color[self.cSection]['CMAP']['N'],
@@ -2097,16 +2135,22 @@ class CorrAPlot(BaseWindowPlot):
             c3  = config.color[self.cSection]['CMAP']['c3'],
             bad = config.color[self.cSection]['CMAP']['NA'],
         )
-        #------------------------------> 
+        #------------------------------>
         self.cParent  = cParent
         self.cTitle  = f"{cParent.cTitle} - {self.cSection} - {self.rDateC}"
         #------------------------------> 
         super().__init__(cParent, {'menudate' : self.rDate})
+        #------------------------------>
+        dKeyMethod = {
+            config.klToolGuiUpdate  : self.UpdateDisplayedData,
+            config.klToolCorrASelCol: self.OnSelectColumns,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
-
+        
         #region ----------------------------------------------------> Position
         self.SetColDetails(self.rDateC)
-        self.UpdateDisplayedData(self.rDateC, 'Name', False)
+        self.UpdateDisplayedData()
         self.WinPos()
         self.Show()
         #endregion -------------------------------------------------> Position
@@ -2125,20 +2169,20 @@ class CorrAPlot(BaseWindowPlot):
         return self.OnZoomResetOne()
     #---
     
-    def OnSelectColumns(self, showAllCol: bool) -> bool:
+    def OnSelectColumns(self, showAllCol: str) -> bool:
         """Plot only selected columns
         
             Parameters
             ----------
-            showAllCol: bool
-                Show all columns (True) or select columns to show (False).
+            showAllCol: str
+                Show all columns or select columns to show.
     
             Returns
             -------
             bool
         """
         #region ---------------------------------------------------> All
-        if showAllCol:
+        if showAllCol == config.lmCorrAAllCol:
             self.SetColDetails(self.rDateC)
             self.UpdateDisplayedData(self.rDateC, self.rCol, self.rBar)
             return True
@@ -2234,7 +2278,7 @@ class CorrAPlot(BaseWindowPlot):
     #---
     
     def UpdateDisplayedData(
-        self, tDate: str, col: Literal['Name', 'Number'], bar: bool
+        self, tDate: str='', col: str='', bar: Optional[bool] = None,
         ) -> bool:
         """ Plot data from a given date.
         
@@ -2242,7 +2286,7 @@ class CorrAPlot(BaseWindowPlot):
             -----------
             tDate : str
                 A date in the section e.g. '20210129-094504 - bla'
-            col: One of Name or Number
+            col: str
                 Set the information to display in the axis
             bar: bool
                 Show or not the colorbar
@@ -2252,14 +2296,14 @@ class CorrAPlot(BaseWindowPlot):
             bool
         """
         #region -------------------------------------------------> Update date
+        tDate = tDate if tDate else self.rDateC
         if tDate == self.rDateC:
             pass
         else:
             self.SetColDetails(tDate)
-        #------------------------------>     
         self.rDateC = tDate
-        self.rCol   = col
-        self.rBar   = bar
+        self.rCol = col if col else self.rCol
+        self.rBar = bar if bar is not None else self.rBar
         #endregion ----------------------------------------------> Update date
         
         #region --------------------------------------------------------> Axis
@@ -2280,7 +2324,7 @@ class CorrAPlot(BaseWindowPlot):
             lw          = 0.005,
         )
         
-        if bar:
+        if self.rBar:
             self.wPlot.figure.colorbar(
                 mpl.cm.ScalarMappable(norm=self.rNorm, cmap=self.rCmap),
                 orientation = 'vertical',
@@ -2338,7 +2382,7 @@ class CorrAPlot(BaseWindowPlot):
         #endregion -----------------------------------------------> Axis range
         
         #region ---------------------------------------------------> Set ticks
-        if self.rCol == 'Name':
+        if self.rCol == config.lmCorrAColName:
             for i in range(0, tLen, step):
                 xticksloc.append(i + 0.5)		
                 xlabel.append(self.rSelColName[i])
@@ -2383,7 +2427,7 @@ class CorrAPlot(BaseWindowPlot):
                 yf = int(y)
                 zf = '{:.2f}'.format(self.rDataPlot.iat[yf,xf])
                 
-                if self.rCol == 'Name':
+                if self.rCol == config.lmCorrAColName:
                     xs = self.rSelColName[xf]
                     ys = self.rSelColName[yf]
                 else:
