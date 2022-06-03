@@ -547,22 +547,35 @@ class BaseMenuPlot(BaseMenu):
         return True
     #---
 
-    def AddLastItems(self) -> bool:
+    def AddLastItems(self, onePlot:bool=True) -> bool:
         """Add the last items to the Tool menu of a window showing results.
+        
+            Parameters
+            ----------
+            onePlot: bool
+                Configure the keyboard shortcut depending on the number of plots
+                on the window.
 
             Returns
             -------
             bool
         """
+        #region ---------------------------------------------------> Variables
+        if onePlot:
+            shortCut = 'Ctrl'
+        else:
+            shortCut = 'Shift+Alt'
+        #endregion ------------------------------------------------> Variables
+
         #region ---------------------------------------------------> Add Items
         self.miCheckDP = self.Append(-1, 'Data Preparation\tCtrl+P')
         self.AppendSeparator()
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
         self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
-        self.miSaveI = self.Append(-1, 'Export Image\tCtrl+I')
+        self.miSaveI = self.Append(-1, f'Export Image\t{shortCut}+I')
         self.AppendSeparator()
-        self.miZoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+        self.miZoomR = self.Append(-1, f'Reset Zoom\t{shortCut}+Z')
         #endregion ------------------------------------------------> Add Items
 
         #region --------------------------------------------------> Add rIDMap
@@ -921,7 +934,7 @@ class MenuToolCorrA(BaseMenuPlot):
 #---
 
 
-class DataPrepToolMenu(wx.Menu, MenuMethods):
+class MenuToolDataPrep(BaseMenuPlot):
     """Tool menu for the Data Preparation Plot window.
         
         Parameters
@@ -929,14 +942,6 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
         menuData: dict
             Data needed to build the menu. See Notes for more details.
         
-        Attributes
-        ----------
-        rPlotDate : list of wx.MenuItems
-            Available dates in the analysis.
-        rKeyID : dict
-            Link wx.MenuItems.Id with keywords used by methods in the window
-            owning the wx.Menu
-            
         Notes
         -----
         menuData has the following structure:
@@ -944,50 +949,18 @@ class DataPrepToolMenu(wx.Menu, MenuMethods):
             'menudate' : [List of dates as str],
         }
     """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
-    def __init__(self, cMenuData: Optional[dict]=None) -> None:
+    def __init__(self, cMenuData: dict={}) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cMenuData = cMenuData
-        self.rPlotDate = []
-        
-        super().__init__()
+        super().__init__(cMenuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        #------------------------------> Add Dates
-        if cMenuData is not None:
-            self.AddDateItems(self.cMenuData['menudate'])
-        else:
-            pass
-        #------------------------------> Duplicate Window
-        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
-        self.AppendSeparator()
-        #------------------------------> Export Data
-        self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
-        self.miSaveI = self.Append(-1, 'Export Image\tAlt+Shift+I')
-        self.AppendSeparator()
-        #------------------------------> 
-        self.miZoomR = self.Append(-1, 'Reset Zoom\tAlt+Shift+Z')
+        self.AddLastItems(False)
+        #------------------------------> Remove Check Data Prep
+        self.DestroyItem(self.miCheckDP)
         #endregion -----------------------------------------------> Menu Items
-        
-        #region ---------------------------------------------------> rKeyID
-        self.rKeyID = {
-            self.miSaveI.GetId(): 'PlotImageOne',
-            self.miZoomR.GetId(): 'PlotZoomResetAllinOne',
-        }
-        #endregion ------------------------------------------------> rKeyID
-
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
-        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
-        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
-        #endregion -----------------------------------------------------> Bind    
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
@@ -3276,7 +3249,7 @@ class MenuBarTool(MenuBarMain):
     dTool = { # Key are window name and values the corresponding tool menu
         config.nwUMSAPControl : MenuToolFileControl,
         config.nwCorrAPlot    : MenuToolCorrA,
-        config.nwCheckDataPrep: DataPrepToolMenu,
+        config.nwCheckDataPrep: MenuToolDataPrep,
         config.nwProtProf     : ProtProfToolMenu,
         config.nwLimProt      : LimProtToolMenu,
         config.nwTarProt      : TarProtToolMenu,

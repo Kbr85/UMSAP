@@ -865,11 +865,7 @@ class BaseWindowNPlotLT(BaseWindow):
             self, 'cLCStyle', wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL)
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
-        #------------------------------> 
-        dKeyMethod = {
-            'PlotZoomResetAllinOne' : self.OnPlotZoomResetAllinOne,
-        }
-        self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        #------------------------------>
         self.rLCIdx = None
         #endregion --------------------------------------------> Initial Setup
 
@@ -1120,7 +1116,7 @@ class BaseWindowNPlotLT(BaseWindow):
         return True
     #---
     
-    def OnPlotZoomResetAllinOne(self) -> bool:
+    def OnPlotZoomResetAll(self) -> bool:
         """Reset all the plots in the window.
         
             Returns
@@ -9723,21 +9719,26 @@ class CheckDataPrep(BaseWindowNPlotLT):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, cParent: wx.Window, cTitle: Optional[str]=None, 
-        tSection: Optional[str]=None, tDate: Optional[str]=None,
+        self, cParent: wx.Window, cTitle: str='', tSection: str='', 
+        tDate: str='',
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cParent  = cParent
         self.rObj     = self.cParent.rObj
         self.cTitle   = cTitle
-        self.tSection = tSection if tSection is not None else self.cSection
+        self.tSection = tSection if tSection else self.cSection
         self.tDate    = tDate
         self.SetWindow(tSection, tDate) # Includes testing for something to plot
         #--------------> menuData here because it is not needed to save it
-        cMenuData = None if self.rDate is None else {'menudate': self.rDate}
+        cMenuData = {'menudate': []} if self.rDate is None else {'menudate': self.rDate}
         #------------------------------> 
         super().__init__(cParent=cParent, cMenuData=cMenuData)
+        #------------------------------> 
+        dKeyMethod = {
+            config.klToolGuiUpdate  : self.UpdateDisplayedData,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -9747,9 +9748,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion --------------------------------------------------> Widgets
 
         #region ---------------------------------------------> Window position
-        date = None if self.rDate is None else self.rDate[0]
-        self.UpdateDisplayedData(date)
-        #------------------------------> 
+        self.UpdateDisplayedData()
+        #------------------------------>
         self.WinPos()
         self.Show()
         #endregion ------------------------------------------> Window position
@@ -9900,7 +9900,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         return True	
     #---
     
-    def OnPlotSaveImageOne(self) -> bool:
+    def OnPlotSaveAllImage(self) -> bool:
         """ Export all plots to a pdf image"""
         #region --------------------------------------------------> Dlg window
         dlg = dtsWindow.DirSelectDialog(parent=self)
@@ -9940,7 +9940,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
     
     #region --------------------------------------------------> Manage Methods
     def SetWindow(
-        self, tSection: Optional[str]=None, tDate: Optional[str]=None,
+        self, tSection: str='', tDate: str='',
         ) -> bool:
         """Configure the window. 
         
@@ -9956,7 +9956,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
             Preparation section of a UMSAP File window
         """
         #region -----------------------------------------------> Set Variables
-        if self.cTitle is None:
+        if self.cTitle == '':
             self.rFromUMSAPFile = True 
             self.rData  = self.rObj.dConfigure[self.cSection]()
             self.rDate  = [k for k in self.rData.keys() if k != 'Error']
@@ -9972,7 +9972,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         else:
             self.rFromUMSAPFile = False
             self.rData = self.rObj.dConfigure[self.cSection](tSection, tDate)
-            self.rDate = None
+            self.rDate = []
             self.rDateC = self.cParent.rDateC
         #endregion --------------------------------------------> Set Variables
 
@@ -10279,7 +10279,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         return True
     #---
     
-    def UpdateDisplayedData(self, date: Optional[str]=None) -> bool:
+    def UpdateDisplayedData(self, tDate: str='') -> bool:
         """Update window when a new date is selected.
     
             Parameters
@@ -10296,9 +10296,9 @@ class CheckDataPrep(BaseWindowNPlotLT):
             
         """
         #region ---------------------------------------------------> Variables
-        if date is not None:
-            self.rDpDF = self.rData[date]['DP']
-            self.rDateC = date
+        if tDate:
+            self.rDpDF = self.rData[tDate]['DP']
+            self.rDateC = tDate
         else:
             self.rDpDF = self.rData[self.rDateC]['DP']
         #endregion ------------------------------------------------> Variables
