@@ -597,17 +597,16 @@ class BaseMenuPlot(BaseMenu):
         return True
     #---
     #endregion ------------------------------------------------> Class Methods
+#---
 
-#---	
 
-
-class PlotSubMenu(wx.Menu, MenuMethods):
+class BaseMenuPlotSubMenu(BaseMenu):
     """Sub menu items for a plot region
     
         Parameters
         ----------
         tKey: str
-            For keyboard binding. Shift, Ctrl or Alt.
+            For keyboard binding. Shift or Alt.
     """
     #region -----------------------------------------------------> Class setup
     rKeys = {
@@ -629,15 +628,15 @@ class PlotSubMenu(wx.Menu, MenuMethods):
         #endregion -----------------------------------------------> Menu Items
         
         #region ---------------------------------------------------> rKeyID
-        self.rKeyID = {
-            self.miSaveI.GetId(): f'{self.rKeys[tKey]}Img',
-            self.miZoomR.GetId(): f'{self.rKeys[tKey]}Zoom',
+        self.rIDMap = {
+            self.miSaveI.GetId(): f'{self.rKeys[tKey]}-Img',
+            self.miZoomR.GetId(): f'{self.rKeys[tKey]}-Zoom',
         }
         #endregion ------------------------------------------------> rKeyID
         
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,     source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnSavePlotImage, source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSaveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1222,19 +1221,14 @@ class LockPlotScale(wx.Menu):
 #---
 
 
-class ClearSelLimProt(wx.Menu):
+class MenuClearSelLimProt(BaseMenu):
     """Clear the selection in a LimProtRes Window
-    
+
         Attributes
         ----------
-        rKeyID : dict
-            To map menu items to the Clear type. Keys are MenuItems.GetId() and 
-            values are str. 
+        rIDMap : dict
+            Map wx.MenuItem IDs to function IDs in the window.
     """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -1250,9 +1244,9 @@ class ClearSelLimProt(wx.Menu):
         self.AppendSeparator()
         self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
         #endregion -----------------------------------------------> Menu Items
-        
+
         #region ---------------------------------------------------> 
-        self.rKeyID = {
+        self.rIDMap = {
             self.miNoPept.GetId(): 'Peptide',
             self.miNoFrag.GetId(): 'Fragment',
             self.miNoGel.GetId() : 'Gel Spot',
@@ -1262,73 +1256,12 @@ class ClearSelLimProt(wx.Menu):
         #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoPept)
-        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoFrag)
-        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoGel)
-        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoBL)
-        self.Bind(wx.EVT_MENU, self.OnClearSelection, source=self.miNoSel)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoPept)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoFrag)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoGel)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoBL)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoSel)
         #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
-
-    #------------------------------> Class method
-    #region ---------------------------------------------------> Event methods
-    def OnClearSelection(self, event: wx.CommandEvent) -> bool:
-        """Clear the selection in a LimProt Res Window
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Variables
-        win = self.GetWindow()
-        tKey = self.rKeyID[event.GetId()]
-        #endregion ------------------------------------------------> Variables
-        
-        #region ---------------------------------------------------> Run
-        win.dKeyMethod[tKey]()
-        #endregion ------------------------------------------------> Run
-
-        return True
-    #---
-    #endregion ------------------------------------------------> Event methods
-#---
-
-
-class MainPlotProt(PlotSubMenu):
-    """Menu for the Main plot in a Proteolysis Window"""
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__('Shift')
-        #endregion --------------------------------------------> Initial Setup
-    #---
-    #endregion -----------------------------------------------> Instance setup
-#---
-
-
-class BottomPlotProt(PlotSubMenu):
-    """Menu for the Bottom plot in a Proteolysis Window"""
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__('Alt')
-        #endregion --------------------------------------------> Initial Setup
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
@@ -2339,6 +2272,79 @@ class VolcanoPlotColorScheme(wx.Menu):
 
 
 #region -----------------------------------------------------------> Mix menus
+class MixMenuToolLimProt(BaseMenuPlot):
+    """Tool menu for the Limited Proteolysis window
+
+        Parameters
+        ----------
+        cMenuData: dict
+            Data needed to build the menu. See Notes below.
+
+        Notes
+        -----
+        menuData has the following structure:
+            {
+                'menudate' : [List of dates as str],
+            }    
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, cMenuData: dict) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cMenuData = cMenuData
+        self.rPlotDate = []
+        
+        super().__init__(cMenuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.miBandLane = self.Append(
+            -1, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
+        #------------------------------> 
+        self.miShowAll = self.Append(-1, 'Show All\tCtrl+A')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.mFragmentMenu = BaseMenuPlotSubMenu('Shift')
+        self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.mGelMenu = BaseMenuPlotSubMenu('Alt')
+        self.AppendSubMenu(self.mGelMenu, 'Gel')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.mClearMenu = MenuClearSelLimProt()
+        self.AppendSubMenu(self.mClearMenu, 'Clear Selection')
+        self.AppendSeparator()
+        #------------------------------> Last Items
+        self.AddLastItems(False)
+        #------------------------------> Add Export Sequence
+        pos = self.FindChildItem(self.miSaveD.GetId())[1]
+        self.miSaveSeq = self.Insert(pos+2, -1, "Export Sequences")
+        #endregion -----------------------------------------------> Menu Items
+        
+        #region ---------------------------------------------------> rKeyID
+        rIDMap = {
+            self.miBandLane.GetId(): config.klToolLimProtBandLane,
+            self.miShowAll.GetId() : config.klToolLimProtShowAll,
+            self.miSaveSeq.GetId() : config.klToolLimProtExpSeq,
+        }
+        self.rIDMap = self.rIDMap | rIDMap
+        #endregion ------------------------------------------------> rKeyID
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miBandLane)
+        self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miShowAll)
+        self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miSaveSeq)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
+
+
+
 class VolcanoPlot(wx.Menu, MenuMethods):
     """Menu for a Volcano Plot.
     
@@ -2896,159 +2902,6 @@ class ProtProfToolMenu(wx.Menu, MenuMethods):
 #---
 
 
-class LimProtToolMenu(wx.Menu, MenuMethods):
-    """Tool menu for the Limited Proteolysis window
-    
-        Parameters
-        ----------
-        cMenuData: dict
-            Data needed to build the menu. See Notes below.
-            
-        Attributes
-        ----------
-        rPlotdate : list of wx.MenuItems
-            Available dates in the analysis.
-        
-        Notes
-        -----
-        menuData has the following structure:
-            {
-                'menudate' : [List of dates as str],
-            }    
-    """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, cMenuData: dict) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        self.cMenuData = cMenuData
-        self.rPlotDate = []
-        
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        #------------------------------> Add Dates
-        self.AddDateItems(self.cMenuData['menudate'])
-        #------------------------------> 
-        self.miBandLane = self.Append(
-            -1, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
-        self.AppendSeparator()    
-        #------------------------------> 
-        self.miShowAll = self.Append(-1, 'Show All\tCtrl+A')
-        self.AppendSeparator()
-        #------------------------------> 
-        self.mFragmentMenu = MainPlotProt()
-        self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
-        self.AppendSeparator()
-        #------------------------------> 
-        self.mGelMenu = BottomPlotProt()
-        self.AppendSubMenu(self.mGelMenu, 'Gel')
-        self.AppendSeparator()
-        #------------------------------> 
-        self.mClearMenu = ClearSelLimProt()
-        self.AppendSubMenu(self.mClearMenu, 'Clear Selection')
-        self.AppendSeparator()
-        #------------------------------> Duplicate Window
-        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
-        self.AppendSeparator()
-        #------------------------------> 
-        self.miDataPrep = self.Append(-1, 'Data Preparation\tCtrl+P')
-        self.AppendSeparator()
-        #------------------------------> Export Data
-        self.miSaveD  = self.Append(-1, 'Export Data\tCtrl+E')
-        self.miSaveI  = self.Append(-1, 'Export Images\tShift+Alt+I')
-        self.miSaveS  = self.Append(-1, 'Export Sequences\tCtrl+S')
-        self.AppendSeparator()
-        #------------------------------>
-        self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Alt+Z')
-        #endregion -----------------------------------------------> Menu Items
-        
-        #region ---------------------------------------------------> rKeyID
-        self.rKeyID = {
-            self.miSaveI.GetId(): 'AllImg',
-            self.miZoomR.GetId(): 'AllZoom',
-        }
-        #endregion ------------------------------------------------> rKeyID
-
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnLaneBand,       source=self.miBandLane)
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
-        self.Bind(wx.EVT_MENU, self.OnCheckDataPrep,  source=self.miDataPrep)
-        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
-        self.Bind(wx.EVT_MENU, self.OnShowAll,        source=self.miShowAll)
-        self.Bind(wx.EVT_MENU, self.OnExportSeq,      source=self.miSaveS)
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
-
-    #------------------------------> Class methods
-    #region ---------------------------------------------------> Event methods
-    def OnLaneBand(self, event: wx.CommandEvent) -> bool:
-        """Change between Lane and Band selection mode.
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnLaneBand(self.miBandLane.IsChecked())
-        
-        return True
-    #---
-        
-    def OnShowAll(self, event: wx.CommandEvent) -> bool:
-        """Show all fragments
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnShowAll()
-        
-        return True
-    #---
-    
-    def OnExportSeq(self, event: wx.CommandEvent) -> bool:
-        """Export Sequences to pdf
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.ExportSeq()
-        
-        return True
-    #---
-    #endregion ------------------------------------------------> Event methods
-#---
-
-
 class TarProtToolMenu(wx.Menu, MenuMethods):
     """Tool menu for the Targeted Proteolysis window
     
@@ -3251,7 +3104,7 @@ class MenuBarTool(MenuBarMain):
         config.nwCorrAPlot    : MenuToolCorrA,
         config.nwCheckDataPrep: MenuToolDataPrep,
         config.nwProtProf     : ProtProfToolMenu,
-        config.nwLimProt      : LimProtToolMenu,
+        config.nwLimProt      : MixMenuToolLimProt,
         config.nwTarProt      : TarProtToolMenu,
         config.nwAAPlot       : AAToolMenu,
         config.nwHistPlot     : HistToolMenu,

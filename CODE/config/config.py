@@ -229,6 +229,10 @@ klToolExpImgAll    = 'Export Image'
 klToolCheckDP      = 'Check DP'
 #------------------------------> Tool Menu for CorrA
 klToolCorrASelCol  = 'Select Column'
+#------------------------------> Tool Menu for LimProt
+klToolLimProtBandLane = 'Band/Lane Sel'
+klToolLimProtShowAll  = 'Show All'
+klToolLimProtExpSeq   = 'Export Sequences'
 #endregion ---------------------------------> Keywords for Menu - Method Links
 
 

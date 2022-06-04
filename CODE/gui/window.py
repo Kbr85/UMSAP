@@ -5379,6 +5379,17 @@ class LimProtPlot(BaseWindowProteolysis):
             'Gel Spot' : self.OnClearGel,
             'Band/Lane': self.OnClearBL,
             'All'      : self.OnClearAll,
+            #------------------------------> 
+            config.klToolGuiUpdate       : self.UpdateDisplayedData,
+            config.klToolLimProtBandLane : self.OnLaneBand,
+            config.klToolLimProtShowAll  : self.OnShowAll,
+            #------------------------------> 
+            'Main-Img'   : self.OnImageMain,
+            'Main-Zoom'  : self.OnZoomResetMain,
+            'Bottom-Img' : self.OnImageBottom,
+            'Bottom-Zoom': self.OnZoomResetBottom,
+            #------------------------------> 
+            config.klToolLimProtExpSeq : self.ExportSeq,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -5457,7 +5468,7 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def UpdateDisplayedData(self, date) -> bool:
+    def UpdateDisplayedData(self, tDate) -> bool:
         """Update the GUI and attributes when a new date is selected.
     
             Parameters
@@ -5470,7 +5481,7 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> Variables
-        self.rDateC       = date
+        self.rDateC       = tDate
         self.rDf          = self.rData[self.rDateC]['DF'].copy()
         self.rBands       = self.rData[self.rDateC]['PI']['Bands']
         self.rLanes       = self.rData[self.rDateC]['PI']['Lanes']
@@ -6876,7 +6887,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
-        if (rID := self.wLC.wLCS.lc.GetFirstSelected()):
+        if (rID := self.wLC.wLCS.lc.GetFirstSelected()) > -1:
             self.wLC.wLCS.lc.Select(rID, on=0)
         else:
             pass
