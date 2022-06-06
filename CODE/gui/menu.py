@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
+from resource import RLIMIT_DATA
 from typing import Optional, Union
 
 import wx
@@ -1821,56 +1822,50 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
 #---
 
 
-class CEvolToolMenu(wx.Menu, MenuMethods):
+class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
     """ """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData):
+    def __init__(self, *args):
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miNat = self.Append(-1, 'Native Sequence', kind=wx.ITEM_RADIO)
-        self.miRec = self.Append(-1, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
-        self.miRec.Check()
+        self.miNat = self.Append(-1, 'Native Sequence', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
         self.miMon = self.Append(-1, 'Monotonic', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
-        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.miClear = self.Append(-1, 'Clear Selection\tCtrl+K')
         self.AppendSeparator()
-        self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
-        self.miSaveI = self.Append(-1, 'Export Image\tCtrl+I')
-        self.AppendSeparator()
-        self.miZoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+        self.AddLastItems()
         #endregion -----------------------------------------------> Menu Items
         
         #region ---------------------------------------------------> 
-        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
-            self.miZoomR.GetId()    : 'ZoomR',
-            self.miSaveI.GetId()    : 'SaveI',
+        rIDMap = {
+            self.miNat.GetId() : config.klToolGuiUpdate,
+            self.miMon.GetId() : config.klToolGuiUpdate,
         }
+        self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------>
+        rKeyMap = {
+            self.miNat.GetId() : 'nat',
+            self.miMon.GetId() : 'mon',
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miRec)
-        self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miNat)
-        self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miMon)
-        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
-        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miNat)
+        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miMon)
+        self.Bind(wx.EVT_MENU, self.OnClear,         source=self.miClear)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
-
-    #region ---------------------------------------------------> Class methods
-    def OnLabel(self, event: wx.CommandEvent) -> bool:
-        """Change between Experiments.
+    
+    #region ---------------------------------------------------> Class Methods
+    def OnClear(self, event:wx.CommandEvent) -> bool:
+        """
 
             Parameters
             ----------
@@ -1880,21 +1875,22 @@ class CEvolToolMenu(wx.Menu, MenuMethods):
 
             Returns
             -------
-            bool
+
+
+            Raise
+            -----
+
         """
-        #region ---------------------------------------------------> 
-        rec = self.miRec.IsChecked()
-        mon = self.miMon.IsChecked()
-        #endregion ------------------------------------------------> 
-
-        #region ---------------------------------------------------> 
+        self.miNat.Check(check=False)
+        self.miMon.Check(check=False)
+        
         win = self.GetWindow()
-        win.UpdatePlot(rec, mon)
-        #endregion ------------------------------------------------> 
-
+        win.UpdatePlot(nat=False, mon=False)
+        
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Class Methods
+
 #---
 
 
@@ -2799,7 +2795,7 @@ class MenuBarTool(MenuBarMain):
         config.nwAAPlot       : AAToolMenu,
         config.nwHistPlot     : MenuToolHist,
         config.nwCpRPlot      : MenuToolCpR,
-        config.nwCEvolPlot    : CEvolToolMenu,
+        config.nwCEvolPlot    : MenuToolCleavageEvol,
     }
     #endregion --------------------------------------------------> Class Setup
     

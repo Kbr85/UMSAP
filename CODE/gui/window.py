@@ -9068,8 +9068,8 @@ class CEvolPlot(BaseWindowNPlotLT):
     cSWindow = (670,560)
     #------------------------------> 
     cRec = {
-        True : 'Rec',
-        False: 'Nat',
+        True : 'Nat',
+        False: 'Rec',
         'Rec': 'Recombinant Sequence',
         'Nat': 'Native Sequence',
     }
@@ -9089,12 +9089,16 @@ class CEvolPlot(BaseWindowNPlotLT):
             cParent.cSection, cParent.rDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         self.rIdx = {}
+        self.rRec = 'Rec'
+        self.rMon = False
         #------------------------------> 
         super().__init__(cParent, {})
         #------------------------------> 
         dKeyMethod = {
             'ZoomR' : self.OnZoomReset,
             'SaveI' : self.OnSaveImage,
+            #------------------------------> 
+            config.klToolGuiUpdate: self.UpdatePlot,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -9220,7 +9224,8 @@ class CEvolPlot(BaseWindowNPlotLT):
     #endregion ------------------------------------------------> Event Methods
     
     #region --------------------------------------------------> Manage Methods
-    def UpdatePlot(self, rec: bool, mon: bool) -> bool:
+    def UpdatePlot(
+        self, nat: Optional[bool]=None, mon: Optional[bool]=None) -> bool:
         """
     
             Parameters
@@ -9235,18 +9240,26 @@ class CEvolPlot(BaseWindowNPlotLT):
             -----
             
         """
-        #region ---------------------------------------------------> 
-        self.rRec = self.cRec[rec]
-        #------------------------------> 
+        #region --------------------------------------------------->
+        #------------------------------>
+        if nat is not None:
+            self.rRec = self.cRec[nat]
+        else:
+            pass
+        #------------------------------>
+        self.rMon = mon if mon is not None else self.rMon
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
         idx = pd.IndexSlice
-        if rec:
+        if self.rRec:
             self.rDF = self.rData.loc[:,idx[self.rRec,:]]
         else:
             self.rDF = self.rData.loc[:,idx[self.rRec,:]]
         #------------------------------> 
         self.rDF = self.rDF[self.rDF.any(axis=1)]
         #------------------------------> 
-        if mon:
+        if self.rMon:
             self.rDF = self.rDF[self.rDF.apply(
                 lambda x: x.is_monotonic_increasing or x.is_monotonic_decreasing,
                 axis=1
