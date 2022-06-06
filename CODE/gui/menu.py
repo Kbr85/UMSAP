@@ -477,7 +477,7 @@ class MenuMethods():
 #---
 
 
-class BaseMenuPlot(BaseMenu):
+class BaseMenuMainResult(BaseMenu):
     """Menu for a window plotting results, like Correlation Analysis
 
         Parameters
@@ -684,7 +684,7 @@ class BaseMenuPlot(BaseMenu):
 #---
 
 
-class BaseMenuPlotSubMenu(BaseMenu):
+class BaseMenuMainResultSubMenu(BaseMenu):
     """Sub menu items for a plot region
     
         Parameters
@@ -724,6 +724,75 @@ class BaseMenuPlotSubMenu(BaseMenu):
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
+#---
+
+
+class BaseMenuFurtherAnalysis(BaseMenu):
+    """ """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        
+        #endregion -----------------------------------------------> Menu Items
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def AddLastItems(self, onePlot:bool=True) -> bool:
+        """Add the last items to the Tool menu of a window showing results.
+        
+            Parameters
+            ----------
+            onePlot: bool
+                Configure the keyboard shortcut depending on the number of plots
+                on the window.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        if onePlot:
+            shortCut = 'Ctrl'
+        else:
+            shortCut = 'Shift+Alt'
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Add Items
+        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
+        self.miSaveI = self.Append(-1, f'Export Image\t{shortCut}+I')
+        self.AppendSeparator()
+        self.miZoomR = self.Append(-1, f'Reset Zoom\t{shortCut}+Z')
+        #endregion ------------------------------------------------> Add Items
+
+        #region --------------------------------------------------> Add rIDMap
+        self.rIDMap[self.miDupWin.GetId()]  = config.klToolDupWin
+        self.rIDMap[self.miZoomR.GetId()]   = config.klToolZoomResetAll
+        self.rIDMap[self.miSaveD.GetId()]   = config.klToolExpData
+        self.rIDMap[self.miSaveI.GetId()]   = config.klToolExpImgAll
+        #endregion -----------------------------------------------> Add rIDMap
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miDupWin)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveD)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveI)
+        #endregion -----------------------------------------------------> Bind
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 #endregion -----------------------------------------------------> Base Classes
 
@@ -947,7 +1016,7 @@ class MenuToolFileControl(BaseMenu):
 #---
 
 
-class MenuToolCorrA(BaseMenuPlot):
+class MenuToolCorrA(BaseMenuMainResult):
     """Creates the Tools menu for a Correlation Analysis Plot window 
 
         Parameters
@@ -1017,7 +1086,7 @@ class MenuToolCorrA(BaseMenuPlot):
 #---
 
 
-class MenuToolDataPrep(BaseMenuPlot):
+class MenuToolDataPrep(BaseMenuMainResult):
     """Tool menu for the Data Preparation Plot window.
         
         Parameters
@@ -1648,7 +1717,7 @@ class HistToolMenu(wx.Menu, MenuMethods):
 #---
 
 
-class CpRToolMenu(wx.Menu, MenuMethods):
+class MenuToolCpR(BaseMenuFurtherAnalysis):
     """ """
     #region -----------------------------------------------------> Class setup
     
@@ -1662,15 +1731,14 @@ class CpRToolMenu(wx.Menu, MenuMethods):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
+        #------------------------------>
         self.rItems = []
-        self.rItems.append(
-            self.Append(-1, menuData['Label'][0], kind=wx.ITEM_CHECK))
-        self.rItems[0].Check()
-        self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[0])
-        for k in menuData['Label'][1:]:
+        for k in menuData['Label']:
             self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
             self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
+        self.rItems[0].Check()
         self.AppendSeparator()
+        #------------------------------>
         if menuData['Nat']:
             self.miNat = self.Append(-1, 'Native Sequence', kind=wx.ITEM_RADIO)
             self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miNat)
@@ -1679,6 +1747,7 @@ class CpRToolMenu(wx.Menu, MenuMethods):
         self.miRec = self.Append(-1, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
         self.miRec.Check()
         self.AppendSeparator()
+        #------------------------------>
         self.miSel = self.Append(
             -1, 'Single Selection\tCtrl+S', kind=wx.ITEM_CHECK)
         self.miSel.Check(True)
@@ -1686,65 +1755,21 @@ class CpRToolMenu(wx.Menu, MenuMethods):
             -1, 'Show Native Protein Location', kind=wx.ITEM_CHECK)
         self.miProtLoc.Check(True)
         self.AppendSeparator()
+        #------------------------------>
         self.miClear = self.Append(-1, 'Clear Selection\tCtrl+K')
         self.AppendSeparator()
-        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
-        self.AppendSeparator()
-        self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
-        self.miSaveI = self.Append(-1, 'Export Image\tCtrl+I')
-        self.AppendSeparator()
-        self.miZoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+        self.AddLastItems()
         #endregion -----------------------------------------------> Menu Items
-        
-        #region ---------------------------------------------------> 
-        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
-            self.miZoomR.GetId()    : 'PlotZoomResetOne',
-            self.miSaveI.GetId()    : 'PlotImageOne',
-        }
-        #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnLabel,          source=self.miRec)
-        self.Bind(wx.EVT_MENU, self.OnShow,           source=self.miProtLoc)
-        self.Bind(wx.EVT_MENU, self.OnClear,          source=self.miClear)
-        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
-        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miRec)
+        self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miProtLoc)
+        self.Bind(wx.EVT_MENU, self.OnClear, source=self.miClear)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnShow(self, event: wx.CommandEvent) -> bool:
-        """Change between Experiments.
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> 
-        rec = self.miRec.IsChecked()
-        #------------------------------> Labels
-        label = [x.GetItemLabel() for x in self.rItems if x.IsChecked()]
-        #------------------------------> Show
-        show = self.miProtLoc.IsChecked()
-        #endregion ------------------------------------------------> 
-
-        #region ---------------------------------------------------> 
-        win = self.GetWindow()
-        win.UpdatePlot(rec, label, show)
-        #endregion ------------------------------------------------> 
-
-        return True
-    #---
-    
     def OnLabel(self, event: wx.CommandEvent) -> bool:
         """Change between Experiments.
 
@@ -1759,10 +1784,13 @@ class CpRToolMenu(wx.Menu, MenuMethods):
             bool
         """
         #region ---------------------------------------------------> 
-        rec = self.miRec.IsChecked()
+        rec  = self.miRec.IsChecked()
         show = self.miProtLoc.IsChecked()
-        #------------------------------> Selection mode
         sel = self.miSel.IsChecked()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        #------------------------------> Selection mode
         if sel:
             [x.Check(False) for x in self.rItems]
             self.Check(event.GetId(), True)
@@ -1798,7 +1826,7 @@ class CpRToolMenu(wx.Menu, MenuMethods):
             -------
             bool
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         self.rItems[0].Check()
         [x.Check(False) for x in self.rItems[1:]]
         self.miRec.Check()
@@ -1808,12 +1836,12 @@ class CpRToolMenu(wx.Menu, MenuMethods):
             pass
         self.miSel.Check(True)
         self.miProtLoc.Check(True)
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         win = self.GetWindow()
         win.UpdatePlot(True, [self.rItems[0].GetItemLabel()], True)
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
         
         return True
     #---
@@ -2086,7 +2114,7 @@ class VolcanoPlotColorScheme(wx.Menu):
 
 
 #region -----------------------------------------------------------> Mix menus
-class MixMenuToolLimProt(BaseMenuPlot):
+class MixMenuToolLimProt(BaseMenuMainResult):
     """Tool menu for the Limited Proteolysis window
 
         Parameters
@@ -2116,11 +2144,11 @@ class MixMenuToolLimProt(BaseMenuPlot):
         self.miShowAll = self.Append(-1, 'Show All\tCtrl+A')
         self.AppendSeparator()
         #------------------------------> 
-        self.mFragmentMenu = BaseMenuPlotSubMenu('Shift')
+        self.mFragmentMenu = BaseMenuMainResultSubMenu('Shift')
         self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
         self.AppendSeparator()
         #------------------------------> 
-        self.mGelMenu = BaseMenuPlotSubMenu('Alt')
+        self.mGelMenu = BaseMenuMainResultSubMenu('Alt')
         self.AppendSubMenu(self.mGelMenu, 'Gel')
         self.AppendSeparator()
         #------------------------------> 
@@ -2153,7 +2181,7 @@ class MixMenuToolLimProt(BaseMenuPlot):
 #---
 
 
-class MixMenuToolTarProt(BaseMenuPlot):
+class MixMenuToolTarProt(BaseMenuMainResult):
     """Tool menu for the Targeted Proteolysis window
 
         Parameters
@@ -2176,11 +2204,11 @@ class MixMenuToolTarProt(BaseMenuPlot):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.mFragmentMenu = BaseMenuPlotSubMenu('Shift')
+        self.mFragmentMenu = BaseMenuMainResultSubMenu('Shift')
         self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
         self.AppendSeparator()
         #------------------------------> 
-        self.mGelMenu = BaseMenuPlotSubMenu('Alt')
+        self.mGelMenu = BaseMenuMainResultSubMenu('Alt')
         self.AppendSubMenu(self.mGelMenu, 'Intensities')
         self.AppendSeparator()
         #------------------------------> 
@@ -2798,7 +2826,7 @@ class MenuBarTool(MenuBarMain):
         config.nwTarProt      : MixMenuToolTarProt,
         config.nwAAPlot       : AAToolMenu,
         config.nwHistPlot     : HistToolMenu,
-        config.nwCpRPlot      : CpRToolMenu,
+        config.nwCpRPlot      : MenuToolCpR,
         config.nwCEvolPlot    : CEvolToolMenu,
     }
     #endregion --------------------------------------------------> Class Setup
