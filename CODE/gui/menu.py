@@ -735,14 +735,6 @@ class BaseMenuFurtherAnalysis(BaseMenu):
         #region -----------------------------------------------> Initial Setup
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        
-        #endregion -----------------------------------------------> Menu Items
-
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -1642,14 +1634,10 @@ class AAToolMenu(wx.Menu, MenuMethods):
 #---
 
 
-class HistToolMenu(wx.Menu, MenuMethods):
+class MenuToolHist(BaseMenuFurtherAnalysis):
     """ """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
-    def __init__(self, *args):
+    def __init__(self, *args) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
@@ -1663,30 +1651,14 @@ class HistToolMenu(wx.Menu, MenuMethods):
         self.miAll = self.Append(-1, 'All Cleavages', kind=wx.ITEM_RADIO)
         self.miUnique = self.Append(-1, 'Unique Cleavages', kind=wx.ITEM_RADIO)
         self.AppendSeparator()
-        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
-        self.AppendSeparator()
-        self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
-        self.miSaveI = self.Append(-1, 'Export Image\tCtrl+I')
-        self.AppendSeparator()
-        self.miZoomR = self.Append(-1, 'Reset Zoom\tCtrl+Z')
+        self.AddLastItems()
         #endregion -----------------------------------------------> Menu Items
-        
-        #region ---------------------------------------------------> 
-        self.rKeyID = { # Associate IDs with Tab names. Avoid manual IDs
-            self.miZoomR.GetId()    : 'PlotZoomResetOne',
-            self.miSaveI.GetId()    : 'PlotImageOne',
-        }
-        #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnChange,         source=self.miNat)
         self.Bind(wx.EVT_MENU, self.OnChange,         source=self.miRec)
         self.Bind(wx.EVT_MENU, self.OnChange,         source=self.miAll)
         self.Bind(wx.EVT_MENU, self.OnChange,         source=self.miUnique)
-        self.Bind(wx.EVT_MENU, self.OnDupWin,         source=self.miDupWin)
-        self.Bind(wx.EVT_MENU, self.OnZoomReset,      source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnExportPlotData, source=self.miSaveD)
-        self.Bind(wx.EVT_MENU, self.OnSavePlotImage,  source=self.miSaveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -2825,7 +2797,7 @@ class MenuBarTool(MenuBarMain):
         config.nwLimProt      : MixMenuToolLimProt,
         config.nwTarProt      : MixMenuToolTarProt,
         config.nwAAPlot       : AAToolMenu,
-        config.nwHistPlot     : HistToolMenu,
+        config.nwHistPlot     : MenuToolHist,
         config.nwCpRPlot      : MenuToolCpR,
         config.nwCEvolPlot    : CEvolToolMenu,
     }
