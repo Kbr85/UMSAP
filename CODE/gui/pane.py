@@ -6680,17 +6680,17 @@ class TarProt(BaseConfModPanel2):
     
     def RunEnd(self) -> bool:
         """"""
-        #------------------------------> 
+        #------------------------------>
         if self.rDFile:
             self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
         else:
             pass
-        #------------------------------> 
+        #------------------------------>
         self.dfAA    = pd.DataFrame()
         self.dfHist  = pd.DataFrame()
         self.dfCpR   = pd.DataFrame()
         self.dfCEvol = pd.DataFrame()
-        #------------------------------>     
+        #------------------------------>
         return super().RunEnd()
     #---
     

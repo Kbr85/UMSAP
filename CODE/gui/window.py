@@ -647,7 +647,8 @@ class BaseWindow(wx.Frame):
         self.rData = self.rObj.dConfigure[self.cSection]()
         self.rDate = [x for x in self.rData.keys() if x != 'Error']
         menuBar    = self.GetMenuBar()
-        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(self.rDate)
+        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(
+            {'menudate': self.rDate})
         
         return True
     #---
@@ -5389,7 +5390,7 @@ class LimProtPlot(BaseWindowProteolysis):
             'Bottom-Img' : self.OnImageBottom,
             'Bottom-Zoom': self.OnZoomResetBottom,
             #------------------------------> 
-            config.klToolLimProtExpSeq : self.ExportSeq,
+            config.klToolExpSeq : self.ExportSeq,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -7245,6 +7246,23 @@ class TarProtPlot(BaseWindowProteolysis):
             'Peptide'  : self.OnClearPept,
             'Fragment' : self.OnClearFrag,
             'All'      : self.OnClearAll,
+            #------------------------------> 
+            config.klToolGuiUpdate       : self.UpdateDisplayedData,
+            #------------------------------> 
+            'Main-Img'   : self.OnImageMain,
+            'Main-Zoom'  : self.OnZoomResetMain,
+            'Bottom-Img' : self.OnImageBottom,
+            'Bottom-Zoom': self.OnZoomResetBottom,
+            #------------------------------> 
+            config.klToolExpSeq : self.OnSeqExport,
+            #------------------------------> 
+            'AA-Item'                : self.OnAASelect,
+            'AA-New'                 : self.OnAANew,
+            'Hist-Item'              : self.OnHistSelect,
+            'Hist-New'               : self.OnHistNew,
+            config.klFACleavageEvol  : self.OnCEvol,
+            config.klFACleavagePerRes: self.OnCpR,
+            config.klFAPDBMap        : self.OnPDBMap,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -7361,11 +7379,11 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rDate, menuData = self.SetDateMenuDate()
         menuBar = self.GetMenuBar()
         menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
-        
+
         return True
     #---
-    
-    def UpdateDisplayedData(self, date) -> bool:
+
+    def UpdateDisplayedData(self, tDate) -> bool:
         """Update the GUI and attributes when a new date is selected.
     
             Parameters
@@ -7378,7 +7396,7 @@ class TarProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> Variables
-        self.rDateC       = date
+        self.rDateC       = tDate
         self.rDf          = self.rData[self.rDateC]['DF'].copy()
         self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
         self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
@@ -8053,7 +8071,8 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rData = self.rObj.dConfigure[self.cSection]()
         #--------------> Menu
         _, menuData = self.SetDateMenuDate()
-        self.mBar.mTool.mFurtherA.UpdateFAList(self.rDateC, menuData['FA'])
+        self.mBar.mTool.mFurtherA.UpdateFurtherAnalysis(
+            self.rDateC, menuData['FA'])
         #--------------> GUI
         self.OnAASelect(f'{date}_{pos}')
         #endregion --------------------------------------------> Save & Update
@@ -8147,7 +8166,8 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rData = self.rObj.dConfigure[self.cSection]()
         #--------------> Menu
         _, menuData = self.SetDateMenuDate()
-        self.mBar.mTool.mFurtherA.UpdateFAList(self.rDateC, menuData['FA'])
+        self.mBar.mTool.mFurtherA.UpdateFurtherAnalysis(
+            self.rDateC, menuData['FA'])
         #--------------> GUI
         self.OnHistSelect(f'{date}_{win}')
         #endregion --------------------------------------------> Save & Update

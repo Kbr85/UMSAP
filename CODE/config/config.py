@@ -227,12 +227,16 @@ klToolZoomResetAll = 'Reset All Zoom'
 klToolExpData      = 'Export Data'
 klToolExpImgAll    = 'Export Image'
 klToolCheckDP      = 'Check DP'
+klToolExpSeq       = 'Export Sequences'
 #------------------------------> Tool Menu for CorrA
 klToolCorrASelCol  = 'Select Column'
 #------------------------------> Tool Menu for LimProt
 klToolLimProtBandLane = 'Band/Lane Sel'
 klToolLimProtShowAll  = 'Show All'
-klToolLimProtExpSeq   = 'Export Sequences'
+#------------------------------> Further Analysis
+klFACleavageEvol = 'Cleavage Evolution'
+klFACleavagePerRes = 'Cleavage per Residue'
+klFAPDBMap = 'PDB Map'
 #endregion ---------------------------------> Keywords for Menu - Method Links
 
 
