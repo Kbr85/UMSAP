@@ -236,6 +236,16 @@ klToolLimProtShowAll  = 'Show All'
 #------------------------------> Tool Menu for AA
 klToolAAExp = 'AA'
 klToolAAPos = 'Pos'
+#------------------------------> Volcano Plot
+klToolVolPlot              = 'Volcano Plot'
+klToolVolPlotLabelPick     = 'Vol Plot Pick Label'
+klToolVolPlotLabelProt     = 'Vol Plot Add Label'
+klToolVolPlotSaveI         = 'Volcano Plot Save Image'
+klToolVolPlotZoom          = 'Volcano Plot Zoom Reset'
+klToolVolPlotColorHypCurve = 'Hyperbolic Curve'
+klToolVolPlotColorPFC      = 'P - Log2FC'
+klToolVolPlotColorZ        = 'Z Score'
+klToolVolPlotColorConf     = 'Configure'
 #------------------------------> Further Analysis
 klFACleavageEvol = 'Cleavage Evolution'
 klFACleavagePerRes = 'Cleavage per Residue'

@@ -2615,12 +2615,12 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rZ           = 10.0
         self.rP           = self.rData[self.rDateC]['Alpha']
         self.rLog2FC      = 0.1
-        self.rColor       = 'Hyp Curve Color'
+        self.rColor       = f'{config.klToolVolPlotColorHypCurve} Color'
         self.rHypCurve    = True
         self.rCI          = None
         self.rFcYMax      = None
         self.rFcYMin      = None
-        self.rLockScale   = 'Date'
+        self.rLockScale   = 'Analysis'
         self.rVXRange     = []
         self.rVYRange     = []
         self.rFcXRange    = []
@@ -2631,34 +2631,43 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rLabelProt   = []
         self.rLabelProtD  = {}
         self.rPickLabel   = False
-        self.rVolLines    = ['Hyp Curve Lines']
+        self.rVolLines    = [f'{config.klToolVolPlotColorHypCurve} Line']
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> Methods
         dKeyMethod = {
             #------------------------------> Set Range of Plots
-            'No'     : self.SetRangeNo,
-            'Date'   : self.SetRangeDate,
-            'Project': self.SetRangeProject,
+            'No'          : self.OnLockScale,
+            'Analysis'    : self.OnLockScale,
+            'Project'     : self.OnLockScale,
+            'No Set'      : self.SetRangeNo,
+            'Analysis Set': self.SetRangeDate,
+            'Project Set' : self.SetRangeProject,
+            #------------------------------> 
+            config.klToolGuiUpdate : self.UpdateDisplayedData,
+            config.klToolVolPlot   : self.OnVolChange,
             #------------------------------> Get DF for Text Intensities
             config.oControlTypeProtProf['OC']   : self.GetDF4TextInt_OC,
             config.oControlTypeProtProf['OCC']  : self.GetDF4TextInt_OCC,
             config.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
             config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
             #------------------------------> Colors
-            'Hyp Curve Color' : self.GetColorHyCurve,
-            'Z Score Color'   : self.GetColorZScore,
-            'P - Log2FC Color': self.GetColorPLog2FC,
+            config.klToolVolPlotColorHypCurve: self.VolDraw,
+            config.klToolVolPlotColorPFC     : self.VolDraw,
+            config.klToolVolPlotColorZ       : self.VolDraw,
+            f'{config.klToolVolPlotColorHypCurve} Color': self.GetColorHyCurve,
+            f'{config.klToolVolPlotColorPFC} Color'     : self.GetColorPLog2FC,
+            f'{config.klToolVolPlotColorZ} Color'       : self.GetColorZScore,
             #------------------------------> Lines
-            'Hyp Curve Line' : self.DrawLinesHypCurve,
-            'Z Score Line'   : self.DrawLinesZScore,
-            'P - Log2FC Line': self.DrawLinesPLog2FC,
+            f'{config.klToolVolPlotColorHypCurve} Line': self.DrawLinesHypCurve,
+            f'{config.klToolVolPlotColorPFC} Line'     : self.DrawLinesPLog2FC,
+            f'{config.klToolVolPlotColorZ} Line'       : self.DrawLinesZScore,
             #------------------------------> Filter methods
             config.lFilFCEvol  : self.Filter_FCChange,
             config.lFilHypCurve: self.Filter_HCurve,
             config.lFilFCLog   : self.Filter_Log2FC,
             config.lFilPVal    : self.Filter_PValue,
-            config.lFilZScore  : self.Filter_ZScore,
+            # config.lFilZScore  : self.Filter_ZScore,
             'Apply All'        : self.FilterApply,
             'Remove Last'      : self.FilterRemoveLast,
             'Remove Any'       : self.FilterRemoveAny,
@@ -2668,16 +2677,21 @@ class ProtProfPlot(BaseWindowNPlotLT):
             'Save Filter'      : self.FilterSave,
             'Load Filter'      : self.FilterLoad,
             #------------------------------> Save Image
-            'VolcanoImg': self.OnSaveVolcanoImage,
+            config.klToolVolPlotSaveI : self.OnSaveVolcanoImage,
             'FCImage'   : self.OnSaveFCImage,
             #------------------------------> Zoom Reset
-            'VolcanoZoom' : self.OnZoomResetVol,
+            config.klToolVolPlotZoom : self.OnZoomResetVol,
             'FCZoom'      : self.OnZoomResetFC,
-            'AllZoom'     : self.OnPlotZoomResetAllinOne,
             #------------------------------> 
             'Labels'      : self.OnClearLabel,
             'Selection'   : self.OnClearSel,
             'AllClear'    : self.OnClearAll, 
+            #------------------------------> 
+            config.klToolVolPlotLabelPick : self.OnLabelPick,
+            config.klToolVolPlotLabelProt : self.OnProtLabel,
+            config.klToolVolPlotColorConf : self.OnVolColorScheme,
+            #------------------------------> 
+            'FCShowAll' : self.OnFCChange,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -2893,13 +2907,17 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return [ymax, ymin]
     #---
     
-    def VolDraw(self) -> bool:
+    def VolDraw(self, colorLabel: str='') -> bool:
         """Create/Update the Volcano plot.
-    
+
             Returns
             -------
             bool
         """
+        #region ---------------------------------------------------> 
+        self.rColor = f'{colorLabel} Color' if colorLabel else self.rColor
+        #endregion ------------------------------------------------> 
+
         #region --------------------------------------------------------> Axes
         self.VolSetAxis()
         #endregion -----------------------------------------------------> Axes
@@ -2917,7 +2935,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #------------------------------> Color
         color = self.dKeyMethod[self.rColor](x, y)
         #endregion -----------------------------------------------------> Data
-        
+
         #region --------------------------------------------------------> Plot
         self.wPlots.dPlot['Vol'].axes.scatter(
             x, y, 
@@ -2927,7 +2945,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             color     = color,
             picker    = True,
         )
-        
+
         for l in self.rVolLines:
             self.dKeyMethod[l]()
         #------------------------------> Lock Scale or Set it manually
@@ -2941,15 +2959,15 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #------------------------------> Show
         self.wPlots.dPlot['Vol'].canvas.draw()
         #endregion -----------------------------------------------------> Plot
-        
+
         #region -------------------------------------> Update selected protein
         self.DrawGreenPoint()
         #endregion ----------------------------------> Update selected protein
-        
+
         #region ---------------------------------------------------> 
         self.AddProtLabel()
         #endregion ------------------------------------------------> 
-        
+
         return True
     #---
     
@@ -3875,7 +3893,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------------------> Color
         
         #region ---------------------------------------------------> 
-        self.rVolLines = ['Hyp Curve Line']
+        self.rVolLines = [f'{config.klToolVolPlotColorHypCurve} Line']
         #endregion ------------------------------------------------> 
 
         return color
@@ -3901,7 +3919,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> 
-        self.rVolLines = ['Z Score Line']
+        self.rVolLines = [f'{config.klToolVolPlotColorZ} Line']
         #endregion ------------------------------------------------> 
         
         return np.select(cond, choice, default=self.cColor['Vol'][1])
@@ -3927,7 +3945,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion -----------------------------------------------------> 
 
         #region ---------------------------------------------------> 
-        self.rVolLines = ['P - Log2FC Line']
+        self.rVolLines = [f'{config.klToolVolPlotColorPFC} Line']
         #endregion ------------------------------------------------> 
         
         return np.select(cond, choice, default=self.cColor['Vol'][1])
@@ -4127,7 +4145,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return True
     #---
     
-    def OnVolChange(self, cond: str, rp:str, corrP: bool) -> bool:
+    def OnVolChange(
+        self, cond: str='', rp:str='', corrP: Optional[bool]=None) -> bool:
         """Update the Volcano plot.
     
             Parameters
@@ -4143,10 +4162,11 @@ class ProtProfPlot(BaseWindowNPlotLT):
             -------
             bool
         """
+        print(cond, rp, corrP)
         #region --------------------------------------------> Update variables
-        self.rCondC   = cond
-        self.rRpC     = rp
-        self.rCorrP   = corrP
+        self.rCondC = cond if cond else self.rCondC
+        self.rRpC   = rp if rp else self.rRpC
+        self.rCorrP = corrP if corrP is not None else corrP
         #endregion -----------------------------------------> Update variables
         
         #region ---------------------------------------------------------> Vol
@@ -4441,7 +4461,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------------> Update Attr
         
         #region ---------------------------------------------------> Get Range
-        self.dKeyMethod[mode]()
+        self.dKeyMethod[f'{mode} Set']()
         #endregion ------------------------------------------------> Get Range
         
         #region ---------------------------------------------------> Set Range
