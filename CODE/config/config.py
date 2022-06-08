@@ -233,6 +233,9 @@ klToolCorrASelCol  = 'Select Column'
 #------------------------------> Tool Menu for LimProt
 klToolLimProtBandLane = 'Band/Lane Sel'
 klToolLimProtShowAll  = 'Show All'
+#------------------------------> Tool Menu for AA
+klToolAAExp = 'AA'
+klToolAAPos = 'Pos'
 #------------------------------> Further Analysis
 klFACleavageEvol = 'Cleavage Evolution'
 klFACleavagePerRes = 'Cleavage per Residue'

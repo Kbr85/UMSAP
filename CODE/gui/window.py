@@ -8286,10 +8286,16 @@ class AAPlot(BaseWindowPlot):
         self.rExp    = True
         self.rLabelC = ''
         super().__init__(cParent, menuData)
+        #------------------------------> 
+        dKeyMethod = {
+            config.klToolAAExp : self.PlotExp,
+            config.klToolAAPos : self.PlotPos,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
         
         #region ---------------------------------------------------> Plot
-        self.UpdatePlot(menuData['Label'][0])
+        self.PlotExp(menuData['Label'][0])
         #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
@@ -8359,6 +8365,15 @@ class AAPlot(BaseWindowPlot):
             -----
             
         """
+        #region --------------------------------------------------------> 
+        self.rExp = True
+        self.rLabelC = label
+        #endregion -----------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.SetAxisExp()
+        #endregion ------------------------------------------------> 
+
         #region ---------------------------------------------------> Data
         idx = pd.IndexSlice
         df = self.rData.loc[:,idx[('AA', label),:]].iloc[0:-1,:]
@@ -8459,6 +8474,15 @@ class AAPlot(BaseWindowPlot):
             -----
             
         """
+        #region --------------------------------------------------------> 
+        self.rExp = False
+        self.rLabelC = label
+        #endregion -----------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.SetAxisPos()
+        #endregion ------------------------------------------------> 
+        
         #region ---------------------------------------------------> Data
         idx = pd.IndexSlice
         df = self.rData.loc[:,idx[:,label]].iloc[0:-1,0:-1]
@@ -8500,42 +8524,6 @@ class AAPlot(BaseWindowPlot):
         self.wPlot.axes.set_title(label)
         self.wPlot.canvas.draw()
         
-        return True
-    #---
-    
-    def UpdatePlot(self, label: str, exp: bool=True):
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        #region ---------------------------------------------------> 
-        self.rExp    = exp
-        self.rLabelC = label
-        #endregion ------------------------------------------------> 
-
-        #region ---------------------------------------------------> 
-        if exp:
-            self.SetAxisExp()
-            self.PlotExp(label)
-        else:
-            self.SetAxisPos()
-            self.PlotPos(label)
-        #endregion ------------------------------------------------> 
-        
-        #region ---------------------------------------------------> Zoom
-        self.wPlot.ZoomResetSetValues()
-        #endregion ------------------------------------------------> Zoom
-
         return True
     #---
     
