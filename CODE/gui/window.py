@@ -8766,14 +8766,14 @@ class HistPlot(BaseWindowPlot):
     rBandWidth = 0.8
     rBandStart = 0.4
     cRec = {
-        True : 'Rec',
-        False: 'Nat',
+        True : 'Nat',
+        False: 'Rec',
         'Rec': 'Recombinant Sequence',
         'Nat': 'Native Sequence',
     }
     cAll = {
-        True    : 'All',
-        False   : 'Unique',
+        True    : 'Unique',
+        False   : 'All',
         'All'   : 'All Cleavages',
         'Unique': 'Unique Cleavages',
     }
@@ -8792,13 +8792,23 @@ class HistPlot(BaseWindowPlot):
         self.rObj    = cParent.rObj
         self.rData  = self.rObj.GetFAData(
             cParent.cSection,cParent.rDateC,fileN, [0,1,2])
-        self.rLabel = self.rData.columns.unique(level=2).tolist()[1:]
+        self.rLabel      = self.rData.columns.unique(level=2).tolist()[1:]
+        self.rProtLength = cParent.rData[self.cDateC]['PI']['ProtLength']
+        self.rProtLoc    = cParent.rData[self.cDateC]['PI']['ProtLoc']
+        menuData         = self.SetMenuDate()
+        self.rNat = 'Rec'
+        self.rAllC = 'All'
         #------------------------------> 
-        super().__init__(cParent, {})
+        super().__init__(cParent, menuData)
+        #------------------------------> 
+        dKeyMethod = {
+            config.klToolGuiUpdate : self.UpdatePlot,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
         
         #region ---------------------------------------------------> Plot
-        self.UpdatePlot(rec=True, allC=True)
+        self.UpdatePlot()
         #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
@@ -8808,8 +8818,40 @@ class HistPlot(BaseWindowPlot):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods    
-    def UpdatePlot(self, rec:bool, allC: bool) -> bool:
+    #region ---------------------------------------------------> Class methods
+    def SetMenuDate(self):
+        """
+
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------->
+        menuData = {}
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        menuData['Label'] = [k for k in self.rLabel]
+        #------------------------------>
+        if self.rProtLength[1] is not None:
+            menuData['Nat'] = True
+        else:
+            menuData['Nat'] = False
+        #endregion ------------------------------------------------>
+
+        return menuData
+    #---
+    
+    def UpdatePlot(
+        self, nat:Optional[bool]=None, allC: Optional[bool]=None) -> bool:
         """
     
             Parameters
@@ -8825,11 +8867,11 @@ class HistPlot(BaseWindowPlot):
             
         """
         #region ---------------------------------------------------> Variables
-        self.rRec  = self.cRec[rec]
-        self.rAllC = self.cAll[allC]
+        self.rNat  = self.cRec[nat] if nat is not None else self.rNat
+        self.rAllC = self.cAll[allC] if allC is not None else self.rAllC
         #------------------------------> 
         idx = pd.IndexSlice
-        df = self.rData.loc[:,idx[self.rRec,['Win',self.rAllC],:]]
+        df = self.rData.loc[:,idx[self.rNat,['Win',self.rAllC],:]]
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> 
@@ -8873,7 +8915,7 @@ class HistPlot(BaseWindowPlot):
         self.wPlot.ZoomResetSetValues()
         #endregion ------------------------------------------------> Zoom
         
-        self.wPlot.axes.set_title(f'{self.cRec[self.rRec]} - {self.cAll[self.rAllC]}')
+        self.wPlot.axes.set_title(f'{self.cRec[self.rNat]} - {self.cAll[self.rAllC]}')
         self.wPlot.canvas.draw()
         return True
     #---
@@ -8939,7 +8981,7 @@ class HistPlot(BaseWindowPlot):
 
         #region ---------------------------------------------------> 
         idx = pd.IndexSlice
-        df = self.rData.loc[:,idx[self.rRec,['Win',self.rAllC],:]]
+        df = self.rData.loc[:,idx[self.rNat,['Win',self.rAllC],:]]
         df = df.dropna(how='all')
         if 0 < xf < df.shape[0]:
             pass
@@ -8963,7 +9005,7 @@ class HistPlot(BaseWindowPlot):
 
         #region ---------------------------------------------------> 
         win = f'{df.iat[xf-1, 0]:.0f}-{df.iat[xf, 0]:.0f}'
-        clv = f'{df.iat[xf-1,df.columns.get_loc(idx[self.rRec,self.rAllC,exp])]}'
+        clv = f'{df.iat[xf-1,df.columns.get_loc(idx[self.rNat,self.rAllC,exp])]}'
         text = (f'Win={win}  Exp={exp}  Cleavages={clv}')
         #endregion ------------------------------------------------> 
         

@@ -741,7 +741,8 @@ class BaseMenuFurtherAnalysis(BaseMenu):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def AddNatRecSeqEntry(self, tMethod: Callable) -> bool:
+    def AddNatRecSeqEntry(
+        self, tMethod: Callable, idMap: str='', idKey: str='') -> bool:
         """
     
             Parameters
@@ -757,8 +758,21 @@ class BaseMenuFurtherAnalysis(BaseMenu):
             
         """
         if self.rMenuData['Nat']:
+            #------------------------------> 
             self.miNat = self.Append(-1, config.lmNatSeq, kind=wx.ITEM_CHECK)
             self.Bind(wx.EVT_MENU, tMethod, source=self.miNat)
+            #------------------------------> 
+            if idMap:
+                rIDMap = {self.miNat.GetId():idMap}
+                self.rIDMap = self.rIDMap | rIDMap
+            else:
+                pass
+            #------------------------------> 
+            if idKey:
+                rKeyMap = {self.miNat.GetId(): idKey}
+                self.rKeyMap = self.rKeyMap | rKeyMap
+            else:
+                pass
         else:
             pass
         
@@ -786,6 +800,8 @@ class BaseMenuFurtherAnalysis(BaseMenu):
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> Add Items
+        self.miClear = self.Append(-1, 'Clear Selections\tCtrl+K')
+        self.AppendSeparator()
         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
         self.AppendSeparator()
         self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
@@ -806,8 +822,27 @@ class BaseMenuFurtherAnalysis(BaseMenu):
         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZoomR)
         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveD)
         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnClear,       source=self.miClear)
         #endregion -----------------------------------------------------> Bind
 
+        return True
+    #---
+    
+    def OnClear(self, event:wx.CommandEvent) -> bool:
+        """Override as needed
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
         return True
     #---
     #endregion ------------------------------------------------> Class methods
@@ -1663,55 +1698,75 @@ class AAToolMenu(wx.Menu, MenuMethods):
 class MenuToolHist(BaseMenuFurtherAnalysis):
     """ """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, *args) -> None:
+    def __init__(self, menuData) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__()
+        super().__init__(menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miNat = self.Append(-1, 'Native Sequence', kind=wx.ITEM_RADIO)
-        self.miRec = self.Append(-1, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
-        self.miRec.Check()
+        self.AddNatRecSeqEntry(
+            self.OnMethodKeyBool, idMap=config.klToolGuiUpdate, idKey='nat')
         self.AppendSeparator()
-        self.miAll = self.Append(-1, 'All Cleavages', kind=wx.ITEM_RADIO)
-        self.miUnique = self.Append(-1, 'Unique Cleavages', kind=wx.ITEM_RADIO)
+        self.miUnique = self.Append(-1, 'Unique Cleavages', kind=wx.ITEM_CHECK)
+        self.miUnique.Check(check=False)
         self.AppendSeparator()
         self.AddLastItems()
         #endregion -----------------------------------------------> Menu Items
+        
+        #region --------------------------------------------------->
+        rIDMap = {
+            self.miUnique.GetId(): config.klToolGuiUpdate,
+            
+        }
+        self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------> 
+        rKeyMap = {
+            self.miUnique.GetId() : 'allC',
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
+        #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnChange,         source=self.miNat)
-        self.Bind(wx.EVT_MENU, self.OnChange,         source=self.miRec)
-        self.Bind(wx.EVT_MENU, self.OnChange,         source=self.miAll)
-        self.Bind(wx.EVT_MENU, self.OnChange,         source=self.miUnique)
+        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miUnique)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
-
-    #region ---------------------------------------------------> Class methods
-    def OnChange(self, event: wx.CommandEvent):
+    
+    #region ---------------------------------------------------> Class Methods
+    def OnClear(self, event: wx.CommandEvent)-> bool:
         """
-
+    
             Parameters
             ----------
-            event:wx.Event
-                Information about the event
-
-
+            
+    
             Returns
             -------
-
-
+            
+    
             Raise
             -----
-
+            
         """
+        #region --------------------------------------------------->
+        try:
+            self.miNat.Check(False)
+        except AttributeError:
+            pass
+        #------------------------------>
+        self.miUnique.Check(check=False)
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
         win = self.GetWindow()
-        win.UpdatePlot(rec=self.miRec.IsChecked(), allC=self.miAll.IsChecked())
+        win.UpdatePlot(nat=False, allC=False)
+        #endregion ------------------------------------------------>
+
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Class Methods
+
 #---
 
 
@@ -1744,14 +1799,11 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
         self.miProtLoc.Check(True)
         self.AppendSeparator()
         #------------------------------>
-        self.miClear = self.Append(-1, 'Clear Selection\tCtrl+K')
-        self.AppendSeparator()
         self.AddLastItems()
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miProtLoc)
-        self.Bind(wx.EVT_MENU, self.OnClear, source=self.miClear)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
