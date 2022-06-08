@@ -18,6 +18,7 @@
 from pathlib import Path
 from resource import RLIMIT_DATA
 from typing import Callable, Optional, Union
+from xml.dom.minidom import Attr
 
 import wx
 
@@ -1792,17 +1793,19 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
         self.miSel = self.Append(
             -1, 'Single Selection\tCtrl+S', kind=wx.ITEM_CHECK)
         self.miSel.Check(True)
-        self.miProtLoc = self.Append(
-            -1, 'Show Native Protein Location', kind=wx.ITEM_CHECK)
-        self.miProtLoc.Check(True)
+        #------------------------------> 
+        if menuData['Nat']:
+            self.miProtLoc = self.Append(
+                -1, 'Show Native Protein Location', kind=wx.ITEM_CHECK)
+            self.miProtLoc.Check(True)
+            #------------------------------>
+            self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miProtLoc)
+        else:
+            pass
         self.AppendSeparator()
         #------------------------------>
         self.AddLastItems()
         #endregion -----------------------------------------------> Menu Items
-
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miProtLoc)
-        #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -1825,7 +1828,12 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
             nat = self.miNat.IsChecked()
         except AttributeError:
             nat = False
-        show = self.miProtLoc.IsChecked()
+        #------------------------------> 
+        try:
+            show = self.miProtLoc.IsChecked()
+        except AttributeError:
+            show = False
+        #------------------------------> 
         sel = self.miSel.IsChecked()
         #endregion ------------------------------------------------> 
 
@@ -1867,24 +1875,28 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
             bool
         """
         #region --------------------------------------------------->
-        #------------------------------> 
+        #------------------------------>
         self.rItems[0].Check()
         [x.Check(False) for x in self.rItems[1:]]
-        #------------------------------> 
+        #------------------------------>
         try:
             self.miNat.Check(False)
         except AttributeError:
             pass
-        #------------------------------> 
+        #------------------------------>
+        try:
+            self.miProtLoc.Check(True)
+        except AttributeError:
+            pass
+        #------------------------------>
         self.miSel.Check(True)
-        self.miProtLoc.Check(True)
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
         win = self.GetWindow()
         win.UpdatePlot(False, [self.rItems[0].GetItemLabel()], True)
         #endregion ------------------------------------------------>
-        
+
         return True
     #---
     #endregion ------------------------------------------------> Class methods

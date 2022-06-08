@@ -9155,7 +9155,7 @@ class CEvolPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> Plot
-        self.UpdatePlot(True, False)
+        self.UpdatePlot(False, False)
         #endregion ------------------------------------------------> Plot
         
         #region ---------------------------------------------> Window position
