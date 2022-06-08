@@ -2667,7 +2667,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             config.lFilHypCurve: self.Filter_HCurve,
             config.lFilFCLog   : self.Filter_Log2FC,
             config.lFilPVal    : self.Filter_PValue,
-            # config.lFilZScore  : self.Filter_ZScore,
+            f'{config.lFilZScore} F'  : self.Filter_ZScore,
             'Apply All'        : self.FilterApply,
             'Remove Last'      : self.FilterRemoveLast,
             'Remove Any'       : self.FilterRemoveAny,
@@ -2676,6 +2676,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             'Paste'            : self.FilterPaste,
             'Save Filter'      : self.FilterSave,
             'Load Filter'      : self.FilterLoad,
+            'AutoApplyFilter'  : self.OnAutoFilter,
             #------------------------------> Save Image
             config.klToolVolPlotSaveI : self.OnSaveVolcanoImage,
             'FCImage'   : self.OnSaveFCImage,

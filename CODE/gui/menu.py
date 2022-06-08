@@ -219,266 +219,6 @@ class BaseMenu(wx.Menu):
 #---
 
 
-class MenuMethods():
-    """Base class to hold common methods to the menus"""
-    
-    #------------------------------> Class methods
-    #region ---------------------------------------------------> Event Methods
-    def OnCreateTab(self, event:wx.CommandEvent) -> bool:
-        """Creates a new tab in the main window
-        
-            Parameters
-            ----------
-            event : wx.CommandEvent
-                Information about the event
-                
-            Returns
-            -------
-            True
-                
-            Notes
-            -----
-            Assumes child class has a self.nameID dict with event's id as keys
-            and tab's ids as values.
-        """
-        #region -------------------------------------------------> Check MainW
-        if config.winMain is None:
-            config.winMain = window.MainWindow()
-        else:
-            pass
-        #endregion ----------------------------------------------> Check MainW
-        
-        #region --------------------------------------------------> Create Tab
-        config.winMain.OnCreateTab(self.rKeyID[event.GetId()])
-        #endregion -----------------------------------------------> Create Tab
-        
-        return True
-    #---    
-
-    def OnDupWin(self, event: wx.CommandEvent) -> bool:
-        """Duplicate window for better data comparison
-    
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-                
-            Returns
-            -------
-            True
-        """
-        win = self.GetWindow() 
-        win.OnDupWin()
-        
-        return True
-    #---
-
-    def OnZoomReset(self, event: wx.CommandEvent) -> bool:
-        """Reset the zoom level of a matlibplot. 
-    
-            Parameters
-            ----------
-            event : wx.CommandEvent
-                Information about the event
-                
-            Returns
-            -------
-            True
-                
-            Notes
-            -----
-            Useful for windows showing only one plot.
-        """
-        #region ---------------------------------------------------> Variables
-        win = self.GetWindow()
-        tKey = self.rKeyID[event.GetId()]
-        #endregion ------------------------------------------------> Variables
-
-        #region ---------------------------------------------------> Run
-        win.dKeyMethod[tKey]()
-        #endregion ------------------------------------------------> Run
-
-        return True
-    #---
-    
-    def OnExportPlotData(self, event: wx.CommandEvent) -> bool:
-        """Export plotted data 
-
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-                
-            Returns
-            -------
-            True
-        """
-        win = self.GetWindow()
-        win.OnExportPlotData()
-        
-        return True
-    #---
-    
-    def OnSavePlotImage(self, event: wx.CommandEvent) -> bool:
-        """Save an image of a single pane showing a plot
-    
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-                
-            Returns
-            -------
-            True
-        """
-        #region ---------------------------------------------------> Variables
-        win = self.GetWindow()
-        tKey = self.rKeyID[event.GetId()]
-        #endregion ------------------------------------------------> Variables
-
-        #region ---------------------------------------------------> Run
-        win.dKeyMethod[tKey]()
-        #endregion ------------------------------------------------> Run
-
-        return True
-    #---
-    
-    def OnCheckDataPrep(self, event: wx.CommandEvent) -> bool:
-        """Launch the Check Data Preparation window.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-    
-            Returns
-            -------
-            True
-        """
-        win = self.GetWindow() 
-        win.OnCheckDataPrep(self.GetCheckedRadiodItem(self.rPlotDate))
-        
-        return True
-    #---
-        
-    def OnPlotDate(self, event: wx.CommandEvent) -> bool:
-        """Plot a date of a section in an UMSAP file.
-    
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-                
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------------> Date
-        tDate = self.GetLabelText(event.GetId())
-        #endregion -----------------------------------------------------> Date
-
-        #region --------------------------------------------------------> Draw
-        win = self.GetWindow()
-        win.UpdateDisplayedData(tDate)
-        #endregion -----------------------------------------------------> Draw
-        
-        return True
-    #---
-    
-    def OnExportFilteredData(self, event: wx.CommandEvent) -> bool:
-        """Export filtered data 
-
-            Parameters
-            ----------
-            event : wx.Event
-                Information about the event
-                
-            Returns
-            -------
-            True
-        """
-        win = self.GetWindow() 
-        win.OnExportFilteredData()
-        
-        return True
-    #---
-    #endregion ------------------------------------------------> Event Methods
-    
-    #region --------------------------------------------------> Manage Methods
-    def UpdateDateItems(self, menuDate: list[str]) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        #region ---------------------------------------------------> 
-        checked = self.GetCheckedRadiodItem(self.rPlotDate)
-        #------------------------------> 
-        for k in self.rPlotDate:
-            self.Delete(k)
-        self.rPlotDate = []
-        #------------------------------> 
-        for k in reversed(menuDate):
-            self.rPlotDate.append(self.InsertRadioItem(0,-1,k))
-            self.Bind(wx.EVT_MENU, self.OnPlotDate, source=self.rPlotDate[-1])
-        #------------------------------> 
-        for k in self.rPlotDate:
-            if k.GetItemLabelText() == checked:
-                k.Check(check=True)
-                break
-            else:
-                pass
-        #endregion ------------------------------------------------> 
-
-        return True
-    #---
-    
-    def GetCheckedRadiodItem(
-        self, lMenuItem: list[wx.MenuItem], getVal: str='Label',
-        ) -> Union[str, int]:
-        """Get the checked item in a list of radio menu items.
-    
-            Parameters
-            ----------
-            lMenuItem: list of wx.MenuItems
-                Items are expected to be radio items from the same group.
-            getVal: str
-                wx.MenuItem property to return. 'Id' or 'Label'. Defauls is 
-                'Label'.
-    
-            Returns
-            -------
-            str
-                Label of the checked item
-            
-            Notes
-            -----
-            If getVal is not known the Id is returned
-        """
-        #region -----------------------------------------------------> Checked
-        for k in lMenuItem:
-            if k.IsChecked():
-                if getVal == 'Label':
-                    return k.GetItemLabelText()
-                else:
-                    return k.GetId()
-            else:
-                pass
-        #endregion --------------------------------------------------> Checked
-    #---
-    #endregion -----------------------------------------------> Manage Methods
-#---
-
-
 class BaseMenuMainResult(BaseMenu):
     """Menu for a window plotting results, like Correlation Analysis
 
@@ -1209,12 +949,8 @@ class MenuFCEvolution(BaseMenu):
 #---
 
 
-class FiltersProtProf(wx.Menu):
+class MenuFiltersProtProf(BaseMenu):
     """Menu for the ProtProfPlot Filters"""
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -1244,12 +980,12 @@ class FiltersProtProf(wx.Menu):
         #endregion -----------------------------------------------> Menu Items
         
         #region ---------------------------------------------------> rKeyID
-        self.rKeyID = {
+        rIDMap = {
             self.miFcChange.GetId():  config.lFilFCEvol,
             self.miHypCurve.GetId():  config.lFilHypCurve,
             self.miLog2FC.GetId():    config.lFilFCLog,
             self.miPValue.GetId():    config.lFilPVal,
-            self.miZScore.GetId():    config.lFilZScore,
+            self.miZScore.GetId():    f'{config.lFilZScore} F',
             self.miApply.GetId():     'Apply All',
             self.miRemoveLast.GetId():'Remove Last',
             self.miRemoveAny.GetId(): 'Remove Any',
@@ -1258,69 +994,29 @@ class FiltersProtProf(wx.Menu):
             self.miPaste.GetId():     'Paste',
             self.miSave.GetId():      'Save Filter',
             self.miLoad.GetId():      'Load Filter',
+            self.miUpdate.GetId():    'AutoApplyFilter',
         }
+        self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miFcChange)
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miHypCurve)
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miLog2FC)
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miPValue)
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miZScore)        
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miApply)
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miRemoveLast)
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miRemoveAny)
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miRemoveAll)
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miCopy)
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miPaste)
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miSave)
-        self.Bind(wx.EVT_MENU, self.OnFilter,      source=self.miLoad)
-        self.Bind(wx.EVT_MENU, self.OnAutoFilter,  source=self.miUpdate)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miFcChange)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miHypCurve)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miLog2FC)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miPValue)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZScore)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miApply)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveLast)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveAny)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveAll)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miCopy)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miPaste)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSave)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miLoad)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miUpdate)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
-
-    #------------------------------> Class methods
-    #region ---------------------------------------------------> Event methods
-    #------------------------------> Event Methods
-    def OnAutoFilter(self, event: wx.CommandEvent) -> bool:
-        """Filter results by Z score.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.OnAutoFilter(self.IsChecked(event.GetId()))
-        
-        return True
-    #---
-
-    def OnFilter(self, event: wx.CommandEvent) -> bool:
-        """Perform selected action.
-    
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-            
-    
-            Returns
-            -------
-            bool
-        """
-        win = self.GetWindow()
-        win.dKeyMethod[self.rKeyID[event.GetId()]]()
-        
-        return True
-    #---
-    #endregion ------------------------------------------------> Event methods
 #---
 
 
@@ -2475,10 +2171,10 @@ class MixMenuToolProtProf(BaseMenuMainResult):
         self.mFc = MenuFCEvolution()
         self.AppendSubMenu(self.mFc, 'FC Evolution')
         self.AppendSeparator()
-        # #------------------------------> Filter
-        # self.mFilter = FiltersProtProf()
-        # self.AppendSubMenu(self.mFilter, 'Filters')
-        # self.AppendSeparator()
+        #------------------------------> Filter
+        self.mFilter = MenuFiltersProtProf()
+        self.AppendSubMenu(self.mFilter, 'Filters')
+        self.AppendSeparator()
         #------------------------------> Lock scale
         self.mLockScale = MenuLockPlotScale()
         self.AppendSubMenu(self.mLockScale, 'Lock Plot Scale')
