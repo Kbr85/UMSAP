@@ -316,6 +316,7 @@ lmCorrAColNum  = 'Column Numbers (0 based)'
 lmCorrAColName = 'Column Names'
 lmCorrASelCol  = 'Select Columns'
 lmCorrAAllCol  = 'All Columns'
+lmNatSeq       = 'Native Sequence'
 #endregion -----------------------------------------------------------> Labels
 
 

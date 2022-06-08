@@ -9409,9 +9409,9 @@ class CpRPlot(BaseWindowPlot):
     cSection = config.nuCpR
     cColor   = config.color[cName]
     #------------------------------> 
-    cRec = {
-        True : 'Rec',
-        False: 'Nat',
+    cNat = {
+        True : 'Nat',
+        False: 'Rec',
         'Rec': 'Recombinant Sequence',
         'Nat': 'Native Sequence',
     }
@@ -9438,7 +9438,7 @@ class CpRPlot(BaseWindowPlot):
         #endregion --------------------------------------------> Initial Setup
         
         #region ---------------------------------------------------> Plot
-        self.UpdatePlot(rec=True, label=[menuData['Label'][0]])
+        self.UpdatePlot(nat=False, label=[menuData['Label'][0]])
         #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
@@ -9451,7 +9451,7 @@ class CpRPlot(BaseWindowPlot):
     #region ---------------------------------------------------> Class methods
     def SetMenuDate(self):
         """
-    
+
             Parameters
             ----------
             
@@ -9464,24 +9464,24 @@ class CpRPlot(BaseWindowPlot):
             -----
             
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         menuData = {}
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
-        #------------------------------> 
+        #------------------------------>
         if self.rProtLength[1] is not None:
             menuData['Nat'] = True
         else:
-            menuData['Nat'] = False    
-        #endregion ------------------------------------------------> 
-    
+            menuData['Nat'] = False
+        #endregion ------------------------------------------------>
+
         return menuData
     #---
     
     def UpdatePlot(
-        self, rec:bool, label: list[str], protLoc: bool=True
+        self, nat:bool, label: list[str], protLoc: bool=True
         ) -> bool:
         """
     
@@ -9498,21 +9498,21 @@ class CpRPlot(BaseWindowPlot):
             
         """
         #region ---------------------------------------------------> Variables
-        self.rRec  = self.cRec[rec]
+        self.rNat  = self.cNat[nat]
         self.rLabelC = label
         #------------------------------> 
         idx = pd.IndexSlice
-        df = self.rData.loc[:,idx[self.rRec,label]]
+        df = self.rData.loc[:,idx[self.rNat,label]]
         #------------------------------> 
-        if rec:
-            tXIdx = range(0, self.rProtLength[0])
-        else:
+        if nat:
             tXIdx = range(0, self.rProtLength[1])
+        else:
+            tXIdx = range(0, self.rProtLength[0])
         x = [x+1 for x in tXIdx]
         #------------------------------> 
         color = []
         #------------------------------> 
-        yMax = self.rData.loc[:,idx[self.rRec,label]].max().max()
+        yMax = self.rData.loc[:,idx[self.rNat,label]].max().max()
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> 
@@ -9522,14 +9522,14 @@ class CpRPlot(BaseWindowPlot):
         #region ---------------------------------------------------> Plot
         for e in label:
             #------------------------------> 
-            y = self.rData.iloc[tXIdx, self.rData.columns.get_loc(idx[self.rRec,e])]
+            y = self.rData.iloc[tXIdx, self.rData.columns.get_loc(idx[self.rNat,e])]
             tColor = self.cColor['Spot'][
                 self.rLabel.index(e)%len(self.cColor['Spot'])]
             color.append(tColor)
             #------------------------------>
             self.wPlot.axes.plot(x,y, color=tColor)
         #------------------------------> 
-        if self.rRec == self.cRec[True] and protLoc:
+        if self.rNat == self.cNat[False] and protLoc:
             if self.rProtLoc[0] is not None:
                 self.wPlot.axes.vlines(
                     self.rProtLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
@@ -9560,7 +9560,7 @@ class CpRPlot(BaseWindowPlot):
         self.wPlot.ZoomResetSetValues()
         #endregion ------------------------------------------------> Zoom
         
-        self.wPlot.axes.set_title(f'{self.cRec[self.rRec]}')
+        self.wPlot.axes.set_title(f'{self.cNat[self.rNat]}')
         self.wPlot.canvas.draw()
         return True
     #---
@@ -9615,7 +9615,7 @@ class CpRPlot(BaseWindowPlot):
             y = []
             try:
                 for l in self.rLabelC:
-                    col = self.rData.columns.get_loc(idx[self.rRec,l])
+                    col = self.rData.columns.get_loc(idx[self.rNat,l])
                     y.append(self.rData.iat[xf-1,col])
             except IndexError:
                 self.wStatBar.SetStatusText('')

@@ -17,7 +17,7 @@
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
 from resource import RLIMIT_DATA
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 
 import wx
 
@@ -731,15 +731,40 @@ class BaseMenuMainResultSubMenu(BaseMenu):
 class BaseMenuFurtherAnalysis(BaseMenu):
     """ """
     #region --------------------------------------------------> Instance setup
-    def __init__(self) -> None:
+    def __init__(self, menuData: dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
+        self.rMenuData = menuData
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
+    def AddNatRecSeqEntry(self, tMethod: Callable) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        if self.rMenuData['Nat']:
+            self.miNat = self.Append(-1, config.lmNatSeq, kind=wx.ITEM_CHECK)
+            self.Bind(wx.EVT_MENU, tMethod, source=self.miNat)
+        else:
+            pass
+        
+        return True
+    #---
+
     def AddLastItems(self, onePlot:bool=True) -> bool:
         """Add the last items to the Tool menu of a window showing results.
         
@@ -1692,15 +1717,11 @@ class MenuToolHist(BaseMenuFurtherAnalysis):
 
 class MenuToolCpR(BaseMenuFurtherAnalysis):
     """ """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
     def __init__(self, menuData):
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__()
+        super().__init__(menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
@@ -1712,13 +1733,7 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
         self.rItems[0].Check()
         self.AppendSeparator()
         #------------------------------>
-        if menuData['Nat']:
-            self.miNat = self.Append(-1, 'Native Sequence', kind=wx.ITEM_RADIO)
-            self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miNat)
-        else:
-            pass
-        self.miRec = self.Append(-1, 'Recombinant Sequence', kind=wx.ITEM_RADIO)
-        self.miRec.Check()
+        self.AddNatRecSeqEntry(self.OnLabel)
         self.AppendSeparator()
         #------------------------------>
         self.miSel = self.Append(
@@ -1735,7 +1750,6 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
         #endregion -----------------------------------------------> Menu Items
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miRec)
         self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miProtLoc)
         self.Bind(wx.EVT_MENU, self.OnClear, source=self.miClear)
         #endregion -----------------------------------------------------> Bind
@@ -1757,14 +1771,17 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
             bool
         """
         #region ---------------------------------------------------> 
-        rec  = self.miRec.IsChecked()
+        try:
+            nat = self.miNat.IsChecked()
+        except AttributeError:
+            nat = False
         show = self.miProtLoc.IsChecked()
         sel = self.miSel.IsChecked()
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 
         #------------------------------> Selection mode
-        if sel:
+        if sel and self.GetLabelText(event.GetId()) != config.lmNatSeq:
             [x.Check(False) for x in self.rItems]
             self.Check(event.GetId(), True)
         else:
@@ -1780,7 +1797,7 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
 
         #region ---------------------------------------------------> 
         win = self.GetWindow()
-        win.UpdatePlot(rec, label, show)
+        win.UpdatePlot(nat, label, show)
         #endregion ------------------------------------------------> 
 
         return True
@@ -1800,20 +1817,22 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
             bool
         """
         #region --------------------------------------------------->
+        #------------------------------> 
         self.rItems[0].Check()
         [x.Check(False) for x in self.rItems[1:]]
-        self.miRec.Check()
+        #------------------------------> 
         try:
             self.miNat.Check(False)
         except AttributeError:
             pass
+        #------------------------------> 
         self.miSel.Check(True)
         self.miProtLoc.Check(True)
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
         win = self.GetWindow()
-        win.UpdatePlot(True, [self.rItems[0].GetItemLabel()], True)
+        win.UpdatePlot(False, [self.rItems[0].GetItemLabel()], True)
         #endregion ------------------------------------------------>
         
         return True
