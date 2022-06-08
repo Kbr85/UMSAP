@@ -9133,8 +9133,11 @@ class CEvolPlot(BaseWindowNPlotLT):
         self.rIdx = {}
         self.rRec = 'Rec'
         self.rMon = False
+        self.rProtLength = cParent.rData[self.cDateC]['PI']['ProtLength']
+        self.rProtLoc    = cParent.rData[self.cDateC]['PI']['ProtLoc']
+        menuData         = self.SetMenuDate()
         #------------------------------> 
-        super().__init__(cParent, {})
+        super().__init__(cParent, menuData)
         #------------------------------> 
         dKeyMethod = {
             'ZoomR' : self.OnZoomReset,
@@ -9266,6 +9269,37 @@ class CEvolPlot(BaseWindowNPlotLT):
     #endregion ------------------------------------------------> Event Methods
     
     #region --------------------------------------------------> Manage Methods
+    def SetMenuDate(self):
+        """
+
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------->
+        menuData = {}
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        menuData['Label'] = [k for k in self.rLabel]
+        #------------------------------>
+        if self.rProtLength[1] is not None:
+            menuData['Nat'] = True
+        else:
+            menuData['Nat'] = False
+        #endregion ------------------------------------------------>
+
+        return menuData
+    #---
+    
     def UpdatePlot(
         self, nat: Optional[bool]=None, mon: Optional[bool]=None) -> bool:
         """

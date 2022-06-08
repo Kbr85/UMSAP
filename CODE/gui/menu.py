@@ -1740,11 +1740,9 @@ class MenuToolHist(BaseMenuFurtherAnalysis):
             Parameters
             ----------
             
-    
             Returns
             -------
-            
-    
+
             Raise
             -----
             
@@ -1896,44 +1894,39 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
 class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
     """ """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, *args):
+    def __init__(self, menuData):
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__()
+        super().__init__(menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miNat = self.Append(-1, 'Native Sequence', kind=wx.ITEM_CHECK)
+        self.AddNatRecSeqEntry(
+            self.OnMethodKeyBool, idMap=config.klToolGuiUpdate, idKey='nat')
         self.AppendSeparator()
         self.miMon = self.Append(-1, 'Monotonic', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
-        self.miClear = self.Append(-1, 'Clear Selection\tCtrl+K')
-        self.AppendSeparator()
         self.AddLastItems()
         #endregion -----------------------------------------------> Menu Items
-        
+
         #region ---------------------------------------------------> 
         rIDMap = {
-            self.miNat.GetId() : config.klToolGuiUpdate,
             self.miMon.GetId() : config.klToolGuiUpdate,
         }
         self.rIDMap = self.rIDMap | rIDMap
         #------------------------------>
         rKeyMap = {
-            self.miNat.GetId() : 'nat',
             self.miMon.GetId() : 'mon',
         }
         self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miNat)
         self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miMon)
-        self.Bind(wx.EVT_MENU, self.OnClear,         source=self.miClear)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
-    
+
     #region ---------------------------------------------------> Class Methods
     def OnClear(self, event:wx.CommandEvent) -> bool:
         """
@@ -1952,16 +1945,23 @@ class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
             -----
 
         """
-        self.miNat.Check(check=False)
+        #region --------------------------------------------------->
+        try:
+            self.miNat.Check(check=False)
+        except AttributeError:
+            pass
+        #------------------------------>
         self.miMon.Check(check=False)
-        
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
         win = self.GetWindow()
         win.UpdatePlot(nat=False, mon=False)
-        
+        #endregion ------------------------------------------------>
+
         return True
     #---
     #endregion ------------------------------------------------> Class Methods
-
 #---
 
 
