@@ -648,7 +648,7 @@ class BaseWindow(wx.Frame):
         self.rDate = [x for x in self.rData.keys() if x != 'Error']
         menuBar    = self.GetMenuBar()
         menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(
-            {'menudate': self.rDate})
+            {'MenuDate': self.rDate})
         
         return True
     #---
@@ -1535,7 +1535,7 @@ class BaseWindowProteolysis(BaseWindow):
             The list is a list of str with the dates in the analysis.
             The dict has the following structure:
                 {
-                    'menudate' : [List of dates],
+                    'MenuDate' : [List of dates],
                 }                    
         """
         #region ---------------------------------------------------> Fill dict
@@ -1543,7 +1543,7 @@ class BaseWindowProteolysis(BaseWindow):
         date = [x for x in self.rData.keys() if x != 'Error']
         menuData = {}
         #------------------------------> 
-        menuData['menudate'] = date
+        menuData['MenuDate'] = date
         #endregion ------------------------------------------------> Fill dict
         
         return (date, menuData)
@@ -2097,7 +2097,7 @@ class CorrAPlot(BaseWindowPlot):
         -----
         The structure of menuData is:
         {
-            'menudate' : [list of dates in the section],
+            'MenuDate' : [list of dates in the section],
         }
     """
     #region -----------------------------------------------------> Class setup
@@ -2136,7 +2136,7 @@ class CorrAPlot(BaseWindowPlot):
         self.cParent  = cParent
         self.cTitle  = f"{cParent.cTitle} - {self.cSection} - {self.rDateC}"
         #------------------------------> 
-        super().__init__(cParent, {'menudate' : self.rDate})
+        super().__init__(cParent, {'MenuDate' : self.rDate})
         #------------------------------>
         dKeyMethod = {
             config.klToolGuiUpdate  : self.UpdateDisplayedData,
@@ -2758,7 +2758,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             The list is a list of str with the dates in the analysis.
             The dict has the following structure:
                 {
-                    'menudate' : [List of dates],
+                    'MenuDate' : [List of dates],
                     'crp' : {
                         'date1' : {
                             'C' : [List of conditions],
@@ -2788,7 +2788,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             else:
                 pass
         #------------------------------> 
-        menuData['menudate'] = date
+        menuData['MenuDate'] = date
         #endregion ------------------------------------------------> Fill dict
         
         return (date, menuData)
@@ -7353,7 +7353,7 @@ class TarProtPlot(BaseWindowProteolysis):
             The list is a list of str with the dates in the analysis.
             The dict has the following structure:
                 {
-                    'menudate' : [List of dates],
+                    'MenuDate' : [List of dates],
                 }                    
         """
         #region ---------------------------------------------------> Fill dict
@@ -7374,7 +7374,7 @@ class TarProtPlot(BaseWindowProteolysis):
             else:
                 pass        
         #------------------------------> 
-        menuData['menudate'] = date
+        menuData['MenuDate'] = date
         #endregion ------------------------------------------------> Fill dict
         
         return (date, menuData)
@@ -9860,7 +9860,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         self.tDate    = tDate
         self.SetWindow(tSection, tDate) # Includes testing for something to plot
         #--------------> menuData here because it is not needed to save it
-        cMenuData = {'menudate': []} if self.rDate is None else {'menudate': self.rDate}
+        cMenuData = {'MenuDate': []} if self.rDate is None else {'MenuDate': self.rDate}
         #------------------------------> 
         super().__init__(cParent=cParent, cMenuData=cMenuData)
         #------------------------------> 

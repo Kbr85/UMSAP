@@ -16,9 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from resource import RLIMIT_DATA
-from typing import Callable, Optional, Union
-from xml.dom.minidom import Attr
+from typing import Callable, Optional
 
 import wx
 
@@ -32,17 +30,29 @@ import gui.window as window
 
 #region --------------------------------------------------------> Base Classes
 class BaseMenu(wx.Menu):
-    """ Base class for menus
+    """Base class for the menus in the app.
 
         Attributes
         ----------
         rIDMap: dict
-            Maps menu item's ID with function in window
+            Maps menu item's ID with function in window, e.g.
+            {self.miSaveI.GetId() : config.klToolExpImgAll,}
         rKeyMap : dict
-            Maps menu items's ID with the keywords of the functions in the win.
+            Maps menu items's ID with the keywords of the corresponding
+            functions in the win, e.g.
+            {self.miMon.GetId(): 'mon',}
+
+        Notes
+        -----
+        Methods in the class assumes the window related to the menu has a dict
+        win.dKeyMethod. Values in win.dKeyMethod are methods in the window
+        while keys are the values in self.rIDMap. This allows binding a 
+        wx.MenuItem directly to the method in the window. Look at self.OnMethod
+        for an example and self.OnMethodKey for an example using keyword 
+        arguments.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self):
+    def __init__(self) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
@@ -55,21 +65,16 @@ class BaseMenu(wx.Menu):
 
     #region ---------------------------------------------------> Event methods
     def OnCreateTab(self, event:wx.CommandEvent) -> bool:
-        """Creates a new tab in the main window
+        """Creates a new tab in the main window.
 
             Parameters
             ----------
             event : wx.CommandEvent
-                Information about the event
+                Information about the event.
 
             Returns
             -------
-            True
-
-            Notes
-            -----
-            Assumes child class has a self.rIDMap dict with event's id as keys
-            and tab's ids as values.
+            bool
         """
         #region -------------------------------------------------> Check MainW
         if config.winMain is None:
@@ -81,18 +86,18 @@ class BaseMenu(wx.Menu):
         #region --------------------------------------------------> Create Tab
         config.winMain.OnCreateTab(self.rIDMap[event.GetId()])
         #endregion -----------------------------------------------> Create Tab
-
+        
         return True
     #---
 
-    def OnMethod(self, event):
+    def OnMethod(self, event:wx.CommandEvent) -> bool:
         """Call the corresponding method in the window with no arguments or
-            keyword arguments
+            keyword arguments.
 
             Parameters
             ----------
             event:wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -103,14 +108,14 @@ class BaseMenu(wx.Menu):
         return True
     #---
 
-    def OnMethodLabel(self, event):
+    def OnMethodLabel(self, event:wx.CommandEvent) -> bool:
         """Call the corresponding method in the window with the text of the menu
             item as argument.
 
             Parameters
             ----------
             event:wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -128,14 +133,14 @@ class BaseMenu(wx.Menu):
         return True
     #---
     
-    def OnMethodLabelBool(self, event):
+    def OnMethodLabelBool(self, event:wx.CommandEvent) -> bool:
         """Call the corresponding method in the window with the boolean of the
             menu item as argument.
 
             Parameters
             ----------
             event:wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -158,13 +163,13 @@ class BaseMenu(wx.Menu):
         return True
     #---
     
-    def OnMethodKey(self, event):
+    def OnMethodKey(self, event:wx.CommandEvent) -> bool:
         """Call the corresponding method in the window with a keyword argument.
 
             Parameters
             ----------
             event:wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -173,25 +178,25 @@ class BaseMenu(wx.Menu):
         #region ---------------------------------------------------> Variables
         tID = event.GetId()
         win = self.GetWindow()
-        tFunction = self.rIDMap[tID]
+        tFunctionKey = self.rIDMap[tID]
         tDict = {self.rKeyMap[tID] : self.GetLabelText(tID)}
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Call Method
-        win.dKeyMethod[tFunction](**tDict)
+        win.dKeyMethod[tFunctionKey](**tDict)
         #endregion ----------------------------------------------> Call Method
 
         return True
     #---
     
-    def OnMethodKeyBool(self, event):
+    def OnMethodKeyBool(self, event:wx.CommandEvent) -> bool:
         """Call the corresponding method in the window with a keyword argument 
             with boolean value.
 
             Parameters
             ----------
             event:wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -205,12 +210,12 @@ class BaseMenu(wx.Menu):
         #region ---------------------------------------------------> Variables
         tID = event.GetId()
         win = self.GetWindow()
-        tFunction = self.rIDMap[tID]
+        tFunctionKey = self.rIDMap[tID]
         tDict = {self.rKeyMap[tID] : self.IsChecked(tID)}
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Call Method
-        win.dKeyMethod[tFunction](**tDict)
+        win.dKeyMethod[tFunctionKey](**tDict)
         #endregion ----------------------------------------------> Call Method
 
         return True
@@ -220,25 +225,24 @@ class BaseMenu(wx.Menu):
 
 
 class BaseMenuMainResult(BaseMenu):
-    """Menu for a window plotting results, like Correlation Analysis
+    """Menu for a window plotting results with a list of available analysis IDs
+        as first items, e.g. Correlation Analysis
 
         Parameters
         ----------
         menuData : dict
             Data to build the Tool menu of the window. It must contain at least
             a key - value pair like:
-            'menudate' : ['20210324-123456 - bla',..., '20220730-105402 - bla2']
-            See other key - value pairs in the window class.
+            'MenuDate' : ['20210324-123456 - bla',..., '20220730-105402 - bla2']
 
         Attributes
         ----------
-        menuData : dict
+        cMenuData : dict
             Data to build the Tool menu of the window. It must contain at least
             a key - value pair like:
-            'menudate' : ['20210324-123456 - bla',..., '20220730-105402 - bla2']
-            See other key - value pairs in the window class.
-        plotDate : list[wx.MenuItems]
-            List of available dates menu items.
+            'MenuDate' : ['20210324-123456 - bla',..., '20220730-105402 - bla2']
+        rPlotDate : list[wx.MenuItems]
+            List of available menu items representing the analysis IDs.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(self, cMenuData: dict) -> None:
@@ -251,18 +255,18 @@ class BaseMenuMainResult(BaseMenu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.AddDateItems(self.cMenuData['menudate'])
+        self.AddDateItems(self.cMenuData['MenuDate'])
         #endregion -----------------------------------------------> Menu Items
     #---
     #endregion -----------------------------------------------> Instance setup
     
     #region ---------------------------------------------------> Class Methods
     def AddDateItems(self, menuDate: list[str]) -> bool:
-        """Add and bind the date to plot. 
+        """Add and bind the analysis ID items. 
 
             Parameters
             ----------
-            menuDate: list of str
+            menuDate: list of str.
                 Available dates to plot e.g. '20210324-123456 - bla'
 
             Returns
@@ -271,15 +275,13 @@ class BaseMenuMainResult(BaseMenu):
         """
         #region ---------------------------------------------------> Add items
         for k in menuDate:
-            #------------------------------> Add item
-            i = self.AppendRadioItem(-1, k)
-            #------------------------------> Add to plotDate
-            self.rPlotDate.append(i)
-            #------------------------------> Add to IDMap
-            self.rIDMap[i.GetId()] = config.klToolGuiUpdate
-            self.rKeyMap[i.GetId()] = 'tDate'
+            #------------------------------> Item
+            self.rPlotDate.append(self.AppendRadioItem(-1, k))
+            #------------------------------> Add to dict
+            self.rIDMap[self.rPlotDate[-1].GetId()]  = config.klToolGuiUpdate
+            self.rKeyMap[self.rPlotDate[-1].GetId()] = 'tDate'
             #------------------------------> Bind
-            self.Bind(wx.EVT_MENU, self.OnMethodKey, source=i)
+            self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[-1])
         #endregion ------------------------------------------------> Add items
 
         #region -----------------------------------------------> Add Separator
@@ -291,7 +293,7 @@ class BaseMenuMainResult(BaseMenu):
 
     def AddLastItems(self, onePlot:bool=True) -> bool:
         """Add the last items to the Tool menu of a window showing results.
-        
+
             Parameters
             ----------
             onePlot: bool
@@ -303,10 +305,7 @@ class BaseMenuMainResult(BaseMenu):
             bool
         """
         #region ---------------------------------------------------> Variables
-        if onePlot:
-            shortCut = 'Ctrl'
-        else:
-            shortCut = 'Shift+Alt'
+        shortCut = 'Ctrl' if onePlot else 'Shift+Alt'
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> Add Items
@@ -321,11 +320,14 @@ class BaseMenuMainResult(BaseMenu):
         #endregion ------------------------------------------------> Add Items
 
         #region --------------------------------------------------> Add rIDMap
-        self.rIDMap[self.miDupWin.GetId()]  = config.klToolDupWin
-        self.rIDMap[self.miZoomR.GetId()]   = config.klToolZoomResetAll
-        self.rIDMap[self.miSaveD.GetId()]   = config.klToolExpData
-        self.rIDMap[self.miSaveI.GetId()]   = config.klToolExpImgAll
-        self.rIDMap[self.miCheckDP.GetId()] = config.klToolCheckDP
+        rIDMap = {
+            self.miDupWin.GetId()  : config.klToolDupWin,
+            self.miZoomR.GetId()   : config.klToolZoomResetAll,
+            self.miSaveD.GetId()   : config.klToolExpData,
+            self.miSaveI.GetId()   : config.klToolExpImgAll,
+            self.miCheckDP.GetId() : config.klToolCheckDP,
+        }
+        self.rIDMap = self.rIDMap | rIDMap
         #endregion -----------------------------------------------> Add rIDMap
 
         #region --------------------------------------------------------> Bind
@@ -339,85 +341,106 @@ class BaseMenuMainResult(BaseMenu):
         return True
     #---
 
-    def UpdateDateItems(self, menuDate: dict) -> bool:
-        """
-    
+    def UpdateDateItems(self, menuData: dict) -> bool:
+        """Update the Analysis ID items when the analyses are modified. 
+
             Parameters
             ----------
-            
-    
+            menuData : dict
+                Data to build the Tool menu of the window. It must contain at 
+                least a key - value pair like:
+                'MenuDate' : ['20210324-123456 - bla',...,]
+
             Returns
             -------
+            bool
             
-    
-            Raise
+            Notes
             -----
-            
+            Menu Further Analysis, if present, is expected to be at 
+            self.mFurtherA and implement the method
+            UpdateFurtherAnalysis(date, menuData['FA']) to handle the update of
+            the Further Analysis menu.
         """
-        #region ---------------------------------------------------> Dates
-        checked = self.GetCheckedRadiodItem(self.rPlotDate)
-        #------------------------------>
+        #region ---------------------------------------------------> Variables
+        checked      = self.GetCheckedRadioItemLabel(self.rPlotDate)
+        checkedFound = False
+        #------------------------------> 
         for k in self.rPlotDate:
             del self.rIDMap[k.GetId()]
             del self.rKeyMap[k.GetId()]
             self.Delete(k)
         self.rPlotDate = []
-        #------------------------------>
-        for k in reversed(menuDate['menudate']):
-            self.rPlotDate.append(self.InsertRadioItem(0,-1,k))
-            self.rIDMap[self.rPlotDate[-1].GetId()] = config.klToolGuiUpdate
-            self.rKeyMap[self.rPlotDate[-1].GetId()] = 'tDate'
-            self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[-1])
-        #------------------------------>
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------------> Dates
+        #------------------------------> Add new items
+        for k in reversed(menuData['MenuDate']):
+            self.rPlotDate.insert(0, self.InsertRadioItem(0,-1,k))
+            self.rIDMap[self.rPlotDate[0].GetId()] = config.klToolGuiUpdate
+            self.rKeyMap[self.rPlotDate[0].GetId()] = 'tDate'
+            self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[0])
+        #------------------------------> Search for previously checked item
         for k in self.rPlotDate:
             if k.GetItemLabelText() == checked:
                 k.Check(check=True)
+                checkedFound = True
                 break
             else:
                 pass
-        #endregion ------------------------------------------------> Dates
-
-        #region --------------------------------------------> Further Analysis
-        if getattr(self, 'mFurtherA', False):
-            for k,v in menuDate.items():
-                print(str(k)+': '+str(v))
-            self.mFurtherA.UpdateFurtherAnalysis(checked, menuDate['FA'])
-        else:
+        #------------------------------> Check first if not found
+        if checkedFound:
             pass
-        #endregion -----------------------------------------> Further Analysis
+        else:
+            self.rPlotDate[0].Check(check=True)
+            checked = self.rPlotDate[0].GetItemLabelText()
+        #endregion ----------------------------------------------------> Dates
+
+        #region ------------------------------------------> Update Other Items
+        # Update menu specific items, e.g. Further Analysis or Cond, RP in 
+        # ProtProf - Volcano Plot. Also update GUI if checked is not the 
+        # analysis currently displayed.
+        self.__UpdateOtherItems(checked, not checkedFound)
+        #endregion ---------------------------------------> Update Other Items
 
         return True
     #---
 
-    def GetCheckedRadiodItem(
-        self, lMenuItem: list[wx.MenuItem], getVal: str='Label',
-        ) -> Union[str, int]:
+    def __UpdateOtherItems(self, tDate: str, updateGUI: bool) -> bool:
+        """Update specific items in the menu after the Analysis IDs were 
+            updated. Override as needed.
+    
+            Parameters
+            ----------
+            tDate: str
+                Currently selected Analysis ID
+            updateGUI: bool
+                Update (True) the data displayed or not (False).
+    
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def GetCheckedRadioItemLabel(self, lMenuItem: list[wx.MenuItem]) -> str: # type: ignore
         """Get the checked item in a list of radio menu items.
 
             Parameters
             ----------
             lMenuItem: list of wx.MenuItems
                 Items are expected to be radio items from the same group.
-            getVal: str
-                wx.MenuItem property to return. 'Id' or 'Label'. Default is 
-                'Label'.
 
             Returns
             -------
             str
                 Label of the checked item
-
-            Notes
-            -----
-            If getVal is not known the Id is returned
         """
         #region -----------------------------------------------------> Checked
         for k in lMenuItem:
             if k.IsChecked():
-                if getVal == 'Label':
-                    return k.GetItemLabelText()
-                else:
-                    return k.GetId()
+                return k.GetItemLabelText()
             else:
                 pass
         #endregion --------------------------------------------------> Checked
@@ -427,8 +450,8 @@ class BaseMenuMainResult(BaseMenu):
 
 
 class BaseMenuMainResultSubMenu(BaseMenu):
-    """Sub menu items for a plot region
-    
+    """Sub menu items for a plot region. 
+
         Parameters
         ----------
         tKey: str
@@ -484,31 +507,33 @@ class BaseMenuFurtherAnalysis(BaseMenu):
     #region ---------------------------------------------------> Class methods
     def AddNatRecSeqEntry(
         self, tMethod: Callable, idMap: str='', idKey: str='') -> bool:
-        """
-    
+        """Add the Native Sequence entry to the menu.
+
             Parameters
             ----------
-            
-    
+            tMethod: Callable
+                Method to call when the menu is selected.
+            idMap : str
+                Value for the self.rIDMap entry
+            idKey: str
+                Value for the self.rKeyMap entry
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
+        #region ---------------------------------------------------> Add Entry
         if self.rMenuData['Nat']:
-            #------------------------------> 
+            #------------------------------> Add Item
             self.miNat = self.Append(-1, config.lmNatSeq, kind=wx.ITEM_CHECK)
             self.Bind(wx.EVT_MENU, tMethod, source=self.miNat)
-            #------------------------------> 
+            #------------------------------> IDMap
             if idMap:
                 rIDMap = {self.miNat.GetId():idMap}
                 self.rIDMap = self.rIDMap | rIDMap
             else:
                 pass
-            #------------------------------> 
+            #------------------------------> KeyMap
             if idKey:
                 rKeyMap = {self.miNat.GetId(): idKey}
                 self.rKeyMap = self.rKeyMap | rKeyMap
@@ -516,13 +541,14 @@ class BaseMenuFurtherAnalysis(BaseMenu):
                 pass
         else:
             pass
-        
+        #endregion ------------------------------------------------> Add Entry
+
         return True
     #---
 
     def AddLastItems(self, onePlot:bool=True) -> bool:
         """Add the last items to the Tool menu of a window showing results.
-        
+
             Parameters
             ----------
             onePlot: bool
@@ -534,10 +560,7 @@ class BaseMenuFurtherAnalysis(BaseMenu):
             bool
         """
         #region ---------------------------------------------------> Variables
-        if onePlot:
-            shortCut = 'Ctrl'
-        else:
-            shortCut = 'Shift+Alt'
+        shortCut = 'Ctrl' if onePlot else 'Shift+Alt'
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> Add Items
@@ -568,21 +591,18 @@ class BaseMenuFurtherAnalysis(BaseMenu):
 
         return True
     #---
-    
+
     def OnClear(self, event:wx.CommandEvent) -> bool:
-        """Override as needed
-    
+        """Override as needed.
+
             Parameters
             ----------
-            
-    
+            event: wx.CommandEvent
+                Information about the event
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         return True
     #---
@@ -822,7 +842,7 @@ class MenuToolCorrA(BaseMenuMainResult):
         -----
         menuData has the following structure:
         {
-            'menudate' : ['dateA',....,'dateN'],
+            'MenuDate' : ['dateA',....,'dateN'],
         }
     """
     #region --------------------------------------------------> Instance setup
@@ -892,7 +912,7 @@ class MenuToolDataPrep(BaseMenuMainResult):
         -----
         menuData has the following structure:
         {
-            'menudate' : [List of dates as str],
+            'MenuDate' : [List of dates as str],
         }
     """
     #region --------------------------------------------------> Instance setup
@@ -1713,7 +1733,7 @@ class MixMenuToolLimProt(BaseMenuMainResult):
         -----
         menuData has the following structure:
             {
-                'menudate' : [List of dates as str],
+                'MenuDate' : [List of dates as str],
             }
     """
     #region --------------------------------------------------> Instance setup
@@ -1780,7 +1800,7 @@ class MixMenuToolTarProt(BaseMenuMainResult):
         -----
         menuData has the following structure:
             {
-                'menudate' : [List of dates as str],
+                'MenuDate' : [List of dates as str],
             }
     """
     #region --------------------------------------------------> Instance setup
@@ -2130,14 +2150,14 @@ class MixMenuToolProtProf(BaseMenuMainResult):
         
         Attributes
         ----------
-        rPlotdate : list of wx.MenuItems
+        rPlotDate : list of wx.MenuItems
             Available dates in the analysis.
         
         Notes
         -----
         cMenuData has the following structure:
             {
-                'menudate' : [List of dates as str],
+                'MenuDate' : [List of dates as str],
                 'crp' : {
                     'date1' : {
                         'C' : [List of conditions as str],

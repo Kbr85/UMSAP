@@ -30,10 +30,10 @@ DEVELOPMENT = True # Track state, development (True) or production (False)
 
 #region -------------------------------------------------------------> Classes
 class UmsapApp(wx.App):
-    """Start the UMSAP app"""
+    """Start the UMSAP app."""
     #region ----------------------------------------------> Overridden methods
     def OnInit(self) -> bool:
-        """Initialize the app
+        """Initialize the app.
 
             Returns
             -------
@@ -68,12 +68,12 @@ class UmsapApp(wx.App):
 
 
 class SplashWindow(wx.adv.SplashScreen):
-    """Create the Splash Screen 
+    """Create the Splash Screen.
 
         Parameters
         ----------
         imgPath : str
-            Path to the image used in the splash window
+            Path to the image used in the splash window.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(self, imgPath: str) -> None:
@@ -100,12 +100,12 @@ class SplashWindow(wx.adv.SplashScreen):
     #region ---------------------------------------------------> Event methods
     def OnClose(self, event: wx.CloseEvent) -> bool:
         """Finish app configuration (parameters that need a running wx.App) &
-            launch main window
+            launch main window.
 
             Parameters
             ----------
-            rEvent : wx.CloseEvent
-                Information regarding the event
+            event : wx.CloseEvent
+                Information regarding the event.
         """
         #region	-----------------------------------------------------> Imports
         import config.config as config
