@@ -21,7 +21,6 @@ from typing import Callable, Optional
 import wx
 
 import config.config as config
-import dtscore.gui_method as dtsGuiMethod
 import dtscore.window as dtsWindow
 import gui.method as method
 import gui.window as window
@@ -245,10 +244,10 @@ class BaseMenuMainResult(BaseMenu):
             List of available menu items representing the analysis IDs.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, cMenuData: dict) -> None:
+    def __init__(self, menuData: dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cMenuData = cMenuData
+        self.cMenuData = menuData
         self.rPlotDate = []
         #------------------------------>
         super().__init__()
@@ -363,7 +362,8 @@ class BaseMenuMainResult(BaseMenu):
             the Further Analysis menu.
         """
         #region ---------------------------------------------------> Variables
-        checked      = self.GetCheckedRadioItemLabel(self.rPlotDate)
+        checked      = self.GetCheckedRadioItem(self.rPlotDate)
+        checkedLabel = checked.GetItemLabelText()
         checkedFound = False
         #------------------------------> 
         for k in self.rPlotDate:
@@ -382,7 +382,7 @@ class BaseMenuMainResult(BaseMenu):
             self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[0])
         #------------------------------> Search for previously checked item
         for k in self.rPlotDate:
-            if k.GetItemLabelText() == checked:
+            if k.GetItemLabelText() == checkedLabel:
                 k.Check(check=True)
                 checkedFound = True
                 break
@@ -393,7 +393,7 @@ class BaseMenuMainResult(BaseMenu):
             pass
         else:
             self.rPlotDate[0].Check(check=True)
-            checked = self.rPlotDate[0].GetItemLabelText()
+            checked = self.rPlotDate[0]
         #endregion ----------------------------------------------------> Dates
 
         #region ------------------------------------------> Update Other Items
@@ -406,13 +406,13 @@ class BaseMenuMainResult(BaseMenu):
         return True
     #---
 
-    def __UpdateOtherItems(self, tDate: str, updateGUI: bool) -> bool:
+    def __UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
         """Update specific items in the menu after the Analysis IDs were 
             updated. Override as needed.
     
             Parameters
             ----------
-            tDate: str
+            tDate: wx.MenuItem
                 Currently selected Analysis ID
             updateGUI: bool
                 Update (True) the data displayed or not (False).
@@ -421,10 +421,17 @@ class BaseMenuMainResult(BaseMenu):
             -------
             bool
         """
+        #region ---------------------------------------------------> Update GUI
+        if updateGUI:
+            self.OnMethodKey(wx.CommandEvent(id=tDate.GetId()))
+        else:
+            pass
+        #endregion ------------------------------------------------> Update GUI
+
         return True
     #---
 
-    def GetCheckedRadioItemLabel(self, lMenuItem: list[wx.MenuItem]) -> str: # type: ignore
+    def GetCheckedRadioItem(self, lMenuItem: list[wx.MenuItem]) -> wx.MenuItem: # type: ignore
         """Get the checked item in a list of radio menu items.
 
             Parameters
@@ -440,7 +447,7 @@ class BaseMenuMainResult(BaseMenu):
         #region -----------------------------------------------------> Checked
         for k in lMenuItem:
             if k.IsChecked():
-                return k.GetItemLabelText()
+                return k
             else:
                 pass
         #endregion --------------------------------------------------> Checked
@@ -493,7 +500,14 @@ class BaseMenuMainResultSubMenu(BaseMenu):
 
 
 class BaseMenuFurtherAnalysis(BaseMenu):
-    """ """
+    """Base Menu for Further Analysis windows, e.g. AA
+    
+        Parameters
+        ----------
+        menuData: dict
+            Information for the menu items. See Child class for details about
+            the content.
+    """
     #region --------------------------------------------------> Instance setup
     def __init__(self, menuData: dict) -> None:
         """ """
@@ -608,19 +622,120 @@ class BaseMenuFurtherAnalysis(BaseMenu):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
+
+
+class BaseMenuFurtherAnalysisEntry(BaseMenu):
+    """Base Menu for Further Analysis submenu, e.g. in TarProt result window.
+
+        Parameters
+        ----------
+        menuData: dict
+            Information for menu entries.
+            {
+                'Date' : {'dictKey': ['E1', 'E2',...]},
+                'DateN': {'dictKey': ['E1', 'E2',...]},
+            }
+        ciDate: str
+            Currently selected date
+        dictKey: str
+            Prefix for the key in self.rIDMap
+        itemLabel: str
+            Label for New Analysis entry.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, menuData: dict, ciDate: str, dictKey: str, itemLabel: str
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cMenuData  = menuData
+        self.rDictKey   = dictKey
+        self.rItemLabel = itemLabel
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------> Menu Items
+        self.rItemList = self.SetItems(ciDate)
+        #endregion -----------------------------------------------> Menu Items
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetItems(self, tDate: str) -> list[wx.MenuItem]:
+        """Set the menu items.
+
+            Parameters
+            ----------
+            tDate: str
+                Currently selected date.
+
+            Returns
+            -------
+            list[wx.MenuItem]
+        """
+        #region ---------------------------------------------------> Variables
+        itemList = []
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------->
+        #------------------------------> Available Date
+        for v in self.cMenuData[tDate][self.rDictKey]:
+            itemList.append(self.Append(-1, v))
+            self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=itemList[-1])
+            self.rIDMap[itemList[-1].GetId()] = f'{self.rDictKey}-Item'
+        #------------------------------> Separator
+        if self.cMenuData[tDate][self.rDictKey]:
+            self.rSep = self.AppendSeparator()
+        else:
+            self.rSep = None
+        #------------------------------> New Analysis
+        itemList.append(self.Append(-1, self.rItemLabel))
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=itemList[-1])
+        self.rIDMap[itemList[-1].GetId()] = f'{self.rDictKey}-New'
+        #endregion ------------------------------------------------>
+
+        return itemList
+    #---
+
+    def Update(self, tDate: str, menuData: dict={}) -> bool:
+        """Update the menu items.
+    
+            Parameters
+            ----------
+            tDate: str
+                Currently selected date.
+            menuDate: dict
+                New menuData dict.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> 
+        for x in self.rItemList:
+            self.Delete(x)
+
+        if self.rSep is not None:
+            self.Delete(self.rSep)
+        else:
+            pass
+        #endregion -----------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.cMenuData = menuData if menuData else self.cMenuData
+        self.rItemList = self.SetItems(tDate)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion -----------------------------------------------------> Base Classes
 
 
 #region ----------------------------------------------------> Individual menus
 class MenuModule(BaseMenu):
-    """Menu with module entries
-
-        Attributes
-        ----------
-        rIDMap : dict
-            Link wx.MenuItems.Id with the name of the tabs in the Analysis Setup
-            window.
-    """
+    """Menu with module entries."""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -653,14 +768,7 @@ class MenuModule(BaseMenu):
 
 
 class MenuUtility(BaseMenu):
-    """Menu with the utilities entries
-
-        Attributes
-        ----------
-        rIDMap : dict
-            Link wx.MenuItems.Id with the name of the tabs in the Analysis Setup
-            window.
-    """
+    """Menu with the utilities entries."""
     #region --------------------------------------------------> Instance Setup
     def __init__(self) -> None:
         """"""
@@ -676,7 +784,7 @@ class MenuUtility(BaseMenu):
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
-        self.rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
+        self.rIDMap = {
             self.miCorrA.GetId()   : config.ntCorrA,
             self.miDataPrep.GetId(): config.ntDataPrep,
         }
@@ -697,7 +805,7 @@ class MenuUtility(BaseMenu):
             Parameters
             ----------
             event : wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -708,14 +816,19 @@ class MenuUtility(BaseMenu):
         #endregion ---------------------------------------------------> Window
 
         #region ---------------------------------------------------> Get fileP
-        #------------------------------>
         try:
-            fileP = dtsGuiMethod.GetFilePath(
+            #------------------------------> 
+            dlg = dtsWindow.FileSelectDialog(
                 'openO', 
                 ext    = config.elUMSAP,
                 parent = win,
                 msg    = config.mFileSelUMSAP,
             )
+            #------------------------------> 
+            if dlg.ShowModal() == wx.ID_OK:
+                fileP = Path(dlg.GetPath())
+            else:
+                return False
         except Exception as e:
             dtsWindow.NotificationDialog(
                 'errorF', 
@@ -724,17 +837,13 @@ class MenuUtility(BaseMenu):
                 parent     = win,
             )
             return False
-        #------------------------------>
-        if fileP:
-            fileP = Path(fileP[0])
-        else:
-            return False
         #endregion ------------------------------------------------> Get fileP
 
         #region ---------------------------------------------------> Load file
         method.LoadUMSAPFile(fileP=fileP)
         #endregion ------------------------------------------------> Load file
 
+        dlg.Destroy()
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
@@ -742,13 +851,7 @@ class MenuUtility(BaseMenu):
 
 
 class MenuHelp(BaseMenu):
-    """Menu with the help entries
-
-        Attributes
-        ----------
-        rIDMap : dict
-            Link wx.MenuItems.Id with the method keyword.
-    """
+    """Menu with the help entries."""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -768,7 +871,7 @@ class MenuHelp(BaseMenu):
         #endregion -----------------------------------------------> Menu Items
 
         #region ---------------------------------------------------> Links
-        self.rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
+        self.rIDMap = {
             self.miAbout.GetId   (): config.klHelpAbout,
             self.miManual.GetId  (): config.klHelpManual,
             self.miTutorial.GetId(): config.klHelpTutorial,
@@ -811,7 +914,7 @@ class MenuToolFileControl(BaseMenu):
         #endregion -----------------------------------------------> Menu Items
 
         #region -------------------------------------------------------> Links
-        self.rIDMap = { # Associate IDs with method keyword
+        self.rIDMap = {
             self.miAddData.GetId()   : config.klToolUMSAPCtrlAddDelExp,
             self.miDelData.GetId()   : config.klToolUMSAPCtrlAddDelExp,
             self.miExpData.GetId()   : config.klToolUMSAPCtrlAddDelExp,
@@ -902,12 +1005,12 @@ class MenuToolCorrA(BaseMenuMainResult):
 
 class MenuToolDataPrep(BaseMenuMainResult):
     """Tool menu for the Data Preparation Plot window.
-        
+
         Parameters
         ----------
         menuData: dict
             Data needed to build the menu. See Notes for more details.
-        
+
         Notes
         -----
         menuData has the following structure:
@@ -916,10 +1019,10 @@ class MenuToolDataPrep(BaseMenuMainResult):
         }
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, cMenuData: dict={}) -> None:
+    def __init__(self, menuData: dict={}) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__(cMenuData)
+        super().__init__(menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
@@ -933,7 +1036,7 @@ class MenuToolDataPrep(BaseMenuMainResult):
 
 
 class MenuFCEvolution(BaseMenu):
-    """Menu for a log2FC evolution along relevant points """
+    """Menu for a log2FC evolution along relevant points."""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -952,8 +1055,8 @@ class MenuFCEvolution(BaseMenu):
 
         #region ---------------------------------------------------> rKeyID
         rIDMap = {
-            self.miSaveI.GetId(): 'FCImage',
-            self.miZoomR.GetId(): 'FCZoom',
+            self.miSaveI.GetId()  : 'FCImage',
+            self.miZoomR.GetId()  : 'FCZoom',
             self.miShowAll.GetId(): 'FCShowAll',
         }
         self.rIDMap = self.rIDMap | rIDMap
@@ -961,8 +1064,8 @@ class MenuFCEvolution(BaseMenu):
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miShowAll)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miZoomR)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -986,7 +1089,8 @@ class MenuFiltersProtProf(BaseMenu):
         self.miZScore   = self.Append(-1, 'Z Score')
         self.AppendSeparator()
         self.miApply = self.Append(-1, 'Apply All\tCtrl+Shift+A')
-        self.miUpdate = self.Append(-1, 'Auto Apply\tCtrl-Shift+F', kind=wx.ITEM_CHECK)
+        self.miUpdate = self.Append(
+            -1, 'Auto Apply\tCtrl-Shift+F', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
         self.miRemoveAny  = self.Append(-1, 'Remove\tCtrl+Shift+R')
         self.miRemoveLast = self.Append(-1, 'Remove Last\tCtrl+Shift+Z')
@@ -1041,14 +1145,7 @@ class MenuFiltersProtProf(BaseMenu):
 
 
 class MenuLockPlotScale(BaseMenu):
-    """Lock the plots scale to the selected option
-    
-        Attributes
-        ----------
-        nameID : dict
-            To map menu items to the Lock type. Keys are MenuItems.GetId() and 
-            values are str. 
-    """
+    """Lock the plots scale to the selected option."""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -1060,19 +1157,18 @@ class MenuLockPlotScale(BaseMenu):
         self.miNo      = self.Append(-1, 'No',         kind=wx.ITEM_RADIO)
         self.miDate    = self.Append(-1, 'Analysis',   kind=wx.ITEM_RADIO)
         self.miProject = self.Append(-1, 'Project',    kind=wx.ITEM_RADIO)
-        
         self.miDate.Check()
         #endregion -----------------------------------------------> Menu Items
 
         #region ------------------------------------------------------> nameID
-        rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
+        rIDMap = {
             self.miNo.GetId()     : 'No',
             self.miDate.GetId()   : 'Analysis',
             self.miProject.GetId(): 'Project',
         }
         self.rIDMap = self.rIDMap | rIDMap
         #------------------------------>
-        rKeyMap = { # Associate IDs with Tab names. Avoid manual IDs
+        rKeyMap = {
             self.miNo.GetId()     : 'mode',
             self.miDate.GetId()   : 'mode',
             self.miProject.GetId(): 'mode',
@@ -1091,13 +1187,7 @@ class MenuLockPlotScale(BaseMenu):
 
 
 class MenuClearSelLimProt(BaseMenu):
-    """Clear the selection in a LimProtRes Window
-
-        Attributes
-        ----------
-        rIDMap : dict
-            Map wx.MenuItem IDs to function IDs in the window.
-    """
+    """Clear the selection in a LimProtRes Window."""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -1137,14 +1227,7 @@ class MenuClearSelLimProt(BaseMenu):
 
 
 class MenuClearSelTarProt(BaseMenu):
-    """Clear the selection in a TarProtRes Window
-
-        Attributes
-        ----------
-        rKeyID : dict
-            To map menu items to the Clear type. Keys are MenuItems.GetId() and 
-            values are str. 
-    """
+    """Clear the selection in a TarProtRes Window."""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -1158,7 +1241,7 @@ class MenuClearSelTarProt(BaseMenu):
         self.AppendSeparator()
         self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
         #endregion -----------------------------------------------> Menu Items
-        
+
         #region ---------------------------------------------------> 
         self.rIDMap = {
             self.miNoPept.GetId(): 'Peptide',
@@ -1178,14 +1261,7 @@ class MenuClearSelTarProt(BaseMenu):
 
 
 class MenuClearSelProtProf(BaseMenu):
-    """Clear the selection in a ProtProf Res Window
-    
-        Attributes
-        ----------
-        rKeyID : dict
-            To map menu items to the Clear type. Keys are MenuItems.GetId() and 
-            values are str. 
-    """
+    """Clear the selection in a ProtProf Res Window."""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -1199,7 +1275,7 @@ class MenuClearSelProtProf(BaseMenu):
         self.AppendSeparator()
         self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
         #endregion -----------------------------------------------> Menu Items
-        
+
         #region ---------------------------------------------------> 
         rIDMap = {
             self.miLabel.GetId(): 'Labels',
@@ -1220,13 +1296,19 @@ class MenuClearSelProtProf(BaseMenu):
 
 
 class MenuToolAA(BaseMenuFurtherAnalysis):
-    """ """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
+    """Tool menu for the AA result window.
 
+        Parameters
+        ----------
+        menuData: dict
+            Dict with the data for the menu with the following two entries:
+            {
+                'Label' : ['L1', 'L2',....],
+                'Pos'   : ['P1', 'P2',....],
+            }
+    """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData):
+    def __init__(self, menuData) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.rItems = []
@@ -1236,25 +1318,27 @@ class MenuToolAA(BaseMenuFurtherAnalysis):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
+        #------------------------------> Labels
         for k in menuData['Label']:
             self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
             self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
             rIDMap[self.rItems[-1].GetId()] = config.klToolAAExp
         self.rItems[0].Check()
+        #------------------------------> Positions
         self.AppendSeparator()
         for k in menuData['Pos']:
             self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
             self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
             rIDMap[self.rItems[-1].GetId()] = config.klToolAAPos
-        #------------------------------>
+        #------------------------------> Last Items
         self.AppendSeparator()
         self.AddLastItems()
         self.DestroyItem(self.miClear.GetId())
         #endregion -----------------------------------------------> Menu Items
-        
-        #region ---------------------------------------------------> 
+
+        #region --------------------------------------------------->
         self.rIDMap = self.rIDMap | rIDMap
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -1267,20 +1351,19 @@ class MenuToolAA(BaseMenuFurtherAnalysis):
             event:wx.Event
                 Information about the event
 
-
             Returns
             -------
             bool
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         [x.Check(check=False) for x in self.rItems]
         tID = event.GetId()
         self.Check(tID, True)
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         self.OnMethodLabel(event)
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         return True
     #---
@@ -1289,7 +1372,17 @@ class MenuToolAA(BaseMenuFurtherAnalysis):
 
 
 class MenuToolHist(BaseMenuFurtherAnalysis):
-    """ """
+    """Tool menu for the Histogram result window.
+
+        Parameters
+        ----------
+        menuData: dict
+            Dict with the data for the menu with the following two entries:
+            {
+                'Label': ['L1', 'L2',....],
+                'Nat: bool,
+            }
+    """
     #region --------------------------------------------------> Instance setup
     def __init__(self, menuData) -> None:
         """ """
@@ -1306,7 +1399,7 @@ class MenuToolHist(BaseMenuFurtherAnalysis):
         self.AppendSeparator()
         self.AddLastItems()
         #endregion -----------------------------------------------> Menu Items
-        
+
         #region --------------------------------------------------->
         rIDMap = {
             self.miUnique.GetId(): config.klToolGuiUpdate,
@@ -1325,20 +1418,19 @@ class MenuToolHist(BaseMenuFurtherAnalysis):
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
-    
+
     #region ---------------------------------------------------> Class Methods
     def OnClear(self, event: wx.CommandEvent)-> bool:
-        """
-    
+        """Clear all selections.
+
             Parameters
             ----------
-            
+            event: wx.CommandEvent
+                Information about the event.
+
             Returns
             -------
-
-            Raise
-            -----
-            
+            bool
         """
         #region --------------------------------------------------->
         try:
@@ -1361,7 +1453,17 @@ class MenuToolHist(BaseMenuFurtherAnalysis):
 
 
 class MenuToolCpR(BaseMenuFurtherAnalysis):
-    """ """
+    """Tool menu for the Cleavage per Residue result window.
+
+        Parameters
+        ----------
+        menuData: dict
+            Dict with the data for the menu with the following two entries:
+            {
+                'Label': ['L1', 'L2',....],
+                'Nat: bool,
+            }
+    """
     #region --------------------------------------------------> Instance setup
     def __init__(self, menuData):
         """ """
@@ -1408,7 +1510,6 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
             ----------
             event:wx.Event
                 Information about the event
-
 
             Returns
             -------
@@ -1460,7 +1561,6 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
             event:wx.Event
                 Information about the event
 
-
             Returns
             -------
             bool
@@ -1495,7 +1595,17 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
 
 
 class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
-    """ """
+    """Tool menu for the Cleavage Evolution.
+
+        Parameters
+        ----------
+        menuData: dict
+            Dict with the data for the menu with the following two entries:
+            {
+                'Label': ['L1', 'L2',....],
+                'Nat: bool,
+            }
+    """
     #region --------------------------------------------------> Instance setup
     def __init__(self, menuData):
         """ """
@@ -1532,21 +1642,16 @@ class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
 
     #region ---------------------------------------------------> Class Methods
     def OnClear(self, event:wx.CommandEvent) -> bool:
-        """
+        """Clear selections.
 
             Parameters
             ----------
             event:wx.Event
                 Information about the event
 
-
             Returns
             -------
-
-
-            Raise
-            -----
-
+            bool
         """
         #region --------------------------------------------------->
         try:
@@ -1568,118 +1673,9 @@ class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
 #---
 
 
-class MenuFurtherAnalysis(BaseMenu):
-    """
-
-        Parameters
-        ----------
-
-
-        Notes
-        -----
-    """
-    #region --------------------------------------------------> Instance setup
-    def __init__(
-        self, cMenuData: dict, ciDate: str, dictKey: str, itemLabel: str
-        ) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        self.cMenuData  = cMenuData
-        self.rDictKey   = dictKey
-        self.rItemLabel = itemLabel
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        self.rItemList = self.SetItems(ciDate)
-        #endregion -----------------------------------------------> Menu Items
-    #---
-    #endregion -----------------------------------------------> Instance setup
-
-    #region ---------------------------------------------------> Class methods
-    def SetItems(self, tDate: str):
-        """
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event
-
-
-            Returns
-            -------
-
-
-            Raise
-            -----
-
-        """
-        #region ---------------------------------------------------> Variables
-        itemList = []
-        #endregion ------------------------------------------------> Variables
-
-        #region --------------------------------------------------->
-        #------------------------------> Available Date
-        for v in self.cMenuData[tDate][self.rDictKey]:
-            itemList.append(self.Append(-1, v))
-            self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=itemList[-1])
-            self.rIDMap[itemList[-1].GetId()] = f'{self.rDictKey}-Item'
-        #------------------------------> Separator
-        if self.cMenuData[tDate][self.rDictKey]:
-            self.rSep = self.AppendSeparator()
-        else:
-            self.rSep = None
-        #------------------------------> New Analysis
-        itemList.append(self.Append(-1, self.rItemLabel))
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=itemList[-1])
-        self.rIDMap[itemList[-1].GetId()] = f'{self.rDictKey}-New'
-        #endregion ------------------------------------------------>
-
-        return itemList
-    #---
-
-    def Update(self, tDate: str, cMenuData: dict={}) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        #region --------------------------------------------------------> 
-        for x in self.rItemList:
-            self.Delete(x)
-
-        if self.rSep is not None:
-            self.Delete(self.rSep)
-        else:
-            pass
-        #endregion -----------------------------------------------------> 
-
-        #region ---------------------------------------------------> 
-        self.cMenuData = cMenuData if cMenuData else self.cMenuData
-        self.rItemList = self.SetItems(tDate)
-        #endregion ------------------------------------------------> 
-
-        return True
-    #---
-    #endregion ------------------------------------------------> Class methods
-#---
-
-
 class MenuVolcanoPlotColorScheme(BaseMenu):
-    """ """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
+    """Menu for Color Scheme in the Volcano Plot menu of ProtProf result window.
+    """
     #region --------------------------------------------------> Instance setup
     def __init__(self):
         """ """
@@ -1722,25 +1718,19 @@ class MenuVolcanoPlotColorScheme(BaseMenu):
 
 #region -----------------------------------------------------------> Mix menus
 class MixMenuToolLimProt(BaseMenuMainResult):
-    """Tool menu for the Limited Proteolysis window
+    """Tool menu for the Limited Proteolysis window.
 
         Parameters
         ----------
-        cMenuData: dict
-            Data needed to build the menu. See Notes below.
-
-        Notes
-        -----
-        menuData has the following structure:
-            {
-                'MenuDate' : [List of dates as str],
-            }
+        menuData: dict
+            Data needed to build the menu. 
+            {'MenuDate' : [List of dates as str],}
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, cMenuData: dict) -> None:
+    def __init__(self, menuData: dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__(cMenuData)
+        super().__init__(menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
@@ -1768,7 +1758,7 @@ class MixMenuToolLimProt(BaseMenuMainResult):
         pos = self.FindChildItem(self.miSaveD.GetId())[1]
         self.miSaveSeq = self.Insert(pos+2, -1, "Export Sequences")
         #endregion -----------------------------------------------> Menu Items
-        
+
         #region ---------------------------------------------------> rKeyID
         rIDMap = {
             self.miBandLane.GetId(): config.klToolLimProtBandLane,
@@ -1794,14 +1784,8 @@ class MixMenuToolTarProt(BaseMenuMainResult):
         Parameters
         ----------
         cMenuData: dict
-            Data needed to build the menu. See Notes below.
-
-        Notes
-        -----
-        menuData has the following structure:
-            {
-                'MenuDate' : [List of dates as str],
-            }
+            Data needed to build the menu. 
+            {'MenuDate' : [List of dates as str],}
     """
     #region --------------------------------------------------> Instance setup
     def __init__(self, cMenuData: dict) -> None:
@@ -1849,7 +1833,7 @@ class MixMenuToolTarProt(BaseMenuMainResult):
     #endregion -----------------------------------------------> Instance setup
     
     #region ---------------------------------------------------> Class Methods
-    def OnMethodKey(self, event):
+    def OnMethodKey(self, event) -> bool:
         """Call the corresponding method in the window with no arguments or
             keyword arguments
 
@@ -1887,7 +1871,7 @@ class MixMenuToolTarProt(BaseMenuMainResult):
 
 class MixMenuVolcanoPlot(BaseMenu):
     """Menu for a Volcano Plot.
-    
+
         Parameters
         ----------
         cCrp: dict
@@ -1895,7 +1879,7 @@ class MixMenuVolcanoPlot(BaseMenu):
             See Notes for more details.
         ciDate : str
             Initially selected date
-            
+
         Attributes
         ----------
         rCond : list of wx.MenuItems
@@ -1907,10 +1891,10 @@ class MixMenuVolcanoPlot(BaseMenu):
             Available relevant points as wx.MenuItems for the current date.
         rSep : wx.MenuItem
             Separator between conditions and relevant points.
-            
+
         Notes
         -----
-        rCrp has the following structure
+        rCrp has the following structure:
             {
                     'date1' : {
                         'C' : [List of conditions as str],
@@ -1935,7 +1919,8 @@ class MixMenuVolcanoPlot(BaseMenu):
         self.rCond, self.rRp = self.SetCondRPMenuItems(ciDate)
         self.AppendSeparator()
         self.miLabelProt = self.Append(-1, 'Add Label\tShift+A')
-        self.miLabelPick = self.Append(-1, 'Pick Label\tShift+P', kind=wx.ITEM_CHECK)
+        self.miLabelPick = self.Append(
+            -1, 'Pick Label\tShift+P', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
         self.mColor = MenuVolcanoPlotColorScheme()
         self.AppendSubMenu(self.mColor, 'Color Scheme')
@@ -1946,7 +1931,7 @@ class MixMenuVolcanoPlot(BaseMenu):
         self.AppendSeparator()
         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
         #endregion -----------------------------------------------> Menu Items
-        
+
         #region ---------------------------------------------------> rKeyID
         rIDMap = {
             self.miLabelPick.GetId() : config.klToolVolPlotLabelPick,
@@ -1979,11 +1964,12 @@ class MixMenuVolcanoPlot(BaseMenu):
         ) -> tuple[list[wx.MenuItem], list[wx.MenuItem]]:
         """Set the menu items for conditions and relevant points as defined for 
             the current analysis date.
-    
+
             Parameters
             ----------
             tDate : str
-    
+                Currently selected date.
+
             Returns
             -------
             tuple:
@@ -1994,7 +1980,7 @@ class MixMenuVolcanoPlot(BaseMenu):
         cond = []
         rp = []
         #endregion ----------------------------------------------> Empty lists
-        
+
         #region ------------------------------------------------> Add elements
         #------------------------------> Conditions
         for c in self.rCrp[tDate]['C']:
@@ -2015,7 +2001,7 @@ class MixMenuVolcanoPlot(BaseMenu):
             self.rIDMap[rp[-1].GetId()] = config.klToolVolPlot
             self.rKeyMap[rp[-1].GetId()] = 'rp'
         #endregion ---------------------------------------------> Add elements
-        
+
         #region ---------------------------------------------------> Add items
         k = 0
         #------------------------------> Conditions
@@ -2031,19 +2017,19 @@ class MixMenuVolcanoPlot(BaseMenu):
 
         return (cond, rp)
     #---
-    
+
     def UpdateCondRP(self, tDate) -> bool:
         """Update the conditions and relevant points when date changes.
-    
+
             Parameters
             ----------
             tDate : str
                 Selected date
-    
+
             Returns
             -------
             bool
-            
+
             Notes
             -----
             Date changes in ProtProfToolMenu
@@ -2074,22 +2060,25 @@ class MixMenuFurtherAnalysisTarProt(BaseMenu):
 
         Parameters
         ----------
-        
-
+        menuData: dict
+            Information for menu items
+            {
+                'Date':{'FA1':['FA11', 'FA12',...],'FA2':['FA21', 'FA22',...],},
+            }
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, cMenuData: dict, ciDate:str) -> None:
+    def __init__(self, menuData: dict, ciDate:str) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
         #------------------------------> 
-        self.mAA = MenuFurtherAnalysis(
-            cMenuData, ciDate, 'AA', 'New AA Analysis')
+        self.mAA = BaseMenuFurtherAnalysisEntry(
+            menuData, ciDate, 'AA', 'New AA Analysis')
         self.AppendSubMenu(self.mAA, 'AA Distribution')
         self.AppendSeparator()
         self.miCEvol = self.Append(-1, 'Cleavage Evolution')
-        self.mHist   = MenuFurtherAnalysis(
-            cMenuData, ciDate, 'Hist', 'New Histogram')
+        self.mHist   = BaseMenuFurtherAnalysisEntry(
+            menuData, ciDate, 'Hist', 'New Histogram')
         self.AppendSubMenu(self.mHist, 'Cleavage Histograms')
         self.miCpR = self.Append(-1, 'Cleavage per Residue')
         self.AppendSeparator()
@@ -2114,25 +2103,22 @@ class MixMenuFurtherAnalysisTarProt(BaseMenu):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def UpdateFurtherAnalysis(self, tDate: str, cMenuData: dict={}):
-        """
+    def UpdateFurtherAnalysis(self, tDate: str, menuData: dict={}) -> bool:
+        """Update Further Analysis.
 
             Parameters
             ----------
-            event:wx.Event
-                Information about the event
-
+            tDate: str
+                Currently selected date.
+            menuData: dict
+                Information for the menu items.
 
             Returns
             -------
-
-
-            Raise
-            -----
-
+            bool
         """
-        self.mAA.Update(tDate, cMenuData)
-        self.mHist.Update(tDate, cMenuData)
+        self.mAA.Update(tDate, menuData)
+        self.mHist.Update(tDate, menuData)
 
         return True
     #---
@@ -2145,17 +2131,8 @@ class MixMenuToolProtProf(BaseMenuMainResult):
         
         Parameters
         ----------
-        cMenuData: dict
-            Data needed to build the menu. See Notes below.
-        
-        Attributes
-        ----------
-        rPlotDate : list of wx.MenuItems
-            Available dates in the analysis.
-        
-        Notes
-        -----
-        cMenuData has the following structure:
+        menuData: dict
+            Data needed to build the menu.
             {
                 'MenuDate' : [List of dates as str],
                 'crp' : {
@@ -2168,17 +2145,11 @@ class MixMenuToolProtProf(BaseMenuMainResult):
                 }
             }    
     """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
-    def __init__(self, cMenuData: dict) -> None:
+    def __init__(self, menuData: dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cMenuData = cMenuData
-        #------------------------------>
-        super().__init__(cMenuData)
+        super().__init__(menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
@@ -2211,8 +2182,7 @@ class MixMenuToolProtProf(BaseMenuMainResult):
 
     #region ---------------------------------------------------> Class Methods
     def OnMethodKey(self, event):
-        """Call the corresponding method in the window with no arguments or
-            keyword arguments
+        """Call the corresponding method in the window.
 
             Parameters
             ----------
@@ -2253,8 +2223,7 @@ class MixMenuToolProtProf(BaseMenuMainResult):
 
 #region -------------------------------------------------------------> Menubar
 class MenuBarMain(wx.MenuBar):
-    """ Creates the application menu bar"""
-
+    """Creates the application menu bar"""
     #region --------------------------------------------------- Instance Setup
     def __init__(self) -> None:
         """ """
@@ -2286,9 +2255,12 @@ class MenuBarTool(MenuBarMain):
         cName : str
             Unique name of the window/tab for which the Tool menu will be 
             created
-        cMenuData : dict
+        menuData : dict
             Data to build the Tool menu of the window. See structure in the
             window or menu class.
+
+        Attributes
+        ----------
         dTool: dict
             Methods to create the Tool Menu
     """

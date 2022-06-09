@@ -336,20 +336,20 @@ class FileSelectDialog(wx.FileDialog):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, mode: Literal['openO', 'openM', 'save'], 
-        wildcard: str, parent: Optional['wx.Window']=None, 
-        message: Optional[str]=None, 
+        ext: str, parent: Optional['wx.Window']=None, 
+        msg: Optional[str]=None, 
         defPath: Union[Path, str, None]=None,
         ) -> None:
         """ """
         #region -----------------------------------------------------> Message
-        msg = self.rTitle[mode] if message is None else message
+        msg = self.rTitle[mode] if msg is None else msg
         #endregion --------------------------------------------------> Message
 
         #region ---------------------------------------------> Create & Center
         super().__init__(
             parent, 
             message    = msg,
-            wildcard   = wildcard,
+            wildcard   = ext,
             style      = self.rStyle[mode],
             defaultDir = '' if defPath is None else str(defPath),
         )
