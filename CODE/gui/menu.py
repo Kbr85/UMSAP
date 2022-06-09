@@ -362,9 +362,9 @@ class BaseMenuMainResult(BaseMenu):
             the Further Analysis menu.
         """
         #region ---------------------------------------------------> Variables
-        checked      = self.GetCheckedRadioItem(self.rPlotDate)
-        checkedLabel = checked.GetItemLabelText()
-        checkedFound = False
+        self.cMenuData = menuData
+        dateC = self.GetCheckedRadioItem(self.rPlotDate).GetItemLabelText()
+        checkedFound   = False
         #------------------------------> 
         for k in self.rPlotDate:
             del self.rIDMap[k.GetId()]
@@ -382,9 +382,10 @@ class BaseMenuMainResult(BaseMenu):
             self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[0])
         #------------------------------> Search for previously checked item
         for k in self.rPlotDate:
-            if k.GetItemLabelText() == checkedLabel:
+            if k.GetItemLabelText() == dateC:
                 k.Check(check=True)
                 checkedFound = True
+                menuItem = k
                 break
             else:
                 pass
@@ -393,30 +394,30 @@ class BaseMenuMainResult(BaseMenu):
             pass
         else:
             self.rPlotDate[0].Check(check=True)
-            checked = self.rPlotDate[0]
+            menuItem = self.rPlotDate[0]
         #endregion ----------------------------------------------------> Dates
 
         #region ------------------------------------------> Update Other Items
         # Update menu specific items, e.g. Further Analysis or Cond, RP in 
         # ProtProf - Volcano Plot. Also update GUI if checked is not the 
         # analysis currently displayed.
-        self.__UpdateOtherItems(checked, not checkedFound)
+        self.UpdateOtherItems(menuItem, not checkedFound)
         #endregion ---------------------------------------> Update Other Items
 
         return True
     #---
 
-    def __UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
+    def UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
         """Update specific items in the menu after the Analysis IDs were 
             updated. Override as needed.
-    
+
             Parameters
             ----------
             tDate: wx.MenuItem
                 Currently selected Analysis ID
             updateGUI: bool
                 Update (True) the data displayed or not (False).
-    
+
             Returns
             -------
             bool
@@ -1783,15 +1784,18 @@ class MixMenuToolTarProt(BaseMenuMainResult):
 
         Parameters
         ----------
-        cMenuData: dict
+        menuData: dict
             Data needed to build the menu. 
-            {'MenuDate' : [List of dates as str],}
+            {
+                'MenuDate' : [List of dates as str],
+                'FA' : {'Date': {'FA1': [], 'FA2':[]}, 'DateN':{},},
+            }
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, cMenuData: dict) -> None:
+    def __init__(self, menuData: dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__(cMenuData)
+        super().__init__(menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
@@ -1865,6 +1869,42 @@ class MixMenuToolTarProt(BaseMenuMainResult):
         
         return True
     #---
+
+    def UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
+        """Update specific items in the menu after the Analysis IDs were 
+            updated. Override as needed.
+
+            Parameters
+            ----------
+            tDate: wx.MenuItem
+                Currently selected Analysis ID
+            updateGUI: bool
+                Update (True) the data displayed or not (False).
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        tDateLabel = tDate.GetItemLabelText()
+        menuData   = self.cMenuData['FA']
+        #endregion ------------------------------------------------> 
+    
+        #region -------------------------------------------------------->
+        self.mFurtherA.UpdateFurtherAnalysis(
+            tDate=tDateLabel, menuData=menuData,
+        )
+        #endregion ----------------------------------------------------->
+
+        #region ---------------------------------------------------> Update GUI
+        if updateGUI:
+            self.OnMethodKey(wx.CommandEvent(id=tDate.GetId()))
+        else:
+            pass
+        #endregion ------------------------------------------------> Update GUI
+
+        return True
+    #---
     #endregion ------------------------------------------------> Class Methods
 #---
 
@@ -1874,7 +1914,7 @@ class MixMenuVolcanoPlot(BaseMenu):
 
         Parameters
         ----------
-        cCrp: dict
+        menuData: dict
             Available conditions and relevant point for the analysis. 
             See Notes for more details.
         ciDate : str
@@ -1905,10 +1945,10 @@ class MixMenuVolcanoPlot(BaseMenu):
             }
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, cCrp: dict, ciDate: str) -> None:
+    def __init__(self, menuData: dict, ciDate: str) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rCrp = cCrp
+        self.rCrp = menuData
         #------------------------------> Cond - RP separator. To remove/create.
         self.rSep = None
         #------------------------------> 
@@ -2018,13 +2058,15 @@ class MixMenuVolcanoPlot(BaseMenu):
         return (cond, rp)
     #---
 
-    def UpdateCondRP(self, tDate) -> bool:
+    def UpdateCondRP(self, tDate: str, menuData: dict={}) -> bool:
         """Update the conditions and relevant points when date changes.
 
             Parameters
             ----------
             tDate : str
                 Selected date
+            menuData: dict
+                Information for the menu item.
 
             Returns
             -------
@@ -2034,6 +2076,10 @@ class MixMenuVolcanoPlot(BaseMenu):
             -----
             Date changes in ProtProfToolMenu
         """
+        #region ---------------------------------------------------> 
+        self.rCrp = menuData if menuData else self.rCrp
+        #endregion ------------------------------------------------> 
+
         #region ---------------------------------------------> Delete Elements
         #------------------------------> Conditions
         for c in self.rCond:
@@ -2213,6 +2259,37 @@ class MixMenuToolProtProf(BaseMenuMainResult):
         else:
             super().OnMethodKey(event)
         #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
+        """Update specific items in the menu after the Analysis IDs were 
+            updated. Override as needed.
+
+            Parameters
+            ----------
+            tDate: wx.MenuItem
+                Currently selected Analysis ID
+            updateGUI: bool
+                Update (True) the data displayed or not (False).
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        self.mVolcano.UpdateCondRP(
+            tDate.GetItemLabelText(), self.cMenuData['crp'],
+        )
+        #endregion ----------------------------------------------------->
+
+        #region ---------------------------------------------------> Update GUI
+        if updateGUI:
+            self.OnMethodKey(wx.CommandEvent(id=tDate.GetId()))
+        else:
+            pass
+        #endregion ------------------------------------------------> Update GUI
 
         return True
     #---
