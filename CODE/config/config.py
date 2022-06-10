@@ -104,9 +104,9 @@ winNumber = {}
 
 #region ---------------------------------------------------------------> Names
 #------------------------------> Default name
-nDefName = 'Default name'
+nwDef = 'Untitled Window'
 #------------------------------> Windows
-nwMain          = 'MainW'
+nwMain          = 'Analysis Setup'
 # nwUMSAPControl  = 'UMSAPControl'
 # nwCorrAPlot     = 'CorrAPlot'
 # nwProtProf      = 'ProtProfPlot'
@@ -119,17 +119,17 @@ nwMain          = 'MainW'
 # nwCEvolPlot     = 'CEvolPlot'
 nwAbout         = 'About UMSAP'
 #------------------------------> Dialogs
-ndCheckUpdateResDialog = 'CheckUpdateResDialog'
+ndCheckUpdateResDialog = 'Check for Updates'
 ndPreferences   = 'Preferences'
 # ndResControlExp        = 'ResControlExp'
 # ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
 # ntStart    = 'StartTab'
-ntDataPrep = "DataPrepTab"
-ntCorrA    = 'CorrATab'
-ntLimProt  = 'LimProtTab'
-ntProtProf = 'ProtProfTab'
-ntTarProt  = 'TarProtTab'
+ntDataPrep   = "DataPrep"
+ntCorrA      = 'CorrA'
+ntLimProt    = 'LimProt'
+ntProtProf   = 'ProtProf'
+ntTarProt    = 'TarProt'
 ntPrefUpdate = 'Updates'
 # #------------------------------> Individual Panes
 # npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
@@ -155,31 +155,6 @@ nuReadF    = 'Read UMSAP File'
 # nuCpR      = 'Cleavage per Residues'
 # nuCEvol    = 'Cleavage Evolution'
 #endregion ------------------------------------------------------------> Names
-
-
-#region --------------------------------------------------------------> Titles
-#------------------------------> Default names
-tdW = "Untitled Window"
-# tdT = "Tab"
-# tdP = 'Pane'
-#------------------------------> 
-t = {
-    #------------------------------> Windows
-    nwMain : "Analysis Setup",
-    #------------------------------> Dialogs
-    ndCheckUpdateResDialog: "Check for Updates",
-    ndPreferences         : 'Preferences',
-#     ndResControlExp       : 'Results - Control Experiments',
-#     ndFilterRemoveAny     : 'Remove Filters',
-#     #------------------------------> Tabs
-#     ntStart   : 'Start',
-#     ntDataPrep: 'DataPrep',
-#     ntCorrA   : 'CorrA',
-#     ntLimProt : 'LimProt',
-#     ntProtProf: 'ProtProf',
-#     ntTarProt : 'TarProt',
-}
-#endregion -----------------------------------------------------------> Titles
 
 
 #region ----------------------------------------------------------- Extensions

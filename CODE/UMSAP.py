@@ -166,7 +166,7 @@ class SplashWindow(wx.adv.SplashScreen):
         #endregion ----------------------------------------------------> Fonts
 
         #region ------------------------------------------> User Configuration
-        # After fonts were created and assign to config, load user values
+        # After fonts were created and assigned to config, load user values
         try:
             data = mFile.ReadJSON(mConfig.fConfig)
         except Exception as e:
@@ -190,7 +190,7 @@ class SplashWindow(wx.adv.SplashScreen):
         #endregion -----------------------------------------------------> Menu
 
         #region ------------------------------------------> Create main window
-        mConfig.winMain = mWindow.MainWindow()
+        mConfig.winMain = mWindow.WindowMain()
         #endregion ---------------------------------------> Create main window
 
         #region --------------------------------------------> Destroy & Return

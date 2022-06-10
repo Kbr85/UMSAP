@@ -8005,7 +8005,7 @@ import config.config as mConfig
 # #---
 
 
-class PrefUpdate(wx.Panel):
+class PanePrefUpdate(wx.Panel):
     """Panel for the Preferences window.
 
         Parameters

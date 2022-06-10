@@ -80,7 +80,7 @@ def UpdateCheck(
         r = requests.get(mConfig.urlUpdate)
     except Exception as e:
         msg = 'Check for Updates failed. Please try again later.'
-        wx.CallAfter(NotificationDialog, 'errorU', msg=msg, tException=e)
+        wx.CallAfter(DialogNotification, 'errorU', msg=msg, tException=e)
         return False
     #endregion ------------------------------> Get web page text from Internet
     
@@ -101,7 +101,7 @@ def UpdateCheck(
         versionI = versionI.strip()
     else:
         msg = 'Check for Updates failed. Please try again later.'
-        wx.CallAfter(NotificationDialog, 'errorU', msg=msg)
+        wx.CallAfter(DialogNotification, 'errorU', msg=msg)
         return False
     #endregion -----------------------------------------> Get Internet version
 
@@ -110,9 +110,9 @@ def UpdateCheck(
     updateAvail = mCheck.VersionCompare(versionI, mConfig.version)[0]
     #------------------------------> Message
     if updateAvail:
-        wx.CallAfter(CheckUpdateResult, parent=win, checkRes=versionI)
+        wx.CallAfter(DialogCheckUpdateResult, parent=win, checkRes=versionI)
     elif not updateAvail and ori == 'menu':
-        wx.CallAfter(CheckUpdateResult, parent=win, checkRes=None)
+        wx.CallAfter(DialogCheckUpdateResult, parent=win, checkRes=None)
     else:
         pass
     #endregion --------------------------------------------> Compare & message
@@ -137,7 +137,7 @@ def UpdateCheck(
     
 #     """
 #     msg = 'It was not possible to read the user configuration file.'
-#     wx.CallAfter(dtsWindow.NotificationDialog,'errorU', msg=msg, tException=tException)
+#     wx.CallAfter(dtsWindow.DialogNotification,'errorU', msg=msg, tException=tException)
 #     return True
 # #---
 #endregion ----------------------------------------------------------> Methods
@@ -173,10 +173,9 @@ class BaseWindow(wx.Frame):
         #region -----------------------------------------------> Initial Setup
         self.cParent = parent
         #------------------------------> Def values if not given in child class
-        self.cName    = getattr(self, 'cName',    mConfig.nDefName)
+        self.cName    = getattr(self, 'cName',    mConfig.nwDef)
         self.cSWindow = getattr(self, 'cSWindow', mConfig.sWinRegular)
-        self.cTitle   = getattr(
-            self, 'cTitle', mConfig.t.get(self.cName, mConfig.tdW))
+        self.cTitle   = getattr(self, 'cTitle',   self.cName)
         # self.cMsgExportFailed = getattr(
         #     self, 'cMsgExportFailed', config.mDataExport)
         #------------------------------> 
@@ -205,7 +204,7 @@ class BaseWindow(wx.Frame):
             parent, size=self.cSWindow, title=self.cTitle, name=self.cName,
         )
         #endregion --------------------------------------------> Initial Setup
-        
+
         #region -----------------------------------------------------> Widgets
         self.wStatBar = self.CreateStatusBar()
         #endregion --------------------------------------------------> Widgets
@@ -214,7 +213,7 @@ class BaseWindow(wx.Frame):
         self.mBar = mMenu.MenuBarTool(self.cName, menuData)
         self.SetMenuBar(self.mBar)
         #endregion -----------------------------------------------------> Menu
-        
+
         #region ------------------------------------------------------> Sizers
         self.sSizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(self.sSizer)
@@ -234,7 +233,7 @@ class BaseWindow(wx.Frame):
             -------
             bool
         """
-        About()
+        WindowAbout()
         return True
     #---
 
@@ -250,7 +249,7 @@ class BaseWindow(wx.Frame):
             return True
         except Exception as e:
             msg = 'It was not possible to open the manual of UMSAP.'
-            NotificationDialog('errorF', msg=msg, tException=e)
+            DialogNotification('errorF', msg=msg, tException=e)
             return False
     #---
 
@@ -283,7 +282,7 @@ class BaseWindow(wx.Frame):
             -------
             bool
         """
-        Preference()
+        DialogPreference()
         return True
     #---
     #endregion ------------------------------------------------> Class Methods
@@ -333,7 +332,7 @@ class BaseWindow(wx.Frame):
 #             return True
 #         except Exception as e:
 #             #------------------------------> 
-#             dtsWindow.NotificationDialog(
+#             dtsWindow.DialogNotification(
 #                 'errorF', msg=str(e), tException=e, parent=self)
 #             #------------------------------> 
 #             return False
@@ -358,7 +357,7 @@ class BaseWindow(wx.Frame):
 #             return True
 #         except Exception as e:
 #             #------------------------------> 
-#             dtsWindow.NotificationDialog(
+#             dtsWindow.DialogNotification(
 #                 'errorF', msg=str(e), tException=e, parent=self)
 #             #------------------------------> 
 #             return False
@@ -381,7 +380,7 @@ class BaseWindow(wx.Frame):
 #         except Exception as e:
 #             #------------------------------> 
 #             msg = 'It was not possible to reset the zoom level of the plot.'
-#             dtsWindow.NotificationDialog(
+#             dtsWindow.DialogNotification(
 #                 'errorU', msg=msg, tException=e, parent=self)
 #             #------------------------------> 
 #             return False
@@ -407,7 +406,7 @@ class BaseWindow(wx.Frame):
 #         except Exception as e:
 #             #------------------------------> 
 #             msg = 'It was not possible to reset the zoom level of the plot.'
-#             dtsWindow.NotificationDialog(
+#             dtsWindow.DialogNotification(
 #                 'errorU', msg=msg, tException=e, parent=self)
 #             #------------------------------> 
 #             return False
@@ -481,7 +480,7 @@ class BaseWindow(wx.Frame):
 #             try:
 #                 dtsFF.WriteDF2CSV(p, tDF)
 #             except Exception as e:
-#                 dtsWindow.NotificationDialog(
+#                 dtsWindow.DialogNotification(
 #                     'errorF',
 #                     msg        = self.cMsgExportFailed,
 #                     tException = e,
@@ -518,7 +517,7 @@ class BaseWindow(wx.Frame):
 #             try:
 #                 dtsFF.WriteDF2CSV(p, self.rDf)
 #             except Exception as e:
-#                 dtsWindow.NotificationDialog(
+#                 dtsWindow.DialogNotification(
 #                     'errorF',
 #                     msg        = self.cMsgExportFailed,
 #                     tException = e,
@@ -630,7 +629,7 @@ class BaseWindow(wx.Frame):
 #         if not self.rDate:
 #             msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are '
 #                 f'corrupted or were not found.')
-#             dtsWindow.NotificationDialog('errorU', msg=msg)
+#             dtsWindow.DialogNotification('errorU', msg=msg)
 #             raise dtsException.PassException()
 #         else:
 #             pass
@@ -643,7 +642,7 @@ class BaseWindow(wx.Frame):
 #             else:
 #                 msg = (f'The data for analysis:\n\n{fileList}\n\n '
 #                 f'contain errors or were not found.')
-#             dtsWindow.NotificationDialog('warning', msg=msg)
+#             dtsWindow.DialogNotification('warning', msg=msg)
 #         else:
 #             pass
 #         #------------------------------> 
@@ -962,7 +961,7 @@ class BaseWindow(wx.Frame):
 #             tException = (
 #                 f'The row numbers where the string was found are:\n '
 #                 f'{str(iSimilar)[1:-1]}')
-#             dtsWindow.NotificationDialog(
+#             dtsWindow.DialogNotification(
 #                 'warning', 
 #                 msg        = msg,
 #                 setText    = True,
@@ -971,7 +970,7 @@ class BaseWindow(wx.Frame):
 #             )
 #         else:
 #             msg = (f'The string, {tStr}, was not found.')
-#             dtsWindow.NotificationDialog(
+#             dtsWindow.DialogNotification(
 #                 'warning', 
 #                 msg        = msg,
 #                 setText    = True,
@@ -1094,7 +1093,7 @@ class BaseWindow(wx.Frame):
 #             msg = (
 #                 'It was not possible to reset the zoom level of one of the '
 #                 'plots.')
-#             dtsWindow.NotificationDialog(
+#             dtsWindow.DialogNotification(
 #                 'errorU', msg=msg, tException=e, parent=self)
 #             #------------------------------> 
 #             return False
@@ -1332,7 +1331,7 @@ class BaseWindow(wx.Frame):
 #             tException = (
 #                 f'The row numbers where the string was found are:\n '
 #                 f'{str(iSimilar)[1:-1]}')
-#             dtsWindow.NotificationDialog(
+#             dtsWindow.DialogNotification(
 #                 'warning', 
 #                 msg        = msg,
 #                 setText    = True,
@@ -1341,7 +1340,7 @@ class BaseWindow(wx.Frame):
 #             )
 #         else:
 #             msg = (f'The string, {tStr}, was not found.')
-#             dtsWindow.NotificationDialog(
+#             dtsWindow.DialogNotification(
 #                 'warning', 
 #                 msg        = msg,
 #                 setText    = True,
@@ -1718,14 +1717,12 @@ class BaseWindow(wx.Frame):
 
 
 #region -------------------------------------------------------------> Classes
-class About(BaseWindow):
+class WindowAbout(BaseWindow):
     """About UMSAP window."""
     #region -----------------------------------------------------> Class setup
     cName = mConfig.nwAbout
     #------------------------------> 
     cSWindow = (600, 775)
-    #------------------------------> 
-    cTitle = cName
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -1805,12 +1802,12 @@ class About(BaseWindow):
 #---
 
 
-class MainWindow(BaseWindow):
+class WindowMain(BaseWindow):
     """Creates the main window of the App.
-    
+
         Parameters
         ----------
-        cParent : wx widget or None
+        parent : wx widget or None
             Parent of the main window.
         
         Attributes
@@ -1820,7 +1817,7 @@ class MainWindow(BaseWindow):
     """
     #region -----------------------------------------------------> Class Setup
     cName = mConfig.nwMain
-    
+    #------------------------------>
     dTab = { # Keys are the unique names of the tabs
         # config.ntStart   : tab.Start,
         # config.ntCorrA   : tab.BaseConfTab,
@@ -3959,7 +3956,7 @@ class MainWindow(BaseWindow):
 #             tException = (
 #                 f'The numbers of the proteins included in the selected '
 #                 f'point are:\n {str(ind)[1:-1]}')
-#             dtsWindow.NotificationDialog(
+#             dtsWindow.DialogNotification(
 #                 'warning', 
 #                 msg        = msg,
 #                 setText    = True,
@@ -4196,7 +4193,7 @@ class MainWindow(BaseWindow):
 #                     #------------------------------> Write
 #                     v.figure.savefig(fPath)
 #             except Exception as e:
-#                 dtsWindow.NotificationDialog(
+#                 dtsWindow.DialogNotification(
 #                     'errorF',
 #                     msg        = self.cMsgExportFailed,
 #                     tException = e,
@@ -4756,7 +4753,7 @@ class MainWindow(BaseWindow):
 #                     msg = 'It was not possible to apply the Log2FC filter.'
 #                     tException = b[2]
 #                     #------------------------------> 
-#                     dtsWindow.NotificationDialog(
+#                     dtsWindow.DialogNotification(
 #                         'errorU', 
 #                         msg        = msg,
 #                         tException = tException,
@@ -4851,7 +4848,7 @@ class MainWindow(BaseWindow):
 #                     msg = 'It was not possible to apply the P value filter.'
 #                     tException = b[2]
 #                     #------------------------------> 
-#                     dtsWindow.NotificationDialog(
+#                     dtsWindow.DialogNotification(
 #                         'errorU', 
 #                         msg        = msg,
 #                         tException = tException,
@@ -4956,7 +4953,7 @@ class MainWindow(BaseWindow):
 #                     msg = 'It was not possible to apply the Z Score filter.'
 #                     tException = b[2]
 #                     #------------------------------> 
-#                     dtsWindow.NotificationDialog(
+#                     dtsWindow.DialogNotification(
 #                         'errorU', 
 #                         msg        = msg,
 #                         tException = tException,
@@ -8192,7 +8189,7 @@ class MainWindow(BaseWindow):
 #             )
 #         except Exception as e:
 #             msg = 'Export of Sequence Alignments failed.'
-#             dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
+#             dtsWindow.DialogNotification('errorF', msg=msg, tException=e)
 #         #endregion ------------------------------------------------> Run
         
 #         # dlg.Destroy()
@@ -9896,7 +9893,7 @@ class MainWindow(BaseWindow):
 #             msg = (
 #                 f'It was not possible to build the histograms for the selected '
 #                 f'column.')
-#             dtsWindow.NotificationDialog('errorU', msg=msg, tException=e, parent=self)
+#             dtsWindow.DialogNotification('errorU', msg=msg, tException=e, parent=self)
 #             #------------------------------> 
 #             self.ClearPlots()
 #             #------------------------------> 
@@ -9961,7 +9958,7 @@ class MainWindow(BaseWindow):
 #                     #------------------------------> Write
 #                     dtsFF.WriteDF2CSV(fPath, v)
 #             except Exception as e:
-#                 dtsWindow.NotificationDialog(
+#                 dtsWindow.DialogNotification(
 #                     'errorF',
 #                     msg        = self.cMsgExportFailed,
 #                     tException = e,
@@ -9998,7 +9995,7 @@ class MainWindow(BaseWindow):
 #                     #------------------------------> Write
 #                     v.figure.savefig(fPath)
 #             except Exception as e:
-#                 dtsWindow.NotificationDialog(
+#                 dtsWindow.DialogNotification(
 #                     'errorF',
 #                     msg        = self.cMsgExportFailed,
 #                     tException = e,
@@ -10579,7 +10576,7 @@ class MainWindow(BaseWindow):
 #                 if fileP == self.rObj.rFileP:
 #                     msg = ('New Analysis cannot be added from the same UMSAP '
 #                         'file.\nPlease choose a different UMSAP file.')
-#                     dtsWindow.NotificationDialog('warning', msg=msg)
+#                     dtsWindow.DialogNotification('warning', msg=msg)
 #                     return False
 #                 else:
 #                     pass
@@ -10587,7 +10584,7 @@ class MainWindow(BaseWindow):
 #                 try:
 #                     objAdd = file.UMSAPFile(fileP)                    
 #                 except Exception as e:
-#                     dtsWindow.NotificationDialog('errorF', tException=e)
+#                     dtsWindow.DialogNotification('errorF', tException=e)
 #                     return False
 #             else:
 #                 dlg.Destroy()
@@ -10986,7 +10983,7 @@ class MainWindow(BaseWindow):
 #         except dtsException.PassException:
 #             return False
 #         except Exception as e:
-#             dtsWindow.NotificationDialog('errorU', msg=str(e), tException=e)
+#             dtsWindow.DialogNotification('errorU', msg=str(e), tException=e)
 #             return False
 #         #endregion --------------------------------------------> Create window
         
@@ -11412,7 +11409,7 @@ class MainWindow(BaseWindow):
 #         if not checked:
 #             msg = (f'There are no analysis selected. Please select something '
 #                 'first.')
-#             dtsWindow.NotificationDialog('warning', msg=msg)
+#             dtsWindow.DialogNotification('warning', msg=msg)
 #             return False
 #         else:
 #             pass
@@ -11436,7 +11433,7 @@ class MainWindow(BaseWindow):
 
 
 #region -----------------------------------------------------------> wx.Dialog
-class NotificationDialog(wx.Dialog):
+class DialogNotification(wx.Dialog):
     """Show a custom notification dialog.
 
         Parameters
@@ -11634,11 +11631,10 @@ class NotificationDialog(wx.Dialog):
     #endregion ------------------------------------------------> Class methods
 #---
 
-class Preference(wx.Dialog):
+class DialogPreference(wx.Dialog):
     """Set the UMSAP preferences."""
     #region -----------------------------------------------------> Class setup
     cName = mConfig.ndPreferences
-    cTitle = mConfig.t[cName]
     #------------------------------> 
     cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
     #------------------------------> 
@@ -11650,13 +11646,18 @@ class Preference(wx.Dialog):
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(
-            None, title=self.cTitle, style=self.cStyle, size=self.cSize)
+            None, 
+            title = self.cName,
+            style = self.cStyle,
+            size  = self.cSize,
+            name  = self.cName,
+        )
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
         self.wNoteBook = wx.Notebook(self, style=wx.NB_TOP)
         #------------------------------> 
-        self.wUpdate = mPane.PrefUpdate(self.wNoteBook)
+        self.wUpdate = mPane.PanePrefUpdate(self.wNoteBook)
         self.wNoteBook.AddPage(self.wUpdate, self.wUpdate.cLTab)
         #------------------------------> 
         self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.NO)
@@ -11705,7 +11706,8 @@ class Preference(wx.Dialog):
         """
         #region ---------------------------------------------------> Set
         #------------------------------> Update
-        mConfig.general['checkUpdate'] = not bool(self.wUpdate.wRBox.GetSelection())
+        mConfig.general['checkUpdate'] = not bool(
+            self.wUpdate.wRBox.GetSelection())
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> Save
@@ -11717,7 +11719,7 @@ class Preference(wx.Dialog):
             mFile.WriteJSON(mConfig.fConfig, data)
         except Exception as e:
             msg = 'Configuration options could not be saved.'
-            NotificationDialog('errorF', msg=msg, tException=e)
+            DialogNotification('errorF', msg=msg, tException=e)
             return False
         #endregion ------------------------------------------------> 
 
@@ -11785,7 +11787,7 @@ class Preference(wx.Dialog):
             data = mFile.ReadJSON(mConfig.fConfigDef)
         except Exception as e:
             msg = 'It was not possible to read the default configuration file.'
-            NotificationDialog('errorF', msg=msg, tException=e)
+            DialogNotification('errorF', msg=msg, tException=e)
             return {}
         #endregion ------------------------------------------------> 
 
@@ -11832,7 +11834,7 @@ class Preference(wx.Dialog):
             self.wUpdate.wRBox.SetSelection(val)
         except Exception as e:
             msg = 'Something went wrong when loading the configuration options.'
-            NotificationDialog('errorU', msg=msg, tException=e)
+            DialogNotification('errorU', msg=msg, tException=e)
             return False
         #endregion ------------------------------------------------> 
 
@@ -11842,7 +11844,7 @@ class Preference(wx.Dialog):
 #---
 
 
-class CheckUpdateResult(wx.Dialog):
+class DialogCheckUpdateResult(wx.Dialog):
     """Show a dialog with the result of the check for update operation.
 
         Parameters
@@ -11864,7 +11866,8 @@ class CheckUpdateResult(wx.Dialog):
         ) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
-        super().__init__(parent, title=mConfig.t[self.cName], style=self.cStyle)
+        super().__init__(
+            parent, title=self.cName, style=self.cStyle, name=self.cName)
         #endregion --------------------------------------------> Initial setup
 
         #region -----------------------------------------------------> Widgets
