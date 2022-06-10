@@ -401,7 +401,7 @@ class BaseMenuMainResult(BaseMenu):
         # Update menu specific items, e.g. Further Analysis or Cond, RP in 
         # ProtProf - Volcano Plot. Also update GUI if checked is not the 
         # analysis currently displayed.
-        self.UpdateOtherItems(menuItem, not checkedFound)
+        self.UpdateOtherItems(menuItem, not checkedFound) # type: ignore
         #endregion ---------------------------------------> Update Other Items
 
         return True
