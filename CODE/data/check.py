@@ -1,29 +1,90 @@
-# # ------------------------------------------------------------------------------
-# # Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
-# #
-# # Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
-# #
-# # This program is distributed for free in the hope that it will be useful,
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# #
-# # See the accompanying license for more details.
-# # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
+#
+# Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
+#
+# This program is distributed for free in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the accompanying license for more details.
+# ------------------------------------------------------------------------------
 
 
-# """Classes and methods to check data"""
+"""Classes and methods to check data"""
 
 
-# #region -------------------------------------------------------------> Imports
-# from typing import Optional, Union
+#region -------------------------------------------------------------> Imports
+from typing import Optional
 
-# import dtscore.check as dtsCheck
-# import dtscore.exception as dtsException
-# import dtscore.data_method as dtsMethod
-# #endregion ----------------------------------------------------------> Imports
+import data.exception as mException
+#endregion ----------------------------------------------------------> Imports
 
 
-# #region -------------------------------------------------------------> Methods
+#region -------------------------------------------------------------> Methods
+def VersionCompare(
+    strA: str, strB: str,
+    )-> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+    """Basic version comparison.
+
+        Parameters
+        ----------
+        strA : str
+            Expected format is '2.3.4' or '2.3.4 (beta)'.
+        strB : str
+            Same format as strA is expected.
+
+        Returns
+        -------
+        tuple
+            (True, None)
+            (False, ('', '', ''))
+
+        Raise
+        -----
+        InputError
+            When strA or strB cannot be converted to x,y,z integers
+
+        Examples
+        --------
+        >>> VersionCompare('2.4.7 beta', '2.4.7')
+        >>> False
+        >>> VersionCompare('2.4.7', '2.4.1')
+        >>> True
+        >>> VersionCompare('3.4.7 beta', '5.4.1')
+        >>> False
+    """
+    #region -------------------------------------------------> Get number list
+    try:
+        xA, yA, zA = map(int, strA.strip().split(" ")[0].split("."))
+        xB, yB, zB = map(int, strB.strip().split(" ")[0].split("."))
+    except ValueError:
+        msg = (
+            f"The expected input for strA and strB is '2.4.5' or "
+            f"'4.10.23 (beta)'."
+        )
+        raise mException.InputError(msg)
+    #endregion ----------------------------------------------> Get number list
+
+    #region ---------------------------------------------------------> Compare
+    if xA > xB:
+        return (True, None)
+    elif xA < xB:
+        return (False, ('', '', ''))
+    else:
+        if yA > yB:
+            return (True, None)
+        elif yA < yB:
+            return (False, ('', '', ''))
+        else:
+            if zA > zB:
+                return (True, None)
+            else:
+                return (False, ('', '', ''))
+    #endregion ------------------------------------------------------> Compare
+#---
+
+
 # def UniqueColNumbers(
 #     value: list[str], sepList: list[str]=[' ', ',', ';'],
 #     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
@@ -194,4 +255,4 @@
 #         raise e
 #     #endregion -------------------------------------------------------> Return
 # #---
-# #endregion ----------------------------------------------------------> Methods
+#endregion ----------------------------------------------------------> Methods

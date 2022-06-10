@@ -1,33 +1,33 @@
-# # ------------------------------------------------------------------------------
-# # Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
-# #
-# # Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
-# #
-# # This program is distributed for free in the hope that it will be useful,
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# #
-# # See the accompanying license for more details.
-# # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
+#
+# Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
+#
+# This program is distributed for free in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the accompanying license for more details.
+# ------------------------------------------------------------------------------
 
 
-# """Main windows and dialogs of the App """
+"""Main windows and dialogs of the App """
 
 
-# #region -------------------------------------------------------------> Imports
-# import _thread
-# import os
+#region -------------------------------------------------------------> Imports
+import _thread
+import os
 # import shutil
-# import webbrowser
+import webbrowser
 # from itertools import zip_longest
-# from pathlib import Path
-# from typing import Optional, Literal, Union
+from pathlib import Path
+from typing import Optional, Literal, Union
 
 # import matplotlib as mpl
 # import matplotlib.patches as mpatches
 # import numpy as np
 # import pandas as pd
-# import requests
+import requests
 # from scipy import stats
 
 # from Bio import pairwise2
@@ -38,93 +38,87 @@
 # from reportlab.platypus.flowables import KeepTogether
 # from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
-# import wx
+import wx
 # import wx.richtext
-# import wx.adv as adv
-# import wx.lib.agw.aui as aui
+import wx.adv as adv
+import wx.lib.agw.aui as aui
 # import wx.lib.agw.customtreectrl as wxCT
-# import wx.lib.agw.hyperlink as hl
+import wx.lib.agw.hyperlink as hl
 
-# import config.config as config
-# import data.file as file
-# import data.method as dmethod
-# import dtscore.check as dtsCheck
-# import dtscore.data_method as dtsMethod
-# import dtscore.exception as dtsException
-# import dtscore.file as dtsFF
-# import dtscore.statistic as dtsStatistic
-# import dtscore.validator as dtsValidator
-# import dtscore.widget as dtsWidget
-# import dtscore.window as dtsWindow
-# import gui.menu as menu
+import config.config as mConfig
+import data.file as mFile
+import data.check as mCheck
+import data.method as mMethod
+import gui.menu as mMenu
+
 # import gui.method as method
-# import gui.pane as pane
+import gui.pane as mPane
 # import gui.tab as tab
 # import gui.window as window
-# #endregion ----------------------------------------------------------> Imports
+#endregion ----------------------------------------------------------> Imports
 
 
-# #region -------------------------------------------------------------> Methods
-# def UpdateCheck(
-#     ori: Literal['menu', 'main'], win: Optional[wx.Window]=None
-#     ) -> bool:
-#     """ Check for updates for UMSAP from another thread.
+#region -------------------------------------------------------------> Methods
+def UpdateCheck(
+    ori: Literal['menu', 'main'], win: Optional[wx.Window]=None
+    ) -> bool:
+    """ Check for updates for UMSAP from another thread.
 
-#         Parameters
-#         ----------
-#         ori: str
-#             Origin of the request, 'menu' or 'main'
-#         win : wx widget
-#             To center the result window in this widget
+        Parameters
+        ----------
+        ori: str
+            Origin of the request, 'menu' or 'main'
+        win : wx widget
+            To center the result window in this widget
 
-#         Return
-#         ------
-#         bool
-#     """
-#     #region ---------------------------------> Get web page text from Internet
-#     try:
-#         r = requests.get(config.urlUpdate)
-#     except Exception as e:
-#         msg = 'Check for Updates failed. Please try again later.'
-#         wx.CallAfter(dtsWindow.NotificationDialog, 'errorU', msg=msg, tException=e)
-#         return False
-#     #endregion ------------------------------> Get web page text from Internet
+        Return
+        ------
+        bool
+    """
+    #region ---------------------------------> Get web page text from Internet
+    try:
+        r = requests.get(mConfig.urlUpdate)
+    except Exception as e:
+        msg = 'Check for Updates failed. Please try again later.'
+        wx.CallAfter(NotificationDialog, 'errorU', msg=msg, tException=e)
+        return False
+    #endregion ------------------------------> Get web page text from Internet
     
-#     #region --------------------------------------------> Get Internet version
-#     if r.status_code == requests.codes.ok:
-#         #------------------------------> 
-#         text = r.text.split('\n')
-#         #------------------------------>
-#         versionI = ''
-#         for i in text:
-#             if '<h1>UMSAP' in i:
-#                 versionI = i
-#                 break
-#             else:
-#                 pass
-#         #------------------------------> 
-#         versionI = versionI.split('UMSAP')[1].split('</h1>')[0]
-#         versionI = versionI.strip()
-#     else:
-#         msg = 'Check for Updates failed. Please try again later.'
-#         wx.CallAfter(dtsWindow.NotificationDialog, 'errorU', msg=msg)
-#         return False
-#     #endregion -----------------------------------------> Get Internet version
+    #region --------------------------------------------> Get Internet version
+    if r.status_code == requests.codes.ok:
+        #------------------------------> 
+        text = r.text.split('\n')
+        #------------------------------>
+        versionI = ''
+        for i in text:
+            if '<h1>UMSAP' in i:
+                versionI = i
+                break
+            else:
+                pass
+        #------------------------------> 
+        versionI = versionI.split('UMSAP')[1].split('</h1>')[0]
+        versionI = versionI.strip()
+    else:
+        msg = 'Check for Updates failed. Please try again later.'
+        wx.CallAfter(NotificationDialog, 'errorU', msg=msg)
+        return False
+    #endregion -----------------------------------------> Get Internet version
 
-#     #region -----------------------------------------------> Compare & message
-#     #------------------------------> Compare
-#     updateAvail = dtsCheck.VersionCompare(versionI, config.version)[0]
-#     #------------------------------> Message
-#     if updateAvail:
-#         wx.CallAfter(CheckUpdateResult, cParent=win, cCheckRes=versionI)
-#     elif not updateAvail and ori == 'menu':
-#         wx.CallAfter(CheckUpdateResult, cParent=win, cCheckRes=None)
-#     else:
-#         pass
-#     #endregion --------------------------------------------> Compare & message
+    #region -----------------------------------------------> Compare & message
+    #------------------------------> Compare
+    updateAvail = mCheck.VersionCompare(versionI, mConfig.version)[0]
+    #------------------------------> Message
+    if updateAvail:
+        wx.CallAfter(CheckUpdateResult, parent=win, checkRes=versionI)
+    elif not updateAvail and ori == 'menu':
+        wx.CallAfter(CheckUpdateResult, parent=win, checkRes=None)
+    else:
+        pass
+    #endregion --------------------------------------------> Compare & message
     
-#     return True
-# #---
+    return True
+#---
 
 
 # def BadUserConf(tException):
@@ -146,219 +140,181 @@
 #     wx.CallAfter(dtsWindow.NotificationDialog,'errorU', msg=msg, tException=tException)
 #     return True
 # #---
-# #endregion ----------------------------------------------------------> Methods
+#endregion ----------------------------------------------------------> Methods
 
 
-# #region --------------------------------------------------------> Base Classes
-# class BaseWindow(wx.Frame):
-#     """Base window for UMSAP.
+#region --------------------------------------------------------> Base Classes
+class BaseWindow(wx.Frame):
+    """Base window for UMSAP.
 
-#         Parameters
-#         ----------
-#         cParent : wx.Window or None
-#             Parent of the window
-#         cMenuData : dict
-#             Data to build the Tool menu of the window. See structure in child 
-#             class.
-            
-#         Attributes
-#         ----------
-#         dKeyMethod : dict
-#             Keys are str and values classes or methods. Use in SavePlot. etc.
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cSDeltaWin = config.deltaWin
-#     #endregion --------------------------------------------------> Class setup
+        Parameters
+        ----------
+        parent : wx.Window or None
+            Parent of the window. Default None
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: Optional[wx.Window]=None, cMenuData: Optional[dict]=None,
-#         ) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cParent = cParent
-#         #------------------------------> Def values if not given in child class
-#         self.cName    = getattr(self, 'cName',    config.nDefName)
-#         self.cSWindow = getattr(self, 'cSWindow', config.sWinRegular)
-#         self.cTitle = getattr(
-#             self, 'cTitle', config.t.get(self.cName, config.tdW))
-#         self.cMsgExportFailed = getattr(
-#             self, 'cMsgExportFailed', config.mDataExport)
-#         #------------------------------> 
-#         self.dKeyMethod = {
-#             #------------------------------> Save Plot Images
-#             'PlotImageOne': self.OnPlotSaveImageOne,
-#             'AllImg'      : self.OnPlotSaveAllImage,
-#             #------------------------------> Reset Zoom Level
-#             'PlotZoomResetOne': self.OnPlotZoomResetOne,
-#             'AllZoom'         : self.OnPlotZoomResetAll,
-#             #------------------------------> Help Menu
-#             config.klHelpAbout   : self.OnAbout,
-#             config.klHelpManual  : self.OnManual,
-#             config.klHelpTutorial: self.OnTutorial,
-#             config.klHelpCheckUpd: self.OnCheckUpdate,
-#             config.klHelpPref    : self.OnPreference,
-#             #------------------------------> Tool Menu
-#             config.klToolZoomResetAll : self.OnPlotZoomResetAll,
-#             config.klToolExpData      : self.OnExportPlotData,
-#             config.klToolExpImgAll    : self.OnPlotSaveAllImage,
-#             config.klToolCheckDP      : self.OnCheckDataPrep,
-#             config.klToolDupWin       : self.OnDupWin,
-#         }
-#         #------------------------------> 
-#         super().__init__(
-#             cParent, size=self.cSWindow, title=self.cTitle, name=self.cName,
-#         )
-#         #endregion --------------------------------------------> Initial Setup
+        Attributes
+        ----------
+        dKeyMethod : dict
+            Keys are str and values classes or methods. Link menu items to
+            windows methods.
+    """
+    #region -----------------------------------------------------> Class setup
+    cSDeltaWin = mConfig.deltaWin
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, menuData: dict={},
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cParent = parent
+        #------------------------------> Def values if not given in child class
+        self.cName    = getattr(self, 'cName',    mConfig.nDefName)
+        self.cSWindow = getattr(self, 'cSWindow', mConfig.sWinRegular)
+        self.cTitle   = getattr(
+            self, 'cTitle', mConfig.t.get(self.cName, mConfig.tdW))
+        # self.cMsgExportFailed = getattr(
+        #     self, 'cMsgExportFailed', config.mDataExport)
+        #------------------------------> 
+        self.dKeyMethod = {
+            #------------------------------> Help Menu
+            mConfig.kwHelpAbout   : self.UMSAPAbout,
+            mConfig.kwHelpManual  : self.UMSAPManual,
+            mConfig.kwHelpTutorial: self.UMSAPTutorial,
+            mConfig.kwHelpCheckUpd: self.CheckUpdate,
+            mConfig.kwHelpPref    : self.Preference,
+        #     #------------------------------> Save Plot Images
+        #     'PlotImageOne': self.OnPlotSaveImageOne,
+        #     'AllImg'      : self.OnPlotSaveAllImage,
+        #     #------------------------------> Reset Zoom Level
+        #     'PlotZoomResetOne': self.OnPlotZoomResetOne,
+        #     'AllZoom'         : self.OnPlotZoomResetAll,
+        #     #------------------------------> Tool Menu
+        #     config.klToolZoomResetAll : self.OnPlotZoomResetAll,
+        #     config.klToolExpData      : self.OnExportPlotData,
+        #     config.klToolExpImgAll    : self.OnPlotSaveAllImage,
+        #     config.klToolCheckDP      : self.OnCheckDataPrep,
+        #     config.klToolDupWin       : self.OnDupWin,
+        }
+        #------------------------------> 
+        super().__init__(
+            parent, size=self.cSWindow, title=self.cTitle, name=self.cName,
+        )
+        #endregion --------------------------------------------> Initial Setup
         
-#         #region -----------------------------------------------------> Widgets
-#         self.wStatBar = self.CreateStatusBar()
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.wStatBar = self.CreateStatusBar()
+        #endregion --------------------------------------------------> Widgets
 
-#         #region --------------------------------------------------------> Menu
-#         self.mBar = menu.MenuBarTool(self.cName, cMenuData)
-#         self.SetMenuBar(self.mBar)		
-#         #endregion -----------------------------------------------------> Menu
+        #region --------------------------------------------------------> Menu
+        self.mBar = mMenu.MenuBarTool(self.cName, menuData)
+        self.SetMenuBar(self.mBar)
+        #endregion -----------------------------------------------------> Menu
         
-#         #region ------------------------------------------------------> Sizers
-#         self.sSizer = wx.BoxSizer(wx.VERTICAL)
-#         self.SetSizer(self.sSizer)
-#         #endregion ---------------------------------------------------> Sizers
+        #region ------------------------------------------------------> Sizers
+        self.sSizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.sSizer)
+        #endregion ---------------------------------------------------> Sizers
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_CLOSE, self.OnClose)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #------------------------------> Class methods
-#     #region ---------------------------------------------------> Event Methods
-#     def OnPreference(self) -> bool:
-#         """
+    #region ---------------------------------------------------> Class Methods
+    def UMSAPAbout(self) -> bool:
+        """Show the About UMSAP window.
+
+            Returns
+            -------
+            bool
+        """
+        About()
+        return True
+    #---
+
+    def UMSAPManual(self) -> bool:
+        """Show the Manual of UMSAP.
+
+            Returns
+            -------
+            bool
+        """
+        try:
+            os.system(f'{mConfig.commOpen} {mConfig.fManual}')
+            return True
+        except Exception as e:
+            msg = 'It was not possible to open the manual of UMSAP.'
+            NotificationDialog('errorF', msg=msg, tException=e)
+            return False
+    #---
+
+    def UMSAPTutorial(self) -> bool:
+        """Show the tutorial for UMSAP.
+
+            Returns
+            -------
+            bool
+        """
+        webbrowser.open_new(f'{mConfig.urlTutorial}/start')
+        return True
+    #---
+
+    def CheckUpdate(self) -> bool:
+        """Check for updates.
+
+            Returns
+            -------
+            bool
+        """
+        _thread.start_new_thread(UpdateCheck, ('menu',))
+        return True
+    #---
+
+    def Preference(self) -> bool:
+        """Set UMSAP preferences.
+
+            Returns
+            -------
+            bool
+        """
+        Preference()
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
+
+    #region ---------------------------------------------------> Event Methods
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Destroy window. Override as needed.
     
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         Preference()
-#         return True
-#     #---
-    
-#     def OnAbout(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         About()
-#         return True
-#     #---
-    
-#     def OnManual(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         try:
-#             os.system(f'{config.commOpen} {config.fManual}')
-#             return True
-#         except Exception as e:
-#             msg = 'It was not possible to open the UMSAP manual.'
-#             dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
-#             return False
-#     #---
-    
-#     def OnTutorial(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         webbrowser.open_new(f'{config.urlTutorial}/start')
-#         return True
-#     #---
-    
-#     def OnCheckUpdate(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         _thread.start_new_thread(UpdateCheck, ('menu',))
-#         return True
-#     #---
-    
-#     def OnClose(self, event: wx.CloseEvent) -> bool:
-#         """Destroy window. Override as needed.
-    
-#             Parameters
-#             ----------
-#             event: wx.CloseEvent
-#                 Information about the event
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
                 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------> Reduce win number
-#         try:
-#             config.winNumber[self.cName] -= 1
-#         except Exception:
-#             pass
-#         #endregion ----------------------------------------> Reduce win number
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------> Reduce win number
+        try:
+            mConfig.winNumber[self.cName] -= 1
+        except Exception:
+            pass
+        #endregion ----------------------------------------> Reduce win number
         
-#         #region -----------------------------------------------------> Destroy
-#         self.Destroy()
-#         #endregion --------------------------------------------------> Destroy
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
         
-#         return True
-#     #---
-    
+        return True
+    #---
+
 #     def OnPlotSaveImageOne(self) -> bool:
 #         """Save an image of the plot. Override as needed. 
         
@@ -654,7 +610,7 @@
 #     #---
     
 #     def ReportPlotDataError(self) -> bool:
-#         """Check that there is somenthing to plot after reading a section in
+#         """Check that there is something to plot after reading a section in
 #             an UMSAP Plot.
 
 #             Parameters
@@ -1758,303 +1714,293 @@
 #     #---
 #     #endregion -----------------------------------------------> Manage Methods
 # #---
-# #endregion -----------------------------------------------------> Base Classes
+#endregion -----------------------------------------------------> Base Classes
 
 
-# #region -------------------------------------------------------------> Classes
-# class About(BaseWindow):
-#     """
+#region -------------------------------------------------------------> Classes
+class About(BaseWindow):
+    """About UMSAP window."""
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.nwAbout
+    #------------------------------> 
+    cSWindow = (600, 775)
+    #------------------------------> 
+    cTitle = cName
+    #endregion --------------------------------------------------> Class setup
 
-#         Parameters
-#         ----------
+    #region --------------------------------------------------> Instance setup
+    def __init__(self):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.SetBackgroundColour('white')
+        #------------------------------>
+        self.wImg = wx.StaticBitmap(self, wx.ID_ANY, 
+            wx.Bitmap(str(mConfig.fImgAbout), wx.BITMAP_TYPE_PNG))
+        self.wCopyRight = wx.StaticText(
+            self, label='Copyright © 2017 Kenny Bravo Rodriguez')
+        #------------------------------>
+        self.wText = wx.TextCtrl(
+            self, 
+            size  = (100, 500),
+            style = wx.TE_MULTILINE|wx.TE_WORDWRAP|wx.TE_READONLY
+        )
+        self.wText.AppendText(myText)
+        self.wText.SetInsertionPoint(0)
+        #------------------------------> 
+        self.wLink = hl.HyperLinkCtrl(
+            self, 
+            -1, 
+            mConfig.urlHome, 
+            URL=mConfig.urlHome,
+        )
+        #------------------------------> 
+        self.wBtn = wx.Button(self, id=wx.ID_OK, label='OK')
+        self.wBtn.SetFocus()
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sBtn = wx.BoxSizer(orient=wx.HORIZONTAL)
+        self.sBtn.Add(self.wLink, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+        self.sBtn.AddStretchSpacer()
+        self.sBtn.Add(self.wBtn, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+        #------------------------------> 
+        self.sSizer.Add(self.wImg,       0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sSizer.Add(self.wCopyRight, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sSizer.Add(self.wText,      1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn,       0, wx.EXPAND|wx.ALL, 5)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_BUTTON, self.OnButtonClose, source=self.wBtn)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.Center()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnButtonClose(self, event: wx.CommandEvent) -> bool:
+        """Close the window
         
-
-#         Attributes
-#         ----------
-        
-
-#         Raises
-#         ------
-        
-
-#         Methods
-#         -------
-        
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.nwAbout
-#     #------------------------------> 
-#     cSWindow = (600, 775)
-#     #------------------------------> 
-#     cTitle = cName
-#     #endregion --------------------------------------------------> Class setup
-
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self):
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
-
-#         #region -----------------------------------------------------> Widgets
-#         self.SetBackgroundColour('white')
-#         #------------------------------> 
-#         self.wImg = wx.StaticBitmap(self, wx.ID_ANY, 
-#             wx.Bitmap(str(config.fImgAbout), wx.BITMAP_TYPE_PNG))
-#         self.wCopyRight = wx.StaticText(
-#             self, label='Copyright © 2017 Kenny Bravo Rodriguez')
-#         #------------------------------> 
-#         self.wText = wx.TextCtrl(
-#             self, 
-#             size  = (100, 500),
-#             style = wx.TE_MULTILINE|wx.TE_WORDWRAP|wx.TE_READONLY
-#         )
-#         self.wText.AppendText(myText)
-#         self.wText.SetInsertionPoint(0)
-#         #------------------------------> 
-#         self.wLink = hl.HyperLinkCtrl(
-#             self, 
-#             -1, 
-#             config.urlHome, 
-#             URL=config.urlHome,
-#         )
-#         #------------------------------> 
-#         self.wBtn = wx.Button(self, id=wx.ID_OK, label='OK')
-#         self.wBtn.SetFocus()
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-#         self.sBtn = wx.BoxSizer(orient=wx.HORIZONTAL)
-#         self.sBtn.Add(self.wLink, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-#         self.sBtn.AddStretchSpacer()
-#         self.sBtn.Add(self.wBtn, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-#         #------------------------------> 
-#         self.sSizer.Add(self.wImg,       0, wx.ALIGN_CENTER|wx.ALL, 5)
-#         self.sSizer.Add(self.wCopyRight, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-#         self.sSizer.Add(self.wText,      1, wx.EXPAND|wx.ALL, 5)
-#         self.sSizer.Add(self.sBtn,       0, wx.EXPAND|wx.ALL, 5)
-#         #endregion ---------------------------------------------------> Sizers
-
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_BUTTON, self.OnButtonClose, source=self.wBtn)
-#         #endregion -----------------------------------------------------> Bind
-
-#         #region ---------------------------------------------> Window position
-#         self.Center()
-#         self.Show()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #region ---------------------------------------------------> Class methods
-#     def OnButtonClose(self, event) -> bool:
-#         """ To close the window 
-        
-        
-#         """
-#         self.Close()
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
-
-
-# class MainWindow(BaseWindow):
-#     """Creates the main window of the App.
-    
-#         Parameters
-#         ----------
-#         cParent : wx widget or None
-#             Parent of the main window.
-        
-#         Attributes
-#         ----------
-#         dTab: dict
-#             Methods to create the tabs.
-#     """
-#     #region -----------------------------------------------------> Class Setup
-#     cName = config.nwMain
-    
-#     dTab = { # Keys are the unique names of the tabs
-#         config.ntStart   : tab.Start,
-#         config.ntCorrA   : tab.BaseConfTab,
-#         config.ntDataPrep: tab.BaseConfListTab,
-#         config.ntLimProt : tab.BaseConfListTab,
-#         config.ntProtProf: tab.BaseConfListTab,
-#         config.ntTarProt : tab.BaseConfListTab,
-#     }
-#     #endregion --------------------------------------------------> Class Setup
-    
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, cParent: Optional[wx.Window]=None) -> None:
-#         """"""
-#         #region -----------------------------------------------> Initial setup
-#         super().__init__(cParent=cParent)
-#         #endregion --------------------------------------------> Initial setup
-
-#         #region -----------------------------------------------------> Widgets
-#         #------------------------------> StatusBar fields
-#         self.wStatBar.SetStatusText(f"{config.softwareF} {config.version}", 0)
-#         #------------------------------> Notebook
-#         self.wNotebook = aui.auibook.AuiNotebook(
-#             self,
-#             agwStyle=aui.AUI_NB_TOP|aui.AUI_NB_CLOSE_ON_ALL_TABS|aui.AUI_NB_TAB_MOVE,
-#         )
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-#         self.sSizer.Add(self.wNotebook, 1, wx.EXPAND|wx.ALL, 5)
-#         #endregion ---------------------------------------------------> Sizers
-
-#         #region --------------------------------------------> Create Start Tab
-#         self.OnCreateTab(config.ntStart)
-#         self.wNotebook.SetCloseButton(0, False)
-#         #endregion -----------------------------------------> Create Start Tab
-
-#         #region ---------------------------------------------> Position & Show
-#         self.Center()
-#         self.Show()
-#         #endregion ------------------------------------------> Position & Show
-
-#         #region --------------------------------------------------------> Bind
-#         self.wNotebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
-#         #endregion -----------------------------------------------------> Bind
-        
-#         #region	------------------------------------------------------> Update
-#         if config.general["checkUpdate"]:
-#             _thread.start_new_thread(UpdateCheck, ("main", self))
-#         else:
-#             pass
-#         #endregion	--------------------------------------------------> Update
-        
-#         #region -------------------------------------> User Configuration File 
-#         if not config.confUserFile:
-#             _thread.start_new_thread(
-#                 BadUserConf, (config.confUserFileException,))
-#         else:
-#             pass
-#         #endregion ----------------------------------> User Configuration File
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #------------------------------> Class Methods
-#     #region ---------------------------------------------------> Event methods
-#     def OnTabClose(self, event: wx.Event) -> bool:
-#         """Make sure to show the Start Tab if no other tab exists
-        
-#             Parameters
-#             ----------
-#             event : wx.aui.Event
-#                 Information about the event
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event
                 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #------------------------------> Close Tab
-#         event.Skip()
-#         #------------------------------> Number of tabs
-#         pageC = self.wNotebook.GetPageCount() - 1
-#         #------------------------------> Update tabs & close buttons
-#         if pageC == 1:
-#             #------------------------------> Remove close button from Start tab
-#             if (win := self.FindWindowByName(config.ntStart)) is not None:
-#                 self.wNotebook.SetCloseButton(
-#                     self.wNotebook.GetPageIndex(win), 
-#                     False,
-#                 )
-#             else:
-#                 pass
-#         elif pageC == 0:
-#             #------------------------------> Show Start Tab with close button
-#             self.OnCreateTab(config.ntStart)
-#             self.wNotebook.SetCloseButton(
-#                 self.wNotebook.GetPageIndex(
-#                     self.FindWindowByName(config.ntStart)), 
-#                 False,
-#             )
-#         else:
-#             pass
-        
-#         return True
-#     #---
+            Returns
+            -------
+            bool
+        """
+        self.Close()
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
-#     def OnCreateTab(self, name: str, dataI: Optional[dict]=None) -> bool:
-#         """Create a tab.
-        
-#             Parameters
-#             ----------
-#             name : str
-#                 One of the values in section Names of config for tabs
-#             dataI: dict or None
-#                 Initial data for the tab
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -----------------------------------------------------> Get tab
-#         win = self.FindWindowByName(name)
-#         #endregion --------------------------------------------------> Get tab
-        
-#         #region ------------------------------------------> Find/Create & Show
-#         if win is None:
-#             #------------------------------> Create tab
-#             self.wNotebook.AddPage(
-#                 self.dTab[name](self.wNotebook, name, dataI),
-#                 config.t.get(name, config.tdT),
-#                 select = True,
-#             )
-#         else:
-#             #------------------------------> Focus
-#             self.wNotebook.SetSelection(self.wNotebook.GetPageIndex(win))
-#             #------------------------------> Initial Data
-#             win.wConf.SetInitialData(dataI)
-#         #endregion ---------------------------------------> Find/Create & Show
 
-#         #region ---------------------------------------------------> Start Tab
-#         if self.wNotebook.GetPageCount() > 1:
-#             winS = self.FindWindowByName(config.ntStart)
-#             if winS is not None:
-#                 self.wNotebook.SetCloseButton(
-#                     self.wNotebook.GetPageIndex(winS), 
-#                     True,
-#                 )
-#             else:
-#                 pass
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Start Tab
-        
-#         #region ---------------------------------------------------> Raise
-#         self.Raise()
-#         #endregion ------------------------------------------------> Raise
-
-        
-#         return True
-#     #---
-
-#     def OnClose(self, event: wx.CloseEvent) -> bool:
-#         """Destroy window and set config.winMain to None.
+class MainWindow(BaseWindow):
+    """Creates the main window of the App.
     
-#             Parameters
-#             ----------
-#             event: wx.CloseEvent
-#                 Information about the event
+        Parameters
+        ----------
+        cParent : wx widget or None
+            Parent of the main window.
+        
+        Attributes
+        ----------
+        dTab: dict
+            Methods to create the tabs.
+    """
+    #region -----------------------------------------------------> Class Setup
+    cName = mConfig.nwMain
+    
+    dTab = { # Keys are the unique names of the tabs
+        # config.ntStart   : tab.Start,
+        # config.ntCorrA   : tab.BaseConfTab,
+        # config.ntDataPrep: tab.BaseConfListTab,
+        # config.ntLimProt : tab.BaseConfListTab,
+        # config.ntProtProf: tab.BaseConfListTab,
+        # config.ntTarProt : tab.BaseConfListTab,
+    }
+    #endregion --------------------------------------------------> Class Setup
+    
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: Optional[wx.Window]=None) -> None:
+        """"""
+        #region -----------------------------------------------> Initial setup
+        super().__init__(parent=parent)
+        #endregion --------------------------------------------> Initial setup
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> StatusBar fields
+        self.wStatBar.SetStatusText(f"{mConfig.softwareF} {mConfig.version}", 0)
+        #------------------------------> Notebook
+        self.wNotebook = aui.auibook.AuiNotebook( # type: ignore
+            self,
+            agwStyle=aui.AUI_NB_TOP|aui.AUI_NB_CLOSE_ON_ALL_TABS|aui.AUI_NB_TAB_MOVE,
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer.Add(self.wNotebook, 1, wx.EXPAND|wx.ALL, 5)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------> Create Start Tab
+        # self.OnCreateTab(config.ntStart)
+        # self.wNotebook.SetCloseButton(0, False)
+        #endregion -----------------------------------------> Create Start Tab
+
+        #region ---------------------------------------------> Position & Show
+        self.Center()
+        self.Show()
+        #endregion ------------------------------------------> Position & Show
+
+        #region --------------------------------------------------------> Bind
+        # self.wNotebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
+        #endregion -----------------------------------------------------> Bind
+        
+        #region	------------------------------------------------------> Update
+        if mConfig.general["checkUpdate"]:
+            _thread.start_new_thread(UpdateCheck, ("main", self))
+        else:
+            pass
+        #endregion	--------------------------------------------------> Update
+        
+        #region -------------------------------------> User Configuration File 
+        # if not config.confUserFile:
+        #     _thread.start_new_thread(
+        #         BadUserConf, (config.confUserFileException,))
+        # else:
+        #     pass
+        #endregion ----------------------------------> User Configuration File
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #------------------------------> Class Methods
+    #region ---------------------------------------------------> Event methods
+    # def OnTabClose(self, event: wx.Event) -> bool:
+    #     """Make sure to show the Start Tab if no other tab exists
+        
+    #         Parameters
+    #         ----------
+    #         event : wx.aui.Event
+    #             Information about the event
                 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #------------------------------> 
-#         self.Destroy()
-#         #------------------------------> 
-#         config.winMain = None
-#         #------------------------------> 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Event methods
-# #---
+    #         Returns
+    #         -------
+    #         bool
+    #     """
+    #     #------------------------------> Close Tab
+    #     event.Skip()
+    #     #------------------------------> Number of tabs
+    #     pageC = self.wNotebook.GetPageCount() - 1
+    #     #------------------------------> Update tabs & close buttons
+    #     if pageC == 1:
+    #         #------------------------------> Remove close button from Start tab
+    #         if (win := self.FindWindowByName(config.ntStart)) is not None:
+    #             self.wNotebook.SetCloseButton(
+    #                 self.wNotebook.GetPageIndex(win), 
+    #                 False,
+    #             )
+    #         else:
+    #             pass
+    #     elif pageC == 0:
+    #         #------------------------------> Show Start Tab with close button
+    #         self.OnCreateTab(config.ntStart)
+    #         self.wNotebook.SetCloseButton(
+    #             self.wNotebook.GetPageIndex(
+    #                 self.FindWindowByName(config.ntStart)), 
+    #             False,
+    #         )
+    #     else:
+    #         pass
+        
+    #     return True
+    # #---
+
+    # def OnCreateTab(self, name: str, dataI: Optional[dict]=None) -> bool:
+    #     """Create a tab.
+        
+    #         Parameters
+    #         ----------
+    #         name : str
+    #             One of the values in section Names of config for tabs
+    #         dataI: dict or None
+    #             Initial data for the tab
+                
+    #         Returns
+    #         -------
+    #         bool
+    #     """
+    #     #region -----------------------------------------------------> Get tab
+    #     win = self.FindWindowByName(name)
+    #     #endregion --------------------------------------------------> Get tab
+        
+    #     #region ------------------------------------------> Find/Create & Show
+    #     if win is None:
+    #         #------------------------------> Create tab
+    #         self.wNotebook.AddPage(
+    #             self.dTab[name](self.wNotebook, name, dataI),
+    #             config.t.get(name, config.tdT),
+    #             select = True,
+    #         )
+    #     else:
+    #         #------------------------------> Focus
+    #         self.wNotebook.SetSelection(self.wNotebook.GetPageIndex(win))
+    #         #------------------------------> Initial Data
+    #         win.wConf.SetInitialData(dataI)
+    #     #endregion ---------------------------------------> Find/Create & Show
+
+    #     #region ---------------------------------------------------> Start Tab
+    #     if self.wNotebook.GetPageCount() > 1:
+    #         winS = self.FindWindowByName(config.ntStart)
+    #         if winS is not None:
+    #             self.wNotebook.SetCloseButton(
+    #                 self.wNotebook.GetPageIndex(winS), 
+    #                 True,
+    #             )
+    #         else:
+    #             pass
+    #     else:
+    #         pass
+    #     #endregion ------------------------------------------------> Start Tab
+        
+    #     #region ---------------------------------------------------> Raise
+    #     self.Raise()
+    #     #endregion ------------------------------------------------> Raise
+
+        
+    #     return True
+    # #---
+
+    # def OnClose(self, event: wx.CloseEvent) -> bool:
+    #     """Destroy window and set config.winMain to None.
+    
+    #         Parameters
+    #         ----------
+    #         event: wx.CloseEvent
+    #             Information about the event
+                
+    #         Returns
+    #         -------
+    #         bool
+    #     """
+    #     #------------------------------> 
+    #     self.Destroy()
+    #     #------------------------------> 
+    #     config.winMain = None
+    #     #------------------------------> 
+    #     return True
+    # #---
+    #endregion ------------------------------------------------> Event methods
+#---
 
 
 # class CorrAPlot(BaseWindowPlot):
@@ -5470,18 +5416,18 @@
 #             -------
 #             bool
 #         """
-#         # #region ---------------------------------------------------> Variables
+#         #region ---------------------------------------------------> Variables
 #         info = super().WinPos()
-#         # #endregion ------------------------------------------------> Variables
+#         #endregion ------------------------------------------------> Variables
                 
-#         # #region ------------------------------------------------> Set Position
+#         #region ------------------------------------------------> Set Position
 #         # x = info['D']['xo'] + info['W']['N']*config.deltaWin
 #         # y = (
 #         #     ((info['D']['h']/2) - (info['W']['h']/2)) 
 #         #     + info['W']['N']*config.deltaWin
 #         # )
 #         # self.SetPosition(pt=(x,y))
-#         # #endregion ---------------------------------------------> Set Position
+#         #endregion ---------------------------------------------> Set Position
 
 #         #region ----------------------------------------------------> Update N
 #         config.winNumber[self.cName] = info['W']['N'] + 1
@@ -7323,18 +7269,18 @@
 #             -------
 #             bool
 #         """
-#         # #region ---------------------------------------------------> Variables
+#         #region ---------------------------------------------------> Variables
 #         info = super().WinPos()
-#         # #endregion ------------------------------------------------> Variables
+#         #endregion ------------------------------------------------> Variables
                 
-#         # #region ------------------------------------------------> Set Position
+#         #region ------------------------------------------------> Set Position
 #         # x = info['D']['xo'] + info['W']['N']*config.deltaWin
 #         # y = (
 #         #     ((info['D']['h']/2) - (info['W']['h']/2)) 
 #         #     + info['W']['N']*config.deltaWin
 #         # )
 #         # self.SetPosition(pt=(x,y))
-#         # #endregion ---------------------------------------------> Set Position
+#         #endregion ---------------------------------------------> Set Position
 
 #         #region ----------------------------------------------------> Update N
 #         config.winNumber[self.cName] = info['W']['N'] + 1
@@ -11481,355 +11427,524 @@
 #     #---
 #     #endregion ------------------------------------------------> Class methods
 # #---
-# #endregion ----------------------------------------------------------> Classes
+#endregion ----------------------------------------------------------> Classes
 
 
-# #region -----------------------------------------------------------> wx.Dialog
-# class Preference(wx.Dialog):
-#     """
+#region ------------------------------------------------------> wx.Dialog Base
 
-#         Parameters
-#         ----------
+#endregion ---------------------------------------------------> wx.Dialog Base
+
+
+#region -----------------------------------------------------------> wx.Dialog
+class NotificationDialog(wx.Dialog):
+    """Show a custom notification dialog.
+
+        Parameters
+        ----------
+        mode : str
+            One of 'errorF', 'errorU', 'warning', 'success', 'question'
+        msg : str
+            General message to place below the Notification type. This cannot be
+            copied by the user.
+        tException : str, Exception or None
+            The message and traceback to place in the wx.TextCtrl. This 
+            can be copied by the user. If str then only an error message will 
+            be placed in the wx.TextCtrl.
+        parent : wx widget or None
+            Parent of the dialog.
+        button : int
+            Kind of buttons to show. 1 is wx.OK else wx.OK|wx.CANCEL
+        setText : bool
+            Set wx.TextCtrl for message independently of the mode of the window.
+            Default is False.
+    """
+    #region -----------------------------------------------------> Class setup
+    style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
+    error = ['errorF', 'errorU']
+    img = mConfig.fImgIcon
+    #------------------------------> 
+    cTitle = 'UMSAP - Notification'
+    #------------------------------> 
+    oNotification = {
+        'errorF' : 'Fatal Error',
+        'errorU' : 'Unexpected Error',
+        'warning': 'Warning',
+        'success': 'Success',
+        'question':'Please answer the following question:',
+    }
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, 
+        mode: Literal['errorF', 'errorU', 'warning', 'success', 'question'],
+        msg: str='', 
+        tException: Union[Exception, str]='', 
+        parent: Optional[wx.Window]=None, 
+        button: int=1, 
+        setText: bool=False,
+        ) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        if not msg and not tException:
+            msg = "The message and exception received were both empty."
+        else:
+            pass
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, title=self.cTitle, style=self.style)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wType = wx.StaticText(
+            self, 
+            label = self.oNotification[mode],
+        )
+        self.wType.SetFont(self.wType.GetFont().MakeBold())
+
+        if msg:
+            self.wMsg = wx.StaticText(self, label=msg)
+        else:
+            self.wMsg = None
+
+        if mode in self.error or setText:
+            self.wError = wx.TextCtrl(
+                self, 
+                size  = (565, 100),
+                style = wx.TE_READONLY|wx.TE_MULTILINE,
+            )
+            self.SetErrorText(msg, tException)
+        else:
+            pass
+
+        self.wImg = wx.StaticBitmap(
+            self,
+            bitmap = wx.Bitmap(str(self.img), wx.BITMAP_TYPE_PNG),
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Create Sizers
+        self.sSizer = wx.BoxSizer(wx.VERTICAL)
+        self.sTop = wx.GridBagSizer(1,1)
+        if button == 1:
+            self.sBtn = self.CreateButtonSizer(wx.OK)
+        else:
+            self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL)
+        #------------------------------> Top Sizer
+        self.sTop.Add(
+            self.wImg,
+            pos    = (0,0),
+            flag   = wx.ALIGN_CENTER_HORIZONTAL|wx.ALL,
+            border = 5,
+            span   = (3,0),
+        )
+        self.sTop.Add(
+            self.wType,
+            pos    = (0,1),
+            flag   = wx.ALIGN_LEFT|wx.ALL,
+            border = 5
+        )
+        if self.wMsg is not None:
+            self.sTop.Add(
+                self.wMsg,
+                pos    = (1,1),
+                flag   = wx.EXPAND|wx.ALL,
+                border = 5
+            )
+        else:
+            pass
+        if self.wError is not None:
+            #------------------------------> 
+            if self.wMsg is not None:
+                pos = (2,1)
+            else:
+                pos = (1,1)
+            #------------------------------> 
+            self.sTop.Add(
+                self.wError,
+                pos    = pos,
+                flag   = wx.EXPAND|wx.ALL,
+                border = 5
+            )
+        else:
+            pass
+        #--------------> Add Grow Col to Top Sizer
+        self.sTop.AddGrowableCol(1,1)
+        if self.wError is not None:
+            if self.wMsg is not None:
+                self.sTop.AddGrowableRow(2,1)
+            else:
+                self.sTop.AddGrowableRow(1,1)
+        else:
+            pass
+        #------------------------------> Main Sizer
+        self.sSizer.Add(self.sTop, 1, wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, 25)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.RIGHT|wx.BOTTOM, 25)
+        #------------------------------>
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        self.CenterOnParent()
+        self.ShowModal()
+        self.Destroy()
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetErrorText(
+        self, msg: str='', tException: Union[Exception, str]='',
+        ) -> bool:
+        """Set the error text in the wx.TextCtrl
+
+            Parameters
+            ----------
+            msg : str
+                Error message
+            tException : Exception, str
+                To display full traceback or a custom further details message.
+        """
+        #region -----------------------------------------------------> Message
+        if msg:
+            self.wError.AppendText(msg)
+        else:
+            pass
+        #endregion --------------------------------------------------> Message
         
-
-#         Attributes
-#         ----------
+        #region ---------------------------------------------------> Exception  
+        if tException:
+            if msg:
+                self.wError.AppendText('\n\nFurther details:\n\n')
+            else:
+                pass
+            if isinstance(tException, str):
+                self.wError.AppendText(tException)
+            else:
+                self.wError.AppendText(mMethod.StrException(tException))
+        else:
+            pass
+        #endregion ------------------------------------------------> Exception  
         
-
-#         Raises
-#         ------
+        self.wError.SetInsertionPoint(0)
         
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
-#         Methods
-#         -------
+class Preference(wx.Dialog):
+    """Set the UMSAP preferences."""
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.ndPreferences
+    cTitle = mConfig.t[cName]
+    #------------------------------> 
+    cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
+    #------------------------------> 
+    cSize = (340,200)
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(
+            None, title=self.cTitle, style=self.cStyle, size=self.cSize)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wNoteBook = wx.Notebook(self, style=wx.NB_TOP)
+        #------------------------------> 
+        self.wUpdate = mPane.PrefUpdate(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wUpdate, self.wUpdate.cLTab)
+        #------------------------------> 
+        self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.NO)
+        self.FindWindowById(wx.ID_OK).SetLabel('Save')
+        self.FindWindowById(wx.ID_CANCEL).SetLabel('Cancel')
+        self.FindWindowById(wx.ID_NO).SetLabel('Load Defaults')
+        #------------------------------> 
+        self.OnDefault('fEvent')
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
+        #------------------------------> 
+        self.sSizer.Add(self.wNoteBook, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------> 
+        self.SetSizer(self.sSizer)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_BUTTON, self.OnSave,    id=wx.ID_OK)
+        self.Bind(wx.EVT_BUTTON, self.OnCancel,  id=wx.ID_CANCEL)
+        self.Bind(wx.EVT_BUTTON, self.OnDefault, id=wx.ID_NO)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.Center()
+        self.ShowModal()
+        self.Destroy()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnSave(self, event: wx.CommandEvent) -> bool:
+        """Save the preferences.
+
+            Parameters
+            ----------
+            event : wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Set
+        #------------------------------> Update
+        mConfig.general['checkUpdate'] = not bool(self.wUpdate.wRBox.GetSelection())
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Save
+        data = {}
+        for sec in mConfig.conflist:
+            data[sec] = getattr(mConfig, sec)
+        #------------------------------> 
+        try:
+            mFile.WriteJSON(mConfig.fConfig, data)
+        except Exception as e:
+            msg = 'Configuration options could not be saved.'
+            NotificationDialog('errorF', msg=msg, tException=e)
+            return False
+        #endregion ------------------------------------------------> 
+
+        self.EndModal(1)
+        return True
+    #---
+
+    def OnCancel(self, event: wx.CommandEvent) -> bool:
+        """Close the window.
+
+            Parameters
+            ----------
+             event : wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        self.EndModal(0)
+        return True
+    #---
+    
+    def OnDefault(self, event: Union[wx.CommandEvent, str]) -> bool:
+        """Set default options.
+
+            Parameters
+            ----------
+             event : wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if type(event) == str:
+            data = self.GetConfConf()
+        else:
+            data = self.GetConfFile()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if data:
+            return self.SetConfValues(data)
+        else:
+            return False
+        #endregion ------------------------------------------------> 
+    #---
+
+    def GetConfFile(self) -> dict:
+        """Get default data from file.
+
+            Parameters
+            ----------
+             event : wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        try:
+            data = mFile.ReadJSON(mConfig.fConfigDef)
+        except Exception as e:
+            msg = 'It was not possible to read the default configuration file.'
+            NotificationDialog('errorF', msg=msg, tException=e)
+            return {}
+        #endregion ------------------------------------------------> 
+
+        return data
+    #---
+
+    def GetConfConf(self) -> dict:
+        """Get default options from current options.
+
+            Parameters
+            ----------
+             event : wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        data = {}
+        for sec in mConfig.conflist:
+            data[sec] = getattr(mConfig, sec)
+        #endregion ------------------------------------------------> 
+
+        return data
+    #---
+
+    def SetConfValues(self, data: dict) -> bool:
+        """Set the default values.
+
+            Parameters
+            ----------
+            data: dict
+                Data to be set.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        try:
+            #------------------------------> Update
+            val = 0 if data['general']['checkUpdate'] else 1
+            self.wUpdate.wRBox.SetSelection(val)
+        except Exception as e:
+            msg = 'Something went wrong when loading the configuration options.'
+            NotificationDialog('errorU', msg=msg, tException=e)
+            return False
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---    
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class CheckUpdateResult(wx.Dialog):
+    """Show a dialog with the result of the check for update operation.
+
+        Parameters
+        ----------
+        parent : wx widget or None
+            To center the dialog in parent. Default None.
+        checkRes : str or None
+            Internet lastest version. Default None.
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.ndCheckUpdateResDialog
+    #------------------------------> Style
+    cStyle = wx.CAPTION|wx.CLOSE_BOX
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, checkRes: str='',
+        ) -> None:
+        """"""
+        #region -----------------------------------------------> Initial setup
+        super().__init__(parent, title=mConfig.t[self.cName], style=self.cStyle)
+        #endregion --------------------------------------------> Initial setup
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Msg
+        if checkRes:
+            msg = (f'UMSAP {checkRes} is already available.\nYou are '
+                f'currently using UMSAP {mConfig.version}.')
+        else:
+            msg = 'You are using the latest version of UMSAP.'
+        self.wMsg = wx.StaticText(self, label=msg, style=wx.ALIGN_LEFT)
+        #------------------------------> Link	
+        if checkRes:
+            self.wStLink = adv.HyperlinkCtrl(
+                self, label='Read the Release Notes.', url=mConfig.urlUpdate)
+        else:
+            pass
+        #------------------------------> Img
+        self.wImg = wx.StaticBitmap(
+            self, bitmap=wx.Bitmap(str(mConfig.fImgIcon), wx.BITMAP_TYPE_PNG))
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Button Sizers
+        self.sBtn = self.CreateStdDialogButtonSizer(wx.OK)
+        #------------------------------> TextSizer
+        self.sText = wx.BoxSizer(wx.VERTICAL)
+        self.sText.Add(self.wMsg, 0, wx.ALIGN_LEFT|wx.ALL, 10)
+        if checkRes:
+            self.sText.Add(self.wStLink, 0, wx.ALIGN_CENTER|wx.ALL, 10)
+        else:
+            pass
+        #------------------------------> Image Sizer
+        self.sImg = wx.BoxSizer(wx.HORIZONTAL)
+        self.sImg.Add(self.wImg, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.sImg.Add(
+            self.sText, 0, wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
+        #------------------------------> Main Sizer
+        self.sSizer = wx.BoxSizer(wx.VERTICAL)
+        self.sSizer.Add(
+            self.sImg, 0, wx.ALIGN_CENTER|wx.TOP|wx.LEFT|wx.RIGHT, 25)
+        self.sSizer.Add(
+            self.sBtn, 0, wx.ALIGN_RIGHT|wx.RIGHT|wx.BOTTOM, 10)
+        #------------------------------> 
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        if checkRes:
+            self.wStLink.Bind(adv.EVT_HYPERLINK, self.OnLink)
+        else:
+            pass
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Position & Show
+        self.CentreOnParent()
+        self.ShowModal()
+        self.Destroy()
+        #endregion ------------------------------------------> Position & Show
+    #---
+    #endregion -----------------------------------------------> Instance setup
+    
+    #------------------------------> Class Methods
+    #region ---------------------------------------------------> Event Methods
+    def OnLink(self, event: wx.Event) -> Literal[True]:
+        """Process the link event.
         
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.nwPreferences
-#     #------------------------------> 
-#     cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
-#     #------------------------------> 
-#     cSize = (340,200)
-#     #endregion --------------------------------------------------> Class setup
-
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self):
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(
-#             None, title=self.cName, style=self.cStyle, size=self.cSize)
-#         #endregion --------------------------------------------> Initial Setup
-
-#         #region -----------------------------------------------------> Widgets
-#         self.wNoteBook = wx.Notebook(self, style=wx.NB_TOP)
-#         #------------------------------> 
-#         self.wUpdate = pane.PrefUpdate(self.wNoteBook)
-#         self.wNoteBook.AddPage(self.wUpdate, self.wUpdate.cLTab)
-#         #------------------------------> 
-#         self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.NO)
-#         self.FindWindowById(wx.ID_OK).SetLabel('Save')
-#         self.FindWindowById(wx.ID_CANCEL).SetLabel('Cancel')
-#         self.FindWindowById(wx.ID_NO).SetLabel('Load Defaults')
-#         #------------------------------> 
-#         self.OnDefault('fEvent')
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-#         self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
-#         #------------------------------> 
-#         self.sSizer.Add(self.wNoteBook, 1, wx.EXPAND|wx.ALL, 5)
-#         self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
-#         #------------------------------> 
-#         self.SetSizer(self.sSizer)
-#         #endregion ---------------------------------------------------> Sizers
-
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_BUTTON, self.OnSave,    id=wx.ID_OK)
-#         self.Bind(wx.EVT_BUTTON, self.OnCancel,  id=wx.ID_CANCEL)
-#         self.Bind(wx.EVT_BUTTON, self.OnDefault, id=wx.ID_NO)
-#         #endregion -----------------------------------------------------> Bind
-
-#         #region ---------------------------------------------> Window position
-#         self.Center()
-#         self.ShowModal()
-#         self.Destroy()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #region ---------------------------------------------------> Class methods
-#     def OnSave(self, event: wx.CommandEvent) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> Set
-#         #------------------------------> Update
-#         config.general['checkUpdate'] = not bool(self.wUpdate.wRBox.GetSelection())
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> Save
-#         data = {}
-#         for sec in config.conflist:
-#             data[sec] = getattr(config, sec)
-#         #------------------------------> 
-#         try:
-#             dtsFF.WriteJSON(config.fConfig, data)
-#         except Exception as e:
-#             msg = 'Configuration options could not be saved.'
-#             dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
-#             return False
-#         #endregion ------------------------------------------------> 
-
-#         self.EndModal(1)
-#         return True
-#     #---
-    
-#     def OnCancel(self, event: wx.CommandEvent) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         self.EndModal(0)
-#         return True
-#     #---
-    
-#     def OnDefault(self, event: Union[wx.CommandEvent, str]) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         if type(event) == str:
-#             data = self.GetConfConf()
-#         else:
-#             data = self.GetConfFile()
-#         #endregion ------------------------------------------------> 
-    
-#         #region ---------------------------------------------------> 
-#         if data:
-#             return self.SetConfValues(data)
-#         else:
-#             return False
-#         #endregion ------------------------------------------------> 
-#     #---
-    
-#     def GetConfFile(self) -> dict:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         try:
-#             data = dtsFF.ReadJSON(config.fConfigDef)
-#         except Exception as e:
-#             msg = 'It was not possible to read the default configuration file.'
-#             dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
-#             return {}
-#         #endregion ------------------------------------------------> 
-        
-#         return data
-#     #---
-    
-#     def GetConfConf(self) -> dict:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         data = {}
-#         for sec in config.conflist:
-#             data[sec] = getattr(config, sec)
-#         return data
-#     #---
-    
-#     def SetConfValues(self, data: dict) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         try:
-#             #------------------------------> Update
-#             val = 0 if data['general']['checkUpdate'] else 1
-#             self.wUpdate.wRBox.SetSelection(val)
-#         except Exception as e:
-#             msg = 'Something went wrong when loading the configuration options.'
-#             dtsWindow.NotificationDialog('errorU', msg=msg, tException=e)
-#             return False
-#         #endregion ------------------------------------------------> 
-        
-#         return True
-#     #---    
-#     #endregion ------------------------------------------------> Class methods
-# #---
-
-
-# class CheckUpdateResult(wx.Dialog):
-#     """Show a dialog with the result of the check for update operation.
-    
-#         Parameters
-#         ----------
-#         cParent : wx widget or None
-#             To center the dialog in parent. Default None.
-#         cCheckRes : str or None
-#             Internet lastest version. Default None.
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.ndCheckUpdateResDialog
-#     #------------------------------> Style
-#     cStyle = wx.CAPTION|wx.CLOSE_BOX
-#     #endregion --------------------------------------------------> Class setup
-    
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: Optional[wx.Window]=None, cCheckRes: Optional[str]=None,
-#         ) -> None:
-#         """"""
-#         #region -----------------------------------------------> Initial setup
-#         super().__init__(cParent, title=config.t[self.cName], style=self.cStyle)
-#         #endregion --------------------------------------------> Initial setup
-
-#         #region -----------------------------------------------------> Widgets
-#         #------------------------------> Msg
-#         if cCheckRes is None:
-#             msg = 'You are using the latest version of UMSAP.'
-#         else:
-#             msg = (f'UMSAP {cCheckRes} is already available.\nYou are '
-#                 f'currently using UMSAP {config.version}.')
-#         self.wStMsg = wx.StaticText(self, label=msg, style=wx.ALIGN_LEFT)
-#         #------------------------------> Link	
-#         if cCheckRes is not None:
-#             self.wStLink = adv.HyperlinkCtrl(
-#                 self, label='Read the Release Notes.', url=config.urlUpdate)
-#         else:
-#             pass
-#         #------------------------------> Img
-#         self.wImg = wx.StaticBitmap(
-#             self, bitmap=wx.Bitmap(str(config.fImgIcon), wx.BITMAP_TYPE_PNG))
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-#         #------------------------------> Button Sizers
-#         self.sBtn = self.CreateStdDialogButtonSizer(wx.OK)
-#         #------------------------------> TextSizer
-#         self.sText = wx.BoxSizer(wx.VERTICAL)
-        
-#         self.sText.Add(self.wStMsg, 0, wx.ALIGN_LEFT|wx.ALL, 10)
-#         if cCheckRes is not None:
-#             self.sText.Add(self.wStLink, 0, wx.ALIGN_CENTER|wx.ALL, 10)
-#         else:
-#             pass
-#         #------------------------------> Image Sizer
-#         self.sImg = wx.BoxSizer(wx.HORIZONTAL)
-        
-#         self.sImg.Add(self.wImg, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-#         self.sImg.Add(
-#             self.sText, 0, wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.BOTTOM, 5)
-#         #------------------------------> Main Sizer
-#         self.sSizer = wx.BoxSizer(wx.VERTICAL)
-        
-#         self.sSizer.Add(
-#             self.sImg, 0, wx.ALIGN_CENTER|wx.TOP|wx.LEFT|wx.RIGHT, 25)
-#         self.sSizer.Add(
-#             self.sBtn, 0, wx.ALIGN_RIGHT|wx.RIGHT|wx.BOTTOM, 10)
-        
-#         self.SetSizer(self.sSizer)
-#         self.sSizer.Fit(self)
-#         #endregion ---------------------------------------------------> Sizers
-
-#         #region --------------------------------------------------------> Bind
-#         if cCheckRes is not None:
-#             self.wStLink.Bind(adv.EVT_HYPERLINK, self.OnLink)
-#         else:
-#             pass
-#         #endregion -----------------------------------------------------> Bind
-
-#         #region ---------------------------------------------> Position & Show
-#         self.CentreOnParent()
-#         self.ShowModal()
-#         self.Destroy()
-#         #endregion ------------------------------------------> Position & Show
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-    
-#     #------------------------------> Class Methods
-#     #region ---------------------------------------------------> Event Methods
-#     def OnLink(self, event: wx.Event) -> Literal[True]:
-#         """Process the link event.
-        
-#             Parameters
-#             ----------
-#             event : wx.adv.HyperlinkEvent
-#                 Information about the event
-#         """
-#         #------------------------------> 
-#         event.Skip()
-#         self.EndModal(1)
-#         self.Destroy()
-#         #------------------------------> 
-#         return True
-#     #endregion ------------------------------------------------> Event Methods
-# #---
+            Parameters
+            ----------
+            event : wx.adv.HyperlinkEvent
+                Information about the event
+        """
+        #------------------------------> 
+        event.Skip()
+        self.EndModal(1)
+        self.Destroy()
+        #------------------------------> 
+        return True
+    #endregion ------------------------------------------------> Event Methods
+#---
 
 
 # class ResControlExp(wx.Dialog):
@@ -12708,71 +12823,71 @@
 #     #---
 #     #endregion ------------------------------------------------> Class methods
 # #---
-# #endregion --------------------------------------------------------> wx.Dialog
+#endregion --------------------------------------------------------> wx.Dialog
 
 
-# #region ----------------------------------------------------------> ABOUT TEXT
-# myText = """UMSAP: Fast post-processing of mass spectrometry data 
+#region ----------------------------------------------------------> ABOUT TEXT
+myText = """UMSAP: Fast post-processing of mass spectrometry data 
 
-# -- Modules and Python version --
+-- Modules and Python version --
 
-# UMSAP 2.2.0 is written in Python 3.9.2 and uses the following modules:
+UMSAP 2.2.0 is written in Python 3.9.2 and uses the following modules:
 
-# Biopython 1.79
-# Matplotlib 3.3.4 
-# NumPy 1.20.1
-# Pandas 1.2.3
-# PyInstaller 4.3
-# Python 3.9.2
-# ReportLab 3.6.8
-# Requests 2.25.1
-# Scipy 1.6.3
-# Statsmodels 0.13.2
-# wxPython 4.1.1
+Biopython 1.79
+Matplotlib 3.3.4 
+NumPy 1.20.1
+Pandas 1.2.3
+PyInstaller 4.3
+Python 3.9.2
+ReportLab 3.6.8
+Requests 2.25.1
+Scipy 1.6.3
+Statsmodels 0.13.2
+wxPython 4.1.1
 
-# Copyright notice and License for the modules can be found in the User's manual of UMSAP.
+Copyright notice and License for the modules can be found in the User's manual of UMSAP.
 
-# -- Acknowledgments --
+-- Acknowledgments --
 
-# I would like to thank all the persons that have contributed to the development 
-# of UMSAP, either by contributing ideas and suggestions or by testing the code. 
-# Special thanks go to: Dr. Farnusch Kaschani, Dr. Juliana Rey, Dr. Petra Janning 
-# and Prof. Dr. Daniel Hoffmann.
+I would like to thank all the persons that have contributed to the development 
+of UMSAP, either by contributing ideas and suggestions or by testing the code. 
+Special thanks go to: Dr. Farnusch Kaschani, Dr. Juliana Rey, Dr. Petra Janning 
+and Prof. Dr. Daniel Hoffmann.
 
-# In particular, I would like to thank Prof. Dr. Michael Ehrmann.
+In particular, I would like to thank Prof. Dr. Michael Ehrmann.
 
-# -- License Agreement --
+-- License Agreement --
 
-# Utilities for Mass Spectrometry Analysis of Proteins and its source code are governed by the following license:
+Utilities for Mass Spectrometry Analysis of Proteins and its source code are governed by the following license:
 
-# Upon execution of this Agreement by the party identified below (”Licensee”), Kenny Bravo Rodriguez (KBR) will provide the Utilities for Mass Spectrometry Analysis of Proteins software in Executable Code and/or Source Code form (”Software”) to Licensee, subject to the following terms and conditions. For purposes of this Agreement, Executable Code is the compiled code, which is ready to run on Licensee’s computer. Source code consists of a set of files, which contain the actual program commands that are compiled to form the Executable Code.
+Upon execution of this Agreement by the party identified below (”Licensee”), Kenny Bravo Rodriguez (KBR) will provide the Utilities for Mass Spectrometry Analysis of Proteins software in Executable Code and/or Source Code form (”Software”) to Licensee, subject to the following terms and conditions. For purposes of this Agreement, Executable Code is the compiled code, which is ready to run on Licensee’s computer. Source code consists of a set of files, which contain the actual program commands that are compiled to form the Executable Code.
 
-# 1. The Software is intellectual property owned by KBR, and all rights, title and interest, including copyright, remain with KBR. KBR grants, and Licensee hereby accepts, a restricted, non-exclusive, non-transferable license to use the Software for academic, research and internal business purposes only, e.g. not for commercial use (see Clause 7 below), without a fee.
+1. The Software is intellectual property owned by KBR, and all rights, title and interest, including copyright, remain with KBR. KBR grants, and Licensee hereby accepts, a restricted, non-exclusive, non-transferable license to use the Software for academic, research and internal business purposes only, e.g. not for commercial use (see Clause 7 below), without a fee.
 
-# 2. Licensee may, at its own expense, create and freely distribute complimentary works that inter-operate with the Software, directing others to the Utilities for Mass Spectrometry Analysis of Proteins web page to license and obtain the Software itself. Licensee may, at its own expense, modify the Software to make derivative works. Except as explicitly provided below, this License shall apply to any derivative work as it does to the original Software distributed by KBR. Any derivative work should be clearly marked and renamed to notify users that it is a modified version and not the original Software distributed by KBR. Licensee agrees to reproduce the copyright notice and other proprietary markings on any derivative work and to include in the documentation of such work the acknowledgment: ”This software includes code developed by Kenny Bravo Rodriguez for the Utilities for Mass Spectrometry Analysis of Proteins software”.
-# Licensee may not sell any derivative work based on the Software under any circumstance. For commercial distribution of the Software or any derivative work based on the Software a separate license is required. Licensee may contact KBR to negotiate an appropriate license for such distribution.
+2. Licensee may, at its own expense, create and freely distribute complimentary works that inter-operate with the Software, directing others to the Utilities for Mass Spectrometry Analysis of Proteins web page to license and obtain the Software itself. Licensee may, at its own expense, modify the Software to make derivative works. Except as explicitly provided below, this License shall apply to any derivative work as it does to the original Software distributed by KBR. Any derivative work should be clearly marked and renamed to notify users that it is a modified version and not the original Software distributed by KBR. Licensee agrees to reproduce the copyright notice and other proprietary markings on any derivative work and to include in the documentation of such work the acknowledgment: ”This software includes code developed by Kenny Bravo Rodriguez for the Utilities for Mass Spectrometry Analysis of Proteins software”.
+Licensee may not sell any derivative work based on the Software under any circumstance. For commercial distribution of the Software or any derivative work based on the Software a separate license is required. Licensee may contact KBR to negotiate an appropriate license for such distribution.
 
-# 3. Except as expressly set forth in this Agreement, THIS SOFTWARE IS PROVIDED ”AS IS” AND KBR MAKES NO REPRESENTATIONS AND EXTENDS NO WAR- RANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OR MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, OR THAT THE USE OF THE SOFTWARE WILL NOT INFRINGE ANY PATENT, TRADEMARK, OR OTHER RIGHTS. LICENSEE AS- SUMES THE ENTIRE RISK AS TO THE RESULTS AND PERFORMANCE OF THE SOFTWARE AND/OR ASSOCIATED MATERIALS. LICENSEE AGREES THAT KBR SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT, CONSE- QUENTIAL, OR INCIDENTAL DAMAGES WITH RESPECT TO ANY CLAIM BY LICENSEE OR ANY THIRD PARTY ON ACCOUNT OF OR ARISING FROM THIS AGREEMENT OR USE OF THE SOFTWARE AND/OR ASSOCIATED MATERIALS.
+3. Except as expressly set forth in this Agreement, THIS SOFTWARE IS PROVIDED ”AS IS” AND KBR MAKES NO REPRESENTATIONS AND EXTENDS NO WAR- RANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OR MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, OR THAT THE USE OF THE SOFTWARE WILL NOT INFRINGE ANY PATENT, TRADEMARK, OR OTHER RIGHTS. LICENSEE AS- SUMES THE ENTIRE RISK AS TO THE RESULTS AND PERFORMANCE OF THE SOFTWARE AND/OR ASSOCIATED MATERIALS. LICENSEE AGREES THAT KBR SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT, CONSE- QUENTIAL, OR INCIDENTAL DAMAGES WITH RESPECT TO ANY CLAIM BY LICENSEE OR ANY THIRD PARTY ON ACCOUNT OF OR ARISING FROM THIS AGREEMENT OR USE OF THE SOFTWARE AND/OR ASSOCIATED MATERIALS.
 
-# 4. Licensee understands the Software is proprietary to KBR. Licensee agrees to take all reasonable steps to insure that the Software is protected and secured from unauthorized disclosure, use, or release and will treat it with at least the same level of care as Licensee would use to protect and secure its own proprietary computer programs and/or information, but using no less than a reasonable standard of care. Licensee agrees to provide the Software only to any other person or entity who has registered with KBR. If Licensee is not registering as an individual but as an institution or corporation each member of the institution or corporation who has access to or uses Software must agree to and abide by the terms of this license. If Licensee becomes aware of any unauthorized licensing, copying or use of the Software, Licensee shall promptly notify KBR in writing. Licensee expressly agrees to use the Software only in the manner and for the specific uses authorized in this Agreement.
+4. Licensee understands the Software is proprietary to KBR. Licensee agrees to take all reasonable steps to insure that the Software is protected and secured from unauthorized disclosure, use, or release and will treat it with at least the same level of care as Licensee would use to protect and secure its own proprietary computer programs and/or information, but using no less than a reasonable standard of care. Licensee agrees to provide the Software only to any other person or entity who has registered with KBR. If Licensee is not registering as an individual but as an institution or corporation each member of the institution or corporation who has access to or uses Software must agree to and abide by the terms of this license. If Licensee becomes aware of any unauthorized licensing, copying or use of the Software, Licensee shall promptly notify KBR in writing. Licensee expressly agrees to use the Software only in the manner and for the specific uses authorized in this Agreement.
 
-# 5. KBR shall have the right to terminate this license immediately by written notice upon Licensee’s breach of, or non-compliance with, any terms of the license. Licensee may be held legally responsible for any copyright infringement that is caused or encouraged by its failure to abide by the terms of this license. Upon termination, Licensee agrees to destroy all copies of the Software in its possession and to verify such destruction in writing.
+5. KBR shall have the right to terminate this license immediately by written notice upon Licensee’s breach of, or non-compliance with, any terms of the license. Licensee may be held legally responsible for any copyright infringement that is caused or encouraged by its failure to abide by the terms of this license. Upon termination, Licensee agrees to destroy all copies of the Software in its possession and to verify such destruction in writing.
 
-# 6. Licensee agrees that any reports or published results obtained with the Software will acknowledge its use by the appropriate citation as follows:
-# ”Utilities for Mass Spectrometry Analysis of Proteins was created by Kenny Bravo Rodriguez at the University of Duisburg-Essen and is currently developed at the Max Planck Institute of Molecular Physiology.”
-# Any published work, which utilizes Utilities for Mass Spectrometry Analysis of Proteins, shall include the following reference:
-# Kenny Bravo-Rodriguez, Birte Hagemeier, Lea Drescher, Marian Lorenz, Michael Meltzer, Farnusch Kaschani, Markus Kaiser and Michael Ehrmann. (2018). Utilities for Mass Spectrometry Analysis of Proteins (UMSAP): Fast post-processing of mass spectrometry data. Rapid Communications in Mass Spectrometry, 32(19), 1659–1667.
-# Electronic documents will include a direct link to the official Utilities for Mass Spec- trometry Analysis of Proteins page at: www.umsap.nl
+6. Licensee agrees that any reports or published results obtained with the Software will acknowledge its use by the appropriate citation as follows:
+”Utilities for Mass Spectrometry Analysis of Proteins was created by Kenny Bravo Rodriguez at the University of Duisburg-Essen and is currently developed at the Max Planck Institute of Molecular Physiology.”
+Any published work, which utilizes Utilities for Mass Spectrometry Analysis of Proteins, shall include the following reference:
+Kenny Bravo-Rodriguez, Birte Hagemeier, Lea Drescher, Marian Lorenz, Michael Meltzer, Farnusch Kaschani, Markus Kaiser and Michael Ehrmann. (2018). Utilities for Mass Spectrometry Analysis of Proteins (UMSAP): Fast post-processing of mass spectrometry data. Rapid Communications in Mass Spectrometry, 32(19), 1659–1667.
+Electronic documents will include a direct link to the official Utilities for Mass Spec- trometry Analysis of Proteins page at: www.umsap.nl
 
-# 7. Commercial use of the Software, or derivative works based thereon, REQUIRES A COMMERCIAL LICENSE. Should Licensee wish to make commercial use of the Software, Licensee will contact KBR to negotiate an appropriate license for such use. Commercial use includes: (1) integration of all or part of the Software into a product for sale, lease or license by or on behalf of Licensee to third parties, or (2) distribution of the Software to third parties that need it to commercialize product sold or licensed by or on behalf of Licensee.
+7. Commercial use of the Software, or derivative works based thereon, REQUIRES A COMMERCIAL LICENSE. Should Licensee wish to make commercial use of the Software, Licensee will contact KBR to negotiate an appropriate license for such use. Commercial use includes: (1) integration of all or part of the Software into a product for sale, lease or license by or on behalf of Licensee to third parties, or (2) distribution of the Software to third parties that need it to commercialize product sold or licensed by or on behalf of Licensee.
 
-# 8. Utilities for Mass Spectrometry Analysis of Proteins is being distributed as a research tool and as such, KBR encourages contributions from users of the code that might, at KBR’s sole discretion, be used or incorporated to make the basic operating framework of the Software a more stable, flexible, and/or useful product. Licensees who contribute their code to become an internal portion of the Software agree that such code may be distributed by KBR under the terms of this License and may be required to sign an ”Agreement Regarding Contributory Code for Utilities for Mass Spectrometry Analysis of Proteins Software” before KBR can accept it (contact umsap@umsap.nl for a copy).
+8. Utilities for Mass Spectrometry Analysis of Proteins is being distributed as a research tool and as such, KBR encourages contributions from users of the code that might, at KBR’s sole discretion, be used or incorporated to make the basic operating framework of the Software a more stable, flexible, and/or useful product. Licensees who contribute their code to become an internal portion of the Software agree that such code may be distributed by KBR under the terms of this License and may be required to sign an ”Agreement Regarding Contributory Code for Utilities for Mass Spectrometry Analysis of Proteins Software” before KBR can accept it (contact umsap@umsap.nl for a copy).
 
-# UNDERSTOOD AND AGREED.
+UNDERSTOOD AND AGREED.
 
-# Contact Information:
+Contact Information:
 
-# The best contact path for licensing issues is by e-mail to umsap@umsap.nl
-# """
-# #endregion -------------------------------------------------------> ABOUT TEXT
+The best contact path for licensing issues is by e-mail to umsap@umsap.nl
+"""
+#endregion -------------------------------------------------------> ABOUT TEXT
 

@@ -1,22 +1,22 @@
-# # ------------------------------------------------------------------------------
-# # Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
-# #
-# # Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
-# #
-# # This program is distributed for free in the hope that it will be useful,
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# #
-# # See the accompanying license for more details.
-# # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
+#
+# Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
+#
+# This program is distributed for free in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the accompanying license for more details.
+# ------------------------------------------------------------------------------
 
 
-# """Classes and methods to manipulate data """
+"""Classes and methods to manipulate data """
 
 
-# #region -------------------------------------------------------------> Imports
+#region -------------------------------------------------------------> Imports
 # import itertools
-# from typing import Literal, Union
+import traceback
 
 # import pandas as pd
 # import numpy as np
@@ -28,10 +28,68 @@
 # import config.config as config
 # import dtscore.data_method as dtsMethod
 # import dtscore.statistic as dtsStatistic
-# #endregion ----------------------------------------------------------> Imports
+#endregion ----------------------------------------------------------> Imports
 
 
-# #region -------------------------------------------------------------> Methods
+#region ------------------------------------------------------> String methods
+def StrException(
+    tException: Exception, tStr: bool=True, tRepr: bool=True, trace: bool=True
+    ) -> str:
+    """Get a string to print information about tException
+
+        Parameters
+        ----------
+        tException: Exception
+            Exception to print
+        tStr : boolean
+            Include error message as return by str(tException). Default is True.
+        tRepr : boolean
+            Include error message as return by repr(tException). 
+            Default is True.
+        trace : boolean
+            Include the traceback. Default is True.
+
+        Returns
+        -------
+        str
+            Error message
+    """
+    # No test
+    #region -------------------------------------------------------> Variables
+    msg = ''
+    #endregion ----------------------------------------------------> Variables
+    
+    #region ---------------------------------------------------------> Message
+    #------------------------------> str(e)
+    if tStr:
+        msg = f"{msg}{str(tException)}\n\n"
+    else:
+        pass
+    #------------------------------> repr(e)
+    if tRepr:
+        msg = f"{msg}{repr(tException)}\n\n"
+    else:
+        pass
+    #------------------------------> traceback
+    if trace:
+        tTrace = "".join(
+            traceback.format_exception(
+                type(tException),
+                tException,
+                tException.__traceback__,
+            )
+        )
+        msg = f"{msg}{tTrace}"
+    else:
+        pass	
+    #endregion ------------------------------------------------------> Message
+    
+    return msg 
+#---
+#endregion ---------------------------------------------------> String methods
+
+
+#region -------------------------------------------------------------> Methods
 # def ResControl2ListNumber(
 #     val: str, sep: list[str]=[' ', ',', ';'], 
 #     numType: Literal['int', 'float']='int',
@@ -903,4 +961,4 @@
 #     doc.build(Story)
 #     return True
 # #---
-# #endregion ----------------------------------------------------------> Methods
+#endregion ----------------------------------------------------------> Methods

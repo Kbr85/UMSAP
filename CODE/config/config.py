@@ -1,112 +1,112 @@
-# # ------------------------------------------------------------------------------
-# # Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
-# #
-# # Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
-# #
-# # This program is distributed for free in the hope that it will be useful,
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# #
-# # See the accompanying license for more details.
-# # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
+#
+# Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
+#
+# This program is distributed for free in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the accompanying license for more details.
+# ------------------------------------------------------------------------------
 
 
-# """Configuration parameters of the app"""
+"""Configuration parameters of the app"""
 
 
-# #region -------------------------------------------------------------> Imports
-# import platform
-# from pathlib import Path
-# #endregion ----------------------------------------------------------> Imports
+#region -------------------------------------------------------------> Imports
+import platform
+from pathlib import Path
+#endregion ----------------------------------------------------------> Imports
 
 
-# #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
-# #region --------------------------------------------------> General parameters
-# development = True # Track state, development (True) or production (False)
-# #------------------------------> 
-# version     = '2.2.1 (beta)' # String to write in the output files
-# software    = 'UMSAP' # Software short name
-# softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
+#region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
+#region --------------------------------------------------> General parameters
+development = True # Track state, development (True) or production (False)
+#------------------------------> 
+version     = '2.2.1 (beta)' # String to write in the output files
+software    = 'UMSAP' # Software short name
+softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
 # dictVersion = { # dict for directly write into output files
 #     'Version': version,
 # }
 # #------------------------------> 
-# os = platform.system() # Current operating system
-# cwd = Path(__file__)   # Config file path
-# #endregion -----------------------------------------------> General parameters
+os = platform.system() # Current operating system
+cwd = Path(__file__)   # Config file path
+# endregion -----------------------------------------------> General parameters
 
 
-# #region ---------------------------------------- Platform Dependent Parameters
+#region ---------------------------------------- Platform Dependent Parameters
 # # There are some that must be defined in other sections
-# if os == 'Darwin':
-#     #------------------------------> Root & Resources Folder
-#     root = cwd.parent.parent.parent
-#     res = root / 'Resources'  # Path to the Resources folder
-#     #------------------------------> Index of the Tool Menu in the MenuBar
-#     toolsMenuIdx = 2
+if os == 'Darwin':
+    #------------------------------> Root & Resources Folder
+    root = cwd.parent.parent.parent
+    res = root / 'Resources'  # Path to the Resources folder
+    #------------------------------> Index of the Tool Menu in the MenuBar
+    toolsMenuIdx = 2
 #     #------------------------------> Statusbar split size
 #     sbPlot2Fields = [-1, 115]
 #     sbPlot3Fields = [-1, -1, 115] 
 #     #------------------------------> Key for shortcuts
 #     copyShortCut = 'Cmd'
-#     #------------------------------> Delta space between consecutive windows
-#     deltaWin = 23
-#     #------------------------------> 
-#     commOpen = 'open'
-# elif os == 'Windows':
-#     #------------------------------> Root & Resources Folder
-#     if development:
-#         root = cwd.parent.parent.parent
-#         res = root / 'Resources'
-#     else:
-#         root = cwd.parent.parent
-#         res = root / 'RESOURCES/'
-#     #------------------------------> Index of the Tool Menu in the MenuBar
-#     toolsMenuIdx = 2
+    #------------------------------> Delta space between consecutive windows
+    deltaWin = 23
+    #------------------------------> 
+    commOpen = 'open'
+elif os == 'Windows':
+    #------------------------------> Root & Resources Folder
+    if development:
+        root = cwd.parent.parent.parent
+        res = root / 'Resources'
+    else:
+        root = cwd.parent.parent
+        res = root / 'RESOURCES/'
+    #------------------------------> Index of the Tool Menu in the MenuBar
+    toolsMenuIdx = 2
 #     #------------------------------> Statusbar split size
 #     sbPlot2Fields = [-1, 115]
 #     sbPlot3Fields = [-1, -1, 115] 
 #     #------------------------------> Key for shortcuts
 #     copyShortCut = 'Ctrl'
-#     #------------------------------> Delta space between consecutive windows
-#     deltaWin = 20
-#     #------------------------------> 
-#     commOpen = 'start'
-# else:
-#     #------------------------------> Root & Resources Folder
-#     root = cwd.parent
-#     res = root / 'Resources'
-#     #------------------------------> Index of the Tool Menu in the MenuBar
-#     toolsMenuIdx = 3
+    #------------------------------> Delta space between consecutive windows
+    deltaWin = 20
+    #------------------------------> 
+    commOpen = 'start'
+else:
+    #------------------------------> Root & Resources Folder
+    root = cwd.parent
+    res = root / 'Resources'
+    #------------------------------> Index of the Tool Menu in the MenuBar
+    toolsMenuIdx = 3
 #     #------------------------------> Statusbar split size
 #     sbPlot2Fields = [-1, 115]
 #     sbPlot3Fields = [-1, -1, 115] 
 #     #------------------------------> Key for shortcuts
 #     copyShortCut = 'Ctrl'
-#     #------------------------------> Delta space between consecutive windows
-#     deltaWin = 20
-#     #------------------------------> 
-#     commOpen = 'xdg-open'
-# #endregion ------------------------------------- Platform Dependent Parameters
+    #------------------------------> Delta space between consecutive windows
+    deltaWin = 20
+    #------------------------------> 
+    commOpen = 'xdg-open'
+#endregion ------------------------------------- Platform Dependent Parameters
 
 
-# #region -------------------------------------------------------------> Windows
-# # #------------------------------> Reference to main window
-# winMain = None
-# #------------------------------> Number of windows for screen positioning
-# # Keys: Windows ID - Values: Total number of opened windows, except conf win
-# winNumber = {}
+#region -------------------------------------------------------------> Windows
+#------------------------------> Reference to main window
+winMain = None
+#------------------------------> Number of windows for screen positioning
+# Keys: Windows ID - Values: Total number of opened windows, except conf win
+winNumber = {}
 # #------------------------------> Track open umsap files
 # # Keys: UMSAP File path - Values: Reference to control window
 # winUMSAP = {}
-# #endregion ----------------------------------------------------------> Windows
+#endregion ----------------------------------------------------------> Windows
 
 
-# #region ---------------------------------------------------------------> Names
-# #------------------------------> Default name
-# nDefName = 'Default name'
-# #------------------------------> Windows
-# nwMain          = 'MainW'
+#region ---------------------------------------------------------------> Names
+#------------------------------> Default name
+nDefName = 'Default name'
+#------------------------------> Windows
+nwMain          = 'MainW'
 # nwUMSAPControl  = 'UMSAPControl'
 # nwCorrAPlot     = 'CorrAPlot'
 # nwProtProf      = 'ProtProfPlot'
@@ -117,20 +117,20 @@
 # nwHistPlot      = 'HistPlot'
 # nwCpRPlot       = 'CpRPlot'
 # nwCEvolPlot     = 'CEvolPlot'
-# nwAbout         = 'About UMSAP'
-# nwPreferences   = 'Preferences'
-# #------------------------------> Dialogs
-# ndCheckUpdateResDialog = 'CheckUpdateResDialog'
+nwAbout         = 'About UMSAP'
+#------------------------------> Dialogs
+ndCheckUpdateResDialog = 'CheckUpdateResDialog'
+ndPreferences   = 'Preferences'
 # ndResControlExp        = 'ResControlExp'
 # ndFilterRemoveAny      = 'Remove Filters'
-# #------------------------------> Tab for notebook windows
+#------------------------------> Tab for notebook windows
 # ntStart    = 'StartTab'
-# ntDataPrep = "DataPrepTab"
-# ntCorrA    = 'CorrATab'
-# ntLimProt  = 'LimProtTab'
-# ntProtProf = 'ProtProfTab'
-# ntTarProt  = 'TarProtTab'
-# ntPrefUpdate = 'Updates'
+ntDataPrep = "DataPrepTab"
+ntCorrA    = 'CorrATab'
+ntLimProt  = 'LimProtTab'
+ntProtProf = 'ProtProfTab'
+ntTarProt  = 'TarProtTab'
+ntPrefUpdate = 'Updates'
 # #------------------------------> Individual Panes
 # npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 # npCorrA                 = 'CorrAPane'
@@ -141,33 +141,34 @@
 # npResControlExpProtProf = 'ResControlExpPaneProtProf'
 # npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 # npResControlExpTarProt  = 'ResControlExpPaneTarProt'
-# npPrefUpdate            = 'PrefUpdate'
-# #------------------------------> Modules
-# nmLimProt  = 'Limited Proteolysis'
-# nmTarProt  = 'Targeted Proteolysis'
-# nmProtProf = 'Proteome Profiling'
-# #------------------------------> Utilities
-# nuDataPrep = "Data Preparation"
-# nuCorrA    = 'Correlation Analysis'
+npPrefUpdate            = 'PrefUpdate'
+#------------------------------> Modules
+nmLimProt  = 'Limited Proteolysis'
+nmTarProt  = 'Targeted Proteolysis'
+nmProtProf = 'Proteome Profiling'
+#------------------------------> Utilities
+nuDataPrep = "Data Preparation"
+nuCorrA    = 'Correlation Analysis'
 # nuAA       = 'AA Distribution'
 # nuHist     = 'Histograms'
-# nuReadF    = 'Read UMSAP File'
+nuReadF    = 'Read UMSAP File'
 # nuCpR      = 'Cleavage per Residues'
 # nuCEvol    = 'Cleavage Evolution'
-# #endregion ------------------------------------------------------------> Names
+#endregion ------------------------------------------------------------> Names
 
 
-# #region --------------------------------------------------------------> Titles
-# # # #------------------------------> Default names
-# tdW = "Untitled Window"
+#region --------------------------------------------------------------> Titles
+#------------------------------> Default names
+tdW = "Untitled Window"
 # tdT = "Tab"
 # tdP = 'Pane'
-# #------------------------------> 
-# t = {
-#     #------------------------------> Windows
-#     nwMain : "Analysis Setup",
-#     #------------------------------> Dialogs
-#     ndCheckUpdateResDialog: "Check for Updates",
+#------------------------------> 
+t = {
+    #------------------------------> Windows
+    nwMain : "Analysis Setup",
+    #------------------------------> Dialogs
+    ndCheckUpdateResDialog: "Check for Updates",
+    ndPreferences         : 'Preferences',
 #     ndResControlExp       : 'Results - Control Experiments',
 #     ndFilterRemoveAny     : 'Remove Filters',
 #     #------------------------------> Tabs
@@ -177,11 +178,11 @@
 #     ntLimProt : 'LimProt',
 #     ntProtProf: 'ProtProf',
 #     ntTarProt : 'TarProt',
-# }
-# #endregion -----------------------------------------------------------> Titles
+}
+#endregion -----------------------------------------------------------> Titles
 
 
-# #region ----------------------------------------------------------- Extensions
+#region ----------------------------------------------------------- Extensions
 # #------------------------------> For wx.Dialogs
 # elData  = 'txt files (*.txt)|*.txt'
 # elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
@@ -204,16 +205,16 @@
 # esPDF   = ['.pdf']
 # esSeq   = ['.txt', '.fasta']
 # esUMSAP = ['.umsap']
-# #endregion -------------------------------------------------------- Extensions
+#endregion -------------------------------------------------------- Extensions
 
 
-# #region ------------------------------------> Keywords for Menu - Method Links
-# #------------------------------> Help Menu
-# klHelpAbout    = 'About UMSAP'
-# klHelpManual   = 'Manual'
-# klHelpTutorial = 'Tutorial'
-# klHelpCheckUpd = 'Check for Updates'
-# klHelpPref     = 'Preferences'
+#region ------------------------------------> Keywords for Menu - Method Links
+#------------------------------> Help Menu
+kwHelpAbout    = 'MenuHelp About UMSAP'
+kwHelpManual   = 'MenuHelp Manual'
+kwHelpTutorial = 'MenuHelp Tutorial'
+kwHelpCheckUpd = 'MenuHelp Check for Updates'
+kwHelpPref     = 'MenuHelp Preferences'
 # #------------------------------> Tool Menu for UMSAPCtrl
 # klToolUMSAPCtrlAddDelExp = 'AddDelExp'
 # klToolUMSAPCtrlAdd       = 'Add Analysis'
@@ -250,21 +251,21 @@
 # klFACleavageEvol = 'Cleavage Evolution'
 # klFACleavagePerRes = 'Cleavage per Residue'
 # klFAPDBMap = 'PDB Map'
-# #endregion ---------------------------------> Keywords for Menu - Method Links
+#endregion ---------------------------------> Keywords for Menu - Method Links
 
 
-# #region ------------------------------------------------------> Path and Files
-# #------------------------------> Relevant paths
-# pImages = res / 'IMAGES' # Images folder
-# #------------------------------> Location & names of important files
+#region ------------------------------------------------------> Path and Files
+#------------------------------> Relevant paths
+pImages = res / 'IMAGES' # Images folder
+#------------------------------> Location & names of important files
 # fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
-# fImgIcon  = pImages / 'DIALOGUE/dlg.png'
-# fImgAbout = pImages / 'ABOUT/p97-2-about.png'
-# #------------------------------> Manual
-# fManual = res / 'MANUAL/manual.pdf'
-# #------------------------------> 
-# fConfig = Path.home() / '.umsap_config.json'
-# fConfigDef = res / 'CONFIG/config_def.json'
+fImgIcon  = pImages / 'DIALOGUE/dlg.png'
+fImgAbout = pImages / 'ABOUT/p97-2-about.png'
+#------------------------------> Manual
+fManual = res / 'MANUAL/manual.pdf'
+#------------------------------> 
+fConfig = Path.home() / '.umsap_config.json'
+fConfigDef = res / 'CONFIG/config_def.json'
 # #------------------------------> Names
 # fnInitial    = "{}_{}-Initial-Data.txt"
 # fnFloat      = "{}_{}-Floated-Data.txt"
@@ -276,18 +277,18 @@
 # fnScore      = "{}_{}-Score-Filtered-Data.txt"
 # fnDataSteps  = 'Steps_Data_Files'
 # fnDataInit   = 'Input_Data_Files'
-# #endregion ---------------------------------------------------> Path and Files
+#endregion ---------------------------------------------------> Path and Files
 
 
-# #region ------------------------------------------------------------------ URL
-# #------------------------------> www.umsap.nl
-# urlHome     = 'https://www.umsap.nl'
-# urlUpdate   = f"{urlHome}/page/release-notes"
-# urlTutorial = f"{urlHome}/tutorial/2-2-X"
-# #endregion --------------------------------------------------------------- URL
+#region ------------------------------------------------------------------ URL
+#------------------------------> www.umsap.nl
+urlHome     = 'https://www.umsap.nl'
+urlUpdate   = f"{urlHome}/page/release-notes"
+urlTutorial = f"{urlHome}/tutorial/2-2-X"
+#endregion --------------------------------------------------------------- URL
 
 
-# #region --------------------------------------------------------------> Labels
+#region --------------------------------------------------------------> Labels
 # #------------------------------> Pane Title
 # lnPaneConf = 'Configuration Options'
 # lnListPane = 'Data File Content'
@@ -330,10 +331,10 @@
 # lmCorrASelCol  = 'Select Columns'
 # lmCorrAAllCol  = 'All Columns'
 # lmNatSeq       = 'Native Sequence'
-# #endregion -----------------------------------------------------------> Labels
+#endregion -----------------------------------------------------------> Labels
 
 
-# #region ------------------------------------------------------------> Tooltips
+#region ------------------------------------------------------------> Tooltips
 # #------------------------------> wx.Button
 # ttBtnHelp = 'Read tutorial at {}.'
 # #------------------------------> wx.StaticText
@@ -366,10 +367,10 @@
 # #------------------------------> dtscore
 # ttSectionRightClick = (
 #     'The content of the Section can be deleted with a right click.')
-# #endregion ---------------------------------------------------------> Tooltips
+#endregion ---------------------------------------------------------> Tooltips
 
 
-# #region -------------------------------------------------------------> Options
+#region -------------------------------------------------------------> Options
 # oNumType = { 
 #     'int'  : int,
 #     'float': float,
@@ -433,21 +434,15 @@
 
 # oFillLoc = ('end', 'start')
 
-# oNotification = {
-#     'errorF' : 'Fatal Error',
-#     'errorU' : 'Unexpected Error',
-#     'warning': 'Warning',
-#     'success': 'Success',
-#     'question':'Please answer the following question:',
-# }
+
 
 # oMsgType = ('errorF', 'errorU', 'warning', 'success')
 
 # oSelectF = ('openO', 'openM', 'save')
-# #endregion ----------------------------------------------------------> Options
+#endregion ----------------------------------------------------------> Options
 
 
-# #region -----------------------------------------------------> DF Column names
+#region -----------------------------------------------------> DF Column names
 # dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
 # dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
 # dfcolDataCheck = [
@@ -459,10 +454,10 @@
 #     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 # dfcolTarProtBLevel = ['Int', 'P']
 # dfcolSeqNC = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
-# #endregion --------------------------------------------------> DF Column names
+#endregion --------------------------------------------------> DF Column names
 
 
-# #region -----------------------------------------------------> Important Lists
+#region -----------------------------------------------------> Important Lists
 # ltDPKeys = ['dfF', 'dfT', 'dfN', 'dfIm']
 
 # lAA1 = [ # AA one letter codes
@@ -486,11 +481,11 @@
 #     'MET': 'M', 'PHE': 'F', 'PRO': 'P', 'SER': 'S', 
 #     'THR': 'T', 'TRP': 'W', 'TYR': 'Y', 'VAL': 'V',
 # }
-# #endregion --------------------------------------------------> Important Lists
+#endregion --------------------------------------------------> Important Lists
 
 
-# #region ------------------------------------------------------------> Messages
-# #region -------------------------------------------------------------> Other 
+#region ------------------------------------------------------------> Messages
+#region -------------------------------------------------------------> Other 
 # #------------------------------> Unexpected Error
 # mUnexpectedError = 'An unexpected error was encountered.'
 # #------------------------------> Sequences related errors
@@ -500,9 +495,9 @@
 # mDataExport = 'Export Data failed.'
 # #------------------------------> Optional Field
 # mOptField = '\nThis field is optional.'
-# #endregion ----------------------------------------------------------> Other
+#endregion ----------------------------------------------------------> Other
 
-# #region ------------------------------------------------------------> Values
+#region ------------------------------------------------------------> Values
 # mOneRNumText = "Only one real number can be accepted here."
 # mOneRPlusNumText = (
 #     "Only one number equal or greater than zero can be accepted here.")
@@ -510,17 +505,17 @@
 # mOne01NumText = "Only one number between 0 and 1 can be accepted here."
 # mNZPlusNumText = (
 #     "Only a list of unique non-negative integers can be accepted here.")
-# #endregion ---------------------------------------------------------> Values
+#endregion ---------------------------------------------------------> Values
 
-# #region ---------------------------------------------------------------> Files
+#region ---------------------------------------------------------------> Files
 # mFileSelector = 'It was not possible to show the file selecting dialog.'
 # mFileRead = 'An error occurred when reading file:\n{}'
 # mFileSelUMSAP = 'Select the UMSAP File'
 # mReadErrorIO  = "The selected file could not be read.\nSelected file: {}"
 # mWriteErrorIO = "The selected file could not be written.\nSelected file: {}"
-# #endregion ------------------------------------------------------------> Files
+#endregion ------------------------------------------------------------> Files
 
-# #region ------------------------------------------------------------> Pandas
+#region ------------------------------------------------------------> Pandas
 # mPDGetInitCol = ('It was not possible to extract the selected columns ({}) '
 #     'from the selected {} file:\n{}')
 # mPDDataTargetProt = ('Selection of Target Protein failed.\nTarget Protein: {} '
@@ -529,9 +524,9 @@
 # mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
 #     'filtering by Score value: {}.')
 # mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
-# #endregion ---------------------------------------------------------> Pandas
+#endregion ---------------------------------------------------------> Pandas
  
-# #region ----------------------------------------------------> For CheckInput
+#region ----------------------------------------------------> For CheckInput
 # mColNumbers = ('In addition, each value must be smaller than the total '
 #     'number of columns in the Data file.')
 # mColNumber = ('In addition, the value must be smaller than the total '
@@ -566,9 +561,9 @@
 #     'corresponding control.\n{}'
 # )
 # mCtrlEmpty = 'None of the Control fields can be empty.'
-# #endregion -------------------------------------------------> For CheckInput
+#endregion -------------------------------------------------> For CheckInput
 
-# #region ---------------------------------------------------> dtscore
+#region ---------------------------------------------------> dtscore
 # #------------------------------> 
 # mCompNYI = "Comparison method is not yet implemented: {}."
 # mPDFilterByCol  = "Filtering process failed."
@@ -612,18 +607,18 @@
 # mNotImplemented = 'Option {} is not yet implemented.'
 # mNotSupported = "{} value ({}) is not supported."
 # mEmpty = 'The field value cannot be empty.'
-# #endregion ------------------------------------------------> dtscore
-# #endregion ---------------------------------------------------------> Messages
+#endregion ------------------------------------------------> dtscore
+#endregion ---------------------------------------------------------> Messages
 
 
-# #region ---------------------------------------------------------> Date & Time
+#region ---------------------------------------------------------> Date & Time
 # dtFormat = '%Y%m%d-%H%M%S'
-# #endregion ------------------------------------------------------> Date & Time
+#endregion ------------------------------------------------------> Date & Time
 
 
-# #region ---------------------------------------------------------------> Sizes
-# #------------------------------> Full Windows 
-# sWinRegular = (990, 775)
+#region ---------------------------------------------------------------> Sizes
+#------------------------------> Full Windows 
+sWinRegular = (990, 775)
 # #------------------------------> Plot Window
 # sWinPlot = (560, 560)
 # sWinModPlot = (1100, 625)
@@ -631,32 +626,33 @@
 # sTc = (50, 22)
 # #------------------------------> wx.ListCtrl
 # sLCtrlColI = [50, 150]
-# #endregion ------------------------------------------------------------> Sizes
-# #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
+#endregion ------------------------------------------------------------> Sizes
+#endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
 
 
-# #region ---------------------------------------------> CONFIGURABLE PARAMETERS
-# conflist = ['general'] # Sections to save/load in the configuration file
-# confUserFile = True # User configuration file was read
-# confUserFileException = Exception()
-# #------------------------------> These must be dictionaries to save/load from
-# #------------------------------> configuration file
-# #region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object
-# font = {
-# }
-# #endregion ---------------> Fonts. Set from UMSAP.py, requires a wx.App object
+#region ---------------------------------------------> CONFIGURABLE PARAMETERS
+conflist = ['general']     # Sections to save/load in the configuration file
+confUserFile = True          # User configuration file was read
+confUserFileException = None # Exception thrown when reading conf file
+
+#------------------------------> These must be dictionaries to save/load from
+#------------------------------> configuration file
+#region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object
+font = {
+}
+#endregion ---------------> Fonts. Set from UMSAP.py, requires a wx.App object
 
 
-# #region -----------------------------------------------------> General options
-# general = { # General options
-#     'checkUpdate'  : True, # True Check, False No check
-#     'DPI'          : 100,  # DPI for plot images
-#     'MatPlotMargin': 0.025 # Margin for the axes range
-# }
-# #endregion --------------------------------------------------> General options
+#region -----------------------------------------------------> General options
+general = { # General options
+    'checkUpdate'  : True, # True Check, False No check
+    'DPI'          : 100,  # DPI for plot images
+    'MatPlotMargin': 0.025 # Margin for the axes range
+}
+#endregion --------------------------------------------------> General options
 
 
-# #region --------------------------------------------------------------> Colors
+#region --------------------------------------------------------------> Colors
 # colorFragments = [
 #     '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
 #     '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
@@ -712,15 +708,15 @@
 #         'Spot' : colorFragments,
 #     },
 # }
-# #endregion -----------------------------------------------------------> Colors
+#endregion -----------------------------------------------------------> Colors
 
 
-# #region --------------------------------------------------------------> Values
+#region --------------------------------------------------------------> Values
 # values = {
 #     nwCheckDataPrep : {
 #         'Shift' : '1.8',
 #         'Width' : '0.3',
 #     }
 # }
-# #endregion -----------------------------------------------------------> Values
-# #endregion ------------------------------------------> CONFIGURABLE PARAMETERS
+#endregion -----------------------------------------------------------> Values
+#endregion ------------------------------------------> CONFIGURABLE PARAMETERS

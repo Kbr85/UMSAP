@@ -98,37 +98,7 @@ def ReadFile(
     #endregion -----------------------------------------> Read and split lines
 #---
 
-def ReadJSON(fileP: Union[Path, str]) -> dict:
-    """Reads a file with a json format 
-        
-        Parameters
-        ----------
-        fileP: Path 
-            Path to the file
 
-        Return
-        ------
-        dict:
-            With the data in the file
-
-        Raise
-        -----
-        ExecutionError:
-            - When the file could not be read
-    """
-    #region -------------------------------------------------------> Read file
-    try:
-        #------------------------------> Read file
-        with open(fileP, 'r') as file:
-            data = json.load(file)
-        #------------------------------> Return
-        return data
-    except FileNotFoundError as e:
-        raise e
-    except Exception:
-        raise dtsException.ExecutionError(config.mReadErrorIO.format(fileP))
-    #endregion ----------------------------------------------------> Read file	
-#---
 
 def ReadCSV2DF(
     fileP: Union[Path, str], sep: str='\t', index_col: Optional[int]=None,
@@ -225,35 +195,7 @@ def ReadFileFirstLine(
 #---
 
 #------------------------------> Write
-def WriteJSON(fileP: Union[Path, str], data: dict) -> bool:
-    """ Writes a json file
 
-        Parameters
-        ----------
-        fileP : str or Path 
-            Path to the file
-        data: dict
-            Data to be written
-            
-        Return
-        ------
-        bool
-        
-        Raise
-        -----
-        ExecutionError:
-            - When the file could not be written
-    """
-    #region ---------------------------------------------------> Write to file
-    try:
-        with open(fileP, 'w') as filew:
-            json.dump(data, filew, indent=4)
-    except Exception:
-        raise dtsException.ExecutionError(config.mWriteErrorIO.format(fileP))
-    #endregion ------------------------------------------------> Write to file
-    
-    return True
-#---
 
 def WriteDF2CSV(
     fileP: Union[Path, str], df: pd.DataFrame, sep: str='\t', na_rep: str='NA', 

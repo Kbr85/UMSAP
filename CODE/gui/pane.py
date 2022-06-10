@@ -1,20 +1,20 @@
-# # ------------------------------------------------------------------------------
-# # Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
-# #
-# # Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
-# #
-# # This program is distributed for free in the hope that it will be useful,
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# #
-# # See the accompanying license for more details.
-# # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
+#
+# Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
+#
+# This program is distributed for free in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the accompanying license for more details.
+# ------------------------------------------------------------------------------
 
 
-# """Panels of the application"""
+"""Panels of the application"""
 
 
-# #region -------------------------------------------------------------> Imports
+#region -------------------------------------------------------------> Imports
 # import _thread
 # from collections import namedtuple
 # import shutil
@@ -25,10 +25,10 @@
 # import pandas as pd
 # from statsmodels.stats.multitest import multipletests
 
-# import wx
+import wx
 # import wx.lib.scrolledpanel as scrolled
 
-# import config.config as config
+import config.config as mConfig
 # import data.check as check
 # import data.method as dmethod
 # import dtscore.check as dtsCheck
@@ -41,10 +41,10 @@
 # import dtscore.window as dtsWindow
 # import gui.method as gmethod
 # import gui.widget as widget
-# #endregion ----------------------------------------------------------> Imports
+#endregion ----------------------------------------------------------> Imports
 
 
-# #region --------------------------------------------------------> Base Classes
+#region --------------------------------------------------------> Base Classes
 # class BaseConfPanel(
 #     scrolled.ScrolledPanel,
 #     dtsWidget.StaticBoxes, 
@@ -2700,10 +2700,10 @@
 #     #---
 #     #endregion -----------------------------------------------> Manage methods
 # #---
-# #endregion -----------------------------------------------------> Base Classes
+#endregion -----------------------------------------------------> Base Classes
 
 
-# #region -------------------------------------------------------------> Classes
+#region -------------------------------------------------------------> Classes
 # #------------------------------> Panes
 # class ListCtrlSearchPlot(wx.Panel):
 #     """Creates a panel with a wx.ListCtrl and below it a wx.SearchCtrl.
@@ -8005,60 +8005,45 @@
 # #---
 
 
-# class PrefUpdate(wx.Panel):
-#     """
+class PrefUpdate(wx.Panel):
+    """Panel for the Preferences window.
 
-#         Parameters
-#         ----------
-        
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the pane.
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.npPrefUpdate
+    #------------------------------>
+    cLTab = mConfig.ntPrefUpdate
+    #endregion --------------------------------------------------> Class setup
 
-#         Attributes
-#         ----------
-        
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
 
-#         Raises
-#         ------
-        
+        #region -----------------------------------------------------> Widgets
+        self.wRBox = wx.RadioBox(
+            self, 
+            label   = 'Check for Updates',
+            choices = ['Always', 'Never'],
+         )
+        #endregion --------------------------------------------------> Widgets
 
-#         Methods
-#         -------
-        
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.npPrefUpdate
-#     #------------------------------> 
-#     cLTab = config.ntPrefUpdate
-#     #endregion --------------------------------------------------> Class setup
+        #region ------------------------------------------------------> Sizers
+        self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, parent):
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(parent, name=self.cName)
-#         #endregion --------------------------------------------> Initial Setup
+        self.sSizer.Add(self.wRBox, 0, wx.EXPAND|wx.ALL, 5)
 
-#         #region -----------------------------------------------------> Widgets
-#         self.wRBox = wx.RadioBox(
-#             self, 
-#             label   = 'Check for Updates',
-#             choices = ['Always', 'Never'],
-#          )
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-#         self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
-        
-#         self.sSizer.Add(self.wRBox, 0, wx.EXPAND|wx.ALL, 5)
-        
-#         self.SetSizer(self.sSizer)
-#         #endregion ---------------------------------------------------> Sizers
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #region ---------------------------------------------------> Class methods
-    
-#     #endregion ------------------------------------------------> Class methods
-# #---
-# #endregion ----------------------------------------------------------> Classes
+        self.SetSizer(self.sSizer)
+        #endregion ---------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+#endregion ----------------------------------------------------------> Classes
 
 

@@ -532,68 +532,6 @@ def AllTcEmpty(
     #endregion --------------------------------------------------> Check empty
 #---
 
-def VersionCompare(
-    strA: str, strB: str,
-    )-> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
-    """Basic version comparison 
-    
-        Parameters
-        ----------
-        strA : str
-            Expected format is '2.3.4' or '2.3.4 (beta)'.
-        strB : str
-            Same format as strA is expected.
-        
-        Returns
-        -------
-        tuple
-            (True, None)
-            (False, ('', '', ''))
-
-        Raise
-        -----
-        InputError
-            When strA or strB cannot be converted to x,y,z integers
-            
-        Examples
-        --------
-        >>> VersionCompare('2.4.7 beta', '2.4.7')
-        >>> False
-        >>> VersionCompare('2.4.7', '2.4.1')
-        >>> True
-        >>> VersionCompare('3.4.7 beta', '5.4.1')
-        >>> False
-    """
-    #region -------------------------------------------------> Get number list
-    try:
-        xA, yA, zA = map(int, strA.strip().split(" ")[0].split("."))
-        xB, yB, zB = map(int, strB.strip().split(" ")[0].split("."))
-    except ValueError:
-        msg = (
-            f"The expected input for strA and strB is '2.4.5' or "
-            f"'4.10.23 (beta)'."
-        )
-        raise dtsException.InputError(msg)
-    #endregion ----------------------------------------------> Get number list
-
-    #region ---------------------------------------------------------> Compare
-    if xA > xB:
-        return (True, None)
-    elif xA < xB:
-        return (False, ('', '', ''))
-    else:
-        if yA > yB:
-            return (True, None)
-        elif yA < yB:
-            return (False, ('', '', ''))
-        else:
-            if zA > zB:
-                return (True, None)
-            else:
-                return (False, ('', '', ''))
-    #endregion ------------------------------------------------------> Compare
-#---
-
 def Comparison(
     tStr: str, numType: Literal['int', 'float']='int', opt: bool=False, 
     vMin: Optional[float]=None, vMax: Optional[float]=None, 

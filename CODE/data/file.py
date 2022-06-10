@@ -1,32 +1,81 @@
-# # ------------------------------------------------------------------------------
-# # Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
-# #
-# # Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
-# #
-# # This program is distributed for free in the hope that it will be useful,
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# #
-# # See the accompanying license for more details.
-# # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# Copyright (C) 2017 Kenny Bravo Rodriguez <www.umsap.nl>
+#
+# Author: Kenny Bravo Rodriguez (kenny.bravorodriguez@mpi-dortmund.mpg.de)
+#
+# This program is distributed for free in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the accompanying license for more details.
+# ------------------------------------------------------------------------------
 
 
-# """Classes and methods to handle file/folder input/output operations"""
+"""Classes and methods to handle file/folder input/output operations"""
 
 
-# #region -------------------------------------------------------------> Imports
-# from pathlib import Path
-# from typing import Optional, Union
+#region -------------------------------------------------------------> Imports
+import json
+from pathlib import Path
+from typing import Union
+#endregion ----------------------------------------------------------> Imports
 
-# import config.config as config
-# import dtscore.exception as dtsException
-# import dtscore.file as dtsFF
-# import dtscore.window as dtsWindow
-# #endregion ----------------------------------------------------------> Imports
 
-# #region -------------------------------------------------------------> Classes
+#region -------------------------------------------------------------> Methods
+def ReadJSON(fileP: Union[Path, str]) -> dict:
+    """Reads a file with a json format.
+
+        Parameters
+        ----------
+        fileP: Path, str
+            Path to the file
+
+        Return
+        ------
+        dict:
+            Data in the file
+    """
+    #region -------------------------------------------------------> Read file
+    with open(fileP, 'r') as file:
+        data = json.load(file)
+    #endregion ----------------------------------------------------> Read file
+
+    return data
+#---
+
+
+def WriteJSON(fileP: Union[Path, str], data: dict) -> bool:
+    """ Writes a json file.
+
+        Parameters
+        ----------
+        fileP : str or Path 
+            Path to the file.
+        data: dict
+            Data to be written.
+
+        Return
+        ------
+        bool
+
+        Raise
+        -----
+        ExecutionError:
+            - When the file could not be written
+    """
+    #region ---------------------------------------------------> Write to file
+    with open(fileP, 'w') as file:
+        json.dump(data, file, indent=4)
+    #endregion ------------------------------------------------> Write to file
+
+    return True
+#---
+#endregion ----------------------------------------------------------> Methods
+
+
+#region -------------------------------------------------------------> Classes
 # class UMSAPFile():
-#     """Read and analyse an UMSAP file.
+#     """Load an UMSAP file.
 
 #         Parameters
 #         ----------
@@ -765,7 +814,7 @@
 #     #---
 #     #endregion --------------------------------------------------> Get Methods
 # #---
-# #endregion ----------------------------------------------------------> Classes
+#endregion ----------------------------------------------------------> Classes
 
 
 

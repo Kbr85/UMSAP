@@ -324,59 +324,7 @@ def StrEqualLength(strL: list[str], char: str=' ', loc:str='end') -> list[str]:
     return lOut
 #---
 
-def StrException(
-    tException: Exception, tStr: bool=True, tRepr: bool=True, trace: bool=True
-    ) -> str:
-    """Get a string to print information about tException
 
-        Parameters
-        ----------
-        tException: Exception
-        tStr : boolean
-            Include error message as return by str(tException). Default is True.
-        tRepr : boolean
-            Include error message as return by repr(tException). 
-            Default is True.
-        trace : boolean
-            Include the traceback. Default is True.
-
-        Returns
-        -------
-        str
-            Error message
-    """
-    # No test
-    #region -------------------------------------------------------> Variables
-    msg = ''
-    #endregion ----------------------------------------------------> Variables
-    
-    #region ---------------------------------------------------------> Message
-    #------------------------------> str(e)
-    if tStr:
-        msg = f"{msg}{str(tException)}\n\n"
-    else:
-        pass
-    #------------------------------> repr(e)
-    if tRepr:
-        msg = f"{msg}{repr(tException)}\n\n"
-    else:
-        pass
-    #------------------------------> traceback
-    if trace:
-        tTrace = "".join(
-            traceback.format_exception(
-                type(tException),
-                tException,
-                tException.__traceback__,
-            )
-        )
-        msg = f"{msg}{tTrace}"
-    else:
-        pass	
-    #endregion ------------------------------------------------------> Message
-    
-    return msg 
-#---
 
 #endregion ----------------------------------------------------------> Strings
 
