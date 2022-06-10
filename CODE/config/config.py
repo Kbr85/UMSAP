@@ -124,7 +124,7 @@ ndPreferences   = 'Preferences'
 # ndResControlExp        = 'ResControlExp'
 # ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
-# ntStart    = 'StartTab'
+ntStart      = 'Start'
 ntDataPrep   = "DataPrep"
 ntCorrA      = 'CorrA'
 ntLimProt    = 'LimProt'
@@ -233,7 +233,7 @@ kwHelpPref     = 'MenuHelp Preferences'
 #------------------------------> Relevant paths
 pImages = res / 'IMAGES' # Images folder
 #------------------------------> Location & names of important files
-# fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
+fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 fImgIcon  = pImages / 'DIALOGUE/dlg.png'
 fImgAbout = pImages / 'ABOUT/p97-2-about.png'
 #------------------------------> Manual

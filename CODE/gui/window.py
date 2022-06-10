@@ -53,7 +53,7 @@ import gui.menu as mMenu
 
 # import gui.method as method
 import gui.pane as mPane
-# import gui.tab as tab
+import gui.tab as mTab
 # import gui.window as window
 #endregion ----------------------------------------------------------> Imports
 
@@ -121,25 +121,22 @@ def UpdateCheck(
 #---
 
 
-# def BadUserConf(tException):
-#     """
+def BadUserConf(tException) -> bool:
+    """Show error message when user configuration file could not be read.
 
-#         Parameters
-#         ----------
-        
+        Parameters
+        ----------
+        tException: Exception
+            Error exception.
 
-#         Returns
-#         -------
-        
-
-#         Raise
-#         -----
-    
-#     """
-#     msg = 'It was not possible to read the user configuration file.'
-#     wx.CallAfter(dtsWindow.DialogNotification,'errorU', msg=msg, tException=tException)
-#     return True
-# #---
+        Returns
+        -------
+        bool
+    """
+    msg = 'It was not possible to read the user configuration file.'
+    wx.CallAfter(DialogNotification,'errorU', msg=msg, tException=tException)
+    return True
+#---
 #endregion ----------------------------------------------------------> Methods
 
 
@@ -1814,17 +1811,23 @@ class WindowMain(BaseWindow):
         ----------
         dTab: dict
             Methods to create the tabs.
+        cTab: dict
+            Name for the tab in the notebook tab list.
     """
     #region -----------------------------------------------------> Class Setup
     cName = mConfig.nwMain
+    #------------------------------> 
+    cTab = {
+        mConfig.ntStart    : mConfig.ntStart,
+    }
     #------------------------------>
-    dTab = { # Keys are the unique names of the tabs
-        # config.ntStart   : tab.Start,
-        # config.ntCorrA   : tab.BaseConfTab,
-        # config.ntDataPrep: tab.BaseConfListTab,
-        # config.ntLimProt : tab.BaseConfListTab,
-        # config.ntProtProf: tab.BaseConfListTab,
-        # config.ntTarProt : tab.BaseConfListTab,
+    dTab = {
+        mConfig.ntStart    : mTab.TabStart,
+        # config.ntCorrA   : mTab.BaseConfTab,
+        # config.ntDataPrep: mTab.BaseConfListTab,
+        # config.ntLimProt : mTab.BaseConfListTab,
+        # config.ntProtProf: mTab.BaseConfListTab,
+        # config.ntTarProt : mTab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup
     
@@ -1850,8 +1853,8 @@ class WindowMain(BaseWindow):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------> Create Start Tab
-        # self.OnCreateTab(config.ntStart)
-        # self.wNotebook.SetCloseButton(0, False)
+        self.OnCreateTab(mConfig.ntStart)
+        self.wNotebook.SetCloseButton(0, False)
         #endregion -----------------------------------------> Create Start Tab
 
         #region ---------------------------------------------> Position & Show
@@ -1860,7 +1863,7 @@ class WindowMain(BaseWindow):
         #endregion ------------------------------------------> Position & Show
 
         #region --------------------------------------------------------> Bind
-        # self.wNotebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
+        self.wNotebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
         #endregion -----------------------------------------------------> Bind
         
         #region	------------------------------------------------------> Update
@@ -1871,111 +1874,116 @@ class WindowMain(BaseWindow):
         #endregion	--------------------------------------------------> Update
         
         #region -------------------------------------> User Configuration File 
-        # if not config.confUserFile:
-        #     _thread.start_new_thread(
-        #         BadUserConf, (config.confUserFileException,))
-        # else:
-        #     pass
+        if not mConfig.confUserFile:
+            _thread.start_new_thread(
+                BadUserConf, (mConfig.confUserFileException,))
+        else:
+            pass
         #endregion ----------------------------------> User Configuration File
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #------------------------------> Class Methods
+    #region ---------------------------------------------------> Class Methods
+    def OnCreateTab(self, name: str, dataI: Optional[dict]=None) -> bool:
+        """Create a tab.
+
+            Parameters
+            ----------
+            name : str
+                One of the values in section Names of config for tabs
+            dataI: dict or None
+                Initial data for the tab
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------------> Get tab
+        win = self.FindWindowByName(name)
+        #endregion --------------------------------------------------> Get tab
+
+        #region ------------------------------------------> Find/Create & Show
+        if win is None:
+            #------------------------------> Create tab
+            self.wNotebook.AddPage(
+                self.dTab[name](self.wNotebook, name, dataI),
+                self.cTab[name],
+                select = True,
+            )
+        else:
+            #------------------------------> Focus
+            self.wNotebook.SetSelection(self.wNotebook.GetPageIndex(win))
+            #------------------------------> Initial Data
+            win.wConf.SetInitialData(dataI)
+        #endregion ---------------------------------------> Find/Create & Show
+
+        #region ---------------------------------------------------> Start Tab
+        if self.wNotebook.GetPageCount() > 1:
+            winS = self.FindWindowByName(mConfig.ntStart)
+            if winS is not None:
+                self.wNotebook.SetCloseButton(
+                    self.wNotebook.GetPageIndex(winS), 
+                    True,
+                )
+            else:
+                pass
+        else:
+            pass
+        #endregion ------------------------------------------------> Start Tab
+
+        #region ---------------------------------------------------> Raise
+        self.Raise()
+        #endregion ------------------------------------------------> Raise
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
+
     #region ---------------------------------------------------> Event methods
-    # def OnTabClose(self, event: wx.Event) -> bool:
-    #     """Make sure to show the Start Tab if no other tab exists
-        
-    #         Parameters
-    #         ----------
-    #         event : wx.aui.Event
-    #             Information about the event
+    def OnTabClose(self, event: wx.Event) -> bool:
+        """Make sure to show the Start Tab if no other tab exists.
+
+            Parameters
+            ----------
+            event : wx.aui.Event
+                Information about the event
                 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #------------------------------> Close Tab
-    #     event.Skip()
-    #     #------------------------------> Number of tabs
-    #     pageC = self.wNotebook.GetPageCount() - 1
-    #     #------------------------------> Update tabs & close buttons
-    #     if pageC == 1:
-    #         #------------------------------> Remove close button from Start tab
-    #         if (win := self.FindWindowByName(config.ntStart)) is not None:
-    #             self.wNotebook.SetCloseButton(
-    #                 self.wNotebook.GetPageIndex(win), 
-    #                 False,
-    #             )
-    #         else:
-    #             pass
-    #     elif pageC == 0:
-    #         #------------------------------> Show Start Tab with close button
-    #         self.OnCreateTab(config.ntStart)
-    #         self.wNotebook.SetCloseButton(
-    #             self.wNotebook.GetPageIndex(
-    #                 self.FindWindowByName(config.ntStart)), 
-    #             False,
-    #         )
-    #     else:
-    #         pass
-        
-    #     return True
-    # #---
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        event.Skip()
+        #endregion ------------------------------------------------> 
 
-    # def OnCreateTab(self, name: str, dataI: Optional[dict]=None) -> bool:
-    #     """Create a tab.
-        
-    #         Parameters
-    #         ----------
-    #         name : str
-    #             One of the values in section Names of config for tabs
-    #         dataI: dict or None
-    #             Initial data for the tab
-                
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region -----------------------------------------------------> Get tab
-    #     win = self.FindWindowByName(name)
-    #     #endregion --------------------------------------------------> Get tab
-        
-    #     #region ------------------------------------------> Find/Create & Show
-    #     if win is None:
-    #         #------------------------------> Create tab
-    #         self.wNotebook.AddPage(
-    #             self.dTab[name](self.wNotebook, name, dataI),
-    #             config.t.get(name, config.tdT),
-    #             select = True,
-    #         )
-    #     else:
-    #         #------------------------------> Focus
-    #         self.wNotebook.SetSelection(self.wNotebook.GetPageIndex(win))
-    #         #------------------------------> Initial Data
-    #         win.wConf.SetInitialData(dataI)
-    #     #endregion ---------------------------------------> Find/Create & Show
+        #region ---------------------------------------------------> 
+        pageC = self.wNotebook.GetPageCount() - 1
+        #------------------------------> Update tabs & close buttons
+        if pageC == 1:
+            #------------------------------> Remove close button from Start tab
+            if (win := self.FindWindowByName(mConfig.ntStart)) is not None:
+                self.wNotebook.SetCloseButton(
+                    self.wNotebook.GetPageIndex(win), 
+                    False,
+                )
+            else:
+                pass
+        elif pageC == 0:
+            #------------------------------> Show Start Tab with close button
+            self.OnCreateTab(mConfig.ntStart)
+            self.wNotebook.SetCloseButton(
+                self.wNotebook.GetPageIndex(
+                    self.FindWindowByName(mConfig.ntStart)), 
+                False,
+            )
+        else:
+            pass
+        #endregion ------------------------------------------------> 
 
-    #     #region ---------------------------------------------------> Start Tab
-    #     if self.wNotebook.GetPageCount() > 1:
-    #         winS = self.FindWindowByName(config.ntStart)
-    #         if winS is not None:
-    #             self.wNotebook.SetCloseButton(
-    #                 self.wNotebook.GetPageIndex(winS), 
-    #                 True,
-    #             )
-    #         else:
-    #             pass
-    #     else:
-    #         pass
-    #     #endregion ------------------------------------------------> Start Tab
-        
-    #     #region ---------------------------------------------------> Raise
-    #     self.Raise()
-    #     #endregion ------------------------------------------------> Raise
+        return True
+    #---
 
-        
-    #     return True
-    # #---
+    
 
     # def OnClose(self, event: wx.CloseEvent) -> bool:
     #     """Destroy window and set config.winMain to None.
