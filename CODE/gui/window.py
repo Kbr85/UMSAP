@@ -192,12 +192,18 @@ class BaseWindow(wx.Frame):
             #------------------------------> Reset Zoom Level
             'PlotZoomResetOne': self.OnPlotZoomResetOne,
             'AllZoom'         : self.OnPlotZoomResetAll,
-            #------------------------------> 
-            'HelpAbout'      : self.OnAbout,
-            'HelpManual'     : self.OnManual,
-            'HelpTutorial'   : self.OnTutorial,
-            'HelpCheckUpd'   : self.OnCheckUpdate,
-            'HelpPreferences': self.OnPreference,
+            #------------------------------> Help Menu
+            config.klHelpAbout   : self.OnAbout,
+            config.klHelpManual  : self.OnManual,
+            config.klHelpTutorial: self.OnTutorial,
+            config.klHelpCheckUpd: self.OnCheckUpdate,
+            config.klHelpPref    : self.OnPreference,
+            #------------------------------> Tool Menu
+            config.klToolZoomResetAll : self.OnPlotZoomResetAll,
+            config.klToolExpData      : self.OnExportPlotData,
+            config.klToolExpImgAll    : self.OnPlotSaveAllImage,
+            config.klToolCheckDP      : self.OnCheckDataPrep,
+            config.klToolDupWin       : self.OnDupWin,
         }
         #------------------------------> 
         super().__init__(
@@ -210,7 +216,7 @@ class BaseWindow(wx.Frame):
         #endregion --------------------------------------------------> Widgets
 
         #region --------------------------------------------------------> Menu
-        self.mBar = menu.ToolMenuBar(self.cName, cMenuData)
+        self.mBar = menu.MenuBarTool(self.cName, cMenuData)
         self.SetMenuBar(self.mBar)		
         #endregion -----------------------------------------------------> Menu
         
@@ -304,7 +310,7 @@ class BaseWindow(wx.Frame):
             -----
             
         """
-        webbrowser.open_new(config.urlTutorial)
+        webbrowser.open_new(f'{config.urlTutorial}/start')
         return True
     #---
     
@@ -383,8 +389,23 @@ class BaseWindow(wx.Frame):
             Returns
             -------
             bool
+            
+            Notes
+            -----
+            If the results window contains more than one plot then the method
+            must be overridden.
         """
-        return True	
+        try:
+            #------------------------------> 
+            self.wPlot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
+            #------------------------------> 
+            return True
+        except Exception as e:
+            #------------------------------> 
+            dtsWindow.NotificationDialog(
+                'errorF', msg=str(e), tException=e, parent=self)
+            #------------------------------> 
+            return False
     #---
     
     def OnPlotZoomResetOne(self) -> bool:
@@ -418,7 +439,23 @@ class BaseWindow(wx.Frame):
             Returns
             -------
             bool
+            
+            Notes
+            -----
+            If the results window contains more than one plot then the method
+            must be overridden.
         """
+        #------------------------------> Try reset
+        try:
+            self.wPlot.ZoomResetPlot()
+        except Exception as e:
+            #------------------------------> 
+            msg = 'It was not possible to reset the zoom level of the plot.'
+            dtsWindow.NotificationDialog(
+                'errorU', msg=msg, tException=e, parent=self)
+            #------------------------------> 
+            return False
+        #------------------------------> 
         return True
     #---
     
@@ -610,7 +647,8 @@ class BaseWindow(wx.Frame):
         self.rData = self.rObj.dConfigure[self.cSection]()
         self.rDate = [x for x in self.rData.keys() if x != 'Error']
         menuBar    = self.GetMenuBar()
-        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(self.rDate)
+        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(
+            {'MenuDate': self.rDate})
         
         return True
     #---
@@ -828,11 +866,7 @@ class BaseWindowNPlotLT(BaseWindow):
             self, 'cLCStyle', wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL)
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
-        #------------------------------> 
-        dKeyMethod = {
-            'PlotZoomResetAllinOne' : self.OnPlotZoomResetAllinOne,
-        }
-        self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        #------------------------------>
         self.rLCIdx = None
         #endregion --------------------------------------------> Initial Setup
 
@@ -1083,7 +1117,7 @@ class BaseWindowNPlotLT(BaseWindow):
         return True
     #---
     
-    def OnPlotZoomResetAllinOne(self) -> bool:
+    def OnPlotZoomResetAll(self) -> bool:
         """Reset all the plots in the window.
         
             Returns
@@ -1501,7 +1535,7 @@ class BaseWindowProteolysis(BaseWindow):
             The list is a list of str with the dates in the analysis.
             The dict has the following structure:
                 {
-                    'menudate' : [List of dates],
+                    'MenuDate' : [List of dates],
                 }                    
         """
         #region ---------------------------------------------------> Fill dict
@@ -1509,7 +1543,7 @@ class BaseWindowProteolysis(BaseWindow):
         date = [x for x in self.rData.keys() if x != 'Error']
         menuData = {}
         #------------------------------> 
-        menuData['menudate'] = date
+        menuData['MenuDate'] = date
         #endregion ------------------------------------------------> Fill dict
         
         return (date, menuData)
@@ -2063,7 +2097,7 @@ class CorrAPlot(BaseWindowPlot):
         -----
         The structure of menuData is:
         {
-            'menudate' : [list of dates in the section],
+            'MenuDate' : [list of dates in the section],
         }
     """
     #region -----------------------------------------------------> Class setup
@@ -2088,7 +2122,8 @@ class CorrAPlot(BaseWindowPlot):
             raise e
         #------------------------------> 
         self.rDateC   = self.rDate[0]
-        self.rBar     = None
+        self.rBar     = False
+        self.rCol     = config.lmCorrAColName
         self.rNorm    = mpl.colors.Normalize(vmin=-1, vmax=1)
         self.rCmap    = dtsMethod.MatplotLibCmap(
             N   = config.color[self.cSection]['CMAP']['N'],
@@ -2097,16 +2132,22 @@ class CorrAPlot(BaseWindowPlot):
             c3  = config.color[self.cSection]['CMAP']['c3'],
             bad = config.color[self.cSection]['CMAP']['NA'],
         )
-        #------------------------------> 
+        #------------------------------>
         self.cParent  = cParent
         self.cTitle  = f"{cParent.cTitle} - {self.cSection} - {self.rDateC}"
         #------------------------------> 
-        super().__init__(cParent, {'menudate' : self.rDate})
+        super().__init__(cParent, {'MenuDate' : self.rDate})
+        #------------------------------>
+        dKeyMethod = {
+            config.klToolGuiUpdate  : self.UpdateDisplayedData,
+            config.klToolCorrASelCol: self.OnSelectColumns,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
-
+        
         #region ----------------------------------------------------> Position
         self.SetColDetails(self.rDateC)
-        self.UpdateDisplayedData(self.rDateC, 'Name', False)
+        self.UpdateDisplayedData()
         self.WinPos()
         self.Show()
         #endregion -------------------------------------------------> Position
@@ -2125,20 +2166,20 @@ class CorrAPlot(BaseWindowPlot):
         return self.OnZoomResetOne()
     #---
     
-    def OnSelectColumns(self, showAllCol: bool) -> bool:
+    def OnSelectColumns(self, showAllCol: str) -> bool:
         """Plot only selected columns
         
             Parameters
             ----------
-            showAllCol: bool
-                Show all columns (True) or select columns to show (False).
+            showAllCol: str
+                Show all columns or select columns to show.
     
             Returns
             -------
             bool
         """
         #region ---------------------------------------------------> All
-        if showAllCol:
+        if showAllCol == config.lmCorrAAllCol:
             self.SetColDetails(self.rDateC)
             self.UpdateDisplayedData(self.rDateC, self.rCol, self.rBar)
             return True
@@ -2234,7 +2275,7 @@ class CorrAPlot(BaseWindowPlot):
     #---
     
     def UpdateDisplayedData(
-        self, tDate: str, col: Literal['Name', 'Number'], bar: bool
+        self, tDate: str='', col: str='', bar: Optional[bool] = None,
         ) -> bool:
         """ Plot data from a given date.
         
@@ -2242,7 +2283,7 @@ class CorrAPlot(BaseWindowPlot):
             -----------
             tDate : str
                 A date in the section e.g. '20210129-094504 - bla'
-            col: One of Name or Number
+            col: str
                 Set the information to display in the axis
             bar: bool
                 Show or not the colorbar
@@ -2252,14 +2293,14 @@ class CorrAPlot(BaseWindowPlot):
             bool
         """
         #region -------------------------------------------------> Update date
+        tDate = tDate if tDate else self.rDateC
         if tDate == self.rDateC:
             pass
         else:
             self.SetColDetails(tDate)
-        #------------------------------>     
         self.rDateC = tDate
-        self.rCol   = col
-        self.rBar   = bar
+        self.rCol = col if col else self.rCol
+        self.rBar = bar if bar is not None else self.rBar
         #endregion ----------------------------------------------> Update date
         
         #region --------------------------------------------------------> Axis
@@ -2280,7 +2321,7 @@ class CorrAPlot(BaseWindowPlot):
             lw          = 0.005,
         )
         
-        if bar:
+        if self.rBar:
             self.wPlot.figure.colorbar(
                 mpl.cm.ScalarMappable(norm=self.rNorm, cmap=self.rCmap),
                 orientation = 'vertical',
@@ -2338,7 +2379,7 @@ class CorrAPlot(BaseWindowPlot):
         #endregion -----------------------------------------------> Axis range
         
         #region ---------------------------------------------------> Set ticks
-        if self.rCol == 'Name':
+        if self.rCol == config.lmCorrAColName:
             for i in range(0, tLen, step):
                 xticksloc.append(i + 0.5)		
                 xlabel.append(self.rSelColName[i])
@@ -2383,7 +2424,7 @@ class CorrAPlot(BaseWindowPlot):
                 yf = int(y)
                 zf = '{:.2f}'.format(self.rDataPlot.iat[yf,xf])
                 
-                if self.rCol == 'Name':
+                if self.rCol == config.lmCorrAColName:
                     xs = self.rSelColName[xf]
                     ys = self.rSelColName[yf]
                 else:
@@ -2574,12 +2615,12 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rZ           = 10.0
         self.rP           = self.rData[self.rDateC]['Alpha']
         self.rLog2FC      = 0.1
-        self.rColor       = 'Hyp Curve Color'
+        self.rColor       = f'{config.klToolVolPlotColorHypCurve} Color'
         self.rHypCurve    = True
         self.rCI          = None
         self.rFcYMax      = None
         self.rFcYMin      = None
-        self.rLockScale   = 'Date'
+        self.rLockScale   = 'Analysis'
         self.rVXRange     = []
         self.rVYRange     = []
         self.rFcXRange    = []
@@ -2590,34 +2631,43 @@ class ProtProfPlot(BaseWindowNPlotLT):
         self.rLabelProt   = []
         self.rLabelProtD  = {}
         self.rPickLabel   = False
-        self.rVolLines    = ['Hyp Curve Lines']
+        self.rVolLines    = [f'{config.klToolVolPlotColorHypCurve} Line']
         #------------------------------> 
         super().__init__(cParent, cMenuData=cMenuData)
         #------------------------------> Methods
         dKeyMethod = {
             #------------------------------> Set Range of Plots
-            'No'     : self.SetRangeNo,
-            'Date'   : self.SetRangeDate,
-            'Project': self.SetRangeProject,
+            'No'          : self.OnLockScale,
+            'Analysis'    : self.OnLockScale,
+            'Project'     : self.OnLockScale,
+            'No Set'      : self.SetRangeNo,
+            'Analysis Set': self.SetRangeDate,
+            'Project Set' : self.SetRangeProject,
+            #------------------------------> 
+            config.klToolGuiUpdate : self.UpdateDisplayedData,
+            config.klToolVolPlot   : self.OnVolChange,
             #------------------------------> Get DF for Text Intensities
             config.oControlTypeProtProf['OC']   : self.GetDF4TextInt_OC,
             config.oControlTypeProtProf['OCC']  : self.GetDF4TextInt_OCC,
             config.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
             config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
             #------------------------------> Colors
-            'Hyp Curve Color' : self.GetColorHyCurve,
-            'Z Score Color'   : self.GetColorZScore,
-            'P - Log2FC Color': self.GetColorPLog2FC,
+            config.klToolVolPlotColorHypCurve: self.VolDraw,
+            config.klToolVolPlotColorPFC     : self.VolDraw,
+            config.klToolVolPlotColorZ       : self.VolDraw,
+            f'{config.klToolVolPlotColorHypCurve} Color': self.GetColorHyCurve,
+            f'{config.klToolVolPlotColorPFC} Color'     : self.GetColorPLog2FC,
+            f'{config.klToolVolPlotColorZ} Color'       : self.GetColorZScore,
             #------------------------------> Lines
-            'Hyp Curve Line' : self.DrawLinesHypCurve,
-            'Z Score Line'   : self.DrawLinesZScore,
-            'P - Log2FC Line': self.DrawLinesPLog2FC,
+            f'{config.klToolVolPlotColorHypCurve} Line': self.DrawLinesHypCurve,
+            f'{config.klToolVolPlotColorPFC} Line'     : self.DrawLinesPLog2FC,
+            f'{config.klToolVolPlotColorZ} Line'       : self.DrawLinesZScore,
             #------------------------------> Filter methods
             config.lFilFCEvol  : self.Filter_FCChange,
             config.lFilHypCurve: self.Filter_HCurve,
             config.lFilFCLog   : self.Filter_Log2FC,
             config.lFilPVal    : self.Filter_PValue,
-            config.lFilZScore  : self.Filter_ZScore,
+            f'{config.lFilZScore} F'  : self.Filter_ZScore,
             'Apply All'        : self.FilterApply,
             'Remove Last'      : self.FilterRemoveLast,
             'Remove Any'       : self.FilterRemoveAny,
@@ -2626,17 +2676,23 @@ class ProtProfPlot(BaseWindowNPlotLT):
             'Paste'            : self.FilterPaste,
             'Save Filter'      : self.FilterSave,
             'Load Filter'      : self.FilterLoad,
+            'AutoApplyFilter'  : self.OnAutoFilter,
             #------------------------------> Save Image
-            'VolcanoImg': self.OnSaveVolcanoImage,
+            config.klToolVolPlotSaveI : self.OnSaveVolcanoImage,
             'FCImage'   : self.OnSaveFCImage,
             #------------------------------> Zoom Reset
-            'VolcanoZoom' : self.OnZoomResetVol,
+            config.klToolVolPlotZoom : self.OnZoomResetVol,
             'FCZoom'      : self.OnZoomResetFC,
-            'AllZoom'     : self.OnPlotZoomResetAllinOne,
             #------------------------------> 
             'Labels'      : self.OnClearLabel,
             'Selection'   : self.OnClearSel,
             'AllClear'    : self.OnClearAll, 
+            #------------------------------> 
+            config.klToolVolPlotLabelPick : self.OnLabelPick,
+            config.klToolVolPlotLabelProt : self.OnProtLabel,
+            config.klToolVolPlotColorConf : self.OnVolColorScheme,
+            #------------------------------> 
+            'FCShowAll' : self.OnFCChange,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -2702,7 +2758,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             The list is a list of str with the dates in the analysis.
             The dict has the following structure:
                 {
-                    'menudate' : [List of dates],
+                    'MenuDate' : [List of dates],
                     'crp' : {
                         'date1' : {
                             'C' : [List of conditions],
@@ -2732,7 +2788,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             else:
                 pass
         #------------------------------> 
-        menuData['menudate'] = date
+        menuData['MenuDate'] = date
         #endregion ------------------------------------------------> Fill dict
         
         return (date, menuData)
@@ -2852,13 +2908,17 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return [ymax, ymin]
     #---
     
-    def VolDraw(self) -> bool:
+    def VolDraw(self, colorLabel: str='') -> bool:
         """Create/Update the Volcano plot.
-    
+
             Returns
             -------
             bool
         """
+        #region ---------------------------------------------------> 
+        self.rColor = f'{colorLabel} Color' if colorLabel else self.rColor
+        #endregion ------------------------------------------------> 
+
         #region --------------------------------------------------------> Axes
         self.VolSetAxis()
         #endregion -----------------------------------------------------> Axes
@@ -2876,7 +2936,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #------------------------------> Color
         color = self.dKeyMethod[self.rColor](x, y)
         #endregion -----------------------------------------------------> Data
-        
+
         #region --------------------------------------------------------> Plot
         self.wPlots.dPlot['Vol'].axes.scatter(
             x, y, 
@@ -2886,7 +2946,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
             color     = color,
             picker    = True,
         )
-        
+
         for l in self.rVolLines:
             self.dKeyMethod[l]()
         #------------------------------> Lock Scale or Set it manually
@@ -2900,15 +2960,15 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #------------------------------> Show
         self.wPlots.dPlot['Vol'].canvas.draw()
         #endregion -----------------------------------------------------> Plot
-        
+
         #region -------------------------------------> Update selected protein
         self.DrawGreenPoint()
         #endregion ----------------------------------> Update selected protein
-        
+
         #region ---------------------------------------------------> 
         self.AddProtLabel()
         #endregion ------------------------------------------------> 
-        
+
         return True
     #---
     
@@ -3834,7 +3894,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------------------> Color
         
         #region ---------------------------------------------------> 
-        self.rVolLines = ['Hyp Curve Line']
+        self.rVolLines = [f'{config.klToolVolPlotColorHypCurve} Line']
         #endregion ------------------------------------------------> 
 
         return color
@@ -3860,7 +3920,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> Variables
         
         #region ---------------------------------------------------> 
-        self.rVolLines = ['Z Score Line']
+        self.rVolLines = [f'{config.klToolVolPlotColorZ} Line']
         #endregion ------------------------------------------------> 
         
         return np.select(cond, choice, default=self.cColor['Vol'][1])
@@ -3886,7 +3946,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion -----------------------------------------------------> 
 
         #region ---------------------------------------------------> 
-        self.rVolLines = ['P - Log2FC Line']
+        self.rVolLines = [f'{config.klToolVolPlotColorPFC} Line']
         #endregion ------------------------------------------------> 
         
         return np.select(cond, choice, default=self.cColor['Vol'][1])
@@ -4086,7 +4146,8 @@ class ProtProfPlot(BaseWindowNPlotLT):
         return True
     #---
     
-    def OnVolChange(self, cond: str, rp:str, corrP: bool) -> bool:
+    def OnVolChange(
+        self, cond: str='', rp:str='', corrP: Optional[bool]=None) -> bool:
         """Update the Volcano plot.
     
             Parameters
@@ -4102,10 +4163,11 @@ class ProtProfPlot(BaseWindowNPlotLT):
             -------
             bool
         """
+        print(cond, rp, corrP)
         #region --------------------------------------------> Update variables
-        self.rCondC   = cond
-        self.rRpC     = rp
-        self.rCorrP   = corrP
+        self.rCondC = cond if cond else self.rCondC
+        self.rRpC   = rp if rp else self.rRpC
+        self.rCorrP = corrP if corrP is not None else corrP
         #endregion -----------------------------------------> Update variables
         
         #region ---------------------------------------------------------> Vol
@@ -4400,7 +4462,7 @@ class ProtProfPlot(BaseWindowNPlotLT):
         #endregion ----------------------------------------------> Update Attr
         
         #region ---------------------------------------------------> Get Range
-        self.dKeyMethod[mode]()
+        self.dKeyMethod[f'{mode} Set']()
         #endregion ------------------------------------------------> Get Range
         
         #region ---------------------------------------------------> Set Range
@@ -5339,6 +5401,17 @@ class LimProtPlot(BaseWindowProteolysis):
             'Gel Spot' : self.OnClearGel,
             'Band/Lane': self.OnClearBL,
             'All'      : self.OnClearAll,
+            #------------------------------> 
+            config.klToolGuiUpdate       : self.UpdateDisplayedData,
+            config.klToolLimProtBandLane : self.OnLaneBand,
+            config.klToolLimProtShowAll  : self.OnShowAll,
+            #------------------------------> 
+            'Main-Img'   : self.OnImageMain,
+            'Main-Zoom'  : self.OnZoomResetMain,
+            'Bottom-Img' : self.OnImageBottom,
+            'Bottom-Zoom': self.OnZoomResetBottom,
+            #------------------------------> 
+            config.klToolExpSeq : self.ExportSeq,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -5417,7 +5490,7 @@ class LimProtPlot(BaseWindowProteolysis):
         return True
     #---
     
-    def UpdateDisplayedData(self, date) -> bool:
+    def UpdateDisplayedData(self, tDate) -> bool:
         """Update the GUI and attributes when a new date is selected.
     
             Parameters
@@ -5430,7 +5503,7 @@ class LimProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> Variables
-        self.rDateC       = date
+        self.rDateC       = tDate
         self.rDf          = self.rData[self.rDateC]['DF'].copy()
         self.rBands       = self.rData[self.rDateC]['PI']['Bands']
         self.rLanes       = self.rData[self.rDateC]['PI']['Lanes']
@@ -6836,7 +6909,7 @@ class LimProtPlot(BaseWindowProteolysis):
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> 
-        if (rID := self.wLC.wLCS.lc.GetFirstSelected()):
+        if (rID := self.wLC.wLCS.lc.GetFirstSelected()) > -1:
             self.wLC.wLCS.lc.Select(rID, on=0)
         else:
             pass
@@ -7194,6 +7267,23 @@ class TarProtPlot(BaseWindowProteolysis):
             'Peptide'  : self.OnClearPept,
             'Fragment' : self.OnClearFrag,
             'All'      : self.OnClearAll,
+            #------------------------------> 
+            config.klToolGuiUpdate       : self.UpdateDisplayedData,
+            #------------------------------> 
+            'Main-Img'   : self.OnImageMain,
+            'Main-Zoom'  : self.OnZoomResetMain,
+            'Bottom-Img' : self.OnImageBottom,
+            'Bottom-Zoom': self.OnZoomResetBottom,
+            #------------------------------> 
+            config.klToolExpSeq : self.OnSeqExport,
+            #------------------------------> 
+            'AA-Item'                : self.OnAASelect,
+            'AA-New'                 : self.OnAANew,
+            'Hist-Item'              : self.OnHistSelect,
+            'Hist-New'               : self.OnHistNew,
+            config.klFACleavageEvol  : self.OnCEvol,
+            config.klFACleavagePerRes: self.OnCpR,
+            config.klFAPDBMap        : self.OnPDBMap,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -7263,7 +7353,7 @@ class TarProtPlot(BaseWindowProteolysis):
             The list is a list of str with the dates in the analysis.
             The dict has the following structure:
                 {
-                    'menudate' : [List of dates],
+                    'MenuDate' : [List of dates],
                 }                    
         """
         #region ---------------------------------------------------> Fill dict
@@ -7284,7 +7374,7 @@ class TarProtPlot(BaseWindowProteolysis):
             else:
                 pass        
         #------------------------------> 
-        menuData['menudate'] = date
+        menuData['MenuDate'] = date
         #endregion ------------------------------------------------> Fill dict
         
         return (date, menuData)
@@ -7310,11 +7400,11 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rDate, menuData = self.SetDateMenuDate()
         menuBar = self.GetMenuBar()
         menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
-        
+
         return True
     #---
-    
-    def UpdateDisplayedData(self, date) -> bool:
+
+    def UpdateDisplayedData(self, tDate) -> bool:
         """Update the GUI and attributes when a new date is selected.
     
             Parameters
@@ -7327,7 +7417,7 @@ class TarProtPlot(BaseWindowProteolysis):
             bool
         """
         #region ---------------------------------------------------> Variables
-        self.rDateC       = date
+        self.rDateC       = tDate
         self.rDf          = self.rData[self.rDateC]['DF'].copy()
         self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
         self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
@@ -8002,7 +8092,8 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rData = self.rObj.dConfigure[self.cSection]()
         #--------------> Menu
         _, menuData = self.SetDateMenuDate()
-        self.mBar.mTool.mFurtherA.UpdateFAList(self.rDateC, menuData['FA'])
+        self.mBar.mTool.mFurtherA.UpdateFurtherAnalysis(
+            self.rDateC, menuData['FA'])
         #--------------> GUI
         self.OnAASelect(f'{date}_{pos}')
         #endregion --------------------------------------------> Save & Update
@@ -8096,7 +8187,8 @@ class TarProtPlot(BaseWindowProteolysis):
         self.rData = self.rObj.dConfigure[self.cSection]()
         #--------------> Menu
         _, menuData = self.SetDateMenuDate()
-        self.mBar.mTool.mFurtherA.UpdateFAList(self.rDateC, menuData['FA'])
+        self.mBar.mTool.mFurtherA.UpdateFurtherAnalysis(
+            self.rDateC, menuData['FA'])
         #--------------> GUI
         self.OnHistSelect(f'{date}_{win}')
         #endregion --------------------------------------------> Save & Update
@@ -8215,10 +8307,16 @@ class AAPlot(BaseWindowPlot):
         self.rExp    = True
         self.rLabelC = ''
         super().__init__(cParent, menuData)
+        #------------------------------> 
+        dKeyMethod = {
+            config.klToolAAExp : self.PlotExp,
+            config.klToolAAPos : self.PlotPos,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
         
         #region ---------------------------------------------------> Plot
-        self.UpdatePlot(menuData['Label'][0])
+        self.PlotExp(menuData['Label'][0])
         #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
@@ -8288,6 +8386,15 @@ class AAPlot(BaseWindowPlot):
             -----
             
         """
+        #region --------------------------------------------------------> 
+        self.rExp = True
+        self.rLabelC = label
+        #endregion -----------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.SetAxisExp()
+        #endregion ------------------------------------------------> 
+
         #region ---------------------------------------------------> Data
         idx = pd.IndexSlice
         df = self.rData.loc[:,idx[('AA', label),:]].iloc[0:-1,:]
@@ -8388,6 +8495,15 @@ class AAPlot(BaseWindowPlot):
             -----
             
         """
+        #region --------------------------------------------------------> 
+        self.rExp = False
+        self.rLabelC = label
+        #endregion -----------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        self.SetAxisPos()
+        #endregion ------------------------------------------------> 
+        
         #region ---------------------------------------------------> Data
         idx = pd.IndexSlice
         df = self.rData.loc[:,idx[:,label]].iloc[0:-1,0:-1]
@@ -8429,42 +8545,6 @@ class AAPlot(BaseWindowPlot):
         self.wPlot.axes.set_title(label)
         self.wPlot.canvas.draw()
         
-        return True
-    #---
-    
-    def UpdatePlot(self, label: str, exp: bool=True):
-        """
-    
-            Parameters
-            ----------
-            
-    
-            Returns
-            -------
-            
-    
-            Raise
-            -----
-            
-        """
-        #region ---------------------------------------------------> 
-        self.rExp    = exp
-        self.rLabelC = label
-        #endregion ------------------------------------------------> 
-
-        #region ---------------------------------------------------> 
-        if exp:
-            self.SetAxisExp()
-            self.PlotExp(label)
-        else:
-            self.SetAxisPos()
-            self.PlotPos(label)
-        #endregion ------------------------------------------------> 
-        
-        #region ---------------------------------------------------> Zoom
-        self.wPlot.ZoomResetSetValues()
-        #endregion ------------------------------------------------> Zoom
-
         return True
     #---
     
@@ -8695,14 +8775,14 @@ class HistPlot(BaseWindowPlot):
     rBandWidth = 0.8
     rBandStart = 0.4
     cRec = {
-        True : 'Rec',
-        False: 'Nat',
+        True : 'Nat',
+        False: 'Rec',
         'Rec': 'Recombinant Sequence',
         'Nat': 'Native Sequence',
     }
     cAll = {
-        True    : 'All',
-        False   : 'Unique',
+        True    : 'Unique',
+        False   : 'All',
         'All'   : 'All Cleavages',
         'Unique': 'Unique Cleavages',
     }
@@ -8721,13 +8801,23 @@ class HistPlot(BaseWindowPlot):
         self.rObj    = cParent.rObj
         self.rData  = self.rObj.GetFAData(
             cParent.cSection,cParent.rDateC,fileN, [0,1,2])
-        self.rLabel = self.rData.columns.unique(level=2).tolist()[1:]
+        self.rLabel      = self.rData.columns.unique(level=2).tolist()[1:]
+        self.rProtLength = cParent.rData[self.cDateC]['PI']['ProtLength']
+        self.rProtLoc    = cParent.rData[self.cDateC]['PI']['ProtLoc']
+        menuData         = self.SetMenuDate()
+        self.rNat = 'Rec'
+        self.rAllC = 'All'
         #------------------------------> 
-        super().__init__(cParent, {})
+        super().__init__(cParent, menuData)
+        #------------------------------> 
+        dKeyMethod = {
+            config.klToolGuiUpdate : self.UpdatePlot,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
         
         #region ---------------------------------------------------> Plot
-        self.UpdatePlot(rec=True, allC=True)
+        self.UpdatePlot()
         #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
@@ -8737,8 +8827,40 @@ class HistPlot(BaseWindowPlot):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods    
-    def UpdatePlot(self, rec:bool, allC: bool) -> bool:
+    #region ---------------------------------------------------> Class methods
+    def SetMenuDate(self):
+        """
+
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------->
+        menuData = {}
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        menuData['Label'] = [k for k in self.rLabel]
+        #------------------------------>
+        if self.rProtLength[1] is not None:
+            menuData['Nat'] = True
+        else:
+            menuData['Nat'] = False
+        #endregion ------------------------------------------------>
+
+        return menuData
+    #---
+    
+    def UpdatePlot(
+        self, nat:Optional[bool]=None, allC: Optional[bool]=None) -> bool:
         """
     
             Parameters
@@ -8754,11 +8876,11 @@ class HistPlot(BaseWindowPlot):
             
         """
         #region ---------------------------------------------------> Variables
-        self.rRec  = self.cRec[rec]
-        self.rAllC = self.cAll[allC]
+        self.rNat  = self.cRec[nat] if nat is not None else self.rNat
+        self.rAllC = self.cAll[allC] if allC is not None else self.rAllC
         #------------------------------> 
         idx = pd.IndexSlice
-        df = self.rData.loc[:,idx[self.rRec,['Win',self.rAllC],:]]
+        df = self.rData.loc[:,idx[self.rNat,['Win',self.rAllC],:]]
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> 
@@ -8802,7 +8924,7 @@ class HistPlot(BaseWindowPlot):
         self.wPlot.ZoomResetSetValues()
         #endregion ------------------------------------------------> Zoom
         
-        self.wPlot.axes.set_title(f'{self.cRec[self.rRec]} - {self.cAll[self.rAllC]}')
+        self.wPlot.axes.set_title(f'{self.cRec[self.rNat]} - {self.cAll[self.rAllC]}')
         self.wPlot.canvas.draw()
         return True
     #---
@@ -8868,7 +8990,7 @@ class HistPlot(BaseWindowPlot):
 
         #region ---------------------------------------------------> 
         idx = pd.IndexSlice
-        df = self.rData.loc[:,idx[self.rRec,['Win',self.rAllC],:]]
+        df = self.rData.loc[:,idx[self.rNat,['Win',self.rAllC],:]]
         df = df.dropna(how='all')
         if 0 < xf < df.shape[0]:
             pass
@@ -8892,7 +9014,7 @@ class HistPlot(BaseWindowPlot):
 
         #region ---------------------------------------------------> 
         win = f'{df.iat[xf-1, 0]:.0f}-{df.iat[xf, 0]:.0f}'
-        clv = f'{df.iat[xf-1,df.columns.get_loc(idx[self.rRec,self.rAllC,exp])]}'
+        clv = f'{df.iat[xf-1,df.columns.get_loc(idx[self.rNat,self.rAllC,exp])]}'
         text = (f'Win={win}  Exp={exp}  Cleavages={clv}')
         #endregion ------------------------------------------------> 
         
@@ -8997,8 +9119,8 @@ class CEvolPlot(BaseWindowNPlotLT):
     cSWindow = (670,560)
     #------------------------------> 
     cRec = {
-        True : 'Rec',
-        False: 'Nat',
+        True : 'Nat',
+        False: 'Rec',
         'Rec': 'Recombinant Sequence',
         'Nat': 'Native Sequence',
     }
@@ -9018,12 +9140,19 @@ class CEvolPlot(BaseWindowNPlotLT):
             cParent.cSection, cParent.rDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         self.rIdx = {}
+        self.rRec = 'Rec'
+        self.rMon = False
+        self.rProtLength = cParent.rData[self.cDateC]['PI']['ProtLength']
+        self.rProtLoc    = cParent.rData[self.cDateC]['PI']['ProtLoc']
+        menuData         = self.SetMenuDate()
         #------------------------------> 
-        super().__init__(cParent, {})
+        super().__init__(cParent, menuData)
         #------------------------------> 
         dKeyMethod = {
             'ZoomR' : self.OnZoomReset,
             'SaveI' : self.OnSaveImage,
+            #------------------------------> 
+            config.klToolGuiUpdate: self.UpdatePlot,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -9035,7 +9164,7 @@ class CEvolPlot(BaseWindowNPlotLT):
         #endregion ------------------------------------------------> 
         
         #region ---------------------------------------------------> Plot
-        self.UpdatePlot(True, False)
+        self.UpdatePlot(False, False)
         #endregion ------------------------------------------------> Plot
         
         #region ---------------------------------------------> Window position
@@ -9149,7 +9278,39 @@ class CEvolPlot(BaseWindowNPlotLT):
     #endregion ------------------------------------------------> Event Methods
     
     #region --------------------------------------------------> Manage Methods
-    def UpdatePlot(self, rec: bool, mon: bool) -> bool:
+    def SetMenuDate(self):
+        """
+
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------->
+        menuData = {}
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        menuData['Label'] = [k for k in self.rLabel]
+        #------------------------------>
+        if self.rProtLength[1] is not None:
+            menuData['Nat'] = True
+        else:
+            menuData['Nat'] = False
+        #endregion ------------------------------------------------>
+
+        return menuData
+    #---
+    
+    def UpdatePlot(
+        self, nat: Optional[bool]=None, mon: Optional[bool]=None) -> bool:
         """
     
             Parameters
@@ -9164,18 +9325,26 @@ class CEvolPlot(BaseWindowNPlotLT):
             -----
             
         """
-        #region ---------------------------------------------------> 
-        self.rRec = self.cRec[rec]
-        #------------------------------> 
+        #region --------------------------------------------------->
+        #------------------------------>
+        if nat is not None:
+            self.rRec = self.cRec[nat]
+        else:
+            pass
+        #------------------------------>
+        self.rMon = mon if mon is not None else self.rMon
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
         idx = pd.IndexSlice
-        if rec:
+        if self.rRec:
             self.rDF = self.rData.loc[:,idx[self.rRec,:]]
         else:
             self.rDF = self.rData.loc[:,idx[self.rRec,:]]
         #------------------------------> 
         self.rDF = self.rDF[self.rDF.any(axis=1)]
         #------------------------------> 
-        if mon:
+        if self.rMon:
             self.rDF = self.rDF[self.rDF.apply(
                 lambda x: x.is_monotonic_increasing or x.is_monotonic_decreasing,
                 axis=1
@@ -9325,9 +9494,9 @@ class CpRPlot(BaseWindowPlot):
     cSection = config.nuCpR
     cColor   = config.color[cName]
     #------------------------------> 
-    cRec = {
-        True : 'Rec',
-        False: 'Nat',
+    cNat = {
+        True : 'Nat',
+        False: 'Rec',
         'Rec': 'Recombinant Sequence',
         'Nat': 'Native Sequence',
     }
@@ -9354,7 +9523,7 @@ class CpRPlot(BaseWindowPlot):
         #endregion --------------------------------------------> Initial Setup
         
         #region ---------------------------------------------------> Plot
-        self.UpdatePlot(rec=True, label=[menuData['Label'][0]])
+        self.UpdatePlot(nat=False, label=[menuData['Label'][0]])
         #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
@@ -9367,7 +9536,7 @@ class CpRPlot(BaseWindowPlot):
     #region ---------------------------------------------------> Class methods
     def SetMenuDate(self):
         """
-    
+
             Parameters
             ----------
             
@@ -9380,24 +9549,24 @@ class CpRPlot(BaseWindowPlot):
             -----
             
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         menuData = {}
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
-        #------------------------------> 
+        #------------------------------>
         if self.rProtLength[1] is not None:
             menuData['Nat'] = True
         else:
-            menuData['Nat'] = False    
-        #endregion ------------------------------------------------> 
-    
+            menuData['Nat'] = False
+        #endregion ------------------------------------------------>
+
         return menuData
     #---
     
     def UpdatePlot(
-        self, rec:bool, label: list[str], protLoc: bool=True
+        self, nat:bool, label: list[str], protLoc: bool=True
         ) -> bool:
         """
     
@@ -9414,21 +9583,21 @@ class CpRPlot(BaseWindowPlot):
             
         """
         #region ---------------------------------------------------> Variables
-        self.rRec  = self.cRec[rec]
+        self.rNat  = self.cNat[nat]
         self.rLabelC = label
         #------------------------------> 
         idx = pd.IndexSlice
-        df = self.rData.loc[:,idx[self.rRec,label]]
+        df = self.rData.loc[:,idx[self.rNat,label]]
         #------------------------------> 
-        if rec:
-            tXIdx = range(0, self.rProtLength[0])
-        else:
+        if nat:
             tXIdx = range(0, self.rProtLength[1])
+        else:
+            tXIdx = range(0, self.rProtLength[0])
         x = [x+1 for x in tXIdx]
         #------------------------------> 
         color = []
         #------------------------------> 
-        yMax = self.rData.loc[:,idx[self.rRec,label]].max().max()
+        yMax = self.rData.loc[:,idx[self.rNat,label]].max().max()
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> 
@@ -9438,14 +9607,14 @@ class CpRPlot(BaseWindowPlot):
         #region ---------------------------------------------------> Plot
         for e in label:
             #------------------------------> 
-            y = self.rData.iloc[tXIdx, self.rData.columns.get_loc(idx[self.rRec,e])]
+            y = self.rData.iloc[tXIdx, self.rData.columns.get_loc(idx[self.rNat,e])]
             tColor = self.cColor['Spot'][
                 self.rLabel.index(e)%len(self.cColor['Spot'])]
             color.append(tColor)
             #------------------------------>
             self.wPlot.axes.plot(x,y, color=tColor)
         #------------------------------> 
-        if self.rRec == self.cRec[True] and protLoc:
+        if self.rNat == self.cNat[False] and protLoc:
             if self.rProtLoc[0] is not None:
                 self.wPlot.axes.vlines(
                     self.rProtLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
@@ -9476,7 +9645,7 @@ class CpRPlot(BaseWindowPlot):
         self.wPlot.ZoomResetSetValues()
         #endregion ------------------------------------------------> Zoom
         
-        self.wPlot.axes.set_title(f'{self.cRec[self.rRec]}')
+        self.wPlot.axes.set_title(f'{self.cNat[self.rNat]}')
         self.wPlot.canvas.draw()
         return True
     #---
@@ -9531,7 +9700,7 @@ class CpRPlot(BaseWindowPlot):
             y = []
             try:
                 for l in self.rLabelC:
-                    col = self.rData.columns.get_loc(idx[self.rRec,l])
+                    col = self.rData.columns.get_loc(idx[self.rNat,l])
                     y.append(self.rData.iat[xf-1,col])
             except IndexError:
                 self.wStatBar.SetStatusText('')
@@ -9679,21 +9848,26 @@ class CheckDataPrep(BaseWindowNPlotLT):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, cParent: wx.Window, cTitle: Optional[str]=None, 
-        tSection: Optional[str]=None, tDate: Optional[str]=None,
+        self, cParent: wx.Window, cTitle: str='', tSection: str='', 
+        tDate: str='',
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cParent  = cParent
         self.rObj     = self.cParent.rObj
         self.cTitle   = cTitle
-        self.tSection = tSection if tSection is not None else self.cSection
+        self.tSection = tSection if tSection else self.cSection
         self.tDate    = tDate
         self.SetWindow(tSection, tDate) # Includes testing for something to plot
         #--------------> menuData here because it is not needed to save it
-        cMenuData = None if self.rDate is None else {'menudate': self.rDate}
+        cMenuData = {'MenuDate': []} if self.rDate is None else {'MenuDate': self.rDate}
         #------------------------------> 
         super().__init__(cParent=cParent, cMenuData=cMenuData)
+        #------------------------------> 
+        dKeyMethod = {
+            config.klToolGuiUpdate  : self.UpdateDisplayedData,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -9703,9 +9877,8 @@ class CheckDataPrep(BaseWindowNPlotLT):
         #endregion --------------------------------------------------> Widgets
 
         #region ---------------------------------------------> Window position
-        date = None if self.rDate is None else self.rDate[0]
-        self.UpdateDisplayedData(date)
-        #------------------------------> 
+        self.UpdateDisplayedData()
+        #------------------------------>
         self.WinPos()
         self.Show()
         #endregion ------------------------------------------> Window position
@@ -9856,7 +10029,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         return True	
     #---
     
-    def OnPlotSaveImageOne(self) -> bool:
+    def OnPlotSaveAllImage(self) -> bool:
         """ Export all plots to a pdf image"""
         #region --------------------------------------------------> Dlg window
         dlg = dtsWindow.DirSelectDialog(parent=self)
@@ -9896,7 +10069,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
     
     #region --------------------------------------------------> Manage Methods
     def SetWindow(
-        self, tSection: Optional[str]=None, tDate: Optional[str]=None,
+        self, tSection: str='', tDate: str='',
         ) -> bool:
         """Configure the window. 
         
@@ -9912,7 +10085,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
             Preparation section of a UMSAP File window
         """
         #region -----------------------------------------------> Set Variables
-        if self.cTitle is None:
+        if self.cTitle == '':
             self.rFromUMSAPFile = True 
             self.rData  = self.rObj.dConfigure[self.cSection]()
             self.rDate  = [k for k in self.rData.keys() if k != 'Error']
@@ -9928,7 +10101,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         else:
             self.rFromUMSAPFile = False
             self.rData = self.rObj.dConfigure[self.cSection](tSection, tDate)
-            self.rDate = None
+            self.rDate = []
             self.rDateC = self.cParent.rDateC
         #endregion --------------------------------------------> Set Variables
 
@@ -10235,7 +10408,7 @@ class CheckDataPrep(BaseWindowNPlotLT):
         return True
     #---
     
-    def UpdateDisplayedData(self, date: Optional[str]=None) -> bool:
+    def UpdateDisplayedData(self, tDate: str='') -> bool:
         """Update window when a new date is selected.
     
             Parameters
@@ -10252,9 +10425,9 @@ class CheckDataPrep(BaseWindowNPlotLT):
             
         """
         #region ---------------------------------------------------> Variables
-        if date is not None:
-            self.rDpDF = self.rData[date]['DP']
-            self.rDateC = date
+        if tDate:
+            self.rDpDF = self.rData[tDate]['DP']
+            self.rDateC = tDate
         else:
             self.rDpDF = self.rData[self.rDateC]['DP']
         #endregion ------------------------------------------------> Variables
@@ -10392,11 +10565,13 @@ class UMSAPControl(BaseWindow):
         self.rCopiedFilters = []
         #------------------------------> 
         super().__init__(cParent=cParent)
-        #------------------------------> 
+        #------------------------------>
         dKeyMethod = {
-            1: self.AddAnalysis,
-            2: self.DeleteAnalysis,
-            3: self.ExportAnalysis,
+            config.klToolUMSAPCtrlAddDelExp: self.OnAddDelExport,
+            config.klToolUMSAPCtrlAdd      : self.AddAnalysis,
+            config.klToolUMSAPCtrlDel      : self.DeleteAnalysis,
+            config.klToolUMSAPCtrlExp      : self.ExportAnalysis,
+            config.klToolUMSAPCtrlReload   : self.UpdateFileContent,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -10441,7 +10616,7 @@ class UMSAPControl(BaseWindow):
             
         """
         #region ---------------------------------------------------> 
-        if mode == 1:
+        if mode == config.klToolUMSAPCtrlAdd:
             #------------------------------> 
             dlg = dtsWindow.FileSelectDialog(
                 'openO', 
@@ -10472,10 +10647,10 @@ class UMSAPControl(BaseWindow):
                 dlg.Destroy()
                 return False
             #------------------------------> 
-            dlg = UMSAPAddDelExport(objAdd, mode) 
+            dlg = UMSAPAddDelExport(objAdd, mode)
         else:
             objAdd = None
-            dlg = UMSAPAddDelExport(self.rObj, mode) 
+            dlg = UMSAPAddDelExport(self.rObj, mode)
         #------------------------------> 
         if dlg.ShowModal():
             selItem = dlg.rSelItems
@@ -11097,19 +11272,19 @@ class UMSAPAddDelExport(dtsWindow.OkCancel):
     #region -----------------------------------------------------> Class setup
     cSWindow = (400, 700)
     cLError = {
-        1: 'adding',
-        2: 'deleting',
-        3: 'exporting',
+        config.klToolUMSAPCtrlAdd: 'adding',
+        config.klToolUMSAPCtrlDel: 'deleting',
+        config.klToolUMSAPCtrlExp: 'exporting',
     }
     cLBtnOpt = {
-        1: 'Add',
-        2: 'Delete',
-        3: 'Export',
+        config.klToolUMSAPCtrlAdd: 'Add',
+        config.klToolUMSAPCtrlDel: 'Delete',
+        config.klToolUMSAPCtrlExp: 'Export',
     } 
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, obj: file.UMSAPFile, mode: int) -> None:
+    def __init__(self, obj: file.UMSAPFile, mode: str) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.rObj = obj

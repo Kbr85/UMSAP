@@ -22,9 +22,9 @@ from pathlib import Path
 
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
 #region --------------------------------------------------> General parameters
-development = False # Track state, development (True) or production (False)
+development = True # Track state, development (True) or production (False)
 #------------------------------> 
-version     = '2.2.0' # String to write in the output files
+version     = '2.2.1 (beta)' # String to write in the output files
 software    = 'UMSAP' # Software short name
 softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
 dictVersion = { # dict for directly write into output files
@@ -207,6 +207,52 @@ esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
 
 
+#region ------------------------------------> Keywords for Menu - Method Links
+#------------------------------> Help Menu
+klHelpAbout    = 'About UMSAP'
+klHelpManual   = 'Manual'
+klHelpTutorial = 'Tutorial'
+klHelpCheckUpd = 'Check for Updates'
+klHelpPref     = 'Preferences'
+#------------------------------> Tool Menu for UMSAPCtrl
+klToolUMSAPCtrlAddDelExp = 'AddDelExp'
+klToolUMSAPCtrlAdd       = 'Add Analysis'
+klToolUMSAPCtrlDel       = 'Delete Analysis'
+klToolUMSAPCtrlExp       = 'Export Analysis'
+klToolUMSAPCtrlReload    = 'Reload File'
+#------------------------------> Tool Menu for Plot Window. General Items
+klToolGuiUpdate    = 'Update Result Window'
+klToolDupWin       = 'Duplicate Window'
+klToolZoomResetAll = 'Reset All Zoom'
+klToolExpData      = 'Export Data'
+klToolExpImgAll    = 'Export Image'
+klToolCheckDP      = 'Check DP'
+klToolExpSeq       = 'Export Sequences'
+#------------------------------> Tool Menu for CorrA
+klToolCorrASelCol  = 'Select Column'
+#------------------------------> Tool Menu for LimProt
+klToolLimProtBandLane = 'Band/Lane Sel'
+klToolLimProtShowAll  = 'Show All'
+#------------------------------> Tool Menu for AA
+klToolAAExp = 'AA'
+klToolAAPos = 'Pos'
+#------------------------------> Volcano Plot
+klToolVolPlot              = 'Volcano Plot'
+klToolVolPlotLabelPick     = 'Vol Plot Pick Label'
+klToolVolPlotLabelProt     = 'Vol Plot Add Label'
+klToolVolPlotSaveI         = 'Volcano Plot Save Image'
+klToolVolPlotZoom          = 'Volcano Plot Zoom Reset'
+klToolVolPlotColorHypCurve = 'Hyperbolic Curve'
+klToolVolPlotColorPFC      = 'P - Log2FC'
+klToolVolPlotColorZ        = 'Z Score'
+klToolVolPlotColorConf     = 'Configure'
+#------------------------------> Further Analysis
+klFACleavageEvol = 'Cleavage Evolution'
+klFACleavagePerRes = 'Cleavage per Residue'
+klFAPDBMap = 'PDB Map'
+#endregion ---------------------------------> Keywords for Menu - Method Links
+
+
 #region ------------------------------------------------------> Path and Files
 #------------------------------> Relevant paths
 pImages = res / 'IMAGES' # Images folder
@@ -237,7 +283,7 @@ fnDataInit   = 'Input_Data_Files'
 #------------------------------> www.umsap.nl
 urlHome     = 'https://www.umsap.nl'
 urlUpdate   = f"{urlHome}/page/release-notes"
-urlTutorial = f"{urlHome}/tutorial/2-2-0"
+urlTutorial = f"{urlHome}/tutorial/2-2-X"
 #endregion --------------------------------------------------------------- URL
 
 
@@ -257,7 +303,7 @@ lStLimProtBand  = 'Bands'
 lStTarProtExp   = 'Experiments'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'
-#------------------------------> wx.Statictext
+#------------------------------> wx.StaticText
 lStColAnalysis = 'Columns for Analysis'
 lStScoreVal    = 'Score Value'
 lStScoreCol    = 'Score'
@@ -278,12 +324,13 @@ lFilHypCurve = 'Hyp Curve'
 lFilFCLog    = 'Log2FC'
 lFilPVal     = 'P Val'
 lFilZScore   = 'Z Score'
+#------------------------------> wx.Menu
+lmCorrAColNum  = 'Column Numbers (0 based)'
+lmCorrAColName = 'Column Names'
+lmCorrASelCol  = 'Select Columns'
+lmCorrAAllCol  = 'All Columns'
+lmNatSeq       = 'Native Sequence'
 #endregion -----------------------------------------------------------> Labels
-
-
-#region ---------------------------------------------------------------> Hints
-
-#endregion ------------------------------------------------------------> Hints
 
 
 #region ------------------------------------------------------------> Tooltips
@@ -371,7 +418,7 @@ oCorrectP = {
     'Sidak'                : 'sidak',
     'Holm - Sidak'         : 'holm-sidak',
     'Holm'                 : 'holm',
-    'Simes-Hochberg'       : 'simes-hochberg',
+    'Simes - Hochberg'     : 'simes-hochberg',
     'Hommel'               : 'hommel',
     'Benjamini - Hochberg' : 'fdr_bh',
     'Benjamini - Yekutieli': 'fdr_by',

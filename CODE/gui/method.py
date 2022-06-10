@@ -21,12 +21,12 @@ from typing import Optional
 import wx
 
 import config.config as config
-import dtscore.gui_method as dtsGuiMethod
 import dtscore.window as dtsWindow
 import gui.window as window
 #endregion ----------------------------------------------------------> Imports
 
 
+#region -------------------------------------------------------------> Methods
 def LoadUMSAPFile(
     fileP: Optional[Path]=None, win: Optional[wx.Window]=None,
     ) -> bool:
@@ -39,28 +39,28 @@ def LoadUMSAPFile(
             If None, it is assumed the method is called from Read UMSAP File
             menu. Default is None.
         win : wx.Window or None
-            If called from menu it is used to center the Select file dialog.
+            If called from menu it is used to center the Select File wx.Dialog.
             Default is None.
-            
+
         Return
         ------
         bool
-    """   
+    """
     #region --------------------------------------------> Get file from Dialog
     if fileP is None:
         try:
-            #------------------------------> Get File
-            filePdlg = dtsGuiMethod.GetFilePath(
-                'openO', 
+            #------------------------------>
+            dlg = dtsWindow.FileSelectDialog(
+                'openO',
                 ext    = config.elUMSAP,
                 parent = win,
                 msg    = config.mFileSelUMSAP,
             )
-            #------------------------------> Set Path
-            if filePdlg is None:
-                return False
+            #------------------------------>
+            if dlg.ShowModal() == wx.ID_OK:
+                tFileP = Path(dlg.GetPath())
             else:
-                tFileP = Path(filePdlg[0])
+                return False
         except Exception as e:      
             dtsWindow.NotificationDialog(
                 'errorF', 
@@ -72,7 +72,7 @@ def LoadUMSAPFile(
     else:
         tFileP = fileP
     #endregion -----------------------------------------> Get file from Dialog
-    
+
     #region ----------------------------> Raise window if file is already open
     if config.winUMSAP.get(tFileP, '') != '':
         config.winUMSAP[tFileP].UpdateFileContent()
@@ -89,7 +89,7 @@ def LoadUMSAPFile(
 def GetDisplayInfo(win: wx.Frame) -> dict[str, dict[str, int]]:
     """This will get the information needed to set the position of a window.
         Should be called after Fitting sizers for accurate window size 
-        information
+        information.
 
         Parameters
         ----------
@@ -104,17 +104,15 @@ def GetDisplayInfo(win: wx.Frame) -> dict[str, dict[str, int]]:
                 'W' : {'N': N, 'w':W, 'h', H},        Info about win
             }
     """
-    
     #region ----------------------------------------------------> Display info
-    d = wx.Display(win)
-    xd, yd, wd, hd = d.GetClientArea()
+    xd, yd, wd, hd =  wx.Display(win).GetClientArea()
     #endregion -------------------------------------------------> Display info
-    
+
     #region -----------------------------------------------------> Window info
-    nw = config.winNumber.get(win.cName, 0)
+    nw = config.winNumber.get(win.cName, 0) #type: ignore
     ww, hw = win.GetSize()
     #endregion --------------------------------------------------> Window info
-    
+
     #region ------------------------------------------------------------> Dict
     data = {
         'D' : {
@@ -130,6 +128,7 @@ def GetDisplayInfo(win: wx.Frame) -> dict[str, dict[str, int]]:
         },
     }
     #endregion ---------------------------------------------------------> Dict
-    
+
     return data
 #---
+#endregion ----------------------------------------------------------> Methods
