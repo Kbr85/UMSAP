@@ -1816,21 +1816,17 @@ class WindowMain(BaseWindow):
     """
     #region -----------------------------------------------------> Class Setup
     cName = mConfig.nwMain
-    #------------------------------> 
-    cTab = {
-        mConfig.ntStart    : mConfig.ntStart,
-    }
     #------------------------------>
     dTab = {
-        mConfig.ntStart    : mTab.TabStart,
-        # config.ntCorrA   : mTab.BaseConfTab,
-        # config.ntDataPrep: mTab.BaseConfListTab,
-        # config.ntLimProt : mTab.BaseConfListTab,
-        # config.ntProtProf: mTab.BaseConfListTab,
-        # config.ntTarProt : mTab.BaseConfListTab,
+        mConfig.ntStart   : mTab.TabStart,
+        mConfig.ntCorrA   : mTab.BaseConfTab,
+        # mConfig.ntDataPrep: mTab.BaseConfListTab,
+        # mConfig.ntLimProt : mTab.BaseConfListTab,
+        # mConfig.ntProtProf: mTab.BaseConfListTab,
+        # mConfig.ntTarProt : mTab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup
-    
+
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent: Optional[wx.Window]=None) -> None:
         """"""
@@ -1853,7 +1849,7 @@ class WindowMain(BaseWindow):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------> Create Start Tab
-        self.OnCreateTab(mConfig.ntStart)
+        self.CreateTab(mConfig.ntStart)
         self.wNotebook.SetCloseButton(0, False)
         #endregion -----------------------------------------> Create Start Tab
 
@@ -1884,7 +1880,7 @@ class WindowMain(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Methods
-    def OnCreateTab(self, name: str, dataI: Optional[dict]=None) -> bool:
+    def CreateTab(self, name: str, dataI: Optional[dict]=None) -> bool:
         """Create a tab.
 
             Parameters
@@ -1907,7 +1903,7 @@ class WindowMain(BaseWindow):
             #------------------------------> Create tab
             self.wNotebook.AddPage(
                 self.dTab[name](self.wNotebook, name, dataI),
-                self.cTab[name],
+                name,
                 select = True,
             )
         else:
@@ -1970,7 +1966,7 @@ class WindowMain(BaseWindow):
                 pass
         elif pageC == 0:
             #------------------------------> Show Start Tab with close button
-            self.OnCreateTab(mConfig.ntStart)
+            self.CreateTab(mConfig.ntStart)
             self.wNotebook.SetCloseButton(
                 self.wNotebook.GetPageIndex(
                     self.FindWindowByName(mConfig.ntStart)), 
@@ -1983,27 +1979,25 @@ class WindowMain(BaseWindow):
         return True
     #---
 
-    
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Destroy window and set config.winMain to None.
 
-    # def OnClose(self, event: wx.CloseEvent) -> bool:
-    #     """Destroy window and set config.winMain to None.
-    
-    #         Parameters
-    #         ----------
-    #         event: wx.CloseEvent
-    #             Information about the event
-                
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #------------------------------> 
-    #     self.Destroy()
-    #     #------------------------------> 
-    #     config.winMain = None
-    #     #------------------------------> 
-    #     return True
-    # #---
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        self.Destroy()
+        #------------------------------> 
+        mConfig.winMain = None
+        #------------------------------> 
+        return True
+    #---
     #endregion ------------------------------------------------> Event methods
 #---
 
@@ -10439,6 +10433,12 @@ class WindowMain(BaseWindow):
 #     #endregion -----------------------------------------------> Manage Methods
 # #---
 
+class WindowUMSAPControl(wx.Frame):
+    """"""
+    def __init__(self, fileP: Path, cParent: Optional[wx.Window]=None):
+        super().__init__()
+    #---
+#---
 
 # class UMSAPControl(BaseWindow):
 #     """Control for an umsap file. 
@@ -11441,6 +11441,74 @@ class WindowMain(BaseWindow):
 
 
 #region -----------------------------------------------------------> wx.Dialog
+class DialogFileSelect(wx.FileDialog):
+    """Creates a dialog to select a file to read/save content from/into
+
+        Parameters
+        ----------
+        mode : str
+            One of 'openO', 'openM', 'save'. The same values are used in
+            dat4s_core.widget.wx_widget.ButtonTextCtrlFF.mode
+        wildcard : str
+            File extensions, 'txt files (*.txt)|*.txt'
+        parent : wx widget or None
+            Parent of the window. If given modal window will be centered on it.
+        message : str or None
+            Message to show in the window
+        defPath: Path, str or None
+            Default value for opening wx.FileDialog.
+
+        Attributes
+        ----------
+        rTitle : dict
+            Default titles for the dialog
+        rStyle : dict
+            Style for the dialog
+    """
+    #region -----------------------------------------------------> Class setup
+    rTitle = {
+        'openO': 'Select a file',
+        'openM': 'Select files',
+        'save' : 'Select a file',
+    }
+
+    rStyle = {
+        'openO': wx.FD_OPEN|wx.FD_CHANGE_DIR|wx.FD_FILE_MUST_EXIST|wx.FD_PREVIEW,
+        'openM': wx.FD_OPEN|wx.FD_CHANGE_DIR|wx.FD_FILE_MUST_EXIST|wx.FD_PREVIEW|wx.FD_MULTIPLE,
+        'save' : wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT,
+    }
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, 
+        mode: Literal['openO', 'openM', 'save'], 
+        ext: str, 
+        parent: Optional['wx.Window']=None, 
+        msg: str='', 
+        defPath: Union[Path, str, None]=None,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------------> Message
+        msg = self.rTitle[mode] if msg is None else msg
+        #endregion --------------------------------------------------> Message
+
+        #region ---------------------------------------------> Create & Center
+        super().__init__(
+            parent, 
+            message    = msg,
+            wildcard   = ext,
+            style      = self.rStyle[mode],
+            defaultDir = '' if defPath is None else str(defPath),
+        )
+
+        self.CenterOnParent()
+         #endregion ------------------------------------------> Create & Center
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
 class DialogNotification(wx.Dialog):
     """Show a custom notification dialog.
 

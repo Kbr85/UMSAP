@@ -96,9 +96,9 @@ winMain = None
 #------------------------------> Number of windows for screen positioning
 # Keys: Windows ID - Values: Total number of opened windows, except conf win
 winNumber = {}
-# #------------------------------> Track open umsap files
-# # Keys: UMSAP File path - Values: Reference to control window
-# winUMSAP = {}
+#------------------------------> Track open umsap files
+# Keys: UMSAP File path - Values: Reference to control window
+winUMSAP = {}
 #endregion ----------------------------------------------------------> Windows
 
 
@@ -124,6 +124,7 @@ ndPreferences   = 'Preferences'
 # ndResControlExp        = 'ResControlExp'
 # ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
+ntDef        = 'Default Tab'
 ntStart      = 'Start'
 ntDataPrep   = "DataPrep"
 ntCorrA      = 'CorrA'
@@ -158,9 +159,9 @@ nuReadF    = 'Read UMSAP File'
 
 
 #region ----------------------------------------------------------- Extensions
-# #------------------------------> For wx.Dialogs
+#------------------------------> For wx.Dialogs
 # elData  = 'txt files (*.txt)|*.txt'
-# elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
+elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
 # elPDB   = 'PDB files (*.pdb)|*.pdb'
 # elPDF   = 'PDF files (*.pdf)|*.pdf'
 # elSeq   = (
@@ -174,12 +175,12 @@ nuReadF    = 'Read UMSAP File'
 #     "Scalable Vector Graphic (*.svg)|*.svg|"
 #     "Tagged Image File (*.tif)|*.tif"
 # )
-# #------------------------------> File extensions. First item is default
+#------------------------------> File extensions. First item is default
 # esData  = ['.txt']
 # esPDB   = ['.pdb']
 # esPDF   = ['.pdf']
 # esSeq   = ['.txt', '.fasta']
-# esUMSAP = ['.umsap']
+esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
 
 
@@ -264,8 +265,8 @@ urlTutorial = f"{urlHome}/tutorial/2-2-X"
 
 
 #region --------------------------------------------------------------> Labels
-# #------------------------------> Pane Title
-# lnPaneConf = 'Configuration Options'
+#------------------------------> Pane Title
+lnPaneConf = 'Configuration Options'
 # lnListPane = 'Data File Content'
 # #------------------------------> wx.Button
 # lBtnTypeResCtrl = 'Type Values'
@@ -483,9 +484,9 @@ urlTutorial = f"{urlHome}/tutorial/2-2-X"
 #endregion ---------------------------------------------------------> Values
 
 #region ---------------------------------------------------------------> Files
-# mFileSelector = 'It was not possible to show the file selecting dialog.'
+mFileSelector = 'It was not possible to show the file selecting dialog.'
 # mFileRead = 'An error occurred when reading file:\n{}'
-# mFileSelUMSAP = 'Select the UMSAP File'
+mFileSelUMSAP = 'Select the UMSAP File'
 # mReadErrorIO  = "The selected file could not be read.\nSelected file: {}"
 # mWriteErrorIO = "The selected file could not be written.\nSelected file: {}"
 #endregion ------------------------------------------------------------> Files

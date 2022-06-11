@@ -45,6 +45,12 @@ import config.config as mConfig
 
 
 #region --------------------------------------------------------> Base Classes
+class PaneCorrA(wx.Panel):
+    """"""
+    def __init__(self, parent, dataI):
+        super().__init__(parent)
+    #---
+#---
 # class BaseConfPanel(
 #     scrolled.ScrolledPanel,
 #     dtsWidget.StaticBoxes, 
