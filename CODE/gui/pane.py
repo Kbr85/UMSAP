@@ -26,523 +26,496 @@
 # from statsmodels.stats.multitest import multipletests
 
 import wx
-# import wx.lib.scrolledpanel as scrolled
+import wx.lib.scrolledpanel as scrolled
 
 import config.config as mConfig
 # import data.check as check
 # import data.method as dmethod
-# import dtscore.check as dtsCheck
-# import dtscore.data_method as dtsMethod
-# import dtscore.exception as dtsException
-# import dtscore.file as dtsFF
-# import dtscore.statistic as dtsStatistic
-# import dtscore.validator as dtsValidator
-# import dtscore.widget as dtsWidget
-# import dtscore.window as dtsWindow
 # import gui.method as gmethod
-# import gui.widget as widget
+import gui.validator as mValidator
+import gui.widget as mWidget
 #endregion ----------------------------------------------------------> Imports
 
 
 #region --------------------------------------------------------> Base Classes
-class PaneCorrA(wx.Panel):
-    """"""
-    def __init__(self, parent, dataI):
-        super().__init__(parent)
-    #---
-#---
-# class BaseConfPanel(
-#     scrolled.ScrolledPanel,
-#     dtsWidget.StaticBoxes, 
-#     dtsWidget.ButtonOnlineHelpClearAllRun
-#     ):
-#     """Creates the skeleton of a configuration panel. This includes the 
-#         wx.StaticBox, the bottom Buttons, the statusbar and some widgets.
+class BaseConfPanel(
+    scrolled.ScrolledPanel,
+    mWidget.StaticBoxes, 
+    mWidget.ButtonOnlineHelpClearAllRun
+    ):
+    """Creates the skeleton of a configuration panel. This includes the 
+        wx.StaticBox, the bottom Buttons, the statusbar and some widgets.
 
-#         Parameters
-#         ----------
-#         cParent : wx Widget
-#             Parent of the widgets
-#         cRightDelete : Boolean
-#             Enables clearing wx.StaticBox input with right click
+        Parameters
+        ----------
+        cParent : wx Widget
+            Parent of the widgets
+        cRightDelete : Boolean
+            Enables clearing wx.StaticBox input with right click
 
-#         Attributes
-#         ----------
-#         dDataPrep: dict
-#             Keys are the messages for the Progress Dialog, values are the 
-#             methods to run the Data Preparation steps. See self.DataPreparation.
-#         dfI : pd.DataFrame
-#             DataFrame for the initial values.
-#         dfF : pd.DataFrame
-#             DataFrame as float values and 0 and '' as np.nan
-#         dfTP : pd.DataFrame
-#             DataFrame filtered by Target Protein
-#         dfE : DataFrame
-#             Exclude some entries by some parameters
-#         dfS : DataFrame
-#             Exclude entries by Score values.
-#         dfT : pd.DataFrame
-#             DataFrame with the transformed values.
-#         dfN : pd.DataFrame
-#             DataFrame with normalized values.
-#         dfIm : pd.DataFrame
-#             DataFrame with imputed values.
-#         dfR : pd.DataFrame
-#             DataFrame with the results values.
-#         rChangeKey : list of str
-#             Keys in do whose values will be turned into a str. Default to
-#             ['iFile', 'uFile].
-#         rDate : str or None
-#             Date for the new section in the umsap file.
-#         rDateID : str or None
-#             Date + Analysis ID
-#         rDFile : list[Path]
-#             Full paths to copied input files. Needed to repeat the analysis
-#             directly after running.
-#         rDI: dict
-#             Dict with user input. 
-#             The following key-value pairs are expected.
-#             'oc' : {
-#                 'Column' : [list of int],
-#             }
-#             See Child class for other key - value pairs.
-#         rDO: dict
-#             Dict with processed user input. 
-#             The following key-value pairs are expected.
-#             'Cero' : bool,
-#             'df' : {
-#                 'ColumnF' : [list of int],
-#                 'ExcludeP': [list of int],
-#             }
-#             See Child class for other key - value pairs.
-#         rDlg: dtscore.ProgressDialog
-#             Progress dialog.
-#         rException: Exception or None
-#             Exception raised during analysis   
-#         rIFileObj: dtsFF.CSVFile or none
-#             Input Data File Object
-#         rLCtrlL: list of wx.ListCtrl
-#             To clear all wx.ListCtrl in the Tab.
-#         rMsgError: Str or None
-#             Error message to show when analysis fails
-#         rNCol: int
-#             Number of columns in the main input file - 1. Set when the file is
-#             read.
-#         rOFolder: Path or None
-#             Folder to contain the output. Set based on the umsap file path.
-#         rSeqFileObj: dtsFF.FastaFile
-#             Object to work with the sequences of the proteins 
+        Attributes
+        ----------
+        dDataPrep: dict
+            Keys are the messages for the Progress Dialog, values are the 
+            methods to run the Data Preparation steps. See self.DataPreparation.
+        dfI : pd.DataFrame
+            DataFrame for the initial values.
+        dfF : pd.DataFrame
+            DataFrame as float values and 0 and '' as np.nan
+        dfTP : pd.DataFrame
+            DataFrame filtered by Target Protein
+        dfE : DataFrame
+            Exclude some entries by some parameters
+        dfS : DataFrame
+            Exclude entries by Score values.
+        dfT : pd.DataFrame
+            DataFrame with the transformed values.
+        dfN : pd.DataFrame
+            DataFrame with normalized values.
+        dfIm : pd.DataFrame
+            DataFrame with imputed values.
+        dfR : pd.DataFrame
+            DataFrame with the results values.
+        rChangeKey : list of str
+            Keys in do whose values will be turned into a str. Default to
+            ['iFile', 'uFile].
+        rDate : str or None
+            Date for the new section in the umsap file.
+        rDateID : str or None
+            Date + Analysis ID
+        rDFile : list[Path]
+            Full paths to copied input files. Needed to repeat the analysis
+            directly after running.
+        rDI: dict
+            Dict with user input. 
+            The following key-value pairs are expected.
+            'oc' : {
+                'Column' : [list of int],
+            }
+            See Child class for other key - value pairs.
+        rDO: dict
+            Dict with processed user input. 
+            The following key-value pairs are expected.
+            'Cero' : bool,
+            'df' : {
+                'ColumnF' : [list of int],
+                'ExcludeP': [list of int],
+            }
+            See Child class for other key - value pairs.
+        rDlg: dtscore.ProgressDialog
+            Progress dialog.
+        rException: Exception or None
+            Exception raised during analysis   
+        rIFileObj: dtsFF.CSVFile or none
+            Input Data File Object
+        rLCtrlL: list of wx.ListCtrl
+            To clear all wx.ListCtrl in the Tab.
+        rMsgError: Str or None
+            Error message to show when analysis fails
+        rNCol: int
+            Number of columns in the main input file - 1. Set when the file is
+            read.
+        rOFolder: Path or None
+            Folder to contain the output. Set based on the umsap file path.
+        rSeqFileObj: dtsFF.FastaFile
+            Object to work with the sequences of the proteins 
         
             
-#         Notes
-#         -----
-#         The following attributes must be set in the child class
-#         cGaugePD : int 
-#             Number of steps for the wx.Gauge in the Progress Dialog shown when 
-#             running analysis        
-#         cName : str
-#             Unique name of the pane
-#         cSection : str 
-#             Section in the UMSAP file. One of the values in config.nameModules 
-#             or config.nameUtilities
-#         cTitlePD : str
-#             Title for the Progress Dialog shown when running analysis
-#         cURL : str 
-#             URL for the Help wx.Button
-#         rCheckUserInput : dict
-#             Dict to check individual fields in the user input in the correct 
-#             order. See CheckInput method for more details.
-#         rLLenLongest : int 
-#             Length of the longest label in output dict
-#         rCopyFile : dict
-#             Keys are jeys in rDO and values keys in rDI. Signal input files that
-#             must be copied to Data_Initial
-#     """
-#     #region -----------------------------------------------------> Class setup
-    
-#     #endregion --------------------------------------------------> Class setup
+        Notes
+        -----
+        The following attributes must be set in the child class
+        cGaugePD : int 
+            Number of steps for the wx.Gauge in the Progress Dialog shown when 
+            running analysis        
+        cName : str
+            Unique name of the pane
+        cSection : str 
+            Section in the UMSAP file. One of the values in config.nameModules 
+            or config.nameUtilities
+        cTitlePD : str
+            Title for the Progress Dialog shown when running analysis
+        cURL : str 
+            URL for the Help wx.Button
+        rCheckUserInput : dict
+            Dict to check individual fields in the user input in the correct 
+            order. See CheckInput method for more details.
+        rLLenLongest : int 
+            Length of the longest label in output dict
+        rCopyFile : dict
+            Keys are jeys in rDO and values keys in rDI. Signal input files that
+            must be copied to Data_Initial
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: wx.Window, rightDelete: bool=True) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cParent = parent
+        #------------------------------> Name
+        self.cName = getattr(self, 'cName', mConfig.npDef)
+        #------------------------------> Labels
+        self.cLFileBox     = getattr(self, 'cLFileBox',     'Files')
+        self.cLDataBox     = getattr(self, 'cLDataBox',     'Data Preparation')
+        self.cLValueBox    = getattr(self, 'cLValueBox',  'User-defined Values')
+        self.cLColumnBox   = getattr(self, 'cLColumnBox',   'Column Numbers')
+        self.cLuFile       = getattr(self, 'cLuFile',       'UMSAP')
+        self.cLiFile       = getattr(self, 'cLiFile',       'Data')
+        # self.cLId          = getattr(self, 'cLId',          'Analysis ID')
+        # self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD',  '0s Missing')
+        # self.cLNormMethod  = getattr(self, 'cLNormMethod',  'Normalization')
+        # self.cLTransMethod = getattr(self, 'cLTransMethod', 'Transformation')
+        # self.cLImputation  = getattr(self, 'cLImputation',  'Imputation')
+        # self.cLShift       = getattr(self, 'cLShift',       'Shift')
+        # self.cLWidth       = getattr(self, 'cLWidth',       'Width')
+        # self.cLCeroTreat   = getattr(
+        #     self, 'cLCeroTreat', 'Treat 0s as missing values')
+        # # For Progress Dialog
+        # self.cLPdCheck    = getattr(self, 'cLPdCheck',  'Checking user input: ')
+        # self.cLPdPrepare  = getattr(self, 'cLPdPrepare', 'Preparing analysis: ')
+        # self.cLPdRun      = getattr(self, 'cLPdRun',     'Running analysis: ')
+        # self.cLPdWrite    = getattr(self, 'cLPdWrite',   'Writing output: ')
+        # self.cLPdLoad     = getattr(self, 'cLPdLoad',    'Loading output file')
+        # self.cLPdError    = getattr(self, 'cLPdError',   mConfig.lPdError)
+        # self.cLPdDone     = getattr(self, 'cLPdDone',    'All Done')
+        # self.cLPdElapsed  = getattr(self, 'cLPdElapsed', 'Elapsed time: ')
+        # self.cLPdReadFile = getattr(
+        #     self, 'cLPdReadFile', 'Reading input files: ')
+        # #------------------------------> Size
+        # self.cSTc = getattr(self, 'cSTc', mConfig.sTc)
+        # #------------------------------> Choices
+        # self.cOCero = getattr(self, 'cOCero', list(mConfig.oYesNo.keys()))
+        # self.cONorm = getattr(self, 'cONorm', list(mConfig.oNormMethod.keys()))
+        # self.cOTrans = getattr(
+        #     self, 'cOTrans', list(mConfig.oTransMethod.keys()))
+        # self.cOImputation = getattr(
+        #     self, 'cOImputation', list(mConfig.oImputation.keys()))
+        # #------------------------------> Hints
+        self.cHuFile = getattr(
+            self, 'cHuFile', f"Path to the {self.cLuFile} file")
+        self.cHiFile = getattr(
+            self, 'cHiFile', f"Path to the {self.cLiFile} file")
+        # self.cHId    = getattr(self, 'cHId', 'e.g. HIV inhibitor')
+        
+        # #------------------------------> Tooltips
+        self.cTTRun = getattr(self, 'cTTRun', 'Start the analysis.')
+        self.cTTHelp = getattr(
+            self, 'cTTHelp', f'Read online tutorial at {mConfig.urlHome}.')
+        self.cTTClearAll = getattr(
+            self, 'cTTClearAll', 'Clear all user input.')
+        self.cTTuFile = getattr(
+            self, 'cTTuFile', f'Select the {self.cLuFile} file.')
+        self.cTTiFile = getattr(
+            self, 'cTTiFile', f'Select the {self.cLiFile} file.')
+        # self.cTTId  = getattr(
+        #     self, 'cTTId', ('Short text to identify the analysis. The date of '
+        #     'the analysis will be automatically included.\ne.g. HIV inhibitor'))
+        # self.cTTNormMethod = getattr(
+        #     self, 'cTTNormMethod', (f'Select the Data {self.cLNormMethod} '
+        #                             f'method.'))
+        # self.cTTTransMethod = getattr(
+        #     self, 'cTTTransMethod', (f'Select the Data {self.cLTransMethod} '
+        #                              f'method.'))
+        # self.cTTImputation  = getattr(
+        #     self, 'cTTImputation', (f'Select the Data {self.cLImputation} '
+        #                             f'method.'))
+        # self.cTTShift = getattr(self, 'cTTShift', (f'Factor to shift the '
+        #     f'center of the normal distribution used to replace missing. '
+        #     f'values\ne.g. 1.8'))
+        # self.cTTWidth = getattr(self, 'cTTWidth', (f'Factor to control the '
+        #     f'width of the normal distribution used to replace missing. '
+        #     f'values\ne.g. 0.3'))
+        #------------------------------> URL
+        self.cURL = getattr(self, 'cURL', mConfig.urlTutorial)
+        #------------------------------> Extensions
+        self.cEiFile = getattr(self, 'ciFileE', mConfig.elData)
+        #------------------------------> Validator
+        self.cVuFile = getattr(self, 'cVuFile', mValidator.OutputFF(fof='file'))
+        self.cViFile = getattr(self, 'cViFile', mValidator.InputFF(fof='file'))
+        # #------------------------------> Values
+        # self.cValShift = config.values[config.nwCheckDataPrep]['Shift']
+        # self.cValWidth = config.values[config.nwCheckDataPrep]['Width']
+        # #------------------------------> To handle Data Preparation Steps
+        # self.dDataPrep = { # Keys are the messaging for the Progress Dialog
+        #     "Setting Data Types"         : self.DatPrep_Float,
+        #     "Data Transformation"        : self.DatPrep_Transformation,
+        #     "Data Normalization"         : self.DatPrep_Normalization,
+        #     "Data Imputation"            : self.DatPrep_Imputation,
+        #     "Filter Data: Target Protein": self.DatPrep_TargetProt,
+        #     "Filter Data: Exclude Rows"  : self.DatPrep_Exclude,
+        #     "Filter Data: Score Value"   : self.DatPrep_Score,
+        # }
+        # #------------------------------> This is needed to handle Data File 
+        # # content load to the wx.ListCtrl in Tabs with multiple panels
+        # #--------------> Default wx.ListCtrl to load data file content
+        # self.wLCtrlI = None 
+        # #--------------> List to use just in case there are more than 1 
+        # self.rLCtrlL = []
+        # #------------------------------> Needed to Run the analysis
+        # #--------------> Dict with the user input as given
+        # self.rDI = {}
+        # #--------------> Dict with the processed user input
+        # self.rDO = {} 
+        # #--------------> Error message and exception to show in self.RunEnd
+        # self.rMsgError  = None 
+        # self.rException = None
+        # #--------------> pd.DataFrames for:
+        # self.dfI  = pd.DataFrame() # Initial and
+        # self.dfF  = pd.DataFrame() # Data as float and 0 and '' values as np.nan
+        # self.dfT  = pd.DataFrame() # Transformed values
+        # self.dfN  = pd.DataFrame() # Normalized Values
+        # self.dfIm = pd.DataFrame() # Imputed values
+        # self.dfTP = pd.DataFrame() # Select Target Protein
+        # self.dfE  = pd.DataFrame() # Exclude entries by some parameter
+        # self.dfS  = pd.DataFrame() # Exclude entries by Score value
+        # self.dfR  = pd.DataFrame() # Results values
+        # #--------------> date for umsap file
+        # self.rDate = None
+        # self.rDateID = None
+        # #--------------> folder for output
+        # self.rOFolder = None
+        # #--------------> input file for directing repeating analysis from
+        # # file copied to oFolder
+        # self.rDFile   = []
+        # #--------------> Obj for files
+        # self.rIFileObj   = None
+        # self.rSeqFileObj = None
+        # #------------------------------> 
+        # self.rChangeKey = getattr(self, 'rChangeKey', ['iFile', 'uFile'])
+        # #------------------------------> 
+        # self.rCopyFile = getattr(self, 'rCopyFile', {'iFile':self.cLiFile})
+        #------------------------------> Parent init
+        scrolled.ScrolledPanel.__init__(self, parent, name=self.cName)
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, cParent: wx.Window, cRightDelete: bool=True) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cParent = cParent
-#         #------------------------------> Labels
-#         self.cLId          = getattr(self, 'cLId',          'Analysis ID')
-#         self.cLuFile       = getattr(self, 'cLuFile',       'UMSAP')
-#         self.cLiFile       = getattr(self, 'cLiFile',       'Data')
-#         self.cLRunBtn      = getattr(self, 'cLRunBtn',      'Start Analysis')        
-#         self.cLFileBox     = getattr(self, 'cLFileBox',     'Files')
-#         self.cLDataBox     = getattr(self, 'cLDataBox',     'Data Preparation')
-#         self.cLColumnBox   = getattr(self, 'cLColumnBox',   'Column Numbers')
-#         self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD',  '0s Missing')
-#         self.cLNormMethod  = getattr(self, 'cLNormMethod',  'Normalization')
-#         self.cLTransMethod = getattr(self, 'cLTransMethod', 'Transformation')
-#         self.cLImputation  = getattr(self, 'cLImputation',  'Imputation')
-#         self.cLShift       = getattr(self, 'cLShift', 'Shift')
-#         self.cLWidth       = getattr(self, 'cLWidth', 'Width')
-#         self.cLValueBox  = getattr(self, 'cLValueBox', 'User-defined Values')
-#         self.cLCeroTreat = getattr(
-#             self, 'cLCeroTreat', 'Treat 0s as missing values')
-#         # For Progress Dialog
-#         self.cLPdCheck    = getattr(self, 'cLPdCheck',  'Checking user input: ')
-#         self.cLPdPrepare  = getattr(self, 'cLPdPrepare', 'Preparing analysis: ')
-#         self.cLPdReadFile = getattr(
-#             self, 'cLPdReadFile', 'Reading input files: ')
-#         self.cLPdRun      = getattr(self, 'cLPdRun',     'Running analysis: ')
-#         self.cLPdWrite    = getattr(self, 'cLPdWrite',   'Writing output: ')
-#         self.cLPdLoad     = getattr(self, 'cLPdLoad',    'Loading output file')
-#         self.cLPdError    = getattr(self, 'cLPdError',   config.lPdError)
-#         self.cLPdDone     = getattr(self, 'cLPdDone',    'All Done')
-#         self.cLPdEllapsed = getattr(self, 'cLPdEllapsed','Ellapsed time: ')
-#         #------------------------------> Size
-#         self.cSTc = getattr(self, 'cSTc', config.sTc)
-#         #------------------------------> Choices
-#         self.cOCero = getattr(self, 'cOCero', list(config.oYesNo.keys()))
-#         self.cONorm = getattr(self, 'cONorm', list(config.oNormMethod.values()))
-#         self.cOTrans = getattr(
-#             self, 'cOTrans', list(config.oTransMethod.values()))
-#         self.cOImputation = getattr(
-#             self, 'cOImputation', list(config.oImputation.values()))
-#         #------------------------------> Hints
-#         self.cHId    = getattr(self, 'cHId', 'e.g. HIV inhibitor')
-#         self.cHuFile = getattr(
-#             self, 'cHuFile', f"Path to the {self.cLuFile} file")
-#         self.cHiFile = getattr(
-#             self, 'cHiFile', f"Path to the {self.cLiFile} file")
-#         #------------------------------> Tooltips
-#         self.cTTRun = getattr(self, 'cTTRun', 'Start the analysis.')
-#         self.cTTHelp = getattr(
-#             self, 'cTTHelp', f'Read online tutorial at {config.urlHome}.')
-#         self.cTTuFile = getattr(
-#             self, 'cTTuFile', f'Select the {self.cLuFile} file.')
-#         self.cTTiFile = getattr(
-#             self, 'cTTiFile', f'Select the {self.cLiFile} file.')
-#         self.cTTClearAll = getattr(
-#             self, 'cTTClearAll', 'Clear all user input.')
-#         self.cTTId  = getattr(
-#             self, 'cTTId', ('Short text to identify the analysis. The date of '
-#             'the analysis will be automatically included.\ne.g. HIV inhibitor'))
-#         self.cTTNormMethod = getattr(
-#             self, 'cTTNormMethod', (f'Select the Data {self.cLNormMethod} '
-#                                     f'method.'))
-#         self.cTTTransMethod = getattr(
-#             self, 'cTTTransMethod', (f'Select the Data {self.cLTransMethod} '
-#                                      f'method.'))
-#         self.cTTImputation  = getattr(
-#             self, 'cTTImputation', (f'Select the Data {self.cLImputation} '
-#                                     f'method.'))
-#         self.cTTShift = getattr(self, 'cTTShift', (f'Factor to shift the '
-#             f'center of the normal distribution used to replace missing. '
-#             f'values\ne.g. 1.8'))
-#         self.cTTWidth = getattr(self, 'cTTWidth', (f'Factor to control the '
-#             f'width of the normal distribution used to replace missing. '
-#             f'values\ne.g. 0.3'))
-#         #------------------------------> Extensions
-#         self.cEiFile = getattr(self, 'ciFileE', config.elData)
-#         #------------------------------> Validator
-#         self.cVuFile = getattr(
-#             self, 
-#             'cVuFile',
-#             dtsValidator.OutputFF(fof='file', ext=config.esUMSAP[0], opt=False),
-#         )
-#         self.cViFile = getattr(
-#             self, 
-#             'cViFile',
-#             dtsValidator.InputFF(fof='file', ext=config.esData),
-#         )
-#         #------------------------------> Values
-#         self.cValShift = config.values[config.nwCheckDataPrep]['Shift']
-#         self.cValWidth = config.values[config.nwCheckDataPrep]['Width']
-#         #------------------------------> To handle Data Preparation Steps
-#         self.dDataPrep = { # Keys are the messaging for the Progress Dialog
-#             "Setting Data Types"         : self.DatPrep_Float,
-#             "Data Transformation"        : self.DatPrep_Transformation,
-#             "Data Normalization"         : self.DatPrep_Normalization,
-#             "Data Imputation"            : self.DatPrep_Imputation,
-#             "Filter Data: Target Protein": self.DatPrep_TargetProt,
-#             "Filter Data: Exclude Rows"  : self.DatPrep_Exclude,
-#             "Filter Data: Score Value"   : self.DatPrep_Score,
-#         }
-#         #------------------------------> This is needed to handle Data File 
-#         # content load to the wx.ListCtrl in Tabs with multiple panels
-#         #--------------> Default wx.ListCtrl to load data file content
-#         self.wLCtrlI = None 
-#         #--------------> List to use just in case there are more than 1 
-#         self.rLCtrlL = []
-#         #------------------------------> Needed to Run the analysis
-#         #--------------> Dict with the user input as given
-#         self.rDI = {}
-#         #--------------> Dict with the processed user input
-#         self.rDO = {} 
-#         #--------------> Error message and exception to show in self.RunEnd
-#         self.rMsgError  = None 
-#         self.rException = None
-#         #--------------> pd.DataFrames for:
-#         self.dfI  = pd.DataFrame() # Initial and
-#         self.dfF  = pd.DataFrame() # Data as float and 0 and '' values as np.nan
-#         self.dfT  = pd.DataFrame() # Transformed values
-#         self.dfN  = pd.DataFrame() # Normalized Values
-#         self.dfIm = pd.DataFrame() # Imputed values
-#         self.dfTP = pd.DataFrame() # Select Target Protein
-#         self.dfE  = pd.DataFrame() # Exclude entries by some parameter
-#         self.dfS  = pd.DataFrame() # Exclude entries by Score value
-#         self.dfR  = pd.DataFrame() # Results values
-#         #--------------> date for umsap file
-#         self.rDate = None
-#         self.rDateID = None
-#         #--------------> folder for output
-#         self.rOFolder = None
-#         #--------------> input file for directing repeating analysis from
-#         # file copied to oFolder
-#         self.rDFile   = []
-#         #--------------> Obj for files
-#         self.rIFileObj   = None
-#         self.rSeqFileObj = None
-#         #------------------------------> 
-#         self.rChangeKey = getattr(self, 'rChangeKey', ['iFile', 'uFile'])
-#         #------------------------------> 
-#         self.rCopyFile = getattr(self, 'rCopyFile', {'iFile':self.cLiFile})
-#         #------------------------------> Parent init
-#         scrolled.ScrolledPanel.__init__(self, cParent, name=self.cName)
+        mWidget.ButtonOnlineHelpClearAllRun.__init__(
+            self, self, self.cURL, 
+            tooltipR = self.cTTRun,
+            tooltipH = self.cTTHelp,
+            tooltipC = self.cTTClearAll,
+        )
 
-#         dtsWidget.ButtonOnlineHelpClearAllRun.__init__(
-#             self, self, self.cURL, 
-#             labelR   = self.cLRunBtn,
-#             tooltipR = self.cTTRun,
-#             tooltipH = self.cTTHelp,
-#             tooltipC = self.cTTClearAll,
-#         )
+        mWidget.StaticBoxes.__init__(self, self, 
+            labelF      = self.cLFileBox,
+            labelD      = self.cLDataBox,
+            labelV      = self.cLValueBox,
+            labelC      = self.cLColumnBox,
+            rightDelete = rightDelete,
+        )
+        #endregion --------------------------------------------> Initial Setup
 
-#         dtsWidget.StaticBoxes.__init__(self, self, 
-#             labelF      = self.cLFileBox,
-#             labelD      = self.cLDataBox,
-#             labelV      = self.cLValueBox,
-#             labelC      = self.cLColumnBox,
-#             rightDelete = cRightDelete,
-#         )
-#         #endregion --------------------------------------------> Initial Setup
+        #region -----------------------------------------------------> Widgets
+        self.wUFile = mWidget.ButtonTextCtrlFF(self.wSbFile,
+            btnLabel   = self.cLuFile,
+            btnTooltip = self.cTTuFile,
+            tcHint     = self.cHuFile,
+            mode       = 'save',
+            ext        = mConfig.elUMSAP,
+            tcStyle    = wx.TE_READONLY,
+            validator  = self.cVuFile,
+            ownCopyCut = True,
+        )
 
-#         #region -----------------------------------------------------> Widgets
-#         self.wUFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
-#             btnLabel   = self.cLuFile,
-#             btnTooltip = self.cTTuFile,
-#             tcHint     = self.cHuFile,
-#             mode       = 'save',
-#             ext        = config.elUMSAP,
-#             tcStyle    = wx.TE_READONLY,
-#             validator  = self.cVuFile,
-#             ownCopyCut = True,
-#         )
-        
-#         self.wIFile = dtsWidget.ButtonTextCtrlFF(self.sbFile,
-#             btnLabel   = self.cLiFile,
-#             btnTooltip = self.cTTiFile,
-#             tcHint     = self.cHiFile,
-#             ext        = self.cEiFile,
-#             mode       = 'openO',
-#             tcStyle    = wx.TE_READONLY|wx.TE_PROCESS_ENTER,
-#             validator  = self.cViFile,
-#             ownCopyCut = True,
-#         )
-        
-#         self.wId = dtsWidget.StaticTextCtrl(
-#             self.sbFile,
-#             stLabel   = self.cLId,
-#             stTooltip = self.cTTId,
-#             tcHint    = self.cHId,
-#             validator = dtsValidator.IsNotEmpty(),
-#         )
+        self.wIFile = mWidget.ButtonTextCtrlFF(self.wSbFile,
+            btnLabel   = self.cLiFile,
+            btnTooltip = self.cTTiFile,
+            tcHint     = self.cHiFile,
+            ext        = self.cEiFile,
+            mode       = 'openO',
+            tcStyle    = wx.TE_READONLY|wx.TE_PROCESS_ENTER,
+            validator  = self.cViFile,
+            ownCopyCut = True,
+        )
 
-#         self.wCeroB = dtsWidget.StaticTextComboBox(
-#             self.sbData,
-#             label   = self.cLCeroTreat,
-#             choices = self.cOCero,
-#             tooltip = (f'Cero values in the {self.cLiFile} file will '
-#             f'be treated as missing values when this option is set to Yes and '
-#             f'as real values when the option is set to No.'),
-#             validator = dtsValidator.IsNotEmpty(),
-#         )
-        
-#         self.wNormMethod = dtsWidget.StaticTextComboBox(
-#             self.sbData, 
-#             label     = self.cLNormMethod,
-#             choices   = self.cONorm,
-#             tooltip   = self.cTTNormMethod,
-#             validator = dtsValidator.IsNotEmpty(),
-#         )
-        
-#         self.wTransMethod = dtsWidget.StaticTextComboBox(
-#             self.sbData, 
-#             label     = self.cLTransMethod,
-#             choices   = self.cOTrans,
-#             tooltip   = self.cTTTransMethod,
-#             validator = dtsValidator.IsNotEmpty(),
-#         )
-        
-#         self.wImputationMethod = dtsWidget.StaticTextComboBox(
-#             self.sbData, 
-#             label     = self.cLImputation,
-#             choices   = self.cOImputation,
-#             tooltip   = self.cTTImputation,
-#             validator = dtsValidator.IsNotEmpty(),
-#         )
-#         self.wShift = dtsWidget.StaticTextCtrl(
-#             self.sbData,
-#             stLabel   = 'Shift',
-#             stTooltip = self.cTTShift,
-#             tcSize    = (60,22),
-#             tcHint    = f'e.g. {self.cValShift}',
-#             validator = dtsValidator.NumberList('float', nN=1, vMin=0),
-#         )
-#         self.wWidth = dtsWidget.StaticTextCtrl(
-#             self.sbData,
-#             stLabel   = 'Width',
-#             stTooltip = self.cTTWidth,
-#             tcSize    = (60,22),
-#             tcHint    = f'e.g. {self.cValWidth}',
-#             validator = dtsValidator.NumberList('float', nN=1, vMin=0),
-#         )
-#         #endregion --------------------------------------------------> Widgets
-        
-#         #region -----------------------------------------------------> Tooltip
-        
-#         #endregion --------------------------------------------------> Tooltip
-        
-#         #region ------------------------------------------------------> Sizers
-#         self.sizersbFileWid.Add(
-#             self.wUFile.btn,
-#             pos    = (0,0),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbFileWid.Add(
-#             self.wUFile.tc,
-#             pos    = (0,1),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbFileWid.Add(
-#             self.wIFile.btn,
-#             pos    = (1,0),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbFileWid.Add(
-#             self.wIFile.tc,
-#             pos    = (1,1),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbFileWid.Add(
-#             self.wId.st,
-#             pos    = (2,0),
-#             flag   = wx.ALIGN_CENTER|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbFileWid.Add(
-#             self.wId.tc,
-#             pos    = (2,1),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbFileWid.AddGrowableCol(1,1)
-#         self.sizersbFileWid.AddGrowableRow(0,1)
-        
-#         self.sCeroTreat = wx.BoxSizer(wx.HORIZONTAL)
-#         self.sCeroTreat.Add(self.wCeroB.st, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-#         self.sCeroTreat.Add(self.wCeroB.cb, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-        
-#         self.sImpNorm = wx.BoxSizer(wx.HORIZONTAL)
-#         self.sImpNorm.Add(self.wShift.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-#         self.sImpNorm.Add(self.wShift.tc, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sImpNorm.Add(self.wWidth.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-#         self.sImpNorm.Add(self.wWidth.tc, 0, wx.EXPAND|wx.ALL, 5)
-        
-#         self.sizersbDataWid.Add(
-#             1, 1,
-#             pos    = (0,0),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbDataWid.Add(
-#             self.sCeroTreat,
-#             pos    = (0,1),
-#             flag   = wx.ALIGN_CENTER|wx.ALL,
-#             border = 5,
-#             span   = (0, 6),
-#         )
-#         self.sizersbDataWid.Add(
-#             self.wTransMethod.st,
-#             pos    = (1,1),
-#             flag   = wx.ALL|wx.ALIGN_CENTER,
-#             border = 5,
-#         )
-#         self.sizersbDataWid.Add(
-#             self.wTransMethod.cb,
-#             pos    = (1,2),
-#             flag   = wx.ALL|wx.EXPAND,
-#             border = 5,
-#         )
-#         self.sizersbDataWid.Add(
-#             self.wNormMethod.st,
-#             pos    = (1,3),
-#             flag   = wx.ALL|wx.ALIGN_CENTER,
-#             border = 5,
-#         )
-#         self.sizersbDataWid.Add(
-#             self.wNormMethod.cb,
-#             pos    = (1,4),
-#             flag   = wx.ALL|wx.EXPAND,
-#             border = 5,
-#         )
-#         self.sizersbDataWid.Add(
-#             self.wImputationMethod.st,
-#             pos    = (1,5),
-#             flag   = wx.ALL|wx.ALIGN_CENTER,
-#             border = 5,
-#         )
-#         self.sizersbDataWid.Add(
-#             self.wImputationMethod.cb,
-#             pos    = (1,6),
-#             flag   = wx.ALL|wx.EXPAND,
-#             border = 5,
-#         )
-#         self.sizersbDataWid.Add(
-#             self.sImpNorm,
-#             pos    = (2,5),
-#             flag   = wx.ALL|wx.ALIGN_CENTER,
-#             border = 5,
-#             span   = (0,2),
-#         )
-#         self.sizersbDataWid.Add(
-#             1, 1,
-#             pos    = (0,7),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbDataWid.AddGrowableCol(0,1)
-#         self.sizersbDataWid.AddGrowableCol(7,1)
+        # self.wId = dtsWidget.StaticTextCtrl(
+        #     self.sbFile,
+        #     stLabel   = self.cLId,
+        #     stTooltip = self.cTTId,
+        #     tcHint    = self.cHId,
+        #     validator = dtsValidator.IsNotEmpty(),
+        # )
 
-#         self.sSizer = wx.BoxSizer(wx.VERTICAL)
+        # self.wCeroB = dtsWidget.StaticTextComboBox(
+        #     self.sbData,
+        #     label   = self.cLCeroTreat,
+        #     choices = self.cOCero,
+        #     tooltip = (f'Cero values in the {self.cLiFile} file will '
+        #     f'be treated as missing values when this option is set to Yes and '
+        #     f'as real values when the option is set to No.'),
+        #     validator = dtsValidator.IsNotEmpty(),
+        # )
+        
+        # self.wNormMethod = dtsWidget.StaticTextComboBox(
+        #     self.sbData, 
+        #     label     = self.cLNormMethod,
+        #     choices   = self.cONorm,
+        #     tooltip   = self.cTTNormMethod,
+        #     validator = dtsValidator.IsNotEmpty(),
+        # )
+        
+        # self.wTransMethod = dtsWidget.StaticTextComboBox(
+        #     self.sbData, 
+        #     label     = self.cLTransMethod,
+        #     choices   = self.cOTrans,
+        #     tooltip   = self.cTTTransMethod,
+        #     validator = dtsValidator.IsNotEmpty(),
+        # )
+        
+        # self.wImputationMethod = dtsWidget.StaticTextComboBox(
+        #     self.sbData, 
+        #     label     = self.cLImputation,
+        #     choices   = self.cOImputation,
+        #     tooltip   = self.cTTImputation,
+        #     validator = dtsValidator.IsNotEmpty(),
+        # )
+        # self.wShift = dtsWidget.StaticTextCtrl(
+        #     self.sbData,
+        #     stLabel   = 'Shift',
+        #     stTooltip = self.cTTShift,
+        #     tcSize    = (60,22),
+        #     tcHint    = f'e.g. {self.cValShift}',
+        #     validator = dtsValidator.NumberList('float', nN=1, vMin=0),
+        # )
+        # self.wWidth = dtsWidget.StaticTextCtrl(
+        #     self.sbData,
+        #     stLabel   = 'Width',
+        #     stTooltip = self.cTTWidth,
+        #     tcSize    = (60,22),
+        #     tcHint    = f'e.g. {self.cValWidth}',
+        #     validator = dtsValidator.NumberList('float', nN=1, vMin=0),
+        # )
+        #endregion --------------------------------------------------> Widgets
 
-#         self.sSizer.Add(self.sizersbFile,   0, wx.EXPAND|wx.ALL,       5)
-#         self.sSizer.Add(self.sizersbData,   0, wx.EXPAND|wx.ALL,       5)
-#         self.sSizer.Add(self.sizersbValue,  0, wx.EXPAND|wx.ALL,       5)
-#         self.sSizer.Add(self.sizersbColumn, 0, wx.EXPAND|wx.ALL,       5)
-#         self.sSizer.Add(self.btnSizer,      0, wx.ALIGN_CENTER|wx.ALL, 5)
-#         #------------------------------> 
-#         self.sSizer.Hide(self.sImpNorm, recursive=True)
-#         #endregion ---------------------------------------------------> Sizers
+        #region ------------------------------------------------------> Sizers
+        self.sSbFileWid.Add(
+            self.wUFile.wBtn,
+            pos    = (0,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sSbFileWid.Add(
+            self.wUFile.wTc,
+            pos    = (0,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sSbFileWid.Add(
+            self.wIFile.wBtn,
+            pos    = (1,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sSbFileWid.Add(
+            self.wIFile.wTc,
+            pos    = (1,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        # self.sizersbFileWid.Add(
+        #     self.wId.st,
+        #     pos    = (2,0),
+        #     flag   = wx.ALIGN_CENTER|wx.ALL,
+        #     border = 5
+        # )
+        # self.sizersbFileWid.Add(
+        #     self.wId.tc,
+        #     pos    = (2,1),
+        #     flag   = wx.EXPAND|wx.ALL,
+        #     border = 5
+        # )
+        self.sSbFileWid.AddGrowableCol(1,1)
+        self.sSbFileWid.AddGrowableRow(0,1)
+        
+        # self.sCeroTreat = wx.BoxSizer(wx.HORIZONTAL)
+        # self.sCeroTreat.Add(self.wCeroB.st, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        # self.sCeroTreat.Add(self.wCeroB.cb, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        
+        # self.sImpNorm = wx.BoxSizer(wx.HORIZONTAL)
+        # self.sImpNorm.Add(self.wShift.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+        # self.sImpNorm.Add(self.wShift.tc, 0, wx.EXPAND|wx.ALL, 5)
+        # self.sImpNorm.Add(self.wWidth.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+        # self.sImpNorm.Add(self.wWidth.tc, 0, wx.EXPAND|wx.ALL, 5)
+        
+        # self.sizersbDataWid.Add(
+        #     1, 1,
+        #     pos    = (0,0),
+        #     flag   = wx.EXPAND|wx.ALL,
+        #     border = 5
+        # )
+        # self.sizersbDataWid.Add(
+        #     self.sCeroTreat,
+        #     pos    = (0,1),
+        #     flag   = wx.ALIGN_CENTER|wx.ALL,
+        #     border = 5,
+        #     span   = (0, 6),
+        # )
+        # self.sizersbDataWid.Add(
+        #     self.wTransMethod.st,
+        #     pos    = (1,1),
+        #     flag   = wx.ALL|wx.ALIGN_CENTER,
+        #     border = 5,
+        # )
+        # self.sizersbDataWid.Add(
+        #     self.wTransMethod.cb,
+        #     pos    = (1,2),
+        #     flag   = wx.ALL|wx.EXPAND,
+        #     border = 5,
+        # )
+        # self.sizersbDataWid.Add(
+        #     self.wNormMethod.st,
+        #     pos    = (1,3),
+        #     flag   = wx.ALL|wx.ALIGN_CENTER,
+        #     border = 5,
+        # )
+        # self.sizersbDataWid.Add(
+        #     self.wNormMethod.cb,
+        #     pos    = (1,4),
+        #     flag   = wx.ALL|wx.EXPAND,
+        #     border = 5,
+        # )
+        # self.sizersbDataWid.Add(
+        #     self.wImputationMethod.st,
+        #     pos    = (1,5),
+        #     flag   = wx.ALL|wx.ALIGN_CENTER,
+        #     border = 5,
+        # )
+        # self.sizersbDataWid.Add(
+        #     self.wImputationMethod.cb,
+        #     pos    = (1,6),
+        #     flag   = wx.ALL|wx.EXPAND,
+        #     border = 5,
+        # )
+        # self.sizersbDataWid.Add(
+        #     self.sImpNorm,
+        #     pos    = (2,5),
+        #     flag   = wx.ALL|wx.ALIGN_CENTER,
+        #     border = 5,
+        #     span   = (0,2),
+        # )
+        # self.sizersbDataWid.Add(
+        #     1, 1,
+        #     pos    = (0,7),
+        #     flag   = wx.EXPAND|wx.ALL,
+        #     border = 5
+        # )
+        # self.sizersbDataWid.AddGrowableCol(0,1)
+        # self.sizersbDataWid.AddGrowableCol(7,1)
+        #------------------------------> 
+        self.sSizer = wx.BoxSizer(wx.VERTICAL)
+        self.sSizer.Add(self.sSbFile,   0, wx.EXPAND|wx.ALL,       5)
+        self.sSizer.Add(self.sSbData,   0, wx.EXPAND|wx.ALL,       5)
+        self.sSizer.Add(self.sSbValue,  0, wx.EXPAND|wx.ALL,       5)
+        self.sSizer.Add(self.sSbColumn, 0, wx.EXPAND|wx.ALL,       5)
+        self.sSizer.Add(self.sBtnSizer, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------> 
+        # self.sSizer.Hide(self.sImpNorm, recursive=True)
+        #endregion ---------------------------------------------------> Sizers
 
-#         #region --------------------------------------------------------> Bind
-#         self.wIFile.tc.Bind(wx.EVT_TEXT,       self.OnIFileLoad)
-#         self.wIFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnIFileLoad)
-#         self.wUFile.tc.Bind(wx.EVT_TEXT,       self.OnUFileChange)
-#         self.wImputationMethod.cb.Bind(wx.EVT_COMBOBOX, self.OnImpMethod)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------------> Bind
+        # self.wIFile.tc.Bind(wx.EVT_TEXT,       self.OnIFileLoad)
+        # self.wIFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnIFileLoad)
+        # self.wUFile.tc.Bind(wx.EVT_TEXT,       self.OnUFileChange)
+        # self.wImputationMethod.cb.Bind(wx.EVT_COMBOBOX, self.OnImpMethod)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
 #     #------------------------------> Class Methods
 #     #region ---------------------------------------------------> Event Methods
@@ -2786,300 +2759,298 @@ class PaneCorrA(wx.Panel):
 #     #endregion ------------------------------------------------> Class methods
 # #---
 
-
-# #------------------------------> Utils
-# class CorrA(BaseConfPanel):
-#     """Creates the configuration tab for Correlation Analysis
+class PaneCorrA(BaseConfPanel):
+    """Creates the configuration tab for Correlation Analysis
     
-#         Parameters
-#         ----------
-#         cParent : wx Widget
-#             Parent of the widgets
-#         cDataI : dict or None
-#             Initial data provided by the user in a previous analysis.
-#             This contains both I and CI dicts e.g. {'I': I, 'CI': CI}
+        Parameters
+        ----------
+        cParent : wx Widget
+            Parent of the widgets
+        cDataI : dict or None
+            Initial data provided by the user in a previous analysis.
+            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}
 
-#         Attributes
-#         ----------
-#         rCheckUserInput : dict
-#             To check the user input in the right order. 
-#             See pane.BaseConfPanel.CheckInput for a description of the dict.
-#         rLCTrlL: list of wx.ListCtrl
-#             List of wx.ListCtrl to support showing two wx.ListCtrl.
-#         rLLenLongest : int
-#             Length of the longest label.     
-#         rMainData : str
-#             Name of the file with the correlation coefficient values.
-#         rMsgError: str
-#             Error method to show to the user.
+        Attributes
+        ----------
+        rCheckUserInput : dict
+            To check the user input in the right order. 
+            See pane.BaseConfPanel.CheckInput for a description of the dict.
+        rLCTrlL: list of wx.ListCtrl
+            List of wx.ListCtrl to support showing two wx.ListCtrl.
+        rLLenLongest : int
+            Length of the longest label.     
+        rMainData : str
+            Name of the file with the correlation coefficient values.
+        rMsgError: str
+            Error method to show to the user.
             
-#         See parent class for more attributes.
+        See parent class for more attributes.
         
-#         Notes
-#         -----
-#         The structures of self.rDO and self.rDI are:
-#         rDO : dict
-#             Dict with the processed user input
-#             {
-#                 'uFile'      : 'umsap file path',
-#                 'iFile'      : 'data file path',
-#                 'ID'         : 'Analysis ID',
-#                 "Cero"       : 'Boolean, how to treat cero values',
-#                 'TransMethod': 'transformation method',
-#                 'NormMethod' : 'normalization method',
-#                 'ImpMethod'  : 'imputation method',
-#                 'CorrMethod' : 'correlation method',
-#                 'oc'         : {
-#                     'Column' : [selected columns as integers],
-#                 }
-#                 'df'         : {
-#                     'ColumnR'     : [cero based list of result columns],  
-#                     'ColumnF'     : [cero based list of float columns],  
-#                     'ResCtrlFlat' : [cero based flat list of result & control],
-#                 },
-#             }
-#         rDI : dict
-#             Similar to 'do' but: 
-#                 - No oc and df dict
-#                 - With the values given by the user
-#                 - Keys as in the GUI of the tab plus empty space.
+        Notes
+        -----
+        The structures of self.rDO and self.rDI are:
+        rDO : dict
+            Dict with the processed user input
+            {
+                'uFile'      : 'umsap file path',
+                'iFile'      : 'data file path',
+                'ID'         : 'Analysis ID',
+                "Cero"       : 'Boolean, how to treat cero values',
+                'TransMethod': 'transformation method',
+                'NormMethod' : 'normalization method',
+                'ImpMethod'  : 'imputation method',
+                'CorrMethod' : 'correlation method',
+                'oc'         : {
+                    'Column' : [selected columns as integers],
+                }
+                'df'         : {
+                    'ColumnR'     : [cero based list of result columns],  
+                    'ColumnF'     : [cero based list of float columns],  
+                    'ResCtrlFlat' : [cero based flat list of result & control],
+                },
+            }
+        rDI : dict
+            Similar to 'do' but: 
+                - No oc and df dict
+                - With the values given by the user
+                - Keys as in the GUI of the tab plus empty space.
 
-#         Running the analysis results in the creation of:
+        Running the analysis results in the creation of:
         
-#         - Parent Folder/
-#             - Input_Data_Files/
-#             - Steps_Data_Files/20210324-165609-Correlation-Analysis/
-#             - output-file.umsap
+        - Parent Folder/
+            - Input_Data_Files/
+            - Steps_Data_Files/20210324-165609-Correlation-Analysis/
+            - output-file.umsap
         
-#         The Input_Data_Files folder contains the original data files. These are 
-#         needed for data visualization, running analysis again with different 
-#         parameters, etc.
-#         The Steps_Data_Files/Date-Section folder contains regular csv files with 
-#         the step by step data.
+        The Input_Data_Files folder contains the original data files. These are 
+        needed for data visualization, running analysis again with different 
+        parameters, etc.
+        The Steps_Data_Files/Date-Section folder contains regular csv files with 
+        the step by step data.
     
-#         The Correlation Analysis section in output-file.umsap contains the 
-#         information about the calculations, e.g
+        The Correlation Analysis section in output-file.umsap contains the 
+        information about the calculations, e.g
 
-#         {
-#             'Correlation-Analysis : {
-#                 '20210324-165609 - bla': {
-#                     'V' : config.dictVersion,
-#                     'I' : self.d,
-#                     'CI': self.do,
-#                     'DP': {
-#                         'dfS' : pd.DataFrame with initial data as float and
-#                                 after discarding values by score.
-#                         'dfT' : pd.DataFrame with transformed data.
-#                         'dfN' : pd.DataFrame with normalized data.
-#                         'dfIm': pd.DataFrame with imputed data.
-#                     }
-#                     'R' : pd.DataFrame (dict) with the correlation coefficients
-#                 }
-#             }
-#         }
+        {
+            'Correlation-Analysis : {
+                '20210324-165609 - bla': {
+                    'V' : config.dictVersion,
+                    'I' : self.d,
+                    'CI': self.do,
+                    'DP': {
+                        'dfS' : pd.DataFrame with initial data as float and
+                                after discarding values by score.
+                        'dfT' : pd.DataFrame with transformed data.
+                        'dfN' : pd.DataFrame with normalized data.
+                        'dfIm': pd.DataFrame with imputed data.
+                    }
+                    'R' : pd.DataFrame (dict) with the correlation coefficients
+                }
+            }
+        }
         
-#         The data frame has the following structure
-#                       Intensity 01  Intensity 02  Intensity 03  Intensity 04  Intensity 05
-#         Intensity 01      1.000000      0.771523      0.162302      0.135884      0.565985
-#         Intensity 02      0.771523      1.000000      0.190120      0.110859      0.588783
-#         Intensity 03      0.162302      0.190120      1.000000      0.775442     -0.010327
-#         Intensity 04      0.135884      0.110859      0.775442      1.000000      0.010221
-#         Intensity 05      0.565985      0.588783     -0.010327      0.010221      1.000000
+        The data frame has the following structure
+                      Intensity 01  Intensity 02  Intensity 03  Intensity 04  Intensity 05
+        Intensity 01      1.000000      0.771523      0.162302      0.135884      0.565985
+        Intensity 02      0.771523      1.000000      0.190120      0.110859      0.588783
+        Intensity 03      0.162302      0.190120      1.000000      0.775442     -0.010327
+        Intensity 04      0.135884      0.110859      0.775442      1.000000      0.010221
+        Intensity 05      0.565985      0.588783     -0.010327      0.010221      1.000000
 
-#         The index and column names are the name of the selected columns in the 
-#         Data File.
-#     """
-#     #region -----------------------------------------------------> Class Setup
-#     #------------------------------> Label
-#     cLCorrMethod = 'Correlation Method'
-#     cLColAnalysis = config.lStColAnalysis
-#     cLNumName     = config.lLCtrlColNameI
-#     cSNumName     = config.sLCtrlColI
-#     #------------------------------> Needed by BaseConfPanel
-#     cName        = config.npCorrA
-#     cURL         = f"{config.urlTutorial}/correlation-analysis"
-#     cSection     = config.nuCorrA
-#     cTitlePD     = 'Calculating Correlation Coefficients'
-#     cGaugePD     = 26
-#     cTTHelp      = config.ttBtnHelp.format(cURL)
-#     rLLenLongest = len(cLCorrMethod)
-#     rMainData    = '{}_{}-CorrelationCoefficients-Data.txt'
-#     #endregion --------------------------------------------------> Class Setup
+        The index and column names are the name of the selected columns in the 
+        Data File.
+    """
+    #region -----------------------------------------------------> Class Setup
+    # #------------------------------> Label
+    # cLCorrMethod = 'Correlation Method'
+    # cLColAnalysis = config.lStColAnalysis
+    # cLNumName     = config.lLCtrlColNameI
+    # cSNumName     = config.sLCtrlColI
+    #------------------------------> Needed by BaseConfPanel
+    cName        = mConfig.npCorrA
+    cURL         = f"{mConfig.urlTutorial}/correlation-analysis"
+    # cSection     = config.nuCorrA
+    # cTitlePD     = 'Calculating Correlation Coefficients'
+    # cGaugePD     = 26
+    # cTTHelp      = config.ttBtnHelp.format(cURL)
+    # rLLenLongest = len(cLCorrMethod)
+    # rMainData    = '{}_{}-CorrelationCoefficients-Data.txt'
+    #endregion --------------------------------------------------> Class Setup
     
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, cParent: wx.Window, cDataI: Optional[dict]):
-#         """"""
-#         #region -----------------------------------------------> Initial setup
-#         #------------------------------> Setup attributes in base class 
-#         super().__init__(cParent)
-#         #endregion --------------------------------------------> Initial setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: wx.Window, dataI: dict={}):
+        """"""
+        #region -----------------------------------------------> Initial setup
+        #------------------------------> Setup attributes in base class 
+        super().__init__(parent)
+        #endregion --------------------------------------------> Initial setup
         
-#         #region -----------------------------------------------------> Widgets
-#         #------------------------------> dtsWidget.StaticTextComboBox
-#         self.wCorrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
-#             label     = self.cLCorrMethod,
-#             tooltip   = f'Select the {self.cLCorrMethod}.',
-#             choices   = list(config.oCorrMethod.values()),
-#             validator = dtsValidator.IsNotEmpty(),
-#         )
-#         #------------------------------> wx.StaticText
-#         self.wStListI = wx.StaticText(
-#             self.sbColumn, label=f'Columns in the {self.cLiFile}')
-#         self.wStListO = wx.StaticText(
-#             self.sbColumn, label=self.cLColAnalysis)
-#         #------------------------------> dtscore.ListZebra
-#         self.wLCtrlI = dtsWidget.ListZebra(self.sbColumn, 
-#             colLabel        = self.cLNumName,
-#             colSize         = self.cSNumName,
-#             copyFullContent = True,
-#         )
-#         self.wLCtrlO = dtsWidget.ListZebra(self.sbColumn, 
-#             colLabel        = self.cLNumName,
-#             colSize         = self.cSNumName,
-#             canPaste        = True,
-#             canCut          = True,
-#             copyFullContent = True,
-#         )
-#         self.rLCtrlL = [self.wLCtrlI, self.wLCtrlO]
-#         #------------------------------> wx.Button
-#         self.wAddCol = wx.Button(self.sbColumn, label='Add columns')
-#         #------------------------------> 
-#         self.wAddCol.SetBitmap(
-#             wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD), dir = wx.RIGHT)
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        # #------------------------------> dtsWidget.StaticTextComboBox
+        # self.wCorrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
+        #     label     = self.cLCorrMethod,
+        #     tooltip   = f'Select the {self.cLCorrMethod}.',
+        #     choices   = list(config.oCorrMethod.values()),
+        #     validator = dtsValidator.IsNotEmpty(),
+        # )
+        # #------------------------------> wx.StaticText
+        # self.wStListI = wx.StaticText(
+        #     self.sbColumn, label=f'Columns in the {self.cLiFile}')
+        # self.wStListO = wx.StaticText(
+        #     self.sbColumn, label=self.cLColAnalysis)
+        # #------------------------------> dtscore.ListZebra
+        # self.wLCtrlI = dtsWidget.ListZebra(self.sbColumn, 
+        #     colLabel        = self.cLNumName,
+        #     colSize         = self.cSNumName,
+        #     copyFullContent = True,
+        # )
+        # self.wLCtrlO = dtsWidget.ListZebra(self.sbColumn, 
+        #     colLabel        = self.cLNumName,
+        #     colSize         = self.cSNumName,
+        #     canPaste        = True,
+        #     canCut          = True,
+        #     copyFullContent = True,
+        # )
+        # self.rLCtrlL = [self.wLCtrlI, self.wLCtrlO]
+        # #------------------------------> wx.Button
+        # self.wAddCol = wx.Button(self.sbColumn, label='Add columns')
+        # #------------------------------> 
+        # self.wAddCol.SetBitmap(
+        #     wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD), dir = wx.RIGHT)
+        #endregion --------------------------------------------------> Widgets
         
-#         #region ----------------------------------------------> checkUserInput
-#         self.rCheckUserInput = {
-#             self.cLuFile      : [self.wUFile.tc,            config.mFileBad  ,    False],
-#             self.cLiFile      : [self.wIFile.tc,            config.mFileBad  ,    False],
-#             self.cLId         : [self.wId.tc,               config.mValueBad ,    False],
-#             self.cLCeroTreat  : [self.wCeroB.cb,            config.mOptionBad,    False],
-#             self.cLTransMethod: [self.wTransMethod.cb,      config.mOptionBad,    False],
-#             self.cLNormMethod : [self.wNormMethod.cb,       config.mOptionBad,    False],
-#             self.cLImputation : [self.wImputationMethod.cb, config.mOptionBad,    False],
-#             self.cLShift      : [self.wShift.tc,            config.mOneRPlusNum , False],
-#             self.cLWidth      : [self.wWidth.tc,            config.mOneRPlusNum , False],
-#             self.cLCorrMethod : [self.wCorrMethod.cb,       config.mOptionBad,    False],
-#         }
-#         #endregion -------------------------------------------> checkUserInput
+        #region ----------------------------------------------> checkUserInput
+        # self.rCheckUserInput = {
+        #     self.cLuFile      : [self.wUFile.tc,            config.mFileBad  ,    False],
+        #     self.cLiFile      : [self.wIFile.tc,            config.mFileBad  ,    False],
+        #     self.cLId         : [self.wId.tc,               config.mValueBad ,    False],
+        #     self.cLCeroTreat  : [self.wCeroB.cb,            config.mOptionBad,    False],
+        #     self.cLTransMethod: [self.wTransMethod.cb,      config.mOptionBad,    False],
+        #     self.cLNormMethod : [self.wNormMethod.cb,       config.mOptionBad,    False],
+        #     self.cLImputation : [self.wImputationMethod.cb, config.mOptionBad,    False],
+        #     self.cLShift      : [self.wShift.tc,            config.mOneRPlusNum , False],
+        #     self.cLWidth      : [self.wWidth.tc,            config.mOneRPlusNum , False],
+        #     self.cLCorrMethod : [self.wCorrMethod.cb,       config.mOptionBad,    False],
+        # }
+        #endregion -------------------------------------------> checkUserInput
     
-#         #region -----------------------------------------------------> Tooltip
-#         self.wStListI.SetToolTip(config.ttLCtrlCopyNoMod)
-#         self.wStListO.SetToolTip(config.ttLCtrlPasteMod)
-#         self.wAddCol.SetToolTip(f'Add selected Columns in the Data File to '
-#             f'the table of Columns to Analyse. New columns will be added after '
-#             f'the last selected element in Columns to analyse. Duplicate '
-#             f'columns are discarded.')
-#         #endregion --------------------------------------------------> Tooltip
+        #region -----------------------------------------------------> Tooltip
+        # self.wStListI.SetToolTip(config.ttLCtrlCopyNoMod)
+        # self.wStListO.SetToolTip(config.ttLCtrlPasteMod)
+        # self.wAddCol.SetToolTip(f'Add selected Columns in the Data File to '
+        #     f'the table of Columns to Analyse. New columns will be added after '
+        #     f'the last selected element in Columns to analyse. Duplicate '
+        #     f'columns are discarded.')
+        #endregion --------------------------------------------------> Tooltip
 
-#         #region ------------------------------------------------------> Sizers
-#         #------------------------------> Expand Column section
-#         item = self.sSizer.GetItem(self.sizersbColumn)
-#         item.Proportion = 1
-#         item = self.sizersbColumn.GetItem(self.sizersbColumnWid)
-#         item.Proportion = 1
-#         #------------------------------> Values
-#         self.sizersbValueWid.Add(
-#             1, 1,
-#             pos    = (0,0),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wCorrMethod.st,
-#             pos    = (0,1),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wCorrMethod.cb,
-#             pos    = (0,2),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             1, 1,
-#             pos    = (0,3),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbValueWid.AddGrowableCol(0, 1)
-#         self.sizersbValueWid.AddGrowableCol(3, 1)
-#         #------------------------------> Columns
-#         self.sizersbColumnWid.Add(
-#             self.wStListI,
-#             pos    = (0,0),
-#             flag   = wx.ALIGN_CENTRE|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.wStListO,
-#             pos    = (0,2),
-#             flag   = wx.ALIGN_CENTRE|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.wLCtrlI,
-#             pos    = (1,0),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 20
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.wAddCol,
-#             pos    = (1,1),
-#             flag   = wx.ALIGN_CENTER|wx.ALL,
-#             border = 20
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.wLCtrlO,
-#             pos    = (1,2),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 20
-#         )
-#         self.sizersbColumnWid.AddGrowableCol(0, 1)
-#         self.sizersbColumnWid.AddGrowableCol(2, 1)
-#         self.sizersbColumnWid.AddGrowableRow(1, 1)
-#         #------------------------------> Main Sizer
-#         self.SetSizer(self.sSizer)
-#         self.sSizer.Fit(self)
-#         self.SetupScrolling()
-#         #endregion ---------------------------------------------------> Sizers
+        #region ------------------------------------------------------> Sizers
+        # #------------------------------> Expand Column section
+        # item = self.sSizer.GetItem(self.sizersbColumn)
+        # item.Proportion = 1
+        # item = self.sizersbColumn.GetItem(self.sizersbColumnWid)
+        # item.Proportion = 1
+        # #------------------------------> Values
+        # self.sizersbValueWid.Add(
+        #     1, 1,
+        #     pos    = (0,0),
+        #     flag   = wx.EXPAND|wx.ALL,
+        #     border = 5
+        # )
+        # self.sizersbValueWid.Add(
+        #     self.wCorrMethod.st,
+        #     pos    = (0,1),
+        #     flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
+        #     border = 5,
+        # )
+        # self.sizersbValueWid.Add(
+        #     self.wCorrMethod.cb,
+        #     pos    = (0,2),
+        #     flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
+        #     border = 5,
+        # )
+        # self.sizersbValueWid.Add(
+        #     1, 1,
+        #     pos    = (0,3),
+        #     flag   = wx.EXPAND|wx.ALL,
+        #     border = 5
+        # )
+        # self.sizersbValueWid.AddGrowableCol(0, 1)
+        # self.sizersbValueWid.AddGrowableCol(3, 1)
+        # #------------------------------> Columns
+        # self.sizersbColumnWid.Add(
+        #     self.wStListI,
+        #     pos    = (0,0),
+        #     flag   = wx.ALIGN_CENTRE|wx.ALL,
+        #     border = 5
+        # )
+        # self.sizersbColumnWid.Add(
+        #     self.wStListO,
+        #     pos    = (0,2),
+        #     flag   = wx.ALIGN_CENTRE|wx.ALL,
+        #     border = 5
+        # )
+        # self.sizersbColumnWid.Add(
+        #     self.wLCtrlI,
+        #     pos    = (1,0),
+        #     flag   = wx.EXPAND|wx.ALL,
+        #     border = 20
+        # )
+        # self.sizersbColumnWid.Add(
+        #     self.wAddCol,
+        #     pos    = (1,1),
+        #     flag   = wx.ALIGN_CENTER|wx.ALL,
+        #     border = 20
+        # )
+        # self.sizersbColumnWid.Add(
+        #     self.wLCtrlO,
+        #     pos    = (1,2),
+        #     flag   = wx.EXPAND|wx.ALL,
+        #     border = 20
+        # )
+        # self.sizersbColumnWid.AddGrowableCol(0, 1)
+        # self.sizersbColumnWid.AddGrowableCol(2, 1)
+        # self.sizersbColumnWid.AddGrowableRow(1, 1)
+        #------------------------------> Main Sizer
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        self.SetupScrolling()
+        #endregion ---------------------------------------------------> Sizers
 
-#         #region --------------------------------------------------------> Bind
-#         self.wAddCol.Bind(wx.EVT_BUTTON, self.OnAdd)
-#         #endregion -----------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
+        # self.wAddCol.Bind(wx.EVT_BUTTON, self.OnAdd)
+        #endregion -----------------------------------------------------> Bind
     
-#         #region --------------------------------------------------------> Test
-#         if config.development:
-#             import getpass
-#             user = getpass.getuser()
-#             if config.os == "Darwin":
-#                 self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-#                 self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
-#             elif config.os == 'Windows':
-#                 from pathlib import Path
-#                 self.wUFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
-#                 self.wIFile.tc.SetValue(str(Path(f'C:/Users/{user}/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt')))
-#             else:
-#                 pass
-#             self.wId.tc.SetValue("Beta Version Dev")
-#             self.wCeroB.cb.SetValue("Yes")
-#             self.wTransMethod.cb.SetValue("Log2")
-#             self.wNormMethod.cb.SetValue("Median")
-#             self.wImputationMethod.cb.SetValue("Normal Distribution")
-#             self.OnImpMethod('fEvent')
-#             self.wShift.tc.SetValue('1.8')
-#             self.wWidth.tc.SetValue('0.3')
-#             self.wCorrMethod.cb.SetValue("Pearson")
-#         else:
-#             pass
-#         #endregion -----------------------------------------------------> Test
+        #region --------------------------------------------------------> Test
+        # if config.development:
+        #     import getpass
+        #     user = getpass.getuser()
+        #     if config.os == "Darwin":
+        #         self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+        #         self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
+        #     elif config.os == 'Windows':
+        #         from pathlib import Path
+        #         self.wUFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
+        #         self.wIFile.tc.SetValue(str(Path(f'C:/Users/{user}/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt')))
+        #     else:
+        #         pass
+        #     self.wId.tc.SetValue("Beta Version Dev")
+        #     self.wCeroB.cb.SetValue("Yes")
+        #     self.wTransMethod.cb.SetValue("Log2")
+        #     self.wNormMethod.cb.SetValue("Median")
+        #     self.wImputationMethod.cb.SetValue("Normal Distribution")
+        #     self.OnImpMethod('fEvent')
+        #     self.wShift.tc.SetValue('1.8')
+        #     self.wWidth.tc.SetValue('0.3')
+        #     self.wCorrMethod.cb.SetValue("Pearson")
+        # else:
+        #     pass
+        #endregion -----------------------------------------------------> Test
         
-#         #region -------------------------------------------------------> DataI
-#         self.SetInitialData(cDataI)
-#         #endregion ----------------------------------------------------> DataI
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region -------------------------------------------------------> DataI
+        # self.SetInitialData(cDataI)
+        #endregion ----------------------------------------------------> DataI
+    #---
+    #endregion -----------------------------------------------> Instance setup
     
 #     #------------------------------> Class Methods
 #     #region ---------------------------------------------------> Event Methods

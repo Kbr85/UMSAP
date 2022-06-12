@@ -11509,6 +11509,46 @@ class DialogFileSelect(wx.FileDialog):
 #---
 
 
+class DialogDirSelect(wx.DirDialog):
+    """Creates a dialog to select a folder.
+
+        Parameters
+        ----------
+        parent : wx widget or None
+            Parent of the window. If given modal window will be centered on it.
+        message : str
+            Message to show in the window.
+        defPath: Path or str
+            Default value for opnening wx.DirDialog.
+    """
+    #region -----------------------------------------------------> Class setup
+    title = 'Select a folder'
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, message: str='',
+        defPath: Union[str,Path]='',
+        ) -> None:
+        """ """
+        #region -------------------------------------------------> Check input
+        msg = self.title if message else message
+        #endregion ----------------------------------------------> Check input
+
+        #region ---------------------------------------------> Create & Center
+        super().__init__(
+            parent, 
+            message     = msg,
+            defaultPath = str(defPath),
+        )
+
+        self.CenterOnParent()
+         #endregion ------------------------------------------> Create & Center
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
 class DialogNotification(wx.Dialog):
     """Show a custom notification dialog.
 
@@ -11706,6 +11746,7 @@ class DialogNotification(wx.Dialog):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
+
 
 class DialogPreference(wx.Dialog):
     """Set the UMSAP preferences."""

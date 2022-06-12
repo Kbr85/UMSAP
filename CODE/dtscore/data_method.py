@@ -262,21 +262,6 @@ def StrSetMessage(start: str, end: str, link: str='\n\nFurther details:\n'
         return f"{start} {end}"
 #---
 
-def StrNow(dtFormat: str=config.dtFormat) -> str:
-    """Get a formatted datetime.now() string.
-
-        Returns
-        -------
-        str:
-            The now date time as 20210112-140137	
-    """
-    # No test
-    try:
-        return datetime.now().strftime(dtFormat)
-    except Exception as e:
-        raise e
-#---
-
 def StrEqualLength(strL: list[str], char: str=' ', loc:str='end') -> list[str]:
     """Return a list in which every string element has the same length
 

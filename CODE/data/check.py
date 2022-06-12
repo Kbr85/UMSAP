@@ -15,9 +15,13 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional
+import os
+from pathlib import Path
+from typing import Optional, Union
 
+import config.config as mConfig
 import data.exception as mException
+import data.method as mMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -85,6 +89,165 @@ def VersionCompare(
 #---
 
 
+def Path2FFOutput(
+    value: Union[str, Path],
+    fof: mConfig.litFoF='file',
+    opt: bool=False,
+    ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+    """Check if value holds a valid path that can be used for output data.
+
+        Parameters
+        ----------
+        value: str or Path
+            Path to the file or folder
+        fof : str
+            One of 'file', 'folder'. Check widgets hold path to file or folder.
+            Default is 'file'.
+        opt : Boolean
+            Value is optional. Default is False.
+
+        Returns
+        -------
+        tuple
+            - (True, None)
+            - (False, (code, value, msg))
+                code is:
+                - NotPath, Input is not a valid path.
+                - NoWrite, It is not possible to write.
+
+        Examples
+        --------
+        >>> Path2FFOutput('', 'file', opt=False)
+        >>> (False, (NoPath, '', The path '' is not valid.))
+    """
+    #region --------------------------------------------------------> Optional
+    if value == '':
+        if opt:
+            return (True, None)
+        else:
+            msg = f"The selected path is not valid.\nSelected path: '{value}'"
+            return (False, ('NotPath', str(value), msg))
+    else:
+        pass
+    #endregion -----------------------------------------------------> Optional
+    
+    #region ---------------------------------------------------> Is valid Path
+    try:
+        tPath = Path(value)
+    except Exception:
+        msg = f"The selected path is not valid.\nSelected path: '{value}'"
+        return (False, ('NotPath', str(value), msg))
+    #endregion ------------------------------------------------> Is valid Path
+
+    #region -------------------------------------------------------> Can write
+    tempFileName = 'kbr-'+mMethod.StrNow()+'.kbr'
+    if fof == 'file':
+        f = tPath.parent / tempFileName 
+    else:
+        f = tPath / tempFileName
+    try:
+        f.touch()
+        f.unlink()
+    except Exception:
+        msg = f"{f} cannot be used for writing."
+        return (False, ('NoWrite', str(value), msg))
+    #endregion ----------------------------------------------------> Can write
+
+    return (True, None)
+#---
+
+
+def Path2FFInput(
+    value: Union[str, Path],
+    fof: mConfig.litFoF='folder',
+    opt: bool=False,
+    ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+    """Check that value is a valid path to a file or folder. 
+
+        Parameters
+        ----------
+        value: str or Path
+            Path to the file or folder
+        fof : str
+            One of 'file', 'folder'. Check widgets hold path to file or folder.
+            Default is 'folder'
+        opt : Boolean
+            Value is optional. Default is False.
+
+        Returns
+        -------
+        tuple
+            - (True, None)
+            - (False, (code, value, msg))
+            code is:
+                - NotPath,   Input is not valid path
+                - NotFile,   Input is not valid file
+                - NotDir,    Input is not valid folder
+                - NoRead,    Input cannot be read
+
+        Examples
+        --------
+        >>> Path2FFInput('', 'file', opt=True, ext=None)
+        >>> (False, ('NotPath', '', 'The path "" is not valid.'))
+        >>> Path2FFInput('/Users/DAT4S/test.py', 'file')
+        >>> (True, None)
+    """
+    #region --------------------------------------------------------> Optional
+    if value == '':
+        if opt:
+            return (True, None)
+        else:
+            msg = f"The selected path is not valid.\nSelected path: '{value}'"
+            return (False, ('NotPath', str(value), msg))
+    else:
+        pass
+    #endregion -----------------------------------------------------> Optional
+
+    #region ---------------------------------------------------> Is valid Path
+    try:
+        tPath = Path(value)
+    except Exception:
+        msg = f"The selected path is not valid.\nSelected path: '{value}'"
+        return (False, ('NotPath', str(value), msg))
+    #endregion ------------------------------------------------> Is valid Path
+    
+    #region -------------------------------------------------------------> Fof
+    if fof == 'file':
+        if tPath.is_file():
+            pass
+        else:
+            msg = (
+                f"The selected path does not point to a file."
+                f"\nSelected path:'{tPath}'")
+            return (False, ('NotFile', str(value), msg))
+    elif fof == 'folder':
+        if tPath.is_dir():
+            pass
+        else:
+            msg = (
+                f"The selected path does not point to a folder.\n"
+                f"Selected path: '{tPath}'")
+            return (False, ('NotDir', str(value), msg))
+    else:
+        msg = mConfig.mNotSupported.format('fof', fof)
+        raise mException.InputError(msg)
+    #endregion ----------------------------------------------------------> Fof
+    
+    #region --------------------------------------------------------> Can read
+    if os.access(tPath, os.R_OK):
+        pass
+    else:
+        msg = f"The selected path cannot be read.\nSelected path: '{tPath}'"
+        return (False, ('NoRead', str(value), msg))
+    #endregion -----------------------------------------------------> Can read
+
+    return (True, None)
+#---
+
+
+
+
+
 # def UniqueColNumbers(
 #     value: list[str], sepList: list[str]=[' ', ',', ';'],
 #     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
@@ -98,12 +261,12 @@ def VersionCompare(
 #         sepList: list of str
 #             Separator used in values.
 #             sepList[0] : internal element separator
-#             sepList[1] : intrarow separator
-#             sepList[2] : interrow separator
+#             sepList[1] : intra row separator
+#             sepList[2] : inter row separator
 
 #         Returns
 #         -------
-#         tupple:
+#         tuple:
 #             (True, None)
 #             (False, (NotUnique, repeated elements, msg))
 
@@ -208,12 +371,12 @@ def VersionCompare(
 #             are separated by sepList[0] while elements in resCtrl are separated 
 #             by:
 #             sepList[0] : internal element separator
-#             sepList[1] : intrarow separator
-#             sepList[2] : interrow separator
+#             sepList[1] : intra row separator
+#             sepList[2] : inter row separator
 
 #         Returns
 #         -------
-#         tupple:
+#         tuple:
 #             (True, None)
 #             (False, (NotUnique, repeated elements, msg))
             

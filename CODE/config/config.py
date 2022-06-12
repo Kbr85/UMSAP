@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import platform
 from pathlib import Path
+from typing import Literal
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -132,9 +133,10 @@ ntLimProt    = 'LimProt'
 ntProtProf   = 'ProtProf'
 ntTarProt    = 'TarProt'
 ntPrefUpdate = 'Updates'
-# #------------------------------> Individual Panes
+#------------------------------> Individual Panes
+npDef = 'Default Pane'
 # npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
-# npCorrA                 = 'CorrAPane'
+npCorrA                 = 'CorrAPane'
 # npDataPrep              = 'DataPrepPane'
 # npLimProt               = 'LimProtPane'
 # npProtProf              = 'ProtProfPane'
@@ -160,7 +162,7 @@ nuReadF    = 'Read UMSAP File'
 
 #region ----------------------------------------------------------- Extensions
 #------------------------------> For wx.Dialogs
-# elData  = 'txt files (*.txt)|*.txt'
+elData  = 'txt files (*.txt)|*.txt'
 elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
 # elPDB   = 'PDB files (*.pdb)|*.pdb'
 # elPDF   = 'PDF files (*.pdf)|*.pdf'
@@ -176,7 +178,7 @@ elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
 #     "Tagged Image File (*.tif)|*.tif"
 # )
 #------------------------------> File extensions. First item is default
-# esData  = ['.txt']
+esData  = ['.txt']
 # esPDB   = ['.pdb']
 # esPDF   = ['.pdf']
 # esSeq   = ['.txt', '.fasta']
@@ -293,8 +295,8 @@ lnPaneConf = 'Configuration Options'
 # lCbCorrectP    = 'P Correction'
 # lCbSample      = 'Samples'
 # lCbIntensity   = 'Intensities'
-# #------------------------------> wx.Dialog
-# lPdError = 'Fatal Error'
+#------------------------------> wx.Dialog
+lPdError = 'Fatal Error'
 # #------------------------------> Filters
 # lFilFCEvol   = 'FC Evolution'
 # lFilHypCurve = 'Hyp Curve'
@@ -340,9 +342,8 @@ lnPaneConf = 'Configuration Options'
 #     f"({copyShortCut}+X) or copied "
 #     f"({copyShortCut}+C)."    
 # )
-# #------------------------------> dtscore
-# ttSectionRightClick = (
-#     'The content of the Section can be deleted with a right click.')
+ttSectionRightClick = (
+    'The content of the Section can be deleted with a right click.')
 #endregion ---------------------------------------------------------> Tooltips
 
 
@@ -351,33 +352,32 @@ lnPaneConf = 'Configuration Options'
 #     'int'  : int,
 #     'float': float,
 # }
-
-# oYesNo = {
-#     ''   : '',
-#     'Yes': True,
-#     'No' : False,
-# }
-# oTransMethod = {
-#     'Empty': '',
-#     'None' : 'None',
-#     'Log2' : 'Log2',
-# }
-# oNormMethod = {
-#     'Empty' : '',
-#     'None'  : 'None',
-#     'Median': 'Median',
-# }
-# oImputation = {
-#     'Empty': '',
-#     'None' : 'None',
-#     'ND'   : 'Normal Distribution',
-# }
-# oCorrMethod = {
-#     'Empty'   : '',
-#     'Pearson' : 'Pearson',
-#     'Kendall' : 'Kendall',
-#     'Spearman': 'Spearman',
-# }
+oYesNo = {
+    'Empty': '',
+    'Yes'  : True,
+    'No'   : False,
+}
+oTransMethod = {
+    'Empty': '',
+    'None' : 'None',
+    'Log2' : 'Log2',
+}
+oNormMethod = {
+    'Empty' : '',
+    'None'  : 'None',
+    'Median': 'Median',
+}
+oImputation = {
+    'Empty'              : '',
+    'None'               : 'None',
+    'Normal Distribution': 'ND',
+}
+oCorrMethod = {
+    'Empty'   : '',
+    'Pearson' : 'Pearson',
+    'Kendall' : 'Kendall',
+    'Spearman': 'Spearman',
+}
 # oIntensities = {
 #     'Empty' : '',
 #     'RawI'  : 'Raw Intensities',
@@ -416,6 +416,12 @@ lnPaneConf = 'Configuration Options'
 
 # oSelectF = ('openO', 'openM', 'save')
 #endregion ----------------------------------------------------------> Options
+
+
+#region --------------------------------------------------------> Literal
+litFFSelect = Literal['openO', 'openM', 'save', 'folder']
+litFoF      = Literal['file', 'folder']
+#endregion -----------------------------------------------------> Literal
 
 
 #region -----------------------------------------------------> DF Column names
@@ -485,9 +491,8 @@ lnPaneConf = 'Configuration Options'
 
 #region ---------------------------------------------------------------> Files
 mFileSelector = 'It was not possible to show the file selecting dialog.'
-# mFileRead = 'An error occurred when reading file:\n{}'
 mFileSelUMSAP = 'Select the UMSAP File'
-# mReadErrorIO  = "The selected file could not be read.\nSelected file: {}"
+mFileRead = 'An error occurred when reading file:\n{}'
 # mWriteErrorIO = "The selected file could not be written.\nSelected file: {}"
 #endregion ------------------------------------------------------------> Files
 
@@ -554,7 +559,7 @@ mFileSelUMSAP = 'Select the UMSAP File'
 #     f"Options for message mode are: {*oMsgType,}. "
 #     "Option {} is unknown.")
 # mwxLCtrNoCopy     = "The elements of this list cannot be copied."
-# mCopyFailedW     = f"Copy operation failed. Try again."
+mCopyFailedW     = f"Copy operation failed. Try again."
 # mwxLCtrNoChange   = "This list cannot be modified."
 # mPasteFailedW    = f"Paste operation failed. Try again."
 # mNothingToPasteW = f"Nothing to paste."
@@ -581,14 +586,14 @@ mFileSelUMSAP = 'Select the UMSAP File'
 #     'For paired samples the number of replicates in {} and {} must be equal.')
 # m1IntGET = ('{} must be an integer greater/equal than/to {}.')
 # mNotImplemented = 'Option {} is not yet implemented.'
-# mNotSupported = "{} value ({}) is not supported."
+mNotSupported = "{} value '{}' is not supported."
 # mEmpty = 'The field value cannot be empty.'
 #endregion ------------------------------------------------> dtscore
 #endregion ---------------------------------------------------------> Messages
 
 
 #region ---------------------------------------------------------> Date & Time
-# dtFormat = '%Y%m%d-%H%M%S'
+dtFormat = '%Y%m%d-%H%M%S'
 #endregion ------------------------------------------------------> Date & Time
 
 
@@ -598,8 +603,8 @@ sWinRegular = (990, 775)
 # #------------------------------> Plot Window
 # sWinPlot = (560, 560)
 # sWinModPlot = (1100, 625)
-# #------------------------------> wx.TextCtrl
-# sTc = (50, 22)
+#------------------------------> wx.TextCtrl
+sTc = (50, 22)
 # #------------------------------> wx.ListCtrl
 # sLCtrlColI = [50, 150]
 #endregion ------------------------------------------------------------> Sizes

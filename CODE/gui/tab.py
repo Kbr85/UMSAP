@@ -159,7 +159,7 @@ class BaseConfTab(wx.Panel):
 
 
 # class ResControlExp(wx.Panel):
-#     """Creates the panel containig the panes for the dialog Results - Control
+#     """Creates the panel containing the panes for the dialog Results - Control
 #         Experiments
 
 #         Parameters
@@ -173,7 +173,7 @@ class BaseConfTab(wx.Panel):
 
 #         Attributes
 #         ----------
-#         dWidget : ditc of methods
+#         dWidget : dict of methods
 #             Methods to create the configuration panel
 #     """
 #     #region -----------------------------------------------------> Class setup

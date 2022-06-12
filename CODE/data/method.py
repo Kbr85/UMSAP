@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 # import itertools
 import traceback
+from datetime import datetime
 
 # import pandas as pd
 # import numpy as np
@@ -25,7 +26,7 @@ import traceback
 # from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 # from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
-# import config.config as config
+import config.config as mConfig
 # import dtscore.data_method as dtsMethod
 # import dtscore.statistic as dtsStatistic
 #endregion ----------------------------------------------------------> Imports
@@ -85,6 +86,18 @@ def StrException(
     #endregion ------------------------------------------------------> Message
     
     return msg 
+#---
+
+
+def StrNow(dtFormat: str=mConfig.dtFormat) -> str:
+    """Get a formatted datetime.now() string.
+
+        Returns
+        -------
+        str:
+            The now date time as 20210112-140137.
+    """
+    return datetime.now().strftime(dtFormat)
 #---
 #endregion ---------------------------------------------------> String methods
 
