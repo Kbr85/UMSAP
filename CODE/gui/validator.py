@@ -194,216 +194,225 @@ class OutputFF(wx.Validator):
 #---
 
 
-# class IsNotEmpty(wx.Validator):
-#     """Check wx widget has a value different than ''	"""
-#     #region --------------------------------------------------> Instance Setup
-#     def __init__(self) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
-#     #---
-#     #endregion -----------------------------------------------> Instance Setup
+class IsNotEmpty(wx.Validator):
+    """Check wx widget has a value different than ''"""
+    #region --------------------------------------------------> Instance Setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+    #---
+    #endregion -----------------------------------------------> Instance Setup
 
-#     #region ------------------------------------------------> Override Methods
-#     def Clone(self) -> wx.Validator:
-#         """ Overridden method """
-#         return IsNotEmpty()
-#     #---
+    #region ------------------------------------------------> Override Methods
+    def Clone(self) -> wx.Validator:
+        """ Overridden method """
+        return IsNotEmpty()
+    #---
 
-#     def Validate(self) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
-#         """ Overridden method """
-#         #region ---------------------------------------------------> Get value
-#         value = self.GetWindow().GetValue()
-#         #endregion ------------------------------------------------> Get value
-        
-#         #region ----------------------------------------------------> Validate
-#         if value != '':
-#             return (True, None)
-#         else:
-#             return (False, ('Empty', str(value), config.mEmpty))
-#         #endregion -------------------------------------------------> Validate
-#     #---
-    
-#     def TransferToWindow(self):
-#         """To use it with wx.Dialog"""
-#         return True
-#     #---
+    def Validate(self) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+        """ Overridden method """
+        #region ---------------------------------------------------> Get value
+        value = self.GetWindow().GetValue()
+        #endregion ------------------------------------------------> Get value
 
-#     def TransferFromWindow(self):
-#         """To use it with wx.Dialog"""
-#         return True
-#     #---
-#     #endregion ---------------------------------------------> Override Methods
-# #---
+        #region ----------------------------------------------------> Validate
+        if value != '':
+            return (True, None)
+        else:
+            return (False, ('Empty', str(value), mConfig.mEmpty))
+        #endregion -------------------------------------------------> Validate
+    #---
+
+    def TransferToWindow(self):
+        """To use it with wx.Dialog"""
+        return True
+    #---
+
+    def TransferFromWindow(self):
+        """To use it with wx.Dialog"""
+        return True
+    #---
+    #endregion ---------------------------------------------> Override Methods
+#---
 
 
-# class NumberList(wx.Validator):
-#     """Checks window holds a list of numbers or just one. Ranges (5-9) are 
-#         supported. Number of elements in the final list are checked after ranges
-#         are expanded.
+class NumberList(wx.Validator):
+    """Checks window holds a list of numbers or just one. Ranges (5-9) are 
+        supported. Number of elements in the final list are checked after ranges
+        are expanded.
 
-#         Parameters
-#         ----------
-#         numType : str
-#             One of 'int' or 'float'. Default is 'int'
-#         unique : boolean
-#             Elements must be unique (True) or not
-#         sep : str
-#             List elements are separated by sep. Default ' '
-#         opt : boolean
-#             To allow for empty fields
-#         vMin : float or None
-#             Elements in the list must be >= vMin
-#         vMax : float or None
-#             Elements in the list must be <= vMax
-#         nMin : int or None
-#             List must contain at least nMin elements
-#         nN : int or None
-#             List must contain exactly nN elements
-#         nMax : int or None
-#             List must contain maximum nMax elements
+        Parameters
+        ----------
+        numType : str
+            One of 'int' or 'float'. Default is 'int'
+        unique : boolean
+            Elements must be unique (True) or not
+        sep : str
+            List elements are separated by sep. Default ' '
+        opt : boolean
+            To allow for empty fields
+        vMin : float or None
+            Elements in the list must be >= vMin
+        vMax : float or None
+            Elements in the list must be <= vMax
+        nMin : int or None
+            List must contain at least nMin elements
+        nN : int or None
+            List must contain exactly nN elements
+        nMax : int or None
+            List must contain maximum nMax elements
             
-#         Return by Validate method
-#         -------------------------
-#         tuple
-#             - (True, None)
-#             - (False, (code, val, msg))
-#                 code val are:
-#                 - (NotOptional, None) : Sting is not optional
-#                 - (BadElement, str) : Value not valid
-#                 - (ListLengthE, None) : Only x values are accepted
-#                 - (ListLengthR, None) : Only x to y values are accepted
-#                 - (NotUnique, list) : list is the list of repeated elements
-#                 - (ExceptionRaised, ExceptionName): Check method raised an exception.
+        Return by Validate method
+        -------------------------
+        tuple
+            - (True, None)
+            - (False, (code, val, msg))
+                code val are:
+                - (NotOptional, None) : Sting is not optional
+                - (BadElement, str) : Value not valid
+                - (ListLengthE, None) : Only x values are accepted
+                - (ListLengthR, None) : Only x to y values are accepted
+                - (NotUnique, list) : list is the list of repeated elements
+                - (ExceptionRaised, ExceptionName): Check method raised an exception.
 
-#         Attributes
-#         ----------
-#         numType : str
-#             One of 'int' or 'float'. Default is 'int'
-#         unique : boolean
-#             Elements must be unique (True) or not
-#         sep : str
-#             List elements are separated by sep. Default ' '
-#         opt : boolean
-#             To allow for empty fields
-#         vMin : float or None
-#             Elements in the list must be >= vMin
-#         vMax : float or None
-#             Elements in the list must be <= vMax
-#         nMin : int or None
-#             List must contain at least nMin elements
-#         nN : int or None
-#             List must contain exactly nN elements
-#         nMax : int or None
-#             List must contain maximum nMax elements
+        Attributes
+        ----------
+        numType : str
+            One of 'int' or 'float'. Default is 'int'
+        unique : boolean
+            Elements must be unique (True) or not
+        sep : str
+            List elements are separated by sep. Default ' '
+        opt : boolean
+            To allow for empty fields
+        vMin : float or None
+            Elements in the list must be >= vMin
+        vMax : float or None
+            Elements in the list must be <= vMax
+        nMin : int or None
+            List must contain at least nMin elements
+        nN : int or None
+            List must contain exactly nN elements
+        nMax : int or None
+            List must contain maximum nMax elements
 
-#         Raises
-#         ------
-#         InputError:
-#             - When numType is not in config.oNumType.keys()
-#     """
-#     #region --------------------------------------------------> Instance Setup
-#     def __init__(
-#         self, numType: Literal['int', 'float']='int', unique: bool=True, 
-#         sep: str=',', opt: bool=False, vMin: Optional[float]=None, 
-#         vMax: Optional[float]=None, nMin: Optional[int]=None, 
-#         nN: Optional[int]=None, nMax: Optional[int]=None,
-#         ) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.numType = numType
-#         self.unique  = unique
-#         self.sep     = sep
-#         self.opt     = opt
-#         self.vMin    = vMin
-#         self.vMax    = vMax
-#         self.nMin    = nMin
-#         self.nN      = nN
-#         self.nMax    = nMax
-        
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
-#     #---
-#     #endregion -----------------------------------------------> Instance Setup
+        Raises
+        ------
+        InputError:
+            - When numType is not in config.oNumType.keys()
+    """
+    #region --------------------------------------------------> Instance Setup
+    def __init__(
+        self,
+        numType: mConfig.litNumType='int',
+        unique: bool=True,
+        sep: str=',',
+        opt: bool=False,
+        vMin: Optional[float]=None,
+        vMax: Optional[float]=None,
+        nMin: Optional[int]=None,
+        nN: Optional[int]=None,
+        nMax: Optional[int]=None,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rNumType: mConfig.litNumType = numType
+        self.rUnique  = unique
+        self.rSep     = sep
+        self.rOpt     = opt
+        self.rVMin    = vMin
+        self.rVMax    = vMax
+        self.rNMin    = nMin
+        self.rNN      = nN
+        self.rNMax    = nMax
+        #------------------------------>
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+    #---
+    #endregion -----------------------------------------------> Instance Setup
 
-#     #region ------------------------------------------------> Override Methods
-#     def Clone(self) -> wx.Validator:
-#         """ Overridden method """
-#         return NumberList(
-#             numType = self.numType,
-#             unique  = self.unique,
-#             sep     = self.sep,
-#             opt     = self.opt,
-#             vMin    = self.vMin,
-#             vMax    = self.vMax,
-#             nMin    = self.nMin,
-#             nN      = self.nN,
-#             nMax    = self.nMax,
-#         )
-#     #---
+    #region ------------------------------------------------> Override Methods
+    def Clone(self) -> wx.Validator:
+        """ Overridden method """
+        return NumberList(
+            numType = self.rNumType,
+            unique  = self.rUnique,
+            sep     = self.rSep,
+            opt     = self.rOpt,
+            vMin    = self.rVMin,
+            vMax    = self.rVMax,
+            nMin    = self.rNMin,
+            nN      = self.rNN,
+            nMax    = self.rNMax,
+        )
+    #---
 
-#     def Validate(
-#         self, vMin: Optional[float]=None, vMax: Optional[float]=None, 
-#         nMin: Optional[int]=None, nN: Optional[int]=None, 
-#         nMax: Optional[int]=None,
-#         ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
-#         """ Validate widget value.  Parameters allow to give these values just
-#             before validation.
-            
-#             Parameters
-#             ----------
-#             vMin : float or None
-#                 Elements in the list must be >= vMin
-#             vMax : float or None
-#                 Elements in the list must be <= vMax
-#             nMin : int or None
-#                 List must contain at least nMin elements
-#             nN : int or None
-#                 List must contain exactly nN elements
-#             nMax : int or None
-#                 List must contain maximum nMax elements
-#         """
-#         #region ---------------------------------------------------> Variables
-#         tvMin = vMin if vMin is not None else self.vMin
-#         tvMax = vMax if vMax is not None else self.vMax
-#         tnMin = nMin if nMin is not None else self.nMin
-#         tnN   = nN if nN is not None else self.nN
-#         tnMax = nMax if nMax is not None else self.nMax
-#         #------------------------------> 
-#         value    = self.GetWindow().GetValue()
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ----------------------------------------------------> Validate
-#         try:
-#             return dtsCheck.NumberList(
-#                 value,
-#                 numType = self.numType,
-#                 unique  = self.unique,
-#                 sep     = self.sep,
-#                 opt     = self.opt,
-#                 vMin    = tvMin,
-#                 vMax    = tvMax,
-#                 nMin    = tnMin,
-#                 nN      = tnN,
-#                 nMax    = tnMax,
-#             )
-#         except Exception as e:
-#             return (False, ('ExceptionRaised', type(e).__name__, str(e)))
-#         #endregion -------------------------------------------------> Validate
-#     #---
+    def Validate(
+        self, 
+        vMin: Optional[float]=None, 
+        vMax: Optional[float]=None, 
+        nMin: Optional[int]=None, 
+        nN: Optional[int]=None, 
+        nMax: Optional[int]=None,
+        ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+        """ Validate widget value. Parameters allow to give these values just
+            before validation.
 
-#     def TransferToWindow(self):
-#         """To use it with wx.Dialog"""
-#         return True
-#     #---
+            Parameters
+            ----------
+            vMin : float or None
+                Elements in the list must be >= vMin
+            vMax : float or None
+                Elements in the list must be <= vMax
+            nMin : int or None
+                List must contain at least nMin elements
+            nN : int or None
+                List must contain exactly nN elements
+            nMax : int or None
+                List must contain maximum nMax elements
+        """
+        #region ---------------------------------------------------> Variables
+        tvMin = vMin if vMin is not None else self.rVMin
+        tvMax = vMax if vMax is not None else self.rVMax
+        tnMin = nMin if nMin is not None else self.rNMin
+        tnN   = nN if nN is not None else self.rNN
+        tnMax = nMax if nMax is not None else self.rNMax
+        #------------------------------> 
+        value    = self.GetWindow().GetValue()
+        #endregion ------------------------------------------------> Variables
 
-#     def TransferFromWindow(self):
-#         """To use it with wx.Dialog"""
-#         return True
-#     #---
-#     #endregion ---------------------------------------------> Override Methods
-# #---
+        #region ----------------------------------------------------> Validate
+        try:
+            return mCheck.NumberList(
+                value,
+                numType = self.rNumType,
+                unique  = self.rUnique,
+                sep     = self.rSep,
+                opt     = self.rOpt,
+                vMin    = tvMin,
+                vMax    = tvMax,
+                nMin    = tnMin,
+                nN      = tnN,
+                nMax    = tnMax,
+            )
+        except Exception as e:
+            return (False, ('ExceptionRaised', type(e).__name__, str(e)))
+        #endregion -------------------------------------------------> Validate
+    #---
+
+    def TransferToWindow(self):
+        """To use it with wx.Dialog"""
+        return True
+    #---
+
+    def TransferFromWindow(self):
+        """To use it with wx.Dialog"""
+        return True
+    #---
+    #endregion ---------------------------------------------> Override Methods
+#---
 
 
 # class Comparison(wx.Validator):

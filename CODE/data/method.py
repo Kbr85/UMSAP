@@ -18,6 +18,7 @@
 # import itertools
 import traceback
 from datetime import datetime
+from typing import Union
 
 # import pandas as pd
 # import numpy as np
@@ -29,6 +30,7 @@ from datetime import datetime
 import config.config as mConfig
 # import dtscore.data_method as dtsMethod
 # import dtscore.statistic as dtsStatistic
+import data.exception as mException
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -100,6 +102,81 @@ def StrNow(dtFormat: str=mConfig.dtFormat) -> str:
     return datetime.now().strftime(dtFormat)
 #---
 #endregion ---------------------------------------------------> String methods
+
+
+#region ------------------------------------------------------> Number methods
+def ExpandRange(
+    r: str, numType: mConfig.litNumType='int'
+    ) -> Union[list[int], list[float]]:
+    """Expand a range of numbers: '4-7' --> [4,5,6,7]. Only positive integers 
+        are supported.
+
+        Parameters
+        ----------
+        r : str
+            String containing the range
+        numType : str
+            One of 'int', 'float'. For the case where r is not a range
+
+        Returns
+        -------
+        list of int
+
+        Examples
+        --------
+        >>> ExpandRange('0-15', 'int')
+        >>> [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+        >>> ExpandRange('-5.4', 'float')
+        >>> [-5.4]
+    """
+    #region -------------------------------------------------> Expand & Return
+    #------------------------------> Remove flanking empty characters
+    tr = r.strip()
+    #------------------------------> Expand
+    if '-' in tr:
+        #------------------------------> Range
+        #--------------> Catch more than one - in range
+        try:
+            a,b = tr.split('-')
+        except ValueError:
+            raise mException.InputError(mConfig.mRangeNumIE.format(r))
+        #-------------->  Check a value
+        if a == '':
+            #--> Negative number
+            try:
+                return [mConfig.oNumType[numType](tr)]
+            except ValueError:
+                raise mException.InputError(mConfig.mRangeNumIE.format(r))
+        else:
+            pass
+        #-------------->  Check b
+        if b == '':
+            #--> range like 4-
+            raise mException.InputError(mConfig.mRangeNumIE.format(r))
+        else:
+            pass
+        #--------------> Expand range
+        #--> Convert to int
+        try:
+            a = int(a)
+            b = int(b)
+        except ValueError:
+            raise mException.InputError(mConfig.mRangeNumIE.format(r))
+        #--> Expand range
+        if a < b:
+            return [x for x in range(a, b+1, 1)]
+        else:
+            raise mException.InputError(mConfig.mRangeNumIE.format(r))
+    else:
+        #------------------------------> Positive number
+        try:
+            return [mConfig.oNumType[numType](tr)]
+        except ValueError:
+            raise mException.InputError(mConfig.mRangeNumIE.format(r))
+    #endregion ----------------------------------------------> Expand & Return
+#---
+#endregion ---------------------------------------------------> Number methods
+
 
 
 #region -------------------------------------------------------------> Methods

@@ -48,8 +48,8 @@ if os == 'Darwin':
 #     #------------------------------> Statusbar split size
 #     sbPlot2Fields = [-1, 115]
 #     sbPlot3Fields = [-1, -1, 115] 
-#     #------------------------------> Key for shortcuts
-#     copyShortCut = 'Cmd'
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Cmd'
     #------------------------------> Delta space between consecutive windows
     deltaWin = 23
     #------------------------------> 
@@ -67,8 +67,8 @@ elif os == 'Windows':
 #     #------------------------------> Statusbar split size
 #     sbPlot2Fields = [-1, 115]
 #     sbPlot3Fields = [-1, -1, 115] 
-#     #------------------------------> Key for shortcuts
-#     copyShortCut = 'Ctrl'
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
     deltaWin = 20
     #------------------------------> 
@@ -82,8 +82,8 @@ else:
 #     #------------------------------> Statusbar split size
 #     sbPlot2Fields = [-1, 115]
 #     sbPlot3Fields = [-1, -1, 115] 
-#     #------------------------------> Key for shortcuts
-#     copyShortCut = 'Ctrl'
+    #------------------------------> Key for shortcuts
+    copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
     deltaWin = 20
     #------------------------------> 
@@ -113,7 +113,7 @@ nwMain          = 'Analysis Setup'
 # nwProtProf      = 'ProtProfPlot'
 # nwLimProt       = 'LimProtPlot'
 # nwTarProt       = 'TarProtPlot'
-# nwCheckDataPrep = 'CheckDataPrep'
+nwCheckDataPrep = 'Data Preparation'
 # nwAAPlot        = 'AAPlot'
 # nwHistPlot      = 'HistPlot'
 # nwCpRPlot       = 'CpRPlot'
@@ -272,8 +272,8 @@ lnPaneConf = 'Configuration Options'
 # lnListPane = 'Data File Content'
 # #------------------------------> wx.Button
 # lBtnTypeResCtrl = 'Type Values'
-# #------------------------------> wx.ListCtrl
-# lLCtrlColNameI = ['#', 'Name']
+#------------------------------> wx.ListCtrl
+lLCtrlColNameI = ['#', 'Name']
 # #------------------------------> wx.StaticBox
 # lStProtProfCond = 'Conditions'
 # lStProtProfRP   = 'Relevant Points'
@@ -331,49 +331,49 @@ lPdError = 'Fatal Error'
 #     f"used for the control and experiment.")
 # ttStIntensity = ('Specify if intensities are raw intensity values or are '
 #     'already expressed as a ratio (SILAC, TMT/iTRAQ).')
-# #------------------------------> wx.ListCtrl
-# ttLCtrlCopyNoMod = (
-#     f"Selected rows can be copied ({copyShortCut}+C) but "
-#     f"the table cannot be modified."
-# )
-# ttLCtrlPasteMod = (
-#     f"New rows can be pasted ({copyShortCut}+V) after the "
-#     f"last selected element and existing ones cut/deleted "
-#     f"({copyShortCut}+X) or copied "
-#     f"({copyShortCut}+C)."    
-# )
+#------------------------------> wx.ListCtrl
+ttLCtrlCopyNoMod = (
+    f"Selected rows can be copied ({copyShortCut}+C) but "
+    f"the table cannot be modified."
+)
+ttLCtrlPasteMod = (
+    f"New rows can be pasted ({copyShortCut}+V) after the "
+    f"last selected element and existing ones cut/deleted "
+    f"({copyShortCut}+X) or copied "
+    f"({copyShortCut}+C)."    
+)
 ttSectionRightClick = (
     'The content of the Section can be deleted with a right click.')
 #endregion ---------------------------------------------------------> Tooltips
 
 
 #region -------------------------------------------------------------> Options
-# oNumType = { 
-#     'int'  : int,
-#     'float': float,
-# }
+oNumType = { 
+    'int'  : int,
+    'float': float,
+}
 oYesNo = {
-    'Empty': '',
-    'Yes'  : True,
-    'No'   : False,
+    ''   : '',
+    'Yes': True,
+    'No' : False,
 }
 oTransMethod = {
-    'Empty': '',
-    'None' : 'None',
-    'Log2' : 'Log2',
+    ''    : '',
+    'None': 'None',
+    'Log2': 'Log2',
 }
 oNormMethod = {
-    'Empty' : '',
+    ''      : '',
     'None'  : 'None',
     'Median': 'Median',
 }
 oImputation = {
-    'Empty'              : '',
+    ''                   : '',
     'None'               : 'None',
     'Normal Distribution': 'ND',
 }
 oCorrMethod = {
-    'Empty'   : '',
+    ''        : '',
     'Pearson' : 'Pearson',
     'Kendall' : 'Kendall',
     'Spearman': 'Spearman',
@@ -421,6 +421,7 @@ oCorrMethod = {
 #region --------------------------------------------------------> Literal
 litFFSelect = Literal['openO', 'openM', 'save', 'folder']
 litFoF      = Literal['file', 'folder']
+litNumType  = Literal['int', 'float']
 #endregion -----------------------------------------------------> Literal
 
 
@@ -544,12 +545,11 @@ mFileRead = 'An error occurred when reading file:\n{}'
 # mCtrlEmpty = 'None of the Control fields can be empty.'
 #endregion -------------------------------------------------> For CheckInput
 
-#region ---------------------------------------------------> dtscore
 # #------------------------------> 
 # mCompNYI = "Comparison method is not yet implemented: {}."
 # mPDFilterByCol  = "Filtering process failed."
 # mWriteFilesIO = "The selected files could not be written to: {}"
-# mRangeNumIE = "Invalid range or number: {}"
+mRangeNumIE = "Invalid range or number: {}"
 # mNotIterable = "{} must be iterable but the given value ({}) is not."
 # mpdReplaceVal = ("It was not possible to replace {} values with {}.")
 # mPDExcludeCol  = "Exclusion process failed."
@@ -558,17 +558,17 @@ mFileRead = 'An error occurred when reading file:\n{}'
 # mMsgTypeIE = (
 #     f"Options for message mode are: {*oMsgType,}. "
 #     "Option {} is unknown.")
-# mwxLCtrNoCopy     = "The elements of this list cannot be copied."
-mCopyFailedW     = f"Copy operation failed. Try again."
-# mwxLCtrNoChange   = "This list cannot be modified."
-# mPasteFailedW    = f"Paste operation failed. Try again."
-# mNothingToPasteW = f"Nothing to paste."
-# mwxLCtrlNColPaste = (
-#     "The clipboard content cannot be pasted because the number of "
-#     "columns being pasted is different to the number of columns "
-#     "in the list."
-# )
-# mInvalidValue = "'{}' is an invalid value."
+mwxLCtrNoCopy    = "The elements of this list cannot be copied."
+mCopyFailedW     = "Copy operation failed. Try again."
+mwxLCtrNoChange  = "This list cannot be modified."
+mPasteFailedW    = "Paste operation failed. Try again."
+mNothingToPasteW = "Nothing to paste."
+mwxLCtrlNColPaste = (
+    "The clipboard content cannot be pasted because the number of "
+    "columns being pasted is different to the number of columns "
+    "in the list."
+)
+mInvalidValue = "'{}' is an invalid value."
 # mPDSelCol  = "The specified columns {} were not found in the dataframe."
 # mTransMethodIE = (
 #     f"Options for transformation method are: {*oTransMethod,}. "
@@ -587,8 +587,7 @@ mCopyFailedW     = f"Copy operation failed. Try again."
 # m1IntGET = ('{} must be an integer greater/equal than/to {}.')
 # mNotImplemented = 'Option {} is not yet implemented.'
 mNotSupported = "{} value '{}' is not supported."
-# mEmpty = 'The field value cannot be empty.'
-#endregion ------------------------------------------------> dtscore
+mEmpty = 'The field value cannot be empty.'
 #endregion ---------------------------------------------------------> Messages
 
 
@@ -598,15 +597,15 @@ dtFormat = '%Y%m%d-%H%M%S'
 
 
 #region ---------------------------------------------------------------> Sizes
-#------------------------------> Full Windows 
+#------------------------------> Full Windows
 sWinRegular = (990, 775)
 # #------------------------------> Plot Window
 # sWinPlot = (560, 560)
 # sWinModPlot = (1100, 625)
 #------------------------------> wx.TextCtrl
 sTc = (50, 22)
-# #------------------------------> wx.ListCtrl
-# sLCtrlColI = [50, 150]
+#------------------------------> wx.ListCtrl
+sLCtrlColI = [50, 150]
 #endregion ------------------------------------------------------------> Sizes
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
 
@@ -639,8 +638,8 @@ general = { # General options
 #     '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
 # ]
 
-# color = { # Colors for the app
-#     'Zebra' : '#ffe6e6',
+color = { # Colors for the app
+    'Zebra' : '#ffe6e6',
 #     'RecProt' : 'gray',
 #     'NatProt' : '#c94c4c',
 #     nuCorrA : { # Color for plot in Correlation Analysis
@@ -688,16 +687,16 @@ general = { # General options
 #     nwCpRPlot : {
 #         'Spot' : colorFragments,
 #     },
-# }
+}
 #endregion -----------------------------------------------------------> Colors
 
 
 #region --------------------------------------------------------------> Values
-# values = {
-#     nwCheckDataPrep : {
-#         'Shift' : '1.8',
-#         'Width' : '0.3',
-#     }
-# }
+values = {
+    nwCheckDataPrep : {
+        'Shift' : '1.8',
+        'Width' : '0.3',
+    }
+}
 #endregion -----------------------------------------------------------> Values
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS

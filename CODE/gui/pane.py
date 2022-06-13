@@ -19,7 +19,7 @@
 # from collections import namedtuple
 # import shutil
 # from pathlib import Path
-# from typing import Optional, Union
+from typing import Union
 
 # import numpy as np
 # import pandas as pd
@@ -159,15 +159,15 @@ class BaseConfPanel(
         self.cLColumnBox   = getattr(self, 'cLColumnBox',   'Column Numbers')
         self.cLuFile       = getattr(self, 'cLuFile',       'UMSAP')
         self.cLiFile       = getattr(self, 'cLiFile',       'Data')
-        # self.cLId          = getattr(self, 'cLId',          'Analysis ID')
+        self.cLId          = getattr(self, 'cLId',          'Analysis ID')
         # self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD',  '0s Missing')
-        # self.cLNormMethod  = getattr(self, 'cLNormMethod',  'Normalization')
-        # self.cLTransMethod = getattr(self, 'cLTransMethod', 'Transformation')
-        # self.cLImputation  = getattr(self, 'cLImputation',  'Imputation')
-        # self.cLShift       = getattr(self, 'cLShift',       'Shift')
-        # self.cLWidth       = getattr(self, 'cLWidth',       'Width')
-        # self.cLCeroTreat   = getattr(
-        #     self, 'cLCeroTreat', 'Treat 0s as missing values')
+        self.cLNormMethod  = getattr(self, 'cLNormMethod',  'Normalization')
+        self.cLTransMethod = getattr(self, 'cLTransMethod', 'Transformation')
+        self.cLImputation  = getattr(self, 'cLImputation',  'Imputation')
+        self.cLShift       = getattr(self, 'cLShift',       'Shift')
+        self.cLWidth       = getattr(self, 'cLWidth',       'Width')
+        self.cLCeroTreat   = getattr(
+            self, 'cLCeroTreat', 'Treat 0s as missing values')
         # # For Progress Dialog
         # self.cLPdCheck    = getattr(self, 'cLPdCheck',  'Checking user input: ')
         # self.cLPdPrepare  = getattr(self, 'cLPdPrepare', 'Preparing analysis: ')
@@ -181,20 +181,19 @@ class BaseConfPanel(
         #     self, 'cLPdReadFile', 'Reading input files: ')
         # #------------------------------> Size
         # self.cSTc = getattr(self, 'cSTc', mConfig.sTc)
-        # #------------------------------> Choices
-        # self.cOCero = getattr(self, 'cOCero', list(mConfig.oYesNo.keys()))
-        # self.cONorm = getattr(self, 'cONorm', list(mConfig.oNormMethod.keys()))
-        # self.cOTrans = getattr(
-        #     self, 'cOTrans', list(mConfig.oTransMethod.keys()))
-        # self.cOImputation = getattr(
-        #     self, 'cOImputation', list(mConfig.oImputation.keys()))
+        #------------------------------> Choices
+        self.cOCero = getattr(self, 'cOCero', list(mConfig.oYesNo.keys()))
+        self.cONorm = getattr(self, 'cONorm', list(mConfig.oNormMethod.keys()))
+        self.cOTrans = getattr(
+            self, 'cOTrans', list(mConfig.oTransMethod.keys()))
+        self.cOImputation = getattr(
+            self, 'cOImputation', list(mConfig.oImputation.keys()))
         # #------------------------------> Hints
         self.cHuFile = getattr(
             self, 'cHuFile', f"Path to the {self.cLuFile} file")
         self.cHiFile = getattr(
             self, 'cHiFile', f"Path to the {self.cLiFile} file")
-        # self.cHId    = getattr(self, 'cHId', 'e.g. HIV inhibitor')
-        
+        self.cHId    = getattr(self, 'cHId', 'e.g. HIV inhibitor')
         # #------------------------------> Tooltips
         self.cTTRun = getattr(self, 'cTTRun', 'Start the analysis.')
         self.cTTHelp = getattr(
@@ -205,24 +204,24 @@ class BaseConfPanel(
             self, 'cTTuFile', f'Select the {self.cLuFile} file.')
         self.cTTiFile = getattr(
             self, 'cTTiFile', f'Select the {self.cLiFile} file.')
-        # self.cTTId  = getattr(
-        #     self, 'cTTId', ('Short text to identify the analysis. The date of '
-        #     'the analysis will be automatically included.\ne.g. HIV inhibitor'))
-        # self.cTTNormMethod = getattr(
-        #     self, 'cTTNormMethod', (f'Select the Data {self.cLNormMethod} '
-        #                             f'method.'))
-        # self.cTTTransMethod = getattr(
-        #     self, 'cTTTransMethod', (f'Select the Data {self.cLTransMethod} '
-        #                              f'method.'))
-        # self.cTTImputation  = getattr(
-        #     self, 'cTTImputation', (f'Select the Data {self.cLImputation} '
-        #                             f'method.'))
-        # self.cTTShift = getattr(self, 'cTTShift', (f'Factor to shift the '
-        #     f'center of the normal distribution used to replace missing. '
-        #     f'values\ne.g. 1.8'))
-        # self.cTTWidth = getattr(self, 'cTTWidth', (f'Factor to control the '
-        #     f'width of the normal distribution used to replace missing. '
-        #     f'values\ne.g. 0.3'))
+        self.cTTId  = getattr(
+            self, 'cTTId', ('Short text to identify the analysis. The date of '
+            'the analysis will be automatically included.\ne.g. HIV inhibitor'))
+        self.cTTNormMethod = getattr(
+            self, 'cTTNormMethod', (f'Select the Data {self.cLNormMethod} '
+                                    f'method.'))
+        self.cTTTransMethod = getattr(
+            self, 'cTTTransMethod', (f'Select the Data {self.cLTransMethod} '
+                                     f'method.'))
+        self.cTTImputation  = getattr(
+            self, 'cTTImputation', (f'Select the Data {self.cLImputation} '
+                                    f'method.'))
+        self.cTTShift = getattr(self, 'cTTShift', (f'Factor to shift the '
+            f'center of the normal distribution used to replace missing. '
+            f'values\ne.g. 1.8'))
+        self.cTTWidth = getattr(self, 'cTTWidth', (f'Factor to control the '
+            f'width of the normal distribution used to replace missing. '
+            f'values\ne.g. 0.3'))
         #------------------------------> URL
         self.cURL = getattr(self, 'cURL', mConfig.urlTutorial)
         #------------------------------> Extensions
@@ -230,9 +229,9 @@ class BaseConfPanel(
         #------------------------------> Validator
         self.cVuFile = getattr(self, 'cVuFile', mValidator.OutputFF(fof='file'))
         self.cViFile = getattr(self, 'cViFile', mValidator.InputFF(fof='file'))
-        # #------------------------------> Values
-        # self.cValShift = config.values[config.nwCheckDataPrep]['Shift']
-        # self.cValWidth = config.values[config.nwCheckDataPrep]['Width']
+        #------------------------------> Values
+        self.cValShift = mConfig.values[mConfig.nwCheckDataPrep]['Shift']
+        self.cValWidth = mConfig.values[mConfig.nwCheckDataPrep]['Width']
         # #------------------------------> To handle Data Preparation Steps
         # self.dDataPrep = { # Keys are the messaging for the Progress Dialog
         #     "Setting Data Types"         : self.DatPrep_Float,
@@ -312,7 +311,6 @@ class BaseConfPanel(
             validator  = self.cVuFile,
             ownCopyCut = True,
         )
-
         self.wIFile = mWidget.ButtonTextCtrlFF(self.wSbFile,
             btnLabel   = self.cLiFile,
             btnTooltip = self.cTTiFile,
@@ -323,67 +321,63 @@ class BaseConfPanel(
             validator  = self.cViFile,
             ownCopyCut = True,
         )
-
-        # self.wId = dtsWidget.StaticTextCtrl(
-        #     self.sbFile,
-        #     stLabel   = self.cLId,
-        #     stTooltip = self.cTTId,
-        #     tcHint    = self.cHId,
-        #     validator = dtsValidator.IsNotEmpty(),
-        # )
-
-        # self.wCeroB = dtsWidget.StaticTextComboBox(
-        #     self.sbData,
-        #     label   = self.cLCeroTreat,
-        #     choices = self.cOCero,
-        #     tooltip = (f'Cero values in the {self.cLiFile} file will '
-        #     f'be treated as missing values when this option is set to Yes and '
-        #     f'as real values when the option is set to No.'),
-        #     validator = dtsValidator.IsNotEmpty(),
-        # )
-        
-        # self.wNormMethod = dtsWidget.StaticTextComboBox(
-        #     self.sbData, 
-        #     label     = self.cLNormMethod,
-        #     choices   = self.cONorm,
-        #     tooltip   = self.cTTNormMethod,
-        #     validator = dtsValidator.IsNotEmpty(),
-        # )
-        
-        # self.wTransMethod = dtsWidget.StaticTextComboBox(
-        #     self.sbData, 
-        #     label     = self.cLTransMethod,
-        #     choices   = self.cOTrans,
-        #     tooltip   = self.cTTTransMethod,
-        #     validator = dtsValidator.IsNotEmpty(),
-        # )
-        
-        # self.wImputationMethod = dtsWidget.StaticTextComboBox(
-        #     self.sbData, 
-        #     label     = self.cLImputation,
-        #     choices   = self.cOImputation,
-        #     tooltip   = self.cTTImputation,
-        #     validator = dtsValidator.IsNotEmpty(),
-        # )
-        # self.wShift = dtsWidget.StaticTextCtrl(
-        #     self.sbData,
-        #     stLabel   = 'Shift',
-        #     stTooltip = self.cTTShift,
-        #     tcSize    = (60,22),
-        #     tcHint    = f'e.g. {self.cValShift}',
-        #     validator = dtsValidator.NumberList('float', nN=1, vMin=0),
-        # )
-        # self.wWidth = dtsWidget.StaticTextCtrl(
-        #     self.sbData,
-        #     stLabel   = 'Width',
-        #     stTooltip = self.cTTWidth,
-        #     tcSize    = (60,22),
-        #     tcHint    = f'e.g. {self.cValWidth}',
-        #     validator = dtsValidator.NumberList('float', nN=1, vMin=0),
-        # )
+        self.wId = mWidget.StaticTextCtrl(
+            self.wSbFile,
+            stLabel   = self.cLId,
+            stTooltip = self.cTTId,
+            tcHint    = self.cHId,
+            validator = mValidator.IsNotEmpty(),
+        )
+        self.wCeroB = mWidget.StaticTextComboBox(
+            self.wSbData,
+            label   = self.cLCeroTreat,
+            choices = self.cOCero,
+            tooltip = (f'Cero values in the {self.cLiFile} file will '
+            f'be treated as missing values when this option is set to Yes and '
+            f'as real values when the option is set to No.'),
+            validator = mValidator.IsNotEmpty(),
+        )
+        self.wNormMethod = mWidget.StaticTextComboBox(
+            self.wSbData, 
+            label     = self.cLNormMethod,
+            choices   = self.cONorm,
+            tooltip   = self.cTTNormMethod,
+            validator = mValidator.IsNotEmpty(),
+        )
+        self.wTransMethod = mWidget.StaticTextComboBox(
+            self.wSbData, 
+            label     = self.cLTransMethod,
+            choices   = self.cOTrans,
+            tooltip   = self.cTTTransMethod,
+            validator = mValidator.IsNotEmpty(),
+        )
+        self.wImputationMethod = mWidget.StaticTextComboBox(
+            self.wSbData, 
+            label     = self.cLImputation,
+            choices   = self.cOImputation,
+            tooltip   = self.cTTImputation,
+            validator = mValidator.IsNotEmpty(),
+        )
+        self.wShift = mWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLShift,
+            stTooltip = self.cTTShift,
+            tcSize    = (60,22),
+            tcHint    = f'e.g. {self.cValShift}',
+            validator = mValidator.NumberList('float', nN=1, vMin=0),
+        )
+        self.wWidth = mWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLWidth,
+            stTooltip = self.cTTWidth,
+            tcSize    = (60,22),
+            tcHint    = f'e.g. {self.cValWidth}',
+            validator = mValidator.NumberList('float', nN=1, vMin=0),
+        )
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
+        #------------------------------> File
         self.sSbFileWid.Add(
             self.wUFile.wBtn,
             pos    = (0,0),
@@ -408,95 +402,95 @@ class BaseConfPanel(
             flag   = wx.EXPAND|wx.ALL,
             border = 5
         )
-        # self.sizersbFileWid.Add(
-        #     self.wId.st,
-        #     pos    = (2,0),
-        #     flag   = wx.ALIGN_CENTER|wx.ALL,
-        #     border = 5
-        # )
-        # self.sizersbFileWid.Add(
-        #     self.wId.tc,
-        #     pos    = (2,1),
-        #     flag   = wx.EXPAND|wx.ALL,
-        #     border = 5
-        # )
+        self.sSbFileWid.Add(
+            self.wId.wSt,
+            pos    = (2,0),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 5
+        )
+        self.sSbFileWid.Add(
+            self.wId.wTc,
+            pos    = (2,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
         self.sSbFileWid.AddGrowableCol(1,1)
         self.sSbFileWid.AddGrowableRow(0,1)
-        
-        # self.sCeroTreat = wx.BoxSizer(wx.HORIZONTAL)
-        # self.sCeroTreat.Add(self.wCeroB.st, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-        # self.sCeroTreat.Add(self.wCeroB.cb, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-        
-        # self.sImpNorm = wx.BoxSizer(wx.HORIZONTAL)
-        # self.sImpNorm.Add(self.wShift.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-        # self.sImpNorm.Add(self.wShift.tc, 0, wx.EXPAND|wx.ALL, 5)
-        # self.sImpNorm.Add(self.wWidth.st, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-        # self.sImpNorm.Add(self.wWidth.tc, 0, wx.EXPAND|wx.ALL, 5)
-        
-        # self.sizersbDataWid.Add(
-        #     1, 1,
-        #     pos    = (0,0),
-        #     flag   = wx.EXPAND|wx.ALL,
-        #     border = 5
-        # )
-        # self.sizersbDataWid.Add(
-        #     self.sCeroTreat,
-        #     pos    = (0,1),
-        #     flag   = wx.ALIGN_CENTER|wx.ALL,
-        #     border = 5,
-        #     span   = (0, 6),
-        # )
-        # self.sizersbDataWid.Add(
-        #     self.wTransMethod.st,
-        #     pos    = (1,1),
-        #     flag   = wx.ALL|wx.ALIGN_CENTER,
-        #     border = 5,
-        # )
-        # self.sizersbDataWid.Add(
-        #     self.wTransMethod.cb,
-        #     pos    = (1,2),
-        #     flag   = wx.ALL|wx.EXPAND,
-        #     border = 5,
-        # )
-        # self.sizersbDataWid.Add(
-        #     self.wNormMethod.st,
-        #     pos    = (1,3),
-        #     flag   = wx.ALL|wx.ALIGN_CENTER,
-        #     border = 5,
-        # )
-        # self.sizersbDataWid.Add(
-        #     self.wNormMethod.cb,
-        #     pos    = (1,4),
-        #     flag   = wx.ALL|wx.EXPAND,
-        #     border = 5,
-        # )
-        # self.sizersbDataWid.Add(
-        #     self.wImputationMethod.st,
-        #     pos    = (1,5),
-        #     flag   = wx.ALL|wx.ALIGN_CENTER,
-        #     border = 5,
-        # )
-        # self.sizersbDataWid.Add(
-        #     self.wImputationMethod.cb,
-        #     pos    = (1,6),
-        #     flag   = wx.ALL|wx.EXPAND,
-        #     border = 5,
-        # )
-        # self.sizersbDataWid.Add(
-        #     self.sImpNorm,
-        #     pos    = (2,5),
-        #     flag   = wx.ALL|wx.ALIGN_CENTER,
-        #     border = 5,
-        #     span   = (0,2),
-        # )
-        # self.sizersbDataWid.Add(
-        #     1, 1,
-        #     pos    = (0,7),
-        #     flag   = wx.EXPAND|wx.ALL,
-        #     border = 5
-        # )
-        # self.sizersbDataWid.AddGrowableCol(0,1)
-        # self.sizersbDataWid.AddGrowableCol(7,1)
+        #------------------------------> Data
+        self.sCeroTreat = wx.BoxSizer(wx.HORIZONTAL)
+        self.sCeroTreat.Add(self.wCeroB.wSt, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sCeroTreat.Add(self.wCeroB.wCb, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+
+        self.sImpNorm = wx.BoxSizer(wx.HORIZONTAL)
+        self.sImpNorm.Add(self.wShift.wSt, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+        self.sImpNorm.Add(self.wShift.wTc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sImpNorm.Add(self.wWidth.wSt, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+        self.sImpNorm.Add(self.wWidth.wTc, 0, wx.EXPAND|wx.ALL, 5)
+
+        self.sSbDataWid.Add(
+            1, 1,
+            pos    = (0,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sSbDataWid.Add(
+            self.sCeroTreat,
+            pos    = (0,1),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 5,
+            span   = (0, 6),
+        )
+        self.sSbDataWid.Add(
+            self.wTransMethod.wSt,
+            pos    = (1,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER,
+            border = 5,
+        )
+        self.sSbDataWid.Add(
+            self.wTransMethod.wCb,
+            pos    = (1,2),
+            flag   = wx.ALL|wx.EXPAND,
+            border = 5,
+        )
+        self.sSbDataWid.Add(
+            self.wNormMethod.wSt,
+            pos    = (1,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER,
+            border = 5,
+        )
+        self.sSbDataWid.Add(
+            self.wNormMethod.wCb,
+            pos    = (1,4),
+            flag   = wx.ALL|wx.EXPAND,
+            border = 5,
+        )
+        self.sSbDataWid.Add(
+            self.wImputationMethod.wSt,
+            pos    = (1,5),
+            flag   = wx.ALL|wx.ALIGN_CENTER,
+            border = 5,
+        )
+        self.sSbDataWid.Add(
+            self.wImputationMethod.wCb,
+            pos    = (1,6),
+            flag   = wx.ALL|wx.EXPAND,
+            border = 5,
+        )
+        self.sSbDataWid.Add(
+            self.sImpNorm,
+            pos    = (2,5),
+            flag   = wx.ALL|wx.ALIGN_CENTER,
+            border = 5,
+            span   = (0,2),
+        )
+        self.sSbDataWid.Add(
+            1, 1,
+            pos    = (0,7),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sSbDataWid.AddGrowableCol(0,1)
+        self.sSbDataWid.AddGrowableCol(7,1)
         #------------------------------> 
         self.sSizer = wx.BoxSizer(wx.VERTICAL)
         self.sSizer.Add(self.sSbFile,   0, wx.EXPAND|wx.ALL,       5)
@@ -505,20 +499,19 @@ class BaseConfPanel(
         self.sSizer.Add(self.sSbColumn, 0, wx.EXPAND|wx.ALL,       5)
         self.sSizer.Add(self.sBtnSizer, 0, wx.ALIGN_CENTER|wx.ALL, 5)
         #------------------------------> 
-        # self.sSizer.Hide(self.sImpNorm, recursive=True)
+        self.sSizer.Hide(self.sImpNorm, recursive=True)
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
         # self.wIFile.tc.Bind(wx.EVT_TEXT,       self.OnIFileLoad)
         # self.wIFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnIFileLoad)
         # self.wUFile.tc.Bind(wx.EVT_TEXT,       self.OnUFileChange)
-        # self.wImputationMethod.cb.Bind(wx.EVT_COMBOBOX, self.OnImpMethod)
+        self.wImputationMethod.wCb.Bind(wx.EVT_COMBOBOX, self.OnImpMethod)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
-#     #------------------------------> Class Methods
-#     #region ---------------------------------------------------> Event Methods
+    #region ---------------------------------------------------> Event Methods
 #     def OnUFileChange(self, event: wx.CommandEvent) -> bool:
 #         """Adjust the default initial path to search for input files when an 
 #             UMSAP file is selected.
@@ -604,35 +597,32 @@ class BaseConfPanel(
 
 #         return True
 #     #---
-    
-#     def OnImpMethod(self, event: Union[wx.CommandEvent, str])-> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         if self.wImputationMethod.cb.GetValue() == config.oImputation['ND']:
-#             self.sSizer.Show(self.sImpNorm, show=True, recursive=True)
-#             self.sSizer.Layout()
-#             self.SetupScrolling()
-#         else:
-#             self.sSizer.Show(self.sImpNorm, show=False, recursive=True)
-#             self.wShift.tc.SetValue(self.cValShift)
-#             self.wWidth.tc.SetValue(self.cValWidth)
-#             self.sSizer.Layout()
-#             self.SetupScrolling()
-#         return True
-#     #---
-    
+
+    def OnImpMethod(self, event: Union[wx.CommandEvent, str])-> bool:
+        """Show/Hide the Imputation options.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent or str
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        if self.wImputationMethod.wCb.GetValue() == 'Normal Distribution':
+            self.sSizer.Show(self.sImpNorm, show=True, recursive=True)
+            self.sSizer.Layout()
+            self.SetupScrolling()
+        else:
+            self.sSizer.Show(self.sImpNorm, show=False, recursive=True)
+            self.wShift.wTc.SetValue(self.cValShift)
+            self.wWidth.wTc.SetValue(self.cValWidth)
+            self.sSizer.Layout()
+            self.SetupScrolling()
+        return True
+    #---
+
 #     def OnClear(self, event) -> bool:
 #         """
     
@@ -652,7 +642,7 @@ class BaseConfPanel(
 #         self.OnImpMethod('fEvent')
 #         return True
 #     #---
-#     #endregion ------------------------------------------------> Event Methods
+    #endregion ------------------------------------------------> Event Methods
 
 #     #region ---------------------------------------------------> Other Methods
 #     def LCtrlEmpty(self) -> bool:
@@ -2861,11 +2851,11 @@ class PaneCorrA(BaseConfPanel):
         Data File.
     """
     #region -----------------------------------------------------> Class Setup
-    # #------------------------------> Label
-    # cLCorrMethod = 'Correlation Method'
+    #------------------------------> Label
+    cLCorrMethod = 'Correlation Method'
     # cLColAnalysis = config.lStColAnalysis
-    # cLNumName     = config.lLCtrlColNameI
-    # cSNumName     = config.sLCtrlColI
+    cLNumName     = mConfig.lLCtrlColNameI
+    cSNumName     = mConfig.sLCtrlColI
     #------------------------------> Needed by BaseConfPanel
     cName        = mConfig.npCorrA
     cURL         = f"{mConfig.urlTutorial}/correlation-analysis"
@@ -2884,40 +2874,121 @@ class PaneCorrA(BaseConfPanel):
         #------------------------------> Setup attributes in base class 
         super().__init__(parent)
         #endregion --------------------------------------------> Initial setup
-        
+
         #region -----------------------------------------------------> Widgets
-        # #------------------------------> dtsWidget.StaticTextComboBox
-        # self.wCorrMethod = dtsWidget.StaticTextComboBox(self.sbValue, 
-        #     label     = self.cLCorrMethod,
-        #     tooltip   = f'Select the {self.cLCorrMethod}.',
-        #     choices   = list(config.oCorrMethod.values()),
-        #     validator = dtsValidator.IsNotEmpty(),
-        # )
-        # #------------------------------> wx.StaticText
-        # self.wStListI = wx.StaticText(
-        #     self.sbColumn, label=f'Columns in the {self.cLiFile}')
-        # self.wStListO = wx.StaticText(
-        #     self.sbColumn, label=self.cLColAnalysis)
-        # #------------------------------> dtscore.ListZebra
-        # self.wLCtrlI = dtsWidget.ListZebra(self.sbColumn, 
-        #     colLabel        = self.cLNumName,
-        #     colSize         = self.cSNumName,
-        #     copyFullContent = True,
-        # )
-        # self.wLCtrlO = dtsWidget.ListZebra(self.sbColumn, 
-        #     colLabel        = self.cLNumName,
-        #     colSize         = self.cSNumName,
-        #     canPaste        = True,
-        #     canCut          = True,
-        #     copyFullContent = True,
-        # )
-        # self.rLCtrlL = [self.wLCtrlI, self.wLCtrlO]
-        # #------------------------------> wx.Button
-        # self.wAddCol = wx.Button(self.sbColumn, label='Add columns')
-        # #------------------------------> 
-        # self.wAddCol.SetBitmap(
-        #     wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD), dir = wx.RIGHT)
+        self.wCorrMethod = mWidget.StaticTextComboBox(self.wSbValue, 
+            label     = self.cLCorrMethod,
+            tooltip   = f'Select the {self.cLCorrMethod}.',
+            choices   = list(mConfig.oCorrMethod.values()),
+            validator = mValidator.IsNotEmpty(),
+        )
+        self.wStListI = wx.StaticText(
+            self.wSbColumn, label=f'Columns in the {self.cLiFile}')
+        self.wStListO = wx.StaticText(
+            self.wSbColumn, label=f'Columns to Analyze')
+        self.wLCtrlI = mWidget.MyListCtrlZebra(self.wSbColumn, 
+            colLabel        = self.cLNumName,
+            colSize         = self.cSNumName,
+            copyFullContent = True,
+        )
+        self.wLCtrlO = mWidget.MyListCtrlZebra(self.wSbColumn, 
+            colLabel        = self.cLNumName,
+            colSize         = self.cSNumName,
+            canPaste        = True,
+            canCut          = True,
+            copyFullContent = True,
+        )
+        self.rLCtrlL = [self.wLCtrlI, self.wLCtrlO]
+        self.wAddCol = wx.Button(self.wSbColumn, label='Add columns')
+        self.wAddCol.SetBitmap(
+            wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD), dir = wx.RIGHT)
         #endregion --------------------------------------------------> Widgets
+
+        #region -----------------------------------------------------> Tooltip
+        self.wStListI.SetToolTip(mConfig.ttLCtrlCopyNoMod)
+        self.wStListO.SetToolTip(mConfig.ttLCtrlPasteMod)
+        self.wAddCol.SetToolTip(f'Add selected Columns in the Data File to '
+            f'the table of Columns to Analyze. New columns will be added after '
+            f'the last selected element in Columns to Analyze. Duplicate '
+            f'columns are discarded.')
+        #endregion --------------------------------------------------> Tooltip
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Values
+        self.sSbValueWid.Add(
+            1, 1,
+            pos    = (0,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sSbValueWid.Add(
+            self.wCorrMethod.wSt,
+            pos    = (0,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wCorrMethod.wCb,
+            pos    = (0,2),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            1, 1,
+            pos    = (0,3),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sSbValueWid.AddGrowableCol(0, 1)
+        self.sSbValueWid.AddGrowableCol(3, 1)
+        #------------------------------> Columns
+        self.sSbColumnWid.Add(
+            self.wStListI,
+            pos    = (0,0),
+            flag   = wx.ALIGN_CENTRE|wx.ALL,
+            border = 5
+        )
+        self.sSbColumnWid.Add(
+            self.wStListO,
+            pos    = (0,2),
+            flag   = wx.ALIGN_CENTRE|wx.ALL,
+            border = 5
+        )
+        self.sSbColumnWid.Add(
+            self.wLCtrlI,
+            pos    = (1,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 20
+        )
+        self.sSbColumnWid.Add(
+            self.wAddCol,
+            pos    = (1,1),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 20
+        )
+        self.sSbColumnWid.Add(
+            self.wLCtrlO,
+            pos    = (1,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 20
+        )
+        self.sSbColumnWid.AddGrowableCol(0, 1)
+        self.sSbColumnWid.AddGrowableCol(2, 1)
+        self.sSbColumnWid.AddGrowableRow(1, 1)
+        #------------------------------> Main Sizer
+        #-------------->  Expand Column section
+        item = self.sSizer.GetItem(self.sSbColumn)
+        item.Proportion = 1
+        item = self.sSbColumn.GetItem(self.sSbColumnWid)
+        item.Proportion = 1
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        self.SetupScrolling()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        # self.wAddCol.Bind(wx.EVT_BUTTON, self.OnAdd)
+        #endregion -----------------------------------------------------> Bind
         
         #region ----------------------------------------------> checkUserInput
         # self.rCheckUserInput = {
@@ -2934,116 +3005,30 @@ class PaneCorrA(BaseConfPanel):
         # }
         #endregion -------------------------------------------> checkUserInput
     
-        #region -----------------------------------------------------> Tooltip
-        # self.wStListI.SetToolTip(config.ttLCtrlCopyNoMod)
-        # self.wStListO.SetToolTip(config.ttLCtrlPasteMod)
-        # self.wAddCol.SetToolTip(f'Add selected Columns in the Data File to '
-        #     f'the table of Columns to Analyse. New columns will be added after '
-        #     f'the last selected element in Columns to analyse. Duplicate '
-        #     f'columns are discarded.')
-        #endregion --------------------------------------------------> Tooltip
-
-        #region ------------------------------------------------------> Sizers
-        # #------------------------------> Expand Column section
-        # item = self.sSizer.GetItem(self.sizersbColumn)
-        # item.Proportion = 1
-        # item = self.sizersbColumn.GetItem(self.sizersbColumnWid)
-        # item.Proportion = 1
-        # #------------------------------> Values
-        # self.sizersbValueWid.Add(
-        #     1, 1,
-        #     pos    = (0,0),
-        #     flag   = wx.EXPAND|wx.ALL,
-        #     border = 5
-        # )
-        # self.sizersbValueWid.Add(
-        #     self.wCorrMethod.st,
-        #     pos    = (0,1),
-        #     flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
-        #     border = 5,
-        # )
-        # self.sizersbValueWid.Add(
-        #     self.wCorrMethod.cb,
-        #     pos    = (0,2),
-        #     flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL,
-        #     border = 5,
-        # )
-        # self.sizersbValueWid.Add(
-        #     1, 1,
-        #     pos    = (0,3),
-        #     flag   = wx.EXPAND|wx.ALL,
-        #     border = 5
-        # )
-        # self.sizersbValueWid.AddGrowableCol(0, 1)
-        # self.sizersbValueWid.AddGrowableCol(3, 1)
-        # #------------------------------> Columns
-        # self.sizersbColumnWid.Add(
-        #     self.wStListI,
-        #     pos    = (0,0),
-        #     flag   = wx.ALIGN_CENTRE|wx.ALL,
-        #     border = 5
-        # )
-        # self.sizersbColumnWid.Add(
-        #     self.wStListO,
-        #     pos    = (0,2),
-        #     flag   = wx.ALIGN_CENTRE|wx.ALL,
-        #     border = 5
-        # )
-        # self.sizersbColumnWid.Add(
-        #     self.wLCtrlI,
-        #     pos    = (1,0),
-        #     flag   = wx.EXPAND|wx.ALL,
-        #     border = 20
-        # )
-        # self.sizersbColumnWid.Add(
-        #     self.wAddCol,
-        #     pos    = (1,1),
-        #     flag   = wx.ALIGN_CENTER|wx.ALL,
-        #     border = 20
-        # )
-        # self.sizersbColumnWid.Add(
-        #     self.wLCtrlO,
-        #     pos    = (1,2),
-        #     flag   = wx.EXPAND|wx.ALL,
-        #     border = 20
-        # )
-        # self.sizersbColumnWid.AddGrowableCol(0, 1)
-        # self.sizersbColumnWid.AddGrowableCol(2, 1)
-        # self.sizersbColumnWid.AddGrowableRow(1, 1)
-        #------------------------------> Main Sizer
-        self.SetSizer(self.sSizer)
-        self.sSizer.Fit(self)
-        self.SetupScrolling()
-        #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-        # self.wAddCol.Bind(wx.EVT_BUTTON, self.OnAdd)
-        #endregion -----------------------------------------------------> Bind
-    
         #region --------------------------------------------------------> Test
-        # if config.development:
-        #     import getpass
-        #     user = getpass.getuser()
-        #     if config.os == "Darwin":
-        #         self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-        #         self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
-        #     elif config.os == 'Windows':
-        #         from pathlib import Path
-        #         self.wUFile.tc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
-        #         self.wIFile.tc.SetValue(str(Path(f'C:/Users/{user}/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt')))
-        #     else:
-        #         pass
-        #     self.wId.tc.SetValue("Beta Version Dev")
-        #     self.wCeroB.cb.SetValue("Yes")
-        #     self.wTransMethod.cb.SetValue("Log2")
-        #     self.wNormMethod.cb.SetValue("Median")
-        #     self.wImputationMethod.cb.SetValue("Normal Distribution")
-        #     self.OnImpMethod('fEvent')
-        #     self.wShift.tc.SetValue('1.8')
-        #     self.wWidth.tc.SetValue('0.3')
-        #     self.wCorrMethod.cb.SetValue("Pearson")
-        # else:
-        #     pass
+        if mConfig.development:
+            import getpass
+            user = getpass.getuser()
+            if mConfig.os == "Darwin":
+                self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
+            elif mConfig.os == 'Windows':
+                from pathlib import Path
+                self.wUFile.wTc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
+                self.wIFile.wTc.SetValue(str(Path(f'C:/Users/{user}/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt')))
+            else:
+                pass
+            self.wId.wTc.SetValue("Beta Version Dev")
+            self.wCeroB.wCb.SetValue("Yes")
+            self.wTransMethod.wCb.SetValue("Log2")
+            self.wNormMethod.wCb.SetValue("Median")
+            self.wImputationMethod.wCb.SetValue("Normal Distribution")
+            self.OnImpMethod('fEvent')
+            self.wShift.wTc.SetValue('1.8')
+            self.wWidth.wTc.SetValue('0.3')
+            self.wCorrMethod.wCb.SetValue("Pearson")
+        else:
+            pass
         #endregion -----------------------------------------------------> Test
         
         #region -------------------------------------------------------> DataI
