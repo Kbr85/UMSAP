@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, Union
 
 import wx
 
@@ -26,7 +26,7 @@ import data.exception as mException
 
 
 #region -------------------------------------------------------------> Methods
-def FastaSequence(fileP: Path) -> Iterator[tuple[str, str]]:
+def FastaSequence(fileP: Union[Path, str]) -> Iterator[tuple[str, str]]:
     """Find all sequences in a multi-FASTA file
 
         Parameters

@@ -547,9 +547,9 @@ mOneRPlusNum = f"{mValueBad}{mOneRPlusNumText}"
 # mCtrlEmpty = 'None of the Control fields can be empty.'
 #endregion -------------------------------------------------> For CheckInput
 
-# #------------------------------> 
-# mCompNYI = "Comparison method is not yet implemented: {}."
-# mPDFilterByCol  = "Filtering process failed."
+#------------------------------> 
+mCompNYI = "Comparison method is not yet implemented: {}."
+mPDFilterByCol  = "Filtering process failed."
 # mWriteFilesIO = "The selected files could not be written to: {}"
 mRangeNumIE = "Invalid range or number: {}"
 # mNotIterable = "{} must be iterable but the given value ({}) is not."

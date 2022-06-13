@@ -31,6 +31,8 @@ import wx.lib.scrolledpanel as scrolled
 import config.config as mConfig
 import data.check as mCheck
 import data.method as mMethod
+import data.exception as mException
+import data.file as mFile
 # import gui.method as gmethod
 import gui.validator as mValidator
 import gui.widget as mWidget
@@ -120,31 +122,30 @@ class BaseConfPanel(
             Folder to contain the output. Set based on the umsap file path.
         rSeqFileObj: dtsFF.FastaFile
             Object to work with the sequences of the proteins 
-        
-            
+
         Notes
         -----
         The following attributes must be set in the child class
         cGaugePD : int 
             Number of steps for the wx.Gauge in the Progress Dialog shown when 
-            running analysis        
+            running analysis.
         cName : str
-            Unique name of the pane
+            Unique name of the pane.
         cSection : str 
             Section in the UMSAP file. One of the values in config.nameModules 
-            or config.nameUtilities
+            or config.nameUtilities.
         cTitlePD : str
-            Title for the Progress Dialog shown when running analysis
+            Title for the Progress Dialog shown when running analysis.
         cURL : str 
-            URL for the Help wx.Button
+            URL for the Help wx.Button.
         rCheckUserInput : dict
             Dict to check individual fields in the user input in the correct 
             order. See CheckInput method for more details.
         rLLenLongest : int 
-            Length of the longest label in output dict
+            Length of the longest label in output dict.
         rCopyFile : dict
-            Keys are jeys in rDO and values keys in rDI. Signal input files that
-            must be copied to Data_Initial
+            Keys are keys in rDO and values keys in rDI. Signal input files that
+            must be copied to Data_Initial.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent: wx.Window, rightDelete: bool=True) -> None:
@@ -157,32 +158,34 @@ class BaseConfPanel(
         self.cTitlePD = getattr(self, 'cTitlePD', 'Default Title')
         self.cGaugePD = getattr(self, 'cGaugePD', 50)
         #------------------------------> Labels
-        self.cLFileBox     = getattr(self, 'cLFileBox',     'Files')
-        self.cLDataBox     = getattr(self, 'cLDataBox',     'Data Preparation')
+        self.cLFileBox     = getattr(self, 'cLFileBox',      'Files')
+        self.cLDataBox     = getattr(self, 'cLDataBox',      'Data Preparation')
         self.cLValueBox    = getattr(self, 'cLValueBox',  'User-defined Values')
-        self.cLColumnBox   = getattr(self, 'cLColumnBox',   'Column Numbers')
-        self.cLuFile       = getattr(self, 'cLuFile',       'UMSAP')
-        self.cLiFile       = getattr(self, 'cLiFile',       'Data')
-        self.cLId          = getattr(self, 'cLId',          'Analysis ID')
-        self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD',  '0s Missing')
-        self.cLNormMethod  = getattr(self, 'cLNormMethod',  'Normalization')
-        self.cLTransMethod = getattr(self, 'cLTransMethod', 'Transformation')
-        self.cLImputation  = getattr(self, 'cLImputation',  'Imputation')
-        self.cLShift       = getattr(self, 'cLShift',       'Shift')
-        self.cLWidth       = getattr(self, 'cLWidth',       'Width')
+        self.cLColumnBox   = getattr(self, 'cLColumnBox',    'Column Numbers')
+        self.cLuFile       = getattr(self, 'cLuFile',        'UMSAP')
+        self.cLiFile       = getattr(self, 'cLiFile',        'Data')
+        self.cLId          = getattr(self, 'cLId',           'Analysis ID')
+        self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD',   '0s Missing')
+        self.cLNormMethod  = getattr(self, 'cLNormMethod',   'Normalization')
+        self.cLTransMethod = getattr(self, 'cLTransMethod',  'Transformation')
+        self.cLImputation  = getattr(self, 'cLImputation',   'Imputation')
+        self.cLShift       = getattr(self, 'cLShift',        'Shift')
+        self.cLWidth       = getattr(self, 'cLWidth',        'Width')
+        self.cLDetectedProt = getattr(self, 'cLDetectedProt','')
+        self.cLSeqFile     = getattr(self, 'cLSeqFile',      '')
         self.cLCeroTreat   = getattr(
             self, 'cLCeroTreat', 'Treat 0s as missing values')
         #------------------------------> For Progress Dialog
         self.cLPdCheck    = getattr(self, 'cLPdCheck',  'Checking user input: ')
-        # self.cLPdPrepare  = getattr(self, 'cLPdPrepare', 'Preparing analysis: ')
+        self.cLPdPrepare  = getattr(self, 'cLPdPrepare', 'Preparing analysis: ')
         # self.cLPdRun      = getattr(self, 'cLPdRun',     'Running analysis: ')
         # self.cLPdWrite    = getattr(self, 'cLPdWrite',   'Writing output: ')
         # self.cLPdLoad     = getattr(self, 'cLPdLoad',    'Loading output file')
         self.cLPdError    = getattr(self, 'cLPdError',   mConfig.lPdError)
         self.cLPdDone     = getattr(self, 'cLPdDone',    'All Done')
         self.cLPdElapsed  = getattr(self, 'cLPdElapsed', 'Elapsed time: ')
-        # self.cLPdReadFile = getattr(
-        #     self, 'cLPdReadFile', 'Reading input files: ')
+        self.cLPdReadFile = getattr(
+            self, 'cLPdReadFile', 'Reading input files: ')
         # #------------------------------> Size
         # self.cSTc = getattr(self, 'cSTc', mConfig.sTc)
         #------------------------------> Choices
@@ -192,13 +195,13 @@ class BaseConfPanel(
             self, 'cOTrans', list(mConfig.oTransMethod.keys()))
         self.cOImputation = getattr(
             self, 'cOImputation', list(mConfig.oImputation.keys()))
-        # #------------------------------> Hints
+        #------------------------------> Hints
         self.cHuFile = getattr(
             self, 'cHuFile', f"Path to the {self.cLuFile} file")
         self.cHiFile = getattr(
             self, 'cHiFile', f"Path to the {self.cLiFile} file")
         self.cHId    = getattr(self, 'cHId', 'e.g. HIV inhibitor')
-        # #------------------------------> Tooltips
+        #------------------------------> Tooltips
         self.cTTRun = getattr(self, 'cTTRun', 'Start the analysis.')
         self.cTTHelp = getattr(
             self, 'cTTHelp', f'Read online tutorial at {mConfig.urlHome}.')
@@ -255,10 +258,11 @@ class BaseConfPanel(
         #------------------------------> Needed to Run the Analysis
         self.rCheckUserInput = {}
         self.rCheckUnique = []
-        # #--------------> Dict with the user input as given
-        # self.rDI = {}
-        # #--------------> Dict with the processed user input
-        # self.rDO = {} 
+        self.rLLenLongest = getattr(self, 'rLLenLongest', 0)
+        #--------------> Dict with the user input as given
+        self.rDI = {}
+        #--------------> Dict with the processed user input
+        self.rDO = {} 
         #--------------> Error message and exception to show in self.RunEnd
         self.rMsgError  = ''
         self.rException = None
@@ -640,6 +644,29 @@ class BaseConfPanel(
 
         return True
     #---
+
+    def EqualLenLabel(self, label: str) -> str:
+        """Add empty space to the end of label to match the length of
+            self.rLLenLongest.
+
+            Parameters
+            ----------
+            label : str
+                Original label
+
+            Returns
+            -------
+            str
+                Label with added empty strings at the end to match the length of
+                self.rLLenLongest
+
+            Notes
+            -----
+            It assumes child class defines a self.rLLenLongest with the length
+            of the longest name for the input fields.
+        """
+        return f"{label}{(self.rLLenLongest - len(label))*' '}" 
+    #---
     #endregion ------------------------------------------------> Class Methods
 
     #region ----------------------------------------------------> Run Analysis
@@ -723,7 +750,7 @@ class BaseConfPanel(
                 pass
             else:
                 msg = mConfig.mSection.format(self.cLColumnBox)
-                self.rMsgError = mMethod.StrSetMessage(msg, b[2])
+                self.rMsgError = mMethod.StrSetMessage(msg, b[2]) # type: ignore
                 return False
         else:
             pass
@@ -732,149 +759,126 @@ class BaseConfPanel(
         return True
     #---
 
-#     def EqualLenLabel(self, label: str) -> str:
-#         """Add empty space to the end of label to match the length of
-#             self.rLLenLongest
-    
-#             Parameters
-#             ----------
-#             label : str
-#                 Original label
-    
-#             Returns
-#             -------
-#             str
-#                 Label with added empty strings at the end to match the length of
-#                 self.rLLenLongest
-            
-#             Notes
-#             -----
-#             It assumes child class defines a self.rLLenLongest with the length
-#             of the longest name for the input fields.
-#         """
-#         return f"{label}{(self.rLLenLongest - len(label))*' '}" 
-#     #---
-    
-#     def PrepareRun(self) -> bool:
-#         """Set variable and prepare data for analysis.
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #------------------------------> Output folder
-#         if self.rDO['uFile'].exists():
-#             self.rOFolder = self.rDO['uFile'].parent
-#         else:
-#             folder = self.rDO['uFile'].parent
-#             step = folder/config.fnDataSteps
-#             init = folder/config.fnDataInit
-#             #------------------------------>
-#             if step.exists() or init.exists():
-#                 self.rOFolder = folder/f'{dtsMethod.StrNow()}'
-#                 self.rDO['uFile'] = self.rOFolder/self.rDO['uFile'].name
-#             else:
-#                 self.rOFolder = self.rDO['uFile'].parent
-#         #------------------------------> Date
-#         self.rDate = dtsMethod.StrNow()
-#         #------------------------------> DateID
-#         self.rDateID = f'{self.rDate} - {self.rDO["ID"]}'
-#         #------------------------------> Remove Shift & Width if not needed
-#         if self.wImputationMethod.cb.GetValue() == config.oImputation['ND']:
-#             pass
-#         else:
-#             del self.rDI[self.EqualLenLabel(self.cLShift)]
-#             del self.rDI[self.EqualLenLabel(self.cLWidth)]
+    def PrepareRun(self) -> bool:
+        """Set variable and prepare data for analysis.
 
-#         return True
-#     #---
-  
-#     def ReadInputFiles(self) -> bool:
-#         """Read input file and check data
-        
-#             Return
-#             ------
-#             bool
-            
-#             Notes
-#             -----
-#             Assumes child class has the following attributes:
-#             - rDO: dict with at least the following key - values:
-#                 {
-#                     'iFile' : Path to data file,
-#                     'seqFile' : Path to the sequence file or no key - value,
-#                 }
-#         """
-#         #region ---------------------------------------------------> Data file
-#         #------------------------------> 
-#         msgStep = self.cLPdReadFile + f"{self.cLiFile}, reading"
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #------------------------------> 
-#         try:
-#             self.rIFileObj = dtsFF.CSVFile(self.rDO['iFile'])
-#         except dtsException.FileIOError as e:
-#             self.rMsgError = config.mFileRead.format(self.rDO['iFile'])
-#             self.rException = e
-#             return False
-#         #------------------------------> Check Target Protein. It cannot be done
-#         # before this step
-#         if 'TargetProt' in self.rDO:
-#             if self.rIFileObj.StrInCol(
-#                 self.rDO['TargetProt'], self.rDO['oc']['TargetProtCol']):
-#                 pass
-#             else:
-#                 self.rMsgError = (f'The Target Protein '
-#                     f'({self.rDO["TargetProt"]}) was not found in the '
-#                     f'{self.cLDetectedProt} column '
-#                     f'({self.rDO["oc"]["TargetProtCol"]}).')
-#                 return False
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Data file
-        
-#         #region ------------------------------------------------> Seq Rec File
-#         if 'seqFile' in self.rDO:
-#             #------------------------------> 
-#             msgStep = self.cLPdReadFile + f"{self.cLSeqFile}, reading"
-#             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#             #------------------------------> 
-#             try:
-#                 self.rSeqFileObj = dtsFF.FastaFile(self.rDO['seqFile'])
-#             except Exception as e:
-#                 self.rMsgError = config.mFileRead.format(self.rDO['seqFile'])
-#                 self.rExceptionn = e
-#                 return False
-#             #------------------------------> 
-#             try:
-#                 ProtLoc = self.rSeqFileObj.GetNatProtLoc()
-#             except Exception:
-#                 ProtLoc = (None, None)
-        
-#             self.rDO['ProtLength'] = [
-#                 self.rSeqFileObj.seqLengthRec, self.rSeqFileObj.seqLengthNat]
-#             self.rDO['ProtLoc'] = ProtLoc
-#             #------------------------------>         
-#             try:
-#                 ProtDelta = self.rSeqFileObj.GetSelfDelta()
-#             except Exception:
-#                 ProtDelta = None
-        
-#             self.rDO['ProtDelta'] = ProtDelta
-#         else:
-#             pass
-#         #endregion ---------------------------------------------> Seq Rec File
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> Date
+        self.rDate = mMethod.StrNow()
+        #------------------------------> Output folder
+        if self.rDO['uFile'].exists():
+            self.rOFolder = self.rDO['uFile'].parent
+        else:
+            folder = self.rDO['uFile'].parent
+            step = folder/mConfig.fnDataSteps
+            init = folder/mConfig.fnDataInit
+            #------------------------------>
+            if step.exists() or init.exists():
+                self.rOFolder = folder/f'{self.rDate}'
+                self.rDO['uFile'] = self.rOFolder/self.rDO['uFile'].name
+            else:
+                self.rOFolder = self.rDO['uFile'].parent
+        #------------------------------> DateID
+        self.rDateID = f'{self.rDate} - {self.rDO["ID"]}'
+        #------------------------------> Remove Shift & Width if not needed
+        if self.wImputationMethod.wCb.GetValue() == 'Normal Distribution':
+            pass
+        else:
+            del self.rDI[self.EqualLenLabel(self.cLShift)]
+            del self.rDI[self.EqualLenLabel(self.cLWidth)]
 
-#         #region ---------------------------------------------------> Print Dev
-#         if config.development and self.rSeqFileObj is not None:
-#             print("Rec Seq: ", self.rSeqFileObj.seqRec)
-#             print("Nat Seq: ", self.rSeqFileObj.seqNat)
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Print Dev
-        
-#         return True
-#     #---
-    
+        return True
+    #---
+
+    def ReadInputFiles(self) -> bool:
+        """Read input file and check data.
+
+            Return
+            ------
+            bool
+
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - rDO: dict with at least the following key - values:
+                {
+                    'iFile' : Path to data file,
+                    'seqFile' : Path to the sequence file or no key - value,
+                }
+        """
+        #region ---------------------------------------------------> Data file
+        #------------------------------>
+        msgStep = self.cLPdReadFile + f"{self.cLiFile}, reading"
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------>
+        try:
+            self.rIFileObj = mFile.CSVFile(self.rDO['iFile'])
+        except mException.FileIOError as e:
+            self.rMsgError = mConfig.mFileRead.format(self.rDO['iFile'])
+            self.rException = e
+            return False
+        #------------------------------> Check Target Protein. It cannot be done
+        # before this step
+        if 'TargetProt' in self.rDO:
+            if self.rIFileObj.StrInCol(
+                self.rDO['TargetProt'], self.rDO['oc']['TargetProtCol']):
+                pass
+            else:
+                self.rMsgError = (f'The Target Protein '
+                    f'({self.rDO["TargetProt"]}) was not found in the '
+                    f'{self.cLDetectedProt} column '
+                    f'({self.rDO["oc"]["TargetProtCol"]}).')
+                return False
+        else:
+            pass
+        #endregion ------------------------------------------------> Data file
+
+        #region ------------------------------------------------> Seq Rec File
+        if 'seqFile' in self.rDO:
+            #------------------------------>
+            msgStep = self.cLPdReadFile + f"{self.cLSeqFile}, reading"
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------>
+            try:
+                self.rSeqFileObj = mFile.FastaFile(self.rDO['seqFile'])
+            except Exception as e:
+                self.rMsgError = mConfig.mFileRead.format(self.rDO['seqFile'])
+                self.rException = e
+                return False
+            #------------------------------>
+            try:
+                ProtLoc = self.rSeqFileObj.GetNatProtLoc()
+            except Exception:
+                ProtLoc = (None, None)
+            #------------------------------>
+            self.rDO['ProtLength'] = [
+                self.rSeqFileObj.rSeqLengthRec, self.rSeqFileObj.rSeqLengthNat]
+            self.rDO['ProtLoc'] = ProtLoc
+            #------------------------------>
+            try:
+                ProtDelta = self.rSeqFileObj.GetSelfDelta()
+            except Exception:
+                ProtDelta = None
+            #------------------------------>
+            self.rDO['ProtDelta'] = ProtDelta
+        else:
+            pass
+        #endregion ---------------------------------------------> Seq Rec File
+
+        #region ---------------------------------------------------> Print Dev
+        if mConfig.development and self.rSeqFileObj is not None:
+            print("Rec Seq: ", self.rSeqFileObj.rSeqRec)
+            print("Nat Seq: ", self.rSeqFileObj.rSeqNat)
+        else:
+            pass
+        #endregion ------------------------------------------------> Print Dev
+
+        return True
+    #---
+
 #     def DataPreparation(self, resetIndex=True) -> bool:
 #         """Perform the data preparation step.
             
@@ -2689,12 +2693,12 @@ class BaseConfPanel(
 # #---
 
 class PaneCorrA(BaseConfPanel):
-    """Creates the configuration tab for Correlation Analysis
+    """Creates the configuration tab for Correlation Analysis.
     
         Parameters
         ----------
         cParent : wx Widget
-            Parent of the widgets
+            Parent of the widgets.
         cDataI : dict or None
             Initial data provided by the user in a previous analysis.
             This contains both I and CI dicts e.g. {'I': I, 'CI': CI}
@@ -2707,7 +2711,7 @@ class PaneCorrA(BaseConfPanel):
         rLCTrlL: list of wx.ListCtrl
             List of wx.ListCtrl to support showing two wx.ListCtrl.
         rLLenLongest : int
-            Length of the longest label.     
+            Length of the longest label.
         rMainData : str
             Name of the file with the correlation coefficient values.
         rMsgError: str
@@ -2802,10 +2806,10 @@ class PaneCorrA(BaseConfPanel):
     cTitlePD     = 'Calculating Correlation Coefficients'
     cGaugePD     = 26
     # cTTHelp      = config.ttBtnHelp.format(cURL)
-    # rLLenLongest = len(cLCorrMethod)
+    rLLenLongest = len(cLCorrMethod)
     # rMainData    = '{}_{}-CorrelationCoefficients-Data.txt'
     #endregion --------------------------------------------------> Class Setup
-    
+
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent: wx.Window, dataI: dict={}):
         """"""
@@ -3063,7 +3067,7 @@ class PaneCorrA(BaseConfPanel):
     #region ---------------------------------------------------> Run Analysis
     def CheckInput(self) -> bool:
         """Check user input
-        
+
             Returns
             -------
             bool
@@ -3074,7 +3078,7 @@ class PaneCorrA(BaseConfPanel):
         else:
             return False
         #endregion ----------------------------------------------------> Super
-        
+
         #region -------------------------------------------> Individual Fields
         #region -------------------------------------------> ListCtrl
         msgStep = self.cLPdCheck +  self.cLColAnalysis
@@ -3087,82 +3091,82 @@ class PaneCorrA(BaseConfPanel):
         #endregion ----------------------------------------> ListCtrl
         #endregion ----------------------------------------> Individual Fields
 
-        return False
+        return True
     #---
 
-#     def PrepareRun(self) -> bool:
-#         """Set variable and prepare data for analysis.
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------------> Input
-#         msgStep = self.cLPdPrepare + 'User input, reading'
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        
-#         col = [int(x) for x in self.wLCtrlO.GetColContent(0)]
-#         colF = [x for x in range(0, len(col))]
-#         impMethod = self.wImputationMethod.cb.GetValue()
-#         #------------------------------> As given
-#         self.rDI = {
-#             self.EqualLenLabel(self.cLiFile) : (
-#                 self.wIFile.tc.GetValue()),
-#             self.EqualLenLabel(self.cLId) : (
-#                 self.wId.tc.GetValue()),
-#             self.EqualLenLabel(self.cLCeroTreatD) : (
-#                 self.wCeroB.cb.GetValue()),
-#             self.EqualLenLabel(self.cLTransMethod) : (
-#                 self.wTransMethod.cb.GetValue()),
-#             self.EqualLenLabel(self.cLNormMethod) : (
-#                 self.wNormMethod.cb.GetValue()),
-#             self.EqualLenLabel(self.cLImputation) : (
-#                 impMethod),
-#             self.EqualLenLabel(self.cLShift) : (
-#                 self.wShift.tc.GetValue()),
-#             self.EqualLenLabel(self.cLWidth) : (
-#                 self.wWidth.tc.GetValue()),
-#             self.EqualLenLabel(self.cLCorrMethod) : (
-#                 self.wCorrMethod.cb.GetValue()),
-#             self.EqualLenLabel('Selected Columns') : col,
-#         }
-#         #------------------------------> 
-#         msgStep = self.cLPdPrepare + 'User input, processing'
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #------------------------------> Dict with all values
-#         self.rDO = {
-#             'uFile'      : Path(self.wUFile.tc.GetValue()),
-#             'iFile'      : Path(self.wIFile.tc.GetValue()),
-#             'ID'         : self.wId.tc.GetValue(),
-#             'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
-#             'TransMethod': self.wTransMethod.cb.GetValue(),
-#             'NormMethod' : self.wNormMethod.cb.GetValue(),
-#             'ImpMethod'  : impMethod,
-#             'Shift'      : float(self.wShift.tc.GetValue()),
-#             'Width'      : float(self.wWidth.tc.GetValue()),
-#             'CorrMethod' : self.wCorrMethod.cb.GetValue(),
-#             'oc'         : {
-#                 'Column'  : col,
-#                 'ColumnF' : col,
-#             },
-#             'df'         : {
-#                 'ColumnR'    : colF,
-#                 'ColumnF'    : colF,
-#                 'ResCtrlFlat': colF,
-#             }
-#         }
-#         #endregion ----------------------------------------------------> Input
-        
-#         #region ---------------------------------------------------> Super
-#         if super().PrepareRun():
-#             pass
-#         else:
-#             self.rMsgError = 'Something went wrong when preparing the analysis.'
-#             return False
-#         #endregion ------------------------------------------------> Super
-        
-#         return True
-#     #---
+    def PrepareRun(self) -> bool:
+        """Set variable and prepare data for analysis.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Input
+        msgStep = self.cLPdPrepare + 'User input, reading'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+
+        col  = [int(x) for x in self.wLCtrlO.GetColContent(0)]
+        colF = [x for x in range(0, len(col))]
+        impMethod = self.wImputationMethod.wCb.GetValue()
+        #------------------------------> As given
+        self.rDI = {
+            self.EqualLenLabel(self.cLiFile) : (
+                self.wIFile.wTc.GetValue()),
+            self.EqualLenLabel(self.cLId) : (
+                self.wId.wTc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.wCeroB.wCb.GetValue()),
+            self.EqualLenLabel(self.cLTransMethod) : (
+                self.wTransMethod.wCb.GetValue()),
+            self.EqualLenLabel(self.cLNormMethod) : (
+                self.wNormMethod.wCb.GetValue()),
+            self.EqualLenLabel(self.cLImputation) : (
+                impMethod),
+            self.EqualLenLabel(self.cLShift) : (
+                self.wShift.wTc.GetValue()),
+            self.EqualLenLabel(self.cLWidth) : (
+                self.wWidth.wTc.GetValue()),
+            self.EqualLenLabel(self.cLCorrMethod) : (
+                self.wCorrMethod.wCb.GetValue()),
+            self.EqualLenLabel('Selected Columns') : col,
+        }
+        #------------------------------> 
+        msgStep = self.cLPdPrepare + 'User input, processing'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> Dict with all values
+        self.rDO = {
+            'uFile'      : Path(self.wUFile.wTc.GetValue()),
+            'iFile'      : Path(self.wIFile.wTc.GetValue()),
+            'ID'         : self.wId.wTc.GetValue(),
+            'Cero'       : mConfig.oYesNo[self.wCeroB.wCb.GetValue()],
+            'TransMethod': self.wTransMethod.wCb.GetValue(),
+            'NormMethod' : self.wNormMethod.wCb.GetValue(),
+            'ImpMethod'  : impMethod,
+            'Shift'      : float(self.wShift.wTc.GetValue()),
+            'Width'      : float(self.wWidth.wTc.GetValue()),
+            'CorrMethod' : self.wCorrMethod.wCb.GetValue(),
+            'oc'         : {
+                'Column'  : col,
+                'ColumnF' : col,
+            },
+            'df'         : {
+                'ColumnR'    : colF,
+                'ColumnF'    : colF,
+                'ResCtrlFlat': colF,
+            }
+        }
+        #endregion ----------------------------------------------------> Input
+
+        #region ---------------------------------------------------> Super
+        if super().PrepareRun():
+            pass
+        else:
+            self.rMsgError = 'Something went wrong when preparing the analysis.'
+            return False
+        #endregion ------------------------------------------------> Super
+
+        return True
+    #---
 
 #     def RunAnalysis(self) -> bool:
 #         """Calculate coefficients

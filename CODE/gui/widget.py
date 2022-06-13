@@ -1688,6 +1688,26 @@ class MyListCtrl(wx.ListCtrl):
         return True
     #---
 
+    def GetColContent(self, col: int) -> list[str]:
+        """Get the content of a column.
+
+            Parameters
+            ----------
+            col : int
+                Column index
+
+            Returns
+            -------
+            list
+                List with the column content from top to bottom
+        """
+        #region ----------------------------------------------> Column content
+        outL = [self.GetItemText(c, col) for c in range(0, self.GetItemCount())]
+        #endregion -------------------------------------------> Column content
+
+        return outL
+    #---
+
 #     def OnGetItemText(self, row, column) -> str:
 #         """Get cell value for virtual mode.
     
@@ -1810,46 +1830,6 @@ class MyListCtrl(wx.ListCtrl):
 #         return True
 #     #---
 
-#     def GetColContent(self, col: int) -> list[str]:
-#         """Get the content of a column
-    
-#             Parameters
-#             ----------
-#             col : int
-#                 Column index
-    
-#             Returns
-#             -------
-#             list
-#                 List with the column content from top to bottom
-    
-#             Raise
-#             -----
-#             InputError:
-#                 - When col is not present in the wx.ListCtrl
-#         """
-#         #region ---------------------------------------------------> Variables
-#         NCol = self.GetColumnCount()
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region -------------------------------------------------> Check input
-#         if col >= NCol:
-#             msg = (
-#                 f"The column number must be smaller than the total number of "
-#                 f"columns in the ListCtrl ({col} >= {NCol})."
-#             )
-#             raise dtsException.InputError(msg)
-#         else:
-#             pass
-#         #endregion ----------------------------------------------> Check input
-        
-#         #region ----------------------------------------------> Column content
-#         outL = [self.GetItemText(c, col) for c in range(0, self.GetItemCount())]
-#         #endregion -------------------------------------------> Column content
-
-#         return outL
-#     #---
-    
 #     def SetRowContent(self, rowL: list[str], rowInd: int) -> Literal[True]:
 #         """Edit the content of a row.
     

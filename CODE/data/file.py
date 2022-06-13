@@ -17,10 +17,16 @@
 #region -------------------------------------------------------------> Imports
 import json
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional, Literal
+
+import pandas as pd
+from Bio import pairwise2
+from Bio.Align import substitution_matrices
 
 import config.config as mConfig
 import data.exception as mException
+import data.generator as mGenerator
+import data.method as mMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -102,6 +108,45 @@ def ReadFileFirstLine(
 #---
 
 
+def ReadCSV2DF(
+    fileP: Union[Path, str],
+    sep: str='\t',
+    index_col: Optional[int]=None,
+    header: Union[int, list[int], None, Literal['infer']]='infer',
+    ) -> pd.DataFrame:
+    """Reads a csv file and returns a pandas dataframe.
+
+        Parameters
+        ----------
+        fileP : str or Path
+            Path to the file.
+        sep : str
+            Column separator in the CSV file. Default is tab.
+        index_col : int or None
+            Index of the column names.
+        header : int, list[int], None
+            Use list[int] for multi index columns.
+
+        Returns
+        -------
+        dataframe:
+            Pandas dataframe with the data.
+
+        Raise
+        -----
+        ExecutionError:
+            - When the file could not be read.
+    """
+    #region -------------------------------------------------------> Read file
+    try:
+        return pd.read_csv(
+            str(fileP), sep=sep, index_col=index_col, header=header)
+    except Exception:
+        raise mException.ExecutionError(mConfig.mFileRead.format(fileP))
+    #endregion ----------------------------------------------------> Read file
+#---
+
+
 def WriteJSON(fileP: Union[Path, str], data: dict) -> bool:
     """ Writes a json file.
 
@@ -132,6 +177,373 @@ def WriteJSON(fileP: Union[Path, str], data: dict) -> bool:
 
 
 #region -------------------------------------------------------------> Classes
+class CSVFile():
+    """Class to deal with csv formatted input files.
+
+        Parameters
+        ----------
+        fileP : str or Path
+            Path to the input file.
+        sep : str
+            Column separator character in the csv file.
+
+        Attributes
+        ----------
+        rDf : pd.DataFrame
+            Copy of the df in the file that can be modified.
+        rData : pd.DataFrame
+            This is the initial data and will not be modified. It is just to 
+            read from if needed.
+        rFileP : str or Path
+            Path to the csv file.
+        rHeader : list
+            List with the names of the columns in the csv file. It is assumed 
+            the names are in the first row of the file.
+        rNRow, rNCol : int
+            Number of rows and columns in self.rData
+
+        Raises
+        ------
+        FileIOError:
+            - When fileP cannot be read
+
+        Notes
+        -----
+        It is assumed the csv file has column names in the first row.
+        """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        fileP: Union[Path, str],
+        sep: str="\t",
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rFileP = fileP
+        #endregion --------------------------------------------> Initial Setup
+
+        #region ---------------------------------------------------> Read File
+        try:
+            self.rData = ReadCSV2DF(self.rFileP, sep=sep)
+        except Exception:
+            raise mException.FileIOError(mConfig.mFileRead.format(fileP))
+        #endregion ------------------------------------------------> Read File
+
+        #region ---------------------------------------------------> Variables
+        self.SetAttributes()
+        #endregion ------------------------------------------------> Variables
+        #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetAttributes(self) -> bool:
+        """ Set other variables needed by the class.
+
+            Returns
+            -------
+            bool
+        """
+        #--> list with the name of the columns in the data file
+        self.rHeader = list(self.rData.columns)
+        #--> copy of self.rData to modify it without altering the original data
+        self.rDf = self.rData.copy()
+        #--> nRows, nCols
+        self.rNRow, self.rNCol = self.rDf.shape
+
+        return True
+    #---
+
+    def StrInCol(self, tStr:str, col:int, comp: Literal['e', 'ne']='e') -> bool:
+        """Basically check if str is in col.
+
+            Parameters
+            ----------
+            tStr: str
+                String to look for.
+            col: int
+                Column containing the string.
+            comp: str
+                One of 'e', 'ne'. Equal or not Equal.
+
+            Returns
+            -------
+            bool
+        """
+        df = mMethod.DFFilterByColS(self.rData, col, tStr, comp=comp)
+        return not df.empty
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class FastaFile():
+    """Class to handle fasta files.
+
+        Parameters
+        ----------
+        fileP: Path or str
+            Path to the fasta file.
+
+        Attributes
+        ----------
+        rAlignment: BioPython alignment or None
+            Last calculated alignment.
+        rFileP: Path or str
+            Path to the fasta file.
+        rHeaderNat: str
+            Header for the Native sequence.
+        rHeaderRec: str
+            Header for the Recombinant sequence.
+        rSeqLengthNat: int or None
+            Length of the Native sequence.
+        rSeqLengthRec: int
+            Length of the Recombinant sequence.
+        rSeqNat: str
+            Sequence of the Native sequence.
+        rSeqRec: str
+            Sequence of the Recombinant sequence.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, fileP: Union[Path, str]) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------>
+        self.rFileP = fileP
+        #------------------------------>
+        gen = mGenerator.FastaSequence(fileP)
+        #------------------------------>
+        self.rHeaderRec, self.rSeqRec = next(gen)
+        self.rSeqLengthRec = len(self.rSeqRec)
+        #------------------------------>
+        try:
+            self.rHeaderNat, self.rSeqNat = next(gen)
+        except StopIteration:
+            self.rHeaderNat, self.rSeqNat, self.rSeqLengthNat = ('', '', None)
+        except Exception:
+            msg = (f'There was an unexpected error when parsing the fasta '
+                f'file.\n{fileP}')
+            raise mException.UnexpectedError(msg)
+        else:
+            self.rSeqLengthNat = len(self.rSeqNat)
+        #------------------------------> 
+        self.rAlignment = None
+        #endregion --------------------------------------------> Initial Setup
+        #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def FindSeq(self, seq: str, seqRec: bool=True) -> tuple[int, int]:
+        """Find the location of seq in the sequence of the Rec or Nat Protein.
+
+            Parameters
+            ----------
+            seq : str
+                Peptide sequence to find in the Protein sequence
+            seqRec: bool
+                Search on the recombinant (True) or native sequence (False).
+
+            Returns
+            -------
+            tuple[int, int]
+                The N and C residue numbers of seq in the protein sequence.
+
+            Raises
+            ------
+            ExecutionError:
+                - when seqRec is False but self.seqNat is None.
+
+            Notes
+            -----
+            [-1, -1] is returned if seq is not found inside the protein 
+            sequence.
+        """
+        #region -------------------------------------------------> Check Input
+        if not self.rSeqNat and not seqRec:
+            msg = ("The Native sequence of the protein is undefined. The "
+                "peptide sequence can only be searched for in the "
+                "Recombinant sequence")
+            raise mException.ExecutionError(msg)
+        else:
+            pass
+        #endregion ----------------------------------------------> Check Input
+
+        #region ------------------------------------------------------> Find N
+        #------------------------------>
+        n = self.rSeqRec.find(seq) if seqRec else self.rSeqNat.find(seq)
+        #------------------------------>
+        if n != -1:
+            n = n + 1
+        else:
+            return (-1, -1)
+        #endregion ---------------------------------------------------> Find N
+
+        #region ------------------------------------------------------> Find C
+        c = n + len(seq) - 1
+        #endregion ---------------------------------------------------> Find C
+
+        return (n, c)
+    #---
+    
+    def CalculateAlignment(self, seqA: str, seqB: str):
+        """Calculate the sequence alignment between both sequences.
+
+            Parameters
+            ----------
+            seqA: str
+                Reference sequence.
+            seqB: str
+                Second sequence.
+
+            Returns
+            -------
+            BioPython Alignment
+        """
+        #region -----------------------------------------------> Blosum matrix
+        blosum62 = substitution_matrices.load("BLOSUM62")
+        #endregion --------------------------------------------> Blosum matrix
+
+        #region ---------------------------------------------------> Alignment
+        try:
+            return pairwise2.align.globalds(seqA, seqB, blosum62, -10, -0.5) # type: ignore
+        except Exception:
+            msg = (f'Sequence alignment failed.\nseqA: {seqA}\nseqB: {seqB}')
+            raise mException.ExecutionError(msg)
+        #endregion ------------------------------------------------> Alignment
+    #---
+
+    def SetSelfAlignment(self) -> bool:
+        """Calculate the sequence alignment between the Recombinant and Native
+            sequences.
+
+            Returns
+            -------
+            bool
+
+            Raise
+            -----
+            InputError if self.rSeqNat is empty.
+        """
+        #region ---------------------------------------------------> 
+        if not self.rSeqNat:
+            msg = (f'It is not possible to calculate the sequence alignment '
+                f'because the Fasta file contains only one sequence.')
+            raise mException.ExecutionError(msg)
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Alignment
+        if getattr(self, 'rAlignment', None) is None:
+            try:
+                self.rAlignment = self.CalculateAlignment(
+                    self.rSeqRec, self.rSeqNat)
+            except Exception as e:
+                raise e
+            else:
+                return True
+        else:
+            return True
+        #endregion ------------------------------------------------> Alignment
+    #---
+
+    def GetSelfAlignment(self):
+        """Get the alignment between the Recombinant and Native sequence.
+
+            Returns
+            -------
+            BioPython alignment.
+        """
+        #region ---------------------------------------------------> Alignment
+        if getattr(self, 'rAlignment', None) is None:
+            try:
+                self.SetSelfAlignment()
+            except Exception as e:
+                raise e
+            else:
+                return self.rAlignment
+        else:
+            return self.rAlignment
+        #endregion ------------------------------------------------> Alignment
+    #---
+
+    def GetSelfDelta(self) -> int:
+        """Get Residue number difference between the Recombinant and Native
+            sequence.
+
+            Returns
+            -------
+            int
+        """
+        #region ---------------------------------------------------> Alignment
+        try:
+            alignment = self.GetSelfAlignment()
+            seqB = alignment[0].seqB # type: ignore
+        except Exception as e:
+            raise e
+        #endregion ------------------------------------------------> Alignment
+
+        #region ---------------------------------------------------> Get delta
+        for k,l in enumerate(seqB):
+            if l == '-':
+                pass
+            else:
+                return -1 * k
+        #------------------------------>
+        return 0 # ProtRec and ProtNat are the same
+        #endregion ------------------------------------------------> Get delta
+    #---
+
+    def GetNatProtLoc(self) -> tuple[int, int]:
+        """Get the location of the Native sequence inside the Recombinant
+            sequence.
+
+            Returns
+            -------
+            tuple
+                First and last residue.
+        """
+        #region ---------------------------------------------------> Alignment
+        try:
+            alignment = self.GetSelfAlignment()
+            seqB = alignment[0].seqB
+        except Exception as e:
+            raise e
+        #endregion ------------------------------------------------> Alignment
+
+        #region -------------------------------------------> Get Left Position
+        ll = None
+        #------------------------------> 
+        for k,l in enumerate(seqB, start=1):
+            if l == '-':
+                pass
+            else:
+                ll = k 
+                break
+        #------------------------------> 
+        ll = 1 if ll is None else ll
+        #endregion ----------------------------------------> Get Left Position
+
+        #region ------------------------------------------> Get Right Position
+        lr = None
+        #------------------------------> 
+        for k,l in reversed(list(enumerate(seqB, start=1))):
+            if l == '-':
+                pass
+            else:
+                lr = k
+                break
+        #------------------------------> 
+        lr = self.rSeqLengthRec if lr is None else lr
+        #endregion ---------------------------------------> Get Right Position
+
+        return (ll, lr)
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+
+
 # class UMSAPFile():
 #     """Load an UMSAP file.
 

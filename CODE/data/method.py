@@ -19,9 +19,9 @@
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Union
+from typing import Union, Literal
 
-# import pandas as pd
+import pandas as pd
 # import numpy as np
 
 import wx
@@ -63,7 +63,7 @@ def StrException(
     #region -------------------------------------------------------> Variables
     msg = ''
     #endregion ----------------------------------------------------> Variables
-    
+
     #region ---------------------------------------------------------> Message
     #------------------------------> str(e)
     if tStr:
@@ -86,9 +86,9 @@ def StrException(
         )
         msg = f"{msg}{tTrace}"
     else:
-        pass	
+        pass
     #endregion ------------------------------------------------------> Message
-    
+
     return msg 
 #---
 
@@ -194,7 +194,7 @@ def Str2ListNumber(
     else:
         lo = lN
     #endregion -------------------------------------------------------> Unique
-    
+
     return lo
 #---
 #endregion ---------------------------------------------------> String methods
@@ -335,6 +335,60 @@ def ListRemoveDuplicates(l: Union[list, tuple]) -> list:
     return list(dict.fromkeys(l))
 #---
 #endregion ------------------------------------------------------> wx.ListCtrl
+
+
+#region --------------------------------------------------------> pd.DataFrame
+def DFFilterByColS(
+    df:'pd.DataFrame', 
+    col: int,
+    refStr: str,
+    comp: Literal['e', 'ne'],
+    ) -> 'pd.DataFrame':
+    """Filter rows in the pd.DataFrame based on the string values present in 
+        col.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+        col : int
+            The column index used to filter rows
+        refStr : string
+            Reference string
+        comp : str
+            Numeric comparison to use in the filter. One of:
+            'e', 'ne
+
+        Returns
+        -------
+        pd.DataFrame
+
+        Notes
+        -----
+        Rows with values in col that do not comply with c[x] comp refStr are 
+        discarded, e.g. c[x] == 'refString'
+        
+        Assumes all values in col are strings
+    """
+    #region ----------------------------------------------------------> Filter
+    #------------------------------>  Copy
+    dfo = df.copy()
+    #------------------------------> Filter
+    try:
+        if comp == 'e':
+            dfo = df.loc[df.iloc[:,col] == refStr]
+        elif comp == 'ne':
+            dfo = df.loc[df.iloc[:,col] != refStr]
+        else:
+            msg = mConfig.mCompNYI.format(comp)
+            raise mException.NotYetImplementedError(msg)
+    except Exception:
+        raise mException.ExecutionError(mConfig.mPDFilterByCol)
+    #endregion -------------------------------------------------------> Filter
+
+    return dfo
+#---
+#endregion -----------------------------------------------------> pd.DataFrame
+
 
 #region -------------------------------------------------------------> Methods
 # def ResControl2ListNumber(
