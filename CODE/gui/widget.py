@@ -1665,6 +1665,29 @@ class MyListCtrl(wx.ListCtrl):
         return False
     #---
 
+    def SelectList(self, listC: list[int]) -> bool:
+        """Select all items in the list of rows. Silently ignores wrong indexes.
+
+            Parameters
+            ----------
+            listC : list[int]
+                List of row indexes
+
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------------------> Select
+        for k in listC:
+            try:
+                self.Select(k, on=1)
+            except Exception:
+                pass
+        #endregion ---------------------------------------------------> Select    
+
+        return True
+    #---
+
 #     def OnGetItemText(self, row, column) -> str:
 #         """Get cell value for virtual mode.
     
@@ -1787,29 +1810,6 @@ class MyListCtrl(wx.ListCtrl):
 #         return True
 #     #---
 
-#     def SelectList(self, listC: list[int]) -> bool:
-#         """Select all items in the list of rows. Silently ignores wrong indexes.
-    
-#             Parameters
-#             ----------
-#             listC : list[int]
-#                 List of row indexes
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ------------------------------------------------------> Select
-#         for k in listC:
-#             try:
-#                 self.Select(k, on=1)
-#             except Exception:
-#                 pass
-#         #endregion ---------------------------------------------------> Select    
-            
-#         return True
-#     #---
-    
 #     def GetColContent(self, col: int) -> list[str]:
 #         """Get the content of a column
     

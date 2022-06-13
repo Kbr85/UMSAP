@@ -18,18 +18,20 @@
 # import itertools
 import traceback
 from datetime import datetime
+from pathlib import Path
 from typing import Union
 
 # import pandas as pd
 # import numpy as np
+
+import wx
 
 # from reportlab.lib.pagesizes import A4
 # from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 # from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 import config.config as mConfig
-# import dtscore.data_method as dtsMethod
-# import dtscore.statistic as dtsStatistic
+import data.file as mFile
 import data.exception as mException
 #endregion ----------------------------------------------------------> Imports
 
@@ -178,6 +180,45 @@ def ExpandRange(
 #endregion ---------------------------------------------------> Number methods
 
 
+#region ---------------------------------------------------------> wx.ListCtrl
+def LCtrlFillColNames(lc: wx.ListCtrl, fileP: Union[Path, str]) -> bool:
+    """Fill the wx.ListCtrl with the name of the columns in fileP.
+
+        Parameters
+        ----------
+        lc : wx.ListCtrl
+            wx.ListCtrl to fill info into
+        fileP : Path
+            Path to the file from which to read the column names
+
+        Notes
+        -----
+        This will delete the wx.ListCtrl before adding the new names.
+        wx.ListCtrl is assumed to have at least two columns [#, Name,]
+    """
+    #region -------------------------------------------------------> Read file
+    try:
+        colNames = mFile.ReadFileFirstLine(fileP)
+    except Exception as e:
+        raise e
+    #endregion ----------------------------------------------------> Read file
+
+    #region -------------------------------------------------------> Fill List
+    try:
+        #------------------------------> Del items
+        lc.DeleteAllItems()
+        #------------------------------> Fill
+        for k, v in enumerate(colNames):
+            index = lc.InsertItem(k, " " + str(k))
+            lc.SetItem(index, 1, v)
+    except Exception:
+        msg = "It was not possible to fill the list."
+        raise mException.ExecutionError(msg)
+    #endregion ----------------------------------------------------> Fill List
+
+    return True
+#---
+#endregion ------------------------------------------------------> wx.ListCtrl
 
 #region -------------------------------------------------------------> Methods
 # def ResControl2ListNumber(

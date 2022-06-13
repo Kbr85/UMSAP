@@ -262,51 +262,6 @@ def ListRemoveDuplicates(l: Union[list, tuple]) -> list:
         msg = config.mNotIterable.format('l', l)
         raise dtsException.InputError(msg)
 #---
-
-def LCtrlFillColNames(lc: wx.ListCtrl, fileP: Path) -> bool:
-    """Fill the wx.ListCtrl with the name of the columns in fileP
-        
-        See Notes for more details.
-
-        Parameters
-        ----------
-        lc : wx.ListCtrl
-            wx.ListCtrl to fill info into
-        fileP : Path
-            Path to the file from which to read the column names
-        
-        Raise
-        -----
-        InputError:
-            - When file cannot be read.
-
-        Notes
-        -----
-        This will delete the wx.ListCtrl before adding the new names.
-        wx.ListCtrl is assumed to have at least two columns [#, Name,]
-    """
-    #region -------------------------------------------------------> Read file
-    try:
-        colNames = dtsFF.ReadFileFirstLine(fileP)
-    except Exception as e:
-        raise e
-    #endregion ----------------------------------------------------> Read file
-    
-    #region -------------------------------------------------------> Fill List
-    try:
-        #------------------------------> Del items
-        lc.DeleteAllItems()
-        #------------------------------> Fill
-        for k, v in enumerate(colNames):
-            index = lc.InsertItem(k, " " + str(k))
-            lc.SetItem(index, 1, v)
-    except Exception:
-        msg = "It was not possible to fill the list."
-        raise dtsException.ExecutionError(msg)
-    #endregion ----------------------------------------------------> Fill List
-    
-    return True
-#---
 #endregion ----------------------------------------------------> List & Tuples
 
 

@@ -18,6 +18,9 @@
 import json
 from pathlib import Path
 from typing import Union
+
+import config.config as mConfig
+import data.exception as mException
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -41,6 +44,61 @@ def ReadJSON(fileP: Union[Path, str]) -> dict:
     #endregion ----------------------------------------------------> Read file
 
     return data
+#---
+
+
+def ReadFileFirstLine(
+    fileP: Union[Path, str], 
+    char: str='\t', 
+    empty: bool=False
+    ) -> list[str]:
+    """Custom method to read the first line in a file.
+
+        Parameters
+        ----------
+        fileP : path or str
+            File path of the file to be read 
+        char : str
+            each line in the file is splitted using the value of char or not if 
+            char is empty.
+        empty : boolean
+            Return first non-empty line (True) or first line (False).
+
+        Returns
+        -------
+        list of list
+            List of list containing the lines in the read file like:
+            [['first', 'line'], ['second', 'line'], ... , ['last', 'line']]
+
+        Notes
+        -----
+        The method returns a list containing the first line in the file. 
+        The line is splitted using char. The first non-empty line is returned if
+        empty is False, otherwise the first line is returned. 
+        If the file is empty an empty line is returned.
+    """
+    #region --------------------------------------------> Read and split lines
+    try:
+        #------------------------------> Read file
+        with open(fileP, 'r') as file:
+            for line in file:
+                #--> To remove ' ', \n, \t & \r from start/end of line
+                l = line.strip()
+                #------------------------------> Return first line
+                if l == '' and not empty:
+                    #------------------------------> Discard empty
+                    continue
+                else:
+                    #------------------------------> Set data
+                    if char:
+                        return l.split(char)
+                    else:
+                        return [l]
+        #------------------------------> If file is empty then return
+        return []
+    except Exception:
+        raise mException.ExecutionError(mConfig.mFileRead.format(fileP))
+    #endregion -----------------------------------------> Read and split lines
 #---
 
 

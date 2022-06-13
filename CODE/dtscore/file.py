@@ -135,68 +135,6 @@ def ReadCSV2DF(
     #endregion ----------------------------------------------------> Read file
 #---
 
-def ReadFileFirstLine(
-    fileP: Union[Path, str], char: Optional[str]='\t', empty: bool=False
-    ) -> list[str]:
-    """Custom method to read the first line in a file.
-
-        See Notes below for more details
-
-        Parameters
-        ----------
-        fileP : path or str
-            File path of the file to be read 
-        char : str or None
-            each line in the file is splitted using the value of char or not if 
-            char is None
-        empty : boolean
-            Keep (True) or discard (False) empty lines in the file
-
-        Returns
-        -------
-        list of list
-            List of list containing the lines in the read file like:
-            [['first', 'line'], ['second', 'line'], ... , ['last', 'line']]
-
-        Raises
-        ------
-        ExecutionError:
-            - When the file cannot be read
-            
-        Notes
-        -----
-        The method returns a list containing the first line in the file. 
-        The line is splitted using char. The first non-empty line is returned if
-        empty is False, otherwise the first line is returned. 
-        If the file is empty an empty line is returned.
-    """
-    #region --------------------------------------------> Read and split lines
-    try:
-        #------------------------------> Read file
-        with open(fileP, 'r') as file:
-            for line in file:
-                #--> To remove ' ', \n, \t & \r from start/end of line
-                l = line.strip()
-                #------------------------------> Return first line
-                if l == '' and not empty:
-                    #------------------------------> Discard empty
-                    continue
-                else:
-                    #------------------------------> Set data
-                    if char is None:
-                        return [l]
-                    else:
-                        return l.split(char)
-        #------------------------------> If file is empty then return
-        return []
-    except Exception:
-        raise dtsException.ExecutionError(config.mReadErrorIO.format(fileP))
-    #endregion -----------------------------------------> Read and split lines
-#---
-
-#------------------------------> Write
-
-
 def WriteDF2CSV(
     fileP: Union[Path, str], df: pd.DataFrame, sep: str='\t', na_rep: str='NA', 
     index: bool=False) -> bool:

@@ -18,7 +18,7 @@
 # import _thread
 # from collections import namedtuple
 # import shutil
-# from pathlib import Path
+from pathlib import Path
 from typing import Union
 
 # import numpy as np
@@ -30,10 +30,11 @@ import wx.lib.scrolledpanel as scrolled
 
 import config.config as mConfig
 # import data.check as check
-# import data.method as dmethod
+import data.method as mMethod
 # import gui.method as gmethod
 import gui.validator as mValidator
 import gui.widget as mWidget
+import gui.window as mWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -242,12 +243,12 @@ class BaseConfPanel(
         #     "Filter Data: Exclude Rows"  : self.DatPrep_Exclude,
         #     "Filter Data: Score Value"   : self.DatPrep_Score,
         # }
-        # #------------------------------> This is needed to handle Data File 
-        # # content load to the wx.ListCtrl in Tabs with multiple panels
-        # #--------------> Default wx.ListCtrl to load data file content
-        # self.wLCtrlI = None 
-        # #--------------> List to use just in case there are more than 1 
-        # self.rLCtrlL = []
+        #------------------------------> This is needed to handle Data File 
+        # content load to the wx.ListCtrl in Tabs with multiple panels
+        #--------------> Default wx.ListCtrl to load data file content
+        self.wLCtrlI = None 
+        #--------------> List to use just in case there are more than 1
+        self.rLCtrlL = []
         # #------------------------------> Needed to Run the analysis
         # #--------------> Dict with the user input as given
         # self.rDI = {}
@@ -503,100 +504,30 @@ class BaseConfPanel(
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        # self.wIFile.tc.Bind(wx.EVT_TEXT,       self.OnIFileLoad)
-        # self.wIFile.tc.Bind(wx.EVT_TEXT_ENTER, self.OnIFileLoad)
-        # self.wUFile.tc.Bind(wx.EVT_TEXT,       self.OnUFileChange)
+        self.wIFile.wTc.Bind(wx.EVT_TEXT, self.OnIFileLoad)
         self.wImputationMethod.wCb.Bind(wx.EVT_COMBOBOX, self.OnImpMethod)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-#     def OnUFileChange(self, event: wx.CommandEvent) -> bool:
-#         """Adjust the default initial path to search for input files when an 
-#             UMSAP file is selected.
-    
-#             Parameters
-#             ----------
-#             event: wx.Event
-#                 Information about the event
-            
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------> Set defPath
-#         if (fileP := self.wUFile.tc.GetValue()) == '':
-#             self.wIFile.defPath = None
-#         else:
-#             #------------------------------> 
-#             p = Path(fileP).parent / config.fnDataInit
-#             #------------------------------> 
-#             if p.exists():
-#                 self.wIFile.defPath = p
-#             else:
-#                 self.wIFile.defPath = None
-#         #endregion ----------------------------------------------> Set defPath
-        
-#         return True
-#     #---
-    
-#     def OnIFileLoad(self, event: Union[wx.CommandEvent, str]) -> bool:
-#         """Clear GUI elements when Data Folder is ''
-    
-#             Parameters
-#             ----------
-#             event: wx.Event
-#                 Information about the event		
-                
-#             Return
-#             ------
-#             bool
-#         """
-#         if (fileP := self.wIFile.tc.GetValue()) == '':
-#             return self.LCtrlEmpty()
-#         else:
-#             return self.OnIFileEnter(fileP)
-#     #---
-    
-#     def OnIFileEnter(self, fileP: Path) -> bool:
-#         """Fill the wx.ListCtrl after selecting path to the input file.
-    
-#             Parameters
-#             ----------
-#             fileP : Path
-#                 Folder path
-                
-#             Notes
-#             -----
-#             Silently ignores the absence of a wx.ListCtrl as self.lbI
-#         """
-#         #region -----------------------------------------------> Check for lbI
-#         if self.wLCtrlI is None:
-#             return True
-#         else:
-#             pass
-#         #endregion --------------------------------------------> Check for lbI
-        
-#         #region ----------------------------------------------------> Del list
-#         self.LCtrlEmpty()
-#         #endregion -------------------------------------------------> Del list
-        
-#         #region ---------------------------------------------------> Fill list
-#         try:
-#             dtsMethod.LCtrlFillColNames(self.wLCtrlI, fileP)
-#         except Exception as e:
-#             dtsWindow.NotificationDialog('errorF', msg=str(e), tException=e)
-#             self.wIFile.tc.SetValue('')
-#             return False
-#         #endregion ------------------------------------------------> Fill list
-        
-#         #region -----------------------------------------> Columns in the file
-#         self.rNCol = self.wLCtrlI.GetItemCount() - 1
-#         #endregion --------------------------------------> Columns in the file
+    def OnIFileLoad(self, event: Union[wx.CommandEvent, str]) -> bool:
+        """Clear GUI elements when Data Folder is ''
 
-#         return True
-#     #---
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event
+
+            Return
+            ------
+            bool
+        """
+        if (fileP := self.wIFile.wTc.GetValue()) == '':
+            return self.LCtrlEmpty()
+        else:
+            return self.IFileEnter(fileP)
+    #---
 
     def OnImpMethod(self, event: Union[wx.CommandEvent, str])-> bool:
         """Show/Hide the Imputation options.
@@ -623,53 +554,90 @@ class BaseConfPanel(
         return True
     #---
 
-#     def OnClear(self, event) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         super().OnClear(event)
-#         self.OnImpMethod('fEvent')
-#         return True
-#     #---
+    def OnClear(self, event: wx.CommandEvent) -> bool:
+        """Clear all input, including the Imputation options.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        super().OnClear(event)
+        self.OnImpMethod('fEvent')
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
 
-#     #region ---------------------------------------------------> Other Methods
-#     def LCtrlEmpty(self) -> bool:
-#         """Clear wx.ListCtrl and NCol 
-        
-#             Returns
-#             -------
-#             bool
-        
-#             Notes
-#             -----
-#             Helper function to accomodate several wx.ListCtrl in the panel.
-#         """
-#         #region -------------------------------------------------> Delete list
-#         for l in self.rLCtrlL:
-#             l.DeleteAllItems()
-#         #endregion ----------------------------------------------> Delete list
-        
-#         #region ---------------------------------------------------> Set NCol
-#         self.rNCol = None
-#         #endregion ------------------------------------------------> Set NCol
+    #region ---------------------------------------------------> Class Methods
+    def LCtrlEmpty(self) -> bool:
+        """Clear wx.ListCtrl and NCol.
 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Other Methods
-    
-#     #region ----------------------------------------------------> Run Analysis
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Helper function to accommodate several wx.ListCtrl in the panel.
+        """
+        #region -------------------------------------------------> Delete list
+        for l in self.rLCtrlL:
+            l.DeleteAllItems()
+        #endregion ----------------------------------------------> Delete list
+
+        #region ---------------------------------------------------> Set NCol
+        self.rNCol = None
+        #endregion ------------------------------------------------> Set NCol
+
+        return True
+    #---
+
+    def IFileEnter(self, fileP: Union[Path, str]) -> bool:
+        """Fill the wx.ListCtrl after selecting path to the input file.
+
+            Parameters
+            ----------
+            fileP : Path
+                Folder path
+
+            Notes
+            -----
+            Silently ignores the absence of a wx.ListCtrl as self.lbI
+        """
+        #region -----------------------------------------------> Check for lbI
+        if self.wLCtrlI is None:
+            return True
+        else:
+            pass
+        #endregion --------------------------------------------> Check for lbI
+
+        #region ----------------------------------------------------> Del list
+        self.LCtrlEmpty()
+        #endregion -------------------------------------------------> Del list
+
+        #region ---------------------------------------------------> Fill list
+        try:
+            mMethod.LCtrlFillColNames(self.wLCtrlI, fileP)
+        except Exception as e:
+            mWindow.DialogNotification(
+                'errorF', parent=self, msg=str(e), tException=e)
+            self.wIFile.wTc.SetValue('')
+            return False
+        #endregion ------------------------------------------------> Fill list
+
+        #region -----------------------------------------> Columns in the file
+        self.rNCol = self.wLCtrlI.GetItemCount() - 1
+        #endregion --------------------------------------> Columns in the file
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
+
+    #region ----------------------------------------------------> Run Analysis
 #     def OnRun(self, event: wx.CommandEvent) -> bool:
 #         """ Start analysis of the module/utility
 
@@ -2987,9 +2955,9 @@ class PaneCorrA(BaseConfPanel):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        # self.wAddCol.Bind(wx.EVT_BUTTON, self.OnAdd)
+        self.wAddCol.Bind(wx.EVT_BUTTON, self.OnAdd)
         #endregion -----------------------------------------------------> Bind
-        
+
         #region ----------------------------------------------> checkUserInput
         # self.rCheckUserInput = {
         #     self.cLuFile      : [self.wUFile.tc,            config.mFileBad  ,    False],
@@ -3011,7 +2979,9 @@ class PaneCorrA(BaseConfPanel):
             user = getpass.getuser()
             if mConfig.os == "Darwin":
                 self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-                self.wIFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
+                fDataTemp = "/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt"
+                self.wIFile.wTc.SetValue(fDataTemp)
+                self.IFileEnter(fDataTemp)
             elif mConfig.os == 'Windows':
                 from pathlib import Path
                 self.wUFile.wTc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
@@ -3030,96 +3000,94 @@ class PaneCorrA(BaseConfPanel):
         else:
             pass
         #endregion -----------------------------------------------------> Test
-        
+
         #region -------------------------------------------------------> DataI
-        # self.SetInitialData(cDataI)
+        self.SetInitialData(dataI)
         #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
-    
-#     #------------------------------> Class Methods
-#     #region ---------------------------------------------------> Event Methods
-#     def OnAdd(self, event: Union[wx.Event, str]) -> bool:
-#         """Add columns to analyse using the button.
-    
-#             Parameters
-#             ----------
-#             event : wx.Event
-#                 Event information
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         self.wLCtrlI.OnCopy('')
-#         self.wLCtrlO.OnPaste('')
+
+    #region ---------------------------------------------------> Event Methods
+    def OnAdd(self, event: Union[wx.Event, str]) -> bool:
+        """Add columns to analyze using the button.
+
+            Parameters
+            ----------
+            event : wx.Event
+                Event information
+
+            Returns
+            -------
+            bool
+        """
+        self.wLCtrlI.OnCopy('')
+        self.wLCtrlO.OnPaste('')
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class Methods
+    def SetInitialData(self, dataI: dict={}) -> bool:
+        """Set initial data.
+
+            Parameters
+            ----------
+            dataI : dict
+                Data to fill all fields and repeat an analysis. See Notes.
+
+            Returns
+            -------
+            bool
+        """
+        if dataI:
+            #------------------------------> 
+            dataInit = dataI['uFile'].parent / mConfig.fnDataInit
+            iFile = dataInit / dataI['I'][self.cLiFile]
+            #------------------------------> 
+            self.wUFile.wTc.SetValue(str(dataI['uFile']))
+            self.wIFile.wTc.SetValue(str(iFile))
+            self.wId.wTc.SetValue(dataI['CI']['ID'])
+            #------------------------------> 
+            self.wCeroB.wCb.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.wTransMethod.wCb.SetValue(dataI['I'][self.cLTransMethod])
+            self.wNormMethod.wCb.SetValue(dataI['I'][self.cLNormMethod])
+            self.wImputationMethod.wCb.SetValue(dataI['I'][self.cLImputation])
+            self.wShift.wTc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
+            self.wWidth.wTc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
+            #------------------------------> 
+            if iFile.exists:
+                #------------------------------> Add columns with the same order
+                l = []
+                for k in dataI['CI']['oc']['Column']:
+                    if len(l) == 0:
+                        #------------------------------>
+                        l.append(k)
+                        continue
+                    else:
+                        #------------------------------>
+                        if k > l[-1]:
+                            #------------------------------>
+                            l.append(k)
+                            continue
+                        else:
+                            #------------------------------>
+                            self.wLCtrlI.SelectList(l)
+                            self.OnAdd('fEvent')
+                            #------------------------------>
+                            l = [k]
+                #------------------------------> Last past
+                self.wLCtrlI.SelectList(l)
+                self.OnAdd('fEvent')
+            else:
+                pass
+            #------------------------------> 
+            self.OnImpMethod('fEvent')
+        else:
+            pass
         
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Event Methods
-    
-#     #region --------------------------------------------------> Manage Methods
-#     def SetInitialData(self, dataI: Optional[dict]=None) -> bool:
-#         """Set initial data
-    
-#             Parameters
-#             ----------
-#             dataI : dict or None
-#                 Data to fill all fields and repeat an analysis. See Notes.
-    
-#             Returns
-#             -------
-#             True
-#         """
-#         if dataI is not None:
-#             #------------------------------> 
-#             dataInit = dataI['uFile'].parent / config.fnDataInit
-#             iFile = dataInit / dataI['I'][self.cLiFile]
-#             #------------------------------> 
-#             self.wUFile.tc.SetValue(str(dataI['uFile']))
-#             self.wIFile.tc.SetValue(str(iFile))
-#             self.wId.tc.SetValue(dataI['CI']['ID'])
-#             #------------------------------> 
-#             self.wCeroB.cb.SetValue(dataI['I'][self.cLCeroTreatD])
-#             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
-#             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
-#             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
-#             self.wShift.tc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
-#             self.wWidth.tc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
-#             #------------------------------> 
-#             if iFile.exists:
-#                 #------------------------------> Add columns with the same order
-#                 l = []
-#                 for k in dataI['CI']['oc']['Column']:
-#                     if len(l) == 0:
-#                         #------------------------------>
-#                         l.append(k)
-#                         continue
-#                     else:
-#                         #------------------------------>
-#                         if k > l[-1]:
-#                             #------------------------------>
-#                             l.append(k)
-#                             continue
-#                         else:
-#                             #------------------------------>
-#                             self.wLCtrlI.SelectList(l)
-#                             self.OnAdd('fEvent')
-#                             #------------------------------>
-#                             l = [k]
-#                 #------------------------------> Last past
-#                 self.wLCtrlI.SelectList(l)
-#                 self.OnAdd('fEvent')
-#             else:
-#                 pass
-#             #------------------------------> 
-#             self.OnImpMethod('fEvent')
-#         else:
-#             pass
-        
-#         return True
-#     #---
-#     #endregion -----------------------------------------------> Manage Methods
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
 
 #     #region ---------------------------------------------------> Run Analysis
 #     def CheckInput(self) -> bool:

@@ -253,8 +253,8 @@ fConfigDef = res / 'CONFIG/config_def.json'
 # fnTargetProt = "{}_{}-Target-Protein-Data.txt"
 # fnExclude    = "{}_{}-After-Excluding-Data.txt"
 # fnScore      = "{}_{}-Score-Filtered-Data.txt"
-# fnDataSteps  = 'Steps_Data_Files'
-# fnDataInit   = 'Input_Data_Files'
+fnDataSteps  = 'Steps_Data_Files'
+fnDataInit   = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
 
 

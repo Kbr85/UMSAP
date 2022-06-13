@@ -11668,7 +11668,7 @@ class DialogNotification(wx.Dialog):
             )
         else:
             pass
-        if self.wError is not None:
+        if getattr(self, 'wError', False):
             #------------------------------> 
             if self.wMsg is not None:
                 pos = (2,1)
@@ -11685,7 +11685,7 @@ class DialogNotification(wx.Dialog):
             pass
         #--------------> Add Grow Col to Top Sizer
         self.sTop.AddGrowableCol(1,1)
-        if self.wError is not None:
+        if getattr(self, 'wError', False):
             if self.wMsg is not None:
                 self.sTop.AddGrowableRow(2,1)
             else:
