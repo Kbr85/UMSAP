@@ -49,8 +49,8 @@ import config.config as mConfig
 import data.file as mFile
 import data.check as mCheck
 import data.method as mMethod
+import data.exception as mException
 import gui.menu as mMenu
-
 # import gui.method as method
 import gui.pane as mPane
 import gui.tab as mTab
@@ -11482,7 +11482,7 @@ class DialogFileSelect(wx.FileDialog):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, 
-        mode: Literal['openO', 'openM', 'save'], 
+        mode: mConfig.litFSelect, 
         ext: str, 
         parent: Optional['wx.Window']=None, 
         msg: str='', 
@@ -11590,7 +11590,7 @@ class DialogNotification(wx.Dialog):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, 
-        mode: Literal['errorF', 'errorU', 'warning', 'success', 'question'],
+        mode: mConfig.litError,
         msg: str='', 
         tException: Union[Exception, str]='', 
         parent: Optional[wx.Window]=None, 
@@ -12064,6 +12064,274 @@ class DialogCheckUpdateResult(wx.Dialog):
         #------------------------------> 
         return True
     #endregion ------------------------------------------------> Event Methods
+#---
+
+
+class DialogProgress(wx.Dialog):
+    """Custom progress dialog.
+
+        Parameters
+        ----------
+        parent : wx Widget
+            Parent of the dialogue.
+        title : str
+            Title of the dialogue.
+        count : int
+            Number of steps for the wx.Gauge
+        img : Path, str or None
+            Image to show in the dialogue.
+        style : wx style
+            Style of the dialogue.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        parent: Optional[wx.Window],
+        title: str,
+        count: int,
+        img: Path=mConfig.fImgIcon,
+        style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, title=title, style=style)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wSt = wx.StaticText(self, label='')
+        self.wG  = wx.Gauge(self, range=count, size=(400, 10))
+        self.wStTime = wx.StaticText(self, label='')
+        self.wStLabel = wx.StaticText(self, label='')
+        self.wStLabel.SetFont(self.wStLabel.GetFont().MakeBold())
+        self.wTcError = wx.TextCtrl(
+            self, 
+            size  = (565, 100),
+            style = wx.TE_READONLY|wx.TE_MULTILINE,
+        )
+        if img is not None:
+            self.img = wx.StaticBitmap(
+                self,
+                bitmap = wx.Bitmap(str(img), wx.BITMAP_TYPE_PNG),
+            )
+        else:
+            self.img = None
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sBtn = self.CreateButtonSizer(wx.OK)
+
+        self.sStG = wx.BoxSizer(wx.VERTICAL)
+        self.sStG.Add(self.wSt, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT, 5)
+        self.sStG.Add(self.wG, 0, wx.EXPAND|wx.LEFT|wx.RIGHT, 5)
+        self.sStG.Add(self.wStTime, 0, wx.ALIGN_CENTRE|wx.LEFT|wx.RIGHT, 5)
+
+        self.sProgress = wx.GridBagSizer(1,1)
+        if self.img is not None:
+            self.sProgress.Add(
+                self.img,
+                pos    = (0,0),
+                flag   = wx.ALIGN_CENTER|wx.ALL,
+                border = 5,
+            )
+        else:
+            pass
+
+        if self.img is not None:
+            pos = (0,1)
+        else:
+            pos = (0,0)
+        self.sProgress.Add(
+            self.sStG,
+            pos    = pos,
+            flag   = wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+            border = 5
+        )
+        self.sProgress.AddGrowableCol(pos[1],1)
+
+        self.sError = wx.BoxSizer(wx.VERTICAL)
+        self.sError.Add(self.wStLabel, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.sError.Add(self.wTcError, 1, wx.EXPAND|wx.ALL, 5)
+
+        self.sSizer = wx.BoxSizer(wx.VERTICAL)
+        self.sSizer.Add(self.sProgress, 0, wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, 25)
+        self.sSizer.Add(self.sError, 1, wx.EXPAND|wx.LEFT|wx.RIGHT, 25)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.RIGHT|wx.BOTTOM, 25)
+        
+        self.sSizer.Hide(self.sError, recursive=True)
+        self.sSizer.Hide(self.sBtn, recursive=True)
+
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        self.CenterOnParent()
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def UpdateStG(self, text:str, step: int=0) -> bool:
+        """Update the step message and the gauge step. 
+
+            Parameters
+            ----------
+            text : str
+                Text for the wx.StaticText.
+            step : int
+                Number of steps to increase the gauge.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update values
+        self.wG.SetValue(self.wG.GetValue()+step)
+        self.wSt.SetLabel(text)
+        #endregion --------------------------------------------> Update values
+
+        #region -----------------------------------------------> Update window
+        self.Refresh()
+        self.Update()
+        #endregion --------------------------------------------> Update window
+
+        return True
+    #---
+
+    def UpdateG(self, step: int) -> bool:
+        """Update only the gauge of the dialogue.
+
+            Parameters
+            ----------
+            step: int
+                Number of steps to increase the gauge.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update values
+        self.wG.SetValue(self.wG.GetValue()+step)
+        #endregion --------------------------------------------> Update values
+
+        #region -----------------------------------------------> Update window
+        self.Refresh()
+        self.Update()
+        #endregion --------------------------------------------> Update window
+
+        return True
+    #---
+
+    def UpdateSt(self, text: str) -> bool:
+        """Update the step message.
+
+            Parameters
+            ----------
+            text : str
+                Text for the wx.StaticText
+        """
+        #region -----------------------------------------------> Update values
+        self.wSt.SetLabel(text)
+        #endregion --------------------------------------------> Update values
+
+        #region -----------------------------------------------> Update window
+        self.Refresh()
+        self.Update()
+        #endregion --------------------------------------------> Update window
+
+        return True
+    #---
+
+    def SuccessMessage(self, label: str, eTime: str='') -> bool:
+        """Show a Success message.
+
+            Parameters
+            ----------
+            label : str
+                All done message.
+            eTime : str
+                Secondary mensage to display below the gauge. e.g. Elapsed time.
+        """
+        #region ------------------------------------------------------> Labels
+        self.wSt.SetLabel(label)
+        self.wSt.SetFont(self.wSt.GetFont().MakeBold())
+        if eTime:
+            self.wStTime.SetLabel(eTime)
+        else:
+            pass
+        #endregion ---------------------------------------------------> Labels
+
+        #region -------------------------------------------------------> Sizer
+        #------------------------------> Center Success message
+        self.sStG.GetItem(self.wSt).SetFlag(wx.ALIGN_CENTRE|wx.TOP|wx.LEFT)
+        #------------------------------> Show buttons
+        self.sSizer.Show(self.sBtn, recursive=True)
+        #------------------------------> Layout & Show
+        self.sSizer.Layout()
+        self.Fit()
+        self.Refresh()
+        self.Update()
+        #endregion ----------------------------------------------------> Sizer
+
+        return True
+    #---
+
+    def ErrorMessage(
+        self,
+        label: str,
+        error: str='',
+        tException: Optional[Exception]=None,
+        ) -> bool:
+        """Show error message.
+
+            Parameters
+            ----------
+            label : str
+                Label to show.
+            error : str
+                Error message.
+            tException : Exception or None
+                Exception raised to offer full traceback.
+        """
+        #region -------------------------------------------------> Check input
+        if not error and tException is None:
+            msg = ("Both error and tException cannot be None")
+            raise mException.InputError(msg)
+        else:
+            pass
+        #endregion ----------------------------------------------> Check input
+
+        #region ------------------------------------------------------> Labels
+        self.wStLabel.SetLabel(label)
+        #------------------------------>
+        if error:
+            self.wTcError.SetValue(error)
+        else:
+            pass
+        #------------------------------>
+        if tException is None:
+            pass
+        else:
+            if error:
+                self.wTcError.AppendText('\n\nFurther details:\n')
+            else:
+                pass
+            self.wTcError.AppendText(mMethod.StrException(tException))
+        #------------------------------>
+        self.wTcError.SetInsertionPoint(0)
+        #endregion ---------------------------------------------------> Labels
+
+        #region -------------------------------------------------------> Sizer
+        self.sSizer.Show(self.sError, recursive=True)
+        self.sSizer.Show(self.sBtn, recursive=True)
+
+        self.sSizer.Layout()
+        self.Fit()
+        self.Refresh()
+        self.Update()
+        #endregion ----------------------------------------------------> Sizer
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 
 

@@ -1683,7 +1683,7 @@ class MyListCtrl(wx.ListCtrl):
                 self.Select(k, on=1)
             except Exception:
                 pass
-        #endregion ---------------------------------------------------> Select    
+        #endregion ---------------------------------------------------> Select
 
         return True
     #---

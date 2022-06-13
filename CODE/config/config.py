@@ -282,8 +282,8 @@ lLCtrlColNameI = ['#', 'Name']
 # lStTarProtExp   = 'Experiments'
 # lStCtrlName     = 'Name'
 # lStCtrlType     = 'Type'
-# #------------------------------> wx.StaticText
-# lStColAnalysis = 'Columns for Analysis'
+#------------------------------> wx.StaticText
+lStColAnalysis = 'Columns for Analysis'
 # lStScoreVal    = 'Score Value'
 # lStScoreCol    = 'Score'
 # lStResultCtrl  = 'Results - Control experiments'
@@ -420,8 +420,10 @@ oCorrMethod = {
 
 #region --------------------------------------------------------> Literal
 litFFSelect = Literal['openO', 'openM', 'save', 'folder']
+litFSelect  = Literal['openO', 'openM', 'save']
 litFoF      = Literal['file', 'folder']
 litNumType  = Literal['int', 'float']
+litError    = Literal['errorF', 'errorU', 'warning', 'success', 'question']
 #endregion -----------------------------------------------------> Literal
 
 
@@ -482,8 +484,8 @@ litNumType  = Literal['int', 'float']
 
 #region ------------------------------------------------------------> Values
 # mOneRNumText = "Only one real number can be accepted here."
-# mOneRPlusNumText = (
-#     "Only one number equal or greater than zero can be accepted here.")
+mOneRPlusNumText = (
+    "Only one number equal or greater than zero can be accepted here.")
 # mOneZPlusNumText = "Only a non-negative integer can be accepted here."
 # mOne01NumText = "Only one number between 0 and 1 can be accepted here."
 # mNZPlusNumText = (
@@ -513,17 +515,17 @@ mFileRead = 'An error occurred when reading file:\n{}'
 #     'number of columns in the Data file.')
 # mColNumber = ('In addition, the value must be smaller than the total '
 #     'number of columns in the Data file.')
-# mSection = 'Values in section {} must be unique.'
+mSection = 'Values in section {} must be unique.'
 # mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
 # mRepeatColNum = 'There are repeated column numbers in the text fields.'
-# mRowsInLCtrl = 'There must be at least {} items in {}.'
+mRowsInLCtrl = 'There must be at least {} items in {}.'
 # mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
 #     'Protein, etc) were applied.')
-# mFileBad = "File: '{}'\ncannot be used as {} file."
-# mOptionBad = "Option '{}' cannot be accepted in {}."
-# mValueBad = "Value '{}' cannot be accepted in {}.\n"
+mFileBad = "File: '{}'\ncannot be used as {} file."
+mOptionBad = "Option '{}' cannot be accepted in {}."
+mValueBad = "Value '{}' cannot be accepted in {}.\n"
 # mOneRealNum = f"{mValueBad}{mOneRNumText}"
-# mOneRPlusNum = f"{mValueBad}{mOneRPlusNumText}"
+mOneRPlusNum = f"{mValueBad}{mOneRPlusNumText}"
 # mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
 # mOneZPlusNumCol = f"{mOneZPlusNum} {mColNumber}"
 # mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"

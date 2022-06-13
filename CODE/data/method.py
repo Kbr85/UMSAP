@@ -103,6 +103,100 @@ def StrNow(dtFormat: str=mConfig.dtFormat) -> str:
     """
     return datetime.now().strftime(dtFormat)
 #---
+
+
+def StrSetMessage(start:str, end:str, link:str='\n\nFurther details:\n') -> str:
+    """Creates a message by concatenating start and end with link.
+
+        Parameters
+        ----------
+        start: str
+            Start of the message
+        end : str
+            End of the message
+        link : str
+            Link between start and end
+
+        Returns
+        -------
+        str:
+            Full message
+
+        Examples
+        --------
+        >>> StrSetMessage('Start', 'End', link=' - ')
+        >>> 'Start - End'
+        >>> StrSetMessage('Start.', 'End.', link=None)
+        >>> 'Start. End.'
+    """
+    if link is not None:
+        return f"{start}{link}{end}"
+    else:
+        return f"{start} {end}"
+#---
+
+
+def Str2ListNumber(
+    tStr: str, 
+    numType:mConfig.litNumType='int',
+    sep: str=',',
+    unique: bool=False
+    ) -> Union[list[int], list[float]]:
+    """Turn a string into a list of numbers. Ranges are expanded as integers.
+
+        Parameters
+        ----------
+        tStr: str
+            The string containing the numbers and/or range of numbers (4-8)
+        numType : str
+            One of int, float
+        sep : str
+            The character to separate numbers in the string
+        unique : boolean
+            Return only unique values. Order is kept. Default is False.
+
+        Returns
+        -------
+        list of numbers.
+
+        Examples
+        --------
+        >>> Str2ListNumber('1, 2, 3, 6-10,  4  ,  5, 6  , 7', sep=',')
+        >>> [1, 2, 3, 6, 7, 8, 9, 10, 4, 5, 6, 7]
+        >>> Str2ListNumber('1, 2, 3, 6-10,  4  ,  5, 6  , 7', sep=',', unique=True)
+        >>> [1, 2, 3, 6, 7, 8, 9, 10, 4, 5]
+    """
+    #region -------------------------------------------------------> Variables
+    lN = []
+    values = tStr.strip().split(sep)
+    #endregion ----------------------------------------------------> Variables
+
+    #region -----------------------------------------------------> Get numbers
+    for k in values:
+        if k.strip() != '':
+            #------------------------------> Expand ranges
+            try:
+                lK = ExpandRange(k, numType)
+            except mException.InputError as e:
+                raise e
+            #------------------------------> Get list of numbers
+            lN = lN + lK
+        else:
+            pass
+    #endregion --------------------------------------------------> Get numbers
+
+    #region ----------------------------------------------------------> Unique
+    if unique:
+        try:
+            lo = ListRemoveDuplicates(lN)
+        except Exception as e:
+            raise e
+    else:
+        lo = lN
+    #endregion -------------------------------------------------------> Unique
+    
+    return lo
+#---
 #endregion ---------------------------------------------------> String methods
 
 
@@ -217,6 +311,28 @@ def LCtrlFillColNames(lc: wx.ListCtrl, fileP: Union[Path, str]) -> bool:
     #endregion ----------------------------------------------------> Fill List
 
     return True
+#---
+
+
+def ListRemoveDuplicates(l: Union[list, tuple]) -> list:
+    """Remove duplicate elements from l. Order is conserved.
+
+        Parameters
+        ----------
+        l : list or tuple
+            Contain the duplicate elements to remove
+
+        Returns
+        -------
+        list
+
+        Examples
+        --------
+        >>> ListRemoveDuplicates([1,2,3,6,4,7,5,6,10,7,8,9])
+        >>> [1, 2, 3, 6, 4, 7, 5, 10, 8, 9]
+    """
+    # Test in tests.unit.data.test_method.Test_ListRemoveDuplicates
+    return list(dict.fromkeys(l))
 #---
 #endregion ------------------------------------------------------> wx.ListCtrl
 

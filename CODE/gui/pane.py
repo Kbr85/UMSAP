@@ -15,7 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
-# import _thread
+import _thread
 # from collections import namedtuple
 # import shutil
 from pathlib import Path
@@ -29,7 +29,7 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 import config.config as mConfig
-# import data.check as check
+import data.check as mCheck
 import data.method as mMethod
 # import gui.method as gmethod
 import gui.validator as mValidator
@@ -151,8 +151,11 @@ class BaseConfPanel(
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cParent = parent
-        #------------------------------> Name
+        #------------------------------> 
         self.cName = getattr(self, 'cName', mConfig.npDef)
+        #------------------------------> For the Progress Dialog
+        self.cTitlePD = getattr(self, 'cTitlePD', 'Default Title')
+        self.cGaugePD = getattr(self, 'cGaugePD', 50)
         #------------------------------> Labels
         self.cLFileBox     = getattr(self, 'cLFileBox',     'Files')
         self.cLDataBox     = getattr(self, 'cLDataBox',     'Data Preparation')
@@ -161,7 +164,7 @@ class BaseConfPanel(
         self.cLuFile       = getattr(self, 'cLuFile',       'UMSAP')
         self.cLiFile       = getattr(self, 'cLiFile',       'Data')
         self.cLId          = getattr(self, 'cLId',          'Analysis ID')
-        # self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD',  '0s Missing')
+        self.cLCeroTreatD  = getattr(self, 'cLCeroTreatD',  '0s Missing')
         self.cLNormMethod  = getattr(self, 'cLNormMethod',  'Normalization')
         self.cLTransMethod = getattr(self, 'cLTransMethod', 'Transformation')
         self.cLImputation  = getattr(self, 'cLImputation',  'Imputation')
@@ -169,15 +172,15 @@ class BaseConfPanel(
         self.cLWidth       = getattr(self, 'cLWidth',       'Width')
         self.cLCeroTreat   = getattr(
             self, 'cLCeroTreat', 'Treat 0s as missing values')
-        # # For Progress Dialog
-        # self.cLPdCheck    = getattr(self, 'cLPdCheck',  'Checking user input: ')
+        #------------------------------> For Progress Dialog
+        self.cLPdCheck    = getattr(self, 'cLPdCheck',  'Checking user input: ')
         # self.cLPdPrepare  = getattr(self, 'cLPdPrepare', 'Preparing analysis: ')
         # self.cLPdRun      = getattr(self, 'cLPdRun',     'Running analysis: ')
         # self.cLPdWrite    = getattr(self, 'cLPdWrite',   'Writing output: ')
         # self.cLPdLoad     = getattr(self, 'cLPdLoad',    'Loading output file')
-        # self.cLPdError    = getattr(self, 'cLPdError',   mConfig.lPdError)
-        # self.cLPdDone     = getattr(self, 'cLPdDone',    'All Done')
-        # self.cLPdElapsed  = getattr(self, 'cLPdElapsed', 'Elapsed time: ')
+        self.cLPdError    = getattr(self, 'cLPdError',   mConfig.lPdError)
+        self.cLPdDone     = getattr(self, 'cLPdDone',    'All Done')
+        self.cLPdElapsed  = getattr(self, 'cLPdElapsed', 'Elapsed time: ')
         # self.cLPdReadFile = getattr(
         #     self, 'cLPdReadFile', 'Reading input files: ')
         # #------------------------------> Size
@@ -249,14 +252,16 @@ class BaseConfPanel(
         self.wLCtrlI = None 
         #--------------> List to use just in case there are more than 1
         self.rLCtrlL = []
-        # #------------------------------> Needed to Run the analysis
+        #------------------------------> Needed to Run the Analysis
+        self.rCheckUserInput = {}
+        self.rCheckUnique = []
         # #--------------> Dict with the user input as given
         # self.rDI = {}
         # #--------------> Dict with the processed user input
         # self.rDO = {} 
-        # #--------------> Error message and exception to show in self.RunEnd
-        # self.rMsgError  = None 
-        # self.rException = None
+        #--------------> Error message and exception to show in self.RunEnd
+        self.rMsgError  = ''
+        self.rException = None
         # #--------------> pd.DataFrames for:
         # self.dfI  = pd.DataFrame() # Initial and
         # self.dfF  = pd.DataFrame() # Data as float and 0 and '' values as np.nan
@@ -272,9 +277,9 @@ class BaseConfPanel(
         # self.rDateID = None
         # #--------------> folder for output
         # self.rOFolder = None
-        # #--------------> input file for directing repeating analysis from
-        # # file copied to oFolder
-        # self.rDFile   = []
+        #--------------> input file for directing repeating analysis from
+        # file copied to oFolder
+        self.rDFile   = []
         # #--------------> Obj for files
         # self.rIFileObj   = None
         # self.rSeqFileObj = None
@@ -638,129 +643,95 @@ class BaseConfPanel(
     #endregion ------------------------------------------------> Class Methods
 
     #region ----------------------------------------------------> Run Analysis
-#     def OnRun(self, event: wx.CommandEvent) -> bool:
-#         """ Start analysis of the module/utility
+    def OnRun(self, event: wx.CommandEvent) -> bool:
+        """ Start analysis of the module/utility.
 
-#             Parameter
-#             ---------
-#             event : wx.Event
-#                 Event information
+            Parameter
+            ---------
+            event : wx.Event
+                Event information.
                 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------> Dlg window
-#         self.rDlg = dtsWindow.ProgressDialog(
-#             config.winMain, self.cTitlePD, self.cGaugePD)
-#         #endregion -----------------------------------------------> Dlg window
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Dlg window
+        self.rDlg = mWindow.DialogProgress(
+            mConfig.winMain, self.cTitlePD, self.cGaugePD)
+        #endregion -----------------------------------------------> Dlg window
 
-#         #region ------------------------------------------------------> Thread
-#         _thread.start_new_thread(self.Run, ('test',))
-#         #endregion ---------------------------------------------------> Thread
+        #region ------------------------------------------------------> Thread
+        _thread.start_new_thread(self.Run, ('test',))
+        #endregion ---------------------------------------------------> Thread
 
-#         #region ----------------------------------------> Show progress dialog
-#         self.rDlg.ShowModal()
-#         self.rDlg.Destroy()
-#         #endregion -------------------------------------> Show progress dialog
+        #region ----------------------------------------> Show progress dialog
+        self.rDlg.ShowModal()
+        self.rDlg.Destroy()
+        #endregion -------------------------------------> Show progress dialog
 
-#         return True
-#     #---
-    
-#     def UniqueColumnNumber(self, l: list[wx.TextCtrl]) -> bool:
-#         """Check l contains unique numbers. 
-    
-#             Parameters
-#             ----------
-#             l: list of wx.TextCtrl
-#                 List of wx.TextCtrl that must contain column numbers.
-    
-#             Returns
-#             -------
-#             bool
-            
-#             Notes
-#             -----
-#             Needed here to make sure that all wx.TextCtrl in l contains valid
-#             input.
-#         """
-#         #region -----------------------------------------------------> Message
-#         msgStep = self.cLPdCheck + 'Unique column numbers'
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #endregion --------------------------------------------------> Message
-        
-#         #region -------------------------------------------------------> Check
-#         a, b = check.TcUniqueColNumbers(l)
-#         if a:
-#             pass
-#         else:
-#             msg = config.mSection.format(self.cLColumnBox)
-#             self.rMsgError = dtsMethod.StrSetMessage(msg, b[2])
-#             return False
-#         #endregion ----------------------------------------------------> Check
-        
-#         return True
-#     #---
-    
-#     def CheckInput(self) -> bool:
-#         """Check individual fields in the user input.
-        
-#             Returns
-#             -------
-#             bool
-        
-#             Notes
-#             -----
-#             BaseErrorMessage must be a string with two placeholder for the 
-#             error value and Field label in that order. For example:
-#             'File: {bad_path_placeholder}\n cannot be used as 
-#                                                     {Field_label_placeholder}'
-                                                    
-#             The child class must define a rCheckUserInput dict with the correct
-#             order for the checking process.
-            
-#             rCheckUserInput = {
-#                 'Field label' : [Widget, BaseErrorMessage]
-#             }
-            
-#             The child class must define a rCheckUnique list with the wx.TextCtrl
-#             that must hold unique column numbers.
-#         """
-#         #region -------------------------------------------------------> Check
-#         for k,v in self.rCheckUserInput.items():
-#             #------------------------------>
-#             msgStep = self.cLPdCheck + k
-#             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#             #------------------------------>
-#             if v[2]:
-#                 a, b = v[0].GetValidator().Validate(vMax=self.rNCol)
-#             else:
-#                 a, b = v[0].GetValidator().Validate()
-#             #------------------------------>
-#             if a:
-#                 pass
-#             else:
-#                 self.rMsgError = dtsMethod.StrSetMessage(
-#                     v[1].format(b[1], k), b[2])
-#                 return False
-#         #endregion ----------------------------------------------------> Check
-        
-#         #region ---------------------------------------> Unique Column Numbers
-#         if getattr(self, 'rCheckUnique', False):
-#             msgStep = self.cLPdCheck + 'Unique Column Numbers'
-#             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#             #------------------------------>
-#             if self.UniqueColumnNumber(self.rCheckUnique):
-#                 pass
-#             else:
-#                 return False
-#         else:
-#             pass
-#         #endregion ------------------------------------> Unique Column Numbers
-        
-#         return True
-#     #---
-    
+        return True
+    #---
+
+    def CheckInput(self) -> bool:
+        """Check individual fields in the user input.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            BaseErrorMessage must be a string with two placeholder for the 
+            error value and Field label in that order. For example:
+            'File: {bad_path_placeholder}\n cannot be used as 
+                                                    {Field_label_placeholder}'
+
+            The child class must define a rCheckUserInput dict with the correct
+            order for the checking process.
+
+            rCheckUserInput = {'Field label':[Widget, BaseErrorMessage, Bool],}
+
+            The child class must define a rCheckUnique list with the wx.TextCtrl
+            that must hold unique column numbers.
+        """
+        #region -------------------------------------------------------> Check
+        for k,v in self.rCheckUserInput.items():
+            #------------------------------>
+            msgStep = self.cLPdCheck + k
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------>
+            if v[2]:
+                a, b = v[0].GetValidator().Validate(vMax=self.rNCol)
+            else:
+                a, b = v[0].GetValidator().Validate()
+            #------------------------------>
+            if a:
+                pass
+            else:
+                self.rMsgError = mMethod.StrSetMessage(
+                    v[1].format(b[1], k), b[2])
+                return False
+        #endregion ----------------------------------------------------> Check
+
+        #region ---------------------------------------> Unique Column Numbers
+        if self.rCheckUnique:
+            msgStep = self.cLPdCheck + 'Unique Column Numbers'
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------>
+            a, b = mCheck.TcUniqueColNumbers(self.rCheckUnique)
+            if a:
+                pass
+            else:
+                msg = mConfig.mSection.format(self.cLColumnBox)
+                self.rMsgError = mMethod.StrSetMessage(msg, b[2])
+                return False
+        else:
+            pass
+        #endregion ------------------------------------> Unique Column Numbers
+
+        return True
+    #---
+
 #     def EqualLenLabel(self, label: str) -> str:
 #         """Add empty space to the end of label to match the length of
 #             self.rLLenLongest
@@ -1543,58 +1514,58 @@ class BaseConfPanel(
 
 #         return True
 #     #---
-    
-#     def RunEnd(self) -> bool:
-#         """Restart GUI and needed variables
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------> Dlg progress dialogue
-#         if self.rMsgError is None:
-#             self.rDFile.append(self.rDO['uFile'])
-#             self.rDlg.SuccessMessage(
-#                 self.cLPdDone, eTime=f"{self.cLPdEllapsed} {self.deltaT}")
-#         else:
-#             self.rDlg.ErrorMessage(
-#                 self.cLPdError,error=self.rMsgError,tException=self.rException)
-#         #endregion ------------------------------------> Dlg progress dialogue
 
-#         #region -------------------------------------------------------> Reset
-#         self.rMsgError  = None # Error msg to show in self.RunEnd
-#         self.rException = None # Exception
-#         self.rDI        = {} # Dict with the user input as given
-#         self.rDO        = {} # Dict with the processed user input
-#         self.dfI        = pd.DataFrame() # pd.DataFrame for initial, normalized 
-#         self.dfF        = pd.DataFrame() # etc
-#         self.dfTP       = pd.DataFrame()
-#         self.dfE        = pd.DataFrame()
-#         self.dfS        = pd.DataFrame()
-#         self.dfT        = pd.DataFrame()
-#         self.dfN        = pd.DataFrame()
-#         self.dfIm       = pd.DataFrame()
-#         self.dfR        = pd.DataFrame()
-#         self.rDate      = None # date for corr file
-#         self.rDateID    = None
-#         self.rOFolder   = None # folder for output
-#         self.rIFileObj  = None
-#         self.deltaT     = None # Defined in DAT4S 
+    def RunEnd(self) -> bool:
+        """Restart GUI and needed variables
         
-#         if self.rDFile:
-#             self.wUFile.tc.SetValue(str(self.rDFile[-1]))
-#             self.wIFile.tc.SetValue(str(self.rDFile[0]))
-#             self.rDFile = []
-#         else:
-#             pass
-#         #endregion ----------------------------------------------------> Reset
-        
-#         return True
-#     #---
-#     #endregion -------------------------------------------------> Run Analysis
-# #---
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------> Dlg progress dialogue
+        if not self.rMsgError:
+            # self.rDFile.append(self.rDO['uFile'])
+            self.rDlg.SuccessMessage(
+                self.cLPdDone, eTime=f"{self.cLPdElapsed} {self.rDeltaT}")
+        else:
+            self.rDlg.ErrorMessage(
+                self.cLPdError,error=self.rMsgError,tException=self.rException)
+        #endregion ------------------------------------> Dlg progress dialogue
 
-    
+        #region -------------------------------------------------------> Reset
+        self.rMsgError  = '' # Error msg to show in self.RunEnd
+        self.rException = None # Exception
+        # self.rDI        = {} # Dict with the user input as given
+        # self.rDO        = {} # Dict with the processed user input
+        # self.dfI        = pd.DataFrame() # pd.DataFrame for initial, normalized 
+        # self.dfF        = pd.DataFrame() # etc
+        # self.dfTP       = pd.DataFrame()
+        # self.dfE        = pd.DataFrame()
+        # self.dfS        = pd.DataFrame()
+        # self.dfT        = pd.DataFrame()
+        # self.dfN        = pd.DataFrame()
+        # self.dfIm       = pd.DataFrame()
+        # self.dfR        = pd.DataFrame()
+        # self.rDate      = None # date for corr file
+        # self.rDateID    = None
+        # self.rOFolder   = None # folder for output
+        # self.rIFileObj  = None
+        self.rDeltaT     = None
+        
+        if self.rDFile:
+            self.wUFile.wTc.SetValue(str(self.rDFile[-1]))
+            self.wIFile.wTc.SetValue(str(self.rDFile[0]))
+            self.rDFile = []
+        else:
+            pass
+        #endregion ----------------------------------------------------> Reset
+
+        return True
+    #---
+    #endregion -------------------------------------------------> Run Analysis
+#---
+
+
 # class BaseConfModPanel(BaseConfPanel, widget.ResControl):
 #     """Base configuration for a panel of a module.
 
@@ -2821,15 +2792,15 @@ class PaneCorrA(BaseConfPanel):
     #region -----------------------------------------------------> Class Setup
     #------------------------------> Label
     cLCorrMethod = 'Correlation Method'
-    # cLColAnalysis = config.lStColAnalysis
+    cLColAnalysis = mConfig.lStColAnalysis
     cLNumName     = mConfig.lLCtrlColNameI
     cSNumName     = mConfig.sLCtrlColI
     #------------------------------> Needed by BaseConfPanel
     cName        = mConfig.npCorrA
     cURL         = f"{mConfig.urlTutorial}/correlation-analysis"
     # cSection     = config.nuCorrA
-    # cTitlePD     = 'Calculating Correlation Coefficients'
-    # cGaugePD     = 26
+    cTitlePD     = 'Calculating Correlation Coefficients'
+    cGaugePD     = 26
     # cTTHelp      = config.ttBtnHelp.format(cURL)
     # rLLenLongest = len(cLCorrMethod)
     # rMainData    = '{}_{}-CorrelationCoefficients-Data.txt'
@@ -2853,7 +2824,7 @@ class PaneCorrA(BaseConfPanel):
         self.wStListI = wx.StaticText(
             self.wSbColumn, label=f'Columns in the {self.cLiFile}')
         self.wStListO = wx.StaticText(
-            self.wSbColumn, label=f'Columns to Analyze')
+            self.wSbColumn, label=f'{self.cLColAnalysis}')
         self.wLCtrlI = mWidget.MyListCtrlZebra(self.wSbColumn, 
             colLabel        = self.cLNumName,
             colSize         = self.cSNumName,
@@ -2959,20 +2930,20 @@ class PaneCorrA(BaseConfPanel):
         #endregion -----------------------------------------------------> Bind
 
         #region ----------------------------------------------> checkUserInput
-        # self.rCheckUserInput = {
-        #     self.cLuFile      : [self.wUFile.tc,            config.mFileBad  ,    False],
-        #     self.cLiFile      : [self.wIFile.tc,            config.mFileBad  ,    False],
-        #     self.cLId         : [self.wId.tc,               config.mValueBad ,    False],
-        #     self.cLCeroTreat  : [self.wCeroB.cb,            config.mOptionBad,    False],
-        #     self.cLTransMethod: [self.wTransMethod.cb,      config.mOptionBad,    False],
-        #     self.cLNormMethod : [self.wNormMethod.cb,       config.mOptionBad,    False],
-        #     self.cLImputation : [self.wImputationMethod.cb, config.mOptionBad,    False],
-        #     self.cLShift      : [self.wShift.tc,            config.mOneRPlusNum , False],
-        #     self.cLWidth      : [self.wWidth.tc,            config.mOneRPlusNum , False],
-        #     self.cLCorrMethod : [self.wCorrMethod.cb,       config.mOptionBad,    False],
-        # }
+        self.rCheckUserInput = {
+            self.cLuFile      : [self.wUFile.wTc,            mConfig.mFileBad  ,    False],
+            self.cLiFile      : [self.wIFile.wTc,            mConfig.mFileBad  ,    False],
+            self.cLId         : [self.wId.wTc,               mConfig.mValueBad ,    False],
+            self.cLCeroTreat  : [self.wCeroB.wCb,            mConfig.mOptionBad,    False],
+            self.cLTransMethod: [self.wTransMethod.wCb,      mConfig.mOptionBad,    False],
+            self.cLNormMethod : [self.wNormMethod.wCb,       mConfig.mOptionBad,    False],
+            self.cLImputation : [self.wImputationMethod.wCb, mConfig.mOptionBad,    False],
+            self.cLShift      : [self.wShift.wTc,            mConfig.mOneRPlusNum , False],
+            self.cLWidth      : [self.wWidth.wTc,            mConfig.mOneRPlusNum , False],
+            self.cLCorrMethod : [self.wCorrMethod.wCb,       mConfig.mOptionBad,    False],
+        }
         #endregion -------------------------------------------> checkUserInput
-    
+
         #region --------------------------------------------------------> Test
         if mConfig.development:
             import getpass
@@ -3089,35 +3060,35 @@ class PaneCorrA(BaseConfPanel):
     #---
     #endregion ------------------------------------------------> Class Methods
 
-#     #region ---------------------------------------------------> Run Analysis
-#     def CheckInput(self) -> bool:
-#         """Check user input
+    #region ---------------------------------------------------> Run Analysis
+    def CheckInput(self) -> bool:
+        """Check user input
         
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------------> Super
-#         if super().CheckInput():
-#             pass
-#         else:
-#             return False
-#         #endregion ----------------------------------------------------> Super
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Super
+        if super().CheckInput():
+            pass
+        else:
+            return False
+        #endregion ----------------------------------------------------> Super
         
-#         #region -------------------------------------------> Individual Fields                
-#         #region -------------------------------------------> ListCtrl
-#         msgStep = self.cLPdCheck +  self.cLColAnalysis
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         if self.wLCtrlO.GetItemCount() > 1:
-#             pass
-#         else:
-#             self.rMsgError = config.mRowsInLCtrl.format(2, self.cLColAnalysis)
-#             return False
-#         #endregion ----------------------------------------> ListCtrl
-#         #endregion ----------------------------------------> Individual Fields
+        #region -------------------------------------------> Individual Fields
+        #region -------------------------------------------> ListCtrl
+        msgStep = self.cLPdCheck +  self.cLColAnalysis
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        if self.wLCtrlO.GetItemCount() > 1:
+            pass
+        else:
+            self.rMsgError = mConfig.mRowsInLCtrl.format(2, self.cLColAnalysis)
+            return False
+        #endregion ----------------------------------------> ListCtrl
+        #endregion ----------------------------------------> Individual Fields
 
-#         return True
-#     #---
+        return False
+    #---
 
 #     def PrepareRun(self) -> bool:
 #         """Set variable and prepare data for analysis.
@@ -3259,8 +3230,8 @@ class PaneCorrA(BaseConfPanel):
 
 #         return self.WriteOutputData(stepDict)
 #     #---
-#     #endregion ------------------------------------------------> Run Analysis
-# #---
+    #endregion ------------------------------------------------> Run Analysis
+#---
 
 
 # class DataPrep(BaseConfPanel):
