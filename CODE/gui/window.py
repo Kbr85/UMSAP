@@ -1853,7 +1853,7 @@ class WindowMain(BaseWindow):
     dTab = {
         mConfig.ntStart   : mTab.TabStart,
         mConfig.ntCorrA   : mTab.BaseConfTab,
-        # mConfig.ntDataPrep: mTab.BaseConfListTab,
+        mConfig.ntDataPrep: mTab.BaseConfListTab,
         # mConfig.ntLimProt : mTab.BaseConfListTab,
         # mConfig.ntProtProf: mTab.BaseConfListTab,
         # mConfig.ntTarProt : mTab.BaseConfListTab,
@@ -11631,7 +11631,7 @@ class DialogNotification(wx.Dialog):
         tException: Union[Exception, str]='', 
         parent: Optional[wx.Window]=None, 
         button: int=1, 
-        setText: bool=True,
+        setText: bool=False,
         ) -> None:
         """ """
         #region -------------------------------------------------> Check Input

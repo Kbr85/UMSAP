@@ -137,7 +137,7 @@ ntPrefUpdate = 'Updates'
 npDef = 'Default Pane'
 # npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
-# npDataPrep              = 'DataPrepPane'
+npDataPrep              = 'DataPrepPane'
 # npLimProt               = 'LimProtPane'
 npProtProf              = 'ProtProfPane'
 npTarProt               = 'TarProtPane'
@@ -269,7 +269,7 @@ urlTutorial = f"{urlHome}/tutorial/2-2-X"
 #region --------------------------------------------------------------> Labels
 #------------------------------> Pane Title
 lnPaneConf = 'Configuration Options'
-# lnListPane = 'Data File Content'
+lnListPane = 'Data File Content'
 # #------------------------------> wx.Button
 # lBtnTypeResCtrl = 'Type Values'
 #------------------------------> wx.ListCtrl
@@ -491,8 +491,8 @@ mOneRPlusNumText = (
     "Only one number equal or greater than zero can be accepted here.")
 # mOneZPlusNumText = "Only a non-negative integer can be accepted here."
 # mOne01NumText = "Only one number between 0 and 1 can be accepted here."
-# mNZPlusNumText = (
-#     "Only a list of unique non-negative integers can be accepted here.")
+mNZPlusNumText = (
+    "Only a list of unique non-negative integers can be accepted here.")
 #endregion ---------------------------------------------------------> Values
 
 #region ---------------------------------------------------------------> Files
@@ -514,8 +514,8 @@ mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
 #endregion ---------------------------------------------------------> Pandas
  
 #region ----------------------------------------------------> For CheckInput
-# mColNumbers = ('In addition, each value must be smaller than the total '
-#     'number of columns in the Data file.')
+mColNumbers = ('In addition, each value must be smaller than the total '
+    'number of columns in the Data file.')
 # mColNumber = ('In addition, the value must be smaller than the total '
 #     'number of columns in the Data file.')
 mSection = 'Values in section {} must be unique.'
@@ -531,8 +531,8 @@ mValueBad = "Value '{}' cannot be accepted in {}.\n"
 mOneRPlusNum = f"{mValueBad}{mOneRPlusNumText}"
 # mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
 # mOneZPlusNumCol = f"{mOneZPlusNum} {mColNumber}"
-# mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
-# mNZPlusNumCol = f"{mNZPlusNum} {mColNumbers}"
+mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
+mNZPlusNumCol = f"{mNZPlusNum} {mColNumbers}"
 # mOne01Num = f"{mValueBad}{mOne01NumText}"
 # mResCtrl = (
 #     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
