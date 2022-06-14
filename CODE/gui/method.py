@@ -47,26 +47,16 @@ def LoadUMSAPFile(
     """
     #region --------------------------------------------> Get file from Dialog
     if fileP is None:
-        try:
-            #------------------------------>
-            dlg = mWindow.DialogFileSelect(
-                'openO',
-                ext    = mConfig.elUMSAP,
-                parent = win,
-                msg    = mConfig.mFileSelUMSAP,
-            )
-            #------------------------------>
-            if dlg.ShowModal() == wx.ID_OK:
-                tFileP = Path(dlg.GetPath())
-            else:
-                return False
-        except Exception as e:
-            mWindow.DialogNotification(
-                'errorF', 
-                msg        = mConfig.mFileSelector,
-                tException = e,
-                parent     = win,
-            )
+        dlg = mWindow.DialogFileSelect(
+            'openO',
+            ext    = mConfig.elUMSAP,
+            parent = win,
+            msg    = mConfig.mFileSelUMSAP,
+        )
+        #------------------------------>
+        if dlg.ShowModal() == wx.ID_OK:
+            tFileP = Path(dlg.GetPath())
+        else:
             return False
     else:
         tFileP = fileP

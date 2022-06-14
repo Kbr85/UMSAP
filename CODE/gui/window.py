@@ -60,9 +60,10 @@ import gui.tab as mTab
 
 #region -------------------------------------------------------------> Methods
 def UpdateCheck(
-    ori: Literal['menu', 'main'], win: Optional[wx.Window]=None
+    ori: Literal['menu', 'main'],
+    win: Optional[wx.Window]=None,
     ) -> bool:
-    """ Check for updates for UMSAP from another thread.
+    """Check for updates for UMSAP.
 
         Parameters
         ----------
@@ -74,16 +75,21 @@ def UpdateCheck(
         Return
         ------
         bool
+
+        Notes
+        -----
+        Always called from another thread.
     """
     #region ---------------------------------> Get web page text from Internet
     try:
         r = requests.get(mConfig.urlUpdate)
     except Exception as e:
         msg = 'Check for Updates failed. Please try again later.'
-        wx.CallAfter(DialogNotification, 'errorU', msg=msg, tException=e)
+        wx.CallAfter(
+            DialogNotification, 'errorU', msg=msg, tException=e, parent=win)
         return False
     #endregion ------------------------------> Get web page text from Internet
-    
+
     #region --------------------------------------------> Get Internet version
     if r.status_code == requests.codes.ok:
         #------------------------------> 
@@ -101,13 +107,21 @@ def UpdateCheck(
         versionI = versionI.strip()
     else:
         msg = 'Check for Updates failed. Please try again later.'
-        wx.CallAfter(DialogNotification, 'errorU', msg=msg)
+        e = f'Web page returned code was: {r.status_code}.'
+        wx.CallAfter(
+            DialogNotification, 'errorU', msg=msg, tException=e, parent=win)
         return False
     #endregion -----------------------------------------> Get Internet version
 
     #region -----------------------------------------------> Compare & message
     #------------------------------> Compare
-    updateAvail = mCheck.VersionCompare(versionI, mConfig.version)[0]
+    try:
+        updateAvail = mCheck.VersionCompare(versionI, mConfig.version)[0]
+    except Exception as e:
+        msg = 'Check for Updates failed. Please try again later.'
+        wx.CallAfter(
+            DialogNotification, 'errorU', msg=msg, tException=e, parent=win)
+        return False
     #------------------------------> Message
     if updateAvail:
         wx.CallAfter(DialogCheckUpdateResult, parent=win, checkRes=versionI)
@@ -132,6 +146,10 @@ def BadUserConf(tException) -> bool:
         Returns
         -------
         bool
+
+        Notes
+        -----
+        Always called from another thread.
     """
     msg = 'It was not possible to read the user configuration file.'
     wx.CallAfter(DialogNotification,'errorU', msg=msg, tException=tException)
@@ -230,8 +248,13 @@ class BaseWindow(wx.Frame):
             -------
             bool
         """
-        WindowAbout()
-        return True
+        try:
+            WindowAbout()
+            return True
+        except Exception as e:
+            msg = 'Failed to show the About UMSAP window.'
+            DialogNotification('errorU', msg=msg, tException=e, parent=self)
+            return False
     #---
 
     def UMSAPManual(self) -> bool:
@@ -245,8 +268,8 @@ class BaseWindow(wx.Frame):
             os.system(f'{mConfig.commOpen} {mConfig.fManual}')
             return True
         except Exception as e:
-            msg = 'It was not possible to open the manual of UMSAP.'
-            DialogNotification('errorF', msg=msg, tException=e)
+            msg = 'Failed to open the manual of UMSAP.'
+            DialogNotification('errorU', msg=msg, tException=e, parent=self)
             return False
     #---
 
@@ -257,8 +280,13 @@ class BaseWindow(wx.Frame):
             -------
             bool
         """
-        webbrowser.open_new(f'{mConfig.urlTutorial}/start')
-        return True
+        try:
+            webbrowser.open_new(f'{mConfig.urlTutorial}/start')
+            return True
+        except Exception as e:
+            msg = 'Failed to open the url with the tutorials for UMSAP.'
+            DialogNotification('errorU', msg=msg, tException=e, parent=self)
+            return False
     #---
 
     def CheckUpdate(self) -> bool:
@@ -279,8 +307,13 @@ class BaseWindow(wx.Frame):
             -------
             bool
         """
-        DialogPreference()
-        return True
+        try:
+            DialogPreference()
+            return True
+        except Exception as e:
+            msg = 'Failed to show the Preferences window.'
+            DialogNotification('errorU', msg=msg, tException=e, parent=self)
+            return False
     #---
     #endregion ------------------------------------------------> Class Methods
 
@@ -303,11 +336,11 @@ class BaseWindow(wx.Frame):
         except Exception:
             pass
         #endregion ----------------------------------------> Reduce win number
-        
+
         #region -----------------------------------------------------> Destroy
         self.Destroy()
         #endregion --------------------------------------------------> Destroy
-        
+
         return True
     #---
 
@@ -1806,7 +1839,7 @@ class WindowMain(BaseWindow):
         ----------
         parent : wx widget or None
             Parent of the main window.
-        
+
         Attributes
         ----------
         dTab: dict
@@ -1861,14 +1894,14 @@ class WindowMain(BaseWindow):
         #region --------------------------------------------------------> Bind
         self.wNotebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
         #endregion -----------------------------------------------------> Bind
-        
+
         #region	------------------------------------------------------> Update
         if mConfig.general["checkUpdate"]:
             _thread.start_new_thread(UpdateCheck, ("main", self))
         else:
             pass
-        #endregion	--------------------------------------------------> Update
-        
+        #endregion ---------------------------------------------------> Update
+
         #region -------------------------------------> User Configuration File 
         if not mConfig.confUserFile:
             _thread.start_new_thread(
@@ -1901,11 +1934,14 @@ class WindowMain(BaseWindow):
         #region ------------------------------------------> Find/Create & Show
         if win is None:
             #------------------------------> Create tab
-            self.wNotebook.AddPage(
-                self.dTab[name](self.wNotebook, name, dataI),
-                name,
-                select = True,
-            )
+            try:
+                tab = self.dTab[name](self.wNotebook, name, dataI)
+            except Exception as e:
+                msg = f'Failed to create the {name} tab.'
+                DialogNotification('errorU', msg=msg, tException=e, parent=self)
+                return False
+            #------------------------------> Add
+            self.wNotebook.AddPage(tab, name, select=True)
         else:
             #------------------------------> Focus
             self.wNotebook.SetSelection(self.wNotebook.GetPageIndex(win))
@@ -11590,12 +11626,12 @@ class DialogNotification(wx.Dialog):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, 
-        mode: mConfig.litError,
+        mode: mConfig.litNotification,
         msg: str='', 
         tException: Union[Exception, str]='', 
         parent: Optional[wx.Window]=None, 
         button: int=1, 
-        setText: bool=False,
+        setText: bool=True,
         ) -> None:
         """ """
         #region -------------------------------------------------> Check Input
@@ -12169,7 +12205,7 @@ class DialogProgress(wx.Dialog):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def UpdateStG(self, text:str, step: int=0) -> bool:
+    def UpdateStG(self, text:str, step: int=1) -> bool:
         """Update the step message and the gauge step. 
 
             Parameters
@@ -12196,7 +12232,7 @@ class DialogProgress(wx.Dialog):
         return True
     #---
 
-    def UpdateG(self, step: int) -> bool:
+    def UpdateG(self, step: int=1) -> bool:
         """Update only the gauge of the dialogue.
 
             Parameters

@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 # import itertools
+import copy
 import traceback
 from datetime import datetime
 from pathlib import Path
@@ -175,10 +176,7 @@ def Str2ListNumber(
     for k in values:
         if k.strip() != '':
             #------------------------------> Expand ranges
-            try:
-                lK = ExpandRange(k, numType)
-            except mException.InputError as e:
-                raise e
+            lK = ExpandRange(k, numType)
             #------------------------------> Get list of numbers
             lN = lN + lK
         else:
@@ -187,10 +185,7 @@ def Str2ListNumber(
 
     #region ----------------------------------------------------------> Unique
     if unique:
-        try:
-            lo = ListRemoveDuplicates(lN)
-        except Exception as e:
-            raise e
+        lo = ListRemoveDuplicates(lN)
     else:
         lo = lN
     #endregion -------------------------------------------------------> Unique
@@ -202,7 +197,7 @@ def Str2ListNumber(
 
 #region ------------------------------------------------------> Number methods
 def ExpandRange(
-    r: str, numType: mConfig.litNumType='int'
+    r: str, numType: mConfig.litNumType='int',
     ) -> Union[list[int], list[float]]:
     """Expand a range of numbers: '4-7' --> [4,5,6,7]. Only positive integers 
         are supported.
@@ -232,17 +227,11 @@ def ExpandRange(
     if '-' in tr:
         #------------------------------> Range
         #--------------> Catch more than one - in range
-        try:
-            a,b = tr.split('-')
-        except ValueError:
-            raise mException.InputError(mConfig.mRangeNumIE.format(r))
+        a,b = tr.split('-')
         #-------------->  Check a value
         if a == '':
             #--> Negative number
-            try:
-                return [mConfig.oNumType[numType](tr)]
-            except ValueError:
-                raise mException.InputError(mConfig.mRangeNumIE.format(r))
+            return [mConfig.oNumType[numType](tr)]
         else:
             pass
         #-------------->  Check b
@@ -252,12 +241,8 @@ def ExpandRange(
         else:
             pass
         #--------------> Expand range
-        #--> Convert to int
-        try:
-            a = int(a)
-            b = int(b)
-        except ValueError:
-            raise mException.InputError(mConfig.mRangeNumIE.format(r))
+        a = int(a)
+        b = int(b)
         #--> Expand range
         if a < b:
             return [x for x in range(a, b+1, 1)]
@@ -265,10 +250,7 @@ def ExpandRange(
             raise mException.InputError(mConfig.mRangeNumIE.format(r))
     else:
         #------------------------------> Positive number
-        try:
-            return [mConfig.oNumType[numType](tr)]
-        except ValueError:
-            raise mException.InputError(mConfig.mRangeNumIE.format(r))
+        return [mConfig.oNumType[numType](tr)]
     #endregion ----------------------------------------------> Expand & Return
 #---
 #endregion ---------------------------------------------------> Number methods
@@ -291,23 +273,16 @@ def LCtrlFillColNames(lc: wx.ListCtrl, fileP: Union[Path, str]) -> bool:
         wx.ListCtrl is assumed to have at least two columns [#, Name,]
     """
     #region -------------------------------------------------------> Read file
-    try:
-        colNames = mFile.ReadFileFirstLine(fileP)
-    except Exception as e:
-        raise e
+    colNames = mFile.ReadFileFirstLine(fileP)
     #endregion ----------------------------------------------------> Read file
 
     #region -------------------------------------------------------> Fill List
-    try:
-        #------------------------------> Del items
-        lc.DeleteAllItems()
-        #------------------------------> Fill
-        for k, v in enumerate(colNames):
-            index = lc.InsertItem(k, " " + str(k))
-            lc.SetItem(index, 1, v)
-    except Exception:
-        msg = "It was not possible to fill the list."
-        raise mException.ExecutionError(msg)
+    #------------------------------> Del items
+    lc.DeleteAllItems()
+    #------------------------------> Fill
+    for k, v in enumerate(colNames):
+        index = lc.InsertItem(k, " " + str(k))
+        lc.SetItem(index, 1, v)
     #endregion ----------------------------------------------------> Fill List
 
     return True
@@ -335,6 +310,54 @@ def ListRemoveDuplicates(l: Union[list, tuple]) -> list:
     return list(dict.fromkeys(l))
 #---
 #endregion ------------------------------------------------------> wx.ListCtrl
+
+
+#region ----------------------------------------------------------------> Dict
+def DictVal2Str(
+    iDict: dict, 
+    changeKey: list=[],
+    new: bool=False,
+    ) -> dict:
+    """Returns a dict with values turn to str for all keys or only those in 
+        changeKey.
+
+        Parameters
+        ----------
+        iDict: dict
+            Initial dict.
+        changeKey: list of keys
+            Only modify this keys.
+        new : boolean
+            Do not modify iDict (True) or modify in place (False). 
+            Default is False.
+
+        Returns
+        -------
+        dict :
+            with the corresponding values turned to str
+
+        Examples
+        --------
+        >>> DictVal2Str({1:Path('/k/d/c'), 'B':3})
+        >>> {1: '/k/d/c', 'B': '3'}
+        >>> DictVal2Str({1:Path('/k/d/c'), 'B':3}, changeKey=[1])
+        >>> {1: '/k/d/c', 'B': 3}
+    """
+    #region -------------------------------------------------------> Variables
+    if new:
+        oDict = copy.deepcopy(iDict)
+    else:
+        oDict = iDict
+    #endregion ----------------------------------------------------> Variables
+    
+    #region ---------------------------------------------------> Change values
+    for k in changeKey:
+        oDict[k] = str(oDict[k])
+    #endregion ------------------------------------------------> Change values
+
+    return oDict
+#---
+#endregion -------------------------------------------------------------> Dict
 
 
 #region --------------------------------------------------------> pd.DataFrame
@@ -373,16 +396,160 @@ def DFFilterByColS(
     #------------------------------>  Copy
     dfo = df.copy()
     #------------------------------> Filter
-    try:
-        if comp == 'e':
-            dfo = df.loc[df.iloc[:,col] == refStr]
-        elif comp == 'ne':
-            dfo = df.loc[df.iloc[:,col] != refStr]
+    if comp == 'e':
+        dfo = df.loc[df.iloc[:,col] == refStr]
+    elif comp == 'ne':
+        dfo = df.loc[df.iloc[:,col] != refStr]
+    else:
+        msg = mConfig.mCompNYI.format(comp)
+        raise mException.NotYetImplementedError(msg)
+    #endregion -------------------------------------------------------> Filter
+
+    return dfo
+#---
+
+
+def DFReplace(
+    df: pd.DataFrame, 
+    oriVal: list, 
+    repVal: Union[list, str, float, int], 
+    sel: list[int]=[],
+    ) -> pd.DataFrame:
+    """Replace values in the dataframe.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Dataframe with the data.
+        oriVal: list
+            List of values to search and replace.
+        repVal: list or single value
+            List of values to use as replacement. When only one value is given
+            all oriVal are replace with the given value.
+        sel : list of int
+            Column indexes.
+
+        Returns
+        -------
+        pd.DataFrame
+            With replaced values
+
+        Raise
+        -----
+        InputError :
+            - When selection is not found in df
+            - When oriVal and repVal have different length
+        ExecutionError :
+            - When the replacement procedure does not finish correctly
+
+        Notes
+        -----
+        Column selection in the df is done by column number.
+    """
+    #region -----------------------------------------------------> Check input
+    if isinstance(repVal, (list, tuple)):
+        repValFix = repVal
+    else:
+        repValFix = len(oriVal) * [repVal]
+    #endregion --------------------------------------------------> Check input
+
+    #region ---------------------------------------------------------> Replace
+    #------------------------------> Copy
+    dfo = df.copy()
+    #------------------------------> 
+    for k, v in enumerate(oriVal):
+        #------------------------------> 
+        rep = repValFix[k]
+        #------------------------------> 
+        if sel is not None:
+            dfo.iloc[:,sel] = dfo.iloc[:,sel].replace(v, rep)
         else:
-            msg = mConfig.mCompNYI.format(comp)
-            raise mException.NotYetImplementedError(msg)
-    except Exception:
-        raise mException.ExecutionError(mConfig.mPDFilterByCol)
+            dfo = dfo.replace(v, rep)
+    #endregion ------------------------------------------------------> Replace
+
+    return dfo
+#---
+
+
+def DFExclude(df:'pd.DataFrame', col: list[int]) -> 'pd.DataFrame':
+    """Exclude rows in the pd.DataFrame based on the values present in col.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+        col : list[int]
+
+        Returns
+        -------
+        pd.DataFrame
+
+        Notes
+        -----
+        Rows with at least one value other than NA in the given columns are 
+        discarded
+    """
+    #region ----------------------------------------------------------> Exclude
+    #------------------------------>  Copy
+    dfo = df.copy()
+    #------------------------------> Exclude
+    a = dfo.iloc[:,col].notna()
+    a = a.loc[(a==True).any(axis=1)]
+    idx = a.index
+    dfo = dfo.drop(index=idx)
+    #endregion -------------------------------------------------------> Exclude
+
+    return dfo
+#---
+
+
+def DFFilterByColN(
+    df:'pd.DataFrame', 
+    col: list[int], 
+    refVal: float,
+    comp: mConfig.litComp,
+    ) -> 'pd.DataFrame':
+    """Filter rows in the pd.DataFrame based on the numeric values present in 
+        col.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+        col : list of int
+            The column indexes used to filter rows
+        refVal : float
+            Reference value
+        comp : str
+            Numeric comparison to use in the filter. One of:
+            'lt', 'le', 'e', 'ge', 'gt'
+
+        Returns
+        -------
+        pd.DataFrame
+
+        Notes
+        -----
+        Rows with values in col that do not comply with c[x] comp refVal are 
+        discarded, e.g. c[x] > 3,45
+        
+        Assumes all values in col are numbers.
+    """
+    #region ----------------------------------------------------------> Filter
+    #------------------------------>  Copy
+    dfo = df.copy()
+    #------------------------------> Filter
+    if comp == 'lt':
+        dfo = df.loc[(df.iloc[:,col] < refVal).any(axis=1)]
+    elif comp == 'le':
+        dfo = df.loc[(df.iloc[:,col] <= refVal).any(axis=1)]
+    elif comp == 'e':
+        dfo = df.loc[(df.iloc[:,col] == refVal).any(axis=1)]
+    elif comp == 'ge':
+        dfo = df.loc[(df.iloc[:,col] >= refVal).any(axis=1)]
+    elif comp == 'gt':
+        dfo = df.loc[(df.iloc[:,col] > refVal).any(axis=1)]
+    else:
+        msg = mConfig.mCompNYI.format(comp)
+        raise mException.NotYetImplementedError(msg)
     #endregion -------------------------------------------------------> Filter
 
     return dfo

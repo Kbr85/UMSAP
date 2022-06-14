@@ -17,12 +17,12 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 # from collections import namedtuple
-# import shutil
+import shutil
 from pathlib import Path
 from typing import Union
 
-# import numpy as np
-# import pandas as pd
+import numpy as np
+import pandas as pd
 # from statsmodels.stats.multitest import multipletests
 
 import wx
@@ -33,6 +33,7 @@ import data.check as mCheck
 import data.method as mMethod
 import data.exception as mException
 import data.file as mFile
+import data.statistic as mStatistic
 # import gui.method as gmethod
 import gui.validator as mValidator
 import gui.widget as mWidget
@@ -178,16 +179,16 @@ class BaseConfPanel(
         #------------------------------> For Progress Dialog
         self.cLPdCheck    = getattr(self, 'cLPdCheck',  'Checking user input: ')
         self.cLPdPrepare  = getattr(self, 'cLPdPrepare', 'Preparing analysis: ')
-        # self.cLPdRun      = getattr(self, 'cLPdRun',     'Running analysis: ')
-        # self.cLPdWrite    = getattr(self, 'cLPdWrite',   'Writing output: ')
-        # self.cLPdLoad     = getattr(self, 'cLPdLoad',    'Loading output file')
+        self.cLPdRun      = getattr(self, 'cLPdRun',     'Running analysis: ')
+        self.cLPdWrite    = getattr(self, 'cLPdWrite',   'Writing output: ')
+        self.cLPdLoad     = getattr(self, 'cLPdLoad',    'Loading output file')
         self.cLPdError    = getattr(self, 'cLPdError',   mConfig.lPdError)
         self.cLPdDone     = getattr(self, 'cLPdDone',    'All Done')
         self.cLPdElapsed  = getattr(self, 'cLPdElapsed', 'Elapsed time: ')
         self.cLPdReadFile = getattr(
             self, 'cLPdReadFile', 'Reading input files: ')
-        # #------------------------------> Size
-        # self.cSTc = getattr(self, 'cSTc', mConfig.sTc)
+        #------------------------------> Size
+        self.cSTc = getattr(self, 'cSTc', mConfig.sTc)
         #------------------------------> Choices
         self.cOCero = getattr(self, 'cOCero', list(mConfig.oYesNo.keys()))
         self.cONorm = getattr(self, 'cONorm', list(mConfig.oNormMethod.keys()))
@@ -239,16 +240,16 @@ class BaseConfPanel(
         #------------------------------> Values
         self.cValShift = mConfig.values[mConfig.nwCheckDataPrep]['Shift']
         self.cValWidth = mConfig.values[mConfig.nwCheckDataPrep]['Width']
-        # #------------------------------> To handle Data Preparation Steps
-        # self.dDataPrep = { # Keys are the messaging for the Progress Dialog
-        #     "Setting Data Types"         : self.DatPrep_Float,
-        #     "Data Transformation"        : self.DatPrep_Transformation,
-        #     "Data Normalization"         : self.DatPrep_Normalization,
-        #     "Data Imputation"            : self.DatPrep_Imputation,
-        #     "Filter Data: Target Protein": self.DatPrep_TargetProt,
-        #     "Filter Data: Exclude Rows"  : self.DatPrep_Exclude,
-        #     "Filter Data: Score Value"   : self.DatPrep_Score,
-        # }
+        #------------------------------> To handle Data Preparation Steps
+        self.dDataPrep = { # Keys are the messaging for the Progress Dialog
+            "Setting Data Types"         : self.DatPrep_Float,
+            "Data Transformation"        : self.DatPrep_Transformation,
+            "Data Normalization"         : self.DatPrep_Normalization,
+            "Data Imputation"            : self.DatPrep_Imputation,
+            "Filter Data: Target Protein": self.DatPrep_TargetProt,
+            "Filter Data: Exclude Rows"  : self.DatPrep_Exclude,
+            "Filter Data: Score Value"   : self.DatPrep_Score,
+        }
         #------------------------------> This is needed to handle Data File 
         # content load to the wx.ListCtrl in Tabs with multiple panels
         #--------------> Default wx.ListCtrl to load data file content
@@ -259,6 +260,8 @@ class BaseConfPanel(
         self.rCheckUserInput = {}
         self.rCheckUnique = []
         self.rLLenLongest = getattr(self, 'rLLenLongest', 0)
+        self.cSection = getattr(self, 'cSection', '')
+        self.rMainData = getattr(self, 'rMainData', '')
         #--------------> Dict with the user input as given
         self.rDI = {}
         #--------------> Dict with the processed user input
@@ -266,31 +269,31 @@ class BaseConfPanel(
         #--------------> Error message and exception to show in self.RunEnd
         self.rMsgError  = ''
         self.rException = None
-        # #--------------> pd.DataFrames for:
-        # self.dfI  = pd.DataFrame() # Initial and
-        # self.dfF  = pd.DataFrame() # Data as float and 0 and '' values as np.nan
-        # self.dfT  = pd.DataFrame() # Transformed values
-        # self.dfN  = pd.DataFrame() # Normalized Values
-        # self.dfIm = pd.DataFrame() # Imputed values
-        # self.dfTP = pd.DataFrame() # Select Target Protein
-        # self.dfE  = pd.DataFrame() # Exclude entries by some parameter
-        # self.dfS  = pd.DataFrame() # Exclude entries by Score value
-        # self.dfR  = pd.DataFrame() # Results values
-        # #--------------> date for umsap file
-        # self.rDate = None
-        # self.rDateID = None
-        # #--------------> folder for output
-        # self.rOFolder = None
+        #--------------> pd.DataFrames for:
+        self.dfI  = pd.DataFrame() # Initial and
+        self.dfF  = pd.DataFrame() # Data as float and 0 and '' values as np.nan
+        self.dfT  = pd.DataFrame() # Transformed values
+        self.dfN  = pd.DataFrame() # Normalized Values
+        self.dfIm = pd.DataFrame() # Imputed values
+        self.dfTP = pd.DataFrame() # Select Target Protein
+        self.dfE  = pd.DataFrame() # Exclude entries by some parameter
+        self.dfS  = pd.DataFrame() # Exclude entries by Score value
+        self.dfR  = pd.DataFrame() # Results values
+        #--------------> Date for umsap file
+        self.rDate = ''
+        self.rDateID = ''
+        #--------------> folder for output
+        self.rOFolder = None
         #--------------> input file for directing repeating analysis from
         # file copied to oFolder
         self.rDFile   = []
         # #--------------> Obj for files
-        # self.rIFileObj   = None
-        # self.rSeqFileObj = None
-        # #------------------------------> 
-        # self.rChangeKey = getattr(self, 'rChangeKey', ['iFile', 'uFile'])
-        # #------------------------------> 
-        # self.rCopyFile = getattr(self, 'rCopyFile', {'iFile':self.cLiFile})
+        self.rIFileObj   = None
+        self.rSeqFileObj = None
+        #------------------------------> 
+        self.rChangeKey = getattr(self, 'rChangeKey', ['iFile', 'uFile'])
+        #------------------------------> 
+        self.rCopyFile = getattr(self, 'rCopyFile', {'iFile':self.cLiFile})
         #------------------------------> Parent init
         scrolled.ScrolledPanel.__init__(self, parent, name=self.cName)
 
@@ -667,6 +670,602 @@ class BaseConfPanel(
         """
         return f"{label}{(self.rLLenLongest - len(label))*' '}" 
     #---
+
+    def DataPreparation(self, resetIndex=True) -> bool:
+        """Perform the data preparation step.
+
+            Parameters
+            ----------
+            resetIndex: bool
+                If True reset the index of self.dfS.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------> Run Data Preparation
+        for k, m in self.dDataPrep.items():
+            #------------------------------> 
+            wx.CallAfter(self.rDlg.UpdateStG, f'{self.cLPdRun} {k}')
+            #------------------------------> 
+            if m():
+                pass
+            else:
+                return False
+        #endregion -------------------------------------> Run Data Preparation
+
+        #region -------------------------------------------------> Reset index
+        if resetIndex:
+            self.dfS.reset_index(drop=True, inplace=True)
+        else:
+            pass
+        #endregion ----------------------------------------------> Reset index
+
+        #region -------------------------------------------------------> Print
+        if mConfig.development:
+            #------------------------------> 
+            dfL = [
+                self.dfI, self.dfF, self.dfT, self.dfN, self.dfIm, 
+                self.dfTP, self.dfE, self.dfS, 
+            ]
+            dfN = ['dfI', 'dfF', 'dfT', 'dfN', 'dfIm', 'dfTP', 'dfEx', 'dfS']
+            #------------------------------> 
+            print('')
+            for i, df in enumerate(dfL):
+                if df is not None:
+                    print(f'{dfN[i]}: {df.shape}')
+                else:
+                    print(f'{dfN[i]}: None')
+        else:
+            pass
+        #endregion ----------------------------------------------------> Print
+
+        return True
+    #---
+
+    def DatPrep_Float(self) -> bool:
+        """Convert or not 0s to NA and then all values to float.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - iFileObj: instance of mFile.CSVFile
+            - rDO: dict with at least the following key - values pairs:
+                'oc' : {
+                    'Column' : [List of int],
+                },
+                'df' : {
+                    'ColumnR' : [List of int],
+                    'ColumnF' : [List of int],
+                }
+        """
+        #region -----------------------------------------------------> Set dfI
+        try:
+            self.dfI = self.rIFileObj.rDf.iloc[:,self.rDO['oc']['Column']] # type: ignore
+        except Exception as e:
+            self.rMsgError = mConfig.mPDGetInitCol.format(
+                self.rDO['oc']['Column'], self.cLiFile, self.rDO['iFile'])
+            self.rException = e
+            return False
+        #endregion --------------------------------------------------> Set dfI
+
+        #region -----------------------------------------------------> Set dfF
+        try:
+            if self.rDO['Cero']:
+                #------------------------------> Replace 0 and ''
+                self.dfF = mMethod.DFReplace(
+                    self.dfI, [0, ''], np.nan, sel=self.rDO['df']['ColumnR']) # type: ignore
+            else:
+                #------------------------------> Replace only ''
+                self.dfF = mMethod.DFReplace(
+                    self.dfI, [''], np.nan, sel=self.rDO['df']['ColumnR']) # type: ignore
+            #------------------------------> Float
+            self.dfF.iloc[:,self.rDO['df']['ColumnF']] = self.dfF.iloc[:,self.rDO['df']['ColumnF']].astype('float')
+        except Exception as e:
+            self.rMsgError = mConfig.mPDDataTypeCol.format(
+                self.cLiFile, ", ".join(map(str, self.rDO['oc']['ColumnF'])))
+            self.rException = e
+            return False
+        #endregion --------------------------------------------------> Set dfF
+
+        return True
+    #---
+
+    def DatPrep_Transformation(self) -> bool:
+        """Apply selected data transformation.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - rDO, dict with at least the following key - values pairs:
+                'Cero' : bool, How to treat 0 values,
+                'TransMethod': str, Transformation method name,
+                'df' : {
+                    'ResCtrlFlat' : [List of int],
+                },
+        """
+        #region -----------------------------------------------------> Set rep
+        if self.rDO['Cero']:
+            rep = np.nan
+        else:
+            rep = 0
+        #endregion --------------------------------------------------> Set rep
+
+        #region ---------------------------------------------------> Transform
+        try:
+            self.dfT = mStatistic.DataTransformation(
+                self.dfF, 
+                self.rDO['df']['ResCtrlFlat'], 
+                method = self.rDO['TransMethod'],
+                rep    = rep,
+            )
+        except Exception as e:
+            self.rMsgError   = 'Data Transformation failed.'
+            self.rException = e
+            return False 
+        #endregion ------------------------------------------------> Transform
+
+        return True
+    #---
+
+    def DatPrep_Normalization(self) -> bool:
+        """Perform a data normalization.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - rDO, dict with at least the following key - values pairs:
+                'NormMethod' : str Normalization method selected
+                df : dict
+                    {
+                        'ResCtrlFlat' : list[int]
+                    }
+        """
+        #region -----------------------------------------------> Normalization
+        try:
+            self.dfN = mStatistic.DataNormalization(
+                self.dfT, 
+                self.rDO['df']['ResCtrlFlat'], 
+                method = self.rDO['NormMethod'],
+            )
+        except Exception as e:
+            self.rMsgError   = 'Data Normalization failed.'
+            self.rException = e
+            return False
+        #endregion --------------------------------------------> Normalization
+
+        return True
+    #---
+
+    def DatPrep_Imputation(self) -> bool:
+        """Perform a data imputation.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - rDO, dict with at least the following key - values pairs:
+                'ImpMethod' : str Imputation method selected
+                df : dict
+                    {
+                        'ResCtrlFlat' : list[int]
+                    }
+        """
+        #region --------------------------------------------------> Imputation
+        try:
+            self.dfIm = mStatistic.DataImputation(
+                self.dfN, 
+                self.rDO['df']['ResCtrlFlat'],
+                method = self.rDO['ImpMethod'],
+                shift  = self.rDO['Shift'],
+                width  = self.rDO['Width'],
+            )
+        except Exception as e:
+            self.rMsgError   = 'Data Imputation failed.'
+            self.rException = e
+            return False
+        #endregion -----------------------------------------------> Imputation
+
+        return True
+    #---
+
+    def DatPrep_TargetProt(self) -> bool:
+        """Filter data based on the value of Target Protein.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - rDO: dict with at least the following key - values pairs:
+                'TargetProt' : str name of the Protein to select in the data
+                'df' : {
+                    'TargetProtCol' : int,
+                }
+        """
+        #region -------------------------------------------------> Get Protein
+        try:
+            if self.rDO['df'].get('TargetProtCol', None) is not None:
+                self.dfTP = mMethod.DFFilterByColS(
+                    self.dfIm, 
+                    self.rDO['df']['TargetProtCol'],
+                    self.rDO['TargetProt'], 
+                    'e',
+                )
+            else:
+                self.dfTP = self.dfIm.copy()
+        except Exception as e:
+            self.rMsgError = mConfig.mPDDataTargetProt.format(
+                self.rDO['TargetProt'], self.rDO['df']['TargetProtCol'])
+            self.rException = e
+            return False
+        #endregion ----------------------------------------------> Get Protein
+
+        return True
+    #---
+
+    def DatPrep_Exclude(self) -> bool:
+        """Exclude rows from self.dfF based on the content of 
+            self.do['df']['ExcludeR'].
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - rDO: dict with at least the following key - values pairs:
+                'df' : {
+                    'ExcludeR' : [List of int],
+                }
+            - dfF: pd.DataFrame with correct data types in each column.
+
+            Rows with at least one value different to NA in 
+            self.do['df']['ExcludeR'] are discarded
+        """
+        #region -----------------------------------------------------> Exclude
+        try:
+            if self.rDO['df'].get('ExcludeR', None) is not None:
+                self.dfE = mMethod.DFExclude(
+                    self.dfTP, self.rDO['df']['ExcludeR'])
+            else:
+                self.dfE = self.dfTP.copy()
+        except Exception as e:
+            self.rMsgError = mConfig.mPDDataExclude.format(
+                self.rDO['df']['ExcludeR'])
+            self.rException = e
+            return False
+        #endregion --------------------------------------------------> Exclude
+
+        return True
+    #---
+
+    def DatPrep_Score(self) -> bool:
+        """Filter rows in self.dfE by Score values.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Assumes child class has the following attributes
+            - rDO: dict with at least the following key - values pairs:
+                'ScoreVal' : float
+                'df' : {
+                    'ScoreCol' : int
+                }
+            - dfE: pd.DataFrame with correct data types in each column
+
+            This is last filter applied. That is why the check for empty df is
+            done here. 
+        """
+        #region ------------------------------------------------------> Filter
+        try:
+            if self.rDO['df'].get('ScoreCol', None) is not None:
+                self.dfS = mMethod.DFFilterByColN(
+                    self.dfE, 
+                    [self.rDO['df']['ScoreCol']], 
+                    self.rDO['ScoreVal'], 
+                    'ge'
+                )
+            else:
+                self.dfS = self.dfE.copy()
+        except Exception as e:
+            self.rMsgError = mConfig.mPDDataScore.format(
+                self.rDO['df']['ScoreCol'])
+            self.rException = e
+            return False
+        #endregion ---------------------------------------------------> Filter
+
+        #region -----------------------> Check some Rows are left for Analysis
+        if self.dfS.empty:
+            self.rMsgError = mConfig.mNoDataLeft
+            return False
+        else:
+            pass
+        #endregion --------------------> Check some Rows are left for Analysis
+
+        return True
+    #---
+
+    def SetStepDictDP(self) -> dict:
+        """Set the Data Processing part of the stepDict to write in the output.
+
+            Returns
+            -------
+            dict
+        """
+        stepDict = {
+            'DP': {
+                mConfig.ltDPKeys[0] : mConfig.fnFloat.format(self.rDate, '02'),
+                mConfig.ltDPKeys[1] : mConfig.fnTrans.format(self.rDate, '03'),
+                mConfig.ltDPKeys[2] : mConfig.fnNorm.format(self.rDate, '04'),
+                mConfig.ltDPKeys[3] : mConfig.fnImp.format(self.rDate, '05'),
+            },
+        }
+
+        return stepDict
+    #---
+
+    def SetOutputDict(self, dateDict) -> dict:
+        """Creates the output dictionary to be written to the output file.
+
+            Parameters
+            ----------
+            dateDict : dict
+                dateDict = {
+                    date : {
+                        'V' : config.dictVersion,
+                        'I' : self.d,
+                        'CI': dtsMethod.DictVal2Str(
+                            self.do, self.changeKey, new=True,
+                        ),
+                        'R' : Results,
+                    }
+                }
+
+            Return
+            ------
+            dict
+                Output data as a dict
+
+            Notes
+            -----
+            If the output file already exists the new data is added to the
+            existing data in the corresponding section.
+            It assumes child class defines a self.cSection attributes with the
+            section name of the analysis.
+        """
+        #region ---------------------------------------------------> Read File
+        if self.rDO['uFile'].exists():
+            try:
+                outData = mFile.ReadJSON(self.rDO['uFile'])
+            except Exception:
+                msg = mConfig.mFileRead.format(self.rDO['uFile'])
+                raise mException.ExecutionError(msg)
+        else:
+            outData = {}
+        #endregion ------------------------------------------------> Read File
+        
+        #region ------------------------------------------------> Add new data
+        if outData.get(self.cSection, False):
+                outData[self.cSection][self.rDateID] = dateDict[self.rDateID]
+        else:
+            outData[self.cSection] = dateDict
+        #endregion ---------------------------------------------> Add new data
+
+        return outData
+    #---
+
+    def SetStepDictDPFileR(self) -> dict:
+        """Set the Data Processing, Files & Results parts of the stepDict to 
+            write in the output.
+
+            Returns
+            -------
+            dict
+        """
+        stepDict = {
+            'DP': {
+                mConfig.ltDPKeys[0] : mConfig.fnFloat.format(self.rDate, '02'),
+                mConfig.ltDPKeys[1] : mConfig.fnTrans.format(self.rDate, '03'),
+                mConfig.ltDPKeys[2] : mConfig.fnNorm.format(self.rDate, '04'),
+                mConfig.ltDPKeys[3] : mConfig.fnImp.format(self.rDate, '05'),
+            },
+            'Files' : {
+                mConfig.fnInitial.format(self.rDate, '01')   : self.dfI,
+                mConfig.fnFloat.format(self.rDate, '02')     : self.dfF,
+                mConfig.fnTrans.format(self.rDate, '03')     : self.dfT,
+                mConfig.fnNorm.format(self.rDate, '04')      : self.dfN,
+                mConfig.fnImp.format(self.rDate, '05')       : self.dfIm,
+                mConfig.fnTargetProt.format(self.rDate, '06'): self.dfTP,
+                mConfig.fnExclude.format(self.rDate, '07')   : self.dfE,
+                mConfig.fnScore.format(self.rDate, '08')     : self.dfS,
+                self.rMainData.format(self.rDate, '09')     : self.dfR,
+            },
+            'R' : self.rMainData.format(self.rDate, '09'),
+        }
+
+        return stepDict
+    #---
+
+    def WriteOutputData(self, stepDict: dict) -> bool:
+        """Write output. 
+
+            Parameters
+            ----------
+            stepDict : dict
+                Dict with the data to write the step by step data files
+                Keys are file names and values pd.DataFrame with the values
+
+            Return
+            ------
+            bool
+        """
+        #region -----------------------------------------------> Create folder
+        #------------------------------> 
+        msgStep = self.cLPdWrite + 'Creating needed folders, Data-Steps folder'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        dataFolder = f"{self.rDate}_{self.cSection.replace(' ', '-')}"
+        dataFolder = self.rOFolder / mConfig.fnDataSteps / dataFolder # type: ignore
+        dataFolder.mkdir(parents=True, exist_ok=True)
+        #------------------------------> 
+        msgStep = self.cLPdWrite + 'Creating needed folders, Data-Initial folder'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        dataInit = self.rOFolder / mConfig.fnDataInit # type: ignore
+        dataInit.mkdir(parents=True, exist_ok=True)
+        #endregion --------------------------------------------> Create folder
+        
+        #region ------------------------------------------------> Data Initial
+        msgStep = self.cLPdWrite + 'Data files, Input Data'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        puFolder = self.rDO['uFile'].parent / mConfig.fnDataInit
+        #------------------------------> 
+        for k,v in self.rCopyFile.items():
+            if self.rDI[self.EqualLenLabel(v)] != '':
+                #------------------------------> 
+                piFolder = self.rDO[k].parent
+                #------------------------------>
+                if not piFolder == puFolder:
+                    #------------------------------> 
+                    tStem = self.rDO[k].stem.replace(' ', '-')
+                    tStem = tStem.replace('_', '-')
+                    name = f"{self.rDate}_{tStem}{self.rDO[k].suffix}"
+                    file = puFolder/name
+                    #------------------------------> 
+                    shutil.copy(self.rDO[k], file)
+                    #------------------------------> 
+                    self.rDI[self.EqualLenLabel(v)] = str(file.name)
+                    #------------------------------> 
+                    self.rDFile.append(file)
+                else:
+                    #------------------------------> 
+                    self.rDI[self.EqualLenLabel(v)] = str(self.rDO[k].name)
+                    #------------------------------> 
+                    self.rDFile.append(self.rDO[k])
+            else:
+                self.rDFile.append('')
+        #endregion ---------------------------------------------> Data Initial
+        
+        #region --------------------------------------------------> Data Steps
+        msgStep = self.cLPdWrite + 'Data files, Output Data'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        try:
+            mFile.WriteDFs2CSV(dataFolder, stepDict['Files'])
+        except Exception as e:
+            self.rMsgError = ('It was not possible to create the files with '
+                'the data for the intermediate steps of the analysis.')
+            self.rException = e
+            return False
+        #endregion -----------------------------------------------> Data Steps
+        
+        #region --------------------------------------------> Further Analysis
+        if (aaDict := stepDict.get('AA', False)):
+            fileP = dataFolder/aaDict[f'{self.rDate}_{self.rDO["AA"]}'] # type: ignore
+            mFile.WriteDF2CSV(fileP, self.dfAA) # type: ignore
+        else:
+            pass
+        
+        if (histDict := stepDict.get('Hist', False)):
+            fileP = dataFolder/histDict[f'{self.rDate}_{self.rDO["Hist"]}'] # type: ignore
+            mFile.WriteDF2CSV(fileP, self.dfHist) # type: ignore
+        else:
+            pass
+        
+        if (fileN := stepDict.get('CpR', False)):
+            fileP = dataFolder/fileN
+            mFile.WriteDF2CSV(fileP, self.dfCpR) # type: ignore
+        else:
+            pass
+        
+        if (fileN := stepDict.get('CEvol', False)):
+            fileP = dataFolder/fileN
+            mFile.WriteDF2CSV(fileP, self.dfCEvol) # type: ignore
+        else:
+            pass
+        #endregion -----------------------------------------> Further Analysis
+
+        #region --------------------------------------------------> UMSAP File
+        msgStep = self.cLPdWrite + 'Main file'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> Create output dict
+        dateDict = {
+            self.rDateID : {
+                'V' : mConfig.dictVersion,
+                'I' : self.rDI,
+                'CI': mMethod.DictVal2Str(self.rDO, self.rChangeKey, new=True),
+                'DP': {
+                    mConfig.ltDPKeys[0] : stepDict['DP'][mConfig.ltDPKeys[0]],
+                    mConfig.ltDPKeys[1] : stepDict['DP'][mConfig.ltDPKeys[1]],
+                    mConfig.ltDPKeys[2] : stepDict['DP'][mConfig.ltDPKeys[2]],
+                    mConfig.ltDPKeys[3] : stepDict['DP'][mConfig.ltDPKeys[3]],
+                },
+            }
+        }
+        #--------------> DataPrep Util does not have dfR
+        if not self.dfR.empty:
+            dateDict[self.rDateID]['R'] = stepDict['R']
+        else:
+            pass
+        #--------------> 
+        if self.cName == mConfig.npProtProf:
+            #--------------> Filters in ProtProf
+            dateDict[self.rDateID]['F'] = {}
+        elif self.cName == mConfig.npTarProt:
+            #--------------> TarProt    
+            dateDict[self.rDateID]['CpR'] = stepDict['CpR']
+            dateDict[self.rDateID]['CEvol'] = stepDict['CEvol']
+        else:
+            pass
+        #--------------> Further Analysis
+        if stepDict.get('AA', None) is not None:
+            dateDict[self.rDateID]['AA'] = stepDict['AA']
+        else:
+            pass
+        if stepDict.get('Hist', None) is not None:
+            dateDict[self.rDateID]['Hist'] = stepDict['Hist']
+        else:
+            pass
+        #------------------------------> Append or not
+        try:
+            outData = self.SetOutputDict(dateDict)
+        except Exception as e:
+            self.rMsgError = ('It was not possible to create the dictionary '
+                'with the UMSAP data.')
+            self.rException = e
+            return False
+        #------------------------------> Write
+        try:
+            mFile.WriteJSON(self.rDO['uFile'], outData)
+        except Exception as e:
+            self.rMsgError = ('It was not possible to create the dictionary '
+                'with the UMSAP data.')
+            self.rException = e
+            return False
+        #endregion -----------------------------------------------> UMSAP File
+
+        return True
+    #---
     #endregion ------------------------------------------------> Class Methods
 
     #region ----------------------------------------------------> Run Analysis
@@ -879,645 +1478,35 @@ class BaseConfPanel(
         return True
     #---
 
-#     def DataPreparation(self, resetIndex=True) -> bool:
-#         """Perform the data preparation step.
-            
-#             Parameters
-#             ----------
-#             resetIndex: bool
-#                 If True reset the index of self.dfImp
-    
-#             Returns
-#             -------
-#             bool
-    
-#             Notes
-#             -----
-#             See the Notes for the individual methods:
-#                 self.DatPrep_Float, 
-#                 self.DatPrep_Transformation,
-#                 self.DatPrep_Normalization,
-#                 self.DatPrep_Imputation,
-#                 self.DatPrep_TargetProt,
-#                 self.DatPrep_Exclude, 
-#                 self.DatPrep_Score,
-                
-#         """
-#         #region ----------------------------------------> Run Data Preparation
-#         for k, m in self.dDataPrep.items():
-#             #------------------------------> 
-#             wx.CallAfter(self.rDlg.UpdateStG, f'{self.cLPdRun} {k}')
-#             #------------------------------> 
-#             if m():
-#                 pass
-#             else:
-#                 return False
-#         #endregion -------------------------------------> Run Data Preparation
+    def WriteOutput(self) -> bool:
+        """Write output for a module
         
-#         #region -------------------------------------------------> Reset index
-#         if resetIndex:
-#             self.dfS.reset_index(drop=True, inplace=True)
-#         else:
-#             pass
-#         #endregion ----------------------------------------------> Reset index
-        
-#         #region -------------------------------------------------------> Print
-#         if config.development:
-#             #------------------------------> 
-#             dfL = [
-#                 self.dfI, self.dfF, self.dfT, self.dfN, self.dfIm, 
-#                 self.dfTP, self.dfE, self.dfS, 
-#             ]
-#             dfN = ['dfI', 'dfF', 'dfT', 'dfN', 'dfIm', 'dfTP', 'dfEx', 'dfS']
-#             #------------------------------> 
-#             print('')
-#             for i, df in enumerate(dfL):
-#                 if df is not None:
-#                     print(f'{dfN[i]}: {df.shape}')
-#                 else:
-#                     print(f'{dfN[i]}: None')
-#         else:
-#             pass
-#         #endregion ----------------------------------------------------> Print
-        
-#         return True
-#     #---
-    
-#     def DatPrep_Float(self) -> bool:
-#         """Convert or not 0s to NA and then all values to float.
-        
-#             Returns
-#             -------
-#             bool
-                
-#             Notes
-#             -----
-#             Assumes child class has the following attributes:
-#             - iFileObj: instance of dtsFF.CSVFile
-#             - rDO: dict with at least the following key - values pairs:
-#                 'oc' : {
-#                     'Column' : [List of int],
-#                 },
-#                 'df' : {
-#                     'ColumnR' : [List of int],
-#                     'ColumnF' : [List of int],
-#                 }
-#         """
-#         #region -----------------------------------------------------> Set dfI
-#         try:
-#             self.dfI = self.rIFileObj.df.iloc[:,self.rDO['oc']['Column']]
-#         except Exception as e:
-#             self.rMsgError = config.mPDGetInitCol.format(
-#                 self.rDO['oc']['Column'], self.cLiFile, self.rDO['iFile'])
-#             self.rException = e
-#             return False
-#         #endregion --------------------------------------------------> Set dfI
-        
-#         #region -----------------------------------------------------> Set dfF
-#         try:
-#             if self.rDO['Cero']:
-#                 #------------------------------> Replace 0 and ''
-#                 self.dfF = dtsMethod.DFReplace(
-#                     self.dfI, [0, ''], np.nan, sel=self.rDO['df']['ColumnR'])
-#             else:
-#                 #------------------------------> Replace only ''
-#                 self.dfF = dtsMethod.DFReplace(
-#                     self.dfI, [''], np.nan, sel=self.rDO['df']['ColumnR'])
-#             #------------------------------> Float
-#             self.dfF.iloc[:,self.rDO['df']['ColumnF']] = self.dfF.iloc[:,self.rDO['df']['ColumnF']].astype('float')
-#         except Exception as e:
-#             self.rMsgError = config.mPDDataTypeCol.format(
-#                 self.cLiFile, ", ".join(map(str, self.rDO['oc']['ColumnF'])))
-#             self.rException = e
-#             return False
-#         #endregion --------------------------------------------------> Set dfF
-        
-#         return True
-#     #---
-    
-#     def DatPrep_Transformation(self) -> bool:
-#         """Apply selected data transformation.
-    
-#             Returns
-#             -------
-#             bool
-    
-#             Notes
-#             -----
-#             Assumes child class has the following attributes:
-#             - rDO, dict with at least the following key - values pairs:
-#                 'Cero' : bool, How to treat 0 values,
-#                 'TransMethod': str, Transformation method name,
-#                 'df' : {
-#                     'ResCtrlFlat' : [List of int],
-#                 },   
-#         """
-#         #region -----------------------------------------------------> Set rep
-#         if self.rDO['Cero']:
-#             rep = np.nan
-#         else:
-#             rep = 0
-#         #endregion --------------------------------------------------> Set rep
-        
-#         #region ---------------------------------------------------> Transform
-#         try:
-#             self.dfT = dtsStatistic.DataTransformation(
-#                 self.dfF, 
-#                 self.rDO['df']['ResCtrlFlat'], 
-#                 method = self.rDO['TransMethod'],
-#                 rep    = rep,
-#             )
-#         except Exception as e:
-#             self.rMsgError   = 'Data Transformation failed.'
-#             self.rException = e
-#             return False 
-#         #endregion ------------------------------------------------> Transform
-        
-#         return True
-#     #---
-    
-#     def DatPrep_Normalization(self) -> bool:
-#         """Perform a data normalization.
-    
-#             Returns
-#             -------
-#             bool
-    
-#             Notes
-#             -----
-#             Assumes child class has the following attributes:
-#             - rDO, dict with at least the following key - values pairs:
-#                 'NormMethod' : str Normalization method selected
-#                 df : dict
-#                     {
-#                         'ResCtrlFlat' : list[int]
-#                     }
-#         """
-#         #region -----------------------------------------------> Normalization
-#         try:
-#             self.dfN = dtsStatistic.DataNormalization(
-#                 self.dfT, 
-#                 self.rDO['df']['ResCtrlFlat'], 
-#                 method = self.rDO['NormMethod'],
-#             )
-#         except Exception as e:
-#             self.rMsgError   = 'Data Normalization failed.'
-#             self.rException = e
-#             return False
-#         #endregion --------------------------------------------> Normalization
-        
-#         return True
-#     #---
-    
-#     def DatPrep_Imputation(self) -> bool:
-#         """Perform a data imputation.
-    
-#             Returns
-#             -------
-#             bool
-    
-#             Notes
-#             -----
-#             Assumes child class has the following attributes:
-#             - rDO, dict with at least the following key - values pairs:
-#                 'ImpMethod' : str Imputation method selected
-#                 df : dict
-#                     {
-#                         'ResCtrlFlat' : list[int]
-#                     }
-#         """
-#         #region --------------------------------------------------> Imputation
-#         try:
-#             self.dfIm = dtsStatistic.DataImputation(
-#                 self.dfN, 
-#                 self.rDO['df']['ResCtrlFlat'],
-#                 method = self.rDO['ImpMethod'],
-#                 shift  = self.rDO['Shift'],
-#                 width  = self.rDO['Width'],
-#             )
-#         except Exception as e:
-#             self.rMsgError   = 'Data Imputation failed.'
-#             self.rException = e
-#             return False
-#         #endregion -----------------------------------------------> Imputation
-        
-#         return True
-#     #---
-    
-#     def DatPrep_TargetProt(self) -> bool:
-#         """Filter data based on the value of Target Protein.
-        
-#             See Notes below for more details
-    
-#             Returns
-#             -------
-#             bool
-    
-#             Notes
-#             -----
-#             Assumes child class has the following attributes:
-#             - rDO: dict with at least the following key - values pairs:
-#                 'TargetProt' : str name of the Protein to select in the data
-#                 'df' : {
-#                     'TargetProtCol' : int,
-#                 }
-#         """
-#         #region -------------------------------------------------> Get Protein
-#         try:
-#             if self.rDO['df'].get('TargetProtCol', None) is not None:
-#                 self.dfTP = dtsMethod.DFFilterByColS(
-#                     self.dfIm, 
-#                     self.rDO['df']['TargetProtCol'],
-#                     self.rDO['TargetProt'], 
-#                     'e',
-#                 )
-#             else:
-#                 self.dfTP = self.dfIm.copy()
-#         except Exception as e:
-#             self.rMsgError = config.mPDDataTargetProt.format(
-#                 self.rDO['TargetProt'], self.rDO['df']['TargetProtCol'])
-#             self.rException = e
-#             return False
-#         #endregion ----------------------------------------------> Get Protein
-        
-#         return True
-#     #---
-    
-#     def DatPrep_Exclude(self) -> bool:
-#         """Exclude rows from self.dfF based on the content of 
-#             self.do['df']['ExcludeR'].
-    
-#             Returns
-#             -------
-#             bool      
-            
-#             Notes
-#             -----
-#             Assumes child class has the following attributes:
-#             - rDO: dict with at least the following key - values pairs:
-#                 'df' : {
-#                     'ExcludeR' : [List of int],
-#                 }
-#             - dfF: pd.DataFrame with correct data types in each column.
-            
-#             Rows with at least one value different to NA in 
-#             self.do['df']['ExcludeR'] are discarded
-#         """
-#         #region -----------------------------------------------------> Exclude
-#         try:
-#             if self.rDO['df'].get('ExcludeR', None) is not None:
-#                 self.dfE = dtsMethod.DFExclude(
-#                     self.dfTP, self.rDO['df']['ExcludeR'])
-#             else:
-#                 self.dfE = self.dfTP.copy()
-#         except Exception as e:
-#             self.rMsgError = config.mPDDataExclude.format(
-#                 self.rDO['df']['ExcludeR'])
-#             self.rException = e
-#             return False
-#         #endregion --------------------------------------------------> Exclude
-        
-#         return True
-#     #---
-    
-#     def DatPrep_Score(self) -> bool:
-#         """Filter rows in self.dfE by Score values.
-        
-#             Returns
-#             -------
-#             bool
-    
-#             Notes
-#             -----
-#             Assumes child class has the following attributes
-#             - rDO: dict with at least the following key - values pairs:
-#                 'ScoreVal' : float
-#                 'df' : {
-#                     'ScoreCol' : int
-#                 }
-#             - dfE: pd.DataFrame with correct data types in each column
-            
-#             This is last filter applied. That is why the check for empty df is
-#             done here. 
-#         """
-#         #region ------------------------------------------------------> Filter
-#         try:
-#             if self.rDO['df'].get('ScoreCol', None) is not None:
-#                 self.dfS = dtsMethod.DFFilterByColN(
-#                     self.dfE, 
-#                     [self.rDO['df']['ScoreCol']], 
-#                     self.rDO['ScoreVal'], 
-#                     'ge'
-#                 )
-#             else:
-#                 self.dfS = self.dfE.copy()
-#         except Exception as e:
-#             self.rMsgError = config.mPDDataScore.format(
-#                 self.rDO['df']['ScoreCol'])
-#             self.rException = e
-#             return False
-#         #endregion ---------------------------------------------------> Filter
-        
-#         #region -----------------------> Check some Rows are left for Analysis
-#         if self.dfS.empty:
-#             self.rMsgError = config.mNoDataLeft
-#             return False
-#         else:
-#             pass
-#         #endregion --------------------> Check some Rows are left for Analysis
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Data Steps
+        stepDict = self.SetStepDictDPFileR()
+        #endregion -----------------------------------------------> Data Steps
 
-#         return True
-#     #---
-    
-#     def SetOutputDict(self, dateDict) -> dict:
-#         """Creates the output dictionary to be written to the output file 
-        
-#             Parameters
-#             ----------
-#             dateDict : dict
-#                 dateDict = {
-#                     date : {
-#                         'V' : config.dictVersion,
-#                         'I' : self.d,
-#                         'CI': dtsMethod.DictVal2Str(
-#                             self.do, self.changeKey, new=True,
-#                         ),
-#                         'R' : Results,
-#                     }
-#                 }
-            
-#             Return
-#             ------
-#             dict
-#                 Output data as a dict
-                
-#             Notes
-#             -----
-#             If the output file already exists the new data is added to the
-#             existing data in the corresponding section.
-#             It assumes child class defines a self.cSection attributes with the
-#             section name of the analysis.
-#         """
-#         #region ---------------------------------------------------> Read File
-#         if self.rDO['uFile'].exists():
-#             try:
-#                 outData = dtsFF.ReadJSON(self.rDO['uFile'])
-#             except Exception as e:
-#                 msg = config.mFileRead.format(self.rDO['uFile'])
-#                 raise dtsException.ExecutionError(msg)
-#         else:
-#             outData = {}
-#         #endregion ------------------------------------------------> Read File
-        
-#         #region ------------------------------------------------> Add new data
-#         if outData.get(self.cSection, False):
-#                 outData[self.cSection][self.rDateID] = dateDict[self.rDateID]
-#         else:
-#             outData[self.cSection] = dateDict
-#         #endregion ---------------------------------------------> Add new data
+        return self.WriteOutputData(stepDict)
+    #---
 
-#         return outData
-#     #---
-    
-#     def SetStepDictDP(self) -> dict:
-#         """Set the Data Processing part of the stepDict to write in the output.
-    
-#             Returns
-#             -------
-#             dict
-#         """
-#         stepDict = {
-#             'DP': {
-#                 config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
-#                 config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '03'),
-#                 config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '04'),
-#                 config.ltDPKeys[3] : config.fnImp.format(self.rDate, '05'),
-#             },
-#         }
+    def LoadResults(self) -> bool:
+        """Load output file
         
-#         return stepDict
-#     #---
-    
-#     def SetStepDictDPFileR(self) -> dict:
-#         """Set the Data Processing, Files & Results parts of the stepDict to 
-#             write in the output.
-    
-#             Returns
-#             -------
-#             dict
-#         """
-#         stepDict = {
-#             'DP': {
-#                 config.ltDPKeys[0] : config.fnFloat.format(self.rDate, '02'),
-#                 config.ltDPKeys[1] : config.fnTrans.format(self.rDate, '03'),
-#                 config.ltDPKeys[2] : config.fnNorm.format(self.rDate, '04'),
-#                 config.ltDPKeys[3] : config.fnImp.format(self.rDate, '05'),
-#             },
-#             'Files' : {
-#                 config.fnInitial.format(self.rDate, '01')   : self.dfI,
-#                 config.fnFloat.format(self.rDate, '02')     : self.dfF,
-#                 config.fnTrans.format(self.rDate, '03')     : self.dfT,
-#                 config.fnNorm.format(self.rDate, '04')      : self.dfN,
-#                 config.fnImp.format(self.rDate, '05')       : self.dfIm,
-#                 config.fnTargetProt.format(self.rDate, '06'): self.dfTP,
-#                 config.fnExclude.format(self.rDate, '07')   : self.dfE,
-#                 config.fnScore.format(self.rDate, '08')     : self.dfS,
-#                 self.rMainData.format(self.rDate, '09')     : self.dfR,
-#             },
-#             'R' : self.rMainData.format(self.rDate, '09'),
-#         }
-        
-#         return stepDict
-#     #---
-    
-#     def WriteOutput(self) -> bool:
-#         """Write output for a module
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------> Data Steps
-#         stepDict = self.SetStepDictDPFileR()
-#         #endregion -----------------------------------------------> Data Steps
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Load
+        wx.CallAfter(self.rDlg.UpdateStG, self.cLPdLoad)
+        #------------------------------> 
+        # wx.CallAfter(gMethod.LoadUMSAPFile, fileP=self.rDO['uFile'])
+        #endregion -----------------------------------------------------> Load
 
-#         return self.WriteOutputData(stepDict)
-#     #---
-
-#     def WriteOutputData(self, stepDict: dict) -> bool:
-#         """Write output. 
-        
-#             Parameters
-#             ----------
-#             stepDict : dict
-#                 Dict with the data to write the step by step data files
-#                 Keys are file names and values pd.DataFrame with the values
-                
-#             Return
-#             ------
-#             bool
-#         """
-#         #region -----------------------------------------------> Create folder
-#         #------------------------------> 
-#         msgStep = self.cLPdWrite + 'Creating needed folders, Data-Steps folder'
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         dataFolder = f"{self.rDate}_{self.cSection.replace(' ', '-')}"
-#         dataFolder = self.rOFolder / config.fnDataSteps / dataFolder
-#         dataFolder.mkdir(parents=True, exist_ok=True)
-#         #------------------------------> 
-#         msgStep = self.cLPdWrite + 'Creating needed folders, Data-Initial folder'
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         dataInit = self.rOFolder / config.fnDataInit
-#         dataInit.mkdir(parents=True, exist_ok=True)
-#         #endregion --------------------------------------------> Create folder
-        
-#         #region ------------------------------------------------> Data Initial
-#         msgStep = self.cLPdWrite + 'Data files, Input Data'
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #------------------------------> 
-#         puFolder = self.rDO['uFile'].parent / config.fnDataInit
-#         #------------------------------> 
-#         for k,v in self.rCopyFile.items():
-#             if self.rDI[self.EqualLenLabel(v)] != '':
-#                 #------------------------------> 
-#                 piFolder = self.rDO[k].parent
-#                 #------------------------------>
-#                 if not piFolder == puFolder:
-#                     #------------------------------> 
-#                     tStem = self.rDO[k].stem.replace(' ', '-')
-#                     tStem = tStem.replace('_', '-')
-#                     name = f"{self.rDate}_{tStem}{self.rDO[k].suffix}"
-#                     file = puFolder/name
-#                     #------------------------------> 
-#                     shutil.copy(self.rDO[k], file)
-#                     #------------------------------> 
-#                     self.rDI[self.EqualLenLabel(v)] = str(file.name)
-#                     #------------------------------> 
-#                     self.rDFile.append(file)
-#                 else:
-#                     #------------------------------> 
-#                     self.rDI[self.EqualLenLabel(v)] = str(self.rDO[k].name)
-#                     #------------------------------> 
-#                     self.rDFile.append(self.rDO[k])
-#             else:
-#                 self.rDFile.append('')
-#         #endregion ---------------------------------------------> Data Initial
-        
-#         #region --------------------------------------------------> Data Steps
-#         msgStep = self.cLPdWrite + 'Data files, Output Data'
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         try:
-#             dtsFF.WriteDFs2CSV(dataFolder, stepDict['Files'])
-#         except Exception as e:
-#             self.rMsgError = ('It was not possible to create the files with '
-#                 'the data for the intermediate steps of the analysis.')
-#             self.rException = e
-#             return False
-#         #endregion -----------------------------------------------> Data Steps
-        
-#         #region --------------------------------------------> Further Analysis
-#         if (aaDict := stepDict.get('AA', False)):
-#             fileP = dataFolder/aaDict[f'{self.rDate}_{self.rDO["AA"]}']
-#             dtsFF.WriteDF2CSV(fileP, self.dfAA)
-#         else:
-#             pass
-        
-#         if (histDict := stepDict.get('Hist', False)):
-#             fileP = dataFolder/histDict[f'{self.rDate}_{self.rDO["Hist"]}']
-#             dtsFF.WriteDF2CSV(fileP, self.dfHist)
-#         else:
-#             pass
-        
-#         if (fileN := stepDict.get('CpR', False)):
-#             fileP = dataFolder/fileN
-#             dtsFF.WriteDF2CSV(fileP, self.dfCpR)
-#         else:
-#             pass
-        
-#         if (fileN := stepDict.get('CEvol', False)):
-#             fileP = dataFolder/fileN
-#             dtsFF.WriteDF2CSV(fileP, self.dfCEvol)
-#         else:
-#             pass
-#         #endregion -----------------------------------------> Further Analysis
-
-#         #region --------------------------------------------------> UMSAP File
-#         msgStep = self.cLPdWrite + 'Main file'
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #------------------------------> Create output dict
-#         dateDict = {
-#             self.rDateID : {
-#                 'V' : config.dictVersion,
-#                 'I' : self.rDI,
-#                 'CI': dtsMethod.DictVal2Str(self.rDO, self.rChangeKey, new=True),
-#                 'DP': {
-#                     config.ltDPKeys[0] : stepDict['DP'][config.ltDPKeys[0]],
-#                     config.ltDPKeys[1] : stepDict['DP'][config.ltDPKeys[1]],
-#                     config.ltDPKeys[2] : stepDict['DP'][config.ltDPKeys[2]],
-#                     config.ltDPKeys[3] : stepDict['DP'][config.ltDPKeys[3]],
-#                 },
-#             }
-#         }
-#         #--------------> DataPrep Util does not have dfR
-#         if not self.dfR.empty:
-#             dateDict[self.rDateID]['R'] = stepDict['R']
-#         else:
-#             pass
-#         #--------------> 
-#         if self.cName == config.npProtProf:
-#             #--------------> Filters in ProtProf
-#             dateDict[self.rDateID]['F'] = {}
-#         elif self.cName == config.npTarProt:
-#             #--------------> TarProt    
-#             dateDict[self.rDateID]['CpR'] = stepDict['CpR']
-#             dateDict[self.rDateID]['CEvol'] = stepDict['CEvol']
-#         else:
-#             pass
-#         #--------------> Further Analysis
-#         if stepDict.get('AA', None) is not None:
-#             dateDict[self.rDateID]['AA'] = stepDict['AA']
-#         else:
-#             pass
-#         if stepDict.get('Hist', None) is not None:
-#             dateDict[self.rDateID]['Hist'] = stepDict['Hist']
-#         else:
-#             pass
-#         #------------------------------> Append or not
-#         try:
-#             outData = self.SetOutputDict(dateDict)
-#         except Exception as e:
-#             self.rMsgError = ('It was not possible to create the dictionary '
-#                 'with the UMSAP data.')
-#             self.rException = e
-#             return False
-#         #------------------------------> Write
-#         try:
-#             dtsFF.WriteJSON(self.rDO['uFile'], outData)
-#         except Exception as e:
-#             self.rMsgError = ('It was not possible to create the dictionary '
-#                 'with the UMSAP data.')
-#             self.rException = e
-#             return False
-#         #endregion -----------------------------------------------> UMSAP File
-
-#         return True
-#     #---
-    
-#     def LoadResults(self) -> bool:
-#         """Load output file
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------------> Load
-#         wx.CallAfter(self.rDlg.UpdateStG, self.cLPdLoad)
-        
-#         wx.CallAfter(gmethod.LoadUMSAPFile, fileP=self.rDO['uFile'])
-#         #endregion -----------------------------------------------------> Load
-
-#         return True
-#     #---
+        return True
+    #---
 
     def RunEnd(self) -> bool:
         """Restart GUI and needed variables
@@ -1528,7 +1517,7 @@ class BaseConfPanel(
         """
         #region ---------------------------------------> Dlg progress dialogue
         if not self.rMsgError:
-            # self.rDFile.append(self.rDO['uFile'])
+            self.rDFile.append(self.rDO['uFile'])
             self.rDlg.SuccessMessage(
                 self.cLPdDone, eTime=f"{self.cLPdElapsed} {self.rDeltaT}")
         else:
@@ -1539,23 +1528,23 @@ class BaseConfPanel(
         #region -------------------------------------------------------> Reset
         self.rMsgError  = '' # Error msg to show in self.RunEnd
         self.rException = None # Exception
-        # self.rDI        = {} # Dict with the user input as given
-        # self.rDO        = {} # Dict with the processed user input
-        # self.dfI        = pd.DataFrame() # pd.DataFrame for initial, normalized 
-        # self.dfF        = pd.DataFrame() # etc
-        # self.dfTP       = pd.DataFrame()
-        # self.dfE        = pd.DataFrame()
-        # self.dfS        = pd.DataFrame()
-        # self.dfT        = pd.DataFrame()
-        # self.dfN        = pd.DataFrame()
-        # self.dfIm       = pd.DataFrame()
-        # self.dfR        = pd.DataFrame()
-        # self.rDate      = None # date for corr file
-        # self.rDateID    = None
-        # self.rOFolder   = None # folder for output
-        # self.rIFileObj  = None
-        self.rDeltaT     = None
-        
+        self.rDI        = {} # Dict with the user input as given
+        self.rDO        = {} # Dict with the processed user input
+        self.dfI        = pd.DataFrame() # pd.DataFrame for initial, normalized 
+        self.dfF        = pd.DataFrame() # etc
+        self.dfTP       = pd.DataFrame()
+        self.dfE        = pd.DataFrame()
+        self.dfS        = pd.DataFrame()
+        self.dfT        = pd.DataFrame()
+        self.dfN        = pd.DataFrame()
+        self.dfIm       = pd.DataFrame()
+        self.dfR        = pd.DataFrame()
+        self.rDate      = '' # date for corr file
+        self.rDateID    = ''
+        self.rOFolder   = None # folder for output
+        self.rIFileObj  = None
+        self.rDeltaT    = ''
+
         if self.rDFile:
             self.wUFile.wTc.SetValue(str(self.rDFile[-1]))
             self.wIFile.wTc.SetValue(str(self.rDFile[0]))
@@ -2802,12 +2791,12 @@ class PaneCorrA(BaseConfPanel):
     #------------------------------> Needed by BaseConfPanel
     cName        = mConfig.npCorrA
     cURL         = f"{mConfig.urlTutorial}/correlation-analysis"
-    # cSection     = config.nuCorrA
+    cSection     = mConfig.nuCorrA
     cTitlePD     = 'Calculating Correlation Coefficients'
     cGaugePD     = 26
-    # cTTHelp      = config.ttBtnHelp.format(cURL)
+    cTTHelp      = mConfig.ttBtnHelp.format(cURL)
     rLLenLongest = len(cLCorrMethod)
-    # rMainData    = '{}_{}-CorrelationCoefficients-Data.txt'
+    rMainData    = '{}_{}-CorrelationCoefficients-Data.txt'
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -3168,72 +3157,72 @@ class PaneCorrA(BaseConfPanel):
         return True
     #---
 
-#     def RunAnalysis(self) -> bool:
-#         """Calculate coefficients
-        
-#             Return
-#             ------
-#             bool
-#         """
-#         #region -------------------------------------------------------> Print
-#         if config.development:
-#             print('d:')
-#             for k,v in self.rDI.items():
-#                 print(str(k)+': '+str(v))
-#             print('')  
-#             print('do:')
-#             for k,v in self.rDO.items():
-#                 if k not in ['df', 'oc', 'dfo']:
-#                     print(str(k)+': '+str(v))
-#                 else:
-#                     print(k)
-#                     for j,w in v.items():
-#                         print(f'\t{j}: {w}')
-#             print('')
-#         else:
-#             pass
-#         #endregion ----------------------------------------------------> Print
-    
-#         #region --------------------------------------------> Data Preparation
-#         if self.DataPreparation():
-#             pass
-#         else:
-#             return False
-#         #endregion -----------------------------------------> Data Preparation
+    def RunAnalysis(self) -> bool:
+        """Calculate coefficients.
 
-#         #region ------------------------------------> Correlation coefficients
-#         #------------------------------> Msg
-#         msgStep = self.cLPdRun + f"Correlation coefficients calculation"
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #------------------------------> 
-#         try:
-#             self.dfR = self.dfIm.corr(method=self.rDO['CorrMethod'].lower())
-#         except Exception as e:
-#             self.rMsgError = str(e)
-#             self.rException = e
-#             return False
-#         #endregion ---------------------------------> Correlation coefficients
+            Return
+            ------
+            bool
+        """
+        #region -------------------------------------------------------> Print
+        if mConfig.development:
+            print('d:')
+            for k,v in self.rDI.items():
+                print(str(k)+': '+str(v))
+            print('')  
+            print('do:')
+            for k,v in self.rDO.items():
+                if k not in ['df', 'oc', 'dfo']:
+                    print(str(k)+': '+str(v))
+                else:
+                    print(k)
+                    for j,w in v.items():
+                        print(f'\t{j}: {w}')
+            print('')
+        else:
+            pass
+        #endregion ----------------------------------------------------> Print
 
-#         return True
-#     #---
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
+            pass
+        else:
+            return False
+        #endregion -----------------------------------------> Data Preparation
 
-#     def WriteOutput(self):
-#         """Write output. Override as needed"""
-#         #region --------------------------------------------------> Data Steps
-#         stepDict = self.SetStepDictDP()
-#         stepDict['Files'] = {
-#             config.fnInitial.format(self.rDate, '01'): self.dfI,
-#             config.fnFloat.format(self.rDate, '02')  : self.dfF,
-#             config.fnTrans.format(self.rDate, '03')  : self.dfT,
-#             config.fnNorm.format(self.rDate, '04')   : self.dfN,
-#             config.fnImp.format(self.rDate, '05')    : self.dfIm,
-#             self.rMainData.format(self.rDate, '06')  : self.dfR,
-#         }
-#         stepDict['R'] = self.rMainData.format(self.rDate, '06')
-#         #endregion -----------------------------------------------> Data Steps
+        #region ------------------------------------> Correlation coefficients
+        #------------------------------> Msg
+        msgStep = self.cLPdRun + f"Correlation coefficients calculation"
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.dfR = self.dfIm.corr(method=self.rDO['CorrMethod'].lower())
+        except Exception as e:
+            self.rMsgError = str(e)
+            self.rException = e
+            return False
+        #endregion ---------------------------------> Correlation coefficients
 
-#         return self.WriteOutputData(stepDict)
-#     #---
+        return True
+    #---
+
+    def WriteOutput(self):
+        """Write output. Override as needed"""
+        #region --------------------------------------------------> Data Steps
+        stepDict = self.SetStepDictDP()
+        stepDict['Files'] = {
+            mConfig.fnInitial.format(self.rDate, '01'): self.dfI,
+            mConfig.fnFloat.format(self.rDate, '02')  : self.dfF,
+            mConfig.fnTrans.format(self.rDate, '03')  : self.dfT,
+            mConfig.fnNorm.format(self.rDate, '04')   : self.dfN,
+            mConfig.fnImp.format(self.rDate, '05')    : self.dfIm,
+            self.rMainData.format(self.rDate, '06')  : self.dfR,
+        }
+        stepDict['R'] = self.rMainData.format(self.rDate, '06')
+        #endregion -----------------------------------------------> Data Steps
+
+        return self.WriteOutputData(stepDict)
+    #---
     #endregion ------------------------------------------------> Run Analysis
 #---
 

@@ -54,7 +54,7 @@ def ReadJSON(fileP: Union[Path, str]) -> dict:
 
 
 def ReadFileFirstLine(
-    fileP: Union[Path, str], 
+    fileP: Union[Path, str],
     char: str='\t', 
     empty: bool=False
     ) -> list[str]:
@@ -84,26 +84,22 @@ def ReadFileFirstLine(
         If the file is empty an empty line is returned.
     """
     #region --------------------------------------------> Read and split lines
-    try:
-        #------------------------------> Read file
-        with open(fileP, 'r') as file:
-            for line in file:
-                #--> To remove ' ', \n, \t & \r from start/end of line
-                l = line.strip()
-                #------------------------------> Return first line
-                if l == '' and not empty:
-                    #------------------------------> Discard empty
-                    continue
+    with open(fileP, 'r') as file:
+        for line in file:
+            #--> To remove ' ', \n, \t & \r from start/end of line
+            l = line.strip()
+            #------------------------------> Return first line
+            if l == '' and not empty:
+                #------------------------------> Discard empty
+                continue
+            else:
+                #------------------------------> Set data
+                if char:
+                    return l.split(char)
                 else:
-                    #------------------------------> Set data
-                    if char:
-                        return l.split(char)
-                    else:
-                        return [l]
-        #------------------------------> If file is empty then return
-        return []
-    except Exception:
-        raise mException.ExecutionError(mConfig.mFileRead.format(fileP))
+                    return [l]
+    #------------------------------> If file is empty then return
+    return []
     #endregion -----------------------------------------> Read and split lines
 #---
 
@@ -138,11 +134,8 @@ def ReadCSV2DF(
             - When the file could not be read.
     """
     #region -------------------------------------------------------> Read file
-    try:
-        return pd.read_csv(
-            str(fileP), sep=sep, index_col=index_col, header=header)
-    except Exception:
-        raise mException.ExecutionError(mConfig.mFileRead.format(fileP))
+    return pd.read_csv(
+        str(fileP), sep=sep, index_col=index_col, header=header)
     #endregion ----------------------------------------------------> Read file
 #---
 
@@ -169,6 +162,71 @@ def WriteJSON(fileP: Union[Path, str], data: dict) -> bool:
     #region ---------------------------------------------------> Write to file
     with open(fileP, 'w') as file:
         json.dump(data, file, indent=4)
+    #endregion ------------------------------------------------> Write to file
+
+    return True
+#---
+
+
+def WriteDF2CSV(
+    fileP: Union[Path, str], 
+    df: pd.DataFrame, 
+    sep: str='\t', 
+    na_rep: str='NA', 
+    index: bool=False
+    ) -> bool:
+    """ Writes a dataframe to csv formatted file .
+
+        Parameters
+        ----------
+        fileP: str or Path 
+            Path to the file
+        df: pd.DataFrame
+            Data frame to be written
+        sep : str
+            Character to separate columns in the csv file
+        na_rep : str
+            Character to represent NA values
+        index: boolean 
+            Write index columns
+    """
+    #region ---------------------------------------------------> Write to file
+    df.to_csv(str(fileP), sep=sep, na_rep=na_rep, index=index)
+    return True
+    #endregion ------------------------------------------------> Write to file
+#---
+
+
+def WriteDFs2CSV(
+    baseP: Path,
+    ncDict: dict[str, pd.DataFrame],
+    sep: str='\t',
+    na_rep: str='NA',
+    index: bool=False
+    ) -> bool:
+    """Write several pd.DataFrames to baseP as CSV files. 
+
+        Parameters
+        ----------
+        baseP : Path
+            Folder in which all files will be saved.
+        ncDict : dict
+            Keys are file names and values the pd.DataFrames.
+        sep : str
+            Character to separate columns in the csv file.
+        na_rep : str
+            Character to represent NA values.
+        index: boolean 
+            Write index columns
+
+        Notes
+        -----
+        Existing files will be overwritten if needed.
+    """
+    #region ---------------------------------------------------> Write to file
+    for k,i in ncDict.items():
+        fileP = baseP / k
+        WriteDF2CSV(fileP, i, sep=sep, na_rep=na_rep, index=index)
     #endregion ------------------------------------------------> Write to file
 
     return True
@@ -223,10 +281,7 @@ class CSVFile():
         #endregion --------------------------------------------> Initial Setup
 
         #region ---------------------------------------------------> Read File
-        try:
-            self.rData = ReadCSV2DF(self.rFileP, sep=sep)
-        except Exception:
-            raise mException.FileIOError(mConfig.mFileRead.format(fileP))
+        self.rData = ReadCSV2DF(self.rFileP, sep=sep)
         #endregion ------------------------------------------------> Read File
 
         #region ---------------------------------------------------> Variables
@@ -403,11 +458,7 @@ class FastaFile():
         #endregion --------------------------------------------> Blosum matrix
 
         #region ---------------------------------------------------> Alignment
-        try:
-            return pairwise2.align.globalds(seqA, seqB, blosum62, -10, -0.5) # type: ignore
-        except Exception:
-            msg = (f'Sequence alignment failed.\nseqA: {seqA}\nseqB: {seqB}')
-            raise mException.ExecutionError(msg)
+        return pairwise2.align.globalds(seqA, seqB, blosum62, -10, -0.5) # type: ignore
         #endregion ------------------------------------------------> Alignment
     #---
 
@@ -434,16 +485,12 @@ class FastaFile():
 
         #region ---------------------------------------------------> Alignment
         if getattr(self, 'rAlignment', None) is None:
-            try:
-                self.rAlignment = self.CalculateAlignment(
-                    self.rSeqRec, self.rSeqNat)
-            except Exception as e:
-                raise e
-            else:
-                return True
+            self.rAlignment = self.CalculateAlignment(self.rSeqRec,self.rSeqNat)
         else:
-            return True
+            pass
         #endregion ------------------------------------------------> Alignment
+
+        return True
     #---
 
     def GetSelfAlignment(self):
@@ -455,15 +502,12 @@ class FastaFile():
         """
         #region ---------------------------------------------------> Alignment
         if getattr(self, 'rAlignment', None) is None:
-            try:
-                self.SetSelfAlignment()
-            except Exception as e:
-                raise e
-            else:
-                return self.rAlignment
+            self.SetSelfAlignment()
         else:
-            return self.rAlignment
+            pass
         #endregion ------------------------------------------------> Alignment
+
+        return self.rAlignment
     #---
 
     def GetSelfDelta(self) -> int:
@@ -475,11 +519,8 @@ class FastaFile():
             int
         """
         #region ---------------------------------------------------> Alignment
-        try:
-            alignment = self.GetSelfAlignment()
-            seqB = alignment[0].seqB # type: ignore
-        except Exception as e:
-            raise e
+        alignment = self.GetSelfAlignment()
+        seqB = alignment[0].seqB # type: ignore
         #endregion ------------------------------------------------> Alignment
 
         #region ---------------------------------------------------> Get delta
@@ -503,11 +544,8 @@ class FastaFile():
                 First and last residue.
         """
         #region ---------------------------------------------------> Alignment
-        try:
-            alignment = self.GetSelfAlignment()
-            seqB = alignment[0].seqB
-        except Exception as e:
-            raise e
+        alignment = self.GetSelfAlignment()
+        seqB = alignment[0].seqB # type: ignore
         #endregion ------------------------------------------------> Alignment
 
         #region -------------------------------------------> Get Left Position

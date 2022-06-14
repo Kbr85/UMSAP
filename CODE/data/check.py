@@ -61,15 +61,8 @@ def VersionCompare(
         >>> False
     """
     #region -------------------------------------------------> Get number list
-    try:
-        xA, yA, zA = map(int, strA.strip().split(" ")[0].split("."))
-        xB, yB, zB = map(int, strB.strip().split(" ")[0].split("."))
-    except ValueError:
-        msg = (
-            f"The expected input for strA and strB is '2.4.5' or "
-            f"'4.10.23 (beta)'."
-        )
-        raise mException.InputError(msg)
+    xA, yA, zA = map(int, strA.strip().split(" ")[0].split("."))
+    xB, yB, zB = map(int, strB.strip().split(" ")[0].split("."))
     #endregion ----------------------------------------------> Get number list
 
     #region ---------------------------------------------------------> Compare

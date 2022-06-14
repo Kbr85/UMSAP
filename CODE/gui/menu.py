@@ -84,7 +84,7 @@ class BaseMenu(wx.Menu):
         #region --------------------------------------------------> Create Tab
         mConfig.winMain.CreateTab(self.rIDMap[event.GetId()])
         #endregion -----------------------------------------------> Create Tab
-        
+
         return True
     #---
 
@@ -101,8 +101,11 @@ class BaseMenu(wx.Menu):
             -------
             bool
         """
+        #region ---------------------------------------------------> 
         win = self.GetWindow()
         win.dKeyMethod[self.rIDMap[event.GetId()]]()
+        #endregion ------------------------------------------------> 
+
         return True
     #---
 
@@ -837,26 +840,12 @@ class MenuUtility(BaseMenu):
         #endregion ---------------------------------------------------> Window
 
         #region ---------------------------------------------------> Get fileP
-        try:
-            #------------------------------> 
-            dlg = mWindow.DialogFileSelect(
-                'openO', 
-                ext    = mConfig.elUMSAP,
-                parent = win,
-                msg    = mConfig.mFileSelUMSAP,
-            )
-            #------------------------------> 
-            if dlg.ShowModal() == wx.ID_OK:
-                fileP = Path(dlg.GetPath())
-            else:
-                return False
-        except Exception as e:
-            mWindow.DialogNotification(
-                'errorF', 
-                msg        = mConfig.mFileSelector,
-                tException = e,
-                parent     = win,
-            )
+        dlg = mWindow.DialogFileSelect(
+            'openO', ext=mConfig.elUMSAP, parent=win, msg=mConfig.mFileSelUMSAP)
+        #------------------------------>
+        if dlg.ShowModal() == wx.ID_OK:
+            fileP = Path(dlg.GetPath())
+        else:
             return False
         #endregion ------------------------------------------------> Get fileP
 
@@ -2390,7 +2379,7 @@ class MenuBarTool(MenuBarMain):
         # mConfig.nwCEvolPlot    : MenuToolCleavageEvol,
     }
     #endregion --------------------------------------------------> Class Setup
-    
+
     #region --------------------------------------------------- Instance Setup
     def __init__(self, cName: str, menuData: dict={}) -> None:
         """ """

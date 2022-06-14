@@ -28,9 +28,9 @@ development = True # Track state, development (True) or production (False)
 version     = '2.2.1 (beta)' # String to write in the output files
 software    = 'UMSAP' # Software short name
 softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
-# dictVersion = { # dict for directly write into output files
-#     'Version': version,
-# }
+dictVersion = { # dict for directly write into output files
+    'Version': version,
+}
 # #------------------------------> 
 os = platform.system() # Current operating system
 cwd = Path(__file__)   # Config file path
@@ -139,8 +139,8 @@ npDef = 'Default Pane'
 npCorrA                 = 'CorrAPane'
 # npDataPrep              = 'DataPrepPane'
 # npLimProt               = 'LimProtPane'
-# npProtProf              = 'ProtProfPane'
-# npTarProt               = 'TarProtPane'
+npProtProf              = 'ProtProfPane'
+npTarProt               = 'TarProtPane'
 # npResControlExpProtProf = 'ResControlExpPaneProtProf'
 # npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 # npResControlExpTarProt  = 'ResControlExpPaneTarProt'
@@ -244,15 +244,15 @@ fManual = res / 'MANUAL/manual.pdf'
 #------------------------------> 
 fConfig = Path.home() / '.umsap_config.json'
 fConfigDef = res / 'CONFIG/config_def.json'
-# #------------------------------> Names
-# fnInitial    = "{}_{}-Initial-Data.txt"
-# fnFloat      = "{}_{}-Floated-Data.txt"
-# fnTrans      = "{}_{}-Transformed-Data.txt"
-# fnNorm       = "{}_{}-Normalized-Data.txt"
-# fnImp        = "{}_{}-Imputed-Data.txt"
-# fnTargetProt = "{}_{}-Target-Protein-Data.txt"
-# fnExclude    = "{}_{}-After-Excluding-Data.txt"
-# fnScore      = "{}_{}-Score-Filtered-Data.txt"
+#------------------------------> Names
+fnInitial    = "{}_{}-Initial-Data.txt"
+fnFloat      = "{}_{}-Floated-Data.txt"
+fnTrans      = "{}_{}-Transformed-Data.txt"
+fnNorm       = "{}_{}-Normalized-Data.txt"
+fnImp        = "{}_{}-Imputed-Data.txt"
+fnTargetProt = "{}_{}-Target-Protein-Data.txt"
+fnExclude    = "{}_{}-After-Excluding-Data.txt"
+fnScore      = "{}_{}-Score-Filtered-Data.txt"
 fnDataSteps  = 'Steps_Data_Files'
 fnDataInit   = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
@@ -313,8 +313,8 @@ lPdError = 'Fatal Error'
 
 
 #region ------------------------------------------------------------> Tooltips
-# #------------------------------> wx.Button
-# ttBtnHelp = 'Read tutorial at {}.'
+#------------------------------> wx.Button
+ttBtnHelp = 'Read tutorial at {}.'
 # #------------------------------> wx.StaticText
 # ttStScoreVal = f'Set the minimum acceptable Score value.\ne.g. -4'
 # ttStScoreCol = f'Set the column number containing the {lStScoreVal}.\ne.g. 4'
@@ -419,11 +419,12 @@ oCorrMethod = {
 
 
 #region --------------------------------------------------------> Literal
-litFFSelect = Literal['openO', 'openM', 'save', 'folder']
-litFSelect  = Literal['openO', 'openM', 'save']
-litFoF      = Literal['file', 'folder']
-litNumType  = Literal['int', 'float']
-litError    = Literal['errorF', 'errorU', 'warning', 'success', 'question']
+litFFSelect     = Literal['openO', 'openM', 'save', 'folder']
+litFSelect      = Literal['openO', 'openM', 'save']
+litFoF          = Literal['file', 'folder']
+litNumType      = Literal['int', 'float']
+litNotification = Literal['errorF', 'errorU', 'warning', 'success', 'question']
+litComp         = Literal['lt', 'le', 'e', 'ge', 'gt']
 #endregion -----------------------------------------------------> Literal
 
 
@@ -443,7 +444,7 @@ litError    = Literal['errorF', 'errorU', 'warning', 'success', 'question']
 
 
 #region -----------------------------------------------------> Important Lists
-# ltDPKeys = ['dfF', 'dfT', 'dfN', 'dfIm']
+ltDPKeys = ['dfF', 'dfT', 'dfN', 'dfIm']
 
 # lAA1 = [ # AA one letter codes
 #     'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
@@ -471,8 +472,10 @@ litError    = Literal['errorF', 'errorU', 'warning', 'success', 'question']
 
 #region ------------------------------------------------------------> Messages
 #region -------------------------------------------------------------> Other 
-# #------------------------------> Unexpected Error
-# mUnexpectedError = 'An unexpected error was encountered.'
+#------------------------------> Unexpected Error
+mUnexpectedError = 'UMSAP encountered an unexpected error.'
+#------------------------------> Check for Update
+mCheckUpdate = 'Check for Updates failed. Check again later.'
 # #------------------------------> Sequences related errors
 # mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
 #     "protein.")
@@ -500,14 +503,14 @@ mFileRead = 'An error occurred when reading file:\n{}'
 #endregion ------------------------------------------------------------> Files
 
 #region ------------------------------------------------------------> Pandas
-# mPDGetInitCol = ('It was not possible to extract the selected columns ({}) '
-#     'from the selected {} file:\n{}')
-# mPDDataTargetProt = ('Selection of Target Protein failed.\nTarget Protein: {} '
-#     'Detected Proteins column: {}.')
-# mPDDataExclude = 'Data Exclusion failed.\nColumns used for data exclusion: {}.'
-# mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
-#     'filtering by Score value: {}.')
-# mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
+mPDGetInitCol = ('It was not possible to extract the selected columns ({}) '
+    'from the selected {} file:\n{}')
+mPDDataTargetProt = ('Selection of Target Protein failed.\nTarget Protein: {} '
+    'Detected Proteins column: {}.')
+mPDDataExclude = 'Data Exclusion failed.\nColumns used for data exclusion: {}.'
+mPDDataScore = ('Data Filtering by Score value failed.\nColumns used for data '
+    'filtering by Score value: {}.')
+mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
 #endregion ---------------------------------------------------------> Pandas
  
 #region ----------------------------------------------------> For CheckInput
@@ -519,8 +522,8 @@ mSection = 'Values in section {} must be unique.'
 # mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
 # mRepeatColNum = 'There are repeated column numbers in the text fields.'
 mRowsInLCtrl = 'There must be at least {} items in {}.'
-# mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
-#     'Protein, etc) were applied.')
+mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
+    'Protein, etc) were applied.')
 mFileBad = "File: '{}'\ncannot be used as {} file."
 mOptionBad = "Option '{}' cannot be accepted in {}."
 mValueBad = "Value '{}' cannot be accepted in {}.\n"

@@ -97,69 +97,6 @@ def ReadFile(
         raise dtsException.ExecutionError(config.mReadErrorIO.format(fileP))
     #endregion -----------------------------------------> Read and split lines
 #---
-
-
-def WriteDF2CSV(
-    fileP: Union[Path, str], df: pd.DataFrame, sep: str='\t', na_rep: str='NA', 
-    index: bool=False) -> bool:
-    """ Writes a dataframe to csv formatted file 
-
-        Parameters
-        ----------
-        fileP: str or Path 
-            Path to the file
-        df: pd.DataFrame
-            Data frame to be written
-        sep : str
-            Character to separate columns in the csv file
-        na_rep : str
-            Character to represent NA values
-        index: boolean 
-            Write index columns
-
-    """
-    #region ---------------------------------------------------> Write to file
-    try:
-        df.to_csv(str(fileP), sep=sep, na_rep=na_rep, index=index)
-        return True
-    except Exception:
-        raise dtsException.ExecutionError(config.mWriteErrorIO.format(fileP))
-    #endregion ------------------------------------------------> Write to file
-#---
-
-
-def WriteDFs2CSV(
-    baseP: Path, ncDict: dict[str, pd.DataFrame], sep: str='\t', 
-    na_rep: str='NA', index: bool=False) -> bool:
-    """Write several pd.DataFrames to baseP as CSV files. 
-
-        Existing files will be overwritten if needed. 
-    
-        Parameters
-        ----------
-        baseP : Path
-            Folder in which all files will be saved
-        ncDict : dict
-            Keys are file names and values the pd.DataFrames
-        sep : str
-            Character to separate columns in the csv file
-        na_rep : str
-            Character to represent NA values
-        index: boolean 
-            Write index columns
-    """
-    #region ---------------------------------------------------> Write to file
-    for k,i in ncDict.items():
-        try:
-            fileP = baseP / k
-            WriteDF2CSV(fileP, i, sep=sep, na_rep=na_rep, index=index)
-        except Exception:
-            msg = config.mWriteFilesIO.format(baseP)
-            raise dtsException.ExecutionError(msg)
-    #endregion ------------------------------------------------> Write to file
-    
-    return True
-#---
 #endregion ---------------------------------------------------> File/Folder IO
 
 
