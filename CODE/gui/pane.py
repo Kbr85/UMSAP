@@ -52,9 +52,9 @@ class BaseConfPanel(
 
         Parameters
         ----------
-        cParent : wx Widget
+        parent : wx Widget
             Parent of the widgets
-        cRightDelete : Boolean
+        rightDelete : Boolean
             Enables clearing wx.StaticBox input with right click
 
         Attributes
@@ -66,27 +66,39 @@ class BaseConfPanel(
             DataFrame for the initial values.
         dfF : pd.DataFrame
             DataFrame as float values and 0 and '' as np.nan
-        dfTP : pd.DataFrame
-            DataFrame filtered by Target Protein
-        dfE : DataFrame
-            Exclude some entries by some parameters
-        dfS : DataFrame
-            Exclude entries by Score values.
         dfT : pd.DataFrame
             DataFrame with the transformed values.
         dfN : pd.DataFrame
             DataFrame with normalized values.
         dfIm : pd.DataFrame
             DataFrame with imputed values.
+        dfTP : pd.DataFrame
+            DataFrame filtered by Target Protein
+        dfE : DataFrame
+            Exclude some entries by some parameters
+        dfS : DataFrame
+            Exclude entries by Score values.
         dfR : pd.DataFrame
             DataFrame with the results values.
         rChangeKey : list of str
             Keys in do whose values will be turned into a str. Default to
             ['iFile', 'uFile].
+        rCheckUnique: list of wx.TextCtrl
+            These fields must contain unique column numbers.
+        rCheckUserInput: dict
+            To check user input in the correct order.
+            Keys are widget labels and values a list with [widget, 
+            error message, bool]. Error message must be like mConfig.mFileBad.
+            Boolean is True when the column numbers in the Data file are needed
+            to check user input.
+        rCopyFile: dict
+            Keys are the keys in self.rDO and values label of the widget.
         rDate : str or None
             Date for the new section in the umsap file.
         rDateID : str or None
             Date + Analysis ID
+        rDeltaT: str
+            Elapsed analysis time.
         rDFile : list[Path]
             Full paths to copied input files. Needed to repeat the analysis
             directly after running.
@@ -114,6 +126,8 @@ class BaseConfPanel(
             Input Data File Object
         rLCtrlL: list of wx.ListCtrl
             To clear all wx.ListCtrl in the Tab.
+        rLLenLongest: int
+            Length of longest label.
         rMsgError: Str or None
             Error message to show when analysis fails
         rNCol: int
@@ -152,9 +166,10 @@ class BaseConfPanel(
     def __init__(self, parent: wx.Window, rightDelete: bool=True) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cParent = parent
+        self.cParent  = parent
         #------------------------------> 
-        self.cName = getattr(self, 'cName', mConfig.npDef)
+        self.cName    = getattr(self, 'cName', mConfig.npDef)
+        self.cSection = getattr(self, 'cSection', 'Default Section')
         #------------------------------> For the Progress Dialog
         self.cTitlePD = getattr(self, 'cTitlePD', 'Default Title')
         self.cGaugePD = getattr(self, 'cGaugePD', 50)
@@ -260,7 +275,6 @@ class BaseConfPanel(
         self.rCheckUserInput = {}
         self.rCheckUnique = []
         self.rLLenLongest = getattr(self, 'rLLenLongest', 0)
-        self.cSection = getattr(self, 'cSection', '')
         self.rMainData = getattr(self, 'rMainData', '')
         #--------------> Dict with the user input as given
         self.rDI = {}
@@ -2686,28 +2700,12 @@ class PaneCorrA(BaseConfPanel):
     
         Parameters
         ----------
-        cParent : wx Widget
+        parent : wx Widget
             Parent of the widgets.
-        cDataI : dict or None
+        dataI : dict or None
             Initial data provided by the user in a previous analysis.
             This contains both I and CI dicts e.g. {'I': I, 'CI': CI}
 
-        Attributes
-        ----------
-        rCheckUserInput : dict
-            To check the user input in the right order. 
-            See pane.BaseConfPanel.CheckInput for a description of the dict.
-        rLCTrlL: list of wx.ListCtrl
-            List of wx.ListCtrl to support showing two wx.ListCtrl.
-        rLLenLongest : int
-            Length of the longest label.
-        rMainData : str
-            Name of the file with the correlation coefficient values.
-        rMsgError: str
-            Error method to show to the user.
-            
-        See parent class for more attributes.
-        
         Notes
         -----
         The structures of self.rDO and self.rDI are:
@@ -2720,10 +2718,13 @@ class PaneCorrA(BaseConfPanel):
                 "Cero"       : 'Boolean, how to treat cero values',
                 'TransMethod': 'transformation method',
                 'NormMethod' : 'normalization method',
+                'Shift'      : float,
+                'Width'      : float,
                 'ImpMethod'  : 'imputation method',
                 'CorrMethod' : 'correlation method',
                 'oc'         : {
                     'Column' : [selected columns as integers],
+                    'ColumnF': [columns that must contain floats],
                 }
                 'df'         : {
                     'ColumnR'     : [cero based list of result columns],  
@@ -2760,13 +2761,12 @@ class PaneCorrA(BaseConfPanel):
                     'I' : self.d,
                     'CI': self.do,
                     'DP': {
-                        'dfS' : pd.DataFrame with initial data as float and
-                                after discarding values by score.
+                        'dfF' : pd.DataFrame with initial data as float
                         'dfT' : pd.DataFrame with transformed data.
                         'dfN' : pd.DataFrame with normalized data.
                         'dfIm': pd.DataFrame with imputed data.
                     }
-                    'R' : pd.DataFrame (dict) with the correlation coefficients
+                    'R' : Path to result file
                 }
             }
         }
