@@ -3249,18 +3249,16 @@ class PaneDataPrep(BaseConfPanel):
             'NormMethod' : self.normMethod.cb.GetValue(),
             'TransMethod': self.transMethod.cb.GetValue(),
             'ImpMethod'  : self.imputationMethod.cb.GetValue(),
-            'ScoreVal'   : float(self.scoreVal.tc.GetValue()),
+            'Shift'      : float,
+            'Width'      : float,
             'oc'         : {
-                'ScoreCol'   : scoreCol,
-                'ExcludeP'   : excludeRow,
-                'ColAnalysis': colAnalysis,
-                'Column'     : [scoreCol] + excludeRow + colAnalysis,
+                'ColAnalysis': Columns for the analysis,
+                'Column'     : Columns for the analysis,
+                'ColumnF'    : Columns that must contain floats,
             },
             'df' : {
-                'ScoreCol'   : 0,
-                'ExcludeP'   : [x for x in range(1, len(excludeRow)+1)],
                 'ResCtrlFlat': resCtrlFlat,
-                'ColumnF'    : [0]+resCtrlFlat,
+                'ColumnF'    : resCtrlFlat,
                 'ColumnR'    : resCtrlFlat,
             },
         }
@@ -3291,18 +3289,14 @@ class PaneDataPrep(BaseConfPanel):
                     'I' : self.d,
                     'CI': self.do,
                     'DP': {
-                        'dfS' : pd.DataFrame with initial data as float and
-                                after discarding values by score.
-                        'dfT' : pd.DataFrame with transformed data.
-                        'dfN' : pd.DataFrame with normalized data.
-                        'dfIm': pd.DataFrame with imputed data.
+                        'dfF' : pd.DataFrame with initial data as float,
+                        'dfT' : pd.DataFrame with transformed data,
+                        'dfN' : pd.DataFrame with normalized data,
+                        'dfIm': pd.DataFrame with imputed data,
                     },
-                    R : {}
                 }
             }
         }
-        
-        The R entry is empty in this case.
     """
     #region -----------------------------------------------------> Class setup
     #------------------------------> Label
