@@ -28,7 +28,7 @@ import wx.lib.mixins.listctrl as listmix
 import config.config as mConfig
 import data.generator as mGenerator
 import data.exception as mException
-# import dtscore.validator as dtsValidator
+import gui.validator as mValidator
 import gui.window as mWindow
 #endregion ----------------------------------------------------------> Imports
 
@@ -2129,109 +2129,104 @@ class MyListCtrlZebraMaxWidth(MyListCtrlZebra, listmix.ListCtrlAutoWidthMixin):
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
+
+
+class ResControl():
+    """Creates the Results - Control experiment widgets.
+
+        Parameters
+        ----------
+        parent : wx widget
+            Parent of the widgets.
+    """
+    #region -----------------------------------------------------> Class setup
+    cLResControl     = mConfig.lStResultCtrl
+    cLBtnTypeResCtrl = mConfig.lBtnTypeResCtrl
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: wx.Window) -> None:
+        """ """
+        #region -----------------------------------------------------> Widgets
+        self.wTcResults = wx.TextCtrl(
+            parent    = parent,
+            style     = wx.TE_READONLY,
+            value     = "",
+            size      = mConfig.sTc,
+            validator = mValidator.IsNotEmpty(),
+        )
+        self.wStResults = wx.StaticText(
+            parent = parent,
+            label  = self.cLResControl,
+            style  = wx.ALIGN_RIGHT
+        )
+        self.wBtnResultsW = wx.Button(
+            parent = parent,
+            label  = self.cLBtnTypeResCtrl,
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> 
+        self.sRes = wx.GridBagSizer(1,1)
+        #------------------------------> 
+        self.sRes.Add(
+            self.wStResults,
+            pos    = (0,0),
+            flag   = wx.ALIGN_LEFT|wx.ALL,
+            border = 5,
+            span   = (0,2),
+        )
+        self.sRes.Add(
+            self.wBtnResultsW,
+            pos    = (1,0),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+            border = 5
+        )
+        self.sRes.Add(
+            self.wTcResults,
+            pos    = (1,1),
+            flag   = wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
+            border = 5,
+        )
+        #------------------------------> 
+        self.sRes.AddGrowableCol(1,1)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region -----------------------------------------------------> Tooltip
+        self.wBtnResultsW.SetToolTip(
+            'Type the column numbers in a helper window.')
+        self.wStResults.SetToolTip(
+            f'Set the column numbers containing the control and experiment '
+            f'results.')
+        #endregion --------------------------------------------------> Tooltip
+
+        #region --------------------------------------------------------> Bind
+        self.wBtnResultsW.Bind(wx.EVT_BUTTON, self.OnResW)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #------------------------------> Class method
+    #region ---------------------------------------------------> Event methods
+    def OnResW(self, event: wx.CommandEvent) -> bool:
+        """Open the window to write the results columns. 
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #------------------------------>
+        with mWindow.DialogResControlExp(self) as dlg: # type: ignore
+            dlg.ShowModal()
+        #------------------------------>
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+#---
 #endregion ----------------------------------------------------------> Classes
-
-
-
-# class ResControl():
-#     """Creates the Results - Control experiment widgets.
-
-#         Parameters
-#         ----------
-#         cParent : wx widget
-#             Parent of the widgets
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cLResControl     = config.lStResultCtrl
-#     cLBtnTypeResCtrl = config.lBtnTypeResCtrl
-#     #endregion --------------------------------------------------> Class setup
-
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, cParent: wx.Window) -> None:
-#         """ """
-#         #region -----------------------------------------------------> Widgets
-#         self.wTcResults = wx.TextCtrl(
-#             parent    = cParent,
-#             style     = wx.TE_READONLY,
-#             value     = "",
-#             size      = config.sTc,
-#             validator = dtsValidator.IsNotEmpty(),
-#         )
-
-#         self.wStResults = wx.StaticText(
-#             parent = cParent,
-#             label  = self.cLResControl,
-#             style  = wx.ALIGN_RIGHT
-#         )
-
-#         self.wBtnResultsW = wx.Button(
-#             parent = cParent,
-#             label  = self.cLBtnTypeResCtrl,
-#         )
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-#         #------------------------------> 
-#         self.sRes = wx.GridBagSizer(1,1)
-#         #------------------------------> 
-#         self.sRes.Add(
-#             self.wStResults,
-#             pos    = (0,0),
-#             flag   = wx.ALIGN_LEFT|wx.ALL,
-#             border = 5,
-#             span   = (0,2),
-#         )
-#         self.sRes.Add(
-#             self.wBtnResultsW,
-#             pos    = (1,0),
-#             flag   = wx.ALIGN_CENTER_VERTICAL|wx.ALL,
-#             border = 5
-#         )
-#         self.sRes.Add(
-#             self.wTcResults,
-#             pos    = (1,1),
-#             flag   = wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
-#             border = 5,
-#         )
-#         #------------------------------> 
-#         self.sRes.AddGrowableCol(1,1)
-#         #endregion ---------------------------------------------------> Sizers
-        
-#         #region -----------------------------------------------------> Tooltip
-#         self.wBtnResultsW.SetToolTip(
-#             'Type the column numbers in a helper window.')
-#         self.wStResults.SetToolTip(
-#             f'Set the column numbers containing the control and experiment '
-#             f'results.')
-#         #endregion --------------------------------------------------> Tooltip
-        
-#         #region --------------------------------------------------------> Bind
-#         self.wBtnResultsW.Bind(wx.EVT_BUTTON, self.OnResW)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #------------------------------> Class method
-#     #region ---------------------------------------------------> Event methods
-#     def OnResW(self, event: wx.CommandEvent) -> bool:
-#         """ Open the window to write the results columns. 
-        
-#             Parameters
-#             ----------
-#             event: wx.Event
-#                 Information about the event
-            
-#             Returns
-#             -------
-#             bool
-#         """
-#         #------------------------------> 
-#         with window.ResControlExp(self) as dlg:
-#             dlg.ShowModal()
-#         #------------------------------> 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Event methods
-# #---
-
-

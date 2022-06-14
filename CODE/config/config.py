@@ -121,8 +121,8 @@ nwCheckDataPrep = 'Data Preparation'
 nwAbout         = 'About UMSAP'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'Check for Updates'
-ndPreferences   = 'Preferences'
-# ndResControlExp        = 'ResControlExp'
+ndPreferences          = 'Preferences'
+ndResControlExp        = 'Results & Control Experiments'
 # ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
 ntDef        = 'Default Tab'
@@ -270,30 +270,30 @@ urlTutorial = f"{urlHome}/tutorial/2-2-X"
 #------------------------------> Pane Title
 lnPaneConf = 'Configuration Options'
 lnListPane = 'Data File Content'
-# #------------------------------> wx.Button
-# lBtnTypeResCtrl = 'Type Values'
+#------------------------------> wx.Button
+lBtnTypeResCtrl = 'Type Values'
 #------------------------------> wx.ListCtrl
 lLCtrlColNameI = ['#', 'Name']
 # #------------------------------> wx.StaticBox
-# lStProtProfCond = 'Conditions'
-# lStProtProfRP   = 'Relevant Points'
+lStProtProfCond = 'Conditions'
+lStProtProfRP   = 'Relevant Points'
 # lStLimProtLane  = 'Lanes'
 # lStLimProtBand  = 'Bands' 
 # lStTarProtExp   = 'Experiments'
-# lStCtrlName     = 'Name'
-# lStCtrlType     = 'Type'
+lStCtrlName     = 'Name'
+lStCtrlType     = 'Type'
 #------------------------------> wx.StaticText
 lStColAnalysis = 'Columns for Analysis'
-# lStScoreVal    = 'Score Value'
-# lStScoreCol    = 'Score'
-# lStResultCtrl  = 'Results - Control experiments'
-# lStResultCtrlS = 'Results - Control'
+lStScoreVal    = 'Score Value'
+lStScoreCol    = 'Score'
+lStResultCtrl  = 'Results - Control experiments'
+lStResultCtrlS = 'Results - Control'
 # lStExcludeRow  = 'Exclude Rows'
-# lStExcludeProt = 'Exclude Proteins'
-# lStGeneName    = 'Gene Names'
+lStExcludeProt = 'Exclude Proteins'
+lStGeneName    = 'Gene Names'
 # #------------------------------> wx.ComboBox or wx.CheckBox
-# lCbCorrectP    = 'P Correction'
-# lCbSample      = 'Samples'
+lCbCorrectP    = 'P Correction'
+lCbSample      = 'Samples'
 # lCbIntensity   = 'Intensities'
 #------------------------------> wx.Dialog
 lPdError = 'Fatal Error'
@@ -315,20 +315,20 @@ lPdError = 'Fatal Error'
 #region ------------------------------------------------------------> Tooltips
 #------------------------------> wx.Button
 ttBtnHelp = 'Read tutorial at {}.'
-# #------------------------------> wx.StaticText
-# ttStScoreVal = f'Set the minimum acceptable Score value.\ne.g. -4'
-# ttStScoreCol = f'Set the column number containing the {lStScoreVal}.\ne.g. 4'
-# ttStGenName = f'Set the column number containing the {lStGeneName}.\ne.g. 3'
-# ttStExcludeProt = (
-#     "Set the column number containing the data used to exclude proteins."
-#     "\ne.g. 8 10-12")
+#------------------------------> wx.StaticText
+ttStScoreVal = f'Set the minimum acceptable Score value.\ne.g. -4'
+ttStScoreCol = f'Set the column number containing the {lStScoreVal}.\ne.g. 4'
+ttStGenName = f'Set the column number containing the {lStGeneName}.\ne.g. 3'
+ttStExcludeProt = (
+    "Set the column number containing the data used to exclude proteins."
+    "\ne.g. 8 10-12")
 # ttStExcludeRow = (
 #     'Set the column numbers containing the data used to Exclude Rows.'
 #     '\ne.g. 8 10-12')
-# ttStCorrectP = 'Select the p correction method.'
-# ttStSample = (f"Specify if samples are independent or paired.\n"
-#     f"For example, samples are paired when the same Petri dish is "
-#     f"used for the control and experiment.")
+ttStCorrectP = 'Select the p correction method.'
+ttStSample = (f"Specify if samples are independent or paired.\n"
+    f"For example, samples are paired when the same Petri dish is "
+    f"used for the control and experiment.")
 # ttStIntensity = ('Specify if intensities are raw intensity values or are '
 #     'already expressed as a ratio (SILAC, TMT/iTRAQ).')
 #------------------------------> wx.ListCtrl
@@ -383,23 +383,23 @@ oCorrMethod = {
 #     'RawI'  : 'Raw Intensities',
 #     'RatioI': 'Ratio of Intensities',
 # }
-# oSamples = {
-#     '': '',
-#     'Independent Samples': 'i',
-#     'Paired Samples': 'p',
-# }
-# oCorrectP = {
-#     ''                     : '',
-#     'None'                 : 'None',
-#     'Bonferroni'           : 'bonferroni',
-#     'Sidak'                : 'sidak',
-#     'Holm - Sidak'         : 'holm-sidak',
-#     'Holm'                 : 'holm',
-#     'Simes - Hochberg'     : 'simes-hochberg',
-#     'Hommel'               : 'hommel',
-#     'Benjamini - Hochberg' : 'fdr_bh',
-#     'Benjamini - Yekutieli': 'fdr_by',
-# }
+oSamples = {
+    '': '',
+    'Independent Samples': 'i',
+    'Paired Samples': 'p',
+}
+oCorrectP = {
+    ''                     : '',
+    'None'                 : 'None',
+    'Bonferroni'           : 'bonferroni',
+    'Sidak'                : 'sidak',
+    'Holm - Sidak'         : 'holm-sidak',
+    'Holm'                 : 'holm',
+    'Simes - Hochberg'     : 'simes-hochberg',
+    'Hommel'               : 'hommel',
+    'Benjamini - Hochberg' : 'fdr_bh',
+    'Benjamini - Yekutieli': 'fdr_by',
+}
 # oControlTypeProtProf = {
 #     'Empty': '',
 #     'OC'   : 'One Control',
@@ -481,16 +481,16 @@ mCheckUpdate = 'Check for Updates failed. Check again later.'
 #     "protein.")
 # #------------------------------> Data
 # mDataExport = 'Export Data failed.'
-# #------------------------------> Optional Field
-# mOptField = '\nThis field is optional.'
+#------------------------------> Optional Field
+mOptField = '\nThis field is optional.'
 #endregion ----------------------------------------------------------> Other
 
 #region ------------------------------------------------------------> Values
-# mOneRNumText = "Only one real number can be accepted here."
+mOneRNumText = "Only one real number can be accepted here."
 mOneRPlusNumText = (
     "Only one number equal or greater than zero can be accepted here.")
-# mOneZPlusNumText = "Only a non-negative integer can be accepted here."
-# mOne01NumText = "Only one number between 0 and 1 can be accepted here."
+mOneZPlusNumText = "Only a non-negative integer can be accepted here."
+mOne01NumText = "Only one number between 0 and 1 can be accepted here."
 mNZPlusNumText = (
     "Only a list of unique non-negative integers can be accepted here.")
 #endregion ---------------------------------------------------------> Values
@@ -516,8 +516,8 @@ mPDDataTypeCol = 'The {} contains unexpected data type in columns {}.'
 #region ----------------------------------------------------> For CheckInput
 mColNumbers = ('In addition, each value must be smaller than the total '
     'number of columns in the Data file.')
-# mColNumber = ('In addition, the value must be smaller than the total '
-#     'number of columns in the Data file.')
+mColNumber = ('In addition, the value must be smaller than the total '
+    'number of columns in the Data file.')
 mSection = 'Values in section {} must be unique.'
 # mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
 # mRepeatColNum = 'There are repeated column numbers in the text fields.'
@@ -527,16 +527,16 @@ mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
 mFileBad = "File: '{}'\ncannot be used as {} file."
 mOptionBad = "Option '{}' cannot be accepted in {}."
 mValueBad = "Value '{}' cannot be accepted in {}.\n"
-# mOneRealNum = f"{mValueBad}{mOneRNumText}"
+mOneRealNum = f"{mValueBad}{mOneRNumText}"
 mOneRPlusNum = f"{mValueBad}{mOneRPlusNumText}"
-# mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
-# mOneZPlusNumCol = f"{mOneZPlusNum} {mColNumber}"
+mOneZPlusNum = f"{mValueBad}{mOneZPlusNumText}"
+mOneZPlusNumCol = f"{mOneZPlusNum} {mColNumber}"
 mNZPlusNum = f"{mValueBad}{mNZPlusNumText}"
 mNZPlusNumCol = f"{mNZPlusNum} {mColNumbers}"
-# mOne01Num = f"{mValueBad}{mOne01NumText}"
-# mResCtrl = (
-#     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
-#     f"correct input.")
+mOne01Num = f"{mValueBad}{mOne01NumText}"
+mResCtrl = (
+    f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
+    f"correct input.")
 # mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
 # mRepNum = ('The number of replicates in some experiments does not match '
 #     'the number of replicates in the control.')

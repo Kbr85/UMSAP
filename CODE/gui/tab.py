@@ -15,15 +15,16 @@
 
 
 #region -------------------------------------------------------------> Imports
-# from typing import Optional
+from pathlib import Path
+from typing import Union
 
 import wx
 import wx.lib.agw.aui as aui
 
 import config.config as mConfig
-# import dtscore.data_method as dtsMethod
-import gui.widget as mWidget
+import data.method as mMethod
 import gui.pane as mPane
+import gui.widget as mWidget
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -51,7 +52,7 @@ class BaseConfTab(wx.Panel):
         mConfig.ntCorrA   : mPane.PaneCorrA,
         mConfig.ntDataPrep: mPane.PaneDataPrep,
         # mConfig.ntLimProt : mPane.PaneLimProt,
-        # mConfig.ntProtProf: mPane.PaneProtProf,
+        mConfig.ntProtProf: mPane.PaneProtProf,
         # mConfig.ntTarProt : mPane.PaneTarProt,
     }
     #endregion --------------------------------------------------> Class setup
@@ -165,129 +166,109 @@ class BaseConfListTab(BaseConfTab):
 #---
 
 
-# class ResControlExp(wx.Panel):
-#     """Creates the panel containing the panes for the dialog Results - Control
-#         Experiments
+class ResControlExp(wx.Panel):
+    """Creates the panel containing the panes for the dialog Results - Control
+        Experiments.
 
-#         Parameters
-#         ----------
-#         cParent : wx.Widget
-#             Parent of the panel
-#         cIFile : Path
-#             Path to the Data File already selected in the parent window
-#         cTopParent : wx.Widget
-#             Window calling the dialog.
+        Parameters
+        ----------
+        parent : wx.Widget
+            Parent of the panel
+        iFile : Path
+            Path to the Data File already selected in the parent window
+        topParent : wx.Widget
+            Window calling the dialog.
 
-#         Attributes
-#         ----------
-#         dWidget : dict of methods
-#             Methods to create the configuration panel
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = 'ResControlExpPane'
+        Attributes
+        ----------
+        dWidget : dict of methods
+            Methods to create the configuration panel
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = 'ResControlExpPane'
 
-#     dWidget = {
-#         config.npProtProf : pane.ProtProfResControlExp,
-#         config.npLimProt  : pane.LimProtResControlExp,
-#         config.npTarProt  : pane.TarProtResControlExp,
-#     }
-#     #endregion --------------------------------------------------> Class setup
+    dWidget = {
+        mConfig.npProtProf : mPane.PaneResControlExpConfProtProf,
+        # config.npLimProt  : pane.LimProtResControlExp,
+        # config.npTarProt  : pane.TarProtResControlExp,
+    }
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: 'wx.Window', cIFile: 'Path', cTopParent: 'wx.Window',
-#         ) -> None:
-#         """ """
-#         #region -------------------------------------------------> Check Input
-        
-#         #endregion ----------------------------------------------> Check Input
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: 'wx.Window',
+        iFile: Union[Path, str],
+        topParent: 'wx.Window',
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Label
+        self.cLLCtrlColName = getattr(
+            self, 'cLLCtrlColName', mConfig.lLCtrlColNameI)
+        self.cLPaneConf = getattr(self, 'cLPaneConf', mConfig.lnPaneConf)
+        self.cLPaneList = getattr(self, 'cLPaneList', mConfig.lnListPane)
+        #------------------------------> Size
+        self.cSLCTrlCol = getattr(self, 'cSLCTrlCol', mConfig.sLCtrlColI)
+        #------------------------------> 
+        super().__init__(parent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region -----------------------------------------------> Initial Setup
-#         #------------------------------> Label
-#         self.cLLCtrlColName = getattr(
-#             self, 'cLLCtrlColName', config.lLCtrlColNameI)
-#         self.cLPaneConf = getattr(self, 'cLPaneConf', config.lnPaneConf)
-#         self.cLPaneList = getattr(self, 'cLPaneList', config.lnListPane)
-#         #------------------------------> Size
-#         self.cSLCTrlCol = getattr(self, 'cSLCTrlCol', config.sLCtrlColI)
-        
-#         super().__init__(cParent, name=self.cName)
-#         #endregion --------------------------------------------> Initial Setup
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> ListCtrl and fill it
+        self.wLCtrl = mWidget.MyListCtrlZebraMaxWidth(
+            self, 
+            colLabel = self.cLLCtrlColName,
+            colSize  = self.cSLCTrlCol,
+        )
+        mMethod.LCtrlFillColNames(self.wLCtrl, iFile)
+        #------------------------------> Conf panel here to read NRow in lc
+        self.wConf = self.dWidget[topParent.cName]( # type: ignore
+            self, topParent, self.wLCtrl.GetItemCount())
+        #endregion --------------------------------------------------> Widgets
 
-#         #region --------------------------------------------------------> Menu
-        
-#         #endregion -----------------------------------------------------> Menu
-
-#         #region -----------------------------------------------------> Widgets
-#         #------------------------------> ListCtrl and fill it
-#         self.wLCtrl = dtsWidget.ListZebraMaxWidth(
-#             self, 
-#             colLabel = self.cLLCtrlColName,
-#             colSize  = self.cSLCTrlCol,
-#         )
-#         dtsMethod.LCtrlFillColNames(self.wLCtrl, cIFile)
-#         #------------------------------> Conf panel here to read NRow in lc
-#         self.wConf = self.dWidget[cTopParent.cName](
-#             self, cTopParent, self.wLCtrl.GetItemCount())
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region -------------------------------------------------> Aui control
-#         #------------------------------> AUI control
-#         self._mgr = aui.AuiManager()
-#         #------------------------------> AUI which frame to use
-#         self._mgr.SetManagedWindow(self)
-#         #------------------------------> Add Configuration panel
-#         self._mgr.AddPane( 
-#             self.wConf, 
-#             aui.AuiPaneInfo(
-#                 ).Center(
-#                 ).Caption(
-#                     self.cLPaneConf
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-
-#         self._mgr.AddPane(
-#             self.wLCtrl, 
-#             aui.AuiPaneInfo(
-#                 ).Right(
-#                 ).Caption(
-#                     self.cLPaneList
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-
-#         self._mgr.Update()
-#         #endregion ----------------------------------------------> Aui control
-
-#         #region --------------------------------------------------------> Bind
-        
-#         #endregion -----------------------------------------------------> Bind
-
-#         #region ---------------------------------------------> Window position
-        
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #region ---------------------------------------------------> Class methods
-    
-#     #endregion ------------------------------------------------> Class methods
-# #---
+        #region -------------------------------------------------> Aui control
+        #------------------------------> AUI control
+        self._mgr = aui.AuiManager()
+        #------------------------------> AUI which frame to use
+        self._mgr.SetManagedWindow(self)
+        #------------------------------> Add Configuration panel
+        self._mgr.AddPane( 
+            self.wConf, 
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    self.cLPaneConf
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        self._mgr.AddPane(
+            self.wLCtrl, 
+            aui.AuiPaneInfo(
+                ).Right(
+                ).Caption(
+                    self.cLPaneList
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        self._mgr.Update()
+        #endregion ----------------------------------------------> Aui control
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 #endregion -----------------------------------------------------> Base Classes
 
 
