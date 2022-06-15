@@ -1956,55 +1956,38 @@ class BaseResControlExpConf(wx.Panel):
 
         Attributes
         ----------
-        rLbDict : dict of lists of wx.StaticText for user-given labels
-            Keys are 1 to N plus 'Control' and values are the lists.
-            List of wx.StaticText to show the given user labels in the Field
-            region.    
+        rControlVal: str
+            Last used control value.
+        rFSectStDict: dict[int: [wx.StaticText]]
+            Labels for the field section
+        rFSectTcDict: dict[int: [wx.TextCtrl]]
+            Text fields for the field section.
+        rLSectTcDict: dict[int: [wx.TextCtrl]]
+            Text fields for the labels in the label section.
+        rLSectWidget: list[mWidget.StaticTextCtrl]
+            Label and Text field for the number of labels in the label section.
         rNColF: int
             Number of columns in the input file minus 1.
         rPName: str
             Name of the parent window.
-        rStLabel : list of wx.StaticText
-            List of wx.StaticText with the label names. e.g. Conditions
-        rTcDict : dict of lists of wx.TextCtrl for labels
-            Keys are 1 to N and values are lists of wx.TextCtrl for the user 
-            given label.
-            List of wx.TextCtrl to input the number of labels.
-        rTcDictF : dict of lists of wx.TextCtrl for fields
-            Keys are 1 to NRow and values are lists of wx.TextCtrl for the user
-            given column numbers. 
-        rTcLabel : list of wx.TextCtrl
-            To give the number of user defined labels. e.g. 2 Conditions.
         
         Notes
         -----
-        The following attributes must be set in the child class
-        cHTotalField: str
-            Hint for the total number of required labels.
-        cLabelText: dict
-            Keys are 1 to cN and values the prefix for the label values. e.g. C
-        cStLabel: dict
-            Keys are 1 to cN and values the text of the labels. e.g. Condition.
-        cN: int
-            Number of labels excluding control labels.
-        cTTTotalField: list of str
-            Tooltips for the labels
-        
         The panel is divided in two sections. 
         - Section Label holds information about the label for the experiments 
         and control.
             The number of labels and the name are set in the child class with 
-            cStLabel and cN.
-            This information is converted to rStLabel (name of the label e.g 
-            Condition), rTcLabel (input of number of each labels) and rTcDict 
-            (name of the experiment points e.g. Cond1).
+            cStLabel.
+            This information is converted to rLSectWidget (name of the label e.g 
+            Condition and input of number of each labels).
+            The given label are stored in rLSectTcDict.
         - Section Fields that holds the information about the column numbers
-            The name of the experiments is shown with rLbDict that is populated 
-            from rTcDict
-            The column numbers are stored in rTcDictF.
+            The name of the experiments is shown with rFSectStDict that is populated 
+            from rLSectTcDict
+            The column numbers are stored in rFSectTcDict.
         
-        See OnOk method for information about how the column numbers are
-        exported to the parent panel.
+        See Export2TopParent method for information about how the column numbers
+        are exported to the parent panel.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent: wx.Window, name: str, topParent: wx.Window, 
@@ -6626,31 +6609,21 @@ class PaneResControlExpConfProtProf(BaseResControlExpConf):
 
         Parameters
         ----------
-        cParent : wx.Widget
+        parent : wx.Widget
             Parent of the panel
-        cTopParent : wx.Widget
+        topParent : wx.Widget
             Top parent window
-        cNColF : int
+        NColF : int
             Total number of columns present in the Data File
 
         Attributes
         ----------
-        cN: int
-            Number of Labels. 
-        cName : str
-            Unique name of the panel
         dAddWidgets: dict
             Methods to add the widgets depending on the control type.
-        mNoCondRP: str
-            Error message
-        mNoControl: str
-            Error message
-        rControlVal : str
-            Value of Control Type in the previous Create Field event.
     """
     #region -----------------------------------------------------> Class setup
     cName = mConfig.npResControlExpProtProf
-
+    #------------------------------> 
     cCtrlType = mConfig.oControlTypeProtProf
     #------------------------------> Needed by ResControlExpConfBase
     cStLabel = [f"{mConfig.lStProtProfCond}:", f"{mConfig.lStProtProfRP}:"]
