@@ -604,6 +604,7 @@ def UniqueColNumbers(
     #endregion -----------------------------------------------> Check Elements
 #---
 
+
 def TcUniqueColNumbers(
     tcList: list[wx.TextCtrl],
     sepList: list[str]=[' ', ',', ';'],
@@ -657,5 +658,51 @@ def TcUniqueColNumbers(
     except Exception as e:
         raise e
     #endregion -------------------------------------------------------> Return
+#---
+
+
+def AllTcEmpty(
+    tcList: list[wx.TextCtrl],
+    ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+    """Check that all values in tcList are empty.
+
+        Parameters
+        ----------
+        tcList: list of wx.TextCtrl
+            Widgets holding the values to check
+
+        Returns
+        -------
+        tuple
+            - (True, None)
+            - (False, (code, val, msg))
+                code, val are:
+                    - ('NotEmpty', '')
+
+        Notes
+        -----
+        If tcList is empty returns True.
+
+        Examples
+        --------
+        >>> AllTcEmpty([])
+        >>> (True, None)
+    """
+    # No Test
+    #region -------------------------------------------------------> Variables
+    values = []
+    #endregion ----------------------------------------------------> Variables
+
+    #region ------------------------------------------------------> Get values
+    for k in tcList:
+        values.append(k.GetValue())
+    #endregion ---------------------------------------------------> Get values
+
+    #region -----------------------------------------------------> Check empty
+    if any(values):
+        return (False, ('NotEmpty', '', 'Some wx.TextCtrl are not empty.'))
+    else:
+        return (True, None)
+    #endregion --------------------------------------------------> Check empty
 #---
 #endregion ----------------------------------------------------------> Methods

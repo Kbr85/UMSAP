@@ -141,7 +141,7 @@ npDataPrep              = 'DataPrepPane'
 # npLimProt               = 'LimProtPane'
 npProtProf              = 'ProtProfPane'
 npTarProt               = 'TarProtPane'
-# npResControlExpProtProf = 'ResControlExpPaneProtProf'
+npResControlExpProtProf = 'ResControlExpPaneProtProf'
 # npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 # npResControlExpTarProt  = 'ResControlExpPaneTarProt'
 npPrefUpdate            = 'PrefUpdate'
@@ -378,11 +378,11 @@ oCorrMethod = {
     'Kendall' : 'Kendall',
     'Spearman': 'Spearman',
 }
-# oIntensities = {
-#     'Empty' : '',
-#     'RawI'  : 'Raw Intensities',
-#     'RatioI': 'Ratio of Intensities',
-# }
+oIntensities = {
+    'Empty' : '',
+    'RawI'  : 'Raw Intensities',
+    'RatioI': 'Ratio of Intensities',
+}
 oSamples = {
     '': '',
     'Independent Samples': 'i',
@@ -400,13 +400,13 @@ oCorrectP = {
     'Benjamini - Hochberg' : 'fdr_bh',
     'Benjamini - Yekutieli': 'fdr_by',
 }
-# oControlTypeProtProf = {
-#     'Empty': '',
-#     'OC'   : 'One Control',
-#     'OCC'  : 'One Control per Column',
-#     'OCR'  : 'One Control per Row',
-#     'Ratio': oIntensities['RatioI'],
-# }
+oControlTypeProtProf = {
+    'Empty': '',
+    'OC'   : 'One Control',
+    'OCC'  : 'One Control per Column',
+    'OCR'  : 'One Control per Row',
+    'Ratio': oIntensities['RatioI'],
+}
 
 # oFillLoc = ('end', 'start')
 
@@ -519,8 +519,8 @@ mColNumbers = ('In addition, each value must be smaller than the total '
 mColNumber = ('In addition, the value must be smaller than the total '
     'number of columns in the Data file.')
 mSection = 'Values in section {} must be unique.'
-# mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
-# mRepeatColNum = 'There are repeated column numbers in the text fields.'
+mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
+mRepeatColNum = 'There are repeated column numbers in the text fields.'
 mRowsInLCtrl = 'There must be at least {} items in {}.'
 mNoDataLeft = ('No data left for analysis after all filters (Score, Target '
     'Protein, etc) were applied.')
@@ -537,7 +537,7 @@ mOne01Num = f"{mValueBad}{mOne01NumText}"
 mResCtrl = (
     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
     f"correct input.")
-# mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
+mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
 # mRepNum = ('The number of replicates in some experiments does not match '
 #     'the number of replicates in the control.')
 # mRepNumProtProf = ('To perform a Proteome Profiling analysis using Raw '
@@ -547,7 +547,7 @@ mResCtrl = (
 #     'experiments does not match the number of replicates in the '
 #     'corresponding control.\n{}'
 # )
-# mCtrlEmpty = 'None of the Control fields can be empty.'
+mCtrlEmpty = 'None of the Control fields can be empty.'
 #endregion -------------------------------------------------> For CheckInput
 
 #------------------------------> 

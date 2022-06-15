@@ -243,7 +243,9 @@ class StaticTextCtrl():
         tcSize : wx.Size
             Size of the wx.TextCtrl. Default is (300, 22)
         tcHint: str
-            Hint for the wx.TextCtrl. Default is '' 
+            Hint for the wx.TextCtrl. Default is ''
+        tcName: str
+            Name for the wx.TextCtrl.
         validator : wx.Validator or None
             To validate input for wx.TexCtrl
 
@@ -269,7 +271,8 @@ class StaticTextCtrl():
         stTooltip: str='', 
         tcSize: Union[wx.Size, tuple[int, int]]=(300, 22), 
         tcHint: str='', 
-        tcStyle = 0, 
+        tcStyle = 0,
+        tcName = '',
         validator: Optional[wx.Validator]=None,
         ) -> None:
         """"""
@@ -281,6 +284,7 @@ class StaticTextCtrl():
         #--------------> 
         self.wTc = wx.TextCtrl(
             parent    = parent,
+            name      = tcName,
             value     = "",
             size      = tcSize,
             style     = tcStyle,

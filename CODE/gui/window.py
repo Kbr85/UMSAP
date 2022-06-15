@@ -12391,13 +12391,13 @@ class DialogResControlExp(wx.Dialog):
     def __init__(self, parent:wx.Window) -> None:
         """ """
         #region -------------------------------------------------> Check Input
-        if (iFile := parent.wIFile.tc.GetValue())  == '': # type: ignore
+        if (iFile := parent.wIFile.wTc.GetValue())  == '': # type: ignore
             #------------------------------>
             dlg = DialogFileSelect('openO', mConfig.elData, parent=parent)
             #------------------------------> 
             if dlg.ShowModal() == wx.ID_OK:
                 iFile = dlg.GetPath()
-                parent.wIFile.tc.SetValue(iFile) # type: ignore
+                parent.wIFile.wTc.SetValue(iFile) # type: ignore
                 dlg.Destroy()
             else:
                 dlg.Destroy()
