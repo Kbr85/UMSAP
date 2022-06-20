@@ -138,7 +138,7 @@ npDef = 'Default Pane'
 # npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npCorrA                 = 'CorrAPane'
 npDataPrep              = 'DataPrepPane'
-# npLimProt               = 'LimProtPane'
+npLimProt               = 'LimProtPane'
 npProtProf              = 'ProtProfPane'
 npTarProt               = 'TarProtPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
@@ -166,10 +166,10 @@ elData  = 'txt files (*.txt)|*.txt'
 elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
 # elPDB   = 'PDB files (*.pdb)|*.pdb'
 # elPDF   = 'PDF files (*.pdf)|*.pdf'
-# elSeq   = (
-#     "Text files (*.txt)|*.txt|"
-#     "Fasta files (*.fasta)|*.fasta"
-# )
+elSeq   = (
+    "Text files (*.txt)|*.txt|"
+    "Fasta files (*.fasta)|*.fasta"
+)
 
 # elMatPlotSaveI = (
 #     "Portable Document File (*.pdf)|*.pdf|"
@@ -181,7 +181,7 @@ elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
 esData  = ['.txt']
 # esPDB   = ['.pdb']
 # esPDF   = ['.pdf']
-# esSeq   = ['.txt', '.fasta']
+esSeq   = ['.txt', '.fasta']
 esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
 
@@ -277,8 +277,8 @@ lLCtrlColNameI = ['#', 'Name']
 # #------------------------------> wx.StaticBox
 lStProtProfCond = 'Conditions'
 lStProtProfRP   = 'Relevant Points'
-# lStLimProtLane  = 'Lanes'
-# lStLimProtBand  = 'Bands' 
+lStLimProtLane  = 'Lanes'
+lStLimProtBand  = 'Bands' 
 # lStTarProtExp   = 'Experiments'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'
@@ -476,9 +476,9 @@ ltDPKeys = ['dfF', 'dfT', 'dfN', 'dfIm']
 mUnexpectedError = 'UMSAP encountered an unexpected error.'
 #------------------------------> Check for Update
 mCheckUpdate = 'Check for Updates failed. Check again later.'
-# #------------------------------> Sequences related errors
-# mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
-#     "protein.")
+#------------------------------> Sequences related errors
+mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
+    "protein.")
 # #------------------------------> Data
 # mDataExport = 'Export Data failed.'
 #------------------------------> Optional Field

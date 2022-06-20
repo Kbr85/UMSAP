@@ -19,7 +19,7 @@ import _thread
 # from collections import namedtuple
 import shutil
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -272,7 +272,6 @@ class BaseConfPanel(
         #--------------> List to use just in case there are more than 1
         self.rLCtrlL = []
         #------------------------------> Needed to Run the Analysis
-        self.rCheckUserInput = {}
         self.rCheckUnique = []
         self.rLLenLongest = getattr(self, 'rLLenLongest', 0)
         self.rMainData = getattr(self, 'rMainData', '')
@@ -303,7 +302,7 @@ class BaseConfPanel(
         self.rDFile   = []
         # #--------------> Obj for files
         self.rIFileObj   = None
-        self.rSeqFileObj = None
+        self.rSeqFileObj: Optional[mFile.FastaFile] = None
         #------------------------------> 
         self.rChangeKey = getattr(self, 'rChangeKey', ['iFile', 'uFile'])
         #------------------------------> 
@@ -533,6 +532,20 @@ class BaseConfPanel(
         self.wIFile.wTc.Bind(wx.EVT_TEXT, self.OnIFileLoad)
         self.wImputationMethod.wCb.Bind(wx.EVT_COMBOBOX, self.OnImpMethod)
         #endregion -----------------------------------------------------> Bind
+
+        #region -------------------------------------------------> Check Input
+        self.rCheckUserInput = {
+            self.cLuFile      : [self.wUFile.wTc,            mConfig.mFileBad  ,    False],
+            self.cLiFile      : [self.wIFile.wTc,            mConfig.mFileBad  ,    False],
+            self.cLId         : [self.wId.wTc,               mConfig.mValueBad ,    False],
+            self.cLCeroTreat  : [self.wCeroB.wCb,            mConfig.mOptionBad,    False],
+            self.cLTransMethod: [self.wTransMethod.wCb,      mConfig.mOptionBad,    False],
+            self.cLNormMethod : [self.wNormMethod.wCb,       mConfig.mOptionBad,    False],
+            self.cLImputation : [self.wImputationMethod.wCb, mConfig.mOptionBad,    False],
+            self.cLShift      : [self.wShift.wTc,            mConfig.mOneRPlusNum , False],
+            self.cLWidth      : [self.wWidth.wTc,            mConfig.mOneRPlusNum , False],
+        }
+        #endregion ----------------------------------------------> Check Input
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -1646,297 +1659,297 @@ class BaseConfPanelMod(BaseConfPanel, mWidget.ResControl):
 #---
 
 
-# class BaseConfModPanel2(BaseConfModPanel):
-#     """Base class for the LimProt and TarProt configuration panel.
+class BaseConfPanelMod2(BaseConfPanelMod):
+    """Base class for the LimProt and TarProt configuration panel.
 
-#         Parameters
-#         ----------
-#         parent : wx Widget
-#             Parent of the widgets
-#         rightDelete : Boolean
-#             Enables clearing wx.StaticBox input with right click
-#     """
-#     #region -----------------------------------------------------> Class setup
-    
-#     #endregion --------------------------------------------------> Class setup
+        Parameters
+        ----------
+        parent : wx Widget
+            Parent of the widgets
+        rightDelete : Boolean
+            Enables clearing wx.StaticBox input with right click
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: wx.Window, rightDelete: bool=True) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Label
+        self.cLSeqFile    = getattr(self, 'cLSeqFile',    'Sequences')
+        self.cLTargetProt = getattr(self, 'cLTargetProt', 'Target Protein')
+        self.cLSeqCol     = getattr(self, 'cLSeqCol',     'Sequences')
+        #------------------------------> Hint
+        self.cHTargetProt = getattr(self, 'cHTargetProt', 'e.g. MisAlpha18')
+        self.cHSeqCol     = getattr(self, 'cHSeqCol',     'e.g. 1')
+        self.cHSeqFile    = getattr(
+            self, 'cHSeqFile', f"Path to the {self.cLSeqFile} file")
+        #------------------------------> Extensions
+        self.cESeqFile = getattr(self, 'cESeqFile', mConfig.elSeq)
+        #------------------------------> Tooltip
+        self.cTTSeqFile = getattr(
+            self, 'cTTSeqFile', f'Select the {self.cLSeqFile} file.')
+        self.cTTTargetProt = getattr(
+            self, 'cTTTargetProt', f'Set the name of the {self.cLTargetProt}.')
+        self.cTTSeqCol = getattr(
+            self, 'cTTSeqCol', ('Set the column number containing the '
+                                'Sequences.\ne.g. 0'))
+        #------------------------------>
+        super().__init__(parent, rightDelete=rightDelete)
+        #------------------------------>
+        self.rCopyFile = {
+            'iFile'  : self.cLiFile,
+            'seqFile': f'{self.cLSeqFile} File',
+        }
+        #endregion --------------------------------------------> Initial Setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, cParent: wx.Window, cRightDelete: bool=True) -> None:
-#         """ """
-#         #region -------------------------------------------------> Check Input
-        
-#         #endregion ----------------------------------------------> Check Input
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Files
+        self.wSeqFile = mWidget.ButtonTextCtrlFF(
+            self.wSbFile,
+            btnLabel   = self.cLSeqFile,
+            btnTooltip = self.cTTSeqFile,
+            tcHint     = self.cHSeqFile,
+            mode       = 'openO',
+            ext        = self.cESeqFile,
+            tcStyle    = wx.TE_READONLY,
+            validator  = mValidator.InputFF(fof='file'),
+            ownCopyCut = True,
+        )
+        #------------------------------> Values
+        self.wTargetProt = mWidget.StaticTextCtrl(
+            self.wSbValue,
+            stLabel   = self.cLTargetProt,
+            stTooltip = self.cTTTargetProt,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHTargetProt,
+            validator = mValidator.IsNotEmpty()
+        )
+        #------------------------------> Columns
+        self.wSeqCol = mWidget.StaticTextCtrl(
+            self.wSbColumn,
+            stLabel   = self.cLSeqCol,
+            stTooltip = self.cTTSeqCol,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHSeqCol,
+            validator = mValidator.NumberList(numType='int', nN=1, vMin=0),
+        )
+        #endregion --------------------------------------------------> Widgets
 
-#         #region -----------------------------------------------> Initial Setup
-#         #------------------------------> Label
-#         self.cLSeqFile    = getattr(self, 'cLSeqFile',    'Sequences')
-#         self.cLSeqLength  = getattr(self, 'cLSeqLength',  'Sequence Length')
-#         self.cLTargetProt = getattr(self, 'cLtargetProt', 'Target Protein')
-#         self.cLSeqCol     = getattr(self, 'cLSeqCol',     'Sequences')
-#         #------------------------------> Hint
-#         self.cHTargetProt = getattr(self, 'cHTargetProt', 'e.g. MisAlpha18')
-#         self.cHSeqCol     = getattr(self, 'cHSeqCol',     'e.g. 1')
-#         self.cHSeqFile    = getattr(
-#             self, 'cHSeqFile', f"Path to the {self.cLSeqFile} file")
-#         #------------------------------> Extensions
-#         self.cEseqFile = getattr(self, 'cEseqFile', config.elSeq)
-#         #------------------------------> Tooltip
-#         self.cTTSeqFile = getattr(
-#             self, 'cTTSeqFile', f'Select the {self.cLSeqFile} file.')
-#         self.cTTTargetProt = getattr(
-#             self, 'cTTTargetProt', f'Set the name of the {self.cLTargetProt}.')
-#         self.cTTSeqCol = getattr(
-#             self, 'cTTSeqCol', ('Set the column number containing the '
-#                                 'Sequences.\ne.g. 0'))
-#         #------------------------------> 
-#         super().__init__(cParent, cRightDelete=cRightDelete)
-#         #endregion --------------------------------------------> Initial Setup
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Sizer Files
+        #--------------> 
+        self.sSbFileWid.Detach(self.wId.wSt)
+        self.sSbFileWid.Detach(self.wId.wTc)
+        #--------------> 
+        self.sSbFileWid.Add(
+            self.wSeqFile.wBtn,
+            pos    = (2,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sSbFileWid.Add(
+            self.wSeqFile.wTc,
+            pos    = (2,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sSbFileWid.Add(
+            self.wId.wSt,
+            pos    = (3,0),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 5
+        )
+        self.sSbFileWid.Add(
+            self.wId.wTc,
+            pos    = (3,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        #------------------------------> Sizer Columns
+        self.sSbColumnWid.Add(
+            self.wSeqCol.wSt,
+            pos    = (0,0),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbColumnWid.Add(
+            self.wSeqCol.wTc,
+            pos    = (0,1),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbColumnWid.Add(
+            self.wDetectedProt.wSt,
+            pos    = (0,2),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbColumnWid.Add(
+            self.wDetectedProt.wTc,
+            pos    = (0,3),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbColumnWid.Add(
+            self.wScore.wSt,
+            pos    = (0,4),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbColumnWid.Add(
+            self.wScore.wTc,
+            pos    = (0,5),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbColumnWid.Add(
+            self.sRes,
+            pos    = (1,0),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
+            border = 0,
+            span   = (0,6),
+        )
+        self.sSbColumnWid.AddGrowableCol(1,1)
+        self.sSbColumnWid.AddGrowableCol(3,1)
+        self.sSbColumnWid.AddGrowableCol(5,1)
+        #endregion ---------------------------------------------------> Sizers
 
-#         #region --------------------------------------------------------> Menu
-        
-#         #endregion -----------------------------------------------------> Menu
+        #region -------------------------------------------------> Check Input
+        self.rCheckUserInput = { # New order is needed.
+            self.cLuFile       :[self.wUFile.wTc,           mConfig.mFileBad       , False],
+            self.cLiFile       :[self.wIFile.wTc,           mConfig.mFileBad       , False],
+            f'{self.cLSeqFile} file' :[self.wSeqFile.wTc,   mConfig.mFileBad       , False],
+            self.cLId          :[self.wId.wTc,              mConfig.mValueBad      , False],
+            self.cLCeroTreat   :[self.wCeroB.wCb,           mConfig.mOptionBad     , False],
+            self.cLTransMethod :[self.wTransMethod.wCb,     mConfig.mOptionBad     , False],
+            self.cLNormMethod  :[self.wNormMethod.wCb,      mConfig.mOptionBad     , False],
+            self.cLImputation  :[self.wImputationMethod.wCb,mConfig.mOptionBad     , False],
+            self.cLShift       :[self.wShift.wTc,           mConfig.mOneRPlusNum   , False],
+            self.cLWidth       :[self.wWidth.wTc,           mConfig.mOneRPlusNum   , False],
+            self.cLTargetProt  :[self.wTargetProt.wTc,      mConfig.mValueBad      , False],
+            self.cLScoreVal    :[self.wScoreVal.wTc,        mConfig.mOneRealNum    , False],
+            f'{self.cLSeqCol} column' :[self.wSeqCol.wTc,   mConfig.mOneZPlusNumCol, True ],
+            self.cLDetectedProt:[self.wDetectedProt.wTc,    mConfig.mOneZPlusNumCol, True ],
+            self.cLScoreCol    :[self.wScore.wTc,           mConfig.mOneZPlusNumCol, True ],
+            self.cLResControl  :[self.wTcResults,           mConfig.mResCtrl       , False]
+        }
+        #------------------------------> 
+        self.rCheckUnique = [self.wSeqCol.wTc, self.wDetectedProt.wTc, 
+            self.wScore.wTc, self.wTcResults]
+        #------------------------------>
+        #endregion ----------------------------------------------> Check Input
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#         #region -----------------------------------------------------> Widgets
-#         #------------------------------> Files
-#         self.wSeqFile = dtsWidget.ButtonTextCtrlFF(
-#             self.sbFile,
-#             btnLabel   = self.cLSeqFile,
-#             btnTooltip = self.cTTSeqFile,
-#             tcHint     = self.cHSeqFile,
-#             mode       = 'openO',
-#             ext        = self.cEseqFile,
-#             tcStyle    = wx.TE_READONLY,
-#             validator  = dtsValidator.InputFF(fof='file', ext=config.esSeq),
-#             ownCopyCut = True,
-#         )
-#         #------------------------------> Values
-#         self.wTargetProt = dtsWidget.StaticTextCtrl(
-#             self.sbValue,
-#             stLabel   = self.cLTargetProt,
-#             stTooltip = self.cTTTargetProt,
-#             tcSize    = self.cSTc,
-#             tcHint    = self.cHTargetProt,
-#             validator = dtsValidator.IsNotEmpty()
-#         )
-#         #------------------------------> Columns
-#         self.wSeqCol = dtsWidget.StaticTextCtrl(
-#             self.sbColumn,
-#             stLabel   = self.cLSeqCol,
-#             stTooltip = self.cTTSeqCol,
-#             tcSize    = self.cSTc,
-#             tcHint    = self.cHSeqCol,
-#             validator = dtsValidator.NumberList(
-#                 numType = 'int',
-#                 nN      = 1,
-#                 vMin    = 0,
-#             )
-#         )
-#         #endregion --------------------------------------------------> Widgets
+    #region ---------------------------------------------------> Class methods
+    def NCResNumbers(self, seqNat: bool=True) -> bool:
+        """Find the residue numbers for the peptides in the sequence of the 
+            Recombinant and Native protein.
 
-#         #region ------------------------------------------------------> Sizers
-#         #------------------------------> Sizer Files
-#         #--------------> 
-#         self.sizersbFileWid.Detach(self.wId.st)
-#         self.sizersbFileWid.Detach(self.wId.tc)
-#         #--------------> 
-#         self.sizersbFileWid.Add(
-#             self.wSeqFile.btn,
-#             pos    = (2,0),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbFileWid.Add(
-#             self.wSeqFile.tc,
-#             pos    = (2,1),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbFileWid.Add(
-#             self.wId.st,
-#             pos    = (3,0),
-#             flag   = wx.ALIGN_CENTER|wx.ALL,
-#             border = 5
-#         )
-#         self.sizersbFileWid.Add(
-#             self.wId.tc,
-#             pos    = (3,1),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5
-#         )
-#         #------------------------------> Sizer Columns
-#         self.sizersbColumnWid.Add(
-#             self.wSeqCol.st,
-#             pos    = (0,0),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.wSeqCol.tc,
-#             pos    = (0,1),
-#             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.wDetectedProt.st,
-#             pos    = (0,2),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.wDetectedProt.tc,
-#             pos    = (0,3),
-#             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.wScore.st,
-#             pos    = (0,4),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.wScore.tc,
-#             pos    = (0,5),
-#             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbColumnWid.Add(
-#             self.sRes,
-#             pos    = (1,0),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
-#             border = 0,
-#             span   = (0,6),
-#         )
-#         self.sizersbColumnWid.AddGrowableCol(1,1)
-#         self.sizersbColumnWid.AddGrowableCol(3,1)
-#         self.sizersbColumnWid.AddGrowableCol(5,1)
-#         #endregion ---------------------------------------------------> Sizers
+            Parameters
+            ----------
+            seqNat: bool
+                Calculate N and C residue numbers also for the Native protein
 
-#         #region --------------------------------------------------------> Bind
-        
-#         #endregion -----------------------------------------------------> Bind
+            Returns
+            -------
+            bool
 
-#         #region ---------------------------------------------> Window position
-        
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - seqFileObj: mFile.FastaFile
+                Object with the sequence of the Recombinant and Native protein.
+            - do: dict with at least the following key - values pairs
+                {
+                    'df' : {
+                        'SeqCol' : int,
+                    },
+                    'dfo' : {
+                        'NC' : list[int],
+                        'NCF': list[int],
+                    },
+                }
+        """
+        #region -----------------------------------------------------> Rec Seq
+        #------------------------------> 
+        msgStep = (f'{self.cLPdRun} Calculating output data - N & C terminal '
+            f'residue numbers I')
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        try:
+            self.dfR.iloc[:,self.rDO['dfo']['NC']] = self.dfR.iloc[
+                :,[self.rDO['df']['SeqCol'], 1]].apply(
+                    self.NCTerm, 
+                    axis        = 1,
+                    raw         = True,
+                    result_type = 'expand',
+                    args        = (self.rSeqFileObj, 'Recombinant'),
+                )
+        except mException.ExecutionError:
+            return False
+        except Exception as e:
+            self.rMsgError  = mConfig.mUnexpectedError
+            self.rException = e
+            return False
+        #endregion --------------------------------------------------> Rec Seq
 
-#     #region ---------------------------------------------------> Class methods
-#     def NCResNumbers(self, seqNat: bool=True) -> bool:
-#         """Find the residue numbers for the peptides in the sequence of the 
-#             Recombinant and Native protein.
-            
-#             Parameters
-#             ----------
-#             seqNat: bool
-#                 Calculate N and C residue numbers also for the Native protein
-                
-#             Returns
-#             -------
-#             bool
-            
-#             Notes
-#             -----
-#             Assumes child class has the following attributes:
-#             - seqFileObj: dtsFF.FastaFile
-#                 Object with the sequence of the Recombinant and Native protein
-#             - do: dict with at least the following key - values pairs
-#                 {
-#                     'df' : {
-#                         'SeqCol' : int,
-#                     },
-#                     'dfo' : {
-#                         'NC' : list[int],
-#                         'NCF': list[int],
-#                     },
-#                 }
-#         """
-#         #region -----------------------------------------------------> Rec Seq
-#         #------------------------------> 
-#         msgStep = (f'{self.cLPdRun} Calculating output data - N & C terminal '
-#             f'residue numbers I')
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #------------------------------> 
-#         try:
-#             self.dfR.iloc[:,self.rDO['dfo']['NC']] = self.dfR.iloc[
-#                 :,[self.rDO['df']['SeqCol'], 1]].apply(
-#                     self.NCTerm, 
-#                     axis        = 1,
-#                     raw         = True,
-#                     result_type = 'expand',
-#                     args        = (self.rSeqFileObj, 'Recombinant'),
-#                 )
-#         except dtsException.ExecutionError:
-#             return False
-#         except Exception as e:
-#             self.rMsgError = config.mUnexpectedError
-#             self.rExceptionn = e
-#             return False
-#         #endregion --------------------------------------------------> Rec Seq
-        
-#         #region -----------------------------------------------------> Nat Seq
-#         #------------------------------> 
-#         msgStep = (f'{self.cLPdRun} Calculating output data - N & C terminal '
-#             f'residue numbers II')
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #------------------------------> 
-#         if seqNat and self.rSeqFileObj.seqNat is not None:
-#             #------------------------------> 
-#             delta = self.rSeqFileObj.GetSelfDelta()
-#             #------------------------------> 
-#             a = self.dfR.iloc[:,self.rDO['dfo']['NC']] + delta
-#             self.dfR.iloc[:,self.rDO['dfo']['NCF']] = a
-#             #------------------------------> 
-#             m = self.dfR.iloc[:,self.rDO['dfo']['NCF']] > 0
-#             a = self.dfR.iloc[:,self.rDO['dfo']['NCF']].where(m, np.nan)
-#             a = a.astype('int')
-#             self.dfR.iloc[:,self.rDO['dfo']['NCF']] = a
-#         else:
-#             pass
-#         #endregion --------------------------------------------------> Nat Seq
-        
-#         return True
-#     #---
-    
-#     def NCTerm(
-#         self, row: list[str], seqObj: 'dtsFF.FastaFile', seqType: str
-#         ) -> tuple[int, int]:
-#         """Get the N and C terminal residue numbers for a given peptide.
-    
-#             Parameters
-#             ----------
-#             row: list[str]
-#                 List with two elements. The Sequence is in index 0.
-#             seqObj : dtsFF.FastaFile
-#                 Object with the protein sequence and the method to search the 
-#                 peptide sequence.
-#             seqType : str
-#                 For the error message.
-    
-#             Returns
-#             -------
-#             (Nterm, Cterm)
-    
-#             Raise
-#             -----
-#             ExecutionError:
-#                 - When the peptide was not found in the sequence of the protein.
-#         """
-#         #region ---------------------------------------------------> Find pept
-#         nc = seqObj.FindSeq(row[0])
-#         #endregion ------------------------------------------------> Find pept
-        
-#         #region ----------------------------------------------------> Check ok
-#         if nc[0] != -1:
-#             return nc
-#         else:
-#             self.rMsgError = config.mSeqPeptNotFound.format(row[0], seqType)
-#             raise dtsException.ExecutionError(self.rMsgError)
-#         #endregion -------------------------------------------------> Check ok
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+        #region -----------------------------------------------------> Nat Seq
+        #------------------------------> 
+        msgStep = (f'{self.cLPdRun} Calculating output data - N & C terminal '
+            f'residue numbers II')
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        if seqNat and self.rSeqFileObj.rSeqNat: # type: ignore
+            #------------------------------> 
+            delta = self.rSeqFileObj.GetSelfDelta() # type: ignore
+            #------------------------------> 
+            a = self.dfR.iloc[:,self.rDO['dfo']['NC']] + delta
+            self.dfR.iloc[:,self.rDO['dfo']['NCF']] = a
+            #------------------------------> 
+            m = self.dfR.iloc[:,self.rDO['dfo']['NCF']] > 0
+            a = self.dfR.iloc[:,self.rDO['dfo']['NCF']].where(m, np.nan)
+            a = a.astype('int')
+            self.dfR.iloc[:,self.rDO['dfo']['NCF']] = a
+        else:
+            pass
+        #endregion --------------------------------------------------> Nat Seq
+
+        return True
+    #---
+
+    def NCTerm(
+        self, row: list[str], seqObj: mFile.FastaFile, seqType: str,
+        ) -> tuple[int, int]:
+        """Get the N and C terminal residue numbers for a given peptide.
+
+            Parameters
+            ----------
+            row: list[str]
+                List with two elements. The Sequence is in index 0.
+            seqObj : mFile.FastaFile
+                Object with the protein sequence and the method to search the 
+                peptide sequence.
+            seqType : str
+                For the error message.
+
+            Returns
+            -------
+            (Nterm, Cterm)
+        """
+        #region ---------------------------------------------------> Find pept
+        nc = seqObj.FindSeq(row[0])
+        #endregion ------------------------------------------------> Find pept
+
+        #region ----------------------------------------------------> Check ok
+        if nc[0] != -1:
+            return nc
+        else:
+            self.rMsgError = mConfig.mSeqPeptNotFound.format(row[0], seqType)
+            raise mException.ExecutionError(self.rMsgError)
+        #endregion -------------------------------------------------> Check ok
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 class BaseResControlExpConf(wx.Panel):
@@ -2878,18 +2891,10 @@ class PaneCorrA(BaseConfPanel):
         #endregion -----------------------------------------------------> Bind
 
         #region ----------------------------------------------> checkUserInput
-        self.rCheckUserInput = {
-            self.cLuFile      : [self.wUFile.wTc,            mConfig.mFileBad  ,    False],
-            self.cLiFile      : [self.wIFile.wTc,            mConfig.mFileBad  ,    False],
-            self.cLId         : [self.wId.wTc,               mConfig.mValueBad ,    False],
-            self.cLCeroTreat  : [self.wCeroB.wCb,            mConfig.mOptionBad,    False],
-            self.cLTransMethod: [self.wTransMethod.wCb,      mConfig.mOptionBad,    False],
-            self.cLNormMethod : [self.wNormMethod.wCb,       mConfig.mOptionBad,    False],
-            self.cLImputation : [self.wImputationMethod.wCb, mConfig.mOptionBad,    False],
-            self.cLShift      : [self.wShift.wTc,            mConfig.mOneRPlusNum , False],
-            self.cLWidth      : [self.wWidth.wTc,            mConfig.mOneRPlusNum , False],
+        rCheckUserInput = {
             self.cLCorrMethod : [self.wCorrMethod.wCb,       mConfig.mOptionBad,    False],
         }
+        self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
 
         #region --------------------------------------------------------> Test
@@ -3333,18 +3338,10 @@ class PaneDataPrep(BaseConfPanel):
         #endregion ----------------------------------------------------> DataI
 
         #region ----------------------------------------------> checkUserInput
-        self.rCheckUserInput = {
-            self.cLuFile      : [self.wUFile.wTc,           mConfig.mFileBad     , False],
-            self.cLiFile      : [self.wIFile.wTc,           mConfig.mFileBad     , False],
-            self.cLId         : [self.wId.wTc,              mConfig.mValueBad    , False],
-            self.cLCeroTreat  : [self.wCeroB.wCb,           mConfig.mOptionBad   , False],
-            self.cLTransMethod: [self.wTransMethod.wCb,     mConfig.mOptionBad   , False],
-            self.cLNormMethod : [self.wNormMethod.wCb,      mConfig.mOptionBad   , False],
-            self.cLImputation : [self.wImputationMethod.wCb,mConfig.mOptionBad   , False],
-            self.cLShift      : [self.wShift.wTc,           mConfig.mOneRPlusNum , False],
-            self.cLWidth      : [self.wWidth.wTc,           mConfig.mOneRPlusNum , False],
+        rCheckUserInput = {
             self.cLColAnalysis: [self.wColAnalysis.wTc,     mConfig.mNZPlusNumCol, True ],
         }
+        self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
 
         #region --------------------------------------------------------> Test
@@ -3937,26 +3934,18 @@ class PaneProtProf(BaseConfPanelMod):
         #endregion ---------------------------------------------------> Sizers
 
         #region ----------------------------------------------> checkUserInput
-        self.rCheckUserInput = {
-            self.cLuFile       : [self.wUFile.wTc,           mConfig.mFileBad       , False],
-            self.cLiFile       : [self.wIFile.wTc,           mConfig.mFileBad       , False],
-            self.cLId          : [self.wId.wTc,              mConfig.mValueBad      , False],
-            self.cLCeroTreat   : [self.wCeroB.wCb,           mConfig.mOptionBad     , False],
-            self.cLTransMethod : [self.wTransMethod.wCb,     mConfig.mOptionBad     , False],
-            self.cLNormMethod  : [self.wNormMethod.wCb,      mConfig.mOptionBad     , False],
-            self.cLImputation  : [self.wImputationMethod.wCb,mConfig.mOptionBad     , False],
-            self.cLShift       : [self.wShift.wTc,           mConfig.mOneRPlusNum   , False],
-            self.cLWidth       : [self.wWidth.wTc,           mConfig.mOneRPlusNum   , False],
-            self.cLScoreVal    : [self.wScoreVal.wTc,        mConfig.mOneRealNum    , False],
-            self.cLSample      : [self.wSample.wCb,          mConfig.mOptionBad     , False],
-            self.cLAlpha       : [self.wAlpha.wTc,           mConfig.mOne01Num      , False],
-            self.cLCorrectP    : [self.wCorrectP.wCb,        mConfig.mOptionBad     , False],
-            self.cLDetectedProt: [self.wDetectedProt.wTc,    mConfig.mOneZPlusNumCol, True ],
-            self.cLGene        : [self.wGeneName.wTc,        mConfig.mOneZPlusNumCol, True ],
-            self.cLScoreCol    : [self.wScore.wTc,           mConfig.mOneZPlusNumCol, True ],
-            self.cLExcludeProt : [self.wExcludeProt.wTc,     mConfig.mNZPlusNumCol  , True ],
-            self.cLResControl  : [self.wTcResults,           mConfig.mResCtrl       , False]
+        rCheckUserInput = {
+            self.cLScoreVal    : [self.wScoreVal.wTc,     mConfig.mOneRealNum    , False],
+            self.cLSample      : [self.wSample.wCb,       mConfig.mOptionBad     , False],
+            self.cLAlpha       : [self.wAlpha.wTc,        mConfig.mOne01Num      , False],
+            self.cLCorrectP    : [self.wCorrectP.wCb,     mConfig.mOptionBad     , False],
+            self.cLDetectedProt: [self.wDetectedProt.wTc, mConfig.mOneZPlusNumCol, True ],
+            self.cLGene        : [self.wGeneName.wTc,     mConfig.mOneZPlusNumCol, True ],
+            self.cLScoreCol    : [self.wScore.wTc,        mConfig.mOneZPlusNumCol, True ],
+            self.cLExcludeProt : [self.wExcludeProt.wTc,  mConfig.mNZPlusNumCol  , True ],
+            self.cLResControl  : [self.wTcResults,        mConfig.mResCtrl       , False]
         }
+        self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #------------------------------> 
         self.rCheckUnique = [self.wDetectedProt.wTc, self.wGeneName.wTc,
             self.wScore.wTc, self.wExcludeProt.wTc, self.wTcResults]
@@ -4765,501 +4754,477 @@ class PaneProtProf(BaseConfPanelMod):
 #---
 
 
-# class LimProt(BaseConfModPanel2):
-#     """Configuration Pane for the Limited Proteolysis module.
+class PaneLimProt(BaseConfPanelMod2):
+    """Configuration Pane for the Limited Proteolysis module.
 
-#         Parameters
-#         ----------
-#         cParent: wx.Widget
-#             Parent of the pane
-#         cDataI : dict or None
-#             Initial data provided by the user in a previous analysis.
-#             This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
+        Parameters
+        ----------
+        cParent: wx.Widget
+            Parent of the pane
+        cDataI : dict or None
+            Initial data provided by the user in a previous analysis.
+            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
 
-#         Attributes
-#         ----------
-#         rChangeKey: list of str
-#             Keys in self.rDO that must be turned to str.
-#         rCheckUserInput : dict
-#             To check the user input in the right order. 
-#             See pane.BaseConfPanel.CheckInput for a description of the dict.
-#         rDI: dict
-#             Dictionary with the user input. Keys are labels in the panel plus:
-#             {
-#                 config.lStLimProtLane           : [list of lanes],
-#                 config.lStLimProtBand           : [list of bands],
-#                 f"Control {config.lStCtrlName}" : "Control Name",
-#             }
-#         rDO: dict
-#             Dictionary with checked user input. Keys are:
-#             {
-#                 "iFile"      : "Path to input data file",
-#                 "uFile"      : "Path to umsap file.",
-#                 'seqFile'    : "Path to the sequence file",
-#                 'ID'         : "Analysis ID",
-#                 "Cero"       : "Boolean, how to treat cero values",
-#                 "TransMethod": "Transformation method",
-#                 "NormMethod" : "Normalization method",
-#                 "ImpMethod"  : "Imputation method",
-#                 "TargetProt" : "Target Protein",
-#                 "ScoreVal"   : "Score value threshold",
-#                 'SeqLength'  : "Sequence length",
-#                 'Sample'     : 'Independent or dependent samples',
-#                 "Alpha"      : "Significance level",
-#                 "Beta"       : "Beta level',
-#                 'Gamma'      : "Gamma level",
-#                 'Theta'      : Theta value or None,
-#                 'Theta Max'  : Theta maximum,
-#                 "Lane"       : [List of lanes],
-#                 "Band"       : [List of bands],
-#                 "ControlL"   : "Control label",
-#                 "oc": {
-#                     "SeqCol"       : Column of Sequences,
-#                     "TargetProtCol": Column of Proteins,
-#                     "ScoreCol"     : Score column,
-#                     "ResCtrl"      : [List of columns containing the control and 
-#                         experiments column numbers],
-#                     "Column": [Flat list of all column numbers with the 
-#                               following order: SeqCol, TargetProtCol, 
-#                               ScoreColRes & Control]
-#                 },
-#                 "df": { Column numbers in the pd.df created from the input file.
-#                     "SeqCol"       : 0,
-#                     "TargetProtCol": 1,
-#                     "ScoreCol"     : 2,
-#                     "ResCtrl"      : [[[]], [[]],...,[[]]],
-#                     "ResCtrlFlat"  : [ResCtrl as a flat list],
-#                     "ColumnR"      : [Columns with the results],
-#                     "ColumnF"      : [Columns that must contain only floats],
-#                 },
-#                 "dfo" : {
-#                     "NC" : [Columns for the N and C residue numbers in the 
-#                         output df],
-#                     "NCF" : [Columns for the Nnat and Cnat residue numbers in 
-#                         the output df],
-#                 },
-#                 "ProtLength": "Length of the Recombinant protein",
-#                 "ProtLoc"   : "Location of the Nat Seq in the Rec Seq",
-#                 "ProtDelta" : "To adjust Res Number. Nat = Res + Delta",
-#             },    
-#         rLbDict: dict
-#             Contains information about the Res - Ctrl e.g.
-#             {
-#                 1        : ['L1', 'L2'],
-#                 2        : ['B1', 'B2'],
-#                 'Control': ['TheControl'],
-#             }
-#         rLLenLongest: int
-#             Number of characters in the longest label.
-#         rMainData : str
-#             Name of the file containing the results of the analysis in the 
-#             step folder
+        Attributes
+        ----------
+        rChangeKey: list of str
+            Keys in self.rDO that must be turned to str.
+        rCheckUserInput : dict
+            To check the user input in the right order. 
+            See pane.BaseConfPanel.CheckInput for a description of the dict.
+        rDI: dict
+            Dictionary with the user input. Keys are labels in the panel plus:
+            {
+                config.lStLimProtLane           : [list of lanes],
+                config.lStLimProtBand           : [list of bands],
+                f"Control {config.lStCtrlName}" : "Control Name",
+            }
+        rDO: dict
+            Dictionary with checked user input. Keys are:
+            {
+                "iFile"      : "Path to input data file",
+                "uFile"      : "Path to umsap file.",
+                'seqFile'    : "Path to the sequence file",
+                'ID'         : "Analysis ID",
+                "Cero"       : "Boolean, how to treat cero values",
+                "TransMethod": "Transformation method",
+                "NormMethod" : "Normalization method",
+                "ImpMethod"  : "Imputation method",
+                "TargetProt" : "Target Protein",
+                "ScoreVal"   : "Score value threshold",
+                'SeqLength'  : "Sequence length",
+                'Sample'     : 'Independent or dependent samples',
+                "Alpha"      : "Significance level",
+                "Beta"       : "Beta level',
+                'Gamma'      : "Gamma level",
+                'Theta'      : Theta value or None,
+                'Theta Max'  : Theta maximum,
+                "Lane"       : [List of lanes],
+                "Band"       : [List of bands],
+                "ControlL"   : "Control label",
+                "oc": {
+                    "SeqCol"       : Column of Sequences,
+                    "TargetProtCol": Column of Proteins,
+                    "ScoreCol"     : Score column,
+                    "ResCtrl"      : [List of columns containing the control and 
+                        experiments column numbers],
+                    "Column": [Flat list of all column numbers with the 
+                              following order: SeqCol, TargetProtCol, 
+                              ScoreColRes & Control]
+                },
+                "df": { Column numbers in the pd.df created from the input file.
+                    "SeqCol"       : 0,
+                    "TargetProtCol": 1,
+                    "ScoreCol"     : 2,
+                    "ResCtrl"      : [[[]], [[]],...,[[]]],
+                    "ResCtrlFlat"  : [ResCtrl as a flat list],
+                    "ColumnR"      : [Columns with the results],
+                    "ColumnF"      : [Columns that must contain only floats],
+                },
+                "dfo" : {
+                    "NC" : [Columns for the N and C residue numbers in the 
+                        output df],
+                    "NCF" : [Columns for the Nnat and Cnat residue numbers in 
+                        the output df],
+                },
+                "ProtLength": "Length of the Recombinant protein",
+                "ProtLoc"   : "Location of the Nat Seq in the Rec Seq",
+                "ProtDelta" : "To adjust Res Number. Nat = Res + Delta",
+            },    
+        rLbDict: dict
+            Contains information about the Res - Ctrl e.g.
+            {
+                1        : ['L1', 'L2'],
+                2        : ['B1', 'B2'],
+                'Control': ['TheControl'],
+            }
+        rLLenLongest: int
+            Number of characters in the longest label.
+        rMainData : str
+            Name of the file containing the results of the analysis in the 
+            step folder
         
-#         See Parent classes for more attributes.
+        See Parent classes for more attributes.
         
-#         Notes
-#         -----
-#         Running the analysis results in the creation of:
+        Notes
+        -----
+        Running the analysis results in the creation of:
         
-#         - Parent Folder/
-#             - Input_Data_Files/
-#             - Steps_Data_Files/20220104-214055_Limited Proteolysis/
-#             - output-file.umsap
+        - Parent Folder/
+            - Input_Data_Files/
+            - Steps_Data_Files/20220104-214055_Limited Proteolysis/
+            - output-file.umsap
         
-#         The Input_Data_Files folder contains the original data files. These are 
-#         needed for data visualization, running analysis again with different 
-#         parameters, etc.
-#         The Steps_Data_Files/Date-Section folder contains regular csv files with 
-#         the step by step data.
+        The Input_Data_Files folder contains the original data files. These are 
+        needed for data visualization, running analysis again with different 
+        parameters, etc.
+        The Steps_Data_Files/Date-Section folder contains regular csv files with 
+        the step by step data.
     
-#         The Limited Proteolysis section in output-file.umsap conteins the 
-#         information about the calculations, e.g
+        The Limited Proteolysis section in output-file.umsap contains the 
+        information about the calculations, e.g
 
-#         {
-#             'Limited Proteolysis : {
-#                 '20210324-165609': {
-#                     'V' : config.dictVersion,
-#                     'I' : self.d,
-#                     'CI': self.do,
-#                     'DP': {
-#                         'dfS' : pd.DataFrame with initial data as float and
-#                                 after discarding values by score.
-#                         'dfT' : pd.DataFrame with transformed data.
-#                         'dfN' : pd.DataFrame with normalized data.
-#                         'dfIm': pd.DataFrame with imputed data.
-#                     }
-#                     'R' : pd.DataFrame (dict) with the calculation results.
-#                 }
-#             }
-#         }
+        {
+            'Limited Proteolysis : {
+                '20210324-165609': {
+                    'V' : config.dictVersion,
+                    'I' : self.d,
+                    'CI': self.do,
+                    'DP': {
+                        'dfS' : pd.DataFrame with initial data as float and
+                                after discarding values by score.
+                        'dfT' : pd.DataFrame with transformed data.
+                        'dfN' : pd.DataFrame with normalized data.
+                        'dfIm': pd.DataFrame with imputed data.
+                    }
+                    'R' : pd.DataFrame (dict) with the calculation results.
+                }
+            }
+        }
         
-#         The result data frame has the following structure:
+        The result data frame has the following structure:
         
-#         Sequence Score Nterm Cterm NtermF CtermF Delta Band1 ... BandN
-#         Sequence Score Nterm Cterm NtermF CtermF Delta Lane1 ... LaneN
-#         Sequence Score Nterm Cterm NtermF CtermF Delta Ptost ... Ptost
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.npLimProt
-#     #------------------------------> Label
-#     cLBeta         = "β level"
-#     cLGamma        = "γ level"
-#     cLTheta        = "Θ value"
-#     cLThetaMax     = "Θmax value"
-#     cLSample       = 'Samples'
-#     cLLane         = config.lStLimProtLane
-#     cLBand         = config.lStLimProtBand
-#     cLCtrlName     = config.lStCtrlName
-#     cLDFFirstThree = config.dfcolLimProtFirstPart
-#     cLDFThirdLevel = config.dfcolLimProtCLevel
-#     #------------------------------> Choices
-#     cOSample = config.oSamples
-#     #------------------------------> Hints
-#     cHBeta = 'e.g. 0.05'
-#     cHGamma = 'e.g. 0.8'
-#     cHTheta = 'e.g. 4.5'
-#     cHThetaMax = 'e.g. 8'
-#     #------------------------------> Tooltips
-#     cTTSample = config.ttStSample
-#     cTTBeta = ('Beta level for the analysis.\ne.g. 0.05')
-#     cTTGamma = ('Confidence limit level for estimating the measuring '
-#                 'precision.\ne.g. 0.80')
-#     cTTTheta = ('Confidence interval used in the analysis. The value depends '
-#         'on the Data Preparation selected. An empty values means that the '
-#         'confidence interval will be calculated for each peptide.\ne.g. 3')
-#     cTTThetaMax = (f'Maximum value for the calculated Confidence interval. It '
-#         f'is only used if {cLTheta} is left empty.\ne.g. 8')
-#     #------------------------------> Needed by BaseConfPanel
-#     cURL         = f"{config.urlTutorial}/limited-proteolysis"
-#     cSection     = config.nmLimProt
-#     cTitlePD     = f"Running {config.nmLimProt} Analysis"
-#     cGaugePD     = 44
-#     rLLenLongest = len(config.lStResultCtrlS)
-#     rMainData    = '{}_{}-LimitedProteolysis-Data.txt'
-#     rChangeKey   = ['iFile', 'uFile', 'seqFile']
-#     #------------------------------> Optional configuration
-#     cTTHelp = config.ttBtnHelp.format(cURL)
-#     #endregion --------------------------------------------------> Class setup
+        Sequence Score Nterm Cterm NtermF CtermF Delta Band1 ... BandN
+        Sequence Score Nterm Cterm NtermF CtermF Delta Lane1 ... LaneN
+        Sequence Score Nterm Cterm NtermF CtermF Delta Ptost ... Ptost
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.npLimProt
+    #------------------------------> Label
+    cLBeta         = "β level"
+    cLGamma        = "γ level"
+    cLTheta        = "Θ value"
+    cLThetaMax     = "Θmax value"
+    cLSample       = 'Samples'
+    cLLane         = mConfig.lStLimProtLane
+    cLBand         = mConfig.lStLimProtBand
+    cLCtrlName     = mConfig.lStCtrlName
+    # cLDFFirstThree = config.dfcolLimProtFirstPart
+    # cLDFThirdLevel = config.dfcolLimProtCLevel
+    #------------------------------> Choices
+    cOSample = mConfig.oSamples
+    #------------------------------> Hints
+    cHBeta = 'e.g. 0.05'
+    cHGamma = 'e.g. 0.8'
+    cHTheta = 'e.g. 4.5'
+    cHThetaMax = 'e.g. 8'
+    #------------------------------> Tooltips
+    cTTSample = mConfig.ttStSample
+    cTTBeta = ('Beta level for the analysis.\ne.g. 0.05')
+    cTTGamma = ('Confidence limit level for estimating the measuring '
+                'precision.\ne.g. 0.80')
+    cTTTheta = ('Confidence interval used in the analysis. The value depends '
+        'on the Data Preparation selected. An empty values means that the '
+        'confidence interval will be calculated for each peptide.\ne.g. 3')
+    cTTThetaMax = (f'Maximum value for the calculated Confidence interval. It '
+        f'is only used if {cLTheta} is left empty.\ne.g. 8')
+    #------------------------------> Needed by BaseConfPanel
+    cURL         = f"{mConfig.urlTutorial}/limited-proteolysis"
+    cSection     = mConfig.nmLimProt
+    cTitlePD     = f"Running {mConfig.nmLimProt} Analysis"
+    cGaugePD     = 44
+    rLLenLongest = len(mConfig.lStResultCtrlS)
+    rMainData    = '{}_{}-LimitedProteolysis-Data.txt'
+    rChangeKey   = ['iFile', 'uFile', 'seqFile']
+    #------------------------------> Optional configuration
+    cTTHelp = mConfig.ttBtnHelp.format(cURL)
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, cParent, cDataI: Optional[dict]) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(cParent)
-#         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent, dataI: dict={}) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region -----------------------------------------------------> Widgets
-#         #------------------------------> Values
-#         self.wBeta = dtsWidget.StaticTextCtrl(
-#             self.sbValue,
-#             stLabel   = self.cLBeta,
-#             stTooltip = self.cTTBeta,
-#             tcSize    = self.cSTc,
-#             tcHint    = self.cHBeta,
-#             validator = dtsValidator.NumberList(
-#                 numType='float', nN=1, vMin=0, vMax=1),
-#         )
-#         self.wGamma = dtsWidget.StaticTextCtrl(
-#             self.sbValue,
-#             stLabel   = self.cLGamma,
-#             stTooltip = self.cTTGamma,
-#             tcSize    = self.cSTc,
-#             tcHint    = self.cHGamma,
-#             validator = dtsValidator.NumberList(
-#                 numType='float', nN=1, vMin=0, vMax=1),
-#         )
-#         self.wTheta = dtsWidget.StaticTextCtrl(
-#             self.sbValue,
-#             stLabel   = self.cLTheta,
-#             stTooltip = self.cTTTheta,
-#             tcSize    = self.cSTc,
-#             tcHint    = self.cHTheta,
-#             validator = dtsValidator.NumberList(
-#                 numType='float', nN=1, vMin=0.01, opt=True),
-#         )
-#         self.wThetaMax = dtsWidget.StaticTextCtrl(
-#             self.sbValue,
-#             stLabel   = self.cLThetaMax,
-#             stTooltip = self.cTTThetaMax,
-#             tcSize    = self.cSTc,
-#             tcHint    = self.cHThetaMax,
-#             validator = dtsValidator.NumberList(
-#                 numType='float', nN=1, vMin=0.01),
-#         )
-#         self.wSample = dtsWidget.StaticTextComboBox(
-#             self.sbValue,
-#             label     = self.cLSample,
-#             choices   = list(self.cOSample.keys()),
-#             tooltip   = self.cTTSample,
-#             validator = dtsValidator.IsNotEmpty(),
-#         )
-#         #endregion --------------------------------------------------> Widgets
-        
-#         #region ----------------------------------------------> checkUserInput
-#         self.rCopyFile = {
-#             'iFile'  : self.cLiFile,
-#             'seqFile': f'{self.cLSeqFile} File',
-#         }
-        
-#         self.rCheckUserInput = {
-#             self.cLuFile       :[self.wUFile.tc,           config.mFileBad       , False],
-#             self.cLiFile       :[self.wIFile.tc,           config.mFileBad       , False],
-#             f'{self.cLSeqFile} file' :[self.wSeqFile.tc,   config.mFileBad       , False],
-#             self.cLId          :[self.wId.tc,              config.mValueBad      , False],
-#             self.cLCeroTreat   :[self.wCeroB.cb,           config.mOptionBad     , False],
-#             self.cLTransMethod :[self.wTransMethod.cb,     config.mOptionBad     , False],
-#             self.cLNormMethod  :[self.wNormMethod.cb,      config.mOptionBad     , False],
-#             self.cLImputation  :[self.wImputationMethod.cb,config.mOptionBad     , False],
-#             self.cLShift       :[self.wShift.tc,           config.mOneRPlusNum   , False],
-#             self.cLWidth       :[self.wWidth.tc,           config.mOneRPlusNum   , False],
-#             self.cLTargetProt  :[self.wTargetProt.tc,      config.mValueBad      , False],
-#             self.cLScoreVal    :[self.wScoreVal.tc,        config.mOneRealNum    , False],
-#             self.cLSample      :[self.wSample.cb,          config.mOptionBad     , False],
-#             self.cLAlpha       :[self.wAlpha.tc,           config.mOne01Num      , False],
-#             self.cLBeta        :[self.wBeta.tc,            config.mOne01Num      , False],
-#             self.cLGamma       :[self.wGamma.tc,           config.mOne01Num      , False],
-#             self.cLTheta       :[self.wTheta.tc,           config.mOneZPlusNumCol, False],
-#             f'{self.cLSeqCol} column' :[self.wSeqCol.tc,   config.mOneZPlusNumCol, True ],
-#             self.cLDetectedProt:[self.wDetectedProt.tc,    config.mOneZPlusNumCol, True ],
-#             self.cLScoreCol    :[self.wScore.tc,           config.mOneZPlusNumCol, True ],
-#             self.cLResControl  :[self.wTcResults,          config.mResCtrl       , False]
-#         }        
-        
-#         self.rCheckUnique = [self.wSeqCol.tc, self.wDetectedProt.tc, 
-#             self.wScore.tc, self.wTcResults]
-#         #endregion -------------------------------------------> checkUserInput
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Values
+        self.wBeta = mWidget.StaticTextCtrl(
+            self.wSbValue,
+            stLabel   = self.cLBeta,
+            stTooltip = self.cTTBeta,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHBeta,
+            validator = mValidator.NumberList(
+                numType='float', nN=1, vMin=0, vMax=1),
+        )
+        self.wGamma = mWidget.StaticTextCtrl(
+            self.wSbValue,
+            stLabel   = self.cLGamma,
+            stTooltip = self.cTTGamma,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHGamma,
+            validator = mValidator.NumberList(
+                numType='float', nN=1, vMin=0, vMax=1),
+        )
+        self.wTheta = mWidget.StaticTextCtrl(
+            self.wSbValue,
+            stLabel   = self.cLTheta,
+            stTooltip = self.cTTTheta,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHTheta,
+            validator = mValidator.NumberList(
+                numType='float', nN=1, vMin=0.01, opt=True),
+        )
+        self.wThetaMax = mWidget.StaticTextCtrl(
+            self.wSbValue,
+            stLabel   = self.cLThetaMax,
+            stTooltip = self.cTTThetaMax,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHThetaMax,
+            validator = mValidator.NumberList(
+                numType='float', nN=1, vMin=0.01),
+        )
+        self.wSample = mWidget.StaticTextComboBox(
+            self.wSbValue,
+            label     = self.cLSample,
+            choices   = list(self.cOSample.keys()),
+            tooltip   = self.cTTSample,
+            validator = mValidator.IsNotEmpty(),
+        )
+        #endregion --------------------------------------------------> Widgets
 
-#         #region ------------------------------------------------------> Sizers
-#         #------------------------------> Sizer Values
-#         self.sizersbValueWid.Add(
-#             1, 1,
-#             pos    = (0,0),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#             span   = (2, 0),
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wTargetProt.st,
-#             pos    = (0,1),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wTargetProt.tc,
-#             pos    = (0,2),
-#             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wScoreVal.st,
-#             pos    = (1,1),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wScoreVal.tc,
-#             pos    = (1,2),
-#             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wSample.st,
-#             pos    = (2,1),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wSample.cb,
-#             pos    = (2,2),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wAlpha.st,
-#             pos    = (3,1),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wAlpha.tc,
-#             pos    = (3,2),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wBeta.st,
-#             pos    = (0,3),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wBeta.tc,
-#             pos    = (0,4),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wGamma.st,
-#             pos    = (1,3),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wGamma.tc,
-#             pos    = (1,4),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wTheta.st,
-#             pos    = (2,3),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wTheta.tc,
-#             pos    = (2,4),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wThetaMax.st,
-#             pos    = (3,3),
-#             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             self.wThetaMax.tc,
-#             pos    = (3,4),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#         )
-#         self.sizersbValueWid.Add(
-#             1, 1,
-#             pos    = (0,5),
-#             flag   = wx.EXPAND|wx.ALL,
-#             border = 5,
-#             span   = (2, 0),
-#         )
-#         self.sizersbValueWid.AddGrowableCol(0, 1)
-#         self.sizersbValueWid.AddGrowableCol(2, 1)
-#         self.sizersbValueWid.AddGrowableCol(4, 1)
-#         self.sizersbValueWid.AddGrowableCol(5, 1)
-#         #------------------------------> Main Sizer
-#         self.SetSizer(self.sSizer)
-#         self.sSizer.Fit(self)
-#         self.SetupScrolling()
-#         #endregion ---------------------------------------------------> Sizers
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Sizer Values
+        self.sSbValueWid.Add(
+            1, 1,
+            pos    = (0,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+            span   = (2, 0),
+        )
+        self.sSbValueWid.Add(
+            self.wTargetProt.wSt,
+            pos    = (0,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wTargetProt.wTc,
+            pos    = (0,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wScoreVal.wSt,
+            pos    = (1,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wScoreVal.wTc,
+            pos    = (1,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wSample.wSt,
+            pos    = (2,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wSample.wCb,
+            pos    = (2,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wAlpha.wSt,
+            pos    = (3,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wAlpha.wTc,
+            pos    = (3,2),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wBeta.wSt,
+            pos    = (0,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wBeta.wTc,
+            pos    = (0,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wGamma.wSt,
+            pos    = (1,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wGamma.wTc,
+            pos    = (1,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wTheta.wSt,
+            pos    = (2,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wTheta.wTc,
+            pos    = (2,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wThetaMax.wSt,
+            pos    = (3,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wThetaMax.wTc,
+            pos    = (3,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            1, 1,
+            pos    = (0,5),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+            span   = (2, 0),
+        )
+        self.sSbValueWid.AddGrowableCol(0, 1)
+        self.sSbValueWid.AddGrowableCol(2, 1)
+        self.sSbValueWid.AddGrowableCol(4, 1)
+        self.sSbValueWid.AddGrowableCol(5, 1)
+        #------------------------------> Main Sizer
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        self.SetupScrolling()
+        #endregion ---------------------------------------------------> Sizers
         
-#         #region --------------------------------------------------------> Test
-#         if config.development:
-#             import getpass
-#             user = getpass.getuser()
-#             if config.os == "Darwin":
-#                 self.wUFile.tc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-#                 self.wIFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
-#                 self.wSeqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
-#             elif config.os == 'Windows':
-#                 self.wUFile.tc.SetValue("C:/Users/" + str(user) + "/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap")
-#                 self.wIFile.tc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
-#                 self.wSeqFile.tc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
-#             else:
-#                 pass
-#             self.wId.tc.SetValue('Beta Test Dev')
-#             self.wCeroB.cb.SetValue('Yes')
-#             self.wTransMethod.cb.SetValue('Log2')
-#             self.wNormMethod.cb.SetValue('Median')
-#             self.wImputationMethod.cb.SetValue('Normal Distribution')
-#             self.wTargetProt.tc.SetValue('Mis18alpha')
-#             self.wScoreVal.tc.SetValue('10')
-#             self.wAlpha.tc.SetValue('0.05')
-#             self.wBeta.tc.SetValue('0.05')
-#             self.wGamma.tc.SetValue('0.8')
-#             self.wTheta.tc.SetValue('')
-#             self.wThetaMax.tc.SetValue('8')
-#             self.wSample.cb.SetValue('Independent Samples')
-#             self.wSeqCol.tc.SetValue('0')
-#             self.wDetectedProt.tc.SetValue('34')
-#             self.wScore.tc.SetValue('42')
-#             self.wTcResults.SetValue('69-71; 81-83, 78-80, 75-77, 72-74, ; , , , 66-68, ; 63-65, 105-107, 102-104, 99-101, ; 93-95, 90-92, 87-89, 84-86, 60-62')
-#             self.rLbDict = {
-#                 1        : ['Lane1', 'Lane2', 'Lane3', 'Lane4', 'Lane5'],
-#                 2        : ['Band1', 'Band2', 'Band3', 'Band4'],
-#                 'Control': ['Ctrl'],
-#             }
-#             self.OnImpMethod('fEvent')
-#             self.wShift.tc.SetValue('1.8')
-#             self.wWidth.tc.SetValue('0.3')
-#         else:
-#             pass
-#         #endregion -----------------------------------------------------> Test
-        
-#         #region -------------------------------------------------------> DataI
-#         self.SetInitialData(cDataI)
-#         #endregion ----------------------------------------------------> DataI
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-    
-#     #------------------------------> Class Methods
-#     #region ---------------------------------------------------> Manage Event
-#     def SetInitialData(self, dataI: Optional[dict]=None) -> bool:
-#         """Set initial data
-    
-#             Parameters
-#             ----------
-#             dataI : dict or None
-#                 Data to fill all fields and repeat an analysis. See Notes.
-    
-#             Returns
-#             -------
-#             True
-#         """
-#         #region -------------------------------------------------> Fill Fields
-#         if dataI is not None:
-#             #------------------------------> 
-#             dataInit = dataI['uFile'].parent / config.fnDataInit
-#             iFile = dataInit / dataI['I'][self.cLiFile]
-#             seqFile = dataInit / dataI['I'][f'{self.cLSeqFile} File']
-#             #------------------------------> Files
-#             self.wUFile.tc.SetValue(str(dataI['uFile']))
-#             self.wIFile.tc.SetValue(str(iFile))
-#             self.wSeqFile.tc.SetValue(str(seqFile))
-#             self.wId.tc.SetValue(dataI['CI']['ID'])
-#             #------------------------------> Data Preparation
-#             self.wCeroB.cb.SetValue(dataI['I'][self.cLCeroTreatD])
-#             self.wTransMethod.cb.SetValue(dataI['I'][self.cLTransMethod])
-#             self.wNormMethod.cb.SetValue(dataI['I'][self.cLNormMethod])
-#             self.wImputationMethod.cb.SetValue(dataI['I'][self.cLImputation])
-#             self.wShift.tc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
-#             self.wWidth.tc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
-#             #------------------------------> Values
-#             self.wTargetProt.tc.SetValue(dataI['I'][self.cLTargetProt])
-#             self.wScoreVal.tc.SetValue(dataI['I'][self.cLScoreVal])
-#             self.wAlpha.tc.SetValue(dataI['I'][self.cLAlpha])
-#             self.wSample.cb.SetValue(dataI['I'][self.cLSample])
-#             self.wBeta.tc.SetValue(dataI['I'][self.cLBeta])
-#             self.wGamma.tc.SetValue(dataI['I'][self.cLGamma])
-#             self.wTheta.tc.SetValue(dataI['I'][self.cLTheta])
-#             self.wThetaMax.tc.SetValue(dataI['I'][self.cLThetaMax])
-#             #------------------------------> Columns
-#             self.wSeqCol.tc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
-#             self.wDetectedProt.tc.SetValue(dataI['I'][self.cLDetectedProt])
-#             self.wScore.tc.SetValue(dataI['I'][self.cLScoreCol])
-#             self.wTcResults.SetValue(dataI['I'][config.lStResultCtrlS])
-#             self.rLbDict[1] = dataI['I'][self.cLLane]
-#             self.rLbDict[2] = dataI['I'][self.cLBand]
-#             self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
-#             #------------------------------> 
-#             self.OnIFileLoad('fEvent')
-#             self.OnImpMethod('fEvent')
-#         else:
-#             pass
-#         #endregion ----------------------------------------------> Fill Fields
-        
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Manage Event
-    
+        #region ----------------------------------------------> checkUserInput
+        rCheckUserInput = {
+            self.cLSample:[self.wSample.wCb, mConfig.mOptionBad     , False],
+            self.cLAlpha :[self.wAlpha.wTc,  mConfig.mOne01Num      , False],
+            self.cLBeta  :[self.wBeta.wTc,   mConfig.mOne01Num      , False],
+            self.cLGamma :[self.wGamma.wTc,  mConfig.mOne01Num      , False],
+            self.cLTheta :[self.wTheta.wTc,  mConfig.mOneZPlusNumCol, False],
+        }
+        self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
+        #endregion -------------------------------------------> checkUserInput
+
+        #region -------------------------------------------------------> DataI
+        self.SetInitialData(dataI)
+        #endregion ----------------------------------------------------> DataI
+
+        #region --------------------------------------------------------> Test
+        if mConfig.development:
+            import getpass
+            user = getpass.getuser()
+            if mConfig.os == "Darwin":
+                self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
+                self.wSeqFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
+            elif mConfig.os == 'Windows':
+                self.wUFile.wTc.SetValue("C:/Users/" + str(user) + "/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.wTc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
+                self.wSeqFile.wTc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
+            else:
+                pass
+            self.wId.wTc.SetValue('Beta Test Dev')
+            self.wCeroB.wCb.SetValue('Yes')
+            self.wTransMethod.wCb.SetValue('Log2')
+            self.wNormMethod.wCb.SetValue('Median')
+            self.wImputationMethod.wCb.SetValue('Normal Distribution')
+            self.wTargetProt.wTc.SetValue('Mis18alpha')
+            self.wScoreVal.wTc.SetValue('10')
+            self.wAlpha.wTc.SetValue('0.05')
+            self.wBeta.wTc.SetValue('0.05')
+            self.wGamma.wTc.SetValue('0.8')
+            self.wTheta.wTc.SetValue('')
+            self.wThetaMax.wTc.SetValue('8')
+            self.wSample.wCb.SetValue('Independent Samples')
+            self.wSeqCol.wTc.SetValue('0')
+            self.wDetectedProt.wTc.SetValue('34')
+            self.wScore.wTc.SetValue('42')
+            self.wTcResults.SetValue('69-71; 81-83, 78-80, 75-77, 72-74, ; , , , 66-68, ; 63-65, 105-107, 102-104, 99-101, ; 93-95, 90-92, 87-89, 84-86, 60-62')
+            self.rLbDict = {
+                0        : ['Lane1', 'Lane2', 'Lane3', 'Lane4', 'Lane5'],
+                1        : ['Band1', 'Band2', 'Band3', 'Band4'],
+                'Control': ['Ctrl'],
+            }
+            self.OnImpMethod('fEvent')
+            self.wShift.wTc.SetValue('1.8')
+            self.wWidth.wTc.SetValue('0.3')
+        else:
+            pass
+        #endregion -----------------------------------------------------> Test
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class Event
+    def SetInitialData(self, dataI: dict={}) -> bool:
+        """Set initial data.
+
+            Parameters
+            ----------
+            dataI : dict
+                Data to fill all fields and repeat an analysis.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------> Fill Fields
+        if dataI:
+            #------------------------------> 
+            dataInit = dataI['uFile'].parent / mConfig.fnDataInit
+            iFile = dataInit / dataI['I'][self.cLiFile]
+            seqFile = dataInit / dataI['I'][f'{self.cLSeqFile} File']
+            #------------------------------> Files
+            self.wUFile.wTc.SetValue(str(dataI['uFile']))
+            self.wIFile.wTc.SetValue(str(iFile))
+            self.wSeqFile.wTc.SetValue(str(seqFile))
+            self.wId.wTc.SetValue(dataI['CI']['ID'])
+            #------------------------------> Data Preparation
+            self.wCeroB.wCb.SetValue(dataI['I'][self.cLCeroTreatD])
+            self.wTransMethod.wCb.SetValue(dataI['I'][self.cLTransMethod])
+            self.wNormMethod.wCb.SetValue(dataI['I'][self.cLNormMethod])
+            self.wImputationMethod.wCb.SetValue(dataI['I'][self.cLImputation])
+            self.wShift.wTc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
+            self.wWidth.wTc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
+            #------------------------------> Values
+            self.wTargetProt.wTc.SetValue(dataI['I'][self.cLTargetProt])
+            self.wScoreVal.wTc.SetValue(dataI['I'][self.cLScoreVal])
+            self.wAlpha.wTc.SetValue(dataI['I'][self.cLAlpha])
+            self.wSample.wCb.SetValue(dataI['I'][self.cLSample])
+            self.wBeta.wTc.SetValue(dataI['I'][self.cLBeta])
+            self.wGamma.wTc.SetValue(dataI['I'][self.cLGamma])
+            self.wTheta.wTc.SetValue(dataI['I'][self.cLTheta])
+            self.wThetaMax.wTc.SetValue(dataI['I'][self.cLThetaMax])
+            #------------------------------> Columns
+            self.wSeqCol.wTc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
+            self.wDetectedProt.wTc.SetValue(dataI['I'][self.cLDetectedProt])
+            self.wScore.wTc.SetValue(dataI['I'][self.cLScoreCol])
+            self.wTcResults.SetValue(dataI['I'][mConfig.lStResultCtrlS])
+            self.rLbDict[0] = dataI['I'][self.cLLane]
+            self.rLbDict[1] = dataI['I'][self.cLBand]
+            self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
+            #------------------------------> 
+            self.OnIFileLoad('fEvent')
+            self.OnImpMethod('fEvent')
+        else:
+            pass
+        #endregion ----------------------------------------------> Fill Fields
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Event
+
 #     #region ---------------------------------------------------> Run Method
 #     def CheckInput(self) -> bool:
 #         """Check user input
@@ -5683,7 +5648,7 @@ class PaneProtProf(BaseConfPanelMod):
 #         return True
 #     #---
 #     #endregion ------------------------------------------------> Run Method
-# #---
+#---
 
 
 # class TarProt(BaseConfModPanel2):

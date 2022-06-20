@@ -51,7 +51,7 @@ class BaseConfTab(wx.Panel):
     dConfPanel = {
         mConfig.ntCorrA   : mPane.PaneCorrA,
         mConfig.ntDataPrep: mPane.PaneDataPrep,
-        # mConfig.ntLimProt : mPane.PaneLimProt,
+        mConfig.ntLimProt : mPane.PaneLimProt,
         mConfig.ntProtProf: mPane.PaneProtProf,
         # mConfig.ntTarProt : mPane.PaneTarProt,
     }

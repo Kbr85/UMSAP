@@ -1854,7 +1854,7 @@ class WindowMain(BaseWindow):
         mConfig.ntStart   : mTab.TabStart,
         mConfig.ntCorrA   : mTab.BaseConfTab,
         mConfig.ntDataPrep: mTab.BaseConfListTab,
-        # mConfig.ntLimProt : mTab.BaseConfListTab,
+        mConfig.ntLimProt : mTab.BaseConfListTab,
         mConfig.ntProtProf: mTab.BaseConfListTab,
         # mConfig.ntTarProt : mTab.BaseConfListTab,
     }
