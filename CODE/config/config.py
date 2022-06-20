@@ -142,7 +142,7 @@ npLimProt               = 'LimProtPane'
 npProtProf              = 'ProtProfPane'
 npTarProt               = 'TarProtPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
-# npResControlExpLimProt  = 'ResControlExpPaneLimProt'
+npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 # npResControlExpTarProt  = 'ResControlExpPaneTarProt'
 npPrefUpdate            = 'PrefUpdate'
 #------------------------------> Modules

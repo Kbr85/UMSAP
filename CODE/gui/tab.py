@@ -189,7 +189,7 @@ class ResControlExp(wx.Panel):
 
     dWidget = {
         mConfig.npProtProf : mPane.PaneResControlExpConfProtProf,
-        # config.npLimProt  : pane.LimProtResControlExp,
+        mConfig.npLimProt  : mPane.PaneResControlExpConfLimProt,
         # config.npTarProt  : pane.TarProtResControlExp,
     }
     #endregion --------------------------------------------------> Class setup
