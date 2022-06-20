@@ -15,7 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional, Any, Literal, Union
+from typing import Literal, Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -471,432 +471,347 @@ def DataImputation(
 
 
 #region -------------------------------------------------> Confidence Interval
-# def _CI_Mean_Diff_DF_True(
-#     df: 'pd.DataFrame', col1: list[int], col2: list[int], alpha: float,
-#     fullCI: bool=True, roundN: Optional[int]=None,
-#     ) -> 'pd.DataFrame':
-#     """Calculate the confidence interval for the difference between means when
-#         samples are independent.
-        
-#         See Notes below for more details.
+def _CI_Mean_Diff_DF_True(
+    df: 'pd.DataFrame',
+    col1: list[int],
+    col2: list[int],
+    alpha: float,
+    fullCI: bool=True,
+    roundN: Optional[int]=None,
+    ) -> 'pd.DataFrame':
+    """Calculate the confidence interval for the difference between means when
+        samples are independent.
 
-#         Parameters
-#         ----------
-#         df: pd.DataFrame
-#             DataFrame with all the data
-#         col1: list[int]
-#             Control columns
-#         col2: list[int]
-#             Experiment columns
-#         alpha: float
-#             Significance level
-#         fullCI : bool
-#             Return full interval (True) or just (False) the CI value. Default is
-#             to return full interval.
-#         roundN : int or None
-#             Round numbers to the given number of decimal places. 
-#             Default is None. 
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame with all the data
+        col1: list[int]
+            Control columns
+        col2: list[int]
+            Experiment columns
+        alpha: float
+            Significance level
+        fullCI : bool
+            Return full interval (True) or just (False) the CI value. Default is
+            to return full interval.
+        roundN : int or None
+            Round numbers to the given number of decimal places. 
+            Default is None. 
 
-#         Returns
-#         -------
-#         pd.Dataframe
-#             With two columns CI_l and CI_u if fullCI is True else one column CI.
-        
-#         Notes
-#         -----
-#         - Input Check is performed CI_Mean_Diff_DF.
-#         - Further details:
-#             https://calcworkshop.com/confidence-interval/difference-in-means/
-#     """
-#     #region ----------------------------------------------------------> Values
-#     #------------------------------> 
-#     diffMean21 = (
-#         df.iloc[:,col2].mean(axis=1, skipna=True)
-#         -df.iloc[:,col1].mean(axis=1, skipna=True)
-#     )
-#     var1 = df.iloc[:,col1].var(axis=1, skipna=True)
-#     var2 = df.iloc[:,col2].var(axis=1, skipna=True)
-#     n1   = len(col1)
-#     n2   = len(col2)
-#     dfT  = n1 + n2 - 2
-#     #------------------------------> 
-#     q    = 1-(alpha/2)
-#     t    = sStats.t.ppf(q, dfT)
-#     F    = np.where(var2 > var1, var2/var1, var1/var2)
-#     #------------------------------> 
-#     ci = np.where(
-#         F > t, 
-#         t*np.sqrt((var1/n1)+(var2/n2)), 
-#         t*np.sqrt((1/n1)+(1/n2))*np.sqrt(((n1-1)*var1+(n2-1)*var2)/dfT),    
-#     )
-#     #endregion -------------------------------------------------------> Values
-    
-#     #region --------------------------------------------------------> Empty DF
-#     if fullCI:
-#         #------------------------------> 
-#         dfO = pd.DataFrame(
-#             np.nan, columns=['CI_l', 'CI_u'], index=range(df.shape[0])
-#         )
-#         #------------------------------> 
-#         dfO['CI_l'] = diffMean21 - ci
-#         dfO['CI_u'] = diffMean21 + ci
-#     else:
-#         #------------------------------> 
-#         dfO = pd.DataFrame(np.nan, columns=['CI'], index=range(df.shape[0]))
-#         #------------------------------> 
-#         dfO['CI'] = ci
-#     #endregion -----------------------------------------------------> Empty DF
-    
-#     #region -----------------------------------------------------------> Round
-#     if roundN is not None:
-#         dfO = dfO.round(int(roundN))
-#     else:
-#         pass
-#     #endregion --------------------------------------------------------> Round
-    
-#     return dfO
-# #---
+        Returns
+        -------
+        pd.Dataframe
+            With two columns CI_l and CI_u if fullCI is True else one column CI.
 
-# def _CI_Mean_Diff_DF_False(
-#     df: 'pd.DataFrame', col1: list[int], col2: list[int], alpha: float,
-#     fullCI: bool=True, roundN: Optional[int]=None,
-#     ) -> 'pd.DataFrame':
-#     """Calculate the confidence interval for the difference between means when
-#         samples are not independent.
-        
-#         See also CI_Mean_DF
+        Notes
+        -----
+        - Input Check is performed CI_Mean_Diff_DF.
+        - Further details:
+            https://calcworkshop.com/confidence-interval/difference-in-means/
+    """
+    #region ----------------------------------------------------------> Values
+    #------------------------------> 
+    diffMean21 = (
+        df.iloc[:,col2].mean(axis=1, skipna=True)
+        -df.iloc[:,col1].mean(axis=1, skipna=True)
+    )
+    var1 = df.iloc[:,col1].var(axis=1, skipna=True)
+    var2 = df.iloc[:,col2].var(axis=1, skipna=True)
+    n1   = len(col1)
+    n2   = len(col2)
+    dfT  = n1 + n2 - 2
+    #------------------------------> 
+    q    = 1-(alpha/2)
+    t    = sStats.t.ppf(q, dfT)
+    F    = np.where(var2 > var1, var2/var1, var1/var2)
+    #------------------------------> 
+    ci = np.where(
+        F > t, 
+        t*np.sqrt((var1/n1)+(var2/n2)), 
+        t*np.sqrt((1/n1)+(1/n2))*np.sqrt(((n1-1)*var1+(n2-1)*var2)/dfT),    
+    )
+    #endregion -------------------------------------------------------> Values
 
-#         Parameters
-#         ----------
-#         df: pd.DataFrame
-#             DataFrame with all the data
-#         col1: list[int]
-#             Control columns
-#         col2: list[int]
-#             Experiment columns
-#         alpha: float
-#             Significance level
-#         fullCI : bool
-#             Return full interval (True) or just (False) the CI value. Default is
-#             to return full interval.
-#         roundN : int or None
-#             Round numbers to the given number of decimal places. 
-#             Default is None. 
+    #region --------------------------------------------------------> Empty DF
+    if fullCI:
+        #------------------------------> 
+        dfO = pd.DataFrame(
+            np.nan, columns=['CI_l', 'CI_u'], index=range(df.shape[0]) # type: ignore
+        )
+        #------------------------------> 
+        dfO['CI_l'] = diffMean21 - ci
+        dfO['CI_u'] = diffMean21 + ci
+    else:
+        #------------------------------> 
+        dfO = pd.DataFrame(np.nan, columns=['CI'], index=range(df.shape[0])) # type: ignore
+        #------------------------------> 
+        dfO['CI'] = ci
+    #endregion -----------------------------------------------------> Empty DF
 
-#         Returns
-#         -------
-#         pd.Dataframe
-#             With two columns CI_l and CI_u if fullCI is True else one column CI.
-        
-#         Notes
-#         -----
-#         - Input Check is performed CI_Mean_Diff_DF.
-#         - It is expected that samples are paired in col1 and col2 like:
-#             col1 = (C1, C2, C3) and col2 = (E1, E2, E3)
-#         - Further details:
-#             https://calcworkshop.com/confidence-interval/difference-in-means/
-            
-#     """
-#     #region ----------------------------------------------------------> New Df
-#     ndf = pd.DataFrame(
-#         df.iloc[:,col2].values - df.iloc[:,col1].values,
-#         columns=range(len(col1))
-#     )
-#     #endregion -------------------------------------------------------> New Df
-    
-#     return CI_Mean_DF(ndf, alpha, fullCI=fullCI, roundN=roundN)
-# #---
+    #region -----------------------------------------------------------> Round
+    if roundN is not None:
+        dfO = dfO.round(int(roundN))
+    else:
+        pass
+    #endregion --------------------------------------------------------> Round
 
-# CI_MEAN_DIFF = {
-#     True : _CI_Mean_Diff_DF_True,
-#     False: _CI_Mean_Diff_DF_False,
-# }
+    return dfO
+#---
 
-# def CI_Mean_Diff_DF(
-#     df: 'pd.DataFrame', col1: list[int], col2: list[int], 
-#     alpha: float, ind: bool, fullCI: bool=True, roundN: Optional[int]=None,
-#     ) -> 'pd.DataFrame':
-#     """Calculate the confidence interval for the difference between means.
-        
-#         See Notes below for more details.
-        
-#         Parameters
-#         ----------
-#         df: pd.DataFrame
-#             DataFrame with all the data
-#         col1: list[int]
-#             Control columns
-#         col2: list[int]
-#             Experiment columns
-#         alpha: float
-#             Significance level
-#         ind: bool
-#             Samples are independent (True) or not (False)
-#         fullCI : bool
-#             Return full interval (True) or just (False) the CI value. Default is
-#             to return full interval.
-#         roundN : int or None
-#             Round numbers to the given number of decimal places. 
-#             Default is None. 
-            
-#         Returns
-#         -------
-#         pd.Dataframe
-#             With two columns CI_l and CI_u if fullCI is True else one column CI.
+def _CI_Mean_Diff_DF_False(
+    df: 'pd.DataFrame',
+    col1: list[int],
+    col2: list[int],
+    alpha: float,
+    fullCI: bool=True,
+    roundN: Optional[int]=None,
+    ) -> 'pd.DataFrame':
+    """Calculate the confidence interval for the difference between means when
+        samples are not independent.
 
-#         Raise
-#         -----
-#         InputError:
-#             - When columns are not in df
-#             - When alpha is not a float between 0 and 1
-        
-#         Notes
-#         -----
-#         - The mean difference is calculated as ave(col2) - ave(col1)
-#         - For paired samples it is expected that samples are paired in col1 and 
-#             col2 like: col1 = (C1, C2, C3) and col2 = (E1, E2, E3)
-#         - See also the _CI_Mean_Diff_DF_True and _CI_Mean_Diff_DF_False
-#         - Further details:
-#             https://calcworkshop.com/confidence-interval/difference-in-means/
-#     """
-#     #region ------------------------------------------------------> Test input
-#     #------------------------------> Selection
-#     try:
-#         df.iloc[:,col1+col2]
-#     except Exception:
-#         msg = f'Columns {col1, col2} were not found in the dataframe.'
-#         raise dtsException.InputError(msg)
-#     #------------------------------> Alpha
-#     try:
-#         #------------------------------> 
-#         a = dtsCheck.AInRange(alpha, refMin=0, refMax=1)[0] 
-#         #------------------------------> 
-#         if a: 
-#             pass
-#         else:
-#             raise dtsException.InputError(config.mAlpha.format(alpha))
-#     except Exception:
-#         raise dtsException.InputError(config.mAlpha.format(alpha))
-#     #------------------------------> 
-#     if not ind and len(col1) != len(col2):
-#         raise dtsException.InputError(
-#             config.mPairSamplesDiffRep.format(
-#                 f'col1 ({len(col1)})', f'col2 ({len(col2)})', 
-#     ))
-#     else:
-#         pass
-#     #------------------------------> round
-#     if roundN is not None:
-#         #------------------------------> 
-#         msg = config.m1IntGET.format('roundN', '0')
-#         #------------------------------> 
-#         try:
-#             #------------------------------> 
-#             a = dtsCheck.AInRange(roundN, refMin=0)[0]
-#             #------------------------------> 
-#             if a:
-#                 pass
-#             else:
-#                 raise dtsException.InputError(msg)
-#             #------------------------------> 
-#             roundN = int(roundN)
-#         except Exception:
-#             raise dtsException.InputError(msg)
-#     else:
-#         pass
-#     #endregion ---------------------------------------------------> Test input
-    
-#     #region -------------------------------------------------------> Calculate
-#     try:
-#         return CI_MEAN_DIFF[ind](
-#             df, col1, col2, alpha, fullCI=fullCI, roundN=roundN)
-#     except Exception as e:
-#         raise e
-#     #endregion ----------------------------------------------------> Calculate
-# #---
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame with all the data
+        col1: list[int]
+            Control columns
+        col2: list[int]
+            Experiment columns
+        alpha: float
+            Significance level
+        fullCI : bool
+            Return full interval (True) or just (False) the CI value. Default is
+            to return full interval.
+        roundN : int or None
+            Round numbers to the given number of decimal places. 
+            Default is None. 
 
-# def CI_Mean_DF(
-#     df: 'pd.DataFrame', alpha: float, fullCI: bool=True, 
-#     roundN: Optional[int]=None,
-#     ) -> 'pd.DataFrame':
-#     """Calculate the confidence interval for the mean. 
+        Returns
+        -------
+        pd.Dataframe
+            With two columns CI_l and CI_u if fullCI is True else one column CI.
 
-#         Parameters
-#         ----------
-#         df: pd.DataFrame
-#             Calculation will be performed for each row in the df. Each column in
-#             the row is considered as a measurement.
-#         alpha: float
-#             Significance level
-#         fullCI : bool
-#             Return full interval (True) or just (False) the CI value. Default is
-#             to return full interval.
-#         roundN : int or None
-#             Round numbers to the given number of decimal places. 
-#             Default is None.
+        Notes
+        -----
+        - Input Check is performed CI_Mean_Diff_DF.
+        - It is expected that samples are paired in col1 and col2 like:
+            col1 = (C1, C2, C3) and col2 = (E1, E2, E3)
+        - Further details:
+            https://calcworkshop.com/confidence-interval/difference-in-means/
+    """
+    #region ----------------------------------------------------------> New Df
+    ndf = pd.DataFrame(
+        df.iloc[:,col2].values - df.iloc[:,col1].values,
+        columns=range(len(col1))
+    )
+    #endregion -------------------------------------------------------> New Df
 
-#         Returns
-#         -------
-#         pd.Dataframe
-#             With two columns CI_l and CI_u if fullCI is True else one column CI.
+    return CI_Mean_DF(ndf, alpha, fullCI=fullCI, roundN=roundN)
+#---
 
-#         Raise
-#         -----
-#         InputError:
-#             - When alpha is not float between 0 and 1
-#             - When round is not an int >= 0 or None
-            
-#         Notes
-#         -----
-#         - It is expected that df has no NA values.
-#         - Further details:
-#             https://calcworkshop.com/confidence-interval/difference-in-means/
-#     """
-#     #region -----------------------------------------------------> Check input
-#     #------------------------------> Alpha
-#     try:
-#         #------------------------------> 
-#         a = dtsCheck.AInRange(alpha, refMin=0, refMax=1)[0]
-#         #------------------------------> 
-#         if a:
-#             q = 1 - (float(alpha)/2)
-#         else:
-#             raise dtsException.InputError(config.mAlpha.format(alpha))
-#     except Exception:
-#         raise dtsException.InputError(config.mAlpha.format(alpha))
-#     #------------------------------> round
-#     if roundN is not None:
-#         #------------------------------> 
-#         msg = config.m1IntGET.format('roundN', '0')
-#         #------------------------------> 
-#         try:
-#             #------------------------------> 
-#             a = dtsCheck.AInRange(roundN, refMin=0)[0]
-#             #------------------------------> 
-#             if a:
-#                 pass
-#             else:
-#                 raise dtsException.InputError(msg)
-#             #------------------------------> 
-#             roundN = int(roundN)
-#         except Exception:
-#             raise dtsException.InputError(msg)
-#     else:
-#         pass
-#     #endregion --------------------------------------------------> Check input
-    
-#     #region ----------------------------------------------------------> Values
-#     var  = df.var(axis=1, skipna=True)
-#     mean = df.mean(axis=1, skipna=True)
-#     t    = sStats.t.ppf(q, df.shape[1]-1)
-#     ci   = t*(var/np.sqrt(df.shape[1]))
-#     #endregion -------------------------------------------------------> Values
-    
-#     #region --------------------------------------------------------------> DF
-#     if fullCI:
-#         #------------------------------> 
-#         dfO = pd.DataFrame(
-#             np.nan, columns=['CI_l', 'CI_u'], index=range(df.shape[0])
-#         )
-#         #------------------------------> 
-#         dfO['CI_l'] = mean - ci
-#         dfO['CI_u'] = mean + ci
-#     else:
-#         #------------------------------> 
-#         dfO = pd.DataFrame(np.nan, columns=['CI'], index=range(df.shape[0]))
-#         #------------------------------> 
-#         dfO['CI'] = ci
-#     #endregion -----------------------------------------------------------> DF
-    
-#     #region -----------------------------------------------------------> Round
-#     if roundN is not None:
-#         dfO = dfO.round(int(roundN))
-#     else:
-#         pass
-#     #endregion --------------------------------------------------------> Round
-    
-#     return dfO
-# #---
+CI_MEAN_DIFF = {
+    True : _CI_Mean_Diff_DF_True,
+    False: _CI_Mean_Diff_DF_False,
+}
+
+def CI_Mean_Diff_DF(
+    df: 'pd.DataFrame',
+    col1: list[int],
+    col2: list[int],
+    alpha: float,
+    ind: bool,
+    fullCI: bool=True,
+    roundN: Optional[int]=None,
+    ) -> pd.DataFrame:
+    """Calculate the confidence interval for the difference between means.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame with all the data
+        col1: list[int]
+            Control columns
+        col2: list[int]
+            Experiment columns
+        alpha: float
+            Significance level
+        ind: bool
+            Samples are independent (True) or not (False)
+        fullCI : bool
+            Return full interval (True) or just (False) the CI value. Default is
+            to return full interval.
+        roundN : int or None
+            Round numbers to the given number of decimal places. 
+            Default is None. 
+
+        Returns
+        -------
+        pd.Dataframe
+            With two columns CI_l and CI_u if fullCI is True else one column CI.
+
+        Notes
+        -----
+        - The mean difference is calculated as ave(col2) - ave(col1)
+        - For paired samples it is expected that samples are paired in col1 and 
+            col2 like: col1 = (C1, C2, C3) and col2 = (E1, E2, E3)
+        - See also the _CI_Mean_Diff_DF_True and _CI_Mean_Diff_DF_False
+        - Further details:
+            https://calcworkshop.com/confidence-interval/difference-in-means/
+    """
+    #region -------------------------------------------------------> Calculate
+    try:
+        return CI_MEAN_DIFF[ind](
+            df, col1, col2, alpha, fullCI=fullCI, roundN=roundN)
+    except Exception as e:
+        raise e
+    #endregion ----------------------------------------------------> Calculate
+#---
+
+def CI_Mean_DF(
+    df: 'pd.DataFrame',
+    alpha: float,
+    fullCI: bool=True,
+    roundN: Optional[int]=None,
+    ) -> 'pd.DataFrame':
+    """Calculate the confidence interval for the mean. 
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Calculation will be performed for each row in the df. Each column in
+            the row is considered as a measurement.
+        alpha: float
+            Significance level
+        fullCI : bool
+            Return full interval (True) or just (False) the CI value. Default is
+            to return full interval.
+        roundN : int or None
+            Round numbers to the given number of decimal places. 
+            Default is None.
+
+        Returns
+        -------
+        pd.Dataframe
+            With two columns CI_l and CI_u if fullCI is True else one column CI.
+
+        Notes
+        -----
+        - It is expected that df has no NA values.
+        - Further details:
+            https://calcworkshop.com/confidence-interval/difference-in-means/
+    """
+    #region -------------------------------------------------------> Variables
+    q = 1 - (float(alpha)/2)
+    #endregion ----------------------------------------------------> Variables
+
+    #region ----------------------------------------------------------> Values
+    var  = df.var(axis=1, skipna=True)
+    mean = df.mean(axis=1, skipna=True)
+    t    = sStats.t.ppf(q, df.shape[1]-1)
+    ci   = t*(var/np.sqrt(df.shape[1]))
+    #endregion -------------------------------------------------------> Values
+
+    #region --------------------------------------------------------------> DF
+    if fullCI:
+        #------------------------------>
+        dfO = pd.DataFrame(
+            np.nan, columns=['CI_l', 'CI_u'], index=range(df.shape[0]) # type: ignore
+        )
+        #------------------------------>
+        dfO['CI_l'] = mean - ci
+        dfO['CI_u'] = mean + ci
+    else:
+        #------------------------------>
+        dfO = pd.DataFrame(np.nan, columns=['CI'], index=range(df.shape[0])) # type: ignore
+        #------------------------------> 
+        dfO['CI'] = ci
+    #endregion -----------------------------------------------------------> DF
+
+    #region -----------------------------------------------------------> Round
+    if roundN is not None:
+        dfO = dfO.round(int(roundN))
+    else:
+        pass
+    #endregion --------------------------------------------------------> Round
+
+    return dfO
+#---
 #endregion ----------------------------------------------> Confidence Interval
 
 
 #region ----------------------------------------------------------------> TEST
-# def ftest_DF(
-#     df: 'pd.DataFrame', col1: list[int], col2: list[int], 
-#     alpha:float=0.05, roundTo: Optional[int]=None) -> 'pd.DataFrame':
-#     """Perform a test for equal variance.
+def Test_f_DF(
+    df: 'pd.DataFrame',
+    col1: list[int],
+    col2: list[int],
+    alpha:float=0.05,
+    roundTo: Optional[int]=None,
+    ) -> 'pd.DataFrame':
+    """Perform a test for equal variance.
 
-#         Parameters
-#         ----------
-#         df: pd.DataFrame
-#             Calculation will be performed for each row in the df. Each column in
-#             the row is considered as a measurement.
-            
-#             It is expected that df has no NA values.
-            
-#         col1: list[int]
-#             Control columns
-#         col2: list[int]
-#             Experiment columns
-#         alpha: float
-#             Significance level
-#         roundTo: int
-#             Number of decimal places for the value of f and P in the output df.
-            
-#         Returns
-#         -------
-#         pd.DataFrame
-#             With three columns ['f', 'P', 'S']
-            
-#         Raise
-#         -----
-#         InputError:
-#             - When col1 or col2 are not found in df
-#             - When alpha is not between 0 and 1
-        
-#         Notes
-#         -----
-#         - The test is conducted taking the greater variance in the numerator of
-#             F and P as the two tail value.
-#         - Invalid values in the input for roundTo are silently ignored and the 
-#             df with full length values is returned. 
-#     """
-#     #region --------------------------------------------------------> Empty DF
-#     dfO = pd.DataFrame(
-#         np.nan, columns=['f', 'P', 'S'], index=range(df.shape[0])
-#     )
-#     F = pd.DataFrame(
-#         np.nan, columns=['F', 'N', 'D'], index=range(df.shape[0])
-#     )
-#     #endregion -----------------------------------------------------> Empty DF
-    
-#     #region ----------------------------------------------------------> Values
-#     N1 = len(col1)-1
-#     N2 = len(col2)-1
-#     var1 = df.iloc[:,col1].var(axis=1, skipna=True)
-#     var2 = df.iloc[:,col2].var(axis=1, skipna=True)
-#     F['F'] = np.where(var2 > var1, var2/var1, var1/var2)
-#     F['N'] = np.where(var2 > var1, N2, N1)
-#     F['D'] = np.where(var2 > var1, N1, N2)
-#     #endregion -------------------------------------------------------> Values
-    
-#     #region ---------------------------------------------------------> Fill DF
-#     #------------------------------> 
-#     dfO['f'] = F['F'].to_numpy()
-#     dfO['P'] = 2 * sStats.f.sf(F['F'], F['N'], F['D'])
-#     dfO['S'] = np.where(dfO['P'] < alpha, True, False)
-#     #------------------------------>
-#     if roundTo is not None:
-#         try:
-#             dfO[['f', 'P']] = dfO[['f', 'P']].round(int(roundTo))
-#         except Exception:
-#             pass
-#     else:
-#         pass
-#     #endregion ------------------------------------------------------> Fill DF
-    
-#     return dfO
-# #---
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Calculation will be performed for each row in the df. Each column in
+            the row is considered as a measurement.
+        col1: list[int]
+            Control columns
+        col2: list[int]
+            Experiment columns
+        alpha: float
+            Significance level
+        roundTo: int
+            Number of decimal places for the value of f and P in the output df.
+
+        Returns
+        -------
+        pd.DataFrame
+            With three columns ['f', 'P', 'S']
+
+        Notes
+        -----
+        - The test is conducted taking the greater variance in the numerator of
+            F and P as the two tail value.
+        - Invalid values in the input for roundTo are silently ignored and the 
+            df with full length values is returned. 
+    """
+    #region --------------------------------------------------------> Empty DF
+    dfO = pd.DataFrame(
+        np.nan, columns=['f', 'P', 'S'], index=range(df.shape[0]) # type: ignore
+    )
+    F = pd.DataFrame(
+        np.nan, columns=['F', 'N', 'D'], index=range(df.shape[0]) # type: ignore
+    )
+    #endregion -----------------------------------------------------> Empty DF
+
+    #region ----------------------------------------------------------> Values
+    N1 = len(col1)-1
+    N2 = len(col2)-1
+    var1 = df.iloc[:,col1].var(axis=1, skipna=True)
+    var2 = df.iloc[:,col2].var(axis=1, skipna=True)
+    F['F'] = np.where(var2 > var1, var2/var1, var1/var2)
+    F['N'] = np.where(var2 > var1, N2, N1)
+    F['D'] = np.where(var2 > var1, N1, N2)
+    #endregion -------------------------------------------------------> Values
+
+    #region ---------------------------------------------------------> Fill DF
+    #------------------------------> 
+    dfO['f'] = F['F'].to_numpy()
+    dfO['P'] = 2 * sStats.f.sf(F['F'], F['N'], F['D'])
+    dfO['S'] = np.where(dfO['P'] < alpha, True, False)
+    #------------------------------>
+    if roundTo is not None:
+        try:
+            dfO[['f', 'P']] = dfO[['f', 'P']].round(int(roundTo))
+        except Exception:
+            pass
+    else:
+        pass
+    #endregion ------------------------------------------------------> Fill DF
+
+    return dfO
+#---
 
 # def test_chi(df:pd.DataFrame, alpha:float, check5: bool=True) -> list:
 #     """
@@ -933,233 +848,217 @@ def DataImputation(
 #     return [1,chi] if chi[1] < alpha else [0, chi]
 # #---
 
-# def ttest_getP(
-#     t: 'pd.DataFrame', tdf: Union['pd.DataFrame', int], 
-#     test: Literal['ts', 's', 'l'],
-#     ) -> 'pd.DataFrame':
-#     """Get p value for a given t value.
+def Test_t_getP(
+    t: 'pd.DataFrame',
+    tdf: Union['pd.DataFrame', int],
+    test: Literal['ts', 's', 'l'],
+    ) -> 'pd.DataFrame':
+    """Get p value for a given t value.
 
-#         Parameters
-#         ----------
-#         t: pd.DataFrame
-#             Calculaed t values.
-#         tdf: pd.DataFrame or int
-#             Calculated degress of freedom
-#         test: str
-#             Type of t test. Default is 'ts'  
+        Parameters
+        ----------
+        t: pd.DataFrame
+            Calculated t values.
+        tdf: pd.DataFrame or int
+            Calculated degrees of freedom.
+        test: str
+            Type of t test. Default is 'ts'.
 
-#         Returns
-#         -------
-#         pd.DataFrame with the p values
+        Returns
+        -------
+        pd.DataFrame with the p values.
+    """
+    #region -----------------------------------------------------> Get P value
+    if test == 'ts':
+        return 2 * sStats.t.sf(np.abs(t), tdf)
+    elif test == 's':
+        return sStats.t.cdf(t, tdf) # type: ignore
+    elif test == 'l':
+        return sStats.t.sf(t, tdf) # type: ignore
+    else:
+        msg = mConfig.mNotImplemented.format(test)
+        raise mException.ExecutionError(msg)
+    #endregion --------------------------------------------------> Get P value
+#---
 
-#         Raise
-#         -----
-#         InputError:
-#             - When test is not one of 'ts', 's', 'l'
-#         ExecutionError:
-#             - when test is one of dtsConfig.oTTest but it is not implemented 
-#             yet.
-#     """
-#     #region -----------------------------------------------------> Get P value
-#     if test == 'ts':
-#         return 2 * sStats.t.sf(np.abs(t), tdf)
-#     elif test == 's':
-#         return sStats.t.cdf(t, tdf)
-#     elif test == 'l':
-#         return sStats.t.sf(t, tdf)
-#     else:
-#         msg = config.mNotImplemented.format(test)
-#         raise dtsException.ExecutionError(msg)
-#     #endregion --------------------------------------------------> Get P value
-# #---
+def Test_t_PS_DF(
+    df: 'pd.DataFrame',
+    col1: list[int],
+    col2: list[int],
+    value: float=0,
+    alpha: float=0.05,
+    roundTo: Optional[int]=None,
+    tType: Literal['ts','l','s']='ts',
+    delta: float = 0,
+    ) -> 'pd.DataFrame':
+    """Perform a t test for paired samples.
 
-# def ttest_PS_DF(
-#     df: 'pd.DataFrame', col1: list[int], col2: list[int], value: float=0,
-#     alpha: float=0.05, roundTo: Optional[int]=None, 
-#     tType: Literal['ts','l','s']='ts', delta: float = 0,
-#     ) -> 'pd.DataFrame':
-#     """Perform a t test for paired samples.
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Calculation will be performed for each row in the df. Each column in
+            the row is considered as a measurement.
+        col1: list[int]
+            Control columns
+        col2: list[int]
+            Experiment columns
+        value: float
+            Hypothetical value for the mean difference. Default is 0.
+        alpha: float
+            Significance level
+        roundTo: int
+            Number of decimal places for the value of t and P in the output df.
+        tType: str
+            Type of T test. One of 'ts','l','s'. Default is 'ts'
+        delta: float
+            For TOST equivalence test. Default is 0, regular T test.
 
-#         Parameters
-#         ----------
-#         df: pd.DataFrame
-#             Calculation will be performed for each row in the df. Each column in
-#             the row is considered as a measurement.
-            
-#             It is expected that df has no NA values.
-            
-#         col1: list[int]
-#             Control columns
-#         col2: list[int]
-#             Experiment columns
-#         value: float
-#             Hypothetical value for the mean difference. Default is 0.
-#         alpha: float
-#             Significance level
-#         roundTo: int
-#             Number of decimal places for the value of t and P in the output df.
-#         tType: str
-#             Type of T test. One of 'ts','l','s'. Default is 'ts'
-#         delta: float
-#             For TOST equivalence test. Default is 0, regular T test.
-            
-#         Returns
-#         -------
-#         pd.DataFrame
-#             With three columns ['t', 'P', 'S']
+        Returns
+        -------
+        pd.DataFrame
+            With three columns ['t', 'P', 'S']
 
-#         Raise
-#         -----
-#         InputError:
-#             - When col1 and col2 has different length
-#             - When col1 or col2 are not found in df
-#             - When alpha is not between 0 and 1
-        
-#         Notes
-#         -----
-#         - Invalid values in the input for roundTo are silently ignored and the 
-#             df with full length values is returned. 
-#         https://www.reneshbedre.com/blog/ttest.html
-#         https://www.datanovia.com/en/lessons/t-test-formula/
-#     """
-#     #region ----------------------------------------------------------> Values
-#     ndf = pd.DataFrame(
-#         df.iloc[:,col2].values - df.iloc[:,col1].values,
-#         columns=range(len(col1)),
-#     )
-#     #------------------------------> m, s, n, t
-#     m = ndf.mean(axis=1, skipna=True)
-#     s = ndf.std(axis=1, skipna=True)
-#     n = ndf.shape[1]
-#     t = (m-value-delta)/(s/np.sqrt(n))
-#     #endregion -------------------------------------------------------> Values
+        Notes
+        -----
+        - Invalid values in the input for roundTo are silently ignored and the 
+            df with full length values is returned. 
+        https://www.reneshbedre.com/blog/ttest.html
+        https://www.datanovia.com/en/lessons/t-test-formula/
+    """
+    #region ----------------------------------------------------------> Values
+    ndf = pd.DataFrame(
+        df.iloc[:,col2].values - df.iloc[:,col1].values,
+        columns=range(len(col1)),
+    )
+    #------------------------------> m, s, n, t
+    m = ndf.mean(axis=1, skipna=True)
+    s = ndf.std(axis=1, skipna=True)
+    n = ndf.shape[1]
+    t = (m-value-delta)/(s/np.sqrt(n))
+    #endregion -------------------------------------------------------> Values
     
-#     #region ----------------------------------------------------------> DF out
-#     #------------------------------> 
-#     dfO = pd.DataFrame(
-#         np.nan, columns=['t', 'P', 'S'], index=range(df.shape[0])
-#     )
-#     #------------------------------> 
-#     dfO['t'] = t.to_numpy()
-#     dfO['P'] = ttest_getP(t, n-1, tType)
-#     dfO['S'] = np.where(dfO["P"] < alpha, True, False)
-#     #------------------------------> 
-#     if roundTo is not None:
-#         try:
-#             dfO[['t', 'P']] = dfO[['t', 'P']].round(int(roundTo))
-#         except Exception:
-#             pass
-#     else:
-#         pass
-#     #endregion -------------------------------------------------------> DF out
+    #region ----------------------------------------------------------> DF out
+    #------------------------------> 
+    dfO = pd.DataFrame(
+        np.nan, columns=['t', 'P', 'S'], index=range(df.shape[0]) # type: ignore
+    )
+    #------------------------------> 
+    dfO['t'] = t.to_numpy()
+    dfO['P'] = Test_t_getP(t, n-1, tType)
+    dfO['S'] = np.where(dfO["P"] < alpha, True, False)
+    #------------------------------> 
+    if roundTo is not None:
+        try:
+            dfO[['t', 'P']] = dfO[['t', 'P']].round(int(roundTo))
+        except Exception:
+            pass
+    else:
+        pass
+    #endregion -------------------------------------------------------> DF out
 
-#     return dfO
-# #---
+    return dfO
+#---
 
-# def ttest_IS_DF(
-#     df: 'pd.DataFrame', col1: list[int], col2: list[int], 
-#     alpha:float=0.05, f:Literal[None, True, False]=None, 
-#     roundTo: Optional[int]=None, tType: Literal['ts', 'l', 's']='ts', 
-#     delta: float=0,
-#     ) -> 'pd.DataFrame':
-#     """Perform a t test for independent samples.
+def Test_t_IS_DF(
+    df: 'pd.DataFrame',
+    col1: list[int],
+    col2: list[int], 
+    alpha:float=0.05,
+    f:Literal[None, True, False]=None,
+    roundTo: Optional[int]=None,
+    tType: Literal['ts', 'l', 's']='ts',
+    delta: float=0,
+    ) -> 'pd.DataFrame':
+    """Perform a t test for independent samples.
 
-#         Parameters
-#         ----------
-#         df: pd.DataFrame
-#             Calculation will be performed for each row in the df. Each column in
-#             the row is considered as a measurement.
-            
-#             It is expected that df has no NA values.
-            
-#         col1: list[int]
-#             Control columns
-#         col2: list[int]
-#             Experiment columns
-#         alpha: float
-#             Significance level
-#         f: None, True, False
-#             Perform F-test (None) or assume result will be significant (True) or
-#             not (False)
-#         roundTo: int
-#             Number of decimal places for the value of t and P in the output df.
-#         delta: float
-#             For TOST equivalence test. Default is 0, regular T test.
-            
-#         Returns
-#         -------
-#         pd.DataFrame
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Calculation will be performed for each row in the df. Each column in
+            the row is considered as a measurement.
+        col1: list[int]
+            Control columns
+        col2: list[int]
+            Experiment columns
+        alpha: float
+            Significance level
+        f: None, True, False
+            Perform F-test (None) or assume result will be significant (True) or
+            not (False)
+        roundTo: int
+            Number of decimal places for the value of t and P in the output df.
+        tType: One of ts, l, s
+            Type of t test to perform.
+        delta: float
+            For TOST equivalence test. Default is 0, regular T test.
 
-#         Raise
-#         -----
-#         InputError:
-#             - When col1 or col2 are not found in df
-#             - When alpha is not a float between 0 and 1
-#             - When f is not a vlid option
-        
-#         Notes
-#         -----
-#         - Invalid values in the input for roundTo are silently ignored and the 
-#             df with full length values is returned. 
-#         - Further details
-#             https://www.reneshbedre.com/blog/ttest.html
-#             https://www.datanovia.com/en/lessons/t-test-formula/
-#     """
-#     #region ----------------------------------------------------------> Values
-#     #------------------------------> m, s, n
-#     m1 = df.iloc[:,col1].mean(axis=1, skipna=True)
-#     m2 = df.iloc[:,col2].mean(axis=1, skipna=True)
-#     var1 = df.iloc[:,col1].var(axis=1, skipna=True)
-#     var2 = df.iloc[:,col2].var(axis=1, skipna=True)
-#     n1 = len(col1)
-#     n2 = len(col2)
-#     dem = n1 + n2 - 2
-#     dfN = n1 + n2 - 1
-#     #------------------------------> F
-#     if f is None:
-#         F = ftest_DF(df, col1, col2, alpha)
-#     elif f:
-#         F = pd.DataFrame(
-#             df.shape[0]*[True], columns=['S'], index=range(df.shape[0])
-#         )
-#     else:
-#         F = pd.DataFrame(
-#             df.shape[0]*[False], columns=['S'], index=range(df.shape[0])
-#         )
-#     #------------------------------> t, ndf
-#     tt = np.where(
-#         F['S'], 
-#         (m2 - m1 - delta)/(np.sqrt((var1/n1)+(var2/n2))),
-#         (m2 - m1 - delta)/(np.sqrt((1/n1)+(1/n2))*np.sqrt(((n1-1)*var1+(n2-1)*var2)/(dem))),
-#     )
-#     tdf = np.where(
-#         F['S'],
-#         np.square((var1/n1)+(var2/n2))/(((var1*var1)/(n1*n1*(n1-1)))+((var2*var2)/(n2*n2*(n2-1)))),
-#         dfN,
-#     )
-#     #endregion -------------------------------------------------------> Values
+        Returns
+        -------
+        pd.DataFrame
+
+        Notes
+        -----
+        - Invalid values in the input for roundTo are silently ignored and the 
+            df with full length values is returned. 
+        - Further details
+            https://www.reneshbedre.com/blog/ttest.html
+            https://www.datanovia.com/en/lessons/t-test-formula/
+    """
+    #region ----------------------------------------------------------> Values
+    #------------------------------> m, s, n
+    m1 = df.iloc[:,col1].mean(axis=1, skipna=True)
+    m2 = df.iloc[:,col2].mean(axis=1, skipna=True)
+    var1 = df.iloc[:,col1].var(axis=1, skipna=True)
+    var2 = df.iloc[:,col2].var(axis=1, skipna=True)
+    n1 = len(col1)
+    n2 = len(col2)
+    dem = n1 + n2 - 2
+    dfN = n1 + n2 - 1
+    #------------------------------> F
+    if f is None:
+        F = Test_f_DF(df, col1, col2, alpha)
+    elif f:
+        F = pd.DataFrame(
+            df.shape[0]*[True], columns=['S'], index=range(df.shape[0])
+        )
+    else:
+        F = pd.DataFrame(
+            df.shape[0]*[False], columns=['S'], index=range(df.shape[0])
+        )
+    #------------------------------> t, ndf
+    tt = np.where(
+        F['S'], 
+        (m2 - m1 - delta)/(np.sqrt((var1/n1)+(var2/n2))),
+        (m2 - m1 - delta)/(np.sqrt((1/n1)+(1/n2))*np.sqrt(((n1-1)*var1+(n2-1)*var2)/(dem))),
+    )
+    tdf = np.where(
+        F['S'],
+        np.square((var1/n1)+(var2/n2))/(((var1*var1)/(n1*n1*(n1-1)))+((var2*var2)/(n2*n2*(n2-1)))),
+        dfN,
+    )
+    #endregion -------------------------------------------------------> Values
     
-#     #region ----------------------------------------------------------> DF Out
-#     #------------------------------> 
-#     dfO = pd.DataFrame(
-#         np.nan, columns=['t', 'P', 'S'], index=range(df.shape[0]),
-#     )
-#     #------------------------------> 
-#     dfO['t'] = tt
-#     dfO['P'] = ttest_getP(tt, tdf, tType)
-#     dfO['S'] = np.where(dfO["P"] < alpha, True, False)
-#     #------------------------------> 
-#     if roundTo is not None:
-#         try:
-#             dfO[['t', 'P']] = dfO[['t', 'P']].round(int(roundTo))
-#         except Exception:
-#             pass
-#     else:
-#         pass
-#     #endregion -------------------------------------------------------> DF Out
-    
-#     return dfO
-# #---
+    #region ----------------------------------------------------------> DF Out
+    #------------------------------> 
+    dfO = pd.DataFrame(
+        np.nan, columns=['t', 'P', 'S'], index=range(df.shape[0]), # type: ignore
+    )
+    #------------------------------> 
+    dfO['t'] = tt
+    dfO['P'] = Test_t_getP(tt, tdf, tType)
+    dfO['S'] = np.where(dfO["P"] < alpha, True, False)
+    #------------------------------> 
+    if roundTo is not None:
+        try:
+            dfO[['t', 'P']] = dfO[['t', 'P']].round(int(roundTo))
+        except Exception:
+            pass
+    else:
+        pass
+    #endregion -------------------------------------------------------> DF Out
+
+    return dfO
+#---
 
 # def tost(
 #     df: 'pd.DataFrame', col1: list[int], col2: list[int], 

@@ -429,8 +429,8 @@ litComp         = Literal['lt', 'le', 'e', 'ge', 'gt']
 
 
 #region -----------------------------------------------------> DF Column names
-# dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
-# dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
+dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
+dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
 # dfcolDataCheck = [
 #     'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
 # dfcolLimProtFirstPart = [
@@ -538,15 +538,15 @@ mResCtrl = (
     f"{mValueBad}Please use the {lBtnTypeResCtrl} button to provide a "
     f"correct input.")
 mResCtrlWin = ("Value '{}' cannot be accepted as input.\n"f"{mNZPlusNumText}")
-# mRepNum = ('The number of replicates in some experiments does not match '
-#     'the number of replicates in the control.')
-# mRepNumProtProf = ('To perform a Proteome Profiling analysis using Raw '
-#     'Intensities and Paired Samples the number of replicates in '
-#     'experiments and the corresponding control must be the '
-#     'same.\n\nThe number of replicates in the following '
-#     'experiments does not match the number of replicates in the '
-#     'corresponding control.\n{}'
-# )
+mRepNum = ('The number of replicates in some experiments does not match '
+    'the number of replicates in the control.')
+mRepNumProtProf = ('To perform a Proteome Profiling analysis using Raw '
+    'Intensities and Paired Samples the number of replicates in '
+    'experiments and the corresponding control must be the '
+    'same.\n\nThe number of replicates in the following '
+    'experiments does not match the number of replicates in the '
+    'corresponding control.\n{}'
+)
 mCtrlEmpty = 'None of the Control fields can be empty.'
 #endregion -------------------------------------------------> For CheckInput
 
@@ -590,7 +590,7 @@ mInvalidValue = "'{}' is an invalid value."
 # mPairSamplesDiffRep = (
 #     'For paired samples the number of replicates in {} and {} must be equal.')
 # m1IntGET = ('{} must be an integer greater/equal than/to {}.')
-# mNotImplemented = 'Option {} is not yet implemented.'
+mNotImplemented = 'Option {} is not yet implemented.'
 mNotSupported = "{} value '{}' is not supported."
 mEmpty = 'The field value cannot be empty.'
 #endregion ---------------------------------------------------------> Messages
