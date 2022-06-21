@@ -143,7 +143,7 @@ npProtProf              = 'ProtProfPane'
 npTarProt               = 'TarProtPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
 npResControlExpLimProt  = 'ResControlExpPaneLimProt'
-# npResControlExpTarProt  = 'ResControlExpPaneTarProt'
+npResControlExpTarProt  = 'ResControlExpPaneTarProt'
 npPrefUpdate            = 'PrefUpdate'
 #------------------------------> Modules
 nmLimProt  = 'Limited Proteolysis'
