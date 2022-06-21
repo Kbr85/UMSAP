@@ -5780,7 +5780,6 @@ class PaneTarProt(BaseConfPanelMod2):
     cLDFFirst  = mConfig.dfcolTarProtFirstPart
     cLDFSecond = mConfig.dfcolTarProtBLevel
     #------------------------------> Hint
-    # cHPDB   = 'Path to the PDB file or PDB ID'
     cHAAPos = 'e.g. 5'
     cHHist  = 'e.g. 50 or 50 100 200'
     #------------------------------> Tooltip
@@ -5789,11 +5788,6 @@ class PaneTarProt(BaseConfPanelMod2):
     cTTHist = (f'Size of the histogram windows. One number will result in '
         f'equally spaced windows. Multiple numbers allow defining custom sized '
         f'windows.\ne.g. 50 or 0 50 100 150 500{mConfig.mOptField}')
-    # #------------------------------> Size
-    # cSTc = (120, 22)
-    # #------------------------------> Extension
-    # cEPDB  = config.elPDB
-    # cESPDB = config.esPDB
     #------------------------------> Needed by BaseConfPanel
     cURL         = f"{mConfig.urlTutorial}/targeted-proteolysis"
     cSection     = mConfig.nmTarProt

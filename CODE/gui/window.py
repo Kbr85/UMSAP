@@ -42,7 +42,7 @@ import wx
 # import wx.richtext
 import wx.adv as adv
 import wx.lib.agw.aui as aui
-# import wx.lib.agw.customtreectrl as wxCT
+import wx.lib.agw.customtreectrl as wxCT
 import wx.lib.agw.hyperlink as hl
 
 import config.config as mConfig
@@ -51,7 +51,7 @@ import data.check as mCheck
 import data.method as mMethod
 import data.exception as mException
 import gui.menu as mMenu
-# import gui.method as method
+import gui.method as gMethod
 import gui.pane as mPane
 import gui.tab as mTab
 # import gui.window as window
@@ -10469,124 +10469,110 @@ class WindowMain(BaseWindow):
 #     #endregion -----------------------------------------------> Manage Methods
 # #---
 
-class WindowUMSAPControl(wx.Frame):
-    """"""
-    def __init__(self, fileP: Path, cParent: Optional[wx.Window]=None):
-        super().__init__()
+
+class WindowUMSAPControl(BaseWindow):
+    """Control for an umsap file. 
+
+        Parameters
+        ----------
+        fileP : Path
+            Path to the UMSAP file
+        cParent : wx.Window or None
+            Parent of the window.
+
+        Attributes
+        ----------
+        dPlotMethod : dict
+            Keys are section names and values the Window to plot the results
+        dSectionTab : dict
+            Keys are section names and values the corresponding config.name
+        rObj : file.UMSAPFile
+            Object to handle UMSAP files
+        rSection : dict
+            Keys are section names and values a reference to the object in the
+            tree control.
+        rWindow : list[wx.Window]
+            List of plot windows associated with this window.
+        rCopiedFilter: list
+            Copy of the List of applied filters in a ProtProfPlot Window
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.nwUMSAPControl
+    #------------------------------>
+    cSWindow = (400, 700)
+    #------------------------------>
+    cFileLabelCheck = ['Data']
+    # #------------------------------>
+    # dPlotMethod = { # Methods to create plot windows
+    #     config.nuCorrA   : CorrAPlot,
+    #     config.nuDataPrep: CheckDataPrep,
+    #     config.nmProtProf: ProtProfPlot,
+    #     config.nmLimProt : LimProtPlot, 
+    #     config.nmTarProt : TarProtPlot,
+    # }
+    # #------------------------------>
+    # dSectionTab = { # Section name and Tab name correlation
+    #     config.nuCorrA   : config.ntCorrA,
+    #     config.nuDataPrep: config.ntDataPrep,
+    #     config.nmProtProf: config.ntProtProf,
+    #     config.nmLimProt : config.ntLimProt,
+    #     config.nmTarProt : config.ntTarProt,
+    # }
+    # #------------------------------>
+    # cLSecSeqF = [config.nmLimProt, config.nmTarProt]
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, fileP: Path, parent: Optional[wx.Window]=None) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rObj = mFile.UMSAPFile(fileP)
+        #------------------------------>
+        self.cTitle = self.rObj.rFileP.name
+        self.rDataInitPath = self.rObj.rInputFileP
+        self.rDataStepPath = self.rObj.rStepDataP
+        #-------------->  Reference to section items in wxCT.CustomTreeCtrl
+        self.rSection = {}
+        #------------------------------> Reference to plot windows
+        self.rWindow = {}
+        #------------------------------> Copied Filters
+        self.rCopiedFilters = []
+        #------------------------------> 
+        super().__init__(parent=parent)
+        #------------------------------>
+        dKeyMethod = {
+            # config.klToolUMSAPCtrlAddDelExp: self.OnAddDelExport,
+            # config.klToolUMSAPCtrlAdd      : self.AddAnalysis,
+            # config.klToolUMSAPCtrlDel      : self.DeleteAnalysis,
+            # config.klToolUMSAPCtrlExp      : self.ExportAnalysis,
+            # config.klToolUMSAPCtrlReload   : self.UpdateFileContent,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wTrc = wxCT.CustomTreeCtrl(self)
+        self.wTrc.SetFont(mConfig.font['TreeItem'])
+        self.SetTree()
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.Sizer.Add(self.wTrc, 1, wx.EXPAND|wx.ALL, 5)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        # self.wTrc.Bind(wxCT.EVT_TREE_ITEM_CHECKING, self.OnCheckItem)
+        # self.wTrc.Bind(wxCT.EVT_TREE_ITEM_HYPERLINK, self.OnHyperLink)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
     #---
-#---
+    #endregion -----------------------------------------------> Instance setup
 
-# class UMSAPControl(BaseWindow):
-#     """Control for an umsap file. 
-
-#         Parameters
-#         ----------
-#         fileP : Path
-#             Path to the UMSAP file
-#         cParent : wx.Window or None
-#             Parent of the window.
-
-#         Attributes
-#         ----------
-#         dPlotMethod : dict
-#             Keys are section names and values the Window to plot the results
-#         dSectionTab : dict
-#             Keys are section names and values the corresponding config.name
-#         rObj : file.UMSAPFile
-#             Object to handle UMSAP files
-#         rSection : dict
-#             Keys are section names and values a reference to the object in the
-#             tree control.
-#         rWindow : list[wx.Window]
-#             List of plot windows associated with this window.
-#         rCopiedFilter: list
-#             Copy of the List of applied filters in a ProtProfPlot Window
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.nwUMSAPControl
-#     #------------------------------> 
-#     cSWindow = (400, 700)
-#     #------------------------------> 
-#     cFileLabelCheck = ['Data']
-#     #------------------------------> 
-#     dPlotMethod = { # Methods to create plot windows
-#         config.nuCorrA   : CorrAPlot,
-#         config.nuDataPrep: CheckDataPrep,
-#         config.nmProtProf: ProtProfPlot,
-#         config.nmLimProt : LimProtPlot, 
-#         config.nmTarProt : TarProtPlot,
-#     }
-#     #------------------------------> 
-#     dSectionTab = { # Section name and Tab name correlation
-#         config.nuCorrA   : config.ntCorrA,
-#         config.nuDataPrep: config.ntDataPrep,
-#         config.nmProtProf: config.ntProtProf,
-#         config.nmLimProt : config.ntLimProt,
-#         config.nmTarProt : config.ntTarProt,
-#     }
-#     #------------------------------> 
-#     cLSecSeqF = [config.nmLimProt, config.nmTarProt]
-#     #endregion --------------------------------------------------> Class setup
-
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, fileP: Path, cParent: Optional[wx.Window]=None) -> None:
-#         """ """
-#         #region -------------------------------------------------> Check Input
-        
-#         #endregion ----------------------------------------------> Check Input
-
-#         #region -----------------------------------------------> Initial Setup
-#         try:
-#             self.rObj = file.UMSAPFile(fileP)
-#         except Exception as e:
-#             raise e
-        
-#         self.cTitle = self.rObj.rFileP.name
-#         self.rDataInitPath = self.rObj.rFileP.parent / config.fnDataInit
-#         self.rDataStepPath = self.rObj.rFileP.parent / config.fnDataSteps
-#         #-------------->  Reference to section items in wxCT.CustomTreeCtrl
-#         self.rSection = {}
-#         #------------------------------> Reference to plot windows
-#         self.rWindow = {}
-#         #------------------------------> Copied Filters
-#         self.rCopiedFilters = []
-#         #------------------------------> 
-#         super().__init__(cParent=cParent)
-#         #------------------------------>
-#         dKeyMethod = {
-#             config.klToolUMSAPCtrlAddDelExp: self.OnAddDelExport,
-#             config.klToolUMSAPCtrlAdd      : self.AddAnalysis,
-#             config.klToolUMSAPCtrlDel      : self.DeleteAnalysis,
-#             config.klToolUMSAPCtrlExp      : self.ExportAnalysis,
-#             config.klToolUMSAPCtrlReload   : self.UpdateFileContent,
-#         }
-#         self.dKeyMethod = self.dKeyMethod | dKeyMethod
-#         #endregion --------------------------------------------> Initial Setup
-
-#         #region -----------------------------------------------------> Widgets
-#         self.wTrc = wxCT.CustomTreeCtrl(self)
-#         self.wTrc.SetFont(config.font['TreeItem'])
-#         self.SetTree()
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-#         self.Sizer.Add(self.wTrc, 1, wx.EXPAND|wx.ALL, 5)
-#         #endregion ---------------------------------------------------> Sizers
-
-#         #region --------------------------------------------------------> Bind
-#         self.wTrc.Bind(wxCT.EVT_TREE_ITEM_CHECKING, self.OnCheckItem)
-#         self.wTrc.Bind(wxCT.EVT_TREE_ITEM_HYPERLINK, self.OnHyperLink)
-#         #endregion -----------------------------------------------------> Bind
-
-#         #region ---------------------------------------------> Window position
-#         self.WinPos()
-#         self.Show()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #------------------------------> Class methods
-#     #region ---------------------------------------------------> Event Methods
+    #region ---------------------------------------------------> Event Methods
 #     def OnAddDelExport(self, mode) -> bool:
 #         """
     
@@ -11061,92 +11047,86 @@ class WindowUMSAPControl(wx.Frame):
         
 #         return True
 #     #---
-#     #endregion ------------------------------------------------> Event Methods
+    #endregion ------------------------------------------------> Event Methods
 
-#     #region --------------------------------------------------> Manage Methods
-#     def WinPos(self) -> bool:
-#         """Set the position on the screen and adjust the total number of
-#             shown windows
-            
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         info = method.GetDisplayInfo(self)
-#         #endregion ------------------------------------------------> Variables
-                
-#         #region ------------------------------------------------> Set Position
-#         self.SetPosition(pt=(
-#             info['D']['xo'] + info['W']['N']*self.cSDeltaWin,
-#             info['D']['yo'] + info['W']['N']*self.cSDeltaWin,
-#         ))
-#         #endregion ---------------------------------------------> Set Position
+    #region ---------------------------------------------------> Class Methods
+    def WinPos(self) -> bool:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
 
-#         #region ----------------------------------------------------> Update N
-#         config.winNumber[self.cName] = info['W']['N'] + 1
-#         #endregion -------------------------------------------------> Update N
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        info = gMethod.GetDisplayInfo(self)
+        #endregion ------------------------------------------------> Variables
 
-#         return True
-#     #---
+        #region ------------------------------------------------> Set Position
+        self.SetPosition(pt=(
+            info['D']['xo'] + info['W']['N']*self.cSDeltaWin,
+            info['D']['yo'] + info['W']['N']*self.cSDeltaWin,
+        ))
+        #endregion ---------------------------------------------> Set Position
 
-#     def SetTree(self) -> bool:
-#         """Set the elements of the wx.TreeCtrl 
-        
-#             Returns
-#             -------
-#             bool
-        
-#             Notes
-#             -----
-#             See data.file.UMSAPFile for the structure of obj.confTree.
-#         """
-#         #region ----------------------------------------------------> Add root
-#         root = self.wTrc.AddRoot(self.rObj.rFileP.name)
-#         #endregion -------------------------------------------------> Add root
-        
-#         #region ------------------------------------------------> Add elements
-#         for a, b in self.rObj.rData.items():
-#             #------------------------------> Add section node
-#             childa = self.wTrc.AppendItem(root, a, ct_type=1)
-#             #------------------------------> Keep reference
-#             self.rSection[a] = childa
-            
-#             for c, d in b.items():
-#                 #------------------------------> Add date node
-#                 childb = self.wTrc.AppendItem(childa, c)
-#                 self.wTrc.SetItemHyperText(childb, True)
+        #region ----------------------------------------------------> Update N
+        mConfig.winNumber[self.cName] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
 
-#                 for e, f in d['I'].items():
-#                     #------------------------------> Add date items
-#                     childc = self.wTrc.AppendItem(childb, f"{e}: {f}")
-#                     #------------------------------> Set font
-#                     if e.strip() in self.cFileLabelCheck:
-#                         fileP = self.rDataInitPath/f
-#                         if fileP.exists():
-#                             self.wTrc.SetItemFont(
-#                             childc, 
-#                             config.font['TreeItemDataFile']
-#                         )
-#                         else:
-#                             self.wTrc.SetItemFont(
-#                             childc, 
-#                             config.font['TreeItemDataFileFalse']
-#                         )
-#                     else:		
-#                         self.wTrc.SetItemFont(
-#                             childc, 
-#                             config.font['TreeItemDataFile']
-#                         )
-#         #endregion ---------------------------------------------> Add elements
-        
-#         #region -------------------------------------------------> Expand root
-#         self.wTrc.Expand(root)		
-#         #endregion ----------------------------------------------> Expand root
-        
-#         return True
-#     #---
-    
+        return True
+    #---
+
+    def SetTree(self) -> bool:
+        """Set the elements of the wx.TreeCtrl.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            See data.file.UMSAPFile for the structure of obj.confTree.
+        """
+        #region ----------------------------------------------------> Add root
+        root = self.wTrc.AddRoot(self.cTitle)
+        #endregion -------------------------------------------------> Add root
+
+        #region ------------------------------------------------> Add elements
+        for a, b in self.rObj.rData.items():
+            #------------------------------> Add section node
+            childa = self.wTrc.AppendItem(root, a, ct_type=1)
+            #------------------------------> Keep reference
+            self.rSection[a] = childa
+            #------------------------------>
+            for c, d in b.items():
+                #------------------------------> Add date node
+                childb = self.wTrc.AppendItem(childa, c)
+                self.wTrc.SetItemHyperText(childb, True)
+                #------------------------------>
+                for e, f in d['I'].items():
+                    #------------------------------> Add date items
+                    childc = self.wTrc.AppendItem(childb, f"{e}: {f}")
+                    #------------------------------> Set font
+                    if e.strip() in self.cFileLabelCheck:
+                        fileP = self.rDataInitPath/f
+                        if fileP.exists():
+                            self.wTrc.SetItemFont(
+                                childc, mConfig.font['TreeItemDataFile'])
+                        else:
+                            self.wTrc.SetItemFont(
+                                childc, mConfig.font['TreeItemDataFileFalse'])
+                    else:
+                        self.wTrc.SetItemFont(
+                            childc, mConfig.font['TreeItemDataFile'])
+        #endregion ---------------------------------------------> Add elements
+
+        #region -------------------------------------------------> Expand root
+        self.wTrc.Expand(root)
+        #endregion ----------------------------------------------> Expand root
+
+        return True
+    #---
+
 #     def UnCheckSection(self, sectionName: str, win: wx.Window) -> bool:
 #         """Method to uncheck a section when the plot window is closed by the 
 #             user
@@ -11221,9 +11201,9 @@ class WindowUMSAPControl(wx.Frame):
 
 #         return True
 #     #---
-#     #endregion -----------------------------------------------> Manage Methods
+    #endregion -----------------------------------------------> Manage Methods
 
-#     #region -----------------------------------------------------> Get Methods
+    #region -----------------------------------------------------> Get Methods
 #     def GetCheckedSection(self) -> list[str]:
 #         """Get a list with the name of all checked sections 
         
@@ -11233,8 +11213,8 @@ class WindowUMSAPControl(wx.Frame):
 #         """
 #         return [k for k, v in self.rSection.items() if v.IsChecked()]
 #     #---
-#     #endregion --------------------------------------------------> Get Methods
-# #---
+    #endregion --------------------------------------------------> Get Methods
+#---
 
 
 # class UMSAPAddDelExport(dtsWindow.OkCancel):

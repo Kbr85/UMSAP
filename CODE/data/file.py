@@ -580,81 +580,73 @@ class FastaFile():
 #---
 
 
+class UMSAPFile():
+    """Load an UMSAP file.
 
+        Parameters
+        ----------
+        rFileP : Path
+            Path to the UMSAP file
 
-# class UMSAPFile():
-#     """Load an UMSAP file.
-
-#         Parameters
-#         ----------
-#         rFileP : Path
-#             Path to the UMSAP file
-
-#         Attributes
-#         ----------
-#         cName : str
-#             Unique name of the class
-#         dConfigure : dict
-#             Configure methods. Keys are the section names as read from the file
-#         rConfData : dict
-#             Configured data. Data from the umsap file is checked and converted 
-#             to the proper python types. See Notes for the structure of the dict.
-#         rConfTree : dict
-#             Nodes to show in the wx.TreeCtrl of the control window. 
-#             See Notes for the structure of the dict.    
-#         rData : dict
-#             Data read from json formatted file
-#         rFileP : Path
-#             Path to the UMSAP file
+        Attributes
+        ----------
+        cName : str
+            Unique name of the class
+        dConfigure : dict
+            Configure methods. Keys are the section names as read from the file
+        rConfData : dict
+            Configured data. Data from the umsap file is checked and converted 
+            to the proper python types. See Notes for the structure of the dict.
+        rConfTree : dict
+            Nodes to show in the wx.TreeCtrl of the control window. 
+            See Notes for the structure of the dict.    
+        rData : dict
+            Data read from json formatted file
+        rFileP : Path
+            Path to the UMSAP file
         
-#         Raises
-#         ------
-#         InputError
-#             - When fileP cannot be read.
-#         ExecutionError
-#             - When a requested section is not found in the file (GetSectionData)
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = 'UMSAPFile'
-#     SeqF = [config.nmTarProt, config.nmLimProt]
-#     #endregion --------------------------------------------------> Class setup
+        Raises
+        ------
+        InputError
+            - When fileP cannot be read.
+        ExecutionError
+            - When a requested section is not found in the file (GetSectionData)
+    """
+    #region -----------------------------------------------------> Class setup
+    # SeqF = [config.nmTarProt, config.nmLimProt]
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, rFileP: Path) -> None:
-#         """ """
-#         #region -------------------------------------------------> Check Input
-#         try:
-#             #------------------------------> Read File
-#             data = dtsFF.ReadJSON(rFileP)
-#             #------------------------------> Sort Keys
-#             dataKey = sorted([x for x in data.keys()])
-#             #------------------------------> 
-#             self.rData = {}
-#             for k in dataKey:
-#                 self.rData[k] = data[k]
-#         except Exception:
-#             raise dtsException.InputError(config.mFileRead.format(self.rFileP))
-#         #endregion ----------------------------------------------> Check Input
-        
-#         #region ---------------------------------------------------> Variables
-#         self.rFileP = Path(rFileP)
-#         self.rStepDataP  = self.rFileP.parent / config.fnDataSteps
-#         self.rInputFileP = self.rFileP.parent / config.fnDataInit
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, fileP: Path) -> None:
+        """ """
+        #region ---------------------------------------------------> Read File
+        data = ReadJSON(fileP)
+        #------------------------------> Sort Keys
+        dataKey = sorted([x for x in data.keys()])
+        #------------------------------> 
+        self.rData = {}
+        for k in dataKey:
+            self.rData[k] = data[k]
+        #endregion ------------------------------------------------> Read File
 
-#         self.dConfigure = {# Configure methods. Keys are the section names as
-#                            # read from the file
-#             config.nuCorrA   : self.ConfigureDataCorrA,
-#             config.nuDataPrep: self.ConfigureDataCheckDataPrep,
-#             config.nmProtProf: self.ConfigureDataProtProf,
-#             config.nmLimProt : self.ConfigureDataLimProt,
-#             config.nmTarProt : self.ConfigureDataTarProt,
-#         }
-#         #endregion ------------------------------------------------> Variables
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region ---------------------------------------------------> Variables
+        self.rFileP = Path(fileP)
+        self.rStepDataP  = self.rFileP.parent / mConfig.fnDataSteps
+        self.rInputFileP = self.rFileP.parent / mConfig.fnDataInit
 
-#     #------------------------------>  Class methods
-#     #region ---------------------------------------------------> 
+        self.dConfigure = {# Configure methods. Keys are the section names as
+                           # read from the file
+            # config.nuCorrA   : self.ConfigureDataCorrA,
+            # config.nuDataPrep: self.ConfigureDataCheckDataPrep,
+            # config.nmProtProf: self.ConfigureDataProtProf,
+            # config.nmLimProt : self.ConfigureDataLimProt,
+            # config.nmTarProt : self.ConfigureDataTarProt,
+        }
+        #endregion ------------------------------------------------> Variables
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ----------------------------------------------------> Class Method
 #     def Save(self, tPath: Union[None, str, Path]=None) -> bool:
 #         """Save the file content
     
@@ -685,9 +677,9 @@ class FastaFile():
 
 #         return True
 #     #---
-#     #endregion ------------------------------------------------> 
+    #endregion -------------------------------------------------> Class Method
     
-#     #region -------------------------------------------------------> Configure
+    #region -------------------------------------------------------> Configure
 #     def ConfigureDataCorrA(self) -> dict:
 #         """Configure a Correlation Analysis section	
         
@@ -970,9 +962,9 @@ class FastaFile():
         
 #         return plotData
 #     #---
-#     #endregion ----------------------------------------------------> Configure
+    #endregion ----------------------------------------------------> Configure
     
-#     #region -----------------------------------------------------> Get Methods
+    #region -----------------------------------------------------> Get Methods
 #     def GetSectionCount(self) -> int:
 #         """Get the total number of sections in file
 
@@ -1320,8 +1312,8 @@ class FastaFile():
                 
 #         return inputF
 #     #---
-#     #endregion --------------------------------------------------> Get Methods
-# #---
+    #endregion --------------------------------------------------> Get Methods
+#---
 #endregion ----------------------------------------------------------> Classes
 
 

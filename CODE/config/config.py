@@ -108,7 +108,7 @@ winUMSAP = {}
 nwDef = 'Untitled Window'
 #------------------------------> Windows
 nwMain          = 'Analysis Setup'
-# nwUMSAPControl  = 'UMSAPControl'
+nwUMSAPControl  = 'UMSAP Control'
 # nwCorrAPlot     = 'CorrAPlot'
 # nwProtProf      = 'ProtProfPlot'
 # nwLimProt       = 'LimProtPlot'

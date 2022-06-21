@@ -22,7 +22,7 @@ import wx
 
 import config.config as mConfig
 import gui.window as mWindow
-import gui.method as mMethod
+import gui.method as gMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -850,7 +850,7 @@ class MenuUtility(BaseMenu):
         #endregion ------------------------------------------------> Get fileP
 
         #region ---------------------------------------------------> Load file
-        mMethod.LoadUMSAPFile(fileP=fileP)
+        gMethod.LoadUMSAPFile(fileP=fileP)
         #endregion ------------------------------------------------> Load file
 
         dlg.Destroy()
