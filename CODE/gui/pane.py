@@ -7348,6 +7348,21 @@ class PaneResControlExpConfLimProt(BaseResControlExpConf):
 
         return True
     #---
+
+    def OnOK(self) -> bool:
+        """Check wx.Dialog content and send values to topParent.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Super
+        if super().OnOK()[0]:
+            return True
+        else:
+            return False
+        #endregion ------------------------------------------------> Super
+    #---
     #endregion ------------------------------------------------> Event Methods
 #---
 
