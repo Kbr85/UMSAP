@@ -431,11 +431,9 @@ litComp         = Literal['lt', 'le', 'e', 'ge', 'gt']
 #region -----------------------------------------------------> DF Column names
 dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
 dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
-# dfcolDataCheck = [
-#     'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
-# dfcolLimProtFirstPart = [
-#     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
-# dfcolLimProtCLevel = ['Ptost']
+dfcolLimProtFirstPart = [
+    'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
+dfcolLimProtCLevel = ['P']
 # dfcolTarProtFirstPart = [
 #     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 # dfcolTarProtBLevel = ['Int', 'P']

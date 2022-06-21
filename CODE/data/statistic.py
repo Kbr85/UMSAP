@@ -559,6 +559,7 @@ def _CI_Mean_Diff_DF_True(
     return dfO
 #---
 
+
 def _CI_Mean_Diff_DF_False(
     df: 'pd.DataFrame',
     col1: list[int],
@@ -610,10 +611,12 @@ def _CI_Mean_Diff_DF_False(
     return CI_Mean_DF(ndf, alpha, fullCI=fullCI, roundN=roundN)
 #---
 
+
 CI_MEAN_DIFF = {
     True : _CI_Mean_Diff_DF_True,
     False: _CI_Mean_Diff_DF_False,
 }
+
 
 def CI_Mean_Diff_DF(
     df: 'pd.DataFrame',
@@ -667,6 +670,7 @@ def CI_Mean_Diff_DF(
         raise e
     #endregion ----------------------------------------------------> Calculate
 #---
+
 
 def CI_Mean_DF(
     df: 'pd.DataFrame',
@@ -848,6 +852,7 @@ def Test_f_DF(
 #     return [1,chi] if chi[1] < alpha else [0, chi]
 # #---
 
+
 def Test_t_getP(
     t: 'pd.DataFrame',
     tdf: Union['pd.DataFrame', int],
@@ -880,6 +885,7 @@ def Test_t_getP(
         raise mException.ExecutionError(msg)
     #endregion --------------------------------------------------> Get P value
 #---
+
 
 def Test_t_PS_DF(
     df: 'pd.DataFrame',
@@ -958,6 +964,7 @@ def Test_t_PS_DF(
 
     return dfO
 #---
+
 
 def Test_t_IS_DF(
     df: 'pd.DataFrame',
@@ -1060,116 +1067,157 @@ def Test_t_IS_DF(
     return dfO
 #---
 
-# def tost(
-#     df: 'pd.DataFrame', col1: list[int], col2: list[int], 
-#     sample: Literal['p', 'i'], f:Literal[None, True, False]=None, 
-#     delta: Optional['pd.DataFrame']=None, alpha: Optional[float]=None, 
-#     beta: Optional[float]=None, gamma: Optional[float]=None, 
-#     d: Optional[float]=None, deltaMax: Optional[float]=None,
-#     ) -> 'pd.DataFrame':
-#     """
 
-#         Parameters
-#         ----------
-        
+def Test_tost(
+    df: 'pd.DataFrame',
+    col1: list[int],
+    col2: list[int],
+    sample: Literal['p', 'i'],
+    f:Literal[None, True, False]=None,
+    delta: Optional['pd.DataFrame']=None,
+    alpha: float=0.05,
+    beta: float=0.05,
+    gamma: float=0.80,
+    d: float=0,
+    deltaMax: Optional[float]=None,
+    ) -> 'pd.DataFrame':
+    """
 
-#         Returns
-#         -------
-#         pd.DataFrame
-#             Columns in the df are:
-#             P t1, p1, s1, t2, p2, s2
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame with data.
+        col1: list[int]
+            Column numbers if df for control
+        col2: list[int]
+            Column numbers in df for experiment
+        sample: One of 'p' or 'i'
+            Paired or Independent samples.
+        f: Bool or None
+            Performed an F test or not
+        delta: pd.DataFrame
+            Delta value for peptides in df.
+        alpha: float
+            Alpha level
+        beta: float
+            Beta level
+        gamma: float
+            Gamma level
+        d: float
+            Absolute difference. Default to 0.
+        deltaMax: float
+            Maximum value for delta.
 
-#         Raise
-#         -----
-    
-#     """
-#     #region --------------------------------------------------------> Empty df
-#     dfo = pd.DataFrame(
-#         np.nan, 
-#         columns=['P','t1', 'p1', 's1', 't2', 'p2', 's2'], 
-#         index=range(df.shape[0])
-#     )
-#     #endregion -----------------------------------------------------> Empty df
-    
-#     #region -----------------------------------------------------------> Delta
-#     if delta is not None:
-#         tDelta = delta
-#     else:
-#         try:
-#             tDelta = tost_delta(
-#                 df.iloc[:,col1], alpha, beta, gamma, d=d, deltaMax=deltaMax)
-#         except Exception as e:
-#             raise e
-#     #endregion --------------------------------------------------------> Delta
+        Returns
+        -------
+        pd.DataFrame
+            Columns in the df are:
+            P t1, p1, s1, t2, p2, s2
 
-#     #region ----------------------------------------------------------> T test
-#     if sample == 'p':
-#         dfo.loc[:,['t1', 'p1', 's1']] = ttest_PS_DF(
-#             df, col1, col2, delta=-tDelta, alpha=alpha, tType='l').to_numpy()
-#         dfo.loc[:,['t2', 'p2', 's2']] = ttest_PS_DF(
-#             df, col1, col2, delta=tDelta, alpha=alpha, tType='s').to_numpy()
-#     else:
-#         dfo.loc[:,['t1', 'p1', 's1']] = ttest_IS_DF(
-#             df, col1, col2, delta=-tDelta, alpha=alpha, f=f, tType='l'
-#         ).to_numpy()
-#         dfo.loc[:,['t2', 'p2', 's2']] = ttest_IS_DF(
-#             df, col1, col2, delta=tDelta, alpha=alpha, f=f, tType='s'
-#         ).to_numpy()
-#     #endregion -------------------------------------------------------> T test
-    
-#     #region ---------------------------------------------------------------> P
-#     dfo['P'] = np.where(dfo['p1'] > dfo['p2'], dfo['p1'], dfo['p2'])
-#     #endregion ------------------------------------------------------------> P
-    
-#     return dfo
-# #---
+        Notes
+        -----
+        https://pubs.acs.org/doi/pdf/10.1021/ac053390m
+    """
+    #region --------------------------------------------------------> Empty df
+    dfo = pd.DataFrame(
+        np.nan, # type: ignore
+        columns=['P','t1', 'p1', 's1', 't2', 'p2', 's2'], 
+        index=range(df.shape[0])
+    )
+    #endregion -----------------------------------------------------> Empty df
 
-# def tost_delta(
-#     df: 'pd.DataFrame', alpha: float, beta: float, gamma: float, d: float=0, 
-#     deltaMax: Optional[float]=None,
-#     ) -> Union['pd.Series', 'np.ndarray']:
-#     """Calculate 
-    
-#         See Notes below for more details
+    #region -----------------------------------------------------------> Delta
+    if delta is not None:
+        tDelta = delta
+    else:
+        try:
+            tDelta = Test_tost_delta(
+                df.iloc[:,col1], alpha, beta, gamma, d=d, deltaMax=deltaMax)
+        except Exception as e:
+            raise e
+    #endregion --------------------------------------------------------> Delta
 
-#         Parameters
-#         ----------
-        
+    #region ----------------------------------------------------------> T test
+    if sample == 'p':
+        dfo.loc[:,['t1', 'p1', 's1']] = Test_t_PS_DF(
+            df, col1, col2, delta=-tDelta, alpha=alpha, tType='l').to_numpy() # type: ignore
+        dfo.loc[:,['t2', 'p2', 's2']] = Test_t_PS_DF(
+            df, col1, col2, delta=tDelta, alpha=alpha, tType='s').to_numpy() # type: ignore
+    else:
+        dfo.loc[:,['t1', 'p1', 's1']] = Test_t_IS_DF(
+            df, col1, col2, delta=-tDelta, alpha=alpha, f=f, tType='l' # type: ignore
+        ).to_numpy()
+        dfo.loc[:,['t2', 'p2', 's2']] = Test_t_IS_DF(
+            df, col1, col2, delta=tDelta, alpha=alpha, f=f, tType='s' # type: ignore
+        ).to_numpy()
+    #endregion -------------------------------------------------------> T test
 
-#         Returns
-#         -------
-        
+    #region ---------------------------------------------------------------> P
+    dfo['P'] = np.where(dfo['p1'] > dfo['p2'], dfo['p1'], dfo['p2'])
+    #endregion ------------------------------------------------------------> P
 
-#         Raise
-#         -----
-        
-#         Notes
-#         -----
-#         Delta is calculated according to:
-#         https://pubs.acs.org/doi/pdf/10.1021/ac053390m
-#     """
-#     #region -------------------------------------------------------> Variables
-#     s = df.std(axis=1)
-#     n = df.shape[1]
-#     chi2 = sStats.chi2.ppf(1-gamma, (n-1))
-#     #------------------------------> 
-#     sCorr = s * np.sqrt((n-1)/chi2)
-#     #------------------------------> 
-#     ta1 = sStats.t.ppf(1 - alpha, 2*n - 2)
-#     tb1 = sStats.t.ppf(1 - beta/2, 2*n -2)
-#     #------------------------------> 
-#     delta = d + sCorr * (ta1 + tb1) * np.sqrt(2/n)
-#     #endregion ----------------------------------------------------> Variables
-    
-#     #region --------------------------------------------------> Check deltaMax
-#     if deltaMax is not None:
-#         delta = np.where(delta > deltaMax, deltaMax, delta)
-#     else:
-#         pass
-#     #endregion -----------------------------------------------> Check deltaMax
-    
-#     return delta
-# #---
+    return dfo
+#---
+
+
+def Test_tost_delta(
+    df: Union['pd.DataFrame', 'pd.Series'],
+    alpha: float,
+    beta: float,
+    gamma: float,
+    d: float=0, 
+    deltaMax: Optional[float]=None,
+    ) -> pd.Series:
+    """Calculate the delta values for a TOST test.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame with the values.
+        alpha: float
+            Alpha level.
+        beta: float
+            Beta level.
+        gamma: float
+            Gamma level.
+        d: float
+            Absolute difference. Default is 0.
+        deltaMax: float or None
+            Maximum allowed value for delta.
+
+        Returns
+        -------
+        pd.Series
+            Delta value for all peptides in df.
+
+        Notes
+        -----
+        Delta is calculated according to:
+        https://pubs.acs.org/doi/pdf/10.1021/ac053390m
+    """
+    #region -------------------------------------------------------> Variables
+    s = df.std(axis=1)
+    n = df.shape[1]
+    chi2 = sStats.chi2.ppf(1-gamma, (n-1))
+    #------------------------------> 
+    sCorr = s * np.sqrt((n-1)/chi2)
+    #------------------------------> 
+    ta1 = sStats.t.ppf(1 - alpha, 2*n - 2)
+    tb1 = sStats.t.ppf(1 - beta/2, 2*n -2)
+    #------------------------------> 
+    delta = d + sCorr * (ta1 + tb1) * np.sqrt(2/n)
+    #endregion ----------------------------------------------------> Variables
+
+    #region --------------------------------------------------> Check deltaMax
+    if deltaMax is not None:
+        delta = np.where(delta > deltaMax, deltaMax, delta)
+    else:
+        pass
+    #endregion -----------------------------------------------> Check deltaMax
+
+    return delta
+#---
+
 
 # def test_slope(df: 'pd.DataFrame', nL: Optional[list[int]]=None) -> list[float]:
 #     """Perform a Test for Homogeneity of Regression.
