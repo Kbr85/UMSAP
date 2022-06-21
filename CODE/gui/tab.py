@@ -53,7 +53,7 @@ class BaseConfTab(wx.Panel):
         mConfig.ntDataPrep: mPane.PaneDataPrep,
         mConfig.ntLimProt : mPane.PaneLimProt,
         mConfig.ntProtProf: mPane.PaneProtProf,
-        # mConfig.ntTarProt : mPane.PaneTarProt,
+        mConfig.ntTarProt : mPane.PaneTarProt,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -190,7 +190,7 @@ class ResControlExp(wx.Panel):
     dWidget = {
         mConfig.npProtProf : mPane.PaneResControlExpConfProtProf,
         mConfig.npLimProt  : mPane.PaneResControlExpConfLimProt,
-        # config.npTarProt  : pane.TarProtResControlExp,
+        # mConfig.npTarProt  : mPane.PaneResControlExpConfTarProt,
     }
     #endregion --------------------------------------------------> Class setup
 

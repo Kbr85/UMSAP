@@ -1856,7 +1856,7 @@ class WindowMain(BaseWindow):
         mConfig.ntDataPrep: mTab.BaseConfListTab,
         mConfig.ntLimProt : mTab.BaseConfListTab,
         mConfig.ntProtProf: mTab.BaseConfListTab,
-        # mConfig.ntTarProt : mTab.BaseConfListTab,
+        mConfig.ntTarProt : mTab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup
 

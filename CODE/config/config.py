@@ -279,7 +279,7 @@ lStProtProfCond = 'Conditions'
 lStProtProfRP   = 'Relevant Points'
 lStLimProtLane  = 'Lanes'
 lStLimProtBand  = 'Bands' 
-# lStTarProtExp   = 'Experiments'
+lStTarProtExp   = 'Experiments'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'
 #------------------------------> wx.StaticText

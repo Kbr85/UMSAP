@@ -1196,7 +1196,7 @@ def Test_tost_delta(
         https://pubs.acs.org/doi/pdf/10.1021/ac053390m
     """
     #region -------------------------------------------------------> Variables
-    s = df.std(axis=1)
+    s = df.std(axis=1) # type: ignore
     n = df.shape[1]
     chi2 = sStats.chi2.ppf(1-gamma, (n-1))
     #------------------------------> 
