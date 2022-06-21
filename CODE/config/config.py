@@ -434,9 +434,9 @@ dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
 dfcolLimProtFirstPart = [
     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
 dfcolLimProtCLevel = ['P']
-# dfcolTarProtFirstPart = [
-#     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
-# dfcolTarProtBLevel = ['Int', 'P']
+dfcolTarProtFirstPart = [
+    'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
+dfcolTarProtBLevel = ['Int', 'P']
 # dfcolSeqNC = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 #endregion --------------------------------------------------> DF Column names
 
@@ -444,19 +444,19 @@ dfcolLimProtCLevel = ['P']
 #region -----------------------------------------------------> Important Lists
 ltDPKeys = ['dfF', 'dfT', 'dfN', 'dfIm']
 
-# lAA1 = [ # AA one letter codes
-#     'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
-#     'H', 'S', 'T', 'N', 'G', 'P'
-# ]
+lAA1 = [ # AA one letter codes
+    'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
+    'H', 'S', 'T', 'N', 'G', 'P'
+]
 
-# lAAGroups = [ # AA groups
-#     ['A', 'I', 'L', 'V', 'M'], 
-#     ['F', 'W', 'Y'], 
-#     ['R', 'K'], 
-#     ['D', 'E'],
-#     ['C', 'Q', 'H', 'S', 'T', 'N'], 
-#     ['G', 'P']
-# ]
+lAAGroups = [ # AA groups
+    ['A', 'I', 'L', 'V', 'M'], 
+    ['F', 'W', 'Y'], 
+    ['R', 'K'], 
+    ['D', 'E'],
+    ['C', 'Q', 'H', 'S', 'T', 'N'], 
+    ['G', 'P']
+]
 
 # oAA3toAA = { # Three to one AA code translation
 #     'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D', 

@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
-# from collections import namedtuple
+from collections import namedtuple
 import shutil
 from pathlib import Path
 from typing import Union, Optional
@@ -1613,6 +1613,8 @@ class BaseConfPanelMod(BaseConfPanel, mWidget.ResControl):
         self.cTTDetectedProt = getattr(
             self, 'cTTDetectedProtL', ('Set the column number containing the '
                                        'detected proteins.\ne.g. 7'))
+        self.rLLenLongest = getattr(
+            self, 'rLLenLongest', len(mConfig.lStResultCtrlS))
         #------------------------------> Parent class init
         BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
 
@@ -4919,7 +4921,6 @@ class PaneLimProt(BaseConfPanelMod2):
     cSection     = mConfig.nmLimProt
     cTitlePD     = f"Running {mConfig.nmLimProt} Analysis"
     cGaugePD     = 44
-    rLLenLongest = len(mConfig.lStResultCtrlS)
     rMainData    = '{}_{}-LimitedProteolysis-Data.txt'
     #------------------------------> Optional configuration
     cTTHelp = mConfig.ttBtnHelp.format(cURL)
@@ -5655,19 +5656,14 @@ class PaneTarProt(BaseConfPanelMod2):
 
         Parameters
         ----------
-        cParent: wx.Widget
+        parent: wx.Widget
             Parent of the pane
-        cDataI : dict or None
+        dataI : dict or None
             Initial data provided by the user in a previous analysis.
             This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
 
         Attributes
         ----------
-        rChangeKey: list of str
-            Keys in self.rDO that must be turned to str.
-        rCheckUserInput : dict
-            To check the user input in the right order. 
-            See pane.BaseConfPanel.CheckInput for a description of the dict.
         rDI: dict
             Dictionary with the user input. Keys are labels in the panel plus:
             {
@@ -5685,6 +5681,8 @@ class PaneTarProt(BaseConfPanelMod2):
                 "TransMethod": "Transformation method",
                 "NormMethod" : "Normalization method",
                 "ImpMethod"  : "Imputation method",
+                "Shift"      : float,
+                "Width"      : float,
                 "TargetProt" : "Target Protein",
                 "ScoreVal"   : "Score value threshold",
                 "Alpha"      : "Significance level",
@@ -5699,6 +5697,7 @@ class PaneTarProt(BaseConfPanelMod2):
                     "ScoreCol"     : Score column,
                     "ResCtrl"      : [List of columns containing the control and 
                         experiments column numbers],
+                    "ColumnF"      : [Flat list with float columns],
                     "Column"       : [Flat list of all column numbers with the 
                               following order: SeqCol, TargetProtCol, 
                               ScoreColRes & Control]
@@ -5725,17 +5724,11 @@ class PaneTarProt(BaseConfPanelMod2):
         rLbDict: dict
             Contains information about the Res - Ctrl e.g.
             {
-                1        : ['Exp1', 'Exp1'],
+                0        : ['Exp1', 'Exp1'],
                 'Control': ['TheControl'],
             }
-        rLLenLongest: int
-            Number of characters in the longest label.
-        rMainData : str
-            Name of the file containing the results of the analysis in the 
-            step folder
-        
         See Parent classes for more attributes.
-        
+
         Notes
         -----
         Running the analysis results in the creation of:
@@ -5744,14 +5737,14 @@ class PaneTarProt(BaseConfPanelMod2):
             - Input_Data_Files/
             - Steps_Data_Files/20220104-214055_Targeted Proteolysis/
             - output-file.umsap
-        
+
         The Input_Data_Files folder contains the original data files. These are 
         needed for data visualization, running analysis again with different 
         parameters, etc.
         The Steps_Data_Files/Date-Section folder contains regular csv files with 
         the step by step data.
-    
-        The Targeted Proteolysis section in output-file.umsap conteins the 
+
+        The Targeted Proteolysis section in output-file.umsap contains the 
         information about the calculations, e.g
 
         {
@@ -5771,9 +5764,9 @@ class PaneTarProt(BaseConfPanelMod2):
                 }
             }
         }
-        
+
         The result data frame has the following structure:
-        
+
         Sequence Score Nterm Cterm NtermF CtermF Exp1, Exp1,..., ExpN, ExpN
         Sequence Score Nterm Cterm NtermF CtermF IntL,    P,..., IntL, P
     """
@@ -5784,8 +5777,8 @@ class PaneTarProt(BaseConfPanelMod2):
     cLHist     = 'Histogram Windows'
     cLExp      = mConfig.lStTarProtExp
     cLCtrlName = mConfig.lStCtrlName
-    # cLDFFirst  = config.dfcolTarProtFirstPart
-    # cLDFSecond = config.dfcolTarProtBLevel
+    cLDFFirst  = mConfig.dfcolTarProtFirstPart
+    cLDFSecond = mConfig.dfcolTarProtBLevel
     #------------------------------> Hint
     # cHPDB   = 'Path to the PDB file or PDB ID'
     cHAAPos = 'e.g. 5'
@@ -5803,11 +5796,10 @@ class PaneTarProt(BaseConfPanelMod2):
     # cESPDB = config.esPDB
     #------------------------------> Needed by BaseConfPanel
     cURL         = f"{mConfig.urlTutorial}/targeted-proteolysis"
-    # cSection     = config.nmTarProt
-    # cTitlePD     = f"Running {config.nmTarProt} Analysis"
-    # cGaugePD     = 60
-    # rLLenLongest = len(config.lStResultCtrlS)
-    # rMainData    = '{}_{}-TargetedProteolysis-Data.txt'
+    cSection     = mConfig.nmTarProt
+    cTitlePD     = f"Running {mConfig.nmTarProt} Analysis"
+    cGaugePD     = 60
+    rMainData    = '{}_{}-TargetedProteolysis-Data.txt'
     #------------------------------> Optional configuration
     cTTHelp = mConfig.ttBtnHelp.format(cURL)
     #endregion --------------------------------------------------> Class setup
@@ -6045,500 +6037,500 @@ class PaneTarProt(BaseConfPanelMod2):
 
         return True
     #---
+
+    def EmptyDFR(self) -> 'pd.DataFrame':
+        """Creates the empty df for the results.
+
+            Returns
+            -------
+            pd.DataFrame
+        """
+        #region -------------------------------------------------------> Index
+        aL = self.cLDFFirst
+        bL = self.cLDFFirst
+        n = len(self.cLDFSecond)
+        #------------------------------> Ctrl
+        aL = aL + n*self.rDO['ControlL']
+        bL = bL + self.cLDFSecond
+        #------------------------------> Exp
+        for exp in self.rDO['Exp']:
+            aL = aL + n*[exp]
+            bL = bL + self.cLDFSecond
+        #------------------------------> 
+        idx = pd.MultiIndex.from_arrays([aL[:], bL[:]])
+        #endregion ----------------------------------------------------> Index
+
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(
+            np.nan, columns=idx, index=range(self.dfS.shape[0]), # type: ignore
+        )
+        idx = pd.IndexSlice
+        df.loc[:,idx[:,'Int']] = df.loc[:,idx[:,'Int']].astype('object')
+        #endregion -------------------------------------------------> Empty DF
+
+        #region -------------------------------------------------> Seq & Score
+        df[aL[0]] = self.dfS.iloc[:,0]
+        df[aL[1]] = self.dfS.iloc[:,2]
+        df[(self.rDO['ControlL'][0], 'P')] = np.nan
+        #endregion ----------------------------------------------> Seq & Score
+
+        return df
+    #---
+
+    def PrepareAncova(
+        self, rowC: int, row: 'namedtuple', rowN: int # type: ignore
+        ) -> 'pd.DataFrame':
+        """Prepare the dataframe used to perform the ANCOVA test and add the
+            intensity to self.dfR.
+
+            Parameters
+            ----------
+            rowC: int
+                Current row index in self.dfR.
+            row: namedtuple
+                Row from self.dfS.
+            rowN: int
+                Maximum number of rows in the output pd.df.
+
+            Returns
+            -------
+            pd.DataFrame
+                Dataframe to use in the ANCOVA test
+                Xc1, Yc1, Xe1, Ye1,....,XcN, YcN, XeN, YeN
+        """
+        #region ---------------------------------------------------> Variables
+        dfAncova = pd.DataFrame(index=range(0,rowN))
+        xC  = []
+        xCt = []
+        yC  = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        #------------------------------> Control
+        #--------------> List
+        for r in self.rDO['df']['ResCtrl'][0][0]:
+            if np.isfinite(row[r]):
+                xC.append(1)
+                xCt.append(5)
+                yC.append(row[r])
+            else:
+                pass
+        #--------------> Add to self.dfR
+        self.dfR.at[rowC,(self.rDO['ControlL'],'Int')] = str(yC)
+        #------------------------------> Points
+        for k,r in enumerate(self.rDO['df']['ResCtrl'][1:], start=1):
+            #------------------------------> 
+            xE = []
+            yE = []
+            #------------------------------> 
+            for rE in r[0]:
+                if np.isfinite(row[rE]):
+                    xE.append(5)
+                    yE.append(row[rE])
+                else:
+                    pass
+            #------------------------------> 
+            self.dfR.at[rowC,(self.rDO['Exp'][k-1], 'Int')] = str(yE)
+            #------------------------------> 
+            a = xC + xCt
+            b = yC + yC
+            c = xC + xE
+            d = yC + yE
+            #------------------------------> 
+            dfAncova.loc[range(0, len(a)),f'Xc{k}'] = a # type: ignore
+            dfAncova.loc[range(0, len(b)),f'Yc{k}'] = b # type: ignore
+            dfAncova.loc[range(0, len(c)),f'Xe{k}'] = c # type: ignore
+            dfAncova.loc[range(0, len(d)),f'Ye{k}'] = d # type: ignore
+        #endregion ------------------------------------------------> 
+        return dfAncova
+    #---
     #endregion ------------------------------------------------> Class Event
 
-#     #region ---------------------------------------------------> Run methods
-#     def PrepareRun(self) -> bool:
-#         """Set variable and prepare data for analysis.
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -----------------------------------------------------------> d
-#         msgStep = self.cLPdPrepare + 'User input, reading'
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #------------------------------> As given
-#         self.rDI = {
-#             self.EqualLenLabel(self.cLiFile) : (
-#                 self.wIFile.tc.GetValue()),
-#             self.EqualLenLabel(f'{self.cLSeqFile} File') : (
-#                 self.wSeqFile.tc.GetValue()),
-#             self.EqualLenLabel(self.cLId) : (
-#                 self.wId.tc.GetValue()),
-#             self.EqualLenLabel(self.cLCeroTreatD) : (
-#                 self.wCeroB.cb.GetValue()),
-#             self.EqualLenLabel(self.cLTransMethod) : (
-#                 self.wTransMethod.cb.GetValue()),
-#             self.EqualLenLabel(self.cLNormMethod) : (
-#                 self.wNormMethod.cb.GetValue()),
-#             self.EqualLenLabel(self.cLImputation) : (
-#                 self.wImputationMethod.cb.GetValue()),
-#             self.EqualLenLabel(self.cLShift) : (
-#                 self.wShift.tc.GetValue()),
-#             self.EqualLenLabel(self.cLWidth) : (
-#                 self.wWidth.tc.GetValue()),
-#             self.EqualLenLabel(self.cLTargetProt) : (
-#                 self.wTargetProt.tc.GetValue()),
-#             self.EqualLenLabel(self.cLScoreVal) : (
-#                 self.wScoreVal.tc.GetValue()),
-#             self.EqualLenLabel(self.cLAlpha) : (
-#                 self.wAlpha.tc.GetValue()),
-#             self.EqualLenLabel(self.cLAAPos) : (
-#                 self.wAAPos.tc.GetValue()),
-#             self.EqualLenLabel(self.cLHist) : (
-#                 self.wHist.tc.GetValue()),
-#             self.EqualLenLabel(f'{self.cLSeqCol} Column') : (
-#                 self.wSeqCol.tc.GetValue()),
-#             self.EqualLenLabel(self.cLDetectedProt) : (
-#                 self.wDetectedProt.tc.GetValue()),
-#             self.EqualLenLabel(self.cLScoreCol) : (
-#                 self.wScore.tc.GetValue()),
-#             self.EqualLenLabel(config.lStResultCtrlS): (
-#                 self.wTcResults.GetValue()),
-#             self.EqualLenLabel(self.cLExp) : (
-#                 self.rLbDict[1]),
-#             self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
-#                 self.rLbDict['Control']),
-#         }
-#         #endregion --------------------------------------------------------> d
-        
-#         #region ----------------------------------------------------------> do
-#         #------------------------------> Dict with all values
-#         #--------------> Step
-#         msgStep = self.cLPdPrepare + 'User input, processing'
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #--------------> SeqLength
-#         aaPosVal     = self.wAAPos.tc.GetValue()
-#         aaPos        = int(aaPosVal) if aaPosVal != '' else None
-#         histVal      = self.wHist.tc.GetValue()
-#         hist         = [int(x) for x in histVal.split()] if histVal != '' else None
-#         #--------------> Columns
-#         seqCol       = int(self.wSeqCol.tc.GetValue())
-#         detectedProt = int(self.wDetectedProt.tc.GetValue())
-#         scoreCol     = int(self.wScore.tc.GetValue())
-#         resctrl       = dmethod.ResControl2ListNumber(self.wTcResults.GetValue())
-#         resctrlFlat   = dmethod.ResControl2Flat(resctrl)
-#         resctrlDF     = dmethod.ResControl2DF(resctrl, 3)
-#         resctrlDFFlat = dmethod.ResControl2Flat(resctrlDF)
-#         #--------------> 
-#         self.rDO  = {
-#             'iFile'      : Path(self.wIFile.tc.GetValue()),
-#             'uFile'      : Path(self.wUFile.tc.GetValue()),
-#             'seqFile'    : Path(self.wSeqFile.tc.GetValue()),
-#             'ID'         : self.wId.tc.GetValue(),
-#             'Cero'       : config.oYesNo[self.wCeroB.cb.GetValue()],
-#             'TransMethod': self.wTransMethod.cb.GetValue(),
-#             'NormMethod' : self.wNormMethod.cb.GetValue(),
-#             'ImpMethod'  : self.wImputationMethod.cb.GetValue(),
-#             'Shift'      : float(self.wShift.tc.GetValue()),
-#             'Width'      : float(self.wWidth.tc.GetValue()),
-#             'TargetProt' : self.wTargetProt.tc.GetValue(),
-#             'ScoreVal'   : float(self.wScoreVal.tc.GetValue()),
-#             'Alpha'      : float(self.wAlpha.tc.GetValue()),
-#             'AA'         : aaPos,
-#             'Hist'       : hist,
-#             'Exp'        : self.rLbDict[1],
-#             'ControlL'   : self.rLbDict['Control'],
-#             'oc'         : { # Column numbers in the initial dataframe
-#                 'SeqCol'       : seqCol,
-#                 'TargetProtCol': detectedProt,
-#                 'ScoreCol'     : scoreCol,
-#                 'ResCtrl'      : resctrl,
-#                 'ColumnF'      : [scoreCol] + resctrlFlat,
-#                 'Column'       : (
-#                     [seqCol, detectedProt, scoreCol] + resctrlFlat),
-#             },
-#             'df' : { # Column numbers in the selected data dataframe
-#                 'SeqCol'       : 0,
-#                 'TargetProtCol': 1,
-#                 'ScoreCol'     : 2,
-#                 'ResCtrl'      : resctrlDF,
-#                 'ResCtrlFlat'  : resctrlDFFlat,
-#                 'ColumnR'      : resctrlDFFlat,
-#                 'ColumnF'      : [2] + resctrlDFFlat,
-#             },
-#             'dfo' : { # Column numbers in the output dataframe
-#                 'NC' : [2,3], # N and C Term Res Numbers in the Rec Seq
-#                 'NCF': [4,5], # N and C Term Res Numbers in the Nat Seq
-#             }
-#         }
-#         #endregion -------------------------------------------------------> do
-        
-#         #region ---------------------------------------------------> Super
-#         if super().PrepareRun():
-#             pass
-#         else:
-#             self.rMsgError = 'Something went wrong when preparing the analysis.'
-#             return False
-#         #endregion ------------------------------------------------> Super
+    #region ---------------------------------------------------> Run methods
+    def PrepareRun(self) -> bool:
+        """Set variable and prepare data for analysis.
 
-#         return True
-#     #--- 
-    
-#     def RunAnalysis(self) -> bool:
-#         """ Perform the equivalence tests 
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------------------> d
+        msgStep = self.cLPdPrepare + 'User input, reading'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> As given
+        self.rDI = {
+            self.EqualLenLabel(self.cLiFile) : (
+                self.wIFile.wTc.GetValue()),
+            self.EqualLenLabel(f'{self.cLSeqFile} File') : (
+                self.wSeqFile.wTc.GetValue()),
+            self.EqualLenLabel(self.cLId) : (
+                self.wId.wTc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.wCeroB.wCb.GetValue()),
+            self.EqualLenLabel(self.cLTransMethod) : (
+                self.wTransMethod.wCb.GetValue()),
+            self.EqualLenLabel(self.cLNormMethod) : (
+                self.wNormMethod.wCb.GetValue()),
+            self.EqualLenLabel(self.cLImputation) : (
+                self.wImputationMethod.wCb.GetValue()),
+            self.EqualLenLabel(self.cLShift) : (
+                self.wShift.wTc.GetValue()),
+            self.EqualLenLabel(self.cLWidth) : (
+                self.wWidth.wTc.GetValue()),
+            self.EqualLenLabel(self.cLTargetProt) : (
+                self.wTargetProt.wTc.GetValue()),
+            self.EqualLenLabel(self.cLScoreVal) : (
+                self.wScoreVal.wTc.GetValue()),
+            self.EqualLenLabel(self.cLAlpha) : (
+                self.wAlpha.wTc.GetValue()),
+            self.EqualLenLabel(self.cLAAPos) : (
+                self.wAAPos.wTc.GetValue()),
+            self.EqualLenLabel(self.cLHist) : (
+                self.wHist.wTc.GetValue()),
+            self.EqualLenLabel(f'{self.cLSeqCol} Column') : (
+                self.wSeqCol.wTc.GetValue()),
+            self.EqualLenLabel(self.cLDetectedProt) : (
+                self.wDetectedProt.wTc.GetValue()),
+            self.EqualLenLabel(self.cLScoreCol) : (
+                self.wScore.wTc.GetValue()),
+            self.EqualLenLabel(mConfig.lStResultCtrlS): (
+                self.wTcResults.GetValue()),
+            self.EqualLenLabel(self.cLExp) : (
+                self.rLbDict[0]),
+            self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
+                self.rLbDict['Control']),
+        }
+        #endregion --------------------------------------------------------> d
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------> Print d, do
-#         if config.development:
-#             print('')
-#             print('self.d:')
-#             for k,v in self.rDI.items():
-#                 print(str(k)+': '+str(v))
-#             print('')
-#             print('self.do')
-#             for k,v in self.rDO.items():
-#                 if k in ['oc', 'df', 'dfo']:
-#                     print(k)
-#                     for j,w in v.items():
-#                         print(f'\t{j}: {w}')
-#                 else:
-#                     print(str(k)+': '+str(v))
-#             print('')
-#         else:
-#             pass
-#         #endregion ----------------------------------------------> Print d, do
-        
-#         #region --------------------------------------------> Data Preparation
-#         if self.DataPreparation():
-#             pass
-#         else:
-#             return False
-#         #endregion -----------------------------------------> Data Preparation
-        
-#         #region ----------------------------------------------------> Empty DF
-#         #------------------------------> Msg
-#         msgStep = f'{self.cLPdRun} Creating empty dataframe'
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #------------------------------> 
-#         self.dfR = self.EmptyDFR()
-#         #endregion -------------------------------------------------> Empty DF
-        
-#         #region ------------------------------------------------> N, C Res Num
-#         if self.NCResNumbers(seqNat=True):
-#             pass
-#         else:
-#             return False
-#         #endregion ---------------------------------------------> N, C Res Num
-        
-#         #region ----------------------------------------------------> P values
-#         #------------------------------> 
-#         totalPeptide = len(self.dfS)
-#         totalRowAncovaDF = 2*max([len(x[0]) for x in self.rDO['df']['ResCtrl']])
-#         nGroups = [2 for x in self.rDO['df']['ResCtrl']]
-#         nGroups = nGroups[1:]
-#         idx = pd.IndexSlice
-#         idx = idx[self.rDO['Exp'], 'P']
-#         #------------------------------> 
-#         k = 0
-#         for row in self.dfS.itertuples(index=False):
-#             #------------------------------> Msg
-#             msgStep = (f'{self.cLPdRun} Calculating P values for peptide '
-#                 f'{k+1} ({totalPeptide})')
-#             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#             #------------------------------> 
-#             try:
-#                 #------------------------------> Ancova df & Int
-#                 dfAncova = self.PrepareAncova(k, row, totalRowAncovaDF)
-#                 #------------------------------> P value
-#                 self.dfR.loc[k,idx] = dtsStatistic.test_slope(
-#                     dfAncova, nGroups)
-#             except Exception as e:
-#                 self.rMsgError = (f'P value calculation failed for peptide '
-#                     f'{row[0]}.')
-#                 self.rException = e
-#                 return False
-#             #------------------------------> 
-#             k = k + 1
-#         #endregion -------------------------------------------------> P values
-        
-#         #region -------------------------------------------------> Check P < a
-#         idx = pd.IndexSlice
-#         if (self.dfR.loc[:,idx[:,'P']] < self.rDO['Alpha']).any().any():
-#             pass
-#         else:
-#             self.rMsgError = ('There were no peptides detected with intensity '
-#                 'values significantly higher to the intensity values in the '
-#                 'controls. You may run the analysis again with different '
-#                 'values for the configuration options.')
-#             return False
-#         #endregion ----------------------------------------------> Check P < a
-        
-#         #region --------------------------------------------------------> Sort
-#         self.dfR = self.dfR.sort_values(
-#             by=[('Nterm', 'Nterm'),('Cterm', 'Cterm')]
-#         )
-#         self.dfR = self.dfR.reset_index(drop=True)
-#         #endregion -----------------------------------------------------> Sort
-        
-#         # Further Analysis
-#         #region ----------------------------------------------------> Cleavage
-#         msgStep = (f'{self.cLPdRun} Cleavage per Residue')
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #------------------------------> 
-#         a = self.cLDFFirst[2:]+self.rDO['Exp']
-#         b = self.cLDFFirst[2:]+['P']
-#         tIdxH = idx[a,b] # Also used for Hist
-#         #------------------------------> 
-#         try:
-#             self.dfCpR = dmethod.R2CpR(
-#                 self.dfR.loc[:, tIdxH],
-#                 self.rDO['Alpha'],
-#                 self.rDO['ProtLength'],
-#             )
-#         except Exception as e:
-#             self.rMsgError = 'The Cleavage per Residue method failed.'
-#             self.rException = e
-#             return False
-#         #endregion -------------------------------------------------> Cleavage
-        
-#         #region ---------------------------------------------------> CutEvo
-#         msgStep = (f'{self.cLPdRun} Cleavage Evolution')
-#         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#         #------------------------------> 
-#         a = self.cLDFFirst[2:]+self.rDO['Exp']
-#         b = self.cLDFFirst[2:]+['Int', 'P']
-#         tIdx = idx[a,b]
-#         #------------------------------> 
-#         try:
-#             self.dfCEvol = dmethod.R2CEvol(
-#                 self.dfR.loc[:, tIdx], 
-#                 self.rDO['Alpha'], 
-#                 self.rDO['ProtLength'],
-#             )
-#         except Exception as e:
-#             self.rMsgError = 'The Cleavage Evolution method failed.'
-#             self.rException = e
-#             return False
-#         #endregion ------------------------------------------------> CutEvo
-        
-#         #region ----------------------------------------------------------> AA
-#         if self.rDO['AA'] is not None:
-#             #------------------------------> 
-#             msgStep = (f'{self.cLPdRun} AA Distribution')
-#             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#             #------------------------------> 
-#             tIdx = idx[['Sequence']+self.rDO['Exp'],['Sequence', 'P']]
-#             try:
-#                 self.dfAA = dmethod.R2AA(
-#                     self.dfR.loc[:,tIdx], 
-#                     self.rSeqFileObj.seqRec, 
-#                     self.rDO['Alpha'],
-#                     self.rDO['ProtLength'][0],
-#                     pos=self.rDO['AA'],
-#                 )
-#             except Exception as e:
-#                 self.rMsgError = 'Amino acid distribution calculation failed.'
-#                 self.rException = e
-#                 return False
-#         else:
-#             pass
-#         #endregion -------------------------------------------------------> AA
-        
-#         #region --------------------------------------------------------> Hist
-#         if self.rDO['Hist'] is not None:
-#             #------------------------------> 
-#             msgStep = (f'{self.cLPdRun} Histograms')
-#             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-#             #------------------------------> 
-#             try:
-#                 self.dfHist = dmethod.R2Hist(
-#                     self.dfR.loc[:,tIdxH], 
-#                     self.rDO['Alpha'],
-#                     self.rDO['Hist'],
-#                     self.rDO['ProtLength']
-#                 )
-#             except Exception as e:
-#                 self.rMsgError = 'The Histogram generation method failed.'
-#                 self.rException = e
-#                 return False
-#         else:
-#             pass
-#         #endregion -----------------------------------------------------> Hist
+        #region ----------------------------------------------------------> do
+        #------------------------------> Dict with all values
+        #--------------> Step
+        msgStep = self.cLPdPrepare + 'User input, processing'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #--------------> SeqLength
+        aaPosVal     = self.wAAPos.wTc.GetValue()
+        aaPos        = int(aaPosVal) if aaPosVal != '' else None
+        histVal      = self.wHist.wTc.GetValue()
+        hist         = [int(x) for x in histVal.split()] if histVal != '' else None
+        #--------------> Columns
+        seqCol        = int(self.wSeqCol.wTc.GetValue())
+        detectedProt  = int(self.wDetectedProt.wTc.GetValue())
+        scoreCol      = int(self.wScore.wTc.GetValue())
+        resCtrl       = mMethod.ResControl2ListNumber(self.wTcResults.GetValue())
+        resCtrlFlat   = mMethod.ResControl2Flat(resCtrl)
+        resCtrlDF     = mMethod.ResControl2DF(resCtrl, 3)
+        resCtrlDFFlat = mMethod.ResControl2Flat(resCtrlDF)
+        #--------------> 
+        self.rDO  = {
+            'iFile'      : Path(self.wIFile.wTc.GetValue()),
+            'uFile'      : Path(self.wUFile.wTc.GetValue()),
+            'seqFile'    : Path(self.wSeqFile.wTc.GetValue()),
+            'ID'         : self.wId.wTc.GetValue(),
+            'Cero'       : mConfig.oYesNo[self.wCeroB.wCb.GetValue()],
+            'TransMethod': self.wTransMethod.wCb.GetValue(),
+            'NormMethod' : self.wNormMethod.wCb.GetValue(),
+            'ImpMethod'  : self.wImputationMethod.wCb.GetValue(),
+            'Shift'      : float(self.wShift.wTc.GetValue()),
+            'Width'      : float(self.wWidth.wTc.GetValue()),
+            'TargetProt' : self.wTargetProt.wTc.GetValue(),
+            'ScoreVal'   : float(self.wScoreVal.wTc.GetValue()),
+            'Alpha'      : float(self.wAlpha.wTc.GetValue()),
+            'AA'         : aaPos,
+            'Hist'       : hist,
+            'Exp'        : self.rLbDict[0],
+            'ControlL'   : self.rLbDict['Control'],
+            'oc'         : { # Column numbers in the initial dataframe
+                'SeqCol'       : seqCol,
+                'TargetProtCol': detectedProt,
+                'ScoreCol'     : scoreCol,
+                'ResCtrl'      : resCtrl,
+                'ColumnF'      : [scoreCol] + resCtrlFlat,
+                'Column'       : (
+                    [seqCol, detectedProt, scoreCol] + resCtrlFlat),
+            },
+            'df' : { # Column numbers in the selected data dataframe
+                'SeqCol'       : 0,
+                'TargetProtCol': 1,
+                'ScoreCol'     : 2,
+                'ResCtrl'      : resCtrlDF,
+                'ResCtrlFlat'  : resCtrlDFFlat,
+                'ColumnR'      : resCtrlDFFlat,
+                'ColumnF'      : [2] + resCtrlDFFlat,
+            },
+            'dfo' : { # Column numbers in the output dataframe
+                'NC' : [2,3], # N and C Term Res Numbers in the Rec Seq
+                'NCF': [4,5], # N and C Term Res Numbers in the Nat Seq
+            }
+        }
+        #endregion -------------------------------------------------------> do
 
-#         if config.development:
-#             print('self.dfR.shape: ', self.dfR.shape)
-#             print('')
-#             print(self.dfR)
-#         else:
-#             pass
-            
-#         return True
-#     #---
-    
-#     def WriteOutput(self) -> bool:
-#         """Write output for a module
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------> Data Steps
-#         stepDict = self.SetStepDictDP()
-#         stepDict['Files'] = {
-#             config.fnInitial.format(self.rDate, '01')   : self.dfI,
-#             config.fnFloat.format(self.rDate, '02')     : self.dfF,
-#             config.fnTrans.format(self.rDate, '03')     : self.dfT,
-#             config.fnNorm.format(self.rDate, '04')      : self.dfN,
-#             config.fnImp.format(self.rDate, '05')       : self.dfIm,
-#             config.fnTargetProt.format(self.rDate, '06'): self.dfTP,
-#             config.fnScore.format(self.rDate, '07')     : self.dfS,
-#             self.rMainData.format(self.rDate, '08')     : self.dfR,
-#         }
-#         stepDict['R'] = self.rMainData.format(self.rDate, '08')
-#         #endregion -----------------------------------------------> Data Steps
-        
-#         #region --------------------------------------------> Further Analysis
-#         #------------------------------> 
-#         stepDict['CpR'] = f'{self.rDate}_CpR.txt'
-#         stepDict['CEvol'] = f'{self.rDate}_CEvol.txt'
-#         #------------------------------> 
-#         stepDict['AA']= {}
-#         if self.rDO['AA'] is not None:
-#             stepDict['AA'][f'{self.rDate}_{self.rDO["AA"]}'] = (
-#                 f'{self.rDate}_AA-{self.rDO["AA"]}.txt')
-#         else:
-#             pass
-#         #------------------------------> 
-#         stepDict['Hist']= {}
-#         if self.rDO['Hist'] is not None:
-#             stepDict['Hist'][f'{self.rDate}_{self.rDO["Hist"]}'] = (
-#                 f'{self.rDate}_Hist-{self.rDO["Hist"]}.txt')
-#         else:
-#             pass
-#         #endregion -----------------------------------------> Further Analysis
+        #region ---------------------------------------------------> Super
+        if super().PrepareRun():
+            pass
+        else:
+            self.rMsgError = 'Something went wrong when preparing the analysis.'
+            return False
+        #endregion ------------------------------------------------> Super
 
-#         return self.WriteOutputData(stepDict)
-#     #---
-    
-#     def RunEnd(self) -> bool:
-#         """"""
-#         #------------------------------>
-#         if self.rDFile:
-#             self.wSeqFile.tc.SetValue(str(self.rDFile[1]))
-#         else:
-#             pass
-#         #------------------------------>
-#         self.dfAA    = pd.DataFrame()
-#         self.dfHist  = pd.DataFrame()
-#         self.dfCpR   = pd.DataFrame()
-#         self.dfCEvol = pd.DataFrame()
-#         #------------------------------>
-#         return super().RunEnd()
-#     #---
-    
-#     def EmptyDFR(self) -> 'pd.DataFrame':
-#         """Creates the empty df for the results
-        
-#             Returns
-#             -------
-#             pd.DataFrame
-#         """
-#         #region -------------------------------------------------------> Index
-#         aL = self.cLDFFirst
-#         bL = self.cLDFFirst
-#         n = len(self.cLDFSecond)
-#         #------------------------------> Ctrl
-#         aL = aL + n*self.rDO['ControlL']
-#         bL = bL + self.cLDFSecond
-#         #------------------------------> Exp
-#         for exp in self.rDO['Exp']:
-#             aL = aL + n*[exp]
-#             bL = bL + self.cLDFSecond
-#         #------------------------------> 
-#         idx = pd.MultiIndex.from_arrays([aL[:], bL[:]])
-#         #endregion ----------------------------------------------------> Index
-        
-#         #region ----------------------------------------------------> Empty DF
-#         df = pd.DataFrame(
-#             np.nan, columns=idx, index=range(self.dfS.shape[0]),
-#         )
-#         idx = pd.IndexSlice
-#         df.loc[:,idx[:,'Int']] = df.loc[:,idx[:,'Int']].astype('object')
-#         #endregion -------------------------------------------------> Empty DF
-        
-#         #region -------------------------------------------------> Seq & Score
-#         df[aL[0]] = self.dfS.iloc[:,0]
-#         df[aL[1]] = self.dfS.iloc[:,2]
-#         df[(self.rDO['ControlL'][0], 'P')] = np.nan
-#         #endregion ----------------------------------------------> Seq & Score
-        
-#         return df
-#     #---
-    
-#     def PrepareAncova(
-#         self, rowC: int, row: 'namedtuple', rowN: int
-#         ) -> 'pd.DataFrame':
-#         """Prepare the dataframe used to perform the ANCOVA test and add the
-#             intensity to self.dfR
-    
-#             Parameters
-#             ----------
-#             rowC: int
-#                 Current row index in self.dfR
-#             row: namedtuple
-#                 Row from self.dfS
-#             rowN: int
-#                 Maximum number of rows in the output pd.df
-    
-#             Returns
-#             -------
-#             pd.DataFrame
-#                 Dataframe to use in the ANCOVA test
-#                 Xc1, Yc1, Xe1, Ye1,....,XcN, YcN, XeN, YeN
-#         """
-#         #region ---------------------------------------------------> Variables
-#         dfAncova = pd.DataFrame(index=range(0,rowN))
-#         xC = []
-#         xCt = []
-#         yC = []
-#         #endregion ------------------------------------------------> Variables
+        return True
+    #---
 
-#         #region ---------------------------------------------------> 
-#         #------------------------------> Control
-#         #--------------> List
-#         for r in self.rDO['df']['ResCtrl'][0][0]:
-#             if np.isfinite(row[r]):
-#                 xC.append(1)
-#                 xCt.append(5)
-#                 yC.append(row[r])
-#             else:
-#                 pass
-#         #--------------> Add to self.dfR
-#         self.dfR.at[rowC,(self.rDO['ControlL'],'Int')] = str(yC)
-#         #------------------------------> Points
-#         for k,r in enumerate(self.rDO['df']['ResCtrl'][1:], start=1):
-#             #------------------------------> 
-#             xE = []
-#             yE = []
-#             #------------------------------> 
-#             for rE in r[0]:
-#                 if np.isfinite(row[rE]):
-#                     xE.append(5)
-#                     yE.append(row[rE])
-#                 else:
-#                     pass
-#             #------------------------------> 
-#             self.dfR.at[rowC,(self.rDO['Exp'][k-1], 'Int')] = str(yE)
-#             #------------------------------> 
-#             a = xC + xCt
-#             b = yC + yC
-#             c = xC + xE
-#             d = yC + yE
-#             #------------------------------> 
-#             dfAncova.loc[range(0, len(a)),f'Xc{k}'] = a
-#             dfAncova.loc[range(0, len(b)),f'Yc{k}'] = b
-#             dfAncova.loc[range(0, len(c)),f'Xe{k}'] = c
-#             dfAncova.loc[range(0, len(d)),f'Ye{k}'] = d
-#         #endregion ------------------------------------------------> 
-#         return dfAncova
-#     #---
-#     #endregion ------------------------------------------------> Run methods
-# #---
+    def RunAnalysis(self) -> bool:
+        """Perform the equivalence tests.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------> Print d, do
+        if mConfig.development:
+            print('')
+            print('self.d:')
+            for k,v in self.rDI.items():
+                print(str(k)+': '+str(v))
+            print('')
+            print('self.do')
+            for k,v in self.rDO.items():
+                if k in ['oc', 'df', 'dfo']:
+                    print(k)
+                    for j,w in v.items():
+                        print(f'\t{j}: {w}')
+                else:
+                    print(str(k)+': '+str(v))
+            print('')
+        else:
+            pass
+        #endregion ----------------------------------------------> Print d, do
+
+        #region --------------------------------------------> Data Preparation
+        if self.DataPreparation():
+            pass
+        else:
+            return False
+        #endregion -----------------------------------------> Data Preparation
+
+        #region ----------------------------------------------------> Empty DF
+        #------------------------------> Msg
+        msgStep = f'{self.cLPdRun} Creating empty dataframe'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        self.dfR = self.EmptyDFR()
+        #endregion -------------------------------------------------> Empty DF
+
+        #region ------------------------------------------------> N, C Res Num
+        if self.NCResNumbers(seqNat=True):
+            pass
+        else:
+            return False
+        #endregion ---------------------------------------------> N, C Res Num
+
+        #region ----------------------------------------------------> P values
+        #------------------------------> 
+        totalPeptide = len(self.dfS)
+        totalRowAncovaDF = 2*max([len(x[0]) for x in self.rDO['df']['ResCtrl']])
+        nGroups = [2 for x in self.rDO['df']['ResCtrl']]
+        nGroups = nGroups[1:]
+        idx = pd.IndexSlice
+        idx = idx[self.rDO['Exp'], 'P']
+        #------------------------------> 
+        k = 0
+        for row in self.dfS.itertuples(index=False):
+            #------------------------------> Msg
+            msgStep = (f'{self.cLPdRun} Calculating P values for peptide '
+                f'{k+1} ({totalPeptide})')
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------> 
+            try:
+                #------------------------------> Ancova df & Int
+                dfAncova = self.PrepareAncova(k, row, totalRowAncovaDF)
+                #------------------------------> P value
+                self.dfR.loc[k,idx] = mStatistic.Test_slope( # type: ignore
+                    dfAncova, nGroups)
+            except Exception as e:
+                self.rMsgError = (f'P value calculation failed for peptide '
+                    f'{row[0]}.')
+                self.rException = e
+                return False
+            #------------------------------> 
+            k = k + 1
+        #endregion -------------------------------------------------> P values
+
+        #region -------------------------------------------------> Check P < a
+        idx = pd.IndexSlice
+        if (self.dfR.loc[:,idx[:,'P']] < self.rDO['Alpha']).any().any():
+            pass
+        else:
+            self.rMsgError = ('There were no peptides detected with intensity '
+                'values significantly higher to the intensity values in the '
+                'controls. You may run the analysis again with different '
+                'values for the configuration options.')
+            return False
+        #endregion ----------------------------------------------> Check P < a
+
+        #region --------------------------------------------------------> Sort
+        self.dfR = self.dfR.sort_values(
+            by=[('Nterm', 'Nterm'),('Cterm', 'Cterm')] # type: ignore
+        )
+        self.dfR = self.dfR.reset_index(drop=True)
+        #endregion -----------------------------------------------------> Sort
+
+        # Further Analysis
+        #region ----------------------------------------------------> Cleavage
+        msgStep = (f'{self.cLPdRun} Cleavage per Residue')
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        a = self.cLDFFirst[2:]+self.rDO['Exp']
+        b = self.cLDFFirst[2:]+['P']
+        tIdxH = idx[a,b] # Also used for Hist
+        #------------------------------> 
+        try:
+            self.dfCpR = mMethod.R2CpR(
+                self.dfR.loc[:, tIdxH],
+                self.rDO['Alpha'],
+                self.rDO['ProtLength'],
+            )
+        except Exception as e:
+            self.rMsgError = 'The Cleavage per Residue method failed.'
+            self.rException = e
+            return False
+        #endregion -------------------------------------------------> Cleavage
+
+        #region ---------------------------------------------------> CutEvo
+        msgStep = (f'{self.cLPdRun} Cleavage Evolution')
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> 
+        a = self.cLDFFirst[2:]+self.rDO['Exp']
+        b = self.cLDFFirst[2:]+['Int', 'P']
+        tIdx = idx[a,b]
+        #------------------------------> 
+        try:
+            self.dfCEvol = mMethod.R2CEvol(
+                self.dfR.loc[:, tIdx], 
+                self.rDO['Alpha'], 
+                self.rDO['ProtLength'],
+            )
+        except Exception as e:
+            self.rMsgError = 'The Cleavage Evolution method failed.'
+            self.rException = e
+            return False
+        #endregion ------------------------------------------------> CutEvo
+
+        #region ----------------------------------------------------------> AA
+        if self.rDO['AA'] is not None:
+            #------------------------------> 
+            msgStep = (f'{self.cLPdRun} AA Distribution')
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------> 
+            tIdx = idx[['Sequence']+self.rDO['Exp'],['Sequence', 'P']]
+            try:
+                self.dfAA = mMethod.R2AA(
+                    self.dfR.loc[:,tIdx], 
+                    self.rSeqFileObj.rSeqRec, # type: ignore
+                    self.rDO['Alpha'],
+                    self.rDO['ProtLength'][0],
+                    pos=self.rDO['AA'],
+                )
+            except Exception as e:
+                self.rMsgError = 'Amino acid distribution calculation failed.'
+                self.rException = e
+                return False
+        else:
+            pass
+        #endregion -------------------------------------------------------> AA
+
+        #region --------------------------------------------------------> Hist
+        if self.rDO['Hist'] is not None:
+            #------------------------------> 
+            msgStep = (f'{self.cLPdRun} Histograms')
+            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            #------------------------------> 
+            try:
+                self.dfHist = mMethod.R2Hist(
+                    self.dfR.loc[:,tIdxH], 
+                    self.rDO['Alpha'],
+                    self.rDO['Hist'],
+                    self.rDO['ProtLength']
+                )
+            except Exception as e:
+                self.rMsgError = 'The Histogram generation method failed.'
+                self.rException = e
+                return False
+        else:
+            pass
+        #endregion -----------------------------------------------------> Hist
+
+        if mConfig.development:
+            print('self.dfR.shape: ', self.dfR.shape)
+            print('')
+            print(self.dfR)
+        else:
+            pass
+
+        return True
+    #---
+
+    def WriteOutput(self) -> bool:
+        """Write output.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Data Steps
+        stepDict = self.SetStepDictDP()
+        stepDict['Files'] = {
+            mConfig.fnInitial.format(self.rDate, '01')   : self.dfI,
+            mConfig.fnFloat.format(self.rDate, '02')     : self.dfF,
+            mConfig.fnTrans.format(self.rDate, '03')     : self.dfT,
+            mConfig.fnNorm.format(self.rDate, '04')      : self.dfN,
+            mConfig.fnImp.format(self.rDate, '05')       : self.dfIm,
+            mConfig.fnTargetProt.format(self.rDate, '06'): self.dfTP,
+            mConfig.fnScore.format(self.rDate, '07')     : self.dfS,
+            self.rMainData.format(self.rDate, '08')     : self.dfR,
+        }
+        stepDict['R'] = self.rMainData.format(self.rDate, '08')
+        #endregion -----------------------------------------------> Data Steps
+
+        #region --------------------------------------------> Further Analysis
+        #------------------------------> 
+        stepDict['CpR'] = f'{self.rDate}_CpR.txt'
+        stepDict['CEvol'] = f'{self.rDate}_CEvol.txt'
+        #------------------------------> 
+        stepDict['AA']= {}
+        if self.rDO['AA'] is not None:
+            stepDict['AA'][f'{self.rDate}_{self.rDO["AA"]}'] = (
+                f'{self.rDate}_AA-{self.rDO["AA"]}.txt')
+        else:
+            pass
+        #------------------------------> 
+        stepDict['Hist']= {}
+        if self.rDO['Hist'] is not None:
+            stepDict['Hist'][f'{self.rDate}_{self.rDO["Hist"]}'] = (
+                f'{self.rDate}_Hist-{self.rDO["Hist"]}.txt')
+        else:
+            pass
+        #endregion -----------------------------------------> Further Analysis
+
+        return self.WriteOutputData(stepDict)
+    #---
+    
+    def RunEnd(self) -> bool:
+        """"""
+        #------------------------------>
+        if self.rDFile:
+            self.wSeqFile.wTc.SetValue(str(self.rDFile[1]))
+        else:
+            pass
+        #------------------------------>
+        self.dfAA    = pd.DataFrame()
+        self.dfHist  = pd.DataFrame()
+        self.dfCpR   = pd.DataFrame()
+        self.dfCEvol = pd.DataFrame()
+        #------------------------------>
+        return super().RunEnd()
+    #---
+    #endregion ------------------------------------------------> Run methods
+#---
 
 
 class PaneResControlExpConfProtProf(BaseResControlExpConf):

@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Union, Literal
 
 import pandas as pd
-# import numpy as np
+import numpy as np
 
 import wx
 
@@ -34,6 +34,7 @@ import wx
 import config.config as mConfig
 import data.file as mFile
 import data.exception as mException
+import data.statistic as mStatistic
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -937,364 +938,393 @@ def DFFilterByColN(
 # #---
 
 
-# def R2AA(
-#     df:pd.DataFrame, seq: str, alpha: float, protL: int, pos: int=5,
-#     ) -> pd.DataFrame:
-#     """AA distribution analysis
+def R2AA(
+    df:pd.DataFrame,
+    seq: str,
+    alpha: float,
+    protL: int,
+    pos: int=5,
+    ) -> pd.DataFrame:
+    """AA distribution analysis.
 
-#         Parameters
-#         ----------
-#         df: pd.DataFrame
-#             Sequence Label1 LabelN
-#             Sequence P      P
-#         seq: str
-#             Recombinant protein sequence
-#         alpha: float
-#             Significance level
-#         pos: int
-#             Number of positions to consider
-            
-#         Returns
-#         -------
-#         pd.DataFrame
-#             AA Label1       LabelN
-#             AA -2 -1 1 2 P  -2 -1 1 2 P
-#     """
-#     print('AA NUMBER OF POSITIONS')
-#     print(pos)
-#     def AddNewAA(dfO, r, pos, seq, l):
-#         """
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Sequence Label1 LabelN
+            Sequence P      P
+        seq: str
+            Recombinant protein sequence
+        alpha: float
+            Significance level
+        protL: int
+            Protein length.
+        pos: int
+            Number of positions to consider.
+
+        Returns
+        -------
+        pd.DataFrame
+            AA Label1       LabelN
+            AA -2 -1 1 2 P  -2 -1 1 2 P
+    """
+    def AddNewAA(
+        dfO: pd.DataFrame, r: int, pos: int, seq: str, l: str
+        ) -> pd.DataFrame:
+        """Add new amino acids to running total.
+
+            Parameters
+            ----------
+            dfO: pd.DataFrame
+                Running total
+            r: int
+                AA distance from cleavage site.
+            pos: int
+                Number of positions to consider.
+            seq: str
+                Amino acids sequence
+            l: str
+                Current column label
+
+            Returns
+            -------
+            pd.DataFrame
+        """
+        #region ---------------------------------------------------> 
+        if r >= pos:
+            col = pos
+            start = r - pos
+        else:
+            col = r
+            start = 0
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for a in seq[start:r]:
+            dfO.at[a,(l,f'P{col}')] = dfO.at[a,(l,f'P{col}')] + 1
+            col -= 1
+        col = 1
+        for a in seq[r:r+pos]:
+            dfO.at[a,(l,f"P{col}'")] = dfO.at[a,(l,f"P{col}'")] + 1
+            col += 1
+        #endregion ------------------------------------------------> 
+
+        return dfO
+    #---
+    #region ---------------------------------------------------> Empty
+    aL = ['AA']
+    bL = ['AA']
+    for l in df.columns.get_level_values(0)[1:]:
+        aL = aL + 2*pos*[l]
+        bL = bL + [f'P{x}' for x in range(pos, 0, -1)] + [f'P{x}\'' for x in range(1, pos+1,1)]
+    idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
+    dfO = pd.DataFrame(0, columns=idx, index=mConfig.lAA1+['Chi']) # type: ignore
+    dfO[('AA','AA')] = mConfig.lAA1[:]+['Chi']
+    #endregion ------------------------------------------------> Empty
+
+    #region ---------------------------------------------------> Fill
+    idx = pd.IndexSlice
+    for l in df.columns.get_level_values(0)[1:]:
+        seqDF = df[df[idx[l,'P']] < alpha].iloc[:,0].to_list()
+        for s in seqDF:
+            #------------------------------> 
+            n = seq.find(s)
+            if n > 0:
+                dfO = AddNewAA(dfO, n, pos, seq, l)
+            else:
+                pass
+            #------------------------------> 
+            c = n+len(s)
+            if c < protL:
+                dfO = AddNewAA(dfO, c, pos, seq, l)
+            else:
+                pass
+    #endregion ------------------------------------------------> Fill
+
+    #region ---------------------------------------------------> Random Cleavage
+    c = 'ALL_CLEAVAGES_UMSAP'
+    aL = 2*pos*[c]
+    bL = [f'P{x}' for x in range(pos, 0, -1)] + [f"P{x}'" for x in range(1, pos+1,1)]
+    idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
+    dfT = pd.DataFrame(0, columns=idx, index=mConfig.lAA1+['Chi']) # type: ignore
+    dfO = pd.concat([dfO, dfT], axis=1)
+    for k,_ in enumerate(seq[1:-1], start=1): # Exclude first and last residue
+        dfO = AddNewAA(dfO, k, pos, seq, c)
+    #endregion ------------------------------------------------> Random Cleavage
+
+    #region ---------------------------------------------------> Group
+    idx = pd.IndexSlice
+    gS = []
+    for g in mConfig.lAAGroups:
+        gS.append(dfO.loc[g,:].sum(axis=0))
+    g = pd.concat(gS, axis=1)
+    g = g.transpose()
+
+    for l in df.columns.get_level_values(0)[1:]:
+        for p in dfO.loc[:,idx[l,:]].columns.get_level_values(1):
+            dfO.at['Chi', idx[l,p]] = mStatistic.Test_chi(
+                g.loc[:,idx[[l,c],p]], alpha)[0]
+    #endregion ------------------------------------------------> Group
+
+    return dfO
+#---
+
+
+def R2Hist(
+    df: pd.DataFrame, alpha: float, win: list[int], maxL: list[int]
+    ) -> pd.DataFrame:
+    """Create the cleavage histograms.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Nterm Cterm NtermF CtermF Exp1 .... ExpN
+            Nterm Cterm NtermF CtermF P    .... P
+        alpha: float
+            Alpha level.
+        win: list[int]
+            Window definition
+        maxL: list[int]
+            Protein lengths, Recombinant and Native or None
+
+        Returns
+        -------
+        pd.DataFrame
+    """
+    #region ---------------------------------------------------> Variables
+    bin = []
+    if len(win) == 1:
+        bin.append([x for x in range(0, maxL[0]+win[0], win[0])])
+        if maxL[1] is not None:
+            bin.append([x for x in range(0, maxL[1]+win[0], win[0])])
+        else:
+            bin.append([None])
+    else:
+        bin.append(win)
+        bin.append(win)
+    #endregion ------------------------------------------------> Variables
+
+    #region --------------------------------------------------------> Empty DF
+    #------------------------------> Columns
+    label = df.columns.unique(level=0).tolist()[4:]
+    nL = len(label)
+    a = (2*nL+1)*['Rec']+(2*nL+1)*['Nat']
+    b = ['Win']+nL*['All']+nL*['Unique']+['Win']+nL*['All']+nL*['Unique']
+    c = 2*(['Win']+2*label)
+    #------------------------------> Rows
+    nR = sorted([len(x) for x in bin])[-1]
+    #------------------------------> df
+    col = pd.MultiIndex.from_arrays([a[:],b[:],c[:]])
+    dfO = pd.DataFrame(np.nan, index=range(0,nR), columns=col) # type: ignore
+    #endregion -----------------------------------------------------> Empty DF
+
+    #region ---------------------------------------------------> Fill
+    #------------------------------> Windows
+    dfO.iloc[range(0,len(bin[0])), dfO.columns.get_loc(('Rec','Win','Win'))] = bin[0]
+    if bin[1][0] is not None:
+        dfO.iloc[range(0,len(bin[1])), dfO.columns.get_loc(('Nat','Win','Win'))] = bin[1]
+    else:
+        pass
+    #------------------------------> 
+    for e in label:
+        dfT = df[df[(e,'P')] < alpha]
+        #------------------------------> 
+        dfR = dfT[[('Nterm','Nterm'),('Cterm', 'Cterm')]].copy()
+        dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 1
+        l = dfR.to_numpy().flatten()
+        l = [x for x in l if x > 0 and x < maxL[0]]
+        a,_ = np.histogram(l, bins=bin[0])
+        dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','All',e))] = a
+        l = list(set(l))
+        a,_ = np.histogram(l, bins=bin[0])
+        dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','Unique',e))] = a
+        #------------------------------> 
+        if bin[1][0] is not None:
+            dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
+            dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 1
+            l = dfR.to_numpy().flatten()
+            l = [x for x in l if x > 0 and x < maxL[0]]
+            a,_ = np.histogram(l, bins=bin[0])
+            dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','All',e))] = a
+            l = list(set(l))
+            a,_ = np.histogram(l, bins=bin[0])
+            dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','Unique',e))] = a
+        else:
+            pass
+    #endregion ------------------------------------------------> Fill
+
+    return dfO
+#---
+
+
+def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
+    """Creates the Cleavage per Residue results.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Nterm Cterm NtermF CtermF Exp1 .... ExpN
+            Nterm Cterm NtermF CtermF P    .... P
+        alpha: float
+            Alpha level
+        protL: list[int]
+            Protein length, recombinant and native or None.
+
+        Returns
+        -------
+        pd.DataFrame
+    """
+    #region -------------------------------------------------------------> dfO
+    label = df.columns.unique(level=0).tolist()[4:]
+    nL = len(label)
+    a = (nL)*['Rec']+(nL)*['Nat']
+    b = 2*label
+    nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
+    idx = pd.IndexSlice
+    col = pd.MultiIndex.from_arrays([a[:],b[:]])
+    dfO = pd.DataFrame(0, index=range(0,nR), columns=col) # type: ignore
+    #endregion ----------------------------------------------------------> dfO
+
+    #region ------------------------------------------------------------> Fill
+    for e in label:
+        dfT = df[df[(e,'P')] < alpha]
+        #------------------------------> Rec
+        dfR = dfT[[('Nterm','Nterm'),('Cterm', 'Cterm')]].copy()
+        #------------------------------> 0 based residue number
+        dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 2
+        dfR[('Cterm','Cterm')] = dfR[('Cterm','Cterm')] - 1
+        l = dfR.to_numpy().flatten()
+        # No Cleavage in 1 and last residue
+        l = [x for x in l if x > -1 and x < protL[0]]
+        for x in l:
+            dfO.at[x, idx['Rec',e]] = dfO.at[x, idx['Rec',e]] + 1
+        #------------------------------> Nat
+        if protL[1] is not None:
+            dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
+            #------------------------------> 0 based residue number
+            dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 2
+            dfR[('CtermF','CtermF')] = dfR[('CtermF','CtermF')] - 1
+            l = dfR.to_numpy().flatten()
+            l = [x for x in l if x > -1 and x < protL[0]]
+            for x in l:
+                dfO.at[x, idx['Nat',e]] = dfO.at[x, idx['Nat',e]] + 1
+        else:
+            pass
+    #endregion ---------------------------------------------------------> Fill
+
+    return dfO
+#---
+
+
+def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
+    """
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Nterm Cterm NtermF CtermF Exp1     .... ExpN
+            Nterm Cterm NtermF CtermF Int P    .... Int P
+        alpha: float
+            Alpha level
+        protL: list[int]
+            Protein length, recombinant and native or None.
+
+        Returns
+        -------
+        pd.DataFrame
+    """
+    def IntL2MeanI(a: list, alpha: float) -> float:
+        """Calculate the intensity average.
+
+            Parameters
+            ----------
+            a: list
+                List with the intensities.
+            alpha: float
+                Alpha level.
+        """
+        if a[-1] < alpha:
+            l = list(map(float, a[0][1:-1].split(',')))
+            return (sum(l)/len(l))
+        else:
+            return np.nan
+    #---
+    #region --------------------------------------------------------> 
+    idx = pd.IndexSlice
+    label = df.columns.unique(level=0).tolist()[4:]
+    nL = len(label)
+    a = df.columns.tolist()[4:]
+    colN = list(range(4, len(a)+4))
+    #endregion -----------------------------------------------------> 
+
+    #region --------------------------------------------------------> 
+    a = (nL)*['Rec']+(nL)*['Nat']
+    b = 2*label
+    nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
+    col = pd.MultiIndex.from_arrays([a[:],b[:]])
+    dfO = pd.DataFrame(0, index=range(0,nR), columns=col) # type: ignore
+    #endregion -----------------------------------------------------> 
+
+    #region ---------------------------------------------------> 
+    dfT = df.iloc[:,[0,1]+colN].copy()
+    #------------------------------> 0 range for residue numbers
+    dfT.iloc[:,0] = dfT.iloc[:,0]-2
+    dfT.iloc[:,1] = dfT.iloc[:,1]-1
+    resL = sorted(list(set(dfT.iloc[:,[0,1]].to_numpy().flatten())))
+    resL = [x for x in resL if x > -1 and x < protL[0]]
+    #------------------------------>
+    for e in label:
+        dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])
+    #------------------------------> 
+    maxN = dfT.loc[:,idx[:,'Int']].max().max()
+    minN = dfT.loc[:,idx[:,'Int']].min().min()
+    if maxN != minN:
+        dfT.loc[:,idx[:,'Int']] = 1 + (((dfT.loc[:,idx[:,'Int']] - minN)*(9))/(maxN - minN))
+        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].replace(np.nan, 0)
+    else:
+        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].notnull().astype('int')
+    #------------------------------>
+    for r in resL:
+        #------------------------------>
+        dfG = dfT.loc[(dfT[('Nterm','Nterm')]==r) | (dfT[('Cterm','Cterm')]==r)].copy()
+        #------------------------------>
+        dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]
+        dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
+        #------------------------------>
+        dfO.iloc[r, range(0,len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)
+    #endregion ------------------------------------------------> 
     
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         if r >= pos:
-#             col = pos
-#             start = r - pos
-#         else:
-#             col = r
-#             start = 0
-#         #endregion ------------------------------------------------> 
+    #region ---------------------------------------------------> 
+    if protL[1] is not None:
+        dfT = df.iloc[:,[2,3]+colN].copy()
+        #------------------------------> 0 range for residue number
+        dfT.iloc[:,0] = dfT.iloc[:,0]-2
+        dfT.iloc[:,1] = dfT.iloc[:,1]-1
+        resL = sorted(list(set(dfT.iloc[:,[0,1]].to_numpy().flatten())))
+        resL = [x for x in resL if x > -1 and x < protL[0]]
+        #------------------------------> 
+        for e in label:
+            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])
+        #------------------------------> 
+        maxN = dfT.loc[:,idx[:,'Int']].max().max()
+        minN = dfT.loc[:,idx[:,'Int']].min().min()
+        if maxN != minN:
+            dfT.loc[:,idx[:,'Int']] = 1 + (((dfT.loc[:,idx[:,'Int']] - minN)*(9))/(maxN - minN))
+            dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].replace(np.nan, 0)
+        else:
+            dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].notnull().astype('int')    
+        #------------------------------> 
+        for r in resL:
+            dfG = dfT.loc[(dfT[('NtermF','NtermF')]==r) | (dfT[('CtermF','CtermF')]==r)].copy()
+            #------------------------------>
+            dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]
+            dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
+            #------------------------------> 
+            dfO.iloc[r, range(len(label),2*len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)    
+    else:
+        pass
+    #endregion ------------------------------------------------> 
 
-#         #region ---------------------------------------------------> 
-#         for a in seq[start:r]:
-#             dfO.at[a,(l,f'P{col}')] = dfO.at[a,(l,f'P{col}')] + 1
-#             col -= 1
-#         col = 1
-#         for a in seq[r:r+pos]:
-#             dfO.at[a,(l,f"P{col}'")] = dfO.at[a,(l,f"P{col}'")] + 1
-#             col += 1
-#         #endregion ------------------------------------------------> 
-
-#         return dfO
-#     #---
-#     #region ---------------------------------------------------> Empty
-#     aL = ['AA']
-#     bL = ['AA']
-#     for l in df.columns.get_level_values(0)[1:]:
-#         aL = aL + 2*pos*[l]
-#         bL = bL + [f'P{x}' for x in range(pos, 0, -1)] + [f'P{x}\'' for x in range(1, pos+1,1)]
-#     idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
-#     dfO = pd.DataFrame(0, columns=idx, index=config.lAA1+['Chi'])
-#     dfO[('AA','AA')] = config.lAA1[:]+['Chi']
-#     #endregion ------------------------------------------------> Empty
-
-#     #region ---------------------------------------------------> Fill
-#     idx = pd.IndexSlice
-#     for l in df.columns.get_level_values(0)[1:]:
-#         seqDF = df[df[idx[l,'P']] < alpha].iloc[:,0].to_list()
-#         for s in seqDF:
-#             #------------------------------> 
-#             n = seq.find(s)
-#             if n > 0:
-#                 dfO = AddNewAA(dfO, n, pos, seq, l)
-#             else:
-#                 pass
-#             #------------------------------> 
-#             c = n+len(s)
-#             if c < protL:
-#                 dfO = AddNewAA(dfO, c, pos, seq, l)
-#             else:
-#                 pass
-#     #endregion ------------------------------------------------> Fill
-    
-#     #region ---------------------------------------------------> Random Cleavage
-#     c = 'ALL_CLEAVAGES_UMSAP'
-#     aL = 2*pos*[c]
-#     bL = [f'P{x}' for x in range(pos, 0, -1)] + [f"P{x}'" for x in range(1, pos+1,1)]
-#     idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
-#     dfT = pd.DataFrame(0, columns=idx, index=config.lAA1+['Chi'])
-#     dfO = pd.concat([dfO, dfT], axis=1)
-#     for k,_ in enumerate(seq[1:-1], start=1): # Exclude first and last residue
-#         dfO = AddNewAA(dfO, k, pos, seq, c)
-#     #endregion ------------------------------------------------> Random Cleavage
-
-#     #region ---------------------------------------------------> Group
-#     idx = pd.IndexSlice
-#     gS = []
-#     for g in config.lAAGroups:
-#         gS.append(dfO.loc[g,:].sum(axis=0))
-#     g = pd.concat(gS, axis=1)
-#     g = g.transpose()
-
-#     for l in df.columns.get_level_values(0)[1:]:
-#         for p in dfO.loc[:,idx[l,:]].columns.get_level_values(1):
-#             dfO.at['Chi', idx[l,p]] = dtsStatistic.test_chi(
-#                 g.loc[:,idx[[l,c],p]], alpha)[0]
-#     #endregion ------------------------------------------------> Group
-
-#     return dfO
-# #---
-
-
-# def R2Hist(
-#     df: pd.DataFrame, alpha: float, win: list[int], maxL: list[int]
-#     ) -> pd.DataFrame:
-#     """
-
-#         Parameters
-#         ----------
-#         df: pd.DataFrame
-#             Nterm Cterm NtermF CtermF Exp1 .... ExpN
-#             Nterm Cterm NtermF CtermF P    .... P
-            
-#         Returns
-#         -------
-#         pd.DataFrame
-#     """
-#     #region ---------------------------------------------------> Variables
-#     bin = []
-#     if len(win) == 1:
-#         bin.append([x for x in range(0, maxL[0]+win[0], win[0])])
-#         if maxL[1] is not None:
-#             bin.append([x for x in range(0, maxL[1]+win[0], win[0])])
-#         else:
-#             bin.append([None])
-#     else:
-#         bin.append(win)
-#         bin.append(win)
-#     #endregion ------------------------------------------------> Variables
-    
-#     #region --------------------------------------------------------> Empty DF
-#     #------------------------------> Columns
-#     label = df.columns.unique(level=0).tolist()[4:]
-#     nL = len(label)
-#     a = (2*nL+1)*['Rec']+(2*nL+1)*['Nat']
-#     b = ['Win']+nL*['All']+nL*['Unique']+['Win']+nL*['All']+nL*['Unique']
-#     c = 2*(['Win']+2*label)
-#     #------------------------------> Rows
-#     nR = sorted([len(x) for x in bin])[-1]
-#     #------------------------------> df
-#     col = pd.MultiIndex.from_arrays([a[:],b[:],c[:]])
-#     dfO = pd.DataFrame(np.nan, index=range(0,nR), columns=col)
-#     #endregion -----------------------------------------------------> Empty DF
-
-#     #region ---------------------------------------------------> Fill
-#     #------------------------------> Windows
-#     dfO.iloc[range(0,len(bin[0])), dfO.columns.get_loc(('Rec','Win','Win'))] = bin[0]
-#     if bin[1][0] is not None:
-#         dfO.iloc[range(0,len(bin[1])), dfO.columns.get_loc(('Nat','Win','Win'))] = bin[1]
-#     else:
-#         pass
-#     #------------------------------> 
-#     for e in label:
-#         dfT = df[df[(e,'P')] < alpha]
-#         #------------------------------> 
-#         dfR = dfT[[('Nterm','Nterm'),('Cterm', 'Cterm')]].copy()
-#         dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 1
-#         l = dfR.to_numpy().flatten()
-#         l = [x for x in l if x > 0 and x < maxL[0]]
-#         a,_ = np.histogram(l, bins=bin[0])
-#         dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','All',e))] = a
-#         l = list(set(l))
-#         a,_ = np.histogram(l, bins=bin[0])
-#         dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','Unique',e))] = a
-#         #------------------------------> 
-#         if bin[1][0] is not None:
-#             dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
-#             dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 1
-#             l = dfR.to_numpy().flatten()
-#             l = [x for x in l if x > 0 and x < maxL[0]]
-#             a,_ = np.histogram(l, bins=bin[0])
-#             dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','All',e))] = a
-#             l = list(set(l))
-#             a,_ = np.histogram(l, bins=bin[0])
-#             dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','Unique',e))] = a
-#         else:
-#             pass
-#     #endregion ------------------------------------------------> Fill
-
-#     return dfO
-# #---
-
-
-# def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
-#     """
-#         Parameters
-#         ----------
-#         df: pd.DataFrame
-#             Nterm Cterm NtermF CtermF Exp1 .... ExpN
-#             Nterm Cterm NtermF CtermF P    .... P
-            
-#         Returns
-#         -------
-#         pd.DataFrame
-#     """
-#     #region -------------------------------------------------------------> dfO
-#     label = df.columns.unique(level=0).tolist()[4:]
-#     nL = len(label)
-#     a = (nL)*['Rec']+(nL)*['Nat']
-#     b = 2*label
-#     nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
-#     idx = pd.IndexSlice
-#     col = pd.MultiIndex.from_arrays([a[:],b[:]])
-#     dfO = pd.DataFrame(0, index=range(0,nR), columns=col)   
-#     #endregion ----------------------------------------------------------> dfO
-   
-#     #region ------------------------------------------------------------> Fill
-#     for e in label:
-#         dfT = df[df[(e,'P')] < alpha]
-#         #------------------------------> Rec
-#         dfR = dfT[[('Nterm','Nterm'),('Cterm', 'Cterm')]].copy()
-#         #------------------------------> 0 based residue number
-#         dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 2
-#         dfR[('Cterm','Cterm')] = dfR[('Cterm','Cterm')] - 1
-#         l = dfR.to_numpy().flatten()
-#         # No Cleavage in 1 and last residue
-#         l = [x for x in l if x > -1 and x < protL[0]]
-#         for x in l:
-#             dfO.at[x, idx['Rec',e]] = dfO.at[x, idx['Rec',e]] + 1
-#         #------------------------------> Nat
-#         if protL[1] is not None:
-#             dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
-#             #------------------------------> 0 based residue number
-#             dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 2
-#             dfR[('CtermF','CtermF')] = dfR[('CtermF','CtermF')] - 1
-#             l = dfR.to_numpy().flatten()
-#             l = [x for x in l if x > -1 and x < protL[0]]
-#             for x in l:
-#                 dfO.at[x, idx['Nat',e]] = dfO.at[x, idx['Nat',e]] + 1
-#         else:
-#             pass
-#     #endregion ---------------------------------------------------------> Fill
-
-#     return dfO
-# #---
-
-
-# def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
-#     """
-#         Parameters
-#         ----------
-#         df: pd.DataFrame
-#             Nterm Cterm NtermF CtermF Exp1     .... ExpN
-#             Nterm Cterm NtermF CtermF Int P    .... Int P
-            
-#         Returns
-#         -------
-#         pd.DataFrame
-#     """
-#     def IntL2MeanI(a: list, alpha: float) -> float:
-#         """
-        
-        
-#         """
-#         if a[-1] < alpha:
-#             l = list(map(float, a[0][1:-1].split(',')))
-#             return (sum(l)/len(l))
-#         else:
-#             return np.nan
-#     #---
-#     #region --------------------------------------------------------> 
-#     idx = pd.IndexSlice
-#     label = df.columns.unique(level=0).tolist()[4:]
-#     nL = len(label)
-#     a = df.columns.tolist()[4:]
-#     print(a)
-#     colN = list(range(4, len(a)+4))
-#     print(colN)
-#     #endregion -----------------------------------------------------> 
-    
-#     #region --------------------------------------------------------> 
-#     a = (nL)*['Rec']+(nL)*['Nat']
-#     b = 2*label
-#     nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
-#     col = pd.MultiIndex.from_arrays([a[:],b[:]])
-#     dfO = pd.DataFrame(0, index=range(0,nR), columns=col)
-#     #endregion -----------------------------------------------------> 
-
-#     #region ---------------------------------------------------> 
-#     dfT = df.iloc[:,[0,1]+colN].copy()
-#     #------------------------------> 0 range for residue numbers
-#     dfT.iloc[:,0] = dfT.iloc[:,0]-2
-#     dfT.iloc[:,1] = dfT.iloc[:,1]-1
-#     resL = sorted(list(set(dfT.iloc[:,[0,1]].to_numpy().flatten())))
-#     resL = [x for x in resL if x > -1 and x < protL[0]]
-#     #------------------------------>
-#     for e in label:
-#         dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])
-#     #------------------------------> 
-#     maxN = dfT.loc[:,idx[:,'Int']].max().max()
-#     minN = dfT.loc[:,idx[:,'Int']].min().min()
-#     if maxN != minN:
-#         dfT.loc[:,idx[:,'Int']] = 1 + (((dfT.loc[:,idx[:,'Int']] - minN)*(9))/(maxN - minN))
-#         dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].replace(np.nan, 0)
-#     else:
-#         dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].notnull().astype('int')
-#     #------------------------------>
-#     for r in resL:
-#         #------------------------------>
-#         dfG = dfT.loc[(dfT[('Nterm','Nterm')]==r) | (dfT[('Cterm','Cterm')]==r)].copy()
-#         #------------------------------>
-#         dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]
-#         dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
-#         #------------------------------>
-#         dfO.iloc[r, range(0,len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)
-#     #endregion ------------------------------------------------> 
-    
-#     #region ---------------------------------------------------> 
-#     if protL[1] is not None:
-#         dfT = df.iloc[:,[2,3]+colN].copy()
-#         #------------------------------> 0 range for residue number
-#         dfT.iloc[:,0] = dfT.iloc[:,0]-2
-#         dfT.iloc[:,1] = dfT.iloc[:,1]-1
-#         resL = sorted(list(set(dfT.iloc[:,[0,1]].to_numpy().flatten())))
-#         resL = [x for x in resL if x > -1 and x < protL[0]]
-#         #------------------------------> 
-#         for e in label:
-#             dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])
-#         #------------------------------> 
-#         maxN = dfT.loc[:,idx[:,'Int']].max().max()
-#         minN = dfT.loc[:,idx[:,'Int']].min().min()
-#         if maxN != minN:
-#             dfT.loc[:,idx[:,'Int']] = 1 + (((dfT.loc[:,idx[:,'Int']] - minN)*(9))/(maxN - minN))
-#             dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].replace(np.nan, 0)
-#         else:
-#             dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].notnull().astype('int')    
-#         #------------------------------> 
-#         for r in resL:
-#             dfG = dfT.loc[(dfT[('NtermF','NtermF')]==r) | (dfT[('CtermF','CtermF')]==r)].copy()
-#             #------------------------------>
-#             dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]
-#             dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
-#             #------------------------------> 
-#             dfO.iloc[r, range(len(label),2*len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)    
-#     else:
-#         pass
-#     #endregion ------------------------------------------------> 
-
-#     return dfO
-# #---
+    return dfO
+#---
 
 
 # def R2SeqAlignment(
