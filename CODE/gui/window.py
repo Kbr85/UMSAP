@@ -17,7 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 import os
-# import shutil
+import shutil
 import webbrowser
 # from itertools import zip_longest
 from pathlib import Path
@@ -10518,8 +10518,8 @@ class WindowUMSAPControl(BaseWindow):
     #     config.nmLimProt : config.ntLimProt,
     #     config.nmTarProt : config.ntTarProt,
     # }
-    # #------------------------------>
-    # cLSecSeqF = [config.nmLimProt, config.nmTarProt]
+    #------------------------------>
+    cLSecSeqF = [mConfig.nmLimProt, mConfig.nmTarProt]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -10537,15 +10537,15 @@ class WindowUMSAPControl(BaseWindow):
         self.rWindow = {}
         #------------------------------> Copied Filters
         self.rCopiedFilters = []
-        #------------------------------> 
+        #------------------------------>
         super().__init__(parent=parent)
         #------------------------------>
         dKeyMethod = {
-            # config.klToolUMSAPCtrlAddDelExp: self.OnAddDelExport,
-            # config.klToolUMSAPCtrlAdd      : self.AddAnalysis,
-            # config.klToolUMSAPCtrlDel      : self.DeleteAnalysis,
-            # config.klToolUMSAPCtrlExp      : self.ExportAnalysis,
-            # config.klToolUMSAPCtrlReload   : self.UpdateFileContent,
+            mConfig.kwToolUMSAPCtrlAddDelExp: self.AddDelExport,
+            mConfig.lmToolUMSAPCtrlAdd      : self.AddAnalysis,
+            mConfig.lmToolUMSAPCtrlDel      : self.DeleteAnalysis,
+            mConfig.lmToolUMSAPCtrlExp      : self.ExportAnalysis,
+            mConfig.kwToolUMSAPCtrlReload   : self.UpdateFileContent,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -10573,377 +10573,6 @@ class WindowUMSAPControl(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-#     def OnAddDelExport(self, mode) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         if mode == config.klToolUMSAPCtrlAdd:
-#             #------------------------------> 
-#             dlg = dtsWindow.FileSelectDialog(
-#                 'openO', 
-#                 config.elUMSAP, 
-#                 parent  = self,
-#                 message = 'Select UMSAP file',
-#             )
-#             #------------------------------> 
-#             if dlg.ShowModal() == wx.ID_OK:
-#                 #------------------------------> 
-#                 fileP = Path(dlg.GetPath())
-#                 dlg.Destroy()
-#                 #------------------------------> 
-#                 if fileP == self.rObj.rFileP:
-#                     msg = ('New Analysis cannot be added from the same UMSAP '
-#                         'file.\nPlease choose a different UMSAP file.')
-#                     dtsWindow.DialogNotification('warning', msg=msg)
-#                     return False
-#                 else:
-#                     pass
-#                 #------------------------------> 
-#                 try:
-#                     objAdd = file.UMSAPFile(fileP)                    
-#                 except Exception as e:
-#                     dtsWindow.DialogNotification('errorF', tException=e)
-#                     return False
-#             else:
-#                 dlg.Destroy()
-#                 return False
-#             #------------------------------> 
-#             dlg = UMSAPAddDelExport(objAdd, mode)
-#         else:
-#             objAdd = None
-#             dlg = UMSAPAddDelExport(self.rObj, mode)
-#         #------------------------------> 
-#         if dlg.ShowModal():
-#             selItem = dlg.rSelItems
-#             dlg.Destroy()
-#         else:
-#             dlg.Destroy()
-#             return True
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         return self.dKeyMethod[mode](selItem, objAdd)
-#         #endregion ------------------------------------------------> 
-#     #---
-    
-#     def AddAnalysis(
-#         self, selItems: dict, objAdd: Optional[file.UMSAPFile]=None,
-#         ) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         folderData = self.rObj.rStepDataP
-#         folderInit = self.rObj.rInputFileP
-#         #------------------------------> 
-#         dataStep = objAdd.rStepDataP
-#         initStep = objAdd.rInputFileP
-#         folderD  = {}
-#         fileD    = {}
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> 
-#         for k, d in selItems.items():
-#             sec = k.replace(" ","-")
-#             #------------------------------> Make sure section exist
-#             self.rObj.rData[k] = self.rObj.rData.get(k, {})
-#             #------------------------------> 
-#             for run in d:
-#                 temp = run.split(" - ")
-#                 date = temp[0]
-#                 tID = " - ".join(temp[1:]) 
-#                 #------------------------------> 
-#                 folderN = f'{date}_{sec}'
-#                 #------------------------------> 
-#                 a = (folderData/folderN).exists()
-#                 b = self.rObj.rData[k].get(run, False)
-#                 if a or b:
-#                     #------------------------------> 
-#                     n = 1
-#                     dateF = f'{date}M{n}'
-#                     c = dateF in self.rObj.rData[k].keys()
-#                     d = (folderData/f"{dateF}_{sec}").exists()
-#                     while(c or d):
-#                         n = n + 1
-#                         dateF = f'{date}M{n}'
-#                         c = dateF in self.rObj.rData[k].keys()
-#                         d = (folderData/f"{dateF}_{sec}").exists()
-#                     #------------------------------> 
-#                     runN    = f'{dateF} - {tID}'
-#                     folderT = f'{dateF}_{sec}'
-#                 else:
-#                     runN    = run
-#                     folderT = folderN
-#                 #------------------------------> Data
-#                 self.rObj.rData[k][runN] = objAdd.rData[k][run]
-#                 #------------------------------> Folder
-#                 folderD[dataStep/folderN] = folderData/folderT
-#                 #------------------------------> Files
-#                 valI = iter(objAdd.rData[k][run]['I'].values())
-#                 keyI = iter(objAdd.rData[k][run]['I'].keys())
-#                 dataFile = next(valI)
-#                 if (folderInit/dataFile).exists():
-#                     #------------------------------> 
-#                     n = 1
-#                     dateFile, nameFile = dataFile.split('_')
-#                     nameF = f"{dateFile}M{n}_{nameFile}"
-#                     while((folderInit/nameF).exists()):
-#                         n = n + 1
-#                         nameF = f"{dateFile}M{n}_{nameFile}"
-#                     #------------------------------> 
-#                     fileD[initStep/dataFile] = folderInit/nameF
-#                     #------------------------------> 
-#                     self.rObj.rData[k][runN]['I'][next(keyI)] = nameF
-#                 else:
-#                     fileD[initStep/dataFile] = folderInit/dataFile
-#                 if k in self.cLSecSeqF:
-#                     dataFile = next(valI)
-#                     if (folderInit/dataFile).exists():
-#                         #------------------------------> 
-#                         n = 1
-#                         dateFile, nameFile = dataFile.split('_')
-#                         nameF = f"{dateFile}M{n}_{nameFile}"
-#                         while((folderInit/nameF).exists()):
-#                             n = n + 1
-#                             nameF = f"{dateFile}M{n}_{nameFile}"
-#                         #------------------------------> 
-#                         fileD[initStep/dataFile] = folderInit/nameF
-#                         #------------------------------> 
-#                         self.rObj.rData[k][runN]['I'][next(keyI)] = nameF
-#                     else:
-#                         fileD[initStep/dataFile] = folderInit/dataFile
-#                 else:
-#                     pass
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         for k,v in folderD.items():
-#             shutil.copytree(k,v)
-#         #------------------------------> 
-#         for k,v in fileD.items():
-#             shutil.copyfile(k,v)
-#         #------------------------------> 
-#         self.rObj.Save()
-#         #------------------------------> 
-#         self.UpdateFileContent()
-#         #endregion ------------------------------------------------> 
-    
-#         return True
-#     #---
-    
-#     def ExportAnalysis(
-#         self, selItems: dict, objAdd: Optional[file.UMSAPFile]=None,
-#         ) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         dlg = dtsWindow.FileSelectDialog(
-#             'save', config.elUMSAP, parent=self, message='Select file')
-#         if dlg.ShowModal() == wx.ID_OK:
-#             fileP = Path(dlg.GetPath())
-#             name = fileP.name
-#             dlg.Destroy()
-#         else:
-#             dlg.Destroy()
-#             return True
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         step = fileP.parent/config.fnDataSteps
-#         init = fileP.parent/config.fnDataInit
-#         if step.exists() or init.exists():
-#             folderN = f'{dtsMethod.StrNow()}_UMSAP_Export'
-#             fileP = fileP.parent / folderN / name
-#         else:
-#             pass
-#         #------------------------------> 
-#         folder = fileP.parent
-#         folderData = folder/config.fnDataSteps
-#         folderInit = folder/config.fnDataInit
-#         #------------------------------> 
-#         dataStep = self.rObj.rStepDataP
-#         initStep = self.rObj.rInputFileP
-#         folderD = {}
-#         fileD   = {}
-#         data    = {}
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         for k,d in selItems.items():
-#             #------------------------------> 
-#             data[k] = data.get(k, {})
-#             #------------------------------> 
-#             for run in d:
-#                 #------------------------------> 
-#                 data[k][run] = self.rObj.rData[k][run]
-#                 #------------------------------> 
-#                 folderD, fileD = self.GetFolderFile(
-#                     k, run, data[k][run]['I'], folderD, fileD, dataStep, 
-#                     folderData, initStep, folderInit)
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         folder.mkdir(parents=True, exist_ok=True)
-#         #------------------------------> 
-#         folderData.mkdir()
-#         for k,v in folderD.items():
-#             shutil.copytree(k,v)
-#         #------------------------------> 
-#         folderInit.mkdir()
-#         for k,v in fileD.items():
-#             shutil.copyfile(k,v)
-#         #------------------------------> 
-#         dtsFF.WriteJSON(fileP, data)
-#         #endregion ------------------------------------------------> 
-
-#         return True
-#     #---
-    
-#     def DeleteAnalysis(
-#         self, selItems: dict, objAdd: Optional[file.UMSAPFile]=None,
-#         ) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         inputF = []
-#         folder = []
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         for k,v in selItems.items():
-#             #------------------------------> Analysis
-#             for item in v:
-#                 #------------------------------> Folder
-#                 folder.append(
-#                     self.rObj.rStepDataP/f"{item.split(' - ')[0]}_{k.replace(' ', '-')}")
-#                 #------------------------------> Files
-#                 iVal = iter(self.rObj.rData[k][item]['I'].values())
-#                 inputF.append(next(iVal))
-#                 if k in self.cLSecSeqF:
-#                     inputF.append(next(iVal))
-#                 else:
-#                     pass
-#                 #------------------------------> Delete Analysis
-#                 self.rObj.rData[k].pop(item)
-#             #------------------------------> Section
-#             if not self.rObj.rData[k]:
-#                 self.rObj.rData.pop(k)
-#             else:
-#                 pass
-#         #------------------------------> Full file
-#         if not self.rObj.rData:
-#             shutil.rmtree(self.rObj.rStepDataP)            
-#             shutil.rmtree(self.rObj.rInputFileP)
-#             self.rObj.rFileP.unlink()
-#             if config.os == 'Darwin':
-#                 (self.rObj.rFileP.parent/'.DS_Store').unlink(missing_ok=True)
-#             else:
-#                 pass
-#             #------------------------------> 
-#             try:
-#                 self.rObj.rFileP.parent.rmdir()
-#             except OSError:
-#                 pass
-#             #------------------------------> 
-#             self.OnClose('fEvent')
-#             return True            
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> 
-
-#         #region --------------------------------------------------------> 
-#         folder = list(set(folder))
-#         [shutil.rmtree(x) for x in folder]
-#         #------------------------------> 
-#         inputF = list(set(inputF))
-#         inputNeeded = self.rObj.GetInputFiles()
-#         for iFile in inputF:
-#             if iFile in inputNeeded:
-#                 pass
-#             else:
-#                 (self.rObj.rInputFileP/iFile).unlink()
-#         #endregion -----------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         self.rObj.Save()
-#         self.UpdateFileContent()
-#         #endregion ------------------------------------------------> 
-    
-#         return True
-#     #---
-    
-#     def GetFolderFile(
-#         self, sec, run, valI, folderD, fileD, dataStep, folderData, 
-#         initStep, folderInit,
-#         ) -> tuple[dict, dict]:
-#         """
-        
-        
-#         """
-#         #------------------------------> 
-#         secN = sec.replace(' ', '-')
-#         secF = f"{run.split(' - ')[0]}_{secN}"
-#         folderD[dataStep/secF] = folderData/secF
-#         #------------------------------> 
-#         val = iter(valI.values())
-#         dataFI = next(val)
-#         fileD[initStep/dataFI] = folderInit/dataFI
-#         if sec in self.cLSecSeqF:
-#             dataFI = next(val)
-#             fileD[initStep/dataFI] = folderInit/dataFI
-#         else:
-#             pass
-#         #------------------------------> 
-#         return (folderD, fileD)
-#     #---
-    
 #     def OnHyperLink(self, event) -> bool:
 #         """ Setup analysis.
     
@@ -11020,36 +10649,366 @@ class WindowUMSAPControl(BaseWindow):
 #         event.Skip()
 #         return True
 #     #---
-    
-#     def OnClose(self, event: Union[wx.CloseEvent, str]) -> bool:
-#         """Destroy window and remove reference from config.umsapW
-    
-#             Parameters
-#             ----------
-#             event: wx.Event
-#                 Information about the event
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -----------------------------------> Update list of open files
-#         del(config.winUMSAP[self.rObj.rFileP])
-#         #endregion --------------------------------> Update list of open files
-        
-#         #region ------------------------------------> Reduce number of windows
-#         config.winNumber[self.cName] -= 1
-#         #endregion ---------------------------------> Reduce number of windows
-        
-#         #region -----------------------------------------------------> Destroy
-#         self.Destroy()
-#         #endregion --------------------------------------------------> Destroy
-        
-#         return True
-#     #---
+
+    def OnClose(self, event: Union[wx.CloseEvent, str]) -> bool:
+        """Destroy window and remove reference from config.umsapW.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------> Update list of open files
+        del(mConfig.winUMSAP[self.rObj.rFileP])
+        #endregion --------------------------------> Update list of open files
+
+        #region ------------------------------------> Reduce number of windows
+        mConfig.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class Methods
+    def AddDelExport(self, mode: str) -> bool:
+        """Set variables to start the Add/Del/Export method.
+
+            Parameters
+            ----------
+            mode: str
+                Label of the selected Tool menu item.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if mode == mConfig.lmToolUMSAPCtrlAdd:
+            #------------------------------>
+            dlg = DialogFileSelect(
+                'openO', mConfig.elUMSAP, parent=self, msg='Select UMSAP file')
+            #------------------------------>
+            if dlg.ShowModal() == wx.ID_OK:
+                #------------------------------>
+                fileP = Path(dlg.GetPath())
+                dlg.Destroy()
+                #------------------------------>
+                if fileP == self.rObj.rFileP:
+                    msg = ('New Analysis cannot be added from the same UMSAP '
+                        'file.\nPlease choose a different UMSAP file.')
+                    DialogNotification('warning', msg=msg)
+                    return False
+                else:
+                    pass
+                #------------------------------>
+                try:
+                    objAdd = mFile.UMSAPFile(fileP)
+                except Exception as e:
+                    DialogNotification('errorF', tException=e)
+                    return False
+            else:
+                dlg.Destroy()
+                return False
+            #------------------------------>
+            dlg = DialogUMSAPAddDelExport(objAdd, mode)
+        else:
+            objAdd = None
+            dlg = DialogUMSAPAddDelExport(self.rObj, mode)
+        #------------------------------>
+        if dlg.ShowModal():
+            selItem = dlg.rSelItems
+            dlg.Destroy()
+        else:
+            dlg.Destroy()
+            return True
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        return self.dKeyMethod[mode](selItem, objAdd) # type: ignore
+        #endregion ------------------------------------------------>
+    #---
+
+    def AddAnalysis(self, selItems: dict, objAdd: mFile.UMSAPFile) -> bool:
+        """Add analysis from objAdd to the file on the window.
+
+            Parameters
+            ----------
+            selItems: dict
+                Keys are Section names and values selected items.
+            objAdd: mFile.UMSAPFile
+                File from where new analysis will be added.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        folderData = self.rObj.rStepDataP
+        folderInit = self.rObj.rInputFileP
+        #------------------------------> 
+        dataStep = objAdd.rStepDataP
+        initStep = objAdd.rInputFileP
+        folderD  = {}
+        fileD    = {}
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        for k, d in selItems.items():
+            sec = k.replace(" ","-")
+            #------------------------------> Make sure section exist
+            self.rObj.rData[k] = self.rObj.rData.get(k, {})
+            #------------------------------> 
+            for run in d:
+                temp = run.split(" - ")
+                date = temp[0]
+                tID = " - ".join(temp[1:]) 
+                #------------------------------> 
+                folderN = f'{date}_{sec}'
+                #------------------------------> 
+                a = (folderData/folderN).exists()
+                b = self.rObj.rData[k].get(run, False)
+                if a or b:
+                    #------------------------------> 
+                    n = 1
+                    dateF = f'{date}M{n}'
+                    c = dateF in self.rObj.rData[k].keys()
+                    d = (folderData/f"{dateF}_{sec}").exists()
+                    while(c or d):
+                        n = n + 1
+                        dateF = f'{date}M{n}'
+                        c = dateF in self.rObj.rData[k].keys()
+                        d = (folderData/f"{dateF}_{sec}").exists()
+                    #------------------------------> 
+                    runN    = f'{dateF} - {tID}'
+                    folderT = f'{dateF}_{sec}'
+                else:
+                    runN    = run
+                    folderT = folderN
+                #------------------------------> Data
+                self.rObj.rData[k][runN] = objAdd.rData[k][run]
+                #------------------------------> Folder
+                folderD[dataStep/folderN] = folderData/folderT
+                #------------------------------> Files
+                valI = iter(objAdd.rData[k][run]['I'].values())
+                keyI = iter(objAdd.rData[k][run]['I'].keys())
+                dataFile = next(valI)
+                if (folderInit/dataFile).exists():
+                    #------------------------------> 
+                    n = 1
+                    dateFile, nameFile = dataFile.split('_')
+                    nameF = f"{dateFile}M{n}_{nameFile}"
+                    while((folderInit/nameF).exists()):
+                        n = n + 1
+                        nameF = f"{dateFile}M{n}_{nameFile}"
+                    #------------------------------> 
+                    fileD[initStep/dataFile] = folderInit/nameF
+                    #------------------------------> 
+                    self.rObj.rData[k][runN]['I'][next(keyI)] = nameF
+                else:
+                    fileD[initStep/dataFile] = folderInit/dataFile
+                if k in self.cLSecSeqF:
+                    dataFile = next(valI)
+                    if (folderInit/dataFile).exists():
+                        #------------------------------> 
+                        n = 1
+                        dateFile, nameFile = dataFile.split('_')
+                        nameF = f"{dateFile}M{n}_{nameFile}"
+                        while((folderInit/nameF).exists()):
+                            n = n + 1
+                            nameF = f"{dateFile}M{n}_{nameFile}"
+                        #------------------------------> 
+                        fileD[initStep/dataFile] = folderInit/nameF
+                        #------------------------------> 
+                        self.rObj.rData[k][runN]['I'][next(keyI)] = nameF
+                    else:
+                        fileD[initStep/dataFile] = folderInit/dataFile
+                else:
+                    pass
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        for k,v in folderD.items():
+            shutil.copytree(k,v)
+        #------------------------------> 
+        for k,v in fileD.items():
+            shutil.copyfile(k,v)
+        #------------------------------> 
+        self.rObj.Save()
+        #------------------------------> 
+        self.UpdateFileContent()
+        #endregion ------------------------------------------------> 
+    
+        return True
+    #---
+
+    def ExportAnalysis(self, selItems: dict, *args) -> bool:
+        """Export analysis to a new UMSAP file.
+
+            Parameters
+            ----------
+            selItems: dict
+                Keys are Section names and values selected items.
+            *args
+                For compatibility. They are ignore.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        dlg = DialogFileSelect(
+            'save', mConfig.elUMSAP, parent=self, msg='Select file')
+        if dlg.ShowModal() == wx.ID_OK:
+            fileP = Path(dlg.GetPath())
+            name = fileP.name
+            dlg.Destroy()
+        else:
+            dlg.Destroy()
+            return True
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        step = fileP.parent/mConfig.fnDataSteps
+        init = fileP.parent/mConfig.fnDataInit
+        if step.exists() or init.exists():
+            folderN = f'{mMethod.StrNow()}_UMSAP_Export'
+            fileP = fileP.parent / folderN / name
+        else:
+            pass
+        #------------------------------> 
+        folder = fileP.parent
+        folderData = folder/mConfig.fnDataSteps
+        folderInit = folder/mConfig.fnDataInit
+        #------------------------------> 
+        dataStep = self.rObj.rStepDataP
+        initStep = self.rObj.rInputFileP
+        folderD = {}
+        fileD   = {}
+        data    = {}
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for k,d in selItems.items():
+            #------------------------------> 
+            data[k] = data.get(k, {})
+            #------------------------------> 
+            for run in d:
+                #------------------------------> 
+                data[k][run] = self.rObj.rData[k][run]
+                #------------------------------> 
+                folderD, fileD = self.GetFolderFile(
+                    k, run, data[k][run]['I'], folderD, fileD, dataStep, 
+                    folderData, initStep, folderInit)
+        #endregion ------------------------------------------------> 
+        
+        #region ---------------------------------------------------> 
+        folder.mkdir(parents=True, exist_ok=True)
+        #------------------------------> 
+        folderData.mkdir()
+        for k,v in folderD.items():
+            shutil.copytree(k,v)
+        #------------------------------> 
+        folderInit.mkdir()
+        for k,v in fileD.items():
+            shutil.copyfile(k,v)
+        #------------------------------> 
+        mFile.WriteJSON(fileP, data)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def DeleteAnalysis(self, selItems: dict, *args) -> bool:
+        """Delete selected analysis.
+
+            Parameters
+            ----------
+            selItems: dict
+                Keys are Section names and values selected items.
+            *args
+                For compatibility. They are ignore.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        inputF = []
+        folder = []
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for k,v in selItems.items():
+            #------------------------------> Analysis
+            for item in v:
+                #------------------------------> Folder
+                folder.append(
+                    self.rObj.rStepDataP/f"{item.split(' - ')[0]}_{k.replace(' ', '-')}")
+                #------------------------------> Files
+                iVal = iter(self.rObj.rData[k][item]['I'].values())
+                inputF.append(next(iVal))
+                if k in self.cLSecSeqF:
+                    inputF.append(next(iVal))
+                else:
+                    pass
+                #------------------------------> Delete Analysis
+                self.rObj.rData[k].pop(item)
+            #------------------------------> Section
+            if not self.rObj.rData[k]:
+                self.rObj.rData.pop(k)
+            else:
+                pass
+        #------------------------------> Full file
+        if not self.rObj.rData:
+            shutil.rmtree(self.rObj.rStepDataP)
+            shutil.rmtree(self.rObj.rInputFileP)
+            self.rObj.rFileP.unlink()
+            if mConfig.os == 'Darwin':
+                (self.rObj.rFileP.parent/'.DS_Store').unlink(missing_ok=True)
+            else:
+                pass
+            #------------------------------> 
+            try:
+                self.rObj.rFileP.parent.rmdir()
+            except OSError:
+                pass
+            #------------------------------> 
+            self.OnClose('fEvent')
+            return True
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> 
+        folder = list(set(folder))
+        [shutil.rmtree(x) for x in folder]
+        #------------------------------> 
+        inputF = list(set(inputF))
+        inputNeeded = self.rObj.GetInputFiles()
+        for iFile in inputF:
+            if iFile in inputNeeded:
+                pass
+            else:
+                (self.rObj.rInputFileP/iFile).unlink()
+        #endregion -----------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.rObj.Save()
+        self.UpdateFileContent()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
     def WinPos(self) -> bool:
         """Set the position on the screen and adjust the total number of
             shown windows.
@@ -11160,299 +11119,200 @@ class WindowUMSAPControl(BaseWindow):
 #             return True
 #         #endregion -----------------------------------------------> Update GUI
 #     #---
-    
-#     def UpdateFileContent(self) -> Literal[True]:
-#         """Update the content of the file. """
-        
-#         #region ---------------------------------------------------> 
-#         tSectionChecked = self.GetCheckedSection()
-#         #endregion ------------------------------------------------> 
 
-#         #region ---------------------------------------------------> Read file
-#         try:
-#             self.rObj = file.UMSAPFile(self.rObj.rFileP)
-#         except Exception as e:
-#             raise e
-#         #endregion ------------------------------------------------> Read file
+    def UpdateFileContent(self) -> bool:
+        """Update the content of the file.
 
-#         #region ---------------------------------------------------> 
-#         self.rSection = {}
-#         #------------------------------> 
-#         self.wTrc.DeleteAllItems()
-#         #------------------------------> 
-#         self.SetTree()
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         for s in tSectionChecked:
-#             if self.rSection.get(s, False):
-#                 #------------------------------> Check
-#                 self.wTrc.SetItem3StateValue(
-#                     self.rSection[s], wx.CHK_CHECKED)
-#                 #------------------------------> Win Menu
-#                 if (win := self.rWindow[s].get('Main', False)):
-#                     for w in win:
-#                         w.UpdateUMSAPData()
-#                 else:
-#                     pass
-#             else:
-#                 [x.Destroy() for v in self.rWindow[s].values() for x in v]
-#         #endregion ------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        tSectionChecked = self.GetCheckedSection()
+        #endregion ------------------------------------------------> 
 
-#         return True
-#     #---
+        #region ---------------------------------------------------> Read file
+        try:
+            self.rObj = mFile.UMSAPFile(self.rObj.rFileP)
+        except Exception as e:
+            raise e
+        #endregion ------------------------------------------------> Read file
+
+        #region ---------------------------------------------------> 
+        self.rSection = {}
+        #------------------------------> 
+        self.wTrc.DeleteAllItems()
+        #------------------------------> 
+        self.SetTree()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for s in tSectionChecked:
+            if self.rSection.get(s, False):
+                #------------------------------> Check
+                self.wTrc.SetItem3StateValue(
+                    self.rSection[s], wx.CHK_CHECKED)
+                #------------------------------> Win Menu
+                if (win := self.rWindow[s].get('Main', False)):
+                    for w in win:
+                        w.UpdateUMSAPData()
+                else:
+                    pass
+            else:
+                [x.Destroy() for v in self.rWindow[s].values() for x in v]
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region -----------------------------------------------------> Get Methods
-#     def GetCheckedSection(self) -> list[str]:
-#         """Get a list with the name of all checked sections 
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         return [k for k, v in self.rSection.items() if v.IsChecked()]
-#     #---
+    def GetCheckedSection(self) -> list[str]:
+        """Get a list with the name of all checked sections.
+
+            Returns
+            -------
+            bool
+        """
+        return [k for k, v in self.rSection.items() if v.IsChecked()]
+    #---
+
+    def GetFolderFile(
+        self, sec, run, valI, folderD, fileD, dataStep, folderData, 
+        initStep, folderInit,
+        ) -> tuple[dict, dict]:
+        """Get path to folders and files.
+
+            Parameters
+            ----------
+            sec: str
+                Section name.
+            run:
+            valI:
+            folderD:
+            fileD:
+            dataStep:
+            folderData:
+            initStep:
+            folderInit:
+
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        secN = sec.replace(' ', '-')
+        secF = f"{run.split(' - ')[0]}_{secN}"
+        folderD[dataStep/secF] = folderData/secF
+        #------------------------------> 
+        val = iter(valI.values())
+        dataFI = next(val)
+        fileD[initStep/dataFI] = folderInit/dataFI
+        if sec in self.cLSecSeqF:
+            dataFI = next(val)
+            fileD[initStep/dataFI] = folderInit/dataFI
+        else:
+            pass
+        #------------------------------> 
+        return (folderD, fileD)
+    #---
     #endregion --------------------------------------------------> Get Methods
 #---
-
-
-# class UMSAPAddDelExport(dtsWindow.OkCancel):
-#     """
-
-#         Parameters
-#         ----------
-        
-
-#         Attributes
-#         ----------
-        
-
-#         Raises
-#         ------
-        
-
-#         Methods
-#         -------
-        
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cSWindow = (400, 700)
-#     cLError = {
-#         config.klToolUMSAPCtrlAdd: 'adding',
-#         config.klToolUMSAPCtrlDel: 'deleting',
-#         config.klToolUMSAPCtrlExp: 'exporting',
-#     }
-#     cLBtnOpt = {
-#         config.klToolUMSAPCtrlAdd: 'Add',
-#         config.klToolUMSAPCtrlDel: 'Delete',
-#         config.klToolUMSAPCtrlExp: 'Export',
-#     } 
-#     #endregion --------------------------------------------------> Class setup
-
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, obj: file.UMSAPFile, mode: str) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.rObj = obj
-#         self.mode = mode
-#         #------------------------------> 
-#         self.cLBtn = self.cLBtnOpt[mode]
-#         self.cTitle = f'{self.cLBtn} data from: {self.rObj.rFileP.name}'
-#         #------------------------------> 
-#         super().__init__(title=self.cTitle, parent=None, size=self.cSWindow)
-#         self.FindWindowById(wx.ID_OK).SetLabel(self.cLBtn)
-#         #------------------------------> 
-#         self.rSelItems = {}
-#         #endregion --------------------------------------------> Initial Setup
-
-#         #region -----------------------------------------------------> Widgets
-#         self.wTrc = wxCT.CustomTreeCtrl(self)
-#         self.wTrc.SetFont(config.font['TreeItem'])
-#         self.SetTree()
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-#         self.sSizer.Add(self.wTrc, 1, wx.EXPAND|wx.ALL, 5)
-#         self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
-        
-#         self.SetSizer(self.sSizer)
-#         #endregion ---------------------------------------------------> Sizers
-
-#         #region --------------------------------------------------------> Bind
-#         self.wTrc.Bind(wxCT.EVT_TREE_ITEM_CHECKED, self.OnCheckItem)
-#         #endregion -----------------------------------------------------> Bind
-
-#         #region ---------------------------------------------> Window position
-#         self.Center()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #region ---------------------------------------------------> Class methods
-#     def OnCheckItem(self, event) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         item     = event.GetItem()
-#         checked  = self.wTrc.IsItemChecked(item)
-#         #endregion ------------------------------------------------> 
-    
-#         #region ---------------------------------------------------> 
-#         if checked:
-#             #------------------------------> Check all children
-#             for child in item.GetChildren():
-#                 child.Set3StateValue(wx.CHK_CHECKED)
-#                 for gchild in child.GetChildren():
-#                     gchild.Set3StateValue(wx.CHK_CHECKED)
-#             #------------------------------> Check parent or not
-#             parent = item.GetParent()
-#             if parent is not None:
-#                 if all([x.IsChecked() for x in parent.GetChildren()]):
-#                     parent.Set3StateValue(wx.CHK_CHECKED)
-#                     gparent = parent.GetParent()
-#                     if gparent is not None:
-#                         if all([x.IsChecked() for x in gparent.GetChildren()]):
-#                             gparent.Set3StateValue(wx.CHK_CHECKED)
-#                         else:
-#                             pass
-#                     else:
-#                         pass
-#                 else:
-#                     pass
-#             else:
-#                 pass
-#         else:
-#             #------------------------------> Uncheck all children
-#             for child in item.GetChildren():
-#                 child.Set3StateValue(wx.CHK_UNCHECKED)
-#                 for gchild in child.GetChildren():
-#                     gchild.Set3StateValue(wx.CHK_UNCHECKED)
-#             #------------------------------> Unchecked all parent
-#             parent = item.GetParent()
-#             if parent is not None:
-#                 parent.Set3StateValue(wx.CHK_UNCHECKED)
-#                 gparent = parent.GetParent()
-#                 if gparent is not None:
-#                     gparent.Set3StateValue(wx.CHK_UNCHECKED)
-#             else:
-#                 pass
-#         #------------------------------> 
-#         self.Update()
-#         self.Refresh()
-#         #endregion ------------------------------------------------> 
-
-#         event.Skip()
-#         return True
-#     #---
-    
-#     def SetTree(self) -> bool:
-#         """Set the elements of the wx.TreeCtrl 
-        
-#             Returns
-#             -------
-#             bool
-        
-#             Notes
-#             -----
-#             See data.file.UMSAPFile for the structure of obj.confTree.
-#         """
-#         #region ----------------------------------------------------> Add root
-#         root = self.wTrc.AddRoot(self.rObj.rFileP.name, ct_type=1)
-#         #endregion -------------------------------------------------> Add root
-        
-#         #region ------------------------------------------------> Add elements
-#         for a, b in self.rObj.rData.items():
-#             #------------------------------> Add section node
-#             childa = self.wTrc.AppendItem(root, a, ct_type=1)
-#             for c, d in b.items():
-#                 #------------------------------> Add date node
-#                 childb = self.wTrc.AppendItem(childa, c, ct_type=1)
-#                 for e, f in d['I'].items():
-#                     #------------------------------> Add date items
-#                     childc = self.wTrc.AppendItem(childb, f"{e}: {f}")
-#                     self.wTrc.SetItemFont(
-#                         childc, config.font['TreeItemDataFile'])
-#         #endregion ---------------------------------------------> Add elements
-        
-#         #region -------------------------------------------------> Expand root
-#         self.wTrc.Expand(root)
-#         [child.Expand() for child in root.GetChildren()]
-#         #endregion ----------------------------------------------> Expand root
-        
-#         return True
-#     #---
-    
-#     def OnOK(self, event):
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         root = self.wTrc.GetRootItem()
-#         self.rSelItems = {}
-#         checked = []
-#         #endregion ------------------------------------------------> 
-        
-#         #region --------------------------------------------------->
-#         for child in root.GetChildren():
-#             #------------------------------> 
-#             childN = child.GetText()
-#             gchildL = child.GetChildren()
-#             #------------------------------> 
-#             for gchild in gchildL:
-#                 if gchild.IsChecked():
-#                     self.rSelItems[childN] = self.rSelItems.get(childN, [])
-#                     self.rSelItems[childN].append(gchild.GetText())
-#                     checked.append(True)
-#                 else:
-#                     pass
-#         #------------------------------> 
-#         if not checked:
-#             msg = (f'There are no analysis selected. Please select something '
-#                 'first.')
-#             dtsWindow.DialogNotification('warning', msg=msg)
-#             return False
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         self.EndModal(1)
-#         self.Close()
-#         #endregion ------------------------------------------------> 
-
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
 #endregion ----------------------------------------------------------> Classes
 
 
 #region ------------------------------------------------------> wx.Dialog Base
+class BaseDialogOkCancel(wx.Dialog):
+    """Basic wx.Dialog with a Cancel Ok Button.
 
+        Parameters
+        ----------
+        title: str
+            Title of the wx.Dialog.
+        parent: wx.Window or None
+            To center the dialog on the parent.
+        size: wx.Size
+            Size of the wx.Dialog.
+        
+        Attributes
+        ----------
+        sBtn: wx.Sizer
+            Sizer with the Cancel, OK buttons.
+        sSizer: wx.BoxSizer(wx.Vertical)
+            Main Sizer of the wx.Dialog
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        title: str='',
+        parent: Optional[wx.Window]=None,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cStyle = getattr(
+            self, 'cStyle', wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER)
+        self.cSize = getattr(self, 'cSize', (600, 900))
+        #------------------------------> 
+        super().__init__(
+            parent, title=title, style=self.cStyle, size=self.cSize)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.sBtn = self.CreateButtonSizer(wx.CANCEL|wx.OK)
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer = wx.BoxSizer(wx.VERTICAL)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
+        self.Bind(wx.EVT_BUTTON, self.OnCancel, id=wx.ID_CANCEL)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+            
+            Returns
+            -------
+            bool
+            
+            Notes
+            -----
+            Basic implementation. Override as needed.
+        """
+        self.EndModal(1)
+        self.Close()
+        return True
+    #---
+    
+    def OnCancel(self, event: wx.CommandEvent) -> bool:
+        """The macOs implementation has a bug here that does not discriminate
+            between the Cancel and Ok button and always return self.EndModal(1).
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+            Returns
+            -------
+            True
+        """
+        self.EndModal(0)
+        self.Close()
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+#---
 #endregion ---------------------------------------------------> wx.Dialog Base
 
 
@@ -12351,7 +12211,7 @@ class DialogProgress(wx.Dialog):
 #---
 
 
-class DialogResControlExp(wx.Dialog):
+class DialogResControlExp(BaseDialogOkCancel):
     """Creates the dialog to type values for Results - Control Experiments.
 
         Parameters
@@ -12387,28 +12247,20 @@ class DialogResControlExp(wx.Dialog):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        super().__init__(
-            mConfig.winMain,
-            title = self.cName,
-            style = self.cStyle,
-            size  = self.cSize,
-        )
+        super().__init__(title  = self.cName, parent = mConfig.winMain)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
         self.wConf = mTab.ResControlExp(self, iFile, parent)
-        #------------------------------> Buttons
-        self.sBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
         #endregion --------------------------------------------------> Widgets
 
         #region -------------------------------------------------------> Sizer
-        self.sSizer = wx.BoxSizer(wx.VERTICAL)
         self.sSizer.Add(self.wConf, 1, wx.EXPAND|wx.ALL, 5)
         self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
         #------------------------------>
         self.SetSizer(self.sSizer)
         #endregion ----------------------------------------------------> Sizer
-        
+
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
         #endregion -----------------------------------------------------> Bind
@@ -12444,6 +12296,231 @@ class DialogResControlExp(wx.Dialog):
         return True
     #---
     #endregion ------------------------------------------------> Event methods
+#---
+
+
+class DialogUMSAPAddDelExport(BaseDialogOkCancel):
+    """Dialog to select items from an UMSAP file in order to Add/Del/Export
+        the selected items.
+
+        Parameters
+        ----------
+        obj: mFile.UMSAPFile
+            UMSAP File object.
+        mode: str
+            Add/Del/Export
+
+        Attributes
+        ----------
+        rSelItem: dict
+            Key are sections and values selected items.
+    """
+    #region -----------------------------------------------------> Class setup
+    cSize = (400, 700)
+    # cLError = {
+    #     config.klToolUMSAPCtrlAdd: 'adding',
+    #     config.klToolUMSAPCtrlDel: 'deleting',
+    #     config.klToolUMSAPCtrlExp: 'exporting',
+    # }
+    cLBtnOpt = {
+        mConfig.lmToolUMSAPCtrlAdd: 'Add',
+        mConfig.lmToolUMSAPCtrlDel: 'Delete',
+        mConfig.lmToolUMSAPCtrlExp: 'Export',
+    } 
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, obj: mFile.UMSAPFile, mode: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rObj = obj
+        self.mode = mode
+        #------------------------------> 
+        self.cLBtn = self.cLBtnOpt[mode]
+        self.cTitle = f'{self.cLBtn} data from: {self.rObj.rFileP.name}'
+        #------------------------------> 
+        super().__init__(title=self.cTitle, parent=None)
+        self.FindWindowById(wx.ID_OK).SetLabel(self.cLBtn)
+        #------------------------------> 
+        self.rSelItems = {}
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wTrc = wxCT.CustomTreeCtrl(self)
+        self.wTrc.SetFont(mConfig.font['TreeItem'])
+        self.SetTree()
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer.Add(self.wTrc, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------>
+        self.SetSizer(self.sSizer)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.wTrc.Bind(wxCT.EVT_TREE_ITEM_CHECKED, self.OnCheckItem)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.Center()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event Methods
+    def OnCheckItem(self, event: wx.Event) -> bool:
+        """Adjust checked items.
+
+            Parameters
+            ----------
+            event: wx.Event
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        item     = event.GetItem() # type: ignore
+        checked  = self.wTrc.IsItemChecked(item)
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if checked:
+            #------------------------------> Check all children
+            for child in item.GetChildren():
+                child.Set3StateValue(wx.CHK_CHECKED)
+                for gchild in child.GetChildren():
+                    gchild.Set3StateValue(wx.CHK_CHECKED)
+            #------------------------------> Check parent or not
+            parent = item.GetParent()
+            if parent is not None:
+                if all([x.IsChecked() for x in parent.GetChildren()]):
+                    parent.Set3StateValue(wx.CHK_CHECKED)
+                    gparent = parent.GetParent()
+                    if gparent is not None:
+                        if all([x.IsChecked() for x in gparent.GetChildren()]):
+                            gparent.Set3StateValue(wx.CHK_CHECKED)
+                        else:
+                            pass
+                    else:
+                        pass
+                else:
+                    pass
+            else:
+                pass
+        else:
+            #------------------------------> Uncheck all children
+            for child in item.GetChildren():
+                child.Set3StateValue(wx.CHK_UNCHECKED)
+                for gchild in child.GetChildren():
+                    gchild.Set3StateValue(wx.CHK_UNCHECKED)
+            #------------------------------> Unchecked all parent
+            parent = item.GetParent()
+            if parent is not None:
+                parent.Set3StateValue(wx.CHK_UNCHECKED)
+                gparent = parent.GetParent()
+                if gparent is not None:
+                    gparent.Set3StateValue(wx.CHK_UNCHECKED)
+            else:
+                pass
+        #------------------------------> 
+        self.Update()
+        self.Refresh()
+        #endregion ------------------------------------------------> 
+
+        event.Skip()
+        return True
+    #---
+
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Check Dialog input.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        root = self.wTrc.GetRootItem()
+        self.rSelItems = {}
+        checked = []
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------->
+        for child in root.GetChildren(): # type: ignore
+            #------------------------------> 
+            childN = child.GetText()
+            gchildL = child.GetChildren()
+            #------------------------------> 
+            for gchild in gchildL:
+                if gchild.IsChecked():
+                    self.rSelItems[childN] = self.rSelItems.get(childN, [])
+                    self.rSelItems[childN].append(gchild.GetText())
+                    checked.append(True)
+                else:
+                    pass
+        #------------------------------> 
+        if not checked:
+            msg = (f'There are no analysis selected. Please select something '
+                'first.')
+            DialogNotification('warning', msg=msg)
+            return False
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.EndModal(1)
+        self.Close()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class Methods
+    def SetTree(self) -> bool:
+        """Set the elements of the wx.TreeCtrl.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            See data.file.UMSAPFile for the structure of obj.confTree.
+        """
+        #region ----------------------------------------------------> Add root
+        root = self.wTrc.AddRoot(self.rObj.rFileP.name, ct_type=1)
+        #endregion -------------------------------------------------> Add root
+
+        #region ------------------------------------------------> Add elements
+        for a, b in self.rObj.rData.items():
+            #------------------------------> Add section node
+            childa = self.wTrc.AppendItem(root, a, ct_type=1)
+            for c, d in b.items():
+                #------------------------------> Add date node
+                childb = self.wTrc.AppendItem(childa, c, ct_type=1)
+                for e, f in d['I'].items():
+                    #------------------------------> Add date items
+                    childc = self.wTrc.AppendItem(childb, f"{e}: {f}")
+                    self.wTrc.SetItemFont(
+                        childc, mConfig.font['TreeItemDataFile'])
+        #endregion ---------------------------------------------> Add elements
+
+        #region -------------------------------------------------> Expand root
+        self.wTrc.Expand(root)
+        [child.Expand() for child in root.GetChildren()]
+        #endregion ----------------------------------------------> Expand root
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 

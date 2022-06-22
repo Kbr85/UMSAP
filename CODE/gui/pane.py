@@ -34,7 +34,7 @@ import data.method as mMethod
 import data.exception as mException
 import data.file as mFile
 import data.statistic as mStatistic
-# import gui.method as gmethod
+import gui.method as gMethod
 import gui.validator as mValidator
 import gui.widget as mWidget
 import gui.window as mWindow
@@ -1520,8 +1520,8 @@ class BaseConfPanel(
     #---
 
     def LoadResults(self) -> bool:
-        """Load output file
-        
+        """Load output file.
+
             Returns
             -------
             bool
@@ -1529,7 +1529,7 @@ class BaseConfPanel(
         #region --------------------------------------------------------> Load
         wx.CallAfter(self.rDlg.UpdateStG, self.cLPdLoad)
         #------------------------------> 
-        # wx.CallAfter(gMethod.LoadUMSAPFile, fileP=self.rDO['uFile'])
+        wx.CallAfter(gMethod.LoadUMSAPFile, fileP=self.rDO['uFile'])
         #endregion -----------------------------------------------------> Load
 
         return True

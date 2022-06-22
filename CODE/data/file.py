@@ -613,7 +613,7 @@ class UMSAPFile():
             - When a requested section is not found in the file (GetSectionData)
     """
     #region -----------------------------------------------------> Class setup
-    # SeqF = [config.nmTarProt, config.nmLimProt]
+    SeqF = [mConfig.nmTarProt, mConfig.nmLimProt]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -647,38 +647,29 @@ class UMSAPFile():
     #endregion -----------------------------------------------> Instance setup
 
     #region ----------------------------------------------------> Class Method
-#     def Save(self, tPath: Union[None, str, Path]=None) -> bool:
-#         """Save the file content
-    
-#             Parameters
-#             ----------
-#             tPath:
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> Variables
-#         oPath = tPath if tPath is not None else self.rFileP
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ---------------------------------------------------> Write
-#         try:
-#             dtsFF.WriteJSON(oPath, self.rData)
-#         except Exception as e:
-#             msg = f'It was not possible to update the content of file: {oPath}'
-#             dtsWindow.NotificationDialog('errorF', msg=msg, tException=e)
-#             return False
-#         #endregion ------------------------------------------------> Write
+    def Save(self, tPath: Union[None, str, Path]=None) -> bool:
+        """Save the file content.
 
-#         return True
-#     #---
+            Parameters
+            ----------
+            tPath: Path, str or None
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        oPath = tPath if tPath is not None else self.rFileP
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Write
+        WriteJSON(oPath, self.rData)
+        #endregion ------------------------------------------------> Write
+
+        return True
+    #---
     #endregion -------------------------------------------------> Class Method
-    
+
     #region -------------------------------------------------------> Configure
 #     def ConfigureDataCorrA(self) -> dict:
 #         """Configure a Correlation Analysis section	
@@ -1284,34 +1275,35 @@ class UMSAPFile():
 #         return dtsFF.ReadCSV2DF(fileP, header=[0,1])
 #     #---
     
-#     def GetInputFiles(self) -> list[str]:
-#         """Get a flat list of all input files in self.rData.
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Notes
-#             -----
-#             This assumes files are added to I as the first and second items
-#         """
-        
-#         inputF = []
-#         for k,v in self.rData.items():
-#             for w in v.values():
-#                 iVal = iter(w['I'].values())
-#                 inputF.append(next(iVal))
-#                 if k in self.SeqF:
-#                     inputF.append(next(iVal))
-#                 else:
-#                     pass
-                
-#         return inputF
-#     #---
+    def GetInputFiles(self) -> list[str]:
+        """Get a flat list of all input files in self.rData.
+
+            Returns
+            -------
+            list[str]
+                List of the files
+
+            Notes
+            -----
+            This assumes files are added to I as the first and second items
+        """
+        #region ---------------------------------------------------> 
+        inputF = []
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for k,v in self.rData.items():
+            for w in v.values():
+                iVal = iter(w['I'].values())
+                inputF.append(next(iVal))
+                if k in self.SeqF:
+                    inputF.append(next(iVal))
+                else:
+                    pass
+        #endregion ------------------------------------------------> 
+
+        return inputF
+    #---
     #endregion --------------------------------------------------> Get Methods
 #---
 #endregion ----------------------------------------------------------> Classes

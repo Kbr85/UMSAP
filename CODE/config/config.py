@@ -193,12 +193,9 @@ kwHelpManual   = 'MenuHelp Manual'
 kwHelpTutorial = 'MenuHelp Tutorial'
 kwHelpCheckUpd = 'MenuHelp Check for Updates'
 kwHelpPref     = 'MenuHelp Preferences'
-# #------------------------------> Tool Menu for UMSAPCtrl
-# klToolUMSAPCtrlAddDelExp = 'AddDelExp'
-# klToolUMSAPCtrlAdd       = 'Add Analysis'
-# klToolUMSAPCtrlDel       = 'Delete Analysis'
-# klToolUMSAPCtrlExp       = 'Export Analysis'
-# klToolUMSAPCtrlReload    = 'Reload File'
+#------------------------------> Tool Menu for UMSAPCtrl
+kwToolUMSAPCtrlAddDelExp = 'ToolUMSAPCtrl Add Del Export Analysis'
+kwToolUMSAPCtrlReload    = 'ToolUMSAPCtrl Reload File'
 # #------------------------------> Tool Menu for Plot Window. General Items
 # klToolGuiUpdate    = 'Update Result Window'
 # klToolDupWin       = 'Duplicate Window'
@@ -303,7 +300,10 @@ lPdError = 'Fatal Error'
 # lFilFCLog    = 'Log2FC'
 # lFilPVal     = 'P Val'
 # lFilZScore   = 'Z Score'
-# #------------------------------> wx.Menu
+#------------------------------> wx.Menu
+lmToolUMSAPCtrlAdd = 'Add Analysis'
+lmToolUMSAPCtrlDel = 'Delete Analysis'
+lmToolUMSAPCtrlExp = 'Export Analysis'
 # lmCorrAColNum  = 'Column Numbers (0 based)'
 # lmCorrAColName = 'Column Names'
 # lmCorrASelCol  = 'Select Columns'
