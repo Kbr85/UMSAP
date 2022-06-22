@@ -10511,13 +10511,13 @@ class WindowUMSAPControl(BaseWindow):
     #     config.nmTarProt : TarProtPlot,
     # }
     # #------------------------------>
-    # dSectionTab = { # Section name and Tab name correlation
-    #     config.nuCorrA   : config.ntCorrA,
-    #     config.nuDataPrep: config.ntDataPrep,
-    #     config.nmProtProf: config.ntProtProf,
-    #     config.nmLimProt : config.ntLimProt,
-    #     config.nmTarProt : config.ntTarProt,
-    # }
+    dSectionTab = { # Section name and Tab name correlation
+        mConfig.nuCorrA   : mConfig.ntCorrA,
+        mConfig.nuDataPrep: mConfig.ntDataPrep,
+        mConfig.nmProtProf: mConfig.ntProtProf,
+        mConfig.nmLimProt : mConfig.ntLimProt,
+        mConfig.nmTarProt : mConfig.ntTarProt,
+    }
     #------------------------------>
     cLSecSeqF = [mConfig.nmLimProt, mConfig.nmTarProt]
     #endregion --------------------------------------------------> Class setup
@@ -10562,7 +10562,7 @@ class WindowUMSAPControl(BaseWindow):
 
         #region --------------------------------------------------------> Bind
         # self.wTrc.Bind(wxCT.EVT_TREE_ITEM_CHECKING, self.OnCheckItem)
-        # self.wTrc.Bind(wxCT.EVT_TREE_ITEM_HYPERLINK, self.OnHyperLink)
+        self.wTrc.Bind(wxCT.EVT_TREE_ITEM_HYPERLINK, self.OnHyperLink)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -10573,40 +10573,40 @@ class WindowUMSAPControl(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-#     def OnHyperLink(self, event) -> bool:
-#         """ Setup analysis.
-    
-#             Parameters
-#             ----------
-#             event : wxCT.Event
-#                 Information about the event
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------------> DateI
-#         dateI   = event.GetItem()
-#         section = dateI.GetParent().GetText()
-#         #endregion ----------------------------------------------------> DateI
-        
-#         #region -------------------------------------------------------> DataI
-#         dataI = self.rObj.GetDataUser(section, dateI.GetText())
-#         #endregion ----------------------------------------------------> DataI
-        
-#         #region --------------------------------------------------> Create Tab
-#         #------------------------------> 
-#         if config.winMain is None:
-#             config.winMain = MainWindow()
-#         else:
-#             pass
-#         #------------------------------> 
-#         config.winMain.OnCreateTab(self.dSectionTab[section], dataI)
-#         #endregion -----------------------------------------------> Create Tab
-        
-#         return True
-#     #---
-    
+    def OnHyperLink(self, event) -> bool:
+        """Setup analysis.
+
+            Parameters
+            ----------
+            event : wxCT.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> DateI
+        dateI   = event.GetItem()
+        section = dateI.GetParent().GetText()
+        #endregion ----------------------------------------------------> DateI
+
+        #region -------------------------------------------------------> DataI
+        dataI = self.rObj.GetDataUser(section, dateI.GetText())
+        #endregion ----------------------------------------------------> DataI
+
+        #region --------------------------------------------------> Create Tab
+        #------------------------------> 
+        if mConfig.winMain is None:
+            mConfig.winMain = WindowMain()
+        else:
+            pass
+        #------------------------------> 
+        mConfig.winMain.CreateTab(self.dSectionTab[section], dataI) # type: ignore
+        #endregion -----------------------------------------------> Create Tab
+
+        return True
+    #---
+
 #     def OnCheckItem(self, event) -> bool:
 #         """Show window when section is checked
     
@@ -10909,7 +10909,7 @@ class WindowUMSAPControl(BaseWindow):
                     k, run, data[k][run]['I'], folderD, fileD, dataStep, 
                     folderData, initStep, folderInit)
         #endregion ------------------------------------------------> 
-        
+
         #region ---------------------------------------------------> 
         folder.mkdir(parents=True, exist_ok=True)
         #------------------------------> 
@@ -11186,14 +11186,21 @@ class WindowUMSAPControl(BaseWindow):
             Parameters
             ----------
             sec: str
-                Section name.
-            run:
-            valI:
+                Analysis name.
+            run: dict
+                Data dict
+            valI: dict
+            
             folderD:
+            
             fileD:
+            
             dataStep:
+            
             folderData:
+            
             initStep:
+            
             folderInit:
 
             Returns
@@ -12317,11 +12324,6 @@ class DialogUMSAPAddDelExport(BaseDialogOkCancel):
     """
     #region -----------------------------------------------------> Class setup
     cSize = (400, 700)
-    # cLError = {
-    #     config.klToolUMSAPCtrlAdd: 'adding',
-    #     config.klToolUMSAPCtrlDel: 'deleting',
-    #     config.klToolUMSAPCtrlExp: 'exporting',
-    # }
     cLBtnOpt = {
         mConfig.lmToolUMSAPCtrlAdd: 'Add',
         mConfig.lmToolUMSAPCtrlDel: 'Delete',

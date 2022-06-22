@@ -590,8 +590,6 @@ class UMSAPFile():
 
         Attributes
         ----------
-        cName : str
-            Unique name of the class
         dConfigure : dict
             Configure methods. Keys are the section names as read from the file
         rConfData : dict
@@ -604,13 +602,6 @@ class UMSAPFile():
             Data read from json formatted file
         rFileP : Path
             Path to the UMSAP file
-        
-        Raises
-        ------
-        InputError
-            - When fileP cannot be read.
-        ExecutionError
-            - When a requested section is not found in the file (GetSectionData)
     """
     #region -----------------------------------------------------> Class setup
     SeqF = [mConfig.nmTarProt, mConfig.nmLimProt]
@@ -1046,50 +1037,42 @@ class UMSAPFile():
 #         except KeyError as e:
 #             raise e
 #     #---
-    
-#     def GetDataUser(self, tSection: str, tDate: str) -> dict:
-#         """ Get both initial and curated data from the user for the analysis
-    
-#             Parameters
-#             ----------
-#             tSection: str
-#                 Analysis performed, e.g. 'Correlation Analysis'
-#             tDate : str
-#                 The date plus user-given Analysis ID 
-#                 e.g. '20210325-112056 - bla'
-    
-#             Returns
-#             -------
-#             dict:
-#                 {
-#                     'I' : user input with stripped keys,
-#                     'CI': corrected user input,
-#                     'rootP' : path to the folder containing the UMSAP file,
-#                 }
-    
-#             Raise
-#             -----
-#             KeyError:
-#                 When tSection or tDate is not found in the file
-#         """
-#         #region ------------------------------------------------> Strip I keys
-#         #------------------------------> 
-#         i = {}
-#         #------------------------------> 
-#         for k,v in self.rData[tSection][tDate]['I'].items():
-#             i[k.strip()] = v
-#         #endregion ---------------------------------------------> Strip I keys
-        
-#         try:
-#             return {
-#                 'I'    : i,
-#                 'CI'   : self.rData[tSection][tDate]['CI'],
-#                 'uFile': self.rFileP,
-#             }
-#         except KeyError as e:
-#             raise e
-#     #---
-    
+
+    def GetDataUser(self, tSection: str, tDate: str) -> dict:
+        """Get both initial and curated data from the user for the analysis.
+
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+
+            Returns
+            -------
+            dict:
+                {
+                    'I' : user input with stripped keys,
+                    'CI': corrected user input,
+                    'rootP' : path to the folder containing the UMSAP file,
+                }
+        """
+        #region ------------------------------------------------> Strip I keys
+        #------------------------------> 
+        i = {}
+        #------------------------------> 
+        for k,v in self.rData[tSection][tDate]['I'].items():
+            i[k.strip()] = v
+        #endregion ---------------------------------------------> Strip I keys
+
+        return {
+            'I'    : i,
+            'CI'   : self.rData[tSection][tDate]['CI'],
+            'uFile': self.rFileP,
+        }
+    #---
+
 #     def GetRecSeq(self, tSection: str, tDate: str) -> str:
 #         """ Get the recombinant sequence used in an analysis.
     

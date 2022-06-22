@@ -1619,6 +1619,8 @@ class BaseConfPanelMod(BaseConfPanel, mWidget.ResControl):
         BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
 
         mWidget.ResControl.__init__(self, self.wSbColumn)
+        #------------------------------>
+        self.rLbDict = {}
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
