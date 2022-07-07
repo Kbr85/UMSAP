@@ -109,7 +109,7 @@ nwDef = 'Untitled Window'
 #------------------------------> Windows
 nwMain          = 'Analysis Setup'
 nwUMSAPControl  = 'UMSAP Control'
-# nwCorrAPlot     = 'CorrAPlot'
+nwCorrAPlot     = 'CorrAPlot'
 # nwProtProf      = 'ProtProfPlot'
 # nwLimProt       = 'LimProtPlot'
 # nwTarProt       = 'TarProtPlot'
@@ -602,8 +602,8 @@ dtFormat = '%Y%m%d-%H%M%S'
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Full Windows
 sWinRegular = (990, 775)
-# #------------------------------> Plot Window
-# sWinPlot = (560, 560)
+#------------------------------> Plot Window
+sWinPlot = (560, 560)
 # sWinModPlot = (1100, 625)
 #------------------------------> wx.TextCtrl
 sTc = (50, 22)

@@ -320,12 +320,12 @@ class BaseWindow(wx.Frame):
     #region ---------------------------------------------------> Event Methods
     def OnClose(self, event: wx.CloseEvent) -> bool:
         """Destroy window. Override as needed.
-    
+
             Parameters
             ----------
             event: wx.CloseEvent
-                Information about the event
-                
+                Information about the event.
+
             Returns
             -------
             bool
@@ -417,10 +417,10 @@ class BaseWindow(wx.Frame):
 #         #------------------------------> 
 #         return True
 #     #---
-    
+
 #     def OnPlotZoomResetAll(self) -> bool:
 #         """Reset the Zoom level of all plots in the window. Override as needed.
-    
+
 #             Returns
 #             -------
 #             bool
@@ -443,7 +443,7 @@ class BaseWindow(wx.Frame):
 #         #------------------------------> 
 #         return True
 #     #---
-    
+
 #     def OnCheckDataPrep(self, tDate: str) -> bool:
 #         """Launch the Check Data Preparation Window.
     
@@ -560,9 +560,9 @@ class BaseWindow(wx.Frame):
 #         dlg.Destroy()
 #         return True	
 #     #---	
-#     #endregion ------------------------------------------------> Event Methods
-    
-#     #region ---------------------------------------------------> Manage Methods
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Manage Methods
 #     def WinPos(self) -> dict:
 #         """Adjust win number and return information about the size of the 
 #             window.
@@ -678,8 +678,101 @@ class BaseWindow(wx.Frame):
 #         #------------------------------> 
 #         return True
 #     #---
-#     #endregion ------------------------------------------------> Manage Methods
-# #---
+    #endregion ------------------------------------------------> Manage Methods
+#---
+
+
+class BaseWindowResult(BaseWindow):
+    """Base class for windows showing results. 
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+        
+        Notes
+        -----
+        At least one plot is expected in the window.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, menuData: dict={}, nPlot:int=1,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cSWindow = getattr(self, 'cSWindow', mConfig.sWinPlot)
+        #------------------------------>
+        super().__init__(parent=parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wPlot = wx.Panel(self)
+        #endregion --------------------------------------------------> Widgets
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class BaseWindowResultOnePlot(BaseWindowResult):
+    """Base class for windows showing results. 
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+        
+        Notes
+        -----
+        At least one plot is expected in the window.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, menuData: dict={},
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cSWindow = getattr(self, 'cSWindow', mConfig.sWinPlot)
+        #------------------------------>
+        super().__init__(parent=parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region ---------------------------------------------------> Sizers
+        self.sSizer.Add(self.wPlot, 1, wx.EXPAND|wx.ALL, 5)
+        self.SetSizer(self.sSizer)
+        #endregion ------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # class BaseWindowPlot(BaseWindow):
@@ -2035,6 +2128,59 @@ class WindowMain(BaseWindow):
         return True
     #---
     #endregion ------------------------------------------------> Event methods
+#---
+
+
+class WindowResCorrA(BaseWindowResultOnePlot):
+    """Correlation Analysis result window.
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+        
+        Notes
+        -----
+        At least one plot is expected in the window.
+    """
+    #region -----------------------------------------------------> Class Setup
+    cName    = mConfig.nwCorrAPlot
+    cSection = mConfig.nuCorrA
+    #endregion --------------------------------------------------> Class Setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: 'WindowUMSAPControl') -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cSWindow = getattr(self, 'cSWindow', mConfig.sWinPlot)
+        #------------------------------>
+        super().__init__(parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wPlot = wx.Panel(self)
+        #endregion --------------------------------------------------> Widgets
+        
+        #region ---------------------------------------------------> Positions
+        self.Show()
+        #endregion ------------------------------------------------> Positions
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    
+    #endregion ------------------------------------------------> Class methods
 #---
 
 
@@ -10502,14 +10648,14 @@ class WindowUMSAPControl(BaseWindow):
     cSWindow = (400, 700)
     #------------------------------>
     cFileLabelCheck = ['Data']
-    # #------------------------------>
-    # dPlotMethod = { # Methods to create plot windows
-    #     config.nuCorrA   : CorrAPlot,
-    #     config.nuDataPrep: CheckDataPrep,
-    #     config.nmProtProf: ProtProfPlot,
-    #     config.nmLimProt : LimProtPlot, 
-    #     config.nmTarProt : TarProtPlot,
-    # }
+    #------------------------------>
+    dPlotMethod = { # Methods to create plot windows
+        mConfig.nuCorrA   : WindowResCorrA,
+    #     mConfig.nuDataPrep: WindowCheckDataPrep,
+    #     mConfig.nmProtProf: WindowProtProfPlot,
+    #     mConfig.nmLimProt : WindowLimProtPlot, 
+    #     mConfig.nmTarProt : WindowTarProtPlot,
+    }
     # #------------------------------>
     dSectionTab = { # Section name and Tab name correlation
         mConfig.nuCorrA   : mConfig.ntCorrA,
@@ -10561,7 +10707,7 @@ class WindowUMSAPControl(BaseWindow):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        # self.wTrc.Bind(wxCT.EVT_TREE_ITEM_CHECKING, self.OnCheckItem)
+        self.wTrc.Bind(wxCT.EVT_TREE_ITEM_CHECKING, self.OnCheckItem)
         self.wTrc.Bind(wxCT.EVT_TREE_ITEM_HYPERLINK, self.OnHyperLink)
         #endregion -----------------------------------------------------> Bind
 
@@ -10607,48 +10753,46 @@ class WindowUMSAPControl(BaseWindow):
         return True
     #---
 
-#     def OnCheckItem(self, event) -> bool:
-#         """Show window when section is checked
-    
-#             Parameters
-#             ----------
-#             event : wxCT.Event
-#                 Information about the event
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ------------------------------------------> Get Item & Section
-#         item    = event.GetItem()
-#         section = self.wTrc.GetItemText(item)
-#         #endregion ---------------------------------------> Get Item & Section
+    def OnCheckItem(self, event) -> bool:
+        """Show window when section is checked.
 
-#         #region ----------------------------------------------> Destroy window
-#         #------------------------------> Event trigers before checkbox changes
-#         if self.wTrc.IsItemChecked(item):
-#             [x.Destroy() for v in self.rWindow[section].values() for x in v]
-#             event.Skip()
-#             return True
-#         else:
-#             pass
-#         #endregion -------------------------------------------> Destroy window
-        
-#         #region -----------------------------------------------> Create window
-#         try:
-#             self.rWindow[section] = {'Main':[], 'FA':[]}
-#             self.rWindow[section]['Main'].append(
-#                 self.dPlotMethod[section](self))
-#         except dtsException.PassException:
-#             return False
-#         except Exception as e:
-#             dtsWindow.DialogNotification('errorU', msg=str(e), tException=e)
-#             return False
-#         #endregion --------------------------------------------> Create window
-        
-#         event.Skip()
-#         return True
-#     #---
+            Parameters
+            ----------
+            event : wxCT.Event
+                Information about the event
+
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------> Get Item & Section
+        item    = event.GetItem()
+        section = self.wTrc.GetItemText(item)
+        #endregion ---------------------------------------> Get Item & Section
+
+        #region ----------------------------------------------> Destroy window
+        #------------------------------> Event trigers before checkbox changes
+        if self.wTrc.IsItemChecked(item):
+            [x.Destroy() for v in self.rWindow[section].values() for x in v]
+            event.Skip()
+            return True
+        else:
+            pass
+        #endregion -------------------------------------------> Destroy window
+
+        #region -----------------------------------------------> Create window
+        try:
+            self.rWindow[section] = {'Main':[], 'FA':[]}
+            self.rWindow[section]['Main'].append(
+                self.dPlotMethod[section](self))
+        except Exception as e:
+            DialogNotification('errorU', msg=str(e), tException=e)
+            return False
+        #endregion --------------------------------------------> Create window
+
+        event.Skip()
+        return True
+    #---
 
     def OnClose(self, event: Union[wx.CloseEvent, str]) -> bool:
         """Destroy window and remove reference from config.umsapW.
