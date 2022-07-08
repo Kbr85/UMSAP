@@ -504,6 +504,36 @@ class BaseWindowResult(BaseWindow):
         #endregion --------------------------------------------> Initial Setup
     #---
     #endregion -----------------------------------------------> Instance setup
+    
+    #region ---------------------------------------------------> Event Methods
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.cParent is an instance of UMSAPControl.
+
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.cParent.UnCheckSection(self.cSection, self)
+        #endregion --------------------------------------------> Update parent
+
+        #region ------------------------------------> Reduce number of windows
+        mConfig.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class methods
     def ReportPlotDataError(self) -> bool:
@@ -734,123 +764,60 @@ class BaseWindowResultOnePlot(BaseWindowResult):
 #---
 
 
-# class BaseWindowPlot(BaseWindow):
-#     """Base class for windows showing only a plot.
+class BaseWindowResultListText(BaseWindowResult):
+    """
 
-#         Parameters
-#         ----------
-#         cParent : 'UMSAPControl'
-#             Parent of the window.
-#         cMenuData : dict
-#             Data to build the Tool menu of the window. See structure in child 
-#             class.
-            
-#         Notes
-#         -----
-#         - Method OnSavePlotImage assumes that this window has an attribute
-#         wPlot (dtsWidget.MatPlotPanel). Override as needed.
-#         - Method OnClose assumes the parent is an instance of UMSAPControl. 
-#         Override as needed.
-#     """
-#     #region -----------------------------------------------------> Class setup
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        parent: Optional[wx.Window]=None,
+        menuData: dict={},
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cSWindow = getattr(self, 'cSWindow', mConfig.sWinPlot)
+        #------------------------------>
+        super().__init__(parent=parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
     
-#     #endregion --------------------------------------------------> Class setup
-
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: Optional[wx.Window]=None, 
-#         cMenuData: Optional[dict]=None
-#         ) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cSWindow = getattr(self, 'cSWindow', config.sWinPlot)
-#         #------------------------------> 
-#         super().__init__(cParent=cParent, cMenuData=cMenuData)
-#         #endregion --------------------------------------------> Initial Setup
-
-#         #region -----------------------------------------------------> Widgets
-#         self.wPlot = dtsWidget.MatPlotPanel(
-#             self, 
-#             statusbar    = self.wStatBar,
-#             statusMethod = self.UpdateStatusBar,
-#             dpi          = config.general['DPI'],
-#         )
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-#         self.sSizer.Add(self.wPlot, 1, wx.EXPAND|wx.ALL, 5)
-
-#         self.SetSizer(self.sSizer)
-#         #endregion ---------------------------------------------------> Sizers
-        
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_CLOSE, self.OnClose)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #------------------------------> Class methods
-#     #region ---------------------------------------------------> Event Methods
-#     def OnClose(self, event: wx.CloseEvent) -> bool:
-#         """Close window and uncheck section in UMSAPFile window. Assumes 
-#             self.parent is an instance of UMSAPControl.
-#             Override as needed.
-    
-#             Parameters
-#             ----------
-#             event: wx.CloseEvent
-#                 Information about the event
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -----------------------------------------------> Update parent
-#         self.cParent.UnCheckSection(self.cSection, self)		
-#         #endregion --------------------------------------------> Update parent
-        
-#         #region ------------------------------------> Reduce number of windows
-#         config.winNumber[self.cName] -= 1
-#         #endregion ---------------------------------> Reduce number of windows
-        
-#         #region -----------------------------------------------------> Destroy
-#         self.Destroy()
-#         #endregion --------------------------------------------------> Destroy
-        
-#         return True
-#     #---
-    
-#     def UpdateStatusBar(self, event) -> bool:
-#         """Update the statusbar info
-    
-#             Parameters
-#             ----------
-#             event: matplotlib event
-#                 Information about the event
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ----------------------------------------------> Statusbar Text
-#         if event.inaxes:
-#             try:
-#                 #------------------------------>
-#                 x, y = event.xdata, event.ydata
-#                 #------------------------------> 
-#                 self.wStatBar.SetStatusText(
-#                     f'x = {x}   y = {y}'
-#                 )
-#             except Exception:
-#                 self.wStatBar.SetStatusText('')
-#         else:
-#             self.wStatBar.SetStatusText('')
-#         #endregion -------------------------------------------> Statusbar Text
-        
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Event Methods
-# #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # class BaseWindowNPlotLT(BaseWindow):
@@ -10664,7 +10631,12 @@ class WindowUMSAPControl(BaseWindow):
         #region ----------------------------------------------> Destroy window
         #------------------------------> Event trigers before checkbox changes
         if self.wTrc.IsItemChecked(item):
-            [x.Destroy() for v in self.rWindow[section].values() for x in v]
+            #------------------------------>
+            for v in self.rWindow[section].values():
+                for x in v:
+                    mConfig.winNumber[x.cName] -= 1
+                    x.Destroy()
+            #------------------------------>
             event.Skip()
             return True
         else:
@@ -11117,39 +11089,39 @@ class WindowUMSAPControl(BaseWindow):
         return True
     #---
 
-#     def UnCheckSection(self, sectionName: str, win: wx.Window) -> bool:
-#         """Method to uncheck a section when the plot window is closed by the 
-#             user
-    
-#             Parameters
-#             ----------
-#             sectionName : str
-#                 Section name like in config.nameModules config.nameUtilities
-#             win : wx.Window
-#                 Window that was closed
+    def UnCheckSection(self, sectionName: str, win: wx.Window) -> bool:
+        """Method to uncheck a section when the plot window is closed by the 
+            user.
+
+            Parameters
+            ----------
+            sectionName : str
+                Section name like in config.nameModules config.nameUtilities
+            win : wx.Window
+                Window that was closed
                 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------> Remove from list
-#         self.rWindow[sectionName]['Main'].remove(win)
-#         #endregion -----------------------------------------> Remove from list
-        
-#         #region --------------------------------------------------> Update GUI
-#         if len(self.rWindow[sectionName]['Main']) > 0:
-#             return True
-#         else:
-#             #------------------------------> Remove check
-#             self.wTrc.SetItem3StateValue(
-#                 self.rSection[sectionName], wx.CHK_UNCHECKED)		
-#             #------------------------------> Repaint
-#             self.Update()
-#             self.Refresh()		
-#             #------------------------------> 
-#             return True
-#         #endregion -----------------------------------------------> Update GUI
-#     #---
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------> Remove from list
+        self.rWindow[sectionName]['Main'].remove(win)
+        #endregion -----------------------------------------> Remove from list
+
+        #region --------------------------------------------------> Update GUI
+        if len(self.rWindow[sectionName]['Main']) > 0:
+            return True
+        else:
+            #------------------------------> Remove check
+            self.wTrc.SetItem3StateValue(
+                self.rSection[sectionName], wx.CHK_UNCHECKED)
+            #------------------------------> Repaint
+            self.Update()
+            self.Refresh()
+            #------------------------------> 
+            return True
+        #endregion -----------------------------------------------> Update GUI
+    #---
 
     def UpdateFileContent(self) -> bool:
         """Update the content of the file.
