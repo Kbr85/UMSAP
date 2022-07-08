@@ -2103,8 +2103,8 @@ class WindowResCorrA(BaseWindowResultOnePlot):
             Show (True) or not (False) the color bar in the plot
         rCmap : Matplotlib cmap
             CMAP to use in the plot
-        rCol : str one of 'Name', 'Number'
-            Plot column names or numbers
+        rCol : Boolean
+            Plot column names (True) or numbers (False)
         rData : parent.obj.confData[Section]
             Data for the Correlation Analysis section.
         rDataPlot : pd.DF

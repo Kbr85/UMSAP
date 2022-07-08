@@ -2251,32 +2251,32 @@ class MatPlotPanel(wx.Panel):
 
         Attributes
         ----------
-        axes: 
+        rAxes: 
             Axes in the canvas.
-        canvas : FigureCanvas
+        rCanvas : FigureCanvas
             Canvas in the panel.
-        dpi : int
+        rDPI : int
             DPI for the plot. Default is 100.
-        figure: mpl.Figure
+        rFigure: mpl.Figure
             Figure in the panel
-        statusbar : wx.StatusBar
-            wx.StatusBar to display information about the graph
-        finalX : float
+        rFinalX : float
             x coordinate in the plot scale when drag is over
-        finalY : float
+        rFinalY : float
             y coordinate in the plot scale when drag is over
-        initX : float
+        rInitX : float
             x coordinate in the plot scale when left click is pressed
-        initY : float
+        rInitY : float
             y coordinate in the plot scale when left click is pressed
-        zoomRect : mpl.patches.Rectangle or None
+        rZoomRect : mpl.patches.Rectangle or None
             Rectangle to show the zoom in area
-        zoomReset : dict
+        rZoomReset : dict
             Cero zoom axes configuration. This will be used to reset the zoom 
             level. {'x' : (xmin, xmax), 'y': (ymin, ymax)}
-        statusMethod: callable or None
+        rStatusMethod: Callable or None
             Method to print information to the statusbar. The method should 
-            accept only one parameter, the matplotlib event. Default is None
+            accept only one parameter, the matplotlib event. Default is None.
+        wStatBar : wx.StatusBar
+            wx.StatusBar to display information about the graph
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
@@ -2576,7 +2576,7 @@ class MatPlotPanel(wx.Panel):
             bool
         """
         #region -------------------------------------------------------> Event
-        self.initX, self.initY = self.OnGetAxesXY(event)
+        self.rInitX, self.rInitY = self.OnGetAxesXY(event)
         #endregion ----------------------------------------------------> Event
 
         return True
