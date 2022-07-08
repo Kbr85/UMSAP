@@ -189,38 +189,38 @@ class BaseMenu(wx.Menu):
 
         return True
     #---
-    
-    # def OnMethodKeyBool(self, event:wx.CommandEvent) -> bool:
-    #     """Call the corresponding method in the window with a keyword argument 
-    #         with boolean value.
 
-    #         Parameters
-    #         ----------
-    #         event:wx.Event
-    #             Information about the event.
+    def OnMethodKeyBool(self, event:wx.CommandEvent) -> bool:
+        """Call the corresponding method in the window with a keyword argument 
+            with boolean value.
 
-    #         Returns
-    #         -------
-    #         bool
-            
-    #         Notes
-    #         -----
-    #         Method assumes the wx.MenuItem is a radio or check item that will
-    #         be True if checked or False if not checked.
-    #     """
-    #     #region ---------------------------------------------------> Variables
-    #     tID = event.GetId()
-    #     win = self.GetWindow()
-    #     tFunctionKey = self.rIDMap[tID]
-    #     tDict = {self.rKeyMap[tID] : self.IsChecked(tID)}
-    #     #endregion ------------------------------------------------> Variables
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
 
-    #     #region -------------------------------------------------> Call Method
-    #     win.dKeyMethod[tFunctionKey](**tDict)
-    #     #endregion ----------------------------------------------> Call Method
+            Returns
+            -------
+            bool
 
-    #     return True
-    # #---
+            Notes
+            -----
+            Method assumes the wx.MenuItem is a radio or check item that will
+            be True if checked or False if not checked.
+        """
+        #region ---------------------------------------------------> Variables
+        tID = event.GetId()
+        win = self.GetWindow()
+        tFunctionKey = self.rIDMap[tID]
+        tDict = {self.rKeyMap[tID] : self.IsChecked(tID)}
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Call Method
+        win.dKeyMethod[tFunctionKey](**tDict)
+        #endregion ----------------------------------------------> Call Method
+
+        return True
+    #---
     #endregion ------------------------------------------------> Event methods
 #---
 
@@ -279,7 +279,7 @@ class BaseMenuMainResult(BaseMenu):
             #------------------------------> Item
             self.rPlotDate.append(self.AppendRadioItem(-1, k))
             #------------------------------> Add to dict
-            self.rIDMap[self.rPlotDate[-1].GetId()] = mConfig.kwToolGuiUpdDate
+            self.rIDMap[self.rPlotDate[-1].GetId()]  = mConfig.kwToolWinUpdate
             self.rKeyMap[self.rPlotDate[-1].GetId()] = 'tDate'
             #------------------------------> Bind
             self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[-1])
@@ -987,8 +987,7 @@ class MenuToolCorrA(BaseMenuMainResult):
     #region -----------------------------------------------------> Class Setup
     cLAllCol  = mConfig.lmCorrAAllCol
     cLSelCol  = mConfig.lmCorrASelCol
-    cLColName = mConfig.lmCorrAColName
-    cLColNum  = mConfig.lmCorrAColNum
+    cLColName = 'Column Names'
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance Setup
@@ -999,8 +998,8 @@ class MenuToolCorrA(BaseMenuMainResult):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miColName   = self.Append(-1, self.cLColName, kind=wx.ITEM_RADIO)
-        self.miColNumber = self.Append(-1, self.cLColNum,kind=wx.ITEM_RADIO)
+        self.miColName   = self.Append(-1, self.cLColName, kind=wx.ITEM_CHECK)
+        self.miColName.Check(check=True)
         #------------------------------>
         self.AppendSeparator()
         self.miAllCol = self.Append(-1, self.cLAllCol)
@@ -1015,29 +1014,26 @@ class MenuToolCorrA(BaseMenuMainResult):
         #endregion -----------------------------------------------> Menu Items
 
         #region -------------------------------------------------------> Names
-        # rIDMap = {
-        #     self.miColName.GetId()  : mConfig.klToolGuiUpdate,
-        #     self.miColNumber.GetId(): mConfig.klToolGuiUpdate,
-        #     self.miColBar.GetId()   : mConfig.klToolGuiUpdate,
-        #     self.miSelCol.GetId()   : mConfig.klToolCorrASelCol,
-        #     self.miAllCol.GetId()   : mConfig.klToolCorrASelCol,
-        # }
-        # self.rIDMap = self.rIDMap | rIDMap
+        rIDMap = {
+            self.miColName.GetId()  : mConfig.kwToolWinUpdate,
+            self.miColBar.GetId()   : mConfig.kwToolWinUpdate,
+            self.miSelCol.GetId()   : mConfig.kwToolCorrACol,
+            self.miAllCol.GetId()   : mConfig.kwToolCorrACol,
+        }
+        self.rIDMap = self.rIDMap | rIDMap
         #------------------------------>
-        # rKeyMap = {
-        #     self.miColName.GetId()  : 'col',
-        #     self.miColNumber.GetId(): 'col',
-        #     self.miColBar.GetId()   : 'bar',
-        # }
-        # self.rKeyMap = self.rKeyMap | rKeyMap
+        rKeyMap = {
+            self.miColName.GetId()  : 'col',
+            self.miColBar.GetId()   : 'bar',
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ----------------------------------------------------> Names
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnMethodKey,     source=self.miColName)
-        # self.Bind(wx.EVT_MENU, self.OnMethodKey,     source=self.miColNumber)
-        # self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miColBar)
-        # self.Bind(wx.EVT_MENU, self.OnMethodLabel,   source=self.miSelCol)
-        # self.Bind(wx.EVT_MENU, self.OnMethodLabel,   source=self.miAllCol)
+        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miColName)
+        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miColBar)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabel,   source=self.miSelCol)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabel,   source=self.miAllCol)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance Setup

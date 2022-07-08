@@ -23,7 +23,7 @@ import webbrowser
 from pathlib import Path
 from typing import Optional, Literal, Union
 
-# import matplotlib as mpl
+import matplotlib as mpl
 # import matplotlib.patches as mpatches
 # import numpy as np
 import pandas as pd
@@ -395,56 +395,32 @@ class BaseWindow(wx.Frame):
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Manage Methods
-#     def WinPos(self) -> dict:
-#         """Adjust win number and return information about the size of the 
-#             window.
-            
-#             See Notes below for more details.
-            
-#             Return
-#             ------
-#             dict
-#                 Information about the size of the window and display and number
-#                 of windows. See also data.method.GetDisplayInfo
-                
-#             Notes
-#             -----
-#             Final position of the window on the display must be set in child 
-#             class.
-#         """
-#         #region ---------------------------------------------------> Variables
-#         info = method.GetDisplayInfo(self)
-#         #endregion ------------------------------------------------> Variables
+    def WinPos(self) -> dict:
+        """Adjust win number and return information about the size of the 
+            window.
 
-#         #region ----------------------------------------------------> Update N
-#         config.winNumber[self.cName] = info['W']['N'] + 1
-#         #endregion -------------------------------------------------> Update N
+            Return
+            ------
+            dict
+                Information about the size of the window and display and number
+                of windows. See also data.method.GetDisplayInfo
 
-#         return info
-#     #---
-    
-#     def PlotTitle(self) -> bool:
-#         """Set the title of a plot window.
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-#             bool
-            
-#             Notes
-#             -----
-#             Assumes child class has self.cSection and self.rDateC and the parent
-#             is an UMSAPControl window
-#         """
-#         self.SetTitle(
-#             f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}")
-        
-#         return True
-#     #---
-    
+            Notes
+            -----
+            Final position of the window on the display must be set in child 
+            class.
+        """
+        #region ---------------------------------------------------> Variables
+        info = gMethod.GetDisplayInfo(self)
+        #endregion ------------------------------------------------> Variables
+
+        #region ----------------------------------------------------> Update N
+        mConfig.winNumber[self.cName] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
+
+        return info
+    #---
+
 #     def UpdateUMSAPData(self):
 #         """Update the window after the UMSAP file have been updated.
     
@@ -517,6 +493,7 @@ class BaseWindowResult(BaseWindow):
         super().__init__(parent=parent, menuData=menuData)
         #------------------------------>
         dKeyMethod = {
+            mConfig.kwToolWinUpdate   : self.UpdateResultWindow,
             mConfig.kwToolDupWin      : self.DupWin,
             mConfig.kwToolExpData     : self.ExportData,
             mConfig.kwToolExpImgAll   : self.ExportImgAll,
@@ -641,6 +618,34 @@ class BaseWindowResult(BaseWindow):
             -------
             bool
         """
+        return True
+    #---
+
+    def UpdateResultWindow(self) -> bool:
+        """Update the result window.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def PlotTitle(self) -> bool:
+        """Set the title of a plot window.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Assumes child class has self.cSection and self.rDateC and the parent
+            is an UMSAPControl window
+        """
+        self.SetTitle(
+            f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}") # type: ignore
+
         return True
     #---
     #endregion ------------------------------------------------> Class methods
@@ -2140,328 +2145,322 @@ class WindowResCorrA(BaseWindowResultOnePlot):
         self.ReportPlotDataError()
         #------------------------------>
         self.rDateC   = self.rDate[0]
-        # self.rBar     = False
-#         self.rCol     = config.lmCorrAColName
-#         self.rNorm    = mpl.colors.Normalize(vmin=-1, vmax=1)
-#         self.rCmap    = dtsMethod.MatplotLibCmap(
-#             N   = config.color[self.cSection]['CMAP']['N'],
-#             c1  = config.color[self.cSection]['CMAP']['c1'],
-#             c2  = config.color[self.cSection]['CMAP']['c2'],
-#             c3  = config.color[self.cSection]['CMAP']['c3'],
-#             bad = config.color[self.cSection]['CMAP']['NA'],
-#         )
+        self.rBar     = False
+        self.rCol     = True
+        self.rNorm    = mpl.colors.Normalize(vmin=-1, vmax=1)
+        self.rCmap    = mMethod.MatplotLibCmap(
+            N   = mConfig.color[self.cSection]['CMAP']['N'],
+            c1  = mConfig.color[self.cSection]['CMAP']['c1'],
+            c2  = mConfig.color[self.cSection]['CMAP']['c2'],
+            c3  = mConfig.color[self.cSection]['CMAP']['c3'],
+            bad = mConfig.color[self.cSection]['CMAP']['NA'],
+        )
         #------------------------------>
         self.cParent  = parent
         self.cTitle  = f"{parent.cTitle} - {self.cSection} - {self.rDateC}"
         #------------------------------> 
         super().__init__(parent, {'MenuDate' : self.rDate})
-#         #------------------------------>
-#         dKeyMethod = {
-#             config.klToolGuiUpdate  : self.UpdateDisplayedData,
-#             config.klToolCorrASelCol: self.OnSelectColumns,
-#         }
-#         self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        #------------------------------>
+        dKeyMethod = {
+            mConfig.kwToolCorrACol: self.SelectColumn,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
-        
+
+        #region ---------------------------------------------------> Widgets
+        self.wPlot[0].SetStatBar(self.wStatBar, self.OnUpdateStatusBar)
+        #endregion ------------------------------------------------> Widgets
+
         #region ----------------------------------------------------> Position
-#         self.SetColDetails(self.rDateC)
-#         self.UpdateDisplayedData()
-#         self.WinPos()
+        self.SetColDetails(self.rDateC)
+        self.UpdateResultWindow()
+        self.WinPos()
         self.Show()
         #endregion -------------------------------------------------> Position
     #---
     #endregion -----------------------------------------------> Instance setup
-
-#     #------------------------------> Class methods
-#     #region ----------------------------------------------------> Event Manage
-#     def OnZoomReset(self) -> bool:
-#         """Reset the zoon of the plot comming from the menu item.
     
-#             Returns
-#             -------
-#             bool
-#         """
-#         return self.OnZoomResetOne()
-#     #---
-    
-#     def OnSelectColumns(self, showAllCol: str) -> bool:
-#         """Plot only selected columns
-        
-#             Parameters
-#             ----------
-#             showAllCol: str
-#                 Show all columns or select columns to show.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> All
-#         if showAllCol == config.lmCorrAAllCol:
-#             self.SetColDetails(self.rDateC)
-#             self.UpdateDisplayedData(self.rDateC, self.rCol, self.rBar)
-#             return True
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> All
+    #region ---------------------------------------------------> Event Methods
+    def OnUpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info.
 
-#         #region -----------------------------------------------------> Options
-#         allCol = []
-#         for k,c in enumerate(self.rData[self.rDateC]['DF'].columns):
-#             allCol.append([str(self.rData[self.rDateC]['NumColList'][k]), c])
-        
-#         selCol = []
-#         for c in self.rSelColIdx:
-#             selCol.append([
-#                 str(self.rData[self.rDateC]['NumColList'][c]),
-#                 self.rData[self.rDateC]['DF'].columns[c]])
-#         #endregion --------------------------------------------------> Options
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event.
 
-#         #region -------------------------------------------------> Get New Sel
-#         #------------------------------> Create the window
-#         dlg = dtsWindow.ListSelect(
-#             allCol, 
-#             config.lLCtrlColNameI, 
-#             config.sLCtrlColI, 
-#             tSelOptions = selCol,
-#             title       = 'Select the columns to show in the correlation plot',
-#             tBtnLabel   = 'Add selection',
-#             color       = config.color['Zebra'],
-#             tStLabel = ['Columns in the current results', 'Selected columns'],
-#         )
-#         #------------------------------> Get the selected values
-#         if dlg.ShowModal():
-#             self.rSelColNum  = dlg.wLCtrlO.GetColContent(0)
-#             self.rSelColIdx  = []
-#             self.rSelColName = []
-#             #------------------------------> 
-#             for k in self.rSelColNum:
-#                 #------------------------------> 
-#                 tIDX = self.rData[self.rDateC]['NumColList'].index(int(k))
-#                 self.rSelColIdx.append(tIDX)
-#                 #------------------------------> 
-#                 self.rSelColName.append(
-#                     self.rData[self.rDateC]['DF'].columns[tIDX])
-#             #------------------------------> 
-#             self.UpdateDisplayedData(self.rDateC, self.rCol, self.rBar)
-#         else:
-#             pass
-        
-#         #endregion ----------------------------------------------> Get New Sel
-        
-#         dlg.Destroy()
-#         return True
-#     #---
-#     #endregion -------------------------------------------------> Event Manage
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            try:
+                #------------------------------> Set x,y,z
+                x, y = event.xdata, event.ydata
+                #------------------------------>
+                xf = int(x)
+                yf = int(y)
+                zf = '{:.2f}'.format(self.rDataPlot.iat[yf,xf])
+                #------------------------------>
+                if self.rCol:
+                    xs = self.rSelColName[xf]
+                    ys = self.rSelColName[yf]
+                else:
+                    xs = self.rSelColNum[xf]
+                    ys = self.rSelColNum[yf]
+                #------------------------------> Print
+                self.wStatBar.SetStatusText(
+                    f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
+                )
+            except Exception:
+                self.wStatBar.SetStatusText('')
+        else:
+            self.wStatBar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
 
-#     #region --------------------------------------------------> Manage Methods
-#     def WinPos(self) -> bool:
-#         """Set the position on the screen and adjust the total number of
-#             shown windows.
-            
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------------> Super
-#         info = super().WinPos()
-#         #endregion -----------------------------------------------------> Super
-        
-#         #region ------------------------------------------------> Set Position
-#         self.SetPosition(pt=(
-#             info['D']['w'] - (info['W']['N']*self.cSDeltaWin + info['W']['w']),
-#             info['D']['yo'] + info['W']['N']*self.cSDeltaWin,
-#         ))
-#         #endregion ---------------------------------------------> Set Position
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
 
-#         return True
-#     #---
-    
-#     def SetColDetails(self, tDate: str) -> bool:
-#         """"Set the values of self.rSelColX to its default values, all values
-#             in the analysis.
-            
-#             Returns
-#             -------
-#             bool
-#         """
-#         self.rSelColName = self.rData[tDate]['DF'].columns.values
-#         self.rSelColNum  = self.rData[tDate]['NumColList']
-#         self.rSelColIdx  = [x for x,_ in enumerate(self.rSelColNum)]
-        
-#         return True
-#     #---
-    
-#     def UpdateDisplayedData(
-#         self, tDate: str='', col: str='', bar: Optional[bool] = None,
-#         ) -> bool:
-#         """ Plot data from a given date.
-        
-#             Paramenters
-#             -----------
-#             tDate : str
-#                 A date in the section e.g. '20210129-094504 - bla'
-#             col: str
-#                 Set the information to display in the axis
-#             bar: bool
-#                 Show or not the colorbar
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------> Update date
-#         tDate = tDate if tDate else self.rDateC
-#         if tDate == self.rDateC:
-#             pass
-#         else:
-#             self.SetColDetails(tDate)
-#         self.rDateC = tDate
-#         self.rCol = col if col else self.rCol
-#         self.rBar = bar if bar is not None else self.rBar
-#         #endregion ----------------------------------------------> Update date
-        
-#         #region --------------------------------------------------------> Axis
-#         self.SetAxis()
-#         #endregion -----------------------------------------------------> Axis
+    #region --------------------------------------------------> Manage Methods
+    def WinPos(self) -> bool:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
 
-#         #region --------------------------------------------------------> Plot
-#         #------------------------------> 
-#         self.rDataPlot = self.rData[self.rDateC]['DF'].iloc[self.rSelColIdx,self.rSelColIdx]
-#         #------------------------------> 
-#         self.wPlot.axes.pcolormesh(
-#             self.rDataPlot, 
-#             cmap        = self.rCmap,
-#             vmin        = -1,
-#             vmax        = 1,
-#             antialiased = True,
-#             edgecolors  = 'k',
-#             lw          = 0.005,
-#         )
-        
-#         if self.rBar:
-#             self.wPlot.figure.colorbar(
-#                 mpl.cm.ScalarMappable(norm=self.rNorm, cmap=self.rCmap),
-#                 orientation = 'vertical',
-#                 ax          = self.wPlot.axes,
-#             )
-#         else:
-#             pass
-#         #endregion -----------------------------------------------------> Plot
-        
-#         #region -------------------------------------------------> Zoom & Draw
-#         #------------------------------> Zoom Out level
-#         self.wPlot.ZoomResetSetValues()
-#         #------------------------------> Draw
-#         self.wPlot.canvas.draw()
-#         #endregion ----------------------------------------------> Zoom & Draw 
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Super
+        info = super().WinPos()
+        #endregion -----------------------------------------------------> Super
 
-#         #region ---------------------------------------------------> Statusbar
-#         self.PlotTitle()
-#         #endregion ------------------------------------------------> Statusbar
-        
-#         return True
-#     #---
+        #region ------------------------------------------------> Set Position
+        self.SetPosition(pt=(
+            info['D']['w'] - (info['W']['N']*self.cSDeltaWin + info['W']['w']),
+            info['D']['yo'] + info['W']['N']*self.cSDeltaWin,
+        ))
+        #endregion ---------------------------------------------> Set Position
 
-#     def SetAxis(self) -> bool:
-#         """ General details of the plot area 
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------------> Clear
-#         self.wPlot.figure.clear()
-#         self.wPlot.axes = self.wPlot.figure.add_subplot(111)
-#         #endregion ----------------------------------------------------> Clear
-        
-#         #region ---------------------------------------------------> Variables
-#         xlabel    = []
-#         xticksloc = []
-        
-#         if (tLen := len(self.rSelColIdx)) <= 30:
-#             step = 1
-#         elif tLen > 30 and tLen <= 60:
-#             step = 2
-#         else:
-#             step = 3
-#         #endregion ------------------------------------------------> Variables
+        return True
+    #---
 
-#         #region --------------------------------------------------------> Grid
-#         self.wPlot.axes.grid(True)		
-#         #endregion -----------------------------------------------------> Grid
-        
-#         #region --------------------------------------------------> Axis range
-#         self.wPlot.axes.set_xlim(0, tLen)
-#         self.wPlot.axes.set_ylim(0, tLen) 
-#         #endregion -----------------------------------------------> Axis range
-        
-#         #region ---------------------------------------------------> Set ticks
-#         if self.rCol == config.lmCorrAColName:
-#             for i in range(0, tLen, step):
-#                 xticksloc.append(i + 0.5)		
-#                 xlabel.append(self.rSelColName[i])
-#         else:
-#             for i in range(0, tLen, step):
-#                 xticksloc.append(i + 0.5)
-#                 xlabel.append(self.rSelColNum[i])
+    def SetColDetails(self, tDate: str) -> bool:
+        """"Set the values of self.rSelColX to its default values, all values
+            in the analysis.
 
-#         self.wPlot.axes.set_xticks(xticksloc)
-#         self.wPlot.axes.set_xticklabels(xlabel, rotation=90)
+            Returns
+            -------
+            bool
+        """
+        self.rSelColName = self.rData[tDate]['DF'].columns.values
+        self.rSelColNum  = self.rData[tDate]['NumColList']
+        self.rSelColIdx  = [x for x,_ in enumerate(self.rSelColNum)]
 
-#         self.wPlot.axes.set_yticks(xticksloc)
-#         self.wPlot.axes.set_yticklabels(xlabel)
-#         #endregion ------------------------------------------------> Set ticks
-        
-#         #region -----------------------------------------------> Adjust figure
-#         self.wPlot.figure.subplots_adjust(bottom=0.13)
-#         #endregion --------------------------------------------> Adjust figure
+        return True
+    #---
 
-#         return True
-#     #---
+    def UpdateResultWindow(
+        self,
+        tDate: str='',
+        col: Optional[bool] = None,
+        bar: Optional[bool] = None,
+        ) -> bool:
+        """Plot data from a given date.
 
-#     def UpdateStatusBar(self, event) -> bool:
-#         """Update the statusbar info
-    
-#             Parameters
-#             ----------
-#             event: matplotlib event
-#                 Information about the event
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ----------------------------------------------> Statusbar Text
-#         if event.inaxes:
-#             try:
-#                 #------------------------------> Set x,y,z
-#                 x, y = event.xdata, event.ydata
-                
-#                 xf = int(x)
-#                 yf = int(y)
-#                 zf = '{:.2f}'.format(self.rDataPlot.iat[yf,xf])
-                
-#                 if self.rCol == config.lmCorrAColName:
-#                     xs = self.rSelColName[xf]
-#                     ys = self.rSelColName[yf]
-#                 else:
-#                     xs = self.rSelColNum[xf]
-#                     ys = self.rSelColNum[yf]
-#                 #------------------------------> Print
-#                 self.wStatBar.SetStatusText(
-#                     f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
-#                 )
-#             except Exception:
-#                 self.wStatBar.SetStatusText('')
-#         else:
-#             self.wStatBar.SetStatusText('')
-#         #endregion -------------------------------------------> Statusbar Text
-        
-#         return True
-#     #---
-#     #endregion -----------------------------------------------> Manage Methods
-# #---
+            Parameters
+            -----------
+            tDate : str
+                A date in the section e.g. '20210129-094504 - bla'
+            col: bool
+                Show column name (True) or numbers (False)
+            bar: bool
+                Show or not the color bar.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------> Update parameters
+        tDate = tDate if tDate else self.rDateC
+        if tDate == self.rDateC:
+            pass
+        else:
+            self.SetColDetails(tDate)
+        #------------------------------>
+        self.rDateC = tDate
+        self.rCol = col if col is not None else self.rCol
+        self.rBar = bar if bar is not None else self.rBar
+        #endregion ----------------------------------------> Update parameters
+
+        #region --------------------------------------------------------> Axis
+        self.SetAxis()
+        #endregion -----------------------------------------------------> Axis
+
+        #region --------------------------------------------------------> Plot
+        #------------------------------>
+        self.rDataPlot = self.rData[self.rDateC]['DF'].iloc[self.rSelColIdx,self.rSelColIdx]
+        #------------------------------> 
+        self.wPlot[0].rAxes.pcolormesh(
+            self.rDataPlot,
+            cmap        = self.rCmap,
+            vmin        = -1,
+            vmax        = 1,
+            antialiased = True,
+            edgecolors  = 'k',
+            lw          = 0.005,
+        )
+        #------------------------------>
+        if self.rBar:
+            self.wPlot[0].rFigure.colorbar(
+                mpl.cm.ScalarMappable(norm=self.rNorm, cmap=self.rCmap),  # type: ignore
+                orientation = 'vertical',
+                ax          = self.wPlot[0].rAxes,
+            )
+        else:
+            pass
+        #endregion -----------------------------------------------------> Plot
+
+        #region -------------------------------------------------> Zoom & Draw
+        #------------------------------> Zoom Out level
+        self.wPlot[0].ZoomResetSetValues()
+        #------------------------------> Draw
+        self.wPlot[0].rCanvas.draw()
+        #endregion ----------------------------------------------> Zoom & Draw 
+
+        #region --------------------------------------------------->
+        self.PlotTitle()
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def SetAxis(self) -> bool:
+        """ General details of the plot area.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Clear
+        self.wPlot[0].rFigure.clear()
+        self.wPlot[0].rAxes = self.wPlot[0].rFigure.add_subplot(111)
+        #endregion ----------------------------------------------------> Clear
+
+        #region ---------------------------------------------------> Variables
+        xLabel    = []
+        xTicksLoc = []
+
+        if (tLen := len(self.rSelColIdx)) <= 30:
+            step = 1
+        elif tLen > 30 and tLen <= 60:
+            step = 2
+        else:
+            step = 3
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------------> Grid
+        self.wPlot[0].rAxes.grid(True)
+        #endregion -----------------------------------------------------> Grid
+
+        #region --------------------------------------------------> Axis range
+        self.wPlot[0].rAxes.set_xlim(0, tLen)
+        self.wPlot[0].rAxes.set_ylim(0, tLen) 
+        #endregion -----------------------------------------------> Axis range
+
+        #region ---------------------------------------------------> Set ticks
+        #------------------------------>
+        if self.rCol:
+            theLabel = self.rSelColName
+        else:
+            theLabel = self.rSelColNum
+        for i in range(0, tLen, step):
+            xTicksLoc.append(i + 0.5)
+            xLabel.append(theLabel[i])
+        #------------------------------>
+        self.wPlot[0].rAxes.set_xticks(xTicksLoc)
+        self.wPlot[0].rAxes.set_xticklabels(xLabel, rotation=90)
+        #------------------------------>
+        self.wPlot[0].rAxes.set_yticks(xTicksLoc)
+        self.wPlot[0].rAxes.set_yticklabels(xLabel)
+        #endregion ------------------------------------------------> Set ticks
+
+        #region -----------------------------------------------> Adjust figure
+        self.wPlot[0].rFigure.subplots_adjust(bottom=0.13)
+        #endregion --------------------------------------------> Adjust figure
+
+        return True
+    #---
+
+    def SelectColumn(self, showAllCol: str) -> bool:
+        """Plot only selected columns.
+
+            Parameters
+            ----------
+            showAllCol: str
+                Show all columns or select columns to show.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> All
+        if showAllCol == mConfig.lmCorrAAllCol:
+            self.SetColDetails(self.rDateC)
+            self.UpdateResultWindow()
+            return True
+        else:
+            pass
+        #endregion ------------------------------------------------> All
+
+        #region -----------------------------------------------------> Options
+        allCol = []
+        for k,c in enumerate(self.rData[self.rDateC]['DF'].columns):
+            allCol.append([str(self.rData[self.rDateC]['NumColList'][k]), c])
+
+        selCol = []
+        for c in self.rSelColIdx:
+            selCol.append([
+                str(self.rData[self.rDateC]['NumColList'][c]),
+                self.rData[self.rDateC]['DF'].columns[c]])
+        #endregion --------------------------------------------------> Options
+
+        #region -------------------------------------------------> Get New Sel
+        #------------------------------> Create the window
+        dlg = DialogListSelect(
+            allCol, 
+            mConfig.lLCtrlColNameI, 
+            mConfig.sLCtrlColI, 
+            tSelOptions = selCol,
+            title       = 'Select the columns to show in the correlation plot',
+            tBtnLabel   = 'Add selection',
+            tStLabel = ['Columns in the current results', 'Selected columns'],
+        )
+        #------------------------------> Get the selected values
+        if dlg.ShowModal():
+            self.rSelColNum  = dlg.wLCtrlO.GetColContent(0)
+            self.rSelColIdx  = []
+            self.rSelColName = []
+            #------------------------------>
+            for k in self.rSelColNum:
+                #------------------------------>
+                tIDX = self.rData[self.rDateC]['NumColList'].index(int(k))
+                self.rSelColIdx.append(tIDX)
+                #------------------------------>
+                self.rSelColName.append(
+                    self.rData[self.rDateC]['DF'].columns[tIDX])
+            #------------------------------>
+            self.UpdateResultWindow()
+        else:
+            pass
+        #endregion ----------------------------------------------> Get New Sel
+
+        dlg.Destroy()
+        return True
+    #---
+    #endregion -----------------------------------------------> Manage Methods
+#---
 
 
 # class ProtProfPlot(BaseWindowNPlotLT):
@@ -11053,7 +11052,7 @@ class WindowUMSAPControl(BaseWindow):
             bool
         """
         #region ---------------------------------------------------> Variables
-        info = gMethod.GetDisplayInfo(self)
+        info = super().WinPos()
         #endregion ------------------------------------------------> Variables
 
         #region ------------------------------------------------> Set Position
@@ -11062,10 +11061,6 @@ class WindowUMSAPControl(BaseWindow):
             info['D']['yo'] + info['W']['N']*self.cSDeltaWin,
         ))
         #endregion ---------------------------------------------> Set Position
-
-        #region ----------------------------------------------------> Update N
-        mConfig.winNumber[self.cName] = info['W']['N'] + 1
-        #endregion -------------------------------------------------> Update N
 
         return True
     #---
@@ -12558,6 +12553,208 @@ class DialogUMSAPAddDelExport(BaseDialogOkCancel):
         return True
     #---
     #endregion ------------------------------------------------> Class Methods
+#---
+
+
+class DialogListSelect(BaseDialogOkCancel):
+    """Select values from a list of options.
+
+        Parameters
+        ----------
+        color: str
+            Alternating color for the wx.ListCtrl
+        parent: wx.Window
+            Parent of the window
+        rightDelete: bool
+            Delete content of the right wx.ListCtrl with a right click
+        tBtnLabel: str
+            Label for the Add wx.Button
+        tColLabel: list[str]
+            Label for the name of the columns in the wx.ListCtrl. It is assumed
+            both wx.ListCtrl have the same column labels.
+        tColSize: list[int]
+            Size of the columns in the wx.ListCtrl. It is assumed both 
+            wx.ListCtrl have the same size.
+        title: str
+            Title of the window
+        tOptions: list[list[str]]
+            Available options.
+        tSelOptions: list[list[str]]
+            Already selected options. Optional
+        tStLabel: list[str]
+            Label to show on top of the wx.ListCtrl.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, 
+        tOptions: list[list[str]],
+        tColLabel: list[str],
+        tColSize: list[int],
+        tSelOptions: list[list[str]]= [],
+        title: str='',
+        tStLabel:list[str]=[],
+        tBtnLabel: str='',
+        parent: Optional[wx.Window]=None,
+        color: str=mConfig.color['Zebra'],
+        rightDelete: bool=True, 
+        style=wx.LC_REPORT|wx.LC_VIRTUAL,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        if tStLabel:
+            self.cStLabel = tStLabel
+        else:
+            self.cStLabel = ['Available options', 'Selected options']
+        if tBtnLabel:
+            self.cBtnLabel = tBtnLabel
+        else:
+            self.cBtnLabel = 'Add options'
+        if title:
+            pass
+        else:
+            title = 'Select options'
+        #------------------------------> 
+        super().__init__(parent=parent, title=title)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> wx.StaticText
+        self.wStListI = wx.StaticText(self, label=self.cStLabel[0])
+        self.wStListO = wx.StaticText(self, label=self.cStLabel[1])
+        #------------------------------> dtsWidget.ListZebra
+        self.wLCtrlI = mWidget.MyListCtrlZebra(self, 
+            color           = color,
+            colLabel        = tColLabel,
+            colSize         = tColSize,
+            copyFullContent = True,
+            style           = style,
+        )
+        self.wLCtrlI.SetNewData(tOptions)
+
+        self.wLCtrlO = mWidget.MyListCtrlZebra(self, 
+            color           = color,
+            colLabel        = tColLabel,
+            colSize         = tColSize,
+            canPaste        = True,
+            canCut          = True,
+            copyFullContent = True,
+            # style           = style,
+        )
+        for r in tSelOptions:
+            self.wLCtrlO.Append(r)
+        #------------------------------> wx.Button
+        self.wAddCol = wx.Button(self, label=self.cBtnLabel)
+        self.wAddCol.SetBitmap(
+            wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD), dir = wx.RIGHT)
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sList = wx.FlexGridSizer(2,3,5,5)
+        self.sList.Add(self.wStListI, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sList.AddStretchSpacer(1)
+        self.sList.Add(self.wStListO, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sList.Add(self.wLCtrlI,  0, wx.EXPAND|wx.ALL,       5)
+        self.sList.Add(self.wAddCol,  0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sList.Add(self.wLCtrlO,  0, wx.EXPAND|wx.ALL,       5)
+        self.sList.AddGrowableCol(0,1)
+        self.sList.AddGrowableCol(2,1)
+        self.sList.AddGrowableRow(1,1)
+        #------------------------------>
+        self.sSizer.Add(self.sList, 1, wx.EXPAND|wx.ALL,      5)
+        self.sSizer.Add(self.sBtn,  0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------>
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region ----------------------------------------------------> Tooltips
+        self.wStListI.SetToolTip(
+            f"Selected rows can be copied ({mConfig.copyShortCut}+C) but "
+            f"the list cannot be modified.")
+        self.wStListO.SetToolTip(
+            f"New rows can be pasted ({mConfig.copyShortCut}+V) after the "
+            f"last selected element and existing ones cut/deleted "
+            f"({mConfig.copyShortCut}+X) or copied "
+            f"({mConfig.copyShortCut}+C)." )
+        self.wAddCol.SetToolTip(f'Add selected rows in the left list to the '
+            f'right list. New columns will be added after the last selected '
+            f'row in the right list. Duplicate columns are discarded.')
+        #endregion -------------------------------------------------> Tooltips
+
+        #region --------------------------------------------------------> Bind
+        self.wAddCol.Bind(wx.EVT_BUTTON, self.OnAdd)
+        if rightDelete:
+                self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDelete)
+                self.wLCtrlO.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDelete)
+        else:
+            pass
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Validate
+        if self.wLCtrlO.GetItemCount() > 0:
+            self.EndModal(1)
+            self.Close()
+        else:
+            return False
+        #endregion -------------------------------------------------> Validate
+
+        return True
+    #---
+
+    def OnAdd(self, event: Union[wx.Event, str]) -> bool:
+        """Add columns to analyse using the button.
+
+            Parameters
+            ----------
+            event : wx.Event
+                Event information.
+
+            Returns
+            -------
+            bool
+        """
+        self.wLCtrlI.OnCopy('')
+        self.wLCtrlO.OnPaste('')
+
+        return True
+    #---
+
+    def OnRightDelete(self, event: Union[wx.Event, str]) -> bool:
+        """Delete list with a right click.
+
+            Parameters
+            ----------
+            event : wx.Event
+                Event information.
+
+            Returns
+            -------
+            bool
+        """
+        self.wLCtrlO.DeleteAllItems()
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
 #---
 
 

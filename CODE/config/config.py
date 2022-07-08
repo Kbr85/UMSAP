@@ -196,15 +196,15 @@ kwHelpPref     = 'MenuHelp Preferences'
 kwToolUMSAPCtrlAddDelExp = 'ToolUMSAPCtrl Add Del Export Analysis'
 kwToolUMSAPCtrlReload    = 'ToolUMSAPCtrl Reload File'
 #------------------------------> Tool Menu for Plot Window. General Items
-kwToolGuiUpdDate    = 'Update Result Window'
+kwToolWinUpdate    = 'Update Result Window'
 kwToolDupWin       = 'Duplicate Window'
 kwToolZoomResetAll = 'Reset All Zoom'
 kwToolExpData      = 'Export Data'
 kwToolExpImgAll    = 'Export Image'
 kwToolCheckDP      = 'Check DP'
 # klToolExpSeq       = 'Export Sequences'
-# #------------------------------> Tool Menu for CorrA
-# klToolCorrASelCol  = 'Select Column'
+#------------------------------> Tool Menu for CorrA
+kwToolCorrACol  = 'ToolCorrA Select Column'
 # #------------------------------> Tool Menu for LimProt
 # klToolLimProtBandLane = 'Band/Lane Sel'
 # klToolLimProtShowAll  = 'Show All'
@@ -303,8 +303,6 @@ lPdError = 'Fatal Error'
 lmToolUMSAPCtrlAdd = 'Add Analysis'
 lmToolUMSAPCtrlDel = 'Delete Analysis'
 lmToolUMSAPCtrlExp = 'Export Analysis'
-lmCorrAColNum  = 'Column Numbers (0 based)'
-lmCorrAColName = 'Column Names'
 lmCorrASelCol  = 'Select Columns'
 lmCorrAAllCol  = 'All Columns'
 # lmNatSeq       = 'Native Sequence'
@@ -626,7 +624,7 @@ font = {
 #region -----------------------------------------------------> General options
 general = { # General options
     'checkUpdate'  : True, # True Check, False No check
-    'DPI'          : 300,  # DPI for plot images
+    'DPI'          : 100,  # DPI for plot images
     'MatPlotMargin': 0.025 # Margin for the axes range
 }
 #endregion --------------------------------------------------> General options
@@ -642,15 +640,15 @@ color = { # Colors for the app
     'Zebra' : '#ffe6e6',
 #     'RecProt' : 'gray',
 #     'NatProt' : '#c94c4c',
-#     nuCorrA : { # Color for plot in Correlation Analysis
-#         'CMAP' : { # CMAP colors and interval
-#             'N' : 128,
-#             'c1': [255, 0, 0],
-#             'c2': [255, 255, 255],
-#             'c3': [0, 0, 255],
-#             'NA': '#90EE90',
-#         },
-#     },
+    nuCorrA : { # Color for plot in Correlation Analysis
+        'CMAP' : { # CMAP colors and interval
+            'N' : 128,
+            'c1': (255, 0, 0),
+            'c2': (255, 255, 255),
+            'c3': (0, 0, 255),
+            'NA': '#90EE90',
+        },
+    },
 #     nwProtProf : {
 #         'Vol'    : ['#ff3333', '#d3d3d3', '#3333ff'],
 #         'VolSel' : '#6ac653',

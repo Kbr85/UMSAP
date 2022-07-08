@@ -25,6 +25,7 @@ import webbrowser
 import wx
 import wx.lib.mixins.listctrl as listmix
 import matplotlib as mpl
+import matplotlib.patches as patches
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 
 import config.config as mConfig
@@ -1714,41 +1715,41 @@ class MyListCtrl(wx.ListCtrl):
         return outL
     #---
 
-#     def OnGetItemText(self, row, column) -> str:
-#         """Get cell value for virtual mode.
-    
-#             Parameters
-#             ----------
-#             row : int
-#                 Row number. 0-based
-#             column : int
-#                 Colum number. 0-based 
-    
-#             Returns
-#             -------
-#             str
-#                 Cell value
-#         """
-#         return self.data[row][column]
-#     #---
-    
-#     def OnGetItemAttr(self, item: int) -> Optional[wx.ItemAttr]:
-#         """Get row attributes. Needed by virtual lists.
-        
-#             Parameters
-#             ----------
-#             item : int
-#                 Row index. 0-based.
-                
-#             Return
-#             ------
-#             wx.ItemAttr
-#         """
-#         if item % 2 == 0:
-#             return self.attr1
-#         else:
-#             return None
-#     #---
+    def OnGetItemText(self, row, column) -> str:
+        """Get cell value for virtual mode. Needed by wxPython.
+
+            Parameters
+            ----------
+            row : int
+                Row number. 0-based
+            column : int
+                Colum number. 0-based 
+
+            Returns
+            -------
+            str
+                Cell value
+        """
+        return self.rData[row][column]
+    #---
+
+    def OnGetItemAttr(self, item: int) -> Optional[wx.ItemAttr]:
+        """Get row attributes in a virtual list. Needed by wxPython.
+
+            Parameters
+            ----------
+            item : int
+                Row index. 0-based.
+
+            Return
+            ------
+            wx.ItemAttr
+        """
+        if item % 2 == 0:
+            return self.attr1
+        else:
+            return None
+    #---
 
 #     def AddList(self, listV: list[list[str]], append: bool=False) -> bool:
 #         """Fill/Append values in listV to the wx.ListCtrl.
@@ -1810,31 +1811,27 @@ class MyListCtrl(wx.ListCtrl):
 #         return True
 #     #---
     
-#     def SetNewData(self, data: list[list[str]]):
-#         """Set new data for a virtual wx.ListCtrl.
-    
-#             Parameters
-#             ----------
-#             data : list of list of str
-#                 One str field for each column in the wx.ListCtrl
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-        
-#         """
-#         #region ---------------------------------------------------> Set Data
-#         #------------------------------> 
-#         self.data = data
-#         #------------------------------> 
-#         self.SetItemCount(len(self.data))
-#         #endregion ------------------------------------------------> Set Data
-        
-#         return True
-#     #---
+    def SetNewData(self, data: list[list[str]]) -> bool:
+        """Set new data for a virtual wx.ListCtrl.
+
+            Parameters
+            ----------
+            data : list of list of str
+                One str field for each column in the wx.ListCtrl
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Set Data
+        #------------------------------>
+        self.rData = data
+        #------------------------------>
+        self.SetItemCount(len(self.rData))
+        #endregion ------------------------------------------------> Set Data
+
+        return True
+    #---
 
 #     def SetRowContent(self, rowL: list[str], rowInd: int) -> Literal[True]:
 #         """Edit the content of a row.
@@ -2259,7 +2256,7 @@ class MatPlotPanel(wx.Panel):
         canvas : FigureCanvas
             Canvas in the panel.
         dpi : int
-            DPI for the plot. Default is 300
+            DPI for the plot. Default is 100.
         figure: mpl.Figure
             Figure in the panel
         statusbar : wx.StatusBar
@@ -2285,374 +2282,413 @@ class MatPlotPanel(wx.Panel):
     def __init__(
         self, parent: wx.Window,
         dpi: Optional[int]=None,
-        # statusbar: Optional[wx.StatusBar]=None, 
-        # statusMethod: Optional[Callable]=None
+        statusbar: Optional[wx.StatusBar]=None, 
+        statusMethod: Optional[Callable]=None
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.dpi          = mConfig.general['DPI'] if dpi is None else dpi
-        # self.statusbar    = statusbar
-        # self.statusMethod = statusMethod
-        # self.initY        = None
-        # self.initX        = None
-        # self.finalX       = None
-        # self.finalY       = None
-        # self.zoomRect     = None
-        # self.zoomReset    = None
-        # self.cid          = []
+        self.rDPI          = mConfig.general['DPI'] if dpi is None else dpi
+        self.wStatBar      = statusbar
+        self.rStatusMethod = statusMethod
+        self.rInitY        = None
+        self.rInitX        = None
+        self.rFinalX       = None
+        self.rFinalY       = None
+        self.rZoomRect     = None
+        self.rZoomReset    = {}
+        self.rBindId       = []
         super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.figure  = mpl.figure.Figure(
-            dpi          = self.dpi,
+        self.rFigure  = mpl.figure.Figure( # type: ignore
+            dpi          = self.rDPI,
             figsize      = (2, 2),
             tight_layout = True,
         )
-        self.axes    = self.figure.add_subplot(111)
-        self.canvas  = FigureCanvas(self, -1, self.figure)
-        self.axes.set_axisbelow(True)
+        self.rAxes    = self.rFigure.add_subplot(111)
+        self.rCanvas  = FigureCanvas(self, -1, self.rFigure)
+        self.rAxes.set_axisbelow(True)
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
-        self.sizerPlot = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizerPlot.Add(self.canvas, 1, wx.EXPAND|wx.ALL, 5)
+        self.sPlot = wx.BoxSizer(wx.HORIZONTAL)
+        self.sPlot.Add(self.rCanvas, 1, wx.EXPAND|wx.ALL, 5)
 
-        self.SetSizer(self.sizerPlot)
-        self.sizerPlot.Fit(self)
+        self.SetSizer(self.sPlot)
+        self.sPlot.Fit(self)
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        # self.ConnectEvent()
+        self.ConnectEvent()
         #------------------------------> Keyboard shortcut
         #--------------> Accelerator entries
-        # accel = {
-        #     'Zoom' : wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('Z'), wx.NewId()),
-        #     'Img'  : wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('I'), wx.NewId()),
-        # }
-        # #--------------> Bind
-        # self.Bind(
-        #     wx.EVT_MENU, self.ZoomResetPlot, id=accel['Zoom'].GetCommand())
-        # self.Bind(
-        #     wx.EVT_MENU, self.OnSaveImage, id=accel['Img'].GetCommand())
-        # #--------------> Add 
-        # self.SetAcceleratorTable(
-        #     wx.AcceleratorTable([x for x in accel.values()])
-        # )
+        accel = {
+            'Zoom' : wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('Z'), wx.NewId()),
+            'Img'  : wx.AcceleratorEntry(wx.ACCEL_CTRL, ord('I'), wx.NewId()),
+        }
+        #--------------> Bind
+        self.Bind(
+            wx.EVT_MENU, self.OnZoomResetPlot, id=accel['Zoom'].GetCommand())
+        self.Bind(
+            wx.EVT_MENU, self.OnSaveImage, id=accel['Img'].GetCommand())
+        #--------------> Add 
+        self.SetAcceleratorTable(
+            wx.AcceleratorTable([x for x in accel.values()])
+        )
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
+    #region ---------------------------------------------------> Event Methods
+    def OnSaveImage(self, event) -> bool:
+        """Save an image of the plot.
+
+            Parameters
+            ----------
+            event: mpl.KeyEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return self.SaveImage(mConfig.elMatPlotSaveI, parent=self)
+    #---
+
+    def OnZoomResetPlot(self, event) -> bool:
+        """Reset the zoom level of the plot.
+
+            Parameters
+            ----------
+            event: mpl.KeyEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return self.ZoomResetPlot()
+    #---
+
+    def OnKeyPress(self, event) -> bool:
+        """Process a key press event.
+
+            Parameter
+            ---------
+            event: mpl.KeyEvent
+                Information about the mpl event
+        """
+        #region -------------------------------------------------------> Event
+        if event.key == 'escape':
+            self.OnZoomInAbort(event) 
+        else:
+            pass
+        #endregion ----------------------------------------------------> Event
+
+        return True
+    #---
+
+    def OnGetAxesXY(self, event) -> tuple[float, float]:
+        """Get the x,y mouse coordinates.
+
+            Parameters
+            ----------
+            event: mpl.event
+                Information about the event.
+
+            Returns
+            -------
+            tuple
+                (X, Y) coordinates.
+        """
+        #region ---------------------------------------------------> 
+        x = event.xdata
+        #------------------------------>
+        if getattr(self, 'axes2', None) is not None:
+            _, y = self.rAxes.transData.inverted().transform((event.x,event.y))
+        else:
+            y = event.ydata
+        #endregion ------------------------------------------------> 
+
+        return (x,y)
+    #---
+
+    def OnMotionMouse(self, event) -> bool:
+        """Handle move mouse event.
+
+            Parameters
+            ----------
+            event: mpl.MouseEvent
+                Information about the mpl event.
+        """
+        #region -------------------------------------------------------> Event
+        if event.button == 1:
+            self.OnDrawZoomRect(event)
+        else:
+            self.OnUpdateStatusBar(event)
+        #endregion ----------------------------------------------------> Event
+
+        return True
+    #---
+
+    def OnUpdateStatusBar(self, event):
+        """To update status bar. Basic functionality. Override as needed.
+
+            Parameters
+            ----------
+            event: mpl.MouseEvent
+                Information about the mpl event.
+        """
+        #region ---------------------------------------------------> Skip
+        if self.wStatBar is None:
+            return True
+        else:
+            pass
+        #endregion ------------------------------------------------> Skip
+
+        #region -------------------------------------------------------> Event
+        if event.inaxes:
+            if self.rStatusMethod is not None:
+                self.rStatusMethod(event)
+            else:
+                x,y = self.OnGetAxesXY(event)
+                self.wStatBar.SetStatusText(
+                    f"x={x:.2f} y={y:.2f}"
+                )
+        else:
+            self.wStatBar.SetStatusText('') 
+        #endregion ----------------------------------------------------> Event
+
+        return True
+    #---
+
+    def OnDrawZoomRect(self, event) -> bool:
+        """Draw a rectangle to highlight area that will be zoomed in.
+
+            Parameters
+            ----------
+            event: mpl.MouseEvent
+                Information about the mpl event
+    
+        """
+        #region -----------------------------------------> Check event in axes
+        if event.inaxes:
+            pass
+        else:
+            return False
+        #endregion --------------------------------------> Check event in axes
+
+        #region -----------------------------------------> Initial coordinates
+        if self.rInitX is None:
+            self.rInitX, self.rInitY = self.OnGetAxesXY(event)
+        else:
+            pass
+        #endregion --------------------------------------> Initial coordinates
+
+        #region -------------------------------------------> Final coordinates
+        self.rFinalX, self.rFinalY = self.OnGetAxesXY(event)
+        #endregion ----------------------------------------> Final coordinates
+
+        #region ------------------------------------> Delete & Create zoomRect
+        #------------------------------> 
+        if self.rZoomRect is not None:
+            self.rZoomRect.remove()
+        else:
+            pass
+        #------------------------------> 
+        self.rZoomRect = patches.Rectangle(
+            (min(self.rInitX, self.rFinalX), min(self.rInitY, self.rFinalY)), # type: ignore
+            abs(self.rInitX - self.rFinalX),
+            abs(self.rInitY - self.rFinalY), # type: ignore
+            fill      = False,
+            linestyle = '--',
+            linewidth = '0.5'
+        )
+        #endregion ---------------------------------> Delete & Create zoomRect
+
+        #region --------------------------------------------------> Add & Draw
+        self.rAxes.add_patch(
+            self.rZoomRect
+        )
+        self.rCanvas.draw()
+        #endregion -----------------------------------------------> Add & Draw
+
+        return True
+    #---
+
+    def OnZoomInAbort(self, event) -> bool:
+        """Abort a zoom in operation when Esc is pressed.
+
+            Parameters
+            ----------
+            event: mpl.MouseEvent
+                Information about the mpl event
+        """
+        #------------------------------> 
+        self.rInitX  = None
+        self.rInitY  = None
+        self.rFinalX = None
+        self.rFinalY = None
+        #------------------------------> 
+        self.ZoomRectDelete()
+        #------------------------------> 
+        self.OnUpdateStatusBar(event)
+
+        return True
+    #---
+
+    def OnPressMouse(self, event) -> bool:
+        """Process press mouse event.
+
+            Parameter
+            ---------
+            event: mpl.MouseEvent
+                Information about the mpl event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Event
+        if event.inaxes:
+            if event.button == 1:
+                self.OnLeftClick(event)
+            else:
+                pass
+        else:
+            pass
+        #endregion ----------------------------------------------------> Event
+
+        return True
+    #---
+
+    def OnLeftClick(self, event) -> bool:
+        """Process left click event. Override as needed.
+
+            Parameters
+            ----------
+            event: mpl.MouseEvent
+                Information about the mpl event
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Event
+        self.initX, self.initY = self.OnGetAxesXY(event)
+        #endregion ----------------------------------------------------> Event
+
+        return True
+    #---
+
+    def OnReleaseMouse(self, event) -> bool:
+        """Process a release mouse event.
+    
+            Parameters
+            ----------
+            event: mpl.MouseEvent
+                Information about the mpl event.
+            
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Event
+        if event.button == 1:
+            self.OnLeftRelease(event)
+        else:
+            pass
+        #endregion ------------------------------------------------> Event
+        
+        return True
+    #---
+
+    def OnLeftRelease(self, event) -> bool:
+        """Process a left button release event.
+    
+            Parameters
+            ----------
+            event: mpl.MouseEvent
+                Information about the mpl event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------------> Zoom in
+        if self.rFinalX is not None:
+            self.rAxes.set_xlim(
+                min(self.rInitX, self.rFinalX), # type: ignore
+                max(self.rInitX, self.rFinalX), # type: ignore
+            )
+            self.rAxes.set_ylim(
+                min(self.rInitY, self.rFinalY), # type: ignore
+                max(self.rInitY, self.rFinalY), # type: ignore
+            )
+        else:
+            return True
+        #endregion --------------------------------------------------> Zoom in
+
+        #region -----------------------------------> Reset initial coordinates
+        self.rInitY  = None
+        self.rInitX  = None
+        self.rFinalX = None
+        self.rFinalY = None
+        #endregion --------------------------------> Reset initial coordinates
+
+        #region --------------------------------------------> Delete zoom rect
+        self.ZoomRectDelete()
+        #endregion -----------------------------------------> Delete zoom rect
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
     #region ---------------------------------------------------> Class methods
-    # def ConnectEvent(self) -> bool:
-    #     """Connect or Disconnect all event handlers.
-    
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region -----------------------------------------------> Connect events
-    #     self.cid.append(
-    #         self.canvas.mpl_connect('motion_notify_event', self.OnMotionMouse)
-    #     )
-    #     self.cid.append(
-    #         self.canvas.mpl_connect('button_press_event', self.OnPressMouse)
-    #     )
-    #     self.cid.append(
-    #         self.canvas.mpl_connect('button_release_event', self.OnReleaseMouse)
-    #     )
-    #     self.cid.append(
-    #         self.canvas.mpl_connect('key_press_event', self.OnKeyPress)
-    #     )
-    #     #endregion --------------------------------------------> Connect events
-        
-    #     return True
-    # #---
-    
-    # def DisconnectEvent(self) -> bool:
-    #     """Disconnect the event defined in ConnectEvent.
-    
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region --------------------------------------------------> Disconnect
-    #     for k in self.cid:
-    #         self.canvas.mpl_disconnect(k)
-    #     #endregion -----------------------------------------------> Disconnect
-        
-    #     #region --------------------------------------------------> Reset list
-    #     self.cid = []
-    #     #endregion -----------------------------------------------> Reset list
-        
-    #     return True
-    # #---
-    
-    # def GetAxesXY(self, event) -> tuple[float, float]:
-    #     """"""
-    #     x = event.xdata
-    #     if getattr(self, 'axes2', None) is not None:
-    #         _, y = self.axes.transData.inverted().transform((event.x,event.y))
-    #     else:
-    #         y = event.ydata
-        
-    #     return (x,y)
-    # #---
-    
-    # #--------------------------------------------------------> Key press event
-    # def OnKeyPress(self, event) -> Literal[True]:
-    #     """Process a key press event
-    
-    #         Parameter
-    #         ---------
-    #         event: mpl.KeyEvent
-    #             Information about the mpl event
-    #     """
-    #     #region -------------------------------------------------------> Event
-    #     if (tKey:= event.key) == 'escape':
-    #         self.ZoomInAbort(event) 
-    #     else:
-    #         pass
-    #     #endregion ----------------------------------------------------> Event
+    def ConnectEvent(self) -> bool:
+        """Connect all event handlers.
 
-    #     return True
-    # #---
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Connect events
+        self.rBindId.append(
+            self.rCanvas.mpl_connect('motion_notify_event', self.OnMotionMouse)
+        )
+        self.rBindId.append(
+            self.rCanvas.mpl_connect('button_press_event', self.OnPressMouse)
+        )
+        self.rBindId.append(
+            self.rCanvas.mpl_connect('button_release_event', self.OnReleaseMouse)
+        )
+        self.rBindId.append(
+            self.rCanvas.mpl_connect('key_press_event', self.OnKeyPress)
+        )
+        #endregion --------------------------------------------> Connect events
 
-    # #-----------------------------------------------------> Press mouse button
-    # def OnPressMouse(self, event) -> Literal[True]:
-    #     """Process press mouse event
-        
-    #         Parameter
-    #         ---------
-    #         event: mpl.MouseEvent
-    #             Information about the mpl event
-    #     """
-    #     #region -------------------------------------------------------> Event
-    #     if event.inaxes:
-    #         if event.button == 1:
-    #             self.OnLeftClick(event)
-    #         elif event.button == 3:
-    #             self.OnRightClick(event)
-    #         else:
-    #             pass
-    #     else:
-    #         pass
-    #     #endregion ----------------------------------------------------> Event
-        
-    #     return True
-    # #---
+        return True
+    #---
 
-    # def OnLeftClick(self, event) -> Literal[True]:
-    #     """Process left click event. Override as needed.
-            
-    #         Parameters
-    #         ----------
-    #         event: mpl.MouseEvent
-    #             Information about the mpl event
-    #     """
-    #     #region -------------------------------------------------------> Event
-    #     self.initX, self.initY = self.GetAxesXY(event)
-    #     #endregion ----------------------------------------------------> Event
+    def DisconnectEvent(self) -> bool:
+        """Disconnect the event defined in ConnectEvent.
 
-    #     return True
-    # #---
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Disconnect
+        for k in self.rBindId:
+            self.rCanvas.mpl_disconnect(k)
+        #endregion -----------------------------------------------> Disconnect
 
-    # def OnRightClick(self, event) -> Literal[True]:
-    #     """Process right click event. Override as needed
-            
-    #         Parameters
-    #         ----------
-    #         event: mpl.MouseEvent
-    #             Information about the mpl event
-    #     """
-    #     return True
-    # #---
+        #region --------------------------------------------------> Reset list
+        self.rBindId = []
+        #endregion -----------------------------------------------> Reset list
 
-    # #------------------------------------------------------> Move mouse button
-    # def OnMotionMouse(self, event) -> Literal[True]:
-    #     """Handle move mouse event
-
-    #         Parameters
-    #         ----------
-    #         event: mpl.MouseEvent
-    #             Information about the mpl event
-    #     """
-    #     #region -------------------------------------------------------> Event
-    #     if event.button == 1:
-    #         self.DrawZoomRect(event)
-    #     else:
-    #         if self.statusbar is not None:
-    #             self.UpdateStatusBar(event)
-    #         else:
-    #             pass        
-    #     #endregion ----------------------------------------------------> Event
-        
-    #     return True
-    # #---
-
-    # def DrawZoomRect(self, event) -> bool:
-    #     """Draw a rectangle to highlight area that will be zoomed in
-    
-    #         Parameters
-    #         ----------
-    #         event: mpl.MouseEvent
-    #             Information about the mpl event
-    
-    #     """
-    #     #region -----------------------------------------> Check event in axes
-    #     if event.inaxes:
-    #         pass
-    #     else:
-    #         return False
-    #     #endregion --------------------------------------> Check event in axes
-
-    #     #region -----------------------------------------> Initial coordinates
-    #     if self.initX is None:
-    #         self.initX, self.initY = self.GetAxesXY(event)
-    #     else:
-    #         pass
-    #     #endregion --------------------------------------> Initial coordinates
-        
-    #     #region -------------------------------------------> Final coordinates
-    #     self.finalX, self.finalY = self.GetAxesXY(event)
-    #     #endregion ----------------------------------------> Final coordinates
-
-    #     #region ------------------------------------> Delete & Create zoomRect
-    #     #------------------------------> 
-    #     if self.zoomRect is not None:
-    #         self.zoomRect.remove()
-    #     else:
-    #         pass
-    #     #------------------------------> 
-    #     self.zoomRect = patches.Rectangle(
-    #         (min(self.initX, self.finalX), min(self.initY, self.finalY)),
-    #         abs(self.initX - self.finalX),
-    #         abs(self.initY - self.finalY),
-    #         fill      = False,
-    #         linestyle = '--',
-    #         linewidth = '0.5'
-    #     )
-    #     #endregion ---------------------------------> Delete & Create zoomRect
-
-    #     #region --------------------------------------------------> Add & Draw
-    #     self.axes.add_patch(
-    #         self.zoomRect
-    #     )
-    #     self.canvas.draw()
-    #     #endregion -----------------------------------------------> Add & Draw
-
-    #     return True
-    # #---
-
-    # def UpdateStatusBar(self, event):
-    #     """To update status bar. Basic functionality. Override as needed 
-        
-    #         Parameters
-    #         ----------
-    #         event: mpl.MouseEvent
-    #             Information about the mpl event
-    #     """
-    #     #region -------------------------------------------------------> Event
-    #     if event.inaxes:
-    #         if self.statusMethod is not None:
-    #             self.statusMethod(event)
-    #         else:
-    #             x,y = self.GetAxesXY(event)
-    #             self.statusbar.SetStatusText(
-    #                 f"x={x:.2f} y={y:.2f}"
-    #             )
-    #     else:
-    #         self.statusbar.SetStatusText('') 
-    #     #endregion ----------------------------------------------------> Event
-        
-    #     return True
-    # #---
-
-    # #---------------------------------------------------> Release mouse button
-    # def OnReleaseMouse(self, event) -> Literal[True]:
-    #     """Process a release mouse event 
-    
-    #         Parameters
-    #         ----------
-    #         event: mpl.MouseEvent
-    #             Information about the mpl event
-    #     """
-    #     #region ---------------------------------------------------> Event
-    #     if event.button == 1:
-    #         self.OnLeftRelease(event)
-    #     elif event.button == 3:
-    #         self.OnRightRelease(event)
-    #     else:
-    #         pass
-    #     #endregion ------------------------------------------------> Event
-        
-    #     return True
-    # #---
-
-    # def OnLeftRelease(self, event) -> Literal[True]:
-    #     """Process a left button release event
-    
-    #         Parameters
-    #         ----------
-    #         event: mpl.MouseEvent
-    #             Information about the mpl event
-    #     """
-    #     #region -----------------------------------------------------> Zoom in
-    #     if self.finalX is not None:
-    #         self.axes.set_xlim(
-    #             min(self.initX, self.finalX), 
-    #             max(self.initX, self.finalX),
-    #         )
-    #         self.axes.set_ylim(
-    #             min(self.initY, self.finalY), 
-    #             max(self.initY, self.finalY),
-    #         )
-    #     else:
-    #         return True
-    #     #endregion --------------------------------------------------> Zoom in
-        
-    #     #region -----------------------------------> Reset initial coordinates
-    #     self.initY  = None
-    #     self.initX  = None
-    #     self.finalX = None
-    #     self.finalY = None
-    #     #endregion --------------------------------> Reset initial coordinates
-        
-    #     #region --------------------------------------------> Delete zoom rect
-    #     self.ZoomRectDelete()
-    #     #endregion -----------------------------------------> Delete zoom rect
-        
-    #     return True
-    # #---
-
-    # def OnRightRelease(self, event) -> Literal[True]:
-    #     """Process a right button release event. Override as needed.
-    
-    #         Parameters
-    #         ----------
-    #         event: mpl.MouseEvent
-    #             Information about the mpl event
-    #     """
-    #     return True
-    # #---
-    
-    # def OnSaveImage(self, event) -> bool:
-    #     """
-    
-    #         Parameters
-    #         ----------
-            
-    
-    #         Returns
-    #         -------
-            
-    
-    #         Raise
-    #         -----
-            
-    #     """
-    #     return self.SaveImage(config.elMatPlotSaveI, parent=self, message=None)
-    # #---
+        return True
+    #---
 
     def ZoomResetSetValues(self) -> bool:
         """Set the axis limit in the cero zoom state. Should be called after all 
@@ -2662,7 +2698,7 @@ class MatPlotPanel(wx.Panel):
             -------
             bool
         """
-        self.zoomReset = {'x': self.axes.get_xlim(), 'y': self.axes.get_ylim()}
+        self.rZoomReset = {'x': self.rAxes.get_xlim(), 'y': self.rAxes.get_ylim()}
 
         return True
     #---
@@ -2675,47 +2711,26 @@ class MatPlotPanel(wx.Panel):
             True
         """
         #------------------------------> 
-        self.axes.set_xlim(self.zoomReset['x'])
-        self.axes.set_ylim(self.zoomReset['y'])
-        self.canvas.draw()
+        self.rAxes.set_xlim(self.rZoomReset['x'])
+        self.rAxes.set_ylim(self.rZoomReset['y'])
+        self.rCanvas.draw()
 
         return True
     #---
 
-    # def ZoomInAbort(self, event) -> Literal[True]:
-    #     """Abort a zoom in operation when Esc is pressed 
-        
-    #         Parameters
-    #         ----------
-    #         event: mpl.MouseEvent
-    #             Information about the mpl event
-    #     """
-    #     #------------------------------> 
-    #     self.initX  = None
-    #     self.initY  = None
-    #     self.finalX = None
-    #     self.finalY = None
-    #     #------------------------------> 
-    #     self.ZoomRectDelete()
-    #     #------------------------------> 
-    #     self.UpdateStatusBar(event)
-        
-    #     return True
-    # #---
+    def ZoomRectDelete(self) -> bool:
+        """Delete the zoom in rectangle"""
+        #region --------------------------------------------------------> Rect
+        if self.rZoomRect is not None:
+            self.rZoomRect.remove()
+            self.rCanvas.draw()
+            self.rZoomRect = None
+        else:
+            pass
+        #endregion -----------------------------------------------------> Rect
 
-    # def ZoomRectDelete(self) -> Literal[True]:
-    #     """Delete the zoom in rectangle"""
-    #     #region --------------------------------------------------------> Rect
-    #     if self.zoomRect is not None:
-    #         self.zoomRect.remove()
-    #         self.canvas.draw()
-    #         self.zoomRect = None
-    #     else:
-    #         pass        
-    #     #endregion -----------------------------------------------------> Rect
-        
-    #     return True
-    # #---
+        return True
+    #---
 
     def SaveImage(
         self, 
@@ -2741,12 +2756,38 @@ class MatPlotPanel(wx.Panel):
         #region ----------------------------------------------------> Get Path
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
-            self.figure.savefig(path, dpi=self.dpi)
+            self.rFigure.savefig(path, dpi=self.rDPI)
         else:
             pass
         #endregion -------------------------------------------------> Get Path
 
         dlg.Destroy()
+        return True
+    #---
+
+    def SetStatBar(
+        self,
+        statusbar: wx.StatusBar,
+        method: Optional[Callable]=None
+        ) -> bool:
+        """Set the wx.StatusBar and StatusBar text update method after creating
+            the widget.
+
+            Parameters
+            ----------
+            statusbar: wx.StatusBar.
+                wx.StatusBar 
+            method: Callable or None
+                In the case of a Callable it must accept the event as first
+                argument.
+
+            Returns
+            -------
+            bool
+        """
+        self.wStatBar      = statusbar
+        self.rStatusMethod = method
+        
         return True
     #---
     #endregion ------------------------------------------------> Class methods
