@@ -627,7 +627,7 @@ class UMSAPFile():
 
         self.dConfigure = {# Configure methods. Keys are the section names as
                            # read from the file
-            # config.nuCorrA   : self.ConfigureDataCorrA,
+            mConfig.nuCorrA   : self.ConfigureDataCorrA,
             # config.nuDataPrep: self.ConfigureDataCheckDataPrep,
             # config.nmProtProf: self.ConfigureDataProtProf,
             # config.nmLimProt : self.ConfigureDataLimProt,
@@ -662,47 +662,47 @@ class UMSAPFile():
     #endregion -------------------------------------------------> Class Method
 
     #region -------------------------------------------------------> Configure
-#     def ConfigureDataCorrA(self) -> dict:
-#         """Configure a Correlation Analysis section	
-        
-#             Returns
-#             ------
-#             dict
-#             {
-#                 'DF' : pd.DataFrame with the data to plot,
-#                 'NumCol' : number of columns in 'DF',
-#                 'NumColList' : List with the number of the columns,
-#             }
-#         """
-#         #region -------------------------------------------------> Plot & Menu
-#         #------------------------------> Empty start
-#         plotData = {'Error':[]}
-#         #------------------------------> Fill
-#         for k,v in self.rData[config.nuCorrA].items():
-#             #------------------------------> 
-#             tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nuCorrA.replace(" ", "-")}'
-#             #------------------------------> 
-#             try:
-#                 #------------------------------> Create data
-#                 df = dtsFF.ReadCSV2DF(tPath/v['R'])
-                
-#                 if (numCol := len(v['CI']['oc']['Column'])) == df.shape[0]:
-#                     pass
-#                 else:
-#                     continue
-#                 #------------------------------> Add to dict if no error
-#                 plotData[k] = {
-#                     'DF'     : df,
-#                     'NumCol' : numCol,
-#                     'NumColList': v['CI']['oc']['Column'],
-#                 }
-#             except Exception:
-#                 plotData['Error'].append(k)
-#         #endregion ----------------------------------------------> Plot & Menu
-        
-#         return plotData
-#     #---
-    
+    def ConfigureDataCorrA(self) -> dict:
+        """Configure a Correlation Analysis section.
+
+            Returns
+            ------
+            dict
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'NumCol' : number of columns in 'DF',
+                'NumColList' : List with the number of the columns,
+            }
+        """
+        #region -------------------------------------------------> Plot & Menu
+        #------------------------------> Empty start
+        plotData = {'Error':[]}
+        #------------------------------> Fill
+        for k, v in self.rData[mConfig.nuCorrA].items():
+            #------------------------------> 
+            tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{mConfig.nuCorrA.replace(" ", "-")}'
+            #------------------------------>
+            try:
+                #------------------------------> Create data
+                df = ReadCSV2DF(tPath/v['R'])
+                #-------------->
+                if (numCol := len(v['CI']['oc']['Column'])) == df.shape[0]:
+                    pass
+                else:
+                    continue
+                #------------------------------> Add to dict if no error
+                plotData[k] = { # type: ignore
+                    'DF'        : df,
+                    'NumCol'    : numCol,
+                    'NumColList': v['CI']['oc']['Column'],
+                }
+            except Exception:
+                plotData['Error'].append(k)
+        #endregion ----------------------------------------------> Plot & Menu
+
+        return plotData
+    #---
+
 #     def ConfigureDataCheckDataPrep(
 #         self, tSection: Optional[str]=None, tDate: Optional[str]=None
 #         ) -> dict:

@@ -26,7 +26,7 @@ from typing import Optional, Literal, Union
 # import matplotlib as mpl
 # import matplotlib.patches as mpatches
 # import numpy as np
-# import pandas as pd
+import pandas as pd
 import requests
 # from scipy import stats
 
@@ -52,9 +52,9 @@ import data.method as mMethod
 import data.exception as mException
 import gui.menu as mMenu
 import gui.method as gMethod
-import gui.pane as mPane
 import gui.tab as mTab
-# import gui.window as window
+import gui.pane as mPane
+import gui.widget as mWidget
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -191,8 +191,6 @@ class BaseWindow(wx.Frame):
         self.cName    = getattr(self, 'cName',    mConfig.nwDef)
         self.cSWindow = getattr(self, 'cSWindow', mConfig.sWinRegular)
         self.cTitle   = getattr(self, 'cTitle',   self.cName)
-        # self.cMsgExportFailed = getattr(
-        #     self, 'cMsgExportFailed', config.mDataExport)
         #------------------------------> 
         self.dKeyMethod = {
             #------------------------------> Help Menu
@@ -201,18 +199,6 @@ class BaseWindow(wx.Frame):
             mConfig.kwHelpTutorial: self.UMSAPTutorial,
             mConfig.kwHelpCheckUpd: self.CheckUpdate,
             mConfig.kwHelpPref    : self.Preference,
-        #     #------------------------------> Save Plot Images
-        #     'PlotImageOne': self.OnPlotSaveImageOne,
-        #     'AllImg'      : self.OnPlotSaveAllImage,
-        #     #------------------------------> Reset Zoom Level
-        #     'PlotZoomResetOne': self.OnPlotZoomResetOne,
-        #     'AllZoom'         : self.OnPlotZoomResetAll,
-        #     #------------------------------> Tool Menu
-        #     config.klToolZoomResetAll : self.OnPlotZoomResetAll,
-        #     config.klToolExpData      : self.OnExportPlotData,
-        #     config.klToolExpImgAll    : self.OnPlotSaveAllImage,
-        #     config.klToolCheckDP      : self.OnCheckDataPrep,
-        #     config.klToolDupWin       : self.OnDupWin,
         }
         #------------------------------> 
         super().__init__(
@@ -344,106 +330,6 @@ class BaseWindow(wx.Frame):
         return True
     #---
 
-#     def OnPlotSaveImageOne(self) -> bool:
-#         """Save an image of the plot. Override as needed. 
-        
-#             Returns
-#             -------
-#             bool
-        
-#             Notes
-#             -----
-#             Assumes window has a wPlot attribute (dtsWidget.MatPlotPanel).
-#         """
-#         try:
-#             #------------------------------> 
-#             self.wPlot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
-#             #------------------------------> 
-#             return True
-#         except Exception as e:
-#             #------------------------------> 
-#             dtsWindow.DialogNotification(
-#                 'errorF', msg=str(e), tException=e, parent=self)
-#             #------------------------------> 
-#             return False
-#     #---
-    
-#     def OnPlotSaveAllImage(self) -> bool:
-#         """ Export all plots to a pdf image. Override as needed.
-        
-#             Returns
-#             -------
-#             bool
-            
-#             Notes
-#             -----
-#             If the results window contains more than one plot then the method
-#             must be overridden.
-#         """
-#         try:
-#             #------------------------------> 
-#             self.wPlot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
-#             #------------------------------> 
-#             return True
-#         except Exception as e:
-#             #------------------------------> 
-#             dtsWindow.DialogNotification(
-#                 'errorF', msg=str(e), tException=e, parent=self)
-#             #------------------------------> 
-#             return False
-#     #---
-    
-#     def OnPlotZoomResetOne(self) -> bool:
-#         """Reset the zoom of the plot.
-    
-#             Returns
-#             -------
-#             True
-            
-#             Notes
-#             -----
-#             It is assumed the wPlot is in self.wPlot (dtsWidget.MatPlotPanel)
-#         """
-#         #------------------------------> Try reset
-#         try:
-#             self.wPlot.ZoomResetPlot()
-#         except Exception as e:
-#             #------------------------------> 
-#             msg = 'It was not possible to reset the zoom level of the plot.'
-#             dtsWindow.DialogNotification(
-#                 'errorU', msg=msg, tException=e, parent=self)
-#             #------------------------------> 
-#             return False
-#         #------------------------------> 
-#         return True
-#     #---
-
-#     def OnPlotZoomResetAll(self) -> bool:
-#         """Reset the Zoom level of all plots in the window. Override as needed.
-
-#             Returns
-#             -------
-#             bool
-            
-#             Notes
-#             -----
-#             If the results window contains more than one plot then the method
-#             must be overridden.
-#         """
-#         #------------------------------> Try reset
-#         try:
-#             self.wPlot.ZoomResetPlot()
-#         except Exception as e:
-#             #------------------------------> 
-#             msg = 'It was not possible to reset the zoom level of the plot.'
-#             dtsWindow.DialogNotification(
-#                 'errorU', msg=msg, tException=e, parent=self)
-#             #------------------------------> 
-#             return False
-#         #------------------------------> 
-#         return True
-#     #---
-
 #     def OnCheckDataPrep(self, tDate: str) -> bool:
 #         """Launch the Check Data Preparation Window.
     
@@ -468,60 +354,6 @@ class BaseWindow(wx.Frame):
 #         )
         
 #         return True
-#     #---
-
-#     def OnDupWin(self) -> bool:
-#         """Duplicate window. Used by Result windows. Override as needed.
-    
-#             Returns
-#             -------
-#             True
-#         """
-#         #------------------------------> 
-#         self.cParent.rWindow[self.cSection]['Main'].append(
-#             self.cParent.dPlotMethod[self.cSection](self.cParent)
-#         )
-#         #------------------------------> 
-#         return True
-#     #---
-    
-#     def OnExportPlotData(self, df:Optional[pd.DataFrame]=None) -> bool:
-#         """ Export data to a csv file 
-        
-#             Returns
-#             -------
-#             bool
-        
-#             Notes
-#             -----
-#             It requires child class to define self.rDateC to catch the current
-#             date being plotted.
-#         """
-#         #region --------------------------------------------------> Dlg window
-#         dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
-#         #endregion -----------------------------------------------> Dlg window
-        
-#         #region ---------------------------------------------------> Get Path
-#         if dlg.ShowModal() == wx.ID_OK:
-#             #------------------------------> Variables
-#             p = Path(dlg.GetPath())
-#             tDF = self.rData[self.rDateC]['DF'] if df is None else df
-#             #------------------------------> Export
-#             try:
-#                 dtsFF.WriteDF2CSV(p, tDF)
-#             except Exception as e:
-#                 dtsWindow.DialogNotification(
-#                     'errorF',
-#                     msg        = self.cMsgExportFailed,
-#                     tException = e,
-#                     parent     = self,
-#                 )
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Get Path
-     
-#         dlg.Destroy()
-#         return True	
 #     #---
     
 #     def OnExportFilteredData(self) -> bool:
@@ -637,47 +469,6 @@ class BaseWindow(wx.Frame):
         
 #         return True
 #     #---
-    
-#     def ReportPlotDataError(self) -> bool:
-#         """Check that there is something to plot after reading a section in
-#             an UMSAP Plot.
-
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
-
-
-#             Returns
-#             -------
-
-
-#             Raise
-#             -----
-
-#         """
-#         if not self.rDate:
-#             msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are '
-#                 f'corrupted or were not found.')
-#             dtsWindow.DialogNotification('errorU', msg=msg)
-#             raise dtsException.PassException()
-#         else:
-#             pass
-#         #------------------------------> Some mistakes
-#         if self.rData['Error']:
-#             fileList = '\n'.join(self.rData['Error'])
-#             if len(self.rData['Error']) == 1:
-#                 msg = (f'The data for analysis\n\n{fileList}\n\n '
-#                 f'contains errors or was not found.')
-#             else:
-#                 msg = (f'The data for analysis:\n\n{fileList}\n\n '
-#                 f'contain errors or were not found.')
-#             dtsWindow.DialogNotification('warning', msg=msg)
-#         else:
-#             pass
-#         #------------------------------> 
-#         return True
-#     #---
     #endregion ------------------------------------------------> Manage Methods
 #---
 
@@ -705,25 +496,153 @@ class BaseWindowResult(BaseWindow):
         -----
         At least one plot is expected in the window.
     """
+    
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: Optional[wx.Window]=None, menuData: dict={}, nPlot:int=1,
+        self, parent: Optional[wx.Window]=None, 
+        menuData: dict={}, nPlot:int=1,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cSWindow = getattr(self, 'cSWindow', mConfig.sWinPlot)
+        self.cSection = getattr(self, 'cSection', '')
+        #------------------------------>
+        self.cMsgExportFailed = getattr(
+            self, 'cMsgExportFailed', 'Export Data failed.')
+        #------------------------------>
+        self.rDate    = getattr(self, 'rDate', [])
+        self.rDateC   = getattr(self, 'rDateC', '')
+        self.rData    = getattr(self, 'rData', {})
         #------------------------------>
         super().__init__(parent=parent, menuData=menuData)
+        #------------------------------>
+        dKeyMethod = {
+            mConfig.kwToolDupWin      : self.DupWin,
+            mConfig.kwToolExpData     : self.ExportData,
+            mConfig.kwToolExpImgAll   : self.ExportImgAll,
+            mConfig.kwToolZoomResetAll: self.ZoomResetAll,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wPlot = wx.Panel(self)
+        self.wPlot = {k:mWidget.MatPlotPanel(self) for k in range(0, nPlot)}
         #endregion --------------------------------------------------> Widgets
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    
+    def ReportPlotDataError(self) -> bool:
+        """Check that there is something to plot after reading a section in
+            an UMSAP Plot.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------> Nothing to Plot
+        if self.rDate:
+            pass
+        else:
+            msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are ' # type: ignore
+                f'corrupted or were not found.')
+            raise mException.InputError(msg)
+        #endregion ------------------------------------------> Nothing to Plot
+
+        #region -------------------------------------------------> Some Errors
+        if self.rData['Error']:
+            #------------------------------>
+            fileList = '\n'.join(self.rData['Error'])
+            #------------------------------>
+            if len(self.rData['Error']) == 1:
+                msg = (f'The data for analysis:\n{fileList}\n '
+                       f'contains errors or was not found.')
+            else:
+                msg = (f'The data for analysis:\n{fileList}\n '
+                       f'contain errors or were not found.')
+            #------------------------------>
+            DialogNotification('warning', msg=msg)
+        else:
+            pass
+        #endregion ----------------------------------------------> Some Errors
+
+        return True
+    #---
+
+    def DupWin(self) -> bool:
+        """Duplicate window.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Duplicate
+        self.cParent.rWindow[self.cSection]['Main'].append( # type: ignore
+            self.cParent.dPlotMethod[self.cSection](self.cParent) # type: ignore
+        )
+        #endregion ------------------------------------------------> Duplicate
+
+        return True
+    #---
+
+    def ExportData(self, df: Optional[pd.DataFrame]=None) -> bool:
+        """Export data to a csv file.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            It requires child class to define self.rDateC to catch the current
+            date being plotted.
+        """
+        #region --------------------------------------------------> Dlg window
+        dlg = DialogFileSelect('save', mConfig.elData, parent=self)
+        #endregion -----------------------------------------------> Dlg window
+
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            tDF = self.rData[self.rDateC]['DF'] if df is None else df
+            #------------------------------> Export
+            try:
+                mFile.WriteDF2CSV(p, tDF)
+            except Exception as e:
+                DialogNotification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed,
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+
+        dlg.Destroy()
+        return True
+    #---
+
+    def ExportImgAll(self) -> bool:
+        """Create and image of all plots in the window.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def ZoomResetAll(self) -> bool:
+        """Reset the zoom of all plots in the window.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -763,14 +682,48 @@ class BaseWindowResultOnePlot(BaseWindowResult):
         #endregion --------------------------------------------> Initial Setup
 
         #region ---------------------------------------------------> Sizers
-        self.sSizer.Add(self.wPlot, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.wPlot[0], 1, wx.EXPAND|wx.ALL, 5)
         self.SetSizer(self.sSizer)
         #endregion ------------------------------------------------> Sizers
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    
+    def ExportImgAll(self) -> bool:
+        """Create and image of all plots in the window.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        try:
+            self.wPlot[0].SaveImage(ext=mConfig.elMatPlotSaveI, parent=self)
+        except Exception as e:
+            msg = "The image of the plot could not be saved."
+            DialogNotification('errorU', msg=msg, tException=e, parent=self)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def ZoomResetAll(self) -> bool:
+        """Reset the zoom of all plots in the window.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        try:
+            self.wPlot[0].ZoomResetPlot()
+        except Exception as e:
+            msg = 'The zoom level of the plot could not be reset.'
+            DialogNotification('errorU', msg=msg, tException=e, parent=self)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -2132,124 +2085,62 @@ class WindowMain(BaseWindow):
 
 
 class WindowResCorrA(BaseWindowResultOnePlot):
-    """Correlation Analysis result window.
+    """Creates the window showing the results of a correlation analysis.
 
         Parameters
         ----------
-        
+        parent : 'UMSAPControl'
+            Parent of the window.
 
         Attributes
         ----------
-        
+        rBar : Boolean
+            Show (True) or not (False) the color bar in the plot
+        rCmap : Matplotlib cmap
+            CMAP to use in the plot
+        rCol : str one of 'Name', 'Number'
+            Plot column names or numbers
+        rData : parent.obj.confData[Section]
+            Data for the Correlation Analysis section.
+        rDataPlot : pd.DF
+            Data to plot and search the values for the wx.StatusBar.
+        rDate : [parent.obj.confData[Section].keys()]
+            List of dates available for plotting.
+        rDateC : one of rDate
+            Current selected date
+        rObj : parent.obj
+            Pointer to the UMSAPFile object in parent.
+        rSelColIdx : list[int]
+            Selected columns index in self.rData[self.rDateC]['DF'].
+        rSelColName : list[int]
+            Selected columns name to plot.
+        rSelColNum : list[int]
+            Selected columns numbers to plot.
 
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
-        
         Notes
         -----
-        At least one plot is expected in the window.
+        The structure of menuData is:
+        {
+            'MenuDate' : [list of dates in the section],
+        }
     """
-    #region -----------------------------------------------------> Class Setup
+    #region -----------------------------------------------------> Class setup
     cName    = mConfig.nwCorrAPlot
     cSection = mConfig.nuCorrA
-    #endregion --------------------------------------------------> Class Setup
+    #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent: 'WindowUMSAPControl') -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cSWindow = getattr(self, 'cSWindow', mConfig.sWinPlot)
+        self.rObj     = parent.rObj
+        self.rData    = self.rObj.dConfigure[self.cSection]()
+        self.rDate    = [x for x in self.rData.keys() if x != 'Error']
+        #------------------------------> Nothing found
+        self.ReportPlotDataError()
         #------------------------------>
-        super().__init__(parent=parent)
-        #endregion --------------------------------------------> Initial Setup
-
-        #region -----------------------------------------------------> Widgets
-        self.wPlot = wx.Panel(self)
-        #endregion --------------------------------------------------> Widgets
-        
-        #region ---------------------------------------------------> Positions
-        self.Show()
-        #endregion ------------------------------------------------> Positions
-    #---
-    #endregion -----------------------------------------------> Instance setup
-
-    #region ---------------------------------------------------> Class methods
-    
-    #endregion ------------------------------------------------> Class methods
-#---
-
-
-# class CorrAPlot(BaseWindowPlot):
-#     """Creates the window showing the results of a correlation analysis.
-    
-#         See Notes below for more details.
-
-#         Parameters
-#         ----------
-#         cParent : 'UMSAPControl'
-#             Parent of the window
-
-#         Attributes
-#         ----------
-#         rBar : Boolean
-#             Show (True) or not (False) the Colorbar in the plot
-#         rCmap : Matplotlib cmap
-#             CMAP to use in the plot
-#         rCol : str one of 'Name', 'Number'
-#             Plot column names or numbers
-#         rData : parent.obj.confData[Section]
-#             Data for the Correlation Analysis section.
-#         rDataPlot : pd.DF
-#             Data to plot and search the values for the wx.StatusBar.
-#         rDate : [parent.obj.confData[Section].keys()]
-#             List of dates availables for plotting.
-#         rDateC : one of rDate
-#             Current selected date
-#         rObj : parent.obj
-#             Pointer to the UMSAPFile object in parent.
-#         rSelColIdx : list[int]
-#             Selected columns index in self.rData[self.rDateC]['DF'].
-#         rSelColName : list[int]
-#             Selected columns name to plot.            
-#         rSelColNum : list[int]
-#             Selected columns numbers to plot.
-        
-            
-#         Notes
-#         -----
-#         The structure of menuData is:
-#         {
-#             'MenuDate' : [list of dates in the section],
-#         }
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     #------------------------------> To id the window
-#     cName = config.nwCorrAPlot
-#     #------------------------------> To id the section in the umsap file 
-#     # shown in the window
-#     cSection = config.nuCorrA
-#     #endregion --------------------------------------------------> Class setup
-
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, cParent: 'UMSAPControl') -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.rObj     = cParent.rObj
-#         self.rData    = self.rObj.dConfigure[self.cSection]()
-#         self.rDate    = [x for x in self.rData.keys() if x != 'Error']
-#         #------------------------------> Nothing found
-#         try:
-#             self.ReportPlotDataError()
-#         except Exception as e:
-#             raise e
-#         #------------------------------> 
-#         self.rDateC   = self.rDate[0]
-#         self.rBar     = False
+        self.rDateC   = self.rDate[0]
+        # self.rBar     = False
 #         self.rCol     = config.lmCorrAColName
 #         self.rNorm    = mpl.colors.Normalize(vmin=-1, vmax=1)
 #         self.rCmap    = dtsMethod.MatplotLibCmap(
@@ -2259,28 +2150,28 @@ class WindowResCorrA(BaseWindowResultOnePlot):
 #             c3  = config.color[self.cSection]['CMAP']['c3'],
 #             bad = config.color[self.cSection]['CMAP']['NA'],
 #         )
-#         #------------------------------>
-#         self.cParent  = cParent
-#         self.cTitle  = f"{cParent.cTitle} - {self.cSection} - {self.rDateC}"
-#         #------------------------------> 
-#         super().__init__(cParent, {'MenuDate' : self.rDate})
+        #------------------------------>
+        self.cParent  = parent
+        self.cTitle  = f"{parent.cTitle} - {self.cSection} - {self.rDateC}"
+        #------------------------------> 
+        super().__init__(parent, {'MenuDate' : self.rDate})
 #         #------------------------------>
 #         dKeyMethod = {
 #             config.klToolGuiUpdate  : self.UpdateDisplayedData,
 #             config.klToolCorrASelCol: self.OnSelectColumns,
 #         }
 #         self.dKeyMethod = self.dKeyMethod | dKeyMethod
-#         #endregion --------------------------------------------> Initial Setup
+        #endregion --------------------------------------------> Initial Setup
         
-#         #region ----------------------------------------------------> Position
+        #region ----------------------------------------------------> Position
 #         self.SetColDetails(self.rDateC)
 #         self.UpdateDisplayedData()
 #         self.WinPos()
-#         self.Show()
-#         #endregion -------------------------------------------------> Position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-    
+        self.Show()
+        #endregion -------------------------------------------------> Position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
 #     #------------------------------> Class methods
 #     #region ----------------------------------------------------> Event Manage
 #     def OnZoomReset(self) -> bool:

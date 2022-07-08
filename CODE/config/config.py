@@ -170,13 +170,12 @@ elSeq   = (
     "Text files (*.txt)|*.txt|"
     "Fasta files (*.fasta)|*.fasta"
 )
-
-# elMatPlotSaveI = (
-#     "Portable Document File (*.pdf)|*.pdf|"
-#     "Portable Network Graphic (*.png)|*.png|"
-#     "Scalable Vector Graphic (*.svg)|*.svg|"
-#     "Tagged Image File (*.tif)|*.tif"
-# )
+elMatPlotSaveI = (
+    "Portable Document File (*.pdf)|*.pdf|"
+    "Portable Network Graphic (*.png)|*.png|"
+    "Scalable Vector Graphic (*.svg)|*.svg|"
+    "Tagged Image File (*.tif)|*.tif"
+)
 #------------------------------> File extensions. First item is default
 esData  = ['.txt']
 # esPDB   = ['.pdb']
@@ -196,13 +195,13 @@ kwHelpPref     = 'MenuHelp Preferences'
 #------------------------------> Tool Menu for UMSAPCtrl
 kwToolUMSAPCtrlAddDelExp = 'ToolUMSAPCtrl Add Del Export Analysis'
 kwToolUMSAPCtrlReload    = 'ToolUMSAPCtrl Reload File'
-# #------------------------------> Tool Menu for Plot Window. General Items
-# klToolGuiUpdate    = 'Update Result Window'
-# klToolDupWin       = 'Duplicate Window'
-# klToolZoomResetAll = 'Reset All Zoom'
-# klToolExpData      = 'Export Data'
-# klToolExpImgAll    = 'Export Image'
-# klToolCheckDP      = 'Check DP'
+#------------------------------> Tool Menu for Plot Window. General Items
+kwToolGuiUpdDate    = 'Update Result Window'
+kwToolDupWin       = 'Duplicate Window'
+kwToolZoomResetAll = 'Reset All Zoom'
+kwToolExpData      = 'Export Data'
+kwToolExpImgAll    = 'Export Image'
+kwToolCheckDP      = 'Check DP'
 # klToolExpSeq       = 'Export Sequences'
 # #------------------------------> Tool Menu for CorrA
 # klToolCorrASelCol  = 'Select Column'
@@ -304,10 +303,10 @@ lPdError = 'Fatal Error'
 lmToolUMSAPCtrlAdd = 'Add Analysis'
 lmToolUMSAPCtrlDel = 'Delete Analysis'
 lmToolUMSAPCtrlExp = 'Export Analysis'
-# lmCorrAColNum  = 'Column Numbers (0 based)'
-# lmCorrAColName = 'Column Names'
-# lmCorrASelCol  = 'Select Columns'
-# lmCorrAAllCol  = 'All Columns'
+lmCorrAColNum  = 'Column Numbers (0 based)'
+lmCorrAColName = 'Column Names'
+lmCorrASelCol  = 'Select Columns'
+lmCorrAAllCol  = 'All Columns'
 # lmNatSeq       = 'Native Sequence'
 #endregion -----------------------------------------------------------> Labels
 
@@ -477,8 +476,6 @@ mCheckUpdate = 'Check for Updates failed. Check again later.'
 #------------------------------> Sequences related errors
 mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
     "protein.")
-# #------------------------------> Data
-# mDataExport = 'Export Data failed.'
 #------------------------------> Optional Field
 mOptField = '\nThis field is optional.'
 #endregion ----------------------------------------------------------> Other
@@ -629,7 +626,7 @@ font = {
 #region -----------------------------------------------------> General options
 general = { # General options
     'checkUpdate'  : True, # True Check, False No check
-    'DPI'          : 100,  # DPI for plot images
+    'DPI'          : 300,  # DPI for plot images
     'MatPlotMargin': 0.025 # Margin for the axes range
 }
 #endregion --------------------------------------------------> General options

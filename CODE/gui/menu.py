@@ -164,31 +164,31 @@ class BaseMenu(wx.Menu):
     #     return True
     # #---
     
-    # def OnMethodKey(self, event:wx.CommandEvent) -> bool:
-    #     """Call the corresponding method in the window with a keyword argument.
+    def OnMethodKey(self, event:wx.CommandEvent) -> bool:
+        """Call the corresponding method in the window with a keyword argument.
 
-    #         Parameters
-    #         ----------
-    #         event:wx.Event
-    #             Information about the event.
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region ---------------------------------------------------> Variables
-    #     tID = event.GetId()
-    #     win = self.GetWindow()
-    #     tFunctionKey = self.rIDMap[tID]
-    #     tDict = {self.rKeyMap[tID] : self.GetLabelText(tID)}
-    #     #endregion ------------------------------------------------> Variables
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        tID = event.GetId()
+        win = self.GetWindow()
+        tFunctionKey = self.rIDMap[tID]
+        tDict = {self.rKeyMap[tID] : self.GetLabelText(tID)}
+        #endregion ------------------------------------------------> Variables
 
-    #     #region -------------------------------------------------> Call Method
-    #     win.dKeyMethod[tFunctionKey](**tDict)
-    #     #endregion ----------------------------------------------> Call Method
+        #region -------------------------------------------------> Call Method
+        win.dKeyMethod[tFunctionKey](**tDict)
+        #endregion ----------------------------------------------> Call Method
 
-    #     return True
-    # #---
+        return True
+    #---
     
     # def OnMethodKeyBool(self, event:wx.CommandEvent) -> bool:
     #     """Call the corresponding method in the window with a keyword argument 
@@ -225,122 +225,122 @@ class BaseMenu(wx.Menu):
 #---
 
 
-# class BaseMenuMainResult(BaseMenu):
-#     """Menu for a window plotting results with a list of available analysis IDs
-#         as first items, e.g. Correlation Analysis
+class BaseMenuMainResult(BaseMenu):
+    """Menu for a window plotting results with a list of available analysis IDs
+        as first items, e.g. Correlation Analysis
 
-#         Parameters
-#         ----------
-#         menuData : dict
-#             Data to build the Tool menu of the window. It must contain at least
-#             a key - value pair like:
-#             'MenuDate' : ['20210324-123456 - bla',..., '20220730-105402 - bla2']
+        Parameters
+        ----------
+        menuData : dict
+            Data to build the Tool menu of the window. It must contain at least
+            a key - value pair like:
+            'MenuDate' : ['20210324-123456 - bla',..., '20220730-105402 - bla2']
 
-#         Attributes
-#         ----------
-#         cMenuData : dict
-#             Data to build the Tool menu of the window. It must contain at least
-#             a key - value pair like:
-#             'MenuDate' : ['20210324-123456 - bla',..., '20220730-105402 - bla2']
-#         rPlotDate : list[wx.MenuItems]
-#             List of available menu items representing the analysis IDs.
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData: dict) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cMenuData = menuData
-#         self.rPlotDate = []
-#         #------------------------------>
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+        Attributes
+        ----------
+        cMenuData : dict
+            Data to build the Tool menu of the window. It must contain at least
+            a key - value pair like:
+            'MenuDate' : ['20210324-123456 - bla',..., '20220730-105402 - bla2']
+        rPlotDate : list[wx.MenuItems]
+            List of available menu items representing the analysis IDs.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData: dict) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cMenuData = menuData
+        self.rPlotDate = []
+        #------------------------------>
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.AddDateItems(self.cMenuData['MenuDate'])
-#         #endregion -----------------------------------------------> Menu Items
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-    
-#     #region ---------------------------------------------------> Class Methods
-#     def AddDateItems(self, menuDate: list[str]) -> bool:
-#         """Add and bind the analysis ID items. 
+        #region --------------------------------------------------> Menu Items
+        self.AddDateItems(self.cMenuData['MenuDate'])
+        #endregion -----------------------------------------------> Menu Items
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#             Parameters
-#             ----------
-#             menuDate: list of str.
-#                 Available dates to plot e.g. '20210324-123456 - bla'
+    #region ---------------------------------------------------> Class Methods
+    def AddDateItems(self, menuDate: list[str]) -> bool:
+        """Add and bind the analysis ID items. 
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Add items
-#         for k in menuDate:
-#             #------------------------------> Item
-#             self.rPlotDate.append(self.AppendRadioItem(-1, k))
-#             #------------------------------> Add to dict
-#             self.rIDMap[self.rPlotDate[-1].GetId()]  = mConfig.klToolGuiUpdate
-#             self.rKeyMap[self.rPlotDate[-1].GetId()] = 'tDate'
-#             #------------------------------> Bind
-#             self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[-1])
-#         #endregion ------------------------------------------------> Add items
+            Parameters
+            ----------
+            menuDate: list of str.
+                Available dates to plot e.g. '20210324-123456 - bla'
 
-#         #region -----------------------------------------------> Add Separator
-#         self.AppendSeparator()
-#         #endregion --------------------------------------------> Add Separator
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Add items
+        for k in menuDate:
+            #------------------------------> Item
+            self.rPlotDate.append(self.AppendRadioItem(-1, k))
+            #------------------------------> Add to dict
+            self.rIDMap[self.rPlotDate[-1].GetId()] = mConfig.kwToolGuiUpdDate
+            self.rKeyMap[self.rPlotDate[-1].GetId()] = 'tDate'
+            #------------------------------> Bind
+            self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[-1])
+        #endregion ------------------------------------------------> Add items
 
-#         return True
-#     #---
+        #region -----------------------------------------------> Add Separator
+        self.AppendSeparator()
+        #endregion --------------------------------------------> Add Separator
 
-#     def AddLastItems(self, onePlot:bool=True) -> bool:
-#         """Add the last items to the Tool menu of a window showing results.
+        return True
+    #---
 
-#             Parameters
-#             ----------
-#             onePlot: bool
-#                 Configure the keyboard shortcut depending on the number of plots
-#                 on the window.
+    def AddLastItems(self, onePlot:bool=True) -> bool:
+        """Add the last items to the Tool menu of a window showing results.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         shortCut = 'Ctrl' if onePlot else 'Shift+Alt'
-#         #endregion ------------------------------------------------> Variables
+            Parameters
+            ----------
+            onePlot: bool
+                Configure the keyboard shortcut depending on the number of plots
+                on the window.
 
-#         #region ---------------------------------------------------> Add Items
-#         self.miCheckDP = self.Append(-1, 'Data Preparation\tCtrl+P')
-#         self.AppendSeparator()
-#         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
-#         self.AppendSeparator()
-#         self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
-#         self.miSaveI = self.Append(-1, f'Export Image\t{shortCut}+I')
-#         self.AppendSeparator()
-#         self.miZoomR = self.Append(-1, f'Reset Zoom\t{shortCut}+Z')
-#         #endregion ------------------------------------------------> Add Items
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        shortCut = 'Ctrl' if onePlot else 'Shift+Alt'
+        #endregion ------------------------------------------------> Variables
 
-#         #region --------------------------------------------------> Add rIDMap
-#         rIDMap = {
-#             self.miDupWin.GetId()  : mConfig.klToolDupWin,
-#             self.miZoomR.GetId()   : mConfig.klToolZoomResetAll,
-#             self.miSaveD.GetId()   : mConfig.klToolExpData,
-#             self.miSaveI.GetId()   : mConfig.klToolExpImgAll,
-#             self.miCheckDP.GetId() : mConfig.klToolCheckDP,
-#         }
-#         self.rIDMap = self.rIDMap | rIDMap
-#         #endregion -----------------------------------------------> Add rIDMap
+        #region ---------------------------------------------------> Add Items
+        self.miCheckDP = self.Append(-1, 'Data Preparation\tCtrl+P')
+        self.AppendSeparator()
+        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
+        self.miSaveI = self.Append(-1, f'Export Image\t{shortCut}+I')
+        self.AppendSeparator()
+        self.miZoomR = self.Append(-1, f'Reset Zoom\t{shortCut}+Z')
+        #endregion ------------------------------------------------> Add Items
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miDupWin)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZoomR)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveD)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveI)
-#         self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miCheckDP)
-#         #endregion -----------------------------------------------------> Bind
+        #region --------------------------------------------------> Add rIDMap
+        rIDMap = {
+            self.miDupWin.GetId()  : mConfig.kwToolDupWin,
+            self.miZoomR.GetId()   : mConfig.kwToolZoomResetAll,
+            self.miSaveD.GetId()   : mConfig.kwToolExpData,
+            self.miSaveI.GetId()   : mConfig.kwToolExpImgAll,
+            self.miCheckDP.GetId() : mConfig.kwToolCheckDP,
+        }
+        self.rIDMap = self.rIDMap | rIDMap
+        #endregion -----------------------------------------------> Add rIDMap
 
-#         return True
-#     #---
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miDupWin)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveD)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miCheckDP)
+        #endregion -----------------------------------------------------> Bind
+
+        return True
+    #---
 
 #     def UpdateDateItems(self, menuData: dict) -> bool:
 #         """Update the Analysis ID items when the analyses are modified. 
@@ -455,8 +455,8 @@ class BaseMenu(wx.Menu):
 #                 pass
 #         #endregion --------------------------------------------------> Checked
 #     #---
-#     #endregion ------------------------------------------------> Class Methods
-# #---
+    #endregion ------------------------------------------------> Class Methods
+#---
 
 
 # class BaseMenuMainResultSubMenu(BaseMenu):
@@ -969,74 +969,79 @@ class MenuToolFileControl(BaseMenu):
 #---
 
 
-# class MenuToolCorrA(BaseMenuMainResult):
-#     """Creates the Tools menu for a Correlation Analysis Plot window 
+class MenuToolCorrA(BaseMenuMainResult):
+    """Creates the Tools menu for a Correlation Analysis Plot window 
 
-#         Parameters
-#         ----------
-#         menuData : dict
-#             Data to build the Tool menu. See Notes for more details.
+        Parameters
+        ----------
+        menuData : dict
+            Data to build the Tool menu. See Notes for more details.
 
-#         Notes
-#         -----
-#         menuData has the following structure:
-#         {
-#             'MenuDate' : ['dateA',....,'dateN'],
-#         }
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData: dict) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(menuData)
-#         #endregion --------------------------------------------> Initial Setup
+        Notes
+        -----
+        menuData has the following structure:
+        {
+            'MenuDate' : ['dateA',....,'dateN'],
+        }
+    """
+    #region -----------------------------------------------------> Class Setup
+    cLAllCol  = mConfig.lmCorrAAllCol
+    cLSelCol  = mConfig.lmCorrASelCol
+    cLColName = mConfig.lmCorrAColName
+    cLColNum  = mConfig.lmCorrAColNum
+    #endregion --------------------------------------------------> Class Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.miColName  = self.Append(
-#             -1, mConfig.lmCorrAColName, kind=wx.ITEM_RADIO)
-#         self.miColNumber = self.Append(
-#             -1, mConfig.lmCorrAColNum,kind=wx.ITEM_RADIO)
-#         #------------------------------>
-#         self.AppendSeparator()
-#         self.miAllCol = self.Append(-1, mConfig.lmCorrAAllCol)
-#         self.miSelCol = self.Append(-1, mConfig.lmCorrASelCol)
-#         #------------------------------>
-#         self.AppendSeparator()
-#         self.miColBar = self.Append(-1, "Show ColorBar",kind=wx.ITEM_CHECK)
-#         self.miColBar.Check(check=False)
-#         #------------------------------>
-#         self.AppendSeparator()
-#         self.AddLastItems()
-#         #endregion -----------------------------------------------> Menu Items
+    #region --------------------------------------------------> Instance Setup
+    def __init__(self, menuData: dict) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(menuData)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region -------------------------------------------------------> Names
-#         rIDMap = {
-#             self.miColName.GetId()  : mConfig.klToolGuiUpdate,
-#             self.miColNumber.GetId(): mConfig.klToolGuiUpdate,
-#             self.miColBar.GetId()   : mConfig.klToolGuiUpdate,
-#             self.miSelCol.GetId()   : mConfig.klToolCorrASelCol,
-#             self.miAllCol.GetId()   : mConfig.klToolCorrASelCol,
-#         }
-#         self.rIDMap = self.rIDMap | rIDMap
-#         #------------------------------>
-#         rKeyMap = {
-#             self.miColName.GetId()  : 'col',
-#             self.miColNumber.GetId(): 'col',
-#             self.miColBar.GetId()   : 'bar',
-#         }
-#         self.rKeyMap = self.rKeyMap | rKeyMap
-#         #endregion ----------------------------------------------------> Names
+        #region --------------------------------------------------> Menu Items
+        self.miColName   = self.Append(-1, self.cLColName, kind=wx.ITEM_RADIO)
+        self.miColNumber = self.Append(-1, self.cLColNum,kind=wx.ITEM_RADIO)
+        #------------------------------>
+        self.AppendSeparator()
+        self.miAllCol = self.Append(-1, self.cLAllCol)
+        self.miSelCol = self.Append(-1, self.cLSelCol)
+        #------------------------------>
+        self.AppendSeparator()
+        self.miColBar = self.Append(-1, "Show ColorBar",kind=wx.ITEM_CHECK)
+        self.miColBar.Check(check=False)
+        #------------------------------>
+        self.AppendSeparator()
+        self.AddLastItems()
+        #endregion -----------------------------------------------> Menu Items
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethodKey,     source=self.miColName)
-#         self.Bind(wx.EVT_MENU, self.OnMethodKey,     source=self.miColNumber)
-#         self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miColBar)
-#         self.Bind(wx.EVT_MENU, self.OnMethodLabel,   source=self.miSelCol)
-#         self.Bind(wx.EVT_MENU, self.OnMethodLabel,   source=self.miAllCol)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-# #---
+        #region -------------------------------------------------------> Names
+        # rIDMap = {
+        #     self.miColName.GetId()  : mConfig.klToolGuiUpdate,
+        #     self.miColNumber.GetId(): mConfig.klToolGuiUpdate,
+        #     self.miColBar.GetId()   : mConfig.klToolGuiUpdate,
+        #     self.miSelCol.GetId()   : mConfig.klToolCorrASelCol,
+        #     self.miAllCol.GetId()   : mConfig.klToolCorrASelCol,
+        # }
+        # self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------>
+        # rKeyMap = {
+        #     self.miColName.GetId()  : 'col',
+        #     self.miColNumber.GetId(): 'col',
+        #     self.miColBar.GetId()   : 'bar',
+        # }
+        # self.rKeyMap = self.rKeyMap | rKeyMap
+        #endregion ----------------------------------------------------> Names
+
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnMethodKey,     source=self.miColName)
+        # self.Bind(wx.EVT_MENU, self.OnMethodKey,     source=self.miColNumber)
+        # self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miColBar)
+        # self.Bind(wx.EVT_MENU, self.OnMethodLabel,   source=self.miSelCol)
+        # self.Bind(wx.EVT_MENU, self.OnMethodLabel,   source=self.miAllCol)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance Setup
+#---
 
 
 # class MenuToolDataPrep(BaseMenuMainResult):
@@ -2379,7 +2384,7 @@ class MenuBarTool(MenuBarMain):
     #region -----------------------------------------------------> Class Setup
     dTool = { # Key are window name and values the corresponding tool menu
         mConfig.nwUMSAPControl : MenuToolFileControl,
-        # mConfig.nwCorrAPlot    : MenuToolCorrA,
+        mConfig.nwCorrAPlot    : MenuToolCorrA,
         # mConfig.nwCheckDataPrep: MenuToolDataPrep,
         # mConfig.nwProtProf     : MixMenuToolProtProf,
         # mConfig.nwLimProt      : MixMenuToolLimProt,
