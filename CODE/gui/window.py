@@ -475,8 +475,9 @@ class BaseWindowResult(BaseWindow):
     
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: Optional[wx.Window]=None, 
-        menuData: dict={}, nPlot:int=1,
+        self, 
+        parent: Optional[wx.Window]=None, 
+        menuData: dict={},
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -501,10 +502,6 @@ class BaseWindowResult(BaseWindow):
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
-
-        #region -----------------------------------------------------> Widgets
-        self.wPlot = {k:mWidget.MatPlotPanel(self) for k in range(0, nPlot)}
-        #endregion --------------------------------------------------> Widgets
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -685,6 +682,10 @@ class BaseWindowResultOnePlot(BaseWindowResult):
         #------------------------------>
         super().__init__(parent=parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
+
+        #region ---------------------------------------------------> Widget
+        self.wPlot = {0:mWidget.MatPlotPanel(self)}
+        #endregion ------------------------------------------------> Widget
 
         #region ---------------------------------------------------> Sizers
         self.sSizer.Add(self.wPlot[0], 1, wx.EXPAND|wx.ALL, 5)
