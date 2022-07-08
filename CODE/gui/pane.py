@@ -16,8 +16,9 @@
 
 #region -------------------------------------------------------------> Imports
 import _thread
-from collections import namedtuple
 import shutil
+from collections import namedtuple
+from math import ceil
 from pathlib import Path
 from typing import Union, Optional
 
@@ -2596,81 +2597,138 @@ class BaseResControlExpConf(wx.Panel):
 
 
 #region -------------------------------------------------------------> Classes
-# #------------------------------> Panes
-# class ListCtrlSearchPlot(wx.Panel):
-#     """Creates a panel with a wx.ListCtrl and below it a wx.SearchCtrl.
+class PaneListCtrlSearchPlot(wx.Panel):
+    """Creates a panel with a wx.ListCtrl and below it a wx.SearchCtrl.
 
-#         Parameters
-#         ----------
-#         cParent: wx.Window
-#             Parent of the panel
-#         cColLabel : list of str or None
-#             Name of the columns in the wx.ListCtrl. Default is None
-#         cColSize : list of int or None
-#             Size of the columns in the wx.ListCtlr. Default is None
-#         cStyle : wx.Style
-#             Style of the wx.ListCtrl. Default is wx.LC_REPORT.
-#         cTcHint : str
-#             Hint for the wx.SearchCtrl. Default is ''.
-#         rData : list of list
-#             Data for the wx.ListCtrl when in virtual mode. Default is []. 
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.npListCtrlSearchPlot
-#     #endregion --------------------------------------------------> Class setup
+        Parameters
+        ----------
+        cParent: wx.Window
+            Parent of the panel
+        cColLabel : list of str or None
+            Name of the columns in the wx.ListCtrl. Default is None
+        cColSize : list of int or None
+            Size of the columns in the wx.ListCtrl. Default is None
+        cStyle : wx.Style
+            Style of the wx.ListCtrl. Default is wx.LC_REPORT.
+        cTcHint : str
+            Hint for the wx.SearchCtrl. Default is ''.
+        rData : list of list
+            Data for the wx.ListCtrl when in virtual mode. Default is []. 
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.npListCtrlSearchPlot
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: wx.Window, cColLabel: Optional[list[str]]=None, 
-#         cColSize: Optional[list[int]]=None, rData: list[list]=[],
-#         cStyle = wx.LC_REPORT, cTcHint: str = ''
-#         ) -> None:
-#         """ """
-#         #region -------------------------------------------------> Check Input
-        
-#         #endregion ----------------------------------------------> Check Input
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, 
+        parent: wx.Window, 
+        colLabel: list[str]  = [],
+        colSize : list[int]  = [],
+        data    : list[list] = [],
+        style                = wx.LC_REPORT,
+        tcHint  : str        = '',
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(cParent, name=self.cName)
-#         #endregion --------------------------------------------> Initial Setup
+        #region -----------------------------------------------------> Widgets
+        self.wLCS = mWidget.ListCtrlSearch(
+            self, 
+            listT    = 2,
+            colLabel = colLabel,
+            colSize  = colSize,
+            canCut   = False,
+            canPaste = False,
+            style    = style,
+            data     = data,
+            tcHint   = tcHint,
+        )
+        #endregion --------------------------------------------------> Widgets
 
-#         #region --------------------------------------------------------> Menu
-        
-#         #endregion -----------------------------------------------------> Menu
+        #region ------------------------------------------------------> Sizers
+        self.SetSizer(self.wLCS.sSizer)
+        #endregion ---------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 
-#         #region -----------------------------------------------------> Widgets
-#         #------------------------------> 
-#         self.wLCS = dtsWidget.ListCtrlSearch(
-#             self, 
-#             listT    = 2,
-#             colLabel = cColLabel,
-#             colSize  = cColSize,
-#             canCut   = False,
-#             canPaste = False,
-#             style    = cStyle,
-#             data     = rData,
-#             tcHint   = cTcHint,
-#         )
-#         #endregion --------------------------------------------------> Widgets
 
-#         #region ------------------------------------------------------> Sizers
-#         self.SetSizer(self.wLCS.Sizer)
-#         #endregion ---------------------------------------------------> Sizers
+class NPlots(wx.Panel):
+    """The panel will contain N plots distributed in a wx.FlexGridSizer.
 
-#         #region --------------------------------------------------------> Bind
-        
-#         #endregion -----------------------------------------------------> Bind
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the wx.Panel holding the plots.
+        tKeys : list of str
+            Keys for a dict holding a reference to the plots
+        nCol : int
+            Number of columns in the wx.FlexGridSizer holding the plots.
+            Number of needed rows will be automatically calculated.
+        dpi : int
+            DPI value for the Matplot plots.
+        statusbar : wx.StatusBar or None
+            StatusBar to display information about the plots.
 
-#         #region ---------------------------------------------> Window position
-        
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        Attributes
+        ----------
+        dPlot : dict
+            Keys are tKeys and values mWidget.MatPlotPanel
+        cName : str
+            Name of the panel holding the plots.
+        nCol : int
+            Number of columns in the sizer
+        nRow: int
+            Number of rows in the sizer.
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.npNPlot
+    #endregion --------------------------------------------------> Class setup
 
-#     #region ---------------------------------------------------> Class methods
-    
-#     #endregion ------------------------------------------------> Class methods
-# #---
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        parent   : wx.Window,
+        tKeys    : list[str],
+        nCol     : int,
+        dpi      : int                    = mConfig.general['DPI'],
+        statusbar: Optional[wx.StatusBar] = None,
+        ) -> None  : 
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.nCol = nCol
+        self.nRow = ceil(len(tKeys)/nCol)
+        #------------------------------>
+        super().__init__(parent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> 
+        self.sSizer = wx.FlexGridSizer(self.nRow, self.nCol, 1,1)
+        #------------------------------> 
+        for k in range(0, self.nCol):
+            self.sSizer.AddGrowableCol(k,1)
+        for k in range(0, self.nRow):
+            self.sSizer.AddGrowableRow(k,1)
+        #------------------------------> 
+        self.SetSizer(self.Sizer)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region -----------------------------------------------------> Widgets
+        self.dPlot = {}
+        for k in tKeys:
+            #------------------------------> Create
+            self.dPlot[k] = mWidget.MatPlotPanel(
+                self, dpi=dpi, statusbar=statusbar)
+            #------------------------------> Add to sizer
+            self.sSizer.Add(self.dPlot[k], 1, wx.EXPAND|wx.ALL, 5)
+        #endregion --------------------------------------------------> Widgets
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 
 
 class PaneCorrA(BaseConfPanel):

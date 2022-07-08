@@ -504,7 +504,7 @@ class BaseWindowResult(BaseWindow):
         #endregion --------------------------------------------> Initial Setup
     #---
     #endregion -----------------------------------------------> Instance setup
-    
+
     #region ---------------------------------------------------> Event Methods
     def OnClose(self, event: wx.CloseEvent) -> bool:
         """Close window and uncheck section in UMSAPFile window. Assumes 
@@ -520,7 +520,7 @@ class BaseWindowResult(BaseWindow):
             bool
         """
         #region -----------------------------------------------> Update parent
-        self.cParent.UnCheckSection(self.cSection, self)
+        self.cParent.UnCheckSection(self.cSection, self) # type: ignore
         #endregion --------------------------------------------> Update parent
 
         #region ------------------------------------> Reduce number of windows
@@ -708,8 +708,6 @@ class BaseWindowResultOnePlot(BaseWindowResult):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cSWindow = getattr(self, 'cSWindow', mConfig.sWinPlot)
-        #------------------------------>
         super().__init__(parent=parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
 
@@ -791,32 +789,69 @@ class BaseWindowResultListText(BaseWindowResult):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cSWindow = getattr(self, 'cSWindow', mConfig.sWinPlot)
+        self.cLCol    = getattr(self, 'cLCol', ['#', 'Item'])
+        self.cLCStyle = getattr(self, 'cLCStyle', wx.LC_REPORT|wx.LC_SINGLE_SEL)
+        self.cSCol    = getattr(self, 'cSCol', [45, 100])
+        self.cHSearch = getattr(self, 'cHSearch', 'Table')
         #------------------------------>
         super().__init__(parent=parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        
+        self.wText = wx.TextCtrl(
+            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
+        self.wText.SetFont(mConfig.font['SeqAlign'])
+        #------------------------------> wx.ListCtrl
+        self.wLC = mPane.PaneListCtrlSearchPlot(
+            self, 
+            colLabel = self.cLCol,
+            colSize  = self.cSCol,
+            style    = self.cLCStyle, 
+            tcHint   = f'Search {self.cHSearch}'
+        )
         #endregion --------------------------------------------------> Widgets
-
-        #region ------------------------------------------------------> Sizers
-        
-        #endregion ---------------------------------------------------> Sizers
-
-        #region --------------------------------------------------------> Bind
-        
-        #endregion -----------------------------------------------------> Bind
-
-        #region ---------------------------------------------> Window position
-        
-        #endregion ------------------------------------------> Window position
     #---
     #endregion -----------------------------------------------> Instance setup
+#---
 
-    #region ---------------------------------------------------> Class methods
-    
-    #endregion ------------------------------------------------> Class methods
+
+class BaseWindowResultListTextNPlot(BaseWindowResultListText):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, menuData: dict={},
+        ) -> None : 
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cLNPlot   = getattr(self, 'cLNPlot', ['Plot 1', 'Plot 2'])
+        self.cNPlotCol = getattr(self, 'cNPlotCol', 1)
+        #------------------------------>
+        super().__init__(parent=parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wPlots = mPane.NPlots(
+            self, self.cLNPlot, self.cNPlotCol, statusbar=self.wStatBar)
+        #endregion --------------------------------------------------> Widgets
+    #---
+    #endregion -----------------------------------------------> Instance setup
 #---
 
 
