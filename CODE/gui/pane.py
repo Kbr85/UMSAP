@@ -2706,15 +2706,15 @@ class NPlots(wx.Panel):
         #endregion --------------------------------------------> Initial Setup
 
         #region ------------------------------------------------------> Sizers
-        #------------------------------> 
+        #------------------------------>
         self.sSizer = wx.FlexGridSizer(self.nRow, self.nCol, 1,1)
-        #------------------------------> 
+        #------------------------------>
         for k in range(0, self.nCol):
             self.sSizer.AddGrowableCol(k,1)
         for k in range(0, self.nRow):
             self.sSizer.AddGrowableRow(k,1)
-        #------------------------------> 
-        self.SetSizer(self.Sizer)
+        #------------------------------>
+        self.SetSizer(self.sSizer)
         #endregion ---------------------------------------------------> Sizers
 
         #region -----------------------------------------------------> Widgets

@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Optional, Literal, Union
 
 import matplotlib as mpl
+from matplotlib.pyplot import get
 # import matplotlib.patches as mpatches
 # import numpy as np
 import pandas as pd
@@ -810,6 +811,13 @@ class BaseWindowResultListText(BaseWindowResult):
             tcHint   = f'Search {self.cHSearch}'
         )
         #endregion --------------------------------------------------> Widgets
+
+        #region ---------------------------------------------------------> AUI
+        #------------------------------> AUI control
+        self._mgr = aui.AuiManager()
+        #------------------------------> AUI which frame to use
+        self._mgr.SetManagedWindow(self)
+        #endregion ------------------------------------------------------> AUI
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
@@ -837,11 +845,14 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, parent: Optional[wx.Window]=None, menuData: dict={},
-        ) -> None : 
+        ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cLNPlot   = getattr(self, 'cLNPlot', ['Plot 1', 'Plot 2'])
         self.cNPlotCol = getattr(self, 'cNPlotCol', 1)
+        self.cTPlot    = getattr(self, 'cTPlot', 'Plots')
+        self.cTText    = getattr(self, 'cTText', 'Details')
+        self.cTList    = getattr(self, 'cTList', 'Table')
         #------------------------------>
         super().__init__(parent=parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
@@ -850,6 +861,64 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
         self.wPlots = mPane.NPlots(
             self, self.cLNPlot, self.cNPlotCol, statusbar=self.wStatBar)
         #endregion --------------------------------------------------> Widgets
+
+        #region ---------------------------------------------------------> AUI
+        self._mgr.AddPane( 
+            self.wPlots, 
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    self.cTPlot
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        self._mgr.AddPane( 
+            self.wText, 
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    self.cTText
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        self._mgr.AddPane( 
+            self.wLC, 
+            aui.AuiPaneInfo(
+                ).Left(
+                ).Layer(
+                    1    
+                ).Caption(
+                    self.cTList
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------> 
+        self._mgr.Update()
+        #endregion ------------------------------------------------------> AUI
+
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
@@ -928,70 +997,6 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
 #             cTcHint   = f'Search {self.cHSearch}'
 #         )
 #         #endregion --------------------------------------------------> Widgets
-
-#         #region ---------------------------------------------------------> AUI
-#         #------------------------------> AUI control
-#         self._mgr = aui.AuiManager()
-#         #------------------------------> AUI which frame to use
-#         self._mgr.SetManagedWindow(self)
-#         #------------------------------> Add Configuration panel
-#         self._mgr.AddPane( 
-#             self.wPlots, 
-#             aui.AuiPaneInfo(
-#                 ).Center(
-#                 ).Caption(
-#                     self.cTPlots
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-
-#         self._mgr.AddPane( 
-#             self.wText, 
-#             aui.AuiPaneInfo(
-#                 ).Bottom(
-#                 ).Layer(
-#                     0
-#                 ).Caption(
-#                     self.cTText
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-        
-#         self._mgr.AddPane( 
-#             self.wLC, 
-#             aui.AuiPaneInfo(
-#                 ).Left(
-#                 ).Layer(
-#                     1    
-#                 ).Caption(
-#                     self.cTList
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-#         #------------------------------> 
-#         self._mgr.Update()
-#         #endregion ------------------------------------------------------> AUI
 
 #         #region --------------------------------------------------------> Bind
 #         self.wLC.wLCS.lc.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
@@ -9795,59 +9800,59 @@ class WindowResCorrA(BaseWindowResultOnePlot):
 # #---
 
 
-# class CheckDataPrep(BaseWindowNPlotLT):
-#     """Window to check the data preparation steps
+class WindowResDataPrep(BaseWindowResultListTextNPlot):
+    """Window to check the data preparation steps
 
-#         Parameters
-#         ----------
-#         cParent: wx.Window
-#             Parent of the window
-#         cTitle : str or None
-#             Title of the window. Default is None
-#         rDpDF : dict[pd.DataFrame] or None
-#             The dictionary has the following structure:
-#             {
-#                 "dfF" : pd.DataFrame, Data after excluding and filter by Score
-#                 "dfT" : pd.DataFrame, Data after transformation
-#                 "dfN" : pd.DataFrame, Data after normalization
-#                 "dfIm": pd.DataFrame, Data after Imputation
-#             }
-#             Default is None
+        Parameters
+        ----------
+        cParent: wx.Window
+            Parent of the window
+        cTitle : str or None
+            Title of the window. Default is None
+        rDpDF : dict[pd.DataFrame] or None
+            The dictionary has the following structure:
+            {
+                "dfF" : pd.DataFrame, Data after excluding and filter by Score
+                "dfT" : pd.DataFrame, Data after transformation
+                "dfN" : pd.DataFrame, Data after normalization
+                "dfIm": pd.DataFrame, Data after Imputation
+            }
+            Default is None
 
-#         Attributes
-#         ----------
-#         rData : dict
-#             Dict with the configured data for this section from UMSAPFile.
-#         rDate : list of str
-#             List of available dates in the section.
-#         rDateC : str
-#             Date selected. Needed to export the data and images.
-#         rDpDF : dict[pd.DataFrame]
-#             See dpDF in Parameters
-#         rFromUMSAPFile : bool
-#             The window is invoked from an UMSAP File window (True) or not (False)
-#         rObj : UMSAPFile
-#             Reference to the UMSAPFile object.
+        Attributes
+        ----------
+        rData : dict
+            Dict with the configured data for this section from UMSAPFile.
+        rDate : list of str
+            List of available dates in the section.
+        rDateC : str
+            Date selected. Needed to export the data and images.
+        rDpDF : dict[pd.DataFrame]
+            See dpDF in Parameters
+        rFromUMSAPFile : bool
+            The window is invoked from an UMSAP File window (True) or not (False)
+        rObj : UMSAPFile
+            Reference to the UMSAPFile object.
             
-#         Notes
-#         -----
-#         Requires a 'NumColList' key in self.rData[tSection][tDate] with a list
-#         of all columns involved in the analysis with the column numbers in the
-#         original data file.
-#         """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.nwCheckDataPrep
-#     #------------------------------> Needed by BaseWindowNPlotLT
-#     cLNPlots   = ['Init', 'Transf', 'Norm', 'Imp']
-#     cNPlotsCol = 2
-#     cLCol      = config.lLCtrlColNameI
-#     cSCol      = [45, 100]
-#     cHSearch   = 'Column Names'
-#     cTList     = 'Column Names'
-#     cTText     = 'Statistic Information'
-#     #------------------------------> To id the section in the umsap file 
-#     # shown in the window
-#     cSection = config.nuDataPrep
+        Notes
+        -----
+        Requires a 'NumColList' key in self.rData[tSection][tDate] with a list
+        of all columns involved in the analysis with the column numbers in the
+        original data file.
+        """
+    #region -----------------------------------------------------> Class setup
+    cName    = mConfig.nwCheckDataPrep
+    cSection = mConfig.nuDataPrep
+    #------------------------------>
+    cLCol     = mConfig.lLCtrlColNameI
+    cHSearch  = 'Column Names'
+    cTList    = 'Column Names'
+    cTText    = 'Statistic Information'
+    #------------------------------>
+    cLNPlot   = ['Init', 'Transf', 'Norm', 'Imp']
+    cNPlotCol = 2
+    #------------------------------>
+    cSWindow = (900,800)
 #     #------------------------------> Label
 #     cLDFData = ['Floated', 'Transformed', 'Normalized', 'Imputed']
 #     cLdfCol = config.dfcolDataCheck
@@ -9864,49 +9869,43 @@ class WindowResCorrA(BaseWindowResultOnePlot):
 #         cLNPlots[2] : '{}-03-Normalized-{}.{}',
 #         cLNPlots[3] : '{}-04-Imputed-{}.{}',
 #     }
-#     #endregion --------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: wx.Window, cTitle: str='', tSection: str='', 
-#         tDate: str='',
-#         ) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cParent  = cParent
-#         self.rObj     = self.cParent.rObj
-#         self.cTitle   = cTitle
-#         self.tSection = tSection if tSection else self.cSection
-#         self.tDate    = tDate
-#         self.SetWindow(tSection, tDate) # Includes testing for something to plot
-#         #--------------> menuData here because it is not needed to save it
-#         cMenuData = {'MenuDate': []} if self.rDate is None else {'MenuDate': self.rDate}
-#         #------------------------------> 
-#         super().__init__(cParent=cParent, cMenuData=cMenuData)
-#         #------------------------------> 
-#         dKeyMethod = {
-#             config.klToolGuiUpdate  : self.UpdateDisplayedData,
-#         }
-#         self.dKeyMethod = self.dKeyMethod | dKeyMethod
-#         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, 
+        parent: wx.Window, 
+        title: str='',
+        tSection: str='', 
+        tDate: str='',
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rObj     = parent.rObj # type: ignore
+        self.cTitle   = title
+        self.tSection = tSection if tSection else self.cSection
+        self.tDate    = tDate
+        self.SetWindow(parent, tSection, tDate)
+        self.ReportPlotDataError()
+        #------------------------------>
+        super().__init__(parent=parent, menuData={'MenuDate': self.rDate})
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region -----------------------------------------------------> Widgets
-#         self.wPlots.dPlot['Transf'].axes2 = self.wPlots.dPlot['Transf'].axes.twinx()
-#         self.wPlots.dPlot['Norm'].axes2 = self.wPlots.dPlot['Norm'].axes.twinx()
-#         self.wPlots.dPlot['Imp'].axes2 = self.wPlots.dPlot['Imp'].axes.twinx()
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.wPlots.dPlot['Transf'].rAxes2 = self.wPlots.dPlot['Transf'].rAxes.twinx()
+        self.wPlots.dPlot['Norm'].rAxes2   = self.wPlots.dPlot['Norm'].rAxes.twinx()
+        self.wPlots.dPlot['Imp'].rAxes2    = self.wPlots.dPlot['Imp'].rAxes.twinx()
+        #endregion --------------------------------------------------> Widgets
 
-#         #region ---------------------------------------------> Window position
+        #region ---------------------------------------------> Window position
 #         self.UpdateDisplayedData()
-#         #------------------------------>
-#         self.WinPos()
-#         self.Show()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #------------------------------> Class methods
-#     #region ---------------------------------------------------> Event Methods
+    #region ---------------------------------------------------> Event Methods
 #     def OnClose(self, event: wx.CloseEvent) -> bool:
 #         """Close window and uncheck section in UMSAPFile window. Assumes 
 #             self.parent is an instance of UMSAPControl.
@@ -10085,72 +10084,67 @@ class WindowResCorrA(BaseWindowResultOnePlot):
 #         dlg.Destroy()
 #         return True	
 #     #---
-#     #endregion ------------------------------------------------> Event Methods
+    #endregion ------------------------------------------------> Event Methods
     
-#     #region --------------------------------------------------> Manage Methods
-#     def SetWindow(
-#         self, tSection: str='', tDate: str='',
-#         ) -> bool:
-#         """Configure the window. 
-        
-#             See Notes below
-    
-#             Returns
-#             -------
-#             bool
-            
-#             Notes
-#             -----
-#             If self.cTitle is None the window is invoked from the main Data 
-#             Preparation section of a UMSAP File window
-#         """
-#         #region -----------------------------------------------> Set Variables
-#         if self.cTitle == '':
-#             self.rFromUMSAPFile = True 
-#             self.rData  = self.rObj.dConfigure[self.cSection]()
-#             self.rDate  = [k for k in self.rData.keys() if k != 'Error']
-#             #------------------------------> 
-#             try:
-#                 self.ReportPlotDataError()
-#             except Exception as e:
-#                 raise e
-#             #------------------------------> 
-#             self.rDateC = self.rDate[0]
-#             self.cTitle = (
-#                 f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}")
-#         else:
-#             self.rFromUMSAPFile = False
-#             self.rData = self.rObj.dConfigure[self.cSection](tSection, tDate)
-#             self.rDate = []
-#             self.rDateC = self.cParent.rDateC
-#         #endregion --------------------------------------------> Set Variables
+    #region --------------------------------------------------> Manage Methods
+    def SetWindow(
+        self, parent:wx.Window, tSection: str='', tDate: str='') -> bool:
+        """Configure the window.
 
-#         return True
-#     #---
-    
-#     def WinPos(self) -> bool:
-#         """Set the position on the screen and adjust the total number of
-#             shown windows.
-#         """
-#         #region ---------------------------------------------------> Variables
-#         info = super().WinPos()
-#         #endregion ------------------------------------------------> Variables
-                
-#         #region ------------------------------------------------> Set Position
-#         # x = info['D']['xo'] + info['W']['N']*config.deltaWin
-#         # y = (
-#         #     ((info['D']['h']/2) - (info['W']['h']/2)) 
-#         #     + info['W']['N']*config.deltaWin
-#         # )
-#         # self.SetPosition(pt=(x,y))
-#         #endregion ---------------------------------------------> Set Position
+            Parameters
+            ----------
 
-#         #region ----------------------------------------------------> Update N
-#         config.winNumber[self.cName] = info['W']['N'] + 1
-#         #endregion -------------------------------------------------> Update N
+            Returns
+            -------
+            bool
 
-#         return True
-#     #---
+            Notes
+            -----
+            If self.cTitle is None the window is invoked from the main Data 
+            Preparation section of a UMSAP File window
+        """
+        #region -----------------------------------------------> Set Variables
+        if self.cTitle == '':
+            self.rFromUMSAPFile = True 
+            self.rData  = self.rObj.dConfigure[self.cSection]()
+            self.rDate  = [k for k in self.rData.keys() if k != 'Error']
+            #------------------------------>
+            self.rDateC = self.rDate[0]
+            self.cTitle = (
+                f"{parent.cTitle} - {self.cSection} - {self.rDateC}") # type: ignore
+        else:
+            self.rFromUMSAPFile = False
+            self.rData = self.rObj.dConfigure[self.cSection](tSection, tDate)
+            self.rDate = []
+            self.rDateC = parent.rDateC # type:ignore
+        #endregion --------------------------------------------> Set Variables
+
+        return True
+    #---
+
+    def WinPos(self) -> bool:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        info = super().WinPos()
+        #endregion ------------------------------------------------> Variables
+
+        #region ------------------------------------------------> Set Position
+        x = info['D']['xo'] + info['W']['N']*mConfig.deltaWin
+        y = (
+            ((info['D']['h']/2) - (info['W']['h']/2)) 
+            + info['W']['N']*mConfig.deltaWin
+        )
+        self.SetPosition(pt=(x,y))
+        #endregion ---------------------------------------------> Set Position
+
+        return True
+    #---
 
 #     def FillListCtrl(self) -> bool:
 #         """Update the column names for the given analysis.
@@ -10505,8 +10499,8 @@ class WindowResCorrA(BaseWindowResultOnePlot):
 
 #         return True
 #     #---
-#     #endregion -----------------------------------------------> Manage Methods
-# #---
+    #endregion -----------------------------------------------> Manage Methods
+#---
 
 
 class WindowUMSAPControl(BaseWindow):
@@ -10544,10 +10538,10 @@ class WindowUMSAPControl(BaseWindow):
     #------------------------------>
     dPlotMethod = { # Methods to create plot windows
         mConfig.nuCorrA   : WindowResCorrA,
-    #     mConfig.nuDataPrep: WindowCheckDataPrep,
-    #     mConfig.nmProtProf: WindowProtProfPlot,
-    #     mConfig.nmLimProt : WindowLimProtPlot, 
-    #     mConfig.nmTarProt : WindowTarProtPlot,
+        mConfig.nuDataPrep: WindowResDataPrep,
+        # mConfig.nmProtProf: WindowProtProfPlot,
+        # mConfig.nmLimProt : WindowLimProtPlot,
+        # mConfig.nmTarProt : WindowTarProtPlot,
     }
     # #------------------------------>
     dSectionTab = { # Section name and Tab name correlation

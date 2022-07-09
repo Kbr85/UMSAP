@@ -628,10 +628,10 @@ class UMSAPFile():
         self.dConfigure = {# Configure methods. Keys are the section names as
                            # read from the file
             mConfig.nuCorrA   : self.ConfigureDataCorrA,
-            # config.nuDataPrep: self.ConfigureDataCheckDataPrep,
-            # config.nmProtProf: self.ConfigureDataProtProf,
-            # config.nmLimProt : self.ConfigureDataLimProt,
-            # config.nmTarProt : self.ConfigureDataTarProt,
+            mConfig.nuDataPrep: self.ConfigureDataDataPrep,
+            # mConfig.nmProtProf: self.ConfigureDataProtProf,
+            # mConfig.nmLimProt : self.ConfigureDataLimProt,
+            # mConfig.nmTarProt : self.ConfigureDataTarProt,
         }
         #endregion ------------------------------------------------> Variables
     #---
@@ -703,105 +703,101 @@ class UMSAPFile():
         return plotData
     #---
 
-#     def ConfigureDataCheckDataPrep(
-#         self, tSection: Optional[str]=None, tDate: Optional[str]=None
-#         ) -> dict:
-#         """Configure a Data Preparation Check section	
-        
-#             Parameters
-#             ----------
-#             tSection: str or None
-#                 Section name. Default is None
-#             tDate : str or None
-#                 Date and comment. Default is None
-        
-#             Returns
-#             -------
-#             dict
-#             {
-#                 'DP' : dict with the data preparation steps key are the step's
-#                         names and values the pd.DataFrame,
-#             }
-#         """
-#         if tSection is None and tDate is None:
-#             return self.ConfigureDataCheckDataPrepFromUMSAP()
-#         elif tSection is not None and tDate is not None:
-#             return self.ConfigureDataCheckDataPrepFromPlot(tSection, tDate)
-#         else:
-#             msg = (f'Both tSection ({tSection}) and tDate ({tDate}) must be '
-#                    f'None or be defined.')
-#             raise dtsException.InputError(msg)
-#     #---
-    
-#     def ConfigureDataCheckDataPrepFromPlot(
-#         self, tSection: str, tDate: str,
-#         ) -> dict:
-#         """Configure a Data Preparation Check section	
-        
-#             Parameters
-#             ----------
-#             tSection: str
-#                 Section name
-#             tDate : str
-#                 Date and comment
-        
-#             Returns
-#             -------
-#             dict
-#             {
-#                 'DP' : dict with the data preparation steps key are the step's
-#                         names and values the pd.DataFrame,
-#             }
-#         """
-#         #region ---------------------------------------------------> Variables
-#         plotData = {}
-#         tPath = self.rStepDataP / f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
-#         #endregion ------------------------------------------------> Variables
+    def ConfigureDataDataPrep(self, tSection: str='', tDate: str='') -> dict:
+        """Configure a Data Preparation Check section.
 
-#         #region -------------------------------------------------> Plot & Menu
-#         try:
-#             plotData[tDate] = {
-#                 'DP': {j:dtsFF.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()},
-#                 'NumColList': self.rData[tSection][tDate]['CI']['oc']['Column'],
-#             }
-#         except Exception as e:
-#             pass        
-#         #endregion ----------------------------------------------> Plot & Menu
-        
-#         return plotData
-#     #---
-    
-#     def ConfigureDataCheckDataPrepFromUMSAP(self) -> dict:
-#         """Configure a Data Preparation Check section	
-        
-#             Returns
-#             -------
-#             dict
-#             {
-#                 'DP' : dict with the data preparation steps key are the step's
-#                         names and values the pd.DataFrame,
-#             }
-#         """
-#         #region ---------------------------------------------------> Variables
-#         plotData = {'Error':[]}
-#         #endregion ------------------------------------------------> Variables
+            Parameters
+            ----------
+            tSection: str
+                Section name. Default is ''.
+            tDate : str
+                Date and comment. Default is ''.
 
-#         #region -------------------------------------------------> Plot & Menu        
-#         for k,v in self.rData[config.nuDataPrep].items():
-#             try:
-#                 #------------------------------> 
-#                 tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nuDataPrep.replace(" ", "-")}'
-#                 #------------------------------> Add to dict
-#                 plotData[k] = {
-#                     'DP' : {j:dtsFF.ReadCSV2DF(tPath/w) for j,w in v['DP'].items()},
-#                     'NumColList': v['CI']['oc']['Column'],
-#                 }
-#             except Exception:
-#                 plotData['Error'].append(k)
-#         #endregion ----------------------------------------------> Plot & Menu
-        
-#         return plotData
-#     #---
+            Returns
+            -------
+            dict
+            {
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
+        """
+        if tSection and tDate:
+            return self.ConfigureDataDataPrepFromPlot(tSection, tDate)
+        elif not tSection and not tDate:
+            return self.ConfigureDataDataPrepFromUMSAP()
+        else:
+            msg = (f'Both tSection ({tSection}) and tDate ({tDate}) must be '
+                   f"defined or ''.")
+            raise mException.InputError(msg)
+    #---
+
+    def ConfigureDataDataPrepFromPlot(self, tSection: str, tDate: str) -> dict:
+        """Configure a Data Preparation Check section.
+
+            Parameters
+            ----------
+            tSection: str
+                Section name.
+            tDate : str
+                Date and comment.
+
+            Returns
+            -------
+            dict
+            {
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
+        """
+        #region ---------------------------------------------------> Variables
+        plotData = {}
+        tPath = self.rStepDataP / f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Plot & Menu
+        try:
+            plotData[tDate] = {
+                'DP': {j:ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()},
+                'NumColList': self.rData[tSection][tDate]['CI']['oc']['Column'],
+            }
+        except Exception:
+            pass
+        #endregion ----------------------------------------------> Plot & Menu
+
+        return plotData
+    #---
+
+    def ConfigureDataDataPrepFromUMSAP(self) -> dict:
+        """Configure a Data Preparation Check section.
+
+            Returns
+            -------
+            dict
+            {
+                'DP' : dict with the data preparation steps key are the step's
+                        names and values the pd.DataFrame,
+            }
+        """
+        #region ---------------------------------------------------> Variables
+        plotData = {'Error':[]}
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Plot & Menu        
+        for k,v in self.rData[mConfig.nuDataPrep].items():
+            try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{mConfig.nuDataPrep.replace(" ", "-")}'
+                #------------------------------> Add to dict
+                plotData[k] = { # type: ignore
+                    'DP' : {j:ReadCSV2DF(tPath/w) for j,w in v['DP'].items()},
+                    'NumColList': v['CI']['oc']['Column'],
+                }
+            except Exception:
+                plotData['Error'].append(k)
+        #endregion ----------------------------------------------> Plot & Menu
+
+        return plotData
+    #---
     
 #     def ConfigureDataProtProf(self) -> dict:
 #         """Configure a Proteome Profiling section
