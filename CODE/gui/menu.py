@@ -1040,36 +1040,36 @@ class MenuToolCorrA(BaseMenuMainResult):
 #---
 
 
-# class MenuToolDataPrep(BaseMenuMainResult):
-#     """Tool menu for the Data Preparation Plot window.
+class MenuToolDataPrep(BaseMenuMainResult):
+    """Tool menu for the Data Preparation Plot window.
 
-#         Parameters
-#         ----------
-#         menuData: dict
-#             Data needed to build the menu. See Notes for more details.
+        Parameters
+        ----------
+        menuData: dict
+            Data needed to build the menu. See Notes for more details.
 
-#         Notes
-#         -----
-#         menuData has the following structure:
-#         {
-#             'MenuDate' : [List of dates as str],
-#         }
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData: dict={}) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(menuData)
-#         #endregion --------------------------------------------> Initial Setup
+        Notes
+        -----
+        menuData has the following structure:
+        {
+            'MenuDate' : [List of dates as str],
+        }
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData: dict={}) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(menuData)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.AddLastItems(False)
-#         #------------------------------> Remove Check Data Prep
-#         self.DestroyItem(self.miCheckDP)
-#         #endregion -----------------------------------------------> Menu Items
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-# #---
+        #region --------------------------------------------------> Menu Items
+        self.AddLastItems(False)
+        #------------------------------> Remove Check Data Prep
+        self.DestroyItem(self.miCheckDP)
+        #endregion -----------------------------------------------> Menu Items
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 
 
 # class MenuFCEvolution(BaseMenu):
@@ -2381,7 +2381,7 @@ class MenuBarTool(MenuBarMain):
     dTool = { # Key are window name and values the corresponding tool menu
         mConfig.nwUMSAPControl : MenuToolFileControl,
         mConfig.nwCorrAPlot    : MenuToolCorrA,
-        # mConfig.nwCheckDataPrep: MenuToolDataPrep,
+        mConfig.nwCheckDataPrep: MenuToolDataPrep,
         # mConfig.nwProtProf     : MixMenuToolProtProf,
         # mConfig.nwLimProt      : MixMenuToolLimProt,
         # mConfig.nwTarProt      : MixMenuToolTarProt,
