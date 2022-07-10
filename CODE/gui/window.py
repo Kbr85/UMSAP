@@ -2187,7 +2187,7 @@ class WindowResCorrA(BaseWindowResultOnePlot):
         #endregion -------------------------------------------------> Position
     #---
     #endregion -----------------------------------------------> Instance setup
-    
+
     #region ---------------------------------------------------> Event Methods
     def OnUpdateStatusBar(self, event) -> bool:
         """Update the statusbar info.
@@ -9853,6 +9853,8 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
     cNPlotCol = 2
     #------------------------------>
     cSWindow = (900,800)
+    #------------------------------>
+    cLCStyle = wx.LC_REPORT|wx.LC_SINGLE_SEL|wx.LC_VIRTUAL
 #     #------------------------------> Label
 #     cLDFData = ['Floated', 'Transformed', 'Normalized', 'Imputed']
 #     cLdfCol = config.dfcolDataCheck
@@ -9898,7 +9900,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         #endregion --------------------------------------------------> Widgets
 
         #region ---------------------------------------------> Window position
-#         self.UpdateDisplayedData()
+        self.UpdateResultWindow()
         self.WinPos()
         self.Show()
         #endregion ------------------------------------------> Window position
@@ -9906,34 +9908,37 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-#     def OnClose(self, event: wx.CloseEvent) -> bool:
-#         """Close window and uncheck section in UMSAPFile window. Assumes 
-#             self.parent is an instance of UMSAPControl.
-#             Override as needed.
-    
-#             Parameters
-#             ----------
-#             event: wx.CloseEvent
-#                 Information about the event
-#         """
-#         #region -----------------------------------------------> Update parent
-#         if self.rFromUMSAPFile:
-#             self.cParent.UnCheckSection(self.cSection, self)		
-#         else:
-#             pass
-#         #endregion --------------------------------------------> Update parent
-        
-#         #region ------------------------------------> Reduce number of windows
-#         config.winNumber[self.cName] -= 1
-#         #endregion ---------------------------------> Reduce number of windows
-        
-#         #region -----------------------------------------------------> Destroy
-#         self.Destroy()
-#         #endregion --------------------------------------------------> Destroy
-        
-#         return True
-#     #---
-    
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        if self.rFromUMSAPFile:
+            self.cParent.UnCheckSection(self.cSection, self)
+        else:
+            pass
+        #endregion --------------------------------------------> Update parent
+
+        #region ------------------------------------> Reduce number of windows
+        mConfig.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+
+        return True
+    #---
+
 #     def OnListSelect(self, event: wx.CommandEvent) -> bool:
 #         """Plot data for the selected column
     
@@ -9994,28 +9999,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         
 #         return True
 #     #---
-    
-#     def OnDupWin(self) -> bool:
-#         """Duplicate window.
-    
-#             Returns
-#             -------
-#             True
-#         """
-#         #------------------------------> 
-#         if self.rFromUMSAPFile:
-#             super().OnDupWin()
-#         else:
-#             CheckDataPrep(
-#                 self.cParent, 
-#                 cTitle   = self.cTitle,
-#                 tSection = self.tSection,
-#                 tDate    = self.tDate,
-#             )
-#         #------------------------------> 
-#         return True
-#     #---
-    
+
 #     def OnExportPlotData(self) -> bool:
 #         """ Export data to a csv file """
 #         #region --------------------------------------------------> Dlg window
@@ -10085,7 +10069,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
 #         return True	
 #     #---
     #endregion ------------------------------------------------> Event Methods
-    
+
     #region --------------------------------------------------> Manage Methods
     def SetWindow(
         self, parent:wx.Window, tSection: str='', tDate: str='') -> bool:
@@ -10146,40 +10130,61 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         return True
     #---
 
-#     def FillListCtrl(self) -> bool:
-#         """Update the column names for the given analysis.
-    
-#             Returns
-#             -------
-#             bool
-            
-#             Notes
-#             -----
-#             Entries are read from self.ddDF['dfF']
-#         """
-#         #region --------------------------------------------------> Delete old
-#         self.wLC.wLCS.lc.DeleteAllItems()
-#         #endregion -----------------------------------------------> Delete old
-        
-#         #region ----------------------------------------------------> Get Data
-#         data = []
-#         for k,n in enumerate(self.rDpDF['dfF'].columns.values.tolist()):
-#             colN = str(self.rData[self.rDateC]['NumColList'][k])
-#             data.append([colN, n])
-#         #endregion -------------------------------------------------> Get Data
-        
-#         #region ------------------------------------------> Set in wx.ListCtrl
-#         self.wLC.wLCS.lc.SetNewData(data)
-#         #endregion ---------------------------------------> Set in wx.ListCtrl
-        
-#         #region ----------------------------------------> Update Column Number
-#         self._mgr.GetPane(self.wLC).Caption(f'{self.cTList} ({len(data)})')
-#         self._mgr.Update()
-#         #endregion -------------------------------------> Update Column Number
-        
-#         return True
-#     #---
-    
+    def DupWin(self) -> bool:
+        """Duplicate window.
+
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        if self.rFromUMSAPFile:
+            super().DupWin()
+        else:
+            WindowResDataPrep(
+                self.cParent,
+                title    = self.cTitle,
+                tSection = self.tSection,
+                tDate    = self.tDate,
+            )
+        #------------------------------> 
+        return True
+    #---
+
+    def FillListCtrl(self) -> bool:
+        """Update the column names for the given analysis.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Entries are read from self.ddDF['dfF']
+        """
+        #region --------------------------------------------------> Delete old
+        self.wLC.wLCS.lc.DeleteAllItems()
+        #endregion -----------------------------------------------> Delete old
+
+        #region ----------------------------------------------------> Get Data
+        data = []
+        for k,n in enumerate(self.rDpDF['dfF'].columns.values.tolist()):
+            colN = str(self.rData[self.rDateC]['NumColList'][k])
+            data.append([colN, n])
+        #endregion -------------------------------------------------> Get Data
+
+        #region ------------------------------------------> Set in wx.ListCtrl
+        self.wLC.wLCS.lc.SetNewData(data)
+        #endregion ---------------------------------------> Set in wx.ListCtrl
+
+        #region ----------------------------------------> Update Column Number
+        self._mgr.GetPane(self.wLC).Caption(f'{self.cTList} ({len(data)})')
+        self._mgr.Update()
+        #endregion -------------------------------------> Update Column Number
+
+        return True
+    #---
+
 #     def PlotdfF(self, col:int) -> bool:
 #         """Plot the histograms for dfF
     
@@ -10421,84 +10426,72 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         
 #         return True
 #     #---
-    
-#     def UpdateDisplayedData(self, tDate: str='') -> bool:
-#         """Update window when a new date is selected.
-    
-#             Parameters
-#             ----------
-#             date : str or None
-#                 Given date to plot.
-    
-#             Returns
-#             -------
-#             bool
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> Variables
-#         if tDate:
-#             self.rDpDF = self.rData[tDate]['DP']
-#             self.rDateC = tDate
-#         else:
-#             self.rDpDF = self.rData[self.rDateC]['DP']
-#         #endregion ------------------------------------------------> Variables
 
-#         #region -------------------------------------------------> wx.ListCtrl
-#         self.FillListCtrl()
-#         #endregion ----------------------------------------------> wx.ListCtrl
+    def UpdateResultWindow(self, tDate: str='') -> bool:
+        """Update window when a new date is selected.
 
-#         #region --------------------------------------------------------> Plot
-#         self.ClearPlots()
-#         #endregion -----------------------------------------------------> Plot
+            Parameters
+            ----------
+            date : str or None
+                Given date to plot.
 
-#         #region ---------------------------------------------------> Text
-#         self.wText.Clear()
-#         #endregion ------------------------------------------------> Text
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        if tDate:
+            self.rDpDF = self.rData[tDate]['DP']
+            self.rDateC = tDate
+        else:
+            self.rDpDF = self.rData[self.rDateC]['DP']
+        #endregion ------------------------------------------------> Variables
 
-#         #region ---------------------------------------------------> Title
-#         if self.rFromUMSAPFile:
-#             self.PlotTitle()
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Title
+        #region -------------------------------------------------> wx.ListCtrl
+        self.FillListCtrl()
+        #endregion ----------------------------------------------> wx.ListCtrl
 
-#         return True
-#     #---
-    
-#     def ClearPlots(self):
-#         """Clear the plots
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         self.wPlots.dPlot[self.cLNPlots[0]].axes.clear()
-#         self.wPlots.dPlot[self.cLNPlots[0]].canvas.draw()
-#         #endregion ------------------------------------------------> 
+        #region --------------------------------------------------------> Plot
+        self.ClearPlots()
+        #endregion -----------------------------------------------------> Plot
 
-#         #region ---------------------------------------------------> 
-#         for p in self.cLNPlots[1:]:
-#             self.wPlots.dPlot[p].axes.clear()
-#             self.wPlots.dPlot[p].axes2.clear()
-#             self.wPlots.dPlot[p].axes2.set_yticks([])
-#             self.wPlots.dPlot[p].axes2.set_yticklabels([])
-#             self.wPlots.dPlot[p].canvas.draw()
-#         #endregion ------------------------------------------------> 
+        #region ---------------------------------------------------> Text
+        self.wText.Clear()
+        #endregion ------------------------------------------------> Text
 
-#         return True
-#     #---
+        #region ---------------------------------------------------> Title
+        if self.rFromUMSAPFile:
+            self.PlotTitle()
+        else:
+            pass
+        #endregion ------------------------------------------------> Title
+
+        return True
+    #---
+
+    def ClearPlots(self) -> bool:
+        """Clear the plots.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        self.wPlots.dPlot[self.cLNPlot[0]].rAxes.clear()
+        self.wPlots.dPlot[self.cLNPlot[0]].rCanvas.draw()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for p in self.cLNPlot[1:]:
+            self.wPlots.dPlot[p].rAxes.clear()
+            self.wPlots.dPlot[p].rAxes2.clear()
+            self.wPlots.dPlot[p].rAxes2.set_yticks([])
+            self.wPlots.dPlot[p].rAxes2.set_yticklabels([])
+            self.wPlots.dPlot[p].rCanvas.draw()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 #---
 
