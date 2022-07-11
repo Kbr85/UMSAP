@@ -28,20 +28,24 @@ import data.exception as mException
 
 
 #region ----------------------------------------------------> Data Description
-# def DataRange(
-#     x: Union[pd.Series, np.ndarray, list, tuple], margin: float=0
-#     ) -> list[float]:
-#     """Return the range of x with an optional margin applied. 
-#         Usefull to set the axes limit in a matplotlib plot.
-    
-#         See Notes below for more details.
+def DataRange(
+    x: Union[pd.Series,np.ndarray, list, tuple],
+    margin: float=0,
+    ) -> list[float]:
+    """Return the range of x with an optional margin applied.
+        Usefull to set the axes limit in a matplotlib plot.
 
-#         Parameters
-#         ----------
-#         x : pd.Serie, np.array, list or tuple of numbers
-#         margin : float
-#             Expand the range by (max(x) - min(x)) * margin. Default is 0, 
-#             meaning that no expansion of the max(x) and min(x) is done.
+        Parameters
+        ----------
+        x : pd.Serie, np.array, list or tuple of numbers.
+        margin : float
+            Expand the range by (max(x) - min(x)) * margin. Default is 0, 
+            meaning that no expansion of the max(x) and min(x) is done.
+
+        Returns
+        -------
+        list of floats
+            [min value, max value]
 
 #         Returns
 #         -------
@@ -62,81 +66,81 @@ import data.exception as mException
 #             [min(x) - dm, max(x) + dm]
 #         When margin is 0 then the return will simply be [min(x), max(x)]
 #     """
-#     #region -------------------------------------------------------> Variables
-#     msg = 'x must contain only numbers.'
-#     #endregion ----------------------------------------------------> Variables
-    
-#     #region -----------------------------------------------------> Check Input
-#     #------------------------------> Type and Float
-#     #-------------->  
-#     tType = type(x)
-#     #--------------> 
-#     if tType == list or tType == tuple:
-#         try:
-#             nL = list(map(float, x))
-#         except Exception:
-#             raise dtsException.InputError(msg)
-#     elif tType == pd.Series:
-#         try:
-#             nL = list(map(float, x.values.tolist()))
-#         except Exception:
-#             raise dtsException.InputError(msg)
-#     elif tType == np.ndarray:
-#         try:
-#             if x.ndim == 1:
-#                 nL = list(map(float, x.tolist()))
-#             else:
-#                 msg = 'A one dimensional np.array is expected here.'
-#                 raise dtsException.InputError(msg)
-#         except Exception:
-#             raise dtsException.InputError(msg)
-#     else:
-#         msg = 'x must be a tuple, list, numpy.ndarray or pandas.Series.'
-#         raise dtsException.InputError(msg)        
-#     #------------------------------> Not empty
-#     if nL:
-#         pass
-#     else:
-#         msg = 'x cannot be empty.'
-#         raise dtsException.InputError(msg)
-#     #endregion --------------------------------------------------> Check Input
-    
-#     #region ----------------------------------------------------------> Values
-#     #------------------------------> 
-#     tmax = max(nL)
-#     tmin = min(nL)
-#     #------------------------------> 
-#     dm = (tmax - tmin) * margin
-#     #endregion -------------------------------------------------------> Values
-    
-#     return [tmin - dm, tmax + dm]
-# #---
+    #region -------------------------------------------------------> Variables
+    msg = 'x must contain only numbers.'
+    #endregion ----------------------------------------------------> Variables
 
-# def HistBin(x: pd.Series) -> tuple[float, float]:
-#     """Calculate the bin width for a histogram according to Freedman–Diaconis 
-#         rule
+    #region -----------------------------------------------------> Check Input
+    #------------------------------> Type and Float
+    #-------------->
+    tType = type(x)
+    #-------------->
+    if tType == list or tType == tuple:
+        try:
+            nL = list(map(float, x))
+        except Exception:
+            raise mException.InputError(msg)
+    elif tType == pd.Series:
+        try:
+            nL = list(map(float, x.values.tolist())) # type: ignore
+        except Exception:
+            raise mException.InputError(msg)
+    elif tType == np.ndarray:
+        if x.ndim == 1: # type: ignore
+            try:
+                nL = list(map(float, x.tolist())) # type: ignore
+            except Exception:
+                raise mException.InputError(msg)
+        else:
+            msg = 'A one dimensional np.array is expected here.'
+            raise mException.InputError(msg)
+    else:
+        msg = 'x must be a tuple, list, numpy.ndarray or pandas.Series.'
+        raise mException.InputError(msg)
+    #------------------------------> Not empty
+    if nL:
+        pass
+    else:
+        msg = 'x cannot be empty.'
+        raise mException.InputError(msg)
+    #endregion --------------------------------------------------> Check Input
 
-#         Parameters
-#         ----------
-#         x : pd.Series
-#             Values 
+    #region ----------------------------------------------------------> Values
+    #------------------------------> 
+    tMax = max(nL)
+    tMin = min(nL)
+    #------------------------------> 
+    dm = (tMax - tMin) * margin
+    #endregion -------------------------------------------------------> Values
 
-#         Returns
-#         -------
-#         tuple of float:
-#             (number_of_bins, bind_width)
-#     """
-#     #region --------------------------------------------------> Get Percentile
-#     q25, q75 = np.percentile(x, [25, 75])
-#     #endregion -----------------------------------------------> Get Percentile
-    
-#     #region -------------------------------------------------------------> Bin
-#     width = 2 * (q75 - q25) * len(x) ** (-1/3)
-#     n = round((x.max() - x.min()) / width)    
-#     #endregion ----------------------------------------------------------> Bin
-    
-#     return (n, width)
-# #---
+    return [tMin - dm, tMax + dm]
+#---
+
+def HistBin(x: pd.Series) -> tuple[float, float]:
+    """Calculate the bin width for a histogram according to Freedman–Diaconis
+        rule.
+
+        Parameters
+        ----------
+        x : pd.Series
+            Values.
+
+        Returns
+        -------
+        tuple of float:
+            (number_of_bins, bind_width)
+    """
+    #region --------------------------------------------------> Get Percentile
+    q25, q75 = np.percentile(x, [25, 75])
+    #endregion -----------------------------------------------> Get Percentile
+
+    #region -------------------------------------------------------------> Bin
+    width = 2 * (q75 - q25) * len(x) ** (-1/3)
+    n = round((x.max() - x.min()) / width)
+    #endregion ----------------------------------------------------------> Bin
+
+    return (n, width)
+#---
 #endregion -------------------------------------------------> Data Description
 
 

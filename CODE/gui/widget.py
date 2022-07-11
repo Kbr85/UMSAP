@@ -2405,7 +2405,7 @@ class MatPlotPanel(wx.Panel):
         #region ---------------------------------------------------> 
         x = event.xdata
         #------------------------------>
-        if getattr(self, 'axes2', None) is not None:
+        if getattr(self, 'rAxes2', None) is not None:
             _, y = self.rAxes.transData.inverted().transform((event.x,event.y))
         else:
             y = event.ydata
@@ -2875,7 +2875,7 @@ class ListCtrlSearch():
         """ """
         #region -----------------------------------------------------> Widgets
         #------------------------------> wx.ListCtrl
-        self.lc = self.listTDict[listT](
+        self.wLC = self.listTDict[listT](
             parent,
             color           = color,
             colLabel        = colLabel,
@@ -2891,8 +2891,8 @@ class ListCtrlSearch():
             data            = data,
         )
         #------------------------------> wx.SearchCtrl
-        self.search = wx.SearchCtrl(parent)
-        self.search.SetHint(tcHint) if tcHint else ''
+        self.wSearch = wx.SearchCtrl(parent)
+        self.wSearch.SetHint(tcHint) if tcHint else ''
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
@@ -2900,8 +2900,8 @@ class ListCtrlSearch():
             #------------------------------> 
             self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
             #------------------------------> 
-            self.sSizer.Add(self.lc, 1, wx.EXPAND|wx.ALL, 5)
-            self.sSizer.Add(self.search, 0, wx.EXPAND|wx.ALL, 5)
+            self.sSizer.Add(self.wLC, 1, wx.EXPAND|wx.ALL, 5)
+            self.sSizer.Add(self.wSearch, 0, wx.EXPAND|wx.ALL, 5)
         else:
             pass
         #endregion ---------------------------------------------------> Sizers

@@ -26,10 +26,10 @@ from typing import Optional, Literal, Union
 import matplotlib as mpl
 from matplotlib.pyplot import get
 # import matplotlib.patches as mpatches
-# import numpy as np
+import numpy as np
 import pandas as pd
 import requests
-# from scipy import stats
+from scipy import stats
 
 # from Bio import pairwise2
 # from Bio.Align import substitution_matrices
@@ -51,6 +51,7 @@ import data.file as mFile
 import data.check as mCheck
 import data.method as mMethod
 import data.exception as mException
+import data.statistic as mStatistic
 import gui.menu as mMenu
 import gui.method as gMethod
 import gui.tab as mTab
@@ -486,7 +487,7 @@ class BaseWindowResult(BaseWindow):
         self.cSection = getattr(self, 'cSection', '')
         #------------------------------>
         self.cMsgExportFailed = getattr(
-            self, 'cMsgExportFailed', 'Export Data failed.')
+            self, 'cMsgExportFailed', 'Export {} failed.')
         #------------------------------>
         self.rDate    = getattr(self, 'rDate', [])
         self.rDateC   = getattr(self, 'rDateC', '')
@@ -617,7 +618,7 @@ class BaseWindowResult(BaseWindow):
             except Exception as e:
                 DialogNotification(
                     'errorF',
-                    msg        = self.cMsgExportFailed,
+                    msg        = self.cMsgExportFailed.format('Data'),
                     tException = e,
                     parent     = self,
                 )
@@ -794,6 +795,7 @@ class BaseWindowResultListText(BaseWindowResult):
         self.cLCStyle = getattr(self, 'cLCStyle', wx.LC_REPORT|wx.LC_SINGLE_SEL)
         self.cSCol    = getattr(self, 'cSCol', [45, 100])
         self.cHSearch = getattr(self, 'cHSearch', 'Table')
+        self.rLCIdx   = getattr(self, 'rLCIdx', -1)
         #------------------------------>
         super().__init__(parent=parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
@@ -818,8 +820,30 @@ class BaseWindowResultListText(BaseWindowResult):
         #------------------------------> AUI which frame to use
         self._mgr.SetManagedWindow(self)
         #endregion ------------------------------------------------------> AUI
+
+        #region --------------------------------------------------------> Bind
+        self.wLC.wLCS.wLC.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
+    
+    #region ---------------------------------------------------> Event Methods
+    def OnListSelect(self, event: wx.CommandEvent) -> bool:
+        """Processes a wx.ListCtrl event.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        self.rLCIdx = self.wLC.wLCS.wLC.GetLastSelected()
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
 #---
 
 
@@ -848,11 +872,11 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cLNPlot   = getattr(self, 'cLNPlot', ['Plot 1', 'Plot 2'])
+        self.cLNPlot   = getattr(self, 'cLNPlot',   ['Plot 1', 'Plot 2'])
         self.cNPlotCol = getattr(self, 'cNPlotCol', 1)
-        self.cTPlot    = getattr(self, 'cTPlot', 'Plots')
-        self.cTText    = getattr(self, 'cTText', 'Details')
-        self.cTList    = getattr(self, 'cTList', 'Table')
+        self.cTPlot    = getattr(self, 'cTPlot',    'Plots')
+        self.cTText    = getattr(self, 'cTText',    'Details')
+        self.cTList    = getattr(self, 'cTList',    'Table')
         #------------------------------>
         super().__init__(parent=parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
@@ -915,12 +939,28 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
                     visible=True,
             ),
         )
-        #------------------------------> 
+        #------------------------------>
         self._mgr.Update()
         #endregion ------------------------------------------------------> AUI
-
     #---
     #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class Methods
+    def ZoomResetAll(self) -> bool:
+        """Reset Zoom of all plots.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        for v in self.wPlots.dPlot.values():
+            v.ZoomResetPlot()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 
@@ -9855,22 +9895,23 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
     cSWindow = (900,800)
     #------------------------------>
     cLCStyle = wx.LC_REPORT|wx.LC_SINGLE_SEL|wx.LC_VIRTUAL
-#     #------------------------------> Label
-#     cLDFData = ['Floated', 'Transformed', 'Normalized', 'Imputed']
-#     cLdfCol = config.dfcolDataCheck
-#     #------------------------------> Other
-#     cFileName = {
-#         config.ltDPKeys[0] : '{}-01-Floated.{}',
-#         config.ltDPKeys[1] : '{}-02-Transformed.{}',
-#         config.ltDPKeys[2] : '{}-03-Normalized.{}',
-#         config.ltDPKeys[3] : '{}-04-Imputed.{}',
-#     }
-#     cImgName = {
-#         cLNPlots[0] : '{}-01-Floated-{}.{}',
-#         cLNPlots[1] : '{}-02-Transformed-{}.{}',
-#         cLNPlots[2] : '{}-03-Normalized-{}.{}',
-#         cLNPlots[3] : '{}-04-Imputed-{}.{}',
-#     }
+    #------------------------------> Label
+    cLDFData = ['Floated', 'Transformed', 'Normalized', 'Imputed']
+    cLdfCol  = [
+        'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
+    #------------------------------> Other
+    cFileName = {
+        mConfig.ltDPKeys[0] : '{}-01-Floated-{}.{}',
+        mConfig.ltDPKeys[1] : '{}-02-Transformed-{}.{}',
+        mConfig.ltDPKeys[2] : '{}-03-Normalized-{}.{}',
+        mConfig.ltDPKeys[3] : '{}-04-Imputed-{}.{}',
+    }
+    cImgName = {
+        cLNPlot[0] : '{}-01-Floated-{}.{}',
+        cLNPlot[1] : '{}-02-Transformed-{}.{}',
+        cLNPlot[2] : '{}-03-Normalized-{}.{}',
+        cLNPlot[3] : '{}-04-Imputed-{}.{}',
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -9939,135 +9980,64 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         return True
     #---
 
-#     def OnListSelect(self, event: wx.CommandEvent) -> bool:
-#         """Plot data for the selected column
-    
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
-            
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ------------------------------------------------> 
-#         super().OnListSelect(event)
-#         #endregion ---------------------------------------------> 
+    def OnListSelect(self, event: wx.CommandEvent) -> bool:
+        """Plot data for the selected column.
 
-#         #region ------------------------------------------------> Get Selected
-#         idx = self.wLC.wLCS.lc.GetFirstSelected()
-#         #------------------------------> If nothing is selected clear the plot
-#         if idx >= 0:
-#             pass
-#         else:
-#             self.ClearPlots()
-#             return False
-#         #endregion ---------------------------------------------> Get Selected
-        
-#         #region ---------------------------------------------------------> dfF
-#         try:
-#             self.PlotdfF(idx)
-#         except Exception as e:
-#             #------------------------------> 
-#             msg = (
-#                 f'It was not possible to build the histograms for the selected '
-#                 f'column.')
-#             dtsWindow.DialogNotification('errorU', msg=msg, tException=e, parent=self)
-#             #------------------------------> 
-#             self.ClearPlots()
-#             #------------------------------> 
-#             return False
-#         #endregion ------------------------------------------------------> dfF
-        
-#         #region ---------------------------------------------------------> dfT
-#         self.PlotdfT(idx)
-#         #endregion ------------------------------------------------------> dfT
-        
-#         #region ---------------------------------------------------------> dfN
-#         self.PlotdfN(idx)
-#         #endregion ------------------------------------------------------> dfN
-        
-#         #region --------------------------------------------------------> dfIm
-#         self.PlotdfIm(idx)
-#         #endregion -----------------------------------------------------> dfIm
-        
-#         #region --------------------------------------------------------> Text
-#         self.SetText(idx)
-#         #endregion -----------------------------------------------------> Text
-        
-#         return True
-#     #---
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
 
-#     def OnExportPlotData(self) -> bool:
-#         """ Export data to a csv file """
-#         #region --------------------------------------------------> Dlg window
-#         dlg = dtsWindow.DirSelectDialog(parent=self)
-#         #endregion -----------------------------------------------> Dlg window
-        
-#         #region ---------------------------------------------------> Get Path
-#         if dlg.ShowModal() == wx.ID_OK:
-#             #------------------------------> Variables
-#             p = Path(dlg.GetPath())
-#             #------------------------------> Export
-#             try:
-#                 for k, v in self.rDpDF.items():
-#                     #------------------------------> file path
-#                     fPath = p/self.cFileName[k].format(self.rDateC, 'txt')
-#                     #------------------------------> Write
-#                     dtsFF.WriteDF2CSV(fPath, v)
-#             except Exception as e:
-#                 dtsWindow.DialogNotification(
-#                     'errorF',
-#                     msg        = self.cMsgExportFailed,
-#                     tException = e,
-#                     parent     = self,
-#                 )
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Get Path
-     
-#         dlg.Destroy()
-#         return True	
-#     #---
-    
-#     def OnPlotSaveAllImage(self) -> bool:
-#         """ Export all plots to a pdf image"""
-#         #region --------------------------------------------------> Dlg window
-#         dlg = dtsWindow.DirSelectDialog(parent=self)
-#         #endregion -----------------------------------------------> Dlg window
-        
-#         #region ---------------------------------------------------> Get Path
-#         if dlg.ShowModal() == wx.ID_OK:
-#             #------------------------------> Variables
-#             p = Path(dlg.GetPath())
-#             col = self.wLC.wLCS.lc.GetFirstSelected()
-#             if col >= 0:
-#                 col = self.wLC.wLCS.lc.GetItemText(col, col=1)
-#             else:
-#                 col = 'None'
-#             #------------------------------> Export
-#             try:
-#                 for k, v in self.wPlots.dPlot.items():
-#                     #------------------------------> file path
-#                     fPath = p / self.cImgName[k].format(self.rDateC, col, 'pdf')
-#                     #------------------------------> Write
-#                     v.figure.savefig(fPath)
-#             except Exception as e:
-#                 dtsWindow.DialogNotification(
-#                     'errorF',
-#                     msg        = self.cMsgExportFailed,
-#                     tException = e,
-#                     parent     = self,
-#                 )
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Get Path
-     
-#         dlg.Destroy()
-#         return True	
-#     #---
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------------> 
+        super().OnListSelect(event)
+        #endregion ---------------------------------------------> 
+
+        #region ------------------------------------------------> Get Selected
+        #------------------------------> If nothing is selected clear the plot
+        if self.rLCIdx >= 0:
+            pass
+        else:
+            self.ClearPlots()
+            return True
+        #endregion ---------------------------------------------> Get Selected
+
+        #region ---------------------------------------------------------> dfF
+        try:
+            self.PlotdfF(self.rLCIdx)
+        except Exception as e:
+            #------------------------------> 
+            msg = (
+                f'It was not possible to build the histograms for the selected '
+                f'column.')
+            DialogNotification('errorU', msg=msg, tException=e, parent=self)
+            #------------------------------> 
+            self.ClearPlots()
+            #------------------------------> 
+            return False
+        #endregion ------------------------------------------------------> dfF
+
+        #region ---------------------------------------------------------> dfT
+        self.PlotdfT(self.rLCIdx)
+        #endregion ------------------------------------------------------> dfT
+
+        #region ---------------------------------------------------------> dfN
+        self.PlotdfN(self.rLCIdx)
+        #endregion ------------------------------------------------------> dfN
+
+        #region --------------------------------------------------------> dfIm
+        self.PlotdfIm(self.rLCIdx)
+        #endregion -----------------------------------------------------> dfIm
+
+        #region --------------------------------------------------------> Text
+        self.SetText(self.rLCIdx)
+        #endregion -----------------------------------------------------> Text
+
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
 
     #region --------------------------------------------------> Manage Methods
@@ -10163,18 +10133,18 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
             Entries are read from self.ddDF['dfF']
         """
         #region --------------------------------------------------> Delete old
-        self.wLC.wLCS.lc.DeleteAllItems()
+        self.wLC.wLCS.wLC.DeleteAllItems()
         #endregion -----------------------------------------------> Delete old
 
         #region ----------------------------------------------------> Get Data
         data = []
-        for k,n in enumerate(self.rDpDF['dfF'].columns.values.tolist()):
+        for k,n in enumerate(self.rDataPlot['dfF'].columns.values.tolist()):
             colN = str(self.rData[self.rDateC]['NumColList'][k])
             data.append([colN, n])
         #endregion -------------------------------------------------> Get Data
 
         #region ------------------------------------------> Set in wx.ListCtrl
-        self.wLC.wLCS.lc.SetNewData(data)
+        self.wLC.wLCS.wLC.SetNewData(data)
         #endregion ---------------------------------------> Set in wx.ListCtrl
 
         #region ----------------------------------------> Update Column Number
@@ -10185,247 +10155,247 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         return True
     #---
 
-#     def PlotdfF(self, col:int) -> bool:
-#         """Plot the histograms for dfF
-    
-#             Parameters
-#             ----------
-#             col : int
-#                 Column to plot
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         #------------------------------> 
-#         x = self.rDpDF['dfF'].iloc[:,col]
-#         x = x[np.isfinite(x)]        
-#         #------------------------------> 
-#         nBin = dtsStatistic.HistBin(x)[0]
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region --------------------------------------------------------> Plot
-#         #------------------------------> 
-#         self.wPlots.dPlot['Init'].axes.clear()
-#         #------------------------------> title
-#         self.wPlots.dPlot['Init'].axes.set_title("Floated")
-#         #------------------------------> 
-#         a = self.wPlots.dPlot['Init'].axes.hist(x, bins=nBin, density=False)
-#         #------------------------------> 
-#         self.wPlots.dPlot['Init'].axes.set_xlim(*dtsStatistic.DataRange(
-#             a[1], margin=config.general['MatPlotMargin']))
-#         self.wPlots.dPlot['Init'].ZoomResetSetValues()
-#         #------------------------------> 
-#         self.wPlots.dPlot['Init'].canvas.draw()
-#         #endregion -----------------------------------------------------> Plot
-        
-#         return True
-#     #---
-    
-#     def PlotdfT(self, col:int) -> bool:
-#         """Plot the histograms for dfT
-    
-#             Parameters
-#             ----------
-#             col : int
-#                 Column to plot
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         #------------------------------> 
-#         x = self.rDpDF['dfT'].iloc[:,col]
-#         x = x[np.isfinite(x)]        
-#         #------------------------------> 
-#         nBin = dtsStatistic.HistBin(x)[0]
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region --------------------------------------------------------> Draw
-#         #------------------------------> 
-#         self.wPlots.dPlot['Transf'].axes.clear()
-#         #------------------------------> title
-#         self.wPlots.dPlot['Transf'].axes.set_title("Transformed")
-#         #------------------------------> 
-#         a = self.wPlots.dPlot['Transf'].axes.hist(x, bins=nBin, density=False)
-#         #------------------------------> 
-#         xRange = dtsStatistic.DataRange(
-#             a[1], margin=config.general['MatPlotMargin'])
-#         self.wPlots.dPlot['Transf'].axes.set_xlim(*xRange)
-#         self.wPlots.dPlot['Transf'].axes.set_ylim(*dtsStatistic.DataRange(
-#             a[0], margin=config.general['MatPlotMargin']))
-#         self.wPlots.dPlot['Transf'].ZoomResetSetValues()
-#         #------------------------------> 
-#         gausX = np.linspace(xRange[0], xRange[1], 300)
-#         gausY = stats.gaussian_kde(x)
-#         self.wPlots.dPlot['Transf'].axes2.clear()
-#         self.wPlots.dPlot['Transf'].axes2.plot(
-#             gausX, gausY.pdf(gausX), color='C1')
-#         self.wPlots.dPlot['Transf'].axes2.set_yticks([])
-#         self.wPlots.dPlot['Transf'].axes2.set_yticklabels([])
-#         #------------------------------> 
-#         self.wPlots.dPlot['Transf'].canvas.draw()
-#         #endregion -----------------------------------------------------> Draw
-        
-#         return True
-#     #---
-    
-#     def PlotdfN(self, col:int) -> bool:
-#         """Plot the histograms for dfN
-    
-#             Parameters
-#             ----------
-#             col : int
-#                 Column to plot
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         #------------------------------> 
-#         x = self.rDpDF['dfN'].iloc[:,col]
-#         x = x[np.isfinite(x)]        
-#         #------------------------------> 
-#         nBin = dtsStatistic.HistBin(x)[0]
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region --------------------------------------------------------> Draw
-#         #------------------------------> 
-#         self.wPlots.dPlot['Norm'].axes.clear()
-#         #------------------------------> title
-#         self.wPlots.dPlot['Norm'].axes.set_title("Normalized")
-#         #------------------------------> 
-#         a = self.wPlots.dPlot['Norm'].axes.hist(x, bins=nBin, density=False)
-#         #------------------------------>
-#         xRange = dtsStatistic.DataRange(
-#             a[1], margin=config.general['MatPlotMargin'])
-#         self.wPlots.dPlot['Norm'].axes.set_xlim(*xRange)
-#         self.wPlots.dPlot['Norm'].axes.set_ylim(*dtsStatistic.DataRange(
-#             a[0], margin=config.general['MatPlotMargin']))
-#         self.wPlots.dPlot['Norm'].ZoomResetSetValues()
-#         #------------------------------> 
-#         gausX = np.linspace(xRange[0], xRange[1], 300)
-#         gausY = stats.gaussian_kde(x)
-#         self.wPlots.dPlot['Norm'].axes2.clear()
-#         self.wPlots.dPlot['Norm'].axes2.plot(
-#             gausX, gausY.pdf(gausX), color='C1')
-#         self.wPlots.dPlot['Norm'].axes2.set_yticks([])
-#         self.wPlots.dPlot['Norm'].axes2.set_yticklabels([])
-#         #------------------------------> 
-#         self.wPlots.dPlot['Norm'].canvas.draw()
-#         #endregion -----------------------------------------------------> Draw
-        
-#         return True
-#     #---
-    
-#     def PlotdfIm(self, col:int) -> bool:
-#         """Plot the histograms for dfIm
+    def PlotdfF(self, col:int) -> bool:
+        """Plot the histograms for dfF.
 
-#             Parameters
-#             ----------
-#             col : int
-#                 Column to plot
+            Parameters
+            ----------
+            col : int
+                Column to plot.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         #------------------------------>
-#         x = self.rDpDF['dfIm'].iloc[:,col]
-#         x = x[np.isfinite(x)]
-#         #------------------------------>
-#         nBin = dtsStatistic.HistBin(x)[0]
-#         #endregion ------------------------------------------------> Variables
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        #------------------------------> 
+        x = self.rDataPlot['dfF'].iloc[:,col]
+        x = x[np.isfinite(x)]
+        #------------------------------>
+        nBin = mStatistic.HistBin(x)[0]
+        #endregion ------------------------------------------------> Variables
         
-#         #region --------------------------------------------------------> Draw
-#         #------------------------------> 
-#         self.wPlots.dPlot['Imp'].axes.clear()
-#         #------------------------------> title
-#         self.wPlots.dPlot['Imp'].axes.set_title("Imputed")
-#         #------------------------------> 
-#         a = self.wPlots.dPlot['Imp'].axes.hist(x, bins=nBin, density=False)
-#         #------------------------------> 
-#         xRange = dtsStatistic.DataRange(
-#             a[1], margin=config.general['MatPlotMargin'])
-#         self.wPlots.dPlot['Imp'].axes.set_xlim(*xRange)
-#         self.wPlots.dPlot['Imp'].axes.set_ylim(*dtsStatistic.DataRange(
-#             a[0], margin=config.general['MatPlotMargin']))
-#         self.wPlots.dPlot['Imp'].ZoomResetSetValues()
-#         #------------------------------> 
-#         idx = np.where(self.rDpDF['dfF'].iloc[:,col].isna())[0]
-#         if len(idx) > 0:
-#             y = self.rDpDF['dfIm'].iloc[idx,col]
-#             if y.count() > 0:
-#                 self.wPlots.dPlot['Imp'].axes.hist(
-#                     y, bins=nBin, density=False, color='C2')
-#             else:
-#                 pass
-#         else:
-#             pass
-#         #------------------------------> 
-#         gausX = np.linspace(xRange[0], xRange[1], 300)
-#         gausY = stats.gaussian_kde(x)
-#         self.wPlots.dPlot['Imp'].axes2.clear()
-#         self.wPlots.dPlot['Imp'].axes2.plot(gausX, gausY.pdf(gausX), color='C1')
-#         self.wPlots.dPlot['Imp'].axes2.set_yticks([])
-#         self.wPlots.dPlot['Imp'].axes2.set_yticklabels([])
-#         self.wPlots.dPlot['Imp'].canvas.draw()
-#         #endregion -----------------------------------------------------> Draw
-        
-#         return True
-#     #---
-    
-#     def SetText(self, col: int) -> bool:
-#         """Set the text with the descriptive statistics about the data prepara
-#             tion steps.
-    
-#             Parameters
-#             ----------
-#             col : int
-#                 Column to plot
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ----------------------------------------------------> Empty DF
-#         df = pd.DataFrame(columns=self.cLdfCol)
-#         df['Data'] = self.cLDFData
-#         #endregion -------------------------------------------------> Empty DF
-        
-#         #region --------------------------------------------> Calculate values
-#         for r,k in enumerate(self.rDpDF):
-#             #------------------------------> N
-#             df.iat[r,1] = self.rDpDF[k].shape[0]
-#             #------------------------------> NA
-#             df.iat[r,2] = self.rDpDF[k].iloc[:,col].isnull().sum()
-#             #------------------------------> Mean
-#             df.iat[r,3] = self.rDpDF[k].iloc[:,col].mean()
-#             #------------------------------> Median
-#             df.iat[r,4] = self.rDpDF[k].iloc[:,col].median()
-#             # #------------------------------> SD
-#             df.iat[r,5] = self.rDpDF[k].iloc[:,col].std()
-#             # #------------------------------> Kurtosis
-#             df.iat[r,6] = self.rDpDF[k].iloc[:,col].kurt()
-#             # #------------------------------> Skewness
-#             df.iat[r,7] = self.rDpDF[k].iloc[:,col].skew()
-#         #endregion -----------------------------------------> Calculate values
-        
-#         #region ---------------------------------------------> Remove Old Text
-#         self.wText.Clear()
-#         #endregion ------------------------------------------> Remove Old Text
-        
-#         #region ------------------------------------------------> Add New Text
-#         self.wText.AppendText(df.to_string(index=False))
-#         self.wText.SetInsertionPoint(0)
-#         #endregion ---------------------------------------------> Add New Text
-        
-#         return True
-#     #---
+        #region --------------------------------------------------------> Plot
+        #------------------------------>
+        self.wPlots.dPlot['Init'].rAxes.clear()
+        #------------------------------> title
+        self.wPlots.dPlot['Init'].rAxes.set_title("Floated")
+        #------------------------------> 
+        a = self.wPlots.dPlot['Init'].rAxes.hist(x, bins=nBin, density=False)
+        #------------------------------> 
+        self.wPlots.dPlot['Init'].rAxes.set_xlim(*mStatistic.DataRange(
+            a[1], margin=mConfig.general['MatPlotMargin']))
+        self.wPlots.dPlot['Init'].ZoomResetSetValues()
+        #------------------------------> 
+        self.wPlots.dPlot['Init'].rCanvas.draw()
+        #endregion -----------------------------------------------------> Plot
+
+        return True
+    #---
+
+    def PlotdfT(self, col:int) -> bool:
+        """Plot the histograms for dfT.
+
+            Parameters
+            ----------
+            col : int
+                Column to plot.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        #------------------------------>
+        x = self.rDataPlot['dfT'].iloc[:,col]
+        x = x[np.isfinite(x)]
+        #------------------------------>
+        nBin = mStatistic.HistBin(x)[0]
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------------> Draw
+        #------------------------------>
+        self.wPlots.dPlot['Transf'].rAxes.clear()
+        #------------------------------> title
+        self.wPlots.dPlot['Transf'].rAxes.set_title("Transformed")
+        #------------------------------> 
+        a = self.wPlots.dPlot['Transf'].rAxes.hist(x, bins=nBin, density=False)
+        #------------------------------> 
+        xRange = mStatistic.DataRange(
+            a[1], margin=mConfig.general['MatPlotMargin'])
+        self.wPlots.dPlot['Transf'].rAxes.set_xlim(*xRange)
+        self.wPlots.dPlot['Transf'].rAxes.set_ylim(*mStatistic.DataRange(
+            a[0], margin=mConfig.general['MatPlotMargin']))
+        self.wPlots.dPlot['Transf'].ZoomResetSetValues()
+        #------------------------------> 
+        gausX = np.linspace(xRange[0], xRange[1], 300)
+        gausY = stats.gaussian_kde(x)
+        self.wPlots.dPlot['Transf'].rAxes2.clear()
+        self.wPlots.dPlot['Transf'].rAxes2.plot(
+            gausX, gausY.pdf(gausX), color='C1')
+        self.wPlots.dPlot['Transf'].rAxes2.set_yticks([])
+        self.wPlots.dPlot['Transf'].rAxes2.set_yticklabels([])
+        #------------------------------> 
+        self.wPlots.dPlot['Transf'].rCanvas.draw()
+        #endregion -----------------------------------------------------> Draw
+
+        return True
+    #---
+
+    def PlotdfN(self, col:int) -> bool:
+        """Plot the histograms for dfN.
+
+            Parameters
+            ----------
+            col : int
+                Column to plot.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        #------------------------------>
+        x = self.rDataPlot['dfN'].iloc[:,col]
+        x = x[np.isfinite(x)]
+        #------------------------------>
+        nBin = mStatistic.HistBin(x)[0]
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------------> Draw
+        #------------------------------> 
+        self.wPlots.dPlot['Norm'].rAxes.clear()
+        #------------------------------> title
+        self.wPlots.dPlot['Norm'].rAxes.set_title("Normalized")
+        #------------------------------> 
+        a = self.wPlots.dPlot['Norm'].rAxes.hist(x, bins=nBin, density=False)
+        #------------------------------>
+        xRange = mStatistic.DataRange(
+            a[1], margin=mConfig.general['MatPlotMargin'])
+        self.wPlots.dPlot['Norm'].rAxes.set_xlim(*xRange)
+        self.wPlots.dPlot['Norm'].rAxes.set_ylim(*mStatistic.DataRange(
+            a[0], margin=mConfig.general['MatPlotMargin']))
+        self.wPlots.dPlot['Norm'].ZoomResetSetValues()
+        #------------------------------> 
+        gausX = np.linspace(xRange[0], xRange[1], 300)
+        gausY = stats.gaussian_kde(x)
+        self.wPlots.dPlot['Norm'].rAxes2.clear()
+        self.wPlots.dPlot['Norm'].rAxes2.plot(
+            gausX, gausY.pdf(gausX), color='C1')
+        self.wPlots.dPlot['Norm'].rAxes2.set_yticks([])
+        self.wPlots.dPlot['Norm'].rAxes2.set_yticklabels([])
+        #------------------------------> 
+        self.wPlots.dPlot['Norm'].rCanvas.draw()
+        #endregion -----------------------------------------------------> Draw
+
+        return True
+    #---
+
+    def PlotdfIm(self, col:int) -> bool:
+        """Plot the histograms for dfIm.
+
+            Parameters
+            ----------
+            col : int
+                Column to plot.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        #------------------------------>
+        x = self.rDataPlot['dfIm'].iloc[:,col]
+        x = x[np.isfinite(x)]
+        #------------------------------>
+        nBin = mStatistic.HistBin(x)[0]
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------------> Draw
+        #------------------------------> 
+        self.wPlots.dPlot['Imp'].rAxes.clear()
+        #------------------------------> title
+        self.wPlots.dPlot['Imp'].rAxes.set_title("Imputed")
+        #------------------------------> 
+        a = self.wPlots.dPlot['Imp'].rAxes.hist(x, bins=nBin, density=False)
+        #------------------------------> 
+        xRange = mStatistic.DataRange(
+            a[1], margin=mConfig.general['MatPlotMargin'])
+        self.wPlots.dPlot['Imp'].rAxes.set_xlim(*xRange)
+        self.wPlots.dPlot['Imp'].rAxes.set_ylim(*mStatistic.DataRange(
+            a[0], margin=mConfig.general['MatPlotMargin']))
+        self.wPlots.dPlot['Imp'].ZoomResetSetValues()
+        #------------------------------> 
+        idx = np.where(self.rDataPlot['dfF'].iloc[:,col].isna())[0]
+        if len(idx) > 0:
+            y = self.rDataPlot['dfIm'].iloc[idx,col]
+            if y.count() > 0:
+                self.wPlots.dPlot['Imp'].rAxes.hist(
+                    y, bins=nBin, density=False, color='C2')
+            else:
+                pass
+        else:
+            pass
+        #------------------------------> 
+        gausX = np.linspace(xRange[0], xRange[1], 300)
+        gausY = stats.gaussian_kde(x)
+        self.wPlots.dPlot['Imp'].rAxes2.clear()
+        self.wPlots.dPlot['Imp'].rAxes2.plot(gausX, gausY.pdf(gausX), color='C1')
+        self.wPlots.dPlot['Imp'].rAxes2.set_yticks([])
+        self.wPlots.dPlot['Imp'].rAxes2.set_yticklabels([])
+        self.wPlots.dPlot['Imp'].rCanvas.draw()
+        #endregion -----------------------------------------------------> Draw
+
+        return True
+    #---
+
+    def SetText(self, col: int) -> bool:
+        """Set the text with the descriptive statistics about the data 
+            preparation steps.
+
+            Parameters
+            ----------
+            col : int
+                Column to plot.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(columns=self.cLdfCol)
+        df['Data'] = self.cLDFData
+        #endregion -------------------------------------------------> Empty DF
+
+        #region --------------------------------------------> Calculate values
+        for r,k in enumerate(self.rDataPlot):
+            #------------------------------> N
+            df.iat[r,1] = self.rDataPlot[k].shape[0]
+            #------------------------------> NA
+            df.iat[r,2] = self.rDataPlot[k].iloc[:,col].isnull().sum()
+            #------------------------------> Mean
+            df.iat[r,3] = self.rDataPlot[k].iloc[:,col].mean()
+            #------------------------------> Median
+            df.iat[r,4] = self.rDataPlot[k].iloc[:,col].median()
+            # #------------------------------> SD
+            df.iat[r,5] = self.rDataPlot[k].iloc[:,col].std()
+            # #------------------------------> Kurtosis
+            df.iat[r,6] = self.rDataPlot[k].iloc[:,col].kurt()
+            # #------------------------------> Skewness
+            df.iat[r,7] = self.rDataPlot[k].iloc[:,col].skew()
+        #endregion -----------------------------------------> Calculate values
+
+        #region ---------------------------------------------> Remove Old Text
+        self.wText.Clear()
+        #endregion ------------------------------------------> Remove Old Text
+
+        #region ------------------------------------------------> Add New Text
+        self.wText.AppendText(df.to_string(index=False))
+        self.wText.SetInsertionPoint(0)
+        #endregion ---------------------------------------------> Add New Text
+
+        return True
+    #---
 
     def UpdateResultWindow(self, tDate: str='') -> bool:
         """Update window when a new date is selected.
@@ -10441,10 +10411,10 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         """
         #region ---------------------------------------------------> Variables
         if tDate:
-            self.rDpDF = self.rData[tDate]['DP']
+            self.rDataPlot = self.rData[tDate]['DP']
             self.rDateC = tDate
         else:
-            self.rDpDF = self.rData[self.rDateC]['DP']
+            self.rDataPlot = self.rData[self.rDateC]['DP']
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> wx.ListCtrl
@@ -10490,6 +10460,100 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
             self.wPlots.dPlot[p].rCanvas.draw()
         #endregion ------------------------------------------------> 
 
+        return True
+    #---
+
+    def ExportData(self) -> bool:
+        """Export data from each plot to a csv file.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------> Check Something to Export
+        if self.rLCIdx >= 0:
+            pass
+        else:
+            msg = 'Please select one of the analyzed columns first.'
+            DialogNotification('warning', msg=msg)
+            return False
+        #endregion --------------------------------> Check Something to Export
+
+        #region --------------------------------------------------> Dlg window
+        dlg = DialogDirSelect(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            col = self.wLC.wLCS.wLC.OnGetItemText(self.rLCIdx, 1)
+            #------------------------------> Export
+            try:
+                for k, v in self.rDataPlot.items():
+                    #------------------------------> file path
+                    fPath = p/self.cFileName[k].format(self.rDateC, col, 'txt')
+                    #------------------------------> Write
+                    mFile.WriteDF2CSV(fPath, v)
+            except Exception as e:
+                DialogNotification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed.format('Data'),
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+
+        dlg.Destroy()
+        return True
+    #---
+
+    def ExportImgAll(self) -> bool:
+        """Export all plots to a pdf image.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------> Check Something to Export
+        if self.rLCIdx >= 0:
+            pass
+        else:
+            msg = 'Please select one of the analyzed columns first.'
+            DialogNotification('warning', msg=msg)
+            return False
+        #endregion --------------------------------> Check Something to Export
+
+        #region --------------------------------------------------> Dlg window
+        dlg = DialogDirSelect(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            col = self.wLC.wLCS.wLC.OnGetItemText(self.rLCIdx, 1)
+            #------------------------------> Export
+            try:
+                for k, v in self.wPlots.dPlot.items():
+                    #------------------------------> file path
+                    fPath = p / self.cImgName[k].format(self.rDateC, col, 'pdf')
+                    #------------------------------> Write
+                    v.rFigure.savefig(fPath)
+            except Exception as e:
+                DialogNotification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed.format('Image'),
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+
+        dlg.Destroy()
         return True
     #---
     #endregion -----------------------------------------------> Manage Methods
