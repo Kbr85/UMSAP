@@ -823,12 +823,72 @@ class BaseWindowResultListText(BaseWindowResult):
 
         #region --------------------------------------------------------> Bind
         self.wLC.wLCS.wLC.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        self.wLC.wLCS.wLC.Bind(wx.EVT_LEFT_UP, self.OnListSelectEmpty)
+        self.wLC.wLCS.wSearch.Bind(wx.EVT_SEARCH, self.OnSearch)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
     
     #region ---------------------------------------------------> Event Methods
-    def OnListSelect(self, event: wx.CommandEvent) -> bool:
+    def OnSearch(self, event: wx.Event) -> bool:
+        """Search for a given string in the wx.ListCtrl.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            See mWidget.MyListCtrl.Search for more details.
+        """
+        #region ---------------------------------------------------> Get index
+        tStr = self.wLC.wLCS.wSearch.GetValue()
+        iEqual, iSimilar = self.wLC.wLCS.wLC.Search(tStr)
+        #endregion ------------------------------------------------> Get index
+
+        #region ----------------------------------------------> Show 1 Results
+        if len(iEqual) == 1:
+            self.SearchSelect(iEqual[0])
+            return True
+        elif len(iSimilar) == 1:
+            self.SearchSelect(iSimilar[0])
+            return True
+        else:
+            pass
+        #endregion -------------------------------------------> Show 1 Results
+        
+        #region ----------------------------------------------> Show N Results
+        if iSimilar:
+            msg = (f'The string, {tStr}, was found in multiple rows.')
+            tException = (
+                f'The row numbers where the string was found are:\n '
+                f'{str(iSimilar)[1:-1]}')
+            DialogNotification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                tException = tException,
+                parent     = self,
+            )
+        else:
+            msg = (f'The string, {tStr}, was not found.')
+            DialogNotification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                parent     = self,
+            )
+        #endregion -------------------------------------------> Show N Results
+        
+        return True
+    #---
+
+    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
         """Processes a wx.ListCtrl event.
 
             Parameters
@@ -843,7 +903,56 @@ class BaseWindowResultListText(BaseWindowResult):
         self.rLCIdx = self.wLC.wLCS.wLC.GetLastSelected()
         return True
     #---
+
+    def OnListSelectEmpty(self, event: wx.CommandEvent) -> bool:
+        """What to do after selecting a row in the wx.ListCtrl. 
+
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        idx = self.wLC.wLCS.wLC.GetFirstSelected()
+        #------------------------------>
+        if idx < 0 and self.rLCIdx is not None:
+            self.wLC.wLCS.wLC.Select(self.rLCIdx, on=1)
+        else:
+            pass
+        #endregion ------------------------------------------------>
+
+        event.Skip()
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class Methods
+    def SearchSelect(self, tRow: int) -> bool:
+        """Select one of the row in the wx.ListCtrl.
+
+            Parameters
+            ----------
+            tRow: int
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Helper to OnSearch
+        """
+        self.wLC.wLCS.wLC.Select(tRow, on=1)
+        self.wLC.wLCS.wLC.EnsureVisible(tRow)
+        self.wLC.wLCS.wLC.SetFocus()
+        self.OnListSelect('fEvent')
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 
@@ -962,276 +1071,6 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
     #---
     #endregion ------------------------------------------------> Class Methods
 #---
-
-
-# class BaseWindowNPlotLT(BaseWindow):
-#     """Base class to create a window like ProtProfPlot
-
-#         Parameters
-#         ----------
-#         parent : wx.Window or None
-#             Parent of the window. Default is None.
-#         menuData : dict or None
-#             Data to build the Tool menu of the window. Default is None.
-#             See Child class for more details.
-            
-#         Attributes
-#         ----------
-#         dKeyMethod : dict
-#             Keys are str and values methods to manage the window.
-#         rLCIdx: int
-#             Last selected row in the wx.ListCtrl
-
-#         Notes
-#         -----
-#         Child class is expected to define:
-#         - cLNPlots : list of str
-#             To id the plots in the window.
-#         - cNPlotsCol : int
-#             Number of columns in the wx.FLexGrid to distribute the plots.
-#         - cLCol : list of str
-#             Column names in the wx.ListCtrl
-#         - cSCol : list of int
-#             Size of the columns in the wx.ListCtrl
-#         - cHSearch : str
-#             Hint for the wx.SearchCtrl. The hint will start with 'Search ', 
-#             independently of the value of cHSearch
-#         - cTText : str
-#             Title for the text pane
-#         - cTList : str
-#             Title for the wx.ListCtrl pane
-        
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: Optional[wx.Window]=None, cMenuData: Optional[dict]=None,
-#         ) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cTText   = getattr(self, 'cTText', 'Text')
-#         self.cTPlots  = getattr(self, 'cTPlots', 'Plots')
-#         self.cLCStyle = getattr(
-#             self, 'cLCStyle', wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL)
-#         #------------------------------> 
-#         super().__init__(cParent, cMenuData=cMenuData)
-#         #------------------------------>
-#         self.rLCIdx = None
-#         #endregion --------------------------------------------> Initial Setup
-
-#         #region -----------------------------------------------------> Widgets
-#         #------------------------------> 
-#         self.wStatBar.SetFieldsCount(3, config.sbPlot3Fields)
-#         #------------------------------>  Plot
-#         self.wPlots = dtsWindow.NPlots(
-#             self, self.cLNPlots, self.cNPlotsCol, statusbar=self.wStatBar)
-#         #------------------------------> Text details
-#         self.wText = wx.TextCtrl(
-#             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
-#         self.wText.SetFont(config.font['SeqAlign'])
-#         #------------------------------> wx.ListCtrl
-#         self.wLC = pane.ListCtrlSearchPlot(
-#             self, 
-#             cColLabel = self.cLCol,
-#             cColSize  = self.cSCol,
-#             cStyle    = self.cLCStyle, 
-#             cTcHint   = f'Search {self.cHSearch}'
-#         )
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region --------------------------------------------------------> Bind
-#         self.wLC.wLCS.lc.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
-#         self.wLC.wLCS.lc.Bind(wx.EVT_LEFT_UP, self.OnListSelectEmpty)
-#         self.Bind(wx.EVT_SEARCH, self.OnSearch)
-#         #endregion -----------------------------------------------------> Bind
-
-#         #region ---------------------------------------------> Window position
-        
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #------------------------------> Class methods
-#     #region ---------------------------------------------------> Event Methods
-#     def OnSearch(self, event: wx.Event) -> bool:
-#         """Search for a given string in the wx.ListCtrl.
-    
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
-            
-#             Returns
-#             -------
-#             bool
-    
-#             Notes
-#             -----
-#             See dtsWidget.MyListCtrl.Search for more details.
-#         """
-#         #region ---------------------------------------------------> Get index
-#         tStr = self.wLC.wLCS.search.GetValue()
-#         iEqual, iSimilar = self.wLC.wLCS.lc.Search(tStr)
-#         #endregion ------------------------------------------------> Get index
-        
-#         #region ----------------------------------------------> Show 1 Results
-#         if len(iEqual) == 1:
-#             self.OnSearchSelect(iEqual[0])
-#             return True
-#         elif len(iSimilar) == 1:
-#             self.OnSearchSelect(iSimilar[0])
-#             return True
-#         else:
-#             pass
-#         #endregion -------------------------------------------> Show 1 Results
-        
-#         #region ----------------------------------------------> Show N Results
-#         if iSimilar:
-#             msg = (f'The string, {tStr}, was found in multiple rows.')
-#             tException = (
-#                 f'The row numbers where the string was found are:\n '
-#                 f'{str(iSimilar)[1:-1]}')
-#             dtsWindow.DialogNotification(
-#                 'warning', 
-#                 msg        = msg,
-#                 setText    = True,
-#                 tException = tException,
-#                 parent     = self,
-#             )
-#         else:
-#             msg = (f'The string, {tStr}, was not found.')
-#             dtsWindow.DialogNotification(
-#                 'warning', 
-#                 msg        = msg,
-#                 setText    = True,
-#                 parent     = self,
-#             )
-#         #endregion -------------------------------------------> Show N Results
-        
-#         return True
-#     #---
-    
-#     def OnSearchSelect(self, tRow: int) -> bool:
-#         """Select one of the row in the wx.ListCtrl.
-    
-#             Parameters
-#             ----------
-#             tRow: int
-    
-#             Returns
-#             -------
-#             bool
-            
-#             Notes
-#             -----
-#             Helper to OnSearch
-#         """
-#         self.wLC.wLCS.lc.Select(tRow, on=1)
-#         self.wLC.wLCS.lc.EnsureVisible(tRow)
-#         self.wLC.wLCS.lc.SetFocus()
-#         self.OnListSelect('fEvent')
-#         return True
-#     #---
-    
-#     def OnListSelect(self, event: Union[wx.Event, str]) -> bool:
-#         """What to do after selecting a row in the wx.ListCtrl. 
-#             Override as needed
-    
-#             Parameters
-#             ----------
-#             event : wx.Event
-#                 Information about the event
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         self.rLCIdx = self.wLC.wLCS.lc.GetLastSelected()
-#         return True
-#     #---
-    
-#     def OnListSelectEmpty(self, event: wx.CommandEvent) -> bool:
-#         """What to do after selecting a row in the wx.ListCtrl. 
-#             Override as needed
-    
-#             Parameters
-#             ----------
-#             event : wx.Event
-#                 Information about the event
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         idx = self.wLC.wLCS.lc.GetFirstSelected()
-        
-#         if idx < 0 and self.rLCIdx is not None:
-#             self.wLC.wLCS.lc.Select(self.rLCIdx, on=1)
-#         else:
-#             pass
-            
-#         event.Skip()
-#         return True
-#     #---
-    
-#     def OnClose(self, event: wx.CloseEvent) -> Literal[True]:
-#         """Close window and uncheck section in UMSAPFile window. 
-    
-#             Parameters
-#             ----------
-#             event: wx.CloseEvent
-#                 Information about the event
-                
-#             Notes
-#             -----
-#             Assumes self.cParent is an instance of UMSAPControl.
-#             Override as needed.
-#         """
-#         #region -----------------------------------------------> Update parent
-#         self.cParent.UnCheckSection(self.cSection, self)		
-#         #endregion --------------------------------------------> Update parent
-        
-#         #region ------------------------------------> Reduce number of windows
-#         config.winNumber[self.cName] -= 1
-#         #endregion ---------------------------------> Reduce number of windows
-        
-#         #region -----------------------------------------------------> Destroy
-#         self.Destroy()
-#         #endregion --------------------------------------------------> Destroy
-        
-#         return True
-#     #---
-    
-#     def OnPlotZoomResetAll(self) -> bool:
-#         """Reset all the plots in the window.
-        
-#             Returns
-#             -------
-#             bool
-    
-#             Notes
-#             -----
-#             It is assumed plots are in a dict self.wPlots.dPlot in which
-#             keys are string and values are instances of dtsWidget.MatPlotPanel
-#         """
-#         #region --------------------------------------------------> Reset Zoom
-#         try:
-#             for v in self.wPlots.dPlot.values():
-#                 v.ZoomResetPlot()
-#         except Exception as e:
-#             #------------------------------> 
-#             msg = (
-#                 'It was not possible to reset the zoom level of one of the '
-#                 'plots.')
-#             dtsWindow.DialogNotification(
-#                 'errorU', msg=msg, tException=e, parent=self)
-#             #------------------------------> 
-#             return False
-#         #endregion -----------------------------------------------> Reset Zoom
-    
-#         return True	
-#     #---	
-#     #endregion ------------------------------------------------> Event Methods
-# #---
 
 
 # class BaseWindowProteolysis(BaseWindow):
@@ -9980,7 +9819,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         return True
     #---
 
-    def OnListSelect(self, event: wx.CommandEvent) -> bool:
+    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
         """Plot data for the selected column.
 
             Parameters
