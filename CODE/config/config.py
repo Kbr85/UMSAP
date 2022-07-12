@@ -110,7 +110,7 @@ nwDef = 'Untitled Window'
 nwMain          = 'Analysis Setup'
 nwUMSAPControl  = 'UMSAP Control'
 nwCorrAPlot     = 'CorrAPlot'
-# nwProtProf      = 'ProtProfPlot'
+nwProtProf      = 'ProtProfPlot'
 # nwLimProt       = 'LimProtPlot'
 # nwTarProt       = 'TarProtPlot'
 nwCheckDataPrep = 'Data Preparation'
@@ -600,7 +600,7 @@ dtFormat = '%Y%m%d-%H%M%S'
 sWinRegular = (990, 775)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
-# sWinModPlot = (1100, 625)
+sWinModPlot = (1100, 625)
 #------------------------------> wx.TextCtrl
 sTc = (50, 22)
 #------------------------------> wx.ListCtrl
