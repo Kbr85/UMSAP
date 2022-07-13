@@ -3208,16 +3208,13 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     def __init__(self, parent: 'WindowUMSAPControl') -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-#         self.cTitle       = f"{cParent.cTitle} - {self.cSection}"
-#         self.rObj         = cParent.rObj
-#         self.rData        = self.rObj.dConfigure[self.cSection]()
-#         self.rDate, cMenuData = self.SetDateMenuDate()
-#         #------------------------------> 
-#         try:
-#             self.ReportPlotDataError()
-#         except Exception as e:
-#             raise e
-#         #------------------------------> 
+        self.rObj            = parent.rObj
+        self.rData           = self.rObj.dConfigure[self.cSection]()
+        self.rDate, menuData = self.SetDateMenuDate()
+        #------------------------------>
+        self.ReportPlotDataError()
+        #------------------------------>
+        self.cTitle       = f"{parent.cTitle} - {self.cSection}"
 #         self.rDf          = None
 #         self.rDateC       = self.rDate[0]
 #         self.rCondC       = cMenuData['crp'][self.rDate[0]]['C'][0]
@@ -3249,7 +3246,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         self.rPickLabel   = False
 #         self.rVolLines    = [f'{config.klToolVolPlotColorHypCurve} Line']
 #         #------------------------------> 
-        super().__init__(parent, menuData={})
+        super().__init__(parent, menuData=menuData)
 #         #------------------------------> Methods
 #         dKeyMethod = {
 #             #------------------------------> Set Range of Plots
@@ -3352,53 +3349,51 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         
 #         return True
 #     #---
-    
-#     def SetDateMenuDate(self) -> tuple[list, dict]:
-#         """Set the self.rDate list and the menuData dict needed to build the Tool
-#             menu.
 
-#             Returns
-#             -------
-#             tuple of list and dict
-#             The list is a list of str with the dates in the analysis.
-#             The dict has the following structure:
-#                 {
-#                     'MenuDate' : [List of dates],
-#                     'crp' : {
-#                         'date1' : {
-#                             'C' : [List of conditions],
-#                             'RP': [List of relevant points],
-#                         }
-#                         .......
-#                         'dateN'
-#                     }
-#                 }                    
-#         """
-#         #region ---------------------------------------------------> Fill dict
-#         #------------------------------> Variables
-#         date = []
-#         menuData = {
-#             'crp' : {},
-#         }
-#         #------------------------------> Fill 
-#         for k in self.rData.keys():
-#             if k != 'Error':
-#                 #------------------------------> 
-#                 date.append(k)
-#                 #------------------------------> 
-#                 menuData['crp'][k] = {
-#                     'C' : self.rObj.rData[self.cSection][k]['CI']['Cond'],
-#                     'RP': self.rObj.rData[self.cSection][k]['CI']['RP']
-#                 }
-#             else:
-#                 pass
-#         #------------------------------> 
-#         menuData['MenuDate'] = date
-#         #endregion ------------------------------------------------> Fill dict
-        
-#         return (date, menuData)
-#     #---
-    
+    def SetDateMenuDate(self) -> tuple[list, dict]:
+        """Set the self.rDate list and the menuData dict needed to build the Tool
+            menu.
+
+            Returns
+            -------
+            tuple of list and dict
+            The list is a list of str with the dates in the analysis.
+            The dict has the following structure:
+                {
+                    'MenuDate' : [List of dates],
+                    'crp' : {
+                        'date1' : {
+                            'C' : [List of conditions],
+                            'RP': [List of relevant points],
+                        }
+                        .......
+                        'dateN'
+                    }
+                }
+        """
+        #region ---------------------------------------------------> Fill dict
+        #------------------------------> Variables
+        date = []
+        menuData = {'crp' : {}, 'MenuDate': []}
+        #------------------------------> Fill
+        for k in self.rData.keys():
+            if k != 'Error':
+                #------------------------------>
+                date.append(k)
+                #------------------------------>
+                menuData['crp'][k] = {
+                    'C' : self.rObj.rData[self.cSection][k]['CI']['Cond'],
+                    'RP': self.rObj.rData[self.cSection][k]['CI']['RP']
+                }
+            else:
+                pass
+        #------------------------------>
+        menuData['MenuDate'] = date
+        #endregion ------------------------------------------------> Fill dict
+
+        return (date, menuData)
+    #---
+
 #     def UpdateUMSAPData(self):
 #         """Update the window after the UMSAP file have been updated.
     

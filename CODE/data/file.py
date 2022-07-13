@@ -629,7 +629,7 @@ class UMSAPFile():
                            # read from the file
             mConfig.nuCorrA   : self.ConfigureDataCorrA,
             mConfig.nuDataPrep: self.ConfigureDataDataPrep,
-            # mConfig.nmProtProf: self.ConfigureDataProtProf,
+            mConfig.nmProtProf: self.ConfigureDataProtProf,
             # mConfig.nmLimProt : self.ConfigureDataLimProt,
             # mConfig.nmTarProt : self.ConfigureDataTarProt,
         }
@@ -798,42 +798,44 @@ class UMSAPFile():
 
         return plotData
     #---
-    
-#     def ConfigureDataProtProf(self) -> dict:
-#         """Configure a Proteome Profiling section
-        
-#             Returns
-#             ------
-#             dict
-#             {
-#                 'DF' : pd.DataFrame with the data to plot,
-#             }
-#         """
-#         #region -------------------------------------------------> Plot & Menu
-#         #------------------------------> Empty start
-#         plotData = {'Error':[]}
-#         colStr = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
-#         #------------------------------> Fill
-#         for k,v in self.rData[config.nmProtProf].items():
-#             try:
-#                 #------------------------------> 
-#                 tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmProtProf.replace(" ", "-")}'
-#                 #------------------------------> Create data
-#                 df = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
-#                 df.loc[:,colStr] = df.loc[:,colStr].astype('str')
-#                 #------------------------------> Add to dict if no error
-#                 plotData[k] = {
-#                     'DF': df,
-#                     'F' : v['F'],
-#                     'Alpha': v['CI']['Alpha'],
-#                 }
-#             except Exception:
-#                 plotData['Error'].append(k)
-#         #endregion ----------------------------------------------> Plot & Menu
-        
-#         return plotData
-#     #---
-    
+
+    def ConfigureDataProtProf(self) -> dict:
+        """Configure a Proteome Profiling section.
+
+            Returns
+            ------
+            dict
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'F'  : dict with filters,
+                'Alpha': Alpha value used in the analysis,
+            }
+        """
+        #region -------------------------------------------------> Plot & Menu
+        #------------------------------> Empty start
+        plotData = {'Error':[]}
+        colStr = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
+        #------------------------------> Fill
+        for k,v in self.rData[mConfig.nmProtProf].items():
+            try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{mConfig.nmProtProf.replace(" ", "-")}'
+                #------------------------------> Create data
+                df = ReadCSV2DF(tPath/v['R'], header=[0,1,2])
+                df.loc[:,colStr] = df.loc[:,colStr].astype('str')
+                #------------------------------> Add to dict if no error
+                plotData[k] = { # type: ignore
+                    'DF': df,
+                    'F' : v['F'],
+                    'Alpha': v['CI']['Alpha'],
+                }
+            except Exception:
+                plotData['Error'].append(k)
+        #endregion ----------------------------------------------> Plot & Menu
+
+        return plotData
+    #---
+
 #     def ConfigureDataLimProt(self) -> dict:
 #         """Configure a Limited Proteolysis section
         

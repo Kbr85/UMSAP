@@ -1072,155 +1072,155 @@ class MenuToolDataPrep(BaseMenuMainResult):
 #---
 
 
-# class MenuFCEvolution(BaseMenu):
-#     """Menu for a log2FC evolution along relevant points."""
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+class MenuToolProtProfFCEvolution(BaseMenu):
+    """Menu for a log2FC evolution along relevant points."""
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.miShowAll = self.Append(-1, 'Show All', kind=wx.ITEM_CHECK)
-#         self.Check(self.miShowAll.GetId(), True)
-#         self.AppendSeparator()
-#         self.miSaveI = self.Append(-1, 'Export Image\tAlt+I')
-#         self.AppendSeparator()
-#         self.miZoomR = self.Append(-1, 'Reset Zoom\tAlt+Z')
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.miShowAll = self.Append(-1, 'Show All', kind=wx.ITEM_CHECK)
+        self.Check(self.miShowAll.GetId(), True)
+        self.AppendSeparator()
+        self.miSaveI = self.Append(-1, 'Export Image\tAlt+I')
+        self.AppendSeparator()
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tAlt+Z')
+        #endregion -----------------------------------------------> Menu Items
 
-#         #region ---------------------------------------------------> rKeyID
-#         rIDMap = {
-#             self.miSaveI.GetId()  : 'FCImage',
-#             self.miZoomR.GetId()  : 'FCZoom',
-#             self.miShowAll.GetId(): 'FCShowAll',
-#         }
-#         self.rIDMap = self.rIDMap | rIDMap
-#         #endregion ------------------------------------------------> rKeyID
+        #region ---------------------------------------------------> rKeyID
+        # rIDMap = {
+        #     self.miSaveI.GetId()  : 'FCImage',
+        #     self.miZoomR.GetId()  : 'FCZoom',
+        #     self.miShowAll.GetId(): 'FCShowAll',
+        # }
+        # self.rIDMap = self.rIDMap | rIDMap
+        #endregion ------------------------------------------------> rKeyID
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miShowAll)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miSaveI)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miZoomR)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-# #---
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miShowAll)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miSaveI)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miZoomR)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 
 
-# class MenuFiltersProtProf(BaseMenu):
-#     """Menu for the ProtProfPlot Filters"""
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+class MenuToolProtProfFilters(BaseMenu):
+    """Menu for the ProtProfPlot Filters"""
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.miFcChange = self.Append(-1, 'FC Evolution')
-#         self.miHypCurve = self.Append(-1, 'Hyperbolic Curve')
-#         self.miLog2FC   = self.Append(-1, 'Log2(FC)')
-#         self.miPValue   = self.Append(-1, 'P Value')
-#         self.miZScore   = self.Append(-1, 'Z Score')
-#         self.AppendSeparator()
-#         self.miApply = self.Append(-1, 'Apply All\tCtrl+Shift+A')
-#         self.miUpdate = self.Append(
-#             -1, 'Auto Apply\tCtrl-Shift+F', kind=wx.ITEM_CHECK)
-#         self.AppendSeparator()
-#         self.miRemoveAny  = self.Append(-1, 'Remove\tCtrl+Shift+R')
-#         self.miRemoveLast = self.Append(-1, 'Remove Last\tCtrl+Shift+Z')
-#         self.miRemoveAll  = self.Append(-1, 'Remove All\tCtrl+Shift+X')
-#         self.AppendSeparator()
-#         self.miCopy = self.Append(-1, 'Copy\tCtrl+Shift+C')
-#         self.miPaste = self.Append(-1, 'Paste\tCtrl+Shift+V')
-#         self.AppendSeparator()
-#         self.miSave = self.Append(-1, 'Save\tCtrl+Shift+S')
-#         self.miLoad = self.Append(-1, 'Load\tCtrl+Shift+L')
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.miFcChange = self.Append(-1, 'FC Evolution')
+        self.miHypCurve = self.Append(-1, 'Hyperbolic Curve')
+        self.miLog2FC   = self.Append(-1, 'Log2(FC)')
+        self.miPValue   = self.Append(-1, 'P Value')
+        self.miZScore   = self.Append(-1, 'Z Score')
+        self.AppendSeparator()
+        self.miApply = self.Append(-1, 'Apply All\tCtrl+Shift+A')
+        self.miUpdate = self.Append(
+            -1, 'Auto Apply\tCtrl-Shift+F', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
+        self.miRemoveAny  = self.Append(-1, 'Remove\tCtrl+Shift+R')
+        self.miRemoveLast = self.Append(-1, 'Remove Last\tCtrl+Shift+Z')
+        self.miRemoveAll  = self.Append(-1, 'Remove All\tCtrl+Shift+X')
+        self.AppendSeparator()
+        self.miCopy = self.Append(-1, 'Copy\tCtrl+Shift+C')
+        self.miPaste = self.Append(-1, 'Paste\tCtrl+Shift+V')
+        self.AppendSeparator()
+        self.miSave = self.Append(-1, 'Save\tCtrl+Shift+S')
+        self.miLoad = self.Append(-1, 'Load\tCtrl+Shift+L')
+        #endregion -----------------------------------------------> Menu Items
         
-#         #region ---------------------------------------------------> rKeyID
-#         rIDMap = {
-#             self.miFcChange.GetId():  mConfig.lFilFCEvol,
-#             self.miHypCurve.GetId():  mConfig.lFilHypCurve,
-#             self.miLog2FC.GetId():    mConfig.lFilFCLog,
-#             self.miPValue.GetId():    mConfig.lFilPVal,
-#             self.miZScore.GetId():    f'{mConfig.lFilZScore} F',
-#             self.miApply.GetId():     'Apply All',
-#             self.miRemoveLast.GetId():'Remove Last',
-#             self.miRemoveAny.GetId(): 'Remove Any',
-#             self.miRemoveAll.GetId(): 'Remove All',
-#             self.miCopy.GetId():      'Copy',
-#             self.miPaste.GetId():     'Paste',
-#             self.miSave.GetId():      'Save Filter',
-#             self.miLoad.GetId():      'Load Filter',
-#             self.miUpdate.GetId():    'AutoApplyFilter',
-#         }
-#         self.rIDMap = self.rIDMap | rIDMap
-#         #endregion ------------------------------------------------> rKeyID
+        #region ---------------------------------------------------> rKeyID
+        # rIDMap = {
+        #     self.miFcChange.GetId():  mConfig.lFilFCEvol,
+        #     self.miHypCurve.GetId():  mConfig.lFilHypCurve,
+        #     self.miLog2FC.GetId():    mConfig.lFilFCLog,
+        #     self.miPValue.GetId():    mConfig.lFilPVal,
+        #     self.miZScore.GetId():    f'{mConfig.lFilZScore} F',
+        #     self.miApply.GetId():     'Apply All',
+        #     self.miRemoveLast.GetId():'Remove Last',
+        #     self.miRemoveAny.GetId(): 'Remove Any',
+        #     self.miRemoveAll.GetId(): 'Remove All',
+        #     self.miCopy.GetId():      'Copy',
+        #     self.miPaste.GetId():     'Paste',
+        #     self.miSave.GetId():      'Save Filter',
+        #     self.miLoad.GetId():      'Load Filter',
+        #     self.miUpdate.GetId():    'AutoApplyFilter',
+        # }
+        # self.rIDMap = self.rIDMap | rIDMap
+        #endregion ------------------------------------------------> rKeyID
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miFcChange)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miHypCurve)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miLog2FC)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miPValue)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZScore)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miApply)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveLast)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveAny)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveAll)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miCopy)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miPaste)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSave)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miLoad)
-#         self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miUpdate)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-# #---
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miFcChange)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miHypCurve)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miLog2FC)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miPValue)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZScore)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miApply)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveLast)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveAny)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveAll)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miCopy)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miPaste)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSave)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miLoad)
+        # self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miUpdate)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 
 
-# class MenuLockPlotScale(BaseMenu):
-#     """Lock the plots scale to the selected option."""
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+class MenuToolProtProfLockPlotScale(BaseMenu):
+    """Lock the plots scale to the selected option."""
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.miNo      = self.Append(-1, 'No',         kind=wx.ITEM_RADIO)
-#         self.miDate    = self.Append(-1, 'Analysis',   kind=wx.ITEM_RADIO)
-#         self.miProject = self.Append(-1, 'Project',    kind=wx.ITEM_RADIO)
-#         self.miDate.Check()
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.miNo      = self.Append(-1, 'No',         kind=wx.ITEM_RADIO)
+        self.miDate    = self.Append(-1, 'Analysis',   kind=wx.ITEM_RADIO)
+        self.miProject = self.Append(-1, 'Project',    kind=wx.ITEM_RADIO)
+        self.miDate.Check()
+        #endregion -----------------------------------------------> Menu Items
 
-#         #region ------------------------------------------------------> nameID
-#         rIDMap = {
-#             self.miNo.GetId()     : 'No',
-#             self.miDate.GetId()   : 'Analysis',
-#             self.miProject.GetId(): 'Project',
-#         }
-#         self.rIDMap = self.rIDMap | rIDMap
-#         #------------------------------>
-#         rKeyMap = {
-#             self.miNo.GetId()     : 'mode',
-#             self.miDate.GetId()   : 'mode',
-#             self.miProject.GetId(): 'mode',
-#         }
-#         self.rKeyMap = self.rKeyMap | rKeyMap
-#         #endregion ---------------------------------------------------> nameID
+        #region ------------------------------------------------------> nameID
+        # rIDMap = {
+        #     self.miNo.GetId()     : 'No',
+        #     self.miDate.GetId()   : 'Analysis',
+        #     self.miProject.GetId(): 'Project',
+        # }
+        # self.rIDMap = self.rIDMap | rIDMap
+        # #------------------------------>
+        # rKeyMap = {
+        #     self.miNo.GetId()     : 'mode',
+        #     self.miDate.GetId()   : 'mode',
+        #     self.miProject.GetId(): 'mode',
+        # }
+        # self.rKeyMap = self.rKeyMap | rKeyMap
+        #endregion ---------------------------------------------------> nameID
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.miNo)
-#         self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.miDate)
-#         self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.miProject)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-# #---
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.miNo)
+        # self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.miDate)
+        # self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.miProject)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 
 
 # class MenuClearSelLimProt(BaseMenu):
@@ -1297,39 +1297,39 @@ class MenuToolDataPrep(BaseMenuMainResult):
 # #---
 
 
-# class MenuClearSelProtProf(BaseMenu):
-#     """Clear the selection in a ProtProf Res Window."""
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+class MenuToolProtProfClearSel(BaseMenu):
+    """Clear the selection in a ProtProf Res Window."""
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.miLabel = self.Append(-1, 'Labels')
-#         self.miSel   = self.Append(-1, 'Selection')
-#         self.AppendSeparator()
-#         self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.miLabel = self.Append(-1, 'Labels')
+        self.miSel   = self.Append(-1, 'Selection')
+        self.AppendSeparator()
+        self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
+        #endregion -----------------------------------------------> Menu Items
 
-#         #region ---------------------------------------------------> 
-#         rIDMap = {
-#             self.miLabel.GetId(): 'Labels',
-#             self.miSel.GetId(): 'Selection',
-#             self.miNoSel.GetId() : 'AllClear',
-#         }
-#         self.rIDMap = self.rIDMap | rIDMap
-#         #endregion ------------------------------------------------> 
+        #region ---------------------------------------------------> 
+        # rIDMap = {
+        #     self.miLabel.GetId(): 'Labels',
+        #     self.miSel.GetId(): 'Selection',
+        #     self.miNoSel.GetId() : 'AllClear',
+        # }
+        # self.rIDMap = self.rIDMap | rIDMap
+        #endregion ------------------------------------------------> 
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miLabel)
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSel)
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoSel)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-# #---
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miLabel)
+        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSel)
+        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoSel)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 
 
 # class MenuToolAA(BaseMenuFurtherAnalysis):
@@ -1710,46 +1710,46 @@ class MenuToolDataPrep(BaseMenuMainResult):
 # #---
 
 
-# class MenuVolcanoPlotColorScheme(BaseMenu):
-#     """Menu for Color Scheme in the Volcano Plot menu of ProtProf result window.
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self):
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+class MenuToolProtProfVolcanoPlotColorScheme(BaseMenu):
+    """Menu for Color Scheme in the Volcano Plot menu of ProtProf result window.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.miHypCurve = self.Append(
-#             -1, mConfig.klToolVolPlotColorHypCurve, kind=wx.ITEM_RADIO)
-#         self.miPLogFC   = self.Append(
-#             -1, mConfig.klToolVolPlotColorPFC, kind=wx.ITEM_RADIO)
-#         self.miZScore   = self.Append(
-#             -1, mConfig.klToolVolPlotColorZ, kind=wx.ITEM_RADIO)
-#         self.AppendSeparator()
-#         self.miConfigure= self.Append(-1, 'Configure')
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.miHypCurve = self.Append(
+            -1, 'Hyperbolic Curve', kind=wx.ITEM_RADIO)
+        self.miPLogFC   = self.Append(
+            -1, 'P - Log2FC', kind=wx.ITEM_RADIO)
+        self.miZScore   = self.Append(
+            -1, 'Z Score', kind=wx.ITEM_RADIO)
+        self.AppendSeparator()
+        self.miConfigure= self.Append(-1, 'Configure')
+        #endregion -----------------------------------------------> Menu Items
         
-#         #region ------------------------------------------------------> rKeyID
-#         rIDMap = {
-#             self.miHypCurve.GetId() : mConfig.klToolVolPlotColorHypCurve,
-#             self.miPLogFC.GetId  () : mConfig.klToolVolPlotColorPFC,
-#             self.miZScore.GetId  () : mConfig.klToolVolPlotColorZ,
-#             self.miConfigure.GetId(): mConfig.klToolVolPlotColorConf,
-#         }
-#         self.rIDMap = self.rIDMap | rIDMap
-#         #endregion ---------------------------------------------------> rKeyID
+        #region ------------------------------------------------------> rKeyID
+        # rIDMap = {
+        #     self.miHypCurve.GetId() : mConfig.klToolVolPlotColorHypCurve,
+        #     self.miPLogFC.GetId  () : mConfig.klToolVolPlotColorPFC,
+        #     self.miZScore.GetId  () : mConfig.klToolVolPlotColorZ,
+        #     self.miConfigure.GetId(): mConfig.klToolVolPlotColorConf,
+        # }
+        # self.rIDMap = self.rIDMap | rIDMap
+        #endregion ---------------------------------------------------> rKeyID
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miHypCurve)
-#         self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miPLogFC)
-#         self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miZScore)
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miConfigure)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-# #---
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miHypCurve)
+        # self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miPLogFC)
+        # self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miZScore)
+        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miConfigure)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 #endregion -------------------------------------------------> Individual menus
 
 
@@ -1945,68 +1945,68 @@ class MenuToolDataPrep(BaseMenuMainResult):
 # #---
 
 
-# class MixMenuVolcanoPlot(BaseMenu):
-#     """Menu for a Volcano Plot.
+class MenuToolProtProfVolcanoPlot(BaseMenu):
+    """Menu for a Volcano Plot.
 
-#         Parameters
-#         ----------
-#         menuData: dict
-#             Available conditions and relevant point for the analysis. 
-#             See Notes for more details.
-#         ciDate : str
-#             Initially selected date
+        Parameters
+        ----------
+        menuData: dict
+            Available conditions and relevant point for the analysis. 
+            See Notes for more details.
+        ciDate : str
+            Initially selected date
 
-#         Attributes
-#         ----------
-#         rCond : list of wx.MenuItems
-#             Available conditions as wx.MenuItems for the current date.
-#         rCrp : dict
-#             Available conditions and relevant point for the analysis. 
-#             See Notes for more details.
-#         rRp : list of wx.MenuItems
-#             Available relevant points as wx.MenuItems for the current date.
-#         rSep : wx.MenuItem
-#             Separator between conditions and relevant points.
+        Attributes
+        ----------
+        rCond : list of wx.MenuItems
+            Available conditions as wx.MenuItems for the current date.
+        rCrp : dict
+            Available conditions and relevant point for the analysis. 
+            See Notes for more details.
+        rRp : list of wx.MenuItems
+            Available relevant points as wx.MenuItems for the current date.
+        rSep : wx.MenuItem
+            Separator between conditions and relevant points.
 
-#         Notes
-#         -----
-#         rCrp has the following structure:
-#             {
-#                     'date1' : {
-#                         'C' : [List of conditions as str],
-#                         'RP': [List of relevant points as str],
-#                     }
-#                     .......
-#                     'dateN' : {}
-#             }
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData: dict, ciDate: str) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.rCrp = menuData
-#         #------------------------------> Cond - RP separator. To remove/create.
-#         self.rSep = None
-#         #------------------------------> 
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+        Notes
+        -----
+        rCrp has the following structure:
+            {
+                    'date1' : {
+                        'C' : [List of conditions as str],
+                        'RP': [List of relevant points as str],
+                    }
+                    .......
+                    'dateN' : {}
+            }
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData: dict, ciDate: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rCrp = menuData
+        #------------------------------> Cond - RP separator. To remove/create.
+        self.rSep = None
+        #------------------------------> 
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.rCond, self.rRp = self.SetCondRPMenuItems(ciDate)
-#         self.AppendSeparator()
-#         self.miLabelProt = self.Append(-1, 'Add Label\tShift+A')
-#         self.miLabelPick = self.Append(
-#             -1, 'Pick Label\tShift+P', kind=wx.ITEM_CHECK)
-#         self.AppendSeparator()
-#         self.mColor = MenuVolcanoPlotColorScheme()
-#         self.AppendSubMenu(self.mColor, 'Color Scheme')
-#         self.AppendSeparator()
-#         self.miPCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
-#         self.AppendSeparator()
-#         self.miSaveI = self.Append(-1, 'Export Image\tShift+I')
-#         self.AppendSeparator()
-#         self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.rCond, self.rRp = self.SetCondRPMenuItems(ciDate)
+        self.AppendSeparator()
+        self.miLabelProt = self.Append(-1, 'Add Label\tShift+A')
+        self.miLabelPick = self.Append(
+            -1, 'Pick Label\tShift+P', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
+        self.mColor = MenuToolProtProfVolcanoPlotColorScheme()
+        self.AppendSubMenu(self.mColor, 'Color Scheme')
+        self.AppendSeparator()
+        self.miPCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
+        self.miSaveI = self.Append(-1, 'Export Image\tShift+I')
+        self.AppendSeparator()
+        self.miZoomR = self.Append(-1, 'Reset Zoom\tShift+Z')
+        #endregion -----------------------------------------------> Menu Items
 
 #         #region ---------------------------------------------------> rKeyID
 #         rIDMap = {
@@ -2031,68 +2031,57 @@ class MenuToolDataPrep(BaseMenuMainResult):
 #         self.Bind(wx.EVT_MENU, self.OnMethod,        source=self.miSaveI)
 #         self.Bind(wx.EVT_MENU, self.OnMethod,        source=self.miZoomR)
 #         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region --------------------------------------------------> Manage methods
-#     def SetCondRPMenuItems(
-#         self, tDate: str
-#         ) -> tuple[list[wx.MenuItem], list[wx.MenuItem]]:
-#         """Set the menu items for conditions and relevant points as defined for 
-#             the current analysis date.
+    #region --------------------------------------------------> Manage methods
+    def SetCondRPMenuItems(
+        self, tDate: str
+        ) -> tuple[list[wx.MenuItem], list[wx.MenuItem]]:
+        """Set the menu items for conditions and relevant points as defined for 
+            the current analysis date.
 
-#             Parameters
-#             ----------
-#             tDate : str
-#                 Currently selected date.
+            Parameters
+            ----------
+            tDate : str
+                Currently selected date.
 
-#             Returns
-#             -------
-#             tuple:
-#                 First element is the condition menu items and second relevant 
-#                 point menu items.
-#         """
-#         #region -------------------------------------------------> Empty lists
-#         cond = []
-#         rp = []
-#         #endregion ----------------------------------------------> Empty lists
+            Returns
+            -------
+            tuple:
+                First element is the condition menu items and second relevant 
+                point menu items.
+        """
+        #region -------------------------------------------------> Empty lists
+        cond = []
+        rp = []
+        #endregion ----------------------------------------------> Empty lists
 
-#         #region ------------------------------------------------> Add elements
-#         #------------------------------> Conditions
-#         for c in self.rCrp[tDate]['C']:
-#             #------------------------------> 
-#             cond.append(wx.MenuItem(None, -1, text=c, kind=wx.ITEM_RADIO))
-#             #------------------------------> 
-#             self.Bind(wx.EVT_MENU, self.OnMethodKey, source=cond[-1])
-#             #------------------------------> 
-#             self.rIDMap[cond[-1].GetId()] = mConfig.klToolVolPlot
-#             self.rKeyMap[cond[-1].GetId()] = 'cond'
-#         #------------------------------> Relevant Points
-#         for t in self.rCrp[tDate]['RP']:
-#             #------------------------------> 
-#             rp.append(wx.MenuItem(None, -1, text=t, kind=wx.ITEM_RADIO))
-#             #------------------------------> 
-#             self.Bind(wx.EVT_MENU, self.OnMethodKey, source=rp[-1])
-#             #------------------------------> 
-#             self.rIDMap[rp[-1].GetId()] = mConfig.klToolVolPlot
-#             self.rKeyMap[rp[-1].GetId()] = 'rp'
-#         #endregion ---------------------------------------------> Add elements
+        #region ------------------------------------------------> Add elements
+        #------------------------------> Conditions
+        for c in self.rCrp[tDate]['C']:
+            #------------------------------> 
+            cond.append(self.AppendRadioItem(-1, c))
+            #------------------------------> 
+            self.Bind(wx.EVT_MENU, self.OnMethodKey, source=cond[-1])
+            #------------------------------> 
+            self.rIDMap[cond[-1].GetId()] = mConfig.kwToolVolPlot
+            self.rKeyMap[cond[-1].GetId()] = 'cond'
+        #------------------------------>
+        self.rSep = self.AppendSeparator()
+        #------------------------------> Relevant Points
+        for t in self.rCrp[tDate]['RP']:
+            #------------------------------> 
+            rp.append(self.AppendRadioItem(-1, t))
+            #------------------------------> 
+            self.Bind(wx.EVT_MENU, self.OnMethodKey, source=rp[-1])
+            #------------------------------> 
+            self.rIDMap[rp[-1].GetId()] = mConfig.kwToolVolPlot
+            self.rKeyMap[rp[-1].GetId()] = 'rp'
+        #endregion ---------------------------------------------> Add elements
 
-#         #region ---------------------------------------------------> Add items
-#         k = 0
-#         #------------------------------> Conditions
-#         for k,c in enumerate(cond):
-#             self.Insert(k,c)
-#         #------------------------------> Separator
-#         self.rSep = wx.MenuItem(None)
-#         self.Insert(k+1, self.rSep)
-#         #------------------------------> Relevant Points
-#         for j,t in enumerate(rp, k+2):
-#             self.Insert(j, t)
-#         #endregion ------------------------------------------------> Add items
-
-#         return (cond, rp)
-#     #---
+        return (cond, rp)
+    #---
 
 #     def UpdateCondRP(self, tDate: str, menuData: dict={}) -> bool:
 #         """Update the conditions and relevant points when date changes.
@@ -2133,8 +2122,8 @@ class MenuToolDataPrep(BaseMenuMainResult):
 
 #         return True
 #     #---
-#     #endregion -----------------------------------------------> Manage methods
-# #---
+    #endregion -----------------------------------------------> Manage methods
+#---
 
 
 # class MixMenuFurtherAnalysisTarProt(BaseMenu):
@@ -2208,61 +2197,61 @@ class MenuToolDataPrep(BaseMenuMainResult):
 # #---
 
 
-# class MixMenuToolProtProf(BaseMenuMainResult):
-#     """Tool menu for the Proteome Profiling Plot window.
-        
-#         Parameters
-#         ----------
-#         menuData: dict
-#             Data needed to build the menu.
-#             {
-#                 'MenuDate' : [List of dates as str],
-#                 'crp' : {
-#                     'date1' : {
-#                         'C' : [List of conditions as str],
-#                         'RP': [List of relevant points as str],
-#                     }
-#                     .......
-#                     'dateN'
-#                 }
-#             }    
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData: dict) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(menuData)
-#         #endregion --------------------------------------------> Initial Setup
+class MenuToolProtProf(BaseMenuMainResult):
+    """Tool menu for the Proteome Profiling Plot window.
 
-#         #region --------------------------------------------------> Menu Items
-#         self.mVolcano =  MixMenuVolcanoPlot(
-#                 self.cMenuData['crp'], self.rPlotDate[0].GetItemLabelText()
-#         )
-#         self.AppendSubMenu(self.mVolcano, 'Volcano Plot')
-#         self.AppendSeparator()
-#         #------------------------------> Relevant Points
-#         self.mFc = MenuFCEvolution()
-#         self.AppendSubMenu(self.mFc, 'FC Evolution')
-#         self.AppendSeparator()
-#         #------------------------------> Filter
-#         self.mFilter = MenuFiltersProtProf()
-#         self.AppendSubMenu(self.mFilter, 'Filters')
-#         self.AppendSeparator()
-#         #------------------------------> Lock scale
-#         self.mLockScale = MenuLockPlotScale()
-#         self.AppendSubMenu(self.mLockScale, 'Lock Plot Scale')
-#         self.AppendSeparator()
-#         #------------------------------> Clear Selection
-#         self.mClearSel = MenuClearSelProtProf()
-#         self.AppendSubMenu(self.mClearSel, 'Clear Selection')
-#         self.AppendSeparator()
-#         #------------------------------> 
-#         self.AddLastItems(False)
-#         #endregion -----------------------------------------------> Menu Items
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        Parameters
+        ----------
+        menuData: dict
+            Data needed to build the menu.
+            {
+                'MenuDate' : [List of dates as str],
+                'crp' : {
+                    'date1' : {
+                        'C' : [List of conditions as str],
+                        'RP': [List of relevant points as str],
+                    }
+                    .......
+                    'dateN'
+                }
+            }
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData: dict) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(menuData)
+        #endregion --------------------------------------------> Initial Setup
 
-#     #region ---------------------------------------------------> Class Methods
+        #region --------------------------------------------------> Menu Items
+        self.mVolcano =  MenuToolProtProfVolcanoPlot(
+                self.cMenuData['crp'], self.rPlotDate[0].GetItemLabelText()
+        )
+        self.AppendSubMenu(self.mVolcano, 'Volcano Plot')
+        self.AppendSeparator()
+        #------------------------------> Relevant Points
+        self.mFc = MenuToolProtProfFCEvolution()
+        self.AppendSubMenu(self.mFc, 'FC Evolution')
+        self.AppendSeparator()
+        #------------------------------> Filter
+        self.mFilter = MenuToolProtProfFilters()
+        self.AppendSubMenu(self.mFilter, 'Filters')
+        self.AppendSeparator()
+        #------------------------------> Lock scale
+        self.mLockScale = MenuToolProtProfLockPlotScale()
+        self.AppendSubMenu(self.mLockScale, 'Lock Plot Scale')
+        self.AppendSeparator()
+        #------------------------------> Clear Selection
+        self.mClearSel = MenuToolProtProfClearSel()
+        self.AppendSubMenu(self.mClearSel, 'Clear Selection')
+        self.AppendSeparator()
+        #------------------------------>
+        self.AddLastItems(False)
+        #endregion -----------------------------------------------> Menu Items
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class Methods
 #     def OnMethodKey(self, event):
 #         """Call the corresponding method in the window.
 
@@ -2329,8 +2318,8 @@ class MenuToolDataPrep(BaseMenuMainResult):
 
 #         return True
 #     #---
-#     #endregion ------------------------------------------------> Class Methods
-# #---
+    #endregion ------------------------------------------------> Class Methods
+#---
 #endregion --------------------------------------------------------> Mix menus
 
 
@@ -2382,7 +2371,7 @@ class MenuBarTool(MenuBarMain):
         mConfig.nwUMSAPControl : MenuToolFileControl,
         mConfig.nwCorrAPlot    : MenuToolCorrA,
         mConfig.nwCheckDataPrep: MenuToolDataPrep,
-        # mConfig.nwProtProf     : MixMenuToolProtProf,
+        mConfig.nwProtProf     : MenuToolProtProf,
         # mConfig.nwLimProt      : MixMenuToolLimProt,
         # mConfig.nwTarProt      : MixMenuToolTarProt,
         # mConfig.nwAAPlot       : MenuToolAA,

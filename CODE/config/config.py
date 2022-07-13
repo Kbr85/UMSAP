@@ -212,8 +212,8 @@ kwToolCorrACol  = 'ToolCorrA Select Column'
 # #------------------------------> Tool Menu for AA
 # klToolAAExp = 'AA'
 # klToolAAPos = 'Pos'
-# #------------------------------> Volcano Plot
-# klToolVolPlot              = 'Volcano Plot'
+#------------------------------> Volcano Plot
+kwToolVolPlot              = 'Volcano Plot CRP'
 # klToolVolPlotLabelPick     = 'Vol Plot Pick Label'
 # klToolVolPlotLabelProt     = 'Vol Plot Add Label'
 # klToolVolPlotSaveI         = 'Volcano Plot Save Image'
