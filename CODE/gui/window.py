@@ -24,8 +24,7 @@ from pathlib import Path
 from typing import Optional, Literal, Union
 
 import matplotlib as mpl
-from matplotlib.pyplot import get
-# import matplotlib.patches as mpatches
+import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 import requests
@@ -2474,7 +2473,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         """
         #region -----------------------------------------------> Update parent
         if self.rFromUMSAPFile:
-            self.cParent.UnCheckSection(self.cSection, self)
+            self.cParent.UnCheckSection(self.cSection, self) # type: ignore
         else:
             pass
         #endregion --------------------------------------------> Update parent
@@ -2622,7 +2621,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
             super().DupWin()
         else:
             WindowResDataPrep(
-                self.cParent,
+                self.cParent, # type: ignore
                 title    = self.cTitle,
                 tSection = self.tSection,
                 tDate    = self.tDate,
@@ -3087,7 +3086,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         rCI : dict
             CI dict for the current date.
         rCondC : str
-            Condiction currently selected.
+            Condition currently selected.
         rCorrP : bool
             Use corrected P values (True) or not (False). Default is False. 
         rData : dict
@@ -3095,7 +3094,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         rDate : list of str
             List of available dates in the section.
         rDateC : str
-            Currently seclected date.
+            Currently selected date.
         rDf : pd.DataFrame
             DF with the data currently display in the window.
         rFcXLabel : list of str
@@ -3118,7 +3117,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         rLog10alpha : float
             -log10(alpha) value to plot in the Volcano plot.
         rObj : UMSAPFile
-            Refernece to the UMSAPFile object.
+            Reference to the UMSAPFile object.
         rProtLine : matplotlib object
             Protein line drawn in the FC plot after selecting a protein in the
             wx.ListCtrl.
@@ -3200,8 +3199,9 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         'Vol': '{}-Vol.pdf',
 #         'FC' : '{}-Evol.pdf',
 #     }
-#     #------------------------------> Color
-#     cColor = config.color[cName]
+    cLCStyle = wx.LC_REPORT|wx.LC_SINGLE_SEL|wx.LC_VIRTUAL
+    #------------------------------> Color
+    cColor = mConfig.color[cName]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -3215,47 +3215,47 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         self.ReportPlotDataError()
         #------------------------------>
         self.cTitle       = f"{parent.cTitle} - {self.cSection}"
-#         self.rDf          = None
-#         self.rDateC       = self.rDate[0]
-#         self.rCondC       = cMenuData['crp'][self.rDate[0]]['C'][0]
-#         self.rRpC         = cMenuData['crp'][self.rDate[0]]['RP'][0]
-#         self.rGreenP      = None
-#         self.rCorrP       = False
-#         self.rShowAll     = True
-#         self.rAutoFilter  = False
-#         self.rT0          = 0.1
-#         self.rS0          = 1.0
-#         self.rZ           = 10.0
-#         self.rP           = self.rData[self.rDateC]['Alpha']
-#         self.rLog2FC      = 0.1
-#         self.rColor       = f'{config.klToolVolPlotColorHypCurve} Color'
+        self.rDf          = pd.DataFrame()
+        self.rDateC       = self.rDate[0]
+        self.rCondC       = menuData['crp'][self.rDate[0]]['C'][0]
+        self.rRpC         = menuData['crp'][self.rDate[0]]['RP'][0]
+        self.rGreenP      = None
+        self.rCorrP       = False
+        self.rShowAll     = True
+        self.rAutoFilter  = False
+        self.rT0          = 0.1
+        self.rS0          = 1.0
+        self.rZ           = 10.0
+        self.rP           = self.rData[self.rDateC]['Alpha']
+        self.rLog2FC      = 0.1
+        self.rColor       = 'Hyperbolic Curve Color'
 #         self.rHypCurve    = True
 #         self.rCI          = None
 #         self.rFcYMax      = None
 #         self.rFcYMin      = None
-#         self.rLockScale   = 'Analysis'
-#         self.rVXRange     = []
-#         self.rVYRange     = []
-#         self.rFcXRange    = []
-#         self.rFcYRange    = []
-#         self.rFcXLabel    = []
-#         self.rProtLine    = []
-#         self.rFilterList  = []
-#         self.rLabelProt   = []
-#         self.rLabelProtD  = {}
+        self.rLockScale   = 'Analysis'
+        self.rVXRange     = []
+        self.rVYRange     = []
+        self.rFcXRange    = []
+        self.rFcYRange    = []
+        self.rFcXLabel    = []
+        self.rProtLine    = []
+        self.rFilterList  = []
+        self.rLabelProt   = []
+        self.rLabelProtD  = {}
 #         self.rPickLabel   = False
-#         self.rVolLines    = [f'{config.klToolVolPlotColorHypCurve} Line']
+        self.rVolLines    = ['Hyperbolic Curve Line']
 #         #------------------------------> 
         super().__init__(parent, menuData=menuData)
-#         #------------------------------> Methods
-#         dKeyMethod = {
-#             #------------------------------> Set Range of Plots
-#             'No'          : self.OnLockScale,
-#             'Analysis'    : self.OnLockScale,
-#             'Project'     : self.OnLockScale,
-#             'No Set'      : self.SetRangeNo,
-#             'Analysis Set': self.SetRangeDate,
-#             'Project Set' : self.SetRangeProject,
+        #------------------------------> Methods
+        dKeyMethod = {
+            #------------------------------> Set Range of Plots
+            'No'          : self.LockScale,
+            'Analysis'    : self.LockScale,
+            'Project'     : self.LockScale,
+            'No Set'      : self.SetRangeNo,
+            'Analysis Set': self.SetRangeDate,
+            'Project Set' : self.SetRangeProject,
 #             #------------------------------> 
 #             config.klToolGuiUpdate : self.UpdateDisplayedData,
 #             config.klToolVolPlot   : self.OnVolChange,
@@ -3268,13 +3268,13 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #             config.klToolVolPlotColorHypCurve: self.VolDraw,
 #             config.klToolVolPlotColorPFC     : self.VolDraw,
 #             config.klToolVolPlotColorZ       : self.VolDraw,
-#             f'{config.klToolVolPlotColorHypCurve} Color': self.GetColorHyCurve,
-#             f'{config.klToolVolPlotColorPFC} Color'     : self.GetColorPLog2FC,
-#             f'{config.klToolVolPlotColorZ} Color'       : self.GetColorZScore,
-#             #------------------------------> Lines
-#             f'{config.klToolVolPlotColorHypCurve} Line': self.DrawLinesHypCurve,
-#             f'{config.klToolVolPlotColorPFC} Line'     : self.DrawLinesPLog2FC,
-#             f'{config.klToolVolPlotColorZ} Line'       : self.DrawLinesZScore,
+            'Hyperbolic Curve Color': self.GetColorHyCurve,
+            'P - Log2FC Color'      : self.GetColorPLog2FC,
+            'Z Score Color'         : self.GetColorZScore,
+            #------------------------------> Lines
+            'Hyperbolic Curve Line': self.DrawLinesHypCurve,
+            'P - Log2FC Line'      : self.DrawLinesPLog2FC,
+            'Z Score Line'         : self.DrawLinesZScore,
 #             #------------------------------> Filter methods
 #             config.lFilFCEvol  : self.Filter_FCChange,
 #             config.lFilHypCurve: self.Filter_HCurve,
@@ -3306,8 +3306,8 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #             config.klToolVolPlotColorConf : self.OnVolColorScheme,
 #             #------------------------------> 
 #             'FCShowAll' : self.OnFCChange,
-#         }
-#         self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
 #         #endregion --------------------------------------------> Initial Setup
 
 #         #region --------------------------------------------------------> Bind
@@ -3315,7 +3315,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
-#         self.UpdateDisplayedData()
+        self.UpdateResultWindow()
         self.WinPos()
         self.Show()
         #endregion ------------------------------------------> Window position
@@ -3442,425 +3442,425 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         return True
     #---
 
-#     def FillListCtrl(self) -> bool:
-#         """Update the protein list for the given analysis.
-    
-#             Returns
-#             -------
-#             bool
+    def FillListCtrl(self) -> bool:
+        """Update the protein list for the given analysis.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Entries are read from self.rDf.
+        """
+        #region --------------------------------------------------> Delete old
+        self.wLC.wLCS.wLC.DeleteAllItems()
+        #endregion -----------------------------------------------> Delete old
+
+        #region ----------------------------------------------------> Get Data
+        data = self.rDf.iloc[:,0:2]
+        data.insert(0, 'kbr', self.rDf.index.values.tolist())
+        data = data.astype(str)
+        data = data.values.tolist()
+        #endregion -------------------------------------------------> Get Data
+
+        #region ------------------------------------------> Set in wx.ListCtrl
+        self.wLC.wLCS.wLC.SetNewData(data)
+        #endregion ---------------------------------------> Set in wx.ListCtrl
+
+        #region ---------------------------------------> Update Protein Number
+        self._mgr.GetPane(self.wLC).Caption(f'{self.cTList} ({len(data)})')
+        self._mgr.Update()
+        #endregion ------------------------------------> Update Protein Number
+
+        return True
+    #---
+
+    def GetFCMinMax(self) -> list[list[float]]:
+        """Get the maximum and minimum values of FC for each studied RP, 
+            excluding the CI.
+
+            Returns
+            -------
+            list of list of float
+                First list is the list with the maximum values.
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #------------------------------> First point is a control with 0 log2FC
+        ymax = [0.0]
+        ymin = [0.0]
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Fill List
+        for c in self.rCI['RP']:
+            #------------------------------> 
+            df = self.rData[self.rDateC]['DF'].loc[:,idx[:,c,'FC']]
+            #------------------------------> 
+            ymax.append(df.max().max())
+            ymin.append(df.min().min())
+        #endregion ------------------------------------------------> Fill List
+
+        return [ymax, ymin]
+    #---
+
+    def VolDraw(self, colorLabel: str='') -> bool:
+        """Create/Update the Volcano plot.
+
+            Parameters
+            ----------
+            colorLabel: str
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        self.rColor = f'{colorLabel} Color' if colorLabel else self.rColor
+        #endregion ------------------------------------------------> 
+
+        #region --------------------------------------------------------> Axes
+        self.VolSetAxis()
+        #endregion -----------------------------------------------------> Axes
+
+        #region --------------------------------------------------------> Data
+        #------------------------------> X
+        x = self.rDf.loc[:,[(self.rCondC,self.rRpC,'FC')]]
+        #------------------------------> Y
+        if self.rCorrP:
+            y = -np.log10(
+                self.rDf.loc[:,[(self.rCondC,self.rRpC,'Pc')]])
+        else:
+            y = -np.log10(
+                self.rDf.loc[:,[(self.rCondC,self.rRpC,'P')]])
+        #------------------------------> Color
+        color = self.dKeyMethod[self.rColor](x, y) # type: ignore
+        #endregion -----------------------------------------------------> Data
+
+        #region --------------------------------------------------------> Plot
+        self.wPlots.dPlot['Vol'].rAxes.scatter(
+            x, y, 
+            alpha     = 1,
+            edgecolor = 'black',
+            linewidth = 1,
+            color     = color,
+            picker    = True,
+        )
+        #------------------------------>
+        for l in self.rVolLines:
+            self.dKeyMethod[l]()
+        #------------------------------> Lock Scale or Set it manually
+        if self.rVXRange and self.rVYRange:
+            self.wPlots.dPlot['Vol'].rAxes.set_xlim(*self.rVXRange)
+            self.wPlots.dPlot['Vol'].rAxes.set_ylim(*self.rVYRange)
+        else:
+            self.VolXYRange(x.squeeze(), y.squeeze())
+        #------------------------------> Zoom level
+        self.wPlots.dPlot['Vol'].ZoomResetSetValues()
+        #------------------------------> Show
+        self.wPlots.dPlot['Vol'].rCanvas.draw()
+        #endregion -----------------------------------------------------> Plot
+
+        #region -------------------------------------> Update selected protein
+        self.DrawGreenPoint()
+        #endregion ----------------------------------> Update selected protein
+
+        #region ---------------------------------------------------> 
+        self.AddProtLabel()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def VolSetAxis(self) -> bool:
+        """Set the axis in the volcano plot.
+
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> Clear
+        self.wPlots.dPlot['Vol'].rAxes.clear()
+        #------------------------------> 
+        self.wPlots.dPlot['Vol'].rAxes.grid(True, linestyle=":")
+        #------------------------------> Labels
+        self.wPlots.dPlot['Vol'].rAxes.set_title(
+            f'C: {self.rCondC} RP: {self.rRpC}')
+        self.wPlots.dPlot['Vol'].rAxes.set_xlabel(
+            "log$_{2}$[Fold Change]", fontweight="bold")
+        self.wPlots.dPlot['Vol'].rAxes.set_ylabel(
+            "-log$_{10}$[P values]", fontweight="bold")
+        #------------------------------>
+        return True
+    #---
+
+    def DrawGreenPoint(self) -> bool:
+        """Draw the green dot in the Volcano plot after selecting a protein in
+            the wx.ListCtrl.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Index
+        if (idx := self.wLC.wLCS.wLC.GetFirstSelected()) < 0:
+            #------------------------------> 
+            if self.rGreenP is None:
+                pass
+            else:
+                self.rGreenP.remove()
+                self.rGreenP = None
+            #------------------------------> 
+            return False
+        else:
+            pass
+        #endregion ----------------------------------------------------> Index
+
+        #region ------------------------------------------------> Volcano Plot
+        #------------------------------> Get new data
+        x = self.rDf.at[self.rDf.index[idx], (self.rCondC, self.rRpC, 'FC')]
+        #-------------->
+        if self.rCorrP:
+            y = -np.log10(
+                self.rDf.at[self.rDf.index[idx], (self.rCondC, self.rRpC, 'Pc')])
+        else:
+            y = -np.log10(
+                self.rDf.at[self.rDf.index[idx], (self.rCondC, self.rRpC, 'P')])
+        #------------------------------> Remove old point
+        if self.rGreenP is None:
+            pass
+        else:
+            self.rGreenP.remove()
+        #------------------------------> Add new one
+        self.rGreenP = self.wPlots.dPlot['Vol'].rAxes.scatter(
+            x, y, 
+            alpha     = 1,
+            edgecolor = 'black',
+            linewidth = 1,
+            color     = self.cColor['VolSel'],
+        )
+        #------------------------------> Draw
+        self.wPlots.dPlot['Vol'].rCanvas.draw()
+        #endregion ---------------------------------------------> Volcano Plot
+
+        return True
+    #---
+
+    def AddProtLabel(self, draw=False, checkKey=False):
+        """
+
+            Parameters
+            ----------
             
-#             Notes
-#             -----
-#             Entries are read from self.rDf
-#         """
-#         #region --------------------------------------------------> Delete old
-#         self.wLC.wLCS.lc.DeleteAllItems()
-#         #endregion -----------------------------------------------> Delete old
-        
-#         #region ----------------------------------------------------> Get Data
-#         data = self.rDf.iloc[:,0:2]
-#         data.insert(0, 'kbr', self.rDf.index.values.tolist())
-#         data = data.astype(str)
-#         data = data.values.tolist()
-#         #endregion -------------------------------------------------> Get Data
-        
-#         #region ------------------------------------------> Set in wx.ListCtrl
-#         self.wLC.wLCS.lc.SetNewData(data)
-#         #endregion ---------------------------------------> Set in wx.ListCtrl
-        
-#         #region ---------------------------------------> Update Protein Number
-#         self._mgr.GetPane(self.wLC).Caption(f'{self.cTList} ({len(data)})')
-#         self._mgr.Update()
-#         #endregion ------------------------------------> Update Protein Number
-        
-#         return True
-#     #---
-    
-#     def GetFCMinMax(self) -> list[list[float]]:
-#         """Get the maximum and minimum values of FC for each studied RP, 
-#             excluding the CI.
-    
-#             Returns
-#             -------
-#             list of list of float
-#                 First list is the list with the maximum values.
-#         """
-#         #region ---------------------------------------------------> Variables
-#         idx = pd.IndexSlice
-#         #------------------------------> First point is a control with 0 log2FC
-#         ymax = [0.0]
-#         ymin = [0.0]
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ---------------------------------------------------> Fill List
-#         for c in self.rCI['RP']:
-#             #------------------------------> 
-#             df = self.rData[self.rDateC]['DF'].loc[:,idx[:,c,'FC']]
-#             #------------------------------> 
-#             ymax.append(df.max().max())
-#             ymin.append(df.min().min())
-#         #endregion ------------------------------------------------> Fill List
-        
-#         return [ymax, ymin]
-#     #---
-    
-#     def VolDraw(self, colorLabel: str='') -> bool:
-#         """Create/Update the Volcano plot.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         self.rColor = f'{colorLabel} Color' if colorLabel else self.rColor
-#         #endregion ------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if self.rLabelProt:
+            pass
+        else:
+            if draw:
+                self.wPlots.dPlot['Vol'].rCanvas.draw()
+            else:
+                pass
+            return True
+        #endregion ------------------------------------------------> 
 
-#         #region --------------------------------------------------------> Axes
-#         self.VolSetAxis()
-#         #endregion -----------------------------------------------------> Axes
+        #region ---------------------------------------------------> 
+        idx = pd.IndexSlice
+        fc = idx[(self.rCondC, self.rRpC, 'FC')]
+        if self.rCorrP:
+            p = idx[(self.rCondC, self.rRpC, 'Pc')]
+        else:
+            p = idx[(self.rCondC, self.rRpC, 'P')]
+        #------------------------------> 
+        dX = self.wPlots.dPlot['Vol'].rAxes.get_xlim()
+        dX = dX[1] - dX[0]
+        dX = dX * 0.002
         
-#         #region --------------------------------------------------------> Data
-#         #------------------------------> X
-#         x = self.rDf.loc[:,[(self.rCondC,self.rRpC,'FC')]]
-#         #------------------------------> Y
-#         if self.rCorrP:
-#             y = -np.log10(
-#                 self.rDf.loc[:,[(self.rCondC,self.rRpC,'Pc')]])
-#         else:
-#             y = -np.log10(
-#                 self.rDf.loc[:,[(self.rCondC,self.rRpC,'P')]])
-#         #------------------------------> Color
-#         color = self.dKeyMethod[self.rColor](x, y)
-#         #endregion -----------------------------------------------------> Data
+        dY = self.wPlots.dPlot['Vol'].rAxes.get_ylim()
+        dY = dY[1] - dY[0]
+        dY = dY * 0.002
+        #endregion ------------------------------------------------> 
 
-#         #region --------------------------------------------------------> Plot
-#         self.wPlots.dPlot['Vol'].axes.scatter(
-#             x, y, 
-#             alpha     = 1,
-#             edgecolor = 'black',
-#             linewidth = 1,
-#             color     = color,
-#             picker    = True,
-#         )
+        #region --------------------------------------------------->
+        for prot in self.rLabelProt:
+            tIdx = int(prot[0])
+            tKey = prot[0]
+            #------------------------------> 
+            if tKey in self.rLabelProtD.keys() and checkKey:
+                continue
+            else:
+                pass
+            #------------------------------> 
+            try:
+                x,y  = self.rDf.loc[tIdx,[fc,p]].to_numpy().tolist() 
+            except KeyError:
+                continue
+            y = -np.log10(y)
+            #------------------------------> 
+            if x > 0:
+                self.rLabelProtD[tKey] = self.wPlots.dPlot['Vol'].rAxes.text(
+                    x+dX,y-dY, prot[1], va='top')
+            else:
+                self.rLabelProtD[tKey] = self.wPlots.dPlot['Vol'].rAxes.text(
+                    x+dX,y-dY, prot[1], ha='right',va='top')
+        #------------------------------> 
+        self.wPlots.dPlot['Vol'].rCanvas.draw()
+        #endregion ------------------------------------------------> 
 
-#         for l in self.rVolLines:
-#             self.dKeyMethod[l]()
-#         #------------------------------> Lock Scale or Set it manually
-#         if self.rVXRange and self.rVYRange:
-#             self.wPlots.dPlot['Vol'].axes.set_xlim(*self.rVXRange)
-#             self.wPlots.dPlot['Vol'].axes.set_ylim(*self.rVYRange)
-#         else:
-#             self.VolXYRange(x.squeeze(), y.squeeze())
-#         #------------------------------> Zoom level
-#         self.wPlots.dPlot['Vol'].ZoomResetSetValues()
-#         #------------------------------> Show
-#         self.wPlots.dPlot['Vol'].canvas.draw()
-#         #endregion -----------------------------------------------------> Plot
+        return True
+    #---
 
-#         #region -------------------------------------> Update selected protein
-#         self.DrawGreenPoint()
-#         #endregion ----------------------------------> Update selected protein
+    def FCDraw(self) -> bool:
+        """Draw Fold Change Evolution plot.
 
-#         #region ---------------------------------------------------> 
-#         self.AddProtLabel()
-#         #endregion ------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Axis
+        self.FCSetAxis()
+        #endregion -----------------------------------------------------> Axis
 
-#         return True
-#     #---
-    
-#     def VolSetAxis(self) -> bool:
-#         """Set the axis in the volcano plot.
+        #region ----------------------------------------------------> Plot All
+        #------------------------------> 
+        if self.rShowAll:
+            #------------------------------> 
+            color = self.cColor['FCAll']
+            x = list(range(0,len(self.rFcYMin)))
+            #------------------------------> 
+            self.wPlots.dPlot['FC'].rAxes.plot(self.rFcYMax, color=color)
+            self.wPlots.dPlot['FC'].rAxes.plot(self.rFcYMin, color=color)
+            #------------------------------> 
+            self.wPlots.dPlot['FC'].rAxes.fill_between(
+                x, self.rFcYMax, self.rFcYMin, color=color, alpha=0.2)
+        else:
+            pass
+        #------------------------------> Lock Scale
+        if self.rFcXRange and self.rFcYRange:
+            self.wPlots.dPlot['FC'].rAxes.set_xlim(*self.rFcXRange)
+            self.wPlots.dPlot['FC'].rAxes.set_ylim(*self.rFcYRange)
+        else:
+            xRange, yRange = self.GetFcXYRange(self.rDateC)
+            self.wPlots.dPlot['FC'].rAxes.set_xlim(*xRange)
+            self.wPlots.dPlot['FC'].rAxes.set_ylim(*yRange)
+        #------------------------------> Zoom level
+        self.wPlots.dPlot['FC'].ZoomResetSetValues()
+        #------------------------------> 
+        self.wPlots.dPlot['FC'].rCanvas.draw()
+        #endregion -------------------------------------------------> Plot All
         
-#             Returns
-#             -------
-#             bool
-#         """
-#         #------------------------------> Clear
-#         self.wPlots.dPlot['Vol'].axes.clear()
-#         #------------------------------> 
-#         self.wPlots.dPlot['Vol'].axes.grid(True, linestyle=":")
-#         #------------------------------> Labels
-#         self.wPlots.dPlot['Vol'].axes.set_title(
-#             f'C: {self.rCondC} RP: {self.rRpC}')
-#         self.wPlots.dPlot['Vol'].axes.set_xlabel(
-#             "log$_{2}$[Fold Change]", fontweight="bold")
-#         self.wPlots.dPlot['Vol'].axes.set_ylabel(
-#             "-log$_{10}$[P values]", fontweight="bold")
-#         #------------------------------>
-#         return True
-#     #---
-    
-#     def DrawGreenPoint(self) -> bool:
-#         """Draw the green dot in the Volcano plot after selecting a protein in
-#             the wx.ListCtrl.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------------> Index
-#         if (idx := self.wLC.wLCS.lc.GetFirstSelected()) < 0:
-#             #------------------------------> 
-#             if self.rGreenP is None:
-#                 pass
-#             else:
-#                 self.rGreenP.remove()
-#                 self.rGreenP = None
-#             #------------------------------> 
-#             return False
-#         else:
-#             pass
-#         #endregion ----------------------------------------------------> Index
+        #region ----------------------------------------------> Plot Prot Line
+        self.DrawProtLine()
+        #endregion -------------------------------------------> Plot Prot Line
         
-#         #region ------------------------------------------------> Volcano Plot
-#         #------------------------------> Get new data
-#         x = self.rDf.at[self.rDf.index[idx], (self.rCondC, self.rRpC, 'FC')]
-        
-#         if self.rCorrP:
-#             y = -np.log10(
-#                 self.rDf.at[self.rDf.index[idx], (self.rCondC, self.rRpC, 'Pc')])
-#         else:
-#             y = -np.log10(
-#                 self.rDf.at[self.rDf.index[idx], (self.rCondC, self.rRpC, 'P')])
-#         #------------------------------> Remove old point
-#         if self.rGreenP is None:
-#             pass
-#         else:
-#             self.rGreenP.remove()
-#         #------------------------------> Add new one
-#         self.rGreenP = self.wPlots.dPlot['Vol'].axes.scatter(
-#             x, y, 
-#             alpha     = 1,
-#             edgecolor = 'black',
-#             linewidth = 1,
-#             color     = self.cColor['VolSel'],
-#         )
-#         #------------------------------> Draw
-#         self.wPlots.dPlot['Vol'].canvas.draw()
-#         #endregion ---------------------------------------------> Volcano Plot
-        
-#         return True
-#     #---
-    
-#     def AddProtLabel(self, draw=False, checkKey=False):
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         if self.rLabelProt:
-#             pass
-#         else:
-#             if draw:
-#                 self.wPlots.dPlot['Vol'].canvas.draw()
-#             else:
-#                 pass
-#             return True
-#         #endregion ------------------------------------------------> 
-    
-#         #region ---------------------------------------------------> 
-#         idx = pd.IndexSlice
-#         fc = idx[(self.rCondC, self.rRpC, 'FC')]
-#         if self.rCorrP:
-#             p = idx[(self.rCondC, self.rRpC, 'Pc')]
-#         else:
-#             p = idx[(self.rCondC, self.rRpC, 'P')]
-#         #------------------------------> 
-#         dX = self.wPlots.dPlot['Vol'].axes.get_xlim()
-#         dX = dX[1] - dX[0]
-#         dX = dX * 0.002
-        
-#         dY = self.wPlots.dPlot['Vol'].axes.get_ylim()
-#         dY = dY[1] - dY[0]
-#         dY = dY * 0.002
-#         #endregion ------------------------------------------------> 
+        return True
+    #---
 
-#         #region --------------------------------------------------->
-#         for prot in self.rLabelProt:
-#             tIdx = int(prot[0])
-#             tKey = prot[0]
-#             #------------------------------> 
-#             if tKey in self.rLabelProtD.keys() and checkKey:
-#                 continue
-#             else:
-#                 pass
-#             #------------------------------> 
-#             try:
-#                 x,y  = self.rDf.loc[tIdx,[fc,p]].to_numpy().tolist() 
-#             except KeyError:
-#                 continue
-#             y = -np.log10(y)
-#             #------------------------------> 
-#             if x > 0:
-#                 self.rLabelProtD[tKey] = self.wPlots.dPlot['Vol'].axes.text(
-#                     x+dX,y-dY, prot[1], va='top')
-#             else:
-#                 self.rLabelProtD[tKey] = self.wPlots.dPlot['Vol'].axes.text(
-#                     x+dX,y-dY, prot[1], ha='right',va='top')
-#         #------------------------------> 
-#         self.wPlots.dPlot['Vol'].canvas.draw()
-#         #endregion ------------------------------------------------> 
+    def FCSetAxis(self) -> bool:
+        """Set the axis in the FC plot.
 
-#         return True
-#     #---
-    
-#     def FCDraw(self) -> bool:
-#         """Draw Fold Change Evolution plot.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------------> Axis
-#         self.FCSetAxis()
-#         #endregion -----------------------------------------------------> Axis
-        
-#         #region ----------------------------------------------------> Plot All
-#         #------------------------------> 
-#         if self.rShowAll:
-#             #------------------------------> 
-#             color = self.cColor['FCAll']
-#             x = list(range(0,len(self.rFcYMin)))
-#             #------------------------------> 
-#             self.wPlots.dPlot['FC'].axes.plot(self.rFcYMax, color=color)
-#             self.wPlots.dPlot['FC'].axes.plot(self.rFcYMin, color=color)
-#             #------------------------------> 
-#             self.wPlots.dPlot['FC'].axes.fill_between(
-#                 x, self.rFcYMax, self.rFcYMin, color=color, alpha=0.2)
-#         else:
-#             pass
-#         #------------------------------> Lock Scale
-#         if self.rFcXRange and self.rFcYRange:
-#             self.wPlots.dPlot['FC'].axes.set_xlim(*self.rFcXRange)
-#             self.wPlots.dPlot['FC'].axes.set_ylim(*self.rFcYRange)
-#         else:
-#             xRange, yRange = self.GetFCXYRange(self.rDateC)
-#             self.wPlots.dPlot['FC'].axes.set_xlim(*xRange)
-#             self.wPlots.dPlot['FC'].axes.set_ylim(*yRange)
-#         #------------------------------> Zoom level
-#         self.wPlots.dPlot['FC'].ZoomResetSetValues()
-#         #------------------------------> 
-#         self.wPlots.dPlot['FC'].canvas.draw()
-#         #endregion -------------------------------------------------> Plot All
-        
-#         #region ----------------------------------------------> Plot Prot Line
-#         self.DrawProtLine()
-#         #endregion -------------------------------------------> Plot Prot Line
-        
-#         return True
-#     #---
-    
-#     def FCSetAxis(self) -> bool:
-#         """Set the axis in the FC plot.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------------> Clear
-#         self.wPlots.dPlot['FC'].axes.clear()
-#         #endregion ----------------------------------------------------> Clear
-        
-#         #region ------------------------------------------------------> Labels
-#         self.wPlots.dPlot['FC'].axes.grid(True, linestyle=":")
-#         self.wPlots.dPlot['FC'].axes.set_xlabel(
-#             'Relevant Points', fontweight="bold")
-#         self.wPlots.dPlot['FC'].axes.set_ylabel(
-#             "log$_{2}$[Fold Change]", fontweight="bold")
-#         #endregion ---------------------------------------------------> Labels
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Clear
+        self.wPlots.dPlot['FC'].rAxes.clear()
+        #endregion ----------------------------------------------------> Clear
 
-#         #region ---------------------------------------------------> X - Axis
-#         self.wPlots.dPlot['FC'].axes.set_xticks(
-#             range(0, len(self.rFcXLabel), 1))
-#         self.wPlots.dPlot['FC'].axes.set_xticklabels(self.rFcXLabel)
-#         #endregion ------------------------------------------------> X - Axis
-        
-#         return True
-#     #---
+        #region ------------------------------------------------------> Labels
+        self.wPlots.dPlot['FC'].rAxes.grid(True, linestyle=":")
+        self.wPlots.dPlot['FC'].rAxes.set_xlabel(
+            'Relevant Points', fontweight="bold")
+        self.wPlots.dPlot['FC'].rAxes.set_ylabel(
+            "log$_{2}$[Fold Change]", fontweight="bold")
+        #endregion ---------------------------------------------------> Labels
+
+        #region ---------------------------------------------------> X - Axis
+        self.wPlots.dPlot['FC'].rAxes.set_xticks(
+            range(0, len(self.rFcXLabel), 1))
+        self.wPlots.dPlot['FC'].rAxes.set_xticklabels(self.rFcXLabel)
+        #endregion ------------------------------------------------> X - Axis
+
+        return True
+    #---
     
-#     def DrawProtLine(self) -> bool:
-#         """Draw the protein line in the FC plot after selecting a protein in the
-#             wx.ListCtrl.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------------> Index
-#         if (idxl := self.wLC.wLCS.lc.GetFirstSelected()) < 0:
-#             #------------------------------> 
-#             if not self.rProtLine:
-#                 pass
-#             else:
-#                 #------------------------------> 
-#                 for k in self.rProtLine:
-#                     k[0].remove()
-#                 #------------------------------> 
-#                 self.rProtLine = []
-#             #------------------------------> 
-#             return False
-#         else:
-#             pass
-#         #endregion ----------------------------------------------------> Index
-        
-#         #region --------------------------------------------> Remove Old Lines
-#         #------------------------------> 
-#         for k in self.rProtLine:
-#             k.remove()
-#         #------------------------------> 
-#         self.rProtLine = []
-#         legend = []
-#         #endregion -----------------------------------------> Remove Old Lines
-        
-#         #region -----------------------------------------------------> FC Plot
-#         #------------------------------> Variables
-#         idx = pd.IndexSlice
-#         colorN = len(self.cColor['FCLines'])
-#         x = list(range(0, len(self.rCI['RP'])+1))
-#         #------------------------------> 
-#         for k,c in enumerate(self.rCI['Cond']):
-#             #------------------------------> FC values
-#             y = self.rDf.loc[self.rDf.index[[idxl]],idx[c,:,'FC']]
-#             y = [0.0] + y.values.tolist()[0]
-#             #------------------------------> Errors
-#             yError = self.rDf.loc[self.rDf.index[[idxl]],idx[c,:,'CI']]
-#             yError = [0] + yError.values.tolist()[0]
-#             #------------------------------> Colors
-#             color = self.cColor['FCLines'][k%colorN]
-#             #------------------------------> Plot line
-#             self.rProtLine.append(
-#                 self.wPlots.dPlot['FC'].axes.errorbar(
-#                     x, y, yerr=yError, color=color, fmt='o-', capsize=5
-#             ))
-#             #------------------------------> Legend
-#             legend.append(mpatches.Patch(color=color, label=c))
-#         #endregion --------------------------------------------------> FC Plot
-        
-#         #region -------------------------------------------------------> Title
-#         self.wPlots.dPlot['FC'].axes.set_title(f'Protein {idxl}')
-#         #endregion ----------------------------------------------------> Title
-        
-#         #region ------------------------------------------------------> Legend
-#         self.wPlots.dPlot['FC'].axes.legend(handles=legend, loc='upper left')
-#         #endregion ---------------------------------------------------> Legend
-        
-#         #region --------------------------------------------------------> Draw
-#         self.wPlots.dPlot['FC'].canvas.draw()
-#         #endregion -----------------------------------------------------> Draw
-        
-#         return True
-#     #---
-    
+    def DrawProtLine(self) -> bool:
+        """Draw the protein line in the FC plot after selecting a protein in the
+            wx.ListCtrl.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Index
+        if (idxL := self.wLC.wLCS.wLC.GetFirstSelected()) < 0:
+            #------------------------------>
+            if not self.rProtLine:
+                pass
+            else:
+                #------------------------------>
+                for k in self.rProtLine:
+                    k[0].remove()
+                #------------------------------>
+                self.rProtLine = []
+            #------------------------------>
+            return False
+        else:
+            pass
+        #endregion ----------------------------------------------------> Index
+
+        #region --------------------------------------------> Remove Old Lines
+        #------------------------------>
+        for k in self.rProtLine:
+            k.remove()
+        #------------------------------>
+        self.rProtLine = []
+        legend = []
+        #endregion -----------------------------------------> Remove Old Lines
+
+        #region -----------------------------------------------------> FC Plot
+        #------------------------------> Variables
+        idx = pd.IndexSlice
+        colorN = len(self.cColor['FCLines'])
+        x = list(range(0, len(self.rCI['RP'])+1))
+        #------------------------------> 
+        for k,c in enumerate(self.rCI['Cond']):
+            #------------------------------> FC values
+            y = self.rDf.loc[self.rDf.index[[idxL]],idx[c,:,'FC']]
+            y = [0.0] + y.values.tolist()[0]
+            #------------------------------> Errors
+            yError = self.rDf.loc[self.rDf.index[[idxL]],idx[c,:,'CI']]
+            yError = [0] + yError.values.tolist()[0]
+            #------------------------------> Colors
+            color = self.cColor['FCLines'][k%colorN]
+            #------------------------------> Plot line
+            self.rProtLine.append(
+                self.wPlots.dPlot['FC'].rAxes.errorbar(
+                    x, y, yerr=yError, color=color, fmt='o-', capsize=5
+            ))
+            #------------------------------> Legend
+            legend.append(mpatches.Patch(color=color, label=c))
+        #endregion --------------------------------------------------> FC Plot
+
+        #region -------------------------------------------------------> Title
+        self.wPlots.dPlot['FC'].rAxes.set_title(f'Protein {idxL}')
+        #endregion ----------------------------------------------------> Title
+
+        #region ------------------------------------------------------> Legend
+        self.wPlots.dPlot['FC'].rAxes.legend(handles=legend, loc='upper left')
+        #endregion ---------------------------------------------------> Legend
+
+        #region --------------------------------------------------------> Draw
+        self.wPlots.dPlot['FC'].rCanvas.draw()
+        #endregion -----------------------------------------------------> Draw
+
+        return True
+    #---
+
 #     def SetText(self) -> bool:
 #         """Set the text with information about the selected protein.
     
@@ -4171,383 +4171,357 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         
 #         return [dfo]
 #     #---
-    
-#     def SetRangeNo(self) -> bool:
-#         """Do nothing. Just to make the dict self.dKeyMethod work.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-        
-#         return True
-#     #---
-    
-#     def SetRangeDate(self):
-#         """Set Plot Range to the range in the given date.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Vol Range
-#         self.rVXRange, self.rVYRange = self.GetVolXYRange(self.rDateC)
-#         #endregion ------------------------------------------------> Vol Range
-        
-#         #region ----------------------------------------------------> FC Range
-#         self.rFcXRange, self.rFcYRange = self.GetFCXYRange(self.rDateC)
-#         #endregion -------------------------------------------------> FC Range
-        
-#         return True
-#     #---
-    
-#     def SetRangeProject(self):
-#         """Set Plot Range to the range in the given project.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         vXLim = 0
-#         vYMin = 0
-#         vYMax = 0
-#         fcXMin = 0
-#         fcXMax = 0
-#         fcYMin = 0
-#         fcYMax = 0 
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region -------------------------------------------------------> Range
-#         #------------------------------> Get larger range in project
-#         for date in self.rDate:
-#             #------------------------------> 
-#             x,y = self.GetVolXYRange(date)
-#             xFC, yFC = self.GetFCXYRange(date)
-#             #------------------------------> 
-#             vXLim = x[1] if x[1] >= vXLim else vXLim
-#             vYMin = y[0] if y[0] <= vYMin else vYMin
-#             vYMax = y[1] if y[1] >= vYMax else vYMax
-            
-#             fcXMin = xFC[0] if xFC[0] <= fcXMin else fcXMin
-#             fcXMax = xFC[1] if xFC[1] >= fcXMax else fcXMax
-#             fcYMin = yFC[0] if yFC[0] <= fcYMin else fcYMin
-#             fcYMax = yFC[1] if yFC[1] >= fcYMax else fcYMax
-#         #------------------------------> Set attributes
-#         self.rVXRange = [-vXLim, vXLim]
-#         self.rVYRange = [vYMin, vYMax]
-        
-#         self.rFcXRange = [fcXMin, fcXMax]
-#         self.rFcYRange = [fcYMin, fcYMax]
-#         #endregion ----------------------------------------------------> Range
-        
-#         return True
-#     #---
-    
-#     def GetVolXYRange(self, date: str) -> list[list[float]]:
-#         """Get the XY range for the volcano plot for the given date
-    
-#             Parameters
-#             ----------
-#             date : str
-#                 A valid date from the project
-    
-#             Returns
-#             -------
-#             list of list of floats
-#                 [xRange, yRange] e.g. [[-0.3, 0.3], [-0.1, 4.5]]
-#         """
-#         #region ---------------------------------------------------> Variables
-#         idx = pd.IndexSlice
-#         #------------------------------> 
-#         x = self.rData[date]['DF'].loc[:, idx[:,:,'FC']]
-#         #------------------------------> 
-#         if self.rCorrP:
-#             y = self.rData[date]['DF'].loc[:, idx[:,:,'Pc']]
-#         else:
-#             y = self.rData[date]['DF'].loc[:, idx[:,:,'P']]
-        
-#         y = -np.log10(y)
-#         #------------------------------> 
-#         xRange = []
-#         yRange = []
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ---------------------------------------------------> Get Range
-#         #------------------------------> X
-#         xmin = abs(x.min().min())
-#         xmax = abs(x.max().max())
-#         #-------------->  To make it symetric
-#         if xmin >= xmax:
-#             lim = xmin
-#         else:
-#             lim = xmax
-#         #--------------> 
-#         dm = 2 * lim * config.general['MatPlotMargin']
-#         #--------------> 
-#         xRange.append(-lim - dm)
-#         xRange.append(lim + dm)
-#         #------------------------------> Y
-#         ymax = y.max().max()
-#         #--------------> 
-#         dm = 2 * ymax * config.general['MatPlotMargin']
-#         #--------------> 
-#         yRange.append(0 - dm)
-#         yRange.append(ymax + dm)
-#         #endregion ------------------------------------------------> Get Range
-        
-#         return [xRange, yRange]
-#     #---
-    
-#     def GetFCXYRange(self, date: str) -> list[list[float]]:
-#         """Get the XY range for the FC plot, including the CI.
-    
-#             Parameters
-#             ----------
-#             date : str
-#                 The selected date.
-    
-#             Returns
-#             -------
-#             list of list of floats
-#                 [xRange, yRange] e.g. [[-0.3, 3.3], [-0.1, 4.5]]
-#         """
-#         #region ---------------------------------------------------> Variables
-#         idx = pd.IndexSlice
-#         #------------------------------> 
-#         y = self.rData[date]['DF'].loc[:, idx[:,:,'FC']]
-#         yCI = self.rData[date]['DF'].loc[:, idx[:,:,'CI']]
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ---------------------------------------------------> Get Range
-#         #------------------------------> X
-#         #--------------> 
-#         dm = len(self.rCI['RP']) * config.general['MatPlotMargin']
-#         #--------------> 
-#         xRange = [-dm, len(self.rCI['RP'])+dm]
-#         #------------------------------> Y
-#         #--------------> 
-#         yMax  = y.max().max()
-#         yMin  = y.min().min()
-#         ciMax = yCI.max().max()
-#         #--------------> 
-#         yminLim = yMin - ciMax
-#         ymaxLim = yMax + ciMax
-#         #--------------> 
-#         dm = (ymaxLim - yminLim) * config.general['MatPlotMargin']
-#         #--------------> 
-#         yRange = [yminLim - dm, ymaxLim + dm]
-#         #endregion ------------------------------------------------> Get Range
 
-#         return [xRange, yRange]
-#     #---
-    
-#     def VolXYRange(self, x, y) -> bool:
-#         """Get the XY range for the volcano plot based on the x,y values.
-    
-#             Parameters
-#             ----------
-#             x : pd.Series or list
-#                 Values for x.
-#             y : pd.Series or list
-#                 Values for y.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------> Check input
-#         if isinstance(x, pd.Series):
-#             if x.empty:
-#                 x = [-1, 1]
-#                 y = [-1, 1]
-#             elif x.shape[0] == 1:
-#                 x = [-x.iloc[0], x.iloc[0]]
-#                 y = [-y.iloc[0], y.iloc[0]]    
-#             else:
-#                 pass
-#         else:
-#             x = [-x, x]
-#             y = [-y, y]
-#         #endregion ----------------------------------------------> Check input
-        
-#         #region ---------------------------------------------------> Get Range
-#         xR = dtsStatistic.DataRange(x, margin=config.general['MatPlotMargin'])
-#         yR = dtsStatistic.DataRange(y, margin=config.general['MatPlotMargin'])
-#         #endregion ------------------------------------------------> Get Range
-        
-#         #region ---------------------------------------------------> Set Range
-#         self.wPlots.dPlot['Vol'].axes.set_xlim(*xR)
-#         self.wPlots.dPlot['Vol'].axes.set_ylim(*yR)
-#         #endregion ------------------------------------------------> Set Range
-        
-#         return True
-#     #---
-    
-#     def DrawLinesHypCurve(self):
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         lim = self.rT0*self.rS0
-#         xCP = np.arange(lim+0.001, 20, 0.001)
-#         yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-lim))
-#         self.wPlots.dPlot['Vol'].axes.plot(
-#             xCP,  yCP, color=self.cColor['CV'])
-#         self.wPlots.dPlot['Vol'].axes.plot(
-#             -xCP, yCP, color=self.cColor['CV'])
-#         return True
-#     #---
-    
-#     def DrawLinesPLog2FC(self):
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> Variables
-#         p = -np.log10(self.rP)
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ---------------------------------------------------> 
-#         self.wPlots.dPlot['Vol'].axes.hlines(
-#             p, -100, 100, color=self.cColor['CV'])
-#         self.wPlots.dPlot['Vol'].axes.vlines(
-#             self.rLog2FC, -100, 100, color=self.cColor['CV'])
-#         self.wPlots.dPlot['Vol'].axes.vlines(
-#             -self.rLog2FC, -100, 100, color=self.cColor['CV'])
-#         #endregion ------------------------------------------------> 
+    def SetRangeNo(self) -> bool:
+        """Do nothing. Just to make the dict self.dKeyMethod work.
 
-#         return True
-#     #---
-    
-#     def DrawLinesZScore(self):
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         return True
-#     #---
-    
-#     def GetColorHyCurve(self, *args) -> list:
-#         """Get color for Volcano plot when schems is Hyp Curve
-        
-#             Returns
-#             -------
-#             list
-#                 List with a color for each protein
-#         """
-#         #region ---------------------------------------------------> Variables
-#         color = []
-#         lim = self.rT0*self.rS0
-#         x = args[0]
-#         y = args[1]
-#         #endregion ------------------------------------------------> Variables
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
 
-#         #region -------------------------------------------------------> Color
-#         for k,v in enumerate(x.values):
-#             if v < -lim:
-#                 if abs((abs(v)*self.rT0)/(abs(v)-lim)) < y.values[k]:
-#                     color.append(self.cColor['Vol'][0])
-#                 else:
-#                     color.append(self.cColor['Vol'][1])
-#             elif v > lim:
-#                 if abs((abs(v)*self.rT0)/(abs(v)-lim)) < y.values[k]:
-#                     color.append(self.cColor['Vol'][2])
-#                 else:
-#                     color.append(self.cColor['Vol'][1])
-#             else:
-#                 color.append(self.cColor['Vol'][1])
-#         #endregion ----------------------------------------------------> Color
-        
-#         #region ---------------------------------------------------> 
-#         self.rVolLines = [f'{config.klToolVolPlotColorHypCurve} Line']
-#         #endregion ------------------------------------------------> 
+    def SetRangeDate(self):
+        """Set Plot Range to the range in the given date.
 
-#         return color
-#     #---
-    
-#     def GetColorZScore(self, *args) -> list:
-#         """Get the color by z value
-        
-#             Returns
-#             -------
-#             list
-#                 List of colors
-#         """
-#         #region ---------------------------------------------------> Variables
-#         zVal = stats.norm.ppf(1.0-(self.rZ/100.0))
-#         #------------------------------> 
-#         idx = pd.IndexSlice
-#         col = idx[self.rCondC,self.rRpC,'FCz']
-#         val = self.rDf.loc[:,col]
-#         #------------------------------> 
-#         cond = [val < -zVal, val > zVal]
-#         choice = [self.cColor['Vol'][0], self.cColor['Vol'][2]]
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ---------------------------------------------------> 
-#         self.rVolLines = [f'{config.klToolVolPlotColorZ} Line']
-#         #endregion ------------------------------------------------> 
-        
-#         return np.select(cond, choice, default=self.cColor['Vol'][1])
-#     #---
-    
-#     def GetColorPLog2FC(self, *args) -> list:
-#         """Get the color by P - Log2FC
-        
-#             Returns
-#             -------
-#             list
-#                 List of colors
-#         """
-#         #region --------------------------------------------------------> 
-#         idx = pd.IndexSlice
-#         colP = idx[self.rCondC, self.rRpC,'P']
-#         valP = self.rDf.loc[:,colP]
-#         colF = idx[self.rCondC, self.rRpC,'FC']
-#         valF = self.rDf.loc[:,colF]
-#         cond = [(valP < self.rP) & (valF < -self.rLog2FC),
-#                 (valP < self.rP) & (valF > self.rLog2FC),]
-#         choice = [self.cColor['Vol'][0], self.cColor['Vol'][2]]
-#         #endregion -----------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Vol Range
+        self.rVXRange, self.rVYRange = self.GetVolXYRange(self.rDateC)
+        #endregion ------------------------------------------------> Vol Range
 
-#         #region ---------------------------------------------------> 
-#         self.rVolLines = [f'{config.klToolVolPlotColorPFC} Line']
-#         #endregion ------------------------------------------------> 
-        
-#         return np.select(cond, choice, default=self.cColor['Vol'][1])
-#     #---
-    
+        #region ----------------------------------------------------> FC Range
+        self.rFcXRange, self.rFcYRange = self.GetFcXYRange(self.rDateC)
+        #endregion -------------------------------------------------> FC Range
+
+        return True
+    #---
+
+    def SetRangeProject(self):
+        """Set Plot Range to the range in the given project.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        vXLim = 0
+        vYMin = 0
+        vYMax = 0
+        fcXMin = 0
+        fcXMax = 0
+        fcYMin = 0
+        fcYMax = 0 
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------------> Range
+        #------------------------------> Get larger range in project
+        for date in self.rDate:
+            #------------------------------>
+            x,y = self.GetVolXYRange(date)
+            xFC, yFC = self.GetFcXYRange(date)
+            #------------------------------>
+            vXLim = x[1] if x[1] >= vXLim else vXLim
+            vYMin = y[0] if y[0] <= vYMin else vYMin
+            vYMax = y[1] if y[1] >= vYMax else vYMax
+            #------------------------------>
+            fcXMin = xFC[0] if xFC[0] <= fcXMin else fcXMin
+            fcXMax = xFC[1] if xFC[1] >= fcXMax else fcXMax
+            fcYMin = yFC[0] if yFC[0] <= fcYMin else fcYMin
+            fcYMax = yFC[1] if yFC[1] >= fcYMax else fcYMax
+        #------------------------------> Set attributes
+        self.rVXRange = [-vXLim, vXLim]
+        self.rVYRange = [vYMin, vYMax]
+        #------------------------------>
+        self.rFcXRange = [fcXMin, fcXMax]
+        self.rFcYRange = [fcYMin, fcYMax]
+        #endregion ----------------------------------------------------> Range
+
+        return True
+    #---
+
+    def GetVolXYRange(self, date: str) -> list[list[float]]:
+        """Get the XY range for the volcano plot for the given date.
+
+            Parameters
+            ----------
+            date : str
+                A valid date from the project.
+
+            Returns
+            -------
+            list of list of floats
+                [xRange, yRange] e.g. [[-0.3, 0.3], [-0.1, 4.5]]
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #------------------------------> 
+        x = self.rData[date]['DF'].loc[:, idx[:,:,'FC']]
+        #------------------------------> 
+        if self.rCorrP:
+            y = self.rData[date]['DF'].loc[:, idx[:,:,'Pc']]
+        else:
+            y = self.rData[date]['DF'].loc[:, idx[:,:,'P']]
+        #------------------------------>
+        y = -np.log10(y)
+        #------------------------------>
+        xRange = []
+        yRange = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Get Range
+        #------------------------------> X
+        xmin = abs(x.min().min())
+        xmax = abs(x.max().max())
+        #-------------->  To make it symmetric
+        if xmin >= xmax:
+            lim = xmin
+        else:
+            lim = xmax
+        #--------------> 
+        dm = 2 * lim * mConfig.general['MatPlotMargin']
+        #--------------> 
+        xRange.append(-lim - dm)
+        xRange.append(lim + dm)
+        #------------------------------> Y
+        ymax = y.max().max()
+        #--------------> 
+        dm = 2 * ymax * mConfig.general['MatPlotMargin']
+        #--------------> 
+        yRange.append(0 - dm)
+        yRange.append(ymax + dm)
+        #endregion ------------------------------------------------> Get Range
+
+        return [xRange, yRange]
+    #---
+
+    def GetFcXYRange(self, date: str) -> list[list[float]]:
+        """Get the XY range for the FC plot, including the CI.
+
+            Parameters
+            ----------
+            date : str
+                The selected date.
+
+            Returns
+            -------
+            list of list of floats
+                [xRange, yRange] e.g. [[-0.3, 3.3], [-0.1, 4.5]]
+        """
+        #region ---------------------------------------------------> Variables
+        idx = pd.IndexSlice
+        #------------------------------> 
+        y = self.rData[date]['DF'].loc[:, idx[:,:,'FC']]
+        yCI = self.rData[date]['DF'].loc[:, idx[:,:,'CI']]
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Get Range
+        #------------------------------> X
+        dm = len(self.rCI['RP']) * mConfig.general['MatPlotMargin']
+        #--------------> 
+        xRange = [-dm, len(self.rCI['RP'])+dm]
+        #------------------------------> Y
+        #-------------->
+        yMax  = y.max().max()
+        yMin  = y.min().min()
+        ciMax = yCI.max().max()
+        #-------------->
+        yminLim = yMin - ciMax
+        ymaxLim = yMax + ciMax
+        #-------------->
+        dm = (ymaxLim - yminLim) * mConfig.general['MatPlotMargin']
+        #-------------->
+        yRange = [yminLim - dm, ymaxLim + dm]
+        #endregion ------------------------------------------------> Get Range
+
+        return [xRange, yRange]
+    #---
+
+    def VolXYRange(self, x, y) -> bool:
+        """Get the XY range for the volcano plot based on the x,y values.
+
+            Parameters
+            ----------
+            x : pd.Series or list
+                Values for x.
+            y : pd.Series or list
+                Values for y.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------> Check input
+        if isinstance(x, pd.Series):
+            if x.empty:
+                x = [-1, 1]
+                y = [-1, 1]
+            elif x.shape[0] == 1:
+                x = [-x.iloc[0], x.iloc[0]]
+                y = [-y.iloc[0], y.iloc[0]]
+            else:
+                pass
+        else:
+            x = [-x, x]
+            y = [-y, y]
+        #endregion ----------------------------------------------> Check input
+
+        #region ---------------------------------------------------> Get Range
+        xR = mStatistic.DataRange(x, margin=mConfig.general['MatPlotMargin'])
+        yR = mStatistic.DataRange(y, margin=mConfig.general['MatPlotMargin'])
+        #endregion ------------------------------------------------> Get Range
+
+        #region ---------------------------------------------------> Set Range
+        self.wPlots.dPlot['Vol'].rAxes.set_xlim(*xR)
+        self.wPlots.dPlot['Vol'].rAxes.set_ylim(*yR)
+        #endregion ------------------------------------------------> Set Range
+
+        return True
+    #---
+
+    def DrawLinesHypCurve(self) -> bool:
+        """
+
+            Returns
+            -------
+            bool
+        """
+        lim = self.rT0*self.rS0
+        xCP = np.arange(lim+0.001, 20, 0.001)
+        yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-lim))
+        self.wPlots.dPlot['Vol'].rAxes.plot(
+            xCP,  yCP, color=self.cColor['CV'])
+        self.wPlots.dPlot['Vol'].rAxes.plot(
+            -xCP, yCP, color=self.cColor['CV'])
+        return True
+    #---
+
+    def DrawLinesPLog2FC(self) -> bool:
+        """
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        p = -np.log10(self.rP)
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        self.wPlots.dPlot['Vol'].rAxes.hlines(
+            p, -100, 100, color=self.cColor['CV'])
+        self.wPlots.dPlot['Vol'].rAxes.vlines(
+            self.rLog2FC, -100, 100, color=self.cColor['CV'])
+        self.wPlots.dPlot['Vol'].rAxes.vlines(
+            -self.rLog2FC, -100, 100, color=self.cColor['CV'])
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def DrawLinesZScore(self) -> bool:
+        """
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def GetColorHyCurve(self, *args) -> list:
+        """Get color for Volcano plot when schemes is Hyp Curve.
+
+            Returns
+            -------
+            list
+                List with a color for each protein.
+        """
+        #region ---------------------------------------------------> Variables
+        color = []
+        lim = self.rT0*self.rS0
+        x = args[0]
+        y = args[1]
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------------> Color
+        for k,v in enumerate(x.values):
+            if v < -lim:
+                if abs((abs(v)*self.rT0)/(abs(v)-lim)) < y.values[k]:
+                    color.append(self.cColor['Vol'][0])
+                else:
+                    color.append(self.cColor['Vol'][1])
+            elif v > lim:
+                if abs((abs(v)*self.rT0)/(abs(v)-lim)) < y.values[k]:
+                    color.append(self.cColor['Vol'][2])
+                else:
+                    color.append(self.cColor['Vol'][1])
+            else:
+                color.append(self.cColor['Vol'][1])
+        #endregion ----------------------------------------------------> Color
+
+        #region ---------------------------------------------------> 
+        self.rVolLines = ['Hyperbolic Curve Line']
+        #endregion ------------------------------------------------> 
+
+        return color
+    #---
+
+    def GetColorZScore(self, *args) -> list:
+        """Get the color by z value.
+
+            Returns
+            -------
+            list
+                List of colors.
+        """
+        #region ---------------------------------------------------> Variables
+        zVal = stats.norm.ppf(1.0-(self.rZ/100.0))
+        #------------------------------> 
+        idx = pd.IndexSlice
+        col = idx[self.rCondC,self.rRpC,'FCz']
+        val = self.rDf.loc[:,col]
+        #------------------------------> 
+        cond = [val < -zVal, val > zVal]
+        choice = [self.cColor['Vol'][0], self.cColor['Vol'][2]]
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        self.rVolLines = ['Z Score Line']
+        #endregion ------------------------------------------------> 
+
+        return np.select(cond, choice, default=self.cColor['Vol'][1])
+    #---
+
+    def GetColorPLog2FC(self, *args) -> list:
+        """Get the color by P - Log2FC.
+
+            Returns
+            -------
+            list
+                List of colors
+        """
+        #region --------------------------------------------------------> 
+        idx = pd.IndexSlice
+        colP = idx[self.rCondC, self.rRpC,'P']
+        valP = self.rDf.loc[:,colP]
+        colF = idx[self.rCondC, self.rRpC,'FC']
+        valF = self.rDf.loc[:,colF]
+        cond = [(valP < self.rP) & (valF < -self.rLog2FC),
+                (valP < self.rP) & (valF > self.rLog2FC),]
+        choice = [self.cColor['Vol'][0], self.cColor['Vol'][2]]
+        #endregion -----------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.rVolLines = ['Z Score Line']
+        #endregion ------------------------------------------------> 
+
+        return np.select(cond, choice, default=self.cColor['Vol'][1])
+    #---
+
 #     def PickLabel(self, ind: list[int]) -> bool:
 #         """Show label for the picked protein.
     
@@ -4623,93 +4597,97 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         
 #         return True
 #     #---
-    #endregion -----------------------------------------------> Manage Methods
-    
-    #region ---------------------------------------------------> Event Methods
-#     def UpdateDisplayedData(
-#         self, tDate: Optional[str]=None, cond: Optional[str]=None, 
-#         rp: Optional[str]=None, corrP: Optional[bool]=None, 
-#         showAll: Optional[bool]=None, t0: Optional[float]=None, 
-#         s0: Optional[float]=None
-#         ) -> bool:
-#         """Configure window to update Volcano and FC plots when date changes.
-    
-#             Parameters
-#             ----------
-#             tDate : str
-#                 Selected date.
-#             cond : str
-#                 Selected condition
-#             rp : str
-#                 Selected relevant point
-#             corrP : bool
-#                 Use corrected P values (True) or not (False)
-#             showAll : bool
-#                 Show FC rnge of values or not.
-#             to: float
-#                 T0 value for the calculation of the hyperbolic curve
-#             so: float
-#                 S0 value for the calculation of the hyperbolic curve
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------> Update variables
-#         self.rDateC      = tDate if tDate is not None else self.rDateC
-#         self.rCondC      = cond if cond is not None else self.rCondC
-#         self.rRpC        = rp if rp is not None else self.rRpC
-#         self.rCorrP      = corrP if corrP is not None else self.rCorrP
-#         self.rShowAll    = showAll if showAll is not None else self.rShowAll
-#         self.rT0         = t0 if t0 is not None else self.rT0
-#         self.rS0         = s0 if s0 is not None else self.rS0
-#         self.rCI         = self.rObj.rData[self.cSection][self.rDateC]['CI']
-#         self.rDf         = self.rData[self.rDateC]['DF'].copy()
-#         self.rLabelProt  = [] if tDate is not None else self.rLabelProt
-#         self.rLabelProtD = {} if tDate is not None else self.rLabelProtD
-#         #endregion -----------------------------------------> Update variables
-        
-#         #region --------------------------------------------------> Update GUI
-#         if self.rAutoFilter:
-#             self.FilterApply(reset=False)
-#         else:
-#             pass
-#         #------------------------------> Clean & Reload Protein List
-#         self.FillListCtrl()
-#         #------------------------------> Clean text
-#         self.wText.SetValue('')
-#         #endregion -----------------------------------------------> Update GUI
-        
-#         #region -------------------------------------------> Update FC x label
-#         self.rFcXLabel = self.rCI['ControlL'] + self.rCI['RP']        
-#         #endregion ----------------------------------------> Update FC x label
-        
-#         #region ---------------------------------------------------> FC minmax
-#         self.rFcYMax, self.rFcYMin = self.GetFCMinMax()
-#         #endregion ------------------------------------------------> FC minmax
-        
-#         #region --------------------------------------------------> Lock Scale
-#         if self.rLockScale is not None:
-#             self.OnLockScale(self.rLockScale)
-#         else:
-#             pass
-#         #endregion -----------------------------------------------> Lock Scale
-        
-#         #region ---------------------------------------------------------> Vol
-#         self.VolDraw()
-#         #endregion ------------------------------------------------------> Vol
-        
-#         #region ----------------------------------------------------------> FC
-#         self.FCDraw()
-#         #endregion -------------------------------------------------------> FC
-        
-#         #region ------------------------------------------------------> Title
-#         self.PlotTitle()
-#         #endregion ---------------------------------------------------> Title
 
-#         return True
-#     #---
-    
+    def UpdateResultWindow(
+        self,
+        tDate: str='',
+        cond: str='', 
+        rp: str='',
+        corrP: Optional[bool]=None, 
+        showAll: Optional[bool]=None,
+        t0: Optional[float]=None, 
+        s0: Optional[float]=None
+        ) -> bool:
+        """Configure window to update Volcano and FC plots when date changes.
+
+            Parameters
+            ----------
+            tDate : str
+                Selected date.
+            cond : str
+                Selected condition.
+            rp : str
+                Selected relevant point.
+            corrP : bool
+                Use corrected P values (True) or not (False).
+            showAll : bool
+                Show FC range of values or not.
+            to: float
+                T0 value for the calculation of the hyperbolic curve.
+            so: float
+                S0 value for the calculation of the hyperbolic curve.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------> Update variables
+        self.rDateC      = tDate if tDate else self.rDateC
+        self.rCondC      = cond if cond else self.rCondC
+        self.rRpC        = rp if rp else self.rRpC
+        self.rCorrP      = corrP if corrP is not None else self.rCorrP
+        self.rShowAll    = showAll if showAll is not None else self.rShowAll
+        self.rT0         = t0 if t0 is not None else self.rT0
+        self.rS0         = s0 if s0 is not None else self.rS0
+        self.rCI         = self.rObj.rData[self.cSection][self.rDateC]['CI']
+        self.rDf         = self.rData[self.rDateC]['DF'].copy()
+        self.rLabelProt  = [] if tDate is not None else self.rLabelProt
+        self.rLabelProtD = {} if tDate is not None else self.rLabelProtD
+        #endregion -----------------------------------------> Update variables
+
+        #region --------------------------------------------------> Update GUI
+        if self.rAutoFilter:
+            self.FilterApply(reset=False)
+        else:
+            pass
+        #------------------------------> Clean & Reload Protein List
+        self.FillListCtrl()
+        #------------------------------> Clean text
+        self.wText.SetValue('')
+        #endregion -----------------------------------------------> Update GUI
+
+        #region -------------------------------------------> Update FC x label
+        self.rFcXLabel = self.rCI['ControlL'] + self.rCI['RP']        
+        #endregion ----------------------------------------> Update FC x label
+
+        #region ---------------------------------------------------> FC minMax
+        self.rFcYMax, self.rFcYMin = self.GetFCMinMax()
+        #endregion ------------------------------------------------> FC minMax
+
+        #region --------------------------------------------------> Lock Scale
+        if self.rLockScale:
+            self.LockScale(self.rLockScale)
+        else:
+            pass
+        #endregion -----------------------------------------------> Lock Scale
+
+        #region ---------------------------------------------------------> Vol
+        self.VolDraw()
+        #endregion ------------------------------------------------------> Vol
+
+        #region ----------------------------------------------------------> FC
+        self.FCDraw()
+        #endregion -------------------------------------------------------> FC
+
+        #region ------------------------------------------------------> Title
+        self.PlotTitle()
+        #endregion ---------------------------------------------------> Title
+
+        return True
+    #---
+    #endregion -----------------------------------------------> Manage Methods
+
+    #region ---------------------------------------------------> Event Methods
 #     def OnVolColorScheme(self) -> bool:
 #         """Adjust the color scheme for the proteins
     
@@ -5033,59 +5011,59 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         """
 #         return self.wPlots.dPlot['FC'].ZoomResetPlot()
 #     #---
-    
-#     def OnLockScale(self, mode: str, updatePlot: bool=True) -> bool:
-#         """Lock the scale of the volcano and FC plot.
-    
-#             Parameters
-#             ----------
-#             mode : str
-#                 One of No, Date, Project
-#             updatePlot : bool
-#                 Apply the new axis limit ot the plots (True) or not. 
-#                 Default is True.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------> Update Attr
-#         self.rLockScale = mode
-#         self.rVXRange   = []
-#         self.rVYRange   = []
-#         self.rFcXRange  = []
-#         self.rFcYRange  = []
-#         #endregion ----------------------------------------------> Update Attr
-        
-#         #region ---------------------------------------------------> Get Range
-#         self.dKeyMethod[f'{mode} Set']()
-#         #endregion ------------------------------------------------> Get Range
-        
-#         #region ---------------------------------------------------> Set Range
-#         if updatePlot:
-#             #------------------------------> Vol
-#             #--------------> 
-#             self.wPlots.dPlot['Vol'].axes.set_xlim(*self.rVXRange)
-#             self.wPlots.dPlot['Vol'].axes.set_ylim(*self.rVYRange)
-#             #--------------> 
-#             self.wPlots.dPlot['Vol'].canvas.draw()
-#             #--------------> 
-#             self.wPlots.dPlot['Vol'].ZoomResetSetValues()
-#             #------------------------------> FC
-#             #--------------> 
-#             self.wPlots.dPlot['FC'].axes.set_xlim(*self.rFcXRange)
-#             self.wPlots.dPlot['FC'].axes.set_ylim(*self.rFcYRange)
-#             #--------------> 
-#             self.wPlots.dPlot['FC'].canvas.draw()
-#             #--------------> 
-#             self.wPlots.dPlot['FC'].ZoomResetSetValues()
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Set Range
-        
-#         return True
-#     #---
-    
+
+    def LockScale(self, mode: str, updatePlot: bool=True) -> bool:
+        """Lock the scale of the volcano and FC plot.
+
+            Parameters
+            ----------
+            mode : str
+                One of No, Date, Project
+            updatePlot : bool
+                Apply the new axis limit ot the plots (True) or not. 
+                Default is True.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------> Update Attr
+        self.rLockScale = mode
+        self.rVXRange   = []
+        self.rVYRange   = []
+        self.rFcXRange  = []
+        self.rFcYRange  = []
+        #endregion ----------------------------------------------> Update Attr
+
+        #region ---------------------------------------------------> Get Range
+        self.dKeyMethod[f'{mode} Set']()
+        #endregion ------------------------------------------------> Get Range
+
+        #region ---------------------------------------------------> Set Range
+        if updatePlot:
+            #------------------------------> Vol
+            #--------------> 
+            self.wPlots.dPlot['Vol'].rAxes.set_xlim(*self.rVXRange)
+            self.wPlots.dPlot['Vol'].rAxes.set_ylim(*self.rVYRange)
+            #--------------> 
+            self.wPlots.dPlot['Vol'].rCanvas.draw()
+            #--------------> 
+            self.wPlots.dPlot['Vol'].ZoomResetSetValues()
+            #------------------------------> FC
+            #--------------> 
+            self.wPlots.dPlot['FC'].rAxes.set_xlim(*self.rFcXRange)
+            self.wPlots.dPlot['FC'].rAxes.set_ylim(*self.rFcYRange)
+            #--------------> 
+            self.wPlots.dPlot['FC'].rCanvas.draw()
+            #--------------> 
+            self.wPlots.dPlot['FC'].ZoomResetSetValues()
+        else:
+            pass
+        #endregion ------------------------------------------------> Set Range
+
+        return True
+    #---
+
 #     def OnAutoFilter(self, mode: bool) -> bool:
 #         """Auto apply filter when changing date.
     
@@ -5105,20 +5083,20 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         self.rAutoFilter = mode
 #         return True
 #     #---
-    
-#     def UpdateGUI(self) -> bool:
-#         """Updateh content of the wx.ListCtrl and Plots
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         self.FillListCtrl()
-#         self.VolDraw()
-#         self.FCDraw()
-#         return True
-#     #---
-    
+
+    def UpdateGUI(self) -> bool:
+        """Update content of the wx.ListCtrl and Plots
+
+            Returns
+            -------
+            bool
+        """
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
+        return True
+    #---
+
 #     def UpdateStatusBarFilterText(self) -> bool:
 #         """Update the filter list in the statusbar
         
@@ -5650,38 +5628,38 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         
 #         return True
 #     #---
-    
-#     def FilterApply(self, reset: bool=True) -> bool:
-#         """Apply all filter to the current date.
-        
-#             Parameters
-#             ----------
-#             reset : bool
-#                 Reset self.rDf. Default is True
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ----------------------------------------------------> Reset df
-#         if reset:
-#             self.rDf = self.rData[self.rDateC]['DF'].copy()
-#         else:
-#             pass
-#         #endregion -------------------------------------------------> Reset df
-        
-#         #region -----------------------------------------------> Apply Filters
-#         for k in self.rFilterList:
-#             self.dKeyMethod[k[0]](**k[1])
-#         #endregion --------------------------------------------> Apply Filters
-        
-#         #region --------------------------------------------------> Update GUI
-#         self.UpdateGUI()
-#         #endregion -----------------------------------------------> Update GUI
 
-#         return True
-#     #---
-    
+    def FilterApply(self, reset: bool=True) -> bool:
+        """Apply all filter to the current date.
+
+            Parameters
+            ----------
+            reset : bool
+                Reset self.rDf. Default is True.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Reset df
+        if reset:
+            self.rDf = self.rData[self.rDateC]['DF'].copy()
+        else:
+            pass
+        #endregion -------------------------------------------------> Reset df
+
+        #region -----------------------------------------------> Apply Filters
+        for k in self.rFilterList:
+            self.dKeyMethod[k[0]](**k[1])
+        #endregion --------------------------------------------> Apply Filters
+
+        #region --------------------------------------------------> Update GUI
+        self.UpdateGUI()
+        #endregion -----------------------------------------------> Update GUI
+
+        return True
+    #---
+
 #     def FilterRemoveAll(self) -> bool:
 #         """Remove all filter.
     
@@ -9961,36 +9939,36 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 
 #         return True
 #     #---
-    
-#     def FillListCtrl(self, tRes: list[int]) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         self.wLC.wLCS.lc.DeleteAllItems()
-#         #endregion ------------------------------------------------> 
-    
-#         #region ---------------------------------------------------> 
-#         data = []
-#         for k in tRes:
-#             data.append([str(k+1)])
-#         self.wLC.wLCS.lc.SetNewData(data)
-#         #endregion ------------------------------------------------> 
 
-#         return True
-#     #---
+    # def FillListCtrl(self, tRes: list[int]) -> bool:
+    #     """
     
+    #         Parameters
+    #         ----------
+            
+    
+    #         Returns
+    #         -------
+            
+    
+    #         Raise
+    #         -----
+            
+    #     """
+    #     #region ---------------------------------------------------> 
+    #     self.wLC.wLCS.wLC.DeleteAllItems()
+    #     #endregion ------------------------------------------------> 
+    
+    #     #region ---------------------------------------------------> 
+    #     data = []
+    #     for k in tRes:
+    #         data.append([str(k+1)])
+    #     self.wLC.wLCS.wLC.SetNewData(data)
+    #     #endregion ------------------------------------------------> 
+
+    #     return True
+    # #---
+
 #     def SetAxis(self) -> bool:
 #         """
     

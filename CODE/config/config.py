@@ -650,13 +650,13 @@ color = { # Colors for the app
             'NA': '#90EE90',
         },
     },
-#     nwProtProf : {
-#         'Vol'    : ['#ff3333', '#d3d3d3', '#3333ff'],
-#         'VolSel' : '#6ac653',
-#         'FCAll'  : '#d3d3d3',
-#         'FCLines': ['#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff'],
-#         'CV'     : 'gray',
-#     },
+    nwProtProf : {
+        'Vol'    : ['#ff3333', '#d3d3d3', '#3333ff'],
+        'VolSel' : '#6ac653',
+        'FCAll'  : '#d3d3d3',
+        'FCLines': ['#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff'],
+        'CV'     : 'gray',
+    },
 #     nwLimProt : {
 #         'Spot' : colorFragments,
 #     },
