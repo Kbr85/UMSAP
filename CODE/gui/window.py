@@ -3243,7 +3243,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         self.rFilterList  = []
         self.rLabelProt   = []
         self.rLabelProtD  = {}
-#         self.rPickLabel   = False
+        self.rPickLabel   = False
         self.rVolLines    = ['Hyperbolic Curve Line']
 #         #------------------------------> 
         super().__init__(parent, menuData=menuData)
@@ -3259,11 +3259,11 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #             #------------------------------> 
 #             config.klToolGuiUpdate : self.UpdateDisplayedData,
 #             config.klToolVolPlot   : self.OnVolChange,
-#             #------------------------------> Get DF for Text Intensities
-#             config.oControlTypeProtProf['OC']   : self.GetDF4TextInt_OC,
-#             config.oControlTypeProtProf['OCC']  : self.GetDF4TextInt_OCC,
-#             config.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
-#             config.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
+            #------------------------------> Get DF for Text Intensities
+            mConfig.oControlTypeProtProf['OC']   : self.GetDF4TextInt_OC,
+            mConfig.oControlTypeProtProf['OCC']  : self.GetDF4TextInt_OCC,
+            mConfig.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
+            mConfig.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
 #             #------------------------------> Colors
 #             config.klToolVolPlotColorHypCurve: self.VolDraw,
 #             config.klToolVolPlotColorPFC     : self.VolDraw,
@@ -3308,11 +3308,11 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #             'FCShowAll' : self.OnFCChange,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
-#         #endregion --------------------------------------------> Initial Setup
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------------> Bind
-#         self.wPlots.dPlot['Vol'].canvas.mpl_connect('pick_event', self.OnPick)
-#         #endregion -----------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
+        self.wPlots.dPlot['Vol'].rCanvas.mpl_connect('pick_event', self.OnPick)
+        #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
         self.UpdateResultWindow()
@@ -3861,316 +3861,312 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         return True
     #---
 
-#     def SetText(self) -> bool:
-#         """Set the text with information about the selected protein.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------------> Index
-#         if (idx := self.wLC.wLCS.lc.GetFirstSelected()) < 0:
-#             #------------------------------> 
-#             self.wText.Freeze()
-#             self.wText.SetValue('')
-#             self.wText.Thaw()
-#             #------------------------------> 
-#             return False
-#         else:
-#             pass
-#         #endregion ----------------------------------------------------> Index
-        
-#         #region ---------------------------------------------------> Add Text
-#         #------------------------------> Delete all
-#         self.Freeze()
-#         self.wText.SetValue('')
-#         #------------------------------> Protein ID
-#         number = self.wLC.wLCS.lc.GetItemText(idx, col=0)
-#         gene = self.wLC.wLCS.lc.GetItemText(idx, col=1)
-#         name = self.wLC.wLCS.lc.GetItemText(idx, col=2)
-#         self.wText.AppendText(
-#             f'--> Selected Protein:\n\n#: {number}, Gene: {gene}, '
-#             f'Protein ID: {name}\n\n'
-#         )
-#         #------------------------------> P and FC values
-#         self.wText.AppendText('--> P and Log2(FC) values:\n\n')
-#         self.wText.AppendText(self.GetDF4TextPFC(idx).to_string(index=False))
-#         self.wText.AppendText('\n\n')
-#         #------------------------------> Ave and st for intensity values
-#         self.wText.AppendText(
-#             '--> Intensity values after data preparation:\n\n')
-#         dfList = self.dKeyMethod[self.rCI['ControlT']](idx)
-#         for df in dfList:
-#             self.wText.AppendText(df.to_string(index=False))
-#             self.wText.AppendText('\n\n')
-#         #------------------------------> Go back to begining
-#         self.wText.SetInsertionPoint(0)
-#         self.Thaw()
-#         #endregion ------------------------------------------------> Add Text
-        
-#         return True
-#     #---
-    
-#     def GetDF4Text(
-#         self, col: list[str], rp: list[str], cond: list[str],
-#         ) -> pd.DataFrame:
-#         """Creates the empty dataframe to be used in GetDF4Text functions.
-    
-#             Parameters
-#             ----------
-#             col : list of str
-#                 Name of the columns in the df.
-#             rp : list of str
-#                 List of relevant points.
-#             cond : list of str
-#                 List of conditions.
-    
-#             Returns
-#             -------
-#             pd.DataFrame
-#         """
-#         #region ---------------------------------------------------> Variables
-#         nCol = len(col)
-#         idx = pd.IndexSlice
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region --------------------------------------------------> Multiindex
-#         #------------------------------> 
-#         a = ['']
-#         b = ['Conditions']
-#         #------------------------------> 
-#         for t in rp:
-#             a = a + nCol * [t]
-#             b = b + col
-#         #------------------------------> 
-#         mInd = pd.MultiIndex.from_arrays([a[:], b[:]])
-#         #endregion -----------------------------------------------> Multiindex
-        
-#         #region ----------------------------------------------------> Empty DF
-#         dfo = pd.DataFrame(columns=mInd, index=range(0,len(cond)))
-#         #endregion -------------------------------------------------> Empty DF
-        
-#         #region ----------------------------------------------------> Add Cond
-#         dfo.loc[:,idx[:,'Conditions']] = cond
-#         #endregion -------------------------------------------------> Add Cond
-        
-#         return dfo
-#     #---
-    
-#     def GetDF4TextPFC(self, pID: int) -> pd.DataFrame:
-#         """Get the dataframe to print the P and FC +/- CI values to the text.
-    
-#             Parameters
-#             ----------
-#             pID : int 
-#                 To select the protein in self.rDf
-            
-#             Returns
-#             -------
-#             pd.Dataframe
-#                      RP1            RPN
-#                      FC (CI)   P
-#                 Cond
-#                 C1   4.5 (0.3) 0.05 
-#                 CN
-#         """
-#         #region ----------------------------------------------------------> DF
-#         dfo = self.GetDF4Text(
-#             ['FC (CI)', 'P'], self.rCI['RP'], self.rCI['Cond'])
-#         #endregion -------------------------------------------------------> DF
-        
-#         #region --------------------------------------------------> Add Values
-#         for k,c in enumerate(self.rCI['Cond']):
-#             for t in self.rCI['RP']:
-#                 #------------------------------> Get Values
-#                 p = self.rDf.at[self.rDf.index[pID],(c,t,'P')]
-#                 fc = self.rDf.at[self.rDf.index[pID],(c,t,'FC')]
-#                 ci = self.rDf.at[self.rDf.index[pID],(c,t,'CI')]
-#                 #------------------------------> Assign
-#                 dfo.at[dfo.index[k], (t,'P')] = p
-#                 dfo.at[dfo.index[k], (t,'FC (CI)')] = f'{fc} ({ci})'
-#         #endregion -----------------------------------------------> Add Values
-        
-#         return dfo
-#     #---
-    
-#     def GetDF4TextInt_OC(self, pID: int) -> list[pd.DataFrame]:
-#         """Get the dataframe to print the ave and std for intensities for 
-#             control type One Control.
-            
-#             See Notes below for more details.
-    
-#             Parameters
-#             ----------
-#             pID : int 
-#                 To select the protein in self.rDf
-            
-#             Returns
-#             -------
-#             list[pd.Dataframe]
-#                      RP1            RPN
-#                      FC (CI)   P
-#                 Cond
-#                 C1   4.5 (0.3) 0.05 
-#                 CN
-#         """
-#         #region ----------------------------------------------------------> DF
-#         #------------------------------> 
-#         aveC = self.rDf.at[
-#             self.rDf.index[pID],(self.rCI['Cond'][0], self.rCI['RP'][0], 'aveC')]
-#         stdC = self.rDf.at[
-#             self.rDf.index[pID], (self.rCI['Cond'][0], self.rCI['RP'][0], 'stdC')]
-#         #------------------------------> 
-#         dfc = pd.DataFrame({
-#             'Condition': self.rCI['ControlL'],
-#             'Ave'      : [aveC],
-#             'Std'      : [stdC]
-#         })
-#         #endregion -------------------------------------------------------> DF
+    def SetText(self) -> bool:
+        """Set the text with information about the selected protein.
 
-#         #region ---------------------------------------------------------> DFO
-#         dfo = self.GetDF4TextInt_RatioI(pID)
-#         #endregion ------------------------------------------------------> DFO
-        
-#         return [dfc] + dfo
-#     #---
-    
-#     def GetDF4TextInt_OCC(self, pID: int) -> list[pd.DataFrame]:
-#         """Get the dataframe to print the ave and std for intensities for 
-#             control type One Control per Column.
-            
-#             See Notes below for more details.
-    
-#             Parameters
-#             ----------
-#             pID : int 
-#                 To select the protein in self.rDf
-            
-#             Returns
-#             -------
-#             list[pd.Dataframe]
-#                         RP1      RPN
-#                         ave  std
-#                 Cond
-#                 Control 4.5 0.05  
-#                 C1   
-#                 CN
-#         """
-#         #region ----------------------------------------------------------> DF
-#         dfo = self.GetDF4Text(
-#             ['Ave', 'Std'], self.rCI['RP'], self.rCI['ControlL']+self.rCI['Cond'])
-#         #endregion -------------------------------------------------------> DF
-        
-#         #region --------------------------------------------------> Add Values
-#         #------------------------------> Control
-#         for c in self.rCI['Cond']:
-#             for t in self.rCI['RP']:
-#                 #------------------------------> Get Values
-#                 aveC = self.rDf.at[self.rDf.index[pID],(c,t,'aveC')]
-#                 stdC = self.rDf.at[self.rDf.index[pID],(c,t,'stdC')]
-#                 #------------------------------> Assign
-#                 dfo.at[dfo.index[0], (t,'Ave')] = aveC
-#                 dfo.at[dfo.index[0], (t,'Std')] = stdC
-#         #------------------------------> Conditions
-#         for k,c in enumerate(self.rCI['Cond'], start=1):
-#             for t in self.rCI['RP']:
-#                 #------------------------------> Get Values
-#                 ave = self.rDf.at[self.rDf.index[pID],(c,t,'ave')]
-#                 std = self.rDf.at[self.rDf.index[pID],(c,t,'std')]
-#                 #------------------------------> Assign
-#                 dfo.at[dfo.index[k], (t,'Ave')] = ave
-#                 dfo.at[dfo.index[k], (t,'Std')] = std
-#         #endregion -----------------------------------------------> Add Values
-        
-#         return [dfo]
-#     #---
-    
-#     def GetDF4TextInt_OCR(self, pID: int) -> list[pd.DataFrame]:
-#         """Get the dataframe to print the ave and std for intensities for 
-#             control type One Control.
-            
-#             See Notes below for more details.
-    
-#             Parameters
-#             ----------
-#             pID : int 
-#                 To select the protein in self.rDf
-            
-#             Returns
-#             -------
-#             list[pd.Dataframe]
-#                      RP1            RPN
-#                      FC (CI)   P
-#                 Cond
-#                 C1   4.5 (0.3) 0.05 
-#                 CN
-#         """
-#         #region ----------------------------------------------------------> DF
-#         dfo = self.GetDF4Text(
-#             ['Ave', 'Std'], self.rCI['ControlL']+self.rCI['RP'], self.rCI['Cond'])
-#         #endregion -------------------------------------------------------> DF
-        
-#         #region --------------------------------------------------> Add Values
-#         #------------------------------> Control
-#         for k,c in enumerate(self.rCI['Cond']):
-#             for t in self.rCI['RP']:
-#                 #------------------------------> Get Values
-#                 aveC = self.rDf.at[self.rDf.index[pID],(c,t,'aveC')]
-#                 stdC = self.rDf.at[self.rDf.index[pID],(c,t,'stdC')]
-#                 #------------------------------> Assign
-#                 dfo.at[dfo.index[k], (self.rCI['ControlL'],'Ave')] = aveC
-#                 dfo.at[dfo.index[k], (self.rCI['ControlL'],'Std')] = stdC
-#         #------------------------------> Conditions
-#         for k,c in enumerate(self.rCI['Cond']):
-#             for t in self.rCI['RP']:
-#                 #------------------------------> Get Values
-#                 ave = self.rDf.at[self.rDf.index[pID],(c,t,'ave')]
-#                 std = self.rDf.at[self.rDf.index[pID],(c,t,'std')]
-#                 #------------------------------> Assign
-#                 dfo.at[dfo.index[k], (t,'Ave')] = ave
-#                 dfo.at[dfo.index[k], (t,'Std')] = std
-#         #endregion -----------------------------------------------> Add Values
-        
-#         return [dfo]
-#     #---
-    
-#     def GetDF4TextInt_RatioI(self, pID: int) -> list[pd.DataFrame]:
-#         """Get the dataframe to print the ave and std for intensities for 
-#             control type One Control.
-            
-#             See Notes below for more details.
-    
-#             Parameters
-#             ----------
-#             pID : int 
-#                 To select the protein in self.rDf
-            
-#             Returns
-#             -------
-#             list[pd.Dataframe]
-#                      RP1            RPN
-#                      FC (CI)   P
-#                 Cond
-#                 C1   4.5 (0.3) 0.05 
-#                 CN
-#         """
-#         #region ----------------------------------------------------------> DF
-#         dfo = self.GetDF4Text(['Ave', 'Std'], self.rCI['RP'], self.rCI['Cond'])
-#         #endregion -------------------------------------------------------> DF
-        
-#         #region --------------------------------------------------> Add Values
-#         for k,c in enumerate(self.rCI['Cond']):
-#             for t in self.rCI['RP']:
-#                 #------------------------------> Get Values
-#                 ave = self.rDf.at[self.rDf.index[pID],(c,t,'ave')]
-#                 std = self.rDf.at[self.rDf.index[pID],(c,t,'std')]
-#                 #------------------------------> Assign
-#                 dfo.at[dfo.index[k], (t,'Ave')] = ave
-#                 dfo.at[dfo.index[k], (t,'Std')] = std
-#         #endregion -----------------------------------------------> Add Values
-        
-#         return [dfo]
-#     #---
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Index
+        if self.rLCIdx < 0:
+            #------------------------------> 
+            self.wText.Freeze()
+            self.wText.SetValue('')
+            self.wText.Thaw()
+            #------------------------------> 
+            return False
+        else:
+            pass
+        #endregion ----------------------------------------------------> Index
+
+        #region ---------------------------------------------------> Add Text
+        #------------------------------> Delete all
+        self.Freeze()
+        self.wText.SetValue('')
+        #------------------------------> Protein ID
+        number = self.wLC.wLCS.wLC.GetItemText(self.rLCIdx, col=0)
+        gene = self.wLC.wLCS.wLC.GetItemText(self.rLCIdx, col=1)
+        name = self.wLC.wLCS.wLC.GetItemText(self.rLCIdx, col=2)
+        self.wText.AppendText(
+            f'--> Selected Protein:\n\n#: {number}, Gene: {gene}, '
+            f'Protein ID: {name}\n\n'
+        )
+        #------------------------------> P and FC values
+        self.wText.AppendText('--> P and Log2(FC) values:\n\n')
+        self.wText.AppendText(
+            self.GetDF4TextPFC(self.rLCIdx).to_string(index=False))
+        self.wText.AppendText('\n\n')
+        #------------------------------> Ave and st for intensity values
+        self.wText.AppendText(
+            '--> Intensity values after data preparation:\n\n')
+        dfList = self.dKeyMethod[self.rCI['ControlT']](self.rLCIdx) # type: ignore
+        for df in dfList:
+            self.wText.AppendText(df.to_string(index=False))
+            self.wText.AppendText('\n\n')
+        #------------------------------> Go back to beginning
+        self.wText.SetInsertionPoint(0)
+        self.Thaw()
+        #endregion ------------------------------------------------> Add Text
+
+        return True
+    #---
+
+    def GetDF4Text(
+        self,
+        col: list[str],
+        rp: list[str],
+        cond: list[str],
+        ) -> pd.DataFrame:
+        """Creates the empty dataframe to be used in GetDF4Text functions.
+
+            Parameters
+            ----------
+            col : list of str
+                Name of the columns in the df.
+            rp : list of str
+                List of relevant points.
+            cond : list of str
+                List of conditions.
+
+            Returns
+            -------
+            pd.DataFrame
+        """
+        #region ---------------------------------------------------> Variables
+        nCol = len(col)
+        idx = pd.IndexSlice
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------> Multi Index
+        #------------------------------> 
+        a = ['']
+        b = ['Conditions']
+        #------------------------------> 
+        for t in rp:
+            a = a + nCol * [t]
+            b = b + col
+        #------------------------------> 
+        mInd = pd.MultiIndex.from_arrays([a[:], b[:]])
+        #endregion -----------------------------------------------> Multi Index
+
+        #region ----------------------------------------------------> Empty DF
+        dfo = pd.DataFrame(columns=mInd, index=range(0,len(cond)))
+        #endregion -------------------------------------------------> Empty DF
+
+        #region ----------------------------------------------------> Add Cond
+        dfo.loc[:,idx[:,'Conditions']] = cond # type: ignore
+        #endregion -------------------------------------------------> Add Cond
+
+        return dfo
+    #---
+
+    def GetDF4TextPFC(self, pID: int) -> pd.DataFrame:
+        """Get the dataframe to print the P and FC +/- CI values to the text.
+
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.rDf.
+
+            Returns
+            -------
+            pd.Dataframe
+                     RP1            RPN
+                     FC (CI)   P
+                Cond
+                C1   4.5 (0.3) 0.05 
+                CN
+        """
+        #region ----------------------------------------------------------> DF
+        dfo = self.GetDF4Text(
+            ['FC (CI)', 'P'], self.rCI['RP'], self.rCI['Cond'])
+        #endregion -------------------------------------------------------> DF
+
+        #region --------------------------------------------------> Add Values
+        for k,c in enumerate(self.rCI['Cond']):
+            for t in self.rCI['RP']:
+                #------------------------------> Get Values
+                p = self.rDf.at[self.rDf.index[pID],(c,t,'P')]
+                fc = self.rDf.at[self.rDf.index[pID],(c,t,'FC')]
+                ci = self.rDf.at[self.rDf.index[pID],(c,t,'CI')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (t,'P')] = p
+                dfo.at[dfo.index[k], (t,'FC (CI)')] = f'{fc} ({ci})'
+        #endregion -----------------------------------------------> Add Values
+
+        return dfo
+    #---
+
+    def GetDF4TextInt_OC(self, pID: int) -> list[pd.DataFrame]:
+        """Get the dataframe to print the ave and std for intensities for 
+            control type One Control.
+
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.rDf.
+
+            Returns
+            -------
+            list[pd.Dataframe]
+                     RP1            RPN
+                     FC (CI)   P
+                Cond
+                C1   4.5 (0.3) 0.05 
+                CN
+        """
+        #region ----------------------------------------------------------> DF
+        #------------------------------> 
+        aveC = self.rDf.at[
+            self.rDf.index[pID],(self.rCI['Cond'][0], self.rCI['RP'][0], 'aveC')]
+        stdC = self.rDf.at[
+            self.rDf.index[pID], (self.rCI['Cond'][0], self.rCI['RP'][0], 'stdC')]
+        #------------------------------> 
+        dfc = pd.DataFrame({
+            'Condition': self.rCI['ControlL'],
+            'Ave'      : [aveC],
+            'Std'      : [stdC]
+        })
+        #endregion -------------------------------------------------------> DF
+
+        #region ---------------------------------------------------------> DFO
+        dfo = self.GetDF4TextInt_RatioI(pID)
+        #endregion ------------------------------------------------------> DFO
+
+        return [dfc] + dfo
+    #---
+
+    def GetDF4TextInt_OCC(self, pID: int) -> list[pd.DataFrame]:
+        """Get the dataframe to print the ave and std for intensities for 
+            control type One Control per Column.
+
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.rDf.
+
+            Returns
+            -------
+            list[pd.Dataframe]
+                        RP1      RPN
+                        ave  std
+                Cond
+                Control 4.5 0.05  
+                C1   
+                CN
+        """
+        #region ----------------------------------------------------------> DF
+        dfo = self.GetDF4Text(
+            ['Ave', 'Std'], self.rCI['RP'], self.rCI['ControlL']+self.rCI['Cond'])
+        #endregion -------------------------------------------------------> DF
+
+        #region --------------------------------------------------> Add Values
+        #------------------------------> Control
+        for c in self.rCI['Cond']:
+            for t in self.rCI['RP']:
+                #------------------------------> Get Values
+                aveC = self.rDf.at[self.rDf.index[pID],(c,t,'aveC')]
+                stdC = self.rDf.at[self.rDf.index[pID],(c,t,'stdC')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[0], (t,'Ave')] = aveC
+                dfo.at[dfo.index[0], (t,'Std')] = stdC
+        #------------------------------> Conditions
+        for k,c in enumerate(self.rCI['Cond'], start=1):
+            for t in self.rCI['RP']:
+                #------------------------------> Get Values
+                ave = self.rDf.at[self.rDf.index[pID],(c,t,'ave')]
+                std = self.rDf.at[self.rDf.index[pID],(c,t,'std')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (t,'Ave')] = ave
+                dfo.at[dfo.index[k], (t,'Std')] = std
+        #endregion -----------------------------------------------> Add Values
+
+        return [dfo]
+    #---
+
+    def GetDF4TextInt_OCR(self, pID: int) -> list[pd.DataFrame]:
+        """Get the dataframe to print the ave and std for intensities for 
+            control type One Control.
+
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.rDf.
+
+            Returns
+            -------
+            list[pd.Dataframe]
+                     RP1            RPN
+                     FC (CI)   P
+                Cond
+                C1   4.5 (0.3) 0.05 
+                CN
+        """
+        #region ----------------------------------------------------------> DF
+        dfo = self.GetDF4Text(
+            ['Ave', 'Std'], self.rCI['ControlL']+self.rCI['RP'], self.rCI['Cond'])
+        #endregion -------------------------------------------------------> DF
+
+        #region --------------------------------------------------> Add Values
+        #------------------------------> Control
+        for k,c in enumerate(self.rCI['Cond']):
+            for t in self.rCI['RP']:
+                #------------------------------> Get Values
+                aveC = self.rDf.at[self.rDf.index[pID],(c,t,'aveC')]
+                stdC = self.rDf.at[self.rDf.index[pID],(c,t,'stdC')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (self.rCI['ControlL'],'Ave')] = aveC
+                dfo.at[dfo.index[k], (self.rCI['ControlL'],'Std')] = stdC
+        #------------------------------> Conditions
+        for k,c in enumerate(self.rCI['Cond']):
+            for t in self.rCI['RP']:
+                #------------------------------> Get Values
+                ave = self.rDf.at[self.rDf.index[pID],(c,t,'ave')]
+                std = self.rDf.at[self.rDf.index[pID],(c,t,'std')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (t,'Ave')] = ave
+                dfo.at[dfo.index[k], (t,'Std')] = std
+        #endregion -----------------------------------------------> Add Values
+
+        return [dfo]
+    #---
+
+    def GetDF4TextInt_RatioI(self, pID: int) -> list[pd.DataFrame]:
+        """Get the dataframe to print the ave and std for intensities for 
+            control type One Control.
+
+            Parameters
+            ----------
+            pID : int 
+                To select the protein in self.rDf
+
+            Returns
+            -------
+            list[pd.Dataframe]
+                     RP1            RPN
+                     FC (CI)   P
+                Cond
+                C1   4.5 (0.3) 0.05 
+                CN
+        """
+        #region ----------------------------------------------------------> DF
+        dfo = self.GetDF4Text(['Ave', 'Std'], self.rCI['RP'], self.rCI['Cond'])
+        #endregion -------------------------------------------------------> DF
+
+        #region --------------------------------------------------> Add Values
+        for k,c in enumerate(self.rCI['Cond']):
+            for t in self.rCI['RP']:
+                #------------------------------> Get Values
+                ave = self.rDf.at[self.rDf.index[pID],(c,t,'ave')]
+                std = self.rDf.at[self.rDf.index[pID],(c,t,'std')]
+                #------------------------------> Assign
+                dfo.at[dfo.index[k], (t,'Ave')] = ave
+                dfo.at[dfo.index[k], (t,'Std')] = std
+        #endregion -----------------------------------------------> Add Values
+
+        return [dfo]
+    #---
 
     def SetRangeNo(self) -> bool:
         """Do nothing. Just to make the dict self.dKeyMethod work.
@@ -4522,81 +4518,81 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         return np.select(cond, choice, default=self.cColor['Vol'][1])
     #---
 
-#     def PickLabel(self, ind: list[int]) -> bool:
-#         """Show label for the picked protein.
-    
-#             Parameters
-#             ----------
-#             ind: list[int]
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         col = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
-#         #endregion ------------------------------------------------> 
+    def PickLabel(self, ind: list[int]) -> bool:
+        """Show label for the picked protein.
 
-#         #region ---------------------------------------------------> 
-#         for k in ind:
-#             idx = self.rDf.index[k]
-#             idxS = str(idx)
-#             row = [idxS]+self.rDf.loc[idx,col].to_numpy().tolist()
-#             if row in self.rLabelProt:
-#                 self.rLabelProtD[idxS].remove()
-#                 self.rLabelProtD.pop(idxS)
-#                 self.rLabelProt.remove(row)
-#             else:
-#                 self.rLabelProt.append(row)
-#         #------------------------------> 
-#         self.AddProtLabel(draw=True, checkKey=True)
-#         #endregion ------------------------------------------------> 
+            Parameters
+            ----------
+            ind: list[int]
 
-#         return True
-#     #---
-    
-#     def PickShow(self, ind: list[int]) -> bool:
-#         """Show info about the picked protein.
-    
-#             Parameters
-#             ----------
-#             ind: list[int]
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Pick
-#         if len(ind) == 1:
-#             self.wLC.wLCS.lc.Select(ind[0], on=1)
-#             self.wLC.wLCS.lc.EnsureVisible(ind[0])
-#             self.wLC.wLCS.lc.SetFocus()
-#             self.OnListSelect('fEvent')
-#         else:
-#             #------------------------------> Disconnect events to avoid zoom in
-#             # while interacting with the modal window
-#             self.wPlots.dPlot['Vol'].DisconnectEvent()
-#             #------------------------------> sort ind
-#             ind = sorted(ind, key=int)
-#             #------------------------------> 
-#             msg = (f'The selected point is an overlap of several proteins.')
-#             tException = (
-#                 f'The numbers of the proteins included in the selected '
-#                 f'point are:\n {str(ind)[1:-1]}')
-#             dtsWindow.DialogNotification(
-#                 'warning', 
-#                 msg        = msg,
-#                 setText    = True,
-#                 tException = tException,
-#                 parent     = self.wPlots.dPlot['Vol'],
-#             )
-#             #------------------------------> Reconnect event
-#             self.wPlots.dPlot['Vol'].ConnectEvent()
-#             return False
-#         #endregion ------------------------------------------------> Pick
-        
-#         return True
-#     #---
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        col = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for k in ind:
+            idx = self.rDf.index[k]
+            idxS = str(idx)
+            row = [idxS]+self.rDf.loc[idx,col].to_numpy().tolist()
+            if row in self.rLabelProt:
+                self.rLabelProtD[idxS].remove()
+                self.rLabelProtD.pop(idxS)
+                self.rLabelProt.remove(row)
+            else:
+                self.rLabelProt.append(row)
+        #------------------------------> 
+        self.AddProtLabel(draw=True, checkKey=True)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def PickShow(self, ind: list[int]) -> bool:
+        """Show info about the picked protein.
+
+            Parameters
+            ----------
+            ind: list[int]
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Pick
+        if len(ind) == 1:
+            self.wLC.wLCS.wLC.Select(ind[0], on=1)
+            self.wLC.wLCS.wLC.EnsureVisible(ind[0])
+            self.wLC.wLCS.wLC.SetFocus()
+            self.OnListSelect('fEvent')
+        else:
+            #------------------------------> Disconnect events to avoid zoom in
+            # while interacting with the modal window
+            self.wPlots.dPlot['Vol'].DisconnectEvent()
+            #------------------------------> sort ind
+            ind = sorted(ind, key=int)
+            #------------------------------> 
+            msg = (f'The selected point is an overlap of several proteins.')
+            tException = (
+                f'The numbers of the proteins included in the selected '
+                f'point are:\n {str(ind)[1:-1]}')
+            DialogNotification(
+                'warning', 
+                msg        = msg,
+                setText    = True,
+                tException = tException,
+                parent     = self.wPlots.dPlot['Vol'],
+            )
+            #------------------------------> Reconnect event
+            self.wPlots.dPlot['Vol'].ConnectEvent()
+            return False
+        #endregion ------------------------------------------------> Pick
+
+        return True
+    #---
 
     def UpdateResultWindow(
         self,
@@ -4683,6 +4679,71 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         self.PlotTitle()
         #endregion ---------------------------------------------------> Title
 
+        return True
+    #---
+
+    def LockScale(self, mode: str, updatePlot: bool=True) -> bool:
+        """Lock the scale of the volcano and FC plot.
+
+            Parameters
+            ----------
+            mode : str
+                One of No, Date, Project
+            updatePlot : bool
+                Apply the new axis limit ot the plots (True) or not. 
+                Default is True.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------> Update Attr
+        self.rLockScale = mode
+        self.rVXRange   = []
+        self.rVYRange   = []
+        self.rFcXRange  = []
+        self.rFcYRange  = []
+        #endregion ----------------------------------------------> Update Attr
+
+        #region ---------------------------------------------------> Get Range
+        self.dKeyMethod[f'{mode} Set']()
+        #endregion ------------------------------------------------> Get Range
+
+        #region ---------------------------------------------------> Set Range
+        if updatePlot:
+            #------------------------------> Vol
+            #--------------> 
+            self.wPlots.dPlot['Vol'].rAxes.set_xlim(*self.rVXRange)
+            self.wPlots.dPlot['Vol'].rAxes.set_ylim(*self.rVYRange)
+            #--------------> 
+            self.wPlots.dPlot['Vol'].rCanvas.draw()
+            #--------------> 
+            self.wPlots.dPlot['Vol'].ZoomResetSetValues()
+            #------------------------------> FC
+            #--------------> 
+            self.wPlots.dPlot['FC'].rAxes.set_xlim(*self.rFcXRange)
+            self.wPlots.dPlot['FC'].rAxes.set_ylim(*self.rFcYRange)
+            #--------------> 
+            self.wPlots.dPlot['FC'].rCanvas.draw()
+            #--------------> 
+            self.wPlots.dPlot['FC'].ZoomResetSetValues()
+        else:
+            pass
+        #endregion ------------------------------------------------> Set Range
+
+        return True
+    #---
+
+    def UpdateGUI(self) -> bool:
+        """Update content of the wx.ListCtrl and Plots
+
+            Returns
+            -------
+            bool
+        """
+        self.FillListCtrl()
+        self.VolDraw()
+        self.FCDraw()
         return True
     #---
     #endregion -----------------------------------------------> Manage Methods
@@ -4856,30 +4917,30 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         self.rPickLabel = not self.rPickLabel
 #         return True
 #     #---
-    
-#     def OnPick(self, event) -> bool:
-#         """Process a pick event in the volcano plot.
-    
-#             Parameters
-#             ----------
-#             event: matplotlib pick event
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         ind = event.ind
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ---------------------------------------------------> Pick
-#         if self.rPickLabel:
-#             return self.PickLabel(ind)
-#         else:
-#             return self.PickShow(ind)
-#         #endregion ------------------------------------------------> Pick
-#     #---
-    
+
+    def OnPick(self, event) -> bool:
+        """Process a pick event in the volcano plot.
+
+            Parameters
+            ----------
+            event: matplotlib pick event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        ind = event.ind
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Pick
+        if self.rPickLabel:
+            return self.PickLabel(ind)
+        else:
+            return self.PickShow(ind)
+        #endregion ------------------------------------------------> Pick
+    #---
+
 #     def OnClearSel(self):
 #         """
     
@@ -4960,38 +5021,37 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         return True
 #     #---
     
-#     def OnListSelect(self, event: Union[wx.Event, str]) -> bool:
-#         """Select an element in the wx.ListCtrl.
-    
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
-            
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Check Sel
-#         super().OnListSelect(event)
-#         #endregion ------------------------------------------------> Check Sel
+    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
+        """Select an element in the wx.ListCtrl.
 
-#         #region ------------------------------------------------> Volcano Plot
-#         self.DrawGreenPoint()
-#         #endregion ---------------------------------------------> Volcano Plot
-        
-#         #region ------------------------------------------------> FC Evolution
-#         self.DrawProtLine()
-#         #endregion ---------------------------------------------> FC Evolution
-        
-#         #region --------------------------------------------------------> Text
-#         self.SetText()
-#         #endregion -----------------------------------------------------> Text
-        
-#         return True
-#     #---
-    
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Check Sel
+        super().OnListSelect(event)
+        #endregion ------------------------------------------------> Check Sel
+
+        #region ------------------------------------------------> Volcano Plot
+        self.DrawGreenPoint()
+        #endregion ---------------------------------------------> Volcano Plot
+
+        #region ------------------------------------------------> FC Evolution
+        self.DrawProtLine()
+        #endregion ---------------------------------------------> FC Evolution
+
+        #region --------------------------------------------------------> Text
+        self.SetText()
+        #endregion -----------------------------------------------------> Text
+
+        return True
+    #---
+
 #     def OnZoomResetVol(self) -> bool:
 #         """Reset the zoom level in the Volcano plot.
         
@@ -5012,58 +5072,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         return self.wPlots.dPlot['FC'].ZoomResetPlot()
 #     #---
 
-    def LockScale(self, mode: str, updatePlot: bool=True) -> bool:
-        """Lock the scale of the volcano and FC plot.
-
-            Parameters
-            ----------
-            mode : str
-                One of No, Date, Project
-            updatePlot : bool
-                Apply the new axis limit ot the plots (True) or not. 
-                Default is True.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------> Update Attr
-        self.rLockScale = mode
-        self.rVXRange   = []
-        self.rVYRange   = []
-        self.rFcXRange  = []
-        self.rFcYRange  = []
-        #endregion ----------------------------------------------> Update Attr
-
-        #region ---------------------------------------------------> Get Range
-        self.dKeyMethod[f'{mode} Set']()
-        #endregion ------------------------------------------------> Get Range
-
-        #region ---------------------------------------------------> Set Range
-        if updatePlot:
-            #------------------------------> Vol
-            #--------------> 
-            self.wPlots.dPlot['Vol'].rAxes.set_xlim(*self.rVXRange)
-            self.wPlots.dPlot['Vol'].rAxes.set_ylim(*self.rVYRange)
-            #--------------> 
-            self.wPlots.dPlot['Vol'].rCanvas.draw()
-            #--------------> 
-            self.wPlots.dPlot['Vol'].ZoomResetSetValues()
-            #------------------------------> FC
-            #--------------> 
-            self.wPlots.dPlot['FC'].rAxes.set_xlim(*self.rFcXRange)
-            self.wPlots.dPlot['FC'].rAxes.set_ylim(*self.rFcYRange)
-            #--------------> 
-            self.wPlots.dPlot['FC'].rCanvas.draw()
-            #--------------> 
-            self.wPlots.dPlot['FC'].ZoomResetSetValues()
-        else:
-            pass
-        #endregion ------------------------------------------------> Set Range
-
-        return True
-    #---
-
 #     def OnAutoFilter(self, mode: bool) -> bool:
 #         """Auto apply filter when changing date.
     
@@ -5083,19 +5091,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         self.rAutoFilter = mode
 #         return True
 #     #---
-
-    def UpdateGUI(self) -> bool:
-        """Update content of the wx.ListCtrl and Plots
-
-            Returns
-            -------
-            bool
-        """
-        self.FillListCtrl()
-        self.VolDraw()
-        self.FCDraw()
-        return True
-    #---
 
 #     def UpdateStatusBarFilterText(self) -> bool:
 #         """Update the filter list in the statusbar
