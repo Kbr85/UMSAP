@@ -676,7 +676,8 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {'Error':[]}
+        plotData = {}
+        plotData['Error'] = []
         #------------------------------> Fill
         for k, v in self.rData[mConfig.nuCorrA].items():
             #------------------------------> 
@@ -751,6 +752,7 @@ class UMSAPFile():
         """
         #region ---------------------------------------------------> Variables
         plotData = {}
+        plotData['Error'] = []
         tPath = self.rStepDataP / f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
         #endregion ------------------------------------------------> Variables
 
@@ -779,7 +781,8 @@ class UMSAPFile():
             }
         """
         #region ---------------------------------------------------> Variables
-        plotData = {'Error':[]}
+        plotData = {}
+        plotData['Error'] = []
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu        
@@ -788,7 +791,7 @@ class UMSAPFile():
                 #------------------------------> 
                 tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{mConfig.nuDataPrep.replace(" ", "-")}'
                 #------------------------------> Add to dict
-                plotData[k] = { # type: ignore
+                plotData[k] = {
                     'DP' : {j:ReadCSV2DF(tPath/w) for j,w in v['DP'].items()},
                     'NumColList': v['CI']['oc']['Column'],
                 }
@@ -813,7 +816,8 @@ class UMSAPFile():
         """
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Empty start
-        plotData = {'Error':[]}
+        plotData = {}
+        plotData['Error'] = []
         colStr = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
         #------------------------------> Fill
         for k,v in self.rData[mConfig.nmProtProf].items():
@@ -824,7 +828,7 @@ class UMSAPFile():
                 df = ReadCSV2DF(tPath/v['R'], header=[0,1,2])
                 df.loc[:,colStr] = df.loc[:,colStr].astype('str')
                 #------------------------------> Add to dict if no error
-                plotData[k] = { # type: ignore
+                plotData[k] = {
                     'DF': df,
                     'F' : v['F'],
                     'Alpha': v['CI']['Alpha'],

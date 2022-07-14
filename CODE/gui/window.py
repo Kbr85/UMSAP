@@ -331,32 +331,6 @@ class BaseWindow(wx.Frame):
         return True
     #---
 
-#     def OnCheckDataPrep(self, tDate: str) -> bool:
-#         """Launch the Check Data Preparation Window.
-    
-#             Parameters
-#             ----------
-#             tDate: str
-#                 Date + ID to find the analysis in the umsap file.
-    
-#             Returns
-#             -------
-#             bool
-    
-#             Raise
-#             -----
-            
-#         """
-#         CheckDataPrep(
-#             self, 
-#             f'{self.GetTitle()} - {config.nuDataPrep}', 
-#             tSection = self.cSection,
-#             tDate    = self.rDateC,
-#         )
-        
-#         return True
-#     #---
-    
 #     def OnExportFilteredData(self) -> bool:
 #         """Export filtered data to a csv file. 
         
@@ -500,6 +474,7 @@ class BaseWindowResult(BaseWindow):
             mConfig.kwToolExpData     : self.ExportData,
             mConfig.kwToolExpImgAll   : self.ExportImgAll,
             mConfig.kwToolZoomResetAll: self.ZoomResetAll,
+            mConfig.kwToolCheckDP     : self.CheckDataPrep,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -546,7 +521,7 @@ class BaseWindowResult(BaseWindow):
             bool
         """
         #region ---------------------------------------------> Nothing to Plot
-        if self.rDate:
+        if len(self.rData.keys()) > 1:
             pass
         else:
             msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are ' # type: ignore
@@ -673,6 +648,39 @@ class BaseWindowResult(BaseWindow):
         """
         self.SetTitle(
             f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}") # type: ignore
+
+        return True
+    #---
+
+    def CheckDataPrep(self, tDate: str) -> bool:
+        """Launch the Check Data Preparation Window.
+
+            Parameters
+            ----------
+            tDate: str
+                Date + ID to find the analysis in the umsap file.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        try:
+            WindowResDataPrep(
+                self, 
+                f'{self.GetTitle()} - {mConfig.nuDataPrep}', 
+                tSection = self.cSection,
+                tDate    = self.rDateC,
+            )
+        except Exception as e:
+            DialogNotification(
+                'errorU',
+                msg        = 'Data Preparation window failed to launch.',
+                tException = e,
+                parent     = self,
+            )
+            return False
+        #endregion ------------------------------------------------>
 
         return True
     #---
@@ -2567,7 +2575,12 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
             Preparation section of a UMSAP File window
         """
         #region -----------------------------------------------> Set Variables
-        if self.cTitle == '':
+        if self.cTitle:
+            self.rFromUMSAPFile = False
+            self.rData = self.rObj.dConfigure[self.cSection](tSection, tDate)
+            self.rDate = []
+            self.rDateC = parent.rDateC # type:ignore
+        else:
             self.rFromUMSAPFile = True 
             self.rData  = self.rObj.dConfigure[self.cSection]()
             self.rDate  = [k for k in self.rData.keys() if k != 'Error']
@@ -2575,11 +2588,6 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
             self.rDateC = self.rDate[0]
             self.cTitle = (
                 f"{parent.cTitle} - {self.cSection} - {self.rDateC}") # type: ignore
-        else:
-            self.rFromUMSAPFile = False
-            self.rData = self.rObj.dConfigure[self.cSection](tSection, tDate)
-            self.rDate = []
-            self.rDateC = parent.rDateC # type:ignore
         #endregion --------------------------------------------> Set Variables
 
         return True
