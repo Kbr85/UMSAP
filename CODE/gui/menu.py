@@ -159,36 +159,36 @@ class BaseMenu(wx.Menu):
         return True
     #---
 
-    # def OnMethodLabelBool(self, event:wx.CommandEvent) -> bool:
-    #     """Call the corresponding method in the window with the boolean of the
-    #         menu item as argument.
+    def OnMethodLabelBool(self, event:wx.CommandEvent) -> bool:
+        """Call the corresponding method in the window with the boolean of the
+            menu item as argument.
 
-    #         Parameters
-    #         ----------
-    #         event:wx.Event
-    #             Information about the event.
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
 
-    #         Returns
-    #         -------
-    #         bool
+            Returns
+            -------
+            bool
             
-    #         Notes
-    #         -----
-    #         Method assumes the wx.MenuItem is a radio or check item that will
-    #         be True if checked or False if not checked.
-    #     """
-    #     #region ---------------------------------------------------> Variables
-    #     tID = event.GetId()
-    #     win = self.GetWindow()
-    #     #endregion ------------------------------------------------> Variables
+            Notes
+            -----
+            Method assumes the wx.MenuItem is a radio or check item that will
+            be True if checked or False if not checked.
+        """
+        #region ---------------------------------------------------> Variables
+        tID = event.GetId()
+        win = self.GetWindow()
+        #endregion ------------------------------------------------> Variables
 
-    #     #region -------------------------------------------------> Call Method
-    #     win.dKeyMethod[self.rIDMap[tID]](self.IsChecked(tID))
-    #     #endregion ----------------------------------------------> Call Method
+        #region -------------------------------------------------> Call Method
+        win.dKeyMethod[self.rIDMap[tID]](self.IsChecked(tID))
+        #endregion ----------------------------------------------> Call Method
 
-    #     return True
-    # #---
-    
+        return True
+    #---
+
     def OnMethodKey(self, event:wx.CommandEvent) -> bool:
         """Call the corresponding method in the window with a keyword argument.
 
@@ -1116,18 +1116,24 @@ class MenuToolProtProfFCEvolution(BaseMenu):
         #endregion -----------------------------------------------> Menu Items
 
         #region ---------------------------------------------------> rKeyID
-        # rIDMap = {
-        #     self.miSaveI.GetId()  : 'FCImage',
-        #     self.miZoomR.GetId()  : 'FCZoom',
-        #     self.miShowAll.GetId(): 'FCShowAll',
-        # }
-        # self.rIDMap = self.rIDMap | rIDMap
+        rIDMap = {
+            self.miSaveI.GetId()  : mConfig.kwToolExpImg,
+            self.miZoomR.GetId()  : mConfig.kwToolZoomReset,
+            self.miShowAll.GetId(): mConfig.kwToolFCShowAll,
+        }
+        self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------>
+        rKeyMap = {
+            self.miSaveI.GetId()  : 'FC',
+            self.miZoomR.GetId()  : 'FC',
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miShowAll)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miSaveI)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miShowAll)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelKey,  source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelKey,  source=self.miZoomR)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1223,25 +1229,25 @@ class MenuToolProtProfLockPlotScale(BaseMenu):
         #endregion -----------------------------------------------> Menu Items
 
         #region ------------------------------------------------------> nameID
-        # rIDMap = {
-        #     self.miNo.GetId()     : 'No',
-        #     self.miDate.GetId()   : 'Analysis',
-        #     self.miProject.GetId(): 'Project',
-        # }
-        # self.rIDMap = self.rIDMap | rIDMap
-        # #------------------------------>
-        # rKeyMap = {
-        #     self.miNo.GetId()     : 'mode',
-        #     self.miDate.GetId()   : 'mode',
-        #     self.miProject.GetId(): 'mode',
-        # }
-        # self.rKeyMap = self.rKeyMap | rKeyMap
+        rIDMap = {
+            self.miNo.GetId()     : 'No',
+            self.miDate.GetId()   : 'Analysis',
+            self.miProject.GetId(): 'Project',
+        }
+        self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------>
+        rKeyMap = {
+            self.miNo.GetId()     : 'mode',
+            self.miDate.GetId()   : 'mode',
+            self.miProject.GetId(): 'mode',
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ---------------------------------------------------> nameID
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.miNo)
-        # self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.miDate)
-        # self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.miProject)
+        self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.miNo)
+        self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.miDate)
+        self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.miProject)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1339,18 +1345,18 @@ class MenuToolProtProfClearSel(BaseMenu):
         #endregion -----------------------------------------------> Menu Items
 
         #region ---------------------------------------------------> 
-        # rIDMap = {
-        #     self.miLabel.GetId(): 'Labels',
-        #     self.miSel.GetId(): 'Selection',
-        #     self.miNoSel.GetId() : 'AllClear',
-        # }
-        # self.rIDMap = self.rIDMap | rIDMap
+        rIDMap = {
+            self.miLabel.GetId(): 'Labels',
+            self.miSel.GetId()  : 'Selection',
+            self.miNoSel.GetId(): 'AllClear',
+        }
+        self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miLabel)
-        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSel)
-        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoSel)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miLabel)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSel)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoSel)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup

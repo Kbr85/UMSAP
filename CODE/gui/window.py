@@ -3351,15 +3351,15 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #             'Save Filter'      : self.FilterSave,
 #             'Load Filter'      : self.FilterLoad,
 #             'AutoApplyFilter'  : self.OnAutoFilter,
-#             #------------------------------> 
-#             'Labels'      : self.OnClearLabel,
-#             'Selection'   : self.OnClearSel,
-#             'AllClear'    : self.OnClearAll, 
+            #------------------------------> 
+            'Labels'      : self.ClearLabel,
+            'Selection'   : self.ClearSel,
+            'AllClear'    : self.ClearAll,
             #------------------------------> 
             mConfig.kwToolVolPlotLabelPick : self.LabelPick,
             mConfig.kwToolVolPlotLabelProt : self.ProtLabel,
-#             #------------------------------> 
-#             'FCShowAll' : self.OnFCChange,
+            #------------------------------> 
+            mConfig.kwToolFCShowAll : self.FCChange,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -4938,6 +4938,85 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         dlg.Destroy()
         return True
     #---
+
+    def FCChange(self, showAll: bool) -> bool:
+        """Configure window to plot FC Evolution.
+
+            Parameters
+            ----------
+            showAll : bool
+                Show FC range of values or not.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        self.rShowAll = showAll
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------------> Plot
+        self.FCDraw()
+        #endregion -----------------------------------------------------> Plot
+
+        return True
+    #---
+
+    def ClearSel(self) -> bool:
+        """
+
+            Returns
+            -------
+            bool
+        """
+        if self.rLCIdx is not None:
+            #------------------------------> 
+            self.wLC.wLCS.wLC.Select(self.rLCIdx, on=0)
+            self.rLCIdx = None
+            #------------------------------> 
+            self.rGreenP.remove() # type: ignore
+            self.rGreenP = None
+            self.wPlots.dPlot['Vol'].rCanvas.draw()
+            #------------------------------> 
+            self.FCDraw()
+            #------------------------------> 
+            self.wText.Clear()
+        else:
+            pass
+        return True
+    #---
+
+    def ClearLabel(self) -> bool:
+        """
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        for t in self.rLabelProtD.values():
+            t.remove()
+        #------------------------------> 
+        self.rLabelProtD = {}
+        self.rLabelProt = []
+        #------------------------------> 
+        self.wPlots.dPlot['Vol'].rCanvas.draw()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def ClearAll(self) -> bool:
+        """
+
+            Returns
+            -------
+            bool
+        """
+        self.ClearSel()
+        self.ClearLabel()
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Event Methods
@@ -4974,29 +5053,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         
 #         return True
 #     #---
-    
-#     def OnFCChange(self, showAll: bool) -> bool:
-#         """Configure window to plot FC Evolution.
-    
-#             Parameters
-#             ----------
-#             showAll : bool
-#                 Show FC range of values or not.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         self.rShowAll = showAll
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region --------------------------------------------------------> Plot
-#         self.FCDraw()
-#         #endregion -----------------------------------------------------> Plot
-        
-#         return True
-#     #---
 
     def OnPick(self, event) -> bool:
         """Process a pick event in the volcano plot.
@@ -5020,86 +5076,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             return self.PickShow(ind)
         #endregion ------------------------------------------------> Pick
     #---
-
-#     def OnClearSel(self):
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         if self.rLCIdx is not None:
-#             #------------------------------> 
-#             self.wLC.wLCS.lc.Select(self.rLCIdx, on=0)
-#             self.rLCIdx = None
-#             #------------------------------> 
-#             self.rGreenP.remove()
-#             self.rGreenP = None
-#             self.wPlots.dPlot['Vol'].canvas.draw()
-#             #------------------------------> 
-#             self.FCDraw()
-#             #------------------------------> 
-#             self.wText.Clear()
-#         else:
-#             pass
-#         return True
-#     #---
-    
-#     def OnClearLabel(self):
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         for t in self.rLabelProtD.values():
-#             t.remove()
-#         #------------------------------> 
-#         self.rLabelProtD = {}
-#         self.rLabelProt = []
-#         #------------------------------> 
-#         self.wPlots.dPlot['Vol'].canvas.draw()        
-#         #endregion ------------------------------------------------> 
-
-#         return True
-#     #---
-    
-#     def OnClearAll(self):
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         self.OnClearSel()
-#         self.OnClearLabel()
-#         return True
-#     #---
 
     def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
         """Select an element in the wx.ListCtrl.

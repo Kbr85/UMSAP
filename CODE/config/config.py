@@ -223,6 +223,8 @@ kwToolVolPlotColorConf     = 'Vol Plot Color Configure'
 # klToolVolPlotColorHypCurve = 'Hyperbolic Curve'
 # klToolVolPlotColorPFC      = 'P - Log2FC'
 # klToolVolPlotColorZ        = 'Z Score'
+#------------------------------>
+kwToolFCShowAll = 'FC Plot Show All'
 # #------------------------------> Further Analysis
 # klFACleavageEvol = 'Cleavage Evolution'
 # klFACleavagePerRes = 'Cleavage per Residue'
