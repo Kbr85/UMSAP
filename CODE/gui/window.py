@@ -3195,10 +3195,10 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     cHSearch = 'Protein List'
     #------------------------------> Other
     cNPlotCol = 2
-#     cImgName   = {
-#         'Vol': '{}-Vol.pdf',
-#         'FC' : '{}-Evol.pdf',
-#     }
+    cImgName   = {
+        'Vol': '{}-Vol-{}.pdf',
+        'FC' : '{}-Evol-{}.pdf',
+    }
     cLCStyle = wx.LC_REPORT|wx.LC_SINGLE_SEL|wx.LC_VIRTUAL
     #------------------------------> Color
     cColor = mConfig.color[cName]
@@ -4746,6 +4746,48 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         self.FCDraw()
         return True
     #---
+
+    def ExportImgAll(self) -> bool:
+        """Export all plots to a pdf image.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Dlg window
+        dlg = DialogDirSelect(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            #------------------------------> Export
+            try:
+                for k, v in self.wPlots.dPlot.items():
+                    #------------------------------>
+                    if k == 'Vol':
+                        nameP = f'{self.rCondC}-{self.rRpC}'
+                    else:
+                        nameP = f'{self.rLCIdx}'
+                    #------------------------------> file path
+                    fPath = p / self.cImgName[k].format(self.rDateC, nameP)
+                    #------------------------------> Write
+                    v.rFigure.savefig(fPath)
+            except Exception as e:
+                DialogNotification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed.format('Images'),
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+
+        dlg.Destroy()
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Event Methods
@@ -4861,44 +4903,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #             config.elMatPlotSaveI, parent=self.wPlots.dPlot['FC']
 #         )
 #     #---
-    
-#     def OnPlotSaveAllImage(self) -> bool:
-#         """ Export all plots to a pdf image
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------> Dlg window
-#         dlg = dtsWindow.DirSelectDialog(parent=self)
-#         #endregion -----------------------------------------------> Dlg window
-        
-#         #region ---------------------------------------------------> Get Path
-#         if dlg.ShowModal() == wx.ID_OK:
-#             #------------------------------> Variables
-#             p = Path(dlg.GetPath())
-#             #------------------------------> Export
-#             try:
-#                 for k, v in self.wPlots.dPlot.items():
-#                     #------------------------------> file path
-#                     fPath = p / self.cImgName[k].format(self.rDateC)
-#                     #------------------------------> Write
-#                     v.figure.savefig(fPath)
-#             except Exception as e:
-#                 dtsWindow.DialogNotification(
-#                     'errorF',
-#                     msg        = self.cMsgExportFailed,
-#                     tException = e,
-#                     parent     = self,
-#                 )
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Get Path
-     
-#         dlg.Destroy()
-#         return True	
-#     #---
-    
+
 #     def OnLabelPick(self):
 #         """
     
@@ -5020,7 +5025,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         self.OnClearLabel()
 #         return True
 #     #---
-    
+
     def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
         """Select an element in the wx.ListCtrl.
 
