@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 import os
+from re import T
 import shutil
 import webbrowser
 # from itertools import zip_longest
@@ -56,6 +57,7 @@ import gui.method as gMethod
 import gui.tab as mTab
 import gui.pane as mPane
 import gui.widget as mWidget
+import gui.validator as mValidator
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -995,6 +997,12 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
         self.cTList    = getattr(self, 'cTList',    'Table')
         #------------------------------>
         super().__init__(parent=parent, menuData=menuData)
+        #------------------------------>
+        dKeyMethod = {
+            mConfig.kwToolExpImg   : self.ExportImg,
+            mConfig.kwToolZoomReset: self.ZoomReset,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -1074,6 +1082,53 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
             v.ZoomResetPlot()
         #endregion ------------------------------------------------> 
 
+        return True
+    #---
+
+    def ExportImg(self, tKey: str) -> bool:
+        """Export an image of one of the plots in self.wPlot.dPlot.
+
+            Parameters
+            ----------
+            tKey: str
+                Key in self.wPlot.dPlot
+
+            Returns
+            -------
+            bool
+        """
+        try:
+            self.wPlots.dPlot[tKey].SaveImage(
+                mConfig.elMatPlotSaveI, parent=self)
+        except Exception as e:
+            DialogNotification(
+                'errorU', 
+                msg        = self.cMsgExportFailed.format('Image'),
+                tException = e,
+                parent     = self,
+                )
+            return False
+        return True
+    #---
+
+    def ZoomReset(self, tKey: str) -> bool:
+        """Reset the zoom of one of the plots in self.wPlot.dPlot.
+
+            Parameters
+            ----------
+            tKey: str
+                Key in self.wPlot.dPlot
+
+            Returns
+            -------
+            bool
+        """
+        try:
+            self.wPlots.dPlot[tKey].ZoomResetPlot()
+        except Exception as e:
+            msg = 'It was not possible to reset the zoom on the selected plot.'
+            DialogNotification('errorU', msg=msg, tException=e, parent=self)
+            return False
         return True
     #---
     #endregion ------------------------------------------------> Class Methods
@@ -3150,9 +3205,9 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.nwProtProf
     cSection = mConfig.nmProtProf
-#     #------------------------------> Labels
-#     cLProtLAvail  = 'Displayed Proteins'
-#     cLProtLShow   = 'Proteins to Label'
+    #------------------------------> Labels
+    cLProtLAvail  = 'Displayed Proteins'
+    cLProtLShow   = 'Proteins to Label'
 #     cLFZscore     = 'Z'
 #     cLFLog2FC     = 'Log2FC'
 #     cLFPValAbs    = 'P'
@@ -3264,21 +3319,19 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             'No Set'      : self.SetRangeNo,
             'Analysis Set': self.SetRangeDate,
             'Project Set' : self.SetRangeProject,
-#             #------------------------------> 
-#             config.klToolGuiUpdate : self.UpdateDisplayedData,
+            #------------------------------> 
 #             config.klToolVolPlot   : self.OnVolChange,
             #------------------------------> Get DF for Text Intensities
             mConfig.oControlTypeProtProf['OC']   : self.GetDF4TextInt_OC,
             mConfig.oControlTypeProtProf['OCC']  : self.GetDF4TextInt_OCC,
             mConfig.oControlTypeProtProf['OCR']  : self.GetDF4TextInt_OCR,
             mConfig.oControlTypeProtProf['Ratio']: self.GetDF4TextInt_RatioI,
-#             #------------------------------> Colors
-#             config.klToolVolPlotColorHypCurve: self.VolDraw,
-#             config.klToolVolPlotColorPFC     : self.VolDraw,
-#             config.klToolVolPlotColorZ       : self.VolDraw,
-            'Hyperbolic Curve Color': self.GetColorHyCurve,
-            'P - Log2FC Color'      : self.GetColorPLog2FC,
-            'Z Score Color'         : self.GetColorZScore,
+            #------------------------------> Colors
+            mConfig.kwToolVolPlotColorConf  : self.VolColorConf,
+            mConfig.kwToolVolPlotColorScheme: self.VolDraw,
+            'Hyperbolic Curve Color'        : self.GetColorHyCurve,
+            'P - Log2FC Color'              : self.GetColorPLog2FC,
+            'Z Score Color'                 : self.GetColorZScore,
             #------------------------------> Lines
             'Hyperbolic Curve Line': self.DrawLinesHypCurve,
             'P - Log2FC Line'      : self.DrawLinesPLog2FC,
@@ -3298,20 +3351,13 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #             'Save Filter'      : self.FilterSave,
 #             'Load Filter'      : self.FilterLoad,
 #             'AutoApplyFilter'  : self.OnAutoFilter,
-#             #------------------------------> Save Image
-#             config.klToolVolPlotSaveI : self.OnSaveVolcanoImage,
-#             'FCImage'   : self.OnSaveFCImage,
-#             #------------------------------> Zoom Reset
-#             config.klToolVolPlotZoom : self.OnZoomResetVol,
-#             'FCZoom'      : self.OnZoomResetFC,
 #             #------------------------------> 
 #             'Labels'      : self.OnClearLabel,
 #             'Selection'   : self.OnClearSel,
 #             'AllClear'    : self.OnClearAll, 
-#             #------------------------------> 
-#             config.klToolVolPlotLabelPick : self.OnLabelPick,
-#             config.klToolVolPlotLabelProt : self.OnProtLabel,
-#             config.klToolVolPlotColorConf : self.OnVolColorScheme,
+            #------------------------------> 
+            mConfig.kwToolVolPlotLabelPick : self.LabelPick,
+            mConfig.kwToolVolPlotLabelProt : self.ProtLabel,
 #             #------------------------------> 
 #             'FCShowAll' : self.OnFCChange,
         }
@@ -3795,7 +3841,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 
         return True
     #---
-    
+
     def DrawProtLine(self) -> bool:
         """Draw the protein line in the FC plot after selecting a protein in the
             wx.ListCtrl.
@@ -4520,7 +4566,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #endregion -----------------------------------------------------> 
 
         #region ---------------------------------------------------> 
-        self.rVolLines = ['Z Score Line']
+        self.rVolLines = ['P - Log2FC Line']
         #endregion ------------------------------------------------> 
 
         return np.select(cond, choice, default=self.cColor['Vol'][1])
@@ -4645,8 +4691,8 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         self.rS0         = s0 if s0 is not None else self.rS0
         self.rCI         = self.rObj.rData[self.cSection][self.rDateC]['CI']
         self.rDf         = self.rData[self.rDateC]['DF'].copy()
-        self.rLabelProt  = [] if tDate is not None else self.rLabelProt
-        self.rLabelProtD = {} if tDate is not None else self.rLabelProtD
+        self.rLabelProt  = [] if tDate else self.rLabelProt
+        self.rLabelProtD = {} if tDate else self.rLabelProtD
         #endregion -----------------------------------------> Update variables
 
         #region --------------------------------------------------> Update GUI
@@ -4796,41 +4842,105 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         dlg.Destroy()
         return True
     #---
+
+    def LabelPick(self) -> bool:
+        """
+
+            Returns
+            -------
+            bool
+        """
+        self.rPickLabel = not self.rPickLabel
+        return True
+    #---
+
+    def ProtLabel(self) -> bool:
+        """
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        data = self.rDf.iloc[:,0:2]
+        data.insert(0, 'kbr', self.rDf.index.values.tolist())
+        data = data.astype(str)
+        data = data.values.tolist()
+        #endregion ------------------------------------------------> 
+
+        #region -------------------------------------------------> Get New Sel
+        #------------------------------> Create the window
+        dlg = DialogListSelect(
+            data,
+            self.cLCol,
+            self.cSCol,
+            tSelOptions = self.rLabelProt,
+            title       = 'Select Proteins',
+            tBtnLabel   = 'Add Protein',
+            color       = mConfig.color['Zebra'],
+            tStLabel = [self.cLProtLAvail, self.cLProtLShow],
+        )
+        #------------------------------> Get the selected values
+        if dlg.ShowModal():
+            #------------------------------> 
+            rowN = dlg.wLCtrlO.GetItemCount()
+            rowL = [dlg.wLCtrlO.GetRowContent(x) for x in range(0, rowN)]
+            #------------------------------> 
+            for z in reversed(self.rLabelProt):
+                if z not in rowL:
+                    self.rLabelProtD[z[0]].remove()
+                    self.rLabelProtD.pop(z[0])
+                    self.rLabelProt.remove(z)
+                else:
+                    pass
+            #------------------------------> 
+            for y in rowL:
+                if y in self.rLabelProt:
+                    pass
+                else:
+                    self.rLabelProt.append(y)
+        else:
+            pass
+        #endregion ----------------------------------------------> Get New Sel
+
+        #region --------------------------------------------------------> 
+        self.AddProtLabel(draw=True, checkKey=True)
+        #endregion -----------------------------------------------------> 
+
+        dlg.Destroy()
+        return True
+    #---
+
+    def VolColorConf(self) -> bool:
+        """Adjust the color scheme for the proteins.
+
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        dlg = DialogVolColorScheme(
+            self.rT0, 
+            self.rS0, 
+            self.rZ, 
+            self.rP,
+            self.rLog2FC,
+            parent=self,
+        )
+        #------------------------------> 
+        if dlg.ShowModal():
+            self.rT0, self.rS0, self.rP, self.rLog2FC, self.rZ = (
+                dlg.GetVal())
+            self.VolDraw()
+        else:
+            return False
+        #------------------------------> 
+        dlg.Destroy()
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Event Methods
-#     def OnVolColorScheme(self) -> bool:
-#         """Adjust the color scheme for the proteins
-    
-#             Returns
-#             -------
-#             bool
-    
-#             Raise
-#             -----
-            
-#         """
-#         #------------------------------> 
-#         dlg = VolColorScheme(
-#             self.rT0, 
-#             self.rS0, 
-#             self.rZ, 
-#             self.rP,
-#             self.rLog2FC,
-#             parent=self,
-#         )
-#         #------------------------------> 
-#         if dlg.ShowModal():
-#             self.rT0, self.rS0, self.rP, self.rLog2FC, self.rZ = (
-#                 dlg.GetVal())
-#             self.VolDraw()
-#         else:
-#             return False
-#         #------------------------------> 
-#         dlg.Destroy()
-#         return True
-#     #---
-    
 #     def OnVolChange(
 #         self, cond: str='', rp:str='', corrP: Optional[bool]=None) -> bool:
 #         """Update the Volcano plot.
@@ -4885,49 +4995,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         self.FCDraw()
 #         #endregion -----------------------------------------------------> Plot
         
-#         return True
-#     #---
-    
-#     def OnSaveVolcanoImage(self) -> bool:
-#         """Save an image of the volcano plot.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         return self.wPlots.dPlot['Vol'].SaveImage(
-#             config.elMatPlotSaveI, parent=self.wPlots.dPlot['Vol']
-#         )
-#     #---
-    
-#     def OnSaveFCImage(self) -> bool:
-#         """Save an image of the volcano plot.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         return self.wPlots.dPlot['FC'].SaveImage(
-#             config.elMatPlotSaveI, parent=self.wPlots.dPlot['FC']
-#         )
-#     #---
-
-#     def OnLabelPick(self):
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         self.rPickLabel = not self.rPickLabel
 #         return True
 #     #---
 
@@ -5065,26 +5132,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         return True
     #---
 
-#     def OnZoomResetVol(self) -> bool:
-#         """Reset the zoom level in the Volcano plot.
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         return self.wPlots.dPlot['Vol'].ZoomResetPlot()
-#     #---
-    
-#     def OnZoomResetFC(self) -> bool:
-#         """Reset the zoom level in the FC plot.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         return self.wPlots.dPlot['FC'].ZoomResetPlot()
-#     #---
-
 #     def OnAutoFilter(self, mode: bool) -> bool:
 #         """Auto apply filter when changing date.
     
@@ -5121,71 +5168,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #             self.StatusBarFilterText(k[2])
 #         #endregion ------------------------------------------------------> Add
 
-#         return True
-#     #---
-    
-#     def OnProtLabel(self):
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         data = self.rDf.iloc[:,0:2]
-#         data.insert(0, 'kbr', self.rDf.index.values.tolist())
-#         data = data.astype(str)
-#         data = data.values.tolist()
-#         #endregion ------------------------------------------------> 
-
-#         #region -------------------------------------------------> Get New Sel
-#         #------------------------------> Create the window
-#         dlg = dtsWindow.ListSelect(
-#             data, 
-#             self.cLCol, 
-#             self.cSCol, 
-#             tSelOptions = self.rLabelProt,
-#             title       = 'Select Proteins',            
-#             tBtnLabel   = 'Add Protein',
-#             color       = config.color['Zebra'],
-#             tStLabel = [self.cLProtLAvail, self.cLProtLShow],
-#         )
-#         #------------------------------> Get the selected values
-#         if dlg.ShowModal():
-#             #------------------------------> 
-#             rowN = dlg.wLCtrlO.GetItemCount()
-#             rowL = [dlg.wLCtrlO.GetRowContent(x) for x in range(0, rowN)]
-#             #------------------------------> 
-#             for z in reversed(self.rLabelProt):
-#                 if z not in rowL:
-#                     self.rLabelProtD[z[0]].remove()
-#                     self.rLabelProtD.pop(z[0])
-#                     self.rLabelProt.remove(z)
-#                 else:
-#                     pass
-#             #------------------------------> 
-#             for y in rowL:
-#                 if y in self.rLabelProt:
-#                     pass
-#                 else:
-#                     self.rLabelProt.append(y)
-#         else:
-#             pass
-#         #endregion ----------------------------------------------> Get New Sel
-        
-#         #region --------------------------------------------------------> 
-#         self.AddProtLabel(draw=True, checkKey=True)
-#         #endregion -----------------------------------------------------> 
-
-#         dlg.Destroy()
 #         return True
 #     #---
     #endregion ------------------------------------------------> Event Methods
@@ -12926,215 +12908,206 @@ class DialogListSelect(BaseDialogOkCancel):
 # #---
 
 
-# class VolColorScheme(dtsWindow.OkCancel):
-#     """Dialog for the setup of the color in the volcano plot of ProtProf
+class DialogVolColorScheme(BaseDialogOkCancel):
+    """Dialog for the setup of the color in the volcano plot of ProtProf.
 
-#         Parameters
-#         ----------
-#         t0: float
-#         s0: float
-#         z: str
-#             '< 10' or '> 1.56'
-#         color: str
-#             Color scheme to use
-#         hcurve : bool
-#             Show (True) or not (False) the H Curve
-#         parent: wx.Window
-#             PArent of the wx.Dialog
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, t0:float, s0:float, z:float, p:float, fc:float, 
-#         parent: Optional[wx.Window]=None,
-#         ) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.rT0 = str(t0)
-#         self.rS0 = str(s0)
-#         self.rZ  = str(z)
-#         self.rP  = str(p)
-#         self.rFC = str(fc)
-#         #------------------------------> 
-#         super().__init__(title='Color Scheme Parameters', parent=parent)
-#         #endregion --------------------------------------------> Initial Setup
+        Parameters
+        ----------
+        t0: float
+        s0: float
+        z: str
+            '< 10' or '> 1.56'
+        color: str
+            Color scheme to use
+        hcurve : bool
+            Show (True) or not (False) the H Curve
+        parent: wx.Window
+            Parent of the wx.Dialog
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        t0:float,
+        s0:float,
+        z:float,
+        p:float,
+        fc:float,
+        parent: Optional[wx.Window]=None,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rValInit = {
+            'T0': str(t0),
+            'S0': str(s0),
+            'Z' : str(z),
+            'P' : str(p),
+            'FC': str(fc),
+        }
+        #------------------------------> 
+        super().__init__(title='Color Scheme Parameters', parent=parent)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region -----------------------------------------------------> Widgets
-#         self.wsbHC = wx.StaticBox(self, label='Hyperbolic Curve')
-#         self.wT0 = dtsWidget.StaticTextCtrl(
-#             self.wsbHC,
-#             stLabel   = 't0',
-#             tcHint    = 'e.g. 1.0',
-#             tcSize    = (100,22),
-#             validator = dtsValidator.NumberList('float', vMin=0, nN=1)
-#         )
-#         self.wT0.tc.SetValue(self.rT0)
-        
-#         self.wS0 = dtsWidget.StaticTextCtrl(
-#             self.wsbHC,
-#             stLabel   = 's0',
-#             tcHint    = 'e.g. 0.1',
-#             tcSize    = (100,22),
-#             validator = dtsValidator.NumberList('float', vMin=0, nN=1)
-#         )
-#         self.wS0.tc.SetValue(self.rS0)
-        
-#         self.wsbPFC = wx.StaticBox(self, label='Log2FC - P')
-#         self.wP = dtsWidget.StaticTextCtrl(
-#             self.wsbPFC,
-#             stLabel   = 'P',
-#             tcHint    = 'e.g. 0.05',
-#             tcSize    = (100,22),
-#             validator = dtsValidator.NumberList('float', vMin=0, nN=1)
-#         )
-#         self.wP.tc.SetValue(self.rP)
-        
-#         self.wFC = dtsWidget.StaticTextCtrl(
-#             self.wsbPFC,
-#             stLabel   = 'log2FC',
-#             tcHint    = 'e.g. 0.1',
-#             tcSize    = (100,22),
-#             validator = dtsValidator.NumberList('float', vMin=0, nN=1)
-#         )
-#         self.wFC.tc.SetValue(self.rFC)
-        
-#         self.wsbZ = wx.StaticBox(self, label='Z Score')
-#         self.wZ = dtsWidget.StaticTextCtrl(
-#             self.wsbZ,
-#             stLabel   = 'Z Score',
-#             tcHint    = 'e.g. 10.0',
-#             tcSize    = (100,22),
-#             validator = dtsValidator.NumberList(
-#                     numType='float', vMin=0, vMax=100, nN=1),
-#         )
-#         self.wZ.tc.SetValue(self.rZ)
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.wsbHC = wx.StaticBox(self, label='Hyperbolic Curve')
+        self.wT0 = mWidget.StaticTextCtrl(
+            self.wsbHC,
+            stLabel   = 't0',
+            tcHint    = 'e.g. 1.0',
+            tcSize    = (100,22),
+            validator = mValidator.NumberList('float', vMin=0, nN=1)
+        )
+        self.wT0.wTc.SetValue(self.rValInit['T0'])
 
-#         #region ------------------------------------------------------> Sizers
-#         self.sFlexHC = wx.FlexGridSizer(2,2,1,1)
-#         self.sFlexHC.Add(self.wT0.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
-#         self.sFlexHC.Add(self.wT0.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-#         self.sFlexHC.Add(self.wS0.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
-#         self.sFlexHC.Add(self.wS0.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-#         self.sFlexHC.AddGrowableCol(1,1)
-        
-#         self.sFlexPFC = wx.FlexGridSizer(2,2,1,1)
-#         self.sFlexPFC.Add(self.wP.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
-#         self.sFlexPFC.Add(self.wP.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-#         self.sFlexPFC.Add(self.wFC.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
-#         self.sFlexPFC.Add(self.wFC.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-#         self.sFlexPFC.AddGrowableCol(1,1)
-        
-#         self.sFlexZ = wx.FlexGridSizer(2,2,1,1)
-#         self.sFlexZ.Add(self.wZ.st, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
-#         self.sFlexZ.Add(self.wZ.tc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
-#         self.sFlexZ.AddGrowableCol(1,1)
-        
-#         self.ssbHC = wx.StaticBoxSizer(self.wsbHC, wx.VERTICAL)
-#         self.ssbHC.Add(self.sFlexHC, 0, wx.EXPAND|wx.ALL, 5)
-        
-#         self.ssbPFC = wx.StaticBoxSizer(self.wsbPFC, wx.VERTICAL)
-#         self.ssbPFC.Add(self.sFlexPFC, 0, wx.EXPAND|wx.ALL, 5)
-        
-#         self.ssbZ = wx.StaticBoxSizer(self.wsbZ, wx.VERTICAL)
-#         self.ssbZ.Add(self.sFlexZ, 0, wx.EXPAND|wx.ALL, 5)
-        
-#         self.sFlexVal = wx.FlexGridSizer(1,3,1,1)
-#         self.sFlexVal.Add(self.ssbHC, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sFlexVal.Add(self.ssbPFC, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sFlexVal.Add(self.ssbZ, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sFlexVal.AddGrowableCol(0,1)
-#         self.sFlexVal.AddGrowableCol(1,1)
-#         self.sFlexVal.AddGrowableCol(2,1)
-        
-#         self.sSizer.Add(self.sFlexVal, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
-        
-#         self.SetSizer(self.sSizer)
-#         self.Fit()
-#         #endregion ---------------------------------------------------> Sizers
+        self.wS0 = mWidget.StaticTextCtrl(
+            self.wsbHC,
+            stLabel   = 's0',
+            tcHint    = 'e.g. 0.1',
+            tcSize    = (100,22),
+            validator = mValidator.NumberList('float', vMin=0, nN=1)
+        )
+        self.wS0.wTc.SetValue(self.rValInit['S0'])
 
-#         #region ---------------------------------------------> Window position
-#         self.CenterOnParent()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        self.wsbPFC = wx.StaticBox(self, label='Log2FC - P')
+        self.wP = mWidget.StaticTextCtrl(
+            self.wsbPFC,
+            stLabel   = 'P',
+            tcHint    = 'e.g. 0.05',
+            tcSize    = (100,22),
+            validator = mValidator.NumberList('float', vMin=0, nN=1)
+        )
+        self.wP.wTc.SetValue(self.rValInit['P'])
 
-#     #region ---------------------------------------------------> Class methods
-#     def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
-#         """Validate user information and close the window.
-    
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
-            
-    
-#             Returns
-#             -------
-#             True
-#         """
-#         #region ----------------------------------------------------> Validate
-#         res = []
-#         #------------------------------> 
-#         if self.wT0.tc.GetValidator().Validate()[0]:
-#             res.append(True)
-#         else:
-#             self.wT0.tc.SetValue(self.rT0)
-#             res.append(False)
-#         #------------------------------> 
-#         if self.wS0.tc.GetValidator().Validate()[0]:
-#             res.append(True)
-#         else:
-#             self.wS0.tc.SetValue(self.rS0)
-#             res.append(False)
-#         #------------------------------> 
-#         if self.wP.tc.GetValidator().Validate()[0]:
-#             res.append(True)
-#         else:
-#             self.wP.tc.SetValue(self.rP)
-#             res.append(False)
-#         #------------------------------> 
-#         if self.wFC.tc.GetValidator().Validate()[0]:
-#             res.append(True)
-#         else:
-#             self.wFC.tc.SetValue(self.rFC)
-#             res.append(False)
-#         #------------------------------> 
-#         if self.wZ.tc.GetValidator().Validate()[0]:
-#             res.append(True)
-#         else:
-#             self.wZ.tc.SetValue(self.rZ)
-#             res.append(False)
-#         #endregion -------------------------------------------------> Validate
+        self.wFC = mWidget.StaticTextCtrl(
+            self.wsbPFC,
+            stLabel   = 'log2FC',
+            tcHint    = 'e.g. 0.1',
+            tcSize    = (100,22),
+            validator = mValidator.NumberList('float', vMin=0, nN=1)
+        )
+        self.wFC.wTc.SetValue(self.rValInit['FC'])
+
+        self.wsbZ = wx.StaticBox(self, label='Z Score')
+        self.wZ = mWidget.StaticTextCtrl(
+            self.wsbZ,
+            stLabel   = 'Z Score',
+            tcHint    = 'e.g. 10.0',
+            tcSize    = (100,22),
+            validator = mValidator.NumberList(
+                    numType='float', vMin=0, vMax=100, nN=1),
+        )
+        self.wZ.wTc.SetValue(self.rValInit['Z'])
+        #------------------------------>
+        self.rWList = {
+            'T0': self.wT0.wTc,
+            'S0': self.wS0.wTc,
+            'P' : self.wP.wTc,
+            'FC': self.wFC.wTc,
+            'Z' : self.wZ.wTc,
+        }
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sFlexHC = wx.FlexGridSizer(2,2,1,1)
+        self.sFlexHC.Add(self.wT0.wSt, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexHC.Add(self.wT0.wTc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexHC.Add(self.wS0.wSt, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexHC.Add(self.wS0.wTc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexHC.AddGrowableCol(1,1)
+
+        self.sFlexPFC = wx.FlexGridSizer(2,2,1,1)
+        self.sFlexPFC.Add(self.wP.wSt, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexPFC.Add(self.wP.wTc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexPFC.Add(self.wFC.wSt, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexPFC.Add(self.wFC.wTc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexPFC.AddGrowableCol(1,1)
+
+        self.sFlexZ = wx.FlexGridSizer(2,2,1,1)
+        self.sFlexZ.Add(self.wZ.wSt, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.Add(self.wZ.wTc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.AddGrowableCol(1,1)
+
+        self.ssbHC = wx.StaticBoxSizer(self.wsbHC, wx.VERTICAL)
+        self.ssbHC.Add(self.sFlexHC, 0, wx.EXPAND|wx.ALL, 5)
+
+        self.ssbPFC = wx.StaticBoxSizer(self.wsbPFC, wx.VERTICAL)
+        self.ssbPFC.Add(self.sFlexPFC, 0, wx.EXPAND|wx.ALL, 5)
+
+        self.ssbZ = wx.StaticBoxSizer(self.wsbZ, wx.VERTICAL)
+        self.ssbZ.Add(self.sFlexZ, 0, wx.EXPAND|wx.ALL, 5)
+
+        self.sFlexVal = wx.FlexGridSizer(1,3,1,1)
+        self.sFlexVal.Add(self.ssbHC, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlexVal.Add(self.ssbPFC, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlexVal.Add(self.ssbZ, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlexVal.AddGrowableCol(0,1)
+        self.sFlexVal.AddGrowableCol(1,1)
+        self.sFlexVal.AddGrowableCol(2,1)
+
+        self.sSizer.Add(self.sFlexVal, 0, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region ---------------------------------------------> Window position
+        self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Validate
+        res = []
+        #------------------------------>
+        for k,w in self.rWList.items():
+            if w.GetValidator().Validate()[0]:
+                res.append(True)
+            else:
+                w.SetValue(self.rValInit[k])
+                res.append(False)
+        #endregion -------------------------------------------------> Validate
+
+        #region ---------------------------------------------------> 
+        if all(res):
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def GetVal(self):
+        """Get the selected values
         
-#         #region ---------------------------------------------------> 
-#         if all(res):
-#             self.EndModal(1)
-#             self.Close()
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> 
-        
-#         return True
-#     #---
-    
-#     def GetVal(self):
-#         """Get the selected values
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         return (
-#             float(self.wT0.tc.GetValue()),
-#             float(self.wS0.tc.GetValue()),
-#             float(self.wP.tc.GetValue()),
-#             float(self.wFC.tc.GetValue()),
-#             float(self.wZ.tc.GetValue()),
-#         )
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+            Returns
+            -------
+            bool
+        """
+        return (
+            float(self.wT0.wTc.GetValue()),
+            float(self.wS0.wTc.GetValue()),
+            float(self.wP.wTc.GetValue()),
+            float(self.wFC.wTc.GetValue()),
+            float(self.wZ.wTc.GetValue()),
+        )
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # class FABtnText(dtsWindow.OkCancel):
