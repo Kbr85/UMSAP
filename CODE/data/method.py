@@ -944,26 +944,22 @@ def MatplotLibCmap(
 # #---
 
 
-# def HCurve(x:float, t0:float, s0:float) -> float:
-#     """Calculate the hyperbolic curve values according to:
-#         doi: 10.1142/S0219720012310038
+def HCurve(x:Union[float,pd.DataFrame,pd.Series], t0:float, s0:float) -> float:
+    """Calculate the hyperbolic curve values according to:
+        doi: 10.1142/S0219720012310038
 
-#         Parameters
-#         ----------
+        Parameters
+        ----------
         
 
-#         Returns
-#         -------
-        
-
-#         Raise
-#         -----
-        
-#     """
-#     #region ---------------------------------------------------> Calculate
-#     return abs((abs(x)*t0)/(abs(x)-t0*s0))
-#     #endregion ------------------------------------------------> Calculate
-# #---
+        Returns
+        -------
+        float
+    """
+    #region ---------------------------------------------------> Calculate
+    return abs((abs(x)*t0)/(abs(x)-t0*s0)) # type: ignore
+    #endregion ------------------------------------------------> Calculate
+#---
 
 
 # def Rec2NatCoord(

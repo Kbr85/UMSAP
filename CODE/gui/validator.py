@@ -415,121 +415,113 @@ class NumberList(wx.Validator):
 #---
 
 
-# class Comparison(wx.Validator):
-#     """Check windows hold a value like 'operand value', e.g. '< 10.4'.
+class Comparison(wx.Validator):
+    """Check windows hold a value like 'operand value', e.g. '< 10.4'.
 
-#         Parameters
-#         ----------
-#         tStr: str
-#             String to check
-#         numType : One of int or float
-#             Number type in tStr.
-#         opt : bool
-#             Input is optional (True) or not (False). Default is False.
-#         vMin : float or None
-#             Minimum acceptable value in tStr
-#         vMax : float or None
-#             Maximum acceptable value in tStr
-#         op : list
-#             List of acceptable operand in front of value for tStr.
+        Parameters
+        ----------
+        tStr: str
+            String to check
+        numType : One of int or float
+            Number type in tStr.
+        opt : bool
+            Input is optional (True) or not (False). Default is False.
+        vMin : float or None
+            Minimum acceptable value in tStr
+        vMax : float or None
+            Maximum acceptable value in tStr
+        op : list
+            List of acceptable operand in front of value for tStr.
 
-#         Attributes
-#         ----------
-#         tStr: str
-#             String to check
-#         numType : One of int or float
-#             Number type in tStr.
-#         opt : bool
-#             Input is optional (True) or not (False). Default is False.
-#         vMin : float or None
-#             Minimum acceptable value in tStr
-#         vMax : float or None
-#             Maximum acceptable value in tStr
-#         op : list
-#             List of acceptable operand in front of value for tStr.
+        Attributes
+        ----------
+        tStr: str
+            String to check
+        numType : One of int or float
+            Number type in tStr.
+        opt : bool
+            Input is optional (True) or not (False). Default is False.
+        vMin : float or None
+            Minimum acceptable value in tStr
+        vMax : float or None
+            Maximum acceptable value in tStr
+        op : list
+            List of acceptable operand in front of value for tStr.
 
-#         Return by Validate method
-#         -------------------------
-#         tuple
-#             (True, None)
-#             (False, (code, val, msg))
-#             code val are:
-#                 - (NotOptional, None) : tStr cannot be an empty string.
-#                 - (BadElement, tStr) : Not a valid string
-#                 - (FalseOperand, operand) : Operand is not in the list of valid operand.
+        Return by Validate method
+        -------------------------
+        tuple
+            (True, None)
+            (False, (code, val, msg))
+            code val are:
+                - (NotOptional, None) : tStr cannot be an empty string.
+                - (BadElement, tStr) : Not a valid string
+                - (FalseOperand, operand) : Operand is not in the list of valid operand.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, 
+        numType: mConfig.litNumType='int',
+        opt: bool=False, 
+        vMin: Optional[float]=None,
+        vMax: Optional[float]=None,
+        op: list[str]=['<', '>', '<=', '>='],
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rNumType = numType
+        self.rOpt     = opt
+        self.rVMin    = vMin
+        self.rVMax    = vMax
+        self.rOp      = op
+        #------------------------------>
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#         Raises
-#         ------
-#         InputError:
-#             - When numType is not in dtsConfig.oNumType.keys()
-#     """
-#     #region -----------------------------------------------------> Class setup
-    
-#     #endregion --------------------------------------------------> Class setup
+    #region ------------------------------------------------> Override methods
+    def Clone(self):
+        """Overridden method"""
+        return Comparison(
+            numType = self.rNumType, # type: ignore
+            opt     = self.rOpt,
+            vMin    = self.rVMin,
+            vMax    = self.rVMax,
+            op      = self.rOp,
+        )
+    #---
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, numType: Literal['int', 'float']='int', opt: bool=False, 
-#         vMin: Optional[float]=None, vMax: Optional[float]=None, 
-#         op: list[str]=['<', '>', '<=', '>='],
-#         ) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.numType = numType
-#         self.opt     = opt
-#         self.vMin    = vMin
-#         self.vMax    = vMax
-#         self.op      = op
-        
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+    def Validate(self):
+        """Overridden method"""
+        #region ---------------------------------------------------> Get value
+        value = self.GetWindow().GetValue()
+        #endregion ------------------------------------------------> Get value
 
-#     #region ------------------------------------------------> Override methods
-#     def Clone(self):
-#         """Overridden method"""
-#         return Comparison(
-#             numType = self.numType,
-#             opt     = self.opt,
-#             vMin    = self.vMin,
-#             vMax    = self.vMax,
-#             op      = self.op,
-#         )
-#     #---
+        #region ----------------------------------------------------> Validate
+        try:
+            return mCheck.Comparison(
+                value,
+                numType = self.rNumType, # type: ignore
+                opt     = self.rOpt,
+                vMin    = self.rVMin,
+                vMax    = self.rVMax,
+                op      = self.rOp
+            )
+        except Exception as e:
+            return (False, ('ExceptionRaised', type(e).__name__, str(e)))
+        #endregion -------------------------------------------------> Validate
+    #---
 
-#     def Validate(self):
-#         """Overridden method"""
-#         #region ---------------------------------------------------> Get value
-#         value = self.GetWindow().GetValue()
-#         #endregion ------------------------------------------------> Get value
+    def TransferToWindow(self):
+        """To use it with wx.Dialog"""
+        return True
+    #---
 
-#         #region ----------------------------------------------------> Validate
-#         try:
-#             return dtsCheck.Comparison(
-#                 value,
-#                 numType = self.numType,
-#                 opt     = self.opt,
-#                 vMin    = self.vMin,
-#                 vMax    = self.vMax,
-#                 op      = self.op
-#             )
-#         except Exception as e:
-#             return (False, ('ExceptionRaised', type(e).__name__, str(e)))
-#         #endregion -------------------------------------------------> Validate
-
-#         return (True, None)
-#     #---
-    
-#     def TransferToWindow(self):
-#         """To use it with wx.Dialog"""
-#         return True
-#     #---
-
-#     def TransferFromWindow(self):
-#         """To use it with wx.Dialog"""
-#         return True
-#     #---
-#     #endregion ---------------------------------------------> Override methods
-# #---
+    def TransferFromWindow(self):
+        """To use it with wx.Dialog"""
+        return True
+    #---
+    #endregion ---------------------------------------------> Override methods
+#---
 #endregion --------------------------------------------------------> Validator

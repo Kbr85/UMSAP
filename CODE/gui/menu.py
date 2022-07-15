@@ -1172,10 +1172,10 @@ class MenuToolProtProfFilters(BaseMenu):
         #endregion -----------------------------------------------> Menu Items
         
         #region ---------------------------------------------------> rKeyID
-        # rIDMap = {
-        #     self.miFcChange.GetId():  mConfig.lFilFCEvol,
-        #     self.miHypCurve.GetId():  mConfig.lFilHypCurve,
-        #     self.miLog2FC.GetId():    mConfig.lFilFCLog,
+        rIDMap = {
+            self.miFcChange.GetId():  mConfig.kwToolFilterFCEvol,
+            self.miHypCurve.GetId():  mConfig.kwToolFilterHypCurve,
+            self.miLog2FC.GetId():    mConfig.kwToolFilterFCLog,
         #     self.miPValue.GetId():    mConfig.lFilPVal,
         #     self.miZScore.GetId():    f'{mConfig.lFilZScore} F',
         #     self.miApply.GetId():     'Apply All',
@@ -1187,14 +1187,14 @@ class MenuToolProtProfFilters(BaseMenu):
         #     self.miSave.GetId():      'Save Filter',
         #     self.miLoad.GetId():      'Load Filter',
         #     self.miUpdate.GetId():    'AutoApplyFilter',
-        # }
-        # self.rIDMap = self.rIDMap | rIDMap
+        }
+        self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miFcChange)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miHypCurve)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miLog2FC)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miFcChange)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miHypCurve)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miLog2FC)
         # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miPValue)
         # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZScore)
         # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miApply)

@@ -223,8 +223,12 @@ kwToolVolPlotColorConf     = 'Vol Plot Color Configure'
 # klToolVolPlotColorHypCurve = 'Hyperbolic Curve'
 # klToolVolPlotColorPFC      = 'P - Log2FC'
 # klToolVolPlotColorZ        = 'Z Score'
-#------------------------------>
+#------------------------------> Fold Change Evolution
 kwToolFCShowAll = 'FC Plot Show All'
+#------------------------------> Prot Prof Filters
+kwToolFilterFCEvol   = 'Prot Prof Tool Filter FC Evol'
+kwToolFilterHypCurve = 'Prot Prof Tool Filter Hyp Curve'
+kwToolFilterFCLog    = 'Prot Prof Tool Filter Log2FC'
 # #------------------------------> Further Analysis
 # klFACleavageEvol = 'Cleavage Evolution'
 # klFACleavagePerRes = 'Cleavage per Residue'
@@ -297,10 +301,10 @@ lCbSample      = 'Samples'
 # lCbIntensity   = 'Intensities'
 #------------------------------> wx.Dialog
 lPdError = 'Fatal Error'
-# #------------------------------> Filters
-# lFilFCEvol   = 'FC Evolution'
-# lFilHypCurve = 'Hyp Curve'
-# lFilFCLog    = 'Log2FC'
+#------------------------------> Filters
+lFilFCEvol   = 'FC Evolution'
+lFilHypCurve = 'Hyp Curve'
+lFilFCLog    = 'Log2FC'
 # lFilPVal     = 'P Val'
 # lFilZScore   = 'Z Score'
 #------------------------------> wx.Menu

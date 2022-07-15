@@ -17,10 +17,10 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 import os
-from re import T
 import shutil
 import webbrowser
 # from itertools import zip_longest
+from math import ceil
 from pathlib import Path
 from typing import Optional, Literal, Union
 
@@ -3209,38 +3209,38 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     cLProtLAvail  = 'Displayed Proteins'
     cLProtLShow   = 'Proteins to Label'
 #     cLFZscore     = 'Z'
-#     cLFLog2FC     = 'Log2FC'
+    cLFLog2FC     = 'Log2FC'
 #     cLFPValAbs    = 'P'
 #     cLFPValLog    = 'pP'
-#     cLFFCUp       = 'FC > 0'
-#     cLFFCUpL      = 'FC > 0'
-#     cLFFCDown     = 'FC < 0'
-#     cLFFCDownL    = 'FC < 0'
-#     cLFFCUpMon    = 'FC Incr'
-#     cLFFCUpMonL   = 'FC Increases'
-#     cLFFCDownMon  = 'FC Decr'
-#     cLFFCDownMonL = 'FC Decreases'
-#     cLFFCNo       = 'FC No Change'
-#     cLFFCOpposite = 'FC Opposite'
-#     cLFDiv        = 'FC Diverges'
-#     cLFCSel       = 'Selected'
-#     cLFCAny       = 'Any'
-#     cLFCAll       = 'All'
+    cLFFCUp       = 'FC > 0'
+    cLFFCUpL      = 'FC > 0'
+    cLFFCDown     = 'FC < 0'
+    cLFFCDownL    = 'FC < 0'
+    cLFFCUpMon    = 'FC Incr'
+    cLFFCUpMonL   = 'FC Increases'
+    cLFFCDownMon  = 'FC Decr'
+    cLFFCDownMonL = 'FC Decreases'
+    cLFFCNo       = 'FC No Change'
+    cLFFCOpposite = 'FC Opposite'
+    cLFDiv        = 'FC Diverges'
+    cLFCSel       = 'Selected'
+    cLFCAny       = 'Any'
+    cLFCAll       = 'All'
     cLCol         = ['#', 'Gene', 'Protein']
-#     cLFFCDict     = {
-#         cLFFCUp      : cLFFCUpL,
-#         cLFFCDown    : cLFFCDownL,
-#         cLFFCUpMon   : cLFFCUpMonL,
-#         cLFFCDownMon : cLFFCDownMonL,
-#         cLFFCOpposite: cLFFCOpposite,
-#         cLFDiv       : cLFDiv, 
-#         cLFFCNo      : cLFFCNo,
-#     }
-#     cLFCOpt = {
-#         cLFCSel : cLFCSel,
-#         cLFCAny : cLFCAny,
-#         cLFCAll : cLFCAll,
-#     }
+    cLFFCDict     = {
+        cLFFCUp      : cLFFCUpL,
+        cLFFCDown    : cLFFCDownL,
+        cLFFCUpMon   : cLFFCUpMonL,
+        cLFFCDownMon : cLFFCDownMonL,
+        cLFFCOpposite: cLFFCOpposite,
+        cLFDiv       : cLFDiv, 
+        cLFFCNo      : cLFFCNo,
+    }
+    cLFCOpt = {
+        cLFCSel : cLFCSel,
+        cLFCAny : cLFCAny,
+        cLFCAll : cLFCAll,
+    }
 #     cLFFCMode = {
 #         'Up'  : cLFFCUp,
 #         'Down': cLFFCDown,
@@ -3308,7 +3308,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         self.rLabelProtD  = {}
         self.rPickLabel   = False
         self.rVolLines    = ['Hyperbolic Curve Line']
-#         #------------------------------> 
+        #------------------------------>
         super().__init__(parent, menuData=menuData)
         #------------------------------> Methods
         dKeyMethod = {
@@ -3319,7 +3319,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             'No Set'      : self.SetRangeNo,
             'Analysis Set': self.SetRangeDate,
             'Project Set' : self.SetRangeProject,
-            #------------------------------> 
+            #------------------------------>
 #             config.klToolVolPlot   : self.OnVolChange,
             #------------------------------> Get DF for Text Intensities
             mConfig.oControlTypeProtProf['OC']   : self.GetDF4TextInt_OC,
@@ -3336,10 +3336,10 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             'Hyperbolic Curve Line': self.DrawLinesHypCurve,
             'P - Log2FC Line'      : self.DrawLinesPLog2FC,
             'Z Score Line'         : self.DrawLinesZScore,
-#             #------------------------------> Filter methods
-#             config.lFilFCEvol  : self.Filter_FCChange,
-#             config.lFilHypCurve: self.Filter_HCurve,
-#             config.lFilFCLog   : self.Filter_Log2FC,
+            #------------------------------> Filter methods
+            mConfig.kwToolFilterFCEvol  : self.Filter_FCChange,
+            mConfig.kwToolFilterHypCurve: self.Filter_HCurve,
+            mConfig.kwToolFilterFCLog   : self.Filter_Log2FC,
 #             config.lFilPVal    : self.Filter_PValue,
 #             f'{config.lFilZScore} F'  : self.Filter_ZScore,
 #             'Apply All'        : self.FilterApply,
@@ -3364,6 +3364,10 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
+        #region -----------------------------------------------------> Widgets
+        self.wStatBar.SetFieldsCount(2, [100, -1])
+        #endregion --------------------------------------------------> Widgets
+
         #region --------------------------------------------------------> Bind
         self.wPlots.dPlot['Vol'].rCanvas.mpl_connect('pick_event', self.OnPick)
         #endregion -----------------------------------------------------> Bind
@@ -3377,32 +3381,32 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Methods
-#     def StatusBarFilterText(self, text: str) -> bool:
-#         """Update the StatusBar text
-    
-#             Parameters
-#             ----------
-#             text : str
-#                 New text to add.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ----------------------------------------------------> Old Text
-#         text_now = self.wStatBar.GetStatusText(1)
-#         #endregion -------------------------------------------------> Old Text
-        
-#         #region ----------------------------------------------------> Add Text
-#         text_new = f'{text_now} | {text}'
-#         #endregion -------------------------------------------------> Add Text
-        
-#         #region ------------------------------------------> Add to wx.StatusBar
-#         self.wStatBar.SetStatusText(text_new, 1)
-#         #endregion ---------------------------------------> Add to wx.StatusBar
-        
-#         return True
-#     #---
+    def StatusBarFilterText(self, text: str) -> bool:
+        """Update the StatusBar text.
+
+            Parameters
+            ----------
+            text : str
+                New text to add.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Old Text
+        text_now = self.wStatBar.GetStatusText(1)
+        #endregion -------------------------------------------------> Old Text
+
+        #region ----------------------------------------------------> Add Text
+        text_new = f'{text_now} | {text}'
+        #endregion -------------------------------------------------> Add Text
+
+        #region ------------------------------------------> Add to wx.StatusBar
+        self.wStatBar.SetStatusText(text_new, 1)
+        #endregion ---------------------------------------> Add to wx.StatusBar
+
+        return True
+    #---
 
     def SetDateMenuDate(self) -> tuple[list, dict]:
         """Set the self.rDate list and the menuData dict needed to build the Tool
@@ -3512,7 +3516,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #endregion -----------------------------------------------> Delete old
 
         #region ----------------------------------------------------> Get Data
-        data = self.rDf.iloc[:,0:2]
+        data = self.rDf.iloc[:,0:2] # type: ignore
         data.insert(0, 'kbr', self.rDf.index.values.tolist())
         data = data.astype(str)
         data = data.values.tolist()
@@ -3602,7 +3606,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         )
         #------------------------------>
         for l in self.rVolLines:
-            self.dKeyMethod[l]()
+            self.dKeyMethod[l]()  # type: ignore
         #------------------------------> Lock Scale or Set it manually
         if self.rVXRange and self.rVYRange:
             self.wPlots.dPlot['Vol'].rAxes.set_xlim(*self.rVXRange)
@@ -3885,10 +3889,10 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         for k,c in enumerate(self.rCI['Cond']):
             #------------------------------> FC values
             y = self.rDf.loc[self.rDf.index[[idxL]],idx[c,:,'FC']]
-            y = [0.0] + y.values.tolist()[0]
+            y = [0.0] + y.values.tolist()[0] # type: ignore
             #------------------------------> Errors
             yError = self.rDf.loc[self.rDf.index[[idxL]],idx[c,:,'CI']]
-            yError = [0] + yError.values.tolist()[0]
+            yError = [0] + yError.values.tolist()[0] # type: ignore
             #------------------------------> Colors
             color = self.cColor['FCLines'][k%colorN]
             #------------------------------> Plot line
@@ -3923,7 +3927,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             bool
         """
         #region -------------------------------------------------------> Index
-        if self.rLCIdx < 0:
+        if self.rLCIdx < 0: # type: ignore
             #------------------------------> 
             self.wText.Freeze()
             self.wText.SetValue('')
@@ -3949,13 +3953,13 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #------------------------------> P and FC values
         self.wText.AppendText('--> P and Log2(FC) values:\n\n')
         self.wText.AppendText(
-            self.GetDF4TextPFC(self.rLCIdx).to_string(index=False))
+            self.GetDF4TextPFC(self.rLCIdx).to_string(index=False)) # type: ignore
         self.wText.AppendText('\n\n')
         #------------------------------> Ave and st for intensity values
         self.wText.AppendText(
             '--> Intensity values after data preparation:\n\n')
         dfList = self.dKeyMethod[self.rCI['ControlT']](self.rLCIdx) # type: ignore
-        for df in dfList:
+        for df in dfList: # type: ignore
             self.wText.AppendText(df.to_string(index=False))
             self.wText.AppendText('\n\n')
         #------------------------------> Go back to beginning
@@ -4760,7 +4764,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #endregion ----------------------------------------------> Update Attr
 
         #region ---------------------------------------------------> Get Range
-        self.dKeyMethod[f'{mode} Set']()
+        self.dKeyMethod[f'{mode} Set']() # type: ignore
         #endregion ------------------------------------------------> Get Range
 
         #region ---------------------------------------------------> Set Range
@@ -4862,7 +4866,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> 
-        data = self.rDf.iloc[:,0:2]
+        data = self.rDf.iloc[:,0:2] # type: ignore
         data.insert(0, 'kbr', self.rDf.index.values.tolist())
         data = data.astype(str)
         data = data.values.tolist()
@@ -5149,250 +5153,227 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #endregion ------------------------------------------------> Event Methods
 
     #region --------------------------------------------------> Filter Methods
-#     def Filter_FCChange(
-#         self, choice: Optional[dict]=None, updateL: bool=True,
-#         ) -> bool:
-#         """Filter results based on FC change
-    
-#             Parameters
-#             ----------
-#             choice : dict
-#                 Keys are int 0 to 1. Value in 0 is the filter to apply and 
-#                 in 1 the conditions to consider. 
-#             updateL : bool
-#                 Update (True) or not (False) the GUI. Default is True.
-            
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Get Value
-#         if choice is None:
-#             #------------------------------> 
-#             dlg = dtsWindow.MultipleCheckBox(
-#                 'Filter results by FC evolution.', 
-#                 [self.cLFFCDict, self.cLFCOpt], 
-#                 [2, 3],
-#                 label       = ['Options', 'Conditions to use'],
-#                 multiChoice = [False, False],
-#                 parent      = self.wPlots.dPlot['FC'],
-#             )
-#             #------------------------------> 
-#             if dlg.ShowModal():
-#                 #------------------------------> 
-#                 choice = dlg.GetChoice() # The value of choice is needed below
-#                 choice0, choice1 = choice.values()
-#                 #------------------------------> 
-#                 dlg.Destroy()
-#             else:
-#                 dlg.Destroy()
-#                 return False
-#         else:
-#             choice0, choice1 = choice.values()
-#         #endregion ------------------------------------------------> Get Value
-        
-#         #region ----------------------------------------------------------> DF
-#         idx = pd.IndexSlice
-#         #------------------------------> 
-#         if choice1 == self.cLFCSel:
-#             df = self.rDf.loc[:,idx[self.rCondC,:,'FC']]
-#         else:
-#             df = self.rDf.loc[:,idx[:,:,'FC']]
-#         #------------------------------> 
-#         if choice0 == self.cLFFCUp:
-#             mask = df.groupby(level=0, axis=1).apply(lambda x: (x > 0).all(axis=1))
-#         elif choice0 == self.cLFFCDown:
-#             mask = df.groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1))
-#         elif choice0 == self.cLFFCNo:
-#             mask = df.groupby(level=0, axis=1).apply(lambda x: ((x > -self.rT0*self.rS0) & (x < self.rT0*self.rS0)).all(axis=1))
-#         elif choice0 == self.cLFFCUpMon:
-#             mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1))
-#         elif choice0 == self.cLFFCDownMon:
-#             mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_decreasing) & (x < 0)).all(), axis=1))     
-#         elif choice0 == self.cLFDiv:
-#             maskUp = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1))
-#             maskUp = maskUp.any(axis=1)
-#             maskDown = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_decreasing) & (x < 0)).all(), axis=1))
-#             maskDown = maskDown.any(axis=1)   
-#         elif choice0 == self.cLFFCOpposite:
-#             maskUp = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: (x > 0).all(axis=1))
-#             maskUp = maskUp.any(axis=1)
-#             maskDown = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1))
-#             maskDown = maskDown.any(axis=1)   
-#         else:
-#             return False
-#         #------------------------------> 
-#         if choice0 not in  [self.cLFDiv, self.cLFFCOpposite]:
-#             if choice1 == self.cLFCAny:
-#                 mask = mask.any(axis=1)
-#             else:
-#                 mask = mask.all(axis=1)
-#         else:
-#             mask = pd.concat([maskUp, maskDown], axis=1).all(axis=1)
-#         #------------------------------> 
-#         self.rDf = self.rDf[mask]
-#         #endregion -------------------------------------------------------> DF
-    
-#         #region --------------------------------------------------> Update GUI
-#         if updateL:
-#             self.UpdateGUI()
-#             #------------------------------> 
-#             self.StatusBarFilterText(f'{choice0} ({choice1[0:3]})')
-#             #------------------------------> 
-#             self.rFilterList.append(
-#                 [config.lFilFCEvol, 
-#                  {'choice':choice, 'updateL': False}, 
-#                  f'{choice0} ({choice1[0:3]})']
-#             )
-#         else:
-#             pass
-#         #endregion -----------------------------------------------> Update GUI
-            
-#         return True
-#     #---
-        
-#     def Filter_HCurve(self, updateL: bool=True, **kwargs) -> bool:
-#         """Filter results based on H Curve
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         filterText = config.lFilHypCurve
-#         lim = self.rT0 * self.rS0
-#         fc = self.rDf.loc[:,[(self.rCondC,self.rRpC,'FC')]]
-#         p = -np.log10(self.rDf.loc[:,[(self.rCondC,self.rRpC,'P')]])
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ---------------------------------------------------> H Curve 
-#         cond = [fc < -lim, fc > lim]
-#         choice = [
-#             dmethod.HCurve(fc, self.rT0, self.rS0), 
-#             dmethod.HCurve(fc, self.rT0, self.rS0),
-#         ]
-#         pH = np.select(cond, choice, np.nan)
-#         #endregion ------------------------------------------------> H Curve
-        
-#         #region ---------------------------------------------------> Filter
-#         cond = [pH < p, pH > p]
-#         choice = [True, False]
-#         npBool = np.select(cond, choice)
-#         npBool = npBool.astype(bool)
-#         self.rDf = self.rDf[npBool]
-#         #endregion ------------------------------------------------> Filter
+    def Filter_FCChange(self, choice: dict={}, updateL: bool=True) -> bool:
+        """Filter results based on FC evolution.
 
-#         #region --------------------------------------------------> Update GUI
-#         if updateL:
-#             self.UpdateGUI()
-#             #------------------------------> 
-#             self.StatusBarFilterText(f'{filterText}')
-#             #------------------------------> 
-#             self.rFilterList.append(
-#                 [filterText, 
-#                  {'choice':filterText, 'updateL': False}, 
-#                  f'{filterText}']
-#             )
-#         else:
-#             pass
-#         #endregion -----------------------------------------------> Update GUI
-            
-#         return True
-#     #---
-    
-#     def Filter_Log2FC(
-#         self, gText: Optional[str]=None, updateL: bool=True) -> bool:
-#         """Filter results by log2FC.
-    
-#             Parameters
-#             ----------
-#             gText : str
-#                 FC threshold and operand, e.g. < 10 or > 3.4
-#             updateL : bool
-#                 Update filterList and StatusBar (True) or not (False)
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ----------------------------------------------> Text Entry Dlg
-#         if gText is None: 
-#             #------------------------------> 
-#             dlg = dtsWindow.UserInput1Text(
-#                 'Filter results by Log2(FC) value.',
-#                 'Threshold',
-#                 'log2(FC) value. e.g. < 2.3 or > -3.5',
-#                 self.wPlots.dPlot['Vol'],
-#                 dtsValidator.Comparison(numType='float', op=['<', '>']),
-#             )
-#             #------------------------------> 
-#             if dlg.ShowModal():
-#                 #------------------------------>
-#                 uText = dlg.input.tc.GetValue()
-#                 #------------------------------> 
-#                 dlg.Destroy()
-#             else:
-#                 dlg.Destroy()
-#                 return True
-#         else:
-#             try:
-#                 #------------------------------> 
-#                 a, b = dtsCheck.Comparison(gText, numType='float', op=['<','>'])
-#                 #------------------------------> 
-#                 if a:
-#                     uText = gText
-#                 else:
-#                     #------------------------------> 
-#                     msg = 'It was not possible to apply the Log2FC filter.'
-#                     tException = b[2]
-#                     #------------------------------> 
-#                     dtsWindow.DialogNotification(
-#                         'errorU', 
-#                         msg        = msg,
-#                         tException = tException,
-#                         parent     = self,
-#                         setText    = True,
-#                     )
-#                     #------------------------------> 
-#                     return False
-#             except Exception as e:
-#                 raise e
-#         #endregion -------------------------------------------> Text Entry Dlg
-        
-#         #region ------------------------------------------> Get Value and Plot
-#         op, val = uText.strip().split()
-#         val = float(val)
-#         #------------------------------> 
-#         idx = pd.IndexSlice
-#         col = idx[self.rCondC,self.rRpC,'FC']
-#         if op == '<':
-#             self.rDf = self.rDf[self.rDf[col] <= val]
-#         else:
-#             self.rDf = self.rDf[self.rDf[col] >= val]
-#         #endregion ---------------------------------------> Get Value and Plot
-        
-#         #region ------------------------------------------> Update Filter List
-#         if updateL:
-#             self.UpdateGUI()
-#             #------------------------------> 
-#             self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
-#             #------------------------------> 
-#             self.rFilterList.append(
-#                 [config.lFilFCLog, 
-#                  {'gText': uText, 'updateL': False},
-#                  f'{self.cLFLog2FC} {op} {val}']
-#             )
-#         else:
-#             pass
-#         #endregion ---------------------------------------> Update Filter List
-        
-#         return True
-#     #---    
-    
+            Parameters
+            ----------
+            choice : dict
+                Keys are int 0 to 1. Value in 0 is the filter to apply and 
+                in 1 the conditions to consider. 
+            updateL : bool
+                Update (True) or not (False) the GUI. Default is True.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Get Value
+        if choice:
+            choice0, choice1 = choice.values()
+        else:
+            dlg = DialogMultipleCheckBox(
+                'Filter results by FC evolution.', 
+                [self.cLFFCDict, self.cLFCOpt], 
+                [2, 3],
+                label       = ['Options', 'Conditions to use'],
+                multiChoice = [False, False],
+                parent      = self,
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------> 
+                choice = dlg.GetChoice() # The value of choice is needed below
+                choice0, choice1 = choice.values()
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return False
+        #endregion ------------------------------------------------> Get Value
+
+        #region ----------------------------------------------------------> DF
+        idx = pd.IndexSlice
+        #------------------------------> 
+        if choice1 == self.cLFCSel:
+            df = self.rDf.loc[:,idx[self.rCondC,:,'FC']]
+        else:
+            df = self.rDf.loc[:,idx[:,:,'FC']]
+        #------------------------------> 
+        if choice0 == self.cLFFCUp:
+            mask = df.groupby(level=0, axis=1).apply(lambda x: (x > 0).all(axis=1)) # type: ignore
+        elif choice0 == self.cLFFCDown:
+            mask = df.groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1)) # type: ignore
+        elif choice0 == self.cLFFCNo:
+            mask = df.groupby(level=0, axis=1).apply(lambda x: ((x > -self.rT0*self.rS0) & (x < self.rT0*self.rS0)).all(axis=1)) # type: ignore
+        elif choice0 == self.cLFFCUpMon:
+            mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1)) # type: ignore
+        elif choice0 == self.cLFFCDownMon:
+            mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_decreasing) & (x < 0)).all(), axis=1)) # type: ignore
+        elif choice0 == self.cLFDiv:
+            maskUp = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1)) # type: ignore
+            maskUp = maskUp.any(axis=1) # type: ignore
+            maskDown = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_decreasing) & (x < 0)).all(), axis=1)) # type: ignore
+            maskDown = maskDown.any(axis=1) # type: ignore
+        elif choice0 == self.cLFFCOpposite:
+            maskUp = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: (x > 0).all(axis=1)) # type: ignore
+            maskUp = maskUp.any(axis=1) # type: ignore
+            maskDown = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1)) # type: ignore
+            maskDown = maskDown.any(axis=1) # type: ignore
+        else:
+            return False
+        #------------------------------> 
+        if choice0 not in [self.cLFDiv, self.cLFFCOpposite]:
+            if choice1 == self.cLFCAny:
+                mask = mask.any(axis=1) # type: ignore
+            else:
+                mask = mask.all(axis=1) # type: ignore
+        else:
+            mask = pd.concat([maskUp, maskDown], axis=1).all(axis=1) # type: ignore
+        #------------------------------> 
+        self.rDf = self.rDf[mask]
+        #endregion -------------------------------------------------------> DF
+
+        #region --------------------------------------------------> Update GUI
+        if updateL:
+            self.UpdateGUI()
+            #------------------------------> 
+            self.StatusBarFilterText(f'{choice0} ({choice1[0:3]})')
+            #------------------------------> 
+            self.rFilterList.append(
+                [mConfig.lFilFCEvol, 
+                 {'choice':choice, 'updateL': False}, 
+                 f'{choice0} ({choice1[0:3]})']
+            )
+        else:
+            pass
+        #endregion -----------------------------------------------> Update GUI
+
+        return True
+    #---
+
+    def Filter_HCurve(self, updateL: bool=True, **kwargs) -> bool:
+        """Filter results based on Hyperbolic Curve.
+
+            Parameters
+            ----------
+            updateL : bool
+                Update (True) or not (False) the GUI. Default is True.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        filterText = mConfig.lFilHypCurve
+        lim = self.rT0 * self.rS0
+        fc = self.rDf.loc[:,[(self.rCondC,self.rRpC,'FC')]]
+        p = -np.log10(self.rDf.loc[:,[(self.rCondC,self.rRpC,'P')]])
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> H Curve 
+        cond = [fc < -lim, fc > lim]
+        choice = [
+            mMethod.HCurve(fc, self.rT0, self.rS0), 
+            mMethod.HCurve(fc, self.rT0, self.rS0),
+        ]
+        pH = np.select(cond, choice, np.nan)
+        #endregion ------------------------------------------------> H Curve
+
+        #region ---------------------------------------------------> Filter
+        cond = [pH < p, pH > p]
+        choice = [True, False]
+        npBool = np.select(cond, choice)
+        npBool = npBool.astype(bool)
+        self.rDf = self.rDf[npBool]
+        #endregion ------------------------------------------------> Filter
+
+        #region --------------------------------------------------> Update GUI
+        if updateL:
+            self.UpdateGUI()
+            #------------------------------> 
+            self.StatusBarFilterText(f'{filterText}')
+            #------------------------------> 
+            self.rFilterList.append(
+                [filterText, 
+                 {'choice':filterText, 'updateL': False}, 
+                 f'{filterText}']
+            )
+        else:
+            pass
+        #endregion -----------------------------------------------> Update GUI
+
+        return True
+    #---
+
+    def Filter_Log2FC(self, gText: str='', updateL: bool=True) -> bool:
+        """Filter results by log2FC.
+
+            Parameters
+            ----------
+            gText : str
+                FC threshold and operand, e.g. < 10 or > 3.4
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        print(gText)
+        if gText:
+            uText = gText
+        else:
+            #------------------------------> 
+            dlg = DialogUserInputText(
+                'Filter results by Log2(FC) value.',
+                ['Threshold'],
+                ['log2(FC) value. e.g. < 2.3 or > -3.5'],
+                [mValidator.Comparison(numType='float', op=['<', '>'])],
+                parent = self,
+            )
+            #------------------------------>
+            if dlg.ShowModal():
+                #------------------------------>
+                uText = dlg.GetValue()
+                #------------------------------>
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return True
+        #endregion -------------------------------------------> Text Entry Dlg
+
+        #region ------------------------------------------> Get Value and Plot
+        op, val = uText[0].strip().split()
+        val = float(val)
+        #------------------------------> 
+        idx = pd.IndexSlice
+        col = idx[self.rCondC,self.rRpC,'FC']
+        if op == '<':
+            self.rDf = self.rDf[self.rDf[col] <= val]
+        else:
+            self.rDf = self.rDf[self.rDf[col] >= val]
+        #endregion ---------------------------------------> Get Value and Plot
+
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            self.UpdateGUI()
+            #------------------------------> 
+            self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
+            #------------------------------> 
+            self.rFilterList.append(
+                [mConfig.lFilFCLog, 
+                 {'gText': uText, 'updateL': False},
+                 f'{self.cLFLog2FC} {op} {val}']
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
+
+        return True
+    #---
+
 #     def Filter_PValue(
 #         self, gText: Optional[str]=None, absB: Optional[bool]=None, 
 #         updateL: bool=True,
@@ -12569,6 +12550,331 @@ class DialogListSelect(BaseDialogOkCancel):
         return True
     #---
     #endregion ------------------------------------------------> Event methods
+#---
+
+
+class DialogMultipleCheckBox(BaseDialogOkCancel):
+    """Present multiple choices as checkboxes.
+
+        Parameters
+        ----------
+        title : str
+            Title for the wx.Dialog.
+        items : dict
+            Keys are the name of the wx.CheckBox and values the label.
+            Keys are also used to return the checked elements.
+        nCol : int
+            wx.CheckBox will be distributed in a grid of nCol and as many as 
+            needed rows.
+        label : str
+            Label for the wx.StaticBox.
+        multiChoice : bool
+            More than one wx.Checkbox can be selected (True) or not (False).
+        parent : wx.Window
+            Parent of the wx.Dialog.
+
+        Attributes
+        ----------
+        rDict: dict
+            Keys are 0 to N where N is the number of elements in items, nCol,
+            label and multiChoice.
+            {
+                0: {
+                    stBox  : wx.StaticBox,
+                    checkB : [wx.CheckBox],
+                    sFlex  : wx.FlexGridSizer,
+                    sStBox : wx.StaticBoxSizer,
+                },
+            }
+        checked : dict
+            Keys are int 0 to N and values the names of the checked wx.CheckBox 
+            after pressing the OK button. The names are the keys in the 
+            corresponding item group.
+
+        Notes
+        -----
+        At least one option must be selected for the OK button to close the 
+        wx.Dialog.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        title: str,
+        items: list[dict[str, str]],
+        nCol: list[int], 
+        label: list[str]=['Options'],
+        multiChoice: list[bool]=[False],
+        parent: Optional[wx.Window]=None
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> 
+        self.rDict = {}
+        self.rChecked = {}
+        #------------------------------> 
+        super().__init__(title=title, parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        try:
+            for k,v in enumerate(label):
+                self.rDict[k] = {}
+                #------------------------------> wx.StaticBox
+                self.rDict[k]['stBox'] = wx.StaticBox(self, label=v)
+                #------------------------------> wx.CheckBox
+                self.rDict[k]['checkB'] = []
+                for j,i in items[k].items():
+                    self.rDict[k]['checkB'].append(
+                        wx.CheckBox(
+                            self.rDict[k]['stBox'], 
+                            label = i,
+                            name  = f'{j}-{k}'
+                    ))
+                #------------------------------> wx.Sizer
+                self.rDict[k]['sFlex'] =(
+                    wx.FlexGridSizer(ceil(len(items[k])/nCol[k]), nCol[k], 1,1))
+                self.rDict[k]['sStBox'] = wx.StaticBoxSizer(
+                    self.rDict[k]['stBox'], orient=wx.VERTICAL)
+                #------------------------------> Bind
+                if not multiChoice[k]:
+                    [x.Bind(wx.EVT_CHECKBOX, self.OnCheck) for x in self.rDict[k]['checkB']]
+                else:
+                    pass   
+        except IndexError:
+            msg = ('items, nCol, label and multiChoice must have the same '
+                   'number of elements.')
+            raise mException.InputError(msg)
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        for k,v in self.rDict.items():
+            #------------------------------> Add check to Flex
+            for c in v['checkB']:
+                v['sFlex'].Add(c, 0, wx.ALIGN_LEFT|wx.ALL, 7)
+            #------------------------------> Add Flex to StaticBox
+            v['sStBox'].Add(v['sFlex'], 0, wx.ALIGN_CENTER|wx.ALL, 5)
+            #------------------------------> Add to Sizer
+            self.sSizer.Add(v['sStBox'], 0, wx.EXPAND|wx.ALL, 5)
+        #------------------------------>
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region ---------------------------------------------> Window position
+        self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnCheck(self, event:wx.CommandEvent) -> bool:
+        """Deselect all other seleced options.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Deselect
+        if event.IsChecked():
+            #------------------------------> 
+            tCheck = event.GetEventObject()
+            group = int(tCheck.GetName().split('-')[1])
+            #------------------------------> 
+            [k.SetValue(False) for k in self.rDict[group]['checkB']]
+            #------------------------------> 
+            tCheck.SetValue(True)
+        else:
+            pass
+        #endregion -------------------------------------------------> Deselect
+
+        return True
+    #---
+
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Validate
+        #------------------------------> 
+        for k in self.rDict:
+            for c in self.rDict[k]['checkB']:
+                if c.IsChecked():
+                    self.rChecked[k] = c.GetName().split('-')[0]
+                else:
+                    pass
+        #------------------------------> 
+        if self.rChecked and len(self.rChecked) == len(self.rDict):
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
+        #endregion -------------------------------------------------> Validate
+
+        return True
+    #---
+
+    def GetChoice(self) -> dict:
+        """Get the selected checkbox.
+
+            Returns
+            -------
+            dict
+                The keys are 0 to N and values the items corresponding to the 
+                checked wx.CheckBox in each group.
+        """
+        return self.rChecked
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class DialogUserInputText(BaseDialogOkCancel):
+    """Present a modal window with N wx.TextCtrl for user input.
+
+        Parameters
+        ----------
+        title : str
+            Title of the dialog.
+        label : list[str]
+            Labels for the wx.StaticText in the dialog.
+        hint : list[str]
+            Hint for the wx.TextCtrl in the dialog.
+        parent : wx.Window or None
+            To center the dialog on the parent.
+        validator : list[wx.Validator]
+            The validator is expected to comply with the return of validators in
+            mValidator.
+        size : wx.Size
+            Size of the window. Default is (100, 70)
+
+        Attributes
+        ----------
+        rInput : list[mWidget.StaticTextCtrl]
+
+        Notes
+        -----
+        A valid input must be given for the wx.Dialog to be closed after
+        pressing the OK button.
+        The number of mWidget.StaticTextCtrl to be created is taken from
+        the label parameter.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        title: str,
+        label: list[str],
+        hint: list[str],
+        validator: list[wx.Validator],
+        parent: Union[wx.Window, None]=None,
+        values: list[str]=[],
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent=parent, title=title)
+        #------------------------------>
+        self.rInput = []
+        if values:
+            self.rValues = values
+        else:
+            self.rValues = ['' for x in label]
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        for k,v in enumerate(label):
+            self.rInput.append(mWidget.StaticTextCtrl(
+                self,
+                stLabel   = v,
+                tcHint    = hint[k],
+                validator = validator[k],
+            ))
+            self.rInput[k].wTc.SetValue(self.rValues[k])
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
+        #------------------------------>
+        for k in self.rInput:
+            self.sSizer.Add(k.wSt, 0, wx.ALIGN_LEFT|wx.UP|wx.LEFT|wx.RIGHT, 5)
+            self.sSizer.Add(k.wTc, 0, wx.EXPAND|wx.DOWN|wx.LEFT|wx.RIGHT, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------>
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region ---------------------------------------------> Window position
+        self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        wrong = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ----------------------------------------------------> Validate
+        for k in self.rInput:
+            if k.wTc.GetValidator().Validate()[0]:
+                pass
+            else:
+                wrong.append(k)
+                k.wTc.SetValue('')
+        #endregion -------------------------------------------------> Validate
+
+        #region ---------------------------------------------------> Return
+        if not wrong:
+            self.EndModal(1)
+            self.Close()
+            return True
+        else:
+            return False
+        #endregion ------------------------------------------------> Return
+    #---
+
+    def GetValue(self) -> list[str]:
+        """Get the values of the wx.TextCtrl.
+
+            Returns
+            -------
+            list[str]
+        """
+        #region --------------------------------------------------->
+        listO = []
+        #------------------------------>
+        for k in self.rInput:
+            listO.append(k.wTc.GetValue())
+        #endregion ------------------------------------------------>
+
+        return listO
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 
 
