@@ -3208,10 +3208,10 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #------------------------------> Labels
     cLProtLAvail  = 'Displayed Proteins'
     cLProtLShow   = 'Proteins to Label'
-#     cLFZscore     = 'Z'
+    cLFZscore     = 'Z'
     cLFLog2FC     = 'Log2FC'
-#     cLFPValAbs    = 'P'
-#     cLFPValLog    = 'pP'
+    cLFPValAbs    = 'P'
+    cLFPValLog    = 'pP'
     cLFFCUp       = 'FC > 0'
     cLFFCUpL      = 'FC > 0'
     cLFFCDown     = 'FC < 0'
@@ -3337,20 +3337,20 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             'P - Log2FC Line'      : self.DrawLinesPLog2FC,
             'Z Score Line'         : self.DrawLinesZScore,
             #------------------------------> Filter methods
-            mConfig.kwToolFilterFCEvol  : self.Filter_FCChange,
-            mConfig.kwToolFilterHypCurve: self.Filter_HCurve,
-            mConfig.kwToolFilterFCLog   : self.Filter_Log2FC,
-#             config.lFilPVal    : self.Filter_PValue,
-#             f'{config.lFilZScore} F'  : self.Filter_ZScore,
-#             'Apply All'        : self.FilterApply,
-#             'Remove Last'      : self.FilterRemoveLast,
-#             'Remove Any'       : self.FilterRemoveAny,
-#             'Remove All'       : self.FilterRemoveAll,
-#             'Copy'             : self.FilterCopy,
-#             'Paste'            : self.FilterPaste,
-#             'Save Filter'      : self.FilterSave,
-#             'Load Filter'      : self.FilterLoad,
-#             'AutoApplyFilter'  : self.OnAutoFilter,
+            mConfig.lFilFCEvol  : self.Filter_FCChange,
+            mConfig.lFilHypCurve: self.Filter_HCurve,
+            mConfig.lFilFCLog   : self.Filter_Log2FC,
+            mConfig.lFilPVal    : self.Filter_PValue,
+            mConfig.lFilZScore  : self.Filter_ZScore,
+            'Apply All'         : self.FilterApply,
+            'Remove Last'       : self.FilterRemoveLast,
+            'Remove Any'        : self.FilterRemoveAny,
+            'Remove All'        : self.FilterRemoveAll,
+            'Copy'              : self.FilterCopy,
+            'Paste'             : self.FilterPaste,
+            'Save Filter'       : self.FilterSave,
+            'Load Filter'       : self.FilterLoad,
+            'AutoApplyFilter'   : self.AutoFilter,
             #------------------------------> 
             'Labels'      : self.ClearLabel,
             'Selection'   : self.ClearSel,
@@ -5021,6 +5021,41 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         self.ClearLabel()
         return True
     #---
+
+    def UpdateStatusBarFilterText(self) -> bool:
+        """Update the filter list in the statusbar.
+
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------------------> Delete
+        self.wStatBar.SetStatusText('', 1)
+        #endregion ---------------------------------------------------> Delete
+
+        #region ---------------------------------------------------------> Add
+        for k in self.rFilterList:
+            self.StatusBarFilterText(k[2])
+        #endregion ------------------------------------------------------> Add
+
+        return True
+    #---
+
+    def AutoFilter(self, mode: bool) -> bool:
+        """Auto apply filter when changing date.
+
+            Parameters
+            ----------
+            mode : bool
+                Apply filters (True) or not (False).
+
+            Returns
+            -------
+            bool
+        """
+        self.rAutoFilter = mode
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Event Methods
@@ -5111,45 +5146,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 
         return True
     #---
-
-#     def OnAutoFilter(self, mode: bool) -> bool:
-#         """Auto apply filter when changing date.
-    
-#             Parameters
-#             ----------
-#             mode : bool
-#                 Apply filters (True) or not (False).
-    
-#             Returns
-#             -------
-#             bool
-    
-#             Raise
-#             -----
-            
-#         """
-#         self.rAutoFilter = mode
-#         return True
-#     #---
-
-#     def UpdateStatusBarFilterText(self) -> bool:
-#         """Update the filter list in the statusbar
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ------------------------------------------------------> Delete
-#         self.wStatBar.SetStatusText('', 1)
-#         #endregion ---------------------------------------------------> Delete
-
-#         #region ---------------------------------------------------------> Add
-#         for k in self.rFilterList:
-#             self.StatusBarFilterText(k[2])
-#         #endregion ------------------------------------------------------> Add
-
-#         return True
-#     #---
     #endregion ------------------------------------------------> Event Methods
 
     #region --------------------------------------------------> Filter Methods
@@ -5241,7 +5237,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             self.StatusBarFilterText(f'{choice0} ({choice1[0:3]})')
             #------------------------------> 
             self.rFilterList.append(
-                [mConfig.lFilFCEvol, 
+                [mConfig.lFilFCEvol,
                  {'choice':choice, 'updateL': False}, 
                  f'{choice0} ({choice1[0:3]})']
             )
@@ -5374,207 +5370,160 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         return True
     #---
 
-#     def Filter_PValue(
-#         self, gText: Optional[str]=None, absB: Optional[bool]=None, 
-#         updateL: bool=True,
-#         ) -> bool:
-#         """Filter results by P value.
-    
-#             Parameters
-#             ----------
-#             gText : str
-#                 P value threshold and operand, e.g. < 10 or > 3.4
-#             absB : bool
-#                 Use absolute values (True) or -log10 values (False)
-#             updateL : bool
-#                 Update filterList and StatusBar (True) or not (False)
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ----------------------------------------------> Text Entry Dlg
-#         if gText is None:
-#             #------------------------------> 
-#             dlg = window.FilterPValue(
-#                 'Filter results by P value.',
-#                 'Threshold',
-#                 'Absolute or -log10(P) value. e.g. < 0.01 or > 1',
-#                 self.wPlots.dPlot['Vol'],
-#                 dtsValidator.Comparison(numType='float', op=['<', '>'], vMin=0),
-#             )
-#             #------------------------------> 
-#             if dlg.ShowModal():
-#                 #------------------------------>
-#                 uText = dlg.input.tc.GetValue()
-#                 absB  = dlg.wCbAbs.IsChecked()
-#                 #------------------------------> 
-#                 dlg.Destroy()
-#             else:
-#                 dlg.Destroy()
-#                 return True
-#         else:
-#             try:
-#                 #------------------------------> 
-#                 a, b = dtsCheck.Comparison(
-#                     gText, numType='float', op=['<', '>'], vMin=0)
-#                 #------------------------------> 
-#                 if a:
-#                     uText = gText
-#                 else:
-#                     #------------------------------> 
-#                     msg = 'It was not possible to apply the P value filter.'
-#                     tException = b[2]
-#                     #------------------------------> 
-#                     dtsWindow.DialogNotification(
-#                         'errorU', 
-#                         msg        = msg,
-#                         tException = tException,
-#                         parent     = self,
-#                         setText    = True,
-#                     )
-#                     #------------------------------> 
-#                     return False
-#             except Exception as e:
-#                 raise e
-#         #endregion -------------------------------------------> Text Entry Dlg
-        
-#         #region ------------------------------------------> Get Value and Plot
-#         op, val = uText.strip().split()
-#         val = float(val)
-#         #------------------------------> Apply to regular or corrected P values
-#         idx = pd.IndexSlice
-#         if self.rCorrP:
-#             col = idx[self.rCondC,self.rRpC,'Pc']
-#         else:
-#             col = idx[self.rCondC,self.rRpC,'P']
-#         #------------------------------> Given value is abs or -log10 P value
-#         df = self.rDf.copy()
-#         if absB:
-#             pass
-#         else:
-#             df.loc[:,col] = -np.log10(df.loc[:,col])
-#         #------------------------------> 
-#         if op == '<':
-#             self.rDf = self.rDf[df[col] <= val]
-#         else:
-#             self.rDf = self.rDf[df[col] >= val]
-#         #endregion ---------------------------------------> Get Value and Plot
-        
-#         #region ------------------------------> Update Filter List & StatusBar
-#         if updateL:
-#             self.UpdateGUI()
-#             #------------------------------> 
-#             label = self.cLFPValAbs if absB else self.cLFPValLog
-#             #------------------------------> 
-#             self.StatusBarFilterText(f'{label} {op} {val}')
-#             #------------------------------> 
-#             self.rFilterList.append(
-#                 [config.lFilPVal, 
-#                  {'gText': uText, 'absB': absB, 'updateL': False},
-#                  f'{label} {op} {val}']
-#             )
-#         else:
-#             pass
-#         #endregion ---------------------------> Update Filter List & StatusBar
-        
-#         return True
-#     #---
-   
-#     def Filter_ZScore(
-#         self, gText: Optional[str]=None, updateL: bool=True
-#         ) -> bool:
-#         """Filter results by Z score.
-    
-#             Parameters
-#             ----------
-#             gText : str
-#                 Z score threshold and operand, e.g. < 10 or > 3.4
-#             updateL : bool
-#                 Update filterList and StatusBar (True) or not (False)
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ----------------------------------------------> Text Entry Dlg
-#         if gText is None:
-#             #------------------------------> 
-#             dlg = dtsWindow.UserInput1Text(
-#                 'Filter results by Z score.',
-#                 'Threshold (%)',
-#                 'Decimal value between 0 and 100. e.g. < 10.0 or > 20.4',
-#                 self.wPlots.dPlot['Vol'],
-#                 dtsValidator.Comparison(
-#                     numType='float', vMin=0, vMax=100, op=['<', '>']
-#                 ),
-#             )
-#             #------------------------------> 
-#             if dlg.ShowModal():
-#                 #------------------------------>
-#                 uText = dlg.input.tc.GetValue()
-#                 #------------------------------> 
-#                 dlg.Destroy()
-#             else:
-#                 dlg.Destroy()
-#                 return True
-#         else:
-#             try:
-#                 #------------------------------> 
-#                 a, b = dtsCheck.Comparison(
-#                     gText, 'int', vMin=0, vMax=100, op=['<', '>'])
-#                 #------------------------------> 
-#                 if a:
-#                     uText = gText
-#                 else:
-#                     #------------------------------> 
-#                     msg = 'It was not possible to apply the Z Score filter.'
-#                     tException = b[2]
-#                     #------------------------------> 
-#                     dtsWindow.DialogNotification(
-#                         'errorU', 
-#                         msg        = msg,
-#                         tException = tException,
-#                         parent     = self,
-#                         setText    = True,
-#                     )
-#                     #------------------------------> 
-#                     return False
-#             except Exception as e:
-#                 raise e
-#         #endregion -------------------------------------------> Text Entry Dlg
-        
-#         #region ------------------------------------------> Get Value and Plot
-#         op, val = uText.strip().split()
-#         zVal = stats.norm.ppf(1.0-(float(val.strip())/100.0))
-#         #------------------------------> 
-#         idx = pd.IndexSlice
-#         col = idx[self.rCondC,self.rRpC,'FCz']
-#         if op == '<':
-#             self.rDf = self.rDf[
-#                 (self.rDf[col] >= zVal) | (self.rDf[col] <= -zVal)]
-#         else:
-#             self.rDf = self.rDf[
-#                 (self.rDf[col] <= zVal) | (self.rDf[col] >= -zVal)]
-#         #endregion ---------------------------------------> Get Value and Plot
-        
-#         #region ------------------------------------------> Update Filter List
-#         if updateL:
-#             self.UpdateGUI()
-#             #------------------------------> 
-#             self.StatusBarFilterText(f'{self.cLFZscore} {op} {val}')
-#             #------------------------------> 
-#             self.rFilterList.append(
-#                 [config.lFilZScore, 
-#                  {'gText': uText, 'updateL': False},
-#                  f'{self.cLFZscore} {op} {val}']
-#             )
-#         else:
-#             pass
-#         #endregion ---------------------------------------> Update Filter List
-        
-#         return True
-#     #---
+    def Filter_PValue(
+        self,
+        gText: str='',
+        absB: Optional[bool]=None,
+        updateL: bool=True,
+        ) -> bool:
+        """Filter results by P value.
+
+            Parameters
+            ----------
+            gText : str
+                P value threshold and operand, e.g. < 10 or > 3.4
+            absB : bool
+                Use absolute values (True) or -log10 values (False)
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False)
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        if gText:
+            uText = gText
+        else:
+            dlg = DialogFilterPValue(
+                'Filter results by P value.',
+                'Threshold',
+                'Absolute or -log10(P) value. e.g. < 0.01 or > 1',
+                self.wPlots.dPlot['Vol'],
+                mValidator.Comparison(numType='float', op=['<', '>'], vMin=0),
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------>
+                uText, absB  = dlg.GetValue()
+                #------------------------------>
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return True
+        #endregion -------------------------------------------> Text Entry Dlg
+
+        #region ------------------------------------------> Get Value and Plot
+        op, val = uText.strip().split()
+        val = float(val)
+        #------------------------------> Apply to regular or corrected P values
+        idx = pd.IndexSlice
+        if self.rCorrP:
+            col = idx[self.rCondC,self.rRpC,'Pc']
+        else:
+            col = idx[self.rCondC,self.rRpC,'P']
+        #------------------------------> Given value is abs or -log10 P value
+        df = self.rDf.copy()
+        if absB:
+            pass
+        else:
+            df.loc[:,col] = -np.log10(df.loc[:,col])
+        #------------------------------> 
+        if op == '<':
+            self.rDf = self.rDf[df[col] <= val]
+        else:
+            self.rDf = self.rDf[df[col] >= val]
+        #endregion ---------------------------------------> Get Value and Plot
+
+        #region ------------------------------> Update Filter List & StatusBar
+        if updateL:
+            self.UpdateGUI()
+            #------------------------------> 
+            label = self.cLFPValAbs if absB else self.cLFPValLog
+            #------------------------------> 
+            self.StatusBarFilterText(f'{label} {op} {val}')
+            #------------------------------> 
+            self.rFilterList.append(
+                [mConfig.lFilPVal, 
+                 {'gText': uText, 'absB': absB, 'updateL': False},
+                 f'{label} {op} {val}']
+            )
+        else:
+            pass
+        #endregion ---------------------------> Update Filter List & StatusBar
+
+        return True
+    #---
+
+    def Filter_ZScore(self, gText: str='', updateL: bool=True) -> bool:
+        """Filter results by Z score.
+
+            Parameters
+            ----------
+            gText : str
+                Z score threshold and operand, e.g. < 10 or > 3.4.
+            updateL : bool
+                Update filterList and StatusBar (True) or not (False).
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Text Entry Dlg
+        if gText:
+            uText = gText
+        else:
+            dlg = DialogUserInputText(
+                'Filter results by Z score.',
+                ['Threshold (%)'],
+                ['Decimal value between 0 and 100. e.g. < 10.0 or > 20.4'],
+                [mValidator.Comparison(
+                    numType='float', vMin=0, vMax=100, op=['<', '>']
+                )],
+                parent = self,
+            )
+            #------------------------------> 
+            if dlg.ShowModal():
+                #------------------------------>
+                uText = dlg.GetValue()[0]
+                #------------------------------> 
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                return True
+        #endregion -------------------------------------------> Text Entry Dlg
+
+        #region ------------------------------------------> Get Value and Plot
+        op, val = uText.strip().split()
+        zVal = stats.norm.ppf(1.0-(float(val.strip())/100.0))
+        #------------------------------> 
+        idx = pd.IndexSlice
+        col = idx[self.rCondC,self.rRpC,'FCz']
+        if op == '<':
+            self.rDf = self.rDf[
+                (self.rDf[col] >= zVal) | (self.rDf[col] <= -zVal)]
+        else:
+            self.rDf = self.rDf[
+                (self.rDf[col] <= zVal) | (self.rDf[col] >= -zVal)]
+        #endregion ---------------------------------------> Get Value and Plot
+
+        #region ------------------------------------------> Update Filter List
+        if updateL:
+            self.UpdateGUI()
+            #------------------------------> 
+            self.StatusBarFilterText(f'{self.cLFZscore} {op} {val}')
+            #------------------------------> 
+            self.rFilterList.append(
+                [mConfig.lFilZScore, 
+                 {'gText': uText, 'updateL': False},
+                 f'{self.cLFZscore} {op} {val}']
+            )
+        else:
+            pass
+        #endregion ---------------------------------------> Update Filter List
+
+        return True
+    #---
 
     def FilterApply(self, reset: bool=True) -> bool:
         """Apply all filter to the current date.
@@ -5607,190 +5556,183 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         return True
     #---
 
-#     def FilterRemoveAll(self) -> bool:
-#         """Remove all filter.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------> Update Attributes
-#         self.rDf = self.rData[self.rDateC]['DF'].copy()
-#         self.rFilterList = []
-#         self.wStatBar.SetStatusText('', 1)
-#         #endregion ----------------------------------------> Update Attributes
-        
-#         #region --------------------------------------------------> Update GUI
-#         self.UpdateGUI()
-#         #endregion -----------------------------------------------> Update GUI 
-        
-#         return True
-#     #---
-    
-#     def FilterRemoveLast(self) -> bool:
-#         """Remove last applied filter.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -----------------------------------> Check Something to Delete
-#         if not self.rFilterList:
-#             return True
-#         else:
-#             pass
-#         #endregion --------------------------------> Check Something to Delete
-        
-#         #region -------------------------------------------> Update Attributes
-#         del self.rFilterList[-1]
-#         #endregion ----------------------------------------> Update Attributes
-        
-#         #region --------------------------------------------------> Update GUI
-#         self.FilterApply()
-#         self.UpdateStatusBarFilterText()
-#         self.UpdateGUI()
-#         #endregion -----------------------------------------------> Update GUI 
-        
-#         return True
-#     #---
-    
-#     def FilterRemoveAny(self) -> bool:
-#         """Remove selected filters.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -----------------------------------> Check Something to Delete
-#         if not self.rFilterList:
-#             return True
-#         else:
-#             pass
-#         #endregion --------------------------------> Check Something to Delete
-        
-#         #region ------------------------------------------------------> Dialog
-#         dlg = window.FilterRemoveAny(self.rFilterList, self.wPlots.dPlot['Vol'])
-#         if dlg.ShowModal():
-#             #------------------------------> 
-#             lo = dlg.GetChecked()
-#             #------------------------------> 
-#             dlg.Destroy()
-#             #------------------------------> 
-#             if lo:
-#                 pass
-#             else:
-#                 return True
-#         else:
-#             dlg.Destroy()
-#             return True
-#         #endregion ---------------------------------------------------> Dialog
-        
-#         #region ---------------------------------------------------> Variables
-#         text = ''
-#         #------------------------------> 
-#         for k in reversed(lo):
-#             del self.rFilterList[k]
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region --------------------------------------------------> Update GUI
-#         if self.rFilterList:
-#             self.FilterApply()
-#             self.UpdateStatusBarFilterText()
-#             self.UpdateGUI()
-#         else:
-#             self.FilterRemoveAll()
-#         #endregion -----------------------------------------------> Update GUI
-        
-#         return True
-#     #---
-    
-#     def FilterCopy(self) -> bool:
-#         """Copy the applied filters
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         self.rParent.rCopiedFilters = [x for x in self.rFilterList]
-#         return True
-#     #---
-    
-#     def FilterPaste(self) -> bool:
-#         """Paste the copied filters 
-        
-#             Returns
-#             -------
-#             True
-#         """
-#         #region ---------------------------------------------------> Copy
-#         self.rFilterList = [x for x in self.rParent.rCopiedFilters]
-#         #endregion ------------------------------------------------> Copy
+    def FilterRemoveAll(self) -> bool:
+        """Remove all filter.
 
-#         #region ---------------------------------------------------> 
-#         self.FilterApply()
-#         self.UpdateStatusBarFilterText()
-#         self.UpdateGUI()
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         self.rParent.rCopiedFilters = []
-#         #endregion ------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------> Update Attributes
+        self.rDf = self.rData[self.rDateC]['DF'].copy()
+        self.rFilterList = []
+        self.wStatBar.SetStatusText('', 1)
+        #endregion ----------------------------------------> Update Attributes
 
-#         return True
-#     #---
-    
-#     def FilterSave(self) -> bool:
-#         """Save the filters
-    
-#             Returns
-#             -------
-#             bool            
-#         """
-#         #region ---------------------------------------------------> 
-#         filterDict = {x[0]: x[1:] for x in self.rFilterList}
-#         #endregion ------------------------------------------------> 
+        #region --------------------------------------------------> Update GUI
+        self.UpdateGUI()
+        #endregion -----------------------------------------------> Update GUI 
 
-#         #region ---------------------------------------------------> 
-#         self.rObj.rData[self.cSection][self.rDateC]['F'] = filterDict
-#         #------------------------------> 
-#         if self.rObj.Save():
-#             self.rData[self.rDateC]['F'] = filterDict
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> 
-        
-#         return True
-#     #---
-    
-#     def FilterLoad(self) -> bool:
-#         """Load the filters
-    
-#             Returns
-#             -------
-#             bool            
-#         """
-#         #region ---------------------------------------------------> 
-#         self.rFilterList = [
-#             [k]+v for k,v in self.rData[self.rDateC]['F'].items()]
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         autoF = self.rAutoFilter
-#         self.rAutoFilter = True
-#         #------------------------------> 
-#         self.UpdateDisplayedData()
-#         #------------------------------> 
-#         self.rAutoFilter = autoF
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         self.wStatBar.SetStatusText('', 1)
-#         for k in self.rFilterList:
-#             self.StatusBarFilterText(k[2])
-#         #endregion ------------------------------------------------> 
+        return True
+    #---
 
-#         return True
-#     #---
+    def FilterRemoveLast(self) -> bool:
+        """Remove last applied filter.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------> Check Something to Delete
+        if not self.rFilterList:
+            return True
+        else:
+            pass
+        #endregion --------------------------------> Check Something to Delete
+
+        #region -------------------------------------------> Update Attributes
+        del self.rFilterList[-1]
+        #endregion ----------------------------------------> Update Attributes
+
+        #region --------------------------------------------------> Update GUI
+        self.FilterApply()
+        self.UpdateStatusBarFilterText()
+        self.UpdateGUI()
+        #endregion -----------------------------------------------> Update GUI 
+
+        return True
+    #---
+
+    def FilterRemoveAny(self) -> bool:
+        """Remove selected filters.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------> Check Something to Delete
+        if not self.rFilterList:
+            return True
+        else:
+            pass
+        #endregion --------------------------------> Check Something to Delete
+
+        #region ------------------------------------------------------> Dialog
+        dlg = DialogFilterRemoveAny(self.rFilterList, self)
+        if dlg.ShowModal():
+            lo = dlg.GetChecked()
+            #------------------------------> 
+            dlg.Destroy()
+            #------------------------------> 
+            if lo:
+                pass
+            else:
+                return True
+        else:
+            dlg.Destroy()
+            return True
+        #endregion ---------------------------------------------------> Dialog
+
+        #region ---------------------------------------------------> Variables
+        for k in reversed(lo):
+            del self.rFilterList[k]
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------> Update GUI
+        if self.rFilterList:
+            self.FilterApply()
+            self.UpdateStatusBarFilterText()
+            self.UpdateGUI()
+        else:
+            self.FilterRemoveAll()
+        #endregion -----------------------------------------------> Update GUI
+
+        return True
+    #---
+
+    def FilterCopy(self) -> bool:
+        """Copy the applied filters.
+
+            Returns
+            -------
+            bool
+        """
+        self.cParent.rCopiedFilters = [x for x in self.rFilterList] # type: ignore
+        return True
+    #---
+
+    def FilterPaste(self) -> bool:
+        """Paste the copied filters.
+
+            Returns
+            -------
+            True
+        """
+        #region ---------------------------------------------------> Copy
+        self.rFilterList = [x for x in self.cParent.rCopiedFilters] # type: ignore
+        #endregion ------------------------------------------------> Copy
+
+        #region ---------------------------------------------------> 
+        self.FilterApply()
+        self.UpdateStatusBarFilterText()
+        self.UpdateGUI()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def FilterSave(self) -> bool:
+        """Save the filters
+    
+            Returns
+            -------
+            bool            
+        """
+        #region ---------------------------------------------------> 
+        filterDict = {x[0]: x[1:] for x in self.rFilterList}
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.rObj.rData[self.cSection][self.rDateC]['F'] = filterDict
+        #------------------------------> 
+        if self.rObj.Save():
+            self.rData[self.rDateC]['F'] = filterDict
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def FilterLoad(self) -> bool:
+        """Load the filters.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        self.rFilterList = [
+            [k]+v for k,v in self.rData[self.rDateC]['F'].items()]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        autoF = self.rAutoFilter
+        self.rAutoFilter = True
+        #------------------------------> 
+        self.UpdateResultWindow()
+        #------------------------------> 
+        self.rAutoFilter = autoF
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.wStatBar.SetStatusText('', 1)
+        for k in self.rFilterList:
+            self.StatusBarFilterText(k[2])
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
     #endregion -----------------------------------------------> Filter Methods
 #---
 
@@ -11125,7 +11067,7 @@ class BaseDialogOkCancel(wx.Dialog):
         self.Close()
         return True
     #---
-    
+
     def OnCancel(self, event: wx.CommandEvent) -> bool:
         """The macOs implementation has a bug here that does not discriminate
             between the Cancel and Ok button and always return self.EndModal(1).
@@ -12878,316 +12820,283 @@ class DialogUserInputText(BaseDialogOkCancel):
 #---
 
 
-# class FilterRemoveAny(wx.Dialog):
-#     """Dialog to select Filters to remove in ProtProfPlot
+class DialogFilterRemoveAny(BaseDialogOkCancel):
+    """Dialog to select Filters to remove in ProtProfPlot.
 
-#         Parameters
-#         ----------
-#         cFilterList : list
-#             List of already applied filter, e.g.:
-#             [['Text', {kwargs} ], ...]
-#         cParent : wx.Window
-#             Parent of the window.
+        Parameters
+        ----------
+        cFilterList : list
+            List of already applied filter, e.g.:
+            [['Text', {kwargs} ], ...]
+        cParent : wx.Window
+            Parent of the window.
 
-#         Attributes
-#         ----------
-#         rCheckB: list[wx.CheckBox]
-#             List of wx.CheckBox to show in the window
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.ndFilterRemoveAny
-#     #------------------------------> 
-#     cSize = (900, 580)
-#     #------------------------------> 
-#     cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
-#     #endregion --------------------------------------------------> Class setup
+        Attributes
+        ----------
+        rCheckB: list[wx.CheckBox]
+            List of wx.CheckBox to show in the window
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.ndFilterRemoveAny
+    #------------------------------> 
+    cSize = (900, 580)
+    #------------------------------> 
+    cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
+    #------------------------------>
+    cTitle = 'Remove Selected Filters'
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cFilterList: list, cParent: Optional[wx.Window]=None) -> None:
-#         """ """
-#         #region -------------------------------------------------> Check Input
-        
-#         #endregion ----------------------------------------------> Check Input
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, filterList: list, parent: Optional[wx.Window]=None) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rCheckB = []
+        #------------------------------>
+        super().__init__(title=self.cTitle, parent=parent)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region -----------------------------------------------> Initial Setup
-#         self.rCheckB = []
-        
-#         super().__init__(
-#             cParent, 
-#             title = config.t[self.cName],
-#             style = self.cStyle,
-#             size  = self.cSize,
-#         )
-#         #endregion --------------------------------------------> Initial Setup
+        #region -----------------------------------------------------> Widgets
+        self.wSt = wx.StaticText(self, label='Select Filters to remove.')
+        #------------------------------> 
+        for k in filterList:
+            self.rCheckB.append(wx.CheckBox(
+                self, label=f'{k[0]} {k[1].get("gText", "")}'))
+        #endregion --------------------------------------------------> Widgets
 
-#         #region -----------------------------------------------------> Widgets
-#         self.wSt = wx.StaticText(self, label='Select Filters to remove.')
-#         #------------------------------> 
-#         for k in cFilterList:
-#             self.rCheckB.append(wx.CheckBox(
-#                 self, label=f'{k[0]} {k[1].get("gText", "")}'))
-#         #------------------------------> Buttons
-#         self.sBtn = self.CreateStdDialogButtonSizer(wx.CANCEL|wx.OK)
-#         #endregion --------------------------------------------------> Widgets
+        #region -------------------------------------------------------> Sizer
+        #------------------------------> 
+        self.sSizer = wx.BoxSizer(wx.VERTICAL)
+        #------------------------------> 
+        self.sSizer.Add(self.wSt, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        for k in self.rCheckB:
+            self.sSizer.Add(k, 0 , wx.ALIGN_LEFT|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------> 
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ----------------------------------------------------> Sizer
 
-#         #region -------------------------------------------------------> Sizer
-#         #------------------------------> 
-#         self.sSizer = wx.BoxSizer(wx.VERTICAL)
-#         #------------------------------> 
-#         self.sSizer.Add(self.wSt, 0, wx.ALIGN_LEFT|wx.ALL, 5)
-#         for k in self.rCheckB:
-#             self.sSizer.Add(k, 0 , wx.ALIGN_LEFT|wx.ALL, 5)
-#         self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
-#         #------------------------------> 
-#         self.SetSizer(self.sSizer)
-#         self.Fit()
-#         #endregion ----------------------------------------------------> Sizer
-        
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
-#         self.Bind(wx.EVT_BUTTON, self.OnCancel, id=wx.ID_CANCEL)
-#         #endregion -----------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
+        self.Bind(wx.EVT_BUTTON, self.OnCancel, id=wx.ID_CANCEL)
+        #endregion -----------------------------------------------------> Bind
 
-#         #region ---------------------------------------------> Window position
-#         self.CenterOnParent()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region ---------------------------------------------> Window position
+        self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #------------------------------> Class methods
-#     #region ---------------------------------------------------> Event methods
-#     def OnOK(self, event: wx.CommandEvent) -> bool:
-#         """Validate user information and close the window
+    #region --------------------------------------------------> Manage methods
+    def GetChecked(self) -> list[int]:
+        """Get the number of the checked wx.CheckBox.
+
+            Returns
+            -------
+            list of int
+                The index in self.checkB of the checked wx.CheckBox
+        """
+        #region ---------------------------------------------------> Variables  
+        lo = []
+        #endregion ------------------------------------------------> Variables  
+
+        #region -------------------------------------------------> Get Checked
+        for k,cb in enumerate(self.rCheckB):
+            lo.append(k) if cb.IsChecked() else None
+        #endregion ----------------------------------------------> Get Checked
+
+        return lo
+    #---
+    #endregion -----------------------------------------------> Manage methods
+#---
+
+
+class DialogFilterPValue(DialogUserInputText):
+    """Dialog to filter values by P value.
+
+        Parameters
+        ----------
+        cTitle : str
+            Title of the wx.Dialog
+        cLabel : str
+            Label for the wx.StaticText
+        cHint : str
+            Hint for the wx.TextCtrl.
+        cParent : wx.Window
+            Parent of the wx.Dialog
+        cValidator : wx.Validator
+            Validator for the wx.TextCtrl
+        cSize : wx.Size
+            Size of the wx.Dialog. Default is (420, 170) 
+    """
+    #region -----------------------------------------------------> Class setup
     
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, 
+        title: str,
+        label: str,
+        hint: str,
+        parent: Union[wx.Window, None]=None,
+        validator: wx.Validator=wx.DefaultValidator,
+        # cSize: tuple[int, int]=(420, 170),
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(
+            title     = title,
+            label     = [label],
+            hint      = [hint],
+            parent    = parent,
+            validator = [validator],
+        )
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wCbAbs = wx.CheckBox(self, label='Absolute P Value')
+        self.wCbLog = wx.CheckBox(self, label='-Log10(P) Value')
+        self.rCheck = [self.wCbAbs, self.wCbLog]
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> 
+        self.sCheck = wx.BoxSizer(orient=wx.HORIZONTAL)
+        self.sCheck.Add(self.wCbAbs, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sCheck.Add(self.wCbLog, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------> 
+        self.sSizer.Detach(self.sBtn)
+        #------------------------------> 
+        self.sSizer.Add(self.sCheck, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------>
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.rInput[0].wTc.Bind(wx.EVT_TEXT, self.OnTextChange)
+        for x in self.rCheck:
+            x.Bind(wx.EVT_CHECKBOX, self.OnCheck)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event methods
+    def OnTextChange(self, event) -> bool:
+        """Select -log10P if the given value is > 1.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Check
+        if self.rInput[0].wTc.GetValidator().Validate()[0]:
+            #------------------------------> Get val
+            val = float(self.rInput[0].wTc.GetValue().strip().split(' ')[1])
+            #------------------------------> 
+            if val > 1:
+                self.wCbAbs.SetValue(False)
+                self.wCbLog.SetValue(True)
+            else:
+                pass
+        else:
+            pass
+        #endregion ----------------------------------------------------> Check
+
+        return True
+    #---
+
+    def OnCheck(self, event: wx.CommandEvent) -> bool:
+        """Allow only one check box to be marked at any given time.
+
+            Parameters
+            ----------
+            event: wx.Event
+             Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Deselect
+        if event.IsChecked():
+            #------------------------------>
+            tCheck = event.GetEventObject()
+            #------------------------------>
+            [k.SetValue(False) for k in self.rCheck]
+            #------------------------------>
+            tCheck.SetValue(True)
+        else:
+            pass
+        #endregion -------------------------------------------------> Deselect
+
+        return True
+    #---
+
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            True
+        """
+        #region ----------------------------------------------------> Validate
+        #------------------------------> Operand and Value
+        tca = self.rInput[0].wTc.GetValidator().Validate()[0]
+        #------------------------------> CheckBox
+        absB = self.wCbAbs.IsChecked()
+        logB = self.wCbLog.IsChecked()
+        if absB and logB:
+            tcb = False
+        elif absB or logB:
+            tcb = True
+        else:
+            tcb = False
+        #------------------------------> All
+        if tca and tcb:
+            self.EndModal(1)
+            self.Close()
+        else:
+            self.rInput[0].wTc.SetValue('')
+        #endregion -------------------------------------------------> Validate
+
+        return True
+    #---
+
+    def GetValue(self) -> tuple[str, bool]:
+        """
+    
+            Parameters
+            ----------
             
     
-#             Returns
-#             -------
-#             True
-#         """
-#         self.EndModal(1)
-#         self.Close()
-    
-#         return True
-#     #---
-    
-#     def OnCancel(self, event: wx.CommandEvent) -> bool:
-#         """The macOs implementation has a bug here that does not discriminate
-#             between the Cancel and Ok button and always return self.EndModal(1).
-    
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
+            Returns
+            -------
             
     
-#             Returns
-#             -------
-#             True
-#         """
-#         self.EndModal(0)
-#         self.Close()
-        
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Event methods
-    
-#     #region --------------------------------------------------> Manage methods
-#     def GetChecked(self) -> list[int]:
-#         """Get the number of the checked wx.CheckBox
-    
-#             Returns
-#             -------
-#             list of int
-#                 The index in self.checkB of the checked wx.CheckBox
-#         """
-#         #region ---------------------------------------------------> Variables  
-#         lo = []
-#         #endregion ------------------------------------------------> Variables  
-        
-#         #region -------------------------------------------------> Get Checked
-#         for k,cb in enumerate(self.rCheckB):
-#             lo.append(k) if cb.IsChecked() else None
-#         #endregion ----------------------------------------------> Get Checked
-        
-#         return lo
-#     #---
-#     #endregion -----------------------------------------------> Manage methods
-# #---
-
-
-# class FilterPValue(dtsWindow.UserInput1Text):
-#     """Dialog to filter values by P value.
-
-#         Parameters
-#         ----------
-#         cTitle : str
-#             Title of the wx.Dialog
-#         cLabel : str
-#             Label for the wx.StaticText
-#         cHint : str
-#             Hint for the wx.TextCtrl.
-#         cParent : wx.Window
-#             Parent of the wx.Dialog
-#         cValidator : wx.Validator
-#             Validator for the wx.TextCtrl
-#         cSize : wx.Size
-#             Size of the wx.Dialog. Default is (420, 170) 
-#     """
-#     #region -----------------------------------------------------> Class setup
-    
-#     #endregion --------------------------------------------------> Class setup
-
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cTitle: str, cLabel: str, cHint: str, cParent: wx.Window=None,
-#         cValidator: wx.Validator=wx.DefaultValidator, cSize: wx.Size=(420, 170),
-#         ) -> None:
-#         """ """
-#         #region -------------------------------------------------> Check Input
-        
-#         #endregion ----------------------------------------------> Check Input
-
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(
-#             title     = cTitle,
-#             label     = cLabel,
-#             hint      = cHint,
-#             parent    = cParent,
-#             validator = cValidator,
-#             size      = cSize,
-#         )
-#         #endregion --------------------------------------------> Initial Setup
-
-#         #region -----------------------------------------------------> Widgets
-#         self.wCbAbs = wx.CheckBox(self, label='Absolute P Value')
-#         self.wCbLog = wx.CheckBox(self, label='-Log10(P) Value')
-#         self.rCheck = [self.wCbAbs, self.wCbLog]
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-#         #------------------------------> 
-#         self.sCheck = wx.BoxSizer(orient=wx.HORIZONTAL)
-#         self.sCheck.Add(self.wCbAbs, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-#         self.sCheck.Add(self.wCbLog, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-#         #------------------------------> 
-#         self.Sizer.Detach(self.sizerBtn)
-#         #------------------------------> 
-#         self.Sizer.Add(self.sCheck, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-#         self.Sizer.Add(self.sizerBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
-#         #endregion ---------------------------------------------------> Sizers
-
-#         #region --------------------------------------------------------> Bind
-#         self.input.tc.Bind(wx.EVT_TEXT, self.OnTextChange)
-#         for x in self.rCheck:
-#             x.Bind(wx.EVT_CHECKBOX, self.OnCheck)
-#         #endregion -----------------------------------------------------> Bind
-
-#         #region ---------------------------------------------> Window position
-        
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #region ---------------------------------------------------> Event methods
-#     def OnTextChange(self, event) -> bool:
-#         """Select -log10P if the given value is > 1.
-    
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
+            Raise
+            -----
             
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------------> Check
-#         if self.input.tc.GetValidator().Validate()[0]:
-#             #------------------------------> Get val
-#             val = float(self.input.tc.GetValue().strip().split(' ')[1])
-#             #------------------------------> 
-#             if val > 1:
-#                 self.wCbAbs.SetValue(False)
-#                 self.wCbLog.SetValue(True)
-#             else:
-#                 pass
-#         else:
-#             pass    
-#         #endregion ----------------------------------------------------> Check
+        """
+        uText = self.rInput[0].wTc.GetValue()
+        absB  = self.wCbAbs.IsChecked()
         
-#         return True
-#     #---
-    
-#     def OnCheck(self, event: wx.Event) -> bool:
-#         """Allow only one check box to be marked at any given time
-    
-#             Parameters
-#             ----------
-#             event: wx.Event
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ----------------------------------------------------> Deselect
-#         if event.IsChecked():
-#             #------------------------------> 
-#             tCheck = event.GetEventObject()
-#             #------------------------------> 
-#             [k.SetValue(False) for k in self.rCheck]
-#             #------------------------------> 
-#             tCheck.SetValue(True)
-#         else:
-#             pass
-#         #endregion -------------------------------------------------> Deselect
-        
-#         return True
-#     #---
-    
-#     def OnOK(self, event: wx.CommandEvent) -> Literal[True]:
-#         """Validate user information and close the window
-    
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
-            
-    
-#             Returns
-#             -------
-#             True
-#         """
-#         #region ----------------------------------------------------> Validate
-#         #------------------------------> Operand and Value
-#         tca = self.input.tc.GetValidator().Validate()[0]
-#         #------------------------------> CheckBox
-#         absB = self.wCbAbs.IsChecked()
-#         logB = self.wCbLog.IsChecked()
-#         if absB and logB:
-#             tcb = False
-#         elif absB or logB:
-#             tcb = True
-#         else:
-#             tcb = False
-#         #------------------------------> All
-#         if tca and tcb:
-#             self.EndModal(1)
-#             self.Close()
-#         else:
-#             self.input.tc.SetValue('')
-#         #endregion -------------------------------------------------> Validate
-        
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Event methods
-# #---
+        return (uText, absB)
+    #---
+    #endregion ------------------------------------------------> Event methods
+#---
 
 
 class DialogVolColorScheme(BaseDialogOkCancel):

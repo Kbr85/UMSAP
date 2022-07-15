@@ -1173,20 +1173,20 @@ class MenuToolProtProfFilters(BaseMenu):
         
         #region ---------------------------------------------------> rKeyID
         rIDMap = {
-            self.miFcChange.GetId():  mConfig.kwToolFilterFCEvol,
-            self.miHypCurve.GetId():  mConfig.kwToolFilterHypCurve,
-            self.miLog2FC.GetId():    mConfig.kwToolFilterFCLog,
-        #     self.miPValue.GetId():    mConfig.lFilPVal,
-        #     self.miZScore.GetId():    f'{mConfig.lFilZScore} F',
-        #     self.miApply.GetId():     'Apply All',
-        #     self.miRemoveLast.GetId():'Remove Last',
-        #     self.miRemoveAny.GetId(): 'Remove Any',
-        #     self.miRemoveAll.GetId(): 'Remove All',
-        #     self.miCopy.GetId():      'Copy',
-        #     self.miPaste.GetId():     'Paste',
-        #     self.miSave.GetId():      'Save Filter',
-        #     self.miLoad.GetId():      'Load Filter',
-        #     self.miUpdate.GetId():    'AutoApplyFilter',
+            self.miFcChange.GetId():  mConfig.lFilFCEvol,  
+            self.miHypCurve.GetId():  mConfig.lFilHypCurve,
+            self.miLog2FC.GetId():    mConfig.lFilFCLog,   
+            self.miPValue.GetId():    mConfig.lFilPVal,    
+            self.miZScore.GetId():    mConfig.lFilZScore,  
+            self.miApply.GetId():     'Apply All',
+            self.miRemoveLast.GetId():'Remove Last',
+            self.miRemoveAny.GetId(): 'Remove Any',
+            self.miRemoveAll.GetId(): 'Remove All',
+            self.miCopy.GetId():      'Copy',
+            self.miPaste.GetId():     'Paste',
+            self.miSave.GetId():      'Save Filter',
+            self.miLoad.GetId():      'Load Filter',
+            self.miUpdate.GetId():    'AutoApplyFilter',
         }
         self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> rKeyID
@@ -1195,17 +1195,17 @@ class MenuToolProtProfFilters(BaseMenu):
         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miFcChange)
         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miHypCurve)
         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miLog2FC)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miPValue)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZScore)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miApply)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveLast)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveAny)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveAll)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miCopy)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miPaste)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSave)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miLoad)
-        # self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miUpdate)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miPValue)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZScore)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miApply)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveLast)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveAny)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miRemoveAll)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miCopy)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miPaste)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSave)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miLoad)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miUpdate)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
