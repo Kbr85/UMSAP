@@ -111,7 +111,7 @@ nwMain          = 'Analysis Setup'
 nwUMSAPControl  = 'UMSAP Control'
 nwCorrAPlot     = 'CorrAPlot'
 nwProtProf      = 'ProtProfPlot'
-# nwLimProt       = 'LimProtPlot'
+nwLimProt       = 'LimProtPlot'
 # nwTarProt       = 'TarProtPlot'
 nwCheckDataPrep = 'Data Preparation'
 # nwAAPlot        = 'AAPlot'
@@ -341,7 +341,7 @@ ttLCtrlPasteMod = (
     f"New rows can be pasted ({copyShortCut}+V) after the "
     f"last selected element and existing ones cut/deleted "
     f"({copyShortCut}+X) or copied "
-    f"({copyShortCut}+C)."    
+    f"({copyShortCut}+C)."
 )
 ttSectionRightClick = (
     'The content of the Section can be deleted with a right click.')

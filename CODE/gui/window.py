@@ -686,6 +686,26 @@ class BaseWindowResult(BaseWindow):
 
         return True
     #---
+
+    def SetDateMenuDate(self) -> tuple[list, dict]:
+        """Set the self.rDate list and the menuData dict needed to build the Tool
+            menu.
+
+            Returns
+            -------
+            tuple of list and dict
+            The list is a list of str with the dates in the analysis.
+            The dict has the following structure:
+                {
+                    'MenuDate' : [List of dates],
+                }
+        """
+        #region ---------------------------------------------------> Fill dict
+        date = [x for x in self.rData.keys() if x != 'Error']
+        #endregion ------------------------------------------------> Fill dict
+
+        return (date, {'MenuDate':date})
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -1135,39 +1155,35 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
 #---
 
 
-# class BaseWindowProteolysis(BaseWindow):
-#     """Base class to create a window like Limited Proteolysis
+class BaseWindowResultListText2Plot(BaseWindowResultListText):
+    """Base class to create a window like Limited Proteolysis.
 
-#         Parameters
-#         ----------
-#         parent : wx.Window or None
-#             Parent of the window. Default is None.
-#         menuData : dict or None
-#             Data to build the Tool menu of the window. Default is None.
-#             See Child class for more details.
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: Optional[wx.Window]=None, cMenuData: Optional[dict]=None,
-#         ) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         #------------------------------> Labels
-#         self.cLPaneMain = getattr(self, 'cLPaneMain', 'Protein Fragments')
-#         self.cLPaneText = getattr(self, 'cLPaneText', 'Selection Details')
-#         self.cLPaneList = getattr(self, 'cLPaneList', 'Peptide List')
-#         self.cLPanePlot = getattr(self, 'cLPanePlot', 'Gel Representation')
-#         self.cLCol      = getattr(self, 'cLCol', ['#', 'Peptides'])
+        Parameters
+        ----------
+        parent : wx.Window or None
+            Parent of the window. Default is None.
+        menuData : dict or None
+            Data to build the Tool menu of the window. Default is None.
+            See Child class for more details.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, menuData: dict={},
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Labels
+        self.cLPaneMain = getattr(self, 'cLPaneMain', 'Protein Fragments')
+        self.cLPaneSec  = getattr(self, 'cLPaneSec', 'Gel Representation')
+        self.cLPaneText = getattr(self, 'cLPaneText', 'Selection Details')
+        self.cLPaneList = getattr(self, 'cLPaneList', 'Peptide List')
+        self.cLCol      = getattr(self, 'cLCol', ['#', 'Peptides'])
 #         #------------------------------> 
 #         self.cGelLineWidth = getattr(self, 'cGelLineWidth', 0.5)
-#         #------------------------------> Sizes
-#         self.cSCol = getattr(self, 'cSCol', [45, 100])
-#         #------------------------------> Hints
-#         self.cHSearch = getattr(self, 'cHSearch', self.cLPaneList)
-#         #------------------------------> 
-#         self.rLCIdx = None
-#         #------------------------------> 
-#         super().__init__(cParent, cMenuData=cMenuData)
+        #------------------------------> Hints
+        self.cHSearch = getattr(self, 'cHSearch', 'Peptides')
+        #------------------------------> 
+        super().__init__(parent, menuData=menuData)
 #         #------------------------------> 
 #         dKeyMethod = {
 #             #------------------------------> Images
@@ -1178,122 +1194,102 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
 #             'BottomZoom': self.OnZoomResetBottom,
 #         }
 #         self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wPlots = {
+            'Main' : mWidget.MatPlotPanel(self),
+            'Sec'  : mWidget.MatPlotPanel(self),
+        }
+        #endregion --------------------------------------------------> Widgets
+
+        #region ---------------------------------------------------------> AUI
+        self._mgr.AddPane( 
+            self.wPlots['Main'], 
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    self.cLPaneMain
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------>
+        self._mgr.AddPane( 
+            self.wPlots['Sec'], 
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    self.cLPaneSec
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------>
+        self._mgr.AddPane( 
+            self.wText, 
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    self.cLPaneText
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
         
-#         #endregion --------------------------------------------> Initial Setup
+        self._mgr.AddPane( 
+            self.wLC, 
+            aui.AuiPaneInfo(
+                ).Left(
+                ).Layer(
+                    2    
+                ).Caption(
+                    self.cLPaneList
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------>
+        self._mgr.Update()
+        #endregion ------------------------------------------------------> AUI
 
-#         #region -----------------------------------------------------> Widgets
-#         self.wPlotM = dtsWidget.MatPlotPanel(self)
-#         #------------------------------>  Plot
-#         self.wPlot = dtsWidget.MatPlotPanel(self)
-#         #------------------------------> Text details
-#         self.wText = wx.TextCtrl(
-#             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
-#         self.wText.SetFont(config.font['SeqAlign'])
-#         #------------------------------> wx.ListCtrl
-#         self.wLC = pane.ListCtrlSearchPlot(
-#             self, 
-#             cColLabel = self.cLCol,
-#             cColSize  = self.cSCol,
-#             cStyle    = wx.LC_REPORT|wx.LC_VIRTUAL|wx.LC_SINGLE_SEL, 
-#             cTcHint   = f'Search {self.cHSearch}'
-#         )
-#         #------------------------------> 
-#         self.wStatBar.SetFieldsCount(2, config.sbPlot2Fields)
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ---------------------------------------------------------> AUI
-#         #------------------------------> AUI control
-#         self._mgr = aui.AuiManager()
-#         #------------------------------> AUI which frame to use
-#         self._mgr.SetManagedWindow(self)
-#         #------------------------------> Add Configuration panel
-#         self._mgr.AddPane( 
-#             self.wPlotM, 
-#             aui.AuiPaneInfo(
-#                 ).Center(
-#                 ).Caption(
-#                     self.cLPaneMain
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-        
-#         self._mgr.AddPane( 
-#             self.wPlot, 
-#             aui.AuiPaneInfo(
-#                 ).Bottom(
-#                 ).Layer(
-#                     0
-#                 ).Caption(
-#                     self.cLPanePlot
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-
-#         self._mgr.AddPane( 
-#             self.wText, 
-#             aui.AuiPaneInfo(
-#                 ).Bottom(
-#                 ).Layer(
-#                     0
-#                 ).Caption(
-#                     self.cLPaneText
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-        
-#         self._mgr.AddPane( 
-#             self.wLC, 
-#             aui.AuiPaneInfo(
-#                 ).Left(
-#                 ).Layer(
-#                     2    
-#                 ).Caption(
-#                     self.cLPaneList
-#                 ).Floatable(
-#                     b=False
-#                 ).CloseButton(
-#                     visible=False
-#                 ).Movable(
-#                     b=False
-#                 ).PaneBorder(
-#                     visible=True,
-#             ),
-#         )
-#         #------------------------------> 
-#         self._mgr.Update()
-#         #endregion ------------------------------------------------------> AUI
-
-#         #region --------------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
 #         self.wLC.wLCS.lc.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
 #         self.wLC.wLCS.lc.Bind(wx.EVT_LEFT_UP, self.OnListSelectEmpty)
 #         self.Bind(wx.EVT_SEARCH, self.OnSearch)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #------------------------------> Class methods
-#     #region ---------------------------------------------------> Event Methods
+    #region ---------------------------------------------------> Event Methods
 #     def OnClose(self, event: wx.CloseEvent) -> bool:
 #         """Close window and uncheck section in UMSAPFile window. Assumes 
 #             self.parent is an instance of UMSAPControl.
@@ -1507,33 +1503,9 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
 #         """
 #         return self.wPlot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
 #     #---
-#     #endregion ------------------------------------------------> Event Methods
+    #endregion ------------------------------------------------> Event Methods
     
-#     #region --------------------------------------------------> Manage Methods
-#     def SetDateMenuDate(self) -> tuple[list, dict]:
-#         """Set the self.rDate list and the menuData dict needed to build the Tool
-#             menu.
-
-#             Returns
-#             -------
-#             tuple of list and dict
-#             The list is a list of str with the dates in the analysis.
-#             The dict has the following structure:
-#                 {
-#                     'MenuDate' : [List of dates],
-#                 }                    
-#         """
-#         #region ---------------------------------------------------> Fill dict
-#         #------------------------------> Variables
-#         date = [x for x in self.rData.keys() if x != 'Error']
-#         menuData = {}
-#         #------------------------------> 
-#         menuData['MenuDate'] = date
-#         #endregion ------------------------------------------------> Fill dict
-        
-#         return (date, menuData)
-#     #---
-    
+    #region --------------------------------------------------> Manage Methods
 #     def FillListCtrl(self) -> bool:
 #         """Update the protein list for the given analysis.
         
@@ -1741,8 +1713,8 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
 
 #         return True
 #     #---
-#     #endregion -----------------------------------------------> Manage Methods
-# #---
+    #endregion -----------------------------------------------> Manage Methods
+#---
 #endregion -----------------------------------------------------> Base Classes
 
 
@@ -2089,7 +2061,7 @@ class WindowResCorrA(BaseWindowResultOnePlot):
         #region -----------------------------------------------> Initial Setup
         self.rObj     = parent.rObj
         self.rData    = self.rObj.dConfigure[self.cSection]()
-        self.rDate    = [x for x in self.rData.keys() if x != 'Error']
+        self.rDate, menuData = self.SetDateMenuDate()
         #------------------------------> Nothing found
         self.ReportPlotDataError()
         #------------------------------>
@@ -2108,7 +2080,7 @@ class WindowResCorrA(BaseWindowResultOnePlot):
         self.cParent  = parent
         self.cTitle  = f"{parent.cTitle} - {self.cSection} - {self.rDateC}"
         #------------------------------> 
-        super().__init__(parent, {'MenuDate' : self.rDate})
+        super().__init__(parent, menuData=menuData)
         #------------------------------>
         dKeyMethod = {
             mConfig.kwToolCorrACol: self.SelectColumn,
@@ -5737,75 +5709,75 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #---
 
 
-# class LimProtPlot(BaseWindowProteolysis):
-#     """Plot the results of a Limited Proteolysis analysis.
+class WindowResLimProtPlot(BaseWindowResultListText2Plot):
+    """Plot the results of a Limited Proteolysis analysis.
 
-#         Parameters
-#         ----------
-#         cParent: wx.Window
-#             Parent of the window
+        Parameters
+        ----------
+        cParent: wx.Window
+            Parent of the window
 
-#         Attributes
-#         ----------
-#         dClearMethod: dict
-#             Methods to clear the selections in the window.
-#         rAlpha: float
-#             Significance level of the analysis
-#         rBands: list[str]
-#             Label for the bands
-#         rBlSelC: list[int, int]
-#             Coordinates for the Band/Lane selected from 1 to N
-#         rBlSelRect: mpatch
-#             Rectangle used to highlight the selected Band/Lane
-#         rData: dict
-#             Data for the Limited Proteolysis section of the UMSAP File.
-#         rDate: list[str]
-#             Avalaible dates.
-#         rDateC: str
-#             Currently selected date.
-#         rDf: pd.DataFrame
-#             Copy of the data used to plot
-#         rFragments: dict
-#             Dict with the info for the fragments. See dmethod.Fragments.
-#         rFragSelC: list[band, lane, fragment]
-#             Coordinates for the currently selected fragment. 0 based.
-#         rFragSelLine: matplotlib line
-#             Line to highlight the currently selected fragment.
-#         rGelSelC: list[band, lane]
-#             Coordinated for the currently selected gel spot. 1 based.
-#         rGelSpotPicked: bool
-#             Gel spot was selected (True) or not (False).
-#         rLanes: list[str]
-#             Name of the lanes.
-#         rObj: UMSAPFile
-#             Reference to the UMSAP file in the parent UMSAPCtrl window.
-#         rPeptide: str
-#             Sequence of the selected peptide in the wx.ListCtrl.
-#         rProtDelta: int
-#             Diference between the residue numbers in the recombinant and native 
-#             protein.
-#         rProtLength: int
-#             Length of hte Recombinant Protein used in the analysis.
-#         rProtLoc: list[int, int]
-#             Location of the Native Sequence in the Recombinant Sequence.
-#         rProtTarget: str
-#             Name of the Recombinant protein used in the analysis.
-#         rRectsFrag: list[mpatches]
-#             Rectangles used in the Fragment plot.
-#         rRectsGel: list[mpatches]
-#             Rectangles used in the Gel spot.
-#         rSelBands: bool
-#             Select Bands (True) or Lanes (False).
-#         rSpotSelLine: line
-#             Line to highlight the selected Gel spot.
-#         rUpdateColors: bool
-#             Update Gel colors (True) or not (False).
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.nwLimProt
-#     #------------------------------> To id the section in the umsap file 
-#     # shown in the window
-#     cSection = config.nmLimProt
+        Attributes
+        ----------
+        dClearMethod: dict
+            Methods to clear the selections in the window.
+        rAlpha: float
+            Significance level of the analysis
+        rBands: list[str]
+            Label for the bands
+        rBlSelC: list[int, int]
+            Coordinates for the Band/Lane selected from 1 to N
+        rBlSelRect: mpatch
+            Rectangle used to highlight the selected Band/Lane
+        rData: dict
+            Data for the Limited Proteolysis section of the UMSAP File.
+        rDate: list[str]
+            Available dates.
+        rDateC: str
+            Currently selected date.
+        rDf: pd.DataFrame
+            Copy of the data used to plot
+        rFragments: dict
+            Dict with the info for the fragments. See dmethod.Fragments.
+        rFragSelC: list[band, lane, fragment]
+            Coordinates for the currently selected fragment. 0 based.
+        rFragSelLine: matplotlib line
+            Line to highlight the currently selected fragment.
+        rGelSelC: list[band, lane]
+            Coordinated for the currently selected gel spot. 1 based.
+        rGelSpotPicked: bool
+            Gel spot was selected (True) or not (False).
+        rLanes: list[str]
+            Name of the lanes.
+        rObj: UMSAPFile
+            Reference to the UMSAP file in the parent UMSAPCtrl window.
+        rPeptide: str
+            Sequence of the selected peptide in the wx.ListCtrl.
+        rProtDelta: int
+            Difference between the residue numbers in the recombinant and native 
+            protein.
+        rProtLength: int
+            Length of hte Recombinant Protein used in the analysis.
+        rProtLoc: list[int, int]
+            Location of the Native Sequence in the Recombinant Sequence.
+        rProtTarget: str
+            Name of the Recombinant protein used in the analysis.
+        rRectsFrag: list[mpatches]
+            Rectangles used in the Fragment plot.
+        rRectsGel: list[mpatches]
+            Rectangles used in the Gel spot.
+        rSelBands: bool
+            Select Bands (True) or Lanes (False).
+        rSpotSelLine: line
+            Line to highlight the selected Gel spot.
+        rUpdateColors: bool
+            Update Gel colors (True) or not (False).
+    """
+    #region -----------------------------------------------------> Class setup
+    cName    = mConfig.nwLimProt
+    cSection = mConfig.nmLimProt
+    #------------------------------>
+    cSWindow = mConfig.sWinModPlot
 #     #------------------------------> Colors
 #     cCNatProt = config.color['NatProt']
 #     cCRecProt = config.color['RecProt']
@@ -5813,16 +5785,16 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #     #------------------------------> 
 #     rIdxP     = pd.IndexSlice[:,:,'Ptost']
 #     rIdxSeqNC = pd.IndexSlice[config.dfcolSeqNC,:,:]
-#     #endregion --------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, cParent: 'UMSAPControl') -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cTitle           = f'{cParent.cTitle} - {self.cSection}'
-#         self.rObj             = cParent.rObj
-#         self.rData            = self.rObj.dConfigure[self.cSection]()
-#         self.rDate, cMenuData = self.SetDateMenuDate()
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: 'WindowUMSAPControl') -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle          = f'{parent.cTitle} - {self.cSection}'
+        self.rObj            = parent.rObj
+        self.rData           = self.rObj.dConfigure[self.cSection]()
+        self.rDate, menuData = self.SetDateMenuDate()
 #         #------------------------------> 
 #         try:
 #             self.ReportPlotDataError()
@@ -5855,9 +5827,9 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         self.rRecSeqColor   = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
 #         self.rTextStyleDef  = wx.TextAttr(
 #             'Black', 'White', config.font['SeqAlign'])
-#         #------------------------------> 
-#         super().__init__(cParent, cMenuData=cMenuData)
-#         #------------------------------> 
+        #------------------------------> 
+        super().__init__(parent, menuData=menuData)
+        #------------------------------> 
 #         dKeyMethod = {
 #             'Peptide'  : self.OnClearPept,
 #             'Fragment' : self.OnClearFrag,
@@ -5877,7 +5849,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #             config.klToolExpSeq : self.ExportSeq,
 #         }
 #         self.dKeyMethod = self.dKeyMethod | dKeyMethod
-#         #endregion --------------------------------------------> Initial Setup
+        #endregion --------------------------------------------> Initial Setup
 
 #         #region -----------------------------------------------------> Widgets
 #         self.wTextSeq = wx.richtext.RichTextCtrl(
@@ -5885,74 +5857,45 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #         self.wTextSeq.SetFont(config.font['SeqAlign'])
 #         #endregion --------------------------------------------------> Widgets
 
-#         #region ---------------------------------------------------------> AUI
-#         self._mgr.AddPane(
-#             self.wTextSeq,
-#             aui.AuiPaneInfo(
-#             ).Bottom(
-#             ).Layer(
-#                 1
-#             ).Caption(
-#                 'Recombinant Sequence'
-#             ).Floatable(
-#                 b=False
-#             ).CloseButton(
-#                 visible=False
-#             ).Movable(
-#                 b=False
-#             ).PaneBorder(
-#                 visible=True
-#             ),
-#         )
-#         #------------------------------> 
-#         self._mgr.Update()
-#         #endregion ------------------------------------------------------> AUI
-
 #         #region --------------------------------------------------------> Bind
 #         self.wPlot.canvas.mpl_connect('pick_event', self.OnPickGel)
 #         self.wPlot.canvas.mpl_connect('button_press_event', self.OnPressMouse)
 #         self.wPlotM.canvas.mpl_connect('pick_event', self.OnPickFragment)
 #         #endregion -----------------------------------------------------> Bind
 
-#         #region ---------------------------------------------> Window position
+        #region ---------------------------------------------> Window position
 #         self.UpdateDisplayedData(self.rDate[0])
-#         #------------------------------> 
-#         self.WinPos()
-#         self.Show()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-    
-#     #------------------------------> Class methods
-#     #region --------------------------------------------------> Manage Methods
-#     def WinPos(self) -> bool:
-#         """Set the position on the screen and adjust the total number of
-#             shown windows.
-            
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         info = super().WinPos()
-#         #endregion ------------------------------------------------> Variables
-                
-#         #region ------------------------------------------------> Set Position
-#         # x = info['D']['xo'] + info['W']['N']*config.deltaWin
-#         # y = (
-#         #     ((info['D']['h']/2) - (info['W']['h']/2)) 
-#         #     + info['W']['N']*config.deltaWin
-#         # )
-#         # self.SetPosition(pt=(x,y))
-#         #endregion ---------------------------------------------> Set Position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#         #region ----------------------------------------------------> Update N
-#         config.winNumber[self.cName] = info['W']['N'] + 1
-#         #endregion -------------------------------------------------> Update N
+    #region --------------------------------------------------> Manage Methods
+    def WinPos(self) -> bool:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
 
-#         return True
-#     #---
-    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        info = super().WinPos()
+        #endregion ------------------------------------------------> Variables
+
+        #region ------------------------------------------------> Set Position
+        x = info['D']['xo'] + info['W']['N']*mConfig.deltaWin
+        y = (
+            ((info['D']['h']/2) - (info['W']['h']/2)) 
+            + info['W']['N']*mConfig.deltaWin
+        )
+        self.SetPosition(pt=(x,y))
+        #endregion ---------------------------------------------> Set Position
+
+        return True
+    #---
+
 #     def UpdateDisplayedData(self, tDate) -> bool:
 #         """Update the GUI and attributes when a new date is selected.
     
@@ -7073,9 +7016,9 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 
 #         return sO
 #     #---
-#     #endregion -----------------------------------------------> Manage Methods
+    #endregion -----------------------------------------------> Manage Methods
 
-#     #region ---------------------------------------------------> Event Methods
+    #region ---------------------------------------------------> Event Methods
 #     def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
 #         """Process a wx.ListCtrl select event.
 
@@ -7661,8 +7604,8 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 
 #         return True
 #     #---
-#     #endregion ------------------------------------------------> Event Methods
-# #---
+    #endregion ------------------------------------------------> Event Methods
+#---
 
 
 # class TarProtPlot(BaseWindowProteolysis):
@@ -10275,7 +10218,7 @@ class WindowUMSAPControl(BaseWindow):
         mConfig.nuCorrA   : WindowResCorrA,
         mConfig.nuDataPrep: WindowResDataPrep,
         mConfig.nmProtProf: WindowResProtProf,
-        # mConfig.nmLimProt : WindowLimProtPlot,
+        mConfig.nmLimProt : WindowResLimProtPlot,
         # mConfig.nmTarProt : WindowTarProtPlot,
     }
     # #------------------------------>

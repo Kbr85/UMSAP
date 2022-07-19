@@ -484,47 +484,47 @@ class BaseMenuMainResult(BaseMenu):
 #---
 
 
-# class BaseMenuMainResultSubMenu(BaseMenu):
-#     """Sub menu items for a plot region. 
+class BaseMenuMainResultSubMenu(BaseMenu):
+    """Sub menu items for a plot region.
 
-#         Parameters
-#         ----------
-#         tKey: str
-#             For keyboard binding. Shift or Alt.
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     rKeys = {
-#         'Shift': 'Main',
-#         'Alt'  : 'Bottom'
-#     }
-#     #endregion --------------------------------------------------> Class setup
+        Parameters
+        ----------
+        tKey: str
+            For keyboard binding. Shift or Alt.
+    """
+    #region -----------------------------------------------------> Class setup
+    rKeys = {
+        'Shift': 'Main',
+        'Alt'  : 'Sec',
+    }
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, tKey: str) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, tKey: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.miSaveI = self.Append(-1, f'Save Image\t{tKey}+I')
-#         self.miZoomR = self.Append(-1, f'Reset Zoom\t{tKey}+Z')
-#         #endregion -----------------------------------------------> Menu Items
-        
-#         #region ---------------------------------------------------> rKeyID
-#         self.rIDMap = {
-#             self.miSaveI.GetId(): f'{self.rKeys[tKey]}-Img',
-#             self.miZoomR.GetId(): f'{self.rKeys[tKey]}-Zoom',
-#         }
-#         #endregion ------------------------------------------------> rKeyID
-        
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miZoomR)
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSaveI)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-# #---
+        #region --------------------------------------------------> Menu Items
+        self.miSaveI = self.Append(-1, f'Save Image\t{tKey}+I')
+        self.miZoomR = self.Append(-1, f'Reset Zoom\t{tKey}+Z')
+        #endregion -----------------------------------------------> Menu Items
+
+        #region ---------------------------------------------------> rKeyID
+        self.rIDMap = {
+            self.miSaveI.GetId(): f'{self.rKeys[tKey]}-Img',
+            self.miZoomR.GetId(): f'{self.rKeys[tKey]}-Zoom',
+        }
+        #endregion ------------------------------------------------> rKeyID
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSaveI)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 
 
 # class BaseMenuFurtherAnalysis(BaseMenu):
@@ -1173,20 +1173,20 @@ class MenuToolProtProfFilters(BaseMenu):
         
         #region ---------------------------------------------------> rKeyID
         rIDMap = {
-            self.miFcChange.GetId():  mConfig.lFilFCEvol,  
-            self.miHypCurve.GetId():  mConfig.lFilHypCurve,
-            self.miLog2FC.GetId():    mConfig.lFilFCLog,   
-            self.miPValue.GetId():    mConfig.lFilPVal,    
-            self.miZScore.GetId():    mConfig.lFilZScore,  
-            self.miApply.GetId():     'Apply All',
-            self.miRemoveLast.GetId():'Remove Last',
-            self.miRemoveAny.GetId(): 'Remove Any',
-            self.miRemoveAll.GetId(): 'Remove All',
-            self.miCopy.GetId():      'Copy',
-            self.miPaste.GetId():     'Paste',
-            self.miSave.GetId():      'Save Filter',
-            self.miLoad.GetId():      'Load Filter',
-            self.miUpdate.GetId():    'AutoApplyFilter',
+            self.miFcChange.GetId()  : mConfig.lFilFCEvol,
+            self.miHypCurve.GetId()  : mConfig.lFilHypCurve,
+            self.miLog2FC.GetId()    : mConfig.lFilFCLog,
+            self.miPValue.GetId()    : mConfig.lFilPVal,
+            self.miZScore.GetId()    : mConfig.lFilZScore,
+            self.miApply.GetId()     : 'Apply All',
+            self.miRemoveLast.GetId(): 'Remove Last',
+            self.miRemoveAny.GetId() : 'Remove Any',
+            self.miRemoveAll.GetId() : 'Remove All',
+            self.miCopy.GetId()      : 'Copy',
+            self.miPaste.GetId()     : 'Paste',
+            self.miSave.GetId()      : 'Save Filter',
+            self.miLoad.GetId()      : 'Load Filter',
+            self.miUpdate.GetId()    : 'AutoApplyFilter',
         }
         self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> rKeyID
@@ -1254,44 +1254,44 @@ class MenuToolProtProfLockPlotScale(BaseMenu):
 #---
 
 
-# class MenuClearSelLimProt(BaseMenu):
-#     """Clear the selection in a LimProtRes Window."""
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+class MenuToolLimProtClearSel(BaseMenu):
+    """Clear the selection in a LimProt Result Window."""
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.miNoPept = self.Append(-1, 'Peptide')
-#         self.miNoFrag = self.Append(-1, 'Fragment')
-#         self.miNoGel  = self.Append(-1, 'Gel Spot')
-#         self.miNoBL   = self.Append(-1, 'Band/Lane')
-#         self.AppendSeparator()
-#         self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.miNoPept = self.Append(-1, 'Peptide')
+        self.miNoFrag = self.Append(-1, 'Fragment')
+        self.miNoGel  = self.Append(-1, 'Gel Spot')
+        self.miNoBL   = self.Append(-1, 'Band/Lane')
+        self.AppendSeparator()
+        self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
+        #endregion -----------------------------------------------> Menu Items
 
-#         #region ---------------------------------------------------> 
-#         self.rIDMap = {
-#             self.miNoPept.GetId(): 'Peptide',
-#             self.miNoFrag.GetId(): 'Fragment',
-#             self.miNoGel.GetId() : 'Gel Spot',
-#             self.miNoBL.GetId()  : 'Band/Lane',
-#             self.miNoSel.GetId() : 'All',
-#         }
-#         #endregion ------------------------------------------------> 
+        #region ---------------------------------------------------> 
+        self.rIDMap = {
+            self.miNoPept.GetId(): 'Peptide',
+            self.miNoFrag.GetId(): 'Fragment',
+            self.miNoGel.GetId() : 'Gel Spot',
+            self.miNoBL.GetId()  : 'Band/Lane',
+            self.miNoSel.GetId() : 'All',
+        }
+        #endregion ------------------------------------------------> 
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoPept)
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoFrag)
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoGel)
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoBL)
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoSel)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-# #---
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoPept)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoFrag)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoGel)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoBL)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoSel)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 
 
 # class MenuClearSelTarProt(BaseMenu):
@@ -1785,65 +1785,65 @@ class MenuToolProtProfVolcanoPlotColorScheme(BaseMenu):
 
 
 #region -----------------------------------------------------------> Mix menus
-# class MixMenuToolLimProt(BaseMenuMainResult):
-#     """Tool menu for the Limited Proteolysis window.
+class MenuToolLimProt(BaseMenuMainResult):
+    """Tool menu for the Limited Proteolysis window.
 
-#         Parameters
-#         ----------
-#         menuData: dict
-#             Data needed to build the menu. 
-#             {'MenuDate' : [List of dates as str],}
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData: dict) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(menuData)
-#         #endregion --------------------------------------------> Initial Setup
+        Parameters
+        ----------
+        menuData: dict
+            Data needed to build the menu. 
+            {'MenuDate' : [List of dates as str],}
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData: dict) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(menuData)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.miBandLane = self.Append(
-#             -1, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
-#         self.AppendSeparator()
-#         #------------------------------> 
-#         self.miShowAll = self.Append(-1, 'Show All\tCtrl+A')
-#         self.AppendSeparator()
-#         #------------------------------> 
-#         self.mFragmentMenu = BaseMenuMainResultSubMenu('Shift')
-#         self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
-#         self.AppendSeparator()
-#         #------------------------------> 
-#         self.mGelMenu = BaseMenuMainResultSubMenu('Alt')
-#         self.AppendSubMenu(self.mGelMenu, 'Gel')
-#         self.AppendSeparator()
-#         #------------------------------> 
-#         self.mClearMenu = MenuClearSelLimProt()
-#         self.AppendSubMenu(self.mClearMenu, 'Clear Selection')
-#         self.AppendSeparator()
-#         #------------------------------> Last Items
-#         self.AddLastItems(False)
-#         #------------------------------> Add Export Sequence
-#         pos = self.FindChildItem(self.miSaveD.GetId())[1]
-#         self.miSaveSeq = self.Insert(pos+2, -1, "Export Sequences")
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.miBandLane = self.Append(
+            -1, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
+        #------------------------------>
+        self.miShowAll = self.Append(-1, 'Show All\tCtrl+A')
+        self.AppendSeparator()
+        #------------------------------>
+        self.mFragmentMenu = BaseMenuMainResultSubMenu('Shift')
+        self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
+        self.AppendSeparator()
+        #------------------------------>
+        self.mGelMenu = BaseMenuMainResultSubMenu('Alt')
+        self.AppendSubMenu(self.mGelMenu, 'Gel')
+        self.AppendSeparator()
+        #------------------------------>
+        self.mClearMenu = MenuToolLimProtClearSel()
+        self.AppendSubMenu(self.mClearMenu, 'Clear Selection')
+        self.AppendSeparator()
+        #------------------------------> Last Items
+        self.AddLastItems(False)
+        #------------------------------> Add Export Sequence
+        pos = self.FindChildItem(self.miSaveD.GetId())[1]
+        self.miSaveSeq = self.Insert(pos+2, -1, "Export Sequences")
+        #endregion -----------------------------------------------> Menu Items
 
-#         #region ---------------------------------------------------> rKeyID
-#         rIDMap = {
-#             self.miBandLane.GetId(): mConfig.klToolLimProtBandLane,
-#             self.miShowAll.GetId() : mConfig.klToolLimProtShowAll,
-#             self.miSaveSeq.GetId() : mConfig.klToolExpSeq,
-#         }
-#         self.rIDMap = self.rIDMap | rIDMap
-#         #endregion ------------------------------------------------> rKeyID
+        #region ---------------------------------------------------> rKeyID
+        # rIDMap = {
+        #     self.miBandLane.GetId(): mConfig.klToolLimProtBandLane,
+        #     self.miShowAll.GetId() : mConfig.klToolLimProtShowAll,
+        #     self.miSaveSeq.GetId() : mConfig.klToolExpSeq,
+        # }
+        # self.rIDMap = self.rIDMap | rIDMap
+        #endregion ------------------------------------------------> rKeyID
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miBandLane)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miShowAll)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miSaveSeq)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-# #---
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miBandLane)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miShowAll)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miSaveSeq)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 
 
 # class MixMenuToolTarProt(BaseMenuMainResult):
@@ -2412,7 +2412,7 @@ class MenuBarTool(MenuBarMain):
         mConfig.nwCorrAPlot    : MenuToolCorrA,
         mConfig.nwCheckDataPrep: MenuToolDataPrep,
         mConfig.nwProtProf     : MenuToolProtProf,
-        # mConfig.nwLimProt      : MixMenuToolLimProt,
+        mConfig.nwLimProt      : MenuToolLimProt,
         # mConfig.nwTarProt      : MixMenuToolTarProt,
         # mConfig.nwAAPlot       : MenuToolAA,
         # mConfig.nwHistPlot     : MenuToolHist,
