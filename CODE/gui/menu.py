@@ -659,78 +659,78 @@ class BaseMenuMainResultSubMenu(BaseMenu):
 # #---
 
 
-# class BaseMenuFurtherAnalysisEntry(BaseMenu):
-#     """Base Menu for Further Analysis submenu, e.g. in TarProt result window.
+class BaseMenuFurtherAnalysisEntry(BaseMenu):
+    """Base Menu for Further Analysis submenu, e.g. in TarProt result window.
 
-#         Parameters
-#         ----------
-#         menuData: dict
-#             Information for menu entries.
-#             {
-#                 'Date' : {'dictKey': ['E1', 'E2',...]},
-#                 'DateN': {'dictKey': ['E1', 'E2',...]},
-#             }
-#         ciDate: str
-#             Currently selected date
-#         dictKey: str
-#             Prefix for the key in self.rIDMap
-#         itemLabel: str
-#             Label for New Analysis entry.
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, menuData: dict, ciDate: str, dictKey: str, itemLabel: str
-#         ) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cMenuData  = menuData
-#         self.rDictKey   = dictKey
-#         self.rItemLabel = itemLabel
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+        Parameters
+        ----------
+        menuData: dict
+            Information for menu entries.
+            {
+                'Date' : {'dictKey': ['E1', 'E2',...]},
+                'DateN': {'dictKey': ['E1', 'E2',...]},
+            }
+        ciDate: str
+            Currently selected date
+        dictKey: str
+            Prefix for the key in self.rIDMap
+        itemLabel: str
+            Label for New Analysis entry.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, menuData: dict, ciDate: str, dictKey: str, itemLabel: str
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cMenuData  = menuData
+        self.rDictKey   = dictKey
+        self.rItemLabel = itemLabel
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.rItemList = self.SetItems(ciDate)
-#         #endregion -----------------------------------------------> Menu Items
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------> Menu Items
+        self.rItemList = self.SetItems(ciDate)
+        #endregion -----------------------------------------------> Menu Items
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
-#     def SetItems(self, tDate: str) -> list[wx.MenuItem]:
-#         """Set the menu items.
+    #region ---------------------------------------------------> Class methods
+    def SetItems(self, tDate: str) -> list[wx.MenuItem]:
+        """Set the menu items.
 
-#             Parameters
-#             ----------
-#             tDate: str
-#                 Currently selected date.
+            Parameters
+            ----------
+            tDate: str
+                Currently selected date.
 
-#             Returns
-#             -------
-#             list[wx.MenuItem]
-#         """
-#         #region ---------------------------------------------------> Variables
-#         itemList = []
-#         #endregion ------------------------------------------------> Variables
+            Returns
+            -------
+            list[wx.MenuItem]
+        """
+        #region ---------------------------------------------------> Variables
+        itemList = []
+        #endregion ------------------------------------------------> Variables
 
-#         #region --------------------------------------------------->
-#         #------------------------------> Available Date
-#         for v in self.cMenuData[tDate][self.rDictKey]:
-#             itemList.append(self.Append(-1, v))
-#             self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=itemList[-1])
-#             self.rIDMap[itemList[-1].GetId()] = f'{self.rDictKey}-Item'
-#         #------------------------------> Separator
-#         if self.cMenuData[tDate][self.rDictKey]:
-#             self.rSep = self.AppendSeparator()
-#         else:
-#             self.rSep = None
-#         #------------------------------> New Analysis
-#         itemList.append(self.Append(-1, self.rItemLabel))
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=itemList[-1])
-#         self.rIDMap[itemList[-1].GetId()] = f'{self.rDictKey}-New'
-#         #endregion ------------------------------------------------>
+        #region --------------------------------------------------->
+        #------------------------------> Available Date
+        for v in self.cMenuData[tDate][self.rDictKey]:
+            itemList.append(self.Append(-1, v))
+            self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=itemList[-1])
+            self.rIDMap[itemList[-1].GetId()] = f'{self.rDictKey}-Item'
+        #------------------------------> Separator
+        if self.cMenuData[tDate][self.rDictKey]:
+            self.rSep = self.AppendSeparator()
+        else:
+            self.rSep = None
+        #------------------------------> New Analysis
+        itemList.append(self.Append(-1, self.rItemLabel))
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=itemList[-1])
+        self.rIDMap[itemList[-1].GetId()] = f'{self.rDictKey}-New'
+        #endregion ------------------------------------------------>
 
-#         return itemList
-#     #---
+        return itemList
+    #---
 
 #     def Update(self, tDate: str, menuData: dict={}) -> bool:
 #         """Update the menu items.
@@ -1301,38 +1301,38 @@ class MenuToolLimProtClearSel(BaseMenu):
 #---
 
 
-# class MenuClearSelTarProt(BaseMenu):
-#     """Clear the selection in a TarProtRes Window."""
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+class MenuToolTarProtClearSel(BaseMenu):
+    """Clear the selection in a TarProtRes Window."""
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.miNoPept = self.Append(-1, 'Peptide')
-#         self.miNoFrag = self.Append(-1, 'Fragment')
-#         self.AppendSeparator()
-#         self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.miNoPept = self.Append(-1, 'Peptide')
+        self.miNoFrag = self.Append(-1, 'Fragment')
+        self.AppendSeparator()
+        self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
+        #endregion -----------------------------------------------> Menu Items
 
-#         #region ---------------------------------------------------> 
-#         self.rIDMap = {
-#             self.miNoPept.GetId(): 'Peptide',
-#             self.miNoFrag.GetId(): 'Fragment',
-#             self.miNoSel.GetId() : 'All',
-#         }
-#         #endregion ------------------------------------------------> 
+        #region ---------------------------------------------------> 
+        # self.rIDMap = {
+        #     self.miNoPept.GetId(): 'Peptide',
+        #     self.miNoFrag.GetId(): 'Fragment',
+        #     self.miNoSel.GetId() : 'All',
+        # }
+        #endregion ------------------------------------------------> 
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoPept)
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoFrag)
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoSel)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-# #---
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoPept)
+        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoFrag)
+        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoSel)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
 
 
 class MenuToolProtProfClearSel(BaseMenu):
@@ -1853,64 +1853,63 @@ class MenuToolLimProt(BaseMenuMainResult):
 #---
 
 
-# class MixMenuToolTarProt(BaseMenuMainResult):
-#     """Tool menu for the Targeted Proteolysis window
+class MenuToolTarProt(BaseMenuMainResult):
+    """Tool menu for the Targeted Proteolysis window.
 
-#         Parameters
-#         ----------
-#         menuData: dict
-#             Data needed to build the menu. 
-#             {
-#                 'MenuDate' : [List of dates as str],
-#                 'FA' : {'Date': {'FA1': [], 'FA2':[]}, 'DateN':{},},
-#             }
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData: dict) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(menuData)
-#         #endregion --------------------------------------------> Initial Setup
+        Parameters
+        ----------
+        menuData: dict
+            Data needed to build the menu. 
+            {
+                'MenuDate' : [List of dates as str],
+                'FA' : {'Date': {'FA1': [], 'FA2':[]}, 'DateN':{},},
+            }
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData: dict) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(menuData)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.mFragmentMenu = BaseMenuMainResultSubMenu('Shift')
-#         self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
-#         self.AppendSeparator()
-#         #------------------------------> 
-#         self.mGelMenu = BaseMenuMainResultSubMenu('Alt')
-#         self.AppendSubMenu(self.mGelMenu, 'Intensities')
-#         self.AppendSeparator()
-#         #------------------------------> 
-#         self.mFurtherA = MixMenuFurtherAnalysisTarProt(
-#             self.cMenuData['FA'], self.rPlotDate[0].GetItemLabelText())
-#         self.AppendSubMenu(self.mFurtherA, 'Further Analysis')
-#         self.AppendSeparator()
-#         #------------------------------> 
-#         self.mClear = MenuClearSelTarProt()
-#         self.AppendSubMenu(self.mClear, 'Clear Selection')
-#         self.AppendSeparator()
-#         #------------------------------>
-#         self.AddLastItems(False)
-#         #------------------------------> 
-#         #------------------------------> Add Export Sequence
-#         pos = self.FindChildItem(self.miSaveD.GetId())[1]
-#         self.miSaveSeq = self.Insert(pos+2, -1, "Export Sequences")
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.mFragmentMenu = BaseMenuMainResultSubMenu('Shift')
+        self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
+        self.AppendSeparator()
+        #------------------------------>
+        self.mGelMenu = BaseMenuMainResultSubMenu('Alt')
+        self.AppendSubMenu(self.mGelMenu, 'Intensities')
+        self.AppendSeparator()
+        #------------------------------>
+        self.mFurtherA = MenuToolTarProtFurtherAnalysis(
+            self.cMenuData['FA'], self.rPlotDate[0].GetItemLabelText())
+        self.AppendSubMenu(self.mFurtherA, 'Further Analysis')
+        self.AppendSeparator()
+        #------------------------------> 
+        self.mClear = MenuToolTarProtClearSel()
+        self.AppendSubMenu(self.mClear, 'Clear Selection')
+        self.AppendSeparator()
+        #------------------------------>
+        self.AddLastItems(False)
+        #------------------------------> Add Export Sequence
+        pos = self.FindChildItem(self.miSaveD.GetId())[1]
+        self.miSaveSeq = self.Insert(pos+2, -1, "Export Sequences")
+        #endregion -----------------------------------------------> Menu Items
 
-#         #region ---------------------------------------------------> rKeyID
+        #region ---------------------------------------------------> rKeyID
 #         rIDMap = {
 #             self.miSaveSeq.GetId() : mConfig.klToolExpSeq,
 #         }
 #         self.rIDMap = self.rIDMap | rIDMap
-#         #endregion ------------------------------------------------> rKeyID
+        #endregion ------------------------------------------------> rKeyID
 
-#         #region --------------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
 #         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSaveSeq)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-    
-#     #region ---------------------------------------------------> Class Methods
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class Methods
 #     def OnMethodKey(self, event) -> bool:
 #         """Call the corresponding method in the window with no arguments or
 #             keyword arguments
@@ -1979,8 +1978,8 @@ class MenuToolLimProt(BaseMenuMainResult):
 
 #         return True
 #     #---
-#     #endregion ------------------------------------------------> Class Methods
-# #---
+    #endregion ------------------------------------------------> Class Methods
+#---
 
 
 class MenuToolProtProfVolcanoPlot(BaseMenu):
@@ -2173,54 +2172,54 @@ class MenuToolProtProfVolcanoPlot(BaseMenu):
 #---
 
 
-# class MixMenuFurtherAnalysisTarProt(BaseMenu):
-#     """Further Analysis menu for the TarProt result window
+class MenuToolTarProtFurtherAnalysis(BaseMenu):
+    """Further Analysis menu for the TarProt result window
 
-#         Parameters
-#         ----------
-#         menuData: dict
-#             Information for menu items
-#             {
-#                 'Date':{'FA1':['FA11', 'FA12',...],'FA2':['FA21', 'FA22',...],},
-#             }
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData: dict, ciDate:str) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #------------------------------> 
-#         self.mAA = BaseMenuFurtherAnalysisEntry(
-#             menuData, ciDate, 'AA', 'New AA Analysis')
-#         self.AppendSubMenu(self.mAA, 'AA Distribution')
-#         self.AppendSeparator()
-#         self.miCEvol = self.Append(-1, 'Cleavage Evolution')
-#         self.mHist   = BaseMenuFurtherAnalysisEntry(
-#             menuData, ciDate, 'Hist', 'New Histogram')
-#         self.AppendSubMenu(self.mHist, 'Cleavage Histograms')
-#         self.miCpR = self.Append(-1, 'Cleavage per Residue')
-#         self.AppendSeparator()
-#         self.miPDB = self.Append(-1, 'PDB Mapping')
-#         #endregion --------------------------------------------> Initial Setup
-        
-#         #region ---------------------------------------------------> 
+        Parameters
+        ----------
+        menuData: dict
+            Information for menu items
+            {
+                'Date':{'FA1':['FA11', 'FA12',...],'FA2':['FA21', 'FA22',...],},
+            }
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData: dict, ciDate:str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #------------------------------> 
+        self.mAA = BaseMenuFurtherAnalysisEntry(
+            menuData, ciDate, 'AA', 'New AA Analysis')
+        self.AppendSubMenu(self.mAA, 'AA Distribution')
+        self.AppendSeparator()
+        self.miCEvol = self.Append(-1, 'Cleavage Evolution')
+        self.mHist   = BaseMenuFurtherAnalysisEntry(
+            menuData, ciDate, 'Hist', 'New Histogram')
+        self.AppendSubMenu(self.mHist, 'Cleavage Histograms')
+        self.miCpR = self.Append(-1, 'Cleavage per Residue')
+        self.AppendSeparator()
+        self.miPDB = self.Append(-1, 'PDB Mapping')
+        #endregion --------------------------------------------> Initial Setup
+
+        #region ---------------------------------------------------> 
 #         rIDMap = {
 #             self.miCEvol.GetId() : mConfig.klFACleavageEvol,
 #             self.miCpR.GetId()   : mConfig.klFACleavagePerRes,
 #             self.miPDB.GetId()   : mConfig.klFAPDBMap,
 #         }
 #         self.rIDMap = self.rIDMap | rIDMap
-#         #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------> 
 
-#         #region --------------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
 #         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCpR)
 #         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCEvol)
 #         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miPDB)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Class methods
 #     def UpdateFurtherAnalysis(self, tDate: str, menuData: dict={}) -> bool:
 #         """Update Further Analysis.
 
@@ -2240,8 +2239,8 @@ class MenuToolProtProfVolcanoPlot(BaseMenu):
 
 #         return True
 #     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 class MenuToolProtProf(BaseMenuMainResult):
@@ -2420,7 +2419,7 @@ class MenuBarTool(MenuBarMain):
         mConfig.nwCheckDataPrep: MenuToolDataPrep,
         mConfig.nwProtProf     : MenuToolProtProf,
         mConfig.nwLimProt      : MenuToolLimProt,
-        # mConfig.nwTarProt      : MixMenuToolTarProt,
+        mConfig.nwTarProt      : MenuToolTarProt,
         # mConfig.nwAAPlot       : MenuToolAA,
         # mConfig.nwHistPlot     : MenuToolHist,
         # mConfig.nwCpRPlot      : MenuToolCpR,
