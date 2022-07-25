@@ -642,8 +642,8 @@ colorFragments = [
 
 color = { # Colors for the app
     'Zebra' : '#ffe6e6',
-#     'RecProt' : 'gray',
-#     'NatProt' : '#c94c4c',
+    'RecProt' : 'gray',
+    'NatProt' : '#c94c4c',
     nuCorrA : { # Color for plot in Correlation Analysis
         'CMAP' : { # CMAP colors and interval
             'N' : 128,

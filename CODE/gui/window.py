@@ -1506,125 +1506,6 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
 #         return self.wPlot.SaveImage(ext=config.elMatPlotSaveI, parent=self)
 #     #---
     #endregion ------------------------------------------------> Event Methods
-    
-    #region --------------------------------------------------> Manage Methods
-#     def DrawProtein(self, y: int) -> bool:
-#         """Draw the protein fragment
-    
-#             Parameters
-#             ----------
-#             y: int
-#                 Y coordinate to draw the protein.
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         recProt = []
-#         natProt = []
-#         #endregion ------------------------------------------------> Variables
-
-#         #region ---------------------------------------------------> 
-#         if self.rProtLoc[0] is not None:
-#             #------------------------------> 
-#             natProt.append(self.rProtLoc)
-#             a, b = self.rProtLoc
-#             #------------------------------> 
-#             if a == 1 and b == self.rProtLength:
-#                 pass
-#             elif a == 1 and b < self.rProtLength:
-#                 recProt.append((b, self.rProtLength))
-#             elif a > 1 and b == self.rProtLength:
-#                 recProt.append((1, a))
-#             else:
-#                 recProt.append((1, a))
-#                 recProt.append((b, self.rProtLength))
-#         else:
-#             recProt.append((1, self.rProtLength))
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> Draw Rect
-#         for r in natProt:
-#             self.wPlotM.axes.add_patch(mpatches.Rectangle(
-#                 (r[0], y-0.2),
-#                 r[1] - r[0],
-#                 0.4,
-#                 edgecolor = 'black',
-#                 facecolor = self.cCNatProt,
-#             ))
-        
-#         for r in recProt:
-#             self.wPlotM.axes.add_patch(mpatches.Rectangle(
-#                 (r[0], y-0.2),
-#                 r[1] - r[0],
-#                 0.4,
-#                 edgecolor = 'black',
-#                 facecolor = self.cCRecProt,
-#             ))
-#         #endregion ------------------------------------------------> Draw Rect
-       
-#         return True
-#     #---
-    
-#     def DrawFragments(self, tKeyLabel: dict) -> bool:
-#         """Draw the fragments associated with the given keys.
-    
-#             Parameters
-#             ----------
-#             tKeyLabel: dict
-#                 Keys are the key to plot and values the associated labels.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         self.rRectsFrag = []
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ----------------------------------------------------> Set Axis
-#         self.SetFragmentAxis()
-#         #endregion -------------------------------------------------> Set Axis
-        
-#         #region ---------------------------------------------------> Fragments
-#         nc = len(self.cColor['Spot'])
-#         #------------------------------> 
-#         for k,v in enumerate(tKeyLabel, start=1):
-#             for j,f in enumerate(self.rFragments[v]['Coord']):
-#                 self.rRectsFrag.append(mpatches.Rectangle(
-#                     (f[0], k-0.2), 
-#                     (f[1]-f[0]), 
-#                     0.4,
-#                     picker    = True,
-#                     linewidth = self.cGelLineWidth,
-#                     facecolor = self.cColor['Spot'][(k-1)%nc],
-#                     edgecolor = 'black',
-#                     label     = f'{tKeyLabel[v]}.{j}',
-#                 ))
-#                 self.wPlotM.axes.add_patch(self.rRectsFrag[-1])
-#         #endregion ------------------------------------------------> Fragments
-        
-#         #region -----------------------------------------------------> Protein
-#         self.DrawProtein(k+1)
-#         #endregion --------------------------------------------------> Protein
-       
-#         #region --------------------------------------------------------> Draw
-#         self.wPlotM.ZoomResetSetValues()
-        
-#         self.wPlotM.canvas.draw()
-#         #endregion -----------------------------------------------------> Draw
-        
-#         #region ---------------------------------------------------> 
-#         if self.rPeptide is not None:
-#             self.ShowPeptideLoc()
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> 
-
-#         return True
-#     #---
-    #endregion -----------------------------------------------> Manage Methods
 #---
 
 
@@ -1647,17 +1528,28 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         -------
         
     """
+    #region -----------------------------------------------------> Class Setup
+    cCNatProt = mConfig.color['NatProt']
+    cCRecProt = mConfig.color['RecProt']
+    #endregion --------------------------------------------------> Class Setup
+
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, parent: Optional[wx.Window]=None, menuData: dict={},
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
+        self.cColor = getattr(self, 'cColor', mConfig.color[self.cName])
+        #------------------------------>
         self.rIdxP = getattr(self, 'rIdxP', pd.IndexSlice[:,:,'P'])
         self.rIdxSeqNC = getattr(
             self, 'rIdxSeqNC', pd.IndexSlice[mConfig.dfcolSeqNC,:,:])
-        self.rAlpha = getattr(self, 'rAlpha', 0.05)
+        self.rAlpha       = getattr(self, 'rAlpha', 0.05)
         self.rFragSelLine = None
+        self.rFragments   = {}
+        self.rProtLoc     = []
+        self.rProtLength  = None
+        self.rPeptide     = None
         #------------------------------>
         super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
@@ -1752,6 +1644,148 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         self._mgr.GetPane(self.wLC).Caption(f'{self.cLPaneList} ({len(data)})')
         self._mgr.Update()
         #endregion ------------------------------------> Update Protein Number
+
+        return True
+    #---
+
+    def DrawFragments(self, tKeyLabel: dict) -> bool:
+        """Draw the fragments associated with the given keys.
+
+            Parameters
+            ----------
+            tKeyLabel: dict
+                Keys are the key to plot and values the associated labels.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        self.rRectsFrag = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ----------------------------------------------------> Set Axis
+        self.SetFragmentAxis()
+        #endregion -------------------------------------------------> Set Axis
+
+        #region ---------------------------------------------------> Fragments
+        nc = len(self.cColor['Spot']) # type: ignore
+        #------------------------------> 
+        for k,v in enumerate(tKeyLabel, start=1):
+            for j,f in enumerate(self.rFragments[v]['Coord']):
+                self.rRectsFrag.append(mpatches.Rectangle(
+                    (f[0], k-0.2), 
+                    (f[1]-f[0]), 
+                    0.4,
+                    picker    = True,
+                    linewidth = self.cGelLineWidth,
+                    facecolor = self.cColor['Spot'][(k-1)%nc], # type: ignore
+                    edgecolor = 'black',
+                    label     = f'{tKeyLabel[v]}.{j}',
+                ))
+                self.wPlot['Main'].rAxes.add_patch(self.rRectsFrag[-1])
+        #endregion ------------------------------------------------> Fragments
+
+        #region -----------------------------------------------------> Protein
+        self.DrawProtein(k+1)
+        #endregion --------------------------------------------------> Protein
+
+        #region --------------------------------------------------------> Draw
+        self.wPlot['Main'].ZoomResetSetValues()
+
+        self.wPlot['Main'].rCanvas.draw()
+        #endregion -----------------------------------------------------> Draw
+
+        #region --------------------------------------------------->
+        if self.rPeptide is not None:
+            self.ShowPeptideLoc()
+        else:
+            pass
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def SetFragmentAxis(self, showAll: bool=False) -> bool:
+        """Set the axis of the Fragments plot.
+
+            Parameters
+            ----------
+            showAll: bool
+                Show all fragments or not. Default is False.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def ShowPeptideLoc(self) -> bool:
+        """Show the location of the selected peptide.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def DrawProtein(self, y: int) -> bool:
+        """Draw the protein fragment
+
+            Parameters
+            ----------
+            y: int
+                Y coordinate to draw the protein.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        recProt = []
+        natProt = []
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------->
+        if self.rProtLoc[0] is not None:
+            #------------------------------> 
+            natProt.append(self.rProtLoc)
+            a, b = self.rProtLoc
+            #------------------------------> 
+            if a == 1 and b == self.rProtLength:
+                pass
+            elif a == 1 and b < self.rProtLength:
+                recProt.append((b, self.rProtLength))
+            elif a > 1 and b == self.rProtLength:
+                recProt.append((1, a))
+            else:
+                recProt.append((1, a))
+                recProt.append((b, self.rProtLength))
+        else:
+            recProt.append((1, self.rProtLength))
+        #endregion ------------------------------------------------>
+
+        #region ---------------------------------------------------> Draw Rect
+        for r in natProt:
+            self.wPlot['Main'].rAxes.add_patch(mpatches.Rectangle(
+                (r[0], y-0.2),
+                r[1] - r[0],
+                0.4,
+                edgecolor = 'black',
+                facecolor = self.cCNatProt,
+            ))
+        #------------------------------>
+        for r in recProt:
+            self.wPlot['Main'].rAxes.add_patch(mpatches.Rectangle(
+                (r[0], y-0.2),
+                r[1] - r[0],
+                0.4,
+                edgecolor = 'black',
+                facecolor = self.cCRecProt,
+            ))
+        #endregion ------------------------------------------------> Draw Rect
 
         return True
     #---
@@ -4882,7 +4916,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         data = self.rDf.iloc[:,0:2] # type: ignore
         data.insert(0, 'kbr', self.rDf.index.values.tolist())
         data = data.astype(str)
-        data = data.values.tolist()
+        data = data.values.tolist() # type: ignore
         #endregion ------------------------------------------------> 
 
         #region -------------------------------------------------> Get New Sel
@@ -5818,11 +5852,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
     cName    = mConfig.nwLimProt
     cSection = mConfig.nmLimProt
     #------------------------------>
-    cSWindow = mConfig.sWinModPlot
-#     #------------------------------> Colors
-#     cCNatProt = config.color['NatProt']
-#     cCRecProt = config.color['RecProt']
-    cColor = mConfig.color[cName]
+    cSWindow = (1100, 900)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -5837,50 +5867,46 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         self.ReportPlotDataError()
         #------------------------------>
         self.rDateC         = self.rDate[0]
-#         self.rBands         = None
-#         self.rLanes         = None
-#         self.rFragments     = None
+        self.rBands         = []
+        self.rLanes         = []
 #         self.rRectsGel      = []
 #         self.rRectsFrag     = []
         self.rSelBands      = True
         self.rBlSelRect     = None
         self.rSpotSelLine   = None
 #         self.rFragSelLine   = None
-#         self.rBlSelC        = [None, None]
+        self.rBlSelC        = [None, None]
 #         self.rGelSelC       = [None, None]
 #         self.rFragSelC      = [None, None, None]
-#         self.rGelSpotPicked = False
-#         self.rUpdateColors  = False
+        self.rGelSpotPicked = False
+        self.rUpdateColors  = False
         self.rAlpha         = None
-#         self.rProtLoc       = None
-#         self.rProtLength    = None
 #         self.rProtDelta     = None
 #         self.rProtTarget    = None
-#         self.rPeptide       = None
         self.rRecSeq        = {}
 #         self.rRecSeqC       = ''
 #         self.rRecSeqColor   = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
-#         self.rTextStyleDef  = wx.TextAttr(
-#             'Black', 'White', config.font['SeqAlign'])
+        self.rTextStyleDef  = wx.TextAttr(
+            'Black', 'White', mConfig.font['SeqAlign'])
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
-        #------------------------------> 
+        #------------------------------>
 #         dKeyMethod = {
 #             'Peptide'  : self.OnClearPept,
 #             'Fragment' : self.OnClearFrag,
 #             'Gel Spot' : self.OnClearGel,
 #             'Band/Lane': self.OnClearBL,
 #             'All'      : self.OnClearAll,
-#             #------------------------------> 
+#             #------------------------------>
 #             config.klToolGuiUpdate       : self.UpdateDisplayedData,
 #             config.klToolLimProtBandLane : self.OnLaneBand,
 #             config.klToolLimProtShowAll  : self.OnShowAll,
-#             #------------------------------> 
+#             #------------------------------>
 #             'Main-Img'   : self.OnImageMain,
 #             'Main-Zoom'  : self.OnZoomResetMain,
 #             'Bottom-Img' : self.OnImageBottom,
 #             'Bottom-Zoom': self.OnZoomResetBottom,
-#             #------------------------------> 
+#             #------------------------------>
 #             config.klToolExpSeq : self.ExportSeq,
 #         }
 #         self.dKeyMethod = self.dKeyMethod | dKeyMethod
@@ -5916,9 +5942,11 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         #endregion ------------------------------------------------------> AUI
 
         #region --------------------------------------------------------> Bind
-#         self.wPlot.canvas.mpl_connect('pick_event', self.OnPickGel)
-#         self.wPlot.canvas.mpl_connect('button_press_event', self.OnPressMouse)
-#         self.wPlotM.canvas.mpl_connect('pick_event', self.OnPickFragment)
+        self.wPlot['Sec'].rCanvas.mpl_connect('pick_event', self.OnPickGel)
+        self.wPlot['Sec'].rCanvas.mpl_connect(
+            'button_press_event', self.OnPressMouse)
+        self.wPlot['Main'].rCanvas.mpl_connect(
+            'pick_event', self.OnPickFragment)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -6152,486 +6180,486 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         #endregion ----------------------------------------------------> Color
     #---
 
-#     def DrawBLRect(self, x: int, y: int) -> bool:
-#         """Draw the red rectangle to highlight the selected band/lane.
-    
-#             Parameters
-#             ----------
-#             x: int
-#                 X coordinate of the band/lane
-#             y: int
-#                 Y coordinate of the band/lane
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         self.UpdateGelColor()
-#         #endregion ------------------------------------------------> 
+    def DrawBLRect(self, x: int, y: int) -> bool:
+        """Draw the red rectangle to highlight the selected band/lane.
 
-#         #region ---------------------------------------------------> Variables
-#         if self.rSelBands:
-#             xy = (0.55, y-0.45)
-#             w = len(self.rLanes) - 0.1
-#             h = 0.9
-#         else:
-#             xy = (x-0.45, 0.55)
-#             w = 0.9
-#             h = len(self.rBands) - 0.1
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ---------------------------------------------> Remove Old Rect
-#         if self.rBlSelRect is not None:
-#             self.rBlSelRect.remove()
-#         else:
-#             pass
-#         #endregion ------------------------------------------> Remove Old Rect
-        
-#         #region -----------------------------------------------> Draw New Rect
-#         self.rBlSelRect = mpatches.Rectangle(
-#             xy, w, h,
-#             linewidth = 1.5,
-#             edgecolor = 'red',
-#             fill      = False,
-#         )
+            Parameters
+            ----------
+            x: int
+                X coordinate of the band/lane
+            y: int
+                Y coordinate of the band/lane
 
-#         self.wPlot.axes.add_patch(self.rBlSelRect)
-        
-#         self.wPlot.canvas.draw()
-#         #endregion --------------------------------------------> Draw New Rect
-        
-#         return True
-#     #---
-    
-#     def DrawFragments(self, x: int, y: int) -> bool:
-#         """Draw the fragments associated with the selected band/lane.
-    
-#             Parameters
-#             ----------
-#             x: int
-#                 X coordinate of the band/lane
-#             y: int
-#                 Y coordinate of the band/lane
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         b = self.rBands[y-1]
-#         l = self.rLanes[x-1]
-#         tKeyLabel = {}
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region --------------------------------------------------------> Keys
-#         if self.rSelBands:
-#             for k,tL in enumerate(self.rLanes):
-#                 tKeyLabel[f"{(b, tL, 'P')}"] = f'{y-1}.{k}'
-#         else:
-#             for k,tB in enumerate(self.rBands):
-#                 tKeyLabel[f"{(tB, l, 'P')}"] = f'{k}.{x-1}'
-#         #endregion -----------------------------------------------------> Keys
-        
-#         #region -------------------------------------------------------> Super
-#         super().DrawFragments(tKeyLabel)
-#         #endregion ----------------------------------------------------> Super
-        
-#         return True
-#     #---
-    
-#     def SetFragmentAxis(self, showAll=False) -> bool:
-#         """Set the axis for the plot showing the fragments.
-    
-#             Parameters
-#             ----------
-#             showAll: bool
-#                 Show all fragments or not. Default is False.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         self.wPlotM.axes.clear()
-#         #endregion ------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        self.UpdateGelColor()
+        #endregion ------------------------------------------------> 
 
-#         #region ---------------------------------------------------> 
-#         #------------------------------>
-#         if self.rProtLoc[0] is not None:
-#             xtick = [1] + list(self.rProtLoc) + [self.rProtLength]
-#         else:
-#             xtick = [1] + [self.rProtLength]
-#         self.wPlotM.axes.set_xticks(xtick)
-#         self.wPlotM.axes.set_xticklabels(xtick)
-#         #------------------------------> 
-#         if showAll:
-#             self.wPlotM.axes.set_yticks(range(1, len(showAll)+2))
-#             self.wPlotM.axes.set_yticklabels(showAll+['Protein'])
-#             self.wPlotM.axes.set_ylim(0.5, len(showAll)+1.5)
-#             #------------------------------> 
-#             ymax = len(showAll)+0.8
-#         else:
-#             if self.rSelBands:
-#                 #------------------------------> 
-#                 self.wPlotM.axes.set_yticks(range(1, len(self.rLanes)+2))
-#                 self.wPlotM.axes.set_yticklabels(self.rLanes+['Protein'])            
-#                 self.wPlotM.axes.set_ylim(0.5, len(self.rLanes)+1.5)
-#                 #------------------------------> 
-#                 ymax = len(self.rLanes)+0.8
-#             else:
-#                 #------------------------------> 
-#                 self.wPlotM.axes.set_yticks(range(1, len(self.rBands)+2))
-#                 self.wPlotM.axes.set_yticklabels(self.rBands+['Protein'])   
-#                 self.wPlotM.axes.set_ylim(0.5, len(self.rBands)+1.5)
-#                 #------------------------------> 
-#                 ymax = len(self.rBands)+0.8
-#         #------------------------------> 
-#         self.wPlotM.axes.tick_params(length=0)
-#         #------------------------------> 
-#         self.wPlotM.axes.set_xlim(0, self.rProtLength+1)
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         self.wPlotM.axes.vlines(
-#             xtick, 0, ymax, linestyles='dashed', linewidth=0.5, color='black')
-#         #endregion ------------------------------------------------> 
-       
-#         #region ------------------------------------------------> Remove Frame
-#         self.wPlotM.axes.spines['top'].set_visible(False)
-#         self.wPlotM.axes.spines['right'].set_visible(False)
-#         self.wPlotM.axes.spines['bottom'].set_visible(False)
-#         self.wPlotM.axes.spines['left'].set_visible(False)
-#         #endregion ---------------------------------------------> Remove Frame
-        
-#         return True
-#     #---
-    
-#     def PrintBLText(self, x: int, y: int) -> bool:
-#         """Print the text for selected band/lane.
-    
-#             Parameters
-#             ----------
-#             x: int
-#                 X coordinates of the selected band/lane
-#             y: int
-#                 Y coordinates of the selected band/lane
+        #region ---------------------------------------------------> Variables
+        if self.rSelBands:
+            xy = (0.55, y-0.45)
+            w = len(self.rLanes) - 0.1
+            h = 0.9
+        else:
+            xy = (x-0.45, 0.55)
+            w = 0.9
+            h = len(self.rBands) - 0.1
+        #endregion ------------------------------------------------> Variables
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         if self.rSelBands:
-#             return self.PrintBText(y)
-#         else:
-#             return self.PrintLText(x)
-#     #---
-    
-#     def PrintLBGetInfo(self, tKeys: list[int]) -> dict:
-#         """Helper method to get information about the selected Band/Lane.
-    
-#             Parameters
-#             ----------
-#             tKeys: str
-#                 List of keys for the information.        
-    
-#             Returns
-#             -------
-#             dict:
-#                 {
-#                     'LanesWithFP': ,
-#                     'Fragments': ,
-#                     'FP': ,
-#                     'NCO': ,
-#                     'NCONat': ,
-#                 }
-#         """
-#         #region ---------------------------------------------------> 
-#         dictO = {}
-#         #endregion ------------------------------------------------> 
+        #region ---------------------------------------------> Remove Old Rect
+        if self.rBlSelRect is not None:
+            self.rBlSelRect.remove()
+        else:
+            pass
+        #endregion ------------------------------------------> Remove Old Rect
 
-#         #region ---------------------------------------------------> 
-#         lanesWithFP = []
-#         fragments = []
-#         fP = []
-#         ncL = []
-#         ncO = []
-#         #------------------------------> 
-#         for tKey in tKeys:
-#             #--------------> 
-#             x = f'{tKey}'
-#             nF = len(self.rFragments[x]['Coord'])
-#             #--------------> 
-#             if nF:
-#                 if self.rSelBands:
-#                     lanesWithFP.append(tKey[1])
-#                 else:
-#                     lanesWithFP.append(tKey[0])
-#                 fragments.append(nF)
-#                 fP.append(sum(self.rFragments[x]['Np']))
-#             else:
-#                 pass
-#             #------------------------------> 
-#             ncL = ncL + self.rFragments[x]['Coord']
-#         #------------------------------> 
-#         dictO['LanesWithFP'] = (
-#             f'{len(lanesWithFP)} (' + f'{lanesWithFP}'[1:-1] + f')')
-#         dictO['Fragments'] = (
-#             f'{sum(fragments)} (' + f'{fragments}'[1:-1] + f')')
-#         dictO['FP'] = (
-#             f'{sum(fP)} (' +f'{fP}'[1:-1] + f')')
-#         #endregion ------------------------------------------------> 
+        #region -----------------------------------------------> Draw New Rect
+        self.rBlSelRect = mpatches.Rectangle(
+            xy, w, h,
+            linewidth = 1.5,
+            edgecolor = 'red',
+            fill      = False,
+        )
+        self.wPlot['Sec'].rAxes.add_patch(self.rBlSelRect)
+        self.wPlot['Sec'].rCanvas.draw()
+        #endregion --------------------------------------------> Draw New Rect
 
-#         #region ---------------------------------------------------> 
-#         ncL.sort()
-#         #------------------------------> 
-#         if ncL:
-#             pass
-#         else:
-#             return {}
-#         #------------------------------> 
-#         n,c = ncL[0]
-#         for nc,cc in ncL[1:]:
-#             if nc <= c:
-#                 if cc <= c:
-#                     pass
-#                 else:
-#                     c = cc
-#             else:
-#                 ncO.append((n,c))
-#                 n = nc
-#                 c = cc
-#         ncO.append((n,c))
-#         #------------------------------> 
-#         if self.rProtDelta is not None:
-#             ncONat = []
-#             for a,b in ncO:
-#                 aX = a+self.rProtDelta
-#                 bX = b+self.rProtDelta
-#                 ncONat.append((aX,bX))
-#         else:
-#             ncONat = 'NA' 
-#         #------------------------------>     
-#         dictO['NCO'] = ncO
-#         dictO['NCONat'] = ncONat
-#         #endregion ------------------------------------------------> 
+        return True
+    #---
 
-#         return dictO
-#     #---
-    
-#     def PrintBText(self, band: int) -> bool:
-#         """Print information about a Band.
-    
-#             Parameters
-#             ----------
-#             band: int
-#                 Index of the selected band in self.rBands
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------> Get Values
-#         #------------------------------> Keys
-#         tKeys = [(self.rBands[band], x, 'P') for x in self.rLanes]
-#         #------------------------------> Info
-#         infoDict = self.PrintLBGetInfo(tKeys)           
-#         #endregion -----------------------------------------------> Get Values
-        
-#         #region -------------------------------------------------------> Clear
-#         self.wText.Clear()
-#         #endregion ----------------------------------------------------> Clear
-        
-#         #region ----------------------------------------------------> New Text
-#         if infoDict:
-#             self.wText.AppendText(f'Details for {self.rBands[band]}\n\n')
-#             self.wText.AppendText(f'--> Analyzed Lanes\n\n')
-#             self.wText.AppendText(f'Total Lanes  : {len(self.rLanes)}\n')
-#             self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
-#             self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
-#             self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
-#             self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
-#             self.wText.AppendText(f'Recombinant Sequence:\n')
-#             self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
-#             self.wText.AppendText(f'Native Sequence:\n')
-#             self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
-#         else:
-#             self.wText.AppendText(f'There were no peptides from '
-#                 f'{self.rProtTarget} detected here.')
-        
-#         self.wText.SetInsertionPoint(0)
-#         #endregion -------------------------------------------------> New Text
-        
-#         return True
-#     #---
-    
-#     def PrintLText(self, lane: int) -> bool:
-#         """Print information about a Lane.
-    
-#             Parameters
-#             ----------
-#             lane: int
-#                 Index of the selected lane in self.rLanes
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------> Get Values
-#         #------------------------------> Keys
-#         tKeys = [(x, self.rLanes[lane], 'P') for x in self.rBands]
-#         #------------------------------> Info
-#         infoDict = self.PrintLBGetInfo(tKeys)
-#         #endregion -----------------------------------------------> Get Values
-        
-#         #region -------------------------------------------------------> Clear
-#         self.wText.Clear()
-#         #endregion ----------------------------------------------------> Clear
-        
-#         #region ----------------------------------------------------> New Text
-#         if infoDict:
-#             self.wText.AppendText(f'Details for {self.rLanes[lane]}\n\n')
-#             self.wText.AppendText(f'--> Analyzed Bands\n\n')
-#             self.wText.AppendText(f'Total Bands  : {len(self.rBands)}\n')
-#             self.wText.AppendText(f'Bands with FP: {infoDict["LanesWithFP"]}\n')
-#             self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
-#             self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
-#             self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
-#             self.wText.AppendText(f'Recombinant Sequence:\n')
-#             self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
-#             self.wText.AppendText(f'Native Sequence:\n')
-#             self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
-#         else:
-#             self.wText.AppendText(f'There were no peptides from '
-#                 f'{self.rProtTarget} detected here.')
-        
-#         self.wText.SetInsertionPoint(0)
-#         #endregion -------------------------------------------------> New Text
-        
-#         return True
-#     #---
-      
-#     def PrintGelSpotText(self, x: int, y: int) -> bool:
-#         """Print information about a selected Gel spot.
-    
-#             Parameters
-#             ----------
-#             x: int
-#                 X coordinate of the selected Gel spot.
-#             y: int
-#                 Y coordinate od the selected Gel spot
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         tKey = f'{(self.rBands[y], self.rLanes[x], "P")}'
-#         #------------------------------> 
-#         fragments = len(self.rFragments[tKey]['Coord'])
-#         if fragments == 0:
-#             self.wText.Clear()
-#             self.wText.AppendText(
-#                 f'Details for {self.rLanes[x]} - {self.rBands[y]}\n\n')
-#             self.wText.AppendText(
-#                 f'There were no peptides from {self.rProtTarget} detected here.')
-#             return True
-#         else:
-#             pass
-#         #------------------------------> 
-#         fp = (
-#             f'{sum(self.rFragments[tKey]["Np"])} (' + 
-#             f'{self.rFragments[tKey]["Np"]}'[1:-1] + ')'
-#         )
-#         #------------------------------> 
-#         if self.rProtDelta is not None:
-#             ncONat = []
-#             for a,b in self.rFragments[tKey]['Coord']:
-#                 aX = a+self.rProtDelta
-#                 bX = b+self.rProtDelta
-#                 ncONat.append((aX,bX))
-#         else:
-#             ncONat = 'NA' 
-#         #endregion ------------------------------------------------> 
+    def DrawFragments(self, x: int, y: int) -> bool:
+        """Draw the fragments associated with the selected band/lane.
 
-#         #region ---------------------------------------------------> 
-#         self.wText.Clear()
-#         #endregion ------------------------------------------------> 
+            Parameters
+            ----------
+            x: int
+                X coordinate of the band/lane.
+            y: int
+                Y coordinate of the band/lane.
 
-#         #region ---------------------------------------------------> 
-#         self.wText.AppendText(
-#             f'Details for {self.rLanes[x]} - {self.rBands[y]}\n\n')
-#         self.wText.AppendText(f'--> Fragments: {fragments}\n\n')
-#         self.wText.AppendText(f'--> Number of FP: {fp}\n\n')
-#         self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
-#         self.wText.AppendText(f'Recombinant Protein:\n')
-#         self.wText.AppendText(f'{self.rFragments[tKey]["Coord"]}'[1:-1]+'\n\n')
-#         self.wText.AppendText(f'Native Protein:\n')
-#         self.wText.AppendText(f'{ncONat}'[1:-1])
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        b = self.rBands[y-1]
+        l = self.rLanes[x-1]
+        tKeyLabel = {}
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------------> Keys
+        if self.rSelBands:
+            for k,tL in enumerate(self.rLanes):
+                tKeyLabel[f"{(b, tL, 'P')}"] = f'{y-1}.{k}'
+        else:
+            for k,tB in enumerate(self.rBands):
+                tKeyLabel[f"{(tB, l, 'P')}"] = f'{k}.{x-1}'
+        #endregion -----------------------------------------------------> Keys
+
+        #region -------------------------------------------------------> Super
+        super().DrawFragments(tKeyLabel)
+        #endregion ----------------------------------------------------> Super
+
+        return True
+    #---
+
+    def SetFragmentAxis(self, showAll=False) -> bool:
+        """Set the axis for the plot showing the fragments.
+
+            Parameters
+            ----------
+            showAll: bool
+                Show all fragments or not. Default is False.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        self.wPlot['Main'].rAxes.clear()
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        #------------------------------>
+        if self.rProtLoc[0] is not None:
+            xtick = [1] + list(self.rProtLoc) + [self.rProtLength]
+        else:
+            xtick = [1] + [self.rProtLength]
+        self.wPlot['Main'].rAxes.set_xticks(xtick)
+        self.wPlot['Main'].rAxes.set_xticklabels(xtick)
+        #------------------------------> 
+        if showAll:
+            nPoint = len(self.rLanes) * len(self.rBands)
+            self.wPlot['Main'].rAxes.set_yticks(range(1, nPoint+2))
+            self.wPlot['Main'].rAxes.set_yticklabels(self.rBands+self.rLanes+['Protein'])
+            self.wPlot['Main'].rAxes.set_ylim(0.5, nPoint+1.5)
+            #------------------------------> 
+            ymax = nPoint+0.8
+        else:
+            if self.rSelBands:
+                #------------------------------> 
+                self.wPlot['Main'].rAxes.set_yticks(range(1, len(self.rLanes)+2))
+                self.wPlot['Main'].rAxes.set_yticklabels(self.rLanes+['Protein'])            
+                self.wPlot['Main'].rAxes.set_ylim(0.5, len(self.rLanes)+1.5)
+                #------------------------------> 
+                ymax = len(self.rLanes)+0.8
+            else:
+                #------------------------------> 
+                self.wPlot['Main'].rAxes.set_yticks(range(1, len(self.rBands)+2))
+                self.wPlot['Main'].rAxes.set_yticklabels(self.rBands+['Protein'])   
+                self.wPlot['Main'].rAxes.set_ylim(0.5, len(self.rBands)+1.5)
+                #------------------------------> 
+                ymax = len(self.rBands)+0.8
+        #------------------------------> 
+        self.wPlot['Main'].rAxes.tick_params(length=0)
+        #------------------------------> 
+        self.wPlot['Main'].rAxes.set_xlim(0, self.rProtLength+1)
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        self.wPlot['Main'].rAxes.vlines(
+            xtick, 0, ymax, linestyles='dashed', linewidth=0.5, color='black')
+        #endregion ------------------------------------------------>
+
+        #region ------------------------------------------------> Remove Frame
+        self.wPlot['Main'].rAxes.spines['top'].set_visible(False)
+        self.wPlot['Main'].rAxes.spines['right'].set_visible(False)
+        self.wPlot['Main'].rAxes.spines['bottom'].set_visible(False)
+        self.wPlot['Main'].rAxes.spines['left'].set_visible(False)
+        #endregion ---------------------------------------------> Remove Frame
+
+        return True
+    #---
+
+    def PrintBLText(self, x: int, y: int) -> bool:
+        """Print the text for selected band/lane.
+
+            Parameters
+            ----------
+            x: int
+                X coordinates of the selected band/lane.
+            y: int
+                Y coordinates of the selected band/lane.
+
+            Returns
+            -------
+            bool
+        """
+        if self.rSelBands:
+            return self.PrintBText(y)
+        else:
+            return self.PrintLText(x)
+    #---
+
+    def PrintLBGetInfo(self, tKeys: list[list]) -> dict:
+        """Helper method to get information about the selected Band/Lane.
+
+            Parameters
+            ----------
+            tKeys: str
+                List of keys for the information.
+
+            Returns
+            -------
+            dict:
+                {
+                    'LanesWithFP': ,
+                    'Fragments': ,
+                    'FP': ,
+                    'NCO': ,
+                    'NCONat': ,
+                }
+        """
+        #region --------------------------------------------------->
+        dictO = {}
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        lanesWithFP = []
+        fragments = []
+        fP = []
+        ncL = []
+        ncO = []
+        #------------------------------>
+        for tKey in tKeys:
+            #-------------->
+            x = f'{tKey}'
+            nF = len(self.rFragments[x]['Coord'])
+            #--------------> 
+            if nF:
+                if self.rSelBands:
+                    lanesWithFP.append(tKey[1])
+                else:
+                    lanesWithFP.append(tKey[0])
+                fragments.append(nF)
+                fP.append(sum(self.rFragments[x]['Np']))
+            else:
+                pass
+            #------------------------------> 
+            ncL = ncL + self.rFragments[x]['Coord']
+        #------------------------------> 
+        dictO['LanesWithFP'] = (
+            f'{len(lanesWithFP)} (' + f'{lanesWithFP}'[1:-1] + f')')
+        dictO['Fragments'] = (
+            f'{sum(fragments)} (' + f'{fragments}'[1:-1] + f')')
+        dictO['FP'] = (
+            f'{sum(fP)} (' +f'{fP}'[1:-1] + f')')
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        ncL.sort()
+        #------------------------------>
+        if ncL:
+            pass
+        else:
+            return {}
+        #------------------------------>
+        n,c = ncL[0]
+        for nc,cc in ncL[1:]:
+            if nc <= c:
+                if cc <= c:
+                    pass
+                else:
+                    c = cc
+            else:
+                ncO.append((n,c))
+                n = nc
+                c = cc
+        ncO.append((n,c))
+        #------------------------------>
+        if self.rProtDelta is not None:
+            ncONat = []
+            for a,b in ncO:
+                aX = a+self.rProtDelta
+                bX = b+self.rProtDelta
+                ncONat.append((aX,bX))
+        else:
+            ncONat = 'NA' 
+        #------------------------------>
+        dictO['NCO'] = ncO
+        dictO['NCONat'] = ncONat
+        #endregion ------------------------------------------------>
+
+        return dictO
+    #---
+
+    def PrintBText(self, band: int) -> bool:
+        """Print information about a Band.
+
+            Parameters
+            ----------
+            band: int
+                Index of the selected band in self.rBands.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Get Values
+        #------------------------------> Keys
+        tKeys = [(self.rBands[band], x, 'P') for x in self.rLanes]
+        #------------------------------> Info
+        infoDict = self.PrintLBGetInfo(tKeys)
+        #endregion -----------------------------------------------> Get Values
+
+        #region -------------------------------------------------------> Clear
+        self.wText.Clear()
+        #endregion ----------------------------------------------------> Clear
+
+        #region ----------------------------------------------------> New Text
+        if infoDict:
+            self.wText.AppendText(f'Details for {self.rBands[band]}\n\n')
+            self.wText.AppendText(f'--> Analyzed Lanes\n\n')
+            self.wText.AppendText(f'Total Lanes  : {len(self.rLanes)}\n')
+            self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
+            self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
+            self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
+            self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
+            self.wText.AppendText(f'Recombinant Sequence:\n')
+            self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
+            self.wText.AppendText(f'Native Sequence:\n')
+            self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        else:
+            self.wText.AppendText(f'There were no peptides from '
+                f'{self.rProtTarget} detected here.')
+
+        self.wText.SetInsertionPoint(0)
+        #endregion -------------------------------------------------> New Text
+
+        return True
+    #---
+
+    def PrintLText(self, lane: int) -> bool:
+        """Print information about a Lane.
+
+            Parameters
+            ----------
+            lane: int
+                Index of the selected lane in self.rLanes.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Get Values
+        #------------------------------> Keys
+        tKeys = [(x, self.rLanes[lane], 'P') for x in self.rBands]
+        #------------------------------> Info
+        infoDict = self.PrintLBGetInfo(tKeys)
+        #endregion -----------------------------------------------> Get Values
+
+        #region -------------------------------------------------------> Clear
+        self.wText.Clear()
+        #endregion ----------------------------------------------------> Clear
+
+        #region ----------------------------------------------------> New Text
+        if infoDict:
+            self.wText.AppendText(f'Details for {self.rLanes[lane]}\n\n')
+            self.wText.AppendText(f'--> Analyzed Bands\n\n')
+            self.wText.AppendText(f'Total Bands  : {len(self.rBands)}\n')
+            self.wText.AppendText(f'Bands with FP: {infoDict["LanesWithFP"]}\n')
+            self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
+            self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
+            self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
+            self.wText.AppendText(f'Recombinant Sequence:\n')
+            self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
+            self.wText.AppendText(f'Native Sequence:\n')
+            self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
+        else:
+            self.wText.AppendText(f'There were no peptides from '
+                f'{self.rProtTarget} detected here.')
+
+        self.wText.SetInsertionPoint(0)
+        #endregion -------------------------------------------------> New Text
+
+        return True
+    #---
+
+    def PrintGelSpotText(self, x: int, y: int) -> bool:
+        """Print information about a selected Gel spot.
+
+            Parameters
+            ----------
+            x: int
+                X coordinate of the selected Gel spot.
+            y: int
+                Y coordinate od the selected Gel spot
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        tKey = f'{(self.rBands[y], self.rLanes[x], "P")}'
+        #------------------------------>
+        fragments = len(self.rFragments[tKey]['Coord'])
+        if fragments == 0:
+            self.wText.Clear()
+            self.wText.AppendText(
+                f'Details for {self.rLanes[x]} - {self.rBands[y]}\n\n')
+            self.wText.AppendText(
+                f'There were no peptides from {self.rProtTarget} detected here.')
+            return True
+        else:
+            pass
+        #------------------------------>
+        fp = (
+            f'{sum(self.rFragments[tKey]["Np"])} (' + 
+            f'{self.rFragments[tKey]["Np"]}'[1:-1] + ')'
+        )
+        #------------------------------>
+        if self.rProtDelta is not None:
+            ncONat = []
+            for a,b in self.rFragments[tKey]['Coord']:
+                aX = a+self.rProtDelta
+                bX = b+self.rProtDelta
+                ncONat.append((aX,bX))
+        else:
+            ncONat = 'NA' 
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        self.wText.Clear()
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        self.wText.AppendText(
+            f'Details for {self.rLanes[x]} - {self.rBands[y]}\n\n')
+        self.wText.AppendText(f'--> Fragments: {fragments}\n\n')
+        self.wText.AppendText(f'--> Number of FP: {fp}\n\n')
+        self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
+        self.wText.AppendText(f'Recombinant Protein:\n')
+        self.wText.AppendText(f'{self.rFragments[tKey]["Coord"]}'[1:-1]+'\n\n')
+        self.wText.AppendText(f'Native Protein:\n')
+        self.wText.AppendText(f'{ncONat}'[1:-1])
         
-#         self.wText.SetInsertionPoint(0)
-#         #endregion ------------------------------------------------> 
+        self.wText.SetInsertionPoint(0)
+        #endregion ------------------------------------------------>
 
-#         return True
-#     #---
-    
-#     def PrintFragmentText(
-#         self, tKey: tuple[str, str,str], fragC: list[int]):
-#         """Print information about a selected Fragment
+        return True
+    #---
 
-#             Parameters
-#             ----------
-#             tKey: tuple(str, str, str)
-#                 Tuple with the column name in the pd.DataFrame with the results.
-#             fragC: list[int]
-#                 Fragment coordinates.
+    def PrintFragmentText(
+        self, tKey: str, fragC: list[int]):
+        """Print information about a selected Fragment.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Info
-#         n, c = self.rFragments[tKey]["Coord"][fragC[2]]
-        
-#         if self.rProtLoc[0] is not None:
-#             if n >= self.rProtLoc[0] and n <= self.rProtLoc[1]:
-#                 nnat = n + self.rProtDelta
-#             else:
-#                 nnat = 'NA'
-        
-#             if c >= self.rProtLoc[0] and c <= self.rProtLoc[1]:
-#                 cnat = c + self.rProtDelta
-#             else:
-#                 cnat = 'NA'
-#         else:
-#             nnat = 'NA'
-#             cnat = 'NA'
-#         resNum = f'Nterm {n}({nnat}) - Cterm {c}({cnat})'
-        
-#         np = (f'{self.rFragments[tKey]["Np"][fragC[2]]} '
-#               f'({self.rFragments[tKey]["NpNat"][fragC[2]]})')
-#         clsite = (f'{self.rFragments[tKey]["Nc"][fragC[2]]} '
-#                   f'({self.rFragments[tKey]["NcNat"][fragC[2]]})')
-#         #endregion ------------------------------------------------> Info
+            Parameters
+            ----------
+            tKey: str
+                String with the column name in the pd.DataFrame with the
+                results.
+            fragC: list[int]
+                Fragment coordinates.
 
-#         #region ---------------------------------------------------> 
-#         self.wText.Clear()
-#         #endregion ------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Info
+        n, c = self.rFragments[tKey]["Coord"][fragC[2]]
+        #------------------------------>
+        if self.rProtLoc[0] is not None:
+            if n >= self.rProtLoc[0] and n <= self.rProtLoc[1]:
+                nnat = n + self.rProtDelta
+            else:
+                nnat = 'NA'
+        #------------------------------>
+            if c >= self.rProtLoc[0] and c <= self.rProtLoc[1]:
+                cnat = c + self.rProtDelta
+            else:
+                cnat = 'NA'
+        else:
+            nnat = 'NA'
+            cnat = 'NA'
+        resNum = f'Nterm {n}({nnat}) - Cterm {c}({cnat})'
+        #------------------------------>
+        np = (f'{self.rFragments[tKey]["Np"][fragC[2]]} '
+              f'({self.rFragments[tKey]["NpNat"][fragC[2]]})')
+        clSite = (f'{self.rFragments[tKey]["Nc"][fragC[2]]} '
+                  f'({self.rFragments[tKey]["NcNat"][fragC[2]]})')
+        #endregion ------------------------------------------------> Info
 
-#         #region ---------------------------------------------------> 
-#         self.wText.AppendText(
-#             f'Details for {self.rLanes[fragC[1]]} - {self.rBands[fragC[0]]} - Fragment {fragC[2]+1}\n\n')
-#         self.wText.AppendText(f'Residue Numbers: {resNum}\n')
-#         self.wText.AppendText(f'Sequences: {np}\n')
-#         self.wText.AppendText(f'Cleavage Sites: {clsite}\n\n')
-#         self.wText.AppendText(f'Sequences in the fragment:\n\n')
-#         self.wText.AppendText(f'{self.rFragments[tKey]["Seq"][fragC[2]]}')
-#         self.wText.SetInsertionPoint(0)
-#         #endregion ------------------------------------------------> 
-        
-#         return True
-#     #---
-    
+        #region --------------------------------------------------->
+        self.wText.Clear()
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        self.wText.AppendText(
+            f'Details for {self.rLanes[fragC[1]]} - {self.rBands[fragC[0]]} - Fragment {fragC[2]+1}\n\n')
+        self.wText.AppendText(f'Residue Numbers: {resNum}\n')
+        self.wText.AppendText(f'Sequences: {np}\n')
+        self.wText.AppendText(f'Cleavage Sites: {clSite}\n\n')
+        self.wText.AppendText(f'Sequences in the fragment:\n\n')
+        self.wText.AppendText(f'{self.rFragments[tKey]["Seq"][fragC[2]]}')
+        self.wText.SetInsertionPoint(0)
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
 #     def PrintAllText(self) -> bool:
 #         """
     
@@ -6751,98 +6779,98 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
 #         doc.build(Story)
 #         return True
 #     #---
-    
-#     def ShowPeptideLoc(self) -> bool:
-#         """Show the location of the selected peptide.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         for k in self.rRectsGel:
-#             k.set_linewidth(self.cGelLineWidth)
-        
-#         for k in self.rRectsFrag:
-#             k.set_linewidth(self.cGelLineWidth)
-#         #endregion ------------------------------------------------> 
+    def ShowPeptideLoc(self) -> bool:
+        """Show the location of the selected peptide.
 
-#         #region ---------------------------------------------------> Gel
-#         j = 0 
-#         for b in self.rBands:
-#             for l in self.rLanes:
-#                 for p in self.rFragments[f'{(b,l, "P")}']['SeqL']:
-#                     if self.rPeptide in p:
-#                         self.rRectsGel[j].set_linewidth(2.0)
-#                         break
-#                     else:
-#                         pass
-#                 j = j + 1
-#         #endregion ------------------------------------------------> Gel
-        
-#         #region ---------------------------------------------------> Fragments
-#         fKeys = []
-#         #------------------------------> 
-#         if self.rBlSelC != [None, None]:
-#             if self.rSelBands:
-#                 for l in self.rLanes:
-#                     fKeys.append(f'{(self.rBands[self.rBlSelC[0]], l, "P")}')
-#             else:
-#                 for b in self.rBands:
-#                     fKeys.append(f'{(b, self.rLanes[self.rBlSelC[1]], "P")}')
-#         else:
-#             for b in self.rBands:
-#                 for l in self.rLanes:
-#                     fKeys.append(f'{(b, l, "P")}')
-#         #------------------------------> 
-#         if self.rRectsFrag:
-#             j = 0
-#             for k in fKeys:
-#                 for p in self.rFragments[k]['SeqL']:
-#                     if self.rPeptide in p:
-#                         self.rRectsFrag[j].set_linewidth(2.0)
-#                     else:
-#                         pass
-#                     j = j + 1
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Fragments
-        
-#         #region ---------------------------------------------------> 
-#         self.wPlot.canvas.draw()
-#         self.wPlotM.canvas.draw()
-#         #endregion ------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        for k in self.rRectsGel:
+            k.set_linewidth(self.cGelLineWidth)
+        #------------------------------>
+        for k in self.rRectsFrag:
+            k.set_linewidth(self.cGelLineWidth)
+        #endregion ------------------------------------------------> 
 
-#         return True
-#     #---
-    
-#     def UpdateGelColor(self, showAll=False) -> bool:
-#         """Update the Gel colors.
-    
-#             Parameters
-#             ----------
-#             showAll: bool
-#                 Show all fragments or not. Default is False.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #------------------------------> 
-#         j = 0
-#         #------------------------------> 
-#         for nb,b in enumerate(self.rBands):
-#             for nl,l in enumerate(self.rLanes):
-#                 self.rRectsGel[j].set_facecolor(
-#                     self.SetGelSpotColor(nb,nl, showAll=showAll)
-#                 )
-#                 j = j + 1
-#         #------------------------------> 
-#         self.wPlot.canvas.draw()
-        
-#         return True
-#     #---
-    
+        #region ---------------------------------------------------> Gel
+        j = 0 
+        for b in self.rBands:
+            for l in self.rLanes:
+                for p in self.rFragments[f'{(b,l, "P")}']['SeqL']:
+                    if self.rPeptide in p:
+                        self.rRectsGel[j].set_linewidth(2.0)
+                        break
+                    else:
+                        pass
+                j = j + 1
+        #endregion ------------------------------------------------> Gel
+
+        #region ---------------------------------------------------> Fragments
+        fKeys = []
+        #------------------------------> 
+        if self.rBlSelC != [None, None]:
+            if self.rSelBands:
+                for l in self.rLanes:
+                    fKeys.append(f'{(self.rBands[self.rBlSelC[0]], l, "P")}') # type: ignore
+            else:
+                for b in self.rBands:
+                    fKeys.append(f'{(b, self.rLanes[self.rBlSelC[1]], "P")}') # type: ignore
+        else:
+            for b in self.rBands:
+                for l in self.rLanes:
+                    fKeys.append(f'{(b, l, "P")}')
+        #------------------------------> 
+        if self.rRectsFrag:
+            j = 0
+            for k in fKeys:
+                for p in self.rFragments[k]['SeqL']:
+                    if self.rPeptide in p:
+                        self.rRectsFrag[j].set_linewidth(2.0)
+                    else:
+                        pass
+                    j = j + 1
+        else:
+            pass
+        #endregion ------------------------------------------------> Fragments
+
+        #region --------------------------------------------------->
+        self.wPlot['Sec'].rCanvas.draw()
+        self.wPlot['Main'].rCanvas.draw()
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def UpdateGelColor(self, showAll=False) -> bool:
+        """Update the Gel colors.
+
+            Parameters
+            ----------
+            showAll: bool
+                Show all fragments or not. Default is False.
+
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        j = 0
+        #------------------------------> 
+        for nb,b in enumerate(self.rBands):
+            for nl,l in enumerate(self.rLanes):
+                self.rRectsGel[j].set_facecolor(
+                    self.SetGelSpotColor(nb,nl, showAll=showAll)
+                )
+                j = j + 1
+        #------------------------------> 
+        self.wPlot['Sec'].rCanvas.draw()
+
+        return True
+    #---
+
 #     def SeqHighPept(self) -> bool:
 #         """Highlight the selected sequence in the wx.ListCtrl
         
@@ -6863,85 +6891,87 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         
 #         return True
 #     #---
-    
-#     def SeqHighSpot(
-#         self, spot: Optional[list[int]]=None) -> list[tuple[int, int]]:
-#         """Highlight the sequences in the selected Gel spot
-        
-#             Returns
-#             -------
-#             list[tuple[int, int]]
-#         """
-#         #region ---------------------------------------------------> Variables
-#         self.rRecSeqColor['Blue']['Frag'] = []
-#         #------------------------------> 
-#         if spot is None:
-#             b,l = self.rGelSelC
-#         else:
-#             b,l = spot
-#         tKey = f'{(self.rBands[b], self.rLanes[l], "P")}'
-#         #endregion ------------------------------------------------> Variables
 
-#         return dtsMethod.MergeOverlapingFragments(
-#             self.rFragments[tKey]['Coord'])
-#     #---
-    
-#     def SeqHighFrag(
-#         self, frag: Optional[list[int]]=None) -> list[tuple[int, int]]:
-#         """Highlight the sequences in the selected Fragment
-        
-#             Returns
-#             -------
-#             list[tuple[int, int]]
-#         """
-#         #region ---------------------------------------------------> Variables
-#         self.rRecSeqColor['Blue']['Spot'] = []
-#         #------------------------------> 
-#         if frag is None:
-#             b,l,j = self.rFragSelC
-#         else:
-#             b,l,j = frag
-#         tKey = f'{(self.rBands[b], self.rLanes[l], "P")}'
-#         #endregion ------------------------------------------------> Variables
+    def SeqHighSpot(
+        self, spot: Optional[list[int]]=None,
+        ) -> list[tuple[int, int]]:
+        """Highlight the sequences in the selected Gel spot.
 
-#         return dtsMethod.MergeOverlapingFragments(
-#             [self.rFragments[tKey]['Coord'][j]])
-#     #---
-    
-#     def SeqHighBL(
-#         self, bb: Optional[int]=None, bl: Optional[int]=None,
-#         ) -> list[tuple[int, int]]:
-#         """Highlight the sequences in the selected Band/Lane
-        
-#             Returns
-#             -------
-#             list[tuple[int, int]]
-#         """
-#         #region ---------------------------------------------------> Variables
-#         if bb is None and bl is None:
-#             b, l = self.rBlSelC
-#         else:
-#             b, l = bb, bl
-#         #------------------------------> 
-#         if b is not None:
-#             bN = self.rBands[b]
-#             tKey = [f'{(bN, l, "P")}' for l in self.rLanes]
-#         else:
-#             lN = self.rLanes[l]
-#             tKey = [f'{(b, lN, "P")}' for b in self.rBands]
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ---------------------------------------------------> Seqs
-#         self.rRecSeqColor['Red'] = []
-#         #------------------------------> 
-#         seqL = []
-#         for k in tKey:
-#             seqL = seqL + self.rFragments[k]['Coord']
-#         #endregion ------------------------------------------------> Seqs
+            Returns
+            -------
+            list[tuple[int, int]]
+        """
+        #region ---------------------------------------------------> Variables
+        self.rRecSeqColor['Blue']['Frag'] = []
+        #------------------------------>
+        if spot is None:
+            b,l = self.rGelSelC
+        else:
+            b,l = spot
+        tKey = f'{(self.rBands[b], self.rLanes[l], "P")}'
+        #endregion ------------------------------------------------> Variables
 
-#         return dtsMethod.MergeOverlapingFragments(list(set(seqL)))
-#     #---
-    
+        return mMethod.MergeOverlappingFragments(
+            self.rFragments[tKey]['Coord'])
+    #---
+
+    def SeqHighFrag(
+        self, frag: Optional[list[int]]=None,
+        ) -> list[tuple[int, int]]:
+        """Highlight the sequences in the selected Fragment.
+
+            Returns
+            -------
+            list[tuple[int, int]]
+        """
+        #region ---------------------------------------------------> Variables
+        self.rRecSeqColor['Blue']['Spot'] = []
+        #------------------------------> 
+        if frag is None:
+            b,l,j = self.rFragSelC
+        else:
+            b,l,j = frag
+        tKey = f'{(self.rBands[b], self.rLanes[l], "P")}' # type: ignore
+        #endregion ------------------------------------------------> Variables
+
+        return mMethod.MergeOverlappingFragments(
+            [self.rFragments[tKey]['Coord'][j]])
+    #---
+
+    def SeqHighBL(
+        self, bb: Optional[int]=None, bl: Optional[int]=None,
+        ) -> list[tuple[int, int]]:
+        """Highlight the sequences in the selected Band/Lane.
+
+            Returns
+            -------
+            list[tuple[int, int]]
+        """
+        #region ---------------------------------------------------> Variables
+        if bb is None and bl is None:
+            b, l = self.rBlSelC
+        else:
+            b, l = bb, bl
+        #------------------------------> 
+        if b is not None:
+            bN = self.rBands[b]
+            tKey = [f'{(bN, l, "P")}' for l in self.rLanes]
+        else:
+            lN = self.rLanes[l]
+            tKey = [f'{(b, lN, "P")}' for b in self.rBands]
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Seqs
+        self.rRecSeqColor['Red'] = []
+        #------------------------------> 
+        seqL = []
+        for k in tKey:
+            seqL = seqL + self.rFragments[k]['Coord']
+        #endregion ------------------------------------------------> Seqs
+
+        return mMethod.MergeOverlappingFragments(list(set(seqL)))
+    #---
+
 #     def SeqHighAll(self) -> list[tuple[int, int]]:
 #         """Highlight the sequences in all Bands/Lanes
         
@@ -6961,41 +6991,40 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
 #             resN.append((s+1, s+len(p)))
 #         #endregion ------------------------------------------------> Seqs
 
-#         return dtsMethod.MergeOverlapingFragments(resN, 1)
+#         return dtsMethod.MergeOverlappingFragments(resN, 1)
 #     #---
-    
-#     def RecSeqHighlight(self) -> bool:
-#         """Apply the colors to the recombinant sequence
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------------> Reset
-#         self.wTextSeq.SetStyle(
-#             0, self.wTextSeq.GetLastPosition(), self.rTextStyleDef)
-#         #endregion ----------------------------------------------------> Reset
-    
-#         #region ---------------------------------------------------> Variables
-#         styleRed = wx.TextAttr('RED', font=self.rTextStyleDef.GetFont())
-#         styleRed.SetFontWeight(wx.FONTWEIGHT_BOLD)
-#         styleBlue = wx.TextAttr('BLUE', font=self.rTextStyleDef.GetFont())
-#         styleBlue.SetFontWeight(wx.FONTWEIGHT_BOLD)
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region -------------------------------------------------------> Color
-#         for p in self.rRecSeqColor['Red']:
-#             self.wTextSeq.SetStyle(p[0]-1, p[1], styleRed)
-            
-#         #------------------------------> 
-#         for _,v in self.rRecSeqColor['Blue'].items():
-#             for p in v:
-#                 self.wTextSeq.SetStyle(p[0]-1, p[1], styleBlue)
-#         #endregion ----------------------------------------------------> Color
-        
-#         return True
-#     #---
-    
+
+    def RecSeqHighlight(self) -> bool:
+        """Apply the colors to the recombinant sequence.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Reset
+        self.wTextSeq.SetStyle(
+            0, self.wTextSeq.GetLastPosition(), self.rTextStyleDef)
+        #endregion ----------------------------------------------------> Reset
+
+        #region ---------------------------------------------------> Variables
+        styleRed = wx.TextAttr('RED', font=self.rTextStyleDef.GetFont())
+        styleRed.SetFontWeight(wx.FONTWEIGHT_BOLD)
+        styleBlue = wx.TextAttr('BLUE', font=self.rTextStyleDef.GetFont())
+        styleBlue.SetFontWeight(wx.FONTWEIGHT_BOLD)
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------------> Color
+        for p in self.rRecSeqColor['Red']:
+            self.wTextSeq.SetStyle(p[0]-1, p[1], styleRed)
+        #------------------------------> 
+        for _,v in self.rRecSeqColor['Blue'].items():
+            for p in v:
+                self.wTextSeq.SetStyle(p[0]-1, p[1], styleBlue)
+        #endregion ----------------------------------------------------> Color
+
+        return True
+    #---
+
 #     def ExportSeq(self) -> bool:
 #         """Export the recombinant sequence 
     
@@ -7095,216 +7124,215 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
 #         self.SeqHighPept()
 #         return True
 #     #---
-    
-#     def OnPickFragment(self, event) -> bool:
-#         """Display info about the selected fragment.
-    
-#             Parameters
-#             ----------
-#             event: matplotlib pick event
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         art = event.artist
-#         fragC = list(map(int, art.get_label().split('.')))
-#         #------------------------------> 
-#         if self.rFragSelC != fragC:
-#             self.rFragSelC = fragC
-#         else:
-#             return True
-#         #------------------------------> 
-#         x, y = event.artist.xy
-#         x = round(x)
-#         y = round(y)
-#         #------------------------------> 
-#         tKey = f'{(self.rBands[fragC[0]], self.rLanes[fragC[1]], "P")}'
-#         #------------------------------> 
-#         x1, x2 = self.rFragments[tKey]['Coord'][fragC[2]]
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ------------------------------------------> Highlight Fragment
-#         if self.rFragSelLine is not None:
-#             self.rFragSelLine[0].remove()
-#         else:
-#             pass
-#         #------------------------------> 
-#         self.rFragSelLine = self.wPlotM.axes.plot(
-#             [x1+2, x2-2], [y,y], color='black', linewidth=4)
-#         #------------------------------> 
-#         self.wPlotM.canvas.draw()
-#         #endregion ---------------------------------------> Highlight Fragment
-        
-#         #region -------------------------------------------------------> Print
-#         self.PrintFragmentText(tKey, fragC)
-#         #endregion ----------------------------------------------------> Print
-        
-#         #region -------------------------------------------> Remove Sel in Gel
-#         if self.rSpotSelLine is not None:
-#             self.rSpotSelLine[0].remove()
-#             self.rSpotSelLine = None
-#             self.wPlot.canvas.draw()
-#             self.rGelSelC = [None, None]
-#         else:
-#             pass
-#         #endregion ----------------------------------------> Remove Sel in Gel
-        
-#         #region -----------------------------------------------------> Rec Seq
-#         self.rRecSeqColor['Blue']['Frag'] = self.SeqHighFrag()
-#         self.RecSeqHighlight()
-#         #endregion --------------------------------------------------> Rec Seq
-        
-#         return True
-#     #---
-    
-#     def OnPickGel(self, event) -> bool:
-#         """Display info about the selected Gel spot.
-    
-#             Parameters
-#             ----------
-#             event: matplotlib pick event
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         x, y = event.artist.xy
-#         x = round(x)
-#         y = round(y)
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region -------------------------------------------------> Flag picked
-#         self.rGelSpotPicked = True
-#         #endregion ----------------------------------------------> Flag picked
-        
-#         #region -----------------------------------------------> Spot Selected
-#         spotC = [y-1, x-1]
-#         if self.rGelSelC != spotC:
-#             self.rGelSelC = spotC
-#         else:
-#             self.PrintGelSpotText(x-1,y-1)
-#             return True
-#         #endregion --------------------------------------------> Spot Selected
-        
-#         #region ---------------------------------------------> Remove Old Line
-#         if self.rSpotSelLine is not None:
-#             self.rSpotSelLine[0].remove()
-#         else:
-#             pass
-#         #endregion ------------------------------------------> Remove Old Line
-        
-#         #region -----------------------------------------------> Draw New Line
-#         self.rSpotSelLine = self.wPlot.axes.plot(
-#             [x-0.3, x+0.3], [y,y], color='black', linewidth=4)
-#         #------------------------------> 
-#         self.wPlot.canvas.draw()
-#         #endregion --------------------------------------------> Draw New Line
-        
-#         #region --------------------------------------------------------> Info
-#         self.PrintGelSpotText(x-1,y-1)
-#         #endregion -----------------------------------------------------> Info
-        
-#         #region ----------------------------------------> Remove Sel from Frag
-#         if self.rFragSelLine is not None:
-#             self.rFragSelLine[0].remove()
-#             self.rFragSelLine = None
-#             self.wPlotM.canvas.draw()
-#             self.rFragSelC = [None, None, None]
-#         else:
-#             pass
-#         #endregion -------------------------------------> Remove Sel from Frag
-        
-#         #region ---------------------------------------------------> 
-#         if self.rUpdateColors:
-#             self.UpdateGelColor()
-#             self.rUpdateColors = False
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> 
-        
-#         #region -----------------------------------------------------> Rec Seq
-#         self.rRecSeqColor['Blue']['Spot'] = self.SeqHighSpot()
-#         self.RecSeqHighlight()
-#         #endregion --------------------------------------------------> Rec Seq
 
-#         return True
-#     #---
-    
-#     def OnPressMouse(self, event) -> bool:
-#         """Press mouse event in the Gel.
+    def OnPickFragment(self, event) -> bool:
+        """Display info about the selected fragment.
 
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
+            Parameters
+            ----------
+            event: matplotlib pick event.
 
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        art = event.artist
+        fragC = list(map(int, art.get_label().split('.')))
+        #------------------------------>
+        if self.rFragSelC != fragC:
+            self.rFragSelC = fragC
+        else:
+            return True
+        #------------------------------>
+        x, y = event.artist.xy
+        x = round(x)
+        y = round(y)
+        #------------------------------>
+        tKey = f'{(self.rBands[fragC[0]], self.rLanes[fragC[1]], "P")}'
+        #------------------------------>
+        x1, x2 = self.rFragments[tKey]['Coord'][fragC[2]]
+        #endregion ------------------------------------------------> Variables
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> In axis
-#         if event.inaxes:
-#             pass
-#         else:
-#             return False
-#         #endregion ------------------------------------------------> In axis
+        #region ------------------------------------------> Highlight Fragment
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+        else:
+            pass
+        #------------------------------> 
+        self.rFragSelLine = self.wPlot['Main'].rAxes.plot(
+            [x1+2, x2-2], [y,y], color='black', linewidth=4)
+        #------------------------------> 
+        self.wPlot['Main'].rCanvas.draw()
+        #endregion ---------------------------------------> Highlight Fragment
 
-#         #region ---------------------------------------------------> Variables
-#         x = round(event.xdata)
-#         y = round(event.ydata)
-#         #endregion ------------------------------------------------> Variables
+        #region -------------------------------------------------------> Print
+        self.PrintFragmentText(tKey, fragC)
+        #endregion ----------------------------------------------------> Print
+
+        #region -------------------------------------------> Remove Sel in Gel
+        if self.rSpotSelLine is not None:
+            self.rSpotSelLine[0].remove()
+            self.rSpotSelLine = None
+            self.wPlot['Sec'].rCanvas.draw()
+            self.rGelSelC = [None, None]
+        else:
+            pass
+        #endregion ----------------------------------------> Remove Sel in Gel
+
+        #region -----------------------------------------------------> Rec Seq
+        self.rRecSeqColor['Blue']['Frag'] = self.SeqHighFrag()
+        self.RecSeqHighlight()
+        #endregion --------------------------------------------------> Rec Seq
+
+        return True
+    #---
+
+    def OnPickGel(self, event) -> bool:
+        """Display info about the selected Gel spot.
+
+            Parameters
+            ----------
+            event: matplotlib pick event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        x, y = event.artist.xy
+        x = round(x)
+        y = round(y)
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Flag picked
+        self.rGelSpotPicked = True
+        #endregion ----------------------------------------------> Flag picked
+
+        #region -----------------------------------------------> Spot Selected
+        spotC = [y-1, x-1]
+        if self.rGelSelC != spotC:
+            self.rGelSelC = spotC
+        else:
+            self.PrintGelSpotText(x-1,y-1)
+            return True
+        #endregion --------------------------------------------> Spot Selected
+
+        #region ---------------------------------------------> Remove Old Line
+        if self.rSpotSelLine is not None:
+            self.rSpotSelLine[0].remove()
+        else:
+            pass
+        #endregion ------------------------------------------> Remove Old Line
+
+        #region -----------------------------------------------> Draw New Line
+        self.rSpotSelLine = self.wPlot['Sec'].rAxes.plot(
+            [x-0.3, x+0.3], [y,y], color='black', linewidth=4)
+        #------------------------------> 
+        self.wPlot['Sec'].rCanvas.draw()
+        #endregion --------------------------------------------> Draw New Line
+
+        #region --------------------------------------------------------> Info
+        self.PrintGelSpotText(x-1,y-1)
+        #endregion -----------------------------------------------------> Info
+
+        #region ----------------------------------------> Remove Sel from Frag
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+            self.rFragSelLine = None
+            self.wPlot['Sec'].rCanvas.draw()
+            self.rFragSelC = [None, None, None]
+        else:
+            pass
+        #endregion -------------------------------------> Remove Sel from Frag
+
+        #region --------------------------------------------------->
+        if self.rUpdateColors:
+            self.UpdateGelColor()
+            self.rUpdateColors = False
+        else:
+            pass
+        #endregion ------------------------------------------------>
+
+        #region -----------------------------------------------------> Rec Seq
+        self.rRecSeqColor['Blue']['Spot'] = self.SeqHighSpot()
+        self.RecSeqHighlight()
+        #endregion --------------------------------------------------> Rec Seq
+
+        return True
+    #---
+
+    def OnPressMouse(self, event) -> bool:
+        """Press mouse event in the Gel.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> In axis
+        if event.inaxes:
+            pass
+        else:
+            return False
+        #endregion ------------------------------------------------> In axis
+
+        #region ---------------------------------------------------> Variables
+        x = round(event.xdata)
+        y = round(event.ydata)
+        #endregion ------------------------------------------------> Variables
+
+        #region -----------------------------------------------> Redraw or Not
+        if self.rGelSpotPicked:
+            self.rGelSpotPicked = False
+            return True
+        else:
+            #------------------------------>
+            blSel = [y-1, x-1]
+            #------------------------------> Update sel curr or print again
+            if self.rSelBands and self.rBlSelC[0] != blSel[0]:
+                self.rBlSelC = [blSel[0], None]
+            elif not self.rSelBands and self.rBlSelC[1] != blSel[1]:
+                self.rBlSelC = [None, blSel[1]]
+            else:
+                self.PrintBLText(x-1,y-1)
+                return True
+        #endregion --------------------------------------------> Redraw or Not
+
+        #region -----------------------------------------------> Draw New Rect
+        self.DrawBLRect(x,y)
+        #endregion --------------------------------------------> Draw New Rect
         
-#         #region -----------------------------------------------> Redraw or Not
-#         if self.rGelSpotPicked:
-#             self.rGelSpotPicked = False
-#             return True
-#         else:
-#             #------------------------------> 
-#             blSel = [y-1, x-1]
-#             #------------------------------> Update sel curr or print again
-#             if self.rSelBands and self.rBlSelC[0] != blSel[0]:
-#                 self.rBlSelC = [blSel[0], None]
-#             elif not self.rSelBands and self.rBlSelC[1] != blSel[1]:
-#                 self.rBlSelC = [None, blSel[1]]
-#             else:
-#                 self.PrintBLText(x-1,y-1)
-#                 return True
-#         #endregion --------------------------------------------> Redraw or Not
+        #region ----------------------------------------------> Draw Fragments
+        self.DrawFragments(x,y)
+        #endregion -------------------------------------------> Draw Fragments
         
-#         #region -----------------------------------------------> Draw New Rect
-#         self.DrawBLRect(x,y)
-#         #endregion --------------------------------------------> Draw New Rect
-        
-#         #region ----------------------------------------------> Draw Fragments
-#         self.DrawFragments(x,y)
-#         #endregion -------------------------------------------> Draw Fragments
-        
-#         #region ---------------------------------------------------> Print
-#         self.PrintBLText(x-1,y-1)
-#         #endregion ------------------------------------------------> Print
+        #region ---------------------------------------------------> Print
+        self.PrintBLText(x-1,y-1)
+        #endregion ------------------------------------------------> Print
 
-#         #region ---------------------------------------------------> 
-#         if self.rUpdateColors:
-#             self.UpdateGelColor()
-#             self.rUpdateColors = False
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> 
+        #region ---------------------------------------------------> 
+        if self.rUpdateColors:
+            self.UpdateGelColor()
+            self.rUpdateColors = False
+        else:
+            pass
+        #endregion ------------------------------------------------> 
         
-#         #region ---------------------------------------------------> Rec Seq
-#         self.rRecSeqColor['Red'] = self.SeqHighBL()
-#         self.RecSeqHighlight()
-#         #endregion ------------------------------------------------> Rec Seq
+        #region ---------------------------------------------------> Rec Seq
+        self.rRecSeqColor['Red'] = self.SeqHighBL()
+        self.RecSeqHighlight()
+        #endregion ------------------------------------------------> Rec Seq
 
-#         return True
-#     #---
-    
+        return True
+    #---
+
 #     def OnLaneBand(self, state: bool) -> bool:
-#         """Change Band/Lane selectio mode.
+#         """Change Band/Lane selection mode.
     
 #             Parameters
 #             ----------

@@ -4463,17 +4463,17 @@ class PaneProtProf(BaseConfPanelMod):
         #region ---------------------------------------------------> Ave & Std
         if colC:
             self.dfR.loc[:,(cN, tN, 'aveC')] = self.dfS.iloc[:,colC].mean(
-                axis=1, skipna=True).to_numpy()
+                axis=1, skipna=True).to_numpy() # type: ignore
             self.dfR.loc[:,(cN, tN, 'stdC')] = self.dfS.iloc[:,colC].std(
-                axis=1, skipna=True).to_numpy()
+                axis=1, skipna=True).to_numpy() # type: ignore
         else:
             self.dfR.loc[:,(cN, tN, 'aveC')] = np.nan
             self.dfR.loc[:,(cN, tN, 'stdC')] = np.nan
         #------------------------------>
         self.dfR.loc[:,(cN, tN, 'ave')] = self.dfS.iloc[:,colD].mean(
-            axis=1, skipna=True).to_numpy()
+            axis=1, skipna=True).to_numpy() # type: ignore
         self.dfR.loc[:,(cN, tN, 'std')] = self.dfS.iloc[:,colD].std(
-            axis=1, skipna=True).to_numpy()
+            axis=1, skipna=True).to_numpy() # type: ignore
         #endregion ------------------------------------------------> Ave & Std
 
         #region --------------------------------------------> Log2 Intensities
@@ -4490,17 +4490,17 @@ class PaneProtProf(BaseConfPanelMod):
         #region ----------------------------------------------------> Log2(FC)
         if colC:
             FC = (
-                dfLogI.iloc[:,colD].mean(axis=1, skipna=True)
-                - dfLogI.iloc[:,colC].mean(axis=1, skipna=True)
+                dfLogI.iloc[:,colD].mean(axis=1, skipna=True) # type: ignore
+                - dfLogI.iloc[:,colC].mean(axis=1, skipna=True) # type: ignore
             )
         else:
-            FC = dfLogI.iloc[:,colD].mean(axis=1, skipna=True)
+            FC = dfLogI.iloc[:,colD].mean(axis=1, skipna=True) # type: ignore
         #------------------------------>
-        self.dfR.loc[:, (cN, tN, 'FC')] = FC.to_numpy()
+        self.dfR.loc[:, (cN, tN, 'FC')] = FC.to_numpy() # type: ignore
         #endregion -------------------------------------------------> Log2(FC)
 
         #region ---------------------------------------------------> FCz
-        self.dfR.loc[:,(cN, tN, 'FCz')] = (FC - FC.mean()).div(FC.std()).to_numpy()
+        self.dfR.loc[:,(cN, tN, 'FCz')] = (FC - FC.mean()).div(FC.std()).to_numpy() # type: ignore
         #endregion ------------------------------------------------> FCz
 
         #region ---------------------------------------------------> FC CI
@@ -4515,7 +4515,7 @@ class PaneProtProf(BaseConfPanelMod):
             ).to_numpy()
         else:
             self.dfR.loc[:,(cN, tN, 'CI')] = mStatistic.CI_Mean_DF(
-                dfLogI.iloc[:,colD], self.rDO['Alpha'], fullCI=False,
+                dfLogI.iloc[:,colD], self.rDO['Alpha'], fullCI=False, # type: ignore
             ).to_numpy()
         #endregion ------------------------------------------------> FC CI
 

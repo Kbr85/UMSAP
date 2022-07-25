@@ -18,6 +18,7 @@
 import itertools
 import copy
 import traceback
+from operator import itemgetter
 from datetime import datetime
 from pathlib import Path
 from typing import Union, Literal
@@ -623,9 +624,9 @@ def DFExclude(df:'pd.DataFrame', col: list[int]) -> 'pd.DataFrame':
     dfo = df.copy()
     #------------------------------> Exclude
     a = dfo.iloc[:,col].notna()
-    a = a.loc[(a==True).any(axis=1)]
+    a = a.loc[(a==True).any(axis=1)] # type: ignore
     idx = a.index
-    dfo = dfo.drop(index=idx)
+    dfo = dfo.drop(index=idx) # type: ignore
     #endregion -------------------------------------------------------> Exclude
 
     return dfo
@@ -668,15 +669,15 @@ def DFFilterByColN(
     dfo = df.copy()
     #------------------------------> Filter
     if comp == 'lt':
-        dfo = df.loc[(df.iloc[:,col] < refVal).any(axis=1)]
+        dfo = df.loc[(df.iloc[:,col] < refVal).any(axis=1)] # type: ignore
     elif comp == 'le':
-        dfo = df.loc[(df.iloc[:,col] <= refVal).any(axis=1)]
+        dfo = df.loc[(df.iloc[:,col] <= refVal).any(axis=1)] # type: ignore
     elif comp == 'e':
-        dfo = df.loc[(df.iloc[:,col] == refVal).any(axis=1)]
+        dfo = df.loc[(df.iloc[:,col] == refVal).any(axis=1)] # type: ignore
     elif comp == 'ge':
-        dfo = df.loc[(df.iloc[:,col] >= refVal).any(axis=1)]
+        dfo = df.loc[(df.iloc[:,col] >= refVal).any(axis=1)] # type: ignore
     elif comp == 'gt':
-        dfo = df.loc[(df.iloc[:,col] > refVal).any(axis=1)]
+        dfo = df.loc[(df.iloc[:,col] > refVal).any(axis=1)] # type: ignore
     else:
         msg = mConfig.mCompNYI.format(comp)
         raise mException.NotYetImplementedError(msg)
@@ -751,6 +752,7 @@ def MatplotLibCmap(
 
     return newMap
 #---
+
 
 def Fragments(
     df: 'pd.DataFrame', val: float, comp: Literal['lt', 'le', 'e', 'ge', 'gt'],
@@ -941,6 +943,57 @@ def Fragments(
     #endregion ------------------------------------------------>
 
     return dictO
+#---
+
+
+def MergeOverlappingFragments(
+    coord:list[tuple[int, int]], delta:int=0,
+    ) -> list[tuple[int, int]]:
+    """Merge overlapping fragments in a list of fragments coordinates.
+
+        Parameters
+        ----------
+        coord: list[tuple[int, int]]
+            Fragment coordinates lists
+        delta: int
+            To adjust the merging of adjacent fragments.
+
+        Returns
+        -------
+        list[tuple[int, int]]
+
+        Notes
+        -----
+        An empty list is returned if coord is empty.
+    """
+    #region ---------------------------------------------------> Variables
+    coordO = []
+    #endregion ------------------------------------------------> Variables
+
+    #region ------------------------------------------------------> Sort & Dup
+    coordS = sorted(list(set(coord)), key=itemgetter(0,1))
+    #endregion ---------------------------------------------------> Sort & Dup
+
+    #region -------------------------------------> Merge Overlapping Intervals
+    try:
+        a,b = coordS[0]
+    except IndexError:
+        return []
+    for ac,bc in coordS[1:]:
+        if ac <= b+delta:
+            if bc > b:
+                b = bc
+            else:
+                pass
+        else:
+            coordO.append((a,b))
+            a = ac
+            b = bc
+    #------------------------------> Catch the last one
+    coordO.append((a,b))
+    #endregion ----------------------------------> Merge Overlapping Intervals
+
+    return coordO
 #---
 
 
@@ -1333,7 +1386,7 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     resL = [x for x in resL if x > -1 and x < protL[0]]
     #------------------------------>
     for e in label:
-        dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])
+        dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha]) # type: ignore
     #------------------------------> 
     maxN = dfT.loc[:,idx[:,'Int']].max().max()
     minN = dfT.loc[:,idx[:,'Int']].min().min()
@@ -1347,7 +1400,7 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         #------------------------------>
         dfG = dfT.loc[(dfT[('Nterm','Nterm')]==r) | (dfT[('Cterm','Cterm')]==r)].copy()
         #------------------------------>
-        dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]
+        dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)] # type: ignore
         dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
         #------------------------------>
         dfO.iloc[r, range(0,len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)
@@ -1363,7 +1416,7 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         resL = [x for x in resL if x > -1 and x < protL[0]]
         #------------------------------> 
         for e in label:
-            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])
+            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha]) # type: ignore
         #------------------------------> 
         maxN = dfT.loc[:,idx[:,'Int']].max().max()
         minN = dfT.loc[:,idx[:,'Int']].min().min()
@@ -1376,7 +1429,7 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         for r in resL:
             dfG = dfT.loc[(dfT[('NtermF','NtermF')]==r) | (dfT[('CtermF','CtermF')]==r)].copy()
             #------------------------------>
-            dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]
+            dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)] # type: ignore
             dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
             #------------------------------> 
             dfO.iloc[r, range(len(label),2*len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)    

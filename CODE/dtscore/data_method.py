@@ -33,58 +33,6 @@ import dtscore.file as dtsFF
 #endregion ----------------------------------------------------------> Imports
 
 
-#region -------------------------------------------------------------> Numbers
-def MergeOverlapingFragments(
-    coord:list[tuple[int, int]], delta:int=0) -> list[tuple[int, int]]:
-    """Merge overlapping fragments in a list of fragments coordinates
-
-        Parameters
-        ----------
-        coord: list[tuple[int, int]]
-            Fragment coordinates lists
-        delta: int
-            To adjust the merging of adjacent fragments.  
-
-        Returns
-        -------
-        list[tuple[int, int]]
-
-        Notes
-        -----
-        An empty list is returned if coord is empty
-    """
-    #region ---------------------------------------------------> Variables
-    coordO = []
-    #endregion ------------------------------------------------> Variables
-
-    #region ------------------------------------------------------> Sort & Dup
-    coordS = sorted(list(set(coord)), key=itemgetter(0,1))
-    #endregion ---------------------------------------------------> Sort & Dup
-
-    #region -------------------------------------> Merge Overlapping Intervals
-    try:
-        a,b = coordS[0]
-    except IndexError:
-        return []
-    for ac,bc in coordS[1:]:
-        if ac <= b+delta:
-            if bc > b:
-                b = bc
-            else:
-                pass
-        else:
-            coordO.append((a,b))
-            a = ac
-            b = bc
-    #------------------------------> Catch the last one        
-    coordO.append((a,b))
-    #endregion ----------------------------------> Merge Overlapping Intervals
-
-    return coordO
-#---
-#endregion ----------------------------------------------------------> Numbers
-
-
 #region -------------------------------------------------------------> Strings
 def StrEqualLength(strL: list[str], char: str=' ', loc:str='end') -> list[str]:
     """Return a list in which every string element has the same length
