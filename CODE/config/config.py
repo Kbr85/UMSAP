@@ -434,11 +434,11 @@ dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
 dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
 dfcolLimProtFirstPart = [
     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
-dfcolLimProtCLevel = ['P']
+dfcolLimProtCLevel = ['Ptost']
 dfcolTarProtFirstPart = [
     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 dfcolTarProtBLevel = ['Int', 'P']
-# dfcolSeqNC = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
+dfcolSeqNC = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 #endregion --------------------------------------------------> DF Column names
 
 
@@ -635,10 +635,10 @@ general = { # General options
 
 
 #region --------------------------------------------------------------> Colors
-# colorFragments = [
-#     '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
-#     '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
-# ]
+colorFragments = [
+    '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
+    '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e',
+]
 
 color = { # Colors for the app
     'Zebra' : '#ffe6e6',
@@ -660,9 +660,9 @@ color = { # Colors for the app
         'FCLines': ['#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff'],
         'CV'     : 'gray',
     },
-#     nwLimProt : {
-#         'Spot' : colorFragments,
-#     },
+    nwLimProt : {
+        'Spot' : colorFragments,
+    },
 #     nwTarProt : {
 #         'Spot' : colorFragments,
 #         'Ctrl' : 'black',

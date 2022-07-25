@@ -1272,7 +1272,7 @@ class MenuToolLimProtClearSel(BaseMenu):
         self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
         #endregion -----------------------------------------------> Menu Items
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         self.rIDMap = {
             self.miNoPept.GetId(): 'Peptide',
             self.miNoFrag.GetId(): 'Fragment',
@@ -1280,7 +1280,7 @@ class MenuToolLimProtClearSel(BaseMenu):
             self.miNoBL.GetId()  : 'Band/Lane',
             self.miNoSel.GetId() : 'All',
         }
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoPept)

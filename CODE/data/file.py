@@ -1076,42 +1076,37 @@ class UMSAPFile():
         }
     #---
 
-#     def GetRecSeq(self, tSection: str, tDate: str) -> str:
-#         """ Get the recombinant sequence used in an analysis.
-    
-#             Parameters
-#             ----------
-#             tSection: str
-#                 Analysis performed, e.g. 'Correlation Analysis'
-#             tDate : str
-#                 The date plus user-given Analysis ID 
-#                 e.g. '20210325-112056 - bla'
-    
-#             Returns
-#             -------
-#             str
-    
-#             Raise
-#             -----
-#             KeyError:
-#                 When tSection or tDate is not found in the file
-#         """
-#         #region ------------------------------------------------> Path
-#         for k,v in self.rData[tSection][tDate]['I'].items():
-#             if 'Sequences File' in k:
-#                 fileN = v
-#                 break
-#             else:
-#                 pass
-#         #endregion ---------------------------------------------> Path
-        
-#         #region ---------------------------------------------------> 
-#         seqObj = dtsFF.FastaFile(self.rInputFileP/fileN)
-        
-#         return seqObj.seqRec
-#         #endregion ------------------------------------------------> 
-#     #---
-    
+    def GetRecSeq(self, tSection: str, tDate: str) -> str:
+        """Get the recombinant sequence used in an analysis.
+
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+
+            Returns
+            -------
+            str
+        """
+        #region ------------------------------------------------> Path
+        for k,v in self.rData[tSection][tDate]['I'].items():
+            if 'Sequences File' in k:
+                fileN = v
+                break
+            else:
+                pass
+        #endregion ---------------------------------------------> Path
+
+        #region --------------------------------------------------->
+        seqObj = FastaFile(self.rInputFileP/fileN) # type: ignore
+
+        return seqObj.rSeqRec
+        #endregion ------------------------------------------------>
+    #---
+
 #     def GetNatSeq(self, tSection: str, tDate: str) -> str:
 #         """ Get the native sequence used in an analysis.
     

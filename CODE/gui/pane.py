@@ -5351,7 +5351,7 @@ class PaneLimProt(BaseConfPanelMod2):
             delta  = self.dfR[('Delta', 'Delta', 'Delta')],
             alpha  = self.rDO['Alpha'],
         ) 
-        self.dfR[(bN, lN, 'P')] = a['P'].to_numpy()
+        self.dfR[(bN, lN, 'Ptost')] = a['P'].to_numpy()
         #endregion -------------------------------------------> Delta and TOST
 
         return True
@@ -5651,7 +5651,7 @@ class PaneLimProt(BaseConfPanelMod2):
 
         #region -------------------------------------------------> Check P < a
         idx = pd.IndexSlice
-        if (self.dfR.loc[:,idx[:,:,'P']] < self.rDO['Alpha']).any().any():
+        if (self.dfR.loc[:,idx[:,:,'Ptost']] < self.rDO['Alpha']).any().any():
             pass
         else:
             self.rMsgError = ('There were no peptides detected in the gel '

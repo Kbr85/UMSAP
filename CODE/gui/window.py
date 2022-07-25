@@ -40,7 +40,7 @@ from scipy import stats
 # from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 import wx
-# import wx.richtext
+import wx.richtext
 import wx.adv as adv
 import wx.lib.agw.aui as aui
 import wx.lib.agw.customtreectrl as wxCT
@@ -467,6 +467,7 @@ class BaseWindowResult(BaseWindow):
         self.rDate    = getattr(self, 'rDate', [])
         self.rDateC   = getattr(self, 'rDateC', '')
         self.rData    = getattr(self, 'rData', {})
+        self.rDf      = getattr(self, 'rDf', pd.DataFrame())
         #------------------------------>
         super().__init__(parent=parent, menuData=menuData)
         #------------------------------>
@@ -821,8 +822,9 @@ class BaseWindowResultListText(BaseWindowResult):
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cLCol    = getattr(self, 'cLCol', ['#', 'Item'])
-        self.cLCStyle = getattr(self, 'cLCStyle', wx.LC_REPORT|wx.LC_SINGLE_SEL)
         self.cSCol    = getattr(self, 'cSCol', [45, 100])
+        self.cLCStyle = getattr(
+            self, 'cLCStyle', wx.LC_REPORT|wx.LC_SINGLE_SEL|wx.LC_VIRTUAL)
         self.cHSearch = getattr(self, 'cHSearch', 'Table')
         self.rLCIdx   = getattr(self, 'rLCIdx', -1)
         #------------------------------>
@@ -1026,13 +1028,13 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wPlots = mPane.NPlots(
+        self.wPlot = mPane.NPlots(
             self, self.cLNPlot, self.cNPlotCol, statusbar=self.wStatBar)
         #endregion --------------------------------------------------> Widgets
 
         #region ---------------------------------------------------------> AUI
         self._mgr.AddPane( 
-            self.wPlots, 
+            self.wPlot, 
             aui.AuiPaneInfo(
                 ).Center(
                 ).Caption(
@@ -1098,7 +1100,7 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
             bool
         """
         #region ---------------------------------------------------> 
-        for v in self.wPlots.dPlot.values():
+        for v in self.wPlot.dPlot.values():
             v.ZoomResetPlot()
         #endregion ------------------------------------------------> 
 
@@ -1118,7 +1120,7 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
             bool
         """
         try:
-            self.wPlots.dPlot[tKey].SaveImage(
+            self.wPlot.dPlot[tKey].SaveImage(
                 mConfig.elMatPlotSaveI, parent=self)
         except Exception as e:
             DialogNotification(
@@ -1144,7 +1146,7 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
             bool
         """
         try:
-            self.wPlots.dPlot[tKey].ZoomResetPlot()
+            self.wPlot.dPlot[tKey].ZoomResetPlot()
         except Exception as e:
             msg = 'It was not possible to reset the zoom on the selected plot.'
             DialogNotification('errorU', msg=msg, tException=e, parent=self)
@@ -1178,8 +1180,8 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
         self.cLPaneText = getattr(self, 'cLPaneText', 'Selection Details')
         self.cLPaneList = getattr(self, 'cLPaneList', 'Peptide List')
         self.cLCol      = getattr(self, 'cLCol', ['#', 'Peptides'])
-#         #------------------------------> 
-#         self.cGelLineWidth = getattr(self, 'cGelLineWidth', 0.5)
+        #------------------------------>
+        self.cGelLineWidth = getattr(self, 'cGelLineWidth', 0.5)
         #------------------------------> Hints
         self.cHSearch = getattr(self, 'cHSearch', 'Peptides')
         #------------------------------> 
@@ -1197,7 +1199,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wPlots = {
+        self.wPlot = {
             'Main' : mWidget.MatPlotPanel(self),
             'Sec'  : mWidget.MatPlotPanel(self),
         }
@@ -1205,7 +1207,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
 
         #region ---------------------------------------------------------> AUI
         self._mgr.AddPane( 
-            self.wPlots['Main'], 
+            self.wPlot['Main'], 
             aui.AuiPaneInfo(
                 ).Center(
                 ).Caption(
@@ -1222,7 +1224,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
         )
         #------------------------------>
         self._mgr.AddPane( 
-            self.wPlots['Sec'], 
+            self.wPlot['Sec'], 
             aui.AuiPaneInfo(
                 ).Bottom(
                 ).Layer(
@@ -1258,7 +1260,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
                     visible=True,
             ),
         )
-        
+        #------------------------------>
         self._mgr.AddPane( 
             self.wLC, 
             aui.AuiPaneInfo(
@@ -1506,97 +1508,6 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
     #endregion ------------------------------------------------> Event Methods
     
     #region --------------------------------------------------> Manage Methods
-#     def FillListCtrl(self) -> bool:
-#         """Update the protein list for the given analysis.
-        
-#             Attributes
-#             ----------
-#             tIDX: pd.IndexSlice
-#                 To select columns used to filter self.rDf by alpha value
-    
-#             Returns
-#             -------
-#             bool
-            
-#             Notes
-#             -----
-#             Entries are read from self.rDf
-#         """
-#         #region --------------------------------------------------> Delete old
-#         self.wLC.wLCS.lc.DeleteAllItems()
-#         #endregion -----------------------------------------------> Delete old
-        
-#         #region ----------------------------------------------------> Get Data
-#         col = [self.rDf.columns.get_loc(c) for c in self.rDf.loc[:,self.rIdxP].columns.values]
-#         data = dtsMethod.DFFilterByColN(self.rDf, col, self.rAlpha, 'le')
-#         data = data.iloc[:,0:2].reset_index(drop=True)
-#         data.insert(0, 'kbr', data.index.values.tolist())
-#         data = data.astype(str)
-#         data = data.iloc[:,0:2].values.tolist()
-#         #endregion -------------------------------------------------> Get Data
-        
-#         #region ------------------------------------------> Set in wx.ListCtrl
-#         self.wLC.wLCS.lc.SetNewData(data)
-#         #endregion ---------------------------------------> Set in wx.ListCtrl
-        
-#         #region ---------------------------------------> Update Protein Number
-#         self._mgr.GetPane(self.wLC).Caption(f'{self.cLPaneList} ({len(data)})')
-#         self._mgr.Update()
-#         #endregion ------------------------------------> Update Protein Number
-        
-#         return True
-#     #---
-    
-#     def GetDF4FragmentSearch(self) -> pd.DataFrame:
-#         """Get the pd.Dataframe needed to create the fragments.
-    
-#             Returns
-#             -------
-#             pd.DataFrame
-#             Seq Nrec Crec Nnat Cnat Col1 Col2 ColN
-            
-#             Notes
-#             -----
-#             Col1 to ColN is expected to hold the P values from the analysis.
-#         """
-#         a = self.rDf.loc[:,self.rIdxSeqNC]
-#         b = self.rDf.loc[:,self.rIdxP]
-
-#         return pd.concat([a,b], axis=1)
-#     #---
-    
-#     def SetEmptyFragmentAxis(self) -> bool:
-#         """Set the axis for an empty fragment state.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         if self.rFragSelLine is not None:
-#             self.rFragSelLine[0].remove()
-#         else:
-#             pass
-        
-#         self.rFragSelLine = None
-#         self.rFragSelC    = [None, None, None]
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> 
-#         self.wPlotM.axes.clear()
-#         self.wPlotM.axes.set_xticks([])
-#         self.wPlotM.axes.set_yticks([])
-#         self.wPlotM.axes.tick_params(length=0)
-#         self.wPlotM.axes.spines['top'].set_visible(False)
-#         self.wPlotM.axes.spines['right'].set_visible(False)
-#         self.wPlotM.axes.spines['bottom'].set_visible(False)
-#         self.wPlotM.axes.spines['left'].set_visible(False)
-#         self.wPlotM.canvas.draw()
-#         #endregion ------------------------------------------------> 
-        
-#         return True
-#     #---
-    
 #     def DrawProtein(self, y: int) -> bool:
 #         """Draw the protein fragment
     
@@ -1714,6 +1625,137 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
 #         return True
 #     #---
     #endregion -----------------------------------------------> Manage Methods
+#---
+
+
+class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, menuData: dict={},
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rIdxP = getattr(self, 'rIdxP', pd.IndexSlice[:,:,'P'])
+        self.rIdxSeqNC = getattr(
+            self, 'rIdxSeqNC', pd.IndexSlice[mConfig.dfcolSeqNC,:,:])
+        self.rAlpha = getattr(self, 'rAlpha', 0.05)
+        self.rFragSelLine = None
+        #------------------------------>
+        super().__init__(parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def GetDF4FragmentSearch(self) -> pd.DataFrame:
+        """Get the pd.Dataframe needed to create the fragments.
+
+            Returns
+            -------
+            pd.DataFrame
+            Seq Nrec Crec Nnat Cnat Col1 Col2 ColN
+
+            Notes
+            -----
+            Col1 to ColN is expected to hold the P values from the analysis.
+        """
+        a = self.rDf.loc[:,self.rIdxSeqNC]
+        b = self.rDf.loc[:,self.rIdxP]
+
+        return pd.concat([a,b], axis=1)
+    #---
+
+    def SetEmptyFragmentAxis(self) -> bool:
+        """Set the axis for an empty fragment state.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+        else:
+            pass
+        #------------------------------>
+        self.rFragSelLine = None
+        self.rFragSelC    = [None, None, None]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.wPlot['Main'].rAxes.clear()
+        self.wPlot['Main'].rAxes.set_xticks([])
+        self.wPlot['Main'].rAxes.set_yticks([])
+        self.wPlot['Main'].rAxes.tick_params(length=0)
+        self.wPlot['Main'].rAxes.spines['top'].set_visible(False)
+        self.wPlot['Main'].rAxes.spines['right'].set_visible(False)
+        self.wPlot['Main'].rAxes.spines['bottom'].set_visible(False)
+        self.wPlot['Main'].rAxes.spines['left'].set_visible(False)
+        self.wPlot['Main'].rCanvas.draw()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def FillListCtrl(self) -> bool:
+        """Update the protein list for the given analysis.
+
+            Attributes
+            ----------
+            tIDX: pd.IndexSlice
+                To select columns used to filter self.rDf by alpha value
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Entries are read from self.rDf
+        """
+        #region --------------------------------------------------> Delete old
+        self.wLC.wLCS.wLC.DeleteAllItems()
+        #endregion -----------------------------------------------> Delete old
+
+        #region ----------------------------------------------------> Get Data
+        col = [self.rDf.columns.get_loc(c) for c in self.rDf.loc[:,self.rIdxP].columns.values]
+        data = mMethod.DFFilterByColN(self.rDf, col, self.rAlpha, 'le')
+        data = data.iloc[:,0:2].reset_index(drop=True)
+        data.insert(0, 'kbr', data.index.values.tolist())
+        data = data.astype(str)
+        data = data.iloc[:,0:2].values.tolist()
+        #endregion -------------------------------------------------> Get Data
+
+        #region ------------------------------------------> Set in wx.ListCtrl
+        self.wLC.wLCS.wLC.SetNewData(data)
+        #endregion ---------------------------------------> Set in wx.ListCtrl
+
+        #region ---------------------------------------> Update Protein Number
+        self._mgr.GetPane(self.wLC).Caption(f'{self.cLPaneList} ({len(data)})')
+        self._mgr.Update()
+        #endregion ------------------------------------> Update Protein Number
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 #endregion -----------------------------------------------------> Base Classes
 
@@ -2479,9 +2521,9 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wPlots.dPlot['Transf'].rAxes2 = self.wPlots.dPlot['Transf'].rAxes.twinx()
-        self.wPlots.dPlot['Norm'].rAxes2   = self.wPlots.dPlot['Norm'].rAxes.twinx()
-        self.wPlots.dPlot['Imp'].rAxes2    = self.wPlots.dPlot['Imp'].rAxes.twinx()
+        self.wPlot.dPlot['Transf'].rAxes2 = self.wPlot.dPlot['Transf'].rAxes.twinx()
+        self.wPlot.dPlot['Norm'].rAxes2   = self.wPlot.dPlot['Norm'].rAxes.twinx()
+        self.wPlot.dPlot['Imp'].rAxes2    = self.wPlot.dPlot['Imp'].rAxes.twinx()
         #endregion --------------------------------------------------> Widgets
 
         #region ---------------------------------------------> Window position
@@ -2721,17 +2763,17 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         
         #region --------------------------------------------------------> Plot
         #------------------------------>
-        self.wPlots.dPlot['Init'].rAxes.clear()
+        self.wPlot.dPlot['Init'].rAxes.clear()
         #------------------------------> title
-        self.wPlots.dPlot['Init'].rAxes.set_title("Floated")
+        self.wPlot.dPlot['Init'].rAxes.set_title("Floated")
         #------------------------------> 
-        a = self.wPlots.dPlot['Init'].rAxes.hist(x, bins=nBin, density=False)
+        a = self.wPlot.dPlot['Init'].rAxes.hist(x, bins=nBin, density=False)
         #------------------------------> 
-        self.wPlots.dPlot['Init'].rAxes.set_xlim(*mStatistic.DataRange(
+        self.wPlot.dPlot['Init'].rAxes.set_xlim(*mStatistic.DataRange(
             a[1], margin=mConfig.general['MatPlotMargin']))
-        self.wPlots.dPlot['Init'].ZoomResetSetValues()
+        self.wPlot.dPlot['Init'].ZoomResetSetValues()
         #------------------------------> 
-        self.wPlots.dPlot['Init'].rCanvas.draw()
+        self.wPlot.dPlot['Init'].rCanvas.draw()
         #endregion -----------------------------------------------------> Plot
 
         return True
@@ -2759,28 +2801,28 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
 
         #region --------------------------------------------------------> Draw
         #------------------------------>
-        self.wPlots.dPlot['Transf'].rAxes.clear()
+        self.wPlot.dPlot['Transf'].rAxes.clear()
         #------------------------------> title
-        self.wPlots.dPlot['Transf'].rAxes.set_title("Transformed")
+        self.wPlot.dPlot['Transf'].rAxes.set_title("Transformed")
         #------------------------------> 
-        a = self.wPlots.dPlot['Transf'].rAxes.hist(x, bins=nBin, density=False)
+        a = self.wPlot.dPlot['Transf'].rAxes.hist(x, bins=nBin, density=False)
         #------------------------------> 
         xRange = mStatistic.DataRange(
             a[1], margin=mConfig.general['MatPlotMargin'])
-        self.wPlots.dPlot['Transf'].rAxes.set_xlim(*xRange)
-        self.wPlots.dPlot['Transf'].rAxes.set_ylim(*mStatistic.DataRange(
+        self.wPlot.dPlot['Transf'].rAxes.set_xlim(*xRange)
+        self.wPlot.dPlot['Transf'].rAxes.set_ylim(*mStatistic.DataRange(
             a[0], margin=mConfig.general['MatPlotMargin']))
-        self.wPlots.dPlot['Transf'].ZoomResetSetValues()
+        self.wPlot.dPlot['Transf'].ZoomResetSetValues()
         #------------------------------> 
         gausX = np.linspace(xRange[0], xRange[1], 300)
         gausY = stats.gaussian_kde(x)
-        self.wPlots.dPlot['Transf'].rAxes2.clear()
-        self.wPlots.dPlot['Transf'].rAxes2.plot(
+        self.wPlot.dPlot['Transf'].rAxes2.clear()
+        self.wPlot.dPlot['Transf'].rAxes2.plot(
             gausX, gausY.pdf(gausX), color='C1')
-        self.wPlots.dPlot['Transf'].rAxes2.set_yticks([])
-        self.wPlots.dPlot['Transf'].rAxes2.set_yticklabels([])
+        self.wPlot.dPlot['Transf'].rAxes2.set_yticks([])
+        self.wPlot.dPlot['Transf'].rAxes2.set_yticklabels([])
         #------------------------------> 
-        self.wPlots.dPlot['Transf'].rCanvas.draw()
+        self.wPlot.dPlot['Transf'].rCanvas.draw()
         #endregion -----------------------------------------------------> Draw
 
         return True
@@ -2808,28 +2850,28 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
 
         #region --------------------------------------------------------> Draw
         #------------------------------> 
-        self.wPlots.dPlot['Norm'].rAxes.clear()
+        self.wPlot.dPlot['Norm'].rAxes.clear()
         #------------------------------> title
-        self.wPlots.dPlot['Norm'].rAxes.set_title("Normalized")
+        self.wPlot.dPlot['Norm'].rAxes.set_title("Normalized")
         #------------------------------> 
-        a = self.wPlots.dPlot['Norm'].rAxes.hist(x, bins=nBin, density=False)
+        a = self.wPlot.dPlot['Norm'].rAxes.hist(x, bins=nBin, density=False)
         #------------------------------>
         xRange = mStatistic.DataRange(
             a[1], margin=mConfig.general['MatPlotMargin'])
-        self.wPlots.dPlot['Norm'].rAxes.set_xlim(*xRange)
-        self.wPlots.dPlot['Norm'].rAxes.set_ylim(*mStatistic.DataRange(
+        self.wPlot.dPlot['Norm'].rAxes.set_xlim(*xRange)
+        self.wPlot.dPlot['Norm'].rAxes.set_ylim(*mStatistic.DataRange(
             a[0], margin=mConfig.general['MatPlotMargin']))
-        self.wPlots.dPlot['Norm'].ZoomResetSetValues()
+        self.wPlot.dPlot['Norm'].ZoomResetSetValues()
         #------------------------------> 
         gausX = np.linspace(xRange[0], xRange[1], 300)
         gausY = stats.gaussian_kde(x)
-        self.wPlots.dPlot['Norm'].rAxes2.clear()
-        self.wPlots.dPlot['Norm'].rAxes2.plot(
+        self.wPlot.dPlot['Norm'].rAxes2.clear()
+        self.wPlot.dPlot['Norm'].rAxes2.plot(
             gausX, gausY.pdf(gausX), color='C1')
-        self.wPlots.dPlot['Norm'].rAxes2.set_yticks([])
-        self.wPlots.dPlot['Norm'].rAxes2.set_yticklabels([])
+        self.wPlot.dPlot['Norm'].rAxes2.set_yticks([])
+        self.wPlot.dPlot['Norm'].rAxes2.set_yticklabels([])
         #------------------------------> 
-        self.wPlots.dPlot['Norm'].rCanvas.draw()
+        self.wPlot.dPlot['Norm'].rCanvas.draw()
         #endregion -----------------------------------------------------> Draw
 
         return True
@@ -2857,24 +2899,24 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
 
         #region --------------------------------------------------------> Draw
         #------------------------------> 
-        self.wPlots.dPlot['Imp'].rAxes.clear()
+        self.wPlot.dPlot['Imp'].rAxes.clear()
         #------------------------------> title
-        self.wPlots.dPlot['Imp'].rAxes.set_title("Imputed")
+        self.wPlot.dPlot['Imp'].rAxes.set_title("Imputed")
         #------------------------------> 
-        a = self.wPlots.dPlot['Imp'].rAxes.hist(x, bins=nBin, density=False)
+        a = self.wPlot.dPlot['Imp'].rAxes.hist(x, bins=nBin, density=False)
         #------------------------------> 
         xRange = mStatistic.DataRange(
             a[1], margin=mConfig.general['MatPlotMargin'])
-        self.wPlots.dPlot['Imp'].rAxes.set_xlim(*xRange)
-        self.wPlots.dPlot['Imp'].rAxes.set_ylim(*mStatistic.DataRange(
+        self.wPlot.dPlot['Imp'].rAxes.set_xlim(*xRange)
+        self.wPlot.dPlot['Imp'].rAxes.set_ylim(*mStatistic.DataRange(
             a[0], margin=mConfig.general['MatPlotMargin']))
-        self.wPlots.dPlot['Imp'].ZoomResetSetValues()
+        self.wPlot.dPlot['Imp'].ZoomResetSetValues()
         #------------------------------> 
         idx = np.where(self.rDataPlot['dfF'].iloc[:,col].isna())[0]
         if len(idx) > 0:
             y = self.rDataPlot['dfIm'].iloc[idx,col]
             if y.count() > 0:
-                self.wPlots.dPlot['Imp'].rAxes.hist(
+                self.wPlot.dPlot['Imp'].rAxes.hist(
                     y, bins=nBin, density=False, color='C2')
             else:
                 pass
@@ -2883,11 +2925,11 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         #------------------------------> 
         gausX = np.linspace(xRange[0], xRange[1], 300)
         gausY = stats.gaussian_kde(x)
-        self.wPlots.dPlot['Imp'].rAxes2.clear()
-        self.wPlots.dPlot['Imp'].rAxes2.plot(gausX, gausY.pdf(gausX), color='C1')
-        self.wPlots.dPlot['Imp'].rAxes2.set_yticks([])
-        self.wPlots.dPlot['Imp'].rAxes2.set_yticklabels([])
-        self.wPlots.dPlot['Imp'].rCanvas.draw()
+        self.wPlot.dPlot['Imp'].rAxes2.clear()
+        self.wPlot.dPlot['Imp'].rAxes2.plot(gausX, gausY.pdf(gausX), color='C1')
+        self.wPlot.dPlot['Imp'].rAxes2.set_yticks([])
+        self.wPlot.dPlot['Imp'].rAxes2.set_yticklabels([])
+        self.wPlot.dPlot['Imp'].rCanvas.draw()
         #endregion -----------------------------------------------------> Draw
 
         return True
@@ -2991,17 +3033,17 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> 
-        self.wPlots.dPlot[self.cLNPlot[0]].rAxes.clear()
-        self.wPlots.dPlot[self.cLNPlot[0]].rCanvas.draw()
+        self.wPlot.dPlot[self.cLNPlot[0]].rAxes.clear()
+        self.wPlot.dPlot[self.cLNPlot[0]].rCanvas.draw()
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 
         for p in self.cLNPlot[1:]:
-            self.wPlots.dPlot[p].rAxes.clear()
-            self.wPlots.dPlot[p].rAxes2.clear()
-            self.wPlots.dPlot[p].rAxes2.set_yticks([])
-            self.wPlots.dPlot[p].rAxes2.set_yticklabels([])
-            self.wPlots.dPlot[p].rCanvas.draw()
+            self.wPlot.dPlot[p].rAxes.clear()
+            self.wPlot.dPlot[p].rAxes2.clear()
+            self.wPlot.dPlot[p].rAxes2.set_yticks([])
+            self.wPlot.dPlot[p].rAxes2.set_yticklabels([])
+            self.wPlot.dPlot[p].rCanvas.draw()
         #endregion ------------------------------------------------> 
 
         return True
@@ -3081,7 +3123,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
             col = self.wLC.wLCS.wLC.OnGetItemText(self.rLCIdx, 1)
             #------------------------------> Export
             try:
-                for k, v in self.wPlots.dPlot.items():
+                for k, v in self.wPlot.dPlot.items():
                     #------------------------------> file path
                     fPath = p / self.cImgName[k].format(self.rDateC, col, 'pdf')
                     #------------------------------> Write
@@ -3234,7 +3276,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         'Vol': '{}-Vol-{}.pdf',
         'FC' : '{}-Evol-{}.pdf',
     }
-    cLCStyle = wx.LC_REPORT|wx.LC_SINGLE_SEL|wx.LC_VIRTUAL
     #------------------------------> Color
     cColor = mConfig.color[cName]
     #endregion --------------------------------------------------> Class setup
@@ -3341,7 +3382,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #endregion --------------------------------------------------> Widgets
 
         #region --------------------------------------------------------> Bind
-        self.wPlots.dPlot['Vol'].rCanvas.mpl_connect('pick_event', self.OnPick)
+        self.wPlot.dPlot['Vol'].rCanvas.mpl_connect('pick_event', self.OnPick)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -3491,7 +3532,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         data = self.rDf.iloc[:,0:2] # type: ignore
         data.insert(0, 'kbr', self.rDf.index.values.tolist())
         data = data.astype(str)
-        data = data.values.tolist()
+        data = data.values.tolist() # type: ignore
         #endregion -------------------------------------------------> Get Data
 
         #region ------------------------------------------> Set in wx.ListCtrl
@@ -3568,7 +3609,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #endregion -----------------------------------------------------> Data
 
         #region --------------------------------------------------------> Plot
-        self.wPlots.dPlot['Vol'].rAxes.scatter(
+        self.wPlot.dPlot['Vol'].rAxes.scatter(
             x, y, 
             alpha     = 1,
             edgecolor = 'black',
@@ -3581,14 +3622,14 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             self.dKeyMethod[l]()  # type: ignore
         #------------------------------> Lock Scale or Set it manually
         if self.rVXRange and self.rVYRange:
-            self.wPlots.dPlot['Vol'].rAxes.set_xlim(*self.rVXRange)
-            self.wPlots.dPlot['Vol'].rAxes.set_ylim(*self.rVYRange)
+            self.wPlot.dPlot['Vol'].rAxes.set_xlim(*self.rVXRange)
+            self.wPlot.dPlot['Vol'].rAxes.set_ylim(*self.rVYRange)
         else:
             self.VolXYRange(x.squeeze(), y.squeeze())
         #------------------------------> Zoom level
-        self.wPlots.dPlot['Vol'].ZoomResetSetValues()
+        self.wPlot.dPlot['Vol'].ZoomResetSetValues()
         #------------------------------> Show
-        self.wPlots.dPlot['Vol'].rCanvas.draw()
+        self.wPlot.dPlot['Vol'].rCanvas.draw()
         #endregion -----------------------------------------------------> Plot
 
         #region -------------------------------------> Update selected protein
@@ -3610,15 +3651,15 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             bool
         """
         #------------------------------> Clear
-        self.wPlots.dPlot['Vol'].rAxes.clear()
+        self.wPlot.dPlot['Vol'].rAxes.clear()
         #------------------------------> 
-        self.wPlots.dPlot['Vol'].rAxes.grid(True, linestyle=":")
+        self.wPlot.dPlot['Vol'].rAxes.grid(True, linestyle=":")
         #------------------------------> Labels
-        self.wPlots.dPlot['Vol'].rAxes.set_title(
+        self.wPlot.dPlot['Vol'].rAxes.set_title(
             f'C: {self.rCondC} RP: {self.rRpC}')
-        self.wPlots.dPlot['Vol'].rAxes.set_xlabel(
+        self.wPlot.dPlot['Vol'].rAxes.set_xlabel(
             "log$_{2}$[Fold Change]", fontweight="bold")
-        self.wPlots.dPlot['Vol'].rAxes.set_ylabel(
+        self.wPlot.dPlot['Vol'].rAxes.set_ylabel(
             "-log$_{10}$[P values]", fontweight="bold")
         #------------------------------>
         return True
@@ -3662,7 +3703,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         else:
             self.rGreenP.remove()
         #------------------------------> Add new one
-        self.rGreenP = self.wPlots.dPlot['Vol'].rAxes.scatter(
+        self.rGreenP = self.wPlot.dPlot['Vol'].rAxes.scatter(
             x, y, 
             alpha     = 1,
             edgecolor = 'black',
@@ -3670,7 +3711,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             color     = self.cColor['VolSel'],
         )
         #------------------------------> Draw
-        self.wPlots.dPlot['Vol'].rCanvas.draw()
+        self.wPlot.dPlot['Vol'].rCanvas.draw()
         #endregion ---------------------------------------------> Volcano Plot
 
         return True
@@ -3692,7 +3733,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             pass
         else:
             if draw:
-                self.wPlots.dPlot['Vol'].rCanvas.draw()
+                self.wPlot.dPlot['Vol'].rCanvas.draw()
             else:
                 pass
             return True
@@ -3706,11 +3747,11 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         else:
             p = idx[(self.rCondC, self.rRpC, 'P')]
         #------------------------------> 
-        dX = self.wPlots.dPlot['Vol'].rAxes.get_xlim()
+        dX = self.wPlot.dPlot['Vol'].rAxes.get_xlim()
         dX = dX[1] - dX[0]
         dX = dX * 0.002
         
-        dY = self.wPlots.dPlot['Vol'].rAxes.get_ylim()
+        dY = self.wPlot.dPlot['Vol'].rAxes.get_ylim()
         dY = dY[1] - dY[0]
         dY = dY * 0.002
         #endregion ------------------------------------------------> 
@@ -3732,13 +3773,13 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             y = -np.log10(y)
             #------------------------------> 
             if x > 0:
-                self.rLabelProtD[tKey] = self.wPlots.dPlot['Vol'].rAxes.text(
+                self.rLabelProtD[tKey] = self.wPlot.dPlot['Vol'].rAxes.text(
                     x+dX,y-dY, prot[1], va='top')
             else:
-                self.rLabelProtD[tKey] = self.wPlots.dPlot['Vol'].rAxes.text(
+                self.rLabelProtD[tKey] = self.wPlot.dPlot['Vol'].rAxes.text(
                     x+dX,y-dY, prot[1], ha='right',va='top')
         #------------------------------> 
-        self.wPlots.dPlot['Vol'].rCanvas.draw()
+        self.wPlot.dPlot['Vol'].rCanvas.draw()
         #endregion ------------------------------------------------> 
 
         return True
@@ -3762,25 +3803,25 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             color = self.cColor['FCAll']
             x = list(range(0,len(self.rFcYMin)))
             #------------------------------> 
-            self.wPlots.dPlot['FC'].rAxes.plot(self.rFcYMax, color=color)
-            self.wPlots.dPlot['FC'].rAxes.plot(self.rFcYMin, color=color)
+            self.wPlot.dPlot['FC'].rAxes.plot(self.rFcYMax, color=color)
+            self.wPlot.dPlot['FC'].rAxes.plot(self.rFcYMin, color=color)
             #------------------------------> 
-            self.wPlots.dPlot['FC'].rAxes.fill_between(
+            self.wPlot.dPlot['FC'].rAxes.fill_between(
                 x, self.rFcYMax, self.rFcYMin, color=color, alpha=0.2)
         else:
             pass
         #------------------------------> Lock Scale
         if self.rFcXRange and self.rFcYRange:
-            self.wPlots.dPlot['FC'].rAxes.set_xlim(*self.rFcXRange)
-            self.wPlots.dPlot['FC'].rAxes.set_ylim(*self.rFcYRange)
+            self.wPlot.dPlot['FC'].rAxes.set_xlim(*self.rFcXRange)
+            self.wPlot.dPlot['FC'].rAxes.set_ylim(*self.rFcYRange)
         else:
             xRange, yRange = self.GetFcXYRange(self.rDateC)
-            self.wPlots.dPlot['FC'].rAxes.set_xlim(*xRange)
-            self.wPlots.dPlot['FC'].rAxes.set_ylim(*yRange)
+            self.wPlot.dPlot['FC'].rAxes.set_xlim(*xRange)
+            self.wPlot.dPlot['FC'].rAxes.set_ylim(*yRange)
         #------------------------------> Zoom level
-        self.wPlots.dPlot['FC'].ZoomResetSetValues()
+        self.wPlot.dPlot['FC'].ZoomResetSetValues()
         #------------------------------> 
-        self.wPlots.dPlot['FC'].rCanvas.draw()
+        self.wPlot.dPlot['FC'].rCanvas.draw()
         #endregion -------------------------------------------------> Plot All
         
         #region ----------------------------------------------> Plot Prot Line
@@ -3798,21 +3839,21 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             bool
         """
         #region -------------------------------------------------------> Clear
-        self.wPlots.dPlot['FC'].rAxes.clear()
+        self.wPlot.dPlot['FC'].rAxes.clear()
         #endregion ----------------------------------------------------> Clear
 
         #region ------------------------------------------------------> Labels
-        self.wPlots.dPlot['FC'].rAxes.grid(True, linestyle=":")
-        self.wPlots.dPlot['FC'].rAxes.set_xlabel(
+        self.wPlot.dPlot['FC'].rAxes.grid(True, linestyle=":")
+        self.wPlot.dPlot['FC'].rAxes.set_xlabel(
             'Relevant Points', fontweight="bold")
-        self.wPlots.dPlot['FC'].rAxes.set_ylabel(
+        self.wPlot.dPlot['FC'].rAxes.set_ylabel(
             "log$_{2}$[Fold Change]", fontweight="bold")
         #endregion ---------------------------------------------------> Labels
 
         #region ---------------------------------------------------> X - Axis
-        self.wPlots.dPlot['FC'].rAxes.set_xticks(
+        self.wPlot.dPlot['FC'].rAxes.set_xticks(
             range(0, len(self.rFcXLabel), 1))
-        self.wPlots.dPlot['FC'].rAxes.set_xticklabels(self.rFcXLabel)
+        self.wPlot.dPlot['FC'].rAxes.set_xticklabels(self.rFcXLabel)
         #endregion ------------------------------------------------> X - Axis
 
         return True
@@ -3869,7 +3910,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             color = self.cColor['FCLines'][k%colorN]
             #------------------------------> Plot line
             self.rProtLine.append(
-                self.wPlots.dPlot['FC'].rAxes.errorbar(
+                self.wPlot.dPlot['FC'].rAxes.errorbar(
                     x, y, yerr=yError, color=color, fmt='o-', capsize=5
             ))
             #------------------------------> Legend
@@ -3877,15 +3918,15 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #endregion --------------------------------------------------> FC Plot
 
         #region -------------------------------------------------------> Title
-        self.wPlots.dPlot['FC'].rAxes.set_title(f'Protein {idxL}')
+        self.wPlot.dPlot['FC'].rAxes.set_title(f'Protein {idxL}')
         #endregion ----------------------------------------------------> Title
 
         #region ------------------------------------------------------> Legend
-        self.wPlots.dPlot['FC'].rAxes.legend(handles=legend, loc='upper left')
+        self.wPlot.dPlot['FC'].rAxes.legend(handles=legend, loc='upper left')
         #endregion ---------------------------------------------------> Legend
 
         #region --------------------------------------------------------> Draw
-        self.wPlots.dPlot['FC'].rCanvas.draw()
+        self.wPlot.dPlot['FC'].rCanvas.draw()
         #endregion -----------------------------------------------------> Draw
 
         return True
@@ -4401,8 +4442,8 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #endregion ------------------------------------------------> Get Range
 
         #region ---------------------------------------------------> Set Range
-        self.wPlots.dPlot['Vol'].rAxes.set_xlim(*xR)
-        self.wPlots.dPlot['Vol'].rAxes.set_ylim(*yR)
+        self.wPlot.dPlot['Vol'].rAxes.set_xlim(*xR)
+        self.wPlot.dPlot['Vol'].rAxes.set_ylim(*yR)
         #endregion ------------------------------------------------> Set Range
 
         return True
@@ -4418,9 +4459,9 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         lim = self.rT0*self.rS0
         xCP = np.arange(lim+0.001, 20, 0.001)
         yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-lim))
-        self.wPlots.dPlot['Vol'].rAxes.plot(
+        self.wPlot.dPlot['Vol'].rAxes.plot(
             xCP,  yCP, color=self.cColor['CV'])
-        self.wPlots.dPlot['Vol'].rAxes.plot(
+        self.wPlot.dPlot['Vol'].rAxes.plot(
             -xCP, yCP, color=self.cColor['CV'])
         return True
     #---
@@ -4437,11 +4478,11 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> 
-        self.wPlots.dPlot['Vol'].rAxes.hlines(
+        self.wPlot.dPlot['Vol'].rAxes.hlines(
             p, -100, 100, color=self.cColor['CV'])
-        self.wPlots.dPlot['Vol'].rAxes.vlines(
+        self.wPlot.dPlot['Vol'].rAxes.vlines(
             self.rLog2FC, -100, 100, color=self.cColor['CV'])
-        self.wPlots.dPlot['Vol'].rAxes.vlines(
+        self.wPlot.dPlot['Vol'].rAxes.vlines(
             -self.rLog2FC, -100, 100, color=self.cColor['CV'])
         #endregion ------------------------------------------------> 
 
@@ -4601,7 +4642,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         else:
             #------------------------------> Disconnect events to avoid zoom in
             # while interacting with the modal window
-            self.wPlots.dPlot['Vol'].DisconnectEvent()
+            self.wPlot.dPlot['Vol'].DisconnectEvent()
             #------------------------------> sort ind
             ind = sorted(ind, key=int)
             #------------------------------> 
@@ -4614,10 +4655,10 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
                 msg        = msg,
                 setText    = True,
                 tException = tException,
-                parent     = self.wPlots.dPlot['Vol'],
+                parent     = self.wPlot.dPlot['Vol'],
             )
             #------------------------------> Reconnect event
-            self.wPlots.dPlot['Vol'].ConnectEvent()
+            self.wPlot.dPlot['Vol'].ConnectEvent()
             return False
         #endregion ------------------------------------------------> Pick
 
@@ -4743,20 +4784,20 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         if updatePlot:
             #------------------------------> Vol
             #--------------> 
-            self.wPlots.dPlot['Vol'].rAxes.set_xlim(*self.rVXRange)
-            self.wPlots.dPlot['Vol'].rAxes.set_ylim(*self.rVYRange)
+            self.wPlot.dPlot['Vol'].rAxes.set_xlim(*self.rVXRange)
+            self.wPlot.dPlot['Vol'].rAxes.set_ylim(*self.rVYRange)
             #--------------> 
-            self.wPlots.dPlot['Vol'].rCanvas.draw()
+            self.wPlot.dPlot['Vol'].rCanvas.draw()
             #--------------> 
-            self.wPlots.dPlot['Vol'].ZoomResetSetValues()
+            self.wPlot.dPlot['Vol'].ZoomResetSetValues()
             #------------------------------> FC
             #--------------> 
-            self.wPlots.dPlot['FC'].rAxes.set_xlim(*self.rFcXRange)
-            self.wPlots.dPlot['FC'].rAxes.set_ylim(*self.rFcYRange)
+            self.wPlot.dPlot['FC'].rAxes.set_xlim(*self.rFcXRange)
+            self.wPlot.dPlot['FC'].rAxes.set_ylim(*self.rFcYRange)
             #--------------> 
-            self.wPlots.dPlot['FC'].rCanvas.draw()
+            self.wPlot.dPlot['FC'].rCanvas.draw()
             #--------------> 
-            self.wPlots.dPlot['FC'].ZoomResetSetValues()
+            self.wPlot.dPlot['FC'].ZoomResetSetValues()
         else:
             pass
         #endregion ------------------------------------------------> Set Range
@@ -4794,7 +4835,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             p = Path(dlg.GetPath())
             #------------------------------> Export
             try:
-                for k, v in self.wPlots.dPlot.items():
+                for k, v in self.wPlot.dPlot.items():
                     #------------------------------>
                     if k == 'Vol':
                         nameP = f'{self.rCondC}-{self.rRpC}'
@@ -4952,7 +4993,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             #------------------------------> 
             self.rGreenP.remove() # type: ignore
             self.rGreenP = None
-            self.wPlots.dPlot['Vol'].rCanvas.draw()
+            self.wPlot.dPlot['Vol'].rCanvas.draw()
             #------------------------------> 
             self.FCDraw()
             #------------------------------> 
@@ -4976,7 +5017,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         self.rLabelProtD = {}
         self.rLabelProt = []
         #------------------------------> 
-        self.wPlots.dPlot['Vol'].rCanvas.draw()
+        self.wPlot.dPlot['Vol'].rCanvas.draw()
         #endregion ------------------------------------------------> 
 
         return True
@@ -5371,7 +5412,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
                 'Filter results by P value.',
                 'Threshold',
                 'Absolute or -log10(P) value. e.g. < 0.01 or > 1',
-                self.wPlots.dPlot['Vol'],
+                self.wPlot.dPlot['Vol'],
                 mValidator.Comparison(numType='float', op=['<', '>'], vMin=0),
             )
             #------------------------------> 
@@ -5709,7 +5750,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 #---
 
 
-class WindowResLimProtPlot(BaseWindowResultListText2Plot):
+class WindowResLimProt(BaseWindowResultListText2PlotFragments):
     """Plot the results of a Limited Proteolysis analysis.
 
         Parameters
@@ -5781,10 +5822,7 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #     #------------------------------> Colors
 #     cCNatProt = config.color['NatProt']
 #     cCRecProt = config.color['RecProt']
-#     cColor = config.color[cName]
-#     #------------------------------> 
-#     rIdxP     = pd.IndexSlice[:,:,'Ptost']
-#     rIdxSeqNC = pd.IndexSlice[config.dfcolSeqNC,:,:]
+    cColor = mConfig.color[cName]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -5795,34 +5833,31 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
         self.rObj            = parent.rObj
         self.rData           = self.rObj.dConfigure[self.cSection]()
         self.rDate, menuData = self.SetDateMenuDate()
-#         #------------------------------> 
-#         try:
-#             self.ReportPlotDataError()
-#         except Exception as e:
-#             raise e
-#         #------------------------------> 
-#         self.rDateC         = None
+        #------------------------------>
+        self.ReportPlotDataError()
+        #------------------------------>
+        self.rDateC         = self.rDate[0]
 #         self.rBands         = None
 #         self.rLanes         = None
 #         self.rFragments     = None
 #         self.rRectsGel      = []
 #         self.rRectsFrag     = []
-#         self.rSelBands      = True
-#         self.rBlSelRect     = None
-#         self.rSpotSelLine   = None
+        self.rSelBands      = True
+        self.rBlSelRect     = None
+        self.rSpotSelLine   = None
 #         self.rFragSelLine   = None
 #         self.rBlSelC        = [None, None]
 #         self.rGelSelC       = [None, None]
 #         self.rFragSelC      = [None, None, None]
 #         self.rGelSpotPicked = False
 #         self.rUpdateColors  = False
-#         self.rAlpha         = None
+        self.rAlpha         = None
 #         self.rProtLoc       = None
 #         self.rProtLength    = None
 #         self.rProtDelta     = None
 #         self.rProtTarget    = None
 #         self.rPeptide       = None
-#         self.rRecSeq        = {}
+        self.rRecSeq        = {}
 #         self.rRecSeqC       = ''
 #         self.rRecSeqColor   = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
 #         self.rTextStyleDef  = wx.TextAttr(
@@ -5851,20 +5886,43 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
-#         #region -----------------------------------------------------> Widgets
-#         self.wTextSeq = wx.richtext.RichTextCtrl(
-#             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
-#         self.wTextSeq.SetFont(config.font['SeqAlign'])
-#         #endregion --------------------------------------------------> Widgets
+        #region -----------------------------------------------------> Widgets
+        self.wTextSeq = wx.richtext.RichTextCtrl(
+            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
+        self.wTextSeq.SetFont(mConfig.font['SeqAlign'])
+        #endregion --------------------------------------------------> Widgets
 
-#         #region --------------------------------------------------------> Bind
+        #region ---------------------------------------------------------> AUI
+        self._mgr.AddPane( 
+            self.wTextSeq, 
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    1
+                ).Caption(
+                    'Sequence Alignment'
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------>
+        self._mgr.Update()
+        #endregion ------------------------------------------------------> AUI
+
+        #region --------------------------------------------------------> Bind
 #         self.wPlot.canvas.mpl_connect('pick_event', self.OnPickGel)
 #         self.wPlot.canvas.mpl_connect('button_press_event', self.OnPressMouse)
 #         self.wPlotM.canvas.mpl_connect('pick_event', self.OnPickFragment)
-#         #endregion -----------------------------------------------------> Bind
+        #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
-#         self.UpdateDisplayedData(self.rDate[0])
+        self.UpdateResultWindow()
         self.WinPos()
         self.Show()
         #endregion ------------------------------------------> Window position
@@ -5896,203 +5954,204 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
         return True
     #---
 
-#     def UpdateDisplayedData(self, tDate) -> bool:
-#         """Update the GUI and attributes when a new date is selected.
-    
-#             Parameters
-#             ----------
-#             date : str
-#                 Selected date.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         self.rDateC       = tDate
-#         self.rDf          = self.rData[self.rDateC]['DF'].copy()
-#         self.rBands       = self.rData[self.rDateC]['PI']['Bands']
-#         self.rLanes       = self.rData[self.rDateC]['PI']['Lanes']
-#         self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
-#         self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
-#         self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength'][0]
-#         self.rProtDelta   = self.rData[self.rDateC]['PI']['ProtDelta']
-#         self.rProtTarget  = self.rData[self.rDateC]['PI']['Prot']
-#         self.rRectsGel    = []
-#         self.rRectsFrag   = []
-#         self.rBlSelC      = [None, None]
-#         self.rGelSelC     = [None, None]
-#         self.rFragSelC    = [None, None, None]
-#         self.rPeptide     = None
-#         self.rLCIdx       = None
-#         self.rRecSeqColor = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
-#         self.rRecSeqC     = (
-#             self.rRecSeq.get(self.rDateC)
-#             or
-#             self.rObj.GetRecSeq(self.cSection, self.rDateC)
-#         )
-#         self.rRecSeq[self.rDateC] = self.rRecSeqC
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ---------------------------------------------------> Fragments
-#         self.rFragments = dmethod.Fragments(
-#             self.GetDF4FragmentSearch(), self.rAlpha,'le')
-                
-#         self.SetEmptyFragmentAxis()
-#         #endregion ------------------------------------------------> Fragments
-        
-#         #region ---------------------------------------------------> 
-#         self.wText.Clear()
-#         self.wTextSeq.Clear()
-#         self.wTextSeq.AppendText(self.rRecSeqC)
-#         self.wTextSeq.SetInsertionPoint(0)
-#         #endregion ------------------------------------------------> 
-        
-#         #region -------------------------------------------------> wx.ListCtrl
-#         self.FillListCtrl()
-#         #endregion ----------------------------------------------> wx.ListCtrl
-        
-#         #region ----------------------------------------------------> Gel Plot
-#         self.DrawGel()
-#         #endregion -------------------------------------------------> Gel Plot
-    
-#         #region ---------------------------------------------------> Win Title
-#         self.PlotTitle()
-#         #endregion ------------------------------------------------> Win Title
-        
-#         return True
-#     #---
-    
-#     def DrawGel(self) -> bool:
-#         """Draw the Gel representation on the window.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------> Remove Old Selections
-#         #------------------------------> Select Gel Spot 
-#         if self.rSpotSelLine is not None:
-#             self.rSpotSelLine[0].remove()
-#             self.rSpotSelLine = None
-#         else:
-#             pass
-        
-#         if self.rBlSelRect is not None:
-#             self.rBlSelRect.remove()
-#             self.rBlSelRect = None
-#         else:
-#             pass
-#         #endregion ------------------------------------> Remove Old Selections
-       
-#         #region --------------------------------------------------------> Axis
-#         self.SetGelAxis()
-#         #endregion -----------------------------------------------------> Axis
+    def UpdateResultWindow(self, tDate: str='') -> bool:
+        """Update the GUI and attributes when a new date is selected.
 
-#         #region ---------------------------------------------------> Draw Rect
-#         for nb,_ in enumerate(self.rBands, start=1):
-#             for nl,_ in enumerate(self.rLanes, start=1):
-#                 self.rRectsGel.append(mpatches.Rectangle(
-#                     ((nl-0.4),(nb-0.4)), 
-#                     0.8, 
-#                     0.8, 
-#                     edgecolor = 'black',
-#                     linewidth = self.cGelLineWidth,
-#                     facecolor = self.SetGelSpotColor(nb-1,nl-1),
-#                     picker    = True,
-#                 ))
-#                 self.wPlot.axes.add_patch(self.rRectsGel[-1])
-#         #endregion ------------------------------------------------> Draw Rect
-       
-#         #region --------------------------------------------------> Zoom Reset
-#         self.wPlot.ZoomResetSetValues()
-#         #endregion -----------------------------------------------> Zoom Reset
-       
-#         #region --------------------------------------------------------> Draw
-#         self.wPlot.canvas.draw()
-#         #endregion -----------------------------------------------------> Draw
-       
-#         return True
-#     #---
-    
-#     def SetGelAxis(self) -> bool:
-#         """Configure the axis for the Gel representation.
-    
-#             Returns
-#             -------
-#             bool        
-#         """
-#         #region ----------------------------------------------------> Variables
-#         nLanes = len(self.rLanes)
-#         nBands = len(self.rBands)
-#         #endregion -------------------------------------------------> Variables
-       
-#         #region ---------------------------------------------------> 
-#         self.wPlot.axes.clear()
-#         self.wPlot.axes.set_xticks(range(1, nLanes+1))
-#         self.wPlot.axes.set_xticklabels(self.rLanes)
-#         self.wPlot.axes.set_yticks(range(1, nBands+1))
-#         self.wPlot.axes.set_yticklabels(self.rBands)
-#         self.wPlot.axes.tick_params(length=0)
-#         #------------------------------> 
-#         self.wPlot.axes.set_xlim(0.5, nLanes+0.5)
-#         self.wPlot.axes.set_ylim(0.5, nBands+0.5)
-#         #endregion ------------------------------------------------> 
-        
-#         #region ------------------------------------------------> Remove Frame
-#         self.wPlot.axes.spines['top'].set_visible(False)
-#         self.wPlot.axes.spines['right'].set_visible(False)
-#         self.wPlot.axes.spines['bottom'].set_visible(False)
-#         self.wPlot.axes.spines['left'].set_visible(False)
-#         #endregion ---------------------------------------------> Remove Frame
-    
-#         return True 
-#     #---
-    
-#     def SetGelSpotColor(
-#         self, nb: int, nl: int, showAll: bool=False
-#         ) -> str:
-#         """Get the color for each gel spot.
-    
-#             Parameters
-#             ----------
-#             nb: int
-#                 Number of bands in the gel.
-#             nl: int
-#                 Number of lanes in the gel.
-#             showAll: bool
-#                 Show all fragments in the gel or not.
-    
-#             Returns
-#             -------
-#             str
-#                 Gel spot color
-#         """
-#         #region ---------------------------------------------------> Variables  
-#         b = self.rBands[nb]
-#         l = self.rLanes[nl]
-#         c = (self.rDf.loc[:,(b,l,'Ptost')].isna().all() or
-#             not self.rFragments[f"{(b,l,'Ptost')}"]['Coord']
-#         )
-#         nc = len(self.cColor['Spot'])
-#         #endregion ------------------------------------------------> Variables  
+            Parameters
+            ----------
+            date : str
+                Selected date.
 
-#         #region -------------------------------------------------------> Color
-#         if c:
-#             return 'white'
-#         elif showAll:
-#             if self.rSelBands:
-#                 return self.cColor['Spot'][nb%nc]
-#             else:
-#                 return self.cColor['Spot'][nl%nc]
-#         else:
-#             if self.rSelBands:
-#                 return self.cColor['Spot'][nl%nc]
-#             else:
-#                 return self.cColor['Spot'][nb%nc]
-#         #endregion ----------------------------------------------------> Color
-#     #---
-    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        self.rDateC = tDate if tDate else self.rDateC
+        #------------------------------>
+        self.rDf          = self.rData[self.rDateC]['DF'].copy()
+        self.rBands       = self.rData[self.rDateC]['PI']['Bands']
+        self.rLanes       = self.rData[self.rDateC]['PI']['Lanes']
+        self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
+        self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
+        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength'][0]
+        self.rProtDelta   = self.rData[self.rDateC]['PI']['ProtDelta']
+        self.rProtTarget  = self.rData[self.rDateC]['PI']['Prot']
+        self.rRectsGel    = []
+        self.rRectsFrag   = []
+        self.rBlSelC      = [None, None]
+        self.rGelSelC     = [None, None]
+        self.rFragSelC    = [None, None, None]
+        self.rPeptide     = None
+        self.rLCIdx       = None
+        self.rRecSeqColor = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
+        self.rRecSeqC     = (
+            self.rRecSeq.get(self.rDateC)
+            or
+            self.rObj.GetRecSeq(self.cSection, self.rDateC)
+        )
+        self.rRecSeq[self.rDateC] = self.rRecSeqC
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Fragments
+        self.rFragments = mMethod.Fragments(
+            self.GetDF4FragmentSearch(), self.rAlpha,'le')
+
+        self.SetEmptyFragmentAxis()
+        #endregion ------------------------------------------------> Fragments
+
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        self.wTextSeq.Clear()
+        self.wTextSeq.AppendText(self.rRecSeqC)
+        self.wTextSeq.SetInsertionPoint(0)
+        #endregion ------------------------------------------------> 
+
+        #region -------------------------------------------------> wx.ListCtrl
+        self.FillListCtrl()
+        #endregion ----------------------------------------------> wx.ListCtrl
+
+        #region ----------------------------------------------------> Gel Plot
+        self.DrawGel()
+        #endregion -------------------------------------------------> Gel Plot
+
+        #region ---------------------------------------------------> Win Title
+        self.PlotTitle()
+        #endregion ------------------------------------------------> Win Title
+
+        return True
+    #---
+
+    def DrawGel(self) -> bool:
+        """Draw the Gel representation on the window.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------> Remove Old Selections
+        #------------------------------> Select Gel Spot 
+        if self.rSpotSelLine is not None:
+            self.rSpotSelLine[0].remove()
+            self.rSpotSelLine = None
+        else:
+            pass
+
+        if self.rBlSelRect is not None:
+            self.rBlSelRect.remove()
+            self.rBlSelRect = None
+        else:
+            pass
+        #endregion ------------------------------------> Remove Old Selections
+
+        #region --------------------------------------------------------> Axis
+        self.SetGelAxis()
+        #endregion -----------------------------------------------------> Axis
+
+        #region ---------------------------------------------------> Draw Rect
+        for nb,_ in enumerate(self.rBands, start=1):
+            for nl,_ in enumerate(self.rLanes, start=1):
+                self.rRectsGel.append(mpatches.Rectangle(
+                    ((nl-0.4),(nb-0.4)), 
+                    0.8, 
+                    0.8, 
+                    edgecolor = 'black',
+                    linewidth = self.cGelLineWidth,
+                    facecolor = self.SetGelSpotColor(nb-1,nl-1),
+                    picker    = True,
+                ))
+                self.wPlot['Sec'].rAxes.add_patch(self.rRectsGel[-1])
+        #endregion ------------------------------------------------> Draw Rect
+
+        #region --------------------------------------------------> Zoom Reset
+        self.wPlot['Sec'].ZoomResetSetValues()
+        #endregion -----------------------------------------------> Zoom Reset
+
+        #region --------------------------------------------------------> Draw
+        self.wPlot['Sec'].rCanvas.draw()
+        #endregion -----------------------------------------------------> Draw
+
+        return True
+    #---
+
+    def SetGelAxis(self) -> bool:
+        """Configure the axis for the Gel representation.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Variables
+        nLanes = len(self.rLanes)
+        nBands = len(self.rBands)
+        #endregion -------------------------------------------------> Variables
+
+        #region --------------------------------------------------->
+        self.wPlot['Sec'].rAxes.clear()
+        self.wPlot['Sec'].rAxes.set_xticks(range(1, nLanes+1))
+        self.wPlot['Sec'].rAxes.set_xticklabels(self.rLanes)
+        self.wPlot['Sec'].rAxes.set_yticks(range(1, nBands+1))
+        self.wPlot['Sec'].rAxes.set_yticklabels(self.rBands)
+        self.wPlot['Sec'].rAxes.tick_params(length=0)
+        #------------------------------> 
+        self.wPlot['Sec'].rAxes.set_xlim(0.5, nLanes+0.5)
+        self.wPlot['Sec'].rAxes.set_ylim(0.5, nBands+0.5)
+        #endregion ------------------------------------------------>
+
+        #region ------------------------------------------------> Remove Frame
+        self.wPlot['Sec'].rAxes.spines['top'].set_visible(False)
+        self.wPlot['Sec'].rAxes.spines['right'].set_visible(False)
+        self.wPlot['Sec'].rAxes.spines['bottom'].set_visible(False)
+        self.wPlot['Sec'].rAxes.spines['left'].set_visible(False)
+        #endregion ---------------------------------------------> Remove Frame
+
+        return True
+    #---
+
+    def SetGelSpotColor(
+        self, nb: int, nl: int, showAll: bool=False,
+        ) -> str:
+        """Get the color for each gel spot.
+
+            Parameters
+            ----------
+            nb: int
+                Number of bands in the gel.
+            nl: int
+                Number of lanes in the gel.
+            showAll: bool
+                Show all fragments in the gel or not.
+
+            Returns
+            -------
+            str
+                Gel spot color
+        """
+        #region ---------------------------------------------------> Variables  
+        b = self.rBands[nb]
+        l = self.rLanes[nl]
+        c = (self.rDf.loc[:,(b,l,'P')].isna().all() or
+            not self.rFragments[f"{(b,l,'P')}"]['Coord']
+        )
+        nc = len(self.cColor['Spot'])
+        #endregion ------------------------------------------------> Variables  
+
+        #region -------------------------------------------------------> Color
+        if c:
+            return 'white'
+        elif showAll:
+            if self.rSelBands:
+                return self.cColor['Spot'][nb%nc]
+            else:
+                return self.cColor['Spot'][nl%nc]
+        else:
+            if self.rSelBands:
+                return self.cColor['Spot'][nl%nc]
+            else:
+                return self.cColor['Spot'][nb%nc]
+        #endregion ----------------------------------------------------> Color
+    #---
+
 #     def DrawBLRect(self, x: int, y: int) -> bool:
 #         """Draw the red rectangle to highlight the selected band/lane.
     
@@ -6168,10 +6227,10 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #         #region --------------------------------------------------------> Keys
 #         if self.rSelBands:
 #             for k,tL in enumerate(self.rLanes):
-#                 tKeyLabel[f"{(b, tL, 'Ptost')}"] = f'{y-1}.{k}'
+#                 tKeyLabel[f"{(b, tL, 'P')}"] = f'{y-1}.{k}'
 #         else:
 #             for k,tB in enumerate(self.rBands):
-#                 tKeyLabel[f"{(tB, l, 'Ptost')}"] = f'{k}.{x-1}'
+#                 tKeyLabel[f"{(tB, l, 'P')}"] = f'{k}.{x-1}'
 #         #endregion -----------------------------------------------------> Keys
         
 #         #region -------------------------------------------------------> Super
@@ -6374,7 +6433,7 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #         """
 #         #region --------------------------------------------------> Get Values
 #         #------------------------------> Keys
-#         tKeys = [(self.rBands[band], x, 'Ptost') for x in self.rLanes]
+#         tKeys = [(self.rBands[band], x, 'P') for x in self.rLanes]
 #         #------------------------------> Info
 #         infoDict = self.PrintLBGetInfo(tKeys)           
 #         #endregion -----------------------------------------------> Get Values
@@ -6420,7 +6479,7 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #         """
 #         #region --------------------------------------------------> Get Values
 #         #------------------------------> Keys
-#         tKeys = [(x, self.rLanes[lane], 'Ptost') for x in self.rBands]
+#         tKeys = [(x, self.rLanes[lane], 'P') for x in self.rBands]
 #         #------------------------------> Info
 #         infoDict = self.PrintLBGetInfo(tKeys)
 #         #endregion -----------------------------------------------> Get Values
@@ -6467,7 +6526,7 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #             bool
 #         """
 #         #region ---------------------------------------------------> 
-#         tKey = f'{(self.rBands[y], self.rLanes[x], "Ptost")}'
+#         tKey = f'{(self.rBands[y], self.rLanes[x], "P")}'
 #         #------------------------------> 
 #         fragments = len(self.rFragments[tKey]['Coord'])
 #         if fragments == 0:
@@ -6712,7 +6771,7 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #         j = 0 
 #         for b in self.rBands:
 #             for l in self.rLanes:
-#                 for p in self.rFragments[f'{(b,l, "Ptost")}']['SeqL']:
+#                 for p in self.rFragments[f'{(b,l, "P")}']['SeqL']:
 #                     if self.rPeptide in p:
 #                         self.rRectsGel[j].set_linewidth(2.0)
 #                         break
@@ -6727,14 +6786,14 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #         if self.rBlSelC != [None, None]:
 #             if self.rSelBands:
 #                 for l in self.rLanes:
-#                     fKeys.append(f'{(self.rBands[self.rBlSelC[0]], l, "Ptost")}')
+#                     fKeys.append(f'{(self.rBands[self.rBlSelC[0]], l, "P")}')
 #             else:
 #                 for b in self.rBands:
-#                     fKeys.append(f'{(b, self.rLanes[self.rBlSelC[1]], "Ptost")}')
+#                     fKeys.append(f'{(b, self.rLanes[self.rBlSelC[1]], "P")}')
 #         else:
 #             for b in self.rBands:
 #                 for l in self.rLanes:
-#                     fKeys.append(f'{(b, l, "Ptost")}')
+#                     fKeys.append(f'{(b, l, "P")}')
 #         #------------------------------> 
 #         if self.rRectsFrag:
 #             j = 0
@@ -6820,7 +6879,7 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #             b,l = self.rGelSelC
 #         else:
 #             b,l = spot
-#         tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
+#         tKey = f'{(self.rBands[b], self.rLanes[l], "P")}'
 #         #endregion ------------------------------------------------> Variables
 
 #         return dtsMethod.MergeOverlapingFragments(
@@ -6842,7 +6901,7 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #             b,l,j = self.rFragSelC
 #         else:
 #             b,l,j = frag
-#         tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
+#         tKey = f'{(self.rBands[b], self.rLanes[l], "P")}'
 #         #endregion ------------------------------------------------> Variables
 
 #         return dtsMethod.MergeOverlapingFragments(
@@ -6866,10 +6925,10 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #         #------------------------------> 
 #         if b is not None:
 #             bN = self.rBands[b]
-#             tKey = [f'{(bN, l, "Ptost")}' for l in self.rLanes]
+#             tKey = [f'{(bN, l, "P")}' for l in self.rLanes]
 #         else:
 #             lN = self.rLanes[l]
-#             tKey = [f'{(b, lN, "Ptost")}' for b in self.rBands]
+#             tKey = [f'{(b, lN, "P")}' for b in self.rBands]
 #         #endregion ------------------------------------------------> Variables
         
 #         #region ---------------------------------------------------> Seqs
@@ -7061,7 +7120,7 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #         x = round(x)
 #         y = round(y)
 #         #------------------------------> 
-#         tKey = f'{(self.rBands[fragC[0]], self.rLanes[fragC[1]], "Ptost")}'
+#         tKey = f'{(self.rBands[fragC[0]], self.rLanes[fragC[1]], "P")}'
 #         #------------------------------> 
 #         x1, x2 = self.rFragments[tKey]['Coord'][fragC[2]]
 #         #endregion ------------------------------------------------> Variables
@@ -7550,14 +7609,14 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #         if self.rSelBands:
 #             for bk, b in enumerate(self.rBands):
 #                 for lk, l in enumerate(self.rLanes):
-#                     tKeys.append(f"{(b, l, 'Ptost')}")
+#                     tKeys.append(f"{(b, l, 'P')}")
 #                     tYLabel.append(f"{b}-{l}")
 #                     tColor.append(bk)
 #                     tLabel.append(f'{bk}.{lk}')
 #         else:
 #             for lk, l in enumerate(self.rLanes):
 #                 for bk, b in enumerate(self.rBands):
-#                     tKeys.append(f"{(b, l, 'Ptost')}")
+#                     tKeys.append(f"{(b, l, 'P')}")
 #                     tYLabel.append(f"{l}-{b}")
 #                     tColor.append(lk)
 #                     tLabel.append(f'{bk}.{lk}')
@@ -9642,8 +9701,8 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #             -------
 #             bool
 #         """
-#         return self.wPlots.dPlot['M'].SaveImage(
-#             config.elMatPlotSaveI, parent=self.wPlots.dPlot['M']
+#         return self.wPlot.dPlot['M'].SaveImage(
+#             config.elMatPlotSaveI, parent=self.wPlot.dPlot['M']
 #         )
 #     #---
     
@@ -9654,7 +9713,7 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #             -------
 #             bool
 #         """
-#         return self.wPlots.dPlot['M'].ZoomResetPlot()
+#         return self.wPlot.dPlot['M'].ZoomResetPlot()
 #     #---
     
 #     def OnListSelect(self, event: Union[wx.Event, str]) -> bool:
@@ -9765,8 +9824,8 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 
 #         #region ---------------------------------------------------> 
 #         self.SetAxis()
-#         self.wPlots.dPlot['M'].ZoomResetSetValues()
-#         self.wPlots.dPlot['M'].canvas.draw()
+#         self.wPlot.dPlot['M'].ZoomResetSetValues()
+#         self.wPlot.dPlot['M'].canvas.draw()
 #         #endregion ------------------------------------------------>
 
 #         return True
@@ -9817,17 +9876,17 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
             
 #         """
 #         #region ---------------------------------------------------> 
-#         self.wPlots.dPlot['M'].axes.clear()
+#         self.wPlot.dPlot['M'].axes.clear()
 #         #endregion ------------------------------------------------> 
 
 #         #region ---------------------------------------------------> Label
-#         self.wPlots.dPlot['M'].axes.set_xticks(range(1,len(self.rLabel)+1))
-#         self.wPlots.dPlot['M'].axes.set_xticklabels(self.rLabel)
-#         self.wPlots.dPlot['M'].axes.set_xlim(0, len(self.rLabel)+1)
-#         self.wPlots.dPlot['M'].axes.set_xlabel('Experiment Label')
-#         self.wPlots.dPlot['M'].axes.set_ylabel('Relative Cleavage Rate')
+#         self.wPlot.dPlot['M'].axes.set_xticks(range(1,len(self.rLabel)+1))
+#         self.wPlot.dPlot['M'].axes.set_xticklabels(self.rLabel)
+#         self.wPlot.dPlot['M'].axes.set_xlim(0, len(self.rLabel)+1)
+#         self.wPlot.dPlot['M'].axes.set_xlabel('Experiment Label')
+#         self.wPlot.dPlot['M'].axes.set_ylabel('Relative Cleavage Rate')
         
-#         self.wPlots.dPlot['M'].axes.set_title(self.cRec[self.rRec])
+#         self.wPlot.dPlot['M'].axes.set_title(self.cRec[self.rRec])
 #         #endregion ------------------------------------------------> Label
         
 #         return True
@@ -9856,15 +9915,15 @@ class WindowResLimProtPlot(BaseWindowResultListText2Plot):
 #         for idx,v in self.rIdx.items():
 #             x = range(1,len(self.rLabel)+1)
 #             y = self.rDF.iloc[idx,:]
-#             self.wPlots.dPlot['M'].axes.plot(x,y, label=f'{v[0]}')
+#             self.wPlot.dPlot['M'].axes.plot(x,y, label=f'{v[0]}')
 #         #------------------------------> 
 #         if len(self.rIdx) > 1:
-#             self.wPlots.dPlot['M'].axes.legend()
+#             self.wPlot.dPlot['M'].axes.legend()
 #         else:
 #             pass
 #         #------------------------------>
-#         self.wPlots.dPlot['M'].ZoomResetSetValues()
-#         self.wPlots.dPlot['M'].canvas.draw()
+#         self.wPlot.dPlot['M'].ZoomResetSetValues()
+#         self.wPlot.dPlot['M'].canvas.draw()
 #         #endregion ------------------------------------------------> 
 
 #         return True
@@ -10218,7 +10277,7 @@ class WindowUMSAPControl(BaseWindow):
         mConfig.nuCorrA   : WindowResCorrA,
         mConfig.nuDataPrep: WindowResDataPrep,
         mConfig.nmProtProf: WindowResProtProf,
-        mConfig.nmLimProt : WindowResLimProtPlot,
+        mConfig.nmLimProt : WindowResLimProt,
         # mConfig.nmTarProt : WindowTarProtPlot,
     }
     # #------------------------------>
