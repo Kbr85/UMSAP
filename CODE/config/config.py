@@ -112,7 +112,7 @@ nwUMSAPControl  = 'UMSAP Control'
 nwCorrAPlot     = 'CorrAPlot'
 nwProtProf      = 'ProtProfPlot'
 nwLimProt       = 'LimProtPlot'
-# nwTarProt       = 'TarProtPlot'
+nwTarProt       = 'TarProtPlot'
 nwCheckDataPrep = 'Data Preparation'
 # nwAAPlot        = 'AAPlot'
 # nwHistPlot      = 'HistPlot'
@@ -664,10 +664,10 @@ color = { # Colors for the app
     nwLimProt : {
         'Spot' : colorFragments,
     },
-#     nwTarProt : {
-#         'Spot' : colorFragments,
+    nwTarProt : {
+        'Spot' : colorFragments,
 #         'Ctrl' : 'black',
-#     },
+    },
 #     nwAAPlot : {
 #         'BarColor': { 
 #             'R': '#0099ff', 'K': '#0099ff', 'D': '#ff4d4d', 'W': '#FF51FD', 

@@ -631,7 +631,7 @@ class UMSAPFile():
             mConfig.nuDataPrep: self.ConfigureDataDataPrep,
             mConfig.nmProtProf: self.ConfigureDataProtProf,
             mConfig.nmLimProt : self.ConfigureDataLimProt,
-            # mConfig.nmTarProt : self.ConfigureDataTarProt,
+            mConfig.nmTarProt : self.ConfigureDataTarProt,
         }
         #endregion ------------------------------------------------> Variables
     #---
@@ -893,60 +893,61 @@ class UMSAPFile():
         return plotData
     #---
 
-#     def ConfigureDataTarProt(self) -> dict:
-#         """Configure a Targeted Proteolysis section
-        
-#             Returns
-#             ------
-#             dict
-#             {
-#                 'DF' : pd.DataFrame with the data to plot,
-#                 'PI' : { dict with information for the plotting window
-#                     'Exp'       : list with the experiment's names,
-#                     'Alpha'     : alpha value,
-#                     'ProtLength': length of the recombinant protein,
-#                     'ProtLoc'   : list with the location of the native protein,
-#                     'ProtDelta' : value to calculate native residue numbers as
-#                                     resN_Nat = resN_Rec + ProtDelta,
-#                     'Prot'      : name of the Target Protein,
-#                 },
-#             }
-#         """
-#         #region -------------------------------------------------> Plot & Menu
-#         #------------------------------> Empty start
-#         plotData = {'Error':[]}
-#         #------------------------------> Fill
-#         for k,v in self.rData[config.nmTarProt].items():
-#             try:
-#                 #------------------------------> 
-#                 tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{config.nmTarProt.replace(" ", "-")}'
-#                 #------------------------------> Create data
-#                 df  = dtsFF.ReadCSV2DF(tPath/v['R'], header=[0,1])
-#                 #------------------------------> Plot Info
-#                 PI = {
-#                     'Exp'       : v['CI']['Exp'],
-#                     'Ctrl'      : v['CI']['ControlL'],
-#                     'Alpha'     : v['CI']['Alpha'],
-#                     'ProtLength': v['CI']['ProtLength'],
-#                     'ProtLoc'   : v['CI']['ProtLoc'],
-#                     'ProtDelta' : v['CI']['ProtDelta'],
-#                     'Prot'      : v['CI']['TargetProt'],
-#                 }
-#                 #------------------------------> Add to dict if no error
-#                 plotData[k] = {
-#                     'DF'   : df,
-#                     'PI'   : PI,
-#                     'AA'   : v.get('AA', {}),
-#                     'Hist' : v.get('Hist', {}),
-#                     'CpR'  : v['CpR'],
-#                     'CEvol': v['CEvol'],
-#                 }
-#             except Exception:
-#                 plotData['Error'].append(k)
-#         #endregion ----------------------------------------------> Plot & Menu
-        
-#         return plotData
-#     #---
+    def ConfigureDataTarProt(self) -> dict:
+        """Configure a Targeted Proteolysis section.
+
+            Returns
+            ------
+            dict
+            {
+                'DF' : pd.DataFrame with the data to plot,
+                'PI' : { dict with information for the plotting window
+                    'Exp'       : list with the experiment's names,
+                    'Alpha'     : alpha value,
+                    'ProtLength': length of the recombinant protein,
+                    'ProtLoc'   : list with the location of the native protein,
+                    'ProtDelta' : value to calculate native residue numbers as
+                                    resN_Nat = resN_Rec + ProtDelta,
+                    'Prot'      : name of the Target Protein,
+                },
+            }
+        """
+        #region -------------------------------------------------> Plot & Menu
+        #------------------------------> Empty start
+        plotData = {}
+        plotData['Error']=[]
+        #------------------------------> Fill
+        for k,v in self.rData[mConfig.nmTarProt].items():
+            try:
+                #------------------------------> 
+                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{mConfig.nmTarProt.replace(" ", "-")}'
+                #------------------------------> Create data
+                df  = ReadCSV2DF(tPath/v['R'], header=[0,1])
+                #------------------------------> Plot Info
+                PI = {
+                    'Exp'       : v['CI']['Exp'],
+                    'Ctrl'      : v['CI']['ControlL'],
+                    'Alpha'     : v['CI']['Alpha'],
+                    'ProtLength': v['CI']['ProtLength'],
+                    'ProtLoc'   : v['CI']['ProtLoc'],
+                    'ProtDelta' : v['CI']['ProtDelta'],
+                    'Prot'      : v['CI']['TargetProt'],
+                }
+                #------------------------------> Add to dict if no error
+                plotData[k] = {
+                    'DF'   : df,
+                    'PI'   : PI,
+                    'AA'   : v.get('AA', {}),
+                    'Hist' : v.get('Hist', {}),
+                    'CpR'  : v['CpR'],
+                    'CEvol': v['CEvol'],
+                }
+            except Exception:
+                plotData['Error'].append(k)
+        #endregion ----------------------------------------------> Plot & Menu
+
+        return plotData
+    #---
     #endregion ----------------------------------------------------> Configure
     
     #region -----------------------------------------------------> Get Methods

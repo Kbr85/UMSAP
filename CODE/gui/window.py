@@ -5789,15 +5789,9 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             'Gel Spot' : self.ClearGel,
             'Band/Lane': self.ClearBL,
             'All'      : self.ClearAll,
-#             #------------------------------>
-#             config.klToolGuiUpdate       : self.UpdateDisplayedData,
+            #------------------------------>
             mConfig.kwToolLimProtBandLane : self.LaneBandSel,
             mConfig.kwToolLimProtShowAll  : self.ShowAll,
-#             #------------------------------>
-#             'Main-Img'   : self.OnImageMain,
-#             'Main-Zoom'  : self.OnZoomResetMain,
-#             'Bottom-Img' : self.OnImageBottom,
-#             'Bottom-Zoom': self.OnZoomResetBottom,
             #------------------------------>
             mConfig.kwToolLimProtExpSeq : self.ExportSeq,
         }
@@ -7531,47 +7525,12 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
 
         return True
     #---
-
-#     def OnPlotSaveAllImage(self) -> bool:
-#         """ Export all plots to a pdf image
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------> Dlg window
-#         dlg = dtsWindow.DirSelectDialog(parent=self)
-#         #endregion -----------------------------------------------> Dlg window
-        
-#         #region ---------------------------------------------------> Get Path
-#         if dlg.ShowModal() == wx.ID_OK:
-#             #------------------------------> Variables
-#             p = Path(dlg.GetPath())
-#             #------------------------------> Export
-#             try:
-#                 if self.rSelBands:
-#                     fName = p / f'{self.rDateC}-{self.rBands[self.rBlSelC[0]]}-fragments.pdf'
-#                 else:
-#                     fName = p / f'{self.rDateC}-{self.rLanes[self.rBlSelC[1]]}-fragments.pdf'
-#                 self.wPlotM.figure.savefig(fName)
-#             except TypeError:
-#                 pass
-#             #------------------------------> 
-#             fName = p / f'{self.rDateC}-gel.pdf'
-#             self.wPlot.figure.savefig(fName)
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Get Path
-     
-#         dlg.Destroy()
-#         return True	
-#     #---
     #endregion ------------------------------------------------> Event Methods
 #---
 
 
-# class TarProtPlot(BaseWindowProteolysis):
-#     """Plot the results of a Targeted Proteolysis analysis.
+class WindowResTarProt(BaseWindowResultListText2PlotFragments):
+    """Plot the results of a Targeted Proteolysis analysis.
 
 #         Parameters
 #         ----------
@@ -7581,39 +7540,26 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
 #         Attributes
 #         ----------
 #     """
-#     #region -----------------------------------------------------> Class setup
-#     cName = config.nwTarProt
-#     #------------------------------> To id the section in the umsap file 
-#     # shown in the window
-#     cSection = config.nmTarProt
-#     #------------------------------> Label
-#     cLPanePlot = 'Intensity'
-#     #------------------------------> Colors
-#     cCNatProt = config.color['NatProt']
-#     cCRecProt = config.color['RecProt']
-#     cColor = config.color[cName]
+    #region -----------------------------------------------------> Class setup
+    cName    = mConfig.nwTarProt
+    cSection = mConfig.nmTarProt
+    #------------------------------> Label
+    cLPaneSec = 'Intensity'
 #     #------------------------------>
 #     rIdxSeqNC = pd.IndexSlice[config.dfcolSeqNC,:]
-#     #endregion --------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, cParent: 'UMSAPControl') -> None:
-#         """ """
-#         #region -------------------------------------------------> Check Input
-        
-#         #endregion ----------------------------------------------> Check Input
-
-#         #region -----------------------------------------------> Initial Setup
-#         self.cTitle       = f'{cParent.cTitle} - {self.cSection}'
-#         self.rObj         = cParent.rObj
-#         self.rData        = self.rObj.dConfigure[self.cSection]()
-#         self.rDate, cMenuData = self.SetDateMenuDate()
-#         #------------------------------>
-#         try:
-#             self.ReportPlotDataError()
-#         except Exception as e:
-#             raise e
-#         #------------------------------>
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent: 'WindowUMSAPControl') -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle       = f'{parent.cTitle} - {self.cSection}'
+        self.rObj         = parent.rObj
+        self.rData        = self.rObj.dConfigure[self.cSection]()
+        self.rDate, menuData = self.SetDateMenuDate()
+        #------------------------------>
+        self.ReportPlotDataError()
+        #------------------------------>
 #         self.rDateC       = None
 #         self.rAlpha       = None
 #         self.rFragments   = None
@@ -7628,8 +7574,8 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
 #         self.rPeptide     = None
 #         self.rRecSeq      = {}
 #         self.rRecSeqC     = ''
-#         #------------------------------> 
-#         super().__init__(cParent, cMenuData=cMenuData)
+        #------------------------------> 
+        super().__init__(parent, menuData=menuData)
 #         #------------------------------> 
 #         dKeyMethod = {
 #             'Peptide'  : self.OnClearPept,
@@ -7654,99 +7600,81 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
 #             config.klFAPDBMap        : self.OnPDBMap,
 #         }
 #         self.dKeyMethod = self.dKeyMethod | dKeyMethod
-#         #endregion --------------------------------------------> Initial Setup
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------------> Menu
-        
-#         #endregion -----------------------------------------------------> Menu
-
-#         #region -----------------------------------------------------> Widgets
-        
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-        
-#         #endregion ---------------------------------------------------> Sizers
-
-#         #region --------------------------------------------------------> Bind
-#         self.wPlotM.canvas.mpl_connect('pick_event', self.OnPickFragment)
-#         #endregion -----------------------------------------------------> Bind
-
-#         #region ---------------------------------------------> Window position
+        #region ---------------------------------------------> Window position
 #         self.UpdateDisplayedData(self.rDate[0])
 #         #------------------------------> 
-#         self.WinPos()
-#         self.Show()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-    
-#     #------------------------------> Class methods
-#     #region --------------------------------------------------> Manage Methods
-#     def WinPos(self) -> bool:
-#         """Set the position on the screen and adjust the total number of
-#             shown windows.
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region --------------------------------------------------> Manage Methods
+    def WinPos(self) -> bool:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
             
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         info = super().WinPos()
-#         #endregion ------------------------------------------------> Variables
-                
-#         #region ------------------------------------------------> Set Position
-#         # x = info['D']['xo'] + info['W']['N']*config.deltaWin
-#         # y = (
-#         #     ((info['D']['h']/2) - (info['W']['h']/2)) 
-#         #     + info['W']['N']*config.deltaWin
-#         # )
-#         # self.SetPosition(pt=(x,y))
-#         #endregion ---------------------------------------------> Set Position
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        info = super().WinPos()
+        #endregion ------------------------------------------------> Variables
 
-#         #region ----------------------------------------------------> Update N
-#         config.winNumber[self.cName] = info['W']['N'] + 1
-#         #endregion -------------------------------------------------> Update N
+        #region ------------------------------------------------> Set Position
+        # x = info['D']['xo'] + info['W']['N']*config.deltaWin
+        # y = (
+        #     ((info['D']['h']/2) - (info['W']['h']/2)) 
+        #     + info['W']['N']*config.deltaWin
+        # )
+        # self.SetPosition(pt=(x,y))
+        #endregion ---------------------------------------------> Set Position
 
-#         return True
-#     #---
-    
-#     def SetDateMenuDate(self) -> tuple[list, dict]:
-#         """Set the self.rDate list and the menuData dict needed to build the Tool
-#             menu.
+        return True
+    #---
 
-#             Returns
-#             -------
-#             tuple of list and dict
-#             The list is a list of str with the dates in the analysis.
-#             The dict has the following structure:
-#                 {
-#                     'MenuDate' : [List of dates],
-#                 }                    
-#         """
-#         #region ---------------------------------------------------> Fill dict
-#         #------------------------------> Variables
-#         date = []
-#         menuData = {'FA':{}}
-#         #------------------------------> Fill 
-#         for k,v in self.rData.items():
-#             if k != 'Error':
-#                 #------------------------------> 
-#                 date.append(k)
-#                 #------------------------------> 
-#                 menuData['FA'][k] = {}
-#                 aa = v.get('AA', {})
-#                 hist = v.get('Hist',{})
-#                 menuData['FA'][k]['AA'] = [x for x in aa.keys()]
-#                 menuData['FA'][k]['Hist'] = [x for x in hist.keys()]    
-#             else:
-#                 pass        
-#         #------------------------------> 
-#         menuData['MenuDate'] = date
-#         #endregion ------------------------------------------------> Fill dict
-        
-#         return (date, menuData)
-#     #---
+    def SetDateMenuDate(self) -> tuple[list, dict]:
+        """Set the self.rDate list and the menuData dict needed to build the Tool
+            menu.
+
+            Returns
+            -------
+            tuple of list and dict
+            The list is a list of str with the dates in the analysis.
+            The dict has the following structure:
+                {
+                    'MenuDate' : [List of dates],
+                }
+        """
+        #region ---------------------------------------------------> Fill dict
+        #------------------------------> Variables
+        date = []
+        menuData = {
+            'MenuDate': [],
+            'FA'      : {},
+        }
+        #------------------------------> Fill 
+        for k,v in self.rData.items():
+            if k != 'Error':
+                #------------------------------> 
+                date.append(k)
+                #------------------------------> 
+                menuData['FA'][k] = {}
+                aa = v.get('AA', {})
+                hist = v.get('Hist',{})
+                menuData['FA'][k]['AA'] = [x for x in aa.keys()]
+                menuData['FA'][k]['Hist'] = [x for x in hist.keys()]    
+            else:
+                pass
+        #------------------------------> 
+        menuData['MenuDate'] = date
+        #endregion ------------------------------------------------> Fill dict
+
+        return (date, menuData)
+    #---
     
 #     def UpdateUMSAPData(self):
 #         """Update the window after the UMSAP file have been updated.
@@ -8065,9 +7993,9 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         
 #         return True
 #     #---
-#     #endregion -----------------------------------------------> Manage Methods
+    #endregion -----------------------------------------------> Manage Methods
     
-#     #region ----------------------------------------------------> Event Methods
+    #region ----------------------------------------------------> Event Methods
 #     def OnPickFragment(self, event) -> bool:
 #         """Display info about the selected fragment.
     
@@ -8620,8 +8548,8 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
 #         # dlg.Destroy()
 #         return True
 #     #---
-#     #endregion -------------------------------------------------> Event Methods
-# #---
+    #endregion -------------------------------------------------> Event Methods
+#---
 
 
 # class AAPlot(BaseWindowPlot):
@@ -10181,7 +10109,7 @@ class WindowUMSAPControl(BaseWindow):
         mConfig.nuDataPrep: WindowResDataPrep,
         mConfig.nmProtProf: WindowResProtProf,
         mConfig.nmLimProt : WindowResLimProt,
-        # mConfig.nmTarProt : WindowTarProtPlot,
+        mConfig.nmTarProt : WindowResTarProt,
     }
     # #------------------------------>
     dSectionTab = { # Section name and Tab name correlation
