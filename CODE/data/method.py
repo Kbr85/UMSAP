@@ -1015,41 +1015,41 @@ def HCurve(x:Union[float,pd.DataFrame,pd.Series], t0:float, s0:float) -> float:
 #---
 
 
-# def Rec2NatCoord(
-#     coord: list[tuple[int,int]], protLoc:tuple[int,int], delta:int,
-#     ) -> Union[list[tuple[int,int]], list[str]]:
-#     """
+def Rec2NatCoord(
+    coord: list[tuple[int,int]], protLoc:tuple[int,int], delta:int,
+    ) -> Union[list[tuple[int,int]], list[str]]:
+    """
 
-#         Parameters
-#         ----------
+        Parameters
+        ----------
         
 
-#         Returns
-#         -------
+        Returns
+        -------
         
 
-#         Raise
-#         -----
+        Raise
+        -----
         
-#     """
-#     #region ---------------------------------------------------> Return NA
-#     if delta == 0 or delta is None or protLoc[0] is None or protLoc[1] is None:
-#         return ['NA']
-#     else:
-#         pass
-#     #endregion ------------------------------------------------> Return NA
+    """
+    #region ---------------------------------------------------> Return NA
+    if delta == 0 or delta is None or protLoc[0] is None or protLoc[1] is None:
+        return ['NA']
+    else:
+        pass
+    #endregion ------------------------------------------------> Return NA
 
-#     #region ---------------------------------------------------> Calc
-#     listO = []
-#     for a,b in coord:
-#         if protLoc[0] <= a <= protLoc[1] and protLoc[0] <= b <= protLoc[1]:
-#             listO.append((a+delta, b+delta))
-#         else:
-#             pass
-#     #endregion ------------------------------------------------> Calc
+    #region ---------------------------------------------------> Calc
+    listO = []
+    for a,b in coord:
+        if protLoc[0] <= a <= protLoc[1] and protLoc[0] <= b <= protLoc[1]:
+            listO.append((a+delta, b+delta))
+        else:
+            pass
+    #endregion ------------------------------------------------> Calc
 
-#     return listO
-# #---
+    return listO
+#---
 
 
 def R2AA(

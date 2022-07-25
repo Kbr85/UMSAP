@@ -512,15 +512,22 @@ class BaseMenuMainResultSubMenu(BaseMenu):
         #endregion -----------------------------------------------> Menu Items
 
         #region ---------------------------------------------------> rKeyID
-        self.rIDMap = {
-            self.miSaveI.GetId(): f'{self.rKeys[tKey]}-Img',
-            self.miZoomR.GetId(): f'{self.rKeys[tKey]}-Zoom',
+        rIDMap = {
+            self.miSaveI.GetId(): mConfig.kwToolExpImg,
+            self.miZoomR.GetId(): mConfig.kwToolZoomReset,
         }
+        self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------>
+        rKeyMap = {
+            self.miSaveI.GetId(): self.rKeys[tKey],
+            self.miZoomR.GetId(): self.rKeys[tKey],
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelKey, source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelKey, source=self.miSaveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1828,18 +1835,18 @@ class MenuToolLimProt(BaseMenuMainResult):
         #endregion -----------------------------------------------> Menu Items
 
         #region ---------------------------------------------------> rKeyID
-        # rIDMap = {
-        #     self.miBandLane.GetId(): mConfig.klToolLimProtBandLane,
-        #     self.miShowAll.GetId() : mConfig.klToolLimProtShowAll,
-        #     self.miSaveSeq.GetId() : mConfig.klToolExpSeq,
-        # }
-        # self.rIDMap = self.rIDMap | rIDMap
+        rIDMap = {
+            self.miBandLane.GetId(): mConfig.kwToolLimProtBandLane,
+            self.miShowAll.GetId() : mConfig.kwToolLimProtShowAll,
+            self.miSaveSeq.GetId() : mConfig.kwToolLimProtExpSeq,
+        }
+        self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miBandLane)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miShowAll)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miSaveSeq)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miBandLane)
+        self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miShowAll)
+        self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miSaveSeq)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup

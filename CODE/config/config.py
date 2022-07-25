@@ -166,7 +166,7 @@ nuReadF    = 'Read UMSAP File'
 elData  = 'txt files (*.txt)|*.txt'
 elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
 # elPDB   = 'PDB files (*.pdb)|*.pdb'
-# elPDF   = 'PDF files (*.pdf)|*.pdf'
+elPDF   = 'PDF files (*.pdf)|*.pdf'
 elSeq   = (
     "Text files (*.txt)|*.txt|"
     "Fasta files (*.fasta)|*.fasta"
@@ -180,7 +180,7 @@ elMatPlotSaveI = (
 #------------------------------> File extensions. First item is default
 esData  = ['.txt']
 # esPDB   = ['.pdb']
-# esPDF   = ['.pdf']
+esPDF   = ['.pdf']
 esSeq   = ['.txt', '.fasta']
 esUMSAP = ['.umsap']
 #endregion -------------------------------------------------------- Extensions
@@ -208,9 +208,10 @@ kwToolCheckDP      = 'Check DP'
 # klToolExpSeq       = 'Export Sequences'
 #------------------------------> Tool Menu for CorrA
 kwToolCorrACol  = 'ToolCorrA Select Column'
-# #------------------------------> Tool Menu for LimProt
-# klToolLimProtBandLane = 'Band/Lane Sel'
-# klToolLimProtShowAll  = 'Show All'
+#------------------------------> Tool Menu for LimProt
+kwToolLimProtBandLane = 'Band/Lane Sel'
+kwToolLimProtShowAll  = 'Show All'
+kwToolLimProtExpSeq   = 'Export Sequence'
 # #------------------------------> Tool Menu for AA
 # klToolAAExp = 'AA'
 # klToolAAPos = 'Pos'
