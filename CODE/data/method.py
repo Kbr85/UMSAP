@@ -29,9 +29,9 @@ import matplotlib as mpl
 
 import wx
 
-# from reportlab.lib.pagesizes import A4
-# from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-# from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 import config.config as mConfig
 import data.file as mFile
@@ -1486,131 +1486,135 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
 #---
 
 
-# def R2SeqAlignment(
-#     df: pd.DataFrame, alpha: float, seqR: str, seqN: Union[None, str],
-#     fileP: 'Path', tLength: int,
-#     ) -> bool:
-#     """Sequence Alignment for the TarProt Module
+def R2SeqAlignment(
+    df     : pd.DataFrame,
+    alpha  : float,
+    seqR   : str,
+    seqN   : Union[None, str],
+    fileP  : 'Path',
+    tLength: int,
+    ) -> bool: 
+    """Sequence Alignment for the TarProt Module.
 
-#         Parameters
-#         ----------
+        Parameters
+        ----------
         
 
-#         Returns
-#         -------
+        Returns
+        -------
         
 
-#         Raise
-#         -----
+        Raise
+        -----
         
-#     """
-#     def GetString(
-#         df: pd.DataFrame, seq: str, rec: bool, alpha: float, label: str, 
-#         lSeq: int,
-#         ) -> tuple[int, list[str]]:
-#         """
+    """
+    def GetString(
+        df: pd.DataFrame, seq: str, rec: bool, alpha: float, label: str, 
+        lSeq: int,
+        ) -> tuple[int, list[str]]:
+        """
     
-#             Parameters
-#             ----------
+            Parameters
+            ----------
             
     
-#             Returns
-#             -------
+            Returns
+            -------
             
     
-#             Raise
-#             -----
+            Raise
+            -----
             
-#         """
-#         #region --------------------------------------------------------> 
-#         idx = pd.IndexSlice
-#         df = df[df.loc[:,idx[label,'P']] <= alpha].copy()
-#         df = df.reset_index(drop=True)
-#         nCero = len(str(df.shape[0]+1))
-#         tString = [seq]
-#         #endregion -----------------------------------------------------> 
+        """
+        #region --------------------------------------------------------> 
+        idx = pd.IndexSlice
+        df = df[df.loc[:,idx[label,'P']] <= alpha].copy()
+        df = df.reset_index(drop=True)
+        nCero = len(str(df.shape[0]+1))
+        tString = [seq]
+        #endregion -----------------------------------------------------> 
 
-#         #region ---------------------------------------------------> 
-#         for r in df.itertuples():
-#             n = r[3] if rec else r[5]  
-#             tString.append((n-1)*' '+r[1]+(lSeq-n+1-len(r[1]))*' ')
-#         #endregion ------------------------------------------------> 
-#         return (nCero, tString)
-#     #---
+        #region ---------------------------------------------------> 
+        for r in df.itertuples():
+            n = r[3] if rec else r[5]  
+            tString.append((n-1)*' '+r[1]+(lSeq-n+1-len(r[1]))*' ')
+        #endregion ------------------------------------------------> 
+        return (nCero, tString)
+    #---
     
-#     #region ---------------------------------------------------> Variables
-#     #------------------------------> 
-#     label = df.columns.unique(level=0)[7:].tolist()
-#     lenSeqR = len(seqR)
-#     lenSeqN = len(seqN) if seqN is not None else None
-#     #------------------------------> ReportLab
-#     doc = SimpleDocTemplate(fileP, pagesize=A4, rightMargin=25,
-#         leftMargin=25, topMargin=25, bottomMargin=25)
-#     Story  = []
-#     styles = getSampleStyleSheet()
-#     styles.add(ParagraphStyle(name='Seq', fontName='Courier', fontSize=8.5))
-#     #endregion ------------------------------------------------> Variables
-    
-#     #region ---------------------------------------------------> 
-#     for e in label:
-#         #------------------------------> 
-#         Story.append(Paragraph(f'{e} Recombinant Sequence'))
-#         Story.append(Spacer(1,20))
-#         nCero, tString = GetString(df, seqR, True, alpha, e, lenSeqR)
-#         for s in range(0, lenSeqR, tLength):
-#             #------------------------------> 
-#             printString = ''
-#             #------------------------------> 
-#             for k,v in enumerate(tString):
-#                 a = v[s:s+tLength]
-#                 if a.strip():
-#                     end = k
-#                     printString = f"{printString}{str(k).zfill(nCero)}-{a.replace(' ', '&nbsp;')}<br />"
-#                 else:
-#                     pass
-#             #------------------------------> 
-#             Story.append(Paragraph(printString, style=styles['Seq']))
-#             if end:
-#                 Story.append(Spacer(1,10))
-#             else:
-#                 pass
-#         if end:
-#             Story.append(Spacer(1,10))
-#         else:
-#             Story.append(Spacer(1,20))
-#     #endregion ------------------------------------------------> 
+    #region ---------------------------------------------------> Variables
+    #------------------------------> 
+    label = df.columns.unique(level=0)[7:].tolist()
+    lenSeqR = len(seqR)
+    lenSeqN = len(seqN) if seqN is not None else None
+    #------------------------------> ReportLab
+    doc = SimpleDocTemplate(fileP, pagesize=A4, rightMargin=25,
+        leftMargin=25, topMargin=25, bottomMargin=25)
+    Story  = []
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Seq', fontName='Courier', fontSize=8.5))
+    #endregion ------------------------------------------------> Variables
 
-#     #region ---------------------------------------------------> 
-#     if seqN is not None:
-#         for e in label:
-#             #------------------------------> 
-#             Story.append(Paragraph(f'{e} Native Sequence'))
-#             Story.append(Spacer(1,20))
-#             nCero, tString = GetString(df, seqN, False, alpha, e, lenSeqN)
-#             for s in range(0, lenSeqN, tLength):
-#                 #------------------------------> 
-#                 printString = ''
-#                 #------------------------------> 
-#                 for k,v in enumerate(tString):
-#                     a = v[s:s+tLength]
-#                     if a.strip():
-#                         end = k
-#                         printString = f"{printString}{str(k).zfill(nCero)}-{a.replace(' ', '&nbsp;')}<br />"
-#                     else:
-#                         pass
-#                 #------------------------------> 
-#                 Story.append(Paragraph(printString, style=styles['Seq']))
-#                 if end:
-#                     Story.append(Spacer(1,10))
-#                 else:
-#                     pass
-#             if end:
-#                 Story.append(Spacer(1,10))
-#             else:
-#                 Story.append(Spacer(1,20))
-#     #endregion ------------------------------------------------> 
-    
-#     doc.build(Story)
-#     return True
-# #---
+    #region --------------------------------------------------->
+    for e in label:
+        #------------------------------> 
+        Story.append(Paragraph(f'{e} Recombinant Sequence'))
+        Story.append(Spacer(1,20))
+        nCero, tString = GetString(df, seqR, True, alpha, e, lenSeqR)
+        for s in range(0, lenSeqR, tLength):
+            #------------------------------> 
+            printString = ''
+            #------------------------------> 
+            for k,v in enumerate(tString):
+                a = v[s:s+tLength]
+                if a.strip():
+                    end = k
+                    printString = f"{printString}{str(k).zfill(nCero)}-{a.replace(' ', '&nbsp;')}<br />"
+                else:
+                    pass
+            #------------------------------> 
+            Story.append(Paragraph(printString, style=styles['Seq']))
+            if end:
+                Story.append(Spacer(1,10))
+            else:
+                pass
+        if end:
+            Story.append(Spacer(1,10))
+        else:
+            Story.append(Spacer(1,20))
+    #endregion ------------------------------------------------> 
+
+    #region ---------------------------------------------------> 
+    if seqN is not None:
+        for e in label:
+            #------------------------------> 
+            Story.append(Paragraph(f'{e} Native Sequence'))
+            Story.append(Spacer(1,20))
+            nCero, tString = GetString(df, seqN, False, alpha, e, lenSeqN)
+            for s in range(0, lenSeqN, tLength):
+                #------------------------------> 
+                printString = ''
+                #------------------------------> 
+                for k,v in enumerate(tString):
+                    a = v[s:s+tLength]
+                    if a.strip():
+                        end = k
+                        printString = f"{printString}{str(k).zfill(nCero)}-{a.replace(' ', '&nbsp;')}<br />"
+                    else:
+                        pass
+                #------------------------------> 
+                Story.append(Paragraph(printString, style=styles['Seq']))
+                if end:
+                    Story.append(Spacer(1,10))
+                else:
+                    pass
+            if end:
+                Story.append(Spacer(1,10))
+            else:
+                Story.append(Spacer(1,20))
+    #endregion ------------------------------------------------> 
+
+    doc.build(Story)
+    return True
+#---
 #endregion ----------------------------------------------------------> Methods

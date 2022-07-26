@@ -1410,8 +1410,13 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         self.rPeptide     = None
         #------------------------------>
         super().__init__(parent, menuData=menuData)
+        #------------------------------>
+        dKeyMethod = {
+            mConfig.kwToolExpSeq : self.SeqExport,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
-        
+
         #region --------------------------------------------------------> Bind
         self.wPlot['Main'].rCanvas.mpl_connect(
             'pick_event', self.OnPickFragment)
@@ -1580,6 +1585,24 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
             Returns
             -------
             bool
+        """
+        return True
+    #---
+
+    def SeqExport(self) -> bool:
+        """Export the recombinant sequence 
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
         """
         return True
     #---
@@ -5811,8 +5834,6 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             #------------------------------>
             mConfig.kwToolLimProtBandLane : self.LaneBandSel,
             mConfig.kwToolLimProtShowAll  : self.ShowAll,
-            #------------------------------>
-            mConfig.kwToolLimProtExpSeq : self.ExportSeq,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -7026,7 +7047,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def ExportSeq(self) -> bool:
+    def SeqExport(self) -> bool:
         """Export the recombinant sequence 
     
             Parameters
@@ -7564,6 +7585,11 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
     cLPaneSec = 'Intensity'
     #------------------------------>
     cSWindow = (1100, 800)
+    #------------------------------>
+    cImgName   = {
+        'Main': '{}-Protein-Fragments.pdf',
+        'Sec' : '{}-Intensity-Representation.pdf',
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -7594,20 +7620,11 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
 #         #------------------------------> 
-#         dKeyMethod = {
-#             'Peptide'  : self.OnClearPept,
-#             'Fragment' : self.OnClearFrag,
-#             'All'      : self.OnClearAll,
-#             #------------------------------> 
-#             config.klToolGuiUpdate       : self.UpdateDisplayedData,
-#             #------------------------------> 
-#             'Main-Img'   : self.OnImageMain,
-#             'Main-Zoom'  : self.OnZoomResetMain,
-#             'Bottom-Img' : self.OnImageBottom,
-#             'Bottom-Zoom': self.OnZoomResetBottom,
-#             #------------------------------> 
-#             config.klToolExpSeq : self.OnSeqExport,
-#             #------------------------------> 
+        dKeyMethod = {
+            'Peptide'  : self.ClearPept,
+            'Fragment' : self.ClearFrag,
+            'All'      : self.ClearAll,
+            # #------------------------------> 
 #             'AA-Item'                : self.OnAASelect,
 #             'AA-New'                 : self.OnAANew,
 #             'Hist-Item'              : self.OnHistSelect,
@@ -7615,8 +7632,8 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 #             config.klFACleavageEvol  : self.OnCEvol,
 #             config.klFACleavagePerRes: self.OnCpR,
 #             config.klFAPDBMap        : self.OnPDBMap,
-#         }
-#         self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
         #region ---------------------------------------------> Window position
@@ -8011,6 +8028,158 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 
         return True
     #---
+
+    def SeqExport(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> dlg
+        dlg = DialogFABtnText(
+            'File', 
+            'Path to the output file',
+            mConfig.elPDF,
+            mValidator.OutputFF('file'),
+            'Length',
+            'Residues per line in the output file, e.g. 100',
+            mValidator.NumberList('int', vMin=1, vMax=100, nN=1),
+            parent = self,
+        )
+        #endregion ------------------------------------------------> dlg
+
+        #region ---------------------------------------------------> Get Pos
+        if dlg.ShowModal():
+            fileP  = dlg.wBtnTc.wTc.GetValue()
+            length = int(dlg.wLength.wTc.GetValue())
+        else:
+            dlg.Destroy()
+            return False
+        #endregion ------------------------------------------------> Get Pos
+
+        #region ---------------------------------------------------> Run 
+        try:
+            mMethod.R2SeqAlignment(
+                self.rDf, 
+                self.rAlpha, 
+                self.rRecSeqC, 
+                self.rNatSeqC, 
+                fileP, 
+                length
+            )
+        except Exception as e:
+            msg = 'Export of Sequence Alignments failed.'
+            DialogNotification('errorF', msg=msg, tException=e)
+        #endregion ------------------------------------------------> Run
+
+        dlg.Destroy()
+        return True
+    #---
+
+    def ClearPept(self, plot: bool=True) -> bool:
+        """Clear the Peptide selection.
+
+            Parameters
+            ----------
+            plot: bool
+                Redraw the canvas.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if (rID := self.wLC.wLCS.wLC.GetFirstSelected()):
+            self.wLC.wLCS.wLC.Select(rID, on=0)
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for r in self.rRectsFrag:
+            r.set_linewidth(self.cGelLineWidth)
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        if plot:
+            self.wPlot['Main'].rCanvas.draw()
+            self.SetAxisInt()
+            self.wPlot['Sec'].rCanvas.draw()
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.rPeptide = None
+        self.rLCIdx = None
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def ClearFrag(self, plot=True) -> bool:
+        """Clear the Fragment selection.
+
+            Parameters
+            ----------
+            plot: bool
+                Redraw the canvas.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+            self.rFragSelLine = None
+            self.wPlot['Main'].rCanvas.draw()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.rFragSelC = [None, None]
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def ClearAll(self) -> bool:
+        """Clear all selections.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        self.ClearPept(plot=False)
+        self.ClearFrag(plot=False)
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.wPlot['Main'].rCanvas.draw()
+        self.SetAxisInt()
+        self.wPlot['Sec'].rCanvas.draw()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.wText.Clear()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ----------------------------------------------------> Event Methods
@@ -8061,104 +8230,6 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 
         return True
     #---
-
-#     def OnClearPept(self, plot: bool=True) -> bool:
-#         """Clear the Peptide selection.
-    
-#             Parameters
-#             ----------
-#             plot: bool
-#                 Redraw the canvas.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         if (rID := self.wLC.wLCS.lc.GetFirstSelected()):
-#             self.wLC.wLCS.lc.Select(rID, on=0)
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> 
-#         for r in self.rRectsFrag:
-#             r.set_linewidth(self.cGelLineWidth)
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         if plot:
-#             self.wPlotM.canvas.draw()
-#             self.SetAxisInt()
-#             self.wPlot.canvas.draw()
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> 
-#         self.rPeptide = None
-#         self.rLCIdx = None
-#         #endregion ------------------------------------------------> 
-
-#         return True
-#     #---
-    
-#     def OnClearFrag(self, plot=True) -> bool:
-#         """Clear the Fragment selection.
-    
-#             Parameters
-#             ----------
-#             plot: bool
-#                 Redraw the canvas.
-            
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         if self.rFragSelLine is not None:
-#             self.rFragSelLine[0].remove()
-#             self.rFragSelLine = None
-#             self.wPlotM.canvas.draw()
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> 
-#         self.wText.Clear()
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> 
-#         self.rFragSelC = [None, None]
-#         #endregion ------------------------------------------------> 
-
-#         return True
-#     #---
-    
-#     def OnClearAll(self) -> bool:
-#         """Clear all selections.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         self.OnClearPept(plot=False)
-#         self.OnClearFrag(plot=False)
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         self.wPlotM.canvas.draw()
-#         self.SetAxisInt()
-#         self.wPlot.canvas.draw()
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         self.wText.Clear()
-#         #endregion ------------------------------------------------> 
-
-#         return True
-#     #---
-    
 #     def OnCpR(self) -> bool:
 #         """
     
@@ -8479,62 +8550,6 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 #         #endregion --------------------------------------------> Save & Update
         
 #         dlg.Destroy()
-#         return True
-#     #---
-    
-#     def OnSeqExport(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> dlg
-#         dlg = window.FABtnText(
-#             'File', 
-#             'Path to the output file',
-#             config.elPDF,
-#             dtsValidator.OutputFF('file', ext=config.esPDF[0]),
-#             'Length',
-#             'Residues per line in the output file, e.g. 100',
-#             dtsValidator.NumberList('int', vMin=1, vMax=100, nN=1),
-#             parent = self,
-#         )
-#         #endregion ------------------------------------------------> dlg
-        
-#         #region ---------------------------------------------------> Get Pos
-#         if dlg.ShowModal():
-#             fileP  = dlg.wBtnTc.tc.GetValue()
-#             length = int(dlg.wLength.tc.GetValue())
-#         else:
-#             dlg.Destroy()
-#             return False
-#         #endregion ------------------------------------------------> Get Pos
-        
-#         #region ---------------------------------------------------> Run 
-#         try:
-#             dmethod.R2SeqAlignment(
-#                 self.rDf, 
-#                 self.rAlpha, 
-#                 self.rRecSeqC, 
-#                 self.rNatSeqC, 
-#                 fileP, 
-#                 length
-#             )
-#         except Exception as e:
-#             msg = 'Export of Sequence Alignments failed.'
-#             dtsWindow.DialogNotification('errorF', msg=msg, tException=e)
-#         #endregion ------------------------------------------------> Run
-        
-#         # dlg.Destroy()
 #         return True
 #     #---
     #endregion -------------------------------------------------> Event Methods
@@ -13123,133 +13138,116 @@ class DialogVolColorScheme(BaseDialogOkCancel):
 #---
 
 
-# class FABtnText(dtsWindow.OkCancel):
-#     """
+class DialogFABtnText(BaseDialogOkCancel):
+    """
 
-#         Parameters
-#         ----------
+        Parameters
+        ----------
         
 
-#         Attributes
-#         ----------
+        Attributes
+        ----------
         
 
-#         Raises
-#         ------
+        Raises
+        ------
         
 
-#         Methods
-#         -------
+        Methods
+        -------
         
-#     """
-#     #region -----------------------------------------------------> Class setup
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, btnLabel: str, btnHint: str, ext: str, btnValidator: wx.Validator,
+        stLabel: str, stHint: str, stValidator: wx.Validator,
+        parent: Optional[wx.Window]=None):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(title='Export Sequence Alignments', parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wBtnTc = mWidget.ButtonTextCtrlFF(
+            self,
+            btnLabel  = btnLabel,
+            tcHint    = btnHint,
+            ext       = ext,
+            mode      = 'save',
+            validator = btnValidator,
+        )
+        self.wLength = mWidget.StaticTextCtrl(
+            self,
+            stLabel   = stLabel,
+            tcHint    = stHint,
+            validator = stValidator,
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sFlex = wx.FlexGridSizer(2,2,1,1)
+        self.sFlex.Add(self.wBtnTc.wBtn, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnTc.wTc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wLength.wSt, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.sFlex.Add(self.wLength.wTc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.AddGrowableCol(1,1)
+        #------------------------------>
+        self.sSizer.Add(self.sFlex, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------>
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window
     
-#     #endregion --------------------------------------------------> Class setup
-
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, btnLabel: str, btnHint: str, ext: str, btnValidator: wx.Validator,
-#         stLabel: str, stHint: str, stValidator: wx.Validator,
-#         parent: Optional[wx.Window]=None):
-#         """ """
-#         #region -------------------------------------------------> Check Input
-        
-#         #endregion ----------------------------------------------> Check Input
-
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(title='Export Sequence Alignments', parent=parent)
-#         #endregion --------------------------------------------> Initial Setup
-
-#         #region -----------------------------------------------------> Widgets
-#         self.wBtnTc = dtsWidget.ButtonTextCtrlFF(
-#             self,
-#             btnLabel  = btnLabel,
-#             tcHint    = btnHint,
-#             ext       = ext,
-#             mode      = 'save',
-#             validator = btnValidator,
-#         )
-        
-#         self.wLength = dtsWidget.StaticTextCtrl(
-#             self,
-#             stLabel   = stLabel,
-#             tcHint    = stHint,
-#             validator = stValidator,
-#         )
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-#         self.sFlex = wx.FlexGridSizer(2,2,1,1)
-#         self.sFlex.Add(self.wBtnTc.btn, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sFlex.Add(self.wBtnTc.tc, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sFlex.Add(self.wLength.st, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-#         self.sFlex.Add(self.wLength.tc, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sFlex.AddGrowableCol(1,1)
-        
-#         self.sSizer.Add(self.sFlex, 1, wx.EXPAND|wx.ALL, 5)
-#         self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
-        
-#         self.SetSizer(self.sSizer)
-#         self.Fit()
-#         #endregion ---------------------------------------------------> Sizers
-
-#         #region --------------------------------------------------------> Bind
-        
-#         #endregion -----------------------------------------------------> Bind
-
-#         #region ---------------------------------------------> Window position
-        
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #region ---------------------------------------------------> Class methods
-#     def OnOK(self, event: wx.CommandEvent) -> bool:
-#         """Validate user information and close the window
-    
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
             
-#             Returns
-#             -------
-#             bool
+            Returns
+            -------
+            bool
             
-#             Notes
-#             -----
-#             Basic implementation. Override as needed.
-#         """
-#         #region ---------------------------------------------------> 
-#         errors = 0
-#         #endregion ------------------------------------------------> 
+            Notes
+            -----
+            Basic implementation. Override as needed.
+        """
+        #region ---------------------------------------------------> 
+        errors = 0
+        #endregion ------------------------------------------------> 
 
-#         #region ---------------------------------------------------> 
-#         if self.wBtnTc.tc.GetValidator().Validate()[0]:
-#             pass
-#         else:
-#             errors += 1
-#             self.wBtnTc.tc.SetValue('')
+        #region ---------------------------------------------------> 
+        if self.wBtnTc.wTc.GetValidator().Validate()[0]:
+            pass
+        else:
+            errors += 1
+            self.wBtnTc.wTc.SetValue('')
             
-#         if self.wLength.tc.GetValidator().Validate()[0]:
-#             pass
-#         else:
-#             errors += 1
-#             self.wLength.tc.SetValue('')
-#         #endregion ------------------------------------------------> 
+        if self.wLength.wTc.GetValidator().Validate()[0]:
+            pass
+        else:
+            errors += 1
+            self.wLength.wTc.SetValue('')
+        #endregion ------------------------------------------------> 
 
-#         #region --------------------------------------------------------> 
-#         if not errors:
-#             self.EndModal(1)
-#             self.Close()
-#         else:
-#             pass
-#         #endregion -----------------------------------------------------> 
+        #region --------------------------------------------------------> 
+        if not errors:
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
+        #endregion -----------------------------------------------------> 
 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # class FA2Btn(dtsWindow.OkCancel):

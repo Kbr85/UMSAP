@@ -205,13 +205,13 @@ kwToolExpData      = 'Export Data'
 kwToolExpImgAll    = 'Export Image'
 kwToolExpImg       = 'Export Image One'
 kwToolCheckDP      = 'Check DP'
-# klToolExpSeq       = 'Export Sequences'
+kwToolExpSeq       = 'Export Sequence'
 #------------------------------> Tool Menu for CorrA
 kwToolCorrACol  = 'ToolCorrA Select Column'
 #------------------------------> Tool Menu for LimProt
 kwToolLimProtBandLane = 'Band/Lane Sel'
 kwToolLimProtShowAll  = 'Show All'
-kwToolLimProtExpSeq   = 'Export Sequence'
+
 # #------------------------------> Tool Menu for AA
 # klToolAAExp = 'AA'
 # klToolAAPos = 'Pos'

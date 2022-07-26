@@ -732,39 +732,39 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
         return itemList
     #---
 
-#     def Update(self, tDate: str, menuData: dict={}) -> bool:
-#         """Update the menu items.
-    
-#             Parameters
-#             ----------
-#             tDate: str
-#                 Currently selected date.
-#             menuDate: dict
-#                 New menuData dict.
+    def Update(self, tDate: str, menuData: dict={}) -> bool:
+        """Update the menu items.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------------> 
-#         for x in self.rItemList:
-#             self.Delete(x)
+            Parameters
+            ----------
+            tDate: str
+                Currently selected date.
+            menuDate: dict
+                New menuData dict.
 
-#         if self.rSep is not None:
-#             self.Delete(self.rSep)
-#         else:
-#             pass
-#         #endregion -----------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        for x in self.rItemList:
+            self.Delete(x)
 
-#         #region ---------------------------------------------------> 
-#         self.cMenuData = menuData if menuData else self.cMenuData
-#         self.rItemList = self.SetItems(tDate)
-#         #endregion ------------------------------------------------> 
+        if self.rSep is not None:
+            self.Delete(self.rSep)
+        else:
+            pass
+        #endregion ----------------------------------------------------->
 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+        #region --------------------------------------------------->
+        self.cMenuData = menuData if menuData else self.cMenuData
+        self.rItemList = self.SetItems(tDate)
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion -----------------------------------------------------> Base Classes
 
 
@@ -1318,17 +1318,17 @@ class MenuToolTarProtClearSel(BaseMenu):
         #endregion -----------------------------------------------> Menu Items
 
         #region ---------------------------------------------------> 
-        # self.rIDMap = {
-        #     self.miNoPept.GetId(): 'Peptide',
-        #     self.miNoFrag.GetId(): 'Fragment',
-        #     self.miNoSel.GetId() : 'All',
-        # }
+        self.rIDMap = {
+            self.miNoPept.GetId(): 'Peptide',
+            self.miNoFrag.GetId(): 'Fragment',
+            self.miNoSel.GetId() : 'All',
+        }
         #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoPept)
-        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoFrag)
-        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoSel)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoPept)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoFrag)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoSel)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1838,7 +1838,7 @@ class MenuToolLimProt(BaseMenuMainResult):
         rIDMap = {
             self.miBandLane.GetId(): mConfig.kwToolLimProtBandLane,
             self.miShowAll.GetId() : mConfig.kwToolLimProtShowAll,
-            self.miSaveSeq.GetId() : mConfig.kwToolLimProtExpSeq,
+            self.miSaveSeq.GetId() : mConfig.kwToolExpSeq,
         }
         self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> rKeyID
@@ -1897,51 +1897,51 @@ class MenuToolTarProt(BaseMenuMainResult):
         #endregion -----------------------------------------------> Menu Items
 
         #region ---------------------------------------------------> rKeyID
-#         rIDMap = {
-#             self.miSaveSeq.GetId() : mConfig.klToolExpSeq,
-#         }
-#         self.rIDMap = self.rIDMap | rIDMap
+        rIDMap = {
+            self.miSaveSeq.GetId() : mConfig.kwToolExpSeq,
+        }
+        self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSaveSeq)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSaveSeq)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Methods
-#     def OnMethodKey(self, event) -> bool:
-#         """Call the corresponding method in the window with no arguments or
-#             keyword arguments
+    def OnMethodKey(self, event) -> bool:
+        """Call the corresponding method in the window with no arguments or
+            keyword arguments.
 
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         super().OnMethodKey(event)
-#         #endregion ------------------------------------------------> 
-        
-#         #region --------------------------------------------------------> 
-#         tID      = event.GetId()
-#         menuItem = self.FindItem(tID)[0]
-#         label    = self.GetLabelText(tID)
-#         #endregion -----------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        super().OnMethodKey(event)
+        #endregion ------------------------------------------------>
 
-#         #region --------------------------------------------------->
-#         if menuItem in self.rPlotDate:
-#             self.mFurtherA.UpdateFurtherAnalysis(label)
-#         else:
-#             pass
-#         #endregion ------------------------------------------------>
-        
-#         return True
-#     #---
+        #region -------------------------------------------------------->
+        tID      = event.GetId()
+        menuItem = self.FindItem(tID)[0]
+        label    = self.GetLabelText(tID)
+        #endregion ----------------------------------------------------->
+
+        #region --------------------------------------------------->
+        if menuItem in self.rPlotDate:
+            self.mFurtherA.UpdateFurtherAnalysis(label)
+        else:
+            pass
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
 
 #     def UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
 #         """Update specific items in the menu after the Analysis IDs were 
@@ -2173,7 +2173,7 @@ class MenuToolProtProfVolcanoPlot(BaseMenu):
 
 
 class MenuToolTarProtFurtherAnalysis(BaseMenu):
-    """Further Analysis menu for the TarProt result window
+    """Further Analysis menu for the TarProt result window.
 
         Parameters
         ----------
@@ -2220,25 +2220,25 @@ class MenuToolTarProtFurtherAnalysis(BaseMenu):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-#     def UpdateFurtherAnalysis(self, tDate: str, menuData: dict={}) -> bool:
-#         """Update Further Analysis.
+    def UpdateFurtherAnalysis(self, tDate: str, menuData: dict={}) -> bool:
+        """Update Further Analysis.
 
-#             Parameters
-#             ----------
-#             tDate: str
-#                 Currently selected date.
-#             menuData: dict
-#                 Information for the menu items.
+            Parameters
+            ----------
+            tDate: str
+                Currently selected date.
+            menuData: dict
+                Information for the menu items.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         self.mAA.Update(tDate, menuData)
-#         self.mHist.Update(tDate, menuData)
+            Returns
+            -------
+            bool
+        """
+        self.mAA.Update(tDate, menuData)
+        self.mHist.Update(tDate, menuData)
 
-#         return True
-#     #---
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
