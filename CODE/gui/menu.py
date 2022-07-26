@@ -367,119 +367,119 @@ class BaseMenuMainResult(BaseMenu):
         return True
     #---
 
-#     def UpdateDateItems(self, menuData: dict) -> bool:
-#         """Update the Analysis ID items when the analyses are modified. 
+    def UpdateDateItems(self, menuData: dict) -> bool:
+        """Update the Analysis ID items when the analyses are modified. 
 
-#             Parameters
-#             ----------
-#             menuData : dict
-#                 Data to build the Tool menu of the window. It must contain at 
-#                 least a key - value pair like:
-#                 'MenuDate' : ['20210324-123456 - bla',...,]
+            Parameters
+            ----------
+            menuData : dict
+                Data to build the Tool menu of the window. It must contain at 
+                least a key - value pair like:
+                'MenuDate' : ['20210324-123456 - bla',...,]
 
-#             Returns
-#             -------
-#             bool
-            
-#             Notes
-#             -----
-#             Menu Further Analysis, if present, is expected to be at 
-#             self.mFurtherA and implement the method
-#             UpdateFurtherAnalysis(date, menuData['FA']) to handle the update of
-#             the Further Analysis menu.
-#         """
-#         #region ---------------------------------------------------> Variables
-#         self.cMenuData = menuData
-#         dateC = self.GetCheckedRadioItem(self.rPlotDate).GetItemLabelText()
-#         checkedFound   = False
-#         #------------------------------> 
-#         for k in self.rPlotDate:
-#             del self.rIDMap[k.GetId()]
-#             del self.rKeyMap[k.GetId()]
-#             self.Delete(k)
-#         self.rPlotDate = []
-#         #endregion ------------------------------------------------> Variables
+            Returns
+            -------
+            bool
 
-#         #region -------------------------------------------------------> Dates
-#         #------------------------------> Add new items
-#         for k in reversed(menuData['MenuDate']):
-#             self.rPlotDate.insert(0, self.InsertRadioItem(0,-1,k))
-#             self.rIDMap[self.rPlotDate[0].GetId()] = mConfig.klToolGuiUpdate
-#             self.rKeyMap[self.rPlotDate[0].GetId()] = 'tDate'
-#             self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[0])
-#         #------------------------------> Search for previously checked item
-#         for k in self.rPlotDate:
-#             if k.GetItemLabelText() == dateC:
-#                 k.Check(check=True)
-#                 checkedFound = True
-#                 menuItem = k
-#                 break
-#             else:
-#                 pass
-#         #------------------------------> Check first if not found
-#         if checkedFound:
-#             pass
-#         else:
-#             self.rPlotDate[0].Check(check=True)
-#             menuItem = self.rPlotDate[0]
-#         #endregion ----------------------------------------------------> Dates
+            Notes
+            -----
+            Menu Further Analysis, if present, is expected to be at 
+            self.mFurtherA and implement the method
+            UpdateFurtherAnalysis(date, menuData['FA']) to handle the update of
+            the Further Analysis menu.
+        """
+        #region ---------------------------------------------------> Variables
+        self.cMenuData = menuData
+        dateC = self.GetCheckedRadioItem(self.rPlotDate).GetItemLabelText()
+        checkedFound   = False
+        #------------------------------> 
+        for k in self.rPlotDate:
+            del self.rIDMap[k.GetId()]
+            del self.rKeyMap[k.GetId()]
+            self.Delete(k)
+        self.rPlotDate = []
+        #endregion ------------------------------------------------> Variables
 
-#         #region ------------------------------------------> Update Other Items
-#         # Update menu specific items, e.g. Further Analysis or Cond, RP in 
-#         # ProtProf - Volcano Plot. Also update GUI if checked is not the 
-#         # analysis currently displayed.
-#         self.UpdateOtherItems(menuItem, not checkedFound) # type: ignore
-#         #endregion ---------------------------------------> Update Other Items
+        #region -------------------------------------------------------> Dates
+        #------------------------------> Add new items
+        for k in reversed(menuData['MenuDate']):
+            self.rPlotDate.insert(0, self.InsertRadioItem(0,-1,k))
+            self.rIDMap[self.rPlotDate[0].GetId()] = mConfig.kwToolWinUpdate
+            self.rKeyMap[self.rPlotDate[0].GetId()] = 'tDate'
+            self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[0])
+        #------------------------------> Search for previously checked item
+        for k in self.rPlotDate:
+            if k.GetItemLabelText() == dateC:
+                k.Check(check=True)
+                checkedFound = True
+                menuItem = k
+                break
+            else:
+                pass
+        #------------------------------> Check first if not found
+        if checkedFound:
+            pass
+        else:
+            self.rPlotDate[0].Check(check=True)
+            menuItem = self.rPlotDate[0]
+        #endregion ----------------------------------------------------> Dates
 
-#         return True
-#     #---
+        #region ------------------------------------------> Update Other Items
+        # Update menu specific items, e.g. Further Analysis or Cond, RP in 
+        # ProtProf - Volcano Plot. Also update GUI if checked is not the 
+        # analysis currently displayed.
+        self.UpdateOtherItems(menuItem, not checkedFound) # type: ignore
+        #endregion ---------------------------------------> Update Other Items
 
-#     def UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
-#         """Update specific items in the menu after the Analysis IDs were 
-#             updated. Override as needed.
+        return True
+    #---
 
-#             Parameters
-#             ----------
-#             tDate: wx.MenuItem
-#                 Currently selected Analysis ID
-#             updateGUI: bool
-#                 Update (True) the data displayed or not (False).
+    def UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
+        """Update specific items in the menu after the Analysis IDs were 
+            updated. Override as needed.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Update GUI
-#         if updateGUI:
-#             self.OnMethodKey(wx.CommandEvent(id=tDate.GetId()))
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Update GUI
+            Parameters
+            ----------
+            tDate: wx.MenuItem
+                Currently selected Analysis ID
+            updateGUI: bool
+                Update (True) the data displayed or not (False).
 
-#         return True
-#     #---
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Update GUI
+        if updateGUI:
+            self.OnMethodKey(wx.CommandEvent(id=tDate.GetId()))
+        else:
+            pass
+        #endregion ------------------------------------------------> Update GUI
 
-#     def GetCheckedRadioItem(self, lMenuItem: list[wx.MenuItem]) -> wx.MenuItem: # type: ignore
-#         """Get the checked item in a list of radio menu items.
+        return True
+    #---
 
-#             Parameters
-#             ----------
-#             lMenuItem: list of wx.MenuItems
-#                 Items are expected to be radio items from the same group.
+    def GetCheckedRadioItem(self, lMenuItem: list[wx.MenuItem]) -> wx.MenuItem: # type: ignore
+        """Get the checked item in a list of radio menu items.
 
-#             Returns
-#             -------
-#             str
-#                 Label of the checked item
-#         """
-#         #region -----------------------------------------------------> Checked
-#         for k in lMenuItem:
-#             if k.IsChecked():
-#                 return k
-#             else:
-#                 pass
-#         #endregion --------------------------------------------------> Checked
-#     #---
+            Parameters
+            ----------
+            lMenuItem: list of wx.MenuItems
+                Items are expected to be radio items from the same group.
+
+            Returns
+            -------
+            str
+                Label of the checked item
+        """
+        #region -----------------------------------------------------> Checked
+        for k in lMenuItem:
+            if k.IsChecked():
+                return k
+            else:
+                pass
+        #endregion --------------------------------------------------> Checked
+    #---
     #endregion ------------------------------------------------> Class Methods
 #---
 

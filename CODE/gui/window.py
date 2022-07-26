@@ -983,6 +983,28 @@ class BaseWindowResultListText(BaseWindowResult):
         self.OnListSelect('fEvent')
         return True
     #---
+
+    def UpdateUMSAPData(self) -> bool:
+        """Update the window after the UMSAP file have been updated.
+
+            Parameters
+            ----------
+            
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        self.rObj  = self.cParent.rObj # type: ignore
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rDate, menuData = self.SetDateMenuDate()
+        menuBar = self.GetMenuBar()
+        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
     #endregion ------------------------------------------------> Class Methods
 #---
 
@@ -3427,30 +3449,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 
         return (date, menuData)
     #---
-
-#     def UpdateUMSAPData(self):
-#         """Update the window after the UMSAP file have been updated.
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         self.rObj  = self.cParent.rObj
-#         self.rData = self.rObj.dConfigure[self.cSection]()
-#         self.rDate, menuData = self.SetDateMenuDate()
-#         menuBar = self.GetMenuBar()
-#         menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
-        
-#         return True
-#     #---
 
     def WinPos(self) -> bool:
         """Set the position on the screen and adjust the total number of
@@ -7619,14 +7617,14 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 #         self.rRecSeqC     = ''
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
-#         #------------------------------> 
+        #------------------------------> 
         dKeyMethod = {
             'Peptide'  : self.ClearPept,
             'Fragment' : self.ClearFrag,
             'All'      : self.ClearAll,
-            # #------------------------------> 
-#             'AA-Item'                : self.OnAASelect,
-#             'AA-New'                 : self.OnAANew,
+            #------------------------------> 
+            'AA-Item'                : self.AASelect,
+            'AA-New'                 : self.AANew,
 #             'Hist-Item'              : self.OnHistSelect,
 #             'Hist-New'               : self.OnHistNew,
 #             config.klFACleavageEvol  : self.OnCEvol,
@@ -7708,30 +7706,6 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 
         return (date, menuData)
     #---
-    
-#     def UpdateUMSAPData(self):
-#         """Update the window after the UMSAP file have been updated.
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         self.rObj  = self.cParent.rObj
-#         self.rData = self.rObj.dConfigure[self.cSection]()
-#         self.rDate, menuData = self.SetDateMenuDate()
-#         menuBar = self.GetMenuBar()
-#         menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
-
-#         return True
-#     #---
 
     def UpdateResultWindow(self, tDate: str='') -> bool:
         """Update the GUI and attributes when a new date is selected.
@@ -8180,6 +8154,98 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 
         return True
     #---
+
+    def AANew(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> dlg
+        dlg = DialogUserInputText(
+            'New AA Distribution Analysis', 
+            ['Positions'], 
+            ['Number of residues around the cleavage site to consider, e.g. 5'],
+            parent    = self,
+            validator = [mValidator.NumberList('int', vMin=1, nN=1)],
+        )
+        #endregion ------------------------------------------------> dlg
+
+        #region ---------------------------------------------------> Get Pos
+        if dlg.ShowModal():
+            pos = int(dlg.rInput[0].wTc.GetValue())
+            dateC = mMethod.StrNow()
+        else:
+            dlg.Destroy()
+            return False
+        #endregion ------------------------------------------------> Get Pos
+
+        #region ---------------------------------------------------> Run 
+        dfI = self.rData[self.rDateC]['DF']
+        idx = pd.IndexSlice
+        dfI = dfI.loc[:,idx[['Sequence']+self.rExp,['Sequence', 'P']]]
+        dfO = mMethod.R2AA(
+            dfI, self.rRecSeqC, self.rAlpha, self.rProtLength, pos=pos)
+        #endregion ------------------------------------------------> Run
+
+        #region -----------------------------------------------> Save & Update
+        #------------------------------> File
+        date = f'{self.rDateC.split(" - ")[0]}'
+        section = f'{self.cSection.replace(" ", "-")}'
+        folder = f'{date}_{section}'
+        fileN = f'{dateC}_AA-{pos}.txt'
+        fileP = self.rObj.rStepDataP/folder/fileN
+        mFile.WriteDF2CSV(fileP, dfO)
+        #------------------------------> Umsap
+        self.rObj.rData[self.cSection][self.rDateC]['AA'][f'{date}_{pos}'] = fileN
+        self.rObj.Save()
+        #------------------------------> Refresh
+        #--------------> UMSAPControl
+        self.cParent.UpdateFileContent() # type: ignore
+        #--------------> TarProt
+        self.rObj = self.cParent.rObj # type: ignore
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        #--------------> Menu
+        _, menuData = self.SetDateMenuDate()
+        self.mBar.mTool.mFurtherA.UpdateFurtherAnalysis(
+            self.rDateC, menuData['FA'])
+        #--------------> GUI
+        self.AASelect(f'{date}_{pos}')
+        #endregion --------------------------------------------> Save & Update
+
+        dlg.Destroy()
+        return True
+    #---
+
+    def AASelect(self, aa:str) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.cParent.rWindow[self.cSection]['FA'].append(
+            WindowResAA(
+                self, self.rDateC, aa, self.rData[self.rDateC]['AA'][aa]))
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ----------------------------------------------------> Event Methods
@@ -8230,6 +8296,7 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 
         return True
     #---
+
 #     def OnCpR(self) -> bool:
 #         """
     
@@ -8269,28 +8336,7 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 #             CEvolPlot(self, self.rDateC, self.rData[self.rDateC]['CEvol']))
 #         return True
 #     #---
-    
-#     def OnAASelect(self, aa:str) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         self.cParent.rWindow[self.cSection]['FA'].append(
-#             AAPlot(self, self.rDateC, aa, self.rData[self.rDateC]['AA'][aa])
-#         )
-#         return True
-#     #---
-    
+
 #     def OnPDBMap(self) -> bool:
 #         """
     
@@ -8386,78 +8432,7 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 #         dlg.Destroy()
 #         return True
 #     #---
-    
-#     def OnAANew(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> dlg
-#         dlg = dtsWindow.UserInput1Text(
-#             'New AA Distribution Analysis', 
-#             'Positions', 
-#             'Number of residues around the cleavage site to consider, e.g. 5',
-#             parent = self,
-#             validator = dtsValidator.NumberList('int', vMin=1, nN=1)
-#         )
-#         #endregion ------------------------------------------------> dlg
-        
-#         #region ---------------------------------------------------> Get Pos
-#         if dlg.ShowModal():
-#             pos = int(dlg.input.tc.GetValue())
-#             dateC = dtsMethod.StrNow()
-#         else:
-#             dlg.Destroy()
-#             return False
-#         #endregion ------------------------------------------------> Get Pos
-        
-#         #region ---------------------------------------------------> Run 
-#         dfI = self.rData[self.rDateC]['DF']
-#         idx = pd.IndexSlice
-#         dfI = dfI.loc[:,idx[['Sequence']+self.rExp,['Sequence', 'P']]]
-#         dfO = dmethod.R2AA(
-#             dfI, self.rRecSeqC, self.rAlpha, self.rProtLength, pos=pos)
-#         #endregion ------------------------------------------------> Run
-        
-#         #region -----------------------------------------------> Save & Update
-#         #------------------------------> File
-#         date = f'{self.rDateC.split(" - ")[0]}'
-#         section = f'{self.cSection.replace(" ", "-")}'
-#         folder = f'{date}_{section}'
-#         fileN = f'{dateC}_AA-{pos}.txt'
-#         fileP = self.rObj.rStepDataP/folder/fileN
-#         dtsFF.WriteDF2CSV(fileP, dfO)
-#         #------------------------------> Umsap
-#         self.rObj.rData[self.cSection][self.rDateC]['AA'][f'{date}_{pos}'] = fileN
-#         self.rObj.Save()
-#         #------------------------------> Refresh
-#         #--------------> UMSAPControl
-#         self.cParent.UpdateFileContent()
-#         #--------------> TarProt
-#         self.rObj = self.cParent.rObj
-#         self.rData = self.rObj.dConfigure[self.cSection]()
-#         #--------------> Menu
-#         _, menuData = self.SetDateMenuDate()
-#         self.mBar.mTool.mFurtherA.UpdateFurtherAnalysis(
-#             self.rDateC, menuData['FA'])
-#         #--------------> GUI
-#         self.OnAASelect(f'{date}_{pos}')
-#         #endregion --------------------------------------------> Save & Update
 
-#         dlg.Destroy()
-#         return True
-#     #---
-    
 #     def OnHistSelect(self, hist:str) -> bool:
 #         """
     
@@ -8556,97 +8531,95 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 #---
 
 
-# class AAPlot(BaseWindowPlot):
-#     """
+class WindowResAA(BaseWindowResultOnePlot):
+    """
 
-#         Parameters
-#         ----------
+        Parameters
+        ----------
         
 
-#         Attributes
-#         ----------
+        Attributes
+        ----------
         
 
-#         Raises
-#         ------
+        Raises
+        ------
         
 
-#         Methods
-#         -------
+        Methods
+        -------
         
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     #------------------------------> To id the window
-#     cName = config.nwAAPlot
-#     #------------------------------> To id the section in the umsap file 
-#     # shown in the window
-#     cSection = config.nuAA
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.nwAAPlot
+    cSection = mConfig.nuAA
 #     cColor   = config.color[cName]
 #     #------------------------------> 
 #     rBandWidth = 0.8
 #     rBandStart = 0.4
-#     #endregion --------------------------------------------------> Class setup
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: wx.Window, dateC: str, key: str, fileN: str) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cTitle  = f"{cParent.cTitle} - {dateC} - {self.cSection} - {key}"
-#         self.cDateC  = dateC
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: wx.Window, dateC: str, key: str, fileN: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle  = f"{parent.cTitle} - {dateC} - {self.cSection} - {key}"
+        # self.cDateC  = dateC
 #         self.cKey    = key
 #         self.cFileN   = fileN
 #         self.rUMSAP  = cParent.cParent
-#         self.rObj    = cParent.rObj
-#         self.rData  = self.rObj.GetFAData(
-#             cParent.cSection,cParent.rDateC,fileN, [0,1])
+        self.rObj    = parent.rObj
+        self.rData  = self.rObj.GetFAData(
+            parent.cSection, parent.rDateC, fileN, [0,1])
 #         self.rRecSeq = self.rObj.GetRecSeq(cParent.cSection, dateC)
-#         menuData     = self.SetMenuDate()
+        menuData     = self.SetMenuDate()
 #         self.rPos    = menuData['Pos']
 #         self.rLabel  = menuData['Label']
 #         self.rExp    = True
 #         self.rLabelC = ''
-#         super().__init__(cParent, menuData)
+        #------------------------------>
+        super().__init__(parent, menuData=menuData)
 #         #------------------------------> 
 #         dKeyMethod = {
 #             config.klToolAAExp : self.PlotExp,
 #             config.klToolAAPos : self.PlotPos,
 #         }
 #         self.dKeyMethod = self.dKeyMethod | dKeyMethod
-#         #endregion --------------------------------------------> Initial Setup
+        #endregion --------------------------------------------> Initial Setup
         
-#         #region ---------------------------------------------------> Plot
+        #region ---------------------------------------------------> Plot
 #         self.PlotExp(menuData['Label'][0])
-#         #endregion ------------------------------------------------> Plot
+        #endregion ------------------------------------------------> Plot
 
-#         #region ---------------------------------------------> Window position
-#         self.WinPos()
-#         self.Show()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
-#     def SetMenuDate(self):
-#         """
+    #region ---------------------------------------------------> Class methods
+    def SetMenuDate(self):
+        """
     
-#             Parameters
-#             ----------
+            Parameters
+            ----------
             
     
-#             Returns
-#             -------
+            Returns
+            -------
             
     
-#             Raise
-#             -----
+            Raise
+            -----
             
-#         """
-#         menuData = {}
-#         menuData['Label'] = [k for k in self.rData.columns.unique(level=0)[1:-1]]
-#         menuData['Pos'] = [k for k in self.rData[menuData['Label'][0]].columns.unique(level=0)]
-#         return menuData
-#     #---
+        """
+        menuData = {}
+        menuData['Label'] = [k for k in self.rData.columns.unique(level=0)[1:-1]]
+        menuData['Pos'] = [k for k in self.rData[menuData['Label'][0]].columns.unique(level=0)]
+        return menuData
+    #---
     
 #     def SetAxisExp(self) -> bool:
 #         """ General details of the plot area 
@@ -9041,8 +9014,8 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 #         #------------------------------> 
 #         return True
 #     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # class HistPlot(BaseWindowPlot):

@@ -114,7 +114,7 @@ nwProtProf      = 'ProtProfPlot'
 nwLimProt       = 'LimProtPlot'
 nwTarProt       = 'TarProtPlot'
 nwCheckDataPrep = 'Data Preparation'
-# nwAAPlot        = 'AAPlot'
+nwAAPlot        = 'AAPlot'
 # nwHistPlot      = 'HistPlot'
 # nwCpRPlot       = 'CpRPlot'
 # nwCEvolPlot     = 'CEvolPlot'
@@ -153,7 +153,7 @@ nmProtProf = 'Proteome Profiling'
 #------------------------------> Utilities
 nuDataPrep = "Data Preparation"
 nuCorrA    = 'Correlation Analysis'
-# nuAA       = 'AA Distribution'
+nuAA       = 'AA Distribution'
 # nuHist     = 'Histograms'
 nuReadF    = 'Read UMSAP File'
 # nuCpR      = 'Cleavage per Residues'
@@ -211,7 +211,6 @@ kwToolCorrACol  = 'ToolCorrA Select Column'
 #------------------------------> Tool Menu for LimProt
 kwToolLimProtBandLane = 'Band/Lane Sel'
 kwToolLimProtShowAll  = 'Show All'
-
 # #------------------------------> Tool Menu for AA
 # klToolAAExp = 'AA'
 # klToolAAPos = 'Pos'

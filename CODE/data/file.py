@@ -1175,32 +1175,32 @@ class UMSAPFile():
         #endregion ------------------------------------------------> 
     #---
 
-#     def GetFAData(
-#         self, tSection: str, tDate: str, fileN: str, header: list[int]
-#         ) -> 'pd.DataFrame':
-#         """Get the data for a Further Analysis section
+    def GetFAData(
+        self, tSection: str, tDate: str, fileN: str, header: list[int]
+        ) -> 'pd.DataFrame':
+        """Get the data for a Further Analysis section.
     
-#             Parameters
-#             ----------
-#             tSection: str
-#                 Analysis performed, e.g. 'Correlation Analysis'
-#             tDate : str
-#                 The date plus user-given Analysis ID 
-#                 e.g. '20210325-112056 - bla'
-#             fileN : str
-#                 File name with the data
-#             header: list[int]
-#                 Header rows in the file
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate : str
+                The date plus user-given Analysis ID 
+                e.g. '20210325-112056 - bla'
+            fileN : str
+                File name with the data
+            header: list[int]
+                Header rows in the file
     
-#             Returns
-#             -------
-#             pd.DataFrame
-#         """
-#         tPath = (
-#             self.rStepDataP/f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'/fileN
-#         )
-#         return dtsFF.ReadCSV2DF(tPath, header=header)
-#     #---
+            Returns
+            -------
+            pd.DataFrame
+        """
+        tPath = (
+            self.rStepDataP/f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'/fileN
+        )
+        return ReadCSV2DF(tPath, header=header)
+    #---
     
 #     def GetCleavagePerResidue(self, tSection:str, tDate:str) -> 'pd.DataFrame':
 #         """
