@@ -115,7 +115,7 @@ nwLimProt       = 'LimProtPlot'
 nwTarProt       = 'TarProtPlot'
 nwCheckDataPrep = 'Data Preparation'
 nwAAPlot        = 'AAPlot'
-# nwHistPlot      = 'HistPlot'
+nwHistPlot      = 'HistPlot'
 # nwCpRPlot       = 'CpRPlot'
 # nwCEvolPlot     = 'CEvolPlot'
 nwAbout         = 'About UMSAP'
@@ -154,7 +154,7 @@ nmProtProf = 'Proteome Profiling'
 nuDataPrep = "Data Preparation"
 nuCorrA    = 'Correlation Analysis'
 nuAA       = 'AA Distribution'
-# nuHist     = 'Histograms'
+nuHist     = 'Histograms'
 nuReadF    = 'Read UMSAP File'
 # nuCpR      = 'Cleavage per Residues'
 # nuCEvol    = 'Cleavage Evolution'
@@ -309,7 +309,7 @@ lmToolUMSAPCtrlDel = 'Delete Analysis'
 lmToolUMSAPCtrlExp = 'Export Analysis'
 lmCorrASelCol  = 'Select Columns'
 lmCorrAAllCol  = 'All Columns'
-# lmNatSeq       = 'Native Sequence'
+lmNatSeq       = 'Native Sequence'
 #endregion -----------------------------------------------------------> Labels
 
 
@@ -682,9 +682,9 @@ color = { # Colors for the app
         'Xaa' : 'GREY',
         'Spot' : colorFragments,
     },
-#     nwHistPlot : {
-#         'Spot' : colorFragments,
-#     },
+    nwHistPlot : {
+        'Spot' : colorFragments,
+    },
 #     nwCpRPlot : {
 #         'Spot' : colorFragments,
 #     },

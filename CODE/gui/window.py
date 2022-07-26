@@ -7715,8 +7715,8 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
             #------------------------------> 
             'AA-Item'                : self.AASelect,
             'AA-New'                 : self.AANew,
-#             'Hist-Item'              : self.OnHistSelect,
-#             'Hist-New'               : self.OnHistNew,
+            'Hist-Item'              : self.HistSelect,
+            'Hist-New'               : self.HistNew,
 #             config.klFACleavageEvol  : self.OnCEvol,
 #             config.klFACleavagePerRes: self.OnCpR,
 #             config.klFAPDBMap        : self.OnPDBMap,
@@ -8336,6 +8336,103 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
                 self, self.rDateC, aa, self.rData[self.rDateC]['AA'][aa]))
         return True
     #---
+
+    def HistSelect(self, hist:str) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.cParent.rWindow[self.cSection]['FA'].append(                       # type: ignore
+            WindowResHist(
+                self, self.rDateC, hist, self.rData[self.rDateC]['Hist'][hist]))
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def HistNew(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> dlg
+        dlg = DialogUserInputText(
+            'New Histogram Analysis', 
+            ['Histograms Windows'], 
+            ['Size of the histogram windows, e.g. 50 or 50 100 200'],
+            parent    = self,
+            validator = [mValidator.NumberList(numType='int', vMin=0, sep=' ')],
+        )
+        #endregion ------------------------------------------------> dlg
+
+        #region ---------------------------------------------------> Get Pos
+        if dlg.ShowModal():
+            win = [int(x) for x in dlg.rInput[0].wTc.GetValue().split()]
+            dateC = mMethod.StrNow()
+        else:
+            dlg.Destroy()
+            return False
+        #endregion ------------------------------------------------> Get Pos
+
+        #region ---------------------------------------------------> Run
+        dfI = self.rData[self.rDateC]['DF']
+        idx = pd.IndexSlice
+        a = mConfig.dfcolTarProtFirstPart[2:]+self.rExp
+        b = mConfig.dfcolTarProtFirstPart[2:]+len(self.rExp)*['P']
+        dfI = dfI.loc[:,idx[a,b]]
+        dfO = mMethod.R2Hist(
+            dfI, self.rAlpha, win, self.rData[self.rDateC]['PI']['ProtLength'])
+        #endregion ------------------------------------------------> Run
+
+        #region -----------------------------------------------> Save & Update
+        #------------------------------> File
+        date = f'{self.rDateC.split(" - ")[0]}'
+        section = f'{self.cSection.replace(" ", "-")}'
+        folder = f'{date}_{section}'
+        fileN = f'{dateC}_Hist-{win}.txt'
+        fileP = self.rObj.rStepDataP/folder/fileN
+        mFile.WriteDF2CSV(fileP, dfO)
+        #------------------------------> Umsap
+        self.rObj.rData[self.cSection][self.rDateC]['Hist'][f'{date}_{win}'] = fileN
+        self.rObj.Save()
+        #------------------------------> Refresh
+        #--------------> UMSAPControl
+        self.cParent.UpdateFileContent()                                        # type: ignore
+        #--------------> TarProt
+        self.rObj = self.cParent.rObj                                           # type: ignore
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        #--------------> Menu
+        _, menuData = self.SetDateMenuDate()
+        self.mBar.mTool.mFurtherA.UpdateFurtherAnalysis(
+            self.rDateC, menuData['FA'])
+        #--------------> GUI
+        self.HistSelect(f'{date}_{win}')
+        #endregion --------------------------------------------> Save & Update
+
+        dlg.Destroy()
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ----------------------------------------------------> Event Methods
@@ -8519,101 +8616,6 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 #         Helper(pdbObj, self.rExp, align, cEvol, (self.rDateC, 'CEvol'))
 #         #endregion --------------------------------------------> Run
 
-#         dlg.Destroy()
-#         return True
-#     #---
-
-#     def OnHistSelect(self, hist:str) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         self.cParent.rWindow[self.cSection]['FA'].append(
-#             HistPlot(
-#                 self, self.rDateC, hist, self.rData[self.rDateC]['Hist'][hist]
-#         ))
-#         return True
-#     #---
-    
-#     def OnHistNew(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> dlg
-#         dlg = dtsWindow.UserInput1Text(
-#             'New Histogram Analysis', 
-#             'Histograms Windows', 
-#             'Size of the histogram windows, e.g. 50 or 50 100 200',
-#             parent = self,
-#             validator = dtsValidator.NumberList(numType='int', vMin=0, sep=' ')
-#         )
-#         #endregion ------------------------------------------------> dlg
-        
-#         #region ---------------------------------------------------> Get Pos
-#         if dlg.ShowModal():
-#             win = [int(x) for x in dlg.input.tc.GetValue().split()]
-#             dateC = dtsMethod.StrNow()
-#         else:
-#             dlg.Destroy()
-#             return False
-#         #endregion ------------------------------------------------> Get Pos
-        
-#         #region ---------------------------------------------------> Run 
-#         dfI = self.rData[self.rDateC]['DF']
-#         idx = pd.IndexSlice
-#         a = config.dfcolTarProtFirstPart[2:]+self.rExp
-#         b = config.dfcolTarProtFirstPart[2:]+len(self.rExp)*['P']
-#         dfI = dfI.loc[:,idx[a,b]]
-#         dfO = dmethod.R2Hist(
-#             dfI, self.rAlpha, win, self.rData[self.rDateC]['PI']['ProtLength'])
-#         #endregion ------------------------------------------------> Run
-        
-#         #region -----------------------------------------------> Save & Update
-#         #------------------------------> File
-#         date = f'{self.rDateC.split(" - ")[0]}'
-#         section = f'{self.cSection.replace(" ", "-")}'
-#         folder = f'{date}_{section}'
-#         fileN = f'{dateC}_Hist-{win}.txt'
-#         fileP = self.rObj.rStepDataP/folder/fileN
-#         dtsFF.WriteDF2CSV(fileP, dfO)
-#         #------------------------------> Umsap
-#         self.rObj.rData[self.cSection][self.rDateC]['Hist'][f'{date}_{win}'] = fileN
-#         self.rObj.Save()
-#         #------------------------------> Refresh
-#         #--------------> UMSAPControl
-#         self.cParent.UpdateFileContent()
-#         #--------------> TarProt
-#         self.rObj = self.cParent.rObj
-#         self.rData = self.rObj.dConfigure[self.cSection]()
-#         #--------------> Menu
-#         _, menuData = self.SetDateMenuDate()
-#         self.mBar.mTool.mFurtherA.UpdateFurtherAnalysis(
-#             self.rDateC, menuData['FA'])
-#         #--------------> GUI
-#         self.OnHistSelect(f'{date}_{win}')
-#         #endregion --------------------------------------------> Save & Update
-        
 #         dlg.Destroy()
 #         return True
 #     #---
@@ -9074,338 +9076,294 @@ class WindowResAA(BaseWindowResultOnePlotFA):
 #---
 
 
-# class HistPlot(BaseWindowPlot):
-#     """
+class WindowResHist(BaseWindowResultOnePlotFA):
+    """
 
-#         Parameters
-#         ----------
+        Parameters
+        ----------
         
 
-#         Attributes
-#         ----------
+        Attributes
+        ----------
         
 
-#         Raises
-#         ------
+        Raises
+        ------
         
 
-#         Methods
-#         -------
+        Methods
+        -------
         
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     #------------------------------> To id the window
-#     cName = config.nwHistPlot
-#     #------------------------------> To id the section in the umsap file 
-#     # shown in the window
-#     cSection = config.nuHist
-#     cColor   = config.color[cName]
-#     #------------------------------> 
-#     rBandWidth = 0.8
-#     rBandStart = 0.4
-#     cRec = {
-#         True : 'Nat',
-#         False: 'Rec',
-#         'Rec': 'Recombinant Sequence',
-#         'Nat': 'Native Sequence',
-#     }
-#     cAll = {
-#         True    : 'Unique',
-#         False   : 'All',
-#         'All'   : 'All Cleavages',
-#         'Unique': 'Unique Cleavages',
-#     }
-#     #endregion --------------------------------------------------> Class setup
+    """
+    #region -----------------------------------------------------> Class setup
+    cName    = mConfig.nwHistPlot
+    cSection = mConfig.nuHist
+    cColor   = mConfig.color[cName]
+    cRec = {
+        True : 'Nat',
+        False: 'Rec',
+        'Rec': 'Recombinant Sequence',
+        'Nat': 'Native Sequence',
+    }
+    cAll = {
+        True    : 'Unique',
+        False   : 'All',
+        'All'   : 'All Cleavages',
+        'Unique': 'Unique Cleavages',
+    }
+    #------------------------------>
+    rBandWidth = 0.8
+    rBandStart = 0.4
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: wx.Window, dateC: str, key: str, fileN: str) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cTitle  = f"{cParent.cTitle} - {dateC} - {self.cSection} - {key}"
-#         self.cDateC  = dateC
-#         self.cKey    = key
-#         self.cFileN   = fileN
-#         self.rUMSAP  = cParent.cParent
-#         self.rObj    = cParent.rObj
-#         self.rData  = self.rObj.GetFAData(
-#             cParent.cSection,cParent.rDateC,fileN, [0,1,2])
-#         self.rLabel      = self.rData.columns.unique(level=2).tolist()[1:]
-#         self.rProtLength = cParent.rData[self.cDateC]['PI']['ProtLength']
-#         self.rProtLoc    = cParent.rData[self.cDateC]['PI']['ProtLoc']
-#         menuData         = self.SetMenuDate()
-#         self.rNat = 'Rec'
-#         self.rAllC = 'All'
-#         #------------------------------> 
-#         super().__init__(cParent, menuData)
-#         #------------------------------> 
-#         dKeyMethod = {
-#             config.klToolGuiUpdate : self.UpdatePlot,
-#         }
-#         self.dKeyMethod = self.dKeyMethod | dKeyMethod
-#         #endregion --------------------------------------------> Initial Setup
-        
-#         #region ---------------------------------------------------> Plot
-#         self.UpdatePlot()
-#         #endregion ------------------------------------------------> Plot
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: WindowResTarProt, dateC: str, key: str, fileN: str,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle  = f"{parent.cTitle} - {dateC} - {self.cSection} - {key}"
+        self.cDateC  = dateC
+        self.cKey    = key
+        self.cFileN   = fileN
+        self.rUMSAP  = parent.cParent
+        self.rObj    = parent.rObj
+        self.rData  = self.rObj.GetFAData(
+            parent.cSection, parent.rDateC,fileN, [0,1,2])
+        self.rLabel      = self.rData.columns.unique(level=2).tolist()[1:]
+        self.rProtLength = parent.rData[self.cDateC]['PI']['ProtLength']
+        menuData         = self.SetMenuDate()
+        self.rNat = 'Rec'
+        self.rAllC = 'All'
+        #------------------------------>
+        super().__init__(parent, menuData)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region ---------------------------------------------> Window position
-#         self.WinPos()
-#         self.Show()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region ---------------------------------------------------> Plot
+        self.UpdateResultWindow()
+        #endregion ------------------------------------------------> Plot
 
-#     #region ---------------------------------------------------> Class methods
-#     def SetMenuDate(self):
-#         """
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#             Parameters
-#             ----------
+    #region ---------------------------------------------------> Class methods
+    def SetMenuDate(self):
+        """
+
+            Parameters
+            ----------
             
     
-#             Returns
-#             -------
+            Returns
+            -------
             
     
-#             Raise
-#             -----
+            Raise
+            -----
             
-#         """
-#         #region --------------------------------------------------->
-#         menuData = {}
-#         #endregion ------------------------------------------------>
+        """
+        #region --------------------------------------------------->
+        menuData = {}
+        #endregion ------------------------------------------------>
 
-#         #region --------------------------------------------------->
-#         menuData['Label'] = [k for k in self.rLabel]
-#         #------------------------------>
-#         if self.rProtLength[1] is not None:
-#             menuData['Nat'] = True
-#         else:
-#             menuData['Nat'] = False
-#         #endregion ------------------------------------------------>
+        #region --------------------------------------------------->
+        menuData['Label'] = [k for k in self.rLabel]
+        #------------------------------>
+        if self.rProtLength[1] is not None:
+            menuData['Nat'] = True
+        else:
+            menuData['Nat'] = False
+        #endregion ------------------------------------------------>
 
-#         return menuData
-#     #---
+        return menuData
+    #---
+
+    def UpdateResultWindow(
+        self, nat:Optional[bool]=None, allC: Optional[bool]=None) -> bool:
+        """
     
-#     def UpdatePlot(
-#         self, nat:Optional[bool]=None, allC: Optional[bool]=None) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
+            Parameters
+            ----------
             
     
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> Variables
-#         self.rNat  = self.cRec[nat] if nat is not None else self.rNat
-#         self.rAllC = self.cAll[allC] if allC is not None else self.rAllC
-#         #------------------------------> 
-#         idx = pd.IndexSlice
-#         df = self.rData.loc[:,idx[self.rNat,['Win',self.rAllC],:]]
-#         #endregion ------------------------------------------------> Variables
-
-#         #region ---------------------------------------------------> 
-#         self.SetAxis(df.loc[:,idx[:,:,'Win']])
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> Plot
-#         n = len(self.rLabel)
-#         w = self.rBandWidth / n
-#         df = df.iloc[:,range(1,n+1,1)]
-#         df = df[(df.notna()).all(axis=1)]
-#         for row in df.itertuples():
-#             s = row[0]+1-self.rBandStart
-#             for x in range(0,n,1):
-#                 self.wPlot.axes.bar(
-#                     s+x*w,
-#                     row[x+1],
-#                     width     = w,
-#                     align     = 'edge',
-#                     color     = self.cColor['Spot'][x%len(self.cColor['Spot'])],
-#                     edgecolor = 'black',
-#                 )
-#         #endregion ------------------------------------------------> Plot
-        
-#         #region ------------------------------------------------------> Legend
-#         leg = []
-#         for i in range(0, n, 1):
-#             leg.append(mpatches.Patch(
-#                 color = self.cColor['Spot'][i],
-#                 label = self.rLabel[i],
-#             ))
-#         leg = self.wPlot.axes.legend(
-#             handles        = leg,
-#             loc            = 'upper left',
-#             bbox_to_anchor = (1, 1)
-#         )
-#         leg.get_frame().set_edgecolor('k')		
-#         #endregion ---------------------------------------------------> Legend
-        
-#         #region ---------------------------------------------------> Zoom
-#         self.wPlot.ZoomResetSetValues()
-#         #endregion ------------------------------------------------> Zoom
-        
-#         self.wPlot.axes.set_title(f'{self.cRec[self.rNat]} - {self.cAll[self.rAllC]}')
-#         self.wPlot.canvas.draw()
-#         return True
-#     #---
-    
-#     def SetAxis(self, win: pd.Series):
-#         """
-    
-#             Parameters
-#             ----------
+            Returns
+            -------
             
     
-#             Returns
-#             -------
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        self.rNat  = self.cRec[nat] if nat is not None else self.rNat
+        self.rAllC = self.cAll[allC] if allC is not None else self.rAllC
+        #------------------------------> 
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[self.rNat,['Win',self.rAllC],:]]
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        self.SetAxis(df.loc[:,idx[:,:,'Win']])                                  # type: ignore
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Plot
+        n = len(self.rLabel)
+        w = self.rBandWidth / n
+        df = df.iloc[:,range(1,n+1,1)]
+        df = df[(df.notna()).all(axis=1)]
+        for row in df.itertuples():
+            s = row[0]+1-self.rBandStart
+            for x in range(0,n,1):
+                self.wPlot[0].rAxes.bar(
+                    s+x*w,
+                    row[x+1],
+                    width     = w,
+                    align     = 'edge',
+                    color     = self.cColor['Spot'][x%len(self.cColor['Spot'])],
+                    edgecolor = 'black',
+                )
+        #endregion ------------------------------------------------> Plot
+
+        #region ------------------------------------------------------> Legend
+        leg = []
+        for i in range(0, n, 1):
+            leg.append(mpatches.Patch(
+                color = self.cColor['Spot'][i],
+                label = self.rLabel[i],
+            ))
+        leg = self.wPlot[0].rAxes.legend(
+            handles        = leg,
+            loc            = 'upper left',
+            bbox_to_anchor = (1, 1)
+        )
+        leg.get_frame().set_edgecolor('k')
+        #endregion ---------------------------------------------------> Legend
+
+        #region ---------------------------------------------------> 
+        self.wPlot[0].ZoomResetSetValues()
+        self.wPlot[0].rAxes.set_title(f'{self.cRec[self.rNat]} - {self.cAll[self.rAllC]}')
+        self.wPlot[0].rCanvas.draw()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def SetAxis(self, win: pd.Series):
+        """
+    
+            Parameters
+            ----------
             
     
-#             Raise
-#             -----
+            Returns
+            -------
             
-#         """
-#         #region ---------------------------------------------------> 
-#         self.wPlot.axes.clear()
-#         #endregion ------------------------------------------------> 
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.wPlot[0].rAxes.clear()
+        #endregion ------------------------------------------------> 
 
-#         #region ---------------------------------------------------> Label
-#         #------------------------------> 
-#         win = win.dropna().astype('int').to_numpy().flatten()
-#         label = []
-#         for k,w in enumerate(win[1:]):
-#             label.append(f'{win[k]}-{w}')
-#         #------------------------------> 
-#         self.wPlot.axes.set_xticks(range(1,len(label)+1,1))
-#         self.wPlot.axes.set_xticklabels(label)
-#         self.wPlot.axes.set_xlim(0, len(label)+1)
-#         self.wPlot.axes.tick_params(axis='x', labelrotation=45)
-#         self.wPlot.axes.yaxis.get_major_locator().set_params(integer=True)
-#         self.wPlot.axes.set_xlabel('Windows')
-#         self.wPlot.axes.set_ylabel('Number of Cleavages')
-#         #endregion ------------------------------------------------> Label
+        #region ---------------------------------------------------> Label
+        #------------------------------> 
+        win = win.dropna().astype('int').to_numpy().flatten()                   # type: ignore
+        label = []
+        for k,w in enumerate(win[1:]):
+            label.append(f'{win[k]}-{w}')
+        #------------------------------> 
+        self.wPlot[0].rAxes.set_xticks(range(1,len(label)+1,1))
+        self.wPlot[0].rAxes.set_xticklabels(label)
+        self.wPlot[0].rAxes.set_xlim(0, len(label)+1)
+        self.wPlot[0].rAxes.tick_params(axis='x', labelrotation=45)
+        self.wPlot[0].rAxes.yaxis.get_major_locator().set_params(integer=True)
+        self.wPlot[0].rAxes.set_xlabel('Windows')
+        self.wPlot[0].rAxes.set_ylabel('Number of Cleavages')
+        #endregion ------------------------------------------------> Label
 
-#         return True
-#     #---
-    
-#     def UpdateStatusBar(self, event) -> bool:
-#         """Update the statusbar info
-    
-#             Parameters
-#             ----------
-#             event: matplotlib event
-#                 Information about the event
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         if event.inaxes:
-#             x, y = event.xdata, event.ydata
-#             xf = round(x)
-#         else:
-#             self.wStatBar.SetStatusText('')
-#             return True
-#         #endregion ------------------------------------------------> 
+        return True
+    #---
 
-#         #region ---------------------------------------------------> 
-#         idx = pd.IndexSlice
-#         df = self.rData.loc[:,idx[self.rNat,['Win',self.rAllC],:]]
-#         df = df.dropna(how='all')
-#         if 0 < xf < df.shape[0]:
-#             pass
-#         else:
-#             self.wStatBar.SetStatusText('')
-#             return False
-#         #endregion ------------------------------------------------> 
+    def DupWin(self) -> bool:
+        """ Export data to a csv file.
         
-#         #region ---------------------------------------------------> 
-#         n = len(self.rLabel)
-#         w = self.rBandWidth / n
-#         e = xf - self.rBandStart + (self.rBandWidth / n)
-#         k = 0
-#         for k in range(0, n, 1):
-#             if e < x:
-#                 e = e + w
-#             else:
-#                 break
-#         exp = self.rLabel[k]
-#         #endregion ------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(                # type: ignore
+            WindowResHist(self.cParent, self.cDateC, self.cKey, self.cFileN))   # type: ignore
+        #endregion ------------------------------------------------>
 
-#         #region ---------------------------------------------------> 
-#         win = f'{df.iat[xf-1, 0]:.0f}-{df.iat[xf, 0]:.0f}'
-#         clv = f'{df.iat[xf-1,df.columns.get_loc(idx[self.rNat,self.rAllC,exp])]}'
-#         text = (f'Win={win}  Exp={exp}  Cleavages={clv}')
-#         #endregion ------------------------------------------------> 
-        
-#         self.wStatBar.SetStatusText(text)    
-#         return True
-#     #---
-    
-#     def OnClose(self, event: wx.CloseEvent) -> bool:
-#         """Close window and uncheck section in UMSAPFile window. Assumes 
-#             self.parent is an instance of UMSAPControl.
-#             Override as needed.
-    
-#             Parameters
-#             ----------
-#             event: wx.CloseEvent
-#                 Information about the event
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -----------------------------------------------> Update parent
-#         self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)		
-#         #endregion --------------------------------------------> Update parent
-        
-#         #region ------------------------------------> Reduce number of windows
-#         config.winNumber[self.cName] -= 1
-#         #endregion ---------------------------------> Reduce number of windows
-        
-#         #region -----------------------------------------------------> Destroy
-#         self.Destroy()
-#         #endregion --------------------------------------------------> Destroy
-        
-#         return True
-#     #---
-    
-#     def OnExportPlotData(self) -> bool:
-#         """ Export data to a csv file 
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         return super().OnExportPlotData(df=self.rData)
-#     #---
-    
-#     def OnDupWin(self) -> bool:
-#         """ Export data to a csv file 
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #------------------------------> 
-#         self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
-#             HistPlot(self.cParent, self.cDateC, self.cKey, self.cFileN)
-#         )
-#         #------------------------------> 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+
+    #region ---------------------------------------------------> Event Methods
+    def OnUpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info.
+
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        if event.inaxes:
+            x, y = event.xdata, event.ydata
+            xf = round(x)
+        else:
+            self.wStatBar.SetStatusText('')
+            return True
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[self.rNat,['Win',self.rAllC],:]]
+        df = df.dropna(how='all')
+        if 0 < xf < df.shape[0]:
+            pass
+        else:
+            self.wStatBar.SetStatusText('')
+            return False
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        n = len(self.rLabel)
+        w = self.rBandWidth / n
+        e = xf - self.rBandStart + (self.rBandWidth / n)
+        k = 0
+        for k in range(0, n, 1):
+            if e < x:
+                e = e + w
+            else:
+                break
+        exp = self.rLabel[k]
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        win = f'{df.iat[xf-1, 0]:.0f}-{df.iat[xf, 0]:.0f}'
+        clv = f'{df.iat[xf-1,df.columns.get_loc(idx[self.rNat,self.rAllC,exp])]}'
+        text = (f'Win={win}  Exp={exp}  Cleavages={clv}')
+        #------------------------------>
+        self.wStatBar.SetStatusText(text)
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+#---
 
 
 # class CEvolPlot(BaseWindowNPlotLT):

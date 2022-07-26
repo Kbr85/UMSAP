@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-# from typing import Callable, Optional
+from typing import Callable
 
 import wx
 
@@ -554,46 +554,46 @@ class BaseMenuFurtherAnalysis(BaseMenu):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-#     def AddNatRecSeqEntry(
-#         self, tMethod: Callable, idMap: str='', idKey: str='') -> bool:
-#         """Add the Native Sequence entry to the menu.
+    def AddNatRecSeqEntry(
+        self, tMethod: Callable, idMap: str='', idKey: str='') -> bool:
+        """Add the Native Sequence entry to the menu.
 
-#             Parameters
-#             ----------
-#             tMethod: Callable
-#                 Method to call when the menu is selected.
-#             idMap : str
-#                 Value for the self.rIDMap entry
-#             idKey: str
-#                 Value for the self.rKeyMap entry
+            Parameters
+            ----------
+            tMethod: Callable
+                Method to call when the menu is selected.
+            idMap : str
+                Value for the self.rIDMap entry
+            idKey: str
+                Value for the self.rKeyMap entry
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Add Entry
-#         if self.rMenuData['Nat']:
-#             #------------------------------> Add Item
-#             self.miNat = self.Append(-1, mConfig.lmNatSeq, kind=wx.ITEM_CHECK)
-#             self.Bind(wx.EVT_MENU, tMethod, source=self.miNat)
-#             #------------------------------> IDMap
-#             if idMap:
-#                 rIDMap = {self.miNat.GetId():idMap}
-#                 self.rIDMap = self.rIDMap | rIDMap
-#             else:
-#                 pass
-#             #------------------------------> KeyMap
-#             if idKey:
-#                 rKeyMap = {self.miNat.GetId(): idKey}
-#                 self.rKeyMap = self.rKeyMap | rKeyMap
-#             else:
-#                 pass
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Add Entry
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Add Entry
+        if self.rMenuData['Nat']:
+            #------------------------------> Add Item
+            self.miNat = self.Append(-1, mConfig.lmNatSeq, kind=wx.ITEM_CHECK)
+            self.Bind(wx.EVT_MENU, tMethod, source=self.miNat)
+            #------------------------------> IDMap
+            if idMap:
+                rIDMap = {self.miNat.GetId():idMap}
+                self.rIDMap = self.rIDMap | rIDMap
+            else:
+                pass
+            #------------------------------> KeyMap
+            if idKey:
+                rKeyMap = {self.miNat.GetId(): idKey}
+                self.rKeyMap = self.rKeyMap | rKeyMap
+            else:
+                pass
+        else:
+            pass
+        #endregion ------------------------------------------------> Add Entry
 
-#         return True
-#     #---
+        return True
+    #---
 
     def AddLastItems(self, onePlot:bool=True) -> bool:
         """Add the last items to the Tool menu of a window showing results.
@@ -1446,85 +1446,84 @@ class MenuToolAA(BaseMenuFurtherAnalysis):
 #---
 
 
-# class MenuToolHist(BaseMenuFurtherAnalysis):
-#     """Tool menu for the Histogram result window.
+class MenuToolHist(BaseMenuFurtherAnalysis):
+    """Tool menu for the Histogram result window.
 
-#         Parameters
-#         ----------
-#         menuData: dict
-#             Dict with the data for the menu with the following two entries:
-#             {
-#                 'Label': ['L1', 'L2',....],
-#                 'Nat: bool,
-#             }
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(menuData)
-#         #endregion --------------------------------------------> Initial Setup
+        Parameters
+        ----------
+        menuData: dict
+            Dict with the data for the menu with the following two entries:
+            {
+                'Label': ['L1', 'L2',....],
+                'Nat: bool,
+            }
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(menuData)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.AddNatRecSeqEntry(
-#             self.OnMethodKeyBool, idMap=mConfig.klToolGuiUpdate, idKey='nat')
-#         self.AppendSeparator()
-#         self.miUnique = self.Append(-1, 'Unique Cleavages', kind=wx.ITEM_CHECK)
-#         self.miUnique.Check(check=False)
-#         self.AppendSeparator()
-#         self.AddLastItems()
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.AddNatRecSeqEntry(
+            self.OnMethodKeyBool, idMap=mConfig.kwToolWinUpdate, idKey='nat')
+        self.AppendSeparator()
+        self.miUnique = self.Append(-1, 'Unique Cleavages', kind=wx.ITEM_CHECK)
+        self.miUnique.Check(check=False)
+        self.AppendSeparator()
+        self.AddLastItems()
+        #endregion -----------------------------------------------> Menu Items
 
-#         #region --------------------------------------------------->
-#         rIDMap = {
-#             self.miUnique.GetId(): mConfig.klToolGuiUpdate,
-            
-#         }
-#         self.rIDMap = self.rIDMap | rIDMap
-#         #------------------------------> 
-#         rKeyMap = {
-#             self.miUnique.GetId() : 'allC',
-#         }
-#         self.rKeyMap = self.rKeyMap | rKeyMap
-#         #endregion ------------------------------------------------> 
+        #region --------------------------------------------------->
+        rIDMap = {
+            self.miUnique.GetId(): mConfig.kwToolWinUpdate,
+        }
+        self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------> 
+        rKeyMap = {
+            self.miUnique.GetId() : 'allC',
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
+        #endregion ------------------------------------------------> 
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miUnique)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miUnique)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class Methods
-#     def OnClear(self, event: wx.CommandEvent)-> bool:
-#         """Clear all selections.
+    #region ---------------------------------------------------> Class Methods
+    def OnClear(self, event: wx.CommandEvent)-> bool:
+        """Clear all selections.
 
-#             Parameters
-#             ----------
-#             event: wx.CommandEvent
-#                 Information about the event.
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------->
-#         try:
-#             self.miNat.Check(False)
-#         except AttributeError:
-#             pass
-#         #------------------------------>
-#         self.miUnique.Check(check=False)
-#         #endregion ------------------------------------------------>
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        try:
+            self.miNat.Check(False)
+        except AttributeError:
+            pass
+        #------------------------------>
+        self.miUnique.Check(check=False)
+        #endregion ------------------------------------------------>
 
-#         #region --------------------------------------------------->
-#         win = self.GetWindow()
-#         win.UpdatePlot(nat=False, allC=False)
-#         #endregion ------------------------------------------------>
+        #region --------------------------------------------------->
+        win = self.GetWindow()
+        win.UpdateResultWindow(nat=False, allC=False)
+        #endregion ------------------------------------------------>
 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class Methods
-# #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
+#---
 
 
 # class MenuToolCpR(BaseMenuFurtherAnalysis):
@@ -2421,7 +2420,7 @@ class MenuBarTool(MenuBarMain):
         mConfig.nwLimProt      : MenuToolLimProt,
         mConfig.nwTarProt      : MenuToolTarProt,
         mConfig.nwAAPlot       : MenuToolAA,
-        # mConfig.nwHistPlot     : MenuToolHist,
+        mConfig.nwHistPlot     : MenuToolHist,
         # mConfig.nwCpRPlot      : MenuToolCpR,
         # mConfig.nwCEvolPlot    : MenuToolCleavageEvol,
     }
