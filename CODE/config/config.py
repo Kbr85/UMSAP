@@ -211,9 +211,9 @@ kwToolCorrACol  = 'ToolCorrA Select Column'
 #------------------------------> Tool Menu for LimProt
 kwToolLimProtBandLane = 'Band/Lane Sel'
 kwToolLimProtShowAll  = 'Show All'
-# #------------------------------> Tool Menu for AA
-# klToolAAExp = 'AA'
-# klToolAAPos = 'Pos'
+#------------------------------> Tool Menu for AA
+kwToolAAExp = 'AA'
+kwToolAAPos = 'Pos'
 #------------------------------> Volcano Plot
 kwToolVolPlot              = 'Volcano Plot CRP'
 kwToolVolPlotLabelPick     = 'Vol Plot Pick Label'
@@ -666,22 +666,22 @@ color = { # Colors for the app
         'Spot' : colorFragments,
         'Ctrl' : 'black',
     },
-#     nwAAPlot : {
-#         'BarColor': { 
-#             'R': '#0099ff', 'K': '#0099ff', 'D': '#ff4d4d', 'W': '#FF51FD', 
-#             'E': '#ff4d4d', 'S': '#70db70', 'T': '#70db70', 'H': '#70db70', 
-#             'N': '#70db70', 'Q': '#70db70', 'C': '#FFFC00', 'G': '#FFFC00', 
-#             'P': '#FFFC00', 'A': '#BEBEBE', 'V': '#BEBEBE', 'I': '#BEBEBE', 
-#             'L': '#BEBEBE', 'M': '#BEBEBE', 'F': '#FF51FD', 'Y': '#FF51FD', 
-#         },
-#         'Chi' : {
-#             1 : 'Green',
-#             0 : 'Red',
-#             -1: 'Black',
-#         },
-#         'Xaa' : 'GREY',
-#         'Spot' : colorFragments,
-#     },
+    nwAAPlot : {
+        'BarColor': { 
+            'R': '#0099ff', 'K': '#0099ff', 'D': '#ff4d4d', 'W': '#FF51FD', 
+            'E': '#ff4d4d', 'S': '#70db70', 'T': '#70db70', 'H': '#70db70', 
+            'N': '#70db70', 'Q': '#70db70', 'C': '#FFFC00', 'G': '#FFFC00', 
+            'P': '#FFFC00', 'A': '#BEBEBE', 'V': '#BEBEBE', 'I': '#BEBEBE', 
+            'L': '#BEBEBE', 'M': '#BEBEBE', 'F': '#FF51FD', 'Y': '#FF51FD', 
+        },
+        'Chi' : {
+            1 : 'Green',
+            0 : 'Red',
+            -1: 'Black',
+        },
+        'Xaa' : 'GREY',
+        'Spot' : colorFragments,
+    },
 #     nwHistPlot : {
 #         'Spot' : colorFragments,
 #     },

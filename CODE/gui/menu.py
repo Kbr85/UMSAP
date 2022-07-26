@@ -534,26 +534,26 @@ class BaseMenuMainResultSubMenu(BaseMenu):
 #---
 
 
-# class BaseMenuFurtherAnalysis(BaseMenu):
-#     """Base Menu for Further Analysis windows, e.g. AA
+class BaseMenuFurtherAnalysis(BaseMenu):
+    """Base Menu for Further Analysis windows, e.g. AA
     
-#         Parameters
-#         ----------
-#         menuData: dict
-#             Information for the menu items. See Child class for details about
-#             the content.
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData: dict) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.rMenuData = menuData
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        Parameters
+        ----------
+        menuData: dict
+            Information for the menu items. See Child class for details about
+            the content.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData: dict) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rMenuData = menuData
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Class methods
 #     def AddNatRecSeqEntry(
 #         self, tMethod: Callable, idMap: str='', idKey: str='') -> bool:
 #         """Add the Native Sequence entry to the menu.
@@ -595,51 +595,51 @@ class BaseMenuMainResultSubMenu(BaseMenu):
 #         return True
 #     #---
 
-#     def AddLastItems(self, onePlot:bool=True) -> bool:
-#         """Add the last items to the Tool menu of a window showing results.
+    def AddLastItems(self, onePlot:bool=True) -> bool:
+        """Add the last items to the Tool menu of a window showing results.
 
-#             Parameters
-#             ----------
-#             onePlot: bool
-#                 Configure the keyboard shortcut depending on the number of plots
-#                 on the window.
+            Parameters
+            ----------
+            onePlot: bool
+                Configure the keyboard shortcut depending on the number of plots
+                on the window.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         shortCut = 'Ctrl' if onePlot else 'Shift+Alt'
-#         #endregion ------------------------------------------------> Variables
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        shortCut = 'Ctrl' if onePlot else 'Shift+Alt'
+        #endregion ------------------------------------------------> Variables
 
-#         #region ---------------------------------------------------> Add Items
-#         self.miClear = self.Append(-1, 'Clear Selections\tCtrl+K')
-#         self.AppendSeparator()
-#         self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
-#         self.AppendSeparator()
-#         self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
-#         self.miSaveI = self.Append(-1, f'Export Image\t{shortCut}+I')
-#         self.AppendSeparator()
-#         self.miZoomR = self.Append(-1, f'Reset Zoom\t{shortCut}+Z')
-#         #endregion ------------------------------------------------> Add Items
+        #region ---------------------------------------------------> Add Items
+        self.miClear = self.Append(-1, 'Clear Selections\tCtrl+K')
+        self.AppendSeparator()
+        self.miDupWin = self.Append(-1, 'Duplicate Window\tCtrl+D')
+        self.AppendSeparator()
+        self.miSaveD = self.Append(-1, 'Export Data\tCtrl+E')
+        self.miSaveI = self.Append(-1, f'Export Image\t{shortCut}+I')
+        self.AppendSeparator()
+        self.miZoomR = self.Append(-1, f'Reset Zoom\t{shortCut}+Z')
+        #endregion ------------------------------------------------> Add Items
 
-#         #region --------------------------------------------------> Add rIDMap
-#         self.rIDMap[self.miDupWin.GetId()]  = mConfig.klToolDupWin
-#         self.rIDMap[self.miZoomR.GetId()]   = mConfig.klToolZoomResetAll
-#         self.rIDMap[self.miSaveD.GetId()]   = mConfig.klToolExpData
-#         self.rIDMap[self.miSaveI.GetId()]   = mConfig.klToolExpImgAll
-#         #endregion -----------------------------------------------> Add rIDMap
+        #region --------------------------------------------------> Add rIDMap
+        # self.rIDMap[self.miDupWin.GetId()]  = mConfig.klToolDupWin
+        # self.rIDMap[self.miZoomR.GetId()]   = mConfig.klToolZoomResetAll
+        # self.rIDMap[self.miSaveD.GetId()]   = mConfig.klToolExpData
+        # self.rIDMap[self.miSaveI.GetId()]   = mConfig.klToolExpImgAll
+        #endregion -----------------------------------------------> Add rIDMap
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miDupWin)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZoomR)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveD)
-#         self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveI)
-#         self.Bind(wx.EVT_MENU, self.OnClear,       source=self.miClear)
-#         #endregion -----------------------------------------------------> Bind
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miDupWin)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZoomR)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveD)
+        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveI)
+        # self.Bind(wx.EVT_MENU, self.OnClear,       source=self.miClear)
+        #endregion -----------------------------------------------------> Bind
 
-#         return True
-#     #---
+        return True
+    #---
 
 #     def OnClear(self, event:wx.CommandEvent) -> bool:
 #         """Override as needed.
@@ -655,8 +655,8 @@ class BaseMenuMainResultSubMenu(BaseMenu):
 #         """
 #         return True
 #     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 class BaseMenuFurtherAnalysisEntry(BaseMenu):
@@ -1370,80 +1370,80 @@ class MenuToolProtProfClearSel(BaseMenu):
 #---
 
 
-# class MenuToolAA(BaseMenuFurtherAnalysis):
-#     """Tool menu for the AA result window.
+class MenuToolAA(BaseMenuFurtherAnalysis):
+    """Tool menu for the AA result window.
 
-#         Parameters
-#         ----------
-#         menuData: dict
-#             Dict with the data for the menu with the following two entries:
-#             {
-#                 'Label' : ['L1', 'L2',....],
-#                 'Pos'   : ['P1', 'P2',....],
-#             }
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.rItems = []
-#         rIDMap = {}
-#         #------------------------------>
-#         super().__init__(menuData)
-#         #endregion --------------------------------------------> Initial Setup
+        Parameters
+        ----------
+        menuData: dict
+            Dict with the data for the menu with the following two entries:
+            {
+                'Label' : ['L1', 'L2',....],
+                'Pos'   : ['P1', 'P2',....],
+            }
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rItems = []
+        rIDMap = {}
+        #------------------------------>
+        super().__init__(menuData)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         #------------------------------> Labels
-#         for k in menuData['Label']:
-#             self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
-#             self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
-#             rIDMap[self.rItems[-1].GetId()] = mConfig.klToolAAExp
-#         self.rItems[0].Check()
-#         #------------------------------> Positions
-#         self.AppendSeparator()
-#         for k in menuData['Pos']:
-#             self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
-#             self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
-#             rIDMap[self.rItems[-1].GetId()] = mConfig.klToolAAPos
-#         #------------------------------> Last Items
-#         self.AppendSeparator()
-#         self.AddLastItems()
-#         self.DestroyItem(self.miClear.GetId())
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        #------------------------------> Labels
+        for k in menuData['Label']:
+            self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
+            self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
+            rIDMap[self.rItems[-1].GetId()] = mConfig.kwToolAAExp
+        self.rItems[0].Check()
+        #------------------------------> Positions
+        self.AppendSeparator()
+        for k in menuData['Pos']:
+            self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
+            self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
+            rIDMap[self.rItems[-1].GetId()] = mConfig.kwToolAAPos
+        #------------------------------> Last Items
+        self.AppendSeparator()
+        self.AddLastItems()
+        self.DestroyItem(self.miClear.GetId())
+        #endregion -----------------------------------------------> Menu Items
 
-#         #region --------------------------------------------------->
-#         self.rIDMap = self.rIDMap | rIDMap
-#         #endregion ------------------------------------------------>
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------->
+        self.rIDMap = self.rIDMap | rIDMap
+        #endregion ------------------------------------------------>
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
-#     def OnLabel(self, event: wx.CommandEvent) -> bool:
-#         """Change between Experiments.
+    #region ---------------------------------------------------> Class methods
+    def OnLabel(self, event: wx.CommandEvent) -> bool:
+        """Change between Experiments.
 
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------->
-#         [x.Check(check=False) for x in self.rItems]
-#         tID = event.GetId()
-#         self.Check(tID, True)
-#         #endregion ------------------------------------------------>
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        [x.Check(check=False) for x in self.rItems]
+        tID = event.GetId()
+        self.Check(tID, True)
+        #endregion ------------------------------------------------>
 
-#         #region --------------------------------------------------->
-#         self.OnMethodLabel(event)
-#         #endregion ------------------------------------------------>
+        #region --------------------------------------------------->
+        self.OnMethodLabel(event)
+        #endregion ------------------------------------------------>
 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # class MenuToolHist(BaseMenuFurtherAnalysis):
@@ -2420,7 +2420,7 @@ class MenuBarTool(MenuBarMain):
         mConfig.nwProtProf     : MenuToolProtProf,
         mConfig.nwLimProt      : MenuToolLimProt,
         mConfig.nwTarProt      : MenuToolTarProt,
-        # mConfig.nwAAPlot       : MenuToolAA,
+        mConfig.nwAAPlot       : MenuToolAA,
         # mConfig.nwHistPlot     : MenuToolHist,
         # mConfig.nwCpRPlot      : MenuToolCpR,
         # mConfig.nwCEvolPlot    : MenuToolCleavageEvol,

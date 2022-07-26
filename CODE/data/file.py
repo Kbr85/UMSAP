@@ -1143,7 +1143,7 @@ class UMSAPFile():
 #         return seqObj.seqNat
 #         #endregion ------------------------------------------------> 
 #     #---
-    
+
     def GetSeq(self, tSection: str, tDate: str) -> tuple[str, str]:
         """Get the sequences used in an analysis.
 
@@ -1201,7 +1201,7 @@ class UMSAPFile():
         )
         return ReadCSV2DF(tPath, header=header)
     #---
-    
+
 #     def GetCleavagePerResidue(self, tSection:str, tDate:str) -> 'pd.DataFrame':
 #         """
     

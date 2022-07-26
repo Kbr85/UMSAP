@@ -745,6 +745,7 @@ class BaseWindowResultOnePlot(BaseWindowResult):
 
         #region ---------------------------------------------------> Widget
         self.wPlot = {0:mWidget.MatPlotPanel(self)}
+        self.wPlot[0].SetStatBar(self.wStatBar, self.OnUpdateStatusBar)
         #endregion ------------------------------------------------> Widget
 
         #region ---------------------------------------------------> Sizers
@@ -788,6 +789,21 @@ class BaseWindowResultOnePlot(BaseWindowResult):
             DialogNotification('errorU', msg=msg, tException=e, parent=self)
         #endregion ------------------------------------------------> 
 
+        return True
+    #---
+
+    def OnUpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info.
+
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
         return True
     #---
     #endregion ------------------------------------------------> Class methods
@@ -2114,10 +2130,6 @@ class WindowResCorrA(BaseWindowResultOnePlot):
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
-
-        #region ---------------------------------------------------> Widgets
-        self.wPlot[0].SetStatBar(self.wStatBar, self.OnUpdateStatusBar)
-        #endregion ------------------------------------------------> Widgets
 
         #region ----------------------------------------------------> Position
         self.SetColDetails(self.rDateC)
@@ -8551,17 +8563,18 @@ class WindowResAA(BaseWindowResultOnePlot):
         
     """
     #region -----------------------------------------------------> Class setup
-    cName = mConfig.nwAAPlot
+    cName    = mConfig.nwAAPlot
     cSection = mConfig.nuAA
-#     cColor   = config.color[cName]
-#     #------------------------------> 
-#     rBandWidth = 0.8
-#     rBandStart = 0.4
+    cColor   = mConfig.color[cName]
+    #------------------------------> 
+    rBandWidth = 0.8
+    rBandStart = 0.4
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: wx.Window, dateC: str, key: str, fileN: str) -> None:
+        self, parent: WindowResTarProt, dateC: str, key: str, fileN: str,
+        ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cTitle  = f"{parent.cTitle} - {dateC} - {self.cSection} - {key}"
@@ -8572,11 +8585,11 @@ class WindowResAA(BaseWindowResultOnePlot):
         self.rObj    = parent.rObj
         self.rData  = self.rObj.GetFAData(
             parent.cSection, parent.rDateC, fileN, [0,1])
-#         self.rRecSeq = self.rObj.GetRecSeq(cParent.cSection, dateC)
+        self.rRecSeq = self.rObj.GetRecSeq(parent.cSection, dateC)
         menuData     = self.SetMenuDate()
-#         self.rPos    = menuData['Pos']
-#         self.rLabel  = menuData['Label']
-#         self.rExp    = True
+        self.rPos    = menuData['Pos']
+        self.rLabel  = menuData['Label']
+        self.rExp    = True
 #         self.rLabelC = ''
         #------------------------------>
         super().__init__(parent, menuData=menuData)
@@ -8589,7 +8602,7 @@ class WindowResAA(BaseWindowResultOnePlot):
         #endregion --------------------------------------------> Initial Setup
         
         #region ---------------------------------------------------> Plot
-#         self.PlotExp(menuData['Label'][0])
+        self.PlotExp(menuData['Label'][0])
         #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
@@ -8620,347 +8633,316 @@ class WindowResAA(BaseWindowResultOnePlot):
         menuData['Pos'] = [k for k in self.rData[menuData['Label'][0]].columns.unique(level=0)]
         return menuData
     #---
-    
-#     def SetAxisExp(self) -> bool:
-#         """ General details of the plot area 
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------------> Clear
-#         self.wPlot.figure.clear()
-#         self.wPlot.axes = self.wPlot.figure.add_subplot(111)
-#         #endregion ----------------------------------------------------> Clear
-        
-#         #region ---------------------------------------------------> Set ticks
-#         self.wPlot.axes.set_ylabel('AA distribution (%)')
-#         self.wPlot.axes.set_xlabel('Positions')
-#         self.wPlot.axes.set_xticks(range(1,len(self.rPos)+1,1))
-#         self.wPlot.axes.set_xticklabels(self.rPos)            
-#         self.wPlot.axes.set_xlim(0,len(self.rPos)+1)
-#         #endregion ------------------------------------------------> Set ticks
-        
-#         return True
-#     #---
-    
-#     def PlotExp(self, label: str) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region --------------------------------------------------------> 
-#         self.rExp = True
-#         self.rLabelC = label
-#         #endregion -----------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         self.SetAxisExp()
-#         #endregion ------------------------------------------------> 
 
-#         #region ---------------------------------------------------> Data
-#         idx = pd.IndexSlice
-#         df = self.rData.loc[:,idx[('AA', label),:]].iloc[0:-1,:]
-#         df.iloc[:,1:] = 100*(df.iloc[:,1:]/df.iloc[:,1:].sum(axis=0))
-#         #endregion ------------------------------------------------> Data
-        
-#         #region ---------------------------------------------------> Bar
-#         col = df.loc[:,idx[label,:]].columns.unique(level=1)
-#         for k,c in enumerate(col, start=1):
-#             #------------------------------> Prepare DF
-#             dfB = df.loc[:,idx[('AA',label),('AA',c)]]
-#             dfB = dfB[dfB[(label,c)] != 0]
-#             dfB = dfB.sort_values(by=[(label,c),('AA','AA')], ascending=False)
-#             #------------------------------> Supp Data
-#             cumS = [0]+dfB[(label,c)].cumsum().values.tolist()[:-1]
-#             #--------------> 
-#             color = []
-#             text = []
-#             r = 0
-#             for row in dfB.itertuples(index=False):
-#                 #--------------> 
-#                 color.append(self.cColor['BarColor'][row[0]] 
-#                      if row[0] in config.lAA1 else self.cColor['Xaa'])
-#                 #--------------> 
-#                 if row[1] >= 10.0:
-#                     s = f'{row[0]}\n{row[1]:.1f}'
-#                     y = (2*cumS[r]+row[1])/2
-#                     text.append([k,y,s])
-#                 else:
-#                     pass
-#                 r = r + 1
-#             #------------------------------> Bar
-#             self.wPlot.axes.bar(
-#                 k, 
-#                 dfB[(label,c)].values.tolist(),
-#                 bottom    = cumS,
-#                 color     = color,
-#                 edgecolor = 'black',
-#             )
-#             #------------------------------> Text
-#             for x,y,t in text:
-#                 self.wPlot.axes.text(
-#                     x,y,t, 
-#                     fontsize            = 9,
-#                     horizontalalignment = 'center',
-#                     verticalalignment   = 'center',
-#                 )
-#         #endregion ------------------------------------------------> Bar
-        
-#         #region --------------------------------------------------> Tick Color
-#         chi = self.rData.loc[:,idx[('AA', label),:]].iloc[-1,1:].values
-#         self.wPlot.axes.set_title(label)
-#         for k,v in enumerate(chi):
-#             color = self.cColor['Chi'][v]
-#             self.wPlot.axes.get_xticklabels()[k].set_color(color)
-#         #endregion -----------------------------------------------> Tick Color
+    def SetAxisExp(self) -> bool:
+        """ General details of the plot area.
 
-#         self.wPlot.canvas.draw()
-        
-#         return True
-#     #---
-    
-#     def SetAxisPos(self) -> bool:
-#         """ General details of the plot area 
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------------> Clear
-#         self.wPlot.figure.clear()
-#         self.wPlot.axes = self.wPlot.figure.add_subplot(111)
-#         #endregion ----------------------------------------------------> Clear
-        
-#         #region ---------------------------------------------------> Set ticks
-#         self.wPlot.axes.set_ylabel('AA distribution (%)')
-#         self.wPlot.axes.set_xlabel('Amino acids')
-#         self.wPlot.axes.set_xticks(range(1,len(config.lAA1)+1,1))
-#         self.wPlot.axes.set_xticklabels(config.lAA1)            
-#         self.wPlot.axes.set_xlim(0,len(config.lAA1)+1)
-#         #endregion ------------------------------------------------> Set ticks
-        
-#         return True
-#     #---
-    
-#     def PlotPos(self, label: str) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region --------------------------------------------------------> 
-#         self.rExp = False
-#         self.rLabelC = label
-#         #endregion -----------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         self.SetAxisPos()
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> Data
-#         idx = pd.IndexSlice
-#         df = self.rData.loc[:,idx[:,label]].iloc[0:-1,0:-1]
-#         df = 100*(df/df.sum(axis=0))
-#         #endregion ------------------------------------------------> Data
-        
-#         #region ---------------------------------------------------> Bar
-#         n = len(self.rLabel)
-#         for row in df.itertuples():
-#             s = row[0]+1-self.rBandStart
-#             w = self.rBandWidth/n
-#             for x in range(0,n,1):
-#                 self.wPlot.axes.bar(
-#                     s+x*w, 
-#                     row[x+1],
-#                     width     = w,
-#                     align     = 'edge',
-#                     color     = self.cColor['Spot'][x%len(self.cColor['Spot'])],
-#                     edgecolor = 'black',
-#                 )
-#         #endregion ------------------------------------------------> Bar
-        
-#         #region ------------------------------------------------------> Legend
-#         leg = []
-#         legLabel = self.rData.columns.unique(level=0)[1:-1]
-#         for i in range(0, n, 1):
-#             leg.append(mpatches.Patch(
-#                 color = self.cColor['Spot'][i],
-#                 label = legLabel[i],
-#             ))
-#         leg = self.wPlot.axes.legend(
-#             handles        = leg,
-#             loc            = 'upper left',
-#             bbox_to_anchor = (1, 1)
-#         )
-#         leg.get_frame().set_edgecolor('k')		
-#         #endregion ---------------------------------------------------> Legend
-        
-#         self.wPlot.axes.set_title(label)
-#         self.wPlot.canvas.draw()
-        
-#         return True
-#     #---
-    
-#     def UpdateStatusBar(self, event) -> bool:
-#         """Update the statusbar info
-    
-#             Parameters
-#             ----------
-#             event: matplotlib event
-#                 Information about the event
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ----------------------------------------------> Statusbar Text
-#         if event.inaxes:
-#             #------------------------------> 
-#             x, y = event.xdata, event.ydata
-#             #------------------------------> 
-#             if self.rExp:
-#                 return self.UpdateStatusBarExp(x,y)
-#             else:
-#                 #------------------------------> Position
-#                 return self.UpdateStatusBarPos(x,y)
-#         else:
-#             self.wStatBar.SetStatusText('')
-#         #endregion -------------------------------------------> Statusbar Text
-        
-#         return True
-#     #---
-    
-#     def UpdateStatusBarExp(self, x: int, y: float) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         if 1 <= (xf := round(x)) <= len(self.rPos):
-#             pass
-#         else:
-#             self.wStatBar.SetStatusText('')
-#             return False
-#         pos = self.rPos[xf-1]
-#         #endregion ------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Clear
+        self.wPlot[0].rFigure.clear()
+        self.wPlot[0].rAxes = self.wPlot[0].rFigure.add_subplot(111)
+        #endregion ----------------------------------------------------> Clear
 
-#         #region ---------------------------------------------------> 
-#         df = self.rData.loc[:,[('AA', 'AA'),(self.rLabelC, pos)]].iloc[0:-1,:]
-#         df['Pc'] = 100*(df.iloc[:,1]/df.iloc[:,1].sum(axis=0))
-#         df = df.sort_values(
-#             by=[(self.rLabelC, pos),('AA','AA')], ascending=False)
-#         df['Sum'] = df['Pc'].cumsum()
-#         df = df.reset_index(drop=True)
-#         #endregion ------------------------------------------------> 
+        #region ---------------------------------------------------> Set ticks
+        self.wPlot[0].rAxes.set_ylabel('AA distribution (%)')
+        self.wPlot[0].rAxes.set_xlabel('Positions')
+        self.wPlot[0].rAxes.set_xticks(range(1,len(self.rPos)+1,1))
+        self.wPlot[0].rAxes.set_xticklabels(self.rPos)
+        self.wPlot[0].rAxes.set_xlim(0,len(self.rPos)+1)
+        #endregion ------------------------------------------------> Set ticks
 
-#         #region ---------------------------------------------------> 
-#         try:
-#             row = df[df['Sum'].gt(y)].index[0]
-#         except Exception:
-#             self.wStatBar.SetStatusText('')
-#             return False
-#         #endregion ------------------------------------------------> 
+        return True
+    #---
 
-#         #region ---------------------------------------------------> 
-#         aa    = df.iat[row,0]
-#         pc    = f'{df.iat[row,-2]:.1f}'
-#         absV  = f'{df.iat[row,1]:.0f}'
-#         inSeq = self.rRecSeq.count(aa)
-#         text = (f'Pos={pos}  AA={aa}  {pc}%  Abs={absV}  InSeq={inSeq}')
-#         #endregion ------------------------------------------------> 
+    def PlotExp(self, label: str) -> bool:
+        """
 
-#         self.wStatBar.SetStatusText(text)    
-#         return True
-#     #---
-    
-#     def UpdateStatusBarPos(self, x: int, y: int) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
+            Parameters
+            ----------
             
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         if 1 <= (xf := round(x)) <= len(config.lAA1):
-#             pass
-#         else:
-#             self.wStatBar.SetStatusText('')
-#             return False
-#         aa = config.lAA1[xf-1]
-#         #endregion ------------------------------------------------> 
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> 
+        self.rExp = True
+        self.rLabelC = label
+        #endregion -----------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.SetAxisExp()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Data
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[('AA', label),:]].iloc[0:-1,:]
+        df.iloc[:,1:] = 100*(df.iloc[:,1:]/df.iloc[:,1:].sum(axis=0))
+        #endregion ------------------------------------------------> Data
+
+        #region ---------------------------------------------------> Bar
+        col = df.loc[:,idx[label,:]].columns.unique(level=1)
+        for k,c in enumerate(col, start=1):
+            #------------------------------> Prepare DF
+            dfB = df.loc[:,idx[('AA',label),('AA',c)]]
+            dfB = dfB[dfB[(label,c)] != 0]
+            dfB = dfB.sort_values(by=[(label,c),('AA','AA')], ascending=False)
+            #------------------------------> Supp Data
+            cumS = [0]+dfB[(label,c)].cumsum().values.tolist()[:-1]
+            #--------------> 
+            color = []
+            text = []
+            r = 0
+            for row in dfB.itertuples(index=False):
+                #--------------> 
+                color.append(self.cColor['BarColor'][row[0]] 
+                     if row[0] in mConfig.lAA1 else self.cColor['Xaa'])
+                #--------------> 
+                if row[1] >= 10.0:
+                    s = f'{row[0]}\n{row[1]:.1f}'
+                    y = (2*cumS[r]+row[1])/2
+                    text.append([k,y,s])
+                else:
+                    pass
+                r = r + 1
+            #------------------------------> Bar
+            self.wPlot[0].rAxes.bar(
+                k, 
+                dfB[(label,c)].values.tolist(),
+                bottom    = cumS,
+                color     = color,
+                edgecolor = 'black',
+            )
+            #------------------------------> Text
+            for x,y,t in text:
+                self.wPlot[0].rAxes.text(
+                    x,y,t, 
+                    fontsize            = 9,
+                    horizontalalignment = 'center',
+                    verticalalignment   = 'center',
+                )
+        #endregion ------------------------------------------------> Bar
+
+        #region --------------------------------------------------> Tick Color
+        chi = self.rData.loc[:,idx[('AA', label),:]].iloc[-1,1:].values
+        self.wPlot[0].rAxes.set_title(label)
+        for k,v in enumerate(chi):
+            color = self.cColor['Chi'][v]
+            self.wPlot[0].rAxes.get_xticklabels()[k].set_color(color)
+        #endregion -----------------------------------------------> Tick Color
+
+        #region ---------------------------------------------------> 
+        self.wPlot[0].rCanvas.draw()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def SetAxisPos(self) -> bool:
+        """ General details of the plot area.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Clear
+        self.wPlot[0].rFigure.clear()
+        self.wPlot[0].rAxes = self.wPlot[0].rFigure.add_subplot(111)
+        #endregion ----------------------------------------------------> Clear
         
-#         #region ---------------------------------------------------> 
-#         n = len(self.rLabel)
-#         w = self.rBandWidth / n
-#         e = xf - self.rBandStart + (self.rBandWidth / n)
-#         k = 0
-#         for k in range(0, n, 1):
-#             if e < x:
-#                 e = e + w
-#             else:
-#                 break
-#         exp = self.rLabel[k]
-#         #endregion ------------------------------------------------> 
+        #region ---------------------------------------------------> Set ticks
+        self.wPlot[0].rAxes.set_ylabel('AA distribution (%)')
+        self.wPlot[0].rAxes.set_xlabel('Amino acids')
+        self.wPlot[0].rAxes.set_xticks(range(1,len(mConfig.lAA1)+1,1))
+        self.wPlot[0].rAxes.set_xticklabels(mConfig.lAA1)
+        self.wPlot[0].rAxes.set_xlim(0,len(mConfig.lAA1)+1)
+        #endregion ------------------------------------------------> Set ticks
 
-#         #region ---------------------------------------------------> 
-#         df = self.rData.loc[:,[('AA', 'AA'),(exp, self.rLabelC)]].iloc[0:-1,:]
-#         df['Pc'] = 100*(df.iloc[:,1]/df.iloc[:,1].sum(axis=0))
-#         df = df.sort_values(
-#             by=[(exp, self.rLabelC),('AA','AA')], ascending=False)
-#         df['Sum'] = df['Pc'].cumsum()
-#         df = df.reset_index(drop=True)
-#         row = df.loc[df[('AA', 'AA')] == aa].index[0]
-#         #endregion ------------------------------------------------> 
+        return True
+    #---
 
-#         #region ---------------------------------------------------> 
-#         pc    = f'{df.iat[row, 2]:.1f}'
-#         absV  = f'{df.iat[row, 1]:.0f}'
-#         inSeq = self.rRecSeq.count(aa)
-#         text  = (f'AA={aa}  Exp={exp}  {pc}%  Abs={absV}  InSeq={inSeq}')
-#         #endregion ------------------------------------------------> 
-        
-#         self.wStatBar.SetStatusText(text)    
-#         return True
-#     #---
+    def PlotPos(self, label: str) -> bool:
+        """
     
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------------> 
+        self.rExp = False
+        self.rLabelC = label
+        #endregion -----------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.SetAxisPos()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Data
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[:,label]].iloc[0:-1,0:-1]
+        df = 100*(df/df.sum(axis=0))
+        #endregion ------------------------------------------------> Data
+
+        #region ---------------------------------------------------> Bar
+        n = len(self.rLabel)
+        for row in df.itertuples():
+            s = row[0]+1-self.rBandStart
+            w = self.rBandWidth/n
+            for x in range(0,n,1):
+                self.wPlot[0].rAxes.bar(
+                    s+x*w, 
+                    row[x+1],
+                    width     = w,
+                    align     = 'edge',
+                    color     = self.cColor['Spot'][x%len(self.cColor['Spot'])],
+                    edgecolor = 'black',
+                )
+        #endregion ------------------------------------------------> Bar
+
+        #region ------------------------------------------------------> Legend
+        leg = []
+        legLabel = self.rData.columns.unique(level=0)[1:-1]
+        for i in range(0, n, 1):
+            leg.append(mpatches.Patch(
+                color = self.cColor['Spot'][i],
+                label = legLabel[i],
+            ))
+        leg = self.wPlot[0].rAxes.legend(
+            handles        = leg,
+            loc            = 'upper left',
+            bbox_to_anchor = (1, 1)
+        )
+        leg.get_frame().set_edgecolor('k')
+        #endregion ---------------------------------------------------> Legend
+
+        self.wPlot[0].rAxes.set_title(label)
+        self.wPlot[0].rCanvas.draw()
+
+        return True
+    #---
+
+    def UpdateStatusBarExp(self, x: int, y: float) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        if 1 <= (xf := round(x)) <= len(self.rPos):
+            pass
+        else:
+            self.wStatBar.SetStatusText('')
+            return False
+        pos = self.rPos[xf-1]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        df = self.rData.loc[:,[('AA', 'AA'),(self.rLabelC, pos)]].iloc[0:-1,:]
+        df['Pc'] = 100*(df.iloc[:,1]/df.iloc[:,1].sum(axis=0))
+        df = df.sort_values(
+            by=[(self.rLabelC, pos),('AA','AA')], ascending=False) # type: ignore
+        df['Sum'] = df['Pc'].cumsum()
+        df = df.reset_index(drop=True)
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        try:
+            row = df[df['Sum'].gt(y)].index[0]
+        except Exception:
+            self.wStatBar.SetStatusText('')
+            return False
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        aa    = df.iat[row,0]
+        pc    = f'{df.iat[row,-2]:.1f}'
+        absV  = f'{df.iat[row,1]:.0f}'
+        inSeq = self.rRecSeq.count(aa)
+        text = (f'Pos={pos}  AA={aa}  {pc}%  Abs={absV}  InSeq={inSeq}')
+        #endregion ------------------------------------------------> 
+
+        self.wStatBar.SetStatusText(text)
+        return True
+    #---
+
+    def UpdateStatusBarPos(self, x: int, y: int) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------->
+        if 1 <= (xf := round(x)) <= len(mConfig.lAA1):
+            pass
+        else:
+            self.wStatBar.SetStatusText('')
+            return False
+        aa = mConfig.lAA1[xf-1]
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        n = len(self.rLabel)
+        w = self.rBandWidth / n
+        e = xf - self.rBandStart + (self.rBandWidth / n)
+        k = 0
+        for k in range(0, n, 1):
+            if e < x:
+                e = e + w
+            else:
+                break
+        exp = self.rLabel[k]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        df = self.rData.loc[:,[('AA', 'AA'),(exp, self.rLabelC)]].iloc[0:-1,:]
+        df['Pc'] = 100*(df.iloc[:,1]/df.iloc[:,1].sum(axis=0))
+        df = df.sort_values(
+            by=[(exp, self.rLabelC),('AA','AA')], ascending=False) # type: ignore
+        df['Sum'] = df['Pc'].cumsum()
+        df = df.reset_index(drop=True)
+        row = df.loc[df[('AA', 'AA')] == aa].index[0]
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        pc    = f'{df.iat[row, 2]:.1f}'
+        absV  = f'{df.iat[row, 1]:.0f}'
+        inSeq = self.rRecSeq.count(aa)
+        text  = (f'AA={aa}  Exp={exp}  {pc}%  Abs={absV}  InSeq={inSeq}')
+        #endregion ------------------------------------------------> 
+
+        self.wStatBar.SetStatusText(text)
+        return True
+    #---
+
 #     def OnClose(self, event: wx.CloseEvent) -> bool:
 #         """Close window and uncheck section in UMSAPFile window. Assumes 
 #             self.parent is an instance of UMSAPControl.
@@ -9015,6 +8997,38 @@ class WindowResAA(BaseWindowResultOnePlot):
 #         return True
 #     #---
     #endregion ------------------------------------------------> Class methods
+    
+    #region ---------------------------------------------------> Event Methods
+    def OnUpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info.
+
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            #------------------------------> 
+            x, y = event.xdata, event.ydata
+            #------------------------------> 
+            if self.rExp:
+                return self.UpdateStatusBarExp(x,y)
+            else:
+                #------------------------------> Position
+                return self.UpdateStatusBarPos(x,y)
+        else:
+            self.wStatBar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
 #---
 
 
