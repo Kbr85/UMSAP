@@ -1411,6 +1411,11 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         #------------------------------>
         super().__init__(parent, menuData=menuData)
         #endregion --------------------------------------------> Initial Setup
+        
+        #region --------------------------------------------------------> Bind
+        self.wPlot['Main'].rCanvas.mpl_connect(
+            'pick_event', self.OnPickFragment)
+        #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -1571,6 +1576,20 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
             ----------
             showAll: list[str]
                 List of labels when selecting the entire gel.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def OnPickFragment(self, showAll: list[str]=[]) -> bool:
+        """Display info about the selected fragment.
+
+            Parameters
+            ----------
+            event: matplotlib pick event.
 
             Returns
             -------
@@ -5831,8 +5850,6 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         self.wPlot['Sec'].rCanvas.mpl_connect('pick_event', self.OnPickGel)
         self.wPlot['Sec'].rCanvas.mpl_connect(
             'button_press_event', self.OnPressMouse)
-        self.wPlot['Main'].rCanvas.mpl_connect(
-            'pick_event', self.OnPickFragment)
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
@@ -7545,8 +7562,8 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
     cSection = mConfig.nmTarProt
     #------------------------------> Label
     cLPaneSec = 'Intensity'
-#     #------------------------------>
-#     rIdxSeqNC = pd.IndexSlice[config.dfcolSeqNC,:]
+    #------------------------------>
+    cSWindow = (1100, 800)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -7560,7 +7577,7 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
         #------------------------------>
         self.ReportPlotDataError()
         #------------------------------>
-#         self.rDateC       = None
+        self.rDateC         = self.rDate[0]
 #         self.rAlpha       = None
 #         self.rFragments   = None
 #         self.rFragSelLine = None
@@ -7572,7 +7589,7 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 #         self.rCtrl        = None
 #         self.rIdxP        = None
 #         self.rPeptide     = None
-#         self.rRecSeq      = {}
+        self.rRecSeq      = {}
 #         self.rRecSeqC     = ''
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
@@ -7603,8 +7620,7 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
         #endregion --------------------------------------------> Initial Setup
 
         #region ---------------------------------------------> Window position
-#         self.UpdateDisplayedData(self.rDate[0])
-#         #------------------------------> 
+        self.UpdateResultWindow()
         self.WinPos()
         self.Show()
         #endregion ------------------------------------------> Window position
@@ -7700,379 +7716,352 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 #         return True
 #     #---
 
-#     def UpdateDisplayedData(self, tDate) -> bool:
-#         """Update the GUI and attributes when a new date is selected.
-    
-#             Parameters
-#             ----------
-#             date : str
-#                 Selected date.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         self.rDateC       = tDate
-#         self.rDf          = self.rData[self.rDateC]['DF'].copy()
-#         self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
-#         self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
-#         self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength'][0]
-#         self.rFragSelLine = None
-#         self.rFragSelC    = [None, None, None]
-#         self.rExp         = self.rData[self.rDateC]['PI']['Exp']
-#         self.rCtrl        = self.rData[self.rDateC]['PI']['Ctrl']
-#         self.rIdxP        = pd.IndexSlice[self.rExp,'P']
-#         self.rPeptide     = None
-#         self.rRecSeqC, self.rNatSeqC = (
-#             self.rRecSeq.get(self.rDateC)
-#             or
-#             self.rObj.GetSeq(self.cSection, self.rDateC)
-#         )
-#         self.rRecSeq[self.rDateC] = (self.rRecSeqC, self.rNatSeqC)
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ---------------------------------------------------> 
-#         self.wText.Clear()
-#         #endregion ------------------------------------------------> 
-        
-#         #region -------------------------------------------------> wx.ListCtrl
-#         self.FillListCtrl()
-#         #endregion ----------------------------------------------> wx.ListCtrl
-        
-#         #region ---------------------------------------------------> Fragments
-#         self.rFragments = dmethod.Fragments(
-#             self.GetDF4FragmentSearch(), self.rAlpha, 'le')
-        
-#         self.DrawFragments()
-#         #endregion ------------------------------------------------> Fragments
-        
-#         #region -----------------------------------------------------> Peptide
-#         self.SetAxisInt()
-#         self.wPlot.canvas.draw()
-#         #endregion --------------------------------------------------> Peptide
+    def UpdateResultWindow(self, tDate: str='') -> bool:
+        """Update the GUI and attributes when a new date is selected.
 
-#         #region ---------------------------------------------------> Win Title
-#         self.PlotTitle()
-#         #endregion ------------------------------------------------> Win Title
-        
-#         return True
-#     #---
-    
-#     def DrawFragments(self) -> bool:
-#         """Draw the fragments associated with the date.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         tKeyLabel = {}
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region --------------------------------------------------------> Keys
-#         for k,v in enumerate(self.rExp):
-#             tKeyLabel[f"{(v, 'P')}"] = f'{k}'
-#         #endregion -----------------------------------------------------> Keys
-        
-#         #region -------------------------------------------------------> Super
-#         super().DrawFragments(tKeyLabel)
-#         #endregion ----------------------------------------------------> Super
-        
-#         return True
-#     #---
-    
-#     def SetFragmentAxis(self, showAll=False) -> bool:
-#         """Set the axis for the plot showing the fragments.
-    
-#             Parameters
-#             ----------
-#             showAll: bool
-#                 Show all fragments or not. Default is False.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         self.wPlotM.axes.clear()
-#         #endregion ------------------------------------------------> 
+            Parameters
+            ----------
+            date : str
+                Selected date.
 
-#         #region ---------------------------------------------------> 
-#         #------------------------------>
-#         if self.rProtLoc[0] is not None:
-#             xtick = [1] + list(self.rProtLoc) + [self.rProtLength]
-#         else:
-#             xtick = [1] + [self.rProtLength]
-#         self.wPlotM.axes.set_xticks(xtick)
-#         self.wPlotM.axes.set_xticklabels(xtick)
-#         #------------------------------> 
-#         self.wPlotM.axes.set_yticks(range(1, len(self.rExp)+2))
-#         self.wPlotM.axes.set_yticklabels(self.rExp+['Protein'])   
-#         self.wPlotM.axes.set_ylim(0.5, len(self.rExp)+1.5)
-#         #------------------------------> 
-#         ymax = len(self.rExp)+0.8
-#         #------------------------------> 
-#         self.wPlotM.axes.tick_params(length=0)
-#         #------------------------------> 
-#         self.wPlotM.axes.set_xlim(0, self.rProtLength+1)
-#         #endregion ------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        self.rDateC       = tDate if tDate else self.rDateC
+        self.rDf          = self.rData[self.rDateC]['DF'].copy()
+        self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
+        self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
+        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength'][0]
+        self.rFragSelLine = None
+        self.rFragSelC    = [None, None, None]
+        self.rExp         = self.rData[self.rDateC]['PI']['Exp']
+        self.rCtrl        = self.rData[self.rDateC]['PI']['Ctrl']
+        self.rIdxP        = pd.IndexSlice[self.rExp,'P']
+        self.rPeptide     = None
+        self.rRecSeqC, self.rNatSeqC = (
+            self.rRecSeq.get(self.rDateC)
+            or
+            self.rObj.GetSeq(self.cSection, self.rDateC)
+        )
+        self.rRecSeq[self.rDateC] = (self.rRecSeqC, self.rNatSeqC)
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------->
+        self.wText.Clear()
+        #endregion ------------------------------------------------>
+
+        #region -------------------------------------------------> wx.ListCtrl
+        self.FillListCtrl()
+        #endregion ----------------------------------------------> wx.ListCtrl
+
+        #region ---------------------------------------------------> Fragments
+        self.rFragments = mMethod.Fragments(
+            self.GetDF4FragmentSearch(), self.rAlpha, 'le')
+        #------------------------------>
+        self.DrawFragments()
+        #endregion ------------------------------------------------> Fragments
+
+        #region -----------------------------------------------------> Peptide
+        self.SetAxisInt()
+        self.wPlot['Sec'].rCanvas.draw()
+        #endregion --------------------------------------------------> Peptide
+
+        #region ---------------------------------------------------> Win Title
+        self.PlotTitle()
+        #endregion ------------------------------------------------> Win Title
+
+        return True
+    #---
+
+    def DrawFragments(self) -> bool:
+        """Draw the fragments associated with the date.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        tKeyLabel = {}
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------------> Keys
+        for k,v in enumerate(self.rExp):
+            tKeyLabel[f"{(v, 'P')}"] = f'{k}'
+        #endregion -----------------------------------------------------> Keys
+
+        #region -------------------------------------------------------> Super
+        super().DrawFragments(tKeyLabel)
+        #endregion ----------------------------------------------------> Super
         
-#         #region ---------------------------------------------------> 
-#         self.wPlotM.axes.vlines(
-#             xtick, 0, ymax, linestyles='dashed', linewidth=0.5, color='black')
-#         #endregion ------------------------------------------------> 
-       
-#         #region ------------------------------------------------> Remove Frame
-#         self.wPlotM.axes.spines['top'].set_visible(False)
-#         self.wPlotM.axes.spines['right'].set_visible(False)
-#         self.wPlotM.axes.spines['bottom'].set_visible(False)
-#         self.wPlotM.axes.spines['left'].set_visible(False)
-#         #endregion ---------------------------------------------> Remove Frame
-        
-#         return True
-#     #---
-    
-#     def ShowPeptideLoc(self) -> bool:
-#         """Show the location of the selected peptide.
+        return True
+    #---
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Fragments
-#         #------------------------------> Remove old 
-#         for k in self.rRectsFrag:
-#             k.set_linewidth(self.cGelLineWidth)
-#         #------------------------------> Get Keys
-#         fKeys = [f'{(x, "P")}' for x in self.rExp]
-#         #------------------------------> Highlight
-#         j = 0
-#         for k in fKeys:
-#             for p in self.rFragments[k]['SeqL']:
-#                 if self.rPeptide in p:
-#                     self.rRectsFrag[j].set_linewidth(2.0)
-#                 else:
-#                     pass
-#                 j = j + 1
-#         #------------------------------> Show
-#         self.wPlotM.canvas.draw()
-#         #endregion ------------------------------------------------> Fragments
-        
-#         #region ---------------------------------------------------> Intensity
-#         #------------------------------> Variables
-#         nExp = len(self.rExp)
-#         nc = len(self.cColor['Spot'])
-#         #------------------------------> Clear Plot
-#         self.wPlot.axes.clear()
-#         #------------------------------> Axis
-#         self.SetAxisInt()
-#         #------------------------------> Row
-#         row = self.rDf.loc[self.rDf[('Sequence', 'Sequence')] == self.rPeptide]
-#         row =row.loc[:,pd.IndexSlice[:,('Int','P')]]
-#         #------------------------------> Values
-#         for k,c in enumerate(self.rCtrl+self.rExp, start=1):
-#             #------------------------------> Variables
-#             intL, P = row[c].values.tolist()[0]
-#             intL = list(map(float, intL[1:-1].split(',')))
-#             P = float(P)
-#             intN = len(intL)
-#             #------------------------------> Color
-#             if k == 1:
-#                 color = self.cColor['Ctrl']
-#                 x = [1]
-#                 y = [sum(intL)/intN]
-#             else:
-#                 color = self.cColor['Spot'][(k-2)%nc]
-#             #------------------------------> Ave
-#             if P <= self.rAlpha:
-#                 x.append(k)
-#                 y.append(sum(intL)/intN)
-#             else:
-#                 pass
-#             #------------------------------> Plot
-#             self.wPlot.axes.scatter(
-#                 intN*[k], intL, color=color, edgecolor='black', zorder=3)
-#         #------------------------------> 
-#         self.wPlot.axes.scatter(
-#             x, 
-#             y, 
-#             edgecolor = 'black',
-#             marker    = 'D',
-#             color     = 'cyan',
-#             s         = 120,
-#             zorder    = 2,
-#         )
-#         self.wPlot.axes.plot(x,y, zorder=1)
-#         #------------------------------> Show
-#         self.wPlot.ZoomResetSetValues()
-#         self.wPlot.canvas.draw()
-#         #endregion ------------------------------------------------> Intensity
+    def SetFragmentAxis(self, showAll=False) -> bool:
+        """Set the axis for the plot showing the fragments.
 
-#         return True
-#     #---
-    
-#     def SetAxisInt(self) -> bool:
-#         """Set the axis of the Intensity plot
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         nExp = len(self.rExp)
-#         #endregion ------------------------------------------------> Variables
+            Parameters
+            ----------
+            showAll: bool
+                Show all fragments or not. Default is False.
 
-#         #region ------------------------------------------------------> Values
-#         self.wPlot.axes.clear()
-#         self.wPlot.axes.set_xticks(range(1,nExp+2))
-#         self.wPlot.axes.set_xticklabels(self.rCtrl+self.rExp)
-#         #------------------------------> 
-#         self.wPlot.axes.set_xlim(0.5, nExp+1.5)
-#         #------------------------------> 
-#         self.wPlot.axes.set_ylabel('Intensity (after DP)')
-#         #endregion ---------------------------------------------------> Values
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        self.wPlot['Main'].rAxes.clear()
+        #endregion ------------------------------------------------>
 
-#         return True
-#     #---
-    
-#     def PrintFragmentText(
-#         self, tKey: tuple[str, str], fragC: list[int]):
-#         """Print information about a selected Fragment
-    
-#             Parameters
-#             ----------
-#             tKey: tuple(str, str)
-#                 Tuple with the column name in the pd.DataFrame with the results.
-#             fragC: list[int]
-#                 Fragment coordinates.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Info
-#         #------------------------------> Fragments
-#         frag =  (f'{self.rFragments[tKey]["NFrag"][0]}'
-#                  f'({self.rFragments[tKey]["NFrag"][1]})')
-#         clsiteExp = (f'{self.rFragments[tKey]["NcT"][0]}'
-#                      f'({self.rFragments[tKey]["NcT"][1]})')
-#         seqExp = (f'{sum(self.rFragments[tKey]["Np"])}'
-#                   f'({sum(self.rFragments[tKey]["NpNat"])})')
-#         #------------------------------> Res Numbers
-#         n, c = self.rFragments[tKey]["Coord"][fragC[1]]
-#         nf, cf = self.rFragments[tKey]["CoordN"][fragC[1]]
-#         resNum = f'Nterm {n}({nf}) - Cterm {c}({cf})'
-#         #------------------------------> Sequences
-#         np = (f'{self.rFragments[tKey]["Np"][fragC[1]]}'
-#               f'({self.rFragments[tKey]["NpNat"][fragC[1]]})')
-#         #------------------------------> Cleavages
-#         clsite = (f'{self.rFragments[tKey]["Nc"][fragC[1]]}'
-#                   f'({self.rFragments[tKey]["NcNat"][fragC[1]]})')
-#         #------------------------------> Labels
-#         expL, fragL = dtsMethod.StrEqualLength(
-#             [self.rExp[fragC[0]], f'Fragment {fragC[1]+1}'])
-#         emptySpace = (2+ len(expL))*' '
-#         #endregion ------------------------------------------------> Info
+        #region --------------------------------------------------->
+        #------------------------------>
+        if self.rProtLoc[0] is not None:
+            xtick = [1] + list(self.rProtLoc) + [self.rProtLength]
+        else:
+            xtick = [1] + [self.rProtLength]
+        self.wPlot['Main'].rAxes.set_xticks(xtick)
+        self.wPlot['Main'].rAxes.set_xticklabels(xtick)
+        #------------------------------> 
+        self.wPlot['Main'].rAxes.set_yticks(range(1, len(self.rExp)+2))
+        self.wPlot['Main'].rAxes.set_yticklabels(self.rExp+['Protein'])
+        self.wPlot['Main'].rAxes.set_ylim(0.5, len(self.rExp)+1.5)
+        #------------------------------> 
+        ymax = len(self.rExp)+0.8
+        #------------------------------> 
+        self.wPlot['Main'].rAxes.tick_params(length=0)
+        #------------------------------> 
+        self.wPlot['Main'].rAxes.set_xlim(0, self.rProtLength+1)
+        #endregion ------------------------------------------------> 
 
-#         #region ---------------------------------------------------> 
-#         self.wText.Clear()
-#         #endregion ------------------------------------------------> 
+        #region ---------------------------------------------------> 
+        self.wPlot['Main'].rAxes.vlines(
+            xtick, 0, ymax, linestyles='dashed', linewidth=0.5, color='black')
+        #endregion ------------------------------------------------> 
 
-#         #region ---------------------------------------------------> 
-#         self.wText.AppendText(
-#             f'Details for {self.rExp[fragC[0]]} - Fragment {fragC[1]+1}\n\n')
-#         self.wText.AppendText(f'{expL}: Fragments {frag}, Cleavage sites {clsiteExp}\n')
-#         self.wText.AppendText(f'{emptySpace}Peptides {seqExp}\n\n')
-#         self.wText.AppendText(f'{fragL}: Nterm {n}({nf}), Cterm {c}({cf})\n')
-#         self.wText.AppendText(f'{emptySpace}Peptides {np}, Cleavage sites {clsite}\n\n')
-#         self.wText.AppendText(f'Sequences in the fragment:\n\n')
-#         self.wText.AppendText(f'{self.rFragments[tKey]["Seq"][fragC[1]]}')
-#         self.wText.SetInsertionPoint(0)
-#         #endregion ------------------------------------------------> 
-        
-#         return True
-#     #---
+        #region ------------------------------------------------> Remove Frame
+        self.wPlot['Main'].rAxes.spines['top'].set_visible(False)
+        self.wPlot['Main'].rAxes.spines['right'].set_visible(False)
+        self.wPlot['Main'].rAxes.spines['bottom'].set_visible(False)
+        self.wPlot['Main'].rAxes.spines['left'].set_visible(False)
+        #endregion ---------------------------------------------> Remove Frame
+
+        return True
+    #---
+
+    def ShowPeptideLoc(self) -> bool:
+        """Show the location of the selected peptide.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Fragments
+        #------------------------------> Remove old 
+        for k in self.rRectsFrag:
+            k.set_linewidth(self.cGelLineWidth)
+        #------------------------------> Get Keys
+        fKeys = [f'{(x, "P")}' for x in self.rExp]
+        #------------------------------> Highlight
+        j = 0
+        for k in fKeys:
+            for p in self.rFragments[k]['SeqL']:
+                if self.rPeptide in p:
+                    self.rRectsFrag[j].set_linewidth(2.0)
+                else:
+                    pass
+                j = j + 1
+        #------------------------------> Show
+        self.wPlot['Main'].rCanvas.draw()
+        #endregion ------------------------------------------------> Fragments
+
+        #region ---------------------------------------------------> Intensity
+        #------------------------------> Variables
+        nExp = len(self.rExp)
+        nc = len(self.cColor['Spot'])
+        #------------------------------> Clear Plot
+        self.wPlot['Sec'].rAxes.clear()
+        #------------------------------> Axis
+        self.SetAxisInt()
+        #------------------------------> Row
+        row = self.rDf.loc[self.rDf[('Sequence', 'Sequence')] == self.rPeptide]
+        row =row.loc[:,pd.IndexSlice[:,('Int','P')]]
+        #------------------------------> Values
+        x = []
+        y = []
+        for k,c in enumerate(self.rCtrl+self.rExp, start=1):
+            #------------------------------> Variables
+            intL, P = row[c].values.tolist()[0]
+            intL = list(map(float, intL[1:-1].split(',')))
+            P = float(P)
+            intN = len(intL)
+            #------------------------------> Color, x & y
+            if k == 1:
+                color = self.cColor['Ctrl']
+                x = [1]
+                y = [sum(intL)/intN]
+            else:
+                color = self.cColor['Spot'][(k-2)%nc]
+            #------------------------------> Ave
+            if P <= self.rAlpha:
+                x.append(k)
+                y.append(sum(intL)/intN)
+            else:
+                pass
+            #------------------------------> Plot
+            self.wPlot['Sec'].rAxes.scatter(
+                intN*[k], intL, color=color, edgecolor='black', zorder=3)
+        #------------------------------> 
+        self.wPlot['Sec'].rAxes.scatter(
+            x, 
+            y, 
+            edgecolor = 'black',
+            marker    = 'D',
+            color     = 'cyan',
+            s         = 120,
+            zorder    = 2,
+        )
+        self.wPlot['Sec'].rAxes.plot(x,y, zorder=1)
+        #------------------------------> Show
+        self.wPlot['Sec'].ZoomResetSetValues()
+        self.wPlot['Sec'].rCanvas.draw()
+        #endregion ------------------------------------------------> Intensity
+
+        return True
+    #---
+
+    def SetAxisInt(self) -> bool:
+        """Set the axis of the Intensity plot.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        nExp = len(self.rExp)
+        #endregion ------------------------------------------------> Variables
+
+        #region ------------------------------------------------------> Values
+        self.wPlot['Sec'].rAxes.clear()
+        self.wPlot['Sec'].rAxes.set_xticks(range(1,nExp+2))
+        self.wPlot['Sec'].rAxes.set_xticklabels(self.rCtrl+self.rExp)
+        #------------------------------> 
+        self.wPlot['Sec'].rAxes.set_xlim(0.5, nExp+1.5)
+        #------------------------------> 
+        self.wPlot['Sec'].rAxes.set_ylabel('Intensity (after DP)')
+        #endregion ---------------------------------------------------> Values
+
+        return True
+    #---
+
+    def PrintFragmentText(
+        self, tKey: str, fragC: list[int]):
+        """Print information about a selected Fragment.
+
+            Parameters
+            ----------
+            tKey: tuple(str, str)
+                Tuple with the column name in the pd.DataFrame with the results.
+            fragC: list[int]
+                Fragment coordinates.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Info
+        #------------------------------> Fragments
+        frag =  (f'{self.rFragments[tKey]["NFrag"][0]}'
+                 f'({self.rFragments[tKey]["NFrag"][1]})')
+        clSiteExp = (f'{self.rFragments[tKey]["NcT"][0]}'
+                     f'({self.rFragments[tKey]["NcT"][1]})')
+        seqExp = (f'{sum(self.rFragments[tKey]["Np"])}'
+                  f'({sum(self.rFragments[tKey]["NpNat"])})')
+        #------------------------------> Res Numbers
+        n, c = self.rFragments[tKey]["Coord"][fragC[1]]
+        nf, cf = self.rFragments[tKey]["CoordN"][fragC[1]]
+        resNum = f'Nterm {n}({nf}) - Cterm {c}({cf})'
+        #------------------------------> Sequences
+        np = (f'{self.rFragments[tKey]["Np"][fragC[1]]}'
+              f'({self.rFragments[tKey]["NpNat"][fragC[1]]})')
+        #------------------------------> Cleavages
+        clSite = (f'{self.rFragments[tKey]["Nc"][fragC[1]]}'
+                  f'({self.rFragments[tKey]["NcNat"][fragC[1]]})')
+        #------------------------------> Labels
+        expL, fragL = mMethod.StrEqualLength(
+            [self.rExp[fragC[0]], f'Fragment {fragC[1]+1}'])
+        emptySpace = (2+ len(expL))*' '
+        #endregion ------------------------------------------------> Info
+
+        #region --------------------------------------------------->
+        self.wText.Clear()
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        self.wText.AppendText(
+            f'Details for {self.rExp[fragC[0]]} - Fragment {fragC[1]+1}\n\n')
+        self.wText.AppendText(f'{expL}: Fragments {frag}, Cleavage sites {clSiteExp}\n')
+        self.wText.AppendText(f'{emptySpace}Peptides {seqExp}\n\n')
+        self.wText.AppendText(f'{fragL}: Nterm {n}({nf}), Cterm {c}({cf})\n')
+        self.wText.AppendText(f'{emptySpace}Peptides {np}, Cleavage sites {clSite}\n\n')
+        self.wText.AppendText(f'Sequences in the fragment:\n\n')
+        self.wText.AppendText(f'{self.rFragments[tKey]["Seq"][fragC[1]]}')
+        self.wText.SetInsertionPoint(0)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
-    
-    #region ----------------------------------------------------> Event Methods
-#     def OnPickFragment(self, event) -> bool:
-#         """Display info about the selected fragment.
-    
-#             Parameters
-#             ----------
-#             event: matplotlib pick event
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> Variables
-#         art = event.artist
-#         fragC = list(map(int, art.get_label().split('.')))
-#         #------------------------------> 
-#         if self.rFragSelC != fragC:
-#             self.rFragSelC = fragC
-#         else:
-#             return True
-#         #------------------------------> 
-#         x, y = event.artist.xy
-#         x = round(x)
-#         y = round(y)
-#         #------------------------------> 
-#         tKey = f'{(self.rExp[fragC[0]], "P")}'
-#         #------------------------------> 
-#         x1, x2 = self.rFragments[tKey]['Coord'][fragC[1]]
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region ------------------------------------------> Highlight Fragment
-#         if self.rFragSelLine is not None:
-#             self.rFragSelLine[0].remove()
-#         else:
-#             pass
-#         #------------------------------> 
-#         self.rFragSelLine = self.wPlotM.axes.plot(
-#             [x1+2, x2-2], [y,y], color='black', linewidth=4)
-#         #------------------------------> 
-#         self.wPlotM.canvas.draw()
-#         #endregion ---------------------------------------> Highlight Fragment
-        
-#         #region -------------------------------------------------------> Print
-#         self.PrintFragmentText(tKey, fragC)
-#         #endregion ----------------------------------------------------> Print
 
-#         return True
-#     #---
-    
-#     def OnPlotSaveAllImage(self) -> bool:
-#         """ Export all plots to a pdf image
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------> Dlg window
-#         dlg = dtsWindow.DirSelectDialog(parent=self)
-#         #endregion -----------------------------------------------> Dlg window
-        
-#         #region ---------------------------------------------------> Get Path
-#         if dlg.ShowModal() == wx.ID_OK:
-#             #------------------------------> Variables
-#             p = Path(dlg.GetPath())
-#             #------------------------------> Export
-#             fName = p / f'{self.rDateC}-fragments.pdf'
-#             self.wPlotM.figure.savefig(fName)
-#             #------------------------------> 
-#             fName = p / f'{self.rDateC}-intensities.pdf'
-#             self.wPlot.figure.savefig(fName)
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Get Path
-     
-#         dlg.Destroy()
-#         return True	
-#     #---
-    
+    #region ----------------------------------------------------> Event Methods
+    def OnPickFragment(self, event) -> bool:
+        """Display info about the selected fragment.
+
+            Parameters
+            ----------
+            event: matplotlib pick event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        art = event.artist
+        fragC = list(map(int, art.get_label().split('.')))
+        #------------------------------>
+        if self.rFragSelC != fragC:
+            self.rFragSelC = fragC
+        else:
+            return True
+        #------------------------------>
+        x, y = event.artist.xy
+        x = round(x)
+        y = round(y)
+        #------------------------------>
+        tKey = f'{(self.rExp[fragC[0]], "P")}'
+        #------------------------------> 
+        x1, x2 = self.rFragments[tKey]['Coord'][fragC[1]]
+        #endregion ------------------------------------------------> Variables
+
+        #region ------------------------------------------> Highlight Fragment
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+        else:
+            pass
+        #------------------------------ 
+        self.rFragSelLine = self.wPlot['Main'].rAxes.plot(
+            [x1+2, x2-2], [y,y], color='black', linewidth=4)
+        #------------------------------>
+        self.wPlot['Main'].rCanvas.draw()
+        #endregion ---------------------------------------> Highlight Fragment
+
+        #region -------------------------------------------------------> Print
+        self.PrintFragmentText(tKey, fragC)
+        #endregion ----------------------------------------------------> Print
+
+        return True
+    #---
+
 #     def OnClearPept(self, plot: bool=True) -> bool:
 #         """Clear the Peptide selection.
     

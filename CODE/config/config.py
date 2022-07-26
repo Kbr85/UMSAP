@@ -409,8 +409,7 @@ oControlTypeProtProf = {
     'OCR'  : 'One Control per Row',
     'Ratio': oIntensities['RatioI'],
 }
-
-# oFillLoc = ('end', 'start')
+oFillLoc = ('end', 'start')
 
 
 
@@ -556,8 +555,8 @@ mRangeNumIE = "Invalid range or number: {}"
 # mNotIterable = "{} must be iterable but the given value ({}) is not."
 # mpdReplaceVal = ("It was not possible to replace {} values with {}.")
 # mPDExcludeCol  = "Exclusion process failed."
-# mNotImplementedFull = ('Option {} is not yet implemented. Valid options for {} '
-#     'are: {}.')
+mNotImplementedFull = ('Option {} is not yet implemented. Valid options for {} '
+    'are: {}.')
 # mMsgTypeIE = (
 #     f"Options for message mode are: {*oMsgType,}. "
 #     "Option {} is unknown.")
@@ -666,7 +665,7 @@ color = { # Colors for the app
     },
     nwTarProt : {
         'Spot' : colorFragments,
-#         'Ctrl' : 'black',
+        'Ctrl' : 'black',
     },
 #     nwAAPlot : {
 #         'BarColor': { 

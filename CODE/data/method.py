@@ -197,6 +197,51 @@ def Str2ListNumber(
 #---
 
 
+def StrEqualLength(strL: list[str], char: str=' ', loc:str='end') -> list[str]:
+    """Return a list in which every string element has the same length.
+
+        Parameters
+        ----------
+        strL: list[str]
+            String with different length.
+        char: str
+            Fill character. Default is empty space.
+        loc: str
+            Add filling character to start or end of the strings.
+
+        Returns
+        -------
+        list[str]
+            String with the same length with the same original order.
+
+        Notes
+        -----
+        Filling characters are added at the end or start of each str.
+    """
+    #region ---------------------------------------------------> Variables
+    long = len(max(strL, key=len))
+    lOut = []
+    #endregion ------------------------------------------------> Variables
+
+    #region ---------------------------------------------------> Fill lOut
+    if loc == 'end':
+        for x in strL:
+            space = (long-len(x))*char
+            lOut.append(f'{x}{space}')
+    elif loc == 'start':
+        for x in strL:
+            space = (long-len(x))*char
+            lOut.append(f'{space}{x}')
+    else:
+        msg = mConfig.mNotImplementedFull.format(
+            loc, 'loc', mConfig.oFillLoc)
+        raise mException.ExecutionError(msg)
+    #endregion ------------------------------------------------> Fill lOut
+
+    return lOut
+#---
+
+
 def ResControl2ListNumber(
     val: str, 
     sep: list[str]=[' ', ',', ';'], 
