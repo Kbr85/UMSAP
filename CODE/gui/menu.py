@@ -624,37 +624,37 @@ class BaseMenuFurtherAnalysis(BaseMenu):
         #endregion ------------------------------------------------> Add Items
 
         #region --------------------------------------------------> Add rIDMap
-        # self.rIDMap[self.miDupWin.GetId()]  = mConfig.klToolDupWin
-        # self.rIDMap[self.miZoomR.GetId()]   = mConfig.klToolZoomResetAll
-        # self.rIDMap[self.miSaveD.GetId()]   = mConfig.klToolExpData
-        # self.rIDMap[self.miSaveI.GetId()]   = mConfig.klToolExpImgAll
+        self.rIDMap[self.miDupWin.GetId()]  = mConfig.kwToolDupWin
+        self.rIDMap[self.miZoomR.GetId()]   = mConfig.kwToolZoomResetAll
+        self.rIDMap[self.miSaveD.GetId()]   = mConfig.kwToolExpData
+        self.rIDMap[self.miSaveI.GetId()]   = mConfig.kwToolExpImgAll
         #endregion -----------------------------------------------> Add rIDMap
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miDupWin)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZoomR)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveD)
-        # self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveI)
-        # self.Bind(wx.EVT_MENU, self.OnClear,       source=self.miClear)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miDupWin)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveD)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnClear,       source=self.miClear)
         #endregion -----------------------------------------------------> Bind
 
         return True
     #---
 
-#     def OnClear(self, event:wx.CommandEvent) -> bool:
-#         """Override as needed.
+    def OnClear(self, event:wx.CommandEvent) -> bool:
+        """Override as needed.
 
-#             Parameters
-#             ----------
-#             event: wx.CommandEvent
-#                 Information about the event
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         return True
-#     #---
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 

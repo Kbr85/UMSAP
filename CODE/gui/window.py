@@ -810,6 +810,84 @@ class BaseWindowResultOnePlot(BaseWindowResult):
 #---
 
 
+class BaseWindowResultOnePlotFA(BaseWindowResultOnePlot):
+    """
+
+        Parameters
+        ----------
+        
+
+        Attributes
+        ----------
+        
+
+        Raises
+        ------
+        
+
+        Methods
+        -------
+        
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: Optional[wx.Window]=None, menuData: dict={},
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent=parent, menuData=menuData)
+        #endregion --------------------------------------------> Initial Setup
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def ExportData(self) -> bool:
+        """Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        return super().ExportData(df=self.rData)                                # type: ignore
+    #---
+    #endregion ------------------------------------------------> Class methods
+
+    #region ---------------------------------------------------> Event Methods
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+    
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+                
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)           # type: ignore
+        #endregion --------------------------------------------> Update parent
+
+        #region ------------------------------------> Reduce number of windows
+        mConfig.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+#---
+
+
+
+
 class BaseWindowResultListText(BaseWindowResult):
     """
 
@@ -8543,7 +8621,7 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 #---
 
 
-class WindowResAA(BaseWindowResultOnePlot):
+class WindowResAA(BaseWindowResultOnePlotFA):
     """
 
         Parameters
@@ -8578,10 +8656,10 @@ class WindowResAA(BaseWindowResultOnePlot):
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cTitle  = f"{parent.cTitle} - {dateC} - {self.cSection} - {key}"
-        # self.cDateC  = dateC
-#         self.cKey    = key
-#         self.cFileN   = fileN
-#         self.rUMSAP  = cParent.cParent
+        self.cDateC  = dateC
+        self.cKey    = key
+        self.cFileN   = fileN
+        self.rUMSAP  = parent.cParent
         self.rObj    = parent.rObj
         self.rData  = self.rObj.GetFAData(
             parent.cSection, parent.rDateC, fileN, [0,1])
@@ -8590,17 +8668,17 @@ class WindowResAA(BaseWindowResultOnePlot):
         self.rPos    = menuData['Pos']
         self.rLabel  = menuData['Label']
         self.rExp    = True
-#         self.rLabelC = ''
+        self.rLabelC = ''
         #------------------------------>
         super().__init__(parent, menuData=menuData)
-#         #------------------------------> 
-#         dKeyMethod = {
-#             config.klToolAAExp : self.PlotExp,
-#             config.klToolAAPos : self.PlotPos,
-#         }
-#         self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        #------------------------------> 
+        dKeyMethod = {
+            mConfig.kwToolAAExp : self.PlotExp,
+            mConfig.kwToolAAPos : self.PlotPos,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
-        
+
         #region ---------------------------------------------------> Plot
         self.PlotExp(menuData['Label'][0])
         #endregion ------------------------------------------------> Plot
@@ -8689,7 +8767,7 @@ class WindowResAA(BaseWindowResultOnePlot):
             #------------------------------> Prepare DF
             dfB = df.loc[:,idx[('AA',label),('AA',c)]]
             dfB = dfB[dfB[(label,c)] != 0]
-            dfB = dfB.sort_values(by=[(label,c),('AA','AA')], ascending=False)
+            dfB = dfB.sort_values(by=[(label,c),('AA','AA')], ascending=False)  # type: ignore
             #------------------------------> Supp Data
             cumS = [0]+dfB[(label,c)].cumsum().values.tolist()[:-1]
             #--------------> 
@@ -8735,6 +8813,7 @@ class WindowResAA(BaseWindowResultOnePlot):
         #endregion -----------------------------------------------> Tick Color
 
         #region ---------------------------------------------------> 
+        self.wPlot[0].ZoomResetSetValues()
         self.wPlot[0].rCanvas.draw()
         #endregion ------------------------------------------------> 
 
@@ -8826,8 +8905,11 @@ class WindowResAA(BaseWindowResultOnePlot):
         leg.get_frame().set_edgecolor('k')
         #endregion ---------------------------------------------------> Legend
 
+        #region ---------------------------------------------------> 
+        self.wPlot[0].ZoomResetSetValues()
         self.wPlot[0].rAxes.set_title(label)
         self.wPlot[0].rCanvas.draw()
+        #endregion ------------------------------------------------> 
 
         return True
     #---
@@ -8943,61 +9025,22 @@ class WindowResAA(BaseWindowResultOnePlot):
         return True
     #---
 
-#     def OnClose(self, event: wx.CloseEvent) -> bool:
-#         """Close window and uncheck section in UMSAPFile window. Assumes 
-#             self.parent is an instance of UMSAPControl.
-#             Override as needed.
-    
-#             Parameters
-#             ----------
-#             event: wx.CloseEvent
-#                 Information about the event
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -----------------------------------------------> Update parent
-#         self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)		
-#         #endregion --------------------------------------------> Update parent
-        
-#         #region ------------------------------------> Reduce number of windows
-#         config.winNumber[self.cName] -= 1
-#         #endregion ---------------------------------> Reduce number of windows
-        
-#         #region -----------------------------------------------------> Destroy
-#         self.Destroy()
-#         #endregion --------------------------------------------------> Destroy
-        
-#         return True
-#     #---
-    
-#     def OnExportPlotData(self) -> bool:
-#         """ Export data to a csv file 
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         return super().OnExportPlotData(df=self.rData)
-#     #---
-    
-#     def OnDupWin(self) -> bool:
-#         """ Export data to a csv file 
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #------------------------------> 
-#         self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
-#             AAPlot(self.cParent, self.cDateC, self.cKey, self.cFileN)
-#         )
-#         #------------------------------> 
-#         return True
-#     #---
+    def DupWin(self) -> bool:
+        """Export data to a csv file.
+
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(                # type: ignore
+            WindowResAA(self.cParent, self.cDateC, self.cKey, self.cFileN)      # type: ignore
+        )
+        #------------------------------> 
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
-    
+
     #region ---------------------------------------------------> Event Methods
     def OnUpdateStatusBar(self, event) -> bool:
         """Update the statusbar info.
@@ -9028,7 +9071,6 @@ class WindowResAA(BaseWindowResultOnePlot):
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
-
 #---
 
 
