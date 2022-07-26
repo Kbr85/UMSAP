@@ -165,7 +165,7 @@ nuCpR      = 'Cleavage per Residues'
 #------------------------------> For wx.Dialogs
 elData  = 'txt files (*.txt)|*.txt'
 elUMSAP = 'UMSAP files (*.umsap)|*.umsap'
-# elPDB   = 'PDB files (*.pdb)|*.pdb'
+elPDB   = 'PDB files (*.pdb)|*.pdb'
 elPDF   = 'PDF files (*.pdf)|*.pdf'
 elSeq   = (
     "Text files (*.txt)|*.txt|"
@@ -179,7 +179,7 @@ elMatPlotSaveI = (
 )
 #------------------------------> File extensions. First item is default
 esData  = ['.txt']
-# esPDB   = ['.pdb']
+esPDB   = ['.pdb']
 esPDF   = ['.pdf']
 esSeq   = ['.txt', '.fasta']
 esUMSAP = ['.umsap']
@@ -228,7 +228,7 @@ kwToolFCShowAll = 'FC Plot Show All'
 #------------------------------> Further Analysis
 # klFACleavageEvol = 'Cleavage Evolution'
 kwToolFACleavagePerRes = 'Cleavage per Residue'
-# klFAPDBMap = 'PDB Map'
+kwToolFAPDBMap = 'PDB Map'
 #endregion ---------------------------------> Keywords for Menu - Method Links
 
 
@@ -458,13 +458,13 @@ lAAGroups = [ # AA groups
     ['G', 'P']
 ]
 
-# oAA3toAA = { # Three to one AA code translation
-#     'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D', 
-#     'CYS': 'C', 'GLU': 'E', 'GLN': 'Q', 'GLY': 'G',
-#     'HIS': 'H', 'ILE': 'I', 'LEU': 'L', 'LYS': 'K', 
-#     'MET': 'M', 'PHE': 'F', 'PRO': 'P', 'SER': 'S', 
-#     'THR': 'T', 'TRP': 'W', 'TYR': 'Y', 'VAL': 'V',
-# }
+oAA3toAA = { # Three to one AA code translation
+    'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D', 
+    'CYS': 'C', 'GLU': 'E', 'GLN': 'Q', 'GLY': 'G',
+    'HIS': 'H', 'ILE': 'I', 'LEU': 'L', 'LYS': 'K', 
+    'MET': 'M', 'PHE': 'F', 'PRO': 'P', 'SER': 'S', 
+    'THR': 'T', 'TRP': 'W', 'TYR': 'Y', 'VAL': 'V',
+}
 #endregion --------------------------------------------------> Important Lists
 
 

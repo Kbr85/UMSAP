@@ -31,8 +31,8 @@ import pandas as pd
 import requests
 from scipy import stats
 
-# from Bio import pairwise2
-# from Bio.Align import substitution_matrices
+from Bio import pairwise2
+from Bio.Align import substitution_matrices
 
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -7719,7 +7719,7 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
             'Hist-New'               : self.HistNew,
 #             config.klFACleavageEvol  : self.OnCEvol,
             mConfig.kwToolFACleavagePerRes: self.CpR,
-#             config.klFAPDBMap        : self.OnPDBMap,
+            mConfig.kwToolFAPDBMap        : self.PDBMap,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -8456,6 +8456,101 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 
         return True
     #---
+
+    def PDBMap(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        def Helper(pdbObj, tExp, tAlign, tDF, name):
+            """
+        
+                Parameters
+                ----------
+                
+        
+                Returns
+                -------
+                
+        
+                Raise
+                -----
+                
+            """
+            idx = pd.IndexSlice
+            #------------------------------>
+            for e in tExp:
+                #------------------------------>
+                betaDict = {}
+                p = 0
+                s = 0
+                #------------------------------>
+                for j,r in enumerate(tAlign[0].seqB):
+                    if r != '-':
+                        #------------------------------>
+                        if tAlign[0].seqA[j] != '-':
+                            betaDict[pdbRes[p]] = tDF.iat[s, tDF.columns.get_loc(idx['Rec',e])]
+                            p = p + 1
+                        else:
+                            pass
+                        #------------------------------>
+                        s = s + 1
+                    else:
+                        pass
+                #------------------------------> 
+                pdbObj.SetBeta(pdbObj.rChain[0], betaDict)
+                pdbObj.WritePDB(
+                    pdbO/f'{name[0]} - {e} - {name[1]}.pdb', pdbObj.rChain[0])
+        #---
+        #region ---------------------------------------------------> dlg
+        dlg = DialogFA2Btn(
+            ['PDB', 'Output'],
+            ['Path to the PDB file', 'Path to the output folder'],
+            [mConfig.elPDB, mConfig.elPDB],
+            [mValidator.InputFF('file'), mValidator.OutputFF('folder')],
+            parent = self
+        )
+        #endregion ------------------------------------------------> dlg
+
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal():
+            pdbI = dlg.wBtnI.wTc.GetValue()
+            pdbO = Path(dlg.wBtnO.wTc.GetValue())
+        else:
+            dlg.Destroy()
+            return False
+        #endregion ------------------------------------------------> Get Path
+
+        #region ---------------------------------------------------> Variables
+        pdbObj   = mFile.PDBFile(pdbI)
+        pdbSeq   = pdbObj.GetSequence(pdbObj.rChain[0])
+        pdbRes   = pdbObj.GetResNum(pdbObj.rChain[0])
+        cut      = self.rObj.GetCleavagePerResidue(self.cSection, self.rDateC)
+        cEvol    = self.rObj.GetCleavageEvolution(self.cSection, self.rDateC)
+        blosum62 = substitution_matrices.load("BLOSUM62")
+        #endregion ------------------------------------------------> Variables
+
+        #region -----------------------------------------------> Run
+        align = pairwise2.align.globalds(                                       # type: ignore
+            pdbSeq, self.rRecSeqC, blosum62, -10, -0.5)
+        #------------------------------> 
+        Helper(pdbObj, self.rExp, align, cut, (self.rDateC, 'CpR'))
+        Helper(pdbObj, self.rExp, align, cEvol, (self.rDateC, 'CEvol'))
+        #endregion --------------------------------------------> Run
+
+        dlg.Destroy()
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ----------------------------------------------------> Event Methods
@@ -8524,102 +8619,6 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 #         """
 #         self.cParent.rWindow[self.cSection]['FA'].append(
 #             CEvolPlot(self, self.rDateC, self.rData[self.rDateC]['CEvol']))
-#         return True
-#     #---
-
-#     def OnPDBMap(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         def Helper(pdbObj, tExp, tAlign, tDF, name):
-#             """
-        
-#                 Parameters
-#                 ----------
-                
-        
-#                 Returns
-#                 -------
-                
-        
-#                 Raise
-#                 -----
-                
-#             """
-#             idx = pd.IndexSlice
-#             #------------------------------>
-#             for e in tExp:
-#                 #------------------------------>
-#                 betaDict = {}
-#                 p = 0
-#                 s = 0
-#                 #------------------------------>
-#                 for j,r in enumerate(tAlign[0].seqB):
-#                     if r != '-':
-#                         #------------------------------>
-#                         if tAlign[0].seqA[j] != '-':
-#                             betaDict[pdbRes[p]] = tDF.iat[s, tDF.columns.get_loc(idx['Rec',e])]
-#                             p = p + 1
-#                         else:
-#                             pass
-#                         #------------------------------>
-#                         s = s + 1
-#                     else:
-#                         pass
-#                 #------------------------------> 
-#                 pdbObj.SetBeta(pdbObj.rChain[0], betaDict)
-#                 pdbObj.WritePDB(
-#                     pdbO/f'{name[0]} - {e} - {name[1]}.pdb', pdbObj.rChain[0])
-#         #---
-#         #region ---------------------------------------------------> dlg
-#         dlg = FA2Btn(
-#             ['PDB', 'Output'],
-#             ['Path to the PDB file', 'Path to the output folder'],
-#             [config.elPDB, config.elPDB],
-#             [dtsValidator.InputFF('file', ext=config.esPDB),
-#             dtsValidator.OutputFF('folder', ext=config.esPDB)],
-#             parent = self
-#         )
-#         #endregion ------------------------------------------------> dlg
-        
-#         #region ---------------------------------------------------> Get Path
-#         if dlg.ShowModal():
-#             pdbI = dlg.wBtnI.tc.GetValue()
-#             pdbO = Path(dlg.wBtnO.tc.GetValue())
-#         else:
-#             dlg.Destroy()
-#             return False
-#         #endregion ------------------------------------------------> Get Path
-        
-#         #region ---------------------------------------------------> Variables
-#         pdbObj   = dtsFF.PDBFile(pdbI)
-#         pdbSeq   = pdbObj.GetSequence(pdbObj.rChain[0])
-#         pdbRes   = pdbObj.GetResNum(pdbObj.rChain[0])
-#         cut      = self.rObj.GetCleavagePerResidue(self.cSection, self.rDateC)
-#         cEvol    = self.rObj.GetCleavageEvolution(self.cSection, self.rDateC)
-#         blosum62 = substitution_matrices.load("BLOSUM62")
-#         #endregion ------------------------------------------------> Variables
-        
-#         #region -----------------------------------------------> Run
-#         align = pairwise2.align.globalds(
-#             pdbSeq, self.rRecSeqC, blosum62, -10, -0.5)
-#         #------------------------------> 
-#         Helper(pdbObj, self.rExp, align, cut, (self.rDateC, 'CpR'))
-#         Helper(pdbObj, self.rExp, align, cEvol, (self.rDateC, 'CEvol'))
-#         #endregion --------------------------------------------> Run
-
-#         dlg.Destroy()
 #         return True
 #     #---
     #endregion -------------------------------------------------> Event Methods
@@ -13199,130 +13198,118 @@ class DialogFABtnText(BaseDialogOkCancel):
 #---
 
 
-# class FA2Btn(dtsWindow.OkCancel):
-#     """
+class DialogFA2Btn(BaseDialogOkCancel):
+    """
 
-#         Parameters
-#         ----------
+        Parameters
+        ----------
         
 
-#         Attributes
-#         ----------
+        Attributes
+        ----------
         
 
-#         Raises
-#         ------
+        Raises
+        ------
         
 
-#         Methods
-#         -------
+        Methods
+        -------
         
-#     """
-#     #region -----------------------------------------------------> Class setup
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, btnLabel: list[str], btnHint: list[str], ext: list[str], 
+        btnValidator: list[wx.Validator], parent: Optional[wx.Window]=None):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(title='PDB Mapping', parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wBtnI = mWidget.ButtonTextCtrlFF(
+            self,
+            btnLabel  = btnLabel[0],
+            tcHint    = btnHint[0],
+            ext       = ext[0],
+            mode      = 'openO',
+            validator = btnValidator[0],
+        )
+        
+        self.wBtnO = mWidget.ButtonTextCtrlFF(
+            self,
+            btnLabel  = btnLabel[1],
+            tcHint    = btnHint[1],
+            ext       = ext[1],
+            mode      = 'folder',
+            validator = btnValidator[1],
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sFlex = wx.FlexGridSizer(2,2,1,1)
+        self.sFlex.Add(self.wBtnI.wBtn, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnI.wTc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnO.wBtn, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnO.wTc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.AddGrowableCol(1,1)
+        
+        self.sSizer.Add(self.sFlex, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window
     
-#     #endregion --------------------------------------------------> Class setup
-
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, btnLabel: list[str], btnHint: list[str], ext: list[str], 
-#         btnValidator: list[wx.Validator], parent: Optional[wx.Window]=None):
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(title='PDB Mapping', parent=parent)
-#         #endregion --------------------------------------------> Initial Setup
-
-#         #region -----------------------------------------------------> Widgets
-#         self.wBtnI = dtsWidget.ButtonTextCtrlFF(
-#             self,
-#             btnLabel  = btnLabel[0],
-#             tcHint    = btnHint[0],
-#             ext       = ext[0],
-#             mode      = 'openO',
-#             validator = btnValidator[0],
-#         )
-        
-#         self.wBtnO = dtsWidget.ButtonTextCtrlFF(
-#             self,
-#             btnLabel  = btnLabel[1],
-#             tcHint    = btnHint[1],
-#             ext       = ext[1],
-#             mode      = 'folder',
-#             validator = btnValidator[1],
-#         )
-#         #endregion --------------------------------------------------> Widgets
-
-#         #region ------------------------------------------------------> Sizers
-#         self.sFlex = wx.FlexGridSizer(2,2,1,1)
-#         self.sFlex.Add(self.wBtnI.btn, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sFlex.Add(self.wBtnI.tc, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sFlex.Add(self.wBtnO.btn, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-#         self.sFlex.Add(self.wBtnO.tc, 0, wx.EXPAND|wx.ALL, 5)
-#         self.sFlex.AddGrowableCol(1,1)
-        
-#         self.sSizer.Add(self.sFlex, 1, wx.EXPAND|wx.ALL, 5)
-#         self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
-        
-#         self.SetSizer(self.sSizer)
-#         self.Fit()
-#         #endregion ---------------------------------------------------> Sizers
-
-#         #region --------------------------------------------------------> Bind
-        
-#         #endregion -----------------------------------------------------> Bind
-
-#         #region ---------------------------------------------> Window position
-        
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #region ---------------------------------------------------> Class methods
-#     def OnOK(self, event: wx.CommandEvent) -> bool:
-#         """Validate user information and close the window
-    
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
             
-#             Returns
-#             -------
-#             bool
+            Returns
+            -------
+            bool
             
-#             Notes
-#             -----
-#             Basic implementation. Override as needed.
-#         """
-#         #region ---------------------------------------------------> 
-#         errors = 0
-#         #endregion ------------------------------------------------> 
+            Notes
+            -----
+            Basic implementation. Override as needed.
+        """
+        #region ---------------------------------------------------> 
+        errors = 0
+        #endregion ------------------------------------------------> 
 
-#         #region ---------------------------------------------------> 
-#         if self.wBtnI.tc.GetValidator().Validate()[0]:
-#             pass
-#         else:
-#             errors += 1
-#             self.wBtnI.tc.SetValue('')
+        #region ---------------------------------------------------> 
+        if self.wBtnI.wTc.GetValidator().Validate()[0]:
+            pass
+        else:
+            errors += 1
+            self.wBtnI.wTc.SetValue('')
             
-#         if self.wBtnO.tc.GetValidator().Validate()[0]:
-#             pass
-#         else:
-#             errors += 1
-#             self.wBtnO.tc.SetValue('')
-#         #endregion ------------------------------------------------> 
+        if self.wBtnO.wTc.GetValidator().Validate()[0]:
+            pass
+        else:
+            errors += 1
+            self.wBtnO.wTc.SetValue('')
+        #endregion ------------------------------------------------> 
 
-#         #region --------------------------------------------------------> 
-#         if not errors:
-#             self.EndModal(1)
-#             self.Close()
-#         else:
-#             pass
-#         #endregion -----------------------------------------------------> 
+        #region --------------------------------------------------------> 
+        if not errors:
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
+        #endregion -----------------------------------------------------> 
 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion --------------------------------------------------------> wx.Dialog
 
 
