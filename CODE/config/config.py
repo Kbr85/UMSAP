@@ -116,7 +116,7 @@ nwTarProt       = 'TarProtPlot'
 nwCheckDataPrep = 'Data Preparation'
 nwAAPlot        = 'AAPlot'
 nwHistPlot      = 'HistPlot'
-# nwCpRPlot       = 'CpRPlot'
+nwCpRPlot       = 'CpRPlot'
 # nwCEvolPlot     = 'CEvolPlot'
 nwAbout         = 'About UMSAP'
 #------------------------------> Dialogs
@@ -156,7 +156,7 @@ nuCorrA    = 'Correlation Analysis'
 nuAA       = 'AA Distribution'
 nuHist     = 'Histograms'
 nuReadF    = 'Read UMSAP File'
-# nuCpR      = 'Cleavage per Residues'
+nuCpR      = 'Cleavage per Residues'
 # nuCEvol    = 'Cleavage Evolution'
 #endregion ------------------------------------------------------------> Names
 
@@ -225,9 +225,9 @@ kwToolVolPlotColorConf     = 'Vol Plot Color Configure'
 # klToolVolPlotColorZ        = 'Z Score'
 #------------------------------> Fold Change Evolution
 kwToolFCShowAll = 'FC Plot Show All'
-# #------------------------------> Further Analysis
+#------------------------------> Further Analysis
 # klFACleavageEvol = 'Cleavage Evolution'
-# klFACleavagePerRes = 'Cleavage per Residue'
+kwToolFACleavagePerRes = 'Cleavage per Residue'
 # klFAPDBMap = 'PDB Map'
 #endregion ---------------------------------> Keywords for Menu - Method Links
 
@@ -685,9 +685,9 @@ color = { # Colors for the app
     nwHistPlot : {
         'Spot' : colorFragments,
     },
-#     nwCpRPlot : {
-#         'Spot' : colorFragments,
-#     },
+    nwCpRPlot : {
+        'Spot' : colorFragments,
+    },
 }
 #endregion -----------------------------------------------------------> Colors
 

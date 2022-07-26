@@ -7718,7 +7718,7 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
             'Hist-Item'              : self.HistSelect,
             'Hist-New'               : self.HistNew,
 #             config.klFACleavageEvol  : self.OnCEvol,
-#             config.klFACleavagePerRes: self.OnCpR,
+            mConfig.kwToolFACleavagePerRes: self.CpR,
 #             config.klFAPDBMap        : self.OnPDBMap,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
@@ -8433,6 +8433,29 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
         dlg.Destroy()
         return True
     #---
+
+    def CpR(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.cParent.rWindow[self.cSection]['FA'].append(                       # type: ignore
+            WindowResCpR(self, self.rDateC, self.rData[self.rDateC]['CpR']))
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ----------------------------------------------------> Event Methods
@@ -8484,26 +8507,6 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-#     def OnCpR(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         self.cParent.rWindow[self.cSection]['FA'].append(
-#             CpRPlot(self, self.rDateC, self.rData[self.rDateC]['CpR']))
-#         return True
-#     #---
-    
 #     def OnCEvol(self) -> bool:
 #         """
     
@@ -9754,312 +9757,271 @@ class WindowResHist(BaseWindowResultOnePlotFA):
 # #---
 
 
-# class CpRPlot(BaseWindowPlot):
-#     """
+class WindowResCpR(BaseWindowResultOnePlotFA):
+    """
 
-#         Parameters
-#         ----------
+        Parameters
+        ----------
         
 
-#         Attributes
-#         ----------
+        Attributes
+        ----------
         
 
-#         Raises
-#         ------
+        Raises
+        ------
         
 
-#         Methods
-#         -------
+        Methods
+        -------
         
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     #------------------------------> To id the window
-#     cName = config.nwCpRPlot
-#     #------------------------------> To id the section in the umsap file 
-#     # shown in the window
-#     cSection = config.nuCpR
-#     cColor   = config.color[cName]
-#     #------------------------------> 
-#     cNat = {
-#         True : 'Nat',
-#         False: 'Rec',
-#         'Rec': 'Recombinant Sequence',
-#         'Nat': 'Native Sequence',
-#     }
-#     #endregion --------------------------------------------------> Class setup
+    """
+    #region -----------------------------------------------------> Class setup
+    cName    = mConfig.nwCpRPlot
+    cSection = mConfig.nuCpR
+    cColor   = mConfig.color[cName]
+    #------------------------------>
+    cNat = {
+        True : 'Nat',
+        False: 'Rec',
+        'Rec': 'Recombinant Sequence',
+        'Nat': 'Native Sequence',
+    }
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: wx.Window, dateC: str, fileN: str) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cTitle = f"{cParent.cTitle} - {dateC} - {self.cSection}"
-#         self.cDateC = dateC
-#         self.cFileN = fileN
-#         self.rUMSAP = cParent.cParent
-#         self.rObj   = cParent.rObj
-#         self.rData  = self.rObj.GetFAData(
-#             cParent.cSection,cParent.rDateC,fileN, [0,1])
-#         self.rLabel = self.rData.columns.unique(level=1).tolist()
-#         self.rProtLength = cParent.rData[self.cDateC]['PI']['ProtLength']
-#         self.rProtLoc    = cParent.rData[self.cDateC]['PI']['ProtLoc']
-#         menuData     = self.SetMenuDate()
-#         #------------------------------> 
-#         super().__init__(cParent, menuData)
-#         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: WindowResTarProt, dateC: str, fileN: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle = f"{parent.cTitle} - {dateC} - {self.cSection}"
+        self.cDateC = dateC
+        self.cFileN = fileN
+        self.rUMSAP = parent.cParent
+        self.rObj   = parent.rObj
+        self.rData  = self.rObj.GetFAData(
+            parent.cSection, parent.rDateC,fileN, [0,1])
+        self.rLabel = self.rData.columns.unique(level=1).tolist()
+        self.rProtLength = parent.rData[self.cDateC]['PI']['ProtLength']
+        self.rProtLoc    = parent.rData[self.cDateC]['PI']['ProtLoc']
+        menuData     = self.SetMenuDate()
+        #------------------------------> 
+        super().__init__(parent, menuData)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region ---------------------------------------------------> Plot
+        self.UpdateResultWindow(nat=False, label=[menuData['Label'][0]])
+        #endregion ------------------------------------------------> Plot
+
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetMenuDate(self):
+        """
+
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------->
+        menuData = {}
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        menuData['Label'] = [k for k in self.rLabel]
+        #------------------------------>
+        if self.rProtLength[1] is not None:
+            menuData['Nat'] = True
+        else:
+            menuData['Nat'] = False
+        #endregion ------------------------------------------------>
+
+        return menuData
+    #---
+
+    def UpdateResultWindow(
+        self, nat:bool, label: list[str], protLoc: bool=True
+        ) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> Variables
+        self.rNat  = self.cNat[nat]
+        self.rLabelC = label
+        #------------------------------> 
+        idx = pd.IndexSlice
+        df = self.rData.loc[:,idx[self.rNat,label]]
+        #------------------------------> 
+        if nat:
+            tXIdx = range(0, self.rProtLength[1])
+        else:
+            tXIdx = range(0, self.rProtLength[0])
+        x = [x+1 for x in tXIdx]
+        #------------------------------> 
+        color = []
+        #------------------------------> 
+        yMax = self.rData.loc[:,idx[self.rNat,label]].max().max()
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        self.SetAxis()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Plot
+        for e in label:
+            #------------------------------> 
+            y = self.rData.iloc[tXIdx, self.rData.columns.get_loc(idx[self.rNat,e])]
+            tColor = self.cColor['Spot'][
+                self.rLabel.index(e)%len(self.cColor['Spot'])]
+            color.append(tColor)
+            #------------------------------>
+            self.wPlot[0].rAxes.plot(x,y, color=tColor)
+        #------------------------------> 
+        if self.rNat == self.cNat[False] and protLoc:
+            if self.rProtLoc[0] is not None:
+                self.wPlot[0].rAxes.vlines(
+                    self.rProtLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
+                self.wPlot[0].rAxes.vlines(
+                    self.rProtLoc[1],0,yMax,linestyles='dashed',color='black',zorder=1)
+            else:
+                pass
+        else:
+            pass
+        #endregion ------------------------------------------------> Plot
+
+        #region ----------------------------------------------------> Legend
+        leg = []
+        for i in range(0, len(label), 1):
+            leg.append(mpatches.Patch(
+                color = color[i],
+                label = label[i],
+            ))
+        leg = self.wPlot[0].rAxes.legend(
+            handles        = leg,
+            loc            = 'upper left',
+            bbox_to_anchor = (1, 1)
+        )
+        leg.get_frame().set_edgecolor('k')
+        #endregion -------------------------------------------------> Legend
+
+        #region ---------------------------------------------------> Zoom
+        self.wPlot[0].ZoomResetSetValues()
+        self.wPlot[0].rAxes.set_title(f'{self.cNat[self.rNat]}')
+        self.wPlot[0].rCanvas.draw()
+        #endregion ------------------------------------------------> Zoom
+
+        return True
+    #---
+
+    def SetAxis(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------->
+        self.wPlot[0].rAxes.clear()
+        #endregion ------------------------------------------------>
+
+        #region ---------------------------------------------------> Label
+        self.wPlot[0].rAxes.yaxis.get_major_locator().set_params(integer=True)
+        self.wPlot[0].rAxes.set_xlabel('Residue Number')
+        self.wPlot[0].rAxes.set_ylabel('Number of Cleavages')
+        #endregion ------------------------------------------------> Label
+
+        return True
+    #---
+
+    def DupWin(self) -> bool:
+        """ Export data to a csv file 
         
-#         #region ---------------------------------------------------> Plot
-#         self.UpdatePlot(nat=False, label=[menuData['Label'][0]])
-#         #endregion ------------------------------------------------> Plot
-
-#         #region ---------------------------------------------> Window position
-#         self.WinPos()
-#         self.Show()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
-
-#     #region ---------------------------------------------------> Class methods
-#     def SetMenuDate(self):
-#         """
-
-#             Parameters
-#             ----------
-            
+            Returns
+            -------
+            bool
+        """
+        #------------------------------> 
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(                # type: ignore
+            WindowResCpR(self.cParent, self.cDateC, self.cFileN))               # type: ignore
+        #------------------------------> 
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
     
-#             Returns
-#             -------
-            
+    #region ---------------------------------------------------> Event Methods
+    def OnUpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info
     
-#             Raise
-#             -----
-            
-#         """
-#         #region --------------------------------------------------->
-#         menuData = {}
-#         #endregion ------------------------------------------------>
-
-#         #region --------------------------------------------------->
-#         menuData['Label'] = [k for k in self.rLabel]
-#         #------------------------------>
-#         if self.rProtLength[1] is not None:
-#             menuData['Nat'] = True
-#         else:
-#             menuData['Nat'] = False
-#         #endregion ------------------------------------------------>
-
-#         return menuData
-#     #---
-    
-#     def UpdatePlot(
-#         self, nat:bool, label: list[str], protLoc: bool=True
-#         ) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> Variables
-#         self.rNat  = self.cNat[nat]
-#         self.rLabelC = label
-#         #------------------------------> 
-#         idx = pd.IndexSlice
-#         df = self.rData.loc[:,idx[self.rNat,label]]
-#         #------------------------------> 
-#         if nat:
-#             tXIdx = range(0, self.rProtLength[1])
-#         else:
-#             tXIdx = range(0, self.rProtLength[0])
-#         x = [x+1 for x in tXIdx]
-#         #------------------------------> 
-#         color = []
-#         #------------------------------> 
-#         yMax = self.rData.loc[:,idx[self.rNat,label]].max().max()
-#         #endregion ------------------------------------------------> Variables
-
-#         #region ---------------------------------------------------> 
-#         self.SetAxis()
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> Plot
-#         for e in label:
-#             #------------------------------> 
-#             y = self.rData.iloc[tXIdx, self.rData.columns.get_loc(idx[self.rNat,e])]
-#             tColor = self.cColor['Spot'][
-#                 self.rLabel.index(e)%len(self.cColor['Spot'])]
-#             color.append(tColor)
-#             #------------------------------>
-#             self.wPlot.axes.plot(x,y, color=tColor)
-#         #------------------------------> 
-#         if self.rNat == self.cNat[False] and protLoc:
-#             if self.rProtLoc[0] is not None:
-#                 self.wPlot.axes.vlines(
-#                     self.rProtLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
-#                 self.wPlot.axes.vlines(
-#                     self.rProtLoc[1],0,yMax,linestyles='dashed',color='black',zorder=1)
-#             else:
-#                 pass
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Plot
-        
-#         #region ----------------------------------------------------> Legend
-#         leg = []
-#         for i in range(0, len(label), 1):
-#             leg.append(mpatches.Patch(
-#                 color = color[i],
-#                 label = label[i],
-#             ))
-#         leg = self.wPlot.axes.legend(
-#             handles        = leg,
-#             loc            = 'upper left',
-#             bbox_to_anchor = (1, 1)
-#         )
-#         leg.get_frame().set_edgecolor('k')		
-#         #endregion -------------------------------------------------> Legend
-        
-#         #region ---------------------------------------------------> Zoom
-#         self.wPlot.ZoomResetSetValues()
-#         #endregion ------------------------------------------------> Zoom
-        
-#         self.wPlot.axes.set_title(f'{self.cNat[self.rNat]}')
-#         self.wPlot.canvas.draw()
-#         return True
-#     #---
-    
-#     def SetAxis(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         self.wPlot.axes.clear()
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> Label
-#         self.wPlot.axes.yaxis.get_major_locator().set_params(integer=True)
-#         self.wPlot.axes.set_xlabel('Residue Number')
-#         self.wPlot.axes.set_ylabel('Number of Cleavages')
-#         #endregion ------------------------------------------------> Label
-
-#         return True
-#     #---
-    
-#     def UpdateStatusBar(self, event) -> bool:
-#         """Update the statusbar info
-    
-#             Parameters
-#             ----------
-#             event: matplotlib event
-#                 Information about the event
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event
                 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ----------------------------------------------> Statusbar Text
-#         if event.inaxes:
-#             #------------------------------> 
-#             x = event.xdata
-#             xf = round(x)
-#             idx = pd.IndexSlice
-#             #------------------------------> 
-#             y = []
-#             try:
-#                 for l in self.rLabelC:
-#                     col = self.rData.columns.get_loc(idx[self.rNat,l])
-#                     y.append(self.rData.iat[xf-1,col])
-#             except IndexError:
-#                 self.wStatBar.SetStatusText('')
-#                 return False
-#             #------------------------------> 
-#             s = ''
-#             for k,l in enumerate(self.rLabelC):
-#                 s = f'{s}{l}={y[k]}   '
-#             self.wStatBar.SetStatusText(f'Res={xf}   {s}')
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            #------------------------------> 
+            x = event.xdata
+            xf = round(x)
+            idx = pd.IndexSlice
+            #------------------------------> 
+            y = []
+            try:
+                for l in self.rLabelC:
+                    col = self.rData.columns.get_loc(idx[self.rNat,l])
+                    y.append(self.rData.iat[xf-1,col])
+            except IndexError:
+                self.wStatBar.SetStatusText('')
+                return False
+            #------------------------------> 
+            s = ''
+            for k,l in enumerate(self.rLabelC):
+                s = f'{s}{l}={y[k]}   '
+            self.wStatBar.SetStatusText(f'Res={xf}   {s}')
             
-#         else:
-#             self.wStatBar.SetStatusText('')
-#         #endregion -------------------------------------------> Statusbar Text
-        
-#         return True
-#     #---
-    
-#     def OnClose(self, event: wx.CloseEvent) -> bool:
-#         """Close window and uncheck section in UMSAPFile window. Assumes 
-#             self.parent is an instance of UMSAPControl.
-#             Override as needed.
-    
-#             Parameters
-#             ----------
-#             event: wx.CloseEvent
-#                 Information about the event
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -----------------------------------------------> Update parent
-#         self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)		
-#         #endregion --------------------------------------------> Update parent
-        
-#         #region ------------------------------------> Reduce number of windows
-#         config.winNumber[self.cName] -= 1
-#         #endregion ---------------------------------> Reduce number of windows
-        
-#         #region -----------------------------------------------------> Destroy
-#         self.Destroy()
-#         #endregion --------------------------------------------------> Destroy
-        
-#         return True
-#     #---
-    
-#     def OnExportPlotData(self) -> bool:
-#         """ Export data to a csv file 
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         return super().OnExportPlotData(df=self.rData)
-#     #---
-    
-#     def OnDupWin(self) -> bool:
-#         """ Export data to a csv file 
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #------------------------------> 
-#         self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
-#             CpRPlot(self.cParent, self.cDateC, self.cFileN)
-#         )
-#         #------------------------------> 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+        else:
+            self.wStatBar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+#---
 
 
 class WindowUMSAPControl(BaseWindow):

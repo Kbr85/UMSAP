@@ -1526,146 +1526,146 @@ class MenuToolHist(BaseMenuFurtherAnalysis):
 #---
 
 
-# class MenuToolCpR(BaseMenuFurtherAnalysis):
-#     """Tool menu for the Cleavage per Residue result window.
+class MenuToolCpR(BaseMenuFurtherAnalysis):
+    """Tool menu for the Cleavage per Residue result window.
 
-#         Parameters
-#         ----------
-#         menuData: dict
-#             Dict with the data for the menu with the following two entries:
-#             {
-#                 'Label': ['L1', 'L2',....],
-#                 'Nat: bool,
-#             }
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData):
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(menuData)
-#         #endregion --------------------------------------------> Initial Setup
+        Parameters
+        ----------
+        menuData: dict
+            Dict with the data for the menu with the following two entries:
+            {
+                'Label': ['L1', 'L2',....],
+                'Nat: bool,
+            }
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(menuData)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         #------------------------------>
-#         self.rItems = []
-#         for k in menuData['Label']:
-#             self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
-#             self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
-#         self.rItems[0].Check()
-#         self.AppendSeparator()
-#         #------------------------------>
-#         self.AddNatRecSeqEntry(self.OnLabel)
-#         self.AppendSeparator()
-#         #------------------------------>
-#         self.miSel = self.Append(
-#             -1, 'Single Selection\tCtrl+S', kind=wx.ITEM_CHECK)
-#         self.miSel.Check(True)
-#         #------------------------------> 
-#         if menuData['Nat']:
-#             self.miProtLoc = self.Append(
-#                 -1, 'Show Native Protein Location', kind=wx.ITEM_CHECK)
-#             self.miProtLoc.Check(True)
-#             #------------------------------>
-#             self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miProtLoc)
-#         else:
-#             pass
-#         self.AppendSeparator()
-#         #------------------------------>
-#         self.AddLastItems()
-#         #endregion -----------------------------------------------> Menu Items
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------> Menu Items
+        #------------------------------>
+        self.rItems = []
+        for k in menuData['Label']:
+            self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
+            self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
+        self.rItems[0].Check()
+        self.AppendSeparator()
+        #------------------------------>
+        self.AddNatRecSeqEntry(self.OnLabel)
+        self.AppendSeparator()
+        #------------------------------>
+        self.miSel = self.Append(
+            -1, 'Single Selection\tCtrl+S', kind=wx.ITEM_CHECK)
+        self.miSel.Check(True)
+        #------------------------------> 
+        if menuData['Nat']:
+            self.miProtLoc = self.Append(
+                -1, 'Show Native Protein Location', kind=wx.ITEM_CHECK)
+            self.miProtLoc.Check(True)
+            #------------------------------>
+            self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miProtLoc)
+        else:
+            pass
+        self.AppendSeparator()
+        #------------------------------>
+        self.AddLastItems()
+        #endregion -----------------------------------------------> Menu Items
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class methods
-#     def OnLabel(self, event: wx.CommandEvent) -> bool:
-#         """Change between Experiments.
+    #region ---------------------------------------------------> Class methods
+    def OnLabel(self, event: wx.CommandEvent) -> bool:
+        """Change between Experiments.
 
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         try:
-#             nat = self.miNat.IsChecked()
-#         except AttributeError:
-#             nat = False
-#         #------------------------------> 
-#         try:
-#             show = self.miProtLoc.IsChecked()
-#         except AttributeError:
-#             show = False
-#         #------------------------------> 
-#         sel = self.miSel.IsChecked()
-#         #endregion ------------------------------------------------> 
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        try:
+            nat = self.miNat.IsChecked()
+        except AttributeError:
+            nat = False
+        #------------------------------> 
+        try:
+            show = self.miProtLoc.IsChecked()
+        except AttributeError:
+            show = False
+        #------------------------------> 
+        sel = self.miSel.IsChecked()
+        #endregion ------------------------------------------------> 
 
-#         #region ---------------------------------------------------> 
-#         #------------------------------> Selection mode
-#         if sel and self.GetLabelText(event.GetId()) != mConfig.lmNatSeq:
-#             [x.Check(False) for x in self.rItems]
-#             self.Check(event.GetId(), True)
-#         else:
-#             pass
-#         #------------------------------> Labels
-#         label = [x.GetItemLabel() for x in self.rItems if x.IsChecked()]
-#         if label:
-#             pass
-#         else:
-#             self.rItems[0].Check()
-#             label = [self.rItems[0].GetItemLabel()]
-#         #endregion ------------------------------------------------> 
+        #region ---------------------------------------------------> 
+        #------------------------------> Selection mode
+        if sel and self.GetLabelText(event.GetId()) != mConfig.lmNatSeq:
+            [x.Check(False) for x in self.rItems]
+            self.Check(event.GetId(), True)
+        else:
+            pass
+        #------------------------------> Labels
+        label = [x.GetItemLabel() for x in self.rItems if x.IsChecked()]
+        if label:
+            pass
+        else:
+            self.rItems[0].Check()
+            label = [self.rItems[0].GetItemLabel()]
+        #endregion ------------------------------------------------> 
 
-#         #region ---------------------------------------------------> 
-#         win = self.GetWindow()
-#         win.UpdatePlot(nat, label, show)
-#         #endregion ------------------------------------------------> 
+        #region ---------------------------------------------------> 
+        win = self.GetWindow()
+        win.UpdateResultWindow(nat, label, show)
+        #endregion ------------------------------------------------> 
 
-#         return True
-#     #---
-    
-#     def OnClear(self, event: wx.CommandEvent) -> bool:
-#         """Change between Experiments.
+        return True
+    #---
 
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
+    def OnClear(self, event: wx.CommandEvent) -> bool:
+        """Change between Experiments.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------->
-#         #------------------------------>
-#         self.rItems[0].Check()
-#         [x.Check(False) for x in self.rItems[1:]]
-#         #------------------------------>
-#         try:
-#             self.miNat.Check(False)
-#         except AttributeError:
-#             pass
-#         #------------------------------>
-#         try:
-#             self.miProtLoc.Check(True)
-#         except AttributeError:
-#             pass
-#         #------------------------------>
-#         self.miSel.Check(True)
-#         #endregion ------------------------------------------------>
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
 
-#         #region --------------------------------------------------->
-#         win = self.GetWindow()
-#         win.UpdatePlot(False, [self.rItems[0].GetItemLabel()], True)
-#         #endregion ------------------------------------------------>
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        #------------------------------>
+        self.rItems[0].Check()
+        [x.Check(False) for x in self.rItems[1:]]
+        #------------------------------>
+        try:
+            self.miNat.Check(False)
+        except AttributeError:
+            pass
+        #------------------------------>
+        try:
+            self.miProtLoc.Check(True)
+        except AttributeError:
+            pass
+        #------------------------------>
+        self.miSel.Check(True)
+        #endregion ------------------------------------------------>
 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class methods
-# #---
+        #region --------------------------------------------------->
+        win = self.GetWindow()
+        win.UpdateResultWindow(False, [self.rItems[0].GetItemLabel()], True)
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 
 
 # class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
@@ -2202,17 +2202,17 @@ class MenuToolTarProtFurtherAnalysis(BaseMenu):
         #endregion --------------------------------------------> Initial Setup
 
         #region ---------------------------------------------------> 
-#         rIDMap = {
-#             self.miCEvol.GetId() : mConfig.klFACleavageEvol,
-#             self.miCpR.GetId()   : mConfig.klFACleavagePerRes,
+        rIDMap = {
+            # self.miCEvol.GetId() : mConfig.kwToolFACleavageEvol,
+            self.miCpR.GetId()   : mConfig.kwToolFACleavagePerRes,
 #             self.miPDB.GetId()   : mConfig.klFAPDBMap,
-#         }
-#         self.rIDMap = self.rIDMap | rIDMap
+        }
+        self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCpR)
-#         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCEvol)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCpR)
+        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCEvol)
 #         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miPDB)
         #endregion -----------------------------------------------------> Bind
     #---
@@ -2421,7 +2421,7 @@ class MenuBarTool(MenuBarMain):
         mConfig.nwTarProt      : MenuToolTarProt,
         mConfig.nwAAPlot       : MenuToolAA,
         mConfig.nwHistPlot     : MenuToolHist,
-        # mConfig.nwCpRPlot      : MenuToolCpR,
+        mConfig.nwCpRPlot      : MenuToolCpR,
         # mConfig.nwCEvolPlot    : MenuToolCleavageEvol,
     }
     #endregion --------------------------------------------------> Class Setup
