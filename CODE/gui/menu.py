@@ -2203,7 +2203,7 @@ class MenuToolTarProtFurtherAnalysis(BaseMenu):
 
         #region ---------------------------------------------------> 
         rIDMap = {
-            # self.miCEvol.GetId() : mConfig.kwToolFACleavageEvol,
+            self.miCEvol.GetId() : mConfig.kwToolFACleavageEvol,
             self.miCpR.GetId()   : mConfig.kwToolFACleavagePerRes,
             self.miPDB.GetId()   : mConfig.kwToolFAPDBMap,
         }
@@ -2212,7 +2212,7 @@ class MenuToolTarProtFurtherAnalysis(BaseMenu):
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCpR)
-        # self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCEvol)
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCEvol)
         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miPDB)
         #endregion -----------------------------------------------------> Bind
     #---

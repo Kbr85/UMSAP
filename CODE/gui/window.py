@@ -882,10 +882,7 @@ class BaseWindowResultOnePlotFA(BaseWindowResultOnePlot):
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
-
 #---
-
-
 
 
 class BaseWindowResultListText(BaseWindowResult):
@@ -7713,11 +7710,11 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
             'Fragment' : self.ClearFrag,
             'All'      : self.ClearAll,
             #------------------------------> 
-            'AA-Item'                : self.AASelect,
-            'AA-New'                 : self.AANew,
-            'Hist-Item'              : self.HistSelect,
-            'Hist-New'               : self.HistNew,
-#             config.klFACleavageEvol  : self.OnCEvol,
+            'AA-Item'                     : self.AASelect,
+            'AA-New'                      : self.AANew,
+            'Hist-Item'                   : self.HistSelect,
+            'Hist-New'                    : self.HistNew,
+            mConfig.kwToolFACleavageEvol  : self.CEvol,
             mConfig.kwToolFACleavagePerRes: self.CpR,
             mConfig.kwToolFAPDBMap        : self.PDBMap,
         }
@@ -8551,6 +8548,26 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
         dlg.Destroy()
         return True
     #---
+
+    def CEvol(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        self.cParent.rWindow[self.cSection]['FA'].append(                       # type: ignore
+            WindowResCEvol(self, self.rDateC, self.rData[self.rDateC]['CEvol']))
+        return True
+    #---
     #endregion -----------------------------------------------> Manage Methods
 
     #region ----------------------------------------------------> Event Methods
@@ -8601,26 +8618,6 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 
         return True
     #---
-
-#     def OnCEvol(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         self.cParent.rWindow[self.cSection]['FA'].append(
-#             CEvolPlot(self, self.rDateC, self.rData[self.rDateC]['CEvol']))
-#         return True
-#     #---
     #endregion -------------------------------------------------> Event Methods
 #---
 
@@ -9368,75 +9365,69 @@ class WindowResHist(BaseWindowResultOnePlotFA):
 #---
 
 
-# class CEvolPlot(BaseWindowNPlotLT):
-#     """
+class WindowResCEvol(BaseWindowResultListTextNPlot):
+    """
 
-#         Parameters
-#         ----------
+        Parameters
+        ----------
         
 
-#         Attributes
-#         ----------
+        Attributes
+        ----------
         
 
-#         Raises
-#         ------
+        Raises
+        ------
         
 
-#         Methods
-#         -------
+        Methods
+        -------
         
-#     """
-#     #region -----------------------------------------------------> Class setup
-#     #------------------------------> To id the window
-#     cName = config.nwCEvolPlot
-#     #------------------------------> To id the section in the umsap file 
-#     # shown in the window
-#     cSection = config.nuCEvol
-#     #------------------------------> 
-#     cTList   = 'Residue Numbers'
-#     cTPlots  = 'Plot'
-#     cLNPlots = ['M']
-#     cLCol    = ['Residue']
-#     cLCStyle = wx.LC_REPORT|wx.LC_VIRTUAL
-#     #------------------------------> 
-#     cHSearch = 'Residue Number'
-#     #------------------------------> 
-#     cNPlotsCol = 1
+    """
+    #region -----------------------------------------------------> Class setup
+    cName    = mConfig.nwCEvolPlot
+    cSection = mConfig.nuCEvol
+    #------------------------------>
+    cTList   = 'Residue Numbers'
+    cTPlot   = 'Plot'
+    cLNPlot  = ['M']
+    cLCol    = ['Residue']
+    #------------------------------> 
+    cHSearch = 'Residue Number'
 #     #------------------------------> 
 #     cSCol    = (100, 100)
 #     cSWindow = (670,560)
 #     #------------------------------> 
-#     cRec = {
-#         True : 'Nat',
-#         False: 'Rec',
-#         'Rec': 'Recombinant Sequence',
-#         'Nat': 'Native Sequence',
-#     }
-#     #endregion --------------------------------------------------> Class setup
+    cRec = {
+        True : 'Nat',
+        False: 'Rec',
+        'Rec': 'Recombinant Sequence',
+        'Nat': 'Native Sequence',
+    }
+    #endregion --------------------------------------------------> Class setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(
-#         self, cParent: wx.Window, dateC: str, fileN: str) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         self.cTitle = f"{cParent.cTitle} - {dateC} - {self.cSection}"
-#         self.cDateC = dateC
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self, parent: WindowResTarProt, dateC: str, fileN: str) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cTitle = f"{parent.cTitle} - {dateC} - {self.cSection}"
+        self.cDateC = dateC
 #         self.cFileN = fileN
-#         self.rUMSAP = cParent.cParent
-#         self.rObj   = cParent.rObj
-#         self.rData  = self.rObj.GetFAData(
-#             cParent.cSection, cParent.rDateC, fileN, [0,1])
-#         self.rLabel = self.rData.columns.unique(level=1).tolist()
-#         self.rIdx = {}
+        self.rUMSAP = parent.cParent
+        self.rObj   = parent.rObj
+        self.rData  = self.rObj.GetFAData(
+            parent.cSection, parent.rDateC, fileN, [0,1])
+        self.rLabel = self.rData.columns.unique(level=1).tolist()
+        self.rIdx = {}
 #         self.rRec = 'Rec'
 #         self.rMon = False
-#         self.rProtLength = cParent.rData[self.cDateC]['PI']['ProtLength']
+        self.rProtLength = parent.rData[self.cDateC]['PI']['ProtLength']
 #         self.rProtLoc    = cParent.rData[self.cDateC]['PI']['ProtLoc']
-#         menuData         = self.SetMenuDate()
-#         #------------------------------> 
-#         super().__init__(cParent, menuData)
-#         #------------------------------> 
+        menuData         = self.SetMenuDate()
+        #------------------------------> 
+        super().__init__(parent, menuData)
+        #------------------------------> 
 #         dKeyMethod = {
 #             'ZoomR' : self.OnZoomReset,
 #             'SaveI' : self.OnSaveImage,
@@ -9444,26 +9435,214 @@ class WindowResHist(BaseWindowResultOnePlotFA):
 #             config.klToolGuiUpdate: self.UpdatePlot,
 #         }
 #         self.dKeyMethod = self.dKeyMethod | dKeyMethod
-#         #endregion --------------------------------------------> Initial Setup
+        #endregion --------------------------------------------> Initial Setup
         
-#         #region ---------------------------------------------------> 
-#         self._mgr.DetachPane(self.wText)
-#         self._mgr.Update()
-#         self.wText.Destroy()
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> Plot
-#         self.UpdatePlot(False, False)
-#         #endregion ------------------------------------------------> Plot
-        
-#         #region ---------------------------------------------> Window position
-#         self.WinPos()
-#         self.Show()
-#         #endregion ------------------------------------------> Window position
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region ---------------------------------------------------> 
+        self._mgr.DetachPane(self.wText)
+        self._mgr.Update()
+        self.wText.Destroy()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Plot
+        self.UpdateResultWindow(False, False)
+        #endregion ------------------------------------------------> Plot
+
+        #region ---------------------------------------------> Window position
+        self.WinPos()
+        self.Show()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region --------------------------------------------------> Manage Methods
+    def SetMenuDate(self):
+        """
+
+            Parameters
+            ----------
+            
     
-#     #region ---------------------------------------------------> Event Methods
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------->
+        menuData = {}
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        menuData['Label'] = [k for k in self.rLabel]
+        #------------------------------>
+        if self.rProtLength[1] is not None:
+            menuData['Nat'] = True
+        else:
+            menuData['Nat'] = False
+        #endregion ------------------------------------------------>
+
+        return menuData
+    #---
+
+    def UpdateResultWindow(
+        self, nat: Optional[bool]=None, mon: Optional[bool]=None) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region --------------------------------------------------->
+        #------------------------------>
+        if nat is not None:
+            self.rRec = self.cRec[nat]
+        else:
+            pass
+        #------------------------------>
+        self.rMon = mon if mon is not None else self.rMon
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        idx = pd.IndexSlice
+        if self.rRec:
+            self.rDF = self.rData.loc[:,idx[self.rRec,:]]
+        else:
+            self.rDF = self.rData.loc[:,idx[self.rRec,:]]
+        #------------------------------> 
+        self.rDF = self.rDF[self.rDF.any(axis=1)]
+        #------------------------------> 
+        if self.rMon:
+            self.rDF = self.rDF[self.rDF.apply(
+                lambda x: x.is_monotonic_increasing or x.is_monotonic_decreasing,
+                axis=1
+            )]
+        else:
+            pass
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.FillListCtrl(self.rDF.index.tolist())
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        self.SetAxis()
+        self.wPlot.dPlot['M'].ZoomResetSetValues()
+        self.wPlot.dPlot['M'].rCanvas.draw()
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def FillListCtrl(self, tRes: list[int]) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.wLC.wLCS.wLC.DeleteAllItems()
+        #endregion ------------------------------------------------> 
+    
+        #region ---------------------------------------------------> 
+        data = []
+        for k in tRes:
+            data.append([str(k+1)])
+        self.wLC.wLCS.wLC.SetNewData(data)
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+
+    def SetAxis(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.wPlot.dPlot['M'].rAxes.clear()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> Label
+        self.wPlot.dPlot['M'].rAxes.set_xticks(range(1,len(self.rLabel)+1))
+        self.wPlot.dPlot['M'].rAxes.set_xticklabels(self.rLabel)
+        self.wPlot.dPlot['M'].rAxes.set_xlim(0, len(self.rLabel)+1)
+        self.wPlot.dPlot['M'].rAxes.set_xlabel('Experiment Label')
+        self.wPlot.dPlot['M'].rAxes.set_ylabel('Relative Cleavage Rate')
+        #------------------------------>
+        self.wPlot.dPlot['M'].rAxes.set_title(self.cRec[self.rRec])
+        #endregion ------------------------------------------------> Label
+
+        return True
+    #---
+
+    def Plot(self) -> bool:
+        """
+    
+            Parameters
+            ----------
+            
+    
+            Returns
+            -------
+            
+    
+            Raise
+            -----
+            
+        """
+        #region ---------------------------------------------------> 
+        self.SetAxis()
+        #endregion ------------------------------------------------> 
+
+        #region ---------------------------------------------------> 
+        for idx,v in self.rIdx.items():
+            x = range(1,len(self.rLabel)+1)
+            y = self.rDF.iloc[idx,:]
+            self.wPlot.dPlot['M'].rAxes.plot(x,y, label=f'{v[0]}')
+        #------------------------------> 
+        if len(self.rIdx) > 1:
+            self.wPlot.dPlot['M'].rAxes.legend()
+        else:
+            pass
+        #------------------------------>
+        self.wPlot.dPlot['M'].ZoomResetSetValues()
+        self.wPlot.dPlot['M'].rCanvas.draw()
+        #endregion ------------------------------------------------> 
+
+        return True
+    #---
+    #endregion -----------------------------------------------> Manage Methods 
+
+    #region ---------------------------------------------------> Event Methods
 #     def OnClose(self, event: wx.CloseEvent) -> bool:
 #         """Close window and uncheck section in UMSAPFile window. Assumes 
 #             self.parent is an instance of UMSAPControl.
@@ -9539,221 +9718,33 @@ class WindowResHist(BaseWindowResultOnePlotFA):
 #         """
 #         return self.wPlot.dPlot['M'].ZoomResetPlot()
 #     #---
-    
-#     def OnListSelect(self, event: Union[wx.Event, str]) -> bool:
-#         """What to do after selecting a row in the wx.ListCtrl. 
-#             Override as needed
-    
-#             Parameters
-#             ----------
-#             event : wx.Event
-#                 Information about the event
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ---------------------------------------------------> 
-#         super().OnListSelect(event)
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         self.rIdx = self.wLC.wLCS.lc.GetSelectedRows(True)
-#         self.Plot()
-#         #endregion ------------------------------------------------> 
 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Event Methods
+    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
+        """What to do after selecting a row in the wx.ListCtrl. 
+            Override as needed
     
-#     #region --------------------------------------------------> Manage Methods
-#     def SetMenuDate(self):
-#         """
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event
+    
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> 
+        super().OnListSelect(event)
+        #endregion ------------------------------------------------> 
 
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region --------------------------------------------------->
-#         menuData = {}
-#         #endregion ------------------------------------------------>
+        #region ---------------------------------------------------> 
+        self.rIdx = self.wLC.wLCS.wLC.GetSelectedRows(True)
+        self.Plot()
+        #endregion ------------------------------------------------> 
 
-#         #region --------------------------------------------------->
-#         menuData['Label'] = [k for k in self.rLabel]
-#         #------------------------------>
-#         if self.rProtLength[1] is not None:
-#             menuData['Nat'] = True
-#         else:
-#             menuData['Nat'] = False
-#         #endregion ------------------------------------------------>
-
-#         return menuData
-#     #---
-    
-#     def UpdatePlot(
-#         self, nat: Optional[bool]=None, mon: Optional[bool]=None) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region --------------------------------------------------->
-#         #------------------------------>
-#         if nat is not None:
-#             self.rRec = self.cRec[nat]
-#         else:
-#             pass
-#         #------------------------------>
-#         self.rMon = mon if mon is not None else self.rMon
-#         #endregion ------------------------------------------------>
-
-#         #region --------------------------------------------------->
-#         idx = pd.IndexSlice
-#         if self.rRec:
-#             self.rDF = self.rData.loc[:,idx[self.rRec,:]]
-#         else:
-#             self.rDF = self.rData.loc[:,idx[self.rRec,:]]
-#         #------------------------------> 
-#         self.rDF = self.rDF[self.rDF.any(axis=1)]
-#         #------------------------------> 
-#         if self.rMon:
-#             self.rDF = self.rDF[self.rDF.apply(
-#                 lambda x: x.is_monotonic_increasing or x.is_monotonic_decreasing,
-#                 axis=1
-#             )]
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> 
-#         self.FillListCtrl(self.rDF.index.tolist())
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> 
-#         self.SetAxis()
-#         self.wPlot.dPlot['M'].ZoomResetSetValues()
-#         self.wPlot.dPlot['M'].canvas.draw()
-#         #endregion ------------------------------------------------>
-
-#         return True
-#     #---
-
-    # def FillListCtrl(self, tRes: list[int]) -> bool:
-    #     """
-    
-    #         Parameters
-    #         ----------
-            
-    
-    #         Returns
-    #         -------
-            
-    
-    #         Raise
-    #         -----
-            
-    #     """
-    #     #region ---------------------------------------------------> 
-    #     self.wLC.wLCS.wLC.DeleteAllItems()
-    #     #endregion ------------------------------------------------> 
-    
-    #     #region ---------------------------------------------------> 
-    #     data = []
-    #     for k in tRes:
-    #         data.append([str(k+1)])
-    #     self.wLC.wLCS.wLC.SetNewData(data)
-    #     #endregion ------------------------------------------------> 
-
-    #     return True
-    # #---
-
-#     def SetAxis(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         self.wPlot.dPlot['M'].axes.clear()
-#         #endregion ------------------------------------------------> 
-
-#         #region ---------------------------------------------------> Label
-#         self.wPlot.dPlot['M'].axes.set_xticks(range(1,len(self.rLabel)+1))
-#         self.wPlot.dPlot['M'].axes.set_xticklabels(self.rLabel)
-#         self.wPlot.dPlot['M'].axes.set_xlim(0, len(self.rLabel)+1)
-#         self.wPlot.dPlot['M'].axes.set_xlabel('Experiment Label')
-#         self.wPlot.dPlot['M'].axes.set_ylabel('Relative Cleavage Rate')
-        
-#         self.wPlot.dPlot['M'].axes.set_title(self.cRec[self.rRec])
-#         #endregion ------------------------------------------------> Label
-        
-#         return True
-#     #---
-    
-#     def Plot(self) -> bool:
-#         """
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         #region ---------------------------------------------------> 
-#         self.SetAxis()
-#         #endregion ------------------------------------------------> 
-        
-#         #region ---------------------------------------------------> 
-#         for idx,v in self.rIdx.items():
-#             x = range(1,len(self.rLabel)+1)
-#             y = self.rDF.iloc[idx,:]
-#             self.wPlot.dPlot['M'].axes.plot(x,y, label=f'{v[0]}')
-#         #------------------------------> 
-#         if len(self.rIdx) > 1:
-#             self.wPlot.dPlot['M'].axes.legend()
-#         else:
-#             pass
-#         #------------------------------>
-#         self.wPlot.dPlot['M'].ZoomResetSetValues()
-#         self.wPlot.dPlot['M'].canvas.draw()
-#         #endregion ------------------------------------------------> 
-
-#         return True
-#     #---
-#     #endregion -----------------------------------------------> Manage Methods 
-# #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+#---
 
 
 class WindowResCpR(BaseWindowResultOnePlotFA):

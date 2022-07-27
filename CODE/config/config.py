@@ -117,7 +117,7 @@ nwCheckDataPrep = 'Data Preparation'
 nwAAPlot        = 'AAPlot'
 nwHistPlot      = 'HistPlot'
 nwCpRPlot       = 'CpRPlot'
-# nwCEvolPlot     = 'CEvolPlot'
+nwCEvolPlot     = 'CEvolPlot'
 nwAbout         = 'About UMSAP'
 #------------------------------> Dialogs
 ndCheckUpdateResDialog = 'Check for Updates'
@@ -157,7 +157,7 @@ nuAA       = 'AA Distribution'
 nuHist     = 'Histograms'
 nuReadF    = 'Read UMSAP File'
 nuCpR      = 'Cleavage per Residues'
-# nuCEvol    = 'Cleavage Evolution'
+nuCEvol    = 'Cleavage Evolution'
 #endregion ------------------------------------------------------------> Names
 
 
@@ -226,9 +226,9 @@ kwToolVolPlotColorConf     = 'Vol Plot Color Configure'
 #------------------------------> Fold Change Evolution
 kwToolFCShowAll = 'FC Plot Show All'
 #------------------------------> Further Analysis
-# klFACleavageEvol = 'Cleavage Evolution'
+kwToolFACleavageEvol   = 'Cleavage Evolution'
 kwToolFACleavagePerRes = 'Cleavage per Residue'
-kwToolFAPDBMap = 'PDB Map'
+kwToolFAPDBMap         = 'PDB Map'
 #endregion ---------------------------------> Keywords for Menu - Method Links
 
 
