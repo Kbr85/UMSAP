@@ -22,14 +22,14 @@ from typing import Optional, Union
 import wx
 
 import config.config as mConfig
-import data.exception as mException
 import data.method as mMethod
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------------> Methods
 def VersionCompare(
-    strA: str, strB: str,
+    strA: str,
+    strB: str,
     )-> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Basic version comparison.
 
@@ -46,11 +46,6 @@ def VersionCompare(
             (True, None)
             (False, ('', '', ''))
 
-        Raise
-        -----
-        InputError
-            When strA or strB cannot be converted to x,y,z integers
-
         Examples
         --------
         >>> VersionCompare('2.4.7 beta', '2.4.7')
@@ -60,9 +55,13 @@ def VersionCompare(
         >>> VersionCompare('3.4.7 beta', '5.4.1')
         >>> False
     """
+    # Test in test.unit.test_check.Test_VersionCompare
     #region -------------------------------------------------> Get number list
-    xA, yA, zA = map(int, strA.strip().split(" ")[0].split("."))
-    xB, yB, zB = map(int, strB.strip().split(" ")[0].split("."))
+    try:
+        xA, yA, zA = map(int, strA.strip().split(" ")[0].split("."))
+        xB, yB, zB = map(int, strB.strip().split(" ")[0].split("."))
+    except Exception as e:
+        return (False, ('Exception', None, str(e)))
     #endregion ----------------------------------------------> Get number list
 
     #region ---------------------------------------------------------> Compare
@@ -86,8 +85,8 @@ def VersionCompare(
 
 def Path2FFOutput(
     value: Union[str, Path],
-    fof: mConfig.litFoF='file',
-    opt: bool=False,
+    fof  : mConfig.litFoF='file',
+    opt  : bool=False,
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Check if value holds a valid path that can be used for output data.
 
@@ -109,12 +108,15 @@ def Path2FFOutput(
                 code is:
                 - NotPath, Input is not a valid path.
                 - NoWrite, It is not possible to write.
+                - NoFile, fof is file but value points to a folder
+                - NoFolder, fof is folder but value points to a file.
 
         Examples
         --------
         >>> Path2FFOutput('', 'file', opt=False)
         >>> (False, (NoPath, '', The path '' is not valid.))
     """
+    # Test in test.unit.test_check.Test_Path2FFOutput
     #region --------------------------------------------------------> Optional
     if value == '':
         if opt:
@@ -125,7 +127,7 @@ def Path2FFOutput(
     else:
         pass
     #endregion -----------------------------------------------------> Optional
-    
+
     #region ---------------------------------------------------> Is valid Path
     try:
         tPath = Path(value)
@@ -136,15 +138,33 @@ def Path2FFOutput(
 
     #region -------------------------------------------------------> Can write
     tempFileName = 'kbr-'+mMethod.StrNow()+'.kbr'
+    #------------------------------>
     if fof == 'file':
+        if tPath.is_file():
+            pass
+        else:
+            msg = (f"The given path does not point to a file."
+                   f"\nSelected path: '{value}'")
+            return (False, ('NoFile', str(value), msg))
+        #------------------------------>
         f = tPath.parent / tempFileName 
-    else:
+    elif fof == 'folder':
+        if tPath.is_dir():
+            pass
+        else:
+            msg = (f"The given path does not point to a folder."
+                   f"\nSelected path: '{value}'")
+            return (False, ('NoFolder', str(value), msg))
+        #------------------------------>
         f = tPath / tempFileName
+    else:
+        return (False, ('Exception', fof, 'Invalid fof option.'))
+    #------------------------------>
     try:
         f.touch()
         f.unlink()
     except Exception:
-        msg = f"{f} cannot be used for writing."
+        msg = f"{tPath.parent} cannot be used for writing."
         return (False, ('NoWrite', str(value), msg))
     #endregion ----------------------------------------------------> Can write
 
@@ -154,15 +174,15 @@ def Path2FFOutput(
 
 def Path2FFInput(
     value: Union[str, Path],
-    fof: mConfig.litFoF='folder',
-    opt: bool=False,
+    fof  : mConfig.litFoF='folder',
+    opt  : bool=False,
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Check that value is a valid path to a file or folder. 
 
         Parameters
         ----------
         value: str or Path
-            Path to the file or folder
+            Path to the file or folder.
         fof : str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
             Default is 'folder'
@@ -179,6 +199,7 @@ def Path2FFInput(
                 - NotFile,   Input is not valid file
                 - NotDir,    Input is not valid folder
                 - NoRead,    Input cannot be read
+                - Exception, Check did not finish correctly.
 
         Examples
         --------
@@ -187,6 +208,7 @@ def Path2FFInput(
         >>> Path2FFInput('/Users/DAT4S/test.py', 'file')
         >>> (True, None)
     """
+    # Test in test.unit.test_check.Test_Path2FFInput
     #region --------------------------------------------------------> Optional
     if value == '':
         if opt:
@@ -205,29 +227,26 @@ def Path2FFInput(
         msg = f"The selected path is not valid.\nSelected path: '{value}'"
         return (False, ('NotPath', str(value), msg))
     #endregion ------------------------------------------------> Is valid Path
-    
+
     #region -------------------------------------------------------------> Fof
     if fof == 'file':
         if tPath.is_file():
             pass
         else:
-            msg = (
-                f"The selected path does not point to a file."
-                f"\nSelected path:'{tPath}'")
+            msg = (f"The selected path does not point to a file."
+                   f"\nSelected path:'{tPath}'")
             return (False, ('NotFile', str(value), msg))
     elif fof == 'folder':
         if tPath.is_dir():
             pass
         else:
-            msg = (
-                f"The selected path does not point to a folder.\n"
-                f"Selected path: '{tPath}'")
+            msg = (f"The selected path does not point to a folder.\n"
+                   f"Selected path: '{tPath}'")
             return (False, ('NotDir', str(value), msg))
     else:
-        msg = mConfig.mNotSupported.format('fof', fof)
-        raise mException.InputError(msg)
+        return (False, ('Exception', fof, 'Invalid fof option.'))
     #endregion ----------------------------------------------------------> Fof
-    
+
     #region --------------------------------------------------------> Can read
     if os.access(tPath, os.R_OK):
         pass
@@ -241,41 +260,41 @@ def Path2FFInput(
 
 
 def NumberList(
-    tStr: str,
+    tStr   : str,
     numType: mConfig.litNumType='int',
-    unique: bool=True,
-    sep: str=' ',
-    opt: bool=False,
-    vMin: Optional[float]=None,
-    vMax: Optional[float]=None,
-    nMin: Optional[int]=None,
-    nN: Optional[int]=None,
-    nMax: Optional[int]=None,
+    unique : bool=True,
+    sep    : str=' ',
+    opt    : bool=False,
+    vMin   : Optional[float]=None,
+    vMax   : Optional[float]=None,
+    nMin   : Optional[int]=None,
+    nN     : Optional[int]=None,
+    nMax   : Optional[int]=None,
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Check tStr contains a list of numbers.
 
         Parameters
         ----------
         tStr: str
-            String to check
+            String to check.
         numType: str
-            One of 'int' or 'float'. Default is 'int'
+            One of 'int' or 'float'. Default is 'int'.
         unique: boolean
-            Elements must be unique (True) or not (False)
+            Elements must be unique (True) or not (False).
         sep: str
-            List elements are separated by sep. Default ' '
+            List elements are separated by sep. Default ' '.
         opt: boolean
-            To allow for empty fields
+            To allow for empty fields.
         vMin: float or None
-            Elements in the list must be >= vMin
+            Elements in the list must be >= vMin.
         vMax: float or None
-            Elements in the list must be <= vMax
+            Elements in the list must be <= vMax.
         nMin: int or None
-            List must contain at least nMin elements
+            List must contain at least nMin elements.
         nN: int or None
-            List must contain exactly nN elements
+            List must contain exactly nN elements.
         nMax: int or None
-            List must contain maximum nMax elements
+            List must contain maximum nMax elements.
 
         Returns
         -------
@@ -283,11 +302,11 @@ def NumberList(
             - (True, None)
             - (False, (code, val, msg))
                 code val are:
-                - (NotOptional, None) : String is not optional
-                - (BadElement, str) : Value not valid
-                - (ListLength, length) : The length of the list is not equal to 
-                    nN and it is not withing the range nMin - nMax
-                - (NotUnique, list) : list is the list of repeated elements
+                - (NotOptional, None) : String is not optional.
+                - (BadElement, str) : Value not valid.
+                - (ListLength, length) : The length of the list is not equal to.
+                    nN and it is not withing the range nMin - nMax.
+                - (NotUnique, list) : list is the list of repeated elements.
 
         Notes
         -----
@@ -300,6 +319,7 @@ def NumberList(
         >>> NumberList('1,2,3, 2-10', numType='int', sep=',', unique=True)
         >>> (False, (NotUnique, val, msg))
     """
+    # Test in test.unit.test_check.Test_NumberList
     #region -------------------------------------------------------> Variables
     value    = ' '.join(tStr.split())
     elements = value.split(sep)
@@ -370,13 +390,13 @@ def NumberList(
     else:
         pass
     #endregion -------------------------------------------------------> Unique
-    
+
     return (True, None)
 #---
 
 
 def AInRange(
-    a: Union[str, int, float],
+    a     : Union[str, int, float],
     refMin: Union[str, int, float, None]=None,
     refMax: Union[str, int, float, None]=None,
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
@@ -385,11 +405,11 @@ def AInRange(
         Parameters
         ----------
         a: str, int or float
-            Number to check if it is within the given range
+            Number to check if it is within the given range.
         refMin: str, int, float or None
-            Lower end of range
+            Lower end of range.
         refMax: str, int, float or None
-            Upper end of range
+            Upper end of range.
 
         Returns
         -------
@@ -398,7 +418,7 @@ def AInRange(
             - (False, (code, val, msg))
                 code, val are:
                     - ('AInRange', a) : a is the given value to check
-                
+
         Notes
         -----
         Leaving one range limit as None allows to check for open intervals.
@@ -419,6 +439,7 @@ def AInRange(
         >>> AInRange('3', refMin=-10, refN=3, refMax=0)
         >>> (True, None)
     """
+    # Test in test.unit.test_check.Test_AInRange
     #region -------------------------------------------------------> Variables
     a = float(a)
     b = float(refMin) if refMin is not None else float('-inf')
@@ -437,7 +458,7 @@ def AInRange(
 
 def ListUnique(
     tList: Union[list, tuple],
-    opt:bool=False,
+    opt  : bool=False,
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Check if tList contains unique elements or not.
 
@@ -464,6 +485,7 @@ def ListUnique(
         >>> ListUnique([9,'A',1,2,6,'1','2','3',2,6,8,9])
         >>> (False, ('NotUnique', '9, 2, 6', 'Duplicated elements: 9, 2, 6'))
     """
+    # Test in test.unit.test_check.Test_ListUnique
     #region -------------------------------------------------------> Variables
     seen = set()
     dup  = []
@@ -504,7 +526,7 @@ def ListUnique(
 
 
 def UniqueColNumbers(
-    value: list[str],
+    value  : list[str],
     sepList: list[str]=[' ', ',', ';'],
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Check value contains unique integers.
@@ -523,8 +545,12 @@ def UniqueColNumbers(
         Returns
         -------
         tuple:
-            (True, None)
-            (False, (NotUnique, repeated elements, msg))
+            - (True, None)
+            - (False, (code, val, msg))
+                code val are:
+                - NoString, None
+                - NotUnique, repeated elements
+                - Exception, ''
 
         Notes
         -----
@@ -538,8 +564,21 @@ def UniqueColNumbers(
     """
     # Test in test.unit.test_check.Test_UniqueColNumbers
     def _strip_split(tEle: Union[str, list[str]], sep: str) -> list[str]:
-        """ """
-        #------------------------------> 
+        """Strip individual elements in the given list/str
+        
+            Parameters
+            ----------
+            tEle: str or list
+                Input to strip elements.
+            sep: str
+                String to split elements.
+            
+            Returns
+            -------
+            list[str]
+                A list containing each stripped element.
+        """
+        #------------------------------>
         if isinstance(tEle, str):
             k = [tEle.strip()]
         else:
@@ -549,7 +588,7 @@ def UniqueColNumbers(
         for v in k:
             for j in v.split(sep):
                 out.append(j)
-        #------------------------------> 
+        #------------------------------>
         return [x.strip() for x in out]
     #---
     #region -----------------------------------------------------> Check input
@@ -558,22 +597,16 @@ def UniqueColNumbers(
         value = list(map(str, value))
     except Exception as e:
         msg = ('value must be a list of strings.')
-        raise mException.InputError(msg)
+        return (False, ('NotString', None, msg))
     #------------------------------> 
     try:
         sepList = list(map(str, sepList))
         if len(sepList) != 3:
-            msg = (
-            f'sepList "({sepList}" must be a list of three strings. '
-            f'e.g. [" ", ",", ";"].')
-            raise mException.InputError(msg)
+            return (False, ('Exception', str(sepList), 'Invalid sepList value'))
         else:
             pass
     except Exception as e:
-        msg = (
-            f'sepList "({sepList}" must be a list of three strings. '
-            f'e.g. [" ", ",", ";"].')
-        raise mException.InputError(msg)
+        return (False, ('Exception', str(sepList), 'Invalid sepList value'))
     #endregion --------------------------------------------------> Check input
 
     #region ----------------------------------------------------> Get Elements
@@ -595,18 +628,18 @@ def UniqueColNumbers(
     try:
         values = mMethod.Str2ListNumber(values, numType='int', sep=sepList[0])
     except Exception as e:
-        raise e
+        return (False, ('Exception', None, str(e)))
     #------------------------------>
     try:
         return ListUnique(values)
     except Exception as e:
-        raise e
+        return (False, ('Exception', None, str(e)))
     #endregion -----------------------------------------------> Check Elements
 #---
 
 
 def TcUniqueColNumbers(
-    tcList: list[wx.TextCtrl],
+    tcList : list[wx.TextCtrl],
     sepList: list[str]=[' ', ',', ';'],
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Checks that all elements in the wx.TextCtrl(s) are unique.
@@ -627,13 +660,17 @@ def TcUniqueColNumbers(
         Returns
         -------
         tuple:
-            (True, None)
-            (False, (NotUnique, repeated elements, msg))
+            - (True, None)
+            - (False, (code, val, msg))
+                code val are:
+                - NotUnique, repeated elements
+                - Exception, ''
 
         Notes
         -----
         Individual elements in tcList and resCtrl are expected to be integers.
     """
+    # No Test
     #region -------------------------------------------------------> Variables
     values = []
     #endregion ----------------------------------------------------> Variables
@@ -644,14 +681,12 @@ def TcUniqueColNumbers(
         for tc in tcList:
             try:
                 values.append(tc.GetValue())
-            except Exception:
-                msg = 'tcList must contain a list of wx.TextCtrl.'
-                raise mException.InputError(msg)
-    except TypeError:
-        msg = f'tcList must be a list of wx.TextCtrl.'
-        raise mException.InputError(msg)
+            except Exception as e:
+                return (False, ('Exception', None, str(e)))
+    except Exception as e:
+        return (False, ('Exception', None, str(e)))
     #endregion ----------------------------------------------------> Form list
-    
+
     #region ----------------------------------------------------------> Return
     try:
         return UniqueColNumbers(values, sepList=sepList)
@@ -669,7 +704,7 @@ def AllTcEmpty(
         Parameters
         ----------
         tcList: list of wx.TextCtrl
-            Widgets holding the values to check
+            Widgets holding the values to check.
 
         Returns
         -------
@@ -707,12 +742,12 @@ def AllTcEmpty(
 #---
 
 def Comparison(
-    tStr: str,
+    tStr   : str,
     numType: mConfig.litNumType='int',
-    opt: bool=False,
-    vMin: Optional[float]=None,
-    vMax: Optional[float]=None, 
-    op: list[str]=['<', '>', '<=', '>='],
+    opt    : bool=False,
+    vMin   : Optional[float]=None,
+    vMax   : Optional[float]=None,
+    op     : list[str]=['<', '>', '<=', '>='],
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Check tStr is like 'op val', e.g. '< 10.3'.
 
@@ -746,6 +781,7 @@ def Comparison(
         >>> Comparison('< 1.4', numType='float', opt=False, vMin=0, vMax=100, op=['<', '>', '<=', '>='])
         >>> (True, None)
     """
+    # Test in test.unit.test_check.Test_Comparison
     #region -------------------------------------------------------> Variables
     value    = " ".join(tStr.split())
     elements = [x.strip() for x in value.split()]
@@ -806,3 +842,4 @@ def Comparison(
     return (True, None)
 #---
 #endregion ----------------------------------------------------------> Methods
+

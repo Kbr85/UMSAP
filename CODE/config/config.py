@@ -45,9 +45,6 @@ if os == 'Darwin':
     res = root / 'Resources'  # Path to the Resources folder
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
-#     #------------------------------> Statusbar split size
-#     sbPlot2Fields = [-1, 115]
-#     sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Cmd'
     #------------------------------> Delta space between consecutive windows
@@ -64,9 +61,6 @@ elif os == 'Windows':
         res = root / 'RESOURCES/'
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
-#     #------------------------------> Statusbar split size
-#     sbPlot2Fields = [-1, 115]
-#     sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -79,9 +73,6 @@ else:
     res = root / 'Resources'
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 3
-#     #------------------------------> Statusbar split size
-#     sbPlot2Fields = [-1, 115]
-#     sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -134,7 +125,7 @@ ntProtProf   = 'ProtProf'
 ntTarProt    = 'TarProt'
 ntPrefUpdate = 'Updates'
 #------------------------------> Individual Panes
-npDef = 'Default Pane'
+npDef                   = 'Default Pane'
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npNPlot                 = 'NPlot'
 npCorrA                 = 'CorrAPane'
@@ -197,33 +188,30 @@ kwHelpPref     = 'MenuHelp Preferences'
 kwToolUMSAPCtrlAddDelExp = 'ToolUMSAPCtrl Add Del Export Analysis'
 kwToolUMSAPCtrlReload    = 'ToolUMSAPCtrl Reload File'
 #------------------------------> Tool Menu for Plot Window. General Items
-kwToolWinUpdate          = 'Update Result Window'
-kwToolDupWin             = 'Duplicate Window'
-kwToolZoomResetAll       = 'Reset Zoom All'
-kwToolZoomReset          = 'Reset Zoom One'
-kwToolExpData            = 'Export Data'
-kwToolExpImgAll          = 'Export Image'
-kwToolExpImg             = 'Export Image One'
-kwToolCheckDP            = 'Check DP'
-kwToolExpSeq             = 'Export Sequence'
-kwToolExportDataFiltered = 'Export Filtered Data'
+kwToolWinUpdate          = 'GeneralTool Update Result Window'
+kwToolDupWin             = 'GeneralTool Duplicate Window'
+kwToolZoomResetAll       = 'GeneralTool Reset Zoom All'
+kwToolZoomReset          = 'GeneralTool Reset Zoom One'
+kwToolExpData            = 'GeneralTool Export Data'
+kwToolExpImgAll          = 'GeneralTool Export Image'
+kwToolExpImg             = 'GeneralTool Export Image One'
+kwToolCheckDP            = 'GeneralTool Check DP'
+kwToolExpSeq             = 'GeneralTool Export Sequence'
+kwToolExportDataFiltered = 'GeneralTool Export Filtered Data'
 #------------------------------> Tool Menu for CorrA
 kwToolCorrACol  = 'ToolCorrA Select Column'
 #------------------------------> Tool Menu for LimProt
-kwToolLimProtBandLane = 'Band/Lane Sel'
-kwToolLimProtShowAll  = 'Show All'
+kwToolLimProtBandLane = 'ToolLimProt Band/Lane Sel'
+kwToolLimProtShowAll  = 'ToolLimProt Show All'
 #------------------------------> Tool Menu for AA
-kwToolAAExp = 'AA'
-kwToolAAPos = 'Pos'
+kwToolAAExp = 'ToolAA AA'
+kwToolAAPos = 'ToolAA Pos'
 #------------------------------> Volcano Plot
-kwToolVolPlot              = 'Volcano Plot CRP'
-kwToolVolPlotLabelPick     = 'Vol Plot Pick Label'
-kwToolVolPlotLabelProt     = 'Vol Plot Add Label'
-kwToolVolPlotColorScheme   = 'Vol Plot Color Scheme'
-kwToolVolPlotColorConf     = 'Vol Plot Color Configure'
-# klToolVolPlotColorHypCurve = 'Hyperbolic Curve'
-# klToolVolPlotColorPFC      = 'P - Log2FC'
-# klToolVolPlotColorZ        = 'Z Score'
+kwToolVolPlot              = 'ToolVol Plot CRP'
+kwToolVolPlotLabelPick     = 'ToolVol Plot Pick Label'
+kwToolVolPlotLabelProt     = 'ToolVol Plot Add Label'
+kwToolVolPlotColorScheme   = 'ToolVol Plot Color Scheme'
+kwToolVolPlotColorConf     = 'ToolVol Plot Color Configure'
 #------------------------------> Fold Change Evolution
 kwToolFCShowAll = 'FC Plot Show All'
 #------------------------------> Further Analysis
@@ -289,13 +277,11 @@ lStScoreVal    = 'Score Value'
 lStScoreCol    = 'Score'
 lStResultCtrl  = 'Results - Control experiments'
 lStResultCtrlS = 'Results - Control'
-# lStExcludeRow  = 'Exclude Rows'
 lStExcludeProt = 'Exclude Proteins'
 lStGeneName    = 'Gene Names'
 # #------------------------------> wx.ComboBox or wx.CheckBox
 lCbCorrectP    = 'P Correction'
 lCbSample      = 'Samples'
-# lCbIntensity   = 'Intensities'
 #------------------------------> wx.Dialog
 lPdError = 'Fatal Error'
 #------------------------------> Filters
@@ -324,15 +310,10 @@ ttStGenName = f'Set the column number containing the {lStGeneName}.\ne.g. 3'
 ttStExcludeProt = (
     "Set the column number containing the data used to exclude proteins."
     "\ne.g. 8 10-12")
-# ttStExcludeRow = (
-#     'Set the column numbers containing the data used to Exclude Rows.'
-#     '\ne.g. 8 10-12')
 ttStCorrectP = 'Select the p correction method.'
 ttStSample = (f"Specify if samples are independent or paired.\n"
     f"For example, samples are paired when the same Petri dish is "
     f"used for the control and experiment.")
-# ttStIntensity = ('Specify if intensities are raw intensity values or are '
-#     'already expressed as a ratio (SILAC, TMT/iTRAQ).')
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -410,12 +391,6 @@ oControlTypeProtProf = {
     'Ratio': oIntensities['RatioI'],
 }
 oFillLoc = ('end', 'start')
-
-
-
-# oMsgType = ('errorF', 'errorU', 'warning', 'success')
-
-# oSelectF = ('openO', 'openM', 'save')
 #endregion ----------------------------------------------------------> Options
 
 
@@ -496,7 +471,6 @@ mNZPlusNumText = (
 mFileSelector = 'It was not possible to show the file selecting dialog.'
 mFileSelUMSAP = 'Select the UMSAP File'
 mFileRead = 'An error occurred when reading file:\n{}'
-# mWriteErrorIO = "The selected file could not be written.\nSelected file: {}"
 #endregion ------------------------------------------------------------> Files
 
 #region ------------------------------------------------------------> Pandas
@@ -550,16 +524,9 @@ mCtrlEmpty = 'None of the Control fields can be empty.'
 #------------------------------> 
 mCompNYI = "Comparison method is not yet implemented: {}."
 mPDFilterByCol  = "Filtering process failed."
-# mWriteFilesIO = "The selected files could not be written to: {}"
 mRangeNumIE = "Invalid range or number: {}"
-# mNotIterable = "{} must be iterable but the given value ({}) is not."
-# mpdReplaceVal = ("It was not possible to replace {} values with {}.")
-# mPDExcludeCol  = "Exclusion process failed."
 mNotImplementedFull = ('Option {} is not yet implemented. Valid options for {} '
     'are: {}.')
-# mMsgTypeIE = (
-#     f"Options for message mode are: {*oMsgType,}. "
-#     "Option {} is unknown.")
 mwxLCtrNoCopy    = "The elements of this list cannot be copied."
 mCopyFailedW     = "Copy operation failed. Try again."
 mwxLCtrNoChange  = "This list cannot be modified."
@@ -571,22 +538,6 @@ mwxLCtrlNColPaste = (
     "in the list."
 )
 mInvalidValue = "'{}' is an invalid value."
-# mPDSelCol  = "The specified columns {} were not found in the dataframe."
-# mTransMethodIE = (
-#     f"Options for transformation method are: {*oTransMethod,}. "
-#     "Option {} is unknown.")
-# mNormMethodIE = (
-#     f"Options for normalization method are: {*oNormMethod,}. "
-#     "Option {} is unknown.")
-# mImputationMethodIE = (
-#     f"Options for imputation method are: {*oImputation,}. "
-#     "Option {} is unknown.")
-# mAlpha = (
-#     "The significance level (alpha) must be a number between 0 and 1. "
-#     "The given value ({}) it is not within this range. ")
-# mPairSamplesDiffRep = (
-#     'For paired samples the number of replicates in {} and {} must be equal.')
-# m1IntGET = ('{} must be an integer greater/equal than/to {}.')
 mNotImplemented = 'Option {} is not yet implemented.'
 mNotSupported = "{} value '{}' is not supported."
 mEmpty = 'The field value cannot be empty.'
@@ -702,3 +653,4 @@ values = {
 }
 #endregion -----------------------------------------------------------> Values
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS
+
