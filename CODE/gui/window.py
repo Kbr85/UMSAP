@@ -606,6 +606,40 @@ class BaseWindowResult(BaseWindow):
         dlg.Destroy()
         return True
     #---
+    
+    def ExportDataFiltered(self, df: Optional[pd.DataFrame]=None) -> bool:
+        """Export data to a csv file.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Dlg window
+        dlg = DialogFileSelect('save', mConfig.elData, parent=self)
+        #endregion -----------------------------------------------> Dlg window
+
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            tDF = self.rDf if df is None else df
+            #------------------------------> Export
+            try:
+                mFile.WriteDF2CSV(p, tDF)
+            except Exception as e:
+                DialogNotification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed.format('Data'),
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+
+        dlg.Destroy()
+        return True
+    #---
 
     def ExportImgAll(self) -> bool:
         """Create and image of all plots in the window.
@@ -3445,6 +3479,8 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             mConfig.kwToolVolPlotLabelProt : self.ProtLabel,
             #------------------------------> 
             mConfig.kwToolFCShowAll : self.FCChange,
+            #------------------------------>
+            mConfig.kwToolExportDataFiltered : self.ExportDataFiltered,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup

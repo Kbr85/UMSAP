@@ -2292,7 +2292,21 @@ class MenuToolProtProf(BaseMenuMainResult):
         self.AppendSeparator()
         #------------------------------>
         self.AddLastItems(False)
+        pos = self.FindChildItem(self.miSaveD.GetId())[1]
+        self.miSaveDataFiltered = self.Insert(
+            pos+1, -1, 'Export Filtered Data\tShift+Ctrl+E')
         #endregion -----------------------------------------------> Menu Items
+
+        #region ---------------------------------------------------> rKeyID
+        rIDMap = {
+            self.miSaveDataFiltered.GetId() : mConfig.kwToolExportDataFiltered,
+        }
+        self.rIDMap = self.rIDMap | rIDMap
+        #endregion ------------------------------------------------> rKeyID
+
+        #region ---------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSaveDataFiltered)
+        #endregion ------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
