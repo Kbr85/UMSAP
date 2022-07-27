@@ -627,7 +627,7 @@ class BaseMenuFurtherAnalysis(BaseMenu):
         self.rIDMap[self.miDupWin.GetId()]  = mConfig.kwToolDupWin
         self.rIDMap[self.miZoomR.GetId()]   = mConfig.kwToolZoomResetAll
         self.rIDMap[self.miSaveD.GetId()]   = mConfig.kwToolExpData
-        self.rIDMap[self.miSaveI.GetId()]   = mConfig.kwToolExpImgAll
+        self.rIDMap[self.miSaveI.GetId()]   = mConfig.kwToolExpImg
         #endregion -----------------------------------------------> Add rIDMap
 
         #region --------------------------------------------------------> Bind
@@ -1668,83 +1668,83 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
 #---
 
 
-# class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
-#     """Tool menu for the Cleavage Evolution.
+class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
+    """Tool menu for the Cleavage Evolution.
 
-#         Parameters
-#         ----------
-#         menuData: dict
-#             Dict with the data for the menu with the following two entries:
-#             {
-#                 'Label': ['L1', 'L2',....],
-#                 'Nat: bool,
-#             }
-#     """
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self, menuData):
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__(menuData)
-#         #endregion --------------------------------------------> Initial Setup
+        Parameters
+        ----------
+        menuData: dict
+            Dict with the data for the menu with the following two entries:
+            {
+                'Label': ['L1', 'L2',....],
+                'Nat: bool,
+            }
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, menuData):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(menuData)
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu Items
-#         self.AddNatRecSeqEntry(
-#             self.OnMethodKeyBool, idMap=mConfig.klToolGuiUpdate, idKey='nat')
-#         self.AppendSeparator()
-#         self.miMon = self.Append(-1, 'Monotonic', kind=wx.ITEM_CHECK)
-#         self.AppendSeparator()
-#         self.AddLastItems()
-#         #endregion -----------------------------------------------> Menu Items
+        #region --------------------------------------------------> Menu Items
+        self.AddNatRecSeqEntry(
+            self.OnMethodKeyBool, idMap=mConfig.kwToolWinUpdate, idKey='nat')
+        self.AppendSeparator()
+        self.miMon = self.Append(-1, 'Monotonic', kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
+        self.AddLastItems()
+        #endregion -----------------------------------------------> Menu Items
 
-#         #region ---------------------------------------------------> 
-#         rIDMap = {
-#             self.miMon.GetId() : mConfig.klToolGuiUpdate,
-#         }
-#         self.rIDMap = self.rIDMap | rIDMap
-#         #------------------------------>
-#         rKeyMap = {
-#             self.miMon.GetId() : 'mon',
-#         }
-#         self.rKeyMap = self.rKeyMap | rKeyMap
-#         #endregion ------------------------------------------------> 
+        #region ---------------------------------------------------> 
+        rIDMap = {
+            self.miMon.GetId() : mConfig.kwToolWinUpdate,
+        }
+        self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------>
+        rKeyMap = {
+            self.miMon.GetId() : 'mon',
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
+        #endregion ------------------------------------------------> 
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miMon)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance setup
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miMon)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
 
-#     #region ---------------------------------------------------> Class Methods
-#     def OnClear(self, event:wx.CommandEvent) -> bool:
-#         """Clear selections.
+    #region ---------------------------------------------------> Class Methods
+    def OnClear(self, event:wx.CommandEvent) -> bool:
+        """Clear selections.
 
-#             Parameters
-#             ----------
-#             event:wx.Event
-#                 Information about the event
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region --------------------------------------------------->
-#         try:
-#             self.miNat.Check(check=False)
-#         except AttributeError:
-#             pass
-#         #------------------------------>
-#         self.miMon.Check(check=False)
-#         #endregion ------------------------------------------------>
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        try:
+            self.miNat.Check(check=False)
+        except AttributeError:
+            pass
+        #------------------------------>
+        self.miMon.Check(check=False)
+        #endregion ------------------------------------------------>
 
-#         #region --------------------------------------------------->
-#         win = self.GetWindow()
-#         win.UpdatePlot(nat=False, mon=False)
-#         #endregion ------------------------------------------------>
+        #region --------------------------------------------------->
+        win = self.GetWindow()
+        win.UpdateResultWindow(nat=False, mon=False)
+        #endregion ------------------------------------------------>
 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class Methods
-# #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
+#---
 
 
 class MenuToolProtProfVolcanoPlotColorScheme(BaseMenu):
@@ -2422,7 +2422,7 @@ class MenuBarTool(MenuBarMain):
         mConfig.nwAAPlot       : MenuToolAA,
         mConfig.nwHistPlot     : MenuToolHist,
         mConfig.nwCpRPlot      : MenuToolCpR,
-        # mConfig.nwCEvolPlot    : MenuToolCleavageEvol,
+        mConfig.nwCEvolPlot    : MenuToolCleavageEvol,
     }
     #endregion --------------------------------------------------> Class Setup
 

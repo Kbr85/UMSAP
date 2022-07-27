@@ -9413,28 +9413,17 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
         #region -----------------------------------------------> Initial Setup
         self.cTitle = f"{parent.cTitle} - {dateC} - {self.cSection}"
         self.cDateC = dateC
-#         self.cFileN = fileN
+        self.cFileN = fileN
         self.rUMSAP = parent.cParent
         self.rObj   = parent.rObj
         self.rData  = self.rObj.GetFAData(
             parent.cSection, parent.rDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         self.rIdx = {}
-#         self.rRec = 'Rec'
-#         self.rMon = False
         self.rProtLength = parent.rData[self.cDateC]['PI']['ProtLength']
-#         self.rProtLoc    = cParent.rData[self.cDateC]['PI']['ProtLoc']
         menuData         = self.SetMenuDate()
-        #------------------------------> 
+        #------------------------------>
         super().__init__(parent, menuData)
-        #------------------------------> 
-#         dKeyMethod = {
-#             'ZoomR' : self.OnZoomReset,
-#             'SaveI' : self.OnSaveImage,
-#             #------------------------------> 
-#             config.klToolGuiUpdate: self.UpdatePlot,
-#         }
-#         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
         
         #region ---------------------------------------------------> 
@@ -9640,84 +9629,71 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
 
         return True
     #---
+
+    def DupWin(self) -> bool:
+        """ Export data to a csv file 
+        
+            Returns
+            -------
+            bool
+        """
+        #------------------------------>
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(                # type: ignore
+            WindowResCEvol(self.cParent, self.cDateC, self.cFileN))             # type: ignore
+        #------------------------------>
+        return True
+    #---
+
+    def ExportData(self) -> bool:
+        """ Export data to a csv file.
+        
+            Returns
+            -------
+            bool
+        """
+        return super().ExportData(df=self.rData)
+    #---
+
+    def ExportImg(self) -> bool:
+        """Save an image of the plot.
+    
+            Returns
+            -------
+            bool
+        """
+        return self.wPlot.dPlot['M'].SaveImage(
+            mConfig.elMatPlotSaveI, parent=self)
+    #---
     #endregion -----------------------------------------------> Manage Methods 
 
     #region ---------------------------------------------------> Event Methods
-#     def OnClose(self, event: wx.CloseEvent) -> bool:
-#         """Close window and uncheck section in UMSAPFile window. Assumes 
-#             self.parent is an instance of UMSAPControl.
-#             Override as needed.
-    
-#             Parameters
-#             ----------
-#             event: wx.CloseEvent
-#                 Information about the event
-                
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -----------------------------------------------> Update parent
-#         self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)		
-#         #endregion --------------------------------------------> Update parent
-        
-#         #region ------------------------------------> Reduce number of windows
-#         config.winNumber[self.cName] -= 1
-#         #endregion ---------------------------------> Reduce number of windows
-        
-#         #region -----------------------------------------------------> Destroy
-#         self.Destroy()
-#         #endregion --------------------------------------------------> Destroy
-        
-#         return True
-#     #---
-    
-#     def OnExportPlotData(self) -> bool:
-#         """ Export data to a csv file 
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         return super().OnExportPlotData(df=self.rData)
-#     #---
-    
-#     def OnDupWin(self) -> bool:
-#         """ Export data to a csv file 
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         #------------------------------> 
-#         self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(
-#             CEvolPlot(self.cParent, self.cDateC, self.cFileN)
-#         )
-#         #------------------------------> 
-#         return True
-#     #---
-    
-#     def OnSaveImage(self) -> bool:
-#         """Save an image of the plot.
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         return self.wPlot.dPlot['M'].SaveImage(
-#             config.elMatPlotSaveI, parent=self.wPlot.dPlot['M']
-#         )
-#     #---
-    
-#     def OnZoomReset(self) -> bool:
-#         """Reset the zoom level in the plot.
-        
-#             Returns
-#             -------
-#             bool
-#         """
-#         return self.wPlot.dPlot['M'].ZoomResetPlot()
-#     #---
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes 
+            self.parent is an instance of UMSAPControl.
+
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)           # type: ignore
+        #endregion --------------------------------------------> Update parent
+
+        #region ------------------------------------> Reduce number of windows
+        mConfig.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+
+        return True
+    #---
 
     def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
         """What to do after selecting a row in the wx.ListCtrl. 
